@@ -4,7 +4,7 @@
   "displayName": "Mercado Libre Argentina Product Detail",
   "url": "https://articulo.mercadolibre.com.ar/MLA-1141892349-notebook-lenovo-ideapad-1-14-intel-celeron-n4020-4gb-64gb-emmc-128gb-_JM",
   "expected": {
-    "titleContains": "Mercado",
+    "titleContains": "Lenovo",
     "textContains": "$"
   },
   "read": {

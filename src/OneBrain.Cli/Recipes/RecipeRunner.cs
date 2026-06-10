@@ -15,6 +15,14 @@ using OneBrain.Verification.Reports;
 
 namespace OneBrain.Cli.Recipes;
 
+public static class RecipeRunner_ExtractHelper
+{
+    public static Dictionary<string, string> Extract(string combined)
+    {
+        return RecipeRunner.ExtractCommercialFields(combined, combined, "product");
+    }
+}
+
 public sealed class RecipeRunner
 {
     private const int DefaultStepTimeoutMs = 15000;
@@ -245,6 +253,7 @@ public sealed class RecipeRunner
                 "sleep"                  => ExecuteSleep(step, sw),
                 "debug.hang"             => ExecuteDebugHang(step, sw),
                 "profile.load"           => ExecuteProfileLoad(step, sw),
+                "extract.visiblefields"  => ExecuteExtractVisibleFields(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
         }
@@ -1459,5 +1468,83 @@ public sealed class RecipeRunner
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"Loaded profile '{result.Profile.Id}' ({result.Profile.Type})", sw.ElapsedMilliseconds, result.Profile);
+    }
+
+    private RecipeStepRunResult ExecuteExtractVisibleFields(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var mode = (step.Args?.GetValueOrDefault("mode") ?? "commercialProduct").ToLowerInvariant();
+        if (mode != "commercialproduct")
+            return Fail(step, sw, $"extract.visibleFields unsupported mode: '{mode}'. Supported: commercialProduct.");
+
+        var prefix = step.SaveAs ?? "extract";
+        var title = _ctx.Variables.TryGetValue("bt", out var t) ? t : (_ctx.Variables.TryGetValue("browser.title", out var bt) ? bt : "");
+        var text = _ctx.Variables.TryGetValue("btext", out var tx) ? tx : (_ctx.Variables.TryGetValue("browser.text", out var btx) ? btx : "");
+
+        if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(text))
+            return Fail(step, sw, "extract.visibleFields: no title/text variables found. Run browser.read first.");
+
+        var result = ExtractCommercialFields(title, text, prefix);
+
+        foreach (var kv in result)
+            _ctx.Variables[kv.Key] = kv.Value;
+
+        sw.Stop();
+        var priceStr = result.TryGetValue(prefix + ".priceCandidate", out var pc) ? pc : "null";
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"Extracted fields: title=yes, price={priceStr}, confidence={result[prefix + ".confidence"]}", sw.ElapsedMilliseconds, result);
+    }
+
+    internal static Dictionary<string, string> ExtractCommercialFields(string title, string text, string prefix)
+    {
+        var vars = new Dictionary<string, string>();
+        var combined = title + " | " + text;
+
+        // Title candidate
+        var titleCandidate = title.Trim();
+        if (!string.IsNullOrWhiteSpace(titleCandidate))
+            vars[prefix + ".titleCandidate"] = titleCandidate;
+
+        // Price detection
+        var priceMatch = System.Text.RegularExpressions.Regex.Match(combined, @"\$[\s]*([\d]{1,3}(?:\.[\d]{3})*(?:,[\d]{2})?)");
+        if (priceMatch.Success)
+        {
+            vars[prefix + ".priceCandidate"] = priceMatch.Value.Trim();
+            vars[prefix + ".currencyCandidate"] = "ARS";
+        }
+        else
+        {
+            vars[prefix + ".priceCandidate"] = "null";
+            vars[prefix + ".currencyCandidate"] = "null";
+        }
+
+        // Shipping
+        bool hasShipping = combined.Contains("Envío", StringComparison.OrdinalIgnoreCase) ||
+                          combined.Contains("envío", StringComparison.OrdinalIgnoreCase) ||
+                          combined.Contains("Llega", StringComparison.OrdinalIgnoreCase) ||
+                          combined.Contains("Retiro", StringComparison.OrdinalIgnoreCase);
+        vars[prefix + ".shippingCandidate"] = hasShipping ? "detected" : "null";
+
+        // Sensitive words
+        var sensitive = new List<string>();
+        if (combined.Contains("Comprar", StringComparison.OrdinalIgnoreCase) || combined.Contains("comprar", StringComparison.OrdinalIgnoreCase))
+            sensitive.Add("comprar");
+        if (combined.Contains("carrito", StringComparison.OrdinalIgnoreCase))
+            sensitive.Add("carrito");
+        if (combined.Contains("Pagar", StringComparison.OrdinalIgnoreCase) || combined.Contains("pagar", StringComparison.OrdinalIgnoreCase))
+            sensitive.Add("pagar");
+        if (combined.Contains("Iniciar sesión", StringComparison.OrdinalIgnoreCase) || combined.Contains("iniciar sesión", StringComparison.OrdinalIgnoreCase))
+            sensitive.Add("login");
+        vars[prefix + ".sensitiveWordsDetected"] = sensitive.Count > 0 ? string.Join(", ", sensitive) : "null";
+
+        // Confidence
+        bool hasTitle = !string.IsNullOrWhiteSpace(titleCandidate);
+        bool hasPrice = priceMatch.Success;
+        vars[prefix + ".confidence"] = (hasTitle && hasPrice) ? "high" : (hasTitle ? "medium" : "low");
+
+        // Raw evidence (truncated)
+        var evidence = combined.Length > 400 ? combined[..400] + "..." : combined;
+        vars[prefix + ".rawEvidence"] = evidence;
+
+        return vars;
     }
 }

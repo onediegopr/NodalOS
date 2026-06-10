@@ -150,6 +150,30 @@ public sealed class ProfileLoaderTests
         Assert.AreEqual("mercadolibre-ar-product", result.Profile!.Id);
     }
 
+    [TestMethod]
+    public void ExtractCommercialFields_Detects_Price()
+    {
+        var result = OneBrain.Cli.Recipes.RecipeRunner_ExtractHelper.Extract("Test | Notebook $ 1.299.999 Envio gratis");
+        Assert.AreEqual("$ 1.299.999", result["product.priceCandidate"]);
+        Assert.AreEqual("high", result["product.confidence"]);
+    }
+
+    [TestMethod]
+    public void ExtractCommercialFields_NoPrice_IsMedium()
+    {
+        var result = OneBrain.Cli.Recipes.RecipeRunner_ExtractHelper.Extract("Notebook sin precio");
+        Assert.AreEqual("null", result["product.priceCandidate"]);
+        Assert.AreEqual("medium", result["product.confidence"]);
+    }
+
+    [TestMethod]
+    public void ExtractCommercialFields_Detects_SensitiveWords()
+    {
+        var result = OneBrain.Cli.Recipes.RecipeRunner_ExtractHelper.Extract("Comprar ahora Notebook | Agregar al carrito");
+        Assert.IsTrue(result["product.sensitiveWordsDetected"].Contains("comprar"));
+        Assert.IsTrue(result["product.sensitiveWordsDetected"].Contains("carrito"));
+    }
+
     private static string GetRootPath(string relative)
     {
         // Tests run from bin/Debug/netXX-windows. Navigate up 4 levels to solution root.

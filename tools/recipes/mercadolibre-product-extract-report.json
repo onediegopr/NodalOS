@@ -1,0 +1,15 @@
+{
+  "name": "mercadolibre-product-extract-report",
+  "description": "ML product detail: read title/text, close, extract structured fields, report",
+  "stopOnFirstFailure": true,
+  "steps": [
+    { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/mercadolibre-ar-product.json", "saveAs": "profile.mlProduct" },
+    { "id": "open-ml", "kind": "browser.open", "path": "{{profile.mlProduct.url}}", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 6000 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btext", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "close-ml", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "extract", "kind": "extract.visibleFields", "args": { "mode": "commercialProduct" }, "saveAs": "product" },
+    { "id": "note-report", "kind": "note", "text": "EXT: {{product.titleCandidate}} | Price: {{product.priceCandidate}} | Currency: {{product.currencyCandidate}} | Shipping: {{product.shippingCandidate}} | Sensitive: {{product.sensitiveWordsDetected}} | Confidence: {{product.confidence}} | Evidence: {{product.rawEvidence}}" }
+  ]
+}
