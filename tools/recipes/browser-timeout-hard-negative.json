@@ -1,0 +1,21 @@
+{
+  "name": "browser-timeout-hard-negative",
+  "description": "Hard negative: wait for impossible process/text with very short timeout. Must fail in <5s.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "wait-impossible-hard",
+      "kind": "wait",
+      "process": "__HARD_NEGATIVE_NONEXISTENT__",
+      "titleContains": "__HARD_NEGATIVE_IMPOSSIBLE_TEXT__",
+      "timeoutMs": 2000,
+      "intervalMs": 500
+    },
+    {
+      "id": "should-not-reach",
+      "kind": "assert.equals",
+      "value": "should-not-reach",
+      "expected": "should-not-reach"
+    }
+  ]
+}

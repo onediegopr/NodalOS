@@ -150,7 +150,9 @@ public sealed class RecipeRunner
         return kind switch
         {
             "browser.open" => 15000,
+            "browser.read" => 10000,
             "wait" => 10000,
+            "visual.capture" => 10000,
             _ => 15000
         };
     }
@@ -191,10 +193,12 @@ public sealed class RecipeRunner
             {
                 "app.open"               => ExecuteAppOpen(step, sw),
                 "browser.open"           => ExecuteBrowserOpen(step, sw),
+                "browser.read"           => ExecuteBrowserRead(step, sw),
                 "wait"                   => ExecuteWait(step, sw),
                 "actv.type"              => ExecuteActvType(step, sw),
                 "actv.invoke"            => ExecuteActvInvoke(step, sw),
                 "key"                    => ExecuteKey(step, sw),
+                "visual.capture"         => ExecuteVisualCapture(step, sw),
                 "visual.capture.window"   => ExecuteVisualCaptureWindow(step, sw),
                 "visual.capture.element"  => ExecuteVisualCaptureElement(step, sw),
                 "visual.verify.changed"   => ExecuteVisualVerifyChanged(step, sw),
@@ -325,6 +329,72 @@ public sealed class RecipeRunner
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"Launched {browserName} with {url} and found active window handle {hwnd}", sw.ElapsedMilliseconds);
+    }
+
+    // ── browser.read ────────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteBrowserRead(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var proc = R(step.Process);
+        if (string.IsNullOrWhiteSpace(proc))
+            return Fail(step, sw, "browser.read requires 'process' field.");
+
+        var property = (step.Property ?? "title").ToLowerInvariant();
+        if (property is not ("title" or "text" or "url"))
+            return Fail(step, sw, $"browser.read unsupported property: '{step.Property}'. Supported: title, text, url.");
+
+        var reader = new CognitiveSnapshotReader();
+        var snap = reader.Read(proc, R(step.Window));
+
+        if (snap == null)
+            return Fail(step, sw, $"browser.read: could not read snapshot for process '{proc}'.");
+
+        string? value = property switch
+        {
+            "title" => snap.Window.Title,
+            "url" => ExtractUrlFromSnapshot(snap),
+            "text" => ExtractTextFromSnapshot(snap),
+            _ => null
+        };
+
+        if (string.IsNullOrWhiteSpace(value))
+            return Fail(step, sw, $"browser.read: '{property}' not found for process '{proc}'.");
+
+        if (!string.IsNullOrWhiteSpace(step.SaveAs))
+        {
+            _ctx.Variables[step.SaveAs] = value;
+            _ctx.Variables[step.SaveAs + ".raw"] = value;
+        }
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"browser.read {property} = '{value}'", sw.ElapsedMilliseconds, value);
+    }
+
+    private static string? ExtractUrlFromSnapshot(CognitiveSnapshot snap)
+    {
+        var urlEl = snap.Elements.FirstOrDefault(e =>
+            e.Role != null && e.Role.Equals("Edit", StringComparison.OrdinalIgnoreCase) &&
+            e.Name != null && (e.Name.StartsWith("http", StringComparison.OrdinalIgnoreCase) ||
+                               e.Name.Contains("http", StringComparison.OrdinalIgnoreCase)));
+
+        if (urlEl?.Name != null && urlEl.Name.Contains("http"))
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(urlEl.Name, @"https?://[^\s]+");
+            if (match.Success) return match.Value;
+        }
+
+        return urlEl?.Name;
+    }
+
+    private static string ExtractTextFromSnapshot(CognitiveSnapshot snap)
+    {
+        var texts = snap.Elements
+            .Where(e => !string.IsNullOrWhiteSpace(e.Name))
+            .Select(e => e.Name!)
+            .Where(n => n.Length > 2)
+            .Distinct()
+            .Take(30);
+        return string.Join(" | ", texts);
     }
 
     // ── wait ────────────────────────────────────────────────────────────────
@@ -479,6 +549,50 @@ public sealed class RecipeRunner
         var req = new ActionRequest("key", "role:Window", text, R(step.Process), R(step.Window),
             CancellationToken: _stepCts?.Token);
         var result = new UiaActionExecutor().Execute(req);
+        SaveOutput(step, result);
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, result.Success, result.Message,
+            sw.ElapsedMilliseconds, result);
+    }
+
+    // ── visual.capture ─────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteVisualCapture(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var mode = (step.Args?.GetValueOrDefault("mode") ?? "window").ToLowerInvariant();
+        if (mode is not ("window" or "region" or "element" or "fullscreen"))
+            return Fail(step, sw, $"visual.capture unsupported mode: '{mode}'. Supported: window, region, element, fullscreen.");
+
+        var proc = R(step.Process);
+        var win = R(step.Window);
+        var outPath = R(step.Out);
+
+        VisualCaptureRequest request = mode switch
+        {
+            "fullscreen" => new VisualCaptureRequest(FullScreen: true, AllowFullScreen: true, OutputPath: outPath),
+            "region" or "element" => new VisualCaptureRequest(
+                ProcessName: proc, WindowTitle: win,
+                Target: new VisualElementTarget(
+                    Name: R(step.Name), Role: R(step.Role),
+                    AutomationId: R(step.AutomationId), ClassName: R(step.Class)),
+                OutputPath: outPath),
+            _ => new VisualCaptureRequest(ProcessName: proc, WindowTitle: win, OutputPath: outPath)
+        };
+
+        var result = new VisualCaptureService().Capture(request);
+
+        if (!string.IsNullOrWhiteSpace(step.SaveAs) && result.Success)
+        {
+            if (result.OutputPath != null)
+            {
+                _ctx.Variables[step.SaveAs] = result.OutputPath;
+                _ctx.Variables[step.SaveAs + ".path"] = result.OutputPath;
+            }
+            _ctx.Variables[step.SaveAs + ".width"] = result.Width.ToString();
+            _ctx.Variables[step.SaveAs + ".height"] = result.Height.ToString();
+            if (result.CapturedAtUtc != null)
+                _ctx.Variables[step.SaveAs + ".timestamp"] = result.CapturedAtUtc;
+        }
+
         SaveOutput(step, result);
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, result.Success, result.Message,
