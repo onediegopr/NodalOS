@@ -2,4 +2,5 @@
 
 public sealed record ActionResult(
     bool Success,
-    string Message);
+    string Message,
+    bool UsedFallback = false);

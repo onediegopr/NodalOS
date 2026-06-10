@@ -21,7 +21,7 @@ public sealed class BasicActionVerifier
 
         var targetExistsAfter = TargetExists(request.TargetRef, after);
         var sameProcess       = before?.Window.ProcessId == after?.Window.ProcessId;
-        var isFallback        = actionResult.Message.Contains("fallback", StringComparison.OrdinalIgnoreCase);
+        var isFallback        = actionResult.UsedFallback;
 
         var notes = isFallback
             ? "Typed via focused-window fallback; UIA tree did not expose target."

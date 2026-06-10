@@ -2,4 +2,5 @@
 
 public sealed record CognitiveSnapshot(
     WindowSnapshot Window,
-    IReadOnlyList<UiElementSnapshot> Elements);
+    IReadOnlyList<UiElementSnapshot> Elements,
+    bool TreeTruncated = false);

@@ -1,4 +1,4 @@
-﻿using FlaUI.Core.AutomationElements;
+using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
 using OneBrain.Core.Models;
 using OneBrain.Observation.Uia;
@@ -8,9 +8,9 @@ namespace OneBrain.Observation;
 
 public sealed class CognitiveSnapshotReader
 {
-    private readonly WindowFinder _windowFinder = new();
-    private readonly ForegroundWindowReader _windowReader = new();
-    private readonly UiaElementReader _elementReader = new();
+    private readonly WindowFinder           _windowFinder  = new();
+    private readonly ForegroundWindowReader  _windowReader  = new();
+    private readonly UiaElementReader        _elementReader = new();
 
     public CognitiveSnapshot? Read(string? processName = null, string? windowTitle = null)
     {
@@ -27,20 +27,12 @@ public sealed class CognitiveSnapshotReader
             hwnd = ForegroundWindowReader.GetForegroundWindow();
         }
 
-        if (hwnd == IntPtr.Zero)
-        {
-            return null;
-        }
+        if (hwnd == IntPtr.Zero) return null;
 
         var window = _windowReader.ReadFromHandle(hwnd);
-
-        if (window is null)
-        {
-            return null;
-        }
+        if (window is null) return null;
 
         AutomationElement? root;
-
         try
         {
             root = automation.FromHandle(hwnd);
@@ -50,13 +42,23 @@ public sealed class CognitiveSnapshotReader
             return null;
         }
 
-        if (root is null)
-        {
-            return null;
-        }
+        if (root is null) return null;
 
-        var elements = _elementReader.ReadFromRoot(root);
+        // Use browser-optimised limits and role set for known browser processes.
+        var effectiveProcess = processName ?? window.ProcessName;
+        bool isBrowser       = IsBrowserProcess(effectiveProcess);
+        var maxElements      = isBrowser ? UiaTreeWalker.BrowserMaxElements : UiaTreeWalker.DefaultMaxElements;
+        var alwaysInclude    = isBrowser ? UiaTreeWalker.BrowserRelevantRoles : null;
 
-        return new CognitiveSnapshot(window, elements);
+        var (elements, truncated) = _elementReader.ReadFromRootDetailed(root, maxElements, alwaysInclude);
+        return new CognitiveSnapshot(window, elements, truncated);
+    }
+
+    private static bool IsBrowserProcess(string? name)
+    {
+        if (string.IsNullOrEmpty(name)) return false;
+        return name.Contains("msedge",  StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("chrome",  StringComparison.OrdinalIgnoreCase) ||
+               name.Contains("firefox", StringComparison.OrdinalIgnoreCase);
     }
 }

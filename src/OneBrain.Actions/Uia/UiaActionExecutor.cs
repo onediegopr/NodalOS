@@ -4,63 +4,26 @@ using FlaUI.UIA3;
 using OneBrain.Core.Actions;
 using OneBrain.Safety.Policies;
 using OneBrain.Observation.Windows;
+using OneBrain.Observation.Uia;
 
 namespace OneBrain.Actions.Uia;
 
 public sealed class UiaActionExecutor
 {
-    private readonly MinimalSafetyGuard _safetyGuard = new();
-    private readonly WindowFinder _windowFinder = new();
+    private readonly MinimalSafetyGuard _safetyGuard  = new();
+    private readonly WindowFinder        _windowFinder = new();
 
-    // ── Safe FlaUI property helpers ──────────────────────────────────────────
-    // Every FlaUI property access can throw PropertyNotSupportedException.
-    // These helpers guarantee a safe default is returned instead.
-
-    private static string SafeRole(AutomationElement e)
-    {
-        try { return e.ControlType.ToString(); } catch { return ""; }
-    }
-
-    private static string SafeName(AutomationElement e)
-    {
-        try { return e.Name ?? ""; } catch { return ""; }
-    }
-
-    private static string SafeId(AutomationElement e)
-    {
-        try { return e.AutomationId ?? ""; } catch { return ""; }
-    }
-
-    private static string SafeClass(AutomationElement e)
-    {
-        try { return e.ClassName ?? ""; } catch { return ""; }
-    }
-
-    private static bool SafeOffscreen(AutomationElement e)
-    {
-        try { return e.IsOffscreen; } catch { return true; }
-    }
-
-    private static IEnumerable<AutomationElement> SafeChildren(AutomationElement e)
-    {
-        try { return e.FindAllChildren(); } catch { return []; }
-    }
-
-    // ── Roles that are always included even when Name and AutomationId are empty ─
-    private static readonly HashSet<string> AlwaysIncludeRoles =
-        new(StringComparer.OrdinalIgnoreCase) { "Document", "Edit" };
+    // Convenience aliases — all property access goes through UiaTreeWalker helpers.
+    private static string SafeRole(AutomationElement e) => UiaTreeWalker.SafeRole(e);
+    private static string SafeName(AutomationElement e) => UiaTreeWalker.SafeName(e);
+    private static string SafeId(AutomationElement e)   => UiaTreeWalker.SafeId(e);
+    private static string SafeClass(AutomationElement e) => UiaTreeWalker.SafeClass(e);
 
     // ── Public entry point ──────────────────────────────────────────────────
     public ActionResult Execute(ActionRequest request)
     {
-        try
-        {
-            return ExecuteCore(request);
-        }
-        catch (Exception ex)
-        {
-            return new ActionResult(false, $"Executor error: {ex.Message}");
-        }
+        try   { return ExecuteCore(request); }
+        catch (Exception ex) { return new ActionResult(false, $"Executor error: {ex.Message}"); }
     }
 
     // ── Core logic ──────────────────────────────────────────────────────────
@@ -74,11 +37,14 @@ public sealed class UiaActionExecutor
         {
             var hwnd = _windowFinder.FindWindow(request.ProcessName, request.WindowTitle);
 
-            if (hwnd != IntPtr.Zero)
+            if (hwnd == IntPtr.Zero)
             {
-                _windowFinder.Activate(hwnd);
-                try { root = automation.FromHandle(hwnd); } catch { }
+                var desc = request.ProcessName ?? request.WindowTitle;
+                return new ActionResult(false, $"Process/window '{desc}' not found or not visible.");
             }
+
+            _windowFinder.Activate(hwnd);
+            try { root = automation.FromHandle(hwnd); } catch { }
         }
 
         if (root == null)
@@ -87,39 +53,36 @@ public sealed class UiaActionExecutor
             try { focused = automation.FocusedElement(); } catch { }
 
             if (focused == null)
-            {
                 return new ActionResult(false, "No window found or focused.");
-            }
 
             root = focused;
 
             try
             {
                 while (root.Parent != null && SafeRole(root) != "Window")
-                {
                     root = root.Parent;
-                }
             }
-            catch
-            {
-            }
+            catch { }
         }
 
         var elements = new List<AutomationElement>();
-        Walk(root, elements, 0);
+        bool truncated = UiaTreeWalker.Walk(root, elements);
 
         var target = ResolveTarget(request.TargetRef, elements);
 
         if (target is null)
         {
-            var k = request.Kind.ToLowerInvariant();
-            if ((k == "type" || k == "type_text") &&
+            var kind = request.Kind.ToLowerInvariant();
+            if ((kind == "type" || kind == "type_text") &&
                 (!string.IsNullOrEmpty(request.ProcessName) || !string.IsNullOrEmpty(request.WindowTitle)))
             {
-                return TypeWithFallback(request);
+                return TypeWithFallback(request, truncated);
             }
 
-            return new ActionResult(false, $"Target '{request.TargetRef}' not found.");
+            var truncatedNote = truncated
+                ? " (UIA tree was capped — try a more specific selector)"
+                : "";
+            return new ActionResult(false, $"Target '{request.TargetRef}' not found.{truncatedNote}");
         }
 
         var decision = _safetyGuard.Evaluate(
@@ -130,33 +93,27 @@ public sealed class UiaActionExecutor
             SafeClass(target));
 
         if (!decision.Allowed)
-        {
             return new ActionResult(false, decision.Reason);
-        }
 
         try
         {
             target.Focus();
 
-            if (request.Kind.ToLowerInvariant() == "type")
+            var kind = request.Kind.ToLowerInvariant();
+
+            if (kind == "type" || kind == "type_text")
             {
                 Keyboard.Type(request.Text ?? "");
                 return new ActionResult(true, "Typed text.");
             }
 
-            if (request.Kind.ToLowerInvariant() == "focus")
-            {
+            if (kind == "focus")
                 return new ActionResult(true, "Focused target.");
-            }
 
             if (SafeRole(target) == "Button")
-            {
                 target.AsButton().Invoke();
-            }
             else
-            {
                 target.Click();
-            }
 
             return new ActionResult(true, "Action executed.");
         }
@@ -166,8 +123,8 @@ public sealed class UiaActionExecutor
         }
     }
 
-    // ── Focused-window fallback for type when UIA tree misses the target ────
-    private ActionResult TypeWithFallback(ActionRequest request)
+    // ── Focused-window fallback for type when UIA tree does not expose target ─
+    private ActionResult TypeWithFallback(ActionRequest request, bool treeWasTruncated)
     {
         try
         {
@@ -175,14 +132,18 @@ public sealed class UiaActionExecutor
 
             if (hwnd == IntPtr.Zero)
             {
-                return new ActionResult(false, $"Target '{request.TargetRef}' not found and fallback window not found.");
+                return new ActionResult(false,
+                    $"Target '{request.TargetRef}' not found and fallback window not found.");
             }
 
             _windowFinder.Activate(hwnd);
             System.Threading.Thread.Sleep(300);
             Keyboard.Type(request.Text ?? "");
 
-            return new ActionResult(true, "Typed text using focused-window fallback.");
+            var note = treeWasTruncated
+                ? "Typed text using focused-window fallback. (UIA tree was capped)"
+                : "Typed text using focused-window fallback.";
+            return new ActionResult(true, note, UsedFallback: true);
         }
         catch (Exception ex)
         {
@@ -200,11 +161,7 @@ public sealed class UiaActionExecutor
         }
 
         var parts = selector.Split(':', 2);
-
-        if (parts.Length < 2)
-        {
-            return null;
-        }
+        if (parts.Length < 2) return null;
 
         var kind = parts[0].ToLowerInvariant();
         var val  = parts[1];
@@ -217,36 +174,5 @@ public sealed class UiaActionExecutor
             "class"         => elements.FirstOrDefault(e => SafeClass(e).Equals(val, StringComparison.OrdinalIgnoreCase)),
             _               => null
         };
-    }
-
-    // ── Element walk ────────────────────────────────────────────────────────
-    private void Walk(AutomationElement e, List<AutomationElement> res, int d)
-    {
-        if (res.Count >= 250 || d > 20)
-        {
-            return;
-        }
-
-        try
-        {
-            var role    = SafeRole(e);
-            var include = !SafeOffscreen(e) && (
-                !string.IsNullOrEmpty(SafeName(e)) ||
-                !string.IsNullOrEmpty(SafeId(e))   ||
-                AlwaysIncludeRoles.Contains(role));
-
-            if (include)
-            {
-                res.Add(e);
-            }
-
-            foreach (var child in SafeChildren(e))
-            {
-                Walk(child, res, d + 1);
-            }
-        }
-        catch
-        {
-        }
     }
 }
