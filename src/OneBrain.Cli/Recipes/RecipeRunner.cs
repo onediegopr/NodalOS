@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq;
 using OneBrain.Actions.Uia;
 using OneBrain.Cli.Browser;
 using OneBrain.Core.Profiles;
@@ -133,10 +134,18 @@ public sealed class RecipeRunner
             }
 
             if (stepResult.Success) passed++;
-            else failed++;
+            else
+            {
+                failed++;
+                TryCaptureFailureArtifact(recipe.Name, step, stepResult);
+            }
 
             if (ShouldStop(recipe, step, forceContinueOnError, stepResult.Success))
+            {
+                if (!stepResult.Success)
+                    TryCleanupOwnedSessions();
                 break;
+            }
         }
 
         sw.Stop();
@@ -1185,6 +1194,61 @@ public sealed class RecipeRunner
     {
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, false, message, sw.ElapsedMilliseconds);
+    }
+
+    private void TryCaptureFailureArtifact(string recipeName, RecipeStepDefinition step, RecipeStepRunResult result)
+    {
+        try
+        {
+            var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            var dir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "failures");
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+            var fileName = $"{timestamp}-{recipeName}-{step.Id ?? step.Kind}.png";
+            var path = Path.Combine(dir, fileName);
+
+            // Try to capture the currently active window
+            var captureResult = new VisualCaptureService().Capture(new VisualCaptureRequest(
+                FullScreen: false, AllowFullScreen: false, OutputPath: path));
+
+            var note = captureResult.Success
+                ? $"Failure artifact saved: {path}"
+                : $"Failure artifact capture failed: {captureResult.Message}";
+
+            _ctx.Notes.Add($"[ARTIFACT] {recipeName}/{step.Id ?? step.Kind}: {result.Message} | {note}");
+        }
+        catch
+        {
+            // Best-effort: never let artifact capture mask the original error
+        }
+    }
+
+    private void TryCleanupOwnedSessions()
+    {
+        try
+        {
+            // Best-effort: close any browser session that was marked owned
+            foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
+            {
+                if (_ctx.Variables[key] != "true") continue;
+
+                var prefix = key[..^6]; // remove ".owned"
+                if (_ctx.Variables.TryGetValue(prefix + ".hwnd", out var hwndStr) &&
+                    long.TryParse(hwndStr, out var hwndLong))
+                {
+                    var hwnd = new IntPtr(hwndLong);
+                    if (BrowserSession.IsHwndAlive(hwnd))
+                    {
+                        BrowserSession.Close(hwnd, 3000);
+                        _ctx.Notes.Add($"[CLEANUP] Closed owned browser session {prefix} on recipe failure.");
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup
+        }
     }
 
     private static bool IsSensitiveStep(RecipeStepDefinition step)

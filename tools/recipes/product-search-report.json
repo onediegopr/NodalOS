@@ -1,0 +1,15 @@
+{
+  "name": "product-search-report",
+  "description": "Safe web search via DuckDuckGo Lite: search for laptop, read results, close browser",
+  "stopOnFirstFailure": true,
+  "steps": [
+    { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/duckduckgo-lite-laptop.json", "saveAs": "profile.search" },
+    { "id": "open-web", "kind": "browser.open", "path": "{{profile.search.url}}", "saveAs": "browser.s1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 4000 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "browser.title", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "browser.text", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "close-web", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "assert-title", "kind": "assert.contains", "value": "{{browser.title}}", "expected": "{{profile.search.expected.titleContains}}" },
+    { "id": "note-report", "kind": "note", "text": "URL: {{profile.search.url}} | Expected: {{profile.search.expected.titleContains}} | Title: {{browser.title}} | Sample: {{browser.text}}" }
+  ]
+}

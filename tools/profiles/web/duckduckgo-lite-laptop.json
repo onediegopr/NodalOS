@@ -1,0 +1,20 @@
+{
+  "id": "duckduckgo-lite-laptop",
+  "type": "web",
+  "displayName": "DuckDuckGo Lite Laptop",
+  "url": "https://lite.duckduckgo.com/lite/?q=laptop",
+  "expected": {
+    "titleContains": "Duck",
+    "textContains": "laptop"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false
+  }
+}

@@ -84,6 +84,25 @@ public sealed class ProfileLoaderTests
         Assert.AreEqual("https://example.com", vars["profile.example-com.url"]);
     }
 
+    [TestMethod]
+    public void Loads_WikipediaLaptop_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/wikipedia-laptop.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("wikipedia-laptop", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+    }
+
+    [TestMethod]
+    public void Loads_DuckDuckGoLite_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/duckduckgo-lite-laptop.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("duckduckgo-lite-laptop", result.Profile!.Id);
+    }
+
     private static string GetRootPath(string relative)
     {
         // Tests run from bin/Debug/netXX-windows. Navigate up 4 levels to solution root.

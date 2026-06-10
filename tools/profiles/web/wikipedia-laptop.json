@@ -1,0 +1,20 @@
+{
+  "id": "wikipedia-laptop",
+  "type": "web",
+  "displayName": "Wikipedia Laptop",
+  "url": "https://en.wikipedia.org/wiki/Laptop",
+  "expected": {
+    "titleContains": "Laptop",
+    "textContains": "Laptop"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false
+  }
+}
