@@ -31,6 +31,17 @@ public sealed class UiaDiagnosticReader
             hwnd = _windowFinder.FindWindow(processName, windowTitle);
         if (hwnd == IntPtr.Zero) return Array.Empty<UiaDiagnosticEntry>();
 
+        return ReadFromHandle(hwnd, processName, containsFilter, roleFilter, raw);
+    }
+
+    /// <summary>Walk the UIA tree directly from an explicit HWND.</summary>
+    public IReadOnlyList<UiaDiagnosticEntry> ReadFromHandle(
+        IntPtr  hwnd,
+        string? processName    = null,
+        string? containsFilter = null,
+        string? roleFilter     = null,
+        bool    raw            = false)
+    {
         using var automation = new UIA3Automation();
         AutomationElement? root;
         try { root = automation.FromHandle(hwnd); } catch { return Array.Empty<UiaDiagnosticEntry>(); }

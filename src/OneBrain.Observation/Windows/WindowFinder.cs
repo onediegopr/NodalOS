@@ -17,7 +17,12 @@ public sealed class WindowFinder
 
     public IntPtr FindWindow(string? processName, string? titlePart)
     {
-        IntPtr foundHwnd = IntPtr.Zero;
+        return FindAllWindows(processName, titlePart).FirstOrDefault();
+    }
+
+    public IReadOnlyList<IntPtr> FindAllWindows(string? processName, string? titlePart)
+    {
+        var found = new List<IntPtr>();
 
         EnumWindows((hWnd, lParam) =>
         {
@@ -53,11 +58,11 @@ public sealed class WindowFinder
                 }
             }
 
-            foundHwnd = hWnd;
-            return false;
+            found.Add(hWnd);
+            return true; // keep enumerating
         }, IntPtr.Zero);
 
-        return foundHwnd;
+        return found;
     }
 
     public void Activate(IntPtr hWnd)

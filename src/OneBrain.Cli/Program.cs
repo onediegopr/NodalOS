@@ -1,8 +1,10 @@
 using OneBrain.Cli;
 using System.Text.Json;
 using OneBrain.Core.Actions;
+using OneBrain.Core.Visual;
 using OneBrain.Observation;
 using OneBrain.Observation.Uia;
+using OneBrain.Observation.Visual;
 using OneBrain.Actions.Uia;
 using OneBrain.Verification.Engine;
 
@@ -353,6 +355,31 @@ else if (cmd == "wait")
     }, new JsonSerializerOptions { WriteIndented = true }));
 }
 
+// ── visual capture ───────────────────────────────────────────────────────────
+else if (cmd == "visual")
+{
+    if (argsList.Count < 3)
+    {
+        PrintVisualUsage();
+        return;
+    }
+
+    var sub = argsList[1].ToLowerInvariant();
+
+    if (sub == "capture")
+    {
+        HandleVisualCapture(argsList);
+    }
+    else if (sub == "verify")
+    {
+        HandleVisualVerify(argsList);
+    }
+    else
+    {
+        PrintVisualUsage();
+    }
+}
+
 // ── fallback ─────────────────────────────────────────────────────────────────
 else
 {
@@ -374,6 +401,12 @@ static void PrintUsage()
     Console.WriteLine("  wait  --process VALUE [--window VALUE]");
     Console.WriteLine("        (--name TEXT | --role ROLE | --title-contains TEXT)");
     Console.WriteLine("        [--timeout MS]  [--interval MS]");
+    Console.WriteLine("  visual capture window --process VALUE [--window VALUE] [--out PATH]");
+    Console.WriteLine("  visual capture element --process VALUE [--window VALUE]");
+    Console.WriteLine("                         (--name TEXT | --role ROLE | --automation-id VALUE | --class VALUE) [--out PATH]");
+    Console.WriteLine("  visual capture region --x X --y Y --width W --height H [--out PATH]");
+    Console.WriteLine("  visual capture fullscreen --allow-fullscreen [--out PATH]");
+    Console.WriteLine("  visual verify changed --before PATH --after PATH [--threshold N] [--output-diff PATH]");
     Console.WriteLine();
     Console.WriteLine("Selectors (use exactly one for act/actv):");
     Console.WriteLine("  --role VALUE          ControlType (Document, Edit, Button …)");
@@ -396,6 +429,169 @@ static void PrintUsage()
     Console.WriteLine("  diagnose uia --process msedge --raw");
     Console.WriteLine("  wait --process msedge --name \"ONE Brain Search\" --timeout 5000");
     Console.WriteLine("  wait --process msedge --title-contains \"ONE Brain\" --timeout 5000");
-    Console.WriteLine("  actv type   --process msedge --name \"ONE Brain Search\" \"hola\"");
+      Console.WriteLine("  actv type   --process msedge --name \"ONE Brain Search\" \"hola\"");
     Console.WriteLine("  actv invoke --process msedge --name \"Run ONE Brain Search\"");
+    Console.WriteLine("  visual capture window --process Notepad");
+    Console.WriteLine("  visual capture element --process msedge --name \"ONE Brain Search\"");
+    Console.WriteLine("  visual capture region --x 100 --y 100 --width 500 --height 300");
+    Console.WriteLine("  visual capture fullscreen --allow-fullscreen");
+      Console.WriteLine("  visual verify changed --before before.png --after after.png");
+}
+
+static void HandleVisualCapture(List<string> argsList)
+{
+    if (argsList.Count < 3)
+    {
+        PrintVisualUsage();
+        return;
+    }
+
+    var mode = argsList[2].ToLowerInvariant();
+    string? proc = null, win = null, outPath = null;
+    string? name = null, role = null, automationId = null, className = null;
+    int? mx = null, my = null, mw = null, mh = null;
+    bool allowFullScreen = false;
+
+    for (int i = 3; i < argsList.Count; i++)
+    {
+        var a = argsList[i];
+        if (a == "--process" && i + 1 < argsList.Count)
+            proc = argsList[++i];
+        else if (a == "--window" && i + 1 < argsList.Count)
+            win = argsList[++i];
+        else if (a == "--out" && i + 1 < argsList.Count)
+            outPath = argsList[++i];
+        else if (a == "--name" && i + 1 < argsList.Count)
+            name = argsList[++i];
+        else if (a == "--role" && i + 1 < argsList.Count)
+            role = argsList[++i];
+        else if (a == "--automation-id" && i + 1 < argsList.Count)
+            automationId = argsList[++i];
+        else if (a == "--class" && i + 1 < argsList.Count)
+            className = argsList[++i];
+        else if (a == "--x" && i + 1 < argsList.Count)
+        {
+            int.TryParse(argsList[++i], out var tx); mx = tx;
+        }
+        else if (a == "--y" && i + 1 < argsList.Count)
+        {
+            int.TryParse(argsList[++i], out var ty); my = ty;
+        }
+        else if (a == "--width" && i + 1 < argsList.Count)
+        {
+            int.TryParse(argsList[++i], out var tw); mw = tw;
+        }
+        else if (a == "--height" && i + 1 < argsList.Count)
+        {
+            int.TryParse(argsList[++i], out var th); mh = th;
+        }
+        else if (a == "--allow-fullscreen")
+            allowFullScreen = true;
+    }
+
+    VisualCaptureResult result;
+
+    switch (mode)
+    {
+        case "window":
+            if (proc == null)
+            {
+                Console.Error.WriteLine("Error: --process required for visual capture window.");
+                return;
+            }
+            result = new VisualCaptureService().Capture(new VisualCaptureRequest(
+                ProcessName: proc, WindowTitle: win, OutputPath: outPath));
+            break;
+
+        case "element":
+            if (proc == null)
+            {
+                Console.Error.WriteLine("Error: --process required for visual capture element.");
+                return;
+            }
+            if (name == null && role == null && automationId == null && className == null)
+            {
+                Console.Error.WriteLine("Error: selector required (--name, --role, --automation-id, --class).");
+                return;
+            }
+            result = new VisualCaptureService().Capture(new VisualCaptureRequest(
+                ProcessName: proc,
+                WindowTitle: win,
+                Target: new VisualElementTarget(
+                    Name: name, Role: role, AutomationId: automationId, ClassName: className),
+                OutputPath: outPath));
+            break;
+
+        case "region":
+            if (mx == null || my == null || mw == null || mh == null)
+            {
+                Console.Error.WriteLine("Error: --x --y --width --height required for visual capture region.");
+                return;
+            }
+            result = new VisualCaptureService().Capture(new VisualCaptureRequest(
+                ManualRegion: new ManualRegion(mx.Value, my.Value, mw.Value, mh.Value),
+                OutputPath: outPath));
+            break;
+
+        case "fullscreen":
+            if (!allowFullScreen)
+            {
+                Console.Error.WriteLine("Error: fullscreen capture requires --allow-fullscreen.");
+                return;
+            }
+            result = new VisualCaptureService().Capture(new VisualCaptureRequest(
+                FullScreen: true, AllowFullScreen: true, OutputPath: outPath));
+            break;
+
+        default:
+            Console.Error.WriteLine($"Error: unknown visual capture mode '{mode}'. Use window, element, region, or fullscreen.");
+            return;
+    }
+
+    Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+static void HandleVisualVerify(List<string> argsList)
+{
+    if (argsList.Count < 5 || argsList[2].ToLowerInvariant() != "changed")
+    {
+        PrintVisualUsage();
+        return;
+    }
+
+    string? before = null, after = null, diffOut = null;
+    double threshold = 0.005;
+
+    for (int i = 3; i < argsList.Count; i++)
+    {
+        var a = argsList[i];
+        if (a == "--before" && i + 1 < argsList.Count)
+            before = argsList[++i];
+        else if (a == "--after" && i + 1 < argsList.Count)
+            after = argsList[++i];
+        else if (a == "--threshold" && i + 1 < argsList.Count)
+            double.TryParse(argsList[++i], System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out threshold);
+        else if (a == "--output-diff" && i + 1 < argsList.Count)
+            diffOut = argsList[++i];
+    }
+
+    if (before == null || after == null)
+    {
+        Console.Error.WriteLine("Error: --before and --after required for visual verify changed.");
+        return;
+    }
+
+    var result = new VisualVerifier().Verify(before, after, threshold, diffOut);
+    Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+static void PrintVisualUsage()
+{
+    Console.WriteLine("visual capture window --process VALUE [--window VALUE] [--out PATH]");
+    Console.WriteLine("visual capture element --process VALUE [--window VALUE]");
+    Console.WriteLine("                       (--name TEXT | --role ROLE | --automation-id VALUE | --class VALUE) [--out PATH]");
+    Console.WriteLine("visual capture region --x X --y Y --width W --height H [--out PATH]");
+    Console.WriteLine("visual capture fullscreen --allow-fullscreen [--out PATH]");
+    Console.WriteLine("visual verify changed --before PATH --after PATH [--threshold N] [--output-diff PATH]");
 }
