@@ -154,14 +154,6 @@ public sealed class RecipeRunner
         var browserName = step.Args?.GetValueOrDefault("browser") ?? "edge";
         var forceAccessibility = step.Args?.ContainsKey("forceAccessibility") == true
             || (step.Args?.GetValueOrDefault("forceAccessibility") ?? "") == "true";
-        var fresh = step.Args?.GetValueOrDefault("fresh") == "true";
-
-        if (fresh)
-        {
-            try { Process.Start(new ProcessStartInfo("taskkill", "/f /im msedge.exe") { UseShellExecute = false, CreateNoWindow = true })?.WaitForExit(3000); }
-            catch { }
-            Thread.Sleep(1500);
-        }
 
         var fileUrl = url;
         if (!fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
@@ -172,10 +164,7 @@ public sealed class RecipeRunner
         }
 
         var extra = forceAccessibility ? "--force-renderer-accessibility " : "";
-        var urlArg = fresh
-            ? $"--app=\"{fileUrl}\""
-            : $"\"{fileUrl}\"";
-        var browserArgs = $"{extra}{urlArg}";
+        var browserArgs = $"{extra}\"{fileUrl}\"";
 
         string[] candidates = browserName == "edge"
             ? [@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -215,9 +204,7 @@ public sealed class RecipeRunner
                 $"Failed to launch {browserName}: {lastError}", sw.ElapsedMilliseconds);
         }
 
-        var waitMs = fresh ? 4000 : 1500;
-        Thread.Sleep(waitMs);
-
+        Thread.Sleep(1500);
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"Launched {browserName} with {url}", sw.ElapsedMilliseconds);

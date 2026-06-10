@@ -9,8 +9,7 @@
       "path": "https://example.com",
       "args": {
         "browser": "edge",
-        "forceAccessibility": "true",
-        "fresh": "true"
+        "forceAccessibility": "true"
       }
     },
     {
