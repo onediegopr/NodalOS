@@ -912,6 +912,9 @@ static void RunDryRun(RecipeDefinition recipe)
             issues.Add($"Step '{step.Id}' ({kind}): missing Process.");
     }
 
+    // Run template validation
+    var templateWarnings = RecipeRunner.ValidateTemplates(recipe);
+
     Console.WriteLine(JsonSerializer.Serialize(new
     {
         DryRun = true,
@@ -919,6 +922,7 @@ static void RunDryRun(RecipeDefinition recipe)
         TotalSteps = recipe.Steps.Count,
         SensitiveCount = steps.Count(s => IsSensitiveKind((recipe.Steps[steps.IndexOf(s) as int? ?? 0].Kind ?? "").ToLowerInvariant())),
         Issues = issues,
+        TemplateWarnings = templateWarnings.Count > 0 ? templateWarnings : null,
         Steps = steps
     }, new JsonSerializerOptions { WriteIndented = true }));
 

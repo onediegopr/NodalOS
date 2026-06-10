@@ -16,7 +16,12 @@ Primer paso hacia búsqueda web segura: abrir URL de búsqueda (DuckDuckGo Lite)
 
 ## 4. Failure artifacts
 
-Cuando un step falla con `stopOnFirstFailure`, el runner intenta capturar screenshot de la ventana activa en `artifacts/failures/{timestamp}-{recipe}-{step}.png`. Es best-effort: si falla, no bloquea.
+Cuando un step falla con `stopOnFirstFailure`, el runner:
+1. Crea directorio: `artifacts/failures/{ts}-{recipe}-{step}/`
+2. Guarda `failure.json` con metadata (step index, kind, error, timestamp, sessions)
+3. Intenta captura screenshot: primero vía session owned HWND si existe, luego fullscreen fallback. **Best-effort post-mortem: puede fallar si no hay escritorio accesible.**
+4. Guarda `snapshot.txt` con variables `.text`/`.title` disponibles
+5. Si hay sesiones owned abiertas, intenta cerrarlas y guarda `{ts}-cleanup.json`
 
 ## 5. Cleanup on failure
 
@@ -33,8 +38,11 @@ Si la receta se detiene por fallo, el runner intenta cerrar cualquier BrowserSes
 
 ## 7. Limitaciones
 
-- DuckDuckGo Lite puede cambiar su layout; si la lectura UIA falla, la receta falla controlada.
-- Captura de falla captura ventana activa, no necesariamente la del browser si otra ventana tiene foco.
+- Screenshot de falla es best-effort post-mortem: intenta capturar via session HWND first, luego fullscreen. Puede fallar si el escritorio no es accesible.
 - Cleanup cierra todas las sesiones owned, no selectivamente.
+- Template validation es estática y prefix-aware (detecta prefijos configurados como conocidos). No es order-aware estricto; variables dinámicas sin prefijo conocido pueden generar falsos positivos.
+- Template warnings aparecen en dry-run como advertencia no bloqueante (v1).
+- Artifacts locales en `artifacts/failures/` están gitignored.
+- DuckDuckGo Lite puede cambiar su layout; si la lectura UIA falla, la receta falla controlada.
 
 ## 8. Próximo bloque: HITO-026+027 Real Cleanup + Failure Report Pack

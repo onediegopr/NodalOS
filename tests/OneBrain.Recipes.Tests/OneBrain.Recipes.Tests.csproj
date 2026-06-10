@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OneBrain.Core\OneBrain.Core.csproj" />
+    <ProjectReference Include="..\..\src\OneBrain.Cli\OneBrain.Cli.csproj" />
   </ItemGroup>
 
 </Project>

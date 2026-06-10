@@ -75,6 +75,7 @@ public sealed class RecipeRunner
                         0);
                     stepResults.Add(globalTimeoutResult);
                     failed++;
+                    TryCleanupOwnedSessions();
                     break;
                 }
                 if (stepTimeout > remainingGlobalMs)
@@ -1201,21 +1202,88 @@ public sealed class RecipeRunner
         try
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-            var dir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "failures");
+            var stepLabel = SanitizeFileName(step.Id ?? step.Kind ?? "unknown");
+            var recipeSafe = SanitizeFileName(recipeName);
+            var dirName = $"{timestamp}-{recipeSafe}-{stepLabel}";
+            var dir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "failures", dirName);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-            var fileName = $"{timestamp}-{recipeName}-{step.Id ?? step.Kind}.png";
-            var path = Path.Combine(dir, fileName);
+            var screenshotPath = Path.Combine(dir, "screenshot.png");
+            var metadataPath = Path.Combine(dir, "failure.json");
+            var snapshotPath = Path.Combine(dir, "snapshot.txt");
 
-            // Try to capture the currently active window
-            var captureResult = new VisualCaptureService().Capture(new VisualCaptureRequest(
-                FullScreen: false, AllowFullScreen: false, OutputPath: path));
+            // Try screenshot (best-effort post-mortem)
+            string? actualScreenshot = null;
+            try
+            {
+                // Try session-owned browser capture first
+                var ownedHwnd = IntPtr.Zero;
+                foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
+                {
+                    if (_ctx.Variables[key] != "true") continue;
+                    var pfx = key[..^6];
+                    if (_ctx.Variables.TryGetValue(pfx + ".hwnd", out var hs) && long.TryParse(hs, out var hl))
+                    {
+                        ownedHwnd = new IntPtr(hl);
+                        break;
+                    }
+                }
 
-            var note = captureResult.Success
-                ? $"Failure artifact saved: {path}"
-                : $"Failure artifact capture failed: {captureResult.Message}";
+                VisualCaptureResult captureResult;
+                if (ownedHwnd != IntPtr.Zero && BrowserSession.IsHwndAlive(ownedHwnd))
+                {
+                    captureResult = new VisualCaptureService().Capture(new VisualCaptureRequest(
+                        FullScreen: false, AllowFullScreen: false, OutputPath: screenshotPath));
+                }
+                else
+                {
+                    captureResult = new VisualCaptureService().Capture(new VisualCaptureRequest(
+                        FullScreen: true, AllowFullScreen: true, OutputPath: screenshotPath));
+                }
 
-            _ctx.Notes.Add($"[ARTIFACT] {recipeName}/{step.Id ?? step.Kind}: {result.Message} | {note}");
+                if (captureResult.Success) actualScreenshot = screenshotPath;
+            }
+            catch { /* best-effort */ }
+
+            // Try text dump from known variables
+            try
+            {
+                var lines = new List<string>();
+                foreach (var kv in _ctx.Variables.Where(v => v.Key.Contains(".text") || v.Key.Contains(".title")))
+                    lines.Add($"{kv.Key}: {kv.Value}");
+                if (lines.Count > 0)
+                    File.WriteAllLines(snapshotPath, lines);
+            }
+            catch { /* best-effort */ }
+
+            // Gather browser session info
+            var sessions = new List<object>();
+            foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".hwnd")))
+            {
+                var prefix = key[..^5];
+                _ctx.Variables.TryGetValue(prefix + ".owned", out var owned);
+                _ctx.Variables.TryGetValue(prefix + ".url", out var url);
+                sessions.Add(new { Prefix = prefix, Hwnd = _ctx.Variables[key], Owned = owned, Url = url });
+            }
+
+            var metadata = new
+            {
+                Timestamp = DateTime.UtcNow.ToString("o"),
+                Recipe = recipeName,
+                StepIndex = _currentRecipe?.Steps.IndexOf(step) ?? -1,
+                StepId = step.Id,
+                StepKind = step.Kind,
+                ErrorMessage = result.Message,
+                Screenshot = actualScreenshot,
+                SnapshotDump = File.Exists(snapshotPath) ? snapshotPath : (string?)null,
+                Sessions = sessions,
+            };
+
+            File.WriteAllText(metadataPath,
+                System.Text.Json.JsonSerializer.Serialize(metadata,
+                    new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+            _ctx.Notes.Add($"[ARTIFACT] {dirName} saved (screenshot: {actualScreenshot != null}, metadata: true)");
         }
         catch
         {
@@ -1223,38 +1291,144 @@ public sealed class RecipeRunner
         }
     }
 
+    private static string SanitizeFileName(string name)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var chars = name.ToCharArray();
+        for (int i = 0; i < chars.Length; i++)
+        {
+            if (invalid.Contains(chars[i]))
+                chars[i] = '-';
+        }
+        return new string(chars);
+    }
+
     private void TryCleanupOwnedSessions()
     {
+        var cleaned = new List<string>();
         try
         {
-            // Best-effort: close any browser session that was marked owned
             foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
             {
                 if (_ctx.Variables[key] != "true") continue;
 
-                var prefix = key[..^6]; // remove ".owned"
+                var prefix = key[..^6];
                 if (_ctx.Variables.TryGetValue(prefix + ".hwnd", out var hwndStr) &&
                     long.TryParse(hwndStr, out var hwndLong))
                 {
                     var hwnd = new IntPtr(hwndLong);
                     if (BrowserSession.IsHwndAlive(hwnd))
                     {
-                        BrowserSession.Close(hwnd, 3000);
-                        _ctx.Notes.Add($"[CLEANUP] Closed owned browser session {prefix} on recipe failure.");
+                        var closeResult = BrowserSession.Close(hwnd, 3000);
+                        cleaned.Add($"{prefix}: {closeResult.Message}");
+                        _ctx.Notes.Add($"[CLEANUP] {closeResult.Message}");
+                    }
+                    else
+                    {
+                        cleaned.Add($"{prefix}: already closed");
                     }
                 }
             }
         }
-        catch
+        catch { /* best-effort */ }
+
+        // Write cleanup result to artifact if available
+        try
         {
-            // Best-effort cleanup
+            if (cleaned.Count > 0)
+            {
+                var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+                var dir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "failures");
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                var cleanupPath = Path.Combine(dir, $"{timestamp}-cleanup.json");
+                File.WriteAllText(cleanupPath,
+                    System.Text.Json.JsonSerializer.Serialize(new { Cleaned = cleaned },
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            }
         }
+        catch { /* best-effort */ }
     }
 
     private static bool IsSensitiveStep(RecipeStepDefinition step)
     {
         var kind = (step.Kind ?? "").ToLowerInvariant();
         return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close";
+    }
+
+    /// <summary>Validate template variables in a recipe against known/provided sources.</summary>
+    public static IReadOnlyList<string> ValidateTemplates(RecipeDefinition recipe)
+    {
+        var warnings = new List<string>();
+        var known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Built-in runtime variables
+        known.Add("runtime.timestamp");
+        known.Add("runtime.date");
+        known.Add("runtime.temp");
+
+        // Recipe-defined variables
+        if (recipe.Variables != null)
+        {
+            foreach (var vk in recipe.Variables.Keys)
+                known.Add(vk);
+        }
+
+        // Simulate step outputs: profile.load and browser.open with saveAs produce variables
+        foreach (var step in recipe.Steps)
+        {
+            var kind = (step.Kind ?? "").ToLowerInvariant();
+
+            if (kind == "profile.load" && !string.IsNullOrWhiteSpace(step.SaveAs))
+            {
+                var prefix = step.SaveAs;
+                known.Add(prefix);
+                foreach (var suffix in new[] { ".id", ".type", ".displayName", ".url", ".process",
+                    ".expected.titleContains", ".expected.textContains",
+                    ".read.preferredProperty", ".read.fallbackProperty",
+                    ".safety.allowForms", ".safety.allowLogin", ".safety.allowPurchase", ".safety.allowSensitiveActions" })
+                    known.Add(prefix + suffix);
+            }
+
+            if ((kind == "browser.open" || kind == "browser.read" || kind == "visual.capture") &&
+                !string.IsNullOrWhiteSpace(step.SaveAs))
+            {
+                var prefix = step.SaveAs;
+                known.Add(prefix);
+                foreach (var suffix in new[] { ".id", ".process", ".hwnd", ".url", ".owned",
+                    ".path", ".width", ".height", ".timestamp", ".raw" })
+                    known.Add(prefix + suffix);
+            }
+
+            if (kind == "snapshot.read" && !string.IsNullOrWhiteSpace(step.SaveAs))
+            {
+                known.Add(step.SaveAs);
+                known.Add(step.SaveAs + "Raw");
+            }
+
+            if (!string.IsNullOrWhiteSpace(step.SaveAs))
+                known.Add(step.SaveAs);
+        }
+
+        // Scan all steps for template references
+        var templateRegex = new System.Text.RegularExpressions.Regex(@"\{\{([^}]+)\}\}");
+        foreach (var step in recipe.Steps)
+        {
+            var rawStep = System.Text.Json.JsonSerializer.Serialize(step);
+            var matches = templateRegex.Matches(rawStep);
+            foreach (System.Text.RegularExpressions.Match m in matches)
+            {
+                var varName = m.Groups[1].Value.Trim();
+                if (!known.Contains(varName) && !known.Any(k => varName.StartsWith(k + ".", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var msg = $"Unknown template variable '{{{{{varName}}}}}' in step '{step.Id ?? step.Kind}'. " +
+                              "It may be misspelled or depend on a missing profile.load/profile step.";
+                    if (!warnings.Contains(msg))
+                        warnings.Add(msg);
+                }
+            }
+        }
+
+        return warnings;
     }
 
     private RecipeStepRunResult ExecuteProfileLoad(RecipeStepDefinition step, Stopwatch sw)

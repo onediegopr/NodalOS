@@ -1,0 +1,24 @@
+{
+  "name": "template-validation-negative",
+  "description": "Negative: misspelled template variable should be detected and fail",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "load-profile",
+      "kind": "profile.load",
+      "path": "tools/profiles/web/example-com.json",
+      "saveAs": "profile.example"
+    },
+    {
+      "id": "use-misspelled",
+      "kind": "note",
+      "text": "URL: {{profile.serach.url}}"
+    },
+    {
+      "id": "also-misspelled",
+      "kind": "assert.contains",
+      "value": "test",
+      "expected": "{{browser.titlee}}"
+    }
+  ]
+}

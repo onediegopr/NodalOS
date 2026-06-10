@@ -103,6 +103,34 @@ public sealed class ProfileLoaderTests
         Assert.AreEqual("duckduckgo-lite-laptop", result.Profile!.Id);
     }
 
+    [TestMethod]
+    public void ValidateTemplates_Detects_Misspelled_Variable()
+    {
+        var path = GetRootPath("tools/recipes/template-validation-negative.json");
+        var json = File.ReadAllText(path);
+        var recipe = System.Text.Json.JsonSerializer.Deserialize<OneBrain.Core.Recipes.RecipeDefinition>(json,
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.IsNotNull(recipe);
+
+        var warnings = OneBrain.Cli.Recipes.RecipeRunner.ValidateTemplates(recipe!);
+        Assert.AreEqual(2, warnings.Count, $"Expected exactly 2 warnings, got {warnings.Count}: {string.Join("; ", warnings)}");
+        StringAssert.Contains(warnings[0], "profile.serach.url");
+        StringAssert.Contains(warnings[1], "browser.titlee");
+    }
+
+    [TestMethod]
+    public void ValidateTemplates_Accepts_Valid_Recipe()
+    {
+        var path = GetRootPath("tools/recipes/product-search-report.json");
+        var json = File.ReadAllText(path);
+        var recipe = System.Text.Json.JsonSerializer.Deserialize<OneBrain.Core.Recipes.RecipeDefinition>(json,
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        Assert.IsNotNull(recipe);
+
+        var warnings = OneBrain.Cli.Recipes.RecipeRunner.ValidateTemplates(recipe!);
+        Assert.AreEqual(0, warnings.Count, $"Expected 0 warnings, got: {string.Join("; ", warnings)}");
+    }
+
     private static string GetRootPath(string relative)
     {
         // Tests run from bin/Debug/netXX-windows. Navigate up 4 levels to solution root.
