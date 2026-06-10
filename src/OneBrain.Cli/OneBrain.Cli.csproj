@@ -4,6 +4,7 @@
     <ProjectReference Include="..\OneBrain.Core\OneBrain.Core.csproj" />
     <ProjectReference Include="..\OneBrain.Observation\OneBrain.Observation.csproj" />
     <ProjectReference Include="..\OneBrain.SemanticState\OneBrain.SemanticState.csproj" />
+    <ProjectReference Include="..\OneBrain.Actions\OneBrain.Actions.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
