@@ -1,6 +1,8 @@
 using OneBrain.Cli;
+using OneBrain.Cli.Recipes;
 using System.Text.Json;
 using OneBrain.Core.Actions;
+using OneBrain.Core.Recipes;
 using OneBrain.Core.Visual;
 using OneBrain.Observation;
 using OneBrain.Observation.Uia;
@@ -206,7 +208,7 @@ else if (cmd == "browser")
     }, new JsonSerializerOptions { WriteIndented = true }));
 }
 
-// ── diagnose uia ─────────────────────────────────────────────────────────────
+// ── app open ─────────────────────────────────────────────────────────────────
 else if (cmd == "app")
 {
     if (argsList.Count < 3 || argsList[1].ToLowerInvariant() != "open")
@@ -216,6 +218,59 @@ else if (cmd == "app")
     }
     AppLauncher.Launch(argsList[2], argsList.Count > 3 ? string.Join(" ", argsList.Skip(3)) : "");
 }
+
+// ── recipe run ───────────────────────────────────────────────────────────────
+else if (cmd == "recipe")
+{
+    if (argsList.Count < 3 || argsList[1].ToLowerInvariant() != "run")
+    {
+        Console.WriteLine("Usage: recipe run PATH [--continue-on-error]");
+        Console.WriteLine("Examples:");
+        Console.WriteLine("  recipe run tools/recipes/calculator-to-notepad.json");
+        Console.WriteLine("  recipe run tools/recipes/browser-smoke.json");
+        return;
+    }
+
+    var recipePath = argsList[2];
+    bool forceContinueOnError = argsList.Any(a => a == "--continue-on-error");
+
+    if (!File.Exists(recipePath))
+    {
+        var errorResult = new RecipeRunResult(false, Path.GetFileNameWithoutExtension(recipePath),
+            0, 0, 0, 0, new List<RecipeStepRunResult>(),
+            new List<string> { $"Recipe file not found: {recipePath}" });
+        Console.WriteLine(JsonSerializer.Serialize(errorResult, new JsonSerializerOptions { WriteIndented = true }));
+        return;
+    }
+
+    try
+    {
+        var json = File.ReadAllText(recipePath);
+        var recipe = JsonSerializer.Deserialize<RecipeDefinition>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        if (recipe == null || recipe.Steps == null || recipe.Steps.Count == 0)
+        {
+            var errorResult = new RecipeRunResult(false, Path.GetFileNameWithoutExtension(recipePath),
+                0, 0, 0, 0, new List<RecipeStepRunResult>(),
+                new List<string> { "Recipe is empty or could not be parsed." });
+            Console.WriteLine(JsonSerializer.Serialize(errorResult, new JsonSerializerOptions { WriteIndented = true }));
+            return;
+        }
+
+        var result = new RecipeRunner().Run(recipe, forceContinueOnError);
+        Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+    }
+    catch (JsonException ex)
+    {
+        var errorResult = new RecipeRunResult(false, Path.GetFileNameWithoutExtension(recipePath),
+            0, 0, 0, 0, new List<RecipeStepRunResult>(),
+            new List<string> { $"Invalid recipe JSON: {ex.Message}" });
+        Console.WriteLine(JsonSerializer.Serialize(errorResult, new JsonSerializerOptions { WriteIndented = true }));
+    }
+}
+
+// ── diagnose uia ─────────────────────────────────────────────────────────────
 else if (cmd == "diagnose")
 {
     if (argsList.Count < 2 || argsList[1].ToLowerInvariant() != "uia")
@@ -395,7 +450,8 @@ static void PrintUsage()
     Console.WriteLine("  act   <kind> <selector> [text]");
     Console.WriteLine("  actv  <kind> <selector> [text]");
     Console.WriteLine("  browser open [--edge|--chrome] [--force-accessibility] <url-or-file>");
-      Console.WriteLine("  app   open [explorer|calculator|notepad] [path/args]");
+    Console.WriteLine("  app   open [explorer|calculator|notepad] [path/args]");
+    Console.WriteLine("  recipe run PATH [--continue-on-error]");
     Console.WriteLine("  diagnose uia --process VALUE [--window VALUE]");
     Console.WriteLine("               [--contains TEXT] [--role ROLE] [--raw]");
     Console.WriteLine("  wait  --process VALUE [--window VALUE]");
@@ -423,6 +479,8 @@ static void PrintUsage()
       Console.WriteLine("  app open explorer [path]");
       Console.WriteLine("  app open calculator");
       Console.WriteLine("  app open notepad");
+    Console.WriteLine("  recipe run tools/recipes/calculator-to-notepad.json");
+    Console.WriteLine("  recipe run tools/recipes/browser-smoke.json");
     Console.WriteLine("  snapshot  --process msedge");
     Console.WriteLine("  diagnose uia --process msedge --contains \"ONE Brain\"");
     Console.WriteLine("  diagnose uia --process msedge --role Edit");

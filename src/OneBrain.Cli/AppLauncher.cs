@@ -39,6 +39,36 @@ public static class AppLauncher
         }
         catch (Exception ex) { PrintJson(new { Opened = false, App = appType, Error = ex.Message }); }
     }
+    public static (bool Success, string Message) TryLaunch(string appType, string appArgs)
+    {
+        try
+        {
+            string? exe = null;
+            switch (appType.ToLowerInvariant())
+            {
+                case "explorer":
+                    if (string.IsNullOrWhiteSpace(appArgs)) return (false, "Path required for explorer.");
+                    if (!Directory.Exists(appArgs)) return (false, $"Path not found: {appArgs}");
+                    exe = "explorer.exe"; appArgs = $"\"{Path.GetFullPath(appArgs)}\"";
+                    break;
+                case "calculator":
+                    try { Process.Start(new ProcessStartInfo("calculator:") { UseShellExecute = true }); }
+                    catch { Process.Start(new ProcessStartInfo("calc.exe") { UseShellExecute = true }); }
+                    Thread.Sleep(1000);
+                    return (true, "Launched calculator");
+                case "notepad":
+                    exe = "notepad.exe";
+                    break;
+                default:
+                    return (false, $"Unsupported app: {appType}");
+            }
+            if (exe != null) { Process.Start(new ProcessStartInfo(exe, appArgs) { UseShellExecute = true }); }
+            Thread.Sleep(1000);
+            return (true, $"Launched {appType}");
+        }
+        catch (Exception ex) { return (false, $"Failed: {ex.Message}"); }
+    }
+
     private static void PrintError(string app, string msg) { PrintJson(new { Opened = false, App = app, Notes = msg }); }
     private static void PrintJson<T>(T value) { Console.WriteLine(JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true })); }       
 }
