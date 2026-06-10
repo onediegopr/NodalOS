@@ -1,3 +1,4 @@
+using FlaUI.Core.WindowsAPI;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Input;
 using FlaUI.UIA3;
@@ -112,6 +113,14 @@ public sealed class UiaActionExecutor
 
             if (kind == "focus")
                 return new ActionResult(true, "Focused target.");
+            if (kind == "key")
+            {
+                if (request.Text == "Ctrl+C") { Keyboard.Type(VirtualKeyShort.KEY_C, VirtualKeyShort.CONTROL); return new ActionResult(true, "Sent Ctrl+C"); }
+                if (request.Text == "Ctrl+V") { Keyboard.Type(VirtualKeyShort.KEY_V, VirtualKeyShort.CONTROL); return new ActionResult(true, "Sent Ctrl+V"); }
+                if (request.Text == "Enter") { Keyboard.Press(VirtualKeyShort.ENTER); return new ActionResult(true, "Sent Enter"); }
+                return new ActionResult(false, $"Unsupported key combo: {request.Text}");
+            }
+
 
             if (SafeRole(target) == "Button")
                 target.AsButton().Invoke();
