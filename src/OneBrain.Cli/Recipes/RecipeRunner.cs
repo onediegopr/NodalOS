@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using OneBrain.Actions.Uia;
 using OneBrain.Cli.Browser;
+using OneBrain.Core.Profiles;
 using OneBrain.Core.Actions;
 using OneBrain.Core.Models;
 using OneBrain.Core.Recipes;
@@ -233,6 +234,7 @@ public sealed class RecipeRunner
                 "delay"                  => ExecuteSleep(step, sw),
                 "sleep"                  => ExecuteSleep(step, sw),
                 "debug.hang"             => ExecuteDebugHang(step, sw),
+                "profile.load"           => ExecuteProfileLoad(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
         }
@@ -1189,5 +1191,35 @@ public sealed class RecipeRunner
     {
         var kind = (step.Kind ?? "").ToLowerInvariant();
         return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close";
+    }
+
+    private RecipeStepRunResult ExecuteProfileLoad(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var path = R(step.Path);
+        if (string.IsNullOrWhiteSpace(path))
+            return Fail(step, sw, "profile.load requires 'path' field.");
+
+        var loader = new ProfileLoader();
+        var result = loader.Load(path);
+
+        if (!result.Success || result.Profile == null)
+        {
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                result.Error ?? "Failed to load profile.", sw.ElapsedMilliseconds);
+        }
+
+        if (!string.IsNullOrWhiteSpace(step.SaveAs))
+        {
+            var prefix = step.SaveAs;
+            var vars = loader.ToVariables(result.Profile, prefix);
+            foreach (var kv in vars)
+                _ctx.Variables[kv.Key] = kv.Value;
+            _ctx.Variables[step.SaveAs] = result.Profile.Id;
+        }
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"Loaded profile '{result.Profile.Id}' ({result.Profile.Type})", sw.ElapsedMilliseconds, result.Profile);
     }
 }

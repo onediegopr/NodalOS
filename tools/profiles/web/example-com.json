@@ -1,0 +1,20 @@
+{
+  "id": "example-com",
+  "type": "web",
+  "displayName": "Example.com",
+  "url": "https://example.com",
+  "expected": {
+    "titleContains": "Example",
+    "textContains": "Example Domain"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false
+  }
+}

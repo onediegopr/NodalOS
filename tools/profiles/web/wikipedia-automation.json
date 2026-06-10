@@ -1,0 +1,20 @@
+{
+  "id": "wikipedia-automation",
+  "type": "web",
+  "displayName": "Wikipedia Automation",
+  "url": "https://en.wikipedia.org/wiki/Automation",
+  "expected": {
+    "titleContains": "Automation",
+    "textContains": "Automation"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false
+  }
+}

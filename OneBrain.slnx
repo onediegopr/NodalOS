@@ -9,6 +9,7 @@
     <Project Path="src/OneBrain.Verification/OneBrain.Verification.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj" />
     <Project Path="tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj" />
   </Folder>
 </Solution>

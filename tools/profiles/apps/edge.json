@@ -1,0 +1,10 @@
+{
+  "id": "edge",
+  "type": "app",
+  "displayName": "Microsoft Edge",
+  "process": "msedge",
+  "safety": {
+    "allowClose": true,
+    "allowDelete": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "notepad",
+  "type": "app",
+  "displayName": "Notepad",
+  "process": "Notepad",
+  "knownInput": {
+    "name": "RichEdit",
+    "role": "RichEdit"
+  },
+  "safety": {
+    "allowClose": false,
+    "allowDelete": false
+  }
+}

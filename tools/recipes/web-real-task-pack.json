@@ -1,0 +1,24 @@
+{
+  "name": "web-real-task-pack",
+  "description": "Integrated: load profiles, open/read/close both, then assert and report to Notepad",
+  "stopOnFirstFailure": false,
+  "steps": [
+    { "id": "load-p1", "kind": "profile.load", "path": "tools/profiles/web/example-com.json", "saveAs": "profile.ex" },
+    { "id": "open-ex", "kind": "browser.open", "path": "{{profile.ex.url}}", "saveAs": "browser.e1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
+    { "id": "delay-ex", "kind": "delay", "timeoutMs": 4000 },
+    { "id": "read-title-ex", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt1", "timeoutMs": 10000, "args": { "session": "browser.e1" } },
+    { "id": "close-ex", "kind": "browser.close", "saveAs": "browser.e1", "timeoutMs": 5000 },
+    { "id": "assert-ex", "kind": "assert.contains", "value": "{{bt1}}", "expected": "{{profile.ex.expected.titleContains}}" },
+    { "id": "pause1", "kind": "delay", "timeoutMs": 1000 },
+    { "id": "load-p2", "kind": "profile.load", "path": "tools/profiles/web/wikipedia-automation.json", "saveAs": "profile.wk" },
+    { "id": "open-wk", "kind": "browser.open", "path": "{{profile.wk.url}}", "saveAs": "browser.w1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
+    { "id": "delay-wk", "kind": "delay", "timeoutMs": 5000 },
+    { "id": "read-title-wk", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt2", "timeoutMs": 10000, "args": { "session": "browser.w1" } },
+    { "id": "close-wk", "kind": "browser.close", "saveAs": "browser.w1", "timeoutMs": 5000 },
+    { "id": "assert-wk", "kind": "assert.contains", "value": "{{bt2}}", "expected": "{{profile.wk.expected.titleContains}}" },
+    { "id": "open-notepad", "kind": "app.open", "app": "notepad" },
+    { "id": "wait-np", "kind": "wait", "process": "Notepad", "titleContains": "Bloc de notas", "timeoutMs": 5000 },
+    { "id": "focus-np", "kind": "key", "process": "Notepad", "text": "Enter", "continueOnError": true },
+    { "id": "report", "kind": "actv.type", "process": "Notepad", "role": "Window", "text": "ONE BRAIN REAL TASK PACK\r\n{{profile.ex.id}}: {{bt1}}\r\n{{profile.wk.id}}: {{bt2}}" }
+  ]
+}
