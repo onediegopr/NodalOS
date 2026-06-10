@@ -1,0 +1,149 @@
+{
+  "name": "real-smoke-windows-pack",
+  "description": "Integrated real-world smoke: Calculator -> Notepad -> Explorer -> Edge",
+  "stopOnFirstFailure": true,
+  "variables": {
+    "run.name": "ONE BRAIN REAL SMOKE",
+    "expected.result": "56"
+  },
+  "steps": [
+    {
+      "id": "note-start",
+      "kind": "note",
+      "text": "ONE BRAIN Real Smoke Pack started at {{runtime.timestamp}}"
+    },
+    {
+      "id": "open-calc",
+      "kind": "app.open",
+      "app": "calculator"
+    },
+    {
+      "id": "wait-calc",
+      "kind": "wait",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "role": "Button",
+      "timeoutMs": 8000
+    },
+    {
+      "id": "calc-7",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Siete",
+      "role": "Button"
+    },
+    {
+      "id": "calc-mul",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Multiplicar por",
+      "role": "Button"
+    },
+    {
+      "id": "calc-8",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Ocho",
+      "role": "Button"
+    },
+    {
+      "id": "calc-eq",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Es igual a",
+      "role": "Button"
+    },
+    {
+      "id": "read-result",
+      "kind": "snapshot.read",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "automationId": "CalculatorResults",
+      "property": "name",
+      "transform": "calculatorResult",
+      "saveAs": "calculator.result",
+      "timeoutMs": 5000
+    },
+    {
+      "id": "assert-56",
+      "kind": "assert.equals",
+      "value": "{{calculator.result}}",
+      "expected": "56"
+    },
+    {
+      "id": "open-notepad",
+      "kind": "app.open",
+      "app": "notepad"
+    },
+    {
+      "id": "wait-notepad",
+      "kind": "wait",
+      "process": "Notepad",
+      "titleContains": "Bloc de notas",
+      "timeoutMs": 5000
+    },
+    {
+      "id": "write-report",
+      "kind": "actv.type",
+      "process": "Notepad",
+      "role": "Document",
+      "text": "{{run.name}}\r\nResultado: {{calculator.result}}\r\nTimestamp: {{runtime.timestamp}}\r\nEstado: OK"
+    },
+    {
+      "id": "open-explorer",
+      "kind": "app.open",
+      "app": "explorer",
+      "path": "{{runtime.temp}}"
+    },
+    {
+      "id": "delay-explorer",
+      "kind": "delay",
+      "timeoutMs": 2000
+    },
+    {
+      "id": "wait-explorer",
+      "kind": "wait",
+      "process": "explorer",
+      "window": "Temp",
+      "role": "Window",
+      "timeoutMs": 8000
+    },
+    {
+      "id": "open-edge",
+      "kind": "browser.open",
+      "path": "https://example.com",
+      "args": {
+        "browser": "edge",
+        "forceAccessibility": "true"
+      }
+    },
+    {
+      "id": "delay-edge",
+      "kind": "delay",
+      "timeoutMs": 4000
+    },
+    {
+      "id": "wait-edge",
+      "kind": "wait",
+      "process": "msedge",
+      "titleContains": "Example",
+      "timeoutMs": 20000
+    },
+    {
+      "id": "back-to-notepad",
+      "kind": "actv.type",
+      "process": "Notepad",
+      "role": "Document",
+      "text": "\r\nBrowser OK\r\nEdge carg\u00F3 example.com correctamente"
+    },
+    {
+      "id": "note-done",
+      "kind": "note",
+      "text": "ONE BRAIN Real Smoke Pack completed successfully. Calc={{calculator.result}}, Browser=example.com, Explorer={{runtime.temp}}"
+    }
+  ]
+}

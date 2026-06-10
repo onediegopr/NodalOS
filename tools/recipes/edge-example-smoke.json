@@ -1,0 +1,34 @@
+{
+  "name": "edge-example-smoke",
+  "description": "Open Edge with example.com, confirm page loaded via title. Close Edge first if already running.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "open-edge",
+      "kind": "browser.open",
+      "path": "https://example.com",
+      "args": {
+        "browser": "edge",
+        "forceAccessibility": "true"
+      }
+    },
+    {
+      "id": "delay-load",
+      "kind": "delay",
+      "timeoutMs": 4000
+    },
+    {
+      "id": "wait-title",
+      "kind": "wait",
+      "process": "msedge",
+      "titleContains": "Example",
+      "timeoutMs": 20000,
+      "intervalMs": 500
+    },
+    {
+      "id": "note-ok",
+      "kind": "note",
+      "text": "Edge loaded example.com successfully"
+    }
+  ]
+}

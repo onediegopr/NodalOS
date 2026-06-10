@@ -1,0 +1,35 @@
+{
+  "name": "notepad-report-smoke",
+  "description": "Notepad report writing with runtime variables and templates",
+  "variables": {
+    "run.name": "ONE BRAIN HITO-012",
+    "expected.result": "56"
+  },
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "open-notepad",
+      "kind": "app.open",
+      "app": "notepad"
+    },
+    {
+      "id": "wait-notepad",
+      "kind": "wait",
+      "process": "Notepad",
+      "titleContains": "Bloc de notas",
+      "timeoutMs": 5000
+    },
+    {
+      "id": "note-start",
+      "kind": "note",
+      "text": "Writing report with runtime timestamp: {{runtime.timestamp}}"
+    },
+    {
+      "id": "write-report",
+      "kind": "actv.type",
+      "process": "Notepad",
+      "role": "Document",
+      "text": "{{run.name}}\r\nResultado: {{expected.result}}\r\nTimestamp: {{runtime.timestamp}}"
+    }
+  ]
+}

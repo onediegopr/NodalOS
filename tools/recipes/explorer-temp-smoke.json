@@ -1,0 +1,32 @@
+{
+  "name": "explorer-temp-smoke",
+  "description": "Open Explorer at %TEMP% via runtime variable, confirm window visible",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "open-explorer",
+      "kind": "app.open",
+      "app": "explorer",
+      "path": "{{runtime.temp}}"
+    },
+    {
+      "id": "delay-explorer",
+      "kind": "delay",
+      "timeoutMs": 2000
+    },
+    {
+      "id": "wait-explorer",
+      "kind": "wait",
+      "process": "explorer",
+      "window": "Temp",
+      "role": "Window",
+      "timeoutMs": 6000,
+      "intervalMs": 500
+    },
+    {
+      "id": "note-ok",
+      "kind": "note",
+      "text": "Explorer opened at {{runtime.temp}}"
+    }
+  ]
+}

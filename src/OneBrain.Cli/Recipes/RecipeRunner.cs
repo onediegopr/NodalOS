@@ -27,6 +27,12 @@ public sealed class RecipeRunner
                 _ctx.Variables[k] = v;
         }
 
+        // Built-in runtime variables
+        var now = DateTime.Now;
+        _ctx.Variables["runtime.timestamp"] = now.ToString("yyyy-MM-ddTHH:mm:ss");
+        _ctx.Variables["runtime.date"] = now.ToString("yyyy-MM-dd");
+        _ctx.Variables["runtime.temp"] = Path.GetTempPath().TrimEnd('\\');
+
         var sw = Stopwatch.StartNew();
         var stepResults = new List<RecipeStepRunResult>();
         int passed = 0, failed = 0;
@@ -106,6 +112,8 @@ public sealed class RecipeRunner
                 "assert.contains"        => ExecuteAssertContains(step, sw),
                 "assert.equals"          => ExecuteAssertEquals(step, sw),
                 "if"                     => ExecuteIf(step, sw),
+                "note"                   => ExecuteNote(step, sw),
+                "delay"                  => ExecuteSleep(step, sw),
                 "sleep"                  => ExecuteSleep(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
@@ -129,7 +137,7 @@ public sealed class RecipeRunner
         if (string.IsNullOrWhiteSpace(app))
             return Fail(step, sw, "app.open requires 'app' field (explorer|calculator|notepad).");
 
-        var (success, message) = AppLauncher.TryLaunch(app, step.Path ?? "");
+        var (success, message) = AppLauncher.TryLaunch(app, R(step.Path) ?? "");
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, success, message, sw.ElapsedMilliseconds);
     }
@@ -528,6 +536,15 @@ public sealed class RecipeRunner
             ? $"assert.equals passed: '{value}' == '{expected}'"
             : $"assert.equals FAILED: '{value}' != '{expected}'";
         return new RecipeStepRunResult(step.Id, step.Kind, equals, message, sw.ElapsedMilliseconds);
+    }
+
+    // ── note ─────────────────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteNote(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var message = R(step.Text ?? step.Args?.GetValueOrDefault("message") ?? "");
+        _ctx.Notes.Add(message);
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true, message, sw.ElapsedMilliseconds);
     }
 
     // ── sleep ───────────────────────────────────────────────────────────────
