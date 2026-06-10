@@ -3,19 +3,22 @@ using FlaUI.Core.Definitions;
 using FlaUI.Core.Input;
 using FlaUI.UIA3;
 using OneBrain.Core.Actions;
+using OneBrain.Safety.Policies;
 
 namespace OneBrain.Actions.Uia;
 
 public sealed class UiaActionExecutor
 {
-    private const int MaxElements = 200;
-    private const int MaxDepth = 8;
+    private const int MaxElements = 250;
+    private const int MaxDepth = 10;
+
+    private readonly MinimalSafetyGuard _safetyGuard = new();
 
     public ActionResult Execute(ActionRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.TargetRef))
         {
-            return new ActionResult(false, "Target ref is required.");
+            return new ActionResult(false, "Target ref or selector is required.");
         }
 
         using var automation = new UIA3Automation();
@@ -38,17 +41,27 @@ public sealed class UiaActionExecutor
 
         var root = FindContainingWindow(focused) ?? focused;
 
-        var elements = new List<AutomationElement>(capacity: 64);
+        var elements = new List<AutomationElement>(capacity: 96);
         Walk(root, elements, 0);
 
-        var index = ParseRefIndex(request.TargetRef);
+        var target = ResolveTarget(request.TargetRef, elements);
 
-        if (index < 1 || index > elements.Count)
+        if (target is null)
         {
-            return new ActionResult(false, $"Target ref {request.TargetRef} not found. Elements available: {elements.Count}.");
+            return new ActionResult(false, $"Target '{request.TargetRef}' not found. Elements available: {elements.Count}.");
         }
 
-        var target = elements[index - 1];
+        var decision = _safetyGuard.Evaluate(
+            actionKind: request.Kind,
+            role: SafeControlType(target),
+            name: SafeString(() => target.Name),
+            automationId: SafeString(() => target.AutomationId),
+            className: SafeString(() => target.ClassName));
+
+        if (!decision.Allowed)
+        {
+            return new ActionResult(false, decision.Reason);
+        }
 
         return request.Kind.ToLowerInvariant() switch
         {
@@ -57,6 +70,67 @@ public sealed class UiaActionExecutor
             "focus" => Focus(target),
             _ => new ActionResult(false, $"Unsupported action kind: {request.Kind}")
         };
+    }
+
+    private static AutomationElement? ResolveTarget(string selector, IReadOnlyList<AutomationElement> elements)
+    {
+        selector = selector.Trim();
+
+        if (selector.StartsWith("@e", StringComparison.OrdinalIgnoreCase))
+        {
+            var index = ParseRefIndex(selector);
+            return index >= 1 && index <= elements.Count ? elements[index - 1] : null;
+        }
+
+        var separatorIndex = selector.IndexOf(':');
+
+        if (separatorIndex <= 0 || separatorIndex >= selector.Length - 1)
+        {
+            return null;
+        }
+
+        var kind = selector[..separatorIndex].Trim().ToLowerInvariant();
+        var value = selector[(separatorIndex + 1)..].Trim();
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return kind switch
+        {
+            "name" => FindByName(elements, value),
+            "automation-id" or "automationid" => FindByAutomationId(elements, value),
+            "role" => FindByRole(elements, value),
+            "class" or "class-name" or "classname" => FindByClassName(elements, value),
+            _ => null
+        };
+    }
+
+    private static AutomationElement? FindByName(IReadOnlyList<AutomationElement> elements, string value)
+    {
+        var exact = elements.FirstOrDefault(e => SafeString(() => e.Name).Equals(value, StringComparison.OrdinalIgnoreCase));
+        if (exact is not null)
+        {
+            return exact;
+        }
+
+        return elements.FirstOrDefault(e => SafeString(() => e.Name).Contains(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static AutomationElement? FindByAutomationId(IReadOnlyList<AutomationElement> elements, string value)
+    {
+        return elements.FirstOrDefault(e => SafeString(() => e.AutomationId).Equals(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static AutomationElement? FindByRole(IReadOnlyList<AutomationElement> elements, string value)
+    {
+        return elements.FirstOrDefault(e => SafeControlType(e).Equals(value, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static AutomationElement? FindByClassName(IReadOnlyList<AutomationElement> elements, string value)
+    {
+        return elements.FirstOrDefault(e => SafeString(() => e.ClassName).Equals(value, StringComparison.OrdinalIgnoreCase));
     }
 
     private static ActionResult TypeText(AutomationElement target, string text)
@@ -209,5 +283,29 @@ public sealed class UiaActionExecutor
         }
 
         return int.TryParse(targetRef[2..], out var index) ? index : -1;
+    }
+
+    private static string SafeControlType(AutomationElement element)
+    {
+        try
+        {
+            return element.ControlType.ToString();
+        }
+        catch
+        {
+            return "Unknown";
+        }
+    }
+
+    private static string SafeString(Func<string?> read)
+    {
+        try
+        {
+            return read() ?? string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
     }
 }

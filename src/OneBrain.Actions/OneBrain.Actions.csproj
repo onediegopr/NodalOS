@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OneBrain.Core\OneBrain.Core.csproj" />
     <ProjectReference Include="..\OneBrain.Observation\OneBrain.Observation.csproj" />
+    <ProjectReference Include="..\OneBrain.Safety\OneBrain.Safety.csproj" />
   </ItemGroup>
 
   <ItemGroup>
