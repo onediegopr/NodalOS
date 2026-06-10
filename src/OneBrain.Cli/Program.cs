@@ -1,3 +1,4 @@
+using OneBrain.Cli;
 using System.Text.Json;
 using OneBrain.Core.Actions;
 using OneBrain.Observation;
@@ -204,6 +205,15 @@ else if (cmd == "browser")
 }
 
 // ── diagnose uia ─────────────────────────────────────────────────────────────
+else if (cmd == "app")
+{
+    if (argsList.Count < 3 || argsList[1].ToLowerInvariant() != "open")
+    {
+        Console.WriteLine("Usage: app open [explorer|calculator|notepad] [path/args]");
+        return;
+    }
+    AppLauncher.Launch(argsList[2], argsList.Count > 3 ? string.Join(" ", argsList.Skip(3)) : "");
+}
 else if (cmd == "diagnose")
 {
     if (argsList.Count < 2 || argsList[1].ToLowerInvariant() != "uia")
@@ -358,6 +368,7 @@ static void PrintUsage()
     Console.WriteLine("  act   <kind> <selector> [text]");
     Console.WriteLine("  actv  <kind> <selector> [text]");
     Console.WriteLine("  browser open [--edge|--chrome] [--force-accessibility] <url-or-file>");
+      Console.WriteLine("  app   open [explorer|calculator|notepad] [path/args]");
     Console.WriteLine("  diagnose uia --process VALUE [--window VALUE]");
     Console.WriteLine("               [--contains TEXT] [--role ROLE] [--raw]");
     Console.WriteLine("  wait  --process VALUE [--window VALUE]");
@@ -376,6 +387,9 @@ static void PrintUsage()
     Console.WriteLine("  actv type  --process Notepad --role Document \"Hola ONE Brain\"");
     Console.WriteLine("  actv invoke --process Notepad --automation-id Close");
     Console.WriteLine("  browser open --edge --force-accessibility tools/browser-smoke/browser-smoke.html");
+      Console.WriteLine("  app open explorer [path]");
+      Console.WriteLine("  app open calculator");
+      Console.WriteLine("  app open notepad");
     Console.WriteLine("  snapshot  --process msedge");
     Console.WriteLine("  diagnose uia --process msedge --contains \"ONE Brain\"");
     Console.WriteLine("  diagnose uia --process msedge --role Edit");
