@@ -4,7 +4,8 @@ public sealed record RecipeDefinition(
     string Name,
     string? Description = null,
     int? DefaultTimeoutMs = null,
-    bool StopOnFirstFailure = true)
+    bool StopOnFirstFailure = true,
+    int? MaxDurationMs = null)
 {
     public List<RecipeStepDefinition> Steps { get; init; } = new();
     public Dictionary<string, string>? Variables { get; init; }

@@ -1,0 +1,15 @@
+{
+  "name": "browser-timeout-negative",
+  "description": "Force timeout: wait for impossible text with short timeout. No browser launch needed.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "wait-impossible",
+      "kind": "wait",
+      "process": "__NONEXISTENT_PROCESS__",
+      "titleContains": "__ONE_BRAIN_TEXT_THAT_SHOULD_NOT_EXIST__",
+      "timeoutMs": 2000,
+      "intervalMs": 500
+    }
+  ]
+}

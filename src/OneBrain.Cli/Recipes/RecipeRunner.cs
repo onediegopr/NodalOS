@@ -14,10 +14,13 @@ namespace OneBrain.Cli.Recipes;
 
 public sealed class RecipeRunner
 {
+    private const int DefaultStepTimeoutMs = 15000;
+    private RecipeDefinition? _currentRecipe;
     private readonly RecipeExecutionContext _ctx = new();
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false)
     {
+        _currentRecipe = recipe;
         _ctx.Variables.Clear();
         _ctx.Notes.Clear();
 
@@ -50,9 +53,49 @@ public sealed class RecipeRunner
             }
 
             RecipeStepRunResult stepResult;
+            var stepTimeout = GetStepTimeoutMs(step, recipe);
+            if (recipe.MaxDurationMs.HasValue)
+            {
+                var remainingGlobalMs = (int)(recipe.MaxDurationMs.Value - sw.ElapsedMilliseconds);
+                if (remainingGlobalMs <= 0)
+                {
+                    var globalTimeoutResult = new RecipeStepRunResult(
+                        step.Id, 
+                        step.Kind ?? "", 
+                        false, 
+                        $"Recipe global duration limit exceeded ({recipe.MaxDurationMs.Value}ms limit)", 
+                        0);
+                    stepResults.Add(globalTimeoutResult);
+                    failed++;
+                    break;
+                }
+                if (stepTimeout > remainingGlobalMs)
+                {
+                    stepTimeout = remainingGlobalMs;
+                }
+            }
+
             try
             {
-                stepResult = ExecuteStep(step);
+                var cts = new CancellationTokenSource();
+                var task = Task.Run(() =>
+                {
+                    try { return ExecuteStep(step); }
+                    catch (RecipeVariableException ex) { return FailNow(step, ex.Message); }
+                    catch (Exception ex) { return new RecipeStepRunResult(step.Id, step.Kind, false, ex.Message, 0); }
+                }, cts.Token);
+
+                if (task.Wait(stepTimeout, cts.Token))
+                {
+                    stepResult = task.Result;
+                }
+                else
+                {
+                    cts.Cancel();
+                    var details = GetStepDetails(step);
+                    stepResult = new RecipeStepRunResult(step.Id, step.Kind, false,
+                        $"Step timeout after {stepTimeout}ms: {step.Kind}{details}", stepTimeout);
+                }
             }
             catch (RecipeVariableException ex)
             {
@@ -82,6 +125,47 @@ public sealed class RecipeRunner
         {
             Variables = new Dictionary<string, string>(_ctx.Variables)
         };
+    }
+
+    private int GetStepTimeoutMs(RecipeStepDefinition step, RecipeDefinition recipe)
+    {
+        var kind = step.Kind.ToLowerInvariant();
+        if (kind is "delay" or "sleep")
+        {
+            var sleepMs = step.TimeoutMs ?? 1000;
+            if (step.Args?.TryGetValue("ms", out var msStr) == true && int.TryParse(msStr, out var parsed))
+                sleepMs = parsed;
+            return sleepMs + 3000;
+        }
+
+        if (step.TimeoutMs.HasValue) return step.TimeoutMs.Value;
+        if (recipe.DefaultTimeoutMs.HasValue) return recipe.DefaultTimeoutMs.Value;
+
+        return kind switch
+        {
+            "browser.open" => 15000,
+            "wait" => 10000,
+            _ => 15000
+        };
+    }
+
+    private static string GetStepDetails(RecipeStepDefinition step)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrEmpty(step.Url)) parts.Add($"url: {step.Url}");
+        else if (!string.IsNullOrEmpty(step.Path)) parts.Add($"path: {step.Path}");
+
+        if (!string.IsNullOrEmpty(step.Process)) parts.Add($"process: {step.Process}");
+        if (!string.IsNullOrEmpty(step.Window)) parts.Add($"window: {step.Window}");
+        if (!string.IsNullOrEmpty(step.Name)) parts.Add($"name: {step.Name}");
+        if (!string.IsNullOrEmpty(step.Role)) parts.Add($"role: {step.Role}");
+        if (!string.IsNullOrEmpty(step.AutomationId)) parts.Add($"automationId: {step.AutomationId}");
+        if (!string.IsNullOrEmpty(step.Class)) parts.Add($"class: {step.Class}");
+        if (!string.IsNullOrEmpty(step.TitleContains)) parts.Add($"titleContains: {step.TitleContains}");
+        if (!string.IsNullOrEmpty(step.App)) parts.Add($"app: {step.App}");
+
+        if (parts.Count == 0) return "";
+        return $" ({string.Join(", ", parts)})";
     }
 
     private static bool ShouldStop(RecipeDefinition recipe, RecipeStepDefinition step, bool forceContinue, bool? stepSuccess = null)
@@ -204,10 +288,35 @@ public sealed class RecipeRunner
                 $"Failed to launch {browserName}: {lastError}", sw.ElapsedMilliseconds);
         }
 
-        Thread.Sleep(1500);
+        var browserTimeoutMs = step.TimeoutMs ?? _currentRecipe?.DefaultTimeoutMs ?? 15000;
+        var openSw = Stopwatch.StartNew();
+        var finder = new WindowFinder();
+        var processToFind = browserName.Equals("edge", StringComparison.OrdinalIgnoreCase) ? "msedge" : "chrome";
+
+        IntPtr hwnd = IntPtr.Zero;
+        while (openSw.ElapsedMilliseconds < browserTimeoutMs)
+        {
+            hwnd = finder.FindWindow(processToFind, null);
+            if (hwnd != IntPtr.Zero)
+            {
+                break;
+            }
+            Thread.Sleep(250);
+        }
+
+        if (hwnd == IntPtr.Zero)
+        {
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"Timeout waiting for {browserName} window to appear (process: {processToFind}, timeout: {browserTimeoutMs}ms)", sw.ElapsedMilliseconds);
+        }
+
+        // Wait a brief moment to let the browser initialize and render
+        Thread.Sleep(500);
+
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
-            $"Launched {browserName} with {url}", sw.ElapsedMilliseconds);
+            $"Launched {browserName} with {url} and found active window handle {hwnd}", sw.ElapsedMilliseconds);
     }
 
     // ── wait ────────────────────────────────────────────────────────────────
@@ -219,20 +328,26 @@ public sealed class RecipeRunner
         var role = R(step.Role);
         var titleContains = R(step.TitleContains ?? step.Args?.GetValueOrDefault("titleContains"));
         if (titleContains == "") titleContains = null;
+        var automationId = R(step.AutomationId);
 
         if (string.IsNullOrWhiteSpace(proc) && string.IsNullOrWhiteSpace(win))
             return Fail(step, sw, "wait requires 'process' or 'window' field.");
 
-        if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(role) && string.IsNullOrWhiteSpace(titleContains))
-            return Fail(step, sw, "wait requires 'name', 'role', or 'titleContains'.");
+        if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(role) && string.IsNullOrWhiteSpace(titleContains) && string.IsNullOrWhiteSpace(automationId))
+            return Fail(step, sw, "wait requires 'name', 'role', 'titleContains', or 'automationId'.");
 
-        var timeout = step.TimeoutMs ?? 5000;
+        var timeout = step.TimeoutMs ?? _currentRecipe?.DefaultTimeoutMs ?? 10000;
         var interval = Math.Max(100, step.IntervalMs ?? 500);
 
-        var selectorUsed = titleContains != null    ? $"title-contains:{titleContains}"
-                         : name != null && role != null ? $"name:{name}+role:{role}"
-                         : name != null              ? $"name:{name}"
-                                                      : $"role:{role}";
+        var searchCriteria = new List<string>();
+        if (!string.IsNullOrEmpty(proc)) searchCriteria.Add($"process: '{proc}'");
+        if (!string.IsNullOrEmpty(win)) searchCriteria.Add($"window: '{win}'");
+        if (!string.IsNullOrEmpty(name)) searchCriteria.Add($"name: '{name}'");
+        if (!string.IsNullOrEmpty(role)) searchCriteria.Add($"role: '{role}'");
+        if (!string.IsNullOrEmpty(automationId)) searchCriteria.Add($"automationId: '{automationId}'");
+        if (!string.IsNullOrEmpty(titleContains)) searchCriteria.Add($"titleContains: '{titleContains}'");
+        
+        var criteriaStr = string.Join(", ", searchCriteria);
 
         var reader = new CognitiveSnapshotReader();
         int attempts = 0;
@@ -254,21 +369,28 @@ public sealed class RecipeRunner
                     found = snap.Window.Title.Contains(titleContains, StringComparison.OrdinalIgnoreCase);
                     if (found) matchObj = new { Title = snap.Window.Title };
                 }
+                else if (automationId != null)
+                {
+                    var el = snap.Elements.FirstOrDefault(e =>
+                        e.AutomationId != null && e.AutomationId.Equals(automationId, StringComparison.OrdinalIgnoreCase));
+                    found = el != null;
+                    if (found) matchObj = el;
+                }
                 else if (name != null)
                 {
                     var el = role != null
                         ? snap.Elements.FirstOrDefault(e =>
-                            e.Name.Contains(name, StringComparison.OrdinalIgnoreCase) &&
-                            e.Role.Equals(role, StringComparison.OrdinalIgnoreCase))
+                            e.Name != null && e.Name.Contains(name, StringComparison.OrdinalIgnoreCase) &&
+                            e.Role != null && e.Role.Equals(role, StringComparison.OrdinalIgnoreCase))
                         : snap.Elements.FirstOrDefault(e =>
-                            e.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+                            e.Name != null && e.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
                     found = el != null;
                     if (found) matchObj = el;
                 }
                 else if (role != null)
                 {
                     var el = snap.Elements.FirstOrDefault(e =>
-                        e.Role.Equals(role, StringComparison.OrdinalIgnoreCase));
+                        e.Role != null && e.Role.Equals(role, StringComparison.OrdinalIgnoreCase));
                     found = el != null;
                     if (found) matchObj = el;
                 }
@@ -277,7 +399,7 @@ public sealed class RecipeRunner
                 {
                     SaveOutput(step, matchObj);
                     return new RecipeStepRunResult(step.Id, step.Kind, true,
-                        $"Found after {sw.ElapsedMilliseconds}ms ({attempts} attempts): {selectorUsed}",
+                        $"Found after {sw.ElapsedMilliseconds}ms ({attempts} attempts): [{criteriaStr}]",
                         sw.ElapsedMilliseconds, matchObj);
                 }
             }
@@ -286,7 +408,7 @@ public sealed class RecipeRunner
         }
 
         return new RecipeStepRunResult(step.Id, step.Kind, false,
-            $"Timeout after {timeout}ms ({attempts} attempts): {selectorUsed}. Last title: '{lastTitle}'",
+            $"Timeout after {timeout}ms ({attempts} attempts) waiting for: [{criteriaStr}]. Last title: '{lastTitle}'",
             sw.ElapsedMilliseconds);
     }
 
@@ -428,7 +550,7 @@ public sealed class RecipeRunner
         UiElementSnapshot? match = null;
         string lastWindowTitle = "";
         int attempts = 0;
-        var timeout = step.TimeoutMs ?? 5000;
+        var timeout = step.TimeoutMs ?? _currentRecipe?.DefaultTimeoutMs ?? 5000;
         var interval = Math.Max(100, step.IntervalMs ?? 500);
 
         while (sw.ElapsedMilliseconds < timeout)
