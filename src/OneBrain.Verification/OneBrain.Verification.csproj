@@ -1,9 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\OneBrain.Core\OneBrain.Core.csproj" />
+    <ProjectReference Include="..\OneBrain.Observation\OneBrain.Observation.csproj" />
+    <ProjectReference Include="..\OneBrain.Actions\OneBrain.Actions.csproj" />
+  </ItemGroup>
 </Project>

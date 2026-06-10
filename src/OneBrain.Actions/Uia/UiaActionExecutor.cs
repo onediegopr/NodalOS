@@ -4,308 +4,151 @@ using FlaUI.Core.Input;
 using FlaUI.UIA3;
 using OneBrain.Core.Actions;
 using OneBrain.Safety.Policies;
+using OneBrain.Observation.Windows;
 
 namespace OneBrain.Actions.Uia;
 
 public sealed class UiaActionExecutor
 {
-    private const int MaxElements = 250;
-    private const int MaxDepth = 10;
-
     private readonly MinimalSafetyGuard _safetyGuard = new();
+    private readonly WindowFinder _windowFinder = new();
 
     public ActionResult Execute(ActionRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.TargetRef))
-        {
-            return new ActionResult(false, "Target ref or selector is required.");
-        }
-
         using var automation = new UIA3Automation();
 
-        AutomationElement? focused;
+        AutomationElement? root = null;
 
-        try
+        if (!string.IsNullOrEmpty(request.ProcessName) || !string.IsNullOrEmpty(request.WindowTitle))
         {
-            focused = automation.FocusedElement();
-        }
-        catch (Exception ex)
-        {
-            return new ActionResult(false, $"Could not get focused element: {ex.Message}");
-        }
+            var hwnd = _windowFinder.FindWindow(request.ProcessName, request.WindowTitle);
 
-        if (focused is null)
-        {
-            return new ActionResult(false, "No focused element.");
+            if (hwnd != IntPtr.Zero)
+            {
+                _windowFinder.Activate(hwnd);
+                root = automation.FromHandle(hwnd);
+            }
         }
 
-        var root = FindContainingWindow(focused) ?? focused;
+        if (root == null)
+        {
+            var focused = automation.FocusedElement();
 
-        var elements = new List<AutomationElement>(capacity: 96);
+            if (focused == null)
+            {
+                return new ActionResult(false, "No window found or focused.");
+            }
+
+            root = focused;
+
+            while (root.Parent != null && root.ControlType != ControlType.Window)
+            {
+                root = root.Parent;
+            }
+        }
+
+        var elements = new List<AutomationElement>();
         Walk(root, elements, 0);
 
         var target = ResolveTarget(request.TargetRef, elements);
 
         if (target is null)
         {
-            return new ActionResult(false, $"Target '{request.TargetRef}' not found. Elements available: {elements.Count}.");
+            return new ActionResult(false, $"Target '{request.TargetRef}' not found.");
         }
 
         var decision = _safetyGuard.Evaluate(
-            actionKind: request.Kind,
-            role: SafeControlType(target),
-            name: SafeString(() => target.Name),
-            automationId: SafeString(() => target.AutomationId),
-            className: SafeString(() => target.ClassName));
+            request.Kind,
+            target.ControlType.ToString(),
+            target.Name ?? "",
+            target.AutomationId ?? "",
+            target.ClassName ?? "");
 
         if (!decision.Allowed)
         {
             return new ActionResult(false, decision.Reason);
         }
 
-        return request.Kind.ToLowerInvariant() switch
-        {
-            "type" or "type_text" => TypeText(target, request.Text ?? string.Empty),
-            "invoke" => Invoke(target),
-            "focus" => Focus(target),
-            _ => new ActionResult(false, $"Unsupported action kind: {request.Kind}")
-        };
-    }
-
-    private static AutomationElement? ResolveTarget(string selector, IReadOnlyList<AutomationElement> elements)
-    {
-        selector = selector.Trim();
-
-        if (selector.StartsWith("@e", StringComparison.OrdinalIgnoreCase))
-        {
-            var index = ParseRefIndex(selector);
-            return index >= 1 && index <= elements.Count ? elements[index - 1] : null;
-        }
-
-        var separatorIndex = selector.IndexOf(':');
-
-        if (separatorIndex <= 0 || separatorIndex >= selector.Length - 1)
-        {
-            return null;
-        }
-
-        var kind = selector[..separatorIndex].Trim().ToLowerInvariant();
-        var value = selector[(separatorIndex + 1)..].Trim();
-
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return kind switch
-        {
-            "name" => FindByName(elements, value),
-            "automation-id" or "automationid" => FindByAutomationId(elements, value),
-            "role" => FindByRole(elements, value),
-            "class" or "class-name" or "classname" => FindByClassName(elements, value),
-            _ => null
-        };
-    }
-
-    private static AutomationElement? FindByName(IReadOnlyList<AutomationElement> elements, string value)
-    {
-        var exact = elements.FirstOrDefault(e => SafeString(() => e.Name).Equals(value, StringComparison.OrdinalIgnoreCase));
-        if (exact is not null)
-        {
-            return exact;
-        }
-
-        return elements.FirstOrDefault(e => SafeString(() => e.Name).Contains(value, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static AutomationElement? FindByAutomationId(IReadOnlyList<AutomationElement> elements, string value)
-    {
-        return elements.FirstOrDefault(e => SafeString(() => e.AutomationId).Equals(value, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static AutomationElement? FindByRole(IReadOnlyList<AutomationElement> elements, string value)
-    {
-        return elements.FirstOrDefault(e => SafeControlType(e).Equals(value, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static AutomationElement? FindByClassName(IReadOnlyList<AutomationElement> elements, string value)
-    {
-        return elements.FirstOrDefault(e => SafeString(() => e.ClassName).Equals(value, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static ActionResult TypeText(AutomationElement target, string text)
-    {
         try
         {
             target.Focus();
-            Keyboard.Type(text);
-            return new ActionResult(true, $"Typed {text.Length} characters.");
-        }
-        catch (Exception ex)
-        {
-            return new ActionResult(false, $"Type failed: {ex.Message}");
-        }
-    }
 
-    private static ActionResult Focus(AutomationElement target)
-    {
-        try
-        {
-            target.Focus();
-            return new ActionResult(true, "Focused target.");
-        }
-        catch (Exception ex)
-        {
-            return new ActionResult(false, $"Focus failed: {ex.Message}");
-        }
-    }
+            if (request.Kind.ToLowerInvariant() == "type")
+            {
+                Keyboard.Type(request.Text ?? "");
+                return new ActionResult(true, "Typed text.");
+            }
 
-    private static ActionResult Invoke(AutomationElement target)
-    {
-        try
-        {
-            target.Focus();
+            if (request.Kind.ToLowerInvariant() == "focus")
+            {
+                return new ActionResult(true, "Focused target.");
+            }
 
             if (target.ControlType == ControlType.Button)
             {
                 target.AsButton().Invoke();
-                return new ActionResult(true, "Invoked button.");
+            }
+            else
+            {
+                target.Click();
             }
 
-            target.Click();
-            return new ActionResult(true, "Clicked target as invoke fallback.");
+            return new ActionResult(true, "Action executed.");
         }
         catch (Exception ex)
         {
-            return new ActionResult(false, $"Invoke failed: {ex.Message}");
+            return new ActionResult(false, ex.Message);
         }
     }
 
-    private static AutomationElement? FindContainingWindow(AutomationElement element)
+    private AutomationElement? ResolveTarget(string selector, List<AutomationElement> elements)
     {
-        try
+        if (selector.StartsWith("@e", StringComparison.OrdinalIgnoreCase) && int.TryParse(selector[2..], out var idx))
         {
-            var current = element;
-
-            for (var i = 0; i < 20; i++)
-            {
-                if (current.ControlType == ControlType.Window)
-                {
-                    return current;
-                }
-
-                var parent = current.Parent;
-
-                if (parent is null)
-                {
-                    return null;
-                }
-
-                current = parent;
-            }
+            return idx >= 1 && idx <= elements.Count ? elements[idx - 1] : null;
         }
-        catch
+
+        var parts = selector.Split(':', 2);
+
+        if (parts.Length < 2)
         {
             return null;
         }
 
-        return null;
+        var kind = parts[0].ToLowerInvariant();
+        var val = parts[1];
+
+        return kind switch
+        {
+            "role" => elements.FirstOrDefault(e => e.ControlType.ToString().Equals(val, StringComparison.OrdinalIgnoreCase)),
+            "name" => elements.FirstOrDefault(e => (e.Name ?? "").Contains(val, StringComparison.OrdinalIgnoreCase)),
+            "automation-id" => elements.FirstOrDefault(e => (e.AutomationId ?? "").Equals(val, StringComparison.OrdinalIgnoreCase)),
+            "class" => elements.FirstOrDefault(e => (e.ClassName ?? "").Equals(val, StringComparison.OrdinalIgnoreCase)),
+            _ => null
+        };
     }
 
-    private static void Walk(AutomationElement element, List<AutomationElement> results, int depth)
+    private void Walk(AutomationElement e, List<AutomationElement> res, int d)
     {
-        if (results.Count >= MaxElements || depth > MaxDepth)
+        if (res.Count >= 250 || d > 10)
         {
             return;
         }
 
         try
         {
-            if (ShouldInclude(element))
+            if (!e.IsOffscreen && (!string.IsNullOrEmpty(e.Name) || !string.IsNullOrEmpty(e.AutomationId)))
             {
-                results.Add(element);
+                res.Add(e);
             }
 
-            AutomationElement[] children;
-
-            try
+            foreach (var child in e.FindAllChildren())
             {
-                children = element.FindAllChildren();
-            }
-            catch
-            {
-                return;
-            }
-
-            foreach (var child in children)
-            {
-                if (results.Count >= MaxElements)
-                {
-                    break;
-                }
-
-                Walk(child, results, depth + 1);
+                Walk(child, res, d + 1);
             }
         }
         catch
         {
-            // UIA providers can throw if an element disappears while walking.
-        }
-    }
-
-    private static bool ShouldInclude(AutomationElement element)
-    {
-        try
-        {
-            if (element.IsOffscreen)
-            {
-                return false;
-            }
-
-            var hasIdentity =
-                !string.IsNullOrWhiteSpace(element.Name) ||
-                !string.IsNullOrWhiteSpace(element.AutomationId) ||
-                !string.IsNullOrWhiteSpace(element.ClassName);
-
-            return hasIdentity;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private static int ParseRefIndex(string targetRef)
-    {
-        if (!targetRef.StartsWith("@e", StringComparison.OrdinalIgnoreCase))
-        {
-            return -1;
-        }
-
-        return int.TryParse(targetRef[2..], out var index) ? index : -1;
-    }
-
-    private static string SafeControlType(AutomationElement element)
-    {
-        try
-        {
-            return element.ControlType.ToString();
-        }
-        catch
-        {
-            return "Unknown";
-        }
-    }
-
-    private static string SafeString(Func<string?> read)
-    {
-        try
-        {
-            return read() ?? string.Empty;
-        }
-        catch
-        {
-            return string.Empty;
         }
     }
 }
