@@ -10,4 +10,5 @@ public sealed record UiElementSnapshot(
     bool IsEnabled,
     bool IsOffscreen,
     bool IsKeyboardFocusable,
-    IReadOnlyList<string> Patterns);
+    IReadOnlyList<string> Patterns,
+    IReadOnlyList<string> Actions);

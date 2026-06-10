@@ -1,4 +1,5 @@
-﻿using FlaUI.Core.AutomationElements;
+﻿using System.Reflection;
+using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Definitions;
 using FlaUI.UIA3;
 using OneBrain.Core.Models;
@@ -81,10 +82,13 @@ public sealed class UiaElementReader
             if (ShouldInclude(element))
             {
                 var index = results.Count + 1;
+                var role = SafeControlType(element);
+                var patterns = GetPatternNames(element);
+                var actions = DeriveActions(role, patterns);
 
                 results.Add(new UiElementSnapshot(
                     Ref: $"@e{index}",
-                    Role: SafeControlType(element),
+                    Role: role,
                     Name: SafeString(() => element.Name),
                     AutomationId: SafeString(() => element.AutomationId),
                     ClassName: SafeString(() => element.ClassName),
@@ -92,7 +96,8 @@ public sealed class UiaElementReader
                     IsEnabled: SafeBool(() => element.IsEnabled),
                     IsOffscreen: SafeBool(() => element.IsOffscreen),
                     IsKeyboardFocusable: false,
-                    Patterns: Array.Empty<string>()));
+                    Patterns: patterns,
+                    Actions: actions));
             }
 
             AutomationElement[] children;
@@ -148,6 +153,148 @@ public sealed class UiaElementReader
         }
 
         return true;
+    }
+
+    private static IReadOnlyList<string> GetPatternNames(AutomationElement element)
+    {
+        var names = new[]
+        {
+            "Invoke",
+            "Value",
+            "Text",
+            "Selection",
+            "SelectionItem",
+            "Toggle",
+            "ExpandCollapse",
+            "Scroll",
+            "RangeValue",
+            "Window",
+            "Grid",
+            "GridItem",
+            "Table",
+            "TableItem",
+            "Dock",
+            "Transform"
+        };
+
+        var found = new List<string>();
+
+        object? patternsRoot;
+
+        try
+        {
+            patternsRoot = element.Patterns;
+        }
+        catch
+        {
+            return found;
+        }
+
+        if (patternsRoot is null)
+        {
+            return found;
+        }
+
+        var rootType = patternsRoot.GetType();
+
+        foreach (var name in names)
+        {
+            try
+            {
+                var property = rootType.GetProperty(name, BindingFlags.Instance | BindingFlags.Public);
+
+                if (property is null)
+                {
+                    continue;
+                }
+
+                var patternAccessor = property.GetValue(patternsRoot);
+
+                if (patternAccessor is null)
+                {
+                    continue;
+                }
+
+                var isSupportedProperty = patternAccessor.GetType().GetProperty("IsSupported", BindingFlags.Instance | BindingFlags.Public);
+
+                if (isSupportedProperty?.GetValue(patternAccessor) is true)
+                {
+                    found.Add(name);
+                }
+            }
+            catch
+            {
+                // Some UIA providers or FlaUI accessors can throw.
+            }
+        }
+
+        return found;
+    }
+
+    private static IReadOnlyList<string> DeriveActions(string role, IReadOnlyList<string> patterns)
+    {
+        var actions = new List<string>();
+
+        if (patterns.Contains("Invoke"))
+        {
+            actions.Add("invoke");
+        }
+
+        if (patterns.Contains("Value"))
+        {
+            actions.Add("set_value");
+            actions.Add("read_value");
+        }
+
+        if (patterns.Contains("Text"))
+        {
+            actions.Add("read_text");
+        }
+
+        if (patterns.Contains("Toggle"))
+        {
+            actions.Add("toggle");
+        }
+
+        if (patterns.Contains("Selection") || patterns.Contains("SelectionItem"))
+        {
+            actions.Add("select");
+        }
+
+        if (patterns.Contains("ExpandCollapse"))
+        {
+            actions.Add("expand_collapse");
+        }
+
+        if (patterns.Contains("Scroll"))
+        {
+            actions.Add("scroll");
+        }
+
+        if (patterns.Contains("RangeValue"))
+        {
+            actions.Add("set_range_value");
+        }
+
+        if (role is "Window")
+        {
+            actions.Add("focus_window");
+        }
+
+        if (role is "Edit" or "Document")
+        {
+            if (!actions.Contains("type_text"))
+            {
+                actions.Add("type_text");
+            }
+        }
+
+        if (role is "Button" && !actions.Contains("invoke"))
+        {
+            actions.Add("invoke_candidate");
+        }
+
+        return actions;
     }
 
     private static string SafeControlType(AutomationElement element)
