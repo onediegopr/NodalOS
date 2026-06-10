@@ -172,7 +172,10 @@ public sealed class RecipeRunner
         }
 
         var extra = forceAccessibility ? "--force-renderer-accessibility " : "";
-        var browserArgs = $"{extra}\"{fileUrl}\"";
+        var urlArg = fresh
+            ? $"--app=\"{fileUrl}\""
+            : $"\"{fileUrl}\"";
+        var browserArgs = $"{extra}{urlArg}";
 
         string[] candidates = browserName == "edge"
             ? [@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -214,6 +217,7 @@ public sealed class RecipeRunner
 
         var waitMs = fresh ? 4000 : 1500;
         Thread.Sleep(waitMs);
+
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"Launched {browserName} with {url}", sw.ElapsedMilliseconds);
