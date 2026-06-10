@@ -1,0 +1,9 @@
+{
+  "name": "approval-required-sample",
+  "description": "Approval test: contains sensitive action (app.open) that requires approval",
+  "steps": [
+    { "kind": "note", "text": "About to open notepad" },
+    { "kind": "app.open", "app": "notepad" },
+    { "kind": "note", "text": "Done - should have been blocked without approval" }
+  ]
+}

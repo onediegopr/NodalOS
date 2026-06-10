@@ -222,17 +222,41 @@ else if (cmd == "app")
 // ── recipe run ───────────────────────────────────────────────────────────────
 else if (cmd == "recipe")
 {
-    if (argsList.Count < 3 || argsList[1].ToLowerInvariant() != "run")
+    if (argsList.Count < 3)
     {
-        Console.WriteLine("Usage: recipe run PATH [--continue-on-error]");
-        Console.WriteLine("Examples:");
-        Console.WriteLine("  recipe run tools/recipes/calculator-to-notepad.json");
-        Console.WriteLine("  recipe run tools/recipes/browser-smoke.json");
+        Console.WriteLine("Usage: recipe run PATH [--continue-on-error] [--dry-run] [--approve deny|allow]");
+        Console.WriteLine("       recipe dry-run PATH");
         return;
     }
 
-    var recipePath = argsList[2];
+    var sub = argsList[1].ToLowerInvariant();
+
+    if (sub is not ("run" or "dry-run"))
+    {
+        Console.WriteLine("Usage: recipe run PATH [--continue-on-error] [--dry-run] [--approve deny|allow]");
+        Console.WriteLine("       recipe dry-run PATH");
+        return;
+    }
+
+    bool isDryRun = sub == "dry-run";
+    var pathIdx = isDryRun ? 2 : 2;
+    if (pathIdx >= argsList.Count)
+    {
+        Console.WriteLine("Error: PATH required.");
+        return;
+    }
+
+    var recipePath = argsList[pathIdx];
     bool forceContinueOnError = argsList.Any(a => a == "--continue-on-error");
+    bool dryRun = isDryRun || argsList.Any(a => a == "--dry-run");
+    var approveIdx = argsList.FindIndex(a => a == "--approval" || a == "--approve");
+    var approvalMode = "auto"; // auto: run normally, mark sensitives in report
+    if (approveIdx >= 0 && approveIdx + 1 < argsList.Count)
+    {
+        approvalMode = argsList[approveIdx + 1].ToLowerInvariant();
+        if (approvalMode is not ("auto" or "allow" or "deny"))
+            approvalMode = "auto";
+    }
 
     if (!File.Exists(recipePath))
     {
@@ -258,7 +282,13 @@ else if (cmd == "recipe")
             return;
         }
 
-        var result = new RecipeRunner().Run(recipe, forceContinueOnError);
+        if (dryRun)
+        {
+            RunDryRun(recipe);
+            return;
+        }
+
+        var result = new RecipeRunner().Run(recipe, forceContinueOnError, approvalMode);
         Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
     }
     catch (JsonException ex)
@@ -435,6 +465,35 @@ else if (cmd == "visual")
     }
 }
 
+// ── record ────────────────────────────────────────────────────────────────────
+else if (cmd == "record")
+{
+    if (argsList.Count < 2)
+    {
+        PrintRecordUsage();
+        return;
+    }
+
+    var sub = argsList[1].ToLowerInvariant();
+
+    if (sub == "new")
+        HandleRecordNew(argsList);
+    else if (sub == "add-note")
+        HandleRecordAddNote(argsList);
+    else if (sub == "add-app-open")
+        HandleRecordAddAppOpen(argsList);
+    else if (sub == "add-type")
+        HandleRecordAddType(argsList);
+    else if (sub == "add-key")
+        HandleRecordAddKey(argsList);
+    else if (sub == "validate")
+        HandleRecordValidate(argsList);
+    else if (sub == "inspect")
+        HandleRecordInspect(argsList);
+    else
+        PrintRecordUsage();
+}
+
 // ── fallback ─────────────────────────────────────────────────────────────────
 else
 {
@@ -451,7 +510,14 @@ static void PrintUsage()
     Console.WriteLine("  actv  <kind> <selector> [text]");
     Console.WriteLine("  browser open [--edge|--chrome] [--force-accessibility] <url-or-file>");
     Console.WriteLine("  app   open [explorer|calculator|notepad] [path/args]");
-    Console.WriteLine("  recipe run PATH [--continue-on-error]");
+    Console.WriteLine("  recipe run PATH [--continue-on-error] [--dry-run]");
+    Console.WriteLine("  record new --out PATH --name NAME [--description DESC]");
+    Console.WriteLine("  record add-note --out PATH --message TEXT");
+    Console.WriteLine("  record add-app-open --out PATH --app APP [--path PATH]");
+    Console.WriteLine("  record add-type --out PATH --process PROCESS [--window WINDOW] --text TEXT");
+    Console.WriteLine("  record add-key --out PATH --process PROCESS [--window WINDOW] --keys COMBINATION");
+    Console.WriteLine("  record validate --out PATH");
+    Console.WriteLine("  record inspect --out PATH");
     Console.WriteLine("  diagnose uia --process VALUE [--window VALUE]");
     Console.WriteLine("               [--contains TEXT] [--role ROLE] [--raw]");
     Console.WriteLine("  wait  --process VALUE [--window VALUE]");
@@ -642,6 +708,271 @@ static void HandleVisualVerify(List<string> argsList)
 
     var result = new VisualVerifier().Verify(before, after, threshold, diffOut);
     Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+// ── Record handlers ──────────────────────────────────────────────────────────
+
+static void PrintRecordUsage()
+{
+    Console.WriteLine("Usage:");
+    Console.WriteLine("  record new --out PATH --name NAME [--description DESCRIPTION]");
+    Console.WriteLine("  record add-note --out PATH --message TEXT");
+    Console.WriteLine("  record add-app-open --out PATH --app APP [--path PATH]");
+    Console.WriteLine("  record add-type --out PATH --process PROCESS [--window WINDOW] --text TEXT");
+    Console.WriteLine("  record add-key --out PATH --process PROCESS [--window WINDOW] --keys COMBINATION");
+    Console.WriteLine("  record validate --out PATH");
+    Console.WriteLine("  record inspect --out PATH");
+}
+
+static void HandleRecordNew(List<string> argsList)
+{
+    var outPath = GetArg(argsList, "--out");
+    var name = GetArg(argsList, "--name") ?? "recorded-recipe";
+    var desc = GetArg(argsList, "--description") ?? "";
+
+    if (outPath == null) { Console.Error.WriteLine("Error: --out required."); return; }
+    if (File.Exists(outPath)) { Console.Error.WriteLine($"Error: file already exists: {outPath}"); return; }
+
+    var recipe = new RecipeDefinition(name, desc.Length > 0 ? desc : null) { Steps = new() };
+    var json = JsonSerializer.Serialize(recipe, new JsonSerializerOptions { WriteIndented = true });
+    var dir = Path.GetDirectoryName(outPath);
+    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+    File.WriteAllText(outPath, json);
+    Console.WriteLine(JsonSerializer.Serialize(new { Created = true, Path = outPath, Name = name }, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+static void HandleRecordAddNote(List<string> argsList)
+{
+    var outPath = GetArg(argsList, "--out");
+    var message = GetArg(argsList, "--message") ?? "";
+    if (!EnsureRecipe(outPath)) return;
+
+    var step = new RecipeStepDefinition { Kind = "note", Text = message };
+    AppendStep(outPath!, step, $"note: {message}");
+}
+
+static void HandleRecordAddAppOpen(List<string> argsList)
+{
+    var outPath = GetArg(argsList, "--out");
+    var app = GetArg(argsList, "--app");
+    var path = GetArg(argsList, "--path");
+    if (!EnsureRecipe(outPath)) return;
+    if (app == null) { Console.Error.WriteLine("Error: --app required."); return; }
+
+    var step = new RecipeStepDefinition
+    {
+        Kind = "app.open",
+        App = app,
+        Path = path
+    };
+    AppendStep(outPath!, step, $"app.open: {app}");
+}
+
+static void HandleRecordAddType(List<string> argsList)
+{
+    var outPath = GetArg(argsList, "--out");
+    var proc = GetArg(argsList, "--process");
+    var win = GetArg(argsList, "--window");
+    var text = GetArg(argsList, "--text") ?? "";
+    if (!EnsureRecipe(outPath)) return;
+    if (proc == null) { Console.Error.WriteLine("Error: --process required."); return; }
+
+    var step = new RecipeStepDefinition
+    {
+        Kind = "actv.type",
+        Process = proc,
+        Window = win,
+        Text = text,
+        Role = "Document"
+    };
+    AppendStep(outPath!, step, $"actv.type into {proc}");
+}
+
+static void HandleRecordAddKey(List<string> argsList)
+{
+    var outPath = GetArg(argsList, "--out");
+    var proc = GetArg(argsList, "--process");
+    var win = GetArg(argsList, "--window");
+    var keys = GetArg(argsList, "--keys");
+    if (!EnsureRecipe(outPath)) return;
+    if (proc == null || keys == null) { Console.Error.WriteLine("Error: --process and --keys required."); return; }
+
+    var step = new RecipeStepDefinition
+    {
+        Kind = "key",
+        Process = proc,
+        Window = win,
+        Text = keys
+    };
+    AppendStep(outPath!, step, $"key: {keys} into {proc}");
+}
+
+static void HandleRecordValidate(List<string> argsList)
+{
+    var outPath = GetArg(argsList, "--out");
+    if (outPath == null) { Console.Error.WriteLine("Error: --out required."); return; }
+    if (!File.Exists(outPath)) { Console.Error.WriteLine($"Error: file not found: {outPath}"); return; }
+
+    try
+    {
+        var json = File.ReadAllText(outPath);
+        var recipe = JsonSerializer.Deserialize<RecipeDefinition>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        var issues = new List<string>();
+        if (recipe == null) issues.Add("Failed to deserialize recipe.");
+        else
+        {
+            if (recipe.Steps == null || recipe.Steps.Count == 0) issues.Add("Recipe has no steps.");
+            else
+            {
+                for (int i = 0; i < recipe.Steps.Count; i++)
+                {
+                    var s = recipe.Steps[i];
+                    if (string.IsNullOrWhiteSpace(s.Kind)) issues.Add($"Step {i}: missing Kind.");
+
+                    var k = (s.Kind ?? "").ToLowerInvariant();
+                    if (k == "app.open" && string.IsNullOrWhiteSpace(s.App))
+                        issues.Add($"Step {i} (app.open): missing App.");
+                    if ((k == "actv.type" || k == "key") && string.IsNullOrWhiteSpace(s.Process))
+                        issues.Add($"Step {i} ({k}): missing Process.");
+                }
+            }
+        }
+
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            Valid = issues.Count == 0,
+            Path = outPath,
+            Steps = recipe?.Steps?.Count ?? 0,
+            Issues = issues
+        }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(new { Valid = false, Path = outPath, Issues = new[] { ex.Message } }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+}
+
+static void HandleRecordInspect(List<string> argsList)
+{
+    var outPath = GetArg(argsList, "--out");
+    if (outPath == null) { Console.Error.WriteLine("Error: --out required."); return; }
+    if (!File.Exists(outPath)) { Console.Error.WriteLine($"Error: file not found: {outPath}"); return; }
+
+    var json = File.ReadAllText(outPath);
+    var recipe = JsonSerializer.Deserialize<RecipeDefinition>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    if (recipe == null) { Console.WriteLine("Error: could not parse recipe."); return; }
+
+    var summary = new
+    {
+        Name = recipe.Name,
+        Description = recipe.Description,
+        Steps = recipe.Steps?.Select((s, i) => new
+        {
+            Index = i,
+            s.Kind,
+            s.App,
+            s.Process,
+            s.Text,
+            s.TimeoutMs,
+            HasSelector = !string.IsNullOrWhiteSpace(s.Name) || !string.IsNullOrWhiteSpace(s.Role)
+        }).ToList()
+    };
+    Console.WriteLine(JsonSerializer.Serialize(summary, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+// ── Dry-run ────────────────────────────────────────────────────────────────────
+
+static void RunDryRun(RecipeDefinition recipe)
+{
+    var issues = new List<string>();
+    var steps = new List<object>();
+
+    foreach (var step in recipe.Steps)
+    {
+        var kind = (step.Kind ?? "").ToLowerInvariant();
+        var isSensitive = IsSensitiveKind(kind);
+
+        var info = new
+        {
+            step.Id,
+            step.Kind,
+            Sensitive = isSensitive,
+            RequiresApproval = isSensitive,
+            Valid = !string.IsNullOrWhiteSpace(step.Kind),
+            Warnings = isSensitive ? new[] { "This step would execute a physical action." } : Array.Empty<string>()
+        };
+        steps.Add(info);
+
+        if (string.IsNullOrWhiteSpace(step.Kind))
+            issues.Add($"Step '{step.Id}' has empty Kind.");
+        if (isSensitive && kind == "app.open" && string.IsNullOrWhiteSpace(step.App))
+            issues.Add($"Step '{step.Id}' (app.open): missing App.");
+        if (isSensitive && (kind == "actv.type" || kind == "key") && string.IsNullOrWhiteSpace(step.Process))
+            issues.Add($"Step '{step.Id}' ({kind}): missing Process.");
+    }
+
+    Console.WriteLine(JsonSerializer.Serialize(new
+    {
+        DryRun = true,
+        Name = recipe.Name,
+        TotalSteps = recipe.Steps.Count,
+        SensitiveCount = steps.Count(s => IsSensitiveKind((recipe.Steps[steps.IndexOf(s) as int? ?? 0].Kind ?? "").ToLowerInvariant())),
+        Issues = issues,
+        Steps = steps
+    }, new JsonSerializerOptions { WriteIndented = true }));
+
+    // Recalculate sensitive count properly
+    var sensitiveCount = recipe.Steps.Count(s => IsSensitiveKind((s.Kind ?? "").ToLowerInvariant()));
+    Console.Error.WriteLine($"DRY-RUN: {recipe.Name} ({recipe.Steps.Count} steps, {sensitiveCount} sensitive) — no actions executed.");
+}
+
+static bool IsSensitiveKind(string kind)
+{
+    return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close";
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+static string? GetArg(List<string> args, string flag)
+{
+    for (int i = 0; i < args.Count; i++)
+    {
+        if (args[i] == flag && i + 1 < args.Count)
+            return args[i + 1];
+    }
+    return null;
+}
+
+static bool EnsureRecipe(string? outPath)
+{
+    if (outPath == null) { Console.Error.WriteLine("Error: --out required."); return false; }
+    if (!File.Exists(outPath)) { Console.Error.WriteLine($"Error: recipe not created yet. Use 'record new --out {outPath} --name RECIPE' first."); return false; }
+    return true;
+}
+
+static void AppendStep(string outPath, RecipeStepDefinition step, string summary)
+{
+    try
+    {
+        var json = File.ReadAllText(outPath);
+        var recipe = JsonSerializer.Deserialize<RecipeDefinition>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        if (recipe == null) { Console.Error.WriteLine("Error: failed to read recipe."); return; }
+
+        if (recipe.Steps == null)
+        {
+            recipe = recipe with { Steps = new List<RecipeStepDefinition>() };
+        }
+        recipe.Steps.Add(step);
+
+        var updated = JsonSerializer.Serialize(recipe, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(outPath, updated);
+        Console.WriteLine(JsonSerializer.Serialize(new { Added = true, Path = outPath, Summary = summary }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Error appending step: {ex.Message}");
+    }
 }
 
 static void PrintVisualUsage()

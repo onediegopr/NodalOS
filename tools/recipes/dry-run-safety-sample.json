@@ -1,0 +1,14 @@
+{
+  "name": "dry-run-safety-sample",
+  "description": "Dry-run test: mix of safe and sensitive steps to verify classification",
+  "steps": [
+    { "kind": "note", "text": "Safe step - no action" },
+    { "kind": "wait", "process": "Notepad", "role": "Window", "timeoutMs": 1000 },
+    { "kind": "delay", "timeoutMs": 500 },
+    { "kind": "app.open", "app": "calculator" },
+    { "kind": "actv.type", "process": "Notepad", "text": "Sensitive" },
+    { "kind": "key", "process": "Notepad", "text": "Enter" },
+    { "kind": "actv.invoke", "process": "Notepad", "name": "Close", "role": "Button" },
+    { "kind": "browser.open", "path": "https://example.com", "args": { "browser": "edge" } }
+  ]
+}

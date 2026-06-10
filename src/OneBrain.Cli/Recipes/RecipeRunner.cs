@@ -21,11 +21,14 @@ public sealed class RecipeRunner
     private CancellationTokenSource? _stepCts;
     private readonly RecipeExecutionContext _ctx = new();
 
-    public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false)
+    public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false, string? approvalMode = null)
     {
         _currentRecipe = recipe;
         _ctx.Variables.Clear();
         _ctx.Notes.Clear();
+
+        var denySensitive = string.Equals(approvalMode, "deny", StringComparison.OrdinalIgnoreCase);
+        var reportSensitive = string.Equals(approvalMode, "auto", StringComparison.OrdinalIgnoreCase) || denySensitive;
 
         if (recipe.Variables != null)
         {
@@ -84,6 +87,18 @@ public sealed class RecipeRunner
                 _stepCts = stepCts;
                 var outerTimeout = stepTimeout + OuterGraceMs;
                 var capturedCts = stepCts;
+
+                if (denySensitive && IsSensitiveStep(step))
+                {
+                    stepResult = new RecipeStepRunResult(step.Id, step.Kind, false,
+                        $"Step '{step.Kind}' requires approval. Use --approve allow to execute.", 0);
+                    stepResults.Add(stepResult);
+                    failed++;
+                    if (ShouldStop(recipe, step, forceContinueOnError, false))
+                        break;
+                    continue;
+                }
+
                 var task = Task.Run(() =>
                 {
                     try { return ExecuteStep(step); }
@@ -110,6 +125,11 @@ public sealed class RecipeRunner
             }
 
             stepResults.Add(stepResult);
+
+            if (reportSensitive && IsSensitiveStep(step))
+            {
+                _ctx.Notes.Add($"[SENSITIVE] {step.Kind} executed (approval mode: {approvalMode})");
+            }
 
             if (stepResult.Success) passed++;
             else failed++;
@@ -1163,5 +1183,11 @@ public sealed class RecipeRunner
     {
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, false, message, sw.ElapsedMilliseconds);
+    }
+
+    private static bool IsSensitiveStep(RecipeStepDefinition step)
+    {
+        var kind = (step.Kind ?? "").ToLowerInvariant();
+        return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close";
     }
 }

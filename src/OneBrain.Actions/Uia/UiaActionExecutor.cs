@@ -119,7 +119,7 @@ public sealed class UiaActionExecutor
             {
                 if (request.CancellationToken?.IsCancellationRequested == true)
                     return new ActionResult(false, "Step expired before physical input.");
-                if (!AssertForeground(expectedHwnd))
+                if (!AssertForegroundWithRetry(expectedHwnd))
                     return new ActionResult(false, "Foreground changed before input; aborting.");
                 Keyboard.Type(request.Text ?? "");
                 return new ActionResult(true, "Typed text.");
@@ -172,6 +172,13 @@ public sealed class UiaActionExecutor
 
             _windowFinder.Activate(hwnd);
             System.Threading.Thread.Sleep(300);
+            // Retry up to 3 times if foreground is stolen
+            for (int retry = 0; retry < 3; retry++)
+            {
+                if (GetForegroundWindow() == hwnd) break;
+                _windowFinder.Activate(hwnd);
+                System.Threading.Thread.Sleep(200);
+            }
             if (GetForegroundWindow() != hwnd)
                 return new ActionResult(false, "Foreground changed before fallback input; aborting.");
             Keyboard.Type(request.Text ?? "");
@@ -312,6 +319,17 @@ public sealed class UiaActionExecutor
     private static bool AssertForeground(IntPtr expectedHwnd)
     {
         if (expectedHwnd == IntPtr.Zero) return true; // no window expected, allow
+        return GetForegroundWindow() == expectedHwnd;
+    }
+
+    private bool AssertForegroundWithRetry(IntPtr expectedHwnd)
+    {
+        if (expectedHwnd == IntPtr.Zero) return true;
+        if (GetForegroundWindow() == expectedHwnd) return true;
+
+        // Retry: re-activate and check once more
+        _windowFinder.Activate(expectedHwnd);
+        System.Threading.Thread.Sleep(300);
         return GetForegroundWindow() == expectedHwnd;
     }
 }

@@ -1,0 +1,10 @@
+{
+  "name": "approval-deny-negative",
+  "description": "Negative: run with --approve deny should block all sensitive steps",
+  "stopOnFirstFailure": true,
+  "steps": [
+    { "kind": "note", "text": "This should run" },
+    { "kind": "app.open", "app": "notepad" },
+    { "kind": "assert.equals", "value": "should-not-reach", "expected": "should-not-reach" }
+  ]
+}

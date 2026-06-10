@@ -1,0 +1,33 @@
+{
+  "name": "recorded-notepad-sample",
+  "description": "Recipe: open Notepad, wait, focus via key, type text",
+  "stopOnFirstFailure": false,
+  "steps": [
+    {
+      "id": "open-notepad",
+      "kind": "app.open",
+      "app": "notepad"
+    },
+    {
+      "id": "wait-notepad",
+      "kind": "wait",
+      "process": "Notepad",
+      "titleContains": "Bloc de notas",
+      "timeoutMs": 5000
+    },
+    {
+      "id": "focus-notepad",
+      "kind": "key",
+      "process": "Notepad",
+      "text": "Enter",
+      "continueOnError": true
+    },
+    {
+      "id": "type-text",
+      "kind": "actv.type",
+      "process": "Notepad",
+      "name": "RichEdit",
+      "text": "ONE BRAIN HITO-020 recorded recipe OK"
+    }
+  ]
+}
