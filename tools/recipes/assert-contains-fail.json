@@ -1,0 +1,13 @@
+{
+  "name": "assert-contains-fail",
+  "description": "Test: assert.contains failure returns structured error",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "contains-fail",
+      "kind": "assert.contains",
+      "value": "La pantalla muestra 56",
+      "expected": "99"
+    }
+  ]
+}

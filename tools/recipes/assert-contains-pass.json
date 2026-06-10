@@ -1,0 +1,13 @@
+{
+  "name": "assert-contains-pass",
+  "description": "Test: assert.contains pass",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "contains-pass",
+      "kind": "assert.contains",
+      "value": "La pantalla muestra 56",
+      "expected": "56"
+    }
+  ]
+}

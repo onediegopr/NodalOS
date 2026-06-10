@@ -7,4 +7,5 @@ public sealed record RecipeDefinition(
     bool StopOnFirstFailure = true)
 {
     public List<RecipeStepDefinition> Steps { get; init; } = new();
+    public Dictionary<string, string>? Variables { get; init; }
 }

@@ -8,4 +8,7 @@ public sealed record RecipeRunResult(
     int Failed,
     long DurationMs,
     List<RecipeStepRunResult> Steps,
-    List<string> Notes);
+    List<string> Notes)
+{
+    public Dictionary<string, string>? Variables { get; init; }
+}

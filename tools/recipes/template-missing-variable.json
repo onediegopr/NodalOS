@@ -1,0 +1,14 @@
+{
+  "name": "template-missing-variable",
+  "description": "Test: template with missing variable returns structured error",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "fail-missing",
+      "kind": "actv.type",
+      "process": "Notepad",
+      "role": "Document",
+      "text": "{{missing.variable}}"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "assert-fail",
+  "description": "Test: assert.equals failure returns structured error",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "fail-assert",
+      "kind": "assert.equals",
+      "value": "56",
+      "expected": "57"
+    }
+  ]
+}

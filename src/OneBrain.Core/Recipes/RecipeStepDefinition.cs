@@ -22,5 +22,11 @@ public sealed record RecipeStepDefinition
     public string? Before { get; init; }
     public string? After { get; init; }
     public double? Threshold { get; init; }
+    public string? SaveAs { get; init; }
+    public string? Property { get; init; }
+    public string? Transform { get; init; }
+    public string? Value { get; init; }
+    public string? Expected { get; init; }
+    public bool? IgnoreCase { get; init; }
     public Dictionary<string, string>? Args { get; init; }
 }
