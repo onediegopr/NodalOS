@@ -1,0 +1,51 @@
+{
+  "name": "conditional-exists",
+  "description": "if exists myvar then pass, else test also has notExists branch",
+  "variables": { "myvar": "hello", "emptyvar": "" },
+  "steps": [
+    {
+      "kind": "if",
+      "id": "check-exists",
+      "condition": {
+        "left": "{{myvar}}",
+        "operator": "exists"
+      },
+      "then": [
+        {
+          "kind": "assert.equals",
+          "value": "hello",
+          "expected": "hello"
+        }
+      ],
+      "else": [
+        {
+          "kind": "assert.equals",
+          "value": "fail",
+          "expected": "fail"
+        }
+      ]
+    },
+    {
+      "kind": "if",
+      "id": "check-notexists",
+      "condition": {
+        "left": "{{no_such_var}}",
+        "operator": "notExists"
+      },
+      "then": [
+        {
+          "kind": "assert.equals",
+          "value": "pass",
+          "expected": "pass"
+        }
+      ],
+      "else": [
+        {
+          "kind": "assert.equals",
+          "value": "fail",
+          "expected": "fail"
+        }
+      ]
+    }
+  ]
+}

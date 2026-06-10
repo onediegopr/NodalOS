@@ -28,5 +28,8 @@ public sealed record RecipeStepDefinition
     public string? Value { get; init; }
     public string? Expected { get; init; }
     public bool? IgnoreCase { get; init; }
+    public RecipeConditionDefinition? Condition { get; init; }
+    public List<RecipeStepDefinition>? Then { get; init; }
+    public List<RecipeStepDefinition>? Else { get; init; }
     public Dictionary<string, string>? Args { get; init; }
 }

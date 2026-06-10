@@ -1,0 +1,21 @@
+{
+  "name": "conditional-contains",
+  "description": "if contains 'hello world' contains 'world' then pass",
+  "steps": [
+    {
+      "kind": "if",
+      "condition": {
+        "left": "hello world",
+        "operator": "contains",
+        "right": "world"
+      },
+      "then": [
+        {
+          "kind": "assert.contains",
+          "value": "hello world",
+          "expected": "world"
+        }
+      ]
+    }
+  ]
+}

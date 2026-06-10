@@ -105,6 +105,7 @@ public sealed class RecipeRunner
                 "snapshot.read"          => ExecuteSnapshotRead(step, sw),
                 "assert.contains"        => ExecuteAssertContains(step, sw),
                 "assert.equals"          => ExecuteAssertEquals(step, sw),
+                "if"                     => ExecuteIf(step, sw),
                 "sleep"                  => ExecuteSleep(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
@@ -539,6 +540,102 @@ public sealed class RecipeRunner
         Thread.Sleep(ms);
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true, $"Slept {ms}ms", sw.ElapsedMilliseconds);
+    }
+
+    // ── if ───────────────────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteIf(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var cond = step.Condition;
+        if (cond == null)
+            return Fail(step, sw, "if requires 'condition' field.");
+
+        var op = (cond.Operator ?? "equals").ToLowerInvariant();
+        var ignoreCase = cond.IgnoreCase ?? false;
+
+        string? left = null;
+        string? right = null;
+        bool leftMissing = false;
+        bool rightMissing = false;
+        string? missingVarName = null;
+
+        try { left = R(cond.Left); }
+        catch (RecipeVariableException ex) { leftMissing = true; missingVarName ??= ex.Message; }
+
+        try { right = R(cond.Right); }
+        catch (RecipeVariableException ex) { rightMissing = true; missingVarName ??= ex.Message; }
+
+        bool evalResult;
+
+        if (op == "exists" || op == "notexists")
+        {
+            var exists = !leftMissing && !string.IsNullOrWhiteSpace(left);
+            evalResult = op == "exists" ? exists : !exists;
+        }
+        else
+        {
+            if (leftMissing || rightMissing)
+            {
+                sw.Stop();
+                var missingMsg = leftMissing
+                    ? $"Missing template variable for condition left: {cond.Left}"
+                    : $"Missing template variable for condition right: {cond.Right}";
+                return new RecipeStepRunResult(step.Id, step.Kind, false, missingMsg, sw.ElapsedMilliseconds);
+            }
+
+            var comp = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            evalResult = op switch
+            {
+                "equals"      => string.Equals(left, right, comp),
+                "notequals"   => !string.Equals(left, right, comp),
+                "contains"    => (left ?? "").Contains(right ?? "", comp),
+                "notcontains" => !(left ?? "").Contains(right ?? "", comp),
+                _ => throw new InvalidOperationException($"Unknown condition operator: {op}")
+            };
+        }
+
+        var branch = evalResult ? step.Then : step.Else;
+        var branchName = evalResult ? "then" : "else";
+        List<RecipeStepRunResult> branchResults = new();
+        bool allPassed = true;
+
+        if (branch != null)
+        {
+            foreach (var nestedStep in branch)
+            {
+                RecipeStepRunResult nestedResult;
+                try
+                {
+                    nestedResult = ExecuteStep(nestedStep);
+                }
+                catch (RecipeVariableException ex)
+                {
+                    nestedResult = FailNow(nestedStep, ex.Message);
+                }
+
+                branchResults.Add(nestedResult);
+                if (!nestedResult.Success)
+                {
+                    allPassed = false;
+                    if (nestedStep.ContinueOnError != true)
+                        break;
+                }
+            }
+        }
+
+        sw.Stop();
+        var summary = evalResult
+            ? $"if: condition {op} true -> executed 'then' branch ({branchResults.Count} steps)"
+            : branch != null
+                ? $"if: condition {op} false -> executed 'else' branch ({branchResults.Count} steps)"
+                : $"if: condition {op} false -> no 'else' branch, skipped";
+
+        return new RecipeStepRunResult(step.Id, step.Kind, allPassed, summary, sw.ElapsedMilliseconds,
+            new
+            {
+                Condition = new { Left = left ?? cond.Left, Operator = op, Right = right ?? cond.Right, Result = evalResult },
+                Branch = branchName,
+                Steps = branchResults
+            });
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────

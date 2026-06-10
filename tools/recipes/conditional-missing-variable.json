@@ -1,0 +1,21 @@
+{
+  "name": "conditional-missing-variable",
+  "description": "if with missing template variable must fail with clear error",
+  "steps": [
+    {
+      "kind": "if",
+      "condition": {
+        "left": "{{missing.var}}",
+        "operator": "equals",
+        "right": "56"
+      },
+      "then": [
+        {
+          "kind": "assert.equals",
+          "value": "never",
+          "expected": "reached"
+        }
+      ]
+    }
+  ]
+}

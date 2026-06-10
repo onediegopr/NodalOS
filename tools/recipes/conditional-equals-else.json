@@ -1,0 +1,29 @@
+{
+  "name": "conditional-equals-else",
+  "description": "if equals 99 == 56 is false -> else branch runs assert.contains",
+  "variables": { "val": "99" },
+  "steps": [
+    {
+      "kind": "if",
+      "condition": {
+        "left": "{{val}}",
+        "operator": "equals",
+        "right": "56"
+      },
+      "then": [
+        {
+          "kind": "assert.equals",
+          "value": "should-not-run",
+          "expected": "should-not-run"
+        }
+      ],
+      "else": [
+        {
+          "kind": "assert.contains",
+          "value": "{{val}}",
+          "expected": "99"
+        }
+      ]
+    }
+  ]
+}

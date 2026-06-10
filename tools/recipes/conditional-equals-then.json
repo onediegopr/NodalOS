@@ -1,0 +1,29 @@
+{
+  "name": "conditional-equals-then",
+  "description": "if equals 56 == 56 then pass assert, else fail",
+  "variables": { "val": "56" },
+  "steps": [
+    {
+      "kind": "if",
+      "condition": {
+        "left": "{{val}}",
+        "operator": "equals",
+        "right": "56"
+      },
+      "then": [
+        {
+          "kind": "assert.equals",
+          "value": "{{val}}",
+          "expected": "56"
+        }
+      ],
+      "else": [
+        {
+          "kind": "assert.equals",
+          "value": "should-not-run",
+          "expected": "should-not-run"
+        }
+      ]
+    }
+  ]
+}
