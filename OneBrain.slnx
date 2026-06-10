@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OneBrain.Actions/OneBrain.Actions.csproj" />
+    <Project Path="src/OneBrain.Cli/OneBrain.Cli.csproj" />
+    <Project Path="src/OneBrain.Core/OneBrain.Core.csproj" />
+    <Project Path="src/OneBrain.Observation/OneBrain.Observation.csproj" />
+    <Project Path="src/OneBrain.Safety/OneBrain.Safety.csproj" />
+    <Project Path="src/OneBrain.SemanticState/OneBrain.SemanticState.csproj" />
+    <Project Path="src/OneBrain.Verification/OneBrain.Verification.csproj" />
+  </Folder>
+</Solution>

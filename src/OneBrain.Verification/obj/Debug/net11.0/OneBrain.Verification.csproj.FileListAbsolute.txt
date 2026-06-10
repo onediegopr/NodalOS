@@ -1,0 +1,11 @@
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\bin\Debug\net11.0\OneBrain.Verification.deps.json
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\bin\Debug\net11.0\OneBrain.Verification.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\bin\Debug\net11.0\OneBrain.Verification.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\OneBrain.Verification.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\OneBrain.Verification.AssemblyInfoInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\OneBrain.Verification.AssemblyInfo.cs
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\OneBrain.Verification.csproj.CoreCompileInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\OneBrain.Verification.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\refint\OneBrain.Verification.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\OneBrain.Verification.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Verification\obj\Debug\net11.0\ref\OneBrain.Verification.dll

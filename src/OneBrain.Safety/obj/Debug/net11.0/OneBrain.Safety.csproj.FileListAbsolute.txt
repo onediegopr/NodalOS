@@ -1,0 +1,11 @@
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\bin\Debug\net11.0\OneBrain.Safety.deps.json
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\bin\Debug\net11.0\OneBrain.Safety.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\bin\Debug\net11.0\OneBrain.Safety.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\OneBrain.Safety.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\OneBrain.Safety.AssemblyInfoInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\OneBrain.Safety.AssemblyInfo.cs
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\OneBrain.Safety.csproj.CoreCompileInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\OneBrain.Safety.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\refint\OneBrain.Safety.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\OneBrain.Safety.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Safety\obj\Debug\net11.0\ref\OneBrain.Safety.dll

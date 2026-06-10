@@ -1,0 +1,15 @@
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\bin\Debug\net11.0\OneBrain.Observation.deps.json
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\bin\Debug\net11.0\OneBrain.Observation.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\bin\Debug\net11.0\OneBrain.Observation.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.Observation.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.Observation.AssemblyInfoInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.Observation.AssemblyInfo.cs
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.Observation.csproj.CoreCompileInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.Observation.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\refint\OneBrain.Observation.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.Observation.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\ref\OneBrain.Observation.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\bin\Debug\net11.0\OneBrain.Core.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\bin\Debug\net11.0\OneBrain.Core.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.Observation.csproj.AssemblyReference.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Observation\obj\Debug\net11.0\OneBrain.43342EBD.Up2Date

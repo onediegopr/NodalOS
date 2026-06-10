@@ -1,0 +1,17 @@
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\bin\Debug\net11.0\OneBrain.SemanticState.deps.json
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\bin\Debug\net11.0\OneBrain.SemanticState.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\bin\Debug\net11.0\OneBrain.SemanticState.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\bin\Debug\net11.0\OneBrain.Observation.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\bin\Debug\net11.0\OneBrain.Observation.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.SemanticState.csproj.AssemblyReference.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.SemanticState.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.SemanticState.AssemblyInfoInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.SemanticState.AssemblyInfo.cs
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.SemanticState.csproj.CoreCompileInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.E83C0EE4.Up2Date
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.SemanticState.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\refint\OneBrain.SemanticState.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\OneBrain.SemanticState.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\obj\Debug\net11.0\ref\OneBrain.SemanticState.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\bin\Debug\net11.0\OneBrain.Core.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.SemanticState\bin\Debug\net11.0\OneBrain.Core.pdb

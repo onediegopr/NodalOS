@@ -1,0 +1,11 @@
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\bin\Debug\net11.0\OneBrain.Actions.deps.json
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\bin\Debug\net11.0\OneBrain.Actions.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\bin\Debug\net11.0\OneBrain.Actions.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\OneBrain.Actions.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\OneBrain.Actions.AssemblyInfoInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\OneBrain.Actions.AssemblyInfo.cs
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\OneBrain.Actions.csproj.CoreCompileInputs.cache
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\OneBrain.Actions.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\refint\OneBrain.Actions.dll
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\OneBrain.Actions.pdb
+C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo\src\OneBrain.Actions\obj\Debug\net11.0\ref\OneBrain.Actions.dll

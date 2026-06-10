@@ -1,0 +1,55 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v11.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v11.0": {
+      "OneBrain.SemanticState/1.0.0": {
+        "dependencies": {
+          "OneBrain.Observation": "1.0.0"
+        },
+        "runtime": {
+          "OneBrain.SemanticState.dll": {}
+        }
+      },
+      "OneBrain.Core/1.0.0": {
+        "runtime": {
+          "OneBrain.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "OneBrain.Observation/1.0.0": {
+        "dependencies": {
+          "OneBrain.Core": "1.0.0"
+        },
+        "runtime": {
+          "OneBrain.Observation.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "OneBrain.SemanticState/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OneBrain.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OneBrain.Observation/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
