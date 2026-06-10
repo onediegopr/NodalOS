@@ -1,0 +1,17 @@
+{
+  "name": "mercadolibre-action-policy-plan-report",
+  "description": "ML product: discover actionable elements, classify risk, generate safe navigation plan. NO clicks. Read-only.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/mercadolibre-ar-product.json", "saveAs": "profile.mlProduct" },
+    { "id": "open-ml", "kind": "browser.open", "path": "{{profile.mlProduct.url}}", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 6000 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btext", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "close-ml", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions" },
+    { "id": "plan", "kind": "plan.safenavigation", "saveAs": "navPlan" },
+    { "id": "assert-count", "kind": "assert.contains", "value": "{{actions.count}}", "expected": "0", "ignoreCase": false },
+    { "id": "note-report", "kind": "note", "text": "ML Action/Policy/Plan: {{actions.count}} items | HighestRisk: {{actions.highestRisk}} | Safe:{{actions.safeCount}} Nav:{{actions.navCount}} Dangerous:{{actions.dangerousCount}} Auth:{{actions.authCount}} Payment:{{actions.paymentCount}} | Blocked: {{navPlan.blockedCount}} | ReqApproval: {{navPlan.requiresApprovalCount}} | Executable: {{navPlan.hasExecutableActions}} | Summary: {{navPlan.summary}}" }
+  ]
+}

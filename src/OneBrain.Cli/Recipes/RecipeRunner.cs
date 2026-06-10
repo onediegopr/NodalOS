@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Linq;
 using OneBrain.Actions.Uia;
 using OneBrain.Cli.Browser;
+using OneBrain.Core.Extraction;
 using OneBrain.Core.Profiles;
 using OneBrain.Core.Actions;
 using OneBrain.Core.Models;
@@ -254,6 +255,8 @@ public sealed class RecipeRunner
                 "debug.hang"             => ExecuteDebugHang(step, sw),
                 "profile.load"           => ExecuteProfileLoad(step, sw),
                 "extract.visiblefields"  => ExecuteExtractVisibleFields(step, sw),
+                "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
+                "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
         }
@@ -1492,6 +1495,64 @@ public sealed class RecipeRunner
         var priceStr = result.TryGetValue(prefix + ".priceCandidate", out var pc) ? pc : "null";
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"Extracted fields: title=yes, price={priceStr}, confidence={result[prefix + ".confidence"]}", sw.ElapsedMilliseconds, result);
+    }
+
+    private RecipeStepRunResult ExecuteDiscoverActionableElements(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var text = step.Args?.GetValueOrDefault("from") ?? _ctx.Variables.GetValueOrDefault("btext", "");
+        if (text is null or "") text = _ctx.Variables.GetValueOrDefault("browser.text", "");
+        if (string.IsNullOrWhiteSpace(text))
+            return Fail(step, sw, "discover.actionableElements: no text found. Run browser.read text first.");
+
+        var result = CommercialActionDiscovery.Discover(text);
+        var prefix = step.SaveAs ?? "actions";
+
+        _ctx.Variables[prefix + ".count"] = result.Count.ToString();
+        _ctx.Variables[prefix + ".safeCount"] = result.SafeCount.ToString();
+        _ctx.Variables[prefix + ".navCount"] = result.NavCount.ToString();
+        _ctx.Variables[prefix + ".dangerousCount"] = result.DangerousCount.ToString();
+        _ctx.Variables[prefix + ".authCount"] = result.AuthCount.ToString();
+        _ctx.Variables[prefix + ".paymentCount"] = result.PaymentCount.ToString();
+        _ctx.Variables[prefix + ".unknownCount"] = result.UnknownCount.ToString();
+        _ctx.Variables[prefix + ".highestRisk"] = result.HighestRisk;
+        _ctx.Variables[prefix + ".hasDangerous"] = result.HasDangerous ? "true" : "false";
+        _ctx.Variables[prefix + ".hasAuth"] = result.HasAuth ? "true" : "false";
+        _ctx.Variables[prefix + ".hasPayment"] = result.HasPayment ? "true" : "false";
+        _ctx.Variables[prefix + ".summary"] = result.Summary;
+        _ctx.Variables[prefix + ".itemsJson"] = CommercialActionDiscovery.SerializeItems(result.Items);
+        _ctx.Variables[prefix + ".rawEvidence"] = result.RawEvidence ?? "";
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"Discovered {result.Count} actionable elements. Highest risk: {result.HighestRisk}",
+            sw.ElapsedMilliseconds, result);
+    }
+
+    private RecipeStepRunResult ExecutePlanSafeNavigation(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var itemsJson = step.Args?.GetValueOrDefault("from") ?? _ctx.Variables.GetValueOrDefault("actions.itemsJson", "");
+        if (itemsJson is null or "")
+            return Fail(step, sw, "plan.safeNavigation: no items found. Run discover.actionableElements first.");
+
+        var items = CommercialActionDiscovery.DeserializeItems(itemsJson);
+        if (items == null)
+            return Fail(step, sw, "plan.safeNavigation: failed to parse items JSON.");
+
+        var plan = SafeNavigationPlanner.Plan(items);
+        var prefix = step.SaveAs ?? "navPlan";
+
+        _ctx.Variables[prefix + ".allowedCount"] = plan.AllowedCount.ToString();
+        _ctx.Variables[prefix + ".blockedCount"] = plan.BlockedCount.ToString();
+        _ctx.Variables[prefix + ".requiresApprovalCount"] = plan.RequiresApprovalCount.ToString();
+        _ctx.Variables[prefix + ".hasExecutableActions"] = plan.HasExecutableActions ? "true" : "false";
+        _ctx.Variables[prefix + ".summary"] = plan.Summary;
+        _ctx.Variables[prefix + ".blockedReasonsJson"] = plan.BlockedReasonsJson ?? "";
+        _ctx.Variables[prefix + ".candidatesJson"] = plan.CandidatesJson ?? "";
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"Navigation plan: {plan.AllowedCount} allowed, {plan.BlockedCount} blocked, hasExecutableActions: false",
+            sw.ElapsedMilliseconds, plan);
     }
 
     internal static Dictionary<string, string> ExtractCommercialFields(string title, string text, string prefix)

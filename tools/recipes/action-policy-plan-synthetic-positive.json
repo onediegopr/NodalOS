@@ -1,0 +1,21 @@
+{
+  "name": "action-policy-plan-synthetic-positive",
+  "description": "Synthetic: discover and plan with known dangerous text. Proves discovery+policy+planning integration.",
+  "stopOnFirstFailure": true,
+  "variables": {
+    "btext": "Comprar ahora Agregar al carrito Iniciar sesión Pagar con Mercado Pago Tarjeta de crédito Cuotas Ver más Descripción Opiniones Categorías Ofertas",
+    "bt": "Notebook test title"
+  },
+  "steps": [
+    { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions" },
+    { "id": "plan", "kind": "plan.safenavigation", "saveAs": "navPlan" },
+    { "id": "assert-count", "kind": "assert.contains", "value": "{{actions.summary}}", "expected": "items" },
+    { "id": "assert-dangerous", "kind": "assert.contains", "value": "{{actions.summary}}", "expected": "4d" },
+    { "id": "assert-payment", "kind": "assert.contains", "value": "{{actions.summary}}", "expected": "6p" },
+    { "id": "assert-auth", "kind": "assert.contains", "value": "{{actions.summary}}", "expected": "1a" },
+    { "id": "assert-nav", "kind": "assert.contains", "value": "{{actions.summary}}", "expected": "3n" },
+    { "id": "assert-blocked", "kind": "assert.contains", "value": "{{navPlan.summary}}", "expected": "BLOCKED" },
+    { "id": "assert-noexec", "kind": "assert.equals", "value": "{{navPlan.hasExecutableActions}}", "expected": "false" },
+    { "id": "note-report", "kind": "note", "text": "Synthetic PASS: {{actions.summary}} | {{navPlan.summary}} | hasExecutableActions={{navPlan.hasExecutableActions}}" }
+  ]
+}
