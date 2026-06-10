@@ -29,6 +29,19 @@ public sealed class CognitiveSnapshotReader
 
         if (hwnd == IntPtr.Zero) return null;
 
+        return ReadCore(automation, hwnd, processName);
+    }
+
+    /// <summary>Read snapshot from a specific HWND. Bypasses process/title search.</summary>
+    public CognitiveSnapshot? ReadFromHwnd(IntPtr hwnd, string? processName = null)
+    {
+        if (hwnd == IntPtr.Zero) return null;
+        using var automation = new UIA3Automation();
+        return ReadCore(automation, hwnd, processName);
+    }
+
+    private CognitiveSnapshot? ReadCore(UIA3Automation automation, IntPtr hwnd, string? processName)
+    {
         var window = _windowReader.ReadFromHandle(hwnd);
         if (window is null) return null;
 

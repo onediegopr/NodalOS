@@ -396,15 +396,16 @@ public sealed class RecipeRunner
                 return Fail(step, sw, $"Browser session not found: {sessionName}");
         }
 
-        var proc = ResolveBrowserProcess(step);
-        if (string.IsNullOrWhiteSpace(proc))
-            return Fail(step, sw, $"browser.read requires valid process (session: {sessionName ?? "none"})");
+        var sessionHwnd = TryGetSessionHwnd(step);
 
-        var win = ResolveBrowserWindow(step);
+        if (hasExplicitSession)
+        {
+            if (sessionHwnd == null || sessionHwnd.Value == IntPtr.Zero)
+                return Fail(step, sw, $"browser.read: session '{sessionName}' has no valid HWND.");
 
-        // Liveness check if we have explicit hwnd from session
-        if (TryGetSessionHwnd(step) is { } hwnd && hwnd != IntPtr.Zero && !BrowserSession.IsHwndAlive(hwnd))
-            return Fail(step, sw, $"browser.read: target browser window (hwnd: {hwnd}) is not alive.");
+            if (!BrowserSession.IsHwndAlive(sessionHwnd.Value))
+                return Fail(step, sw, $"browser.read: session HWND {sessionHwnd.Value} is not alive.");
+        }
 
         if (_stepCts?.IsCancellationRequested == true)
             return Fail(step, sw, "Step expired before reading browser.");
@@ -413,11 +414,29 @@ public sealed class RecipeRunner
         if (property is not ("title" or "text" or "url"))
             return Fail(step, sw, $"browser.read unsupported property: '{step.Property}'. Supported: title, text, url.");
 
+        CognitiveSnapshot? snap;
         var reader = new CognitiveSnapshotReader();
-        var snap = reader.Read(proc, win);
+
+        if (sessionHwnd.HasValue && sessionHwnd.Value != IntPtr.Zero)
+        {
+            // Use HWND directly — never fall back to process-based search
+            snap = reader.ReadFromHwnd(sessionHwnd.Value);
+        }
+        else
+        {
+            // No session: use process-based search (legacy)
+            var proc = ResolveBrowserProcess(step);
+            if (string.IsNullOrWhiteSpace(proc))
+                return Fail(step, sw, "browser.read requires 'process' field or session variable with .hwnd");
+            var win = ResolveBrowserWindow(step);
+            snap = reader.Read(proc, win);
+        }
 
         if (snap == null)
-            return Fail(step, sw, $"browser.read: could not read snapshot for process '{proc}'.");
+        {
+            var detail = sessionHwnd.HasValue ? $"hwnd {sessionHwnd.Value}" : $"process '{ResolveBrowserProcess(step)}'";
+            return Fail(step, sw, $"browser.read: could not read snapshot ({detail}).");
+        }
 
         string? value = property switch
         {
@@ -428,7 +447,10 @@ public sealed class RecipeRunner
         };
 
         if (string.IsNullOrWhiteSpace(value))
-            return Fail(step, sw, $"browser.read: '{property}' not found for process '{proc}'.");
+        {
+            var detail = sessionHwnd.HasValue ? $"hwnd {sessionHwnd.Value}" : $"process '{ResolveBrowserProcess(step)}'";
+            return Fail(step, sw, $"browser.read: '{property}' not found ({detail}).");
+        }
 
         if (!string.IsNullOrWhiteSpace(step.SaveAs))
         {
@@ -437,8 +459,10 @@ public sealed class RecipeRunner
         }
 
         sw.Stop();
-        return new RecipeStepRunResult(step.Id, step.Kind, true,
-            $"browser.read {property} = '{value}'", sw.ElapsedMilliseconds, value);
+        var msg = sessionHwnd.HasValue
+            ? $"browser.read {property} = '{value}' (session: {sessionName}, hwnd: {sessionHwnd.Value})"
+            : $"browser.read {property} = '{value}'";
+        return new RecipeStepRunResult(step.Id, step.Kind, true, msg, sw.ElapsedMilliseconds, value);
     }
 
     private string ResolveBrowserProcess(RecipeStepDefinition step)
