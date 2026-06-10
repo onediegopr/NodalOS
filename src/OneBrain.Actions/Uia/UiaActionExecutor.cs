@@ -65,10 +65,15 @@ public sealed class UiaActionExecutor
             catch { }
         }
 
-        var elements = new List<AutomationElement>();
-        bool truncated = UiaTreeWalker.Walk(root, elements);
+        bool isBrowser  = UiaTreeWalker.IsBrowserProcess(request.ProcessName ?? request.WindowTitle);
+        var walkRoles   = isBrowser ? UiaTreeWalker.BrowserRelevantRoles : null;
+        var walkMax     = isBrowser ? UiaTreeWalker.BrowserMaxElements : UiaTreeWalker.DefaultMaxElements;
 
-        var target = ResolveTarget(request.TargetRef, elements);
+        var elements = new List<AutomationElement>();
+        bool truncated = UiaTreeWalker.Walk(root, elements, walkMax,
+            UiaTreeWalker.DefaultMaxDepth, walkRoles, isBrowser);
+
+        var target = ResolveTarget(request.TargetRef, request.Kind, elements);
 
         if (target is null)
         {
@@ -79,10 +84,8 @@ public sealed class UiaActionExecutor
                 return TypeWithFallback(request, truncated);
             }
 
-            var truncatedNote = truncated
-                ? " (UIA tree was capped — try a more specific selector)"
-                : "";
-            return new ActionResult(false, $"Target '{request.TargetRef}' not found.{truncatedNote}");
+            return new ActionResult(false,
+                BuildNotFoundMessage(request.TargetRef, elements, truncated, isBrowser));
         }
 
         var decision = _safetyGuard.Evaluate(
@@ -152,7 +155,9 @@ public sealed class UiaActionExecutor
     }
 
     // ── Target resolution ───────────────────────────────────────────────────
-    private AutomationElement? ResolveTarget(string selector, List<AutomationElement> elements)
+
+    private AutomationElement? ResolveTarget(
+        string selector, string actionKind, List<AutomationElement> elements)
     {
         if (selector.StartsWith("@e", StringComparison.OrdinalIgnoreCase) &&
             int.TryParse(selector[2..], out var idx))
@@ -163,16 +168,111 @@ public sealed class UiaActionExecutor
         var parts = selector.Split(':', 2);
         if (parts.Length < 2) return null;
 
-        var kind = parts[0].ToLowerInvariant();
-        var val  = parts[1];
+        var selectorKind = parts[0].ToLowerInvariant();
+        var val          = parts[1];
 
-        return kind switch
+        return selectorKind switch
         {
             "role"          => elements.FirstOrDefault(e => SafeRole(e).Equals(val, StringComparison.OrdinalIgnoreCase)),
-            "name"          => elements.FirstOrDefault(e => SafeName(e).Contains(val, StringComparison.OrdinalIgnoreCase)),
+            // --name: collect all matching candidates, then pick best for actionKind.
+            // Edge exposes label Text nodes before the actual Edit in tree order, so
+            // FirstOrDefault would silently return the label instead of the input.
+            "name"          => BestNameMatch(elements, val, actionKind),
             "automation-id" => elements.FirstOrDefault(e => SafeId(e).Equals(val, StringComparison.OrdinalIgnoreCase)),
             "class"         => elements.FirstOrDefault(e => SafeClass(e).Equals(val, StringComparison.OrdinalIgnoreCase)),
             _               => null
         };
+    }
+
+    private static AutomationElement? BestNameMatch(
+        List<AutomationElement> elements, string val, string actionKind)
+    {
+        var candidates = elements.Where(e => MatchesName(e, val)).ToList();
+        if (candidates.Count == 0) return null;
+        if (candidates.Count == 1) return candidates[0];
+
+        var kind = actionKind.ToLowerInvariant();
+
+        if (kind == "type" || kind == "type_text")
+            return candidates.OrderBy(RankForType).First();
+
+        if (kind == "invoke")
+            return candidates.OrderBy(RankForInvoke).First();
+
+        return candidates[0];
+    }
+
+    // Rank candidates for type/type_text: prefer Edit > Document > ValuePattern holder > other.
+    // Text/StaticText label nodes get rank 99 so they are never chosen when a real input exists.
+    private static int RankForType(AutomationElement e)
+    {
+        var role = SafeRole(e);
+        if (role.Equals("Edit", StringComparison.OrdinalIgnoreCase))
+        {
+            try { return e.Patterns.Value.IsSupported ? 0 : 1; } catch { return 1; }
+        }
+        if (role.Equals("Document", StringComparison.OrdinalIgnoreCase)) return 2;
+        if (role.Equals("Text",     StringComparison.OrdinalIgnoreCase)) return 99;
+        try { return e.Patterns.Value.IsSupported ? 3 : 50; } catch { return 50; }
+    }
+
+    // Rank candidates for invoke: prefer Button > MenuItem > InvokePattern holder > other.
+    private static int RankForInvoke(AutomationElement e)
+    {
+        var role = SafeRole(e);
+        if (role.Equals("Button",   StringComparison.OrdinalIgnoreCase))
+        {
+            try { return e.Patterns.Invoke.IsSupported ? 0 : 1; } catch { return 1; }
+        }
+        if (role.Equals("MenuItem", StringComparison.OrdinalIgnoreCase))
+        {
+            try { return e.Patterns.Invoke.IsSupported ? 2 : 3; } catch { return 3; }
+        }
+        if (role.Equals("Text", StringComparison.OrdinalIgnoreCase)) return 99;
+        try { return e.Patterns.Invoke.IsSupported ? 4 : 50; } catch { return 50; }
+    }
+
+    private static bool MatchesName(AutomationElement e, string val)
+        => SafeName(e).Contains(val, StringComparison.OrdinalIgnoreCase) ||
+           UiaTreeWalker.SafeHelpText(e).Contains(val, StringComparison.OrdinalIgnoreCase) ||
+           UiaTreeWalker.SafeLegacyName(e).Contains(val, StringComparison.OrdinalIgnoreCase) ||
+           UiaTreeWalker.SafeLabeledByName(e).Contains(val, StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildNotFoundMessage(
+        string selector, List<AutomationElement> elements, bool truncated, bool isBrowser)
+    {
+        var sb = new System.Text.StringBuilder($"Target '{selector}' not found.");
+
+        if (isBrowser)
+        {
+            var roleSummary = elements
+                .Select(e => UiaTreeWalker.SafeRole(e))
+                .Where(r => !string.IsNullOrEmpty(r))
+                .GroupBy(r => r, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(g => g.Key)
+                .Select(g => g.Count() == 1 ? g.Key : $"{g.Key}×{g.Count()}");
+            sb.Append($" Browser tree roles: {string.Join(", ", roleSummary)}.");
+
+            if (selector.StartsWith("name:", StringComparison.OrdinalIgnoreCase))
+            {
+                var editButtons = elements
+                    .Where(e => { var r = UiaTreeWalker.SafeRole(e);
+                                  return r.Equals("Edit", StringComparison.OrdinalIgnoreCase) ||
+                                         r.Equals("Button", StringComparison.OrdinalIgnoreCase); })
+                    .Take(5)
+                    .Select(e => $"{UiaTreeWalker.SafeRole(e)}" +
+                                 $"[name='{UiaTreeWalker.SafeName(e)}'" +
+                                 $",help='{UiaTreeWalker.SafeHelpText(e)}'" +
+                                 $",leg='{UiaTreeWalker.SafeLegacyName(e)}']")
+                    .ToList();
+                if (editButtons.Count > 0)
+                    sb.Append($" Edit/Button found: {string.Join("; ", editButtons)}.");
+                else
+                    sb.Append(" No Edit or Button in tree.");
+            }
+        }
+
+        if (truncated) sb.Append(" (tree capped — use 'diagnose uia' for full view)");
+        return sb.ToString();
     }
 }

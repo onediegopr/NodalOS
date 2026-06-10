@@ -4,58 +4,82 @@
   <meta charset="UTF-8">
   <title>ONE Brain Browser Smoke Test</title>
   <style>
-    body  { font-family: sans-serif; padding: 40px; max-width: 600px; }
-    h1    { font-size: 1.4em; margin-bottom: 8px; }
-    .row  { display: flex; gap: 8px; margin-top: 16px; }
-    input { padding: 8px 12px; font-size: 14px; flex: 1; border: 1px solid #888; }
-    button{ padding: 8px 18px; font-size: 14px; cursor: pointer; white-space: nowrap; }
-    #result {
-      margin-top: 20px; padding: 14px; background: #f5f5f5;
-      border: 1px solid #ccc; min-height: 44px; font-size: 15px;
-    }
+    body    { font-family: sans-serif; padding: 40px; max-width: 640px; }
+    h1      { font-size: 1.3em; }
+    .row    { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
+    label   { font-weight: bold; display: block; margin-bottom: 4px; }
+    input   { padding: 8px 12px; font-size: 14px; flex: 1;
+              border: 2px solid #444; border-radius: 3px; }
+    button  { padding: 8px 18px; font-size: 14px; cursor: pointer;
+              border: 2px solid #444; border-radius: 3px; white-space: nowrap; }
+    #result { margin-top: 20px; padding: 14px; background: #f5f5f5;
+              border: 2px solid #aaa; border-radius: 3px; min-height: 48px;
+              font-size: 15px; }
+    .hint   { margin-top: 24px; font-size: 12px; color: #666; }
   </style>
 </head>
 <body>
-  <h1>ONE Brain Browser Smoke Test</h1>
-  <p>Página local para HITO-005. Abrir con Edge/Chrome + <code>--force-renderer-accessibility</code>.</p>
 
+  <h1>ONE Brain Browser Smoke Test</h1>
+  <p>Página local HITO-005/006.  Abrir con Edge/Chrome + <code>--force-renderer-accessibility</code>.</p>
+
+  <!--
+    Accessibility strategy (maximise UIA surface area):
+    * <label for="onebrain-search"> creates a LabeledBy relationship in UIA.
+    * aria-label="ONE Brain Search" maps directly to UIA Name.
+    * title="ONE Brain Search" maps to UIA HelpText (and sometimes Name as fallback).
+    * name / id / placeholder give additional hooks.
+    * Button text "Run ONE Brain Search" is the primary UIA Name for the button.
+    * aria-label on the button is a duplicate that reinforces the Name.
+  -->
+
+  <label for="onebrain-search">ONE Brain Search</label>
   <div class="row">
     <input
-      id="q"
-      type="text"
-      aria-label="ONE Brain Search"
-      placeholder="Escribí algo para buscar..."
+      id        = "onebrain-search"
+      type      = "text"
+      name      = "onebrain-search"
+      aria-label= "ONE Brain Search"
+      title     = "ONE Brain Search"
+      placeholder="ONE Brain Search"
+      autocomplete="off"
     />
     <button
-      id="go"
-      aria-label="Run ONE Brain Search"
-      onclick="runSearch()"
+      id        = "onebrain-run"
+      type      = "button"
+      aria-label= "Run ONE Brain Search"
+      title     = "Run ONE Brain Search"
+      onclick   = "runSearch()"
     >
-      Buscar
+      Run ONE Brain Search
     </button>
   </div>
 
   <div
-    id="result"
-    role="status"
-    aria-label="Search Result"
-    aria-live="polite"
+    id        = "result"
+    role      = "status"
+    aria-label= "Search Result"
+    aria-live = "polite"
   >
-    Resultado aparecerá aquí.
+    Result: (nada todavía)
   </div>
+
+  <p class="hint">
+    Textos accesibles: <strong>ONE Brain Search</strong> · <strong>Run ONE Brain Search</strong> · <strong>Search Result</strong>
+  </p>
 
   <script>
     function runSearch() {
-      var q = document.getElementById('q').value.trim();
+      var q = document.getElementById('onebrain-search').value.trim();
       var display = q || '(vacío)';
-      document.getElementById('result').textContent = 'Resultado: ' + display;
+      document.getElementById('result').textContent = 'Result: ' + display;
       document.title = 'ONE Brain — ' + display;
     }
 
-    // Allow Enter key in input
-    document.getElementById('q').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') runSearch();
+    document.getElementById('onebrain-search').addEventListener('keydown', function(ev) {
+      if (ev.key === 'Enter') runSearch();
     });
   </script>
+
 </body>
 </html>

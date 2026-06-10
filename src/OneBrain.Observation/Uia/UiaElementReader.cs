@@ -28,11 +28,12 @@ public sealed class UiaElementReader
     public (IReadOnlyList<UiElementSnapshot> Elements, bool WasTruncated) ReadFromRootDetailed(
         AutomationElement root,
         int maxElements = UiaTreeWalker.DefaultMaxElements,
-        IReadOnlySet<string>? alwaysIncludeRoles = null)
+        IReadOnlySet<string>? alwaysIncludeRoles = null,
+        bool relaxOffscreen = false)
     {
         var raw = new List<AutomationElement>();
         bool truncated = UiaTreeWalker.Walk(root, raw, maxElements,
-            UiaTreeWalker.DefaultMaxDepth, alwaysIncludeRoles);
+            UiaTreeWalker.DefaultMaxDepth, alwaysIncludeRoles, relaxOffscreen);
         return (raw.Select((e, i) => Map(e, i + 1)).ToList(), truncated);
     }
 

@@ -46,19 +46,12 @@ public sealed class CognitiveSnapshotReader
 
         // Use browser-optimised limits and role set for known browser processes.
         var effectiveProcess = processName ?? window.ProcessName;
-        bool isBrowser       = IsBrowserProcess(effectiveProcess);
+        bool isBrowser       = UiaTreeWalker.IsBrowserProcess(effectiveProcess);
         var maxElements      = isBrowser ? UiaTreeWalker.BrowserMaxElements : UiaTreeWalker.DefaultMaxElements;
         var alwaysInclude    = isBrowser ? UiaTreeWalker.BrowserRelevantRoles : null;
 
-        var (elements, truncated) = _elementReader.ReadFromRootDetailed(root, maxElements, alwaysInclude);
+        var (elements, truncated) = _elementReader.ReadFromRootDetailed(
+            root, maxElements, alwaysInclude, relaxOffscreen: isBrowser);
         return new CognitiveSnapshot(window, elements, truncated);
-    }
-
-    private static bool IsBrowserProcess(string? name)
-    {
-        if (string.IsNullOrEmpty(name)) return false;
-        return name.Contains("msedge",  StringComparison.OrdinalIgnoreCase) ||
-               name.Contains("chrome",  StringComparison.OrdinalIgnoreCase) ||
-               name.Contains("firefox", StringComparison.OrdinalIgnoreCase);
     }
 }

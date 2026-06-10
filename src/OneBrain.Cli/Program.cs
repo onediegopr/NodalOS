@@ -1,6 +1,7 @@
 using System.Text.Json;
 using OneBrain.Core.Actions;
 using OneBrain.Observation;
+using OneBrain.Observation.Uia;
 using OneBrain.Actions.Uia;
 using OneBrain.Verification.Engine;
 
@@ -202,6 +203,146 @@ else if (cmd == "browser")
     }, new JsonSerializerOptions { WriteIndented = true }));
 }
 
+// ── diagnose uia ─────────────────────────────────────────────────────────────
+else if (cmd == "diagnose")
+{
+    if (argsList.Count < 2 || argsList[1].ToLowerInvariant() != "uia")
+    {
+        Console.WriteLine("Usage: diagnose uia --process VALUE [--window VALUE]");
+        Console.WriteLine("                    [--contains TEXT] [--role ROLE] [--raw]");
+        return;
+    }
+
+    string? diagProc = null, diagWin = null, diagContains = null, diagRole = null;
+    bool    diagRaw  = false;
+
+    for (int i = 2; i < argsList.Count; i++)
+    {
+        var a = argsList[i];
+        if      (a == "--process"  && i + 1 < argsList.Count) diagProc     = argsList[++i];
+        else if (a == "--window"   && i + 1 < argsList.Count) diagWin      = argsList[++i];
+        else if (a == "--contains" && i + 1 < argsList.Count) diagContains = argsList[++i];
+        else if (a == "--role"     && i + 1 < argsList.Count) diagRole     = argsList[++i];
+        else if (a == "--raw")                                 diagRaw      = true;
+    }
+
+    if (diagProc == null && diagWin == null)
+    {
+        Console.Error.WriteLine("Error: --process or --window required for diagnose uia.");
+        return;
+    }
+
+    var entries = new UiaDiagnosticReader().Read(diagProc, diagWin, diagContains, diagRole, diagRaw);
+    Console.WriteLine(JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true }));
+}
+
+// ── wait ─────────────────────────────────────────────────────────────────────
+else if (cmd == "wait")
+{
+    string? waitProc = null, waitWin = null;
+    string? waitName = null, waitRole = null, waitTitleContains = null;
+    int timeout  = 5000;
+    int interval = 500;
+
+    for (int i = 1; i < argsList.Count; i++)
+    {
+        var a = argsList[i];
+        if      (a == "--process"        && i + 1 < argsList.Count) waitProc          = argsList[++i];
+        else if (a == "--window"         && i + 1 < argsList.Count) waitWin           = argsList[++i];
+        else if (a == "--name"           && i + 1 < argsList.Count) waitName          = argsList[++i];
+        else if (a == "--role"           && i + 1 < argsList.Count) waitRole          = argsList[++i];
+        else if (a == "--title-contains" && i + 1 < argsList.Count) waitTitleContains = argsList[++i];
+        else if (a == "--timeout"        && i + 1 < argsList.Count) int.TryParse(argsList[++i], out timeout);
+        else if (a == "--interval"       && i + 1 < argsList.Count) int.TryParse(argsList[++i], out interval);
+    }
+
+    if (waitProc == null && waitWin == null)
+    {
+        Console.Error.WriteLine("Error: --process or --window required for wait.");
+        return;
+    }
+    if (waitName == null && waitRole == null && waitTitleContains == null)
+    {
+        Console.Error.WriteLine("Error: specify one of --name, --role, --title-contains.");
+        return;
+    }
+
+    interval = Math.Max(100, interval);
+    var selectorUsed = waitTitleContains != null    ? $"title-contains:{waitTitleContains}"
+                     : waitName != null && waitRole != null ? $"name:{waitName}+role:{waitRole}"
+                     : waitName != null              ? $"name:{waitName}"
+                                                     : $"role:{waitRole}";
+    var reader   = new CognitiveSnapshotReader();
+    var sw       = System.Diagnostics.Stopwatch.StartNew();
+    int attempts = 0;
+    string lastTitle = "";
+
+    while (sw.ElapsedMilliseconds < timeout)
+    {
+        attempts++;
+        var snap = reader.Read(waitProc, waitWin);
+        lastTitle = snap?.Window.Title ?? "";
+
+        if (snap != null)
+        {
+            bool found = false;
+            object? matchObj = null;
+
+            if (waitTitleContains != null)
+            {
+                found = snap.Window.Title.Contains(waitTitleContains, StringComparison.OrdinalIgnoreCase);
+                if (found) matchObj = new { Title = snap.Window.Title };
+            }
+            else if (waitName != null)
+            {
+                // --role can be combined with --name to skip label/Text nodes
+                var el = waitRole != null
+                    ? snap.Elements.FirstOrDefault(e =>
+                        e.Name.Contains(waitName, StringComparison.OrdinalIgnoreCase) &&
+                        e.Role.Equals(waitRole, StringComparison.OrdinalIgnoreCase))
+                    : snap.Elements.FirstOrDefault(e =>
+                        e.Name.Contains(waitName, StringComparison.OrdinalIgnoreCase));
+                found = el != null;
+                if (found) matchObj = el;
+            }
+            else if (waitRole != null)
+            {
+                var el = snap.Elements.FirstOrDefault(e =>
+                    e.Role.Equals(waitRole, StringComparison.OrdinalIgnoreCase));
+                found = el != null;
+                if (found) matchObj = el;
+            }
+
+            if (found)
+            {
+                Console.WriteLine(JsonSerializer.Serialize(new
+                {
+                    Success         = true,
+                    ElapsedMs       = sw.ElapsedMilliseconds,
+                    Attempts        = attempts,
+                    SelectorUsed    = selectorUsed,
+                    Message         = "Found.",
+                    LastWindowTitle = lastTitle,
+                    MatchedElement  = matchObj
+                }, new JsonSerializerOptions { WriteIndented = true }));
+                return;
+            }
+        }
+
+        System.Threading.Thread.Sleep(interval);
+    }
+
+    Console.WriteLine(JsonSerializer.Serialize(new
+    {
+        Success         = false,
+        ElapsedMs       = sw.ElapsedMilliseconds,
+        Attempts        = attempts,
+        SelectorUsed    = selectorUsed,
+        Message         = $"Timeout after {timeout}ms ({attempts} attempts).",
+        LastWindowTitle = lastTitle
+    }, new JsonSerializerOptions { WriteIndented = true }));
+}
+
 // ── fallback ─────────────────────────────────────────────────────────────────
 else
 {
@@ -213,14 +354,19 @@ static void PrintUsage()
     Console.WriteLine("ONE BRAIN CLI");
     Console.WriteLine();
     Console.WriteLine("Commands:");
-    Console.WriteLine("  snapshot [--process VALUE] [--window VALUE]");
+    Console.WriteLine("  snapshot  [--process VALUE] [--window VALUE]");
     Console.WriteLine("  act   <kind> <selector> [text]");
     Console.WriteLine("  actv  <kind> <selector> [text]");
     Console.WriteLine("  browser open [--edge|--chrome] [--force-accessibility] <url-or-file>");
+    Console.WriteLine("  diagnose uia --process VALUE [--window VALUE]");
+    Console.WriteLine("               [--contains TEXT] [--role ROLE] [--raw]");
+    Console.WriteLine("  wait  --process VALUE [--window VALUE]");
+    Console.WriteLine("        (--name TEXT | --role ROLE | --title-contains TEXT)");
+    Console.WriteLine("        [--timeout MS]  [--interval MS]");
     Console.WriteLine();
-    Console.WriteLine("Selectors (use exactly one):");
+    Console.WriteLine("Selectors (use exactly one for act/actv):");
     Console.WriteLine("  --role VALUE          ControlType (Document, Edit, Button …)");
-    Console.WriteLine("  --name VALUE          element Name (partial match)");
+    Console.WriteLine("  --name VALUE          Name / HelpText / LegacyIAccessible.Name (partial match)");
     Console.WriteLine("  --automation-id VALUE AutomationId (exact match)");
     Console.WriteLine("  --class VALUE         ClassName (exact match)");
     Console.WriteLine("  @eN                   element ref from last snapshot");
@@ -230,7 +376,12 @@ static void PrintUsage()
     Console.WriteLine("  actv type  --process Notepad --role Document \"Hola ONE Brain\"");
     Console.WriteLine("  actv invoke --process Notepad --automation-id Close");
     Console.WriteLine("  browser open --edge --force-accessibility tools/browser-smoke/browser-smoke.html");
-    Console.WriteLine("  snapshot --process msedge");
-    Console.WriteLine("  actv type  --process msedge --name \"ONE Brain Search\" \"hola browser\"");
+    Console.WriteLine("  snapshot  --process msedge");
+    Console.WriteLine("  diagnose uia --process msedge --contains \"ONE Brain\"");
+    Console.WriteLine("  diagnose uia --process msedge --role Edit");
+    Console.WriteLine("  diagnose uia --process msedge --raw");
+    Console.WriteLine("  wait --process msedge --name \"ONE Brain Search\" --timeout 5000");
+    Console.WriteLine("  wait --process msedge --title-contains \"ONE Brain\" --timeout 5000");
+    Console.WriteLine("  actv type   --process msedge --name \"ONE Brain Search\" \"hola\"");
     Console.WriteLine("  actv invoke --process msedge --name \"Run ONE Brain Search\"");
 }
