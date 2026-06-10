@@ -20,6 +20,12 @@ public sealed class BasicActionVerifier
         var after = _reader.Read(request.ProcessName, request.WindowTitle);
 
         var targetExistsAfter = TargetExists(request.TargetRef, after);
+        var sameProcess       = before?.Window.ProcessId == after?.Window.ProcessId;
+        var isFallback        = actionResult.Message.Contains("fallback", StringComparison.OrdinalIgnoreCase);
+
+        var notes = isFallback
+            ? "Typed via focused-window fallback; UIA tree did not expose target."
+            : "Structural verification complete.";
 
         var report = new ActionVerificationReport(
             ElementsBefore: before?.Elements.Count ?? 0,
@@ -30,12 +36,17 @@ public sealed class BasicActionVerifier
             SelectorUsed: request.TargetRef,
             SnapshotBefore: before != null,
             SnapshotAfter: after != null,
-            SameProcess: before?.Window.ProcessId == after?.Window.ProcessId,
+            SameProcess: sameProcess,
             ElementCountChanged: (before?.Elements.Count ?? 0) != (after?.Elements.Count ?? 0),
-            Notes: "Structural verification complete.");
+            Notes: notes);
+
+        // Fallback type: treat as success when the action itself succeeded, the window
+        // is still alive (SnapshotAfter), and belongs to the same process.
+        var overallSuccess = actionResult.Success && after != null &&
+            (!isFallback || sameProcess);
 
         return new VerifiedActionResult(
-            Success: actionResult.Success && after != null,
+            Success: overallSuccess,
             Message: actionResult.Message,
             Action: actionResult,
             Verification: report);

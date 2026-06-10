@@ -9,7 +9,13 @@ var cmd = argsList.Count > 0 ? argsList[0].ToLowerInvariant() : "help";
 
 if (cmd == "snapshot")
 {
-    var res = new CognitiveSnapshotReader().Read();
+    string? snapshotProc = null, snapshotWin = null;
+    for (int i = 1; i < argsList.Count; i++)
+    {
+        if (argsList[i] == "--process" && i + 1 < argsList.Count) snapshotProc = argsList[++i];
+        else if (argsList[i] == "--window" && i + 1 < argsList.Count) snapshotWin = argsList[++i];
+    }
+    var res = new CognitiveSnapshotReader().Read(snapshotProc, snapshotWin);
     Console.WriteLine(JsonSerializer.Serialize(res, new JsonSerializerOptions { WriteIndented = true }));
 }
 else if (cmd == "act" || cmd == "actv")

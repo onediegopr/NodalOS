@@ -7,7 +7,7 @@ namespace OneBrain.Observation.Windows;
 
 public sealed class ForegroundWindowReader
 {
-    [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll", SetLastError = true)] private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)] private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
     [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr hWnd, out Rect lpRect);
@@ -51,3 +51,4 @@ public sealed class ForegroundWindowReader
             IsForeground: hWnd == GetForegroundWindow());
     }
 }
+

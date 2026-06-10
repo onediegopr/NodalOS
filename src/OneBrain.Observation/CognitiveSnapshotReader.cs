@@ -1,4 +1,5 @@
-﻿using FlaUI.UIA3;
+﻿using FlaUI.Core.AutomationElements;
+using FlaUI.UIA3;
 using OneBrain.Core.Models;
 using OneBrain.Observation.Uia;
 using OneBrain.Observation.Windows;
@@ -21,17 +22,35 @@ public sealed class CognitiveSnapshotReader
         {
             hwnd = _windowFinder.FindWindow(processName, windowTitle);
         }
+        else
+        {
+            hwnd = ForegroundWindowReader.GetForegroundWindow();
+        }
 
-        var window = hwnd == IntPtr.Zero ? _windowReader.Read() : _windowReader.ReadFromHandle(hwnd);
-
-        if (window == null)
+        if (hwnd == IntPtr.Zero)
         {
             return null;
         }
 
-        var root = hwnd == IntPtr.Zero ? automation.FocusedElement() : automation.FromHandle(hwnd);
+        var window = _windowReader.ReadFromHandle(hwnd);
 
-        if (root == null)
+        if (window is null)
+        {
+            return null;
+        }
+
+        AutomationElement? root;
+
+        try
+        {
+            root = automation.FromHandle(hwnd);
+        }
+        catch
+        {
+            return null;
+        }
+
+        if (root is null)
         {
             return null;
         }

@@ -7,6 +7,12 @@ namespace OneBrain.Observation.Uia;
 public sealed class UiaElementReader
 {
     private const int MaxElements = 250;
+    private const int MaxDepth = 20;
+
+    private static readonly HashSet<string> AlwaysIncludeRoles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Document", "Edit"
+    };
 
     public IReadOnlyList<UiElementSnapshot> ReadForegroundWindowElements()
     {
@@ -33,14 +39,20 @@ public sealed class UiaElementReader
 
     private void Walk(AutomationElement e, List<AutomationElement> res, int d)
     {
-        if (res.Count >= MaxElements || d > 10)
+        if (res.Count >= MaxElements || d > MaxDepth)
         {
             return;
         }
 
         try
         {
-            if (!e.IsOffscreen && (!string.IsNullOrEmpty(e.Name) || !string.IsNullOrEmpty(e.AutomationId)))
+            var role = Safe(() => e.ControlType.ToString());
+            var include = !e.IsOffscreen && (
+                !string.IsNullOrEmpty(e.Name) ||
+                !string.IsNullOrEmpty(e.AutomationId) ||
+                AlwaysIncludeRoles.Contains(role));
+
+            if (include)
             {
                 res.Add(e);
             }
