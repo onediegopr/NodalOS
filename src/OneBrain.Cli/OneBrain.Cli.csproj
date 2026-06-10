@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <ProjectReference Include="..\OneBrain.Core\OneBrain.Core.csproj" />
-    <ProjectReference Include="..\OneBrain.Observation\OneBrain.Observation.csproj" />
-    <ProjectReference Include="..\OneBrain.SemanticState\OneBrain.SemanticState.csproj" />
-    <ProjectReference Include="..\OneBrain.Actions\OneBrain.Actions.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net11.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\OneBrain.Core\OneBrain.Core.csproj" />
+    <ProjectReference Include="..\OneBrain.Observation\OneBrain.Observation.csproj" />
+    <ProjectReference Include="..\OneBrain.SemanticState\OneBrain.SemanticState.csproj" />
+    <ProjectReference Include="..\OneBrain.Actions\OneBrain.Actions.csproj" />
+    <ProjectReference Include="..\OneBrain.Verification\OneBrain.Verification.csproj" />
+  </ItemGroup>
 </Project>

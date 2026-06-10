@@ -1,147 +1,115 @@
 ﻿using System.Text.Json;
-using OneBrain.Actions.Uia;
 using OneBrain.Core.Actions;
 using OneBrain.Observation;
+using OneBrain.Actions.Uia;
+using OneBrain.Verification.Engine;
 
-var command = args.Length > 0 ? args[0].Trim().ToLowerInvariant() : "help";
+var argsList = args.ToList();
+var cmd = argsList.Count > 0 ? argsList[0].ToLowerInvariant() : "help";
 
-switch (command)
+if (cmd == "snapshot")
 {
-    case "snapshot":
+    string? snapshotProc = null, snapshotWin = null;
+    for (int i = 1; i < argsList.Count; i++)
     {
-        var reader = new CognitiveSnapshotReader();
-        var snapshot = reader.Read();
-
-        if (snapshot is null)
-        {
-            Console.Error.WriteLine("No foreground window detected.");
-            Environment.ExitCode = 1;
-            return;
-        }
-
-        WriteJson(snapshot);
+        if (argsList[i] == "--process" && i + 1 < argsList.Count) snapshotProc = argsList[++i];
+        else if (argsList[i] == "--window" && i + 1 < argsList.Count) snapshotWin = argsList[++i];
+    }
+    var res = new CognitiveSnapshotReader().Read(snapshotProc, snapshotWin);
+    Console.WriteLine(JsonSerializer.Serialize(res, new JsonSerializerOptions { WriteIndented = true }));
+}
+else if (cmd == "act" || cmd == "actv")
+{
+    if (argsList.Count < 3)
+    {
+        PrintUsage();
         return;
     }
 
-    case "act":
+    string kind = argsList[1];
+    string? proc = null;
+    string? win = null;
+    string? target = null;
+    List<string> text = new();
+
+    for (int i = 2; i < argsList.Count; i++)
     {
-        if (args.Length < 3)
+        var a = argsList[i];
+
+        if (a == "--process" && i + 1 < argsList.Count)
         {
-            PrintActUsage();
-            Environment.ExitCode = 1;
-            return;
+            proc = argsList[++i];
         }
-
-        var kind = args[1];
-        var parse = ParseTargetAndText(args.Skip(2).ToArray());
-
-        if (!parse.Success)
+        else if (a == "--window" && i + 1 < argsList.Count)
         {
-            Console.Error.WriteLine(parse.Error);
-            PrintActUsage();
-            Environment.ExitCode = 1;
-            return;
+            win = argsList[++i];
         }
-
-        var executor = new UiaActionExecutor();
-        var result = executor.Execute(new ActionRequest(kind, parse.TargetSelector, parse.Text));
-
-        WriteJson(result);
-
-        if (!result.Success)
+        else if (a.StartsWith("--") && target == null)
         {
-            Environment.ExitCode = 1;
-        }
+            if (i + 1 >= argsList.Count)
+            {
+                Console.WriteLine("Error: missing value for selector.");
+                return;
+            }
 
+            var val = argsList[++i];
+
+            target = a.ToLowerInvariant() switch
+            {
+                "--role" => $"role:{val}",
+                "--name" => $"name:{val}",
+                "--automation-id" or "--automationid" => $"automation-id:{val}",
+                "--class" or "--class-name" or "--classname" => $"class:{val}",
+                _ => null
+            };
+        }
+        else if (a.StartsWith("@e", StringComparison.OrdinalIgnoreCase) && target == null)
+        {
+            target = a;
+        }
+        else
+        {
+            text.Add(a);
+        }
+    }
+
+    if (target == null)
+    {
+        Console.WriteLine("Error: Target selector required.");
         return;
     }
 
-    case "help":
-    default:
-        Console.WriteLine("ONE BRAIN CLI");
-        Console.WriteLine();
-        Console.WriteLine("Commands:");
-        Console.WriteLine("  snapshot");
-        Console.WriteLine("      Reads the current foreground window and visible UIA elements.");
-        Console.WriteLine();
-        Console.WriteLine("  act type @eN [text]");
-        Console.WriteLine("      Types text into a target element.");
-        Console.WriteLine();
-        Console.WriteLine("  act type --role Document [text]");
-        Console.WriteLine("      Types text into the first element with role Document.");
-        Console.WriteLine();
-        Console.WriteLine("  act invoke @eN");
-        Console.WriteLine("      Invokes a target element by temporary ref.");
-        Console.WriteLine();
-        Console.WriteLine("  act invoke --name [visible name]");
-        Console.WriteLine("      Invokes by visible accessible name.");
-        Console.WriteLine();
-        Console.WriteLine("  act invoke --automation-id [id]");
-        Console.WriteLine("      Invokes by AutomationId.");
-        Console.WriteLine();
-        Console.WriteLine("  act focus --role Document");
-        Console.WriteLine("      Focuses first element with role Document.");
-        return;
+    var req = new ActionRequest(kind, target, string.Join(" ", text), proc, win);
+
+    var res = cmd == "act"
+        ? (object)new UiaActionExecutor().Execute(req)
+        : (object)new BasicActionVerifier().ExecuteAndVerify(req);
+
+    Console.WriteLine(JsonSerializer.Serialize(res, new JsonSerializerOptions { WriteIndented = true }));
+}
+else
+{
+    PrintUsage();
 }
 
-static (bool Success, string TargetSelector, string? Text, string Error) ParseTargetAndText(string[] args)
+static void PrintUsage()
 {
-    if (args.Length == 0)
-    {
-        return (false, "", null, "Missing target.");
-    }
-
-    if (args[0].StartsWith("@e", StringComparison.OrdinalIgnoreCase))
-    {
-        var text = args.Length >= 2 ? string.Join(" ", args.Skip(1)) : null;
-        return (true, args[0], text, "");
-    }
-
-    if (args.Length >= 2 && args[0].StartsWith("--", StringComparison.OrdinalIgnoreCase))
-    {
-        var option = args[0].Trim().ToLowerInvariant();
-        var value = args[1];
-        var text = args.Length >= 3 ? string.Join(" ", args.Skip(2)) : null;
-
-        var selector = option switch
-        {
-            "--name" => $"name:{value}",
-            "--automation-id" => $"automation-id:{value}",
-            "--automationid" => $"automation-id:{value}",
-            "--role" => $"role:{value}",
-            "--class" => $"class:{value}",
-            "--class-name" => $"class:{value}",
-            _ => ""
-        };
-
-        if (string.IsNullOrWhiteSpace(selector))
-        {
-            return (false, "", null, $"Unknown selector option: {option}");
-        }
-
-        return (true, selector, text, "");
-    }
-
-    return (false, "", null, "Invalid target syntax.");
-}
-
-static void PrintActUsage()
-{
-    Console.Error.WriteLine("Usage:");
-    Console.Error.WriteLine("  act type @eN [text]");
-    Console.Error.WriteLine("  act type --role Document [text]");
-    Console.Error.WriteLine("  act invoke @eN");
-    Console.Error.WriteLine("  act invoke --name [visible name]");
-    Console.Error.WriteLine("  act invoke --automation-id [id]");
-    Console.Error.WriteLine("  act focus --role Document");
-}
-
-static void WriteJson<T>(T value)
-{
-    var json = JsonSerializer.Serialize(value, new JsonSerializerOptions
-    {
-        WriteIndented = true
-    });
-
-    Console.WriteLine(json);
+    Console.WriteLine("ONE BRAIN CLI");
+    Console.WriteLine();
+    Console.WriteLine("Commands:");
+    Console.WriteLine("  snapshot");
+    Console.WriteLine("  act [kind] [target]");
+    Console.WriteLine("  actv [kind] [target]");
+    Console.WriteLine();
+    Console.WriteLine("Options:");
+    Console.WriteLine("  --process VALUE");
+    Console.WriteLine("  --window VALUE");
+    Console.WriteLine("  --role VALUE");
+    Console.WriteLine("  --name VALUE");
+    Console.WriteLine("  --automation-id VALUE");
+    Console.WriteLine("  --class VALUE");
+    Console.WriteLine();
+    Console.WriteLine("Examples:");
+    Console.WriteLine("  actv type --process Notepad --role Document [text]");
+    Console.WriteLine("  actv invoke --process Notepad --automation-id Close");
 }
