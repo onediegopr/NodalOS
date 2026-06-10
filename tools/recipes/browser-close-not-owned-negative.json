@@ -1,0 +1,20 @@
+{
+  "name": "browser-close-not-owned-negative",
+  "description": "Negative: close a non-owned session using fake variables. Must fail without launching browser.",
+  "stopOnFirstFailure": true,
+  "variables": {
+    "fake.session.id": "nobody",
+    "fake.session.process": "msedge",
+    "fake.session.hwnd": "12345",
+    "fake.session.url": "about:blank",
+    "fake.session.owned": "false"
+  },
+  "steps": [
+    {
+      "id": "try-close-not-owned",
+      "kind": "browser.close",
+      "saveAs": "fake.session",
+      "timeoutMs": 5000
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using OneBrain.Actions.Uia;
+using OneBrain.Cli.Browser;
 using OneBrain.Core.Actions;
 using OneBrain.Core.Models;
 using OneBrain.Core.Recipes;
@@ -150,6 +151,7 @@ public sealed class RecipeRunner
         return kind switch
         {
             "browser.open" => 15000,
+            "browser.close" => 5000,
             "browser.read" => 10000,
             "wait" => 10000,
             "visual.capture" => 10000,
@@ -193,6 +195,7 @@ public sealed class RecipeRunner
             {
                 "app.open"               => ExecuteAppOpen(step, sw),
                 "browser.open"           => ExecuteBrowserOpen(step, sw),
+                "browser.close"          => ExecuteBrowserClose(step, sw),
                 "browser.read"           => ExecuteBrowserRead(step, sw),
                 "wait"                   => ExecuteWait(step, sw),
                 "actv.type"              => ExecuteActvType(step, sw),
@@ -246,104 +249,172 @@ public sealed class RecipeRunner
 
         url = R(url);
 
-        var browserName = step.Args?.GetValueOrDefault("browser") ?? "edge";
+        var browserName = (step.Args?.GetValueOrDefault("browser") ?? "edge").Trim();
+        var normalized = browserName.ToLowerInvariant();
+        if (normalized is not ("edge" or "chrome"))
+            return Fail(step, sw, $"Unsupported browser: {browserName}. Supported: edge, chrome.");
+
         var forceAccessibility = step.Args?.ContainsKey("forceAccessibility") == true
             || (step.Args?.GetValueOrDefault("forceAccessibility") ?? "") == "true";
-
-        var fileUrl = url;
-        if (!fileUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-            !fileUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase) &&
-            !fileUrl.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
-        {
-            fileUrl = new Uri(Path.GetFullPath(fileUrl)).AbsoluteUri;
-        }
-
-        var extra = forceAccessibility ? "--force-renderer-accessibility " : "";
-        var browserArgs = $"{extra}\"{fileUrl}\"";
-
-        string[] candidates = browserName == "edge"
-            ? [@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-               @"C:\Program Files\Microsoft\Edge\Application\msedge.exe"]
-            : [@"C:\Program Files\Google\Chrome\Application\chrome.exe",
-               @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"];
-
-        var launched = false;
-        var lastError = "";
-        foreach (var exe in candidates)
-        {
-            if (!File.Exists(exe)) continue;
-            try
-            {
-                Process.Start(new ProcessStartInfo(exe, browserArgs) { UseShellExecute = false });
-                launched = true;
-                break;
-            }
-            catch (Exception ex) { lastError = ex.Message; }
-        }
-
-        if (!launched)
-        {
-            var fallbackExe = browserName == "edge" ? "msedge" : "chrome";
-            try
-            {
-                Process.Start(new ProcessStartInfo(fallbackExe, browserArgs) { UseShellExecute = false });
-                launched = true;
-            }
-            catch (Exception ex) { lastError = ex.Message; }
-        }
-
-        if (!launched)
-        {
-            sw.Stop();
-            return new RecipeStepRunResult(step.Id, step.Kind, false,
-                $"Failed to launch {browserName}: {lastError}", sw.ElapsedMilliseconds);
-        }
+        var reuseExisting = step.Args?.GetValueOrDefault("reuseExisting") ?? "";
+        var allowReuse = reuseExisting.Equals("true", StringComparison.OrdinalIgnoreCase);
+        var useSession = !string.IsNullOrWhiteSpace(step.SaveAs) && !allowReuse;
 
         var browserTimeoutMs = step.TimeoutMs ?? _currentRecipe?.DefaultTimeoutMs ?? 15000;
-        var openSw = Stopwatch.StartNew();
-        var finder = new WindowFinder();
-        var processToFind = browserName.Equals("edge", StringComparison.OrdinalIgnoreCase) ? "msedge" : "chrome";
 
-        IntPtr hwnd = IntPtr.Zero;
-        while (openSw.ElapsedMilliseconds < browserTimeoutMs)
+        if (allowReuse)
         {
-            if (_stepCts?.IsCancellationRequested == true) break;
-            hwnd = finder.FindWindow(processToFind, null);
-            if (hwnd != IntPtr.Zero)
+            // Legacy mode: just find any matching window
+            var processToFind = BrowserSession.ResolveProcessName(normalized) ?? "msedge";
+            var finder = new WindowFinder();
+            IntPtr hwnd = IntPtr.Zero;
+            var openSw = Stopwatch.StartNew();
+            while (openSw.ElapsedMilliseconds < browserTimeoutMs)
             {
-                break;
+                if (_stepCts?.IsCancellationRequested == true) break;
+                hwnd = finder.FindWindow(processToFind, null);
+                if (hwnd != IntPtr.Zero) break;
+                Thread.Sleep(250);
             }
-            Thread.Sleep(250);
+
+            if (hwnd == IntPtr.Zero)
+            {
+                sw.Stop();
+                return new RecipeStepRunResult(step.Id, step.Kind, false,
+                    $"Timeout waiting for {browserName} window (timeout: {browserTimeoutMs}ms)", sw.ElapsedMilliseconds);
+            }
+
+            Thread.Sleep(500);
+            sw.Stop();
+
+            SaveSessionVars(step, id: "reused", process: processToFind, hwnd: hwnd, url: url, owned: false);
+
+            return new RecipeStepRunResult(step.Id, step.Kind, true,
+                $"Reused existing {browserName} window (hwnd: {hwnd})", sw.ElapsedMilliseconds, hwnd.ToInt64());
         }
 
-        if (hwnd == IntPtr.Zero)
+        // Standard launch through BrowserSession (handles both normal and accessibility)
+        var extraArgs = forceAccessibility ? "--force-renderer-accessibility" : null;
+        var sessionResult = BrowserSession.Open(url, normalized, browserTimeoutMs,
+            useNewWindow: useSession, extraArgs: extraArgs, token: _stepCts?.Token);
+
+        if (!sessionResult.Success || sessionResult.Session == null)
         {
             sw.Stop();
             return new RecipeStepRunResult(step.Id, step.Kind, false,
-                $"Timeout waiting for {browserName} window to appear (process: {processToFind}, timeout: {browserTimeoutMs}ms)", sw.ElapsedMilliseconds);
+                sessionResult.Error ?? $"Failed to open {browserName}", sw.ElapsedMilliseconds);
         }
 
-        // Wait a brief moment to let the browser initialize and render
-        Thread.Sleep(500);
+        SaveSessionVars(step,
+            id: sessionResult.Session.Id,
+            process: sessionResult.Session.ProcessName,
+            hwnd: sessionResult.Session.Hwnd,
+            url: sessionResult.Session.Url,
+            owned: sessionResult.Session.Owned);
 
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
-            $"Launched {browserName} with {url} and found active window handle {hwnd}", sw.ElapsedMilliseconds);
+            $"Launched {browserName} with {url} (hwnd: {sessionResult.Session.Hwnd}, owned: {sessionResult.Session.Owned})",
+            sw.ElapsedMilliseconds, sessionResult.Session.Hwnd.ToInt64());
+    }
+
+    private void SaveSessionVars(RecipeStepDefinition step, string id, string process, IntPtr hwnd, string url, bool owned)
+    {
+        if (string.IsNullOrWhiteSpace(step.SaveAs)) return;
+        _ctx.Variables[step.SaveAs] = id;
+        _ctx.Variables[step.SaveAs + ".id"] = id;
+        _ctx.Variables[step.SaveAs + ".process"] = process;
+        _ctx.Variables[step.SaveAs + ".hwnd"] = hwnd.ToString();
+        _ctx.Variables[step.SaveAs + ".url"] = url;
+        _ctx.Variables[step.SaveAs + ".owned"] = owned ? "true" : "false";
+    }
+
+    // ── browser.close ───────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteBrowserClose(RecipeStepDefinition step, Stopwatch sw)
+    {
+        if (step.Args?.ContainsKey("hwnd") == true)
+            return Fail(step, sw, "browser.close does not support raw hwnd; use session variable via saveAs.");
+
+        if (string.IsNullOrWhiteSpace(step.SaveAs))
+            return Fail(step, sw, "browser.close requires 'saveAs' with session variable prefix.");
+
+        // Resolve session prefix: args.session or saveAs
+        var sessionPrefix = step.Args?.GetValueOrDefault("session") ?? step.SaveAs;
+        if (!_ctx.Variables.TryGetValue(sessionPrefix + ".hwnd", out var hwndStr) || string.IsNullOrWhiteSpace(hwndStr))
+            return Fail(step, sw, $"Browser session not found: {sessionPrefix}");
+
+        if (!long.TryParse(hwndStr, out var hwndLong))
+            return Fail(step, sw, $"Invalid session hwnd: {hwndStr}");
+
+        var hwnd = new IntPtr(hwndLong);
+        if (hwnd == IntPtr.Zero)
+            return Fail(step, sw, "Session HWND is zero (session was empty).");
+
+        // Verify ownership from the same prefix
+        _ctx.Variables.TryGetValue(sessionPrefix + ".owned", out var owned);
+        if (!string.Equals(owned, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                "Cannot close browser window not owned by this recipe.", sw.ElapsedMilliseconds);
+        }
+
+        // Liveness check
+        if (!BrowserSession.IsHwndAlive(hwnd))
+        {
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, true,
+                "Browser session already closed.", sw.ElapsedMilliseconds);
+        }
+
+        if (_stepCts?.IsCancellationRequested == true)
+        {
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                "Step expired before closing browser.", sw.ElapsedMilliseconds);
+        }
+
+        var closeTimeout = step.TimeoutMs ?? 5000;
+        var closeResult = BrowserSession.Close(hwnd, closeTimeout);
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, closeResult.Success, closeResult.Message, sw.ElapsedMilliseconds);
     }
 
     // ── browser.read ────────────────────────────────────────────────────────
     private RecipeStepRunResult ExecuteBrowserRead(RecipeStepDefinition step, Stopwatch sw)
     {
-        var proc = R(step.Process);
+        var sessionName = step.Args?.GetValueOrDefault("session")?.Trim();
+        var hasExplicitSession = !string.IsNullOrWhiteSpace(sessionName);
+
+        if (hasExplicitSession && sessionName!.Contains("{{"))
+            return Fail(step, sw, $"browser.read: session must be a plain variable name, not a template. Use \"browser.session\" instead of \"{{{{browser.session}}}}\".");
+
+        if (hasExplicitSession)
+        {
+            if (!_ctx.Variables.TryGetValue(sessionName + ".process", out _))
+                return Fail(step, sw, $"Browser session not found: {sessionName}");
+        }
+
+        var proc = ResolveBrowserProcess(step);
         if (string.IsNullOrWhiteSpace(proc))
-            return Fail(step, sw, "browser.read requires 'process' field.");
+            return Fail(step, sw, $"browser.read requires valid process (session: {sessionName ?? "none"})");
+
+        var win = ResolveBrowserWindow(step);
+
+        // Liveness check if we have explicit hwnd from session
+        if (TryGetSessionHwnd(step) is { } hwnd && hwnd != IntPtr.Zero && !BrowserSession.IsHwndAlive(hwnd))
+            return Fail(step, sw, $"browser.read: target browser window (hwnd: {hwnd}) is not alive.");
+
+        if (_stepCts?.IsCancellationRequested == true)
+            return Fail(step, sw, "Step expired before reading browser.");
 
         var property = (step.Property ?? "title").ToLowerInvariant();
         if (property is not ("title" or "text" or "url"))
             return Fail(step, sw, $"browser.read unsupported property: '{step.Property}'. Supported: title, text, url.");
 
         var reader = new CognitiveSnapshotReader();
-        var snap = reader.Read(proc, R(step.Window));
+        var snap = reader.Read(proc, win);
 
         if (snap == null)
             return Fail(step, sw, $"browser.read: could not read snapshot for process '{proc}'.");
@@ -368,6 +439,73 @@ public sealed class RecipeRunner
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"browser.read {property} = '{value}'", sw.ElapsedMilliseconds, value);
+    }
+
+    private string ResolveBrowserProcess(RecipeStepDefinition step)
+    {
+        var sessionName = step.Args?.GetValueOrDefault("session")?.Trim();
+        if (!string.IsNullOrWhiteSpace(sessionName))
+        {
+            // Reject template syntax
+            if (sessionName.Contains("{{"))
+                return ""; // will cause a clear failure below
+
+            if (_ctx.Variables.TryGetValue(sessionName + ".process", out var sp) && !string.IsNullOrWhiteSpace(sp))
+                return sp;
+
+            // Session was explicitly declared but not found
+            return "";
+        }
+
+        // Fallback: saveAs prefix or explicit process field
+        if (!string.IsNullOrWhiteSpace(step.SaveAs))
+        {
+            if (_ctx.Variables.TryGetValue(step.SaveAs + ".process", out var savedProc) && !string.IsNullOrWhiteSpace(savedProc))
+                return savedProc;
+        }
+
+        return R(step.Process);
+    }
+
+    private string? ResolveBrowserWindow(RecipeStepDefinition step)
+    {
+        var sessionName = step.Args?.GetValueOrDefault("session")?.Trim();
+        if (!string.IsNullOrWhiteSpace(sessionName) && !sessionName.Contains("{{"))
+        {
+            // When using session, prefer window title if set, otherwise null
+            // Don't use session URL as window filter (URL is not a window title)
+            return R(step.Window); // could be null, which is fine
+        }
+
+        if (!string.IsNullOrWhiteSpace(step.SaveAs))
+        {
+            if (_ctx.Variables.TryGetValue(step.SaveAs + ".url", out var savedUrl) && !string.IsNullOrWhiteSpace(savedUrl))
+                return savedUrl;
+        }
+
+        return R(step.Window);
+    }
+
+    private IntPtr? TryGetSessionHwnd(RecipeStepDefinition step)
+    {
+        var sessionName = step.Args?.GetValueOrDefault("session")?.Trim();
+        if (!string.IsNullOrWhiteSpace(sessionName) && !sessionName.Contains("{{"))
+        {
+            if (_ctx.Variables.TryGetValue(sessionName + ".hwnd", out var varHwnd) && long.TryParse(varHwnd, out var hwndLong))
+                return new IntPtr(hwndLong);
+        }
+
+        if (!string.IsNullOrWhiteSpace(step.SaveAs))
+        {
+            if (_ctx.Variables.TryGetValue(step.SaveAs + ".hwnd", out var savedHwnd) && long.TryParse(savedHwnd, out var sh))
+                return new IntPtr(sh);
+        }
+
+        var hwndStr = step.Args?.GetValueOrDefault("hwnd");
+        if (!string.IsNullOrWhiteSpace(hwndStr) && long.TryParse(hwndStr, out var h))
+            return new IntPtr(h);
+
+        return null;
     }
 
     private static string? ExtractUrlFromSnapshot(CognitiveSnapshot snap)
@@ -558,13 +696,20 @@ public sealed class RecipeRunner
     // ── visual.capture ─────────────────────────────────────────────────────
     private RecipeStepRunResult ExecuteVisualCapture(RecipeStepDefinition step, Stopwatch sw)
     {
+        if (_stepCts?.IsCancellationRequested == true)
+            return Fail(step, sw, "Step expired before capturing.");
+
         var mode = (step.Args?.GetValueOrDefault("mode") ?? "window").ToLowerInvariant();
         if (mode is not ("window" or "region" or "element" or "fullscreen"))
             return Fail(step, sw, $"visual.capture unsupported mode: '{mode}'. Supported: window, region, element, fullscreen.");
 
-        var proc = R(step.Process);
-        var win = R(step.Window);
+        var proc = ResolveBrowserProcess(step);
+        var win = ResolveBrowserWindow(step);
         var outPath = R(step.Out);
+
+        // Liveness check for session-based captures
+        if (TryGetSessionHwnd(step) is { } hwnd && hwnd != IntPtr.Zero && !BrowserSession.IsHwndAlive(hwnd))
+            return Fail(step, sw, $"visual.capture: target window (hwnd: {hwnd}) is not alive.");
 
         VisualCaptureRequest request = mode switch
         {

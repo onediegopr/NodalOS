@@ -1,0 +1,52 @@
+{
+  "name": "browser-session-no-stale-window",
+  "description": "Validate browser.open session does NOT reuse a stale window. Uses session-based read.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "open-owned",
+      "kind": "browser.open",
+      "path": "https://example.com",
+      "saveAs": "browser.owned",
+      "timeoutMs": 15000,
+      "args": {
+        "browser": "edge",
+        "forceAccessibility": "true",
+        "reuseExisting": "false"
+      }
+    },
+    {
+      "id": "delay-load",
+      "kind": "delay",
+      "timeoutMs": 3000
+    },
+    {
+      "id": "read-owned",
+      "kind": "browser.read",
+      "process": "msedge",
+      "property": "title",
+      "saveAs": "browser.title",
+      "timeoutMs": 10000,
+      "args": {
+        "session": "browser.owned"
+      }
+    },
+    {
+      "id": "assert-example",
+      "kind": "assert.contains",
+      "value": "{{browser.title}}",
+      "expected": "Example"
+    },
+    {
+      "id": "close-owned",
+      "kind": "browser.close",
+      "saveAs": "browser.owned",
+      "timeoutMs": 5000
+    },
+    {
+      "id": "note-done",
+      "kind": "note",
+      "text": "Owned session opened, read via session, and closed. Stale windows unaffected."
+    }
+  ]
+}

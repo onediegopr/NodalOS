@@ -109,4 +109,18 @@ public sealed class MinimalSafetyGuardTests
         var decision = _guard.Evaluate("focus", "Button", "Cerrar", "Close", "");
         Assert.IsTrue(decision.Allowed);
     }
+
+    [TestMethod]
+    public void Allows_Key_Kind()
+    {
+        var decision = _guard.Evaluate("key", "Window", "Cerrar", "Close", "");
+        Assert.IsTrue(decision.Allowed);
+    }
+
+    [TestMethod]
+    public void Unknown_Kind_Not_Dangerous()
+    {
+        var decision = _guard.Evaluate("foobar", "Button", "Cerrar", "Close", "");
+        Assert.IsTrue(decision.Allowed);
+    }
 }
