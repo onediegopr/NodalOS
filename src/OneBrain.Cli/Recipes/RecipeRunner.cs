@@ -15,7 +15,9 @@ namespace OneBrain.Cli.Recipes;
 public sealed class RecipeRunner
 {
     private const int DefaultStepTimeoutMs = 15000;
+    private const int OuterGraceMs = 3000;
     private RecipeDefinition? _currentRecipe;
+    private CancellationTokenSource? _stepCts;
     private readonly RecipeExecutionContext _ctx = new();
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false)
@@ -47,7 +49,7 @@ public sealed class RecipeRunner
                 var bad = new RecipeStepRunResult(step.Id, step.Kind ?? "", false, "Step missing Kind", 0);
                 stepResults.Add(bad);
                 failed++;
-                if (ShouldStop(recipe, step, forceContinueOnError))
+                if (ShouldStop(recipe, step, forceContinueOnError, false))
                     break;
                 continue;
             }
@@ -77,25 +79,29 @@ public sealed class RecipeRunner
 
             try
             {
-                var cts = new CancellationTokenSource();
+                using var stepCts = new CancellationTokenSource();
+                _stepCts = stepCts;
+                var outerTimeout = stepTimeout + OuterGraceMs;
+                var capturedCts = stepCts;
                 var task = Task.Run(() =>
                 {
                     try { return ExecuteStep(step); }
                     catch (RecipeVariableException ex) { return FailNow(step, ex.Message); }
                     catch (Exception ex) { return new RecipeStepRunResult(step.Id, step.Kind, false, ex.Message, 0); }
-                }, cts.Token);
+                }, capturedCts.Token);
 
-                if (task.Wait(stepTimeout, cts.Token))
+                if (task.Wait(outerTimeout, capturedCts.Token))
                 {
                     stepResult = task.Result;
                 }
                 else
                 {
-                    cts.Cancel();
+                    capturedCts.Cancel();
                     var details = GetStepDetails(step);
                     stepResult = new RecipeStepRunResult(step.Id, step.Kind, false,
                         $"Step timeout after {stepTimeout}ms: {step.Kind}{details}", stepTimeout);
                 }
+                _stepCts = null;
             }
             catch (RecipeVariableException ex)
             {
@@ -199,6 +205,7 @@ public sealed class RecipeRunner
                 "note"                   => ExecuteNote(step, sw),
                 "delay"                  => ExecuteSleep(step, sw),
                 "sleep"                  => ExecuteSleep(step, sw),
+                "debug.hang"             => ExecuteDebugHang(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
         }
@@ -296,6 +303,7 @@ public sealed class RecipeRunner
         IntPtr hwnd = IntPtr.Zero;
         while (openSw.ElapsedMilliseconds < browserTimeoutMs)
         {
+            if (_stepCts?.IsCancellationRequested == true) break;
             hwnd = finder.FindWindow(processToFind, null);
             if (hwnd != IntPtr.Zero)
             {
@@ -355,6 +363,7 @@ public sealed class RecipeRunner
 
         while (sw.ElapsedMilliseconds < timeout)
         {
+            if (_stepCts?.IsCancellationRequested == true) break;
             attempts++;
             var snap = reader.Read(proc, win);
             lastTitle = snap?.Window.Title ?? "";
@@ -421,7 +430,8 @@ public sealed class RecipeRunner
 
         var text = R(step.Text);
 
-        var req = new ActionRequest("type", targetRef, text, R(step.Process), R(step.Window));
+        var req = new ActionRequest("type", targetRef, text, R(step.Process), R(step.Window),
+            CancellationToken: _stepCts?.Token);
 
         var result = new BasicActionVerifier().ExecuteAndVerify(req);
         SaveOutput(step, result);
@@ -437,7 +447,8 @@ public sealed class RecipeRunner
         if (targetRef == null)
             return Fail(step, sw, "actv.invoke requires a selector (role, name, automationId, or class).");
 
-        var req = new ActionRequest("invoke", targetRef, null, R(step.Process), R(step.Window));
+        var req = new ActionRequest("invoke", targetRef, null, R(step.Process), R(step.Window),
+            CancellationToken: _stepCts?.Token);
 
         var result = new BasicActionVerifier().ExecuteAndVerify(req);
         SaveOutput(step, result);
@@ -465,7 +476,8 @@ public sealed class RecipeRunner
             Thread.Sleep(300);
         }
 
-        var req = new ActionRequest("key", "role:Window", text, R(step.Process), R(step.Window));
+        var req = new ActionRequest("key", "role:Window", text, R(step.Process), R(step.Window),
+            CancellationToken: _stepCts?.Token);
         var result = new UiaActionExecutor().Execute(req);
         SaveOutput(step, result);
         sw.Stop();
@@ -555,6 +567,7 @@ public sealed class RecipeRunner
 
         while (sw.ElapsedMilliseconds < timeout)
         {
+            if (_stepCts?.IsCancellationRequested == true) break;
             attempts++;
             var snap = new CognitiveSnapshotReader().Read(proc, win);
             lastWindowTitle = snap?.Window.Title ?? "";
@@ -670,6 +683,21 @@ public sealed class RecipeRunner
         Thread.Sleep(ms);
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true, $"Slept {ms}ms", sw.ElapsedMilliseconds);
+    }
+
+    // ── debug.hang ─────────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteDebugHang(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var ms = step.TimeoutMs ?? 1000;
+        if (step.Args?.TryGetValue("ms", out var msStr) == true && int.TryParse(msStr, out var parsed))
+            ms = parsed;
+
+        // Non-cooperative hang: Thread.Sleep does not observe CancellationToken.
+        // The outer timeout wrapper will cut this step.
+        Thread.Sleep(ms);
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, false,
+            $"debug.hang completed after {ms}ms (should have been cut by timeout)", sw.ElapsedMilliseconds);
     }
 
     // ── if ───────────────────────────────────────────────────────────────────

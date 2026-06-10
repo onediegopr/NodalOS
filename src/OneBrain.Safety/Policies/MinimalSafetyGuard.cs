@@ -75,7 +75,12 @@ public sealed class MinimalSafetyGuard
     }
 
     private static bool IsPotentiallyDangerousAction(string actionKind)
-        => actionKind.Equals("invoke", StringComparison.OrdinalIgnoreCase);
+    {
+        // Any kind that triggers a physical Invoke/Click/Press on a UI element
+        // is potentially dangerous and must pass safety evaluation.
+        var kind = actionKind.ToLowerInvariant();
+        return kind is "invoke" or "click" or "press";
+    }
 
     private static bool ContainsAny(string value, IReadOnlyList<string> terms)
     {

@@ -1,0 +1,16 @@
+{
+  "name": "unsupported-action-kind-negative",
+  "description": "Negative: unsupported action kind must fail and not execute physical action",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "unsupported-kind",
+      "kind": "__UNSUPPORTED_KIND_FOO__"
+    },
+    {
+      "id": "should-not-run",
+      "kind": "note",
+      "text": "Should not execute"
+    }
+  ]
+}

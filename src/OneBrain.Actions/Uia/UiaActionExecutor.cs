@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using FlaUI.Core.WindowsAPI;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Input;
@@ -11,6 +12,9 @@ namespace OneBrain.Actions.Uia;
 
 public sealed class UiaActionExecutor
 {
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
     private readonly MinimalSafetyGuard _safetyGuard  = new();
     private readonly WindowFinder        _windowFinder = new();
 
@@ -30,9 +34,14 @@ public sealed class UiaActionExecutor
     // ── Core logic ──────────────────────────────────────────────────────────
     private ActionResult ExecuteCore(ActionRequest request)
     {
+        // Check cancellation before any heavy work
+        if (request.CancellationToken?.IsCancellationRequested == true)
+            return new ActionResult(false, "Step expired before physical input.");
+
         using var automation = new UIA3Automation();
 
         AutomationElement? root = null;
+        IntPtr expectedHwnd = IntPtr.Zero;
 
         if (!string.IsNullOrEmpty(request.ProcessName) || !string.IsNullOrEmpty(request.WindowTitle))
         {
@@ -45,6 +54,7 @@ public sealed class UiaActionExecutor
             }
 
             _windowFinder.Activate(hwnd);
+            expectedHwnd = hwnd;
             try { root = automation.FromHandle(hwnd); } catch { }
         }
 
@@ -107,6 +117,10 @@ public sealed class UiaActionExecutor
 
             if (kind == "type" || kind == "type_text")
             {
+                if (request.CancellationToken?.IsCancellationRequested == true)
+                    return new ActionResult(false, "Step expired before physical input.");
+                if (!AssertForeground(expectedHwnd))
+                    return new ActionResult(false, "Foreground changed before input; aborting.");
                 Keyboard.Type(request.Text ?? "");
                 return new ActionResult(true, "Typed text.");
             }
@@ -122,12 +136,20 @@ public sealed class UiaActionExecutor
             }
 
 
-            if (SafeRole(target) == "Button")
-                target.AsButton().Invoke();
-            else
-                target.Click();
+            if (kind == "invoke" || kind == "click" || kind == "press")
+            {
+                if (request.CancellationToken?.IsCancellationRequested == true)
+                    return new ActionResult(false, "Step expired before physical input.");
 
-            return new ActionResult(true, "Action executed.");
+                if (SafeRole(target) == "Button")
+                    target.AsButton().Invoke();
+                else
+                    target.Click();
+
+                return new ActionResult(true, "Action executed.");
+            }
+
+            return new ActionResult(false, $"Unsupported action kind: {request.Kind}. Supported: type, type_text, focus, key, invoke, click.");
         }
         catch (Exception ex)
         {
@@ -150,6 +172,8 @@ public sealed class UiaActionExecutor
 
             _windowFinder.Activate(hwnd);
             System.Threading.Thread.Sleep(300);
+            if (GetForegroundWindow() != hwnd)
+                return new ActionResult(false, "Foreground changed before fallback input; aborting.");
             Keyboard.Type(request.Text ?? "");
 
             var note = treeWasTruncated
@@ -283,5 +307,11 @@ public sealed class UiaActionExecutor
 
         if (truncated) sb.Append(" (tree capped — use 'diagnose uia' for full view)");
         return sb.ToString();
+    }
+
+    private static bool AssertForeground(IntPtr expectedHwnd)
+    {
+        if (expectedHwnd == IntPtr.Zero) return true; // no window expected, allow
+        return GetForegroundWindow() == expectedHwnd;
     }
 }

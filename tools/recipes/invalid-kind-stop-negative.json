@@ -1,0 +1,16 @@
+{
+  "name": "invalid-kind-stop-negative",
+  "description": "Negative: empty kind step should stop recipe when stopOnFirstFailure is true",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "bad-step",
+      "kind": ""
+    },
+    {
+      "id": "should-not-run",
+      "kind": "note",
+      "text": "This should NOT execute because the previous step failed"
+    }
+  ]
+}

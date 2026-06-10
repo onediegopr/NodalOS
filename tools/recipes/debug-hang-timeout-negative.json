@@ -1,0 +1,20 @@
+{
+  "name": "debug-hang-timeout-negative",
+  "description": "Negative: debug.hang with 10s sleep but 1s timeout. Must fail <5s.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    {
+      "id": "hang-10s",
+      "kind": "debug.hang",
+      "args": {
+        "ms": "10000"
+      },
+      "timeoutMs": 1000
+    },
+    {
+      "id": "should-not-run",
+      "kind": "note",
+      "text": "Should not execute"
+    }
+  ]
+}

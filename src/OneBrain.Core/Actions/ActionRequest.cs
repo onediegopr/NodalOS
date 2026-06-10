@@ -4,4 +4,5 @@ public sealed record ActionRequest(
     string TargetRef,
     string? Text,
     string? ProcessName = null,
-    string? WindowTitle = null);
+    string? WindowTitle = null,
+    CancellationToken? CancellationToken = null);
