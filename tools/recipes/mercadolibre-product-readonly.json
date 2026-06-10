@@ -1,0 +1,15 @@
+{
+  "name": "mercadolibre-product-readonly",
+  "description": "ML Argentina product category read-only: open, read title/text, close, report. No click, no login, no cart.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/mercadolibre-ar-product.json", "saveAs": "profile.mlProduct" },
+    { "id": "open-ml", "kind": "browser.open", "path": "{{profile.mlProduct.url}}", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 6000 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btext", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "close-ml", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "assert-title", "kind": "assert.contains", "value": "{{bt}}", "expected": "{{profile.mlProduct.expected.titleContains}}" },
+    { "id": "note-report", "kind": "note", "text": "ML Product: {{profile.mlProduct.url}} | Title: {{bt}} | Text: {{btext}} | Sensitive words: Comprar/Carrito/Pagar/Login (read-only, no action)" }
+  ]
+}
