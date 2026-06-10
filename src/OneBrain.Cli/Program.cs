@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using OneBrain.Observation.Windows;
+using OneBrain.Observation;
 
 var command = args.Length > 0 ? args[0].Trim().ToLowerInvariant() : "help";
 
@@ -7,7 +7,7 @@ switch (command)
 {
     case "snapshot":
     {
-        var reader = new ForegroundWindowReader();
+        var reader = new CognitiveSnapshotReader();
         var snapshot = reader.Read();
 
         if (snapshot is null)
@@ -31,6 +31,6 @@ switch (command)
         Console.WriteLine("ONE BRAIN CLI");
         Console.WriteLine();
         Console.WriteLine("Commands:");
-        Console.WriteLine("  snapshot    Reads the current foreground window.");
+        Console.WriteLine("  snapshot    Reads the current foreground window and visible UIA elements.");
         return;
 }
