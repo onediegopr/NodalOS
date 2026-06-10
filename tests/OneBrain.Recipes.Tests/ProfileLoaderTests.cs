@@ -131,6 +131,16 @@ public sealed class ProfileLoaderTests
         Assert.AreEqual(0, warnings.Count, $"Expected 0 warnings, got: {string.Join("; ", warnings)}");
     }
 
+    [TestMethod]
+    public void Loads_MercadoLibre_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/mercadolibre-ar-notebook.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("mercadolibre-ar-notebook", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+    }
+
     private static string GetRootPath(string relative)
     {
         // Tests run from bin/Debug/netXX-windows. Navigate up 4 levels to solution root.

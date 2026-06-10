@@ -1,0 +1,20 @@
+{
+  "id": "mercadolibre-ar-notebook",
+  "type": "web",
+  "displayName": "Mercado Libre Argentina Notebook Search",
+  "url": "https://listado.mercadolibre.com.ar/notebook",
+  "expected": {
+    "titleContains": "Mercado",
+    "textContains": "notebook"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false
+  }
+}
