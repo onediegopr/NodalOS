@@ -1,0 +1,56 @@
+{
+  "name": "browser-smoke",
+  "description": "Browser smoke test: open page, type query, click search, capture result",
+  "stopOnFirstFailure": true,
+  "defaultTimeoutMs": 15000,
+  "steps": [
+    {
+      "id": "open-browser",
+      "kind": "browser.open",
+      "path": "tools/browser-smoke/browser-smoke.html",
+      "args": {
+        "browser": "edge",
+        "forceAccessibility": "true"
+      }
+    },
+    {
+      "id": "wait-input",
+      "kind": "wait",
+      "process": "msedge",
+      "name": "ONE Brain Search",
+      "role": "Edit",
+      "timeoutMs": 10000,
+      "intervalMs": 500
+    },
+    {
+      "id": "type-query",
+      "kind": "actv.type",
+      "process": "msedge",
+      "name": "ONE Brain Search",
+      "text": "recipe browser"
+    },
+    {
+      "id": "click-run",
+      "kind": "actv.invoke",
+      "process": "msedge",
+      "name": "Run ONE Brain Search"
+    },
+    {
+      "id": "wait-result-title",
+      "kind": "wait",
+      "process": "msedge",
+      "args": {
+        "titleContains": "ONE Brain \u2014 recipe browser"
+      },
+      "timeoutMs": 8000,
+      "intervalMs": 500
+    },
+    {
+      "id": "capture-result",
+      "kind": "visual.capture.element",
+      "process": "msedge",
+      "automationId": "result",
+      "out": "artifacts/recipes/browser-result.png"
+    }
+  ]
+}

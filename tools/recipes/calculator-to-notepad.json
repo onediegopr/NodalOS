@@ -1,0 +1,74 @@
+{
+  "name": "calculator-to-notepad",
+  "description": "Smoke test: Calculator 7x8 -> Notepad writing result",
+  "stopOnFirstFailure": true,
+  "defaultTimeoutMs": 10000,
+  "steps": [
+    {
+      "id": "open-calc",
+      "kind": "app.open",
+      "app": "calculator"
+    },
+    {
+      "id": "wait-calc",
+      "kind": "wait",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "role": "Button",
+      "timeoutMs": 8000,
+      "intervalMs": 500
+    },
+    {
+      "id": "click-7",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Siete",
+      "role": "Button"
+    },
+    {
+      "id": "click-multiply",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Multiplicar por",
+      "role": "Button"
+    },
+    {
+      "id": "click-8",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Ocho",
+      "role": "Button"
+    },
+    {
+      "id": "click-equals",
+      "kind": "actv.invoke",
+      "process": "ApplicationFrameHost",
+      "window": "Calculadora",
+      "name": "Es igual a",
+      "role": "Button"
+    },
+    {
+      "id": "open-notepad",
+      "kind": "app.open",
+      "app": "notepad"
+    },
+    {
+      "id": "wait-notepad",
+      "kind": "wait",
+      "process": "Notepad",
+      "titleContains": "Bloc de notas",
+      "timeoutMs": 5000,
+      "intervalMs": 500
+    },
+    {
+      "id": "type-result",
+      "kind": "actv.type",
+      "process": "Notepad",
+      "role": "Document",
+      "text": "56\r\nlologramos"
+    }
+  ]
+}

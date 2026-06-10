@@ -1,0 +1,12 @@
+{
+  "name": "invalid-kind",
+  "description": "Test recipe with unsupported step kind",
+  "stopOnFirstFailure": false,
+  "steps": [
+    {
+      "id": "bad-step",
+      "kind": "do.something.unsupported",
+      "process": "Notepad"
+    }
+  ]
+}
