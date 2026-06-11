@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>ONE BRAIN Control</title></head>
+<body>
+<h1>Controlled Safe Click Test</h1>
+<button id="show-details" name="Mostrar detalles" aria-label="Mostrar detalles">Mostrar detalles</button>
+<div id="details" style="display:none" role="status">Detalles visibles</div>
+<script>
+document.getElementById('show-details').onclick = function(){
+    var d = document.getElementById('details');
+    d.style.display = 'block';
+    d.textContent = 'Detalles visibles';
+};
+</script>
+</body>
+</html>

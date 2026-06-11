@@ -260,6 +260,7 @@ public sealed class RecipeRunner
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
                 "approval.manifest"       => ExecuteApprovalManifest(step, sw),
+                "safe.click"              => ExecuteSafeClick(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
         }
@@ -1593,11 +1594,12 @@ public sealed class RecipeRunner
         if (fromPrefix is null or "")
             fromPrefix = "clickPreflight";
 
+        var mode = step.Args?.GetValueOrDefault("mode") ?? "commercialWeb";
         var evidenceJson = _ctx.Variables.GetValueOrDefault(fromPrefix + ".evidenceJson", "");
         if (string.IsNullOrWhiteSpace(evidenceJson))
-            return Fail(step, sw, $"approval.manifest: no evidence found for prefix '{fromPrefix}'. Run preflight.click first.");
+            return Fail(step, sw, $"approval.manifest: no evidence found for prefix '{fromPrefix}'.");
 
-        var manifest = ApprovalManifestBuilder.BuildFromEvidence(evidenceJson);
+        var manifest = ApprovalManifestBuilder.BuildFromEvidence(evidenceJson, mode);
 
         var prefix = step.SaveAs ?? "approval";
 
@@ -1614,7 +1616,104 @@ public sealed class RecipeRunner
 
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
-            $"Approval manifest: {manifest.Title} → blocked={manifest.Blocked}, executable=false", sw.ElapsedMilliseconds, manifest);
+            $"Approval manifest: {manifest.Title} → blocked={manifest.Blocked}, executable={manifest.ExecutionAllowedInThisHito}", sw.ElapsedMilliseconds, manifest);
+    }
+
+    private RecipeStepRunResult ExecuteSafeClick(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var targetText = step.Args?.GetValueOrDefault("targettext") ?? "";
+        if (targetText is null or "")
+            return Fail(step, sw, "safe.click requires 'targetText'.");
+
+        var prefix = step.SaveAs ?? "safeClick";
+        var approvalPrefix = step.Args?.GetValueOrDefault("approvalprefix") ?? "approval";
+        var mode = step.Args?.GetValueOrDefault("mode") ?? "controlled";
+
+        // 1. Verify browser session owned (required only for non-controlled)
+        var hasOwned = false;
+        foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
+            if (_ctx.Variables[key] == "true") { hasOwned = true; break; }
+
+        if (!hasOwned && mode != "controlled")
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", "no owned browser session");
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                "safe.click: no owned browser session active.", sw.ElapsedMilliseconds);
+        }
+
+        // 2. Preflight
+        var pr = ClickPreflightEvaluator.Evaluate(targetText);
+        if (pr.Blocked)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", pr.Reason);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"safe.click: target blocked: {pr.Reason}", sw.ElapsedMilliseconds);
+        }
+
+        // 3. Approval check
+        var execAllowed = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".executionAllowedInThisHito", "false");
+        if (execAllowed != "true")
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", "executionAllowedInThisHito is false");
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                "safe.click: approval does not allow execution.", sw.ElapsedMilliseconds);
+        }
+
+        // 4. Determine process
+        var proc = step.Args?.GetValueOrDefault("proc") ?? "msedge";
+        if (proc == "msedge" && !hasOwned)
+        {
+            // For controlled mode without browser, try to infer process from context
+            foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".process")))
+            {
+                proc = _ctx.Variables[key];
+                break;
+            }
+        }
+
+        // 5. Execute via UIA action executor (same infrastructure as actv.invoke)
+        try
+        {
+            var req = new ActionRequest("invoke", $"name:{targetText}", null, proc, null,
+                CancellationToken: _stepCts?.Token);
+
+            var result = new UiaActionExecutor().Execute(req);
+            if (!result.Success && result.Message?.Contains("not supported") == true)
+            {
+                // Retry with click fallback for MenuItems etc.
+                var req2 = new ActionRequest("click", $"name:{targetText}", null, proc, null,
+                    CancellationToken: _stepCts?.Token);
+                result = new UiaActionExecutor().Execute(req2);
+            }
+            var success = result.Success;
+
+            SetSafeClickVars(prefix, targetText, success ? "success" : "failed",
+                result.Message ?? (success ? "clicked" : "failed"));
+
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, success,
+                $"safe.click: {result.Message}", sw.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            SetSafeClickVars(prefix, targetText, "failed", ex.Message);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"safe.click: {ex.Message}", sw.ElapsedMilliseconds);
+        }
+    }
+
+    private void SetSafeClickVars(string prefix, string targetText, string result, string reason)
+    {
+        _ctx.Variables[prefix + ".executed"] = result == "success" ? "true" : "false";
+        _ctx.Variables[prefix + ".targetText"] = targetText;
+        _ctx.Variables[prefix + ".method"] = "UIA safe.click";
+        _ctx.Variables[prefix + ".reason"] = reason;
+        _ctx.Variables[prefix + ".result"] = result;
+        _ctx.Variables[prefix + ".summary"] = $"safe.click {targetText}: {result} ({reason})";
     }
 
     internal static Dictionary<string, string> ExtractCommercialFields(string title, string text, string prefix)

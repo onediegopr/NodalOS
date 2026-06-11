@@ -1,0 +1,18 @@
+{
+  "name": "controlled-safe-click-report",
+  "description": "Controlled safe click: open Calc, click button 7 via safe.click with preflight+approval",
+  "stopOnFirstFailure": true,
+  "steps": [
+    { "id": "open-calc", "kind": "app.open", "app": "calculator" },
+    { "id": "wait-calc", "kind": "wait", "process": "ApplicationFrameHost", "window": "Calculadora", "role": "Button", "timeoutMs": 8000 },
+    { "id": "read-before", "kind": "snapshot.read", "process": "ApplicationFrameHost", "window": "Calculadora", "automationId": "CalculatorResults", "property": "name", "saveAs": "beforeResult", "timeoutMs": 5000 },
+    { "id": "preflight", "kind": "preflight.click", "saveAs": "clickPreflight", "args": { "targettext": "Siete" } },
+    { "id": "approval", "kind": "approval.manifest", "saveAs": "approval", "args": { "from": "clickPreflight", "mode": "controlled" } },
+    { "id": "assert-exec-allowed", "kind": "assert.equals", "value": "{{approval.executionAllowedInThisHito}}", "expected": "true" },
+    { "id": "safe-click", "kind": "safe.click", "saveAs": "safeClick", "args": { "targettext": "Siete", "mode": "controlled", "proc": "ApplicationFrameHost" } },
+    { "id": "delay-after", "kind": "delay", "timeoutMs": 1000 },
+    { "id": "read-after", "kind": "snapshot.read", "process": "ApplicationFrameHost", "window": "Calculadora", "automationId": "CalculatorResults", "property": "name", "saveAs": "afterResult", "timeoutMs": 5000 },
+    { "id": "assert-executed", "kind": "assert.equals", "value": "{{safeClick.executed}}", "expected": "true" },
+    { "id": "note-report", "kind": "note", "text": "Controlled safe click PASS: {{safeClick.targetText}} -> {{safeClick.result}}. Before: {{beforeResult}} After: {{afterResult}}" }
+  ]
+}

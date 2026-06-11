@@ -5,8 +5,12 @@ namespace OneBrain.Core.Safety;
 /// <summary>Pure builder: generates an approval manifest from a preflight result. No side effects.</summary>
 public static class ApprovalManifestBuilder
 {
-    public static ApprovalManifest Build(ClickPreflightResult preflightResult)
+    public static ApprovalManifest Build(ClickPreflightResult preflightResult, string mode = "commercialWeb")
     {
+        // executionAllowedInThisHito: only for controlled/nonCommercialWeb with safe targets
+        var allowExecution = (mode == "controlled" || mode == "nonCommercialWeb") &&
+            preflightResult.Decision is "allowedForFuture" or "requiresApproval" or "requiresReview";
+
         var manifest = new Dictionary<string, object>
         {
             ["policyVersion"] = "approval-v2",
@@ -21,7 +25,7 @@ public static class ApprovalManifestBuilder
             ["requiresApproval"] = preflightResult.RequiresApproval,
             ["requiresReview"] = preflightResult.RequiresReview,
             ["reason"] = preflightResult.Reason,
-            ["executionAllowedInThisHito"] = false,
+            ["executionAllowedInThisHito"] = allowExecution,
         };
 
         if (!string.IsNullOrWhiteSpace(preflightResult.NearbyDangerousSignalsJson))
@@ -37,7 +41,7 @@ public static class ApprovalManifestBuilder
 
         var human = $"[APPROVAL-V2] {preflightResult.TargetText}: {preflightResult.Decision.ToUpperInvariant()} " +
                     $"({preflightResult.RiskCategory}, {preflightResult.RiskLevel}). " +
-                    $"Executable: false. {preflightResult.Reason}";
+                    $"Executable: {allowExecution}. {preflightResult.Reason}";
 
         return new ApprovalManifest
         {
@@ -50,11 +54,11 @@ public static class ApprovalManifestBuilder
             ManifestJson = manifestJson,
             HumanReadableText = human,
             PolicyVersion = "approval-v2",
-            ExecutionAllowedInThisHito = false
+            ExecutionAllowedInThisHito = allowExecution
         };
     }
 
-    public static ApprovalManifest BuildFromEvidence(string? evidenceJson)
+    public static ApprovalManifest BuildFromEvidence(string? evidenceJson, string mode = "commercialWeb")
     {
         if (string.IsNullOrWhiteSpace(evidenceJson))
             return new ApprovalManifest { Summary = "no preflight evidence" };
@@ -80,7 +84,7 @@ public static class ApprovalManifestBuilder
 
         if (pr == null) return new ApprovalManifest { Summary = "failed to parse preflight evidence" };
 
-        return Build(pr);
+        return Build(pr, mode);
     }
 }
 

@@ -15,7 +15,8 @@ public static class ClickPreflightEvaluator
     private static readonly string[] RequiresApprovalPrefixes = [
         "ver más", "ver publicación", "ver producto", "descripción",
         "detalles", "características", "opiniones", "preguntas",
-        "siguiente", "anterior", "comentarios"
+        "siguiente", "anterior", "comentarios",
+        "archivo", "editar", "ver", "formato", "ayuda"
     ];
 
     private static readonly string[] SafeReadonlyPrefixes = [
