@@ -3,6 +3,11 @@
   "description": "7x8 Calculator -> read result -> Notepad open+close. Cleanup: close Calc before Notepad, close Notepad while blank to avoid save dialog.",
   "stopOnFirstFailure": true,
   "defaultTimeoutMs": 10000,
+  "metadata": {
+    "category": "regression",
+    "cleanupRisk": "low",
+    "autoRegression": true
+  },
   "steps": [
     { "id": "open-calc", "kind": "app.open", "app": "calculator" },
     { "id": "wait-calc", "kind": "wait", "process": "ApplicationFrameHost", "window": "Calculadora", "role": "Button", "timeoutMs": 8000, "intervalMs": 500 },
@@ -11,8 +16,8 @@
     { "id": "click-8", "kind": "actv.invoke", "process": "ApplicationFrameHost", "window": "Calculadora", "name": "Ocho", "role": "Button" },
     { "id": "click-equals", "kind": "actv.invoke", "process": "ApplicationFrameHost", "window": "Calculadora", "name": "Es igual a", "role": "Button" },
     { "id": "read-result", "kind": "snapshot.read", "process": "ApplicationFrameHost", "window": "Calculadora", "automationId": "CalculatorResults", "property": "name", "transform": "calculatorResult", "saveAs": "calculator.result", "timeoutMs": 5000, "intervalMs": 500 },
-    { "id": "assert-result", "kind": "assert.equals", "value": "{{calculator.result}}", "expected": "56" },
     { "id": "close-calc", "kind": "app.close", "app": "calculator", "saveAs": "calcClose" },
+    { "id": "assert-result", "kind": "assert.equals", "value": "{{calculator.result}}", "expected": "56" },
     { "id": "open-notepad", "kind": "app.open", "app": "notepad" },
     { "id": "wait-notepad", "kind": "wait", "process": "Notepad", "titleContains": "Bloc de notas", "timeoutMs": 5000, "intervalMs": 500 },
     { "id": "close-notepad", "kind": "app.close", "app": "notepad", "saveAs": "noteClose" },

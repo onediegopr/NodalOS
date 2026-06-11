@@ -2,6 +2,12 @@
   "name": "web-real-task-pack",
   "description": "Integrated: load profiles, open/read/close both, then assert and report to Notepad",
   "stopOnFirstFailure": false,
+  "metadata": {
+    "category": "legacy",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "reason": "Browser sessions close, but the recipe opens a dirty Notepad report and must remain manual."
+  },
   "steps": [
     { "id": "load-p1", "kind": "profile.load", "path": "tools/profiles/web/example-com.json", "saveAs": "profile.ex" },
     { "id": "open-ex", "kind": "browser.open", "path": "{{profile.ex.url}}", "saveAs": "browser.e1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },

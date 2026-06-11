@@ -2,6 +2,13 @@
   "name": "approval-deny-negative",
   "description": "Negative: run with --approve deny should block all sensitive steps",
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "negative",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "requiredMode": "--approve deny",
+    "reason": "The notepad app.open must be blocked by approval deny; if it executes, the test has failed."
+  },
   "steps": [
     { "kind": "note", "text": "This should run" },
     { "kind": "app.open", "app": "notepad" },

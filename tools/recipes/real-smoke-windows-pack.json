@@ -3,6 +3,12 @@
   "description": "Integrated real-world smoke: Calculator -> Notepad -> Explorer -> Edge. Cleanup: close Calc + Edge.",
   "stopOnFirstFailure": true,
   "defaultTimeoutMs": 15000,
+  "metadata": {
+    "category": "legacy",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "reason": "Leaves dirty Notepad and Explorer windows by design; kept as manual historical integrated smoke only."
+  },
   "variables": {
     "run.name": "ONE BRAIN REAL SMOKE",
     "expected.result": "56"

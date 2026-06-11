@@ -1,6 +1,13 @@
 {
   "name": "dry-run-safety-sample",
   "description": "Dry-run test: mix of safe and sensitive steps to verify classification",
+  "metadata": {
+    "category": "dry-run-only",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "requiredMode": "recipe dry-run",
+    "reason": "Contains intentionally unsafe/sensitive sample actions and must not be run."
+  },
   "steps": [
     { "kind": "note", "text": "Safe step - no action" },
     { "kind": "wait", "process": "Notepad", "role": "Window", "timeoutMs": 1000 },

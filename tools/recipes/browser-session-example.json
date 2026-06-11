@@ -2,6 +2,11 @@
   "name": "browser-session-example",
   "description": "Browser session: open new owned window, read title via session, close owned window",
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "regression",
+    "cleanupRisk": "low",
+    "autoRegression": true
+  },
   "steps": [
     {
       "id": "open-session",
@@ -32,16 +37,16 @@
       }
     },
     {
-      "id": "assert-title",
-      "kind": "assert.contains",
-      "value": "{{browser.title}}",
-      "expected": "Example"
-    },
-    {
       "id": "close-session",
       "kind": "browser.close",
       "saveAs": "browser.session",
       "timeoutMs": 5000
+    },
+    {
+      "id": "assert-title",
+      "kind": "assert.contains",
+      "value": "{{browser.title}}",
+      "expected": "Example"
     },
     {
       "id": "note-done",

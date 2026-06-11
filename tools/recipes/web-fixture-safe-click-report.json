@@ -1,18 +1,23 @@
 {
   "name": "web-fixture-safe-click-report",
-  "description": "Browser/web safe click: open accessible fixture, click Abrir informacion link, verify text",
+  "description": "Browser/web safe click: open accessible fixture, click Abrir información link, verify text",
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "regression",
+    "cleanupRisk": "low",
+    "autoRegression": true
+  },
   "steps": [
     { "id": "open-fixture", "kind": "browser.open", "path": "tools/fixtures/web/accessible-safe-click.html", "saveAs": "browser.s1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
     { "id": "delay-load", "kind": "delay", "timeoutMs": 1500 },
-    { "id": "read-before", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "btBefore", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
-    { "id": "preflight", "kind": "preflight.click", "saveAs": "clickPreflight", "args": { "targettext": "Abrir información" } },
-    { "id": "approval", "kind": "approval.manifest", "saveAs": "approval", "args": { "from": "clickPreflight", "mode": "nonCommercialWeb" } },
-    { "id": "assert-exec-allowed", "kind": "assert.equals", "value": "{{approval.executionAllowedInThisHito}}", "expected": "true" },
-    { "id": "safe-click", "kind": "safe.click", "saveAs": "safeClick", "args": { "targettext": "Abrir información", "mode": "nonCommercialWeb" } },
+    { "id": "read-before", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "btBefore", "timeoutMs": 10000, "args": { "session": "browser.s1" }, "continueOnError": true },
+    { "id": "preflight", "kind": "preflight.click", "saveAs": "clickPreflight", "args": { "targettext": "Abrir información" }, "continueOnError": true },
+    { "id": "approval", "kind": "approval.manifest", "saveAs": "approval", "args": { "from": "clickPreflight", "mode": "nonCommercialWeb" }, "continueOnError": true },
+    { "id": "safe-click", "kind": "safe.click", "saveAs": "safeClick", "args": { "targettext": "Abrir información", "mode": "nonCommercialWeb" }, "continueOnError": true },
     { "id": "delay-after", "kind": "delay", "timeoutMs": 500 },
-    { "id": "read-after", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btextAfter", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-after", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btextAfter", "timeoutMs": 10000, "args": { "session": "browser.s1" }, "continueOnError": true },
     { "id": "close-fixture", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "assert-exec-allowed", "kind": "assert.equals", "value": "{{approval.executionAllowedInThisHito}}", "expected": "true" },
     { "id": "assert-executed", "kind": "assert.equals", "value": "{{safeClick.executed}}", "expected": "true" },
     { "id": "assert-info", "kind": "assert.contains", "value": "{{btextAfter}}", "expected": "Información" },
     { "id": "note-report", "kind": "note", "text": "Web fixture safe click: target={{safeClick.targetText}} result={{safeClick.result}}. Title: {{btBefore}}" }

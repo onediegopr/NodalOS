@@ -6,6 +6,12 @@
     "expected.result": "56"
   },
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "manual",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "reason": "Writes a dirty Notepad buffer and cannot be auto-closed without a save/discard policy."
+  },
   "steps": [
     {
       "id": "open-notepad",

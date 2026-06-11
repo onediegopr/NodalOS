@@ -2,6 +2,12 @@
   "name": "firefox-noncommercial-safe-click-report",
   "description": "HITO-040: Open example.com in Firefox, preflight+approval+safe.click 'More information' target. Non-commercial web safe click spike.",
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "external-fragile",
+    "cleanupRisk": "medium",
+    "autoRegression": false,
+    "reason": "Uses external example.com and a real safe.click; fixture recipes cover automatic Firefox regression."
+  },
   "steps": [
     { "id": "open-example", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
     { "id": "delay-load", "kind": "delay", "timeoutMs": 2000 },

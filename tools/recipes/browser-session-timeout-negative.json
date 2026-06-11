@@ -2,6 +2,12 @@
   "name": "browser-session-timeout-negative",
   "description": "Negative: force timeout on impossible browser detection with very short timeout",
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "negative",
+    "cleanupRisk": "low",
+    "autoRegression": false,
+    "reason": "Uses a nonexistent browser id and should fail before owning a real session."
+  },
   "steps": [
     {
       "id": "open-impossible",

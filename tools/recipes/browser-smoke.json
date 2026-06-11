@@ -3,6 +3,12 @@
   "description": "Browser smoke test: open page, type query, click search, capture result",
   "stopOnFirstFailure": true,
   "defaultTimeoutMs": 15000,
+  "metadata": {
+    "category": "legacy",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "reason": "Legacy browser UIA smoke opens Edge without owned-session cleanup; use fixture safe-click/browser-session recipes for regression."
+  },
   "steps": [
     {
       "id": "open-browser",

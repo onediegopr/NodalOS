@@ -2,6 +2,11 @@
   "name": "browser-session-no-stale-window",
   "description": "Validate browser.open session does NOT reuse a stale window. Uses session-based read.",
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "regression",
+    "cleanupRisk": "low",
+    "autoRegression": true
+  },
   "steps": [
     {
       "id": "open-owned",
@@ -32,16 +37,16 @@
       }
     },
     {
-      "id": "assert-example",
-      "kind": "assert.contains",
-      "value": "{{browser.title}}",
-      "expected": "Example"
-    },
-    {
       "id": "close-owned",
       "kind": "browser.close",
       "saveAs": "browser.owned",
       "timeoutMs": 5000
+    },
+    {
+      "id": "assert-example",
+      "kind": "assert.contains",
+      "value": "{{browser.title}}",
+      "expected": "Example"
     },
     {
       "id": "note-done",

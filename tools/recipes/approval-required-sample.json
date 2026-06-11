@@ -1,6 +1,12 @@
 {
   "name": "approval-required-sample",
   "description": "Approval test: contains sensitive action (app.open) that requires approval",
+  "metadata": {
+    "category": "manual",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "reason": "Demonstrates approval gating with Notepad and intentionally has no safe cleanup path if approved."
+  },
   "steps": [
     { "kind": "note", "text": "About to open notepad" },
     { "kind": "app.open", "app": "notepad" },

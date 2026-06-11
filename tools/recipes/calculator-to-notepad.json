@@ -3,6 +3,13 @@
   "description": "Smoke test: Calculator 7x8 -> Notepad writing result",
   "stopOnFirstFailure": true,
   "defaultTimeoutMs": 10000,
+  "metadata": {
+    "category": "legacy",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "replacement": "calculator-to-notepad-variables.json",
+    "reason": "Writes a dirty Notepad buffer and has no safe automatic close path."
+  },
   "steps": [
     {
       "id": "open-calc",

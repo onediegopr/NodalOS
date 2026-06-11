@@ -2,6 +2,12 @@
   "name": "recorded-notepad-sample",
   "description": "Recipe: open Notepad, wait, focus via key, type text",
   "stopOnFirstFailure": false,
+  "metadata": {
+    "category": "legacy",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "reason": "Recorded sample writes a dirty Notepad buffer and has no safe automatic close path."
+  },
   "steps": [
     {
       "id": "open-notepad",

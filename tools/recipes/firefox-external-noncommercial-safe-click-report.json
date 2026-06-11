@@ -2,6 +2,12 @@
   "name": "firefox-external-noncommercial-safe-click-report",
   "description": "HITO-042: Open external non-commercial web in Firefox, attempt safe.click. Close before note.",
   "stopOnFirstFailure": false,
+  "metadata": {
+    "category": "external-fragile",
+    "cleanupRisk": "medium",
+    "autoRegression": false,
+    "reason": "External non-commercial safe-click diagnostic; not part of automatic regression."
+  },
   "steps": [
     { "id": "open-external", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
     { "id": "delay-load", "kind": "delay", "timeoutMs": 3000 },

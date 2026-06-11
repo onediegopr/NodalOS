@@ -2,6 +2,12 @@
   "name": "explorer-temp-smoke",
   "description": "Open Explorer at %TEMP% via runtime variable, confirm window visible",
   "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "manual",
+    "cleanupRisk": "high",
+    "autoRegression": false,
+    "reason": "Explorer close is blocked without owned app-session tracking; do not run as automatic regression."
+  },
   "steps": [
     {
       "id": "open-explorer",
