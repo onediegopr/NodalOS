@@ -1705,6 +1705,16 @@ public sealed class RecipeRunner
                     {
                         if (!string.IsNullOrWhiteSpace(resolution.CandidatesJson))
                             _ctx.Variables[prefix + ".resolution.candidatesJson"] = resolution.CandidatesJson;
+
+                        // Ambiguity: multiple candidates found → block, not fail
+                        if (resolution.CandidateCount > 1 && resolution.Reason.Contains("ambiguous"))
+                        {
+                            SetSafeClickVars(prefix, targetText, "blocked", $"ambiguous: {resolution.CandidateCount} candidates");
+                            sw.Stop();
+                            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                                $"safe.click: ambiguous target ({resolution.CandidateCount} candidates)", sw.ElapsedMilliseconds);
+                        }
+
                         SetSafeClickVars(prefix, targetText, "failed", resolution.Reason);
                         sw.Stop();
                         return new RecipeStepRunResult(step.Id, step.Kind, false,
@@ -1788,9 +1798,12 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".resolution.candidateCount"] = r.CandidateCount.ToString();
         _ctx.Variables[prefix + ".resolution.selectedName"] = r.SelectedName ?? "";
         _ctx.Variables[prefix + ".resolution.selectedControlType"] = r.SelectedControlType ?? "";
+        _ctx.Variables[prefix + ".resolution.selectedBoundingRect"] = r.SelectedBoundingRect ?? "";
         _ctx.Variables[prefix + ".resolution.windowsSearched"] = r.WindowsSearched.ToString();
         _ctx.Variables[prefix + ".resolution.method"] = "WebTargetResolver";
         _ctx.Variables[prefix + ".resolution.reason"] = r.Reason;
+        _ctx.Variables[prefix + ".resolution.hasInvoke"] = r.HasInvoke ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.hasClickablePoint"] = r.HasClickablePoint ? "true" : "false";
         if (r.ChildHwndDiagnostics.Count > 0)
             _ctx.Variables[prefix + ".resolution.childHwndDiagnostics"] = string.Join(" | ", r.ChildHwndDiagnostics);
     }

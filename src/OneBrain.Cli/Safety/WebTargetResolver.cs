@@ -189,8 +189,9 @@ public static class WebTargetResolver
         {
             Found = true, CandidateCount = 1,
             SelectedName = c.Name, SelectedControlType = c.ControlType,
-            SelectedHwnd = c.Hwnd.ToString(), HasInvoke = c.HasInvoke,
-            HasClickablePoint = c.HasClickablePoint, Reason = "exact match",
+            SelectedHwnd = c.Hwnd.ToString(), SelectedBoundingRect = c.BoundingRect,
+            HasInvoke = c.HasInvoke, HasClickablePoint = c.HasClickablePoint,
+            Reason = "exact match",
             WindowsSearched = windows,
             ChildHwndDiagnostics = diagnostics.Select(d => d.ToSummary()).ToList()
         };
@@ -251,6 +252,7 @@ public sealed class WebTargetResult
     public string? SelectedName { get; init; }
     public string? SelectedControlType { get; init; }
     public string? SelectedHwnd { get; init; }
+    public string? SelectedBoundingRect { get; init; }
     public bool HasInvoke { get; init; }
     public bool HasClickablePoint { get; init; }
     public string? CandidatesJson { get; init; }
