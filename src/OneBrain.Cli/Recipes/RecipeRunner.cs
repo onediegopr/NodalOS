@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Linq;
 using OneBrain.Actions.Uia;
 using OneBrain.Cli.Browser;
+using OneBrain.Cli.Safety;
 using OneBrain.Core.Extraction;
 using OneBrain.Core.Profiles;
 using OneBrain.Core.Safety;
@@ -1674,27 +1675,95 @@ public sealed class RecipeRunner
             }
         }
 
-        // 5. Execute via UIA action executor (same infrastructure as actv.invoke)
+        // 5. Execute: try WebTargetResolver for browser, then UIA executor
         try
         {
+            ActionResult result;
+
+            if (hasOwned)
+            {
+                IntPtr sessionHwnd = IntPtr.Zero;
+                foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".hwnd")))
+                {
+                    var pfx = key[..^5];
+                    if (_ctx.Variables.GetValueOrDefault(pfx + ".owned", "false") == "true" &&
+                        long.TryParse(_ctx.Variables[key], out var hl))
+                    {
+                        sessionHwnd = new IntPtr(hl);
+                        break;
+                    }
+                }
+
+                if (sessionHwnd != IntPtr.Zero)
+                {
+                    var resolution = WebTargetResolver.Resolve(sessionHwnd, targetText, proc);
+                    SetResolutionVars(prefix, resolution);
+
+                    if (!resolution.Found)
+                    {
+                        if (!string.IsNullOrWhiteSpace(resolution.CandidatesJson))
+                            _ctx.Variables[prefix + ".resolution.candidatesJson"] = resolution.CandidatesJson;
+                        SetSafeClickVars(prefix, targetText, "failed", resolution.Reason);
+                        sw.Stop();
+                        return new RecipeStepRunResult(step.Id, step.Kind, false,
+                            $"safe.click: {resolution.Reason}", sw.ElapsedMilliseconds);
+                    }
+
+                    // Execute click via FlaUI on the selected element
+                    try
+                    {
+                        if (long.TryParse(resolution.SelectedHwnd, out var selHwnd))
+                        {
+                            using var automation = new FlaUI.UIA3.UIA3Automation();
+                            var root = automation.FromHandle(new IntPtr(selHwnd));
+                            if (root != null)
+                            {
+                                var el = root.FindAllDescendants()
+                                    .FirstOrDefault(e => (e.Name ?? "").Contains(targetText, StringComparison.OrdinalIgnoreCase));
+                                if (el != null)
+                                {
+                                    if (el.Patterns.Invoke.IsSupported)
+                                        el.Patterns.Invoke.Pattern.Invoke();
+                                    else
+                                        el.Click();
+
+                                    SetSafeClickVars(prefix, targetText, "success", $"clicked via WebTargetResolver on {resolution.SelectedControlType}");
+                                    sw.Stop();
+                                    return new RecipeStepRunResult(step.Id, step.Kind, true,
+                                        $"safe.click: clicked '{targetText}' ({resolution.SelectedControlType})", sw.ElapsedMilliseconds);
+                                }
+                            }
+                        }
+                        SetSafeClickVars(prefix, targetText, "failed", "element disappeared after resolution");
+                    }
+                    catch (Exception ex)
+                    {
+                        SetSafeClickVars(prefix, targetText, "failed", ex.Message);
+                    }
+
+                    sw.Stop();
+                    return new RecipeStepRunResult(step.Id, step.Kind, false,
+                        $"safe.click: click failed after target found. {_ctx.Variables.GetValueOrDefault(prefix + ".reason", "")}", sw.ElapsedMilliseconds);
+                }
+            }
+
+            // Fallback to UIA action executor for desktop apps
             var req = new ActionRequest("invoke", $"name:{targetText}", null, proc, null,
                 CancellationToken: _stepCts?.Token);
 
-            var result = new UiaActionExecutor().Execute(req);
+            result = new UiaActionExecutor().Execute(req);
             if (!result.Success && result.Message?.Contains("not supported") == true)
             {
-                // Retry with click fallback for MenuItems etc.
                 var req2 = new ActionRequest("click", $"name:{targetText}", null, proc, null,
                     CancellationToken: _stepCts?.Token);
                 result = new UiaActionExecutor().Execute(req2);
             }
-            var success = result.Success;
 
-            SetSafeClickVars(prefix, targetText, success ? "success" : "failed",
-                result.Message ?? (success ? "clicked" : "failed"));
+            SetSafeClickVars(prefix, targetText, result.Success ? "success" : "failed",
+                result.Message ?? (result.Success ? "clicked" : "failed"));
 
             sw.Stop();
-            return new RecipeStepRunResult(step.Id, step.Kind, success,
+            return new RecipeStepRunResult(step.Id, step.Kind, result.Success,
                 $"safe.click: {result.Message}", sw.ElapsedMilliseconds);
         }
         catch (Exception ex)
@@ -1714,6 +1783,17 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".reason"] = reason;
         _ctx.Variables[prefix + ".result"] = result;
         _ctx.Variables[prefix + ".summary"] = $"safe.click {targetText}: {result} ({reason})";
+    }
+
+    private void SetResolutionVars(string prefix, WebTargetResult r)
+    {
+        _ctx.Variables[prefix + ".resolution.found"] = r.Found ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.candidateCount"] = r.CandidateCount.ToString();
+        _ctx.Variables[prefix + ".resolution.selectedName"] = r.SelectedName ?? "";
+        _ctx.Variables[prefix + ".resolution.selectedControlType"] = r.SelectedControlType ?? "";
+        _ctx.Variables[prefix + ".resolution.windowsSearched"] = r.WindowsSearched.ToString();
+        _ctx.Variables[prefix + ".resolution.method"] = "WebTargetResolver";
+        _ctx.Variables[prefix + ".resolution.reason"] = r.Reason;
     }
 
     internal static Dictionary<string, string> ExtractCommercialFields(string title, string text, string prefix)
