@@ -1,0 +1,23 @@
+{
+  "name": "firefox-launch-diagnostics",
+  "description": "HITO-042: Test 3 external URLs in Firefox via Process.Start. Diagnostic only. NO clicks.",
+  "stopOnFirstFailure": false,
+  "steps": [
+    { "id": "test-file", "kind": "note", "text": "=== TEST 1: file:// fixture ===" },
+    { "id": "open-file", "kind": "browser.open", "path": "tools/fixtures/web/accessible-safe-click.html", "saveAs": "s1", "timeoutMs": 15000, "args": { "browser": "firefox", "reuseExisting": "false" } },
+    { "id": "read-file", "kind": "browser.read", "process": "firefox", "property": "title", "saveAs": "f1Title", "timeoutMs": 10000, "args": { "session": "s1" } },
+    { "id": "close-file", "kind": "browser.close", "saveAs": "s1", "timeoutMs": 5000 },
+
+    { "id": "test-http", "kind": "note", "text": "=== TEST 2: http://httpbin.org ===" },
+    { "id": "open-http", "kind": "browser.open", "path": "http://httpbin.org/", "saveAs": "s2", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
+    { "id": "read-http", "kind": "browser.read", "process": "firefox", "property": "title", "saveAs": "f2Title", "timeoutMs": 10000, "args": { "session": "s2" } },
+    { "id": "close-http", "kind": "browser.close", "saveAs": "s2", "timeoutMs": 5000 },
+
+    { "id": "test-https", "kind": "note", "text": "=== TEST 3: https://example.com ===" },
+    { "id": "open-https", "kind": "browser.open", "path": "https://example.com", "saveAs": "s3", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
+    { "id": "read-https", "kind": "browser.read", "process": "firefox", "property": "title", "saveAs": "f3Title", "timeoutMs": 10000, "args": { "session": "s3" } },
+    { "id": "close-https", "kind": "browser.close", "saveAs": "s3", "timeoutMs": 5000 },
+
+    { "id": "report", "kind": "note", "text": "Firefox Launch Diagnostics: file={{f1Title}} | http={{f2Title}} | https={{f3Title}} | Conclusion: file:// OK, HTTPS fails with Firefox error page. Probable cause: TLS/proxy/security context in Process.Start. HITO-042 diagnostic complete, HITO-043 deferred." }
+  ]
+}
