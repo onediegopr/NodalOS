@@ -261,6 +261,7 @@ public sealed class RecipeRunner
                 "extract.visiblefields"  => ExecuteExtractVisibleFields(step, sw),
                 "extract.productevidence" => ExecuteExtractProductEvidence(step, sw),
                 "artifact.writeproductevidence" => ExecuteWriteProductEvidenceArtifact(step, sw),
+                "artifact.summarizeproductevidence" => ExecuteSummarizeProductEvidenceArtifacts(step, sw),
                 "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
@@ -1769,6 +1770,55 @@ public sealed class RecipeRunner
                 ? $"Product evidence artifact written: {result.RelativePath}"
                 : $"artifact.writeProductEvidence failed: {result.Error}",
             sw.ElapsedMilliseconds, result);
+    }
+
+    private RecipeStepRunResult ExecuteSummarizeProductEvidenceArtifacts(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var prefix = step.SaveAs ?? "productEvidenceSummary";
+        var inputDir = ResolveArg(step, "inputDir");
+        var outputDir = ResolveArg(step, "outputDir");
+
+        var result = ProductEvidenceSummaryWriter.WriteFromDirectory(
+            Directory.GetCurrentDirectory(),
+            inputDir,
+            outputDir);
+
+        SetProductEvidenceSummaryVars(prefix, result);
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, result.Success,
+            result.Success
+                ? $"Product evidence summary written: {result.RelativePath} ({result.Summary.ValidArtifactCount} valid, {result.Summary.InvalidArtifactCount} invalid)"
+                : $"artifact.summarizeProductEvidence failed: {result.Error}",
+            sw.ElapsedMilliseconds, result);
+    }
+
+    private void SetProductEvidenceSummaryVars(string prefix, ProductEvidenceSummaryWriteResult result)
+    {
+        _ctx.Variables[prefix + ".success"] = result.Success ? "true" : "false";
+        _ctx.Variables[prefix + ".path"] = result.Path;
+        _ctx.Variables[prefix + ".relativePath"] = result.RelativePath;
+        _ctx.Variables[prefix + ".error"] = result.Error;
+
+        var summary = result.Summary;
+        _ctx.Variables[prefix + ".schemaVersion"] = summary.SchemaVersion;
+        _ctx.Variables[prefix + ".sourceArtifactCount"] = summary.SourceArtifactCount.ToString();
+        _ctx.Variables[prefix + ".validArtifactCount"] = summary.ValidArtifactCount.ToString();
+        _ctx.Variables[prefix + ".invalidArtifactCount"] = summary.InvalidArtifactCount.ToString();
+        _ctx.Variables[prefix + ".productsWithPrice"] = summary.Totals.ProductsWithPrice.ToString();
+        _ctx.Variables[prefix + ".productsMissingPrice"] = summary.Totals.ProductsMissingPrice.ToString();
+        _ctx.Variables[prefix + ".productsWithMediumConfidence"] = summary.Totals.ProductsWithMediumConfidence.ToString();
+        _ctx.Variables[prefix + ".productsWithHighConfidence"] = summary.Totals.ProductsWithHighConfidence.ToString();
+        _ctx.Variables[prefix + ".productsWithDiagnosticStatus"] = summary.Totals.ProductsWithDiagnosticStatus.ToString();
+        _ctx.Variables[prefix + ".safetyClicksTotal"] = summary.Totals.SafetyClicksTotal.ToString();
+        _ctx.Variables[prefix + ".safetyPaymentsSignalsTotal"] = summary.Totals.SafetyPaymentsSignalsTotal.ToString();
+        _ctx.Variables[prefix + ".artifactsWithWarnings"] = summary.Totals.ArtifactsWithWarnings.ToString();
+        _ctx.Variables[prefix + ".notes"] = summary.Notes.Count == 0 ? "null" : string.Join(" | ", summary.Notes);
+        _ctx.Variables[prefix + ".json"] = System.Text.Json.JsonSerializer.Serialize(summary, new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+            WriteIndented = false
+        });
     }
 
     private RecipeStepRunResult ExecutePlanSafeNavigation(RecipeStepDefinition step, Stopwatch sw)

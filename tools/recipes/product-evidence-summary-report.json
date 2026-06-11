@@ -1,0 +1,29 @@
+{
+  "name": "product-evidence-summary-report",
+  "description": "HITO-062+063: Local JSON summary of product evidence artifacts. NO browser, NO clicks, NO network.",
+  "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "diagnostic",
+    "cleanupRisk": "none",
+    "autoRegression": true,
+    "readOnly": true,
+    "localOnly": true,
+    "commercialClicksAllowed": false
+  },
+  "steps": [
+    {
+      "id": "summarize-product-evidence",
+      "kind": "artifact.summarizeProductEvidence",
+      "saveAs": "productEvidenceSummary",
+      "args": {
+        "inputDir": "artifacts/product-evidence",
+        "outputDir": "artifacts/product-evidence-summary"
+      }
+    },
+    {
+      "id": "report",
+      "kind": "note",
+      "text": "Product Evidence Summary: sourceArtifactCount={{productEvidenceSummary.sourceArtifactCount}} | validArtifactCount={{productEvidenceSummary.validArtifactCount}} | invalidArtifactCount={{productEvidenceSummary.invalidArtifactCount}} | productsMissingPrice={{productEvidenceSummary.productsMissingPrice}} | productsWithPrice={{productEvidenceSummary.productsWithPrice}} | safetyClicksTotal={{productEvidenceSummary.safetyClicksTotal}} | safetyPaymentsSignalsTotal={{productEvidenceSummary.safetyPaymentsSignalsTotal}} | artifactsWithWarnings={{productEvidenceSummary.artifactsWithWarnings}} | outputPath={{productEvidenceSummary.relativePath}} | notes={{productEvidenceSummary.notes}}"
+    }
+  ]
+}
