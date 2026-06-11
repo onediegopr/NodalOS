@@ -24,9 +24,33 @@ public sealed class ClickPreflightEvaluatorTests
     }
 
     [TestMethod]
+    public void Tarjeta_De_Credito_Blocked_Payment()
+    {
+        var r = ClickPreflightEvaluator.Evaluate("tarjeta de crédito");
+        Assert.AreEqual("blocked", r.Decision);
+        Assert.AreEqual("payment-related", r.RiskCategory);
+    }
+
+    [TestMethod]
+    public void Debito_Blocked_Payment()
+    {
+        var r = ClickPreflightEvaluator.Evaluate("débito");
+        Assert.AreEqual("blocked", r.Decision);
+        Assert.AreEqual("payment-related", r.RiskCategory);
+    }
+
+    [TestMethod]
     public void Iniciar_Sesion_Blocked_Auth()
     {
-        var r = ClickPreflightEvaluator.Evaluate("Iniciar sesión");
+        var r = ClickPreflightEvaluator.Evaluate("iniciar sesión");
+        Assert.AreEqual("blocked", r.Decision);
+        Assert.AreEqual("auth-related", r.RiskCategory);
+    }
+
+    [TestMethod]
+    public void Contrasena_Blocked_Auth()
+    {
+        var r = ClickPreflightEvaluator.Evaluate("contraseña");
         Assert.AreEqual("blocked", r.Decision);
         Assert.AreEqual("auth-related", r.RiskCategory);
     }

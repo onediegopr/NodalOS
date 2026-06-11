@@ -5,23 +5,28 @@ namespace OneBrain.Core.Safety;
 /// <summary>Pure evaluator: determines if a click on targetText would be safe. No side effects.</summary>
 public static class ClickPreflightEvaluator
 {
-    private static readonly string[] AlwaysBlockedPrefixes = [
+    private static readonly string[] AlwaysBlockedPrefixes =
+    [
         "comprar", "pagar", "carrito", "checkout", "tarjeta",
         "cuotas", "crédito", "débito", "mercado pago", "transferencia",
-        "iniciar sesión", "registrarse", "crear cuenta", "contraseña",
+        "iniciar sesión", "sesión", "registrarse", "crear cuenta", "contraseña",
         "facturación", "financiación", "reservar", "contratar"
     ];
 
-    private static readonly string[] RequiresApprovalPrefixes = [
+    private static readonly string[] RequiresApprovalPrefixes =
+    [
         "ver más", "ver publicación", "ver producto", "descripción",
         "detalles", "características", "opiniones", "preguntas",
         "siguiente", "anterior", "comentarios",
-        "archivo", "editar", "ver", "formato", "ayuda"
+        "archivo", "editar", "ver", "formato", "ayuda",
+        "abrir información", "more information"
     ];
 
-    private static readonly string[] SafeReadonlyPrefixes = [
+    private static readonly string[] SafeReadonlyPrefixes =
+    [
         "categorías", "ofertas", "cupones", "ayuda", "términos",
-        "privacidad", "supermercado", "moda", "breadcrumb"
+        "privacidad", "supermercado", "moda", "breadcrumb",
+        "siete"
     ];
 
     public static ClickPreflightResult Evaluate(string targetText, string? contextJson = null)
@@ -30,7 +35,6 @@ public static class ClickPreflightEvaluator
         if (string.IsNullOrWhiteSpace(lower))
             return BuildResult(targetText, "unknown", "requiresReview", "empty target text", contextJson);
 
-        // Determine risk category and level
         string riskCategory;
         string riskLevel;
 
@@ -41,8 +45,8 @@ public static class ClickPreflightEvaluator
                           lower.Contains("transferencia") || lower.Contains("facturación") || lower.Contains("financiación")
                 ? "payment-related" : "dangerous-commercial";
 
-            if (lower.Contains("iniciar sesión") || lower.Contains("registrarse") || lower.Contains("crear cuenta") ||
-                lower.Contains("contraseña"))
+            if (lower.Contains("iniciar sesión") || lower.Contains("sesión") || lower.Contains("registrarse") ||
+                lower.Contains("crear cuenta") || lower.Contains("contraseña"))
                 riskCategory = "auth-related";
 
             riskLevel = riskCategory switch
@@ -101,6 +105,7 @@ public static class ClickPreflightEvaluator
         var evidence = new
         {
             targetText = text,
+            riskCategory = category,
             category,
             decision,
             riskLevel,
@@ -110,6 +115,7 @@ public static class ClickPreflightEvaluator
             requiresApproval = decision == "requiresApproval",
             requiresReview = decision == "requiresReview",
             nearbyDangerousSignals = nearby.Distinct().ToList(),
+            nearbyDangerousSignalsJson = JsonSerializer.Serialize(nearby.Distinct().ToList()),
             executionAllowedInThisHito = false
         };
 
@@ -126,7 +132,7 @@ public static class ClickPreflightEvaluator
             Reason = reason,
             EvidenceJson = JsonSerializer.Serialize(evidence),
             NearbyDangerousSignalsJson = JsonSerializer.Serialize(nearby.Distinct().ToList()),
-            Summary = $"{text} → {decision} ({category}, {riskLevel})"
+            Summary = $"{text} -> {decision} ({category}, {riskLevel})"
         };
     }
 }

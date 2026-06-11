@@ -3,7 +3,7 @@ namespace OneBrain.Safety.Policies;
 public sealed class MinimalSafetyGuard
 {
     // Blocked when ANY of these appears as a substring of the element name.
-    // "run" and "ejecutar" are intentionally NOT here — they are too generic.
+    // "run" and "ejecutar" are intentionally NOT here; they are too generic.
     // Use DangerousRunPhrases below for run-specific dangerous contexts.
     private static readonly string[] DangerousSubstrings =
     [
@@ -32,7 +32,7 @@ public sealed class MinimalSafetyGuard
         "execute",    // "execute" alone is dangerous; "run" alone is not
     ];
 
-    // Dangerous only when the name contains one of these *specific phrases*.
+    // Dangerous only when the name contains one of these specific phrases.
     // Prevents "Run ONE Brain Search" from being blocked while still catching
     // "Run as administrator", "Run script", etc.
     private static readonly string[] DangerousRunPhrases =

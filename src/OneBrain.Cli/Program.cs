@@ -914,26 +914,26 @@ static void RunDryRun(RecipeDefinition recipe)
 
     // Run template validation
     var templateWarnings = RecipeRunner.ValidateTemplates(recipe);
+    var sensitiveCount = recipe.Steps.Count(s => IsSensitiveKind((s.Kind ?? "").ToLowerInvariant()));
 
     Console.WriteLine(JsonSerializer.Serialize(new
     {
         DryRun = true,
         Name = recipe.Name,
         TotalSteps = recipe.Steps.Count,
-        SensitiveCount = steps.Count(s => IsSensitiveKind((recipe.Steps[steps.IndexOf(s) as int? ?? 0].Kind ?? "").ToLowerInvariant())),
+        SensitiveCount = sensitiveCount,
         Issues = issues,
         TemplateWarnings = templateWarnings.Count > 0 ? templateWarnings : null,
         Steps = steps
     }, new JsonSerializerOptions { WriteIndented = true }));
 
     // Recalculate sensitive count properly
-    var sensitiveCount = recipe.Steps.Count(s => IsSensitiveKind((s.Kind ?? "").ToLowerInvariant()));
     Console.Error.WriteLine($"DRY-RUN: {recipe.Name} ({recipe.Steps.Count} steps, {sensitiveCount} sensitive) — no actions executed.");
 }
 
 static bool IsSensitiveKind(string kind)
 {
-    return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close";
+    return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close" or "safe.click";
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

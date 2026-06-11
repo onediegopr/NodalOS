@@ -39,7 +39,7 @@ public sealed class BrowserSession
         var finder = new WindowFinder();
         var processToFind = ResolveProcessName(browserName);
         if (processToFind == null)
-            return new BrowserOpenResult { Success = false, Error = $"Unsupported browser: {browserName}. Supported: edge, chrome." };
+            return new BrowserOpenResult { Success = false, Error = $"Unsupported browser: {browserName}. Supported: edge, chrome, firefox." };
 
         var existingHwnds = new HashSet<IntPtr>(finder.FindAllWindows(processToFind, null));
 

@@ -44,13 +44,38 @@ public sealed class ApprovalManifestBuilderTests
     }
 
     [TestMethod]
-    public void ExecutionAllowedInThisHito_Always_False()
+    public void RequiresReview_Never_Executable()
     {
-        foreach (var text in new[] { "Comprar ahora", "Ver descripción", "Categorías", "foo-bar" })
+        foreach (var mode in new[] { "controlled", "nonCommercialWeb", "commercialWeb" })
         {
-            var pr = ClickPreflightEvaluator.Evaluate(text);
-            var m = ApprovalManifestBuilder.Build(pr);
-            Assert.IsFalse(m.ExecutionAllowedInThisHito, $"Expected false for '{text}'");
+            var pr = ClickPreflightEvaluator.Evaluate("foo-bar");
+            var m = ApprovalManifestBuilder.Build(pr, mode);
+            Assert.IsTrue(pr.RequiresReview);
+            Assert.IsFalse(m.ExecutionAllowedInThisHito, $"Expected false for mode '{mode}'");
         }
+    }
+
+    [TestMethod]
+    public void Controlled_Navigation_Can_Be_Executable()
+    {
+        var pr = ClickPreflightEvaluator.Evaluate("Ver descripción");
+        var m = ApprovalManifestBuilder.Build(pr, "controlled");
+        Assert.AreEqual("requiresApproval", pr.Decision);
+        Assert.IsTrue(m.ExecutionAllowedInThisHito);
+    }
+
+    [TestMethod]
+    public void Manifest_Includes_Binding_Fields()
+    {
+        var pr = ClickPreflightEvaluator.Evaluate("Ver descripción");
+        var m = ApprovalManifestBuilder.Build(pr, "nonCommercialWeb");
+
+        Assert.AreEqual("Ver descripción", m.TargetText);
+        Assert.AreEqual("nonCommercialWeb", m.Mode);
+        Assert.AreEqual("requiresApproval", m.Decision);
+        Assert.AreEqual("navigation-candidate", m.RiskCategory);
+        Assert.AreEqual("medium", m.RiskLevel);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(m.EvidenceHash));
+        StringAssert.Contains(m.ManifestJson!, "\"evidenceHash\"");
     }
 }

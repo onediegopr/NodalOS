@@ -11,7 +11,6 @@ public sealed class MinimalSafetyGuardTests
     [TestMethod]
     public void Blocks_Close_AutomationId()
     {
-        // Name "Cerrar ventana" also triggers dangerous substring, so it blocks by name first
         var decision = _guard.Evaluate("invoke", "Button", "Cerrar ventana", "Close", "ButtonClass");
         Assert.IsFalse(decision.Allowed);
     }
@@ -19,7 +18,6 @@ public sealed class MinimalSafetyGuardTests
     [TestMethod]
     public void Blocks_Close_AutomationId_Only()
     {
-        // Only automation id triggers block, not name
         var decision = _guard.Evaluate("invoke", "Button", "Regular Button", "Close", "");
         Assert.IsFalse(decision.Allowed);
         StringAssert.Contains(decision.Reason, "Close");

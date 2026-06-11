@@ -9,8 +9,9 @@ public sealed class SafeClickPolicyTests
     [TestMethod]
     public void Controlled_Mode_Allows_Execution_For_SafeReadonly()
     {
-        var pr = ClickPreflightEvaluator.Evaluate("Mostrar detalles");
+        var pr = ClickPreflightEvaluator.Evaluate("Siete");
         var m = ApprovalManifestBuilder.Build(pr, "controlled");
+        Assert.AreEqual("allowedForFuture", pr.Decision);
         Assert.IsTrue(m.ExecutionAllowedInThisHito);
     }
 
@@ -19,6 +20,16 @@ public sealed class SafeClickPolicyTests
     {
         var pr = ClickPreflightEvaluator.Evaluate("More information...");
         var m = ApprovalManifestBuilder.Build(pr, "nonCommercialWeb");
+        Assert.AreEqual("requiresApproval", pr.Decision);
+        Assert.IsTrue(m.ExecutionAllowedInThisHito);
+    }
+
+    [TestMethod]
+    public void ControlledWeb_Allows_Execution_For_Nav()
+    {
+        var pr = ClickPreflightEvaluator.Evaluate("Ver descripción");
+        var m = ApprovalManifestBuilder.Build(pr, "controlled");
+        Assert.AreEqual("requiresApproval", pr.Decision);
         Assert.IsTrue(m.ExecutionAllowedInThisHito);
     }
 
@@ -28,6 +39,15 @@ public sealed class SafeClickPolicyTests
         var pr = ClickPreflightEvaluator.Evaluate("Ver descripción");
         var m = ApprovalManifestBuilder.Build(pr, "commercialWeb");
         Assert.IsFalse(m.ExecutionAllowedInThisHito);
+    }
+
+    [TestMethod]
+    public void RequiresReview_Never_Allows_Execution()
+    {
+        var pr = ClickPreflightEvaluator.Evaluate("unknown target");
+        Assert.IsTrue(pr.RequiresReview);
+        Assert.IsFalse(ApprovalManifestBuilder.Build(pr, "controlled").ExecutionAllowedInThisHito);
+        Assert.IsFalse(ApprovalManifestBuilder.Build(pr, "nonCommercialWeb").ExecutionAllowedInThisHito);
     }
 
     [TestMethod]
@@ -57,14 +77,11 @@ public sealed class SafeClickPolicyTests
         Assert.IsFalse(m.ExecutionAllowedInThisHito);
     }
 
-    // ── HITO-041: Ambiguity + Commercial hardening ──────────────────────────
-
     [TestMethod]
     public void CommercialWeb_Blocks_Even_Nav_Target()
     {
-        // Even navigation-like targets should not execute in commercialWeb mode
         var pr = ClickPreflightEvaluator.Evaluate("More information...");
-        Assert.IsFalse(pr.Blocked); // Not dangerous text
+        Assert.IsFalse(pr.Blocked);
         var m = ApprovalManifestBuilder.Build(pr, "commercialWeb");
         Assert.IsFalse(m.ExecutionAllowedInThisHito);
     }
@@ -72,7 +89,7 @@ public sealed class SafeClickPolicyTests
     [TestMethod]
     public void CommercialWeb_Blocks_Even_SafeReadonly_Target()
     {
-        var pr = ClickPreflightEvaluator.Evaluate("Mostrar detalles");
+        var pr = ClickPreflightEvaluator.Evaluate("Siete");
         Assert.IsFalse(pr.Blocked);
         var m = ApprovalManifestBuilder.Build(pr, "commercialWeb");
         Assert.IsFalse(m.ExecutionAllowedInThisHito);
@@ -82,7 +99,7 @@ public sealed class SafeClickPolicyTests
     public void NonCommercialWeb_Blocks_Dangerous_Target()
     {
         var pr = ClickPreflightEvaluator.Evaluate("Agregar al carrito");
-        Assert.IsTrue(pr.Blocked); // Carrito should be blocked
+        Assert.IsTrue(pr.Blocked);
     }
 
     [TestMethod]

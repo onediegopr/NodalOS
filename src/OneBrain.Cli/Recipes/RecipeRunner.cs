@@ -316,6 +316,14 @@ public sealed class RecipeRunner
             return Fail(step, sw, $"app.close unsupported app: {app}");
         }
 
+        if (app == "explorer")
+        {
+            SetAppCloseVars(prefix, false, app, "blocked: explorer close requires owned app session tracking", 0);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                "app.close explorer blocked: Explorer close requires owned session tracking.", sw.ElapsedMilliseconds);
+        }
+
         var finder = new OneBrain.Observation.Windows.WindowFinder();
         var windows = finder.FindAllWindows(proc, titleContains);
 
@@ -337,20 +345,32 @@ public sealed class RecipeRunner
 
         // Close each matching window
         var closed = 0;
+        var failures = new List<string>();
         foreach (var hwnd in windows)
         {
             try
             {
-                Browser.BrowserSession.Close(hwnd, 3000);
-                closed++;
+                var closeResult = Browser.BrowserSession.Close(hwnd, 3000);
+                if (closeResult.Success)
+                    closed++;
+                else
+                    failures.Add(closeResult.Message);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                failures.Add(ex.Message);
+            }
         }
 
-        SetAppCloseVars(prefix, closed > 0, app, closed > 0 ? "closed" : "failed", closed);
+        var success = closed > 0 && failures.Count == 0;
+        var reason = success ? "closed" : failures.Count > 0 ? string.Join("; ", failures) : "failed";
+        SetAppCloseVars(prefix, success, app, reason, closed);
         sw.Stop();
-        return new RecipeStepRunResult(step.Id, step.Kind, closed > 0,
-            $"App '{app}' closed ({closed} window(s)).", sw.ElapsedMilliseconds);
+        return new RecipeStepRunResult(step.Id, step.Kind, success,
+            success
+                ? $"App '{app}' closed ({closed} window(s))."
+                : $"app.close failed for '{app}': {reason}",
+            sw.ElapsedMilliseconds);
     }
 
     private void SetAppCloseVars(string prefix, bool success, string target, string reason, int count)
@@ -1443,7 +1463,7 @@ public sealed class RecipeRunner
     private static bool IsSensitiveStep(RecipeStepDefinition step)
     {
         var kind = (step.Kind ?? "").ToLowerInvariant();
-        return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "app.close" or "browser.open" or "browser.close";
+        return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "app.close" or "browser.open" or "browser.close" or "safe.click";
     }
 
     /// <summary>Validate template variables in a recipe against known/provided sources.</summary>
@@ -1640,7 +1660,9 @@ public sealed class RecipeRunner
         if (targetText is null or "")
             return Fail(step, sw, "preflight.click requires 'targetText'.");
 
-        var contextJson = step.Args?.GetValueOrDefault("from") ?? _ctx.Variables.GetValueOrDefault("actions.itemsJson", null);
+        var contextJson = step.Args?.GetValueOrDefault("from");
+        if (contextJson == null)
+            _ctx.Variables.TryGetValue("actions.itemsJson", out contextJson);
 
         var result = ClickPreflightEvaluator.Evaluate(targetText, contextJson);
         var prefix = step.SaveAs ?? "clickPreflight";
@@ -1687,6 +1709,12 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".manifestJson"] = manifest.ManifestJson ?? "";
         _ctx.Variables[prefix + ".humanReadableText"] = manifest.HumanReadableText;
         _ctx.Variables[prefix + ".policyVersion"] = manifest.PolicyVersion;
+        _ctx.Variables[prefix + ".targetText"] = manifest.TargetText;
+        _ctx.Variables[prefix + ".mode"] = manifest.Mode;
+        _ctx.Variables[prefix + ".decision"] = manifest.Decision;
+        _ctx.Variables[prefix + ".riskCategory"] = manifest.RiskCategory;
+        _ctx.Variables[prefix + ".riskLevel"] = manifest.RiskLevel;
+        _ctx.Variables[prefix + ".evidenceHash"] = manifest.EvidenceHash;
         _ctx.Variables[prefix + ".executionAllowedInThisHito"] = manifest.ExecutionAllowedInThisHito ? "true" : "false";
 
         sw.Stop();
@@ -1702,7 +1730,13 @@ public sealed class RecipeRunner
 
         var prefix = step.SaveAs ?? "safeClick";
         var approvalPrefix = step.Args?.GetValueOrDefault("approvalprefix") ?? "approval";
-        var mode = step.Args?.GetValueOrDefault("mode") ?? "controlled";
+        var requestedMode = step.Args?.GetValueOrDefault("mode");
+        var approvalMode = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".mode", "");
+        var mode = !string.IsNullOrWhiteSpace(requestedMode)
+            ? requestedMode
+            : !string.IsNullOrWhiteSpace(approvalMode)
+                ? approvalMode
+                : "controlled";
 
         // 1. Verify browser session owned (required only for non-controlled)
         var hasOwned = false;
@@ -1727,7 +1761,17 @@ public sealed class RecipeRunner
                 $"safe.click: target blocked: {pr.Reason}", sw.ElapsedMilliseconds);
         }
 
-        // 3. Approval check
+        // 3. Approval binding check
+        var bindingError = ValidateApprovalBinding(approvalPrefix, targetText, mode);
+        if (bindingError != null)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", bindingError);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"safe.click: approval binding invalid: {bindingError}", sw.ElapsedMilliseconds);
+        }
+
+        // 4. Approval check
         var execAllowed = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".executionAllowedInThisHito", "false");
         if (execAllowed != "true")
         {
@@ -1737,7 +1781,7 @@ public sealed class RecipeRunner
                 "safe.click: approval does not allow execution.", sw.ElapsedMilliseconds);
         }
 
-        // 4. Determine process
+        // 5. Determine process
         var proc = step.Args?.GetValueOrDefault("proc") ?? "msedge";
         if (proc == "msedge" && !hasOwned)
         {
@@ -1749,7 +1793,7 @@ public sealed class RecipeRunner
             }
         }
 
-        // 5. Execute: try WebTargetResolver for browser, then UIA executor
+        // 6. Execute: try WebTargetResolver for browser, then UIA executor
         try
         {
             ActionResult result;
@@ -1862,6 +1906,45 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".reason"] = reason;
         _ctx.Variables[prefix + ".result"] = result;
         _ctx.Variables[prefix + ".summary"] = $"safe.click {targetText}: {result} ({reason})";
+    }
+
+    private string? ValidateApprovalBinding(string approvalPrefix, string targetText, string mode)
+    {
+        var approvalTarget = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".targetText", "");
+        if (!approvalTarget.Equals(targetText, StringComparison.Ordinal))
+            return $"target mismatch: approval='{approvalTarget}', click='{targetText}'";
+
+        var approvalMode = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".mode", "");
+        if (!approvalMode.Equals(mode, StringComparison.Ordinal))
+            return $"mode mismatch: approval='{approvalMode}', click='{mode}'";
+
+        var policyVersion = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".policyVersion", "");
+        if (policyVersion != ApprovalManifestBuilder.PolicyVersion)
+            return $"unsupported approval policy version '{policyVersion}'";
+
+        var decision = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".decision", "");
+        if (decision == "requiresReview")
+            return "requiresReview is never executable";
+        if (decision is not ("allowedForFuture" or "requiresApproval"))
+            return $"decision '{decision}' is not executable";
+
+        var riskCategory = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".riskCategory", "");
+        var riskLevel = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".riskLevel", "");
+        var evidenceHash = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".evidenceHash", "");
+        if (string.IsNullOrWhiteSpace(evidenceHash))
+            return "missing approval evidenceHash";
+
+        var expectedHash = ApprovalManifestBuilder.ComputeEvidenceHash(
+            approvalTarget,
+            approvalMode,
+            decision,
+            riskCategory,
+            riskLevel,
+            policyVersion);
+        if (!evidenceHash.Equals(expectedHash, StringComparison.OrdinalIgnoreCase))
+            return "approval evidenceHash mismatch";
+
+        return null;
     }
 
     private void SetResolutionVars(string prefix, WebTargetResult r)
