@@ -21,17 +21,24 @@ public static class ProductEvidenceMarkdownRenderer
         AppendMetric(sb, "Invalid artifacts", summary.InvalidArtifactCount);
         AppendMetric(sb, "Products with price", summary.Totals.ProductsWithPrice);
         AppendMetric(sb, "Products missing price", summary.Totals.ProductsMissingPrice);
+        AppendMetric(sb, "Sufficient evidence", summary.Totals.SufficientCount);
+        AppendMetric(sb, "Partial evidence", summary.Totals.PartialCount);
+        AppendMetric(sb, "Insufficient evidence", summary.Totals.InsufficientCount);
+        AppendMetric(sb, "Diagnostic evidence", summary.Totals.DiagnosticCount);
+        AppendMetric(sb, "Average evidence score", summary.Totals.AverageEvidenceScore);
+        AppendMetric(sb, "Ready for comparison", summary.Totals.ReadyForComparisonCount);
+        AppendMetric(sb, "Needs price verification", summary.Totals.NeedsPriceVerificationCount);
         AppendMetric(sb, "Safety clicks total", summary.Totals.SafetyClicksTotal);
         AppendMetric(sb, "Safety payment signals total", summary.Totals.SafetyPaymentsSignalsTotal);
         sb.AppendLine();
 
         sb.AppendLine("## Products");
         sb.AppendLine();
-        sb.AppendLine("| Product | Source | Price | Currency | Status | Confidence | Missing fields |");
-        sb.AppendLine("|---|---|---:|---|---|---|---|");
+        sb.AppendLine("| Product | Source | Price | Currency | Status | Confidence | Score | Grade | Readiness | Missing fields |");
+        sb.AppendLine("|---|---|---:|---|---|---|---:|---|---|---|");
         if (summary.Items.Count == 0)
         {
-            sb.AppendLine("| diagnostic: no products | — | — | — | diagnostic | diagnostic | — |");
+            sb.AppendLine("| diagnostic: no products | — | — | — | diagnostic | diagnostic | 0 | insufficient | diagnostic_only | — |");
         }
         else
         {
@@ -50,6 +57,12 @@ public static class ProductEvidenceMarkdownRenderer
                 sb.Append(" | ");
                 sb.Append(Cell(ValueOrDash(item.ExtractionConfidence)));
                 sb.Append(" | ");
+                sb.Append(item.EvidenceScore);
+                sb.Append(" | ");
+                sb.Append(Cell(ValueOrDash(item.EvidenceGrade)));
+                sb.Append(" | ");
+                sb.Append(Cell(ValueOrDash(item.DecisionReadiness)));
+                sb.Append(" | ");
                 sb.Append(Cell(item.BlockedOrMissingFields.Count == 0 ? "—" : string.Join(", ", item.BlockedOrMissingFields)));
                 sb.AppendLine(" |");
             }
@@ -60,6 +73,8 @@ public static class ProductEvidenceMarkdownRenderer
         sb.AppendLine();
         sb.AppendLine("- Raw signals are not treated as visible normalized price.");
         sb.AppendLine("- Missing price means the visible/UIA evidence did not confirm a price.");
+        sb.AppendLine("- Missing price is evidence incompleteness, not a technical failure by itself.");
+        sb.AppendLine("- Score, grade, and readiness evaluate captured evidence only; they do not create product data.");
         sb.AppendLine("- Safety summary: no clicks, no checkout, no payments.");
         foreach (var note in summary.Notes)
             sb.AppendLine($"- {ValueOrDash(note)}");
@@ -83,6 +98,11 @@ public static class ProductEvidenceMarkdownRenderer
     private static void AppendMetric(StringBuilder sb, string metric, int value)
     {
         sb.AppendLine($"| {Cell(metric)} | {value} |");
+    }
+
+    private static void AppendMetric(StringBuilder sb, string metric, double value)
+    {
+        sb.AppendLine($"| {Cell(metric)} | {value:0.##} |");
     }
 
     private static string ValueOrDash(string? value)

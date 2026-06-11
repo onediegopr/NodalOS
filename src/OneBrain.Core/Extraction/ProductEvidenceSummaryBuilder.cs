@@ -24,7 +24,7 @@ public static class ProductEvidenceSummaryBuilder
             var currency = NullIfBlank(evidence.Currency);
             var stock = NullIfBlank(evidence.Stock);
 
-            items.Add(new ProductEvidenceSummaryItem
+            var item = new ProductEvidenceSummaryItem
             {
                 RecipeId = artifact.RecipeId,
                 ProfileId = artifact.ProfileId,
@@ -45,6 +45,17 @@ public static class ProductEvidenceSummaryBuilder
                 RawSignalCount = evidence.RawSignals.Count,
                 SafetySummary = artifact.Safety,
                 ArtifactPath = source.ArtifactPath
+            };
+
+            var quality = ProductEvidenceQualityScorer.Score(item);
+            items.Add(item with
+            {
+                EvidenceScore = quality.EvidenceScore,
+                EvidenceGrade = quality.EvidenceGrade,
+                QualityStatus = quality.QualityStatus,
+                QualityReasons = quality.QualityReasons,
+                MissingCriticalFields = quality.MissingCriticalFields,
+                DecisionReadiness = quality.DecisionReadiness
             });
         }
 
@@ -57,7 +68,14 @@ public static class ProductEvidenceSummaryBuilder
             ProductsWithDiagnosticStatus = items.Count(item => item.ExtractionStatus.Equals("diagnostic", StringComparison.OrdinalIgnoreCase)),
             SafetyClicksTotal = items.Sum(item => item.SafetySummary.Clicks),
             SafetyPaymentsSignalsTotal = items.Sum(item => item.SafetySummary.PaymentSignals.Count),
-            ArtifactsWithWarnings = items.Count(item => item.BlockedOrMissingFields.Count > 0) + invalidArtifacts.Count
+            ArtifactsWithWarnings = items.Count(item => item.BlockedOrMissingFields.Count > 0) + invalidArtifacts.Count,
+            SufficientCount = items.Count(item => item.QualityStatus.Equals("sufficient", StringComparison.OrdinalIgnoreCase)),
+            PartialCount = items.Count(item => item.QualityStatus.Equals("partial", StringComparison.OrdinalIgnoreCase)),
+            InsufficientCount = items.Count(item => item.QualityStatus.Equals("insufficient", StringComparison.OrdinalIgnoreCase)),
+            DiagnosticCount = items.Count(item => item.QualityStatus.Equals("diagnostic", StringComparison.OrdinalIgnoreCase)),
+            AverageEvidenceScore = items.Count == 0 ? 0 : Math.Round(items.Average(item => item.EvidenceScore), 2),
+            ReadyForComparisonCount = items.Count(item => item.DecisionReadiness.Equals("ready_for_comparison", StringComparison.OrdinalIgnoreCase)),
+            NeedsPriceVerificationCount = items.Count(item => item.DecisionReadiness.Equals("needs_price_verification", StringComparison.OrdinalIgnoreCase))
         };
 
         var notes = new List<string>();

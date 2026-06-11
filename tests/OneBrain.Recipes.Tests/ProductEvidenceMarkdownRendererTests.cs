@@ -30,7 +30,7 @@ public sealed class ProductEvidenceMarkdownRendererTests
         var markdown = ProductEvidenceMarkdownRenderer.Render(CreateSummary());
 
         StringAssert.Contains(markdown, "## Products");
-        StringAssert.Contains(markdown, "| Product | Source | Price | Currency | Status | Confidence | Missing fields |");
+        StringAssert.Contains(markdown, "| Product | Source | Price | Currency | Status | Confidence | Score | Grade | Readiness | Missing fields |");
     }
 
     [TestMethod]
@@ -38,7 +38,26 @@ public sealed class ProductEvidenceMarkdownRendererTests
     {
         var markdown = ProductEvidenceMarkdownRenderer.Render(CreateSummary());
 
-        StringAssert.Contains(markdown, "| Placa Marmol Blanco Firenze | suministrosroca-uy-product | — | — | missing_price | medium | missing_price, missing_currency, missing_stock |");
+        StringAssert.Contains(markdown, "| Placa Marmol Blanco Firenze | suministrosroca-uy-product | — | — | missing_price | medium | 50 | partial | needs_price_verification | missing_price, missing_currency, missing_stock |");
+    }
+
+    [TestMethod]
+    public void Render_Includes_Quality_Metrics()
+    {
+        var markdown = ProductEvidenceMarkdownRenderer.Render(CreateSummary());
+
+        StringAssert.Contains(markdown, "| Partial evidence | 1 |");
+        StringAssert.Contains(markdown, "| Average evidence score | 50 |");
+        StringAssert.Contains(markdown, "| Needs price verification | 1 |");
+    }
+
+    [TestMethod]
+    public void Render_Includes_Score_Grade_And_Readiness()
+    {
+        var markdown = ProductEvidenceMarkdownRenderer.Render(CreateSummary());
+
+        StringAssert.Contains(markdown, "Score | Grade | Readiness");
+        StringAssert.Contains(markdown, "50 | partial | needs_price_verification");
     }
 
     [TestMethod]
@@ -168,7 +187,13 @@ public sealed class ProductEvidenceMarkdownRendererTests
             HasStock = false,
             RawSignalCount = rawSignalCount,
             SafetySummary = new ProductEvidenceSafetySummary { Clicks = 0, CookiesAccepted = 0 },
-            ArtifactPath = "artifacts/product-evidence/example.json"
+            ArtifactPath = "artifacts/product-evidence/example.json",
+            EvidenceScore = 50,
+            EvidenceGrade = "partial",
+            QualityStatus = "partial",
+            QualityReasons = ["identified product evidence floor: 50"],
+            MissingCriticalFields = ["missing_price", "missing_currency", "missing_stock"],
+            DecisionReadiness = "needs_price_verification"
         };
 
         return new ProductEvidenceSummary
@@ -185,7 +210,10 @@ public sealed class ProductEvidenceMarkdownRendererTests
                 ProductsWithMediumConfidence = 1,
                 SafetyClicksTotal = 0,
                 SafetyPaymentsSignalsTotal = 0,
-                ArtifactsWithWarnings = 1
+                ArtifactsWithWarnings = 1,
+                PartialCount = 1,
+                AverageEvidenceScore = 50,
+                NeedsPriceVerificationCount = 1
             },
             Notes = ["rawSignals are not treated as visible normalized price"]
         };

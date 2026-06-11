@@ -68,6 +68,36 @@ public sealed class ProductEvidenceSummaryBuilderTests
     }
 
     [TestMethod]
+    public void Build_Adds_Quality_Score_To_Items()
+    {
+        var summary = ProductEvidenceSummaryBuilder.Build([
+            ValidSource("missing.json", CreateArtifact("missing", "profile", price: null, currency: null))
+        ]);
+
+        Assert.AreEqual(50, summary.Items[0].EvidenceScore);
+        Assert.AreEqual("partial", summary.Items[0].EvidenceGrade);
+        Assert.AreEqual("partial", summary.Items[0].QualityStatus);
+        Assert.AreEqual("needs_price_verification", summary.Items[0].DecisionReadiness);
+    }
+
+    [TestMethod]
+    public void Build_Calculates_Quality_Totals()
+    {
+        var summary = ProductEvidenceSummaryBuilder.Build([
+            ValidSource("missing.json", CreateArtifact("missing", "profile", price: null, currency: null)),
+            ValidSource("priced.json", CreateArtifact("priced", "profile", price: "38.18", currency: "USD"))
+        ]);
+
+        Assert.AreEqual(1, summary.Totals.PartialCount);
+        Assert.AreEqual(1, summary.Totals.SufficientCount);
+        Assert.AreEqual(0, summary.Totals.InsufficientCount);
+        Assert.AreEqual(0, summary.Totals.DiagnosticCount);
+        Assert.AreEqual(1, summary.Totals.ReadyForComparisonCount);
+        Assert.AreEqual(1, summary.Totals.NeedsPriceVerificationCount);
+        Assert.AreEqual(70, summary.Totals.AverageEvidenceScore);
+    }
+
+    [TestMethod]
     public void Build_Includes_BlockedOrMissingFields()
     {
         var summary = ProductEvidenceSummaryBuilder.Build([

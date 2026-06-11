@@ -32,6 +32,12 @@ public sealed record ProductEvidenceSummaryItem
     public int RawSignalCount { get; init; }
     public ProductEvidenceSafetySummary SafetySummary { get; init; } = new();
     public string ArtifactPath { get; init; } = "";
+    public int EvidenceScore { get; init; }
+    public string EvidenceGrade { get; init; } = "insufficient";
+    public string QualityStatus { get; init; } = "insufficient";
+    public IReadOnlyList<string> QualityReasons { get; init; } = [];
+    public IReadOnlyList<string> MissingCriticalFields { get; init; } = [];
+    public string DecisionReadiness { get; init; } = "needs_more_evidence";
 }
 
 public sealed record ProductEvidenceSummaryTotals
@@ -44,6 +50,13 @@ public sealed record ProductEvidenceSummaryTotals
     public int SafetyClicksTotal { get; init; }
     public int SafetyPaymentsSignalsTotal { get; init; }
     public int ArtifactsWithWarnings { get; init; }
+    public int SufficientCount { get; init; }
+    public int PartialCount { get; init; }
+    public int InsufficientCount { get; init; }
+    public int DiagnosticCount { get; init; }
+    public double AverageEvidenceScore { get; init; }
+    public int ReadyForComparisonCount { get; init; }
+    public int NeedsPriceVerificationCount { get; init; }
 }
 
 public sealed record ProductEvidenceSummarySource
