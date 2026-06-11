@@ -1,0 +1,19 @@
+{
+  "id": "eleconomista-home",
+  "type": "web",
+  "displayName": "elEconomista.es Home",
+  "url": "https://www.eleconomista.es/",
+  "expected": {
+    "titleContains": "Economista"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false
+  }
+}

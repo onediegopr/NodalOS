@@ -1,0 +1,20 @@
+{
+  "id": "wikipedia-ai",
+  "type": "web",
+  "displayName": "Wikipedia Artificial Intelligence",
+  "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+  "expected": {
+    "titleContains": "Wikipedia",
+    "textContains": "artificial"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false
+  }
+}

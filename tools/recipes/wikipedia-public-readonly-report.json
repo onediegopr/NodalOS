@@ -1,0 +1,18 @@
+{
+  "name": "wikipedia-public-readonly-report",
+  "description": "Wikipedia public read-only: open AI article, read content, extract fields, discover actions, plan navigation. NO clicks.",
+  "stopOnFirstFailure": false,
+  "steps": [
+    { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/wikipedia-ai.json", "saveAs": "profile.wiki" },
+    { "id": "open-wiki", "kind": "browser.open", "path": "{{profile.wiki.url}}", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "edge", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 3000 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btext", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "close-wiki", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "extract", "kind": "extract.visiblefields", "saveAs": "page" },
+    { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions" },
+    { "id": "plan", "kind": "plan.safenavigation", "saveAs": "navPlan" },
+    { "id": "assert-title", "kind": "assert.contains", "value": "{{bt}}", "expected": "Wikipedia" },
+    { "id": "report", "kind": "note", "text": "Wikipedia Read-Only: URL=https://en.wikipedia.org/wiki/Artificial_intelligence | Title={{bt}} | TitleCandidate={{page.titleCandidate}} | Actions={{actions.count}} (nav={{actions.navCount}} auth={{actions.authCount}} pay={{actions.paymentCount}}) | NavPlan: {{navPlan.summary}} (executable={{navPlan.hasExecutableActions}})" }
+  ]
+}
