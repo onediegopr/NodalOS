@@ -262,6 +262,7 @@ public sealed class RecipeRunner
                 "extract.productevidence" => ExecuteExtractProductEvidence(step, sw),
                 "artifact.writeproductevidence" => ExecuteWriteProductEvidenceArtifact(step, sw),
                 "artifact.summarizeproductevidence" => ExecuteSummarizeProductEvidenceArtifacts(step, sw),
+                "report.writeproductevidencemarkdown" => ExecuteWriteProductEvidenceMarkdownReport(step, sw),
                 "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
@@ -1819,6 +1820,48 @@ public sealed class RecipeRunner
             PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
             WriteIndented = false
         });
+    }
+
+    private RecipeStepRunResult ExecuteWriteProductEvidenceMarkdownReport(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var prefix = step.SaveAs ?? "productEvidenceMarkdownReport";
+        var summaryPrefix = ResolveArg(step, "summaryFrom") ?? "productEvidenceSummary";
+        var summaryJson = _ctx.Variables.GetValueOrDefault(summaryPrefix + ".json", "");
+        if (string.IsNullOrWhiteSpace(summaryJson))
+            return Fail(step, sw, $"report.writeProductEvidenceMarkdown: no summary JSON found for prefix '{summaryPrefix}'. Run artifact.summarizeProductEvidence first.");
+
+        ProductEvidenceSummary? summary;
+        try
+        {
+            summary = System.Text.Json.JsonSerializer.Deserialize<ProductEvidenceSummary>(summaryJson,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            return Fail(step, sw, $"report.writeProductEvidenceMarkdown: invalid summary JSON: {ex.Message}");
+        }
+
+        if (summary == null)
+            return Fail(step, sw, "report.writeProductEvidenceMarkdown: summary JSON parsed as null.");
+
+        var outputDir = ResolveArg(step, "outputDir");
+        var result = ProductEvidenceMarkdownWriter.Write(Directory.GetCurrentDirectory(), summary, outputDir);
+        SetProductEvidenceMarkdownVars(prefix, result);
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, result.Success,
+            result.Success
+                ? $"Product evidence Markdown report written: {result.RelativePath}"
+                : $"report.writeProductEvidenceMarkdown failed: {result.Error}",
+            sw.ElapsedMilliseconds, result);
+    }
+
+    private void SetProductEvidenceMarkdownVars(string prefix, ProductEvidenceMarkdownWriteResult result)
+    {
+        _ctx.Variables[prefix + ".success"] = result.Success ? "true" : "false";
+        _ctx.Variables[prefix + ".path"] = result.Path;
+        _ctx.Variables[prefix + ".relativePath"] = result.RelativePath;
+        _ctx.Variables[prefix + ".error"] = result.Error;
     }
 
     private RecipeStepRunResult ExecutePlanSafeNavigation(RecipeStepDefinition step, Stopwatch sw)

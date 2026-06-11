@@ -1,0 +1,38 @@
+{
+  "name": "product-evidence-markdown-report",
+  "description": "HITO-064+065: Local Markdown report from product evidence summary. NO browser, NO clicks, NO network.",
+  "stopOnFirstFailure": true,
+  "metadata": {
+    "category": "diagnostic",
+    "cleanupRisk": "none",
+    "autoRegression": true,
+    "readOnly": true,
+    "localOnly": true,
+    "commercialClicksAllowed": false
+  },
+  "steps": [
+    {
+      "id": "summarize-product-evidence",
+      "kind": "artifact.summarizeProductEvidence",
+      "saveAs": "productEvidenceSummary",
+      "args": {
+        "inputDir": "artifacts/product-evidence",
+        "outputDir": "artifacts/product-evidence-summary"
+      }
+    },
+    {
+      "id": "write-markdown-report",
+      "kind": "report.writeProductEvidenceMarkdown",
+      "saveAs": "productEvidenceMarkdownReport",
+      "args": {
+        "summaryFrom": "productEvidenceSummary",
+        "outputDir": "artifacts/product-evidence-reports"
+      }
+    },
+    {
+      "id": "report",
+      "kind": "note",
+      "text": "Product Evidence Markdown Report: outputPath={{productEvidenceMarkdownReport.relativePath}} | sourceArtifactCount={{productEvidenceSummary.sourceArtifactCount}} | validArtifactCount={{productEvidenceSummary.validArtifactCount}} | invalidArtifactCount={{productEvidenceSummary.invalidArtifactCount}} | productsMissingPrice={{productEvidenceSummary.productsMissingPrice}} | productsWithPrice={{productEvidenceSummary.productsWithPrice}} | safetyClicksTotal={{productEvidenceSummary.safetyClicksTotal}} | notes={{productEvidenceSummary.notes}}"
+    }
+  ]
+}
