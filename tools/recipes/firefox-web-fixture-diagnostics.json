@@ -1,11 +1,18 @@
 {
   "name": "firefox-web-fixture-diagnostics",
-  "description": "HITO-039: open accessible fixture in Firefox, diagnose MSAA accessibility tree for 'Abrir información' target. NO click.",
+  "description": "HITO-039 diagnostic: open accessible fixture in Firefox, diagnose MSAA accessibility tree for 'Abrir informacion' target. NO click.",
   "stopOnFirstFailure": false,
+  "metadata": {
+    "category": "diagnostic",
+    "cleanupRisk": "low",
+    "autoRegression": false,
+    "flaky": true,
+    "reason": "Firefox fixture navigation is not reproducible with resident Firefox background processes; use for manual diagnosis only."
+  },
   "steps": [
     { "id": "open-fixture", "kind": "browser.open", "path": "tools/fixtures/web/accessible-safe-click.html", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
     { "id": "delay-load", "kind": "delay", "timeoutMs": 8000 },
-    { "id": "msaa-diagnostics", "kind": "diagnose.msaa", "saveAs": "msaa", "args": { "proc": "firefox", "targetText": "Abrir información" } },
+    { "id": "msaa-diagnostics", "kind": "diagnose.msaa", "saveAs": "msaa", "args": { "proc": "firefox", "targetText": "Abrir informaci\u00f3n" } },
     { "id": "close-browser", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
     { "id": "report", "kind": "note", "text": "Firefox fixture MSAA: found={{msaa.found}} nodes={{msaa.nodeCount}} candidates={{msaa.candidateCount}} links={{msaa.linkCount}} btns={{msaa.buttonCount}} name={{msaa.selectedName}} role={{msaa.selectedRole}} reason={{msaa.reason}}" }
   ]

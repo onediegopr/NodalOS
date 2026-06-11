@@ -1,0 +1,17 @@
+{
+  "name": "exit-code-negative",
+  "description": "HITO-055 negative control: intentionally fails without opening apps or browsers. The CLI must return a non-zero exit code.",
+  "metadata": {
+    "category": "negative",
+    "cleanupRisk": "none",
+    "autoRegression": false
+  },
+  "steps": [
+    {
+      "id": "assert-fails",
+      "kind": "assert.equals",
+      "value": "A",
+      "expected": "B"
+    }
+  ]
+}

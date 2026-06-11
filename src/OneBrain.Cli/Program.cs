@@ -264,6 +264,7 @@ else if (cmd == "recipe")
             0, 0, 0, 0, new List<RecipeStepRunResult>(),
             new List<string> { $"Recipe file not found: {recipePath}" });
         Console.WriteLine(JsonSerializer.Serialize(errorResult, new JsonSerializerOptions { WriteIndented = true }));
+        Environment.ExitCode = CliExitCodes.FromRecipeResult(errorResult);
         return;
     }
 
@@ -279,6 +280,7 @@ else if (cmd == "recipe")
                 0, 0, 0, 0, new List<RecipeStepRunResult>(),
                 new List<string> { "Recipe is empty or could not be parsed." });
             Console.WriteLine(JsonSerializer.Serialize(errorResult, new JsonSerializerOptions { WriteIndented = true }));
+            Environment.ExitCode = CliExitCodes.FromRecipeResult(errorResult);
             return;
         }
 
@@ -290,6 +292,7 @@ else if (cmd == "recipe")
 
         var result = new RecipeRunner().Run(recipe, forceContinueOnError, approvalMode);
         Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+        Environment.ExitCode = CliExitCodes.FromRecipeResult(result);
     }
     catch (JsonException ex)
     {
@@ -297,6 +300,7 @@ else if (cmd == "recipe")
             0, 0, 0, 0, new List<RecipeStepRunResult>(),
             new List<string> { $"Invalid recipe JSON: {ex.Message}" });
         Console.WriteLine(JsonSerializer.Serialize(errorResult, new JsonSerializerOptions { WriteIndented = true }));
+        Environment.ExitCode = CliExitCodes.FromRecipeResult(errorResult);
     }
 }
 
