@@ -1,0 +1,21 @@
+{
+  "id": "sodimac-public-home",
+  "type": "web",
+  "displayName": "Sodimac Public Home",
+  "url": "https://www.sodimac.com.uy",
+  "expected": {
+    "titleContains": "Sodimac",
+    "textContains": "Sodimac"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false,
+    "allowClose": true
+  }
+}

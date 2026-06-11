@@ -13,6 +13,6 @@
     { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions" },
     { "id": "plan", "kind": "plan.safenavigation", "saveAs": "navPlan" },
     { "id": "assert-title", "kind": "assert.contains", "value": "{{bt}}", "expected": "Economista" },
-    { "id": "report", "kind": "note", "text": "elEconomista Read-Only: URL=https://www.eleconomista.es/ | Title={{bt}} | TitleCandidate={{page.titleCandidate}} | Actions={{actions.count}} (nav={{actions.navCount}} auth={{actions.authCount}} pay={{actions.paymentCount}}) | NavPlan: {{navPlan.summary}} (executable={{navPlan.hasExecutableActions}}) | Signals: cookies={{page.cookieSignals}} login={{page.loginSignals}} subscribe={{page.subscribeSignals}}" }
+    { "id": "report", "kind": "note", "text": "elEconomista Read-Only: URL=https://www.eleconomista.es/ | Title={{bt}} | TitleCandidate={{page.titleCandidate}} | Actions={{actions.count}} (nav={{actions.navCount}} auth={{actions.authCount}} pay={{actions.paymentCount}} dangerous={{actions.dangerousCount}}) | NavPlan: {{navPlan.summary}} (executable={{navPlan.hasExecutableActions}}) | SensitiveWords={{page.sensitiveWordsDetected}}" }
   ]
 }

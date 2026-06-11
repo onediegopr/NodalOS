@@ -1,0 +1,33 @@
+{
+  "name": "sodimac-readonly-report",
+  "description": "HITO-052: Sodimac public retail read-only report. NO clicks, NO cookies, NO login, NO cart, NO purchase.",
+  "stopOnFirstFailure": false,
+  "metadata": {
+    "category": "external-fragile",
+    "cleanupRisk": "low",
+    "autoRegression": false,
+    "readOnly": true,
+    "commercialClicksAllowed": false,
+    "fallbackUrl": "https://www.sodimac.com.ar"
+  },
+  "steps": [
+    { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/sodimac-public-home.json", "saveAs": "profile.sodimac" },
+    { "id": "open-sodimac", "kind": "browser.open", "path": "{{profile.sodimac.url}}", "saveAs": "browser.s1", "timeoutMs": 30000, "args": { "browser": "edge", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 7000 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt", "timeoutMs": 15000, "args": { "session": "browser.s1" }, "continueOnError": true },
+    { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btext", "timeoutMs": 15000, "args": { "session": "browser.s1" }, "continueOnError": true },
+    { "id": "close-sodimac", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "extract", "kind": "extract.visiblefields", "saveAs": "page", "continueOnError": true },
+    { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions", "args": { "mode": "retailPublic" }, "continueOnError": true },
+    { "id": "plan", "kind": "plan.safenavigation", "saveAs": "navPlan", "args": { "mode": "retailPublic" }, "continueOnError": true },
+    {
+      "id": "assert-title-exists",
+      "kind": "if",
+      "condition": { "left": "{{bt}}", "operator": "exists" },
+      "then": [{ "kind": "assert.equals", "value": "title-exists", "expected": "title-exists" }],
+      "else": [{ "kind": "assert.equals", "value": "missing-title", "expected": "title-exists" }]
+    },
+    { "id": "assert-sodimac-signal", "kind": "assert.contains", "value": "{{bt}} {{btext}}", "expected": "Sodimac" },
+    { "id": "report", "kind": "note", "text": "Sodimac Read-Only: URL={{profile.sodimac.url}} fallback=https://www.sodimac.com.ar | Title={{bt}} | Sample={{btext}} | Signals cookie/geoloc/popup/login/cart/buy/payment observed in visible text only. Actions={{actions.count}} dangerousCommercialCount={{actions.dangerousCount}} authRelatedCount={{actions.authCount}} paymentRelatedCount={{actions.paymentCount}} | NavPlan executable={{navPlan.hasExecutableActions}} summary={{navPlan.summary}} | Diagnostic if blocked by cookies/geoloc/antibot/network. NO clicks, NO cookies accepted, NO popup close, NO login, NO cart, NO purchase, NO payment." }
+  ]
+}

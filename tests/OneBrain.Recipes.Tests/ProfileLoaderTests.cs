@@ -151,6 +151,28 @@ public sealed class ProfileLoaderTests
     }
 
     [TestMethod]
+    public void Loads_SuministrosRoca_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/suministrosroca-uy-home.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("suministrosroca-uy-home", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+        Assert.AreEqual("https://suministrosroca.uy", result.Profile.Url);
+    }
+
+    [TestMethod]
+    public void Loads_Sodimac_Public_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/sodimac-public-home.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("sodimac-public-home", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+        Assert.AreEqual("https://www.sodimac.com.uy", result.Profile.Url);
+    }
+
+    [TestMethod]
     public void ExtractCommercialFields_Detects_Price()
     {
         var result = OneBrain.Cli.Recipes.RecipeRunner_ExtractHelper.Extract("Test | Notebook $ 1.299.999 Envio gratis");

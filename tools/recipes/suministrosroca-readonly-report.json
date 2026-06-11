@@ -1,0 +1,32 @@
+{
+  "name": "suministrosroca-readonly-report",
+  "description": "HITO-051: Suministros Roca Uruguay public retail read-only report. NO clicks, NO cookies, NO login, NO cart, NO purchase.",
+  "stopOnFirstFailure": false,
+  "metadata": {
+    "category": "external-fragile",
+    "cleanupRisk": "low",
+    "autoRegression": false,
+    "readOnly": true,
+    "commercialClicksAllowed": false
+  },
+  "steps": [
+    { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/suministrosroca-uy-home.json", "saveAs": "profile.roca" },
+    { "id": "open-roca", "kind": "browser.open", "path": "{{profile.roca.url}}", "saveAs": "browser.s1", "timeoutMs": 25000, "args": { "browser": "edge", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 5000 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt", "timeoutMs": 12000, "args": { "session": "browser.s1" }, "continueOnError": true },
+    { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btext", "timeoutMs": 12000, "args": { "session": "browser.s1" }, "continueOnError": true },
+    { "id": "close-roca", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "extract", "kind": "extract.visiblefields", "saveAs": "page", "continueOnError": true },
+    { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions", "args": { "mode": "retailPublic" }, "continueOnError": true },
+    { "id": "plan", "kind": "plan.safenavigation", "saveAs": "navPlan", "args": { "mode": "retailPublic" }, "continueOnError": true },
+    {
+      "id": "assert-title-exists",
+      "kind": "if",
+      "condition": { "left": "{{bt}}", "operator": "exists" },
+      "then": [{ "kind": "assert.equals", "value": "title-exists", "expected": "title-exists" }],
+      "else": [{ "kind": "assert.equals", "value": "missing-title", "expected": "title-exists" }]
+    },
+    { "id": "assert-roca-signal", "kind": "assert.contains", "value": "{{bt}} {{btext}}", "expected": "Roca" },
+    { "id": "report", "kind": "note", "text": "Suministros Roca Read-Only: URL={{profile.roca.url}} | Title={{bt}} | Sample={{btext}} | RetailSignals productos/revestimientos/paneles/pisos/contacto/WhatsApp/carrito/comprar observed in visible text only. Actions={{actions.count}} dangerousCommercialCount={{actions.dangerousCount}} authRelatedCount={{actions.authCount}} paymentRelatedCount={{actions.paymentCount}} | NavPlan executable={{navPlan.hasExecutableActions}} summary={{navPlan.summary}} | NO clicks, NO cookies accepted, NO popup close, NO login, NO cart, NO purchase, NO payment." }
+  ]
+}
