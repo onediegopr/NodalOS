@@ -259,6 +259,7 @@ public sealed class RecipeRunner
                 "debug.hang"             => ExecuteDebugHang(step, sw),
                 "profile.load"           => ExecuteProfileLoad(step, sw),
                 "extract.visiblefields"  => ExecuteExtractVisibleFields(step, sw),
+                "extract.productevidence" => ExecuteExtractProductEvidence(step, sw),
                 "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
@@ -1625,6 +1626,91 @@ public sealed class RecipeRunner
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"Discovered {result.Count} actionable elements. Highest risk: {result.HighestRisk}",
             sw.ElapsedMilliseconds, result);
+    }
+
+    private RecipeStepRunResult ExecuteExtractProductEvidence(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var prefix = step.SaveAs ?? "productEvidence";
+        var title = ResolveArg(step, "title") ?? _ctx.Variables.GetValueOrDefault("bt", _ctx.Variables.GetValueOrDefault("browser.title", ""));
+        var text = ResolveArg(step, "text") ?? _ctx.Variables.GetValueOrDefault("btext", _ctx.Variables.GetValueOrDefault("browser.text", ""));
+
+        if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(text))
+            return Fail(step, sw, "extract.productEvidence: no title/text variables found. Run browser.read first.");
+
+        var input = new ProductEvidenceInput
+        {
+            SourceUrl = ResolveArg(step, "sourceUrl") ?? ResolveFirstVariableValue(".url"),
+            SourceProfileId = ResolveArg(step, "sourceProfileId") ?? ResolveFirstVariableValue(".id"),
+            PageTitle = title,
+            VisibleText = text,
+            CategoryHint = ResolveArg(step, "category"),
+            RawSignals = ResolveArg(step, "rawSignals")
+        };
+
+        var evidence = ProductEvidenceExtractor.Extract(input);
+        SetProductEvidenceVars(prefix, evidence);
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"Product evidence: status={evidence.ExtractionStatus}, confidence={evidence.ExtractionConfidence}, product={evidence.ProductName ?? "null"}",
+            sw.ElapsedMilliseconds, evidence);
+    }
+
+    private string? ResolveArg(RecipeStepDefinition step, string key)
+    {
+        if (step.Args == null) return null;
+
+        foreach (var kv in step.Args)
+        {
+            if (string.Equals(kv.Key, key, StringComparison.OrdinalIgnoreCase))
+                return R(kv.Value);
+        }
+
+        return null;
+    }
+
+    private string? ResolveFirstVariableValue(string suffix)
+    {
+        var kv = _ctx.Variables.FirstOrDefault(v => v.Key.EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+        return string.IsNullOrWhiteSpace(kv.Value) ? null : kv.Value;
+    }
+
+    private void SetProductEvidenceVars(string prefix, ProductEvidence evidence)
+    {
+        _ctx.Variables[prefix + ".sourceUrl"] = evidence.SourceUrl ?? "null";
+        _ctx.Variables[prefix + ".sourceProfileId"] = evidence.SourceProfileId ?? "null";
+        _ctx.Variables[prefix + ".pageTitle"] = evidence.PageTitle ?? "null";
+        _ctx.Variables[prefix + ".productName"] = evidence.ProductName ?? "null";
+        _ctx.Variables[prefix + ".brand"] = evidence.Brand ?? "null";
+        _ctx.Variables[prefix + ".sku"] = evidence.Sku ?? "null";
+        _ctx.Variables[prefix + ".category"] = evidence.Category ?? "null";
+        _ctx.Variables[prefix + ".description"] = evidence.Description ?? "null";
+        _ctx.Variables[prefix + ".price"] = evidence.Price ?? "null";
+        _ctx.Variables[prefix + ".currency"] = evidence.Currency ?? "null";
+        _ctx.Variables[prefix + ".availability"] = evidence.Availability ?? "null";
+        _ctx.Variables[prefix + ".stock"] = evidence.Stock ?? "null";
+        _ctx.Variables[prefix + ".seller"] = evidence.Seller ?? "null";
+        _ctx.Variables[prefix + ".contactSignals"] = JoinSignals(evidence.ContactSignals);
+        _ctx.Variables[prefix + ".whatsappSignals"] = JoinSignals(evidence.WhatsappSignals);
+        _ctx.Variables[prefix + ".cartSignals"] = JoinSignals(evidence.CartSignals);
+        _ctx.Variables[prefix + ".buySignals"] = JoinSignals(evidence.BuySignals);
+        _ctx.Variables[prefix + ".paymentSignals"] = JoinSignals(evidence.PaymentSignals);
+        _ctx.Variables[prefix + ".loginSignals"] = JoinSignals(evidence.LoginSignals);
+        _ctx.Variables[prefix + ".cookieSignals"] = JoinSignals(evidence.CookieSignals);
+        _ctx.Variables[prefix + ".geolocSignals"] = JoinSignals(evidence.GeolocSignals);
+        _ctx.Variables[prefix + ".popupSignals"] = JoinSignals(evidence.PopupSignals);
+        _ctx.Variables[prefix + ".evidenceTextSample"] = evidence.EvidenceTextSample ?? "null";
+        _ctx.Variables[prefix + ".rawSignals"] = JoinSignals(evidence.RawSignals);
+        _ctx.Variables[prefix + ".blockedOrMissingFields"] = JoinSignals(evidence.BlockedOrMissingFields);
+        _ctx.Variables[prefix + ".extractionConfidence"] = evidence.ExtractionConfidence;
+        _ctx.Variables[prefix + ".extractionStatus"] = evidence.ExtractionStatus;
+        _ctx.Variables[prefix + ".extractionNotes"] = JoinSignals(evidence.ExtractionNotes);
+        _ctx.Variables[prefix + ".json"] = evidence.ToJson();
+    }
+
+    private static string JoinSignals(IReadOnlyList<string> signals)
+    {
+        return signals.Count == 0 ? "null" : string.Join(", ", signals);
     }
 
     private RecipeStepRunResult ExecutePlanSafeNavigation(RecipeStepDefinition step, Stopwatch sw)
