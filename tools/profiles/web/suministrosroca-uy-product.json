@@ -1,0 +1,35 @@
+{
+  "id": "suministrosroca-uy-product",
+  "type": "web",
+  "displayName": "Suministros Roca Uruguay Product Detail",
+  "url": "https://suministrosroca.uy/producto/placa-marmol-blanco-firenze/",
+  "mode": "retailPublicReadOnly",
+  "allowedActions": ["open", "read", "close", "extract", "discover", "plan", "report"],
+  "forbidden": [
+    "click",
+    "type",
+    "submit",
+    "login",
+    "cart",
+    "checkout",
+    "payment",
+    "whatsapp",
+    "cookie",
+    "geoloc"
+  ],
+  "expected": {
+    "titleContains": "Firenze",
+    "textContains": "ROCA"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false,
+    "allowClose": true
+  }
+}

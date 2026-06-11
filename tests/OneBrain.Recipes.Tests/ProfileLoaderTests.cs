@@ -195,6 +195,28 @@ public sealed class ProfileLoaderTests
     }
 
     [TestMethod]
+    public void Loads_SuministrosRoca_Product_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/suministrosroca-uy-product.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("suministrosroca-uy-product", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+        Assert.AreEqual("https://suministrosroca.uy/producto/placa-marmol-blanco-firenze/", result.Profile.Url);
+    }
+
+    [TestMethod]
+    public void Loads_Sodimac_Product_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/sodimac-product.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("sodimac-product", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+        Assert.AreEqual("https://www.sodimac.com.uy/sodimac-uy/product/9065911/piso-flotante-simil-madera-6-mm-essen-cafe-claro-mate-interior-296-m2/9065911/", result.Profile.Url);
+    }
+
+    [TestMethod]
     public void ExtractCommercialFields_Detects_Price()
     {
         var result = OneBrain.Cli.Recipes.RecipeRunner_ExtractHelper.Extract("Test | Notebook $ 1.299.999 Envio gratis");

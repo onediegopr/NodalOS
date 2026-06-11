@@ -1,0 +1,35 @@
+{
+  "id": "sodimac-product",
+  "type": "web",
+  "displayName": "Sodimac Uruguay Product Detail",
+  "url": "https://www.sodimac.com.uy/sodimac-uy/product/9065911/piso-flotante-simil-madera-6-mm-essen-cafe-claro-mate-interior-296-m2/9065911/",
+  "mode": "retailPublicReadOnly",
+  "allowedActions": ["open", "read", "close", "extract", "discover", "plan", "report"],
+  "forbidden": [
+    "click",
+    "type",
+    "submit",
+    "login",
+    "cart",
+    "checkout",
+    "payment",
+    "whatsapp",
+    "cookie",
+    "geoloc"
+  ],
+  "expected": {
+    "titleContains": "Sodimac",
+    "textContains": "Essen"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false,
+    "allowClose": true
+  }
+}
