@@ -260,6 +260,7 @@ public sealed class RecipeRunner
                 "profile.load"           => ExecuteProfileLoad(step, sw),
                 "extract.visiblefields"  => ExecuteExtractVisibleFields(step, sw),
                 "extract.productevidence" => ExecuteExtractProductEvidence(step, sw),
+                "artifact.writeproductevidence" => ExecuteWriteProductEvidenceArtifact(step, sw),
                 "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
@@ -1711,6 +1712,63 @@ public sealed class RecipeRunner
     private static string JoinSignals(IReadOnlyList<string> signals)
     {
         return signals.Count == 0 ? "null" : string.Join(", ", signals);
+    }
+
+    private RecipeStepRunResult ExecuteWriteProductEvidenceArtifact(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var fromPrefix = step.Args?.GetValueOrDefault("from") ?? "productEvidence";
+        var evidenceJson = _ctx.Variables.GetValueOrDefault(fromPrefix + ".json", "");
+        if (string.IsNullOrWhiteSpace(evidenceJson))
+            return Fail(step, sw, $"artifact.writeProductEvidence: no evidence JSON found for prefix '{fromPrefix}'. Run extract.productEvidence first.");
+
+        ProductEvidence? evidence;
+        try
+        {
+            evidence = System.Text.Json.JsonSerializer.Deserialize<ProductEvidence>(evidenceJson,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            return Fail(step, sw, $"artifact.writeProductEvidence: invalid evidence JSON: {ex.Message}");
+        }
+
+        if (evidence == null)
+            return Fail(step, sw, "artifact.writeProductEvidence: evidence JSON parsed as null.");
+
+        var recipeId = ResolveArg(step, "recipeId") ?? _currentRecipe?.Name ?? "unknown-recipe";
+        var profileId = ResolveArg(step, "profileId") ?? evidence.SourceProfileId;
+        var sourceUrl = ResolveArg(step, "sourceUrl") ?? evidence.SourceUrl;
+        var pageTitle = ResolveArg(step, "pageTitle") ?? evidence.PageTitle;
+        var runId = ResolveArg(step, "runId");
+        var notesArg = ResolveArg(step, "notes");
+        var notes = string.IsNullOrWhiteSpace(notesArg)
+            ? Array.Empty<string>()
+            : notesArg.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var result = ProductEvidenceArtifactWriter.Write(Directory.GetCurrentDirectory(), new ProductEvidenceArtifactInput
+        {
+            Evidence = evidence,
+            RecipeId = recipeId,
+            ProfileId = profileId,
+            SourceUrl = sourceUrl,
+            PageTitle = pageTitle,
+            RunId = runId,
+            Notes = notes
+        });
+
+        var prefix = step.SaveAs ?? "artifact";
+        _ctx.Variables[prefix + ".success"] = result.Success ? "true" : "false";
+        _ctx.Variables[prefix + ".path"] = result.Path;
+        _ctx.Variables[prefix + ".relativePath"] = result.RelativePath;
+        _ctx.Variables[prefix + ".runId"] = result.RunId;
+        _ctx.Variables[prefix + ".error"] = result.Error;
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, result.Success,
+            result.Success
+                ? $"Product evidence artifact written: {result.RelativePath}"
+                : $"artifact.writeProductEvidence failed: {result.Error}",
+            sw.ElapsedMilliseconds, result);
     }
 
     private RecipeStepRunResult ExecutePlanSafeNavigation(RecipeStepDefinition step, Stopwatch sw)

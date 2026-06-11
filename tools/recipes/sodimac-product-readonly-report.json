@@ -33,6 +33,19 @@
       }
     },
     {
+      "id": "write-product-evidence-artifact",
+      "kind": "artifact.writeProductEvidence",
+      "saveAs": "productArtifact",
+      "args": {
+        "from": "productEvidence",
+        "recipeId": "sodimac-product-readonly-report",
+        "profileId": "{{profile.sodimacProduct.id}}",
+        "sourceUrl": "{{profile.sodimacProduct.url}}",
+        "pageTitle": "{{bt}}",
+        "notes": "raw public HTML signal, not visible UIA price"
+      }
+    },
+    {
       "id": "assert-title-exists",
       "kind": "if",
       "condition": { "left": "{{bt}}", "operator": "exists" },
@@ -40,6 +53,6 @@
       "else": [{ "kind": "assert.equals", "value": "missing-title", "expected": "title-exists" }]
     },
     { "id": "assert-product-signal", "kind": "assert.contains", "value": "{{bt}} {{btext}}", "expected": "Sodimac" },
-    { "id": "report", "kind": "note", "text": "Sodimac Product Read-Only: URL={{profile.sodimacProduct.url}} | title={{bt}} | text sample={{btext}} | normalizedEvidence={{productEvidence.json}} | productNameCandidate={{productEvidence.productName}} | categoryCandidate={{productEvidence.category}} | descriptionCandidate={{productEvidence.description}} | priceCandidate={{productEvidence.price}} | currencyCandidate={{productEvidence.currency}} | stockCandidate={{productEvidence.stock}} | rawSignals={{productEvidence.rawSignals}} | contactSignals={{productEvidence.contactSignals}} | whatsappSignals={{productEvidence.whatsappSignals}} | cartSignals={{productEvidence.cartSignals}} | buySignals={{productEvidence.buySignals}} | paymentSignals={{productEvidence.paymentSignals}} | loginSignals={{productEvidence.loginSignals}} | cookieSignals={{productEvidence.cookieSignals}} | geolocSignals={{productEvidence.geolocSignals}} | popupSignals={{productEvidence.popupSignals}} | extractionStatus={{productEvidence.extractionStatus}} | extractionConfidence={{productEvidence.extractionConfidence}} | blockedOrMissingFields={{productEvidence.blockedOrMissingFields}} | actions.count={{actions.count}} | dangerousCommercialCount={{actions.dangerousCount}} | authRelatedCount={{actions.authCount}} | paymentRelatedCount={{actions.paymentCount}} | navPlan.hasExecutableActions={{navPlan.hasExecutableActions}} | navPlan.summary={{navPlan.summary}} | PASS_or_diagnostic=PASS_if_Sodimac_or_expected_diagnostic_visible | UIA price/currency/stock remain null unless visible text proves them. | NO clicks, NO cookies accepted, NO login, NO cart, NO purchase, NO payment." }
+    { "id": "report", "kind": "note", "text": "Sodimac Product Read-Only: URL={{profile.sodimacProduct.url}} | title={{bt}} | text sample={{btext}} | artifact={{productArtifact.relativePath}} | normalizedEvidence={{productEvidence.json}} | productNameCandidate={{productEvidence.productName}} | categoryCandidate={{productEvidence.category}} | descriptionCandidate={{productEvidence.description}} | priceCandidate={{productEvidence.price}} | currencyCandidate={{productEvidence.currency}} | stockCandidate={{productEvidence.stock}} | rawSignals={{productEvidence.rawSignals}} | contactSignals={{productEvidence.contactSignals}} | whatsappSignals={{productEvidence.whatsappSignals}} | cartSignals={{productEvidence.cartSignals}} | buySignals={{productEvidence.buySignals}} | paymentSignals={{productEvidence.paymentSignals}} | loginSignals={{productEvidence.loginSignals}} | cookieSignals={{productEvidence.cookieSignals}} | geolocSignals={{productEvidence.geolocSignals}} | popupSignals={{productEvidence.popupSignals}} | extractionStatus={{productEvidence.extractionStatus}} | extractionConfidence={{productEvidence.extractionConfidence}} | blockedOrMissingFields={{productEvidence.blockedOrMissingFields}} | actions.count={{actions.count}} | dangerousCommercialCount={{actions.dangerousCount}} | authRelatedCount={{actions.authCount}} | paymentRelatedCount={{actions.paymentCount}} | navPlan.hasExecutableActions={{navPlan.hasExecutableActions}} | navPlan.summary={{navPlan.summary}} | PASS_or_diagnostic=PASS_if_Sodimac_or_expected_diagnostic_visible | UIA price/currency/stock remain null unless visible text proves them. | NO clicks, NO cookies accepted, NO login, NO cart, NO purchase, NO payment." }
   ]
 }
