@@ -1,0 +1,13 @@
+{
+  "name": "msaa-web-fixture-diagnostics",
+  "description": "MSAA discovery: open accessible fixture, probe IAccessible tree for 'Abrir informacion' target",
+  "stopOnFirstFailure": false,
+  "steps": [
+    { "id": "open-fixture", "kind": "browser.open", "path": "tools/fixtures/web/accessible-safe-click.html", "saveAs": "browser.s1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 1500 },
+    { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "btBefore", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "diagnose-msaa", "kind": "diagnose.msaa", "saveAs": "msaa", "args": { "targetText": "Abrir informacion" } },
+    { "id": "close-fixture", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "report", "kind": "note", "text": "MSAA diagnostics: found={{msaa.found}} nodes={{msaa.nodeCount}} candidates={{msaa.candidateCount}} links={{msaa.linkCount}} btns={{msaa.buttonCount}} reason={{msaa.reason}}" }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "mercadolibre-action-policy-plan-report",
-  "description": "ML product: discover actionable elements, classify risk, generate safe navigation plan. NO clicks. Read-only.",
+  "description": "ML product: discover actionable elements, classify risk, generate safe navigation plan. NO clicks. Read-only. Stable assertion: verifies no executable actions.",
   "stopOnFirstFailure": true,
   "steps": [
     { "id": "load-profile", "kind": "profile.load", "path": "tools/profiles/web/mercadolibre-ar-product.json", "saveAs": "profile.mlProduct" },
@@ -11,7 +11,7 @@
     { "id": "close-ml", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
     { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions" },
     { "id": "plan", "kind": "plan.safenavigation", "saveAs": "navPlan" },
-    { "id": "assert-count", "kind": "assert.contains", "value": "{{actions.count}}", "expected": "0", "ignoreCase": false },
+    { "id": "assert-safety", "kind": "assert.equals", "value": "{{navPlan.hasExecutableActions}}", "expected": "false" },
     { "id": "note-report", "kind": "note", "text": "ML Action/Policy/Plan: {{actions.count}} items | HighestRisk: {{actions.highestRisk}} | Safe:{{actions.safeCount}} Nav:{{actions.navCount}} Dangerous:{{actions.dangerousCount}} Auth:{{actions.authCount}} Payment:{{actions.paymentCount}} | Blocked: {{navPlan.blockedCount}} | ReqApproval: {{navPlan.requiresApprovalCount}} | Executable: {{navPlan.hasExecutableActions}} | Summary: {{navPlan.summary}}" }
   ]
 }

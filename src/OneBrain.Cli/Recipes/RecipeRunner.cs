@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Linq;
 using OneBrain.Actions.Uia;
+using OneBrain.Cli.Accessibility;
 using OneBrain.Cli.Browser;
 using OneBrain.Cli.Safety;
 using OneBrain.Core.Extraction;
@@ -262,6 +263,7 @@ public sealed class RecipeRunner
                 "preflight.click"         => ExecutePreflightClick(step, sw),
                 "approval.manifest"       => ExecuteApprovalManifest(step, sw),
                 "safe.click"              => ExecuteSafeClick(step, sw),
+                "diagnose.msaa"           => ExecuteDiagnoseMsaa(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
         }
@@ -1794,6 +1796,81 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".resolution.windowsSearched"] = r.WindowsSearched.ToString();
         _ctx.Variables[prefix + ".resolution.method"] = "WebTargetResolver";
         _ctx.Variables[prefix + ".resolution.reason"] = r.Reason;
+        if (r.ChildHwndDiagnostics.Count > 0)
+            _ctx.Variables[prefix + ".resolution.childHwndDiagnostics"] = string.Join(" | ", r.ChildHwndDiagnostics);
+    }
+
+    // ── diagnose.msaa ─────────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteDiagnoseMsaa(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var prefix = step.SaveAs ?? "msaa";
+        var targetText = step.Args?.GetValueOrDefault("targetText") ?? "";
+        if (string.IsNullOrWhiteSpace(targetText))
+            return Fail(step, sw, "diagnose.msaa requires 'targetText'.");
+
+        var proc = step.Args?.GetValueOrDefault("proc") ?? "msedge";
+
+        // Get owned session HWND
+        IntPtr sessionHwnd = IntPtr.Zero;
+        foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".hwnd")))
+        {
+            var pfx = key[..^5];
+            if (_ctx.Variables.GetValueOrDefault(pfx + ".owned", "false") == "true" &&
+                long.TryParse(_ctx.Variables[key], out var hl))
+            {
+                sessionHwnd = new IntPtr(hl);
+                break;
+            }
+        }
+
+        if (sessionHwnd == IntPtr.Zero)
+            return Fail(step, sw, "diagnose.msaa: no owned browser session active.");
+
+        try
+        {
+            var reader = new MsaaAccessibleReader();
+            var result = reader.Discover(sessionHwnd, targetText, proc);
+
+            _ctx.Variables[prefix + ".found"] = result.Found ? "true" : "false";
+            _ctx.Variables[prefix + ".nodeCount"] = result.NodeCount.ToString();
+            _ctx.Variables[prefix + ".candidateCount"] = result.CandidateCount.ToString();
+            _ctx.Variables[prefix + ".linkCount"] = result.LinkCount.ToString();
+            _ctx.Variables[prefix + ".buttonCount"] = result.ButtonCount.ToString();
+            _ctx.Variables[prefix + ".selectedName"] = result.SelectedName ?? "";
+            _ctx.Variables[prefix + ".selectedRole"] = result.SelectedRole ?? "";
+            _ctx.Variables[prefix + ".selectedDefaultAction"] = result.SelectedDefaultAction ?? "";
+            _ctx.Variables[prefix + ".selectedLocation"] = result.SelectedLocation ?? "";
+            _ctx.Variables[prefix + ".sourceHwnd"] = result.SourceHwnd ?? "";
+            _ctx.Variables[prefix + ".reason"] = result.Reason;
+            if (!string.IsNullOrWhiteSpace(result.CandidatesJson))
+                _ctx.Variables[prefix + ".candidatesJson"] = result.CandidatesJson;
+
+            // HWND summaries
+            if (result.HwndSummaries.Count > 0)
+            {
+                var summaries = new List<string>();
+                foreach (var s in result.HwndSummaries)
+                {
+                    var vis = s.IsVisible ? "VIS" : "HID";
+                    var ena = s.IsEnabled ? "ENA" : "DIS";
+                    var lvl = s.IsTopLevel ? "TOP" : "CHD";
+                    summaries.Add($"{s.HwndHex} [{lvl}] [{vis}/{ena}] '{s.ClassName}' nodes={s.NodeCount} links={s.LinkCount} btns={s.ButtonCount}");
+                }
+                _ctx.Variables[prefix + ".hwndSummaries"] = string.Join(" | ", summaries);
+            }
+
+            sw.Stop();
+            var msg = result.Found
+                ? $"MSAA found '{result.SelectedName}' ({result.SelectedRole}) in {result.NodeCount} nodes"
+                : $"MSAA: {result.Reason}";
+            return new RecipeStepRunResult(step.Id, step.Kind, true, msg, sw.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"diagnose.msaa: {ex.Message}", sw.ElapsedMilliseconds);
+        }
     }
 
     internal static Dictionary<string, string> ExtractCommercialFields(string title, string text, string prefix)

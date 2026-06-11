@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>ONE BRAIN Web Safe Click Fixture</title></head>
+<body>
+<h1>Web Safe Click Fixture</h1>
+<a id="info-link" href="#details" aria-label="Abrir información" role="link" tabindex="0">Abrir información</a>
+<div id="details" style="display:none" role="region" aria-label="Info">Información visible</div>
+<script>
+document.getElementById('info-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    var d = document.getElementById('details');
+    d.style.display = 'block';
+    d.textContent = 'Información visible';
+});
+</script>
+</body>
+</html>
