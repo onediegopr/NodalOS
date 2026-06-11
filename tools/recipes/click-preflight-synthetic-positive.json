@@ -1,0 +1,22 @@
+{
+  "name": "click-preflight-synthetic-positive",
+  "description": "Synthetic: preflight.click on dangerous/safe/nav targets, approval.manifest. Zero real clicks.",
+  "stopOnFirstFailure": true,
+  "variables": {
+    "btext": "Comprar ahora Agregar al carrito Iniciar sesión Pagar con Mercado Pago Ver descripción Categorías"
+  },
+  "steps": [
+    { "id": "discover", "kind": "discover.actionableelements", "saveAs": "actions" },
+    { "id": "preflight-buy", "kind": "preflight.click", "saveAs": "buyPreflight", "args": { "targettext": "Comprar ahora", "from": "{{actions.itemsJson}}" } },
+    { "id": "approval-buy", "kind": "approval.manifest", "saveAs": "buyApproval", "args": { "from": "buyPreflight" } },
+    { "id": "preflight-desc", "kind": "preflight.click", "saveAs": "descPreflight", "args": { "targettext": "Ver descripción" } },
+    { "id": "approval-desc", "kind": "approval.manifest", "saveAs": "descApproval", "args": { "from": "descPreflight" } },
+    { "id": "assert-buy-blocked", "kind": "assert.equals", "value": "{{buyPreflight.decision}}", "expected": "blocked" },
+    { "id": "assert-buy-app-blocked", "kind": "assert.equals", "value": "{{buyApproval.blocked}}", "expected": "true" },
+    { "id": "assert-desc-req", "kind": "assert.equals", "value": "{{descPreflight.decision}}", "expected": "requiresApproval" },
+    { "id": "assert-desc-app-req", "kind": "assert.equals", "value": "{{descApproval.required}}", "expected": "true" },
+    { "id": "assert-exec-false-buy", "kind": "assert.equals", "value": "{{buyApproval.executionAllowedInThisHito}}", "expected": "false" },
+    { "id": "assert-exec-false-desc", "kind": "assert.equals", "value": "{{descApproval.executionAllowedInThisHito}}", "expected": "false" },
+    { "id": "note-report", "kind": "note", "text": "Preflight PASS: buy=blocked, desc=requiresApproval, execAllowed=false" }
+  ]
+}

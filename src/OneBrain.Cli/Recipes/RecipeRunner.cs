@@ -4,6 +4,7 @@ using OneBrain.Actions.Uia;
 using OneBrain.Cli.Browser;
 using OneBrain.Core.Extraction;
 using OneBrain.Core.Profiles;
+using OneBrain.Core.Safety;
 using OneBrain.Core.Actions;
 using OneBrain.Core.Models;
 using OneBrain.Core.Recipes;
@@ -257,6 +258,8 @@ public sealed class RecipeRunner
                 "extract.visiblefields"  => ExecuteExtractVisibleFields(step, sw),
                 "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
+                "preflight.click"         => ExecutePreflightClick(step, sw),
+                "approval.manifest"       => ExecuteApprovalManifest(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
             };
         }
@@ -1553,6 +1556,65 @@ public sealed class RecipeRunner
         return new RecipeStepRunResult(step.Id, step.Kind, true,
             $"Navigation plan: {plan.AllowedCount} allowed, {plan.BlockedCount} blocked, hasExecutableActions: false",
             sw.ElapsedMilliseconds, plan);
+    }
+
+    private RecipeStepRunResult ExecutePreflightClick(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var targetText = step.Args?.GetValueOrDefault("targettext") ?? "";
+        if (targetText is null or "")
+            return Fail(step, sw, "preflight.click requires 'targetText'.");
+
+        var contextJson = step.Args?.GetValueOrDefault("from") ?? _ctx.Variables.GetValueOrDefault("actions.itemsJson", null);
+
+        var result = ClickPreflightEvaluator.Evaluate(targetText, contextJson);
+        var prefix = step.SaveAs ?? "clickPreflight";
+
+        _ctx.Variables[prefix + ".targetText"] = result.TargetText;
+        _ctx.Variables[prefix + ".decision"] = result.Decision;
+        _ctx.Variables[prefix + ".riskCategory"] = result.RiskCategory;
+        _ctx.Variables[prefix + ".riskLevel"] = result.RiskLevel;
+        _ctx.Variables[prefix + ".allowed"] = result.Allowed ? "true" : "false";
+        _ctx.Variables[prefix + ".blocked"] = result.Blocked ? "true" : "false";
+        _ctx.Variables[prefix + ".requiresApproval"] = result.RequiresApproval ? "true" : "false";
+        _ctx.Variables[prefix + ".requiresReview"] = result.RequiresReview ? "true" : "false";
+        _ctx.Variables[prefix + ".reason"] = result.Reason;
+        _ctx.Variables[prefix + ".summary"] = result.Summary;
+        _ctx.Variables[prefix + ".evidenceJson"] = result.EvidenceJson ?? "";
+        _ctx.Variables[prefix + ".nearbyDangerousSignalsJson"] = result.NearbyDangerousSignalsJson ?? "";
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"Preflight: '{targetText}' → {result.Decision} ({result.RiskCategory})", sw.ElapsedMilliseconds, result);
+    }
+
+    private RecipeStepRunResult ExecuteApprovalManifest(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var fromPrefix = step.Args?.GetValueOrDefault("from") ?? "";
+        if (fromPrefix is null or "")
+            fromPrefix = "clickPreflight";
+
+        var evidenceJson = _ctx.Variables.GetValueOrDefault(fromPrefix + ".evidenceJson", "");
+        if (string.IsNullOrWhiteSpace(evidenceJson))
+            return Fail(step, sw, $"approval.manifest: no evidence found for prefix '{fromPrefix}'. Run preflight.click first.");
+
+        var manifest = ApprovalManifestBuilder.BuildFromEvidence(evidenceJson);
+
+        var prefix = step.SaveAs ?? "approval";
+
+        _ctx.Variables[prefix + ".required"] = manifest.Required ? "true" : "false";
+        _ctx.Variables[prefix + ".allowed"] = manifest.Allowed ? "true" : "false";
+        _ctx.Variables[prefix + ".blocked"] = manifest.Blocked ? "true" : "false";
+        _ctx.Variables[prefix + ".title"] = manifest.Title;
+        _ctx.Variables[prefix + ".summary"] = manifest.Summary;
+        _ctx.Variables[prefix + ".reason"] = manifest.Reason;
+        _ctx.Variables[prefix + ".manifestJson"] = manifest.ManifestJson ?? "";
+        _ctx.Variables[prefix + ".humanReadableText"] = manifest.HumanReadableText;
+        _ctx.Variables[prefix + ".policyVersion"] = manifest.PolicyVersion;
+        _ctx.Variables[prefix + ".executionAllowedInThisHito"] = manifest.ExecutionAllowedInThisHito ? "true" : "false";
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, true,
+            $"Approval manifest: {manifest.Title} → blocked={manifest.Blocked}, executable=false", sw.ElapsedMilliseconds, manifest);
     }
 
     internal static Dictionary<string, string> ExtractCommercialFields(string title, string text, string prefix)
