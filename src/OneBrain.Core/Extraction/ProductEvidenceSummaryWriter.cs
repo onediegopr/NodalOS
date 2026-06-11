@@ -6,6 +6,8 @@ public static class ProductEvidenceSummaryWriter
 {
     public const string RelativeInputDirectory = "artifacts/product-evidence";
     public const string RelativeSummaryDirectory = "artifacts/product-evidence-summary";
+    public const string RelativeSampleInputDirectory = "samples/product-evidence";
+    public const string RelativeArtifactsDirectory = "artifacts";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -25,8 +27,11 @@ public static class ProductEvidenceSummaryWriter
             var inputRoot = ResolveRoot(baseDirectory, inputDirectory, RelativeInputDirectory);
             var outputRoot = ResolveRoot(baseDirectory, outputDirectory, RelativeSummaryDirectory);
 
-            EnsureInsideRoot(GetDefaultRoot(baseDirectory, RelativeInputDirectory), inputRoot, "input path escaped artifacts/product-evidence root");
-            EnsureInsideRoot(GetDefaultRoot(baseDirectory, RelativeSummaryDirectory), outputRoot, "output path escaped artifacts/product-evidence-summary root");
+            EnsureInsideAnyRoot(baseDirectory, inputRoot, "input path escaped product evidence roots",
+                RelativeInputDirectory,
+                RelativeSampleInputDirectory);
+            EnsureInsideAnyRoot(baseDirectory, outputRoot, "output path escaped artifacts root",
+                RelativeArtifactsDirectory);
 
             var sources = LoadSources(inputRoot, baseDirectory);
             var summary = ProductEvidenceSummaryBuilder.Build(sources, createdAtUtc);
@@ -43,7 +48,7 @@ public static class ProductEvidenceSummaryWriter
             {
                 Success = true,
                 Path = fullPath,
-                RelativePath = Path.Combine(RelativeSummaryDirectory, fileName).Replace('\\', '/'),
+                RelativePath = ToRelativePath(baseDirectory, fullPath),
                 Summary = summary
             };
         }
@@ -153,6 +158,22 @@ public static class ProductEvidenceSummaryWriter
         if (!checkedPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase) &&
             !checkedPath.Equals(fullRoot.TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException(message);
+    }
+
+    private static void EnsureInsideAnyRoot(string baseDirectory, string fullPath, string message, params string[] relativeRoots)
+    {
+        if (relativeRoots.Any(relativeRoot => IsInsideRoot(GetDefaultRoot(baseDirectory, relativeRoot), fullPath)))
+            return;
+
+        throw new InvalidOperationException(message);
+    }
+
+    private static bool IsInsideRoot(string root, string fullPath)
+    {
+        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var checkedPath = Path.GetFullPath(fullPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        return checkedPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase) ||
+            checkedPath.Equals(fullRoot.TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ToRelativePath(string baseDirectory, string file)

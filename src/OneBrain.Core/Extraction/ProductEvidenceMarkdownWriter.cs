@@ -3,6 +3,7 @@ namespace OneBrain.Core.Extraction;
 public static class ProductEvidenceMarkdownWriter
 {
     public const string RelativeReportDirectory = "artifacts/product-evidence-reports";
+    public const string RelativeArtifactsDirectory = "artifacts";
 
     public static ProductEvidenceMarkdownWriteResult Write(
         string baseDirectory,
@@ -12,7 +13,7 @@ public static class ProductEvidenceMarkdownWriter
         try
         {
             var outputRoot = ResolveRoot(baseDirectory, outputDirectory, RelativeReportDirectory);
-            EnsureInsideRoot(GetDefaultRoot(baseDirectory, RelativeReportDirectory), outputRoot, "output path escaped artifacts/product-evidence-reports root");
+            EnsureInsideRoot(GetDefaultRoot(baseDirectory, RelativeArtifactsDirectory), outputRoot, "output path escaped artifacts root");
 
             Directory.CreateDirectory(outputRoot);
             var fileName = BuildFileName(summary);
@@ -27,7 +28,7 @@ public static class ProductEvidenceMarkdownWriter
             {
                 Success = true,
                 Path = fullPath,
-                RelativePath = Path.Combine(RelativeReportDirectory, fileName).Replace('\\', '/'),
+                RelativePath = Path.GetRelativePath(baseDirectory, fullPath).Replace('\\', '/'),
                 Markdown = markdown
             };
         }

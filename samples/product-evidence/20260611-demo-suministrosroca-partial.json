@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "product-evidence-artifact/v1",
+  "runId": "demo-suministrosroca-partial",
+  "createdAtUtc": "2026-06-11T12:00:00.0000000Z",
+  "recipeId": "demo-product-evidence-report",
+  "profileId": "suministrosroca-uy-product",
+  "sourceUrl": "https://suministrosroca.uy/producto/placa-marmol-blanco-firenze/",
+  "pageTitle": "Placa Marmol Blanco Firenze - ROCA - Suministros Roca",
+  "evidence": {
+    "sourceUrl": "https://suministrosroca.uy/producto/placa-marmol-blanco-firenze/",
+    "sourceProfileId": "suministrosroca-uy-product",
+    "pageTitle": "Placa Marmol Blanco Firenze - ROCA - Suministros Roca",
+    "productName": "Placa Marmol Blanco Firenze",
+    "brand": "ROCA",
+    "sku": null,
+    "category": "placa/revestimiento",
+    "description": "Producto publico de Suministros Roca leido en modo read-only. Precio no visible por UIA.",
+    "price": null,
+    "currency": null,
+    "availability": null,
+    "stock": null,
+    "seller": "Suministros Roca",
+    "contactSignals": [
+      "contact"
+    ],
+    "whatsappSignals": [],
+    "cartSignals": [],
+    "buySignals": [],
+    "paymentSignals": [],
+    "loginSignals": [],
+    "cookieSignals": [],
+    "geolocSignals": [],
+    "popupSignals": [],
+    "evidenceTextSample": "Placa Marmol Blanco Firenze - ROCA - Suministros Roca | Tienda | Productos | Contacto",
+    "rawSignals": [],
+    "blockedOrMissingFields": [
+      "missing_price",
+      "missing_currency",
+      "missing_stock"
+    ],
+    "extractionConfidence": "medium",
+    "extractionStatus": "missing_price",
+    "extractionNotes": [
+      "Demo sample derived from read-only evidence",
+      "price_not_visible_or_not_proven",
+      "stock_not_visible_or_not_proven"
+    ]
+  },
+  "safety": {
+    "clicks": 0,
+    "cookiesAccepted": 0,
+    "loginSignals": [],
+    "cartSignals": [],
+    "buySignals": [],
+    "paymentSignals": [],
+    "whatsappSignals": []
+  },
+  "validation": {
+    "success": true,
+    "status": "missing_price",
+    "confidence": "medium",
+    "blockedOrMissingFields": [
+      "missing_price",
+      "missing_currency",
+      "missing_stock"
+    ]
+  },
+  "notes": [
+    "Demo sample from public read-only evidence",
+    "No clicks, no cookies, no login, no cart, no purchase, no payment"
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "product-evidence-artifact/v1",
+  "runId": "demo-sodimac-partial",
+  "createdAtUtc": "2026-06-11T12:01:00.0000000Z",
+  "recipeId": "demo-product-evidence-report",
+  "profileId": "sodimac-product",
+  "sourceUrl": "https://www.sodimac.com.uy/sodimac-uy/product/9065911/piso-flotante-simil-madera-6-mm-essen-cafe-claro-mate-interior-296-m2/9065911/",
+  "pageTitle": "Piso flotante simil madera 6 mm Essen cafe claro mate interior 2.96 m2 - Sodimac.com.uy",
+  "evidence": {
+    "sourceUrl": "https://www.sodimac.com.uy/sodimac-uy/product/9065911/piso-flotante-simil-madera-6-mm-essen-cafe-claro-mate-interior-296-m2/9065911/",
+    "sourceProfileId": "sodimac-product",
+    "pageTitle": "Piso flotante simil madera 6 mm Essen cafe claro mate interior 2.96 m2 - Sodimac.com.uy",
+    "productName": "Piso flotante simil madera 6 mm Essen cafe claro mate interior 2.96 m2",
+    "brand": null,
+    "sku": "9065911",
+    "category": "pisos/revestimientos",
+    "description": "Producto publico Sodimac leido en modo read-only. Precio no visible por UIA.",
+    "price": null,
+    "currency": null,
+    "availability": null,
+    "stock": null,
+    "seller": "Sodimac Uruguay",
+    "contactSignals": [
+      "servicio al cliente"
+    ],
+    "whatsappSignals": [],
+    "cartSignals": [],
+    "buySignals": [],
+    "paymentSignals": [],
+    "loginSignals": [],
+    "cookieSignals": [],
+    "geolocSignals": [],
+    "popupSignals": [],
+    "evidenceTextSample": "Piso flotante simil madera 6 mm Essen cafe claro mate interior 2.96 m2 | Sodimac Uruguay",
+    "rawSignals": [
+      "public-html-signal: @type=Product",
+      "public-html-signal: sku=9065911",
+      "public-html-signal: price=38.18",
+      "public-html-signal: priceCurrency=USD"
+    ],
+    "blockedOrMissingFields": [
+      "missing_price",
+      "missing_currency",
+      "missing_stock"
+    ],
+    "extractionConfidence": "medium",
+    "extractionStatus": "missing_price",
+    "extractionNotes": [
+      "Demo sample derived from read-only evidence",
+      "raw public HTML signal, not visible UIA price",
+      "price_not_visible_or_not_proven",
+      "stock_not_visible_or_not_proven"
+    ]
+  },
+  "safety": {
+    "clicks": 0,
+    "cookiesAccepted": 0,
+    "loginSignals": [],
+    "cartSignals": [],
+    "buySignals": [],
+    "paymentSignals": [],
+    "whatsappSignals": []
+  },
+  "validation": {
+    "success": true,
+    "status": "missing_price",
+    "confidence": "medium",
+    "blockedOrMissingFields": [
+      "missing_price",
+      "missing_currency",
+      "missing_stock"
+    ]
+  },
+  "notes": [
+    "Demo sample from public read-only evidence",
+    "Raw public HTML price signal is not treated as visible normalized price",
+    "No clicks, no cookies, no login, no cart, no purchase, no payment"
+  ]
+}

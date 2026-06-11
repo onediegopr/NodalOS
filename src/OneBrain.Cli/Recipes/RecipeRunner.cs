@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using OneBrain.Actions.Uia;
 using OneBrain.Cli.Accessibility;
@@ -1814,6 +1815,13 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".safetyClicksTotal"] = summary.Totals.SafetyClicksTotal.ToString();
         _ctx.Variables[prefix + ".safetyPaymentsSignalsTotal"] = summary.Totals.SafetyPaymentsSignalsTotal.ToString();
         _ctx.Variables[prefix + ".artifactsWithWarnings"] = summary.Totals.ArtifactsWithWarnings.ToString();
+        _ctx.Variables[prefix + ".sufficientCount"] = summary.Totals.SufficientCount.ToString();
+        _ctx.Variables[prefix + ".partialCount"] = summary.Totals.PartialCount.ToString();
+        _ctx.Variables[prefix + ".insufficientCount"] = summary.Totals.InsufficientCount.ToString();
+        _ctx.Variables[prefix + ".diagnosticCount"] = summary.Totals.DiagnosticCount.ToString();
+        _ctx.Variables[prefix + ".averageEvidenceScore"] = summary.Totals.AverageEvidenceScore.ToString("0.##", CultureInfo.InvariantCulture);
+        _ctx.Variables[prefix + ".readyForComparisonCount"] = summary.Totals.ReadyForComparisonCount.ToString();
+        _ctx.Variables[prefix + ".needsPriceVerificationCount"] = summary.Totals.NeedsPriceVerificationCount.ToString();
         _ctx.Variables[prefix + ".notes"] = summary.Notes.Count == 0 ? "null" : string.Join(" | ", summary.Notes);
         _ctx.Variables[prefix + ".json"] = System.Text.Json.JsonSerializer.Serialize(summary, new System.Text.Json.JsonSerializerOptions
         {

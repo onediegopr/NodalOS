@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "product-evidence-artifact/v1",
+  "runId": "demo-complete-fixture",
+  "createdAtUtc": "2026-06-11T12:02:00.0000000Z",
+  "recipeId": "demo-product-evidence-report",
+  "profileId": "demo-fixture",
+  "sourceUrl": "https://example.invalid/demo-product",
+  "pageTitle": "Demo Fixture Product - Complete Evidence",
+  "evidence": {
+    "sourceUrl": "https://example.invalid/demo-product",
+    "sourceProfileId": "demo-fixture",
+    "pageTitle": "Demo Fixture Product - Complete Evidence",
+    "productName": "Demo Fixture Product",
+    "brand": "Demo Brand",
+    "sku": "DEMO-001",
+    "category": "demo/category",
+    "description": "Demo fixture with complete controlled evidence. Not live web evidence.",
+    "price": "199.00",
+    "currency": "USD",
+    "availability": "available",
+    "stock": "in_stock",
+    "seller": "Demo Seller",
+    "contactSignals": [],
+    "whatsappSignals": [],
+    "cartSignals": [],
+    "buySignals": [],
+    "paymentSignals": [],
+    "loginSignals": [],
+    "cookieSignals": [],
+    "geolocSignals": [],
+    "popupSignals": [],
+    "evidenceTextSample": "Demo Fixture Product | USD 199.00 | in_stock | Demo Brand",
+    "rawSignals": [
+      "demo-fixture: controlled complete evidence"
+    ],
+    "blockedOrMissingFields": [],
+    "extractionConfidence": "high",
+    "extractionStatus": "complete",
+    "extractionNotes": [
+      "Demo fixture, not live web evidence"
+    ]
+  },
+  "safety": {
+    "clicks": 0,
+    "cookiesAccepted": 0,
+    "loginSignals": [],
+    "cartSignals": [],
+    "buySignals": [],
+    "paymentSignals": [],
+    "whatsappSignals": []
+  },
+  "validation": {
+    "success": true,
+    "status": "complete",
+    "confidence": "high",
+    "blockedOrMissingFields": []
+  },
+  "notes": [
+    "Demo fixture, not live web evidence",
+    "No clicks, no cookies, no login, no cart, no purchase, no payment"
+  ]
+}

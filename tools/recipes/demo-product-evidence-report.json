@@ -1,0 +1,37 @@
+{
+  "name": "demo-product-evidence-report",
+  "description": "Deterministic local demo report from versioned sample product evidence artifacts. No browser, no web, no clicks.",
+  "metadata": {
+    "category": "demo",
+    "cleanupRisk": "none",
+    "autoRegression": true,
+    "readOnly": true,
+    "localOnly": true,
+    "commercialClicksAllowed": false
+  },
+  "steps": [
+    {
+      "id": "summarize-demo-evidence",
+      "kind": "artifact.summarizeProductEvidence",
+      "saveAs": "demoSummary",
+      "args": {
+        "inputDir": "samples/product-evidence",
+        "outputDir": "artifacts/product-evidence-demo-summary"
+      }
+    },
+    {
+      "id": "write-demo-markdown",
+      "kind": "report.writeProductEvidenceMarkdown",
+      "saveAs": "demoMarkdown",
+      "args": {
+        "summaryFrom": "demoSummary",
+        "outputDir": "artifacts/product-evidence-demo-reports"
+      }
+    },
+    {
+      "id": "report-demo",
+      "kind": "note",
+      "text": "Demo Product Evidence Report: sourceArtifactCount={{demoSummary.sourceArtifactCount}} | validArtifactCount={{demoSummary.validArtifactCount}} | invalidArtifactCount={{demoSummary.invalidArtifactCount}} | productsWithPrice={{demoSummary.productsWithPrice}} | productsMissingPrice={{demoSummary.productsMissingPrice}} | partialCount={{demoSummary.partialCount}} | sufficientCount={{demoSummary.sufficientCount}} | averageEvidenceScore={{demoSummary.averageEvidenceScore}} | readyForComparisonCount={{demoSummary.readyForComparisonCount}} | needsPriceVerificationCount={{demoSummary.needsPriceVerificationCount}} | summaryPath={{demoSummary.relativePath}} | markdownPath={{demoMarkdown.relativePath}} | local-only demo: no browser, no web, no clicks, no cookies, no login, no cart, no purchase, no payment."
+    }
+  ]
+}
