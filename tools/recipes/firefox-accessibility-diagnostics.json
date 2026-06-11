@@ -1,0 +1,12 @@
+{
+  "name": "firefox-accessibility-diagnostics",
+  "description": "HITO-039: Open example.com in Firefox, diagnose MSAA accessibility tree for 'More information' target. NO click.",
+  "stopOnFirstFailure": false,
+  "steps": [
+    { "id": "open-example", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 2000 },
+    { "id": "msaa-diagnostics", "kind": "diagnose.msaa", "saveAs": "msaa", "args": { "proc": "firefox", "targetText": "More information" } },
+    { "id": "close-browser", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "report", "kind": "note", "text": "Firefox example.com MSAA: found={{msaa.found}} nodes={{msaa.nodeCount}} candidates={{msaa.candidateCount}} links={{msaa.linkCount}} btns={{msaa.buttonCount}} name={{msaa.selectedName}} role={{msaa.selectedRole}} reason={{msaa.reason}}" }
+  ]
+}

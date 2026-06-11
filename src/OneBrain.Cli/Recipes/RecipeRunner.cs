@@ -302,8 +302,8 @@ public sealed class RecipeRunner
 
         var browserName = (step.Args?.GetValueOrDefault("browser") ?? "edge").Trim();
         var normalized = browserName.ToLowerInvariant();
-        if (normalized is not ("edge" or "chrome"))
-            return Fail(step, sw, $"Unsupported browser: {browserName}. Supported: edge, chrome.");
+        if (normalized is not ("edge" or "chrome" or "firefox"))
+            return Fail(step, sw, $"Unsupported browser: {browserName}. Supported: edge, chrome, firefox.");
 
         var forceAccessibility = step.Args?.ContainsKey("forceAccessibility") == true
             || (step.Args?.GetValueOrDefault("forceAccessibility") ?? "") == "true";
@@ -1717,23 +1717,18 @@ public sealed class RecipeRunner
                         if (long.TryParse(resolution.SelectedHwnd, out var selHwnd))
                         {
                             using var automation = new FlaUI.UIA3.UIA3Automation();
-                            var root = automation.FromHandle(new IntPtr(selHwnd));
-                            if (root != null)
+                            var el = WebTargetResolver.FindElementByName(new IntPtr(selHwnd), targetText);
+                            if (el != null)
                             {
-                                var el = root.FindAllDescendants()
-                                    .FirstOrDefault(e => (e.Name ?? "").Contains(targetText, StringComparison.OrdinalIgnoreCase));
-                                if (el != null)
-                                {
-                                    if (el.Patterns.Invoke.IsSupported)
-                                        el.Patterns.Invoke.Pattern.Invoke();
-                                    else
-                                        el.Click();
+                                if (el.Patterns.Invoke.IsSupported)
+                                    el.Patterns.Invoke.Pattern.Invoke();
+                                else
+                                    el.Click();
 
-                                    SetSafeClickVars(prefix, targetText, "success", $"clicked via WebTargetResolver on {resolution.SelectedControlType}");
-                                    sw.Stop();
-                                    return new RecipeStepRunResult(step.Id, step.Kind, true,
-                                        $"safe.click: clicked '{targetText}' ({resolution.SelectedControlType})", sw.ElapsedMilliseconds);
-                                }
+                                SetSafeClickVars(prefix, targetText, "success", $"clicked via WebTargetResolver on {resolution.SelectedControlType}");
+                                sw.Stop();
+                                return new RecipeStepRunResult(step.Id, step.Kind, true,
+                                    $"safe.click: clicked '{targetText}' ({resolution.SelectedControlType})", sw.ElapsedMilliseconds);
                             }
                         }
                         SetSafeClickVars(prefix, targetText, "failed", "element disappeared after resolution");

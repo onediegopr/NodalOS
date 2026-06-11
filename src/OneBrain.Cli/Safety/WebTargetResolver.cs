@@ -70,14 +70,17 @@ public static class WebTargetResolver
                 if (root != null)
                 {
                     diag.UiaRootAvailable = true;
-                    var descendants = root.FindAllDescendants().Take(maxDescendants).ToList();
+                    var descendants = new List<AutomationElement>();
+                    descendants.Add(root); // include root itself
+                    WalkUiaTreeRecursive(root, descendants, maxDescendants, 0, 30);
                     diag.DescendantCount = descendants.Count;
                     diag.HyperlinkCount = descendants.Count(e => e.ControlType.ToString() == "Hyperlink");
                     diag.ButtonCount = descendants.Count(e => e.ControlType.ToString() == "Button");
 
                     foreach (var el in descendants)
                     {
-                        var name = el.Name ?? "";
+                        string name;
+                        try { name = el.Name ?? ""; } catch { name = ""; }
                         if (string.IsNullOrWhiteSpace(name)) continue;
                         if (name.Trim().Equals(normalized, StringComparison.OrdinalIgnoreCase) ||
                             name.Contains(targetText, StringComparison.OrdinalIgnoreCase))
@@ -195,8 +198,47 @@ public static class WebTargetResolver
 
     // ── Safe wrappers ────────────────────────────────────────────────────────
 
+    private static void WalkUiaTreeRecursive(AutomationElement parent, List<AutomationElement> results, int max, int depth, int maxDepth)
+    {
+        if (results.Count >= max || depth > maxDepth) return;
+        try
+        {
+            var children = new List<AutomationElement>();
+            try { children.AddRange(parent.FindAllChildren()); } catch { }
+
+            foreach (var child in children)
+            {
+                if (results.Count >= max) return;
+                results.Add(child);
+                WalkUiaTreeRecursive(child, results, max, depth + 1, maxDepth);
+            }
+        }
+        catch { }
+    }
+
     private static bool SafePattern(AutomationElement el, Func<AutomationElement, bool> check) { try { return check(el); } catch { return false; } }
     private static bool SafeClickable(AutomationElement el) { try { var p = el.GetClickablePoint(); return p.X > 0 || p.Y > 0; } catch { return false; } }
+
+    /// <summary>Find a UIA element by name using recursive tree walk (finds content deep inside Document panes).</summary>
+    public static AutomationElement? FindElementByName(IntPtr hwnd, string nameContains, int max = 2000)
+    {
+        try
+        {
+            using var automation = new UIA3Automation();
+            var root = automation.FromHandle(hwnd);
+            if (root == null) return null;
+
+            var candidates = new List<AutomationElement>();
+            candidates.Add(root);
+            WalkUiaTreeRecursive(root, candidates, max, 0, 30);
+            return candidates.FirstOrDefault(e =>
+            {
+                try { return (e.Name ?? "").Contains(nameContains, StringComparison.OrdinalIgnoreCase); }
+                catch { return false; }
+            });
+        }
+        catch { return null; }
+    }
 }
 
 // ── Result types ──────────────────────────────────────────────────────────────

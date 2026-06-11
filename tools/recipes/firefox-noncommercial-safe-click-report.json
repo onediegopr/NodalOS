@@ -1,0 +1,22 @@
+{
+  "name": "firefox-noncommercial-safe-click-report",
+  "description": "HITO-040: Open example.com in Firefox, preflight+approval+safe.click 'More information' target. Non-commercial web safe click spike.",
+  "stopOnFirstFailure": true,
+  "steps": [
+    { "id": "open-example", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 2000 },
+    { "id": "read-title", "kind": "browser.read", "process": "firefox", "property": "title", "saveAs": "btBefore", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-text", "kind": "browser.read", "process": "firefox", "property": "text", "saveAs": "btextBefore", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "preflight", "kind": "preflight.click", "saveAs": "clickPreflight", "args": { "targettext": "More information" } },
+    { "id": "approval", "kind": "approval.manifest", "saveAs": "approval", "args": { "from": "clickPreflight", "mode": "nonCommercialWeb" } },
+    { "id": "assert-exec-allowed", "kind": "assert.equals", "value": "{{approval.executionAllowedInThisHito}}", "expected": "true" },
+    { "id": "safe-click", "kind": "safe.click", "saveAs": "safeClick", "args": { "targettext": "More information", "proc": "firefox", "mode": "nonCommercialWeb" } },
+    { "id": "delay-after", "kind": "delay", "timeoutMs": 2000 },
+    { "id": "read-title-after", "kind": "browser.read", "process": "firefox", "property": "title", "saveAs": "btAfter", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "read-text-after", "kind": "browser.read", "process": "firefox", "property": "text", "saveAs": "btextAfter", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
+    { "id": "close-browser", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "assert-executed", "kind": "assert.equals", "value": "{{safeClick.executed}}", "expected": "true" },
+    { "id": "assert-evidence", "kind": "assert.contains", "value": "{{btextAfter}}", "expected": "IANA" },
+    { "id": "report", "kind": "note", "text": "Firefox Non-Commercial Safe Click: target={{safeClick.targetText}} result={{safeClick.result}} executed={{safeClick.executed}} reason={{safeClick.reason}} resolutionMethod={{safeClick.resolution.method}} titleBefore={{btBefore}} titleAfter={{btAfter}}" }
+  ]
+}

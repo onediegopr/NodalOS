@@ -21,6 +21,7 @@ public sealed class BrowserSession
         {
             "edge" => "msedge",
             "chrome" => "chrome",
+            "firefox" => "firefox",
             _ => null
         };
     }
@@ -43,16 +44,24 @@ public sealed class BrowserSession
         var existingHwnds = new HashSet<IntPtr>(finder.FindAllWindows(processToFind, null));
 
         // Build browser args
-        var flags = useNewWindow ? "--new-window " : "";
+        var flags = useNewWindow
+            ? (browserName == "firefox" ? "-new-window " : "--new-window ")
+            : "";
         if (!string.IsNullOrEmpty(extraArgs))
             flags += extraArgs + " ";
-        var browserArgs = $"{flags}\"{url}\"";
+        var urlArg = browserName == "firefox" ? $"\"{url}\"" : $"\"{url}\"";
+        var browserArgs = $"{flags}{urlArg}";
 
-        string[] candidates = browserName == "edge"
-            ? [@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-               @"C:\Program Files\Microsoft\Edge\Application\msedge.exe"]
-            : [@"C:\Program Files\Google\Chrome\Application\chrome.exe",
-               @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"];
+        string[] candidates = browserName switch
+        {
+            "edge" => [@"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                       @"C:\Program Files\Microsoft\Edge\Application\msedge.exe"],
+            "chrome" => [@"C:\Program Files\Google\Chrome\Application\chrome.exe",
+                         @"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"],
+            "firefox" => [@"C:\Program Files\Mozilla Firefox\firefox.exe",
+                          @"C:\Program Files (x86)\Mozilla Firefox\firefox.exe"],
+            _ => []
+        };
 
         var launched = false;
         var lastError = "";
@@ -71,7 +80,13 @@ public sealed class BrowserSession
 
         if (!launched)
         {
-            var fallbackExe = browserName == "edge" ? "msedge" : "chrome";
+            var fallbackExe = browserName switch
+            {
+                "edge" => "msedge",
+                "chrome" => "chrome",
+                "firefox" => "firefox",
+                _ => processToFind
+            };
             try
             {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fallbackExe, browserArgs)
@@ -82,7 +97,10 @@ public sealed class BrowserSession
         }
 
         if (!launched)
-            return new BrowserOpenResult { Success = false, Error = $"Failed to launch {browserName}: {lastError}" };
+        {
+            var tried = string.Join(", ", candidates);
+            return new BrowserOpenResult { Success = false, Error = $"{browserName} not found. Tried: {tried}. PATH fallback: {lastError}" };
+        }
 
         // Poll for a NEW window not in existing set
         var sw = System.Diagnostics.Stopwatch.StartNew();
