@@ -1,8 +1,10 @@
 {
   "name": "controlled-safe-click-report",
-  "description": "Controlled safe click: open Calc, click button 7 via safe.click with preflight+approval",
+  "description": "Controlled safe click: open Calc, click 7 via safe.click with preflight+approval, close Calc on cleanup. Cleanup residual from start too.",
   "stopOnFirstFailure": true,
   "steps": [
+    { "id": "close-residual-calc", "kind": "app.close", "app": "calculator", "continueOnError": true, "saveAs": "preCleanup" },
+    { "id": "delay-after-cleanup", "kind": "delay", "timeoutMs": 500 },
     { "id": "open-calc", "kind": "app.open", "app": "calculator" },
     { "id": "wait-calc", "kind": "wait", "process": "ApplicationFrameHost", "window": "Calculadora", "role": "Button", "timeoutMs": 8000 },
     { "id": "read-before", "kind": "snapshot.read", "process": "ApplicationFrameHost", "window": "Calculadora", "automationId": "CalculatorResults", "property": "name", "saveAs": "beforeResult", "timeoutMs": 5000 },
@@ -12,7 +14,8 @@
     { "id": "safe-click", "kind": "safe.click", "saveAs": "safeClick", "args": { "targettext": "Siete", "mode": "controlled", "proc": "ApplicationFrameHost" } },
     { "id": "delay-after", "kind": "delay", "timeoutMs": 1000 },
     { "id": "read-after", "kind": "snapshot.read", "process": "ApplicationFrameHost", "window": "Calculadora", "automationId": "CalculatorResults", "property": "name", "saveAs": "afterResult", "timeoutMs": 5000 },
+    { "id": "close-calc", "kind": "app.close", "app": "calculator", "saveAs": "appClose" },
     { "id": "assert-executed", "kind": "assert.equals", "value": "{{safeClick.executed}}", "expected": "true" },
-    { "id": "note-report", "kind": "note", "text": "Controlled safe click PASS: {{safeClick.targetText}} -> {{safeClick.result}}. Before: {{beforeResult}} After: {{afterResult}}" }
+    { "id": "note-report", "kind": "note", "text": "Controlled safe click PASS: {{safeClick.targetText}} -> {{safeClick.result}}. Before: {{beforeResult}} After: {{afterResult}}. Cleanup: {{appClose.success}} (residualBefore: {{preCleanup.success}})" }
   ]
 }

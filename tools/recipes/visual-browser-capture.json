@@ -1,45 +1,13 @@
 {
   "name": "visual-browser-capture",
-  "description": "Visual capture: open Edge example.com, capture window region, verify path",
+  "description": "Visual capture: open Edge example.com, capture window region, close browser, verify path",
   "stopOnFirstFailure": true,
   "steps": [
-    {
-      "id": "open-edge",
-      "kind": "browser.open",
-      "path": "https://example.com",
-      "timeoutMs": 15000,
-      "args": {
-        "browser": "edge",
-        "forceAccessibility": "true"
-      }
-    },
-    {
-      "id": "delay-load",
-      "kind": "delay",
-      "timeoutMs": 4000
-    },
-    {
-      "id": "capture-browser",
-      "kind": "visual.capture",
-      "args": {
-        "mode": "window"
-      },
-      "process": "msedge",
-      "out": "artifacts/recipes/browser-capture.png",
-      "saveAs": "visual.browserCapture",
-      "timeoutMs": 10000
-    },
-    {
-      "id": "assert-path-set",
-      "kind": "assert.contains",
-      "value": "{{visual.browserCapture.path}}",
-      "expected": "browser-capture",
-      "ignoreCase": false
-    },
-    {
-      "id": "note-metadata",
-      "kind": "note",
-      "text": "Capture: {{visual.browserCapture.path}} ({{visual.browserCapture.width}}x{{visual.browserCapture.height}})"
-    }
+    { "id": "open-edge", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true" } },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 4000 },
+    { "id": "capture-browser", "kind": "visual.capture", "args": { "mode": "window" }, "process": "msedge", "out": "artifacts/recipes/browser-capture.png", "saveAs": "visual.browserCapture", "timeoutMs": 10000 },
+    { "id": "close-edge", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "assert-path-set", "kind": "assert.contains", "value": "{{visual.browserCapture.path}}", "expected": "browser-capture", "ignoreCase": false },
+    { "id": "note-metadata", "kind": "note", "text": "Capture: {{visual.browserCapture.path}} ({{visual.browserCapture.width}}x{{visual.browserCapture.height}})" }
   ]
 }

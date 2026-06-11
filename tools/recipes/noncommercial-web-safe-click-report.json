@@ -1,6 +1,6 @@
 {
   "name": "noncommercial-web-safe-click-report",
-  "description": "Non-commercial safe click: evaluates preflight, approval, and attempts click on example.com (UIA target finding is limited v1)",
+  "description": "Non-commercial safe click: evaluates preflight, approval, attempts click on example.com. Close before note.",
   "stopOnFirstFailure": true,
   "steps": [
     { "id": "open-web", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
@@ -11,6 +11,6 @@
     { "id": "assert-exec-allowed", "kind": "assert.equals", "value": "{{approval.executionAllowedInThisHito}}", "expected": "true" },
     { "id": "safe-click", "kind": "safe.click", "saveAs": "safeClick", "args": { "targettext": "More information...", "approvalprefix": "approval" }, "continueOnError": true },
     { "id": "close-web", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
-    { "id": "note-report", "kind": "note", "text": "Non-commercial safe click: approval allowed=true, click executed={{safeClick.executed}}, result={{safeClick.result}}. UIA target finding limited in v1." }
+    { "id": "note-report", "kind": "note", "text": "Non-commercial safe click: approval allowed=true, click executed={{safeClick.executed}}, result={{safeClick.result}}." }
   ]
 }

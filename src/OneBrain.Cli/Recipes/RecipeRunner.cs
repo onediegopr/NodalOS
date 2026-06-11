@@ -237,6 +237,7 @@ public sealed class RecipeRunner
             return step.Kind.ToLowerInvariant() switch
             {
                 "app.open"               => ExecuteAppOpen(step, sw),
+                "app.close"              => ExecuteAppClose(step, sw),
                 "browser.open"           => ExecuteBrowserOpen(step, sw),
                 "browser.close"          => ExecuteBrowserClose(step, sw),
                 "browser.read"           => ExecuteBrowserRead(step, sw),
@@ -289,6 +290,77 @@ public sealed class RecipeRunner
         var (success, message) = AppLauncher.TryLaunch(app, R(step.Path) ?? "");
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, success, message, sw.ElapsedMilliseconds);
+    }
+
+    // ── app.close ─────────────────────────────────────────────────────────────
+    private RecipeStepRunResult ExecuteAppClose(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var app = (step.App ?? step.Args?.GetValueOrDefault("app") ?? "").Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(app))
+            return Fail(step, sw, "app.close requires 'app' field (calculator|notepad|explorer).");
+
+        var prefix = step.SaveAs ?? "appClose";
+
+        var (proc, titleContains, cls) = app switch
+        {
+            "calculator" => ("ApplicationFrameHost", "alculador", ""),
+            "notepad"    => ("Notepad", "Notepad", ""),
+            "explorer"   => ("explorer", "", ""),
+            _ => (null, null, null)
+        };
+
+        if (proc == null)
+        {
+            SetAppCloseVars(prefix, false, app, "unsupported app", 0);
+            sw.Stop();
+            return Fail(step, sw, $"app.close unsupported app: {app}");
+        }
+
+        var finder = new OneBrain.Observation.Windows.WindowFinder();
+        var windows = finder.FindAllWindows(proc, titleContains);
+
+        if (windows.Count == 0)
+        {
+            SetAppCloseVars(prefix, true, app, "not found (already closed)", 0);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, true,
+                $"App '{app}' not found (already closed).", sw.ElapsedMilliseconds);
+        }
+
+        if (windows.Count > 1 && app != "explorer")
+        {
+            SetAppCloseVars(prefix, false, app, $"ambiguous: {windows.Count} windows", 0);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"app.close: ambiguous target ({windows.Count} {app} windows).", sw.ElapsedMilliseconds);
+        }
+
+        // Close each matching window
+        var closed = 0;
+        foreach (var hwnd in windows)
+        {
+            try
+            {
+                Browser.BrowserSession.Close(hwnd, 3000);
+                closed++;
+            }
+            catch { }
+        }
+
+        SetAppCloseVars(prefix, closed > 0, app, closed > 0 ? "closed" : "failed", closed);
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, closed > 0,
+            $"App '{app}' closed ({closed} window(s)).", sw.ElapsedMilliseconds);
+    }
+
+    private void SetAppCloseVars(string prefix, bool success, string target, string reason, int count)
+    {
+        _ctx.Variables[prefix + ".success"] = success ? "true" : "false";
+        _ctx.Variables[prefix + ".target"] = target;
+        _ctx.Variables[prefix + ".method"] = "WM_CLOSE";
+        _ctx.Variables[prefix + ".closedCount"] = count.ToString();
+        _ctx.Variables[prefix + ".reason"] = reason;
+        _ctx.Variables[prefix + ".warning"] = success ? "" : "app may still be open";
     }
 
     // ── browser.open ────────────────────────────────────────────────────────
@@ -1371,7 +1443,7 @@ public sealed class RecipeRunner
     private static bool IsSensitiveStep(RecipeStepDefinition step)
     {
         var kind = (step.Kind ?? "").ToLowerInvariant();
-        return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close";
+        return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "app.close" or "browser.open" or "browser.close";
     }
 
     /// <summary>Validate template variables in a recipe against known/provided sources.</summary>

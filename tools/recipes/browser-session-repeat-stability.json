@@ -1,72 +1,27 @@
 {
   "name": "browser-session-repeat-stability",
-  "description": "Stress test: 3 consecutive open+read+close sessions. Validates session cleanup and HWND-precise reading.",
+  "description": "Stress test: 3 consecutive open+read+close sessions. Close before asserts to prevent orphan windows.",
   "stopOnFirstFailure": true,
   "steps": [
-    {
-      "id": "open-s1",
-      "kind": "browser.open",
-      "path": "https://example.com",
-      "saveAs": "browser.s1",
-      "timeoutMs": 15000,
-      "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" }
-    },
+    { "id": "open-s1", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s1", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
     { "id": "delay-s1", "kind": "delay", "timeoutMs": 3000 },
-    {
-      "id": "read-s1",
-      "kind": "browser.read",
-      "process": "msedge",
-      "property": "title",
-      "saveAs": "browser.t1",
-      "timeoutMs": 10000,
-      "args": { "session": "browser.s1" }
-    },
-    { "id": "assert-s1", "kind": "assert.contains", "value": "{{browser.t1}}", "expected": "Example" },
+    { "id": "read-s1", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "browser.t1", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
     { "id": "close-s1", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 5000 },
+    { "id": "assert-s1", "kind": "assert.contains", "value": "{{browser.t1}}", "expected": "Example" },
     { "id": "pause1", "kind": "delay", "timeoutMs": 1000 },
 
-    {
-      "id": "open-s2",
-      "kind": "browser.open",
-      "path": "https://example.com",
-      "saveAs": "browser.s2",
-      "timeoutMs": 15000,
-      "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" }
-    },
+    { "id": "open-s2", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s2", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
     { "id": "delay-s2", "kind": "delay", "timeoutMs": 3000 },
-    {
-      "id": "read-s2",
-      "kind": "browser.read",
-      "process": "msedge",
-      "property": "title",
-      "saveAs": "browser.t2",
-      "timeoutMs": 10000,
-      "args": { "session": "browser.s2" }
-    },
-    { "id": "assert-s2", "kind": "assert.contains", "value": "{{browser.t2}}", "expected": "Example" },
+    { "id": "read-s2", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "browser.t2", "timeoutMs": 10000, "args": { "session": "browser.s2" } },
     { "id": "close-s2", "kind": "browser.close", "saveAs": "browser.s2", "timeoutMs": 5000 },
+    { "id": "assert-s2", "kind": "assert.contains", "value": "{{browser.t2}}", "expected": "Example" },
     { "id": "pause2", "kind": "delay", "timeoutMs": 1000 },
 
-    {
-      "id": "open-s3",
-      "kind": "browser.open",
-      "path": "https://example.com",
-      "saveAs": "browser.s3",
-      "timeoutMs": 15000,
-      "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" }
-    },
+    { "id": "open-s3", "kind": "browser.open", "path": "https://example.com", "saveAs": "browser.s3", "timeoutMs": 15000, "args": { "browser": "edge", "forceAccessibility": "true", "reuseExisting": "false" } },
     { "id": "delay-s3", "kind": "delay", "timeoutMs": 3000 },
-    {
-      "id": "read-s3",
-      "kind": "browser.read",
-      "process": "msedge",
-      "property": "title",
-      "saveAs": "browser.t3",
-      "timeoutMs": 10000,
-      "args": { "session": "browser.s3" }
-    },
-    { "id": "assert-s3", "kind": "assert.contains", "value": "{{browser.t3}}", "expected": "Example" },
+    { "id": "read-s3", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "browser.t3", "timeoutMs": 10000, "args": { "session": "browser.s3" } },
     { "id": "close-s3", "kind": "browser.close", "saveAs": "browser.s3", "timeoutMs": 5000 },
+    { "id": "assert-s3", "kind": "assert.contains", "value": "{{browser.t3}}", "expected": "Example" },
 
     { "id": "note-done", "kind": "note", "text": "3 sessions opened, read, and closed. No accumulation." }
   ]
