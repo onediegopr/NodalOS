@@ -7,7 +7,11 @@
     "autoRegression": true,
     "readOnly": true,
     "localOnly": true,
-    "commercialClicksAllowed": false
+    "commercialClicksAllowed": false,
+    "oneCommandDemo": true,
+    "sampleInputDir": "samples/product-evidence",
+    "summaryOutputDir": "artifacts/product-evidence-demo-summary",
+    "markdownOutputDir": "artifacts/product-evidence-demo-reports"
   },
   "steps": [
     {
@@ -31,7 +35,7 @@
     {
       "id": "report-demo",
       "kind": "note",
-      "text": "Demo Product Evidence Report: sourceArtifactCount={{demoSummary.sourceArtifactCount}} | validArtifactCount={{demoSummary.validArtifactCount}} | invalidArtifactCount={{demoSummary.invalidArtifactCount}} | productsWithPrice={{demoSummary.productsWithPrice}} | productsMissingPrice={{demoSummary.productsMissingPrice}} | partialCount={{demoSummary.partialCount}} | sufficientCount={{demoSummary.sufficientCount}} | averageEvidenceScore={{demoSummary.averageEvidenceScore}} | readyForComparisonCount={{demoSummary.readyForComparisonCount}} | needsPriceVerificationCount={{demoSummary.needsPriceVerificationCount}} | summaryPath={{demoSummary.relativePath}} | markdownPath={{demoMarkdown.relativePath}} | local-only demo: no browser, no web, no clicks, no cookies, no login, no cart, no purchase, no payment."
+      "text": "Demo Product Evidence Report: sourceArtifactCount={{demoSummary.sourceArtifactCount}} | validArtifactCount={{demoSummary.validArtifactCount}} | invalidArtifactCount={{demoSummary.invalidArtifactCount}} | productsWithPrice={{demoSummary.productsWithPrice}} | productsNeedingPriceVerification={{demoSummary.productsMissingPrice}} | partialCount={{demoSummary.partialCount}} | sufficientCount={{demoSummary.sufficientCount}} | averageEvidenceScore={{demoSummary.averageEvidenceScore}} | readyForComparisonCount={{demoSummary.readyForComparisonCount}} | needsPriceVerificationCount={{demoSummary.needsPriceVerificationCount}} | summaryPath={{demoSummary.relativePath}} | markdownOutputPath={{demoMarkdown.relativePath}} | local-only demo: no browser, no web, no clicks, no cookies, no login, no cart, no purchase, no payment."
     }
   ]
 }

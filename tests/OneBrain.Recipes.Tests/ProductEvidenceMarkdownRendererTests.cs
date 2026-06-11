@@ -15,6 +15,41 @@ public sealed class ProductEvidenceMarkdownRendererTests
     }
 
     [TestMethod]
+    public void Render_Demo_Generates_Stable_Demo_Title()
+    {
+        var markdown = ProductEvidenceMarkdownRenderer.Render(CreateDemoSummary());
+
+        StringAssert.Contains(markdown, "# ONE BRAIN - Stable Product Evidence Demo");
+    }
+
+    [TestMethod]
+    public void Render_Demo_Includes_What_This_Demo_Shows()
+    {
+        var markdown = ProductEvidenceMarkdownRenderer.Render(CreateDemoSummary());
+
+        StringAssert.Contains(markdown, "## What this demo shows");
+        StringAssert.Contains(markdown, "No live web access is required for this demo.");
+    }
+
+    [TestMethod]
+    public void Render_Demo_Includes_Safety_Guarantees()
+    {
+        var markdown = ProductEvidenceMarkdownRenderer.Render(CreateDemoSummary());
+
+        StringAssert.Contains(markdown, "## Important safety guarantees");
+        StringAssert.Contains(markdown, "No browser or web navigation is required by the demo report recipe.");
+    }
+
+    [TestMethod]
+    public void Render_Demo_Includes_Decision_Readiness()
+    {
+        var markdown = ProductEvidenceMarkdownRenderer.Render(CreateDemoSummary());
+
+        StringAssert.Contains(markdown, "## Decision readiness");
+        StringAssert.Contains(markdown, "ready_for_comparison");
+    }
+
+    [TestMethod]
     public void Render_Includes_Summary_Table()
     {
         var markdown = ProductEvidenceMarkdownRenderer.Render(CreateSummary());
@@ -38,7 +73,7 @@ public sealed class ProductEvidenceMarkdownRendererTests
     {
         var markdown = ProductEvidenceMarkdownRenderer.Render(CreateSummary());
 
-        StringAssert.Contains(markdown, "| Placa Marmol Blanco Firenze | suministrosroca-uy-product | — | — | missing_price | medium | 50 | partial | needs_price_verification | missing_price, missing_currency, missing_stock |");
+        StringAssert.Contains(markdown, "| Placa Marmol Blanco Firenze | suministrosroca-uy-product | \u2014 | \u2014 | missing_price | medium | 50 | partial | needs_price_verification | missing_price, missing_currency, missing_stock |");
     }
 
     [TestMethod]
@@ -48,6 +83,7 @@ public sealed class ProductEvidenceMarkdownRendererTests
 
         StringAssert.Contains(markdown, "| Partial evidence | 1 |");
         StringAssert.Contains(markdown, "| Average evidence score | 50 |");
+        StringAssert.Contains(markdown, "| Products needing price verification | 1 |");
         StringAssert.Contains(markdown, "| Needs price verification | 1 |");
     }
 
@@ -164,10 +200,22 @@ public sealed class ProductEvidenceMarkdownRendererTests
         }
     }
 
+    private static ProductEvidenceSummary CreateDemoSummary()
+    {
+        return CreateSummary(
+            profileId: "demo-fixture",
+            artifactPath: "samples/product-evidence/20260611-demo-complete-fixture.json",
+            decisionReadiness: "ready_for_comparison",
+            readyForComparisonCount: 1);
+    }
+
     private static ProductEvidenceSummary CreateSummary(
         string productName = "Placa Marmol Blanco Firenze",
         string profileId = "suministrosroca-uy-product",
-        int rawSignalCount = 0)
+        int rawSignalCount = 0,
+        string artifactPath = "artifacts/product-evidence/example.json",
+        string decisionReadiness = "needs_price_verification",
+        int readyForComparisonCount = 0)
     {
         var item = new ProductEvidenceSummaryItem
         {
@@ -187,13 +235,13 @@ public sealed class ProductEvidenceMarkdownRendererTests
             HasStock = false,
             RawSignalCount = rawSignalCount,
             SafetySummary = new ProductEvidenceSafetySummary { Clicks = 0, CookiesAccepted = 0 },
-            ArtifactPath = "artifacts/product-evidence/example.json",
+            ArtifactPath = artifactPath,
             EvidenceScore = 50,
             EvidenceGrade = "partial",
             QualityStatus = "partial",
             QualityReasons = ["identified product evidence floor: 50"],
             MissingCriticalFields = ["missing_price", "missing_currency", "missing_stock"],
-            DecisionReadiness = "needs_price_verification"
+            DecisionReadiness = decisionReadiness
         };
 
         return new ProductEvidenceSummary
@@ -213,6 +261,7 @@ public sealed class ProductEvidenceMarkdownRendererTests
                 ArtifactsWithWarnings = 1,
                 PartialCount = 1,
                 AverageEvidenceScore = 50,
+                ReadyForComparisonCount = readyForComparisonCount,
                 NeedsPriceVerificationCount = 1
             },
             Notes = ["rawSignals are not treated as visible normalized price"]

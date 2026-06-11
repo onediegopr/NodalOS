@@ -83,6 +83,10 @@ public sealed class ProductEvidenceDemoSamplesTests
     {
         var markdown = ProductEvidenceMarkdownRenderer.Render(BuildSampleSummary());
 
+        StringAssert.Contains(markdown, "# ONE BRAIN - Stable Product Evidence Demo");
+        StringAssert.Contains(markdown, "## What this demo shows");
+        StringAssert.Contains(markdown, "## Important safety guarantees");
+        StringAssert.Contains(markdown, "## Decision readiness");
         StringAssert.Contains(markdown, "Score | Grade | Readiness");
         StringAssert.Contains(markdown, "50 | partial | needs_price_verification");
         StringAssert.Contains(markdown, "100 | excellent | ready_for_comparison");
