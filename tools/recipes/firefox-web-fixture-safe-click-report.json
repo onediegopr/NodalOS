@@ -9,7 +9,7 @@
   },
   "steps": [
     { "id": "open-fixture", "kind": "browser.open", "path": "tools/fixtures/web/accessible-safe-click.html", "saveAs": "browser.s1", "timeoutMs": 20000, "args": { "browser": "firefox", "reuseExisting": "false" } },
-    { "id": "delay-load", "kind": "delay", "timeoutMs": 2000 },
+    { "id": "delay-load", "kind": "delay", "timeoutMs": 8000 },
     { "id": "read-text", "kind": "browser.read", "process": "firefox", "property": "text", "saveAs": "btextBefore", "timeoutMs": 10000, "args": { "session": "browser.s1" }, "continueOnError": true },
     { "id": "preflight", "kind": "preflight.click", "saveAs": "clickPreflight", "args": { "targettext": "Abrir información" }, "continueOnError": true },
     { "id": "approval", "kind": "approval.manifest", "saveAs": "approval", "args": { "from": "clickPreflight", "mode": "nonCommercialWeb" }, "continueOnError": true },

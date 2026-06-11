@@ -1,0 +1,21 @@
+{
+  "id": "suministrosroca-uy-category",
+  "type": "web",
+  "displayName": "Suministros Roca Uruguay Pisos Category",
+  "url": "https://suministrosroca.uy/categoria-producto/pisos/",
+  "expected": {
+    "titleContains": "Pisos",
+    "textContains": "Roca"
+  },
+  "read": {
+    "preferredProperty": "text",
+    "fallbackProperty": "title"
+  },
+  "safety": {
+    "allowForms": false,
+    "allowLogin": false,
+    "allowPurchase": false,
+    "allowSensitiveActions": false,
+    "allowClose": true
+  }
+}

@@ -173,6 +173,28 @@ public sealed class ProfileLoaderTests
     }
 
     [TestMethod]
+    public void Loads_SuministrosRoca_Category_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/suministrosroca-uy-category.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("suministrosroca-uy-category", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+        Assert.AreEqual("https://suministrosroca.uy/categoria-producto/pisos/", result.Profile.Url);
+    }
+
+    [TestMethod]
+    public void Loads_Sodimac_Category_Profile()
+    {
+        var path = GetRootPath("tools/profiles/web/sodimac-category.json");
+        var result = _loader.Load(path);
+        Assert.IsTrue(result.Success, result.Error ?? "unknown error");
+        Assert.AreEqual("sodimac-category", result.Profile!.Id);
+        Assert.AreEqual("web", result.Profile.Type);
+        Assert.AreEqual("https://www.sodimac.com.uy/sodimac-uy/category/cat20668/pisos-y-revestimientos/", result.Profile.Url);
+    }
+
+    [TestMethod]
     public void ExtractCommercialFields_Detects_Price()
     {
         var result = OneBrain.Cli.Recipes.RecipeRunner_ExtractHelper.Extract("Test | Notebook $ 1.299.999 Envio gratis");
