@@ -12,10 +12,10 @@ public sealed class PilotRecordingDemoTests
     {
         var html = PilotHomePageRenderer.RenderRecordingDemo(RecordingDemoFixture.CreateTimeline());
 
-        StringAssert.Contains(html, "Recording timeline demo");
-        StringAssert.Contains(html, "shadow mode");
-        StringAssert.Contains(html, "Timeline");
-        StringAssert.Contains(html, "Human annotations");
+        StringAssert.Contains(html, "Observacion supervisada");
+        StringAssert.Contains(html, "modo observacion");
+        StringAssert.Contains(html, "Linea de tiempo");
+        StringAssert.Contains(html, "Anotaciones humanas");
         StringAssert.Contains(html, "este bloque es buscar cliente");
         StringAssert.Contains(html, "este paso requiere aprobacion");
     }
@@ -25,9 +25,10 @@ public sealed class PilotRecordingDemoTests
     {
         var html = PilotHomePageRenderer.RenderRecordingDemo(RecordingDemoFixture.CreateTimeline());
 
-        StringAssert.Contains(html, "no playback");
+        StringAssert.Contains(html, "sin reproduccion de acciones");
         StringAssert.Contains(html, "no clicks");
-        StringAssert.Contains(html, "does not capture secrets, execute actions, replay actions, or generate executable recipes");
+        StringAssert.Contains(html, "sin ejecutar acciones reales");
+        StringAssert.Contains(html, "no dispara ejecucion");
     }
 
     [TestMethod]
@@ -36,6 +37,6 @@ public sealed class PilotRecordingDemoTests
         var html = PilotHomePageRenderer.RenderRecordingDemo(RecordingDemoFixture.CreateTimeline());
 
         StringAssert.Contains(html, "requires_approval");
-        StringAssert.Contains(html, "<td>true</td>");
+        StringAssert.Contains(html, "requiere aprobacion");
     }
 }

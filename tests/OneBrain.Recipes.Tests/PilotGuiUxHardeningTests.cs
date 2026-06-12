@@ -22,6 +22,11 @@ public sealed class PilotGuiUxHardeningTests
         StringAssert.Contains(html, "href=\"/runs\"");
         StringAssert.Contains(html, "href=\"/ai/config\"");
         StringAssert.Contains(html, "href=\"/ai/audit\"");
+        StringAssert.Contains(html, "Guiarme paso a paso");
+        StringAssert.Contains(html, "Tareas");
+        StringAssert.Contains(html, "Historial");
+        StringAssert.Contains(html, "Configuracion");
+        StringAssert.Contains(html, "Links secundarios");
     }
 
     [TestMethod]
@@ -41,14 +46,53 @@ public sealed class PilotGuiUxHardeningTests
 
         foreach (var html in pages)
         {
-            StringAssert.Contains(html, "Safety always visible");
+            StringAssert.Contains(html, "Modo seguro visible");
             StringAssert.Contains(html, "0 clicks");
-            StringAssert.Contains(html, "0 cookies accepted");
+            StringAssert.Contains(html, "0 cookies aceptadas");
             StringAssert.Contains(html, "0 login");
             StringAssert.Contains(html, "0 carrito");
             StringAssert.Contains(html, "0 compra");
             StringAssert.Contains(html, "0 pago");
         }
+    }
+
+    [TestMethod]
+    public void Core_Pilot_Pages_Explain_User_Facing_Concepts()
+    {
+        var recipesHtml = PilotHomePageRenderer.RenderRecipeList([]);
+        var variablesHtml = PilotHomePageRenderer.RenderVariables([]);
+        var memoryHtml = PilotHomePageRenderer.RenderProcessMemory([], new WorkflowRetrievalResult(new WorkflowRetrievalQuery(), []));
+        var profilesHtml = PilotHomePageRenderer.RenderAppProfiles([]);
+        var approvalsHtml = PilotHomePageRenderer.RenderApprovalDemo(BusinessFlowDemoFixture.CreateSendMessageApproval(), BusinessFlowDemoFixture.CreateConfidenceProfile());
+        var runsHtml = PilotHomePageRenderer.RenderRunHistory([]);
+        var auditHtml = PilotHomePageRenderer.RenderAIAuditLog([]);
+
+        StringAssert.Contains(recipesHtml, "Una tarea automatizable es una accion permitida y revisable.");
+        StringAssert.Contains(variablesHtml, "Los datos de la tarea son valores");
+        StringAssert.Contains(memoryHtml, "Esta memoria ayuda a buscar procesos observados o aprendidos");
+        StringAssert.Contains(profilesHtml, "Los perfiles de apps y sitios describen que sabe hacer ONE BRAIN");
+        StringAssert.Contains(approvalsHtml, "Aprobacion humana");
+        StringAssert.Contains(runsHtml, "Esta pantalla muestra ejecuciones locales");
+        StringAssert.Contains(auditHtml, "Esta bitacora muestra por que el router recomendaria un perfil IA");
+    }
+
+    [TestMethod]
+    public void Empty_States_Are_Explanatory()
+    {
+        var recipesHtml = PilotHomePageRenderer.RenderRecipeList([]);
+        var variablesHtml = PilotHomePageRenderer.RenderVariables([]);
+        var memoryHtml = PilotHomePageRenderer.RenderProcessMemory([], new WorkflowRetrievalResult(new WorkflowRetrievalQuery(), []));
+        var profilesHtml = PilotHomePageRenderer.RenderAppProfiles([]);
+        var runsHtml = PilotHomePageRenderer.RenderRunHistory([]);
+        var auditHtml = PilotHomePageRenderer.RenderAIAuditLog([]);
+
+        StringAssert.Contains(recipesHtml, "Todavia no hay tareas cargadas en esta vista.");
+        StringAssert.Contains(variablesHtml, "No se detectaron datos en esta vista.");
+        StringAssert.Contains(memoryHtml, "Todavia no hay procesos aprendidos cargados en esta vista.");
+        StringAssert.Contains(memoryHtml, "La busqueda no encontro procesos parecidos con este criterio.");
+        StringAssert.Contains(profilesHtml, "No hay perfiles cargados en esta vista.");
+        StringAssert.Contains(runsHtml, "Todavia no hay ejecuciones registradas.");
+        StringAssert.Contains(auditHtml, "Todavia no hay decisiones de IA registradas.");
     }
 
     [TestMethod]
@@ -71,10 +115,10 @@ public sealed class PilotGuiUxHardeningTests
 
         var html = PilotHomePageRenderer.Render(plan, result);
 
-        StringAssert.Contains(html, "Select and copy manually");
-        StringAssert.Contains(html, "Pilot never opens files automatically");
-        StringAssert.Contains(html, "Markdown report path");
-        StringAssert.Contains(html, "HTML report path");
+        StringAssert.Contains(html, "Selecciona y copia manualmente");
+        StringAssert.Contains(html, "Pilot nunca abre archivos automaticamente");
+        StringAssert.Contains(html, "Ruta del reporte Markdown");
+        StringAssert.Contains(html, "Ruta del reporte HTML");
         StringAssert.Contains(html, "artifacts/product-evidence-demo-html-reports/demo.html");
     }
 
@@ -84,12 +128,34 @@ public sealed class PilotGuiUxHardeningTests
         var memoryHtml = PilotHomePageRenderer.RenderProcessMemoryDetail(null);
         var profileHtml = PilotHomePageRenderer.RenderAppProfileDetail(null);
 
-        StringAssert.Contains(memoryHtml, "Process memory entry not found");
-        StringAssert.Contains(memoryHtml, "Back to memory");
-        StringAssert.Contains(profileHtml, "App profile not found");
-        StringAssert.Contains(profileHtml, "Back to app profiles");
-        StringAssert.Contains(memoryHtml, "no execution");
-        StringAssert.Contains(profileHtml, "no execution");
+        StringAssert.Contains(memoryHtml, "Proceso aprendido no encontrado");
+        StringAssert.Contains(memoryHtml, "Volver al inicio");
+        StringAssert.Contains(profileHtml, "App o sitio no encontrado");
+        StringAssert.Contains(profileHtml, "Volver al inicio");
+        StringAssert.Contains(memoryHtml, "sin ejecucion");
+        StringAssert.Contains(profileHtml, "sin ejecucion");
+    }
+
+    [TestMethod]
+    public void Main_User_Facing_Titles_Avoid_English_Primary_Names()
+    {
+        var html = string.Join('\n', [
+            PilotHomePageRenderer.Render(),
+            PilotHomePageRenderer.RenderRecipeList([]),
+            PilotHomePageRenderer.RenderVariables([]),
+            PilotHomePageRenderer.RenderRunHistory([]),
+            PilotHomePageRenderer.RenderAIAuditLog([]),
+            PilotHomePageRenderer.RenderAppProfiles([]),
+            PilotHomePageRenderer.RenderApprovalDemo(BusinessFlowDemoFixture.CreateSendMessageApproval(), BusinessFlowDemoFixture.CreateConfidenceProfile())
+        ]);
+
+        Assert.IsFalse(html.Contains(">Recipes<", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains(">Variables<", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains(">Runs<", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains(">AI Audit<", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains(">App Profiles<", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains(">Memory<", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains(">Approvals<", StringComparison.OrdinalIgnoreCase));
     }
 
     [TestMethod]

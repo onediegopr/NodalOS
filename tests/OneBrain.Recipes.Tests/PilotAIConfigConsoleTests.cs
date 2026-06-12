@@ -12,7 +12,7 @@ public sealed class PilotAIConfigConsoleTests
     {
         var html = PilotHomePageRenderer.Render();
 
-        StringAssert.Contains(html, "AI model router");
+        StringAssert.Contains(html, "Decisiones de IA");
         StringAssert.Contains(html, "/ai/config");
     }
 
@@ -58,7 +58,7 @@ public sealed class PilotAIConfigConsoleTests
 
         var html = PilotHomePageRenderer.RenderAIConfigConsole(profiles, result);
 
-        StringAssert.Contains(html, "Run dry-run routing test");
+        StringAssert.Contains(html, "Correr prueba en seco del router");
         StringAssert.Contains(html, "selectedProfile=OB_AI_CHEAP_INTENT");
         StringAssert.Contains(html, "wouldCallProvider=False");
     }

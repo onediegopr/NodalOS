@@ -12,9 +12,9 @@ public sealed class PilotRecipeEditorTests
     {
         var html = PilotHomePageRenderer.Render();
 
-        StringAssert.Contains(html, "Recipe editor");
+        StringAssert.Contains(html, "Tareas automatizables");
         StringAssert.Contains(html, "/recipes");
-        StringAssert.Contains(html, "Variable manager");
+        StringAssert.Contains(html, "Datos de la tarea");
         StringAssert.Contains(html, "/variables");
     }
 
@@ -25,8 +25,8 @@ public sealed class PilotRecipeEditorTests
 
         var html = PilotHomePageRenderer.RenderRecipeList(recipes);
 
-        StringAssert.Contains(html, "allowlist only");
-        StringAssert.Contains(html, "drafts only");
+        StringAssert.Contains(html, "lista permitida");
+        StringAssert.Contains(html, "solo borradores");
         StringAssert.Contains(html, "demo-product-evidence-report");
         StringAssert.Contains(html, "tools/recipes/demo-product-evidence-report.json");
     }
@@ -41,11 +41,11 @@ public sealed class PilotRecipeEditorTests
 
         var html = PilotHomePageRenderer.RenderRecipeDetail(model, validation, variables);
 
-        StringAssert.Contains(html, "safe fields only");
-        StringAssert.Contains(html, "no action edit");
-        StringAssert.Contains(html, "Can run");
-        StringAssert.Contains(html, "Human-readable steps");
-        StringAssert.Contains(html, "Fields like step kind");
+        StringAssert.Contains(html, "solo campos seguros");
+        StringAssert.Contains(html, "sin editar acciones");
+        StringAssert.Contains(html, "Puede ejecutarse");
+        StringAssert.Contains(html, "Pasos explicados para humanos");
+        StringAssert.Contains(html, "Campos como tipo de paso");
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public sealed class PilotRecipeEditorTests
 
         var html = PilotHomePageRenderer.RenderVariables(variables);
 
-        StringAssert.Contains(html, "masked sensitive values");
+        StringAssert.Contains(html, "valores sensibles enmascarados");
         Assert.IsFalse(html.Contains("Mensaje privado demo", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(html, "Me...");
     }

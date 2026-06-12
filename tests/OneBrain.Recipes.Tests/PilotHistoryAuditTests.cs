@@ -12,9 +12,9 @@ public sealed class PilotHistoryAuditTests
     {
         var html = PilotHomePageRenderer.Render();
 
-        StringAssert.Contains(html, "Execution history");
+        StringAssert.Contains(html, "Historial");
         StringAssert.Contains(html, "/runs");
-        StringAssert.Contains(html, "AI audit log");
+        StringAssert.Contains(html, "Decisiones de IA");
         StringAssert.Contains(html, "/ai/audit");
     }
 
@@ -23,9 +23,9 @@ public sealed class PilotHistoryAuditTests
     {
         var html = PilotHomePageRenderer.RenderRunHistory(HistoryDemoFixture.CreateRunHistory());
 
-        StringAssert.Contains(html, "Execution history");
-        StringAssert.Contains(html, "runtime artifacts local only");
-        StringAssert.Contains(html, "no secrets stored");
+        StringAssert.Contains(html, "Historial");
+        StringAssert.Contains(html, "evidencia generada local solamente");
+        StringAssert.Contains(html, "sin secretos guardados");
         StringAssert.Contains(html, "demo-product-evidence-html-report");
         StringAssert.Contains(html, "clicks=0; cookies=0; login=0; cart=0; purchase=0; payment=0");
         StringAssert.Contains(html, "approval-send-message-demo");
@@ -39,13 +39,13 @@ public sealed class PilotHistoryAuditTests
     {
         var html = PilotHomePageRenderer.RenderAIAuditLog(HistoryDemoFixture.CreateAIAudit());
 
-        StringAssert.Contains(html, "AI usage audit");
-        StringAssert.Contains(html, "no provider call");
-        StringAssert.Contains(html, "no API keys");
+        StringAssert.Contains(html, "Decisiones de IA");
+        StringAssert.Contains(html, "sin llamada a proveedor");
+        StringAssert.Contains(html, "sin API keys");
         StringAssert.Contains(html, "OB_AI_CHEAP_INTENT");
         StringAssert.Contains(html, "OB_AI_CRITICAL_REASONER");
         StringAssert.Contains(html, "high");
         StringAssert.Contains(html, AIBudgetDecisions.Blocked);
-        StringAssert.Contains(html, "requires approval");
+        StringAssert.Contains(html, "Aprobacion humana");
     }
 }

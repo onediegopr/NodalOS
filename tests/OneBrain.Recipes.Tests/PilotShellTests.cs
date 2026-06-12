@@ -12,14 +12,14 @@ public sealed class PilotShellTests
         var html = PilotHomePageRenderer.Render();
 
         StringAssert.Contains(html, "<title>ONE BRAIN Pilot</title>");
-        StringAssert.Contains(html, "ONE BRAIN Pilot / local read-only shell");
+        StringAssert.Contains(html, "ONE BRAIN Pilot / recorrido local seguro");
         StringAssert.Contains(html, "textarea");
-        StringAssert.Contains(html, "Comparar productos demo");
-        StringAssert.Contains(html, "Generar reporte Markdown");
-        StringAssert.Contains(html, "Generar reporte HTML");
-        StringAssert.Contains(html, "Ver safety guarantees");
-        StringAssert.Contains(html, "Start recording demo/shadow");
-        StringAssert.Contains(html, "/recording/demo");
+        StringAssert.Contains(html, "Guiarme paso a paso");
+        StringAssert.Contains(html, "Probar demo HTML segura");
+        StringAssert.Contains(html, "Ver tareas automatizables");
+        StringAssert.Contains(html, "Revisar datos de la tarea");
+        StringAssert.Contains(html, "Simular aprobacion humana");
+        StringAssert.Contains(html, "/approvals/demo");
     }
 
     [TestMethod]
@@ -33,7 +33,38 @@ public sealed class PilotShellTests
         StringAssert.Contains(html, "0 carrito");
         StringAssert.Contains(html, "0 compra");
         StringAssert.Contains(html, "0 pago");
-        StringAssert.Contains(html, "No autonomous free-agent mode");
+        StringAssert.Contains(html, "ONE BRAIN no hace clicks, no inicia sesion, no acepta cookies, no compra, no paga y no envia nada sin aprobacion.");
+    }
+
+    [TestMethod]
+    public void Home_Render_Includes_Guided_Workflow_And_Basic_Concepts()
+    {
+        var html = PilotHomePageRenderer.Render();
+
+        StringAssert.Contains(html, "Flujo recomendado paso a paso");
+        StringAssert.Contains(html, "Que hace ONE BRAIN Pilot");
+        StringAssert.Contains(html, "Que no hara por seguridad");
+        StringAssert.Contains(html, "Conceptos basicos");
+        StringAssert.Contains(html, "Aprobacion humana");
+        StringAssert.Contains(html, "Diagnostico");
+        StringAssert.Contains(html, "Bloqueo seguro");
+        StringAssert.Contains(html, "details class=\"help-text\"");
+        StringAssert.Contains(html, "help-box");
+        StringAssert.Contains(html, "step-number");
+    }
+
+    [TestMethod]
+    public void Guide_Render_Includes_Step_Navigation_And_Resume()
+    {
+        var html = PilotHomePageRenderer.RenderGuide(4);
+
+        StringAssert.Contains(html, "Guiarme paso a paso");
+        StringAssert.Contains(html, "Simula aprobacion humana");
+        StringAssert.Contains(html, "Anterior");
+        StringAssert.Contains(html, "Siguiente");
+        StringAssert.Contains(html, "Salir de la guia");
+        StringAssert.Contains(html, "Retomar recorrido");
+        StringAssert.Contains(html, "Abrir pantalla real");
     }
 
     [TestMethod]
@@ -60,6 +91,25 @@ public sealed class PilotShellTests
         StringAssert.Contains(html, "demo.md");
         StringAssert.Contains(html, "demo.html");
         StringAssert.Contains(html, "success");
+    }
+
+    [TestMethod]
+    public void Rendered_Pilot_Pages_Do_Not_Use_External_Scripts_Or_Cdns()
+    {
+        var pages = new[]
+        {
+            PilotHomePageRenderer.Render(),
+            PilotHomePageRenderer.RenderRecipeList([]),
+            PilotHomePageRenderer.RenderVariables([]),
+            PilotHomePageRenderer.RenderRunHistory([]),
+            PilotHomePageRenderer.RenderAIAuditLog([])
+        };
+
+        foreach (var html in pages)
+        {
+            Assert.IsFalse(html.Contains("<script src=", StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(html.Contains("cdn", StringComparison.OrdinalIgnoreCase));
+        }
     }
 
     [TestMethod]

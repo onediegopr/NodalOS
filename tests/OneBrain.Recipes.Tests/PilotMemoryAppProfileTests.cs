@@ -15,8 +15,8 @@ public sealed class PilotMemoryAppProfileTests
 
         StringAssert.Contains(html, "/memory");
         StringAssert.Contains(html, "/app-profiles");
-        StringAssert.Contains(html, "Process memory");
-        StringAssert.Contains(html, "App profiles");
+        StringAssert.Contains(html, "Procesos aprendidos");
+        StringAssert.Contains(html, "Apps y sitios");
     }
 
     [TestMethod]
@@ -26,11 +26,11 @@ public sealed class PilotMemoryAppProfileTests
         var retrieval = WorkflowRetrievalService.Search(entries, new WorkflowRetrievalQuery(Text: "report", Tags: ["product-evidence"]));
         var html = PilotHomePageRenderer.RenderProcessMemory(entries, retrieval);
 
-        StringAssert.Contains(html, "Process memory");
-        StringAssert.Contains(html, "retrieval only");
-        StringAssert.Contains(html, "no OpenAI call");
+        StringAssert.Contains(html, "Procesos aprendidos");
+        StringAssert.Contains(html, "solo busqueda");
+        StringAssert.Contains(html, "sin llamada a OpenAI");
         StringAssert.Contains(html, "process-demo-product-evidence-report");
-        StringAssert.Contains(html, "safe");
+        StringAssert.Contains(html, "seguro para sugerir");
         StringAssert.Contains(html, "title match");
     }
 
@@ -42,7 +42,7 @@ public sealed class PilotMemoryAppProfileTests
         StringAssert.Contains(html, "candidate-whatsapp-browser-demo-v0");
         StringAssert.Contains(html, "approval-send-message-demo");
         StringAssert.Contains(html, "artifacts/approvals");
-        StringAssert.Contains(html, "no execution");
+        StringAssert.Contains(html, "sin ejecucion");
     }
 
     [TestMethod]
@@ -50,12 +50,12 @@ public sealed class PilotMemoryAppProfileTests
     {
         var html = PilotHomePageRenderer.RenderAppProfiles(AppProfileDemoFixture.CreateProfiles());
 
-        StringAssert.Contains(html, "App profile manager");
+        StringAssert.Contains(html, "Apps y sitios");
         StringAssert.Contains(html, "mercadolibre-readonly-diagnostic");
         StringAssert.Contains(html, "diagnostic_allowed");
-        StringAssert.Contains(html, "loginBlocked=True");
-        StringAssert.Contains(html, "paymentBlocked=True");
-        StringAssert.Contains(html, "purchaseBlocked=True");
+        StringAssert.Contains(html, "login bloqueado=si");
+        StringAssert.Contains(html, "pago bloqueado=si");
+        StringAssert.Contains(html, "compra bloqueada=si");
     }
 
     [TestMethod]
@@ -64,8 +64,8 @@ public sealed class PilotMemoryAppProfileTests
         var html = PilotHomePageRenderer.RenderAppProfileDetail(AppProfileDemoFixture.CreateMercadoLibreProfile());
 
         StringAssert.Contains(html, "Mercado Libre readonly diagnostic");
-        StringAssert.Contains(html, "Diagnostic allowed: True");
-        StringAssert.Contains(html, "Blocks login: True");
-        StringAssert.Contains(html, "Can activate: <strong>True</strong>");
+        StringAssert.Contains(html, "Diagnostico permitido: si");
+        StringAssert.Contains(html, "Bloquea login: si");
+        StringAssert.Contains(html, "Puede activarse: <strong>si</strong>");
     }
 }

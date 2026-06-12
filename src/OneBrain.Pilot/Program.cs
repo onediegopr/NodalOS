@@ -7,7 +7,7 @@ using OneBrain.Core.Memory;
 using OneBrain.Core.Recording;
 using OneBrain.Core.Recipes.Editing;
 
-var root = GetArg(args, "--root") ?? Directory.GetCurrentDirectory();
+var root = ResolveRepoRoot(GetArg(args, "--root") ?? Directory.GetCurrentDirectory());
 var dotnet = GetArg(args, "--dotnet")
     ?? Environment.GetEnvironmentVariable("ONEBRAIN_DOTNET")
     ?? PilotRecipeExecutor.DefaultDotnetPath;
@@ -21,6 +21,8 @@ var planner = new PilotPlanBuilder();
 var executor = new PilotRecipeExecutor(root, dotnet);
 
 app.MapGet("/", () => Results.Content(PilotHomePageRenderer.Render(), "text/html"));
+
+app.MapGet("/guia", (int? paso) => Results.Content(PilotHomePageRenderer.RenderGuide(paso ?? 1), "text/html"));
 
 app.MapPost("/plan", async (HttpContext context) =>
 {
@@ -289,6 +291,20 @@ static string? GetArg(string[] args, string name)
     }
 
     return null;
+}
+
+static string ResolveRepoRoot(string startPath)
+{
+    var directory = new DirectoryInfo(Path.GetFullPath(startPath));
+    while (directory != null)
+    {
+        if (File.Exists(Path.Combine(directory.FullName, "OneBrain.slnx")))
+            return directory.FullName;
+
+        directory = directory.Parent;
+    }
+
+    return Path.GetFullPath(startPath);
 }
 
 static IReadOnlyList<string> SplitCsv(string? value)

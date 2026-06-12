@@ -12,9 +12,9 @@ public sealed class PilotApprovalDemoTests
     {
         var html = PilotHomePageRenderer.Render();
 
-        StringAssert.Contains(html, "Review approval demo");
+        StringAssert.Contains(html, "Simular aprobacion humana");
         StringAssert.Contains(html, "/approvals/demo");
-        StringAssert.Contains(html, "Approval and confidence");
+        StringAssert.Contains(html, "Aprobaciones y confianza");
     }
 
     [TestMethod]
@@ -24,16 +24,16 @@ public sealed class PilotApprovalDemoTests
             BusinessFlowDemoFixture.CreateSendMessageApproval(),
             BusinessFlowDemoFixture.CreateConfidenceProfile());
 
-        StringAssert.Contains(html, "Approval demo");
+        StringAssert.Contains(html, "Aprobaciones humanas");
         StringAssert.Contains(html, "send");
         StringAssert.Contains(html, "blocked");
-        StringAssert.Contains(html, "Confidence score");
-        StringAssert.Contains(html, "ExecutionAllowed=false");
+        StringAssert.Contains(html, "Puntaje de confianza");
+        StringAssert.Contains(html, "La ejecucion real esta desactivada en esta version");
         StringAssert.Contains(html, "0 clicks");
-        StringAssert.Contains(html, "0 cookies");
+        StringAssert.Contains(html, "0 cookies aceptadas");
         StringAssert.Contains(html, "0 login");
-        StringAssert.Contains(html, "0 purchase");
-        StringAssert.Contains(html, "0 payment");
+        StringAssert.Contains(html, "0 compra");
+        StringAssert.Contains(html, "0 pago");
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public sealed class PilotApprovalDemoTests
 
         StringAssert.Contains(html, "approved");
         StringAssert.Contains(html, "reviewed");
-        StringAssert.Contains(html, "ExecutionAllowed=false");
+        StringAssert.Contains(html, "La ejecucion real esta desactivada en esta version");
         Assert.IsFalse(html.Contains("safe.click", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(html.Contains("browser.open", StringComparison.OrdinalIgnoreCase));
     }
