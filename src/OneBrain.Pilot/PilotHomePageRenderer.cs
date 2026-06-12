@@ -145,6 +145,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Home")}}
     <section class="hero">
       <div class="card">
         <div class="eyebrow">ONE BRAIN Pilot / local read-only shell</div>
@@ -248,10 +249,10 @@ public static class PilotHomePageRenderer
 
       <div class="card full">
         <h2>Execution result</h2>
-        <p>Exit code: <strong>{{Html(result?.ExitCode?.ToString() ?? "-")}}</strong></p>
-        <p>Markdown: <span class="path">{{Html(latestMarkdown.Length == 0 ? "-" : latestMarkdown)}}</span></p>
-        <p>HTML: <span class="path">{{Html(latestHtml.Length == 0 ? "-" : latestHtml)}}</span></p>
-        <p>Artifacts: <span class="path">{{Html(result?.ArtifactsFolder ?? "artifacts")}}</span></p>
+        {{ExecutionStatusBlock(result)}}
+        {{CopyPathField("Markdown report path", latestMarkdown)}}
+        {{CopyPathField("HTML report path", latestHtml)}}
+        {{CopyPathField("Artifacts folder", result?.ArtifactsFolder ?? "artifacts")}}
         {{OutputBlock(result)}}
       </div>
     </section>
@@ -292,6 +293,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Recording")}}
     <section class="card">
       <p><span class="badge safe">shadow mode</span> <span class="badge safe">no playback</span> <span class="badge safe">no clicks</span></p>
       <h1>Recording timeline demo</h1>
@@ -377,6 +379,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Approvals")}}
     <section class="card">
       <p><span class="badge risk">approval required</span> <span class="badge safe">audit only</span> <span class="badge safe">no execution</span></p>
       <h1>Approval demo</h1>
@@ -454,6 +457,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("AI Config")}}
     <section class="card">
       <p><span class="badge safe">OpenAI primary</span> <span class="badge safe">central router</span> <span class="badge safe">masked secrets</span> <span class="badge safe">dry-run only</span></p>
       <h1>AI model router config</h1>
@@ -516,6 +520,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Runs")}}
     <section class="card">
       <p><span class="badge safe">runtime artifacts local only</span> <span class="badge safe">no secrets stored</span> <span class="badge safe">0 clicks baseline</span></p>
       <h1>Execution history</h1>
@@ -568,6 +573,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("AI Audit")}}
     <section class="card">
       <p><span class="badge safe">no provider call</span> <span class="badge safe">no prompts stored by default</span> <span class="badge safe">no API keys</span></p>
       <h1>AI usage audit</h1>
@@ -605,6 +611,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Recipes")}}
     <section class="card">
       <p><span class="badge safe">allowlist only</span> <span class="badge safe">drafts only</span> <span class="badge safe">no arbitrary commands</span></p>
       <h1>Recipe editor</h1>
@@ -643,6 +650,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Recipe Detail")}}
     <section class="card">
       <p><span class="badge safe">safe fields only</span> <span class="badge safe">draft artifact</span> <span class="badge risk">no action edit</span></p>
       <h1>{{Html(recipe.Title)}}</h1>
@@ -714,6 +722,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Variables")}}
     <section class="card">
       <p><span class="badge safe">no execution</span> <span class="badge safe">masked sensitive values</span> <span class="badge risk">no normal secrets</span></p>
       <h1>{{Html(title ?? "Variable manager")}}</h1>
@@ -746,6 +755,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Memory")}}
     <section class="card">
       <p><span class="badge safe">retrieval only</span> <span class="badge safe">no execution</span> <span class="badge safe">no embeddings</span> <span class="badge safe">no OpenAI call</span></p>
       <h1>Process memory</h1>
@@ -785,7 +795,7 @@ public static class PilotHomePageRenderer
     public static string RenderProcessMemoryDetail(ProcessMemoryEntry? entry)
     {
         if (entry == null)
-            return RenderProcessMemory([], new WorkflowRetrievalResult(new WorkflowRetrievalQuery(), []));
+            return RenderNotFound("Process memory entry not found", "/memory", "Back to memory");
 
         return $$"""
 <!doctype html>
@@ -798,6 +808,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("Memory Detail")}}
     <section class="card">
       <p><span class="badge safe">memory detail</span> <span class="badge safe">no execution</span> <span class="badge warn">human review for risky suggestions</span></p>
       <h1>{{Html(entry.Title)}}</h1>
@@ -848,6 +859,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("App Profiles")}}
     <section class="card">
       <p><span class="badge safe">profile manager v0</span> <span class="badge safe">no execution</span> <span class="badge risk">login/cookies/payment/purchase blocked</span></p>
       <h1>App profile manager</h1>
@@ -870,7 +882,7 @@ public static class PilotHomePageRenderer
     public static string RenderAppProfileDetail(AppProfile? profile)
     {
         if (profile == null)
-            return RenderAppProfiles([]);
+            return RenderNotFound("App profile not found", "/app-profiles", "Back to app profiles");
 
         var validation = AppProfilePolicy.Validate(profile);
         return $$"""
@@ -884,6 +896,7 @@ public static class PilotHomePageRenderer
 </head>
 <body>
   <main>
+    {{PilotChrome("App Profile Detail")}}
     <section class="card">
       <p><span class="badge safe">read-only by default</span> <span class="badge safe">diagnostic policy visible</span> <span class="badge risk">unsafe actions blocked</span></p>
       <h1>{{Html(profile.Name)}}</h1>
@@ -929,6 +942,92 @@ public static class PilotHomePageRenderer
   </main>
 </body>
 </html>
+""";
+    }
+
+    private static string RenderNotFound(string title, string backPath, string backLabel)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Not Found</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Not Found")}}
+    <section class="card">
+      <p><span class="badge warn">not found</span> <span class="badge safe">no execution</span></p>
+      <h1>{{Html(title)}}</h1>
+      <p>The requested Pilot item does not exist in the current local fixtures or runtime artifacts.</p>
+      <p><a class="button" href="{{Html(backPath)}}">{{Html(backLabel)}}</a> <a class="button" href="/">Back to Pilot</a></p>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    private static string PilotChrome(string currentPage)
+    {
+        return $$"""
+<section class="card" aria-label="Pilot navigation and safety">
+  <p><span class="badge safe">Current: {{Html(currentPage)}}</span> <span class="badge safe">local UI</span> <span class="badge safe">no auto-open</span></p>
+  <nav style="display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 14px">
+    <a class="button" href="/">Home</a>
+    <a class="button" href="/recipes">Recipes</a>
+    <a class="button" href="/variables">Variables</a>
+    <a class="button" href="/memory">Memory</a>
+    <a class="button" href="/app-profiles">App profiles</a>
+    <a class="button" href="/approvals/demo">Approvals</a>
+    <a class="button" href="/runs">Runs</a>
+    <a class="button" href="/ai/config">AI config</a>
+    <a class="button" href="/ai/audit">AI audit</a>
+  </nav>
+  {{SafetyAlwaysVisible()}}
+</section>
+""";
+    }
+
+    private static string SafetyAlwaysVisible()
+    {
+        return """
+<p aria-label="Always visible safety summary">
+  <span class="badge safe">Safety always visible</span>
+  <span class="badge safe">0 clicks</span>
+  <span class="badge safe">0 cookies accepted</span>
+  <span class="badge safe">0 login</span>
+  <span class="badge safe">0 carrito</span>
+  <span class="badge safe">0 compra</span>
+  <span class="badge safe">0 pago</span>
+</p>
+""";
+    }
+
+    private static string ExecutionStatusBlock(PilotExecutionResult? result)
+    {
+        if (result == null)
+            return "<p><span class=\"badge warn\">No UI flow executed yet</span> Choose a safe quick action or submit a task.</p>";
+
+        var badgeClass = result.Success ? "safe" : "risk";
+        var status = result.Success ? "OK" : "failed";
+        return $$"""
+<p><span class="badge {{badgeClass}}">Status {{Html(status)}}</span> <strong>{{Html(result.Status)}}</strong></p>
+<p>Recipe: <span class="path">{{Html(result.RecipePath ?? "-")}}</span></p>
+<p>Exit code: <strong>{{Html(result.ExitCode?.ToString() ?? "-")}}</strong></p>
+""";
+    }
+
+    private static string CopyPathField(string label, string? value)
+    {
+        var displayValue = string.IsNullOrWhiteSpace(value) ? "-" : value;
+        return $$"""
+<label>{{Html(label)}} <small>Select and copy manually; Pilot never opens files automatically.</small>
+  <input readonly value="{{Html(displayValue)}}">
+</label>
 """;
     }
 

@@ -18,6 +18,15 @@ if (-not (Test-Path $Dotnet)) {
 }
 
 Write-Host "ONE_BRAIN_PILOT_URL=$Urls"
+Write-Host "PILOT_ROUTE_HOME=$Urls/"
+Write-Host "PILOT_ROUTE_RECIPES=$Urls/recipes"
+Write-Host "PILOT_ROUTE_VARIABLES=$Urls/variables"
+Write-Host "PILOT_ROUTE_MEMORY=$Urls/memory"
+Write-Host "PILOT_ROUTE_APP_PROFILES=$Urls/app-profiles"
+Write-Host "PILOT_ROUTE_APPROVALS=$Urls/approvals/demo"
+Write-Host "PILOT_ROUTE_RUNS=$Urls/runs"
+Write-Host "PILOT_ROUTE_AI_CONFIG=$Urls/ai/config"
+Write-Host "PILOT_ROUTE_AI_AUDIT=$Urls/ai/audit"
 Write-Host "No browser will be opened automatically."
 Write-Host "Allowed recipes are enforced by OneBrain.Pilot."
 
