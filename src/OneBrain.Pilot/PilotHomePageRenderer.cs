@@ -4,6 +4,7 @@ using OneBrain.Core.AI;
 using OneBrain.Core.AppProfiles;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Confidence;
+using OneBrain.Core.Flows;
 using OneBrain.Core.History;
 using OneBrain.Core.Memory;
 using OneBrain.Core.Recording;
@@ -329,6 +330,12 @@ public static class PilotHomePageRenderer
       </div>
 
       <div class="card">
+        <h2>Flujos supervisados</h2>
+        <p>Promover un flujo candidato y recorrerlo paso a paso con control humano. En v0 no hay playback libre ni acciones reales peligrosas.</p>
+        <p><a class="button ghost" href="/flows">Ver flujos promovidos</a> <a class="button ghost" href="/playback/demo">Probar playback supervisado</a></p>
+      </div>
+
+      <div class="card">
         <h2>Aprobaciones y confianza</h2>
         <p>Revisar una demo supervisada de aprobacion y confianza. Aprobar o rechazar solo registra auditoria; no envia, no compra, no paga y no reproduce acciones.</p>
         <p><a class="button ghost" href="/approvals/demo">Abrir demo de aprobacion</a></p>
@@ -456,6 +463,161 @@ public static class PilotHomePageRenderer
           <ul>{{AnnotationRows(timeline)}}</ul>
         </div>
       </div>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderPromotedFlows(IReadOnlyList<PromotedCandidateFlow> flows)
+    {
+        return $$"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Flujos supervisados</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Flujos supervisados")}}
+    <section class="card">
+      <p><span class="badge safe">playback supervisado</span> <span class="badge approval">control humano</span> <span class="badge blocked">sin ejecucion libre</span></p>
+      <h1>Flujos supervisados</h1>
+      <p>Un flujo promovido viene de una linea de tiempo candidata revisada. Solo puede ejecutarse paso a paso, con aprobacion cuando corresponde y sin acciones reales peligrosas.</p>
+      <p>{{ConceptHint("Promocion de flujo", "Convierte una linea de tiempo candidata en un flujo apto para playback supervisado. No genera una recipe ejecutable libre.")}}</p>
+      <form method="post" action="/flows/demo/promote">
+        <button type="submit">Promover demo segura</button>
+        <a class="button" href="/playback/demo">Probar playback supervisado</a>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Flujos disponibles</h2>
+      {{EmptyStateNotice(flows.Count == 0, "Todavia no hay flujos promovidos. Podes promover la demo segura para ver el recorrido completo.")}}
+      <table>
+        <thead><tr><th>Flujo</th><th>Estado</th><th>Riesgo</th><th>Confianza</th><th>Aprobacion</th><th>Pasos</th><th>Accion</th></tr></thead>
+        <tbody>{{PromotedFlowRows(flows)}}</tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderPromotedFlowDetail(
+        PromotedCandidateFlow flow,
+        CandidateFlowPromotionResult? promotion = null,
+        PromotedFlowArtifactWriteResult? write = null)
+    {
+        return $$"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Detalle de flujo supervisado</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Detalle de flujo")}}
+    <section class="card">
+      <p><span class="badge safe">supervisado</span> <span class="badge approval">aprobacion si corresponde</span> <span class="badge blocked">autonomo desactivado</span></p>
+      <h1>{{Html(flow.Title)}}</h1>
+      <p>{{Html(flow.Description)}}</p>
+      <p>La ejecucion real libre esta desactivada. Este flujo solo permite confirmar, saltar si la politica lo permite, o abortar.</p>
+      {{PromotionResultBlock(promotion, write)}}
+      <p><a class="button" href="/flows">Volver a flujos</a> <a class="button" href="/playback/demo">Iniciar playback supervisado</a></p>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Resumen</h2>
+        <div class="metric"><span>Estado</span><strong>{{Html(flow.Status)}}</strong></div>
+        <div class="metric"><span>Riesgo</span><strong>{{Html(flow.RiskLevel)}}</strong></div>
+        <div class="metric"><span>Confianza</span><strong>{{flow.ConfidenceScore}}</strong></div>
+        <div class="metric"><span>Aprobacion humana</span><strong>{{SpanishBool(flow.RequiresHumanApproval)}}</strong></div>
+        <div class="metric"><span>Playback autonomo</span><strong>{{SpanishBool(flow.AllowsAutonomousPlayback)}}</strong></div>
+      </div>
+      <div class="card">
+        <h2>Variables declaradas</h2>
+        <ul>{{ListRows(flow.Variables)}}</ul>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Pasos supervisados</h2>
+      <table>
+        <thead><tr><th>Paso</th><th>Accion</th><th>Riesgo</th><th>Aprobacion</th><th>Executor seguro</th><th>Modo</th><th>Saltar</th></tr></thead>
+        <tbody>{{PromotedFlowStepRows(flow.Steps)}}</tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderSupervisedPlayback(
+        PromotedCandidateFlow flow,
+        SupervisedPlaybackSession session,
+        SupervisedPlaybackActionResult? actionResult = null,
+        SupervisedPlaybackArtifactWriteResult? playbackWrite = null,
+        RunHistoryArtifactWriteResult? runWrite = null)
+    {
+        var currentStep = flow.Steps.FirstOrDefault(step => step.StepNumber == session.CurrentStepNumber) ?? flow.Steps.FirstOrDefault();
+        return $$"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Playback supervisado</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Playback supervisado")}}
+    <section class="card">
+      <p><span class="badge safe">paso a paso</span> <span class="badge approval">humano al mando</span> <span class="badge blocked">sin acciones peligrosas</span></p>
+      <h1>Playback supervisado</h1>
+      <p>Este flujo permite confirmar, saltar o abortar pasos. En v0 no hace clicks reales, no inicia sesion, no acepta cookies, no compra, no paga y no envia mensajes.</p>
+      <p>{{ConceptHint("Playback supervisado", "Ejecucion guiada paso a paso. Si hay ambiguedad, accion sensible o falta executor seguro, el flujo se frena.")}}</p>
+      {{PlaybackActionBlock(actionResult, playbackWrite, runWrite)}}
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Paso actual</h2>
+        {{CurrentPlaybackStepBlock(currentStep, session)}}
+        <form method="post" action="/playback/demo/confirm">
+          <input type="hidden" name="stepNumber" value="{{currentStep?.StepNumber ?? 1}}">
+          <label><input type="checkbox" name="approval" value="approved"> Simular aprobacion humana para este paso</label>
+          <p><button type="submit">Confirmar paso supervisado</button></p>
+        </form>
+        <form method="post" action="/playback/demo/skip">
+          <input type="hidden" name="stepNumber" value="{{currentStep?.StepNumber ?? 1}}">
+          <p><button type="submit" class="secondary">Saltar paso si la politica lo permite</button></p>
+        </form>
+        <form method="post" action="/playback/demo/abort">
+          <p><button type="submit" class="reject">Abortar flujo</button></p>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Resultado</h2>
+        <div class="metric"><span>Estado de sesion</span><strong>{{Html(session.Status)}}</strong></div>
+        <div class="metric"><span>Playback ID</span><strong>{{Html(session.PlaybackId)}}</strong></div>
+        <div class="metric"><span>Flujo</span><strong>{{Html(flow.FlowId)}}</strong></div>
+        <p>{{Safety(session.SafetyCounters)}}</p>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Linea de pasos</h2>
+      <table>
+        <thead><tr><th>Paso</th><th>Estado</th><th>Decision</th><th>Aprobacion</th><th>Evidencia</th></tr></thead>
+        <tbody>{{PlaybackStepRows(session.Steps)}}</tbody>
+      </table>
     </section>
   </main>
 </body>
@@ -1219,7 +1381,7 @@ public static class PilotHomePageRenderer
     <a class="button" href="/runs">Historial</a>
     <a class="button" href="/ai/config">Configuracion</a>
   </nav>
-  <p>Links secundarios: <a href="/variables">datos</a> - <a href="/approvals/demo">aprobaciones</a> - <a href="/ai/audit">decisiones de IA</a> - <a href="/memory">procesos aprendidos</a> - <a href="/app-profiles">apps y sitios</a></p>
+  <p>Links secundarios: <a href="/variables">datos</a> - <a href="/flows">flujos supervisados</a> - <a href="/playback/demo">playback demo</a> - <a href="/approvals/demo">aprobaciones</a> - <a href="/ai/audit">decisiones de IA</a> - <a href="/memory">procesos aprendidos</a> - <a href="/app-profiles">apps y sitios</a></p>
   {{SafetyAlwaysVisible()}}
 </section>
 """;
@@ -1777,6 +1939,138 @@ wouldCallProvider={result.Decision.WouldCallProvider}
         return builder.Length == 0 ? "<li>-</li>" : builder.ToString();
     }
 
+    private static string PromotedFlowRows(IReadOnlyList<PromotedCandidateFlow> flows)
+    {
+        if (flows.Count == 0)
+            return "<tr><td colspan=\"7\">Todavia no hay flujos promovidos.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var flow in flows)
+        {
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(flow.Title)).Append("<br><small>").Append(Html(flow.FlowId)).Append("</small></td>")
+                .Append("<td><span class=\"badge safe\">").Append(Html(flow.Status)).Append("</span></td>")
+                .Append("<td><span class=\"badge ").Append(RiskBadgeClass(flow.RiskLevel)).Append("\">").Append(Html(TranslateRisk(flow.RiskLevel))).Append("</span></td>")
+                .Append("<td>").Append(flow.ConfidenceScore).Append("</td>")
+                .Append("<td>").Append(flow.RequiresHumanApproval ? "requiere aprobacion" : "no requiere").Append("</td>")
+                .Append("<td>").Append(flow.Steps.Count).Append("</td>")
+                .Append("<td><a class=\"button\" href=\"/flows/demo\">Detalle</a> <a class=\"button\" href=\"/playback/demo\">Playback</a></td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string PromotedFlowStepRows(IReadOnlyList<PromotedFlowStep> steps)
+    {
+        if (steps.Count == 0)
+            return "<tr><td colspan=\"7\">Este flujo no tiene pasos.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var step in steps)
+        {
+            builder.Append("<tr>")
+                .Append("<td>").Append(step.StepNumber).Append("</td>")
+                .Append("<td>").Append(Html(step.ActionKind)).Append("<br><small>").Append(Html(step.Title)).Append("</small></td>")
+                .Append("<td><span class=\"badge ").Append(RiskBadgeClass(step.RiskLevel)).Append("\">").Append(Html(TranslateRisk(step.RiskLevel))).Append("</span></td>")
+                .Append("<td>").Append(step.RequiresApproval ? "si" : "no").Append("</td>")
+                .Append("<td>").Append(step.HasSafeExecutor ? "si" : "no").Append("</td>")
+                .Append("<td>").Append(Html(step.ExecutionMode)).Append("</td>")
+                .Append("<td>").Append(step.CanSkip ? "si" : "no").Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string PlaybackStepRows(IReadOnlyList<SupervisedPlaybackStepState> steps)
+    {
+        if (steps.Count == 0)
+            return "<tr><td colspan=\"5\">No hay pasos de playback.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var step in steps)
+        {
+            var statusClass = step.Status switch
+            {
+                SupervisedPlaybackStepStatuses.Confirmed => "safe",
+                SupervisedPlaybackStepStatuses.Skipped => "warn",
+                SupervisedPlaybackStepStatuses.Blocked => "blocked",
+                SupervisedPlaybackStepStatuses.Aborted => "risk",
+                _ => "info"
+            };
+            builder.Append("<tr>")
+                .Append("<td>").Append(step.StepNumber).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(statusClass).Append("\">").Append(Html(step.Status)).Append("</span></td>")
+                .Append("<td>").Append(Html(string.IsNullOrWhiteSpace(step.Decision) ? "-" : step.Decision)).Append("</td>")
+                .Append("<td>").Append(Html(FirstNonEmpty(step.ApprovalDecisionId, step.ApprovalRequestId, "-"))).Append("</td>")
+                .Append("<td>").Append(Html(string.IsNullOrWhiteSpace(step.EvidenceSummary) ? "-" : step.EvidenceSummary)).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string PromotionResultBlock(CandidateFlowPromotionResult? promotion, PromotedFlowArtifactWriteResult? write)
+    {
+        if (promotion == null)
+            return "";
+
+        var badgeClass = promotion.Success ? "safe" : "blocked";
+        var writeDetail = write == null ? "" : write.Success ? $" Evidencia generada: {write.RelativePath}" : $" Error de artifact: {write.Error}";
+        return "<p><span class=\"badge " + badgeClass + "\">promocion " + Html(promotion.Status) + "</span> " +
+               Html(string.Join("; ", promotion.Issues.Concat(promotion.Notes))) +
+               Html(writeDetail) + "</p>";
+    }
+
+    private static string PlaybackActionBlock(
+        SupervisedPlaybackActionResult? actionResult,
+        SupervisedPlaybackArtifactWriteResult? playbackWrite,
+        RunHistoryArtifactWriteResult? runWrite)
+    {
+        if (actionResult == null)
+            return "<p class=\"notice\">Todavia no se confirmo ningun paso. Revisa el paso actual y elegi confirmar, saltar o abortar.</p>";
+
+        var badgeClass = actionResult.Success ? "safe" : "blocked";
+        var artifacts = new[]
+        {
+            playbackWrite?.Success == true ? playbackWrite.RelativePath : "",
+            runWrite?.Success == true ? runWrite.RelativePath : ""
+        }.Where(value => !string.IsNullOrWhiteSpace(value));
+
+        return "<p><span class=\"badge " + badgeClass + "\">" + Html(actionResult.Message) + "</span></p>" +
+               "<p>Evidencia: " + Html(string.Join("; ", actionResult.Evidence)) + "</p>" +
+               "<p>Rutas de evidencia generada: <span class=\"path\">" + Html(string.Join("; ", artifacts)) + "</span></p>";
+    }
+
+    private static string CurrentPlaybackStepBlock(PromotedFlowStep? step, SupervisedPlaybackSession session)
+    {
+        if (step == null)
+            return "<p>No hay paso actual. El flujo puede estar terminado.</p>";
+
+        return $$"""
+<div class="metric"><span>Paso</span><strong>{{step.StepNumber}}</strong></div>
+<div class="metric"><span>Accion</span><strong>{{Html(step.ActionKind)}}</strong></div>
+<div class="metric"><span>Descripcion</span><strong>{{Html(step.Description)}}</strong></div>
+<div class="metric"><span>Riesgo</span><strong>{{Html(TranslateRisk(step.RiskLevel))}}</strong></div>
+<div class="metric"><span>Aprobacion</span><strong>{{(step.RequiresApproval ? "requiere aprobacion" : "no requiere")}}</strong></div>
+<div class="metric"><span>Executor seguro</span><strong>{{SpanishBool(step.HasSafeExecutor)}}</strong></div>
+<p class="notice">Si el paso es sensible o no hay executor seguro, ONE BRAIN frena y registra evidencia. No ejecuta acciones reales.</p>
+""";
+    }
+
+    private static string RiskBadgeClass(string risk)
+    {
+        return risk?.ToLowerInvariant() switch
+        {
+            "low" => "safe",
+            "medium" => "warn",
+            "high" => "approval",
+            "critical" => "blocked",
+            _ => "info"
+        };
+    }
+
     private static string DraftResultBlock(RecipeDraft? draft, RecipeDraftArtifactWriteResult? write)
     {
         if (draft == null)
@@ -1846,7 +2140,10 @@ wouldCallProvider={result.Decision.WouldCallProvider}
   .metric { border-bottom: 1px solid var(--line); padding: 10px 0; }
   .metric strong { display: block; font-size: 18px; color: var(--ink); }
   textarea, input { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 10px; background: #fffdf6; font: inherit; margin: 6px 0 10px; }
+  input[type="checkbox"] { width: auto; margin-right: 8px; }
   button, .button { display: inline-block; border: 0; border-radius: 999px; padding: 11px 16px; color: #fffaf0; background: var(--ink); font-weight: 800; text-decoration: none; }
+  button.secondary { background: #6a755d; }
+  button.reject { background: var(--risk); }
   @media (max-width: 780px) { .grid, .step-flow { grid-template-columns: 1fr; } }
 </style>
 """;

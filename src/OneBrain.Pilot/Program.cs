@@ -2,6 +2,7 @@ using OneBrain.Pilot;
 using OneBrain.Core.AI;
 using OneBrain.Core.AppProfiles;
 using OneBrain.Core.Approval;
+using OneBrain.Core.Flows;
 using OneBrain.Core.History;
 using OneBrain.Core.Memory;
 using OneBrain.Core.Recording;
@@ -51,6 +52,82 @@ app.MapGet("/recording/demo", () =>
 {
     var timeline = RecordingDemoFixture.CreateTimeline();
     return Results.Content(PilotHomePageRenderer.RenderRecordingDemo(timeline), "text/html");
+});
+
+app.MapGet("/flows", () =>
+{
+    var flows = PromotedFlowStore.ReadAll(root);
+    if (flows.Count == 0)
+        flows = [BusinessFlowPlaybackFixture.CreatePromotedFlow()];
+
+    return Results.Content(PilotHomePageRenderer.RenderPromotedFlows(flows), "text/html");
+});
+
+app.MapGet("/flows/demo", () =>
+{
+    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId) ??
+               BusinessFlowPlaybackFixture.CreatePromotedFlow();
+    return Results.Content(PilotHomePageRenderer.RenderPromotedFlowDetail(flow), "text/html");
+});
+
+app.MapPost("/flows/demo/promote", () =>
+{
+    var promotion = CandidateFlowPromotionService.Promote(BusinessFlowPlaybackFixture.CreatePromotionRequest());
+    PromotedFlowArtifactWriteResult? write = null;
+    if (promotion.Flow != null)
+        write = PromotedFlowStore.Write(root, promotion.Flow);
+
+    return Results.Content(PilotHomePageRenderer.RenderPromotedFlowDetail(promotion.Flow ?? BusinessFlowPlaybackFixture.CreatePromotedFlow(), promotion, write), "text/html");
+});
+
+app.MapGet("/playback/demo", () =>
+{
+    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId) ??
+               BusinessFlowPlaybackFixture.CreatePromotedFlow();
+    var session = SupervisedPlaybackService.Start(flow);
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, session), "text/html");
+});
+
+app.MapPost("/playback/demo/confirm", async (HttpContext context) =>
+{
+    var form = await context.Request.ReadFormAsync();
+    var stepNumber = int.TryParse(form["stepNumber"].FirstOrDefault(), out var parsed) ? parsed : 1;
+    var withApproval = string.Equals(form["approval"].FirstOrDefault(), "approved", StringComparison.OrdinalIgnoreCase);
+    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId) ??
+               BusinessFlowPlaybackFixture.CreatePromotedFlow();
+    var session = SupervisedPlaybackService.Start(flow);
+    ApprovalDecision? decision = withApproval ? BusinessFlowPlaybackFixture.CreateSendApprovalDecision() : null;
+    var result = SupervisedPlaybackService.ConfirmStep(flow, session, stepNumber, decision);
+    var playbackWrite = SupervisedPlaybackStore.Write(root, result.Session);
+    var runWrite = RunHistoryStore.Write(root, result.RunHistory);
+
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite), "text/html");
+});
+
+app.MapPost("/playback/demo/skip", async (HttpContext context) =>
+{
+    var form = await context.Request.ReadFormAsync();
+    var stepNumber = int.TryParse(form["stepNumber"].FirstOrDefault(), out var parsed) ? parsed : 1;
+    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId) ??
+               BusinessFlowPlaybackFixture.CreatePromotedFlow();
+    var session = SupervisedPlaybackService.Start(flow);
+    var result = SupervisedPlaybackService.SkipStep(flow, session, stepNumber);
+    var playbackWrite = SupervisedPlaybackStore.Write(root, result.Session);
+    var runWrite = RunHistoryStore.Write(root, result.RunHistory);
+
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite), "text/html");
+});
+
+app.MapPost("/playback/demo/abort", () =>
+{
+    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId) ??
+               BusinessFlowPlaybackFixture.CreatePromotedFlow();
+    var session = SupervisedPlaybackService.Start(flow);
+    var result = SupervisedPlaybackService.Abort(flow, session, "Usuario aborto el playback supervisado demo.");
+    var playbackWrite = SupervisedPlaybackStore.Write(root, result.Session);
+    var runWrite = RunHistoryStore.Write(root, result.RunHistory);
+
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite), "text/html");
 });
 
 app.MapPost("/recording/demo/annotate", async (HttpContext context) =>
