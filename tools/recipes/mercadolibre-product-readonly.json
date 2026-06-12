@@ -18,7 +18,7 @@
     { "id": "read-title", "kind": "browser.read", "process": "msedge", "property": "title", "saveAs": "bt", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
     { "id": "read-text", "kind": "browser.read", "process": "msedge", "property": "text", "saveAs": "btext", "timeoutMs": 10000, "args": { "session": "browser.s1" } },
     { "id": "close-ml", "kind": "browser.close", "saveAs": "browser.s1", "timeoutMs": 12000 },
-    { "id": "assert-ml-loaded", "kind": "assert.contains", "value": "{{bt}} {{btext}}", "expected": "Mercado" },
+    { "id": "assert-ml-loaded", "kind": "assert.contains", "value": "{{bt}} {{btext}}", "expected": "{{profile.mlProduct.expected.titleContains}}" },
     { "id": "note-report", "kind": "note", "text": "ML Product Read-Only/Diagnostic: {{profile.mlProduct.url}} | Title: {{bt}} | Text: {{btext}} | Expected product signal: {{profile.mlProduct.expected.titleContains}} | Diagnostic allowed if ML returns login/cookies/challenge/geoloc/captcha/dynamic/no-product screen. No cookies accepted, no login, no click, no cart, no purchase, no payment. This recipe does not bypass ML blocks and does not claim complete extraction when product details are not visible." }
   ]
 }
