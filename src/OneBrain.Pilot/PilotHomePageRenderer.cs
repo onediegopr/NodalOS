@@ -5,6 +5,7 @@ using OneBrain.Core.Approval;
 using OneBrain.Core.Confidence;
 using OneBrain.Core.History;
 using OneBrain.Core.Recording;
+using OneBrain.Core.Recipes.Editing;
 
 namespace OneBrain.Pilot;
 
@@ -169,6 +170,8 @@ public static class PilotHomePageRenderer
           <a class="button ghost" href="/ai/config">AI model router config</a>
           <a class="button ghost" href="/runs">Execution history</a>
           <a class="button ghost" href="/ai/audit">AI audit log</a>
+          <a class="button ghost" href="/recipes">Recipe editor</a>
+          <a class="button ghost" href="/variables">Variable manager</a>
         </div>
       </div>
     </section>
@@ -219,6 +222,12 @@ public static class PilotHomePageRenderer
         <h2>History and audit</h2>
         <p>Browse local run history and AI routing audit decisions. Runtime artifacts remain local under artifacts/ and are not committed.</p>
         <p><a class="button ghost" href="/runs">Open run history</a> <a class="button ghost" href="/ai/audit">Open AI audit</a></p>
+      </div>
+
+      <div class="card">
+        <h2>Recipes and variables</h2>
+        <p>Inspect allowlisted recipes, create safe metadata drafts, review variables, and run linter checks before any promotion. Stable recipe JSON is not overwritten from Pilot.</p>
+        <p><a class="button ghost" href="/recipes">Open recipe editor</a> <a class="button ghost" href="/variables">Open variable manager</a></p>
       </div>
 
       <div class="card full">
@@ -567,6 +576,147 @@ public static class PilotHomePageRenderer
 """;
     }
 
+    public static string RenderRecipeList(IReadOnlyList<RecipeEditorModel> recipes, string? message = null)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Recipes</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">allowlist only</span> <span class="badge safe">drafts only</span> <span class="badge safe">no arbitrary commands</span></p>
+      <h1>Recipe editor</h1>
+      <p>Inspect allowlisted recipes and create safe metadata drafts. Pilot does not overwrite stable recipe JSON and does not execute from this editor.</p>
+      <p><a class="button" href="/">Back to Pilot</a> <a class="button" href="/variables">Variable manager</a></p>
+      {{MessageBlock(message)}}
+    </section>
+    <section class="card">
+      <h2>Allowlisted recipes</h2>
+      <table>
+        <thead><tr><th>Recipe</th><th>Risk</th><th>Confidence</th><th>Path</th><th>Steps</th><th>Actions</th></tr></thead>
+        <tbody>{{RecipeListRows(recipes)}}</tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderRecipeDetail(
+        RecipeEditorModel recipe,
+        RecipeValidationResult validation,
+        IReadOnlyList<RecipeVariableDefinition> variables,
+        RecipeDraft? draft = null,
+        RecipeDraftArtifactWriteResult? draftWrite = null)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Recipe Detail</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">safe fields only</span> <span class="badge safe">draft artifact</span> <span class="badge risk">no action edit</span></p>
+      <h1>{{Html(recipe.Title)}}</h1>
+      <p>{{Html(recipe.Description)}}</p>
+      <p><a class="button" href="/recipes">Back to recipes</a> <a class="button" href="/recipes/{{Html(recipe.RecipeId)}}/variables">Recipe variables</a></p>
+      {{DraftResultBlock(draft, draftWrite)}}
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Metadata</h2>
+        <div class="metric"><span>Recipe ID</span><strong>{{Html(recipe.RecipeId)}}</strong></div>
+        <div class="metric"><span>Risk level</span><strong>{{Html(recipe.RiskLevel)}}</strong></div>
+        <div class="metric"><span>Confidence</span><strong>{{Html(recipe.ConfidenceStatus)}}</strong></div>
+        <div class="metric"><span>Path</span><strong class="path">{{Html(recipe.RecipePath)}}</strong></div>
+      </div>
+      <div class="card">
+        <h2>Safe edit draft</h2>
+        <form method="post" action="/recipes/{{Html(recipe.RecipeId)}}/edit">
+          <label>Title<input name="title" value="{{Html(recipe.Title)}}"></label>
+          <label>Description<textarea name="description">{{Html(recipe.Description)}}</textarea></label>
+          <label>Tags CSV<input name="tags" value="{{Html(string.Join(", ", recipe.Tags))}}"></label>
+          <label>Notes CSV<input name="notes" value="{{Html(string.Join(", ", recipe.Notes))}}"></label>
+          <input type="hidden" name="unsafe.kind" value="">
+          <p><button type="submit">Save draft candidate</button></p>
+        </form>
+        <p>Fields like step kind, args, paths, commands, browser actions, login, cookies, payment, purchase, submit and click are not editable freely.</p>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Human-readable steps</h2>
+      <table>
+        <thead><tr><th>#</th><th>Step ID</th><th>Kind</th><th>Label</th><th>Risk</th><th>Approval</th></tr></thead>
+        <tbody>{{RecipeStepRows(recipe.Steps)}}</tbody>
+      </table>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Validation result</h2>
+        <p>Can run: <strong>{{validation.CanRun}}</strong> / Can promote: <strong>{{validation.CanPromote}}</strong></p>
+        <table>
+          <thead><tr><th>Severity</th><th>Code</th><th>Field</th><th>Message</th><th>Remediation</th></tr></thead>
+          <tbody>{{ValidationRows(validation.Issues)}}</tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Variables</h2>
+        <table>
+          <thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Sensitivity</th><th>Value</th></tr></thead>
+          <tbody>{{VariableRows(variables)}}</tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderVariables(IReadOnlyList<RecipeVariableDefinition> variables, string? title = null)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Variables</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">no execution</span> <span class="badge safe">masked sensitive values</span> <span class="badge risk">no normal secrets</span></p>
+      <h1>{{Html(title ?? "Variable manager")}}</h1>
+      <p>Inspect variables used by allowlisted recipes and candidate flows. Secret variables are never shown in full and should use environment/secret references, not plain recipe values.</p>
+      <p><a class="button" href="/">Back to Pilot</a> <a class="button" href="/recipes">Recipe editor</a></p>
+    </section>
+    <section class="card">
+      <h2>Variables</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Default/example</th><th>Sensitivity</th><th>Rules</th></tr></thead>
+        <tbody>{{VariableManagerRows(variables)}}</tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
     private static string TimelineRows(RecipeTimeline timeline)
     {
         var builder = new StringBuilder();
@@ -744,6 +894,151 @@ wouldCallProvider={result.Decision.WouldCallProvider}
         }
 
         return builder.ToString();
+    }
+
+    private static string RecipeListRows(IReadOnlyList<RecipeEditorModel> recipes)
+    {
+        if (recipes.Count == 0)
+            return "<tr><td colspan=\"6\">No allowlisted recipes found.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var recipe in recipes)
+        {
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(recipe.Title)).Append("<br><small>").Append(Html(recipe.RecipeId)).Append("</small></td>")
+                .Append("<td>").Append(Html(recipe.RiskLevel)).Append("</td>")
+                .Append("<td>").Append(Html(recipe.ConfidenceStatus)).Append("</td>")
+                .Append("<td class=\"path\">").Append(Html(recipe.RecipePath)).Append("</td>")
+                .Append("<td>").Append(recipe.Steps.Count).Append("</td>")
+                .Append("<td><a class=\"button\" href=\"/recipes/").Append(Html(recipe.RecipeId)).Append("\">Open</a></td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string RecipeStepRows(IReadOnlyList<RecipeEditorStepSummary> steps)
+    {
+        var builder = new StringBuilder();
+        foreach (var step in steps)
+        {
+            var riskClass = step.RiskLevel == "high" ? "risk" : "safe";
+            builder.Append("<tr>")
+                .Append("<td>").Append(step.StepNumber).Append("</td>")
+                .Append("<td>").Append(Html(step.StepId ?? "-")).Append("</td>")
+                .Append("<td>").Append(Html(step.Kind)).Append("</td>")
+                .Append("<td>").Append(Html(step.HumanLabel)).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(riskClass).Append("\">").Append(Html(step.RiskLevel)).Append("</span></td>")
+                .Append("<td>").Append(step.RequiresApproval ? "true" : "false").Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string ValidationRows(IReadOnlyList<RecipeValidationIssue> issues)
+    {
+        if (issues.Count == 0)
+            return "<tr><td colspan=\"5\">No validation issues.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var issue in issues)
+        {
+            var severityClass = issue.Severity is "blocked" or "error" ? "risk" : issue.Severity == "warning" ? "warn" : "safe";
+            builder.Append("<tr>")
+                .Append("<td><span class=\"badge ").Append(severityClass).Append("\">").Append(Html(issue.Severity)).Append("</span></td>")
+                .Append("<td>").Append(Html(issue.Code)).Append("</td>")
+                .Append("<td>").Append(Html(issue.FieldPath)).Append("</td>")
+                .Append("<td>").Append(Html(issue.Message)).Append("</td>")
+                .Append("<td>").Append(Html(issue.Remediation)).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string VariableRows(IReadOnlyList<RecipeVariableDefinition> variables)
+    {
+        if (variables.Count == 0)
+            return "<tr><td colspan=\"5\">No variables detected.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var variable in variables)
+        {
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(variable.Name)).Append("</td>")
+                .Append("<td>").Append(Html(variable.Type)).Append("</td>")
+                .Append("<td>").Append(variable.Required ? "true" : "false").Append("</td>")
+                .Append("<td>").Append(Html(variable.Sensitivity)).Append("</td>")
+                .Append("<td>").Append(Html(RecipeVariableManager.DisplayValue(variable))).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string VariableManagerRows(IReadOnlyList<RecipeVariableDefinition> variables)
+    {
+        if (variables.Count == 0)
+            return "<tr><td colspan=\"6\">No variables detected.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var variable in variables)
+        {
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(variable.Name)).Append("</td>")
+                .Append("<td>").Append(Html(variable.Type)).Append("</td>")
+                .Append("<td>").Append(variable.Required ? "true" : "false").Append("</td>")
+                .Append("<td>").Append(Html(RecipeVariableManager.DisplayValue(variable))).Append("</td>")
+                .Append("<td>").Append(Html(variable.Sensitivity)).Append(variable.Redacted ? " / redacted" : "").Append("</td>")
+                .Append("<td>").Append(Html(variable.Regex ?? "-")).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string DraftResultBlock(RecipeDraft? draft, RecipeDraftArtifactWriteResult? write)
+    {
+        if (draft == null)
+            return "";
+
+        var status = write?.Success == true ? "Draft saved" : "Draft rejected";
+        var detail = write?.Success == true ? write.RelativePath : write?.Error ?? string.Join("; ", draft.ValidationNotes);
+        return "<p><span class=\"badge " + (write?.Success == true ? "safe" : "risk") + "\">" + Html(status) + "</span> " + Html(detail) + "</p>";
+    }
+
+    private static string MessageBlock(string? message)
+    {
+        return string.IsNullOrWhiteSpace(message) ? "" : "<p><span class=\"badge warn\">" + Html(message) + "</span></p>";
+    }
+
+    private static string SharedPilotStyle()
+    {
+        return """
+<style>
+  :root { --ink: #17211a; --muted: #5c6b60; --paper: #f5f1e7; --panel: #fffaf0; --line: #d7cdb7; --safe: #226b45; --risk: #8a352d; --warn: #9a5a10; }
+  body { margin: 0; color: var(--ink); font-family: "Aptos", "Segoe UI", sans-serif; background: linear-gradient(135deg, #f7f2df, #e4eadc); }
+  main { max-width: 1220px; margin: 0 auto; padding: 40px 24px; }
+  .card { background: rgba(255,250,240,.92); border: 1px solid var(--line); border-radius: 26px; padding: 24px; box-shadow: 0 20px 70px rgba(43,32,16,.14); margin-bottom: 18px; }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 6vw, 72px); line-height: .95; margin: 8px 0 12px; letter-spacing: -.045em; }
+  p, li { color: var(--muted); line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 18px; overflow: hidden; }
+  th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; background: #efe6d4; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .badge { display: inline-block; border-radius: 999px; padding: 5px 10px; font-weight: 800; font-size: 12px; background: #eadfca; }
+  .safe { color: var(--safe); background: #dcebdd; }
+  .risk { color: var(--risk); background: #f6e7e6; }
+  .warn { color: var(--warn); background: #f3e2bf; }
+  .path { word-break: break-all; }
+  .metric { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .metric strong { display: block; font-size: 18px; color: var(--ink); }
+  textarea, input { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 10px; background: #fffdf6; font: inherit; margin: 6px 0 10px; }
+  button, .button { display: inline-block; border: 0; border-radius: 999px; padding: 11px 16px; color: #fffaf0; background: var(--ink); font-weight: 800; text-decoration: none; }
+  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+</style>
+""";
     }
 
     private static string Safety(RunSafetyCounters counters)

@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace OneBrain.Core.History;
 
-internal static partial class HistorySanitizer
+public static partial class HistorySanitizer
 {
     public static bool ContainsSecretLikeContent(string? value)
     {

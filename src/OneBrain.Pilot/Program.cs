@@ -3,6 +3,7 @@ using OneBrain.Core.AI;
 using OneBrain.Core.Approval;
 using OneBrain.Core.History;
 using OneBrain.Core.Recording;
+using OneBrain.Core.Recipes.Editing;
 
 var root = GetArg(args, "--root") ?? Directory.GetCurrentDirectory();
 var dotnet = GetArg(args, "--dotnet")
@@ -135,6 +136,81 @@ app.MapGet("/ai/audit", () =>
     return Results.Content(PilotHomePageRenderer.RenderAIAuditLog(audits), "text/html");
 });
 
+app.MapGet("/recipes", () =>
+{
+    var models = PilotRecipeCatalog.AllowlistedRecipes
+        .Select(recipe => RecipeEditorService.Load(root, recipe.Id, recipe.RecipePath, confidenceStatus: "supervised"))
+        .ToList();
+    return Results.Content(PilotHomePageRenderer.RenderRecipeList(models), "text/html");
+});
+
+app.MapGet("/recipes/{id}", (string id) =>
+{
+    var recipe = PilotRecipeCatalog.FindById(id);
+    if (recipe == null)
+        return Results.Content(PilotHomePageRenderer.RenderRecipeList([], $"Recipe not found or not allowlisted: {id}"), "text/html");
+
+    var model = RecipeEditorService.Load(root, recipe.Id, recipe.RecipePath, confidenceStatus: "supervised");
+    var json = File.ReadAllText(Path.Combine(root, recipe.RecipePath.Replace('/', Path.DirectorySeparatorChar)));
+    var validation = RecipeLinter.ValidateJson(json, recipe.RecipePath);
+    var variables = RecipeVariableManager.ExtractVariablesFromJson(json);
+    return Results.Content(PilotHomePageRenderer.RenderRecipeDetail(model, validation, variables), "text/html");
+});
+
+app.MapPost("/recipes/{id}/edit", async (string id, HttpContext context) =>
+{
+    var recipe = PilotRecipeCatalog.FindById(id);
+    if (recipe == null)
+        return Results.Content(PilotHomePageRenderer.RenderRecipeList([], $"Recipe not found or not allowlisted: {id}"), "text/html");
+
+    var form = await context.Request.ReadFormAsync();
+    var model = RecipeEditorService.Load(root, recipe.Id, recipe.RecipePath, confidenceStatus: "supervised");
+    var request = new RecipeEditRequest(
+        RecipeId: recipe.Id,
+        RecipePath: recipe.RecipePath,
+        Title: form["title"].FirstOrDefault(),
+        Description: form["description"].FirstOrDefault(),
+        Tags: SplitCsv(form["tags"].FirstOrDefault()),
+        Notes: SplitCsv(form["notes"].FirstOrDefault()),
+        HumanReadableLabels: new Dictionary<string, string>(),
+        UnsafeFieldAttempts: BuildUnsafeAttempts(form));
+
+    var policy = RecipeEditPolicy.Evaluate(request);
+    var draft = RecipeEditorService.CreateDraft(model, request, policy);
+    var write = policy.Allowed ? RecipeDraftStore.Write(root, draft) : new RecipeDraftArtifactWriteResult { Success = false, Error = string.Join("; ", policy.Errors) };
+    var json = File.ReadAllText(Path.Combine(root, recipe.RecipePath.Replace('/', Path.DirectorySeparatorChar)));
+    var validation = RecipeLinter.ValidateJson(json, recipe.RecipePath);
+    var variables = RecipeVariableManager.ExtractVariablesFromJson(json);
+    return Results.Content(PilotHomePageRenderer.RenderRecipeDetail(model, validation, variables, draft, write), "text/html");
+});
+
+app.MapGet("/variables", () =>
+{
+    var variables = PilotRecipeCatalog.AllowlistedRecipes
+        .SelectMany(recipe =>
+        {
+            var json = File.ReadAllText(Path.Combine(root, recipe.RecipePath.Replace('/', Path.DirectorySeparatorChar)));
+            return RecipeVariableManager.ExtractVariablesFromJson(json);
+        })
+        .GroupBy(variable => variable.Name, StringComparer.OrdinalIgnoreCase)
+        .Select(group => group.First())
+        .OrderBy(variable => variable.Name)
+        .ToList();
+
+    return Results.Content(PilotHomePageRenderer.RenderVariables(variables), "text/html");
+});
+
+app.MapGet("/recipes/{id}/variables", (string id) =>
+{
+    var recipe = PilotRecipeCatalog.FindById(id);
+    if (recipe == null)
+        return Results.Content(PilotHomePageRenderer.RenderVariables([], $"Recipe not found or not allowlisted: {id}"), "text/html");
+
+    var json = File.ReadAllText(Path.Combine(root, recipe.RecipePath.Replace('/', Path.DirectorySeparatorChar)));
+    var variables = RecipeVariableManager.ExtractVariablesFromJson(json);
+    return Results.Content(PilotHomePageRenderer.RenderVariables(variables, $"Variables for {recipe.Label}"), "text/html");
+});
+
 app.Run();
 
 static async Task<string?> ReadTaskAsync(HttpContext context)
@@ -155,4 +231,23 @@ static string? GetArg(string[] args, string name)
     }
 
     return null;
+}
+
+static IReadOnlyList<string> SplitCsv(string? value)
+{
+    return string.IsNullOrWhiteSpace(value)
+        ? []
+        : value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+}
+
+static IReadOnlyDictionary<string, string> BuildUnsafeAttempts(IFormCollection form)
+{
+    var attempts = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    foreach (var key in form.Keys)
+    {
+        if (key.StartsWith("unsafe.", StringComparison.OrdinalIgnoreCase))
+            attempts[key["unsafe.".Length..]] = form[key].FirstOrDefault() ?? "";
+    }
+
+    return attempts;
 }
