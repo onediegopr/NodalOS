@@ -57,17 +57,27 @@ app.MapGet("/recording/demo", () =>
 app.MapGet("/flows", () =>
 {
     var flows = PromotedFlowStore.ReadAll(root);
+    var origin = PilotDataOrigins.Runtime;
     if (flows.Count == 0)
+    {
         flows = [BusinessFlowPlaybackFixture.CreatePromotedFlow()];
+        origin = PilotDataOrigins.DemoFixture;
+    }
 
-    return Results.Content(PilotHomePageRenderer.RenderPromotedFlows(flows), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderPromotedFlows(flows, origin), "text/html");
 });
 
 app.MapGet("/flows/demo", () =>
 {
-    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId) ??
-               BusinessFlowPlaybackFixture.CreatePromotedFlow();
-    return Results.Content(PilotHomePageRenderer.RenderPromotedFlowDetail(flow), "text/html");
+    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId);
+    var origin = PilotDataOrigins.Runtime;
+    if (flow == null)
+    {
+        flow = BusinessFlowPlaybackFixture.CreatePromotedFlow();
+        origin = PilotDataOrigins.DemoFixture;
+    }
+
+    return Results.Content(PilotHomePageRenderer.RenderPromotedFlowDetail(flow, dataOrigin: origin), "text/html");
 });
 
 app.MapPost("/flows/demo/promote", () =>
@@ -77,15 +87,21 @@ app.MapPost("/flows/demo/promote", () =>
     if (promotion.Flow != null)
         write = PromotedFlowStore.Write(root, promotion.Flow);
 
-    return Results.Content(PilotHomePageRenderer.RenderPromotedFlowDetail(promotion.Flow ?? BusinessFlowPlaybackFixture.CreatePromotedFlow(), promotion, write), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderPromotedFlowDetail(promotion.Flow ?? BusinessFlowPlaybackFixture.CreatePromotedFlow(), promotion, write, PilotDataOrigins.DemoFixture), "text/html");
 });
 
 app.MapGet("/playback/demo", () =>
 {
-    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId) ??
-               BusinessFlowPlaybackFixture.CreatePromotedFlow();
+    var flow = PromotedFlowStore.ReadById(root, BusinessFlowPlaybackFixture.CandidateFlowId);
+    var origin = PilotDataOrigins.Runtime;
+    if (flow == null)
+    {
+        flow = BusinessFlowPlaybackFixture.CreatePromotedFlow();
+        origin = PilotDataOrigins.DemoFixture;
+    }
+
     var session = SupervisedPlaybackService.Start(flow);
-    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, session), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, session, dataOrigin: origin), "text/html");
 });
 
 app.MapPost("/playback/demo/confirm", async (HttpContext context) =>
@@ -101,7 +117,7 @@ app.MapPost("/playback/demo/confirm", async (HttpContext context) =>
     var playbackWrite = SupervisedPlaybackStore.Write(root, result.Session);
     var runWrite = RunHistoryStore.Write(root, result.RunHistory);
 
-    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite, PilotDataOrigins.DemoFixture), "text/html");
 });
 
 app.MapPost("/playback/demo/skip", async (HttpContext context) =>
@@ -115,7 +131,7 @@ app.MapPost("/playback/demo/skip", async (HttpContext context) =>
     var playbackWrite = SupervisedPlaybackStore.Write(root, result.Session);
     var runWrite = RunHistoryStore.Write(root, result.RunHistory);
 
-    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite, PilotDataOrigins.DemoFixture), "text/html");
 });
 
 app.MapPost("/playback/demo/abort", () =>
@@ -127,7 +143,7 @@ app.MapPost("/playback/demo/abort", () =>
     var playbackWrite = SupervisedPlaybackStore.Write(root, result.Session);
     var runWrite = RunHistoryStore.Write(root, result.RunHistory);
 
-    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, result.Session, result, playbackWrite, runWrite, PilotDataOrigins.DemoFixture), "text/html");
 });
 
 app.MapPost("/recording/demo/annotate", async (HttpContext context) =>
@@ -195,26 +211,35 @@ app.MapPost("/ai/config/test", () =>
 app.MapGet("/runs", () =>
 {
     var runs = RunHistoryStore.ReadAll(root);
+    var origin = PilotDataOrigins.Runtime;
     if (runs.Count == 0)
+    {
         runs = HistoryDemoFixture.CreateRunHistory();
+        origin = PilotDataOrigins.DemoFixture;
+    }
 
-    return Results.Content(PilotHomePageRenderer.RenderRunHistory(runs), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderRunHistory(runs, origin), "text/html");
 });
 
 app.MapGet("/runs/{id}", (string id) =>
 {
     var run = RunHistoryStore.ReadById(root, id);
+    var origin = run == null ? PilotDataOrigins.DemoFixture : PilotDataOrigins.Runtime;
     var runs = run == null ? HistoryDemoFixture.CreateRunHistory().Where(candidate => candidate.RunId == id).ToList() : [run];
-    return Results.Content(PilotHomePageRenderer.RenderRunHistory(runs), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderRunHistory(runs, origin), "text/html");
 });
 
 app.MapGet("/ai/audit", () =>
 {
     var audits = AIAuditLogStore.ReadAll(root);
+    var origin = PilotDataOrigins.Runtime;
     if (audits.Count == 0)
+    {
         audits = HistoryDemoFixture.CreateAIAudit();
+        origin = PilotDataOrigins.DemoFixture;
+    }
 
-    return Results.Content(PilotHomePageRenderer.RenderAIAuditLog(audits), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderAIAuditLog(audits, origin), "text/html");
 });
 
 app.MapGet("/recipes", () =>
@@ -295,8 +320,12 @@ app.MapGet("/recipes/{id}/variables", (string id) =>
 app.MapGet("/memory", (string? q, string? tag, string? appOrSite, string? domain, string? status) =>
 {
     var entries = ProcessMemoryStore.ReadAll(root);
+    var origin = PilotDataOrigins.Runtime;
     if (entries.Count == 0)
+    {
         entries = ProcessMemoryDemoFixture.CreateEntries();
+        origin = PilotDataOrigins.DemoFixture;
+    }
 
     var tags = string.IsNullOrWhiteSpace(tag) ? [] : SplitCsv(tag);
     var query = new WorkflowRetrievalQuery(
@@ -306,14 +335,18 @@ app.MapGet("/memory", (string? q, string? tag, string? appOrSite, string? domain
         Domain: domain,
         Status: status);
     var retrieval = WorkflowRetrievalService.Search(entries, query);
-    return Results.Content(PilotHomePageRenderer.RenderProcessMemory(entries, retrieval), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderProcessMemory(entries, retrieval, origin), "text/html");
 });
 
 app.MapGet("/memory/search", (string? q, string? tag, string? appOrSite, string? domain, string? status) =>
 {
     var entries = ProcessMemoryStore.ReadAll(root);
+    var origin = PilotDataOrigins.Runtime;
     if (entries.Count == 0)
+    {
         entries = ProcessMemoryDemoFixture.CreateEntries();
+        origin = PilotDataOrigins.DemoFixture;
+    }
 
     var query = new WorkflowRetrievalQuery(
         Text: q,
@@ -322,30 +355,46 @@ app.MapGet("/memory/search", (string? q, string? tag, string? appOrSite, string?
         Domain: domain,
         Status: status);
     var retrieval = WorkflowRetrievalService.Search(entries, query);
-    return Results.Content(PilotHomePageRenderer.RenderProcessMemory(entries, retrieval), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderProcessMemory(entries, retrieval, origin), "text/html");
 });
 
 app.MapGet("/memory/{id}", (string id) =>
 {
-    var entry = ProcessMemoryStore.ReadById(root, id) ??
-                ProcessMemoryDemoFixture.CreateEntries().FirstOrDefault(candidate => string.Equals(candidate.Id, id, StringComparison.OrdinalIgnoreCase));
-    return Results.Content(PilotHomePageRenderer.RenderProcessMemoryDetail(entry), "text/html");
+    var entry = ProcessMemoryStore.ReadById(root, id);
+    var origin = PilotDataOrigins.Runtime;
+    if (entry == null)
+    {
+        entry = ProcessMemoryDemoFixture.CreateEntries().FirstOrDefault(candidate => string.Equals(candidate.Id, id, StringComparison.OrdinalIgnoreCase));
+        origin = PilotDataOrigins.DemoFixture;
+    }
+
+    return Results.Content(PilotHomePageRenderer.RenderProcessMemoryDetail(entry, origin), "text/html");
 });
 
 app.MapGet("/app-profiles", () =>
 {
     var profiles = AppProfileStore.ReadAll(root);
+    var origin = PilotDataOrigins.Runtime;
     if (profiles.Count == 0)
+    {
         profiles = AppProfileDemoFixture.CreateProfiles();
+        origin = PilotDataOrigins.DemoFixture;
+    }
 
-    return Results.Content(PilotHomePageRenderer.RenderAppProfiles(profiles), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderAppProfiles(profiles, origin), "text/html");
 });
 
 app.MapGet("/app-profiles/{id}", (string id) =>
 {
-    var profile = AppProfileStore.ReadById(root, id) ??
-                  AppProfileDemoFixture.CreateProfiles().FirstOrDefault(candidate => string.Equals(candidate.Id, id, StringComparison.OrdinalIgnoreCase));
-    return Results.Content(PilotHomePageRenderer.RenderAppProfileDetail(profile), "text/html");
+    var profile = AppProfileStore.ReadById(root, id);
+    var origin = PilotDataOrigins.Runtime;
+    if (profile == null)
+    {
+        profile = AppProfileDemoFixture.CreateProfiles().FirstOrDefault(candidate => string.Equals(candidate.Id, id, StringComparison.OrdinalIgnoreCase));
+        origin = PilotDataOrigins.DemoFixture;
+    }
+
+    return Results.Content(PilotHomePageRenderer.RenderAppProfileDetail(profile, origin), "text/html");
 });
 
 app.Run();

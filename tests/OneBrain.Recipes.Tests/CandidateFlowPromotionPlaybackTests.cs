@@ -147,7 +147,8 @@ public sealed class CandidateFlowPromotionPlaybackTests
         StringAssert.Contains(flowsHtml, "Flujos supervisados");
         StringAssert.Contains(flowsHtml, "Promover demo segura");
         StringAssert.Contains(detailHtml, "Playback autonomo");
-        StringAssert.Contains(playbackHtml, "Confirmar paso supervisado");
+        StringAssert.Contains(playbackHtml, "Confirmar paso de demostracion");
+        StringAssert.Contains(playbackHtml, "Este flujo no ejecuta acciones reales.");
         StringAssert.Contains(playbackHtml, "Abortar flujo");
     }
 

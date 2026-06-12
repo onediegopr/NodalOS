@@ -216,6 +216,7 @@ public static class PilotHomePageRenderer
     {{PilotChrome("Home")}}
     <section class="hero">
       <div class="card">
+        <p class="notice"><span class="badge info">Separacion demo/real</span> Proba demo segura cuando no tengas datos reales. Las pantallas que usan ejemplos lo muestran como MODO DEMO / SIMULACION SEGURA.</p>
         <div class="eyebrow">ONE BRAIN Pilot / recorrido local seguro</div>
         <h1>ONE BRAIN Pilot</h1>
         <p>Esta interfaz te deja entender, revisar y probar automatizaciones seguras sin tocar sitios vivos ni ejecutar acciones peligrosas. Pilot primero explica, despues planifica, y solo ejecuta tareas permitidas de demo o reporte.</p>
@@ -470,7 +471,7 @@ public static class PilotHomePageRenderer
 """;
     }
 
-    public static string RenderPromotedFlows(IReadOnlyList<PromotedCandidateFlow> flows)
+    public static string RenderPromotedFlows(IReadOnlyList<PromotedCandidateFlow> flows, string dataOrigin = PilotDataOrigins.Runtime)
     {
         return $$"""
 <!doctype html>
@@ -485,13 +486,14 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Flujos supervisados")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge safe">playback supervisado</span> <span class="badge approval">control humano</span> <span class="badge blocked">sin ejecucion libre</span></p>
       <h1>Flujos supervisados</h1>
-      <p>Un flujo promovido viene de una linea de tiempo candidata revisada. Solo puede ejecutarse paso a paso, con aprobacion cuando corresponde y sin acciones reales peligrosas.</p>
+      <p>Un flujo promovido viene de una linea de tiempo candidata revisada. Solo puede simularse paso a paso, con aprobacion cuando corresponde y sin acciones reales peligrosas.</p>
       <p>{{ConceptHint("Promocion de flujo", "Convierte una linea de tiempo candidata en un flujo apto para playback supervisado. No genera una recipe ejecutable libre.")}}</p>
       <form method="post" action="/flows/demo/promote">
         <button type="submit">Promover demo segura</button>
-        <a class="button" href="/playback/demo">Probar playback supervisado</a>
+        <a class="button" href="/playback/demo">Probar simulacion supervisada</a>
       </form>
     </section>
     <section class="card">
@@ -511,7 +513,8 @@ public static class PilotHomePageRenderer
     public static string RenderPromotedFlowDetail(
         PromotedCandidateFlow flow,
         CandidateFlowPromotionResult? promotion = null,
-        PromotedFlowArtifactWriteResult? write = null)
+        PromotedFlowArtifactWriteResult? write = null,
+        string dataOrigin = PilotDataOrigins.Runtime)
     {
         return $$"""
 <!doctype html>
@@ -526,12 +529,13 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Detalle de flujo")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge safe">supervisado</span> <span class="badge approval">aprobacion si corresponde</span> <span class="badge blocked">autonomo desactivado</span></p>
       <h1>{{Html(flow.Title)}}</h1>
       <p>{{Html(flow.Description)}}</p>
-      <p>La ejecucion real libre esta desactivada. Este flujo solo permite confirmar, saltar si la politica lo permite, o abortar.</p>
+      <p>La ejecucion real esta desactivada en esta version. ONE BRAIN registra la decision, pero no actua sobre otras apps. Este flujo solo permite confirmar una simulacion, saltar si la politica lo permite, o abortar.</p>
       {{PromotionResultBlock(promotion, write)}}
-      <p><a class="button" href="/flows">Volver a flujos</a> <a class="button" href="/playback/demo">Iniciar playback supervisado</a></p>
+      <p><a class="button" href="/flows">Volver a flujos</a> <a class="button" href="/playback/demo">Iniciar simulacion supervisada</a></p>
     </section>
     <section class="grid">
       <div class="card">
@@ -565,7 +569,8 @@ public static class PilotHomePageRenderer
         SupervisedPlaybackSession session,
         SupervisedPlaybackActionResult? actionResult = null,
         SupervisedPlaybackArtifactWriteResult? playbackWrite = null,
-        RunHistoryArtifactWriteResult? runWrite = null)
+        RunHistoryArtifactWriteResult? runWrite = null,
+        string dataOrigin = PilotDataOrigins.Runtime)
     {
         var currentStep = flow.Steps.FirstOrDefault(step => step.StepNumber == session.CurrentStepNumber) ?? flow.Steps.FirstOrDefault();
         return $$"""
@@ -581,9 +586,11 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Playback supervisado")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge safe">paso a paso</span> <span class="badge approval">humano al mando</span> <span class="badge blocked">sin acciones peligrosas</span></p>
       <h1>Playback supervisado</h1>
-      <p>Este flujo permite confirmar, saltar o abortar pasos. En v0 no hace clicks reales, no inicia sesion, no acepta cookies, no compra, no paga y no envia mensajes.</p>
+      <p>Este flujo no ejecuta acciones reales. Este flujo no hace clicks. Este flujo no envia mensajes. Este flujo no compra, no paga y no inicia sesion.</p>
+      <p>La ejecucion real esta desactivada en esta version. ONE BRAIN registra la decision, pero no actua sobre otras apps.</p>
       <p>{{ConceptHint("Playback supervisado", "Ejecucion guiada paso a paso. Si hay ambiguedad, accion sensible o falta executor seguro, el flujo se frena.")}}</p>
       {{PlaybackActionBlock(actionResult, playbackWrite, runWrite)}}
     </section>
@@ -594,7 +601,7 @@ public static class PilotHomePageRenderer
         <form method="post" action="/playback/demo/confirm">
           <input type="hidden" name="stepNumber" value="{{currentStep?.StepNumber ?? 1}}">
           <label><input type="checkbox" name="approval" value="approved"> Simular aprobacion humana para este paso</label>
-          <p><button type="submit">Confirmar paso supervisado</button></p>
+          <p><button type="submit">Confirmar paso de demostracion</button></p>
         </form>
         <form method="post" action="/playback/demo/skip">
           <input type="hidden" name="stepNumber" value="{{currentStep?.StepNumber ?? 1}}">
@@ -758,9 +765,11 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Aprobaciones")}}
     <section class="card">
+      {{OriginBanner(PilotDataOrigins.DemoFixture)}}
       <p><span class="badge approval">requiere aprobacion humana</span> <span class="badge info">solo auditoria</span> <span class="badge safe">sin ejecucion</span></p>
       <h1>Aprobaciones humanas</h1>
       <p>Esta demo prepara una accion sensible y se frena antes del envio. La decision humana queda auditada, pero en v0 no habilita ninguna ejecucion real.</p>
+      <p>ExecutionAllowed=false significa: la ejecucion real esta desactivada en esta version. ONE BRAIN registra la decision, pero no actua sobre otras apps.</p>
       <p>{{ConceptHint("Aprobacion humana", "Nombre tecnico: human-in-the-loop. Una persona revisa pasos sensibles o de baja confianza antes de cualquier intento de ejecucion.")}}</p>
       <p><a class="button" href="/">Volver al inicio</a></p>
     </section>
@@ -871,7 +880,7 @@ public static class PilotHomePageRenderer
 """;
     }
 
-    public static string RenderRunHistory(IReadOnlyList<RunHistoryRecord> runs)
+    public static string RenderRunHistory(IReadOnlyList<RunHistoryRecord> runs, string dataOrigin = PilotDataOrigins.Runtime)
     {
         return $$"""
 <!doctype html>
@@ -903,9 +912,10 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Historial")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge safe">evidencia generada local solamente</span> <span class="badge safe">sin secretos guardados</span> <span class="badge safe">base 0 clicks</span></p>
       <h1>Historial</h1>
-      <p>Esta pantalla muestra ejecuciones locales con estado, seguridad, evidencia generada y referencias a aprobaciones, confianza y decisiones de IA. Si no hay historial real, Pilot usa simulaciones seguras para explicar el formato.</p>
+      <p>Esta pantalla muestra ejecuciones locales con estado, seguridad, evidencia generada y referencias a aprobaciones, confianza y decisiones de IA. Si no hay datos reales todavia, Pilot lo indica y puede mostrar un ejemplo de demostracion separado.</p>
       <p>{{ConceptHint("Evidencia generada", "Archivo local generado por una ejecucion: HTML, Markdown, JSON de resumen, aprobaciones o auditoria.")}}</p>
       <p><a class="button" href="/">Volver al inicio</a></p>
     </section>
@@ -928,7 +938,7 @@ public static class PilotHomePageRenderer
 """;
     }
 
-    public static string RenderAIAuditLog(IReadOnlyList<AIAuditRecord> audits)
+    public static string RenderAIAuditLog(IReadOnlyList<AIAuditRecord> audits, string dataOrigin = PilotDataOrigins.Runtime)
     {
         return $$"""
 <!doctype html>
@@ -959,9 +969,10 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Decisiones de IA")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge safe">sin llamada a proveedor</span> <span class="badge safe">sin prompts completos por defecto</span> <span class="badge safe">sin API keys</span></p>
       <h1>Decisiones de IA</h1>
-      <p>Esta bitacora muestra por que el router recomendaria un perfil IA, si hubo alternativa, presupuesto, escalado por riesgo o bloqueo seguro. En este hito solo hay decisiones locales o simuladas.</p>
+      <p>Esta bitacora muestra por que el router recomendaria un perfil IA, si hubo alternativa, presupuesto, escalado por riesgo o bloqueo seguro. En este hito solo hay decisiones locales o ejemplos simulados claramente marcados.</p>
       <p>{{ConceptHint("Bloqueo seguro", "Si falta configuracion, presupuesto o seguridad suficiente, la decision se bloquea en lugar de avanzar.")}}</p>
       <p><a class="button" href="/">Volver al inicio</a> <a class="button" href="/ai/config">Ver configuracion IA</a></p>
     </section>
@@ -1134,7 +1145,7 @@ public static class PilotHomePageRenderer
 """;
     }
 
-    public static string RenderProcessMemory(IReadOnlyList<ProcessMemoryEntry> entries, WorkflowRetrievalResult retrieval)
+    public static string RenderProcessMemory(IReadOnlyList<ProcessMemoryEntry> entries, WorkflowRetrievalResult retrieval, string dataOrigin = PilotDataOrigins.Runtime)
     {
         return $$"""
 <!doctype html>
@@ -1149,6 +1160,7 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Procesos aprendidos")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge info">solo busqueda</span> <span class="badge safe">sin ejecucion</span> <span class="badge disabled">sin embeddings</span> <span class="badge safe">sin llamada a OpenAI</span></p>
       <h1>Procesos aprendidos</h1>
       <p>Esta memoria ayuda a buscar procesos observados o aprendidos por texto, etiqueta, app o dominio. La busqueda es deterministica y solo sugiere; no ejecuta flujos.</p>
@@ -1187,7 +1199,7 @@ public static class PilotHomePageRenderer
 """;
     }
 
-    public static string RenderProcessMemoryDetail(ProcessMemoryEntry? entry)
+    public static string RenderProcessMemoryDetail(ProcessMemoryEntry? entry, string dataOrigin = PilotDataOrigins.Runtime)
     {
         if (entry == null)
             return RenderNotFound("Proceso aprendido no encontrado", "/memory", "Volver a procesos");
@@ -1205,6 +1217,7 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Detalle de proceso")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge info">detalle de proceso</span> <span class="badge safe">sin ejecucion</span> <span class="badge warn">revision humana para sugerencias riesgosas</span></p>
       <h1>{{Html(entry.Title)}}</h1>
       <p>{{Html(entry.Description)}}</p>
@@ -1241,7 +1254,7 @@ public static class PilotHomePageRenderer
 """;
     }
 
-    public static string RenderAppProfiles(IReadOnlyList<AppProfile> profiles)
+    public static string RenderAppProfiles(IReadOnlyList<AppProfile> profiles, string dataOrigin = PilotDataOrigins.Runtime)
     {
         return $$"""
 <!doctype html>
@@ -1256,6 +1269,7 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Apps y sitios")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge info">gestor de perfiles v0</span> <span class="badge safe">sin ejecucion</span> <span class="badge blocked">login/cookies/pago/compra bloqueados</span></p>
       <h1>Apps y sitios</h1>
       <p>Los perfiles de apps y sitios describen que sabe hacer ONE BRAIN con una app o sitio y que bloquea por politica. Los perfiles externos fragiles requieren diagnostico controlado; no habilitan acciones inseguras por defecto.</p>
@@ -1276,7 +1290,7 @@ public static class PilotHomePageRenderer
 """;
     }
 
-    public static string RenderAppProfileDetail(AppProfile? profile)
+    public static string RenderAppProfileDetail(AppProfile? profile, string dataOrigin = PilotDataOrigins.Runtime)
     {
         if (profile == null)
             return RenderNotFound("App o sitio no encontrado", "/app-profiles", "Volver a apps y sitios");
@@ -1295,6 +1309,7 @@ public static class PilotHomePageRenderer
   <main>
     {{PilotChrome("Detalle de app o sitio")}}
     <section class="card">
+      {{OriginBanner(dataOrigin)}}
       <p><span class="badge safe">solo lectura por defecto</span> <span class="badge info">politica de diagnostico visible</span> <span class="badge blocked">acciones inseguras bloqueadas</span></p>
       <h1>{{Html(profile.Name)}}</h1>
       <p>{{ConceptHint("Solo lectura", "Capacidad restringida a observacion o lectura. No implica envio, compra, pago ni login.")}}</p>
@@ -1384,6 +1399,27 @@ public static class PilotHomePageRenderer
   <p>Links secundarios: <a href="/variables">datos</a> - <a href="/flows">flujos supervisados</a> - <a href="/playback/demo">playback demo</a> - <a href="/approvals/demo">aprobaciones</a> - <a href="/ai/audit">decisiones de IA</a> - <a href="/memory">procesos aprendidos</a> - <a href="/app-profiles">apps y sitios</a></p>
   {{SafetyAlwaysVisible()}}
 </section>
+""";
+    }
+
+    private static string OriginBanner(string origin)
+    {
+        if (PilotDataOrigins.IsDemoLike(origin))
+        {
+            return $$"""
+<div class="notice" aria-label="Origen de datos demo">
+  <p><span class="badge warn">MODO DEMO / SIMULACION SEGURA</span> <span class="badge disabled">Origen: {{Html(PilotDataOrigins.Label(origin))}}</span> <span class="badge safe">Sin ejecucion real</span></p>
+  <p>Estos datos no vienen de una ejecucion real del usuario. Sirven para mostrar como funciona ONE BRAIN.</p>
+  <p>No hay datos reales todavia. Mostrando ejemplo de demostracion. No se hacen clicks, no se envian mensajes, no se compra, no se paga y no se inicia sesion.</p>
+</div>
+""";
+        }
+
+        return $$"""
+<div class="notice" aria-label="Origen de datos runtime">
+  <p><span class="badge safe">Dato real</span> <span class="badge info">Origen: {{Html(PilotDataOrigins.Label(origin))}}</span> <span class="badge safe">Evidencia runtime</span></p>
+  <p>Origen: Datos locales generados por esta instalacion. Las rutas se muestran para copiar manualmente; Pilot no abre evidencia automaticamente.</p>
+</div>
 """;
     }
 

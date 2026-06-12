@@ -9,7 +9,7 @@ public sealed class SafeClickPolicyTests
     [TestMethod]
     public void Controlled_Mode_Allows_Execution_For_SafeReadonly()
     {
-        var pr = ClickPreflightEvaluator.Evaluate("Siete");
+        var pr = ClickPreflightEvaluator.Evaluate("Categorias");
         var m = ApprovalManifestBuilder.Build(pr, "controlled");
         Assert.AreEqual("allowedForFuture", pr.Decision);
         Assert.IsTrue(m.ExecutionAllowedInThisHito);
@@ -89,7 +89,7 @@ public sealed class SafeClickPolicyTests
     [TestMethod]
     public void CommercialWeb_Blocks_Even_SafeReadonly_Target()
     {
-        var pr = ClickPreflightEvaluator.Evaluate("Siete");
+        var pr = ClickPreflightEvaluator.Evaluate("Categorias");
         Assert.IsFalse(pr.Blocked);
         var m = ApprovalManifestBuilder.Build(pr, "commercialWeb");
         Assert.IsFalse(m.ExecutionAllowedInThisHito);
