@@ -4,6 +4,7 @@ using OneBrain.Core.AI;
 using OneBrain.Core.AppProfiles;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Confidence;
+using OneBrain.Core.ExecutorHarness;
 using OneBrain.Core.Flows;
 using OneBrain.Core.History;
 using OneBrain.Core.Memory;
@@ -246,6 +247,7 @@ public static class PilotHomePageRenderer
           <a class="button ghost" href="/ai/audit">Ver decisiones de IA</a>
           <a class="button ghost" href="/memory">Ver memoria de procesos</a>
           <a class="button ghost" href="/app-profiles">Ver apps y sitios</a>
+          <a class="button ghost" href="/executor-harness">Probar click benigno supervisado</a>
         </div>
         {{HelpText("Que podes probar ahora", "Demo HTML y Markdown, tareas permitidas, datos requeridos, validador, aprobaciones simuladas, historial local, decisiones de IA sin proveedor real, procesos aprendidos y apps/sitios.")}}
       </div>
@@ -626,6 +628,65 @@ public static class PilotHomePageRenderer
         <tbody>{{PlaybackStepRows(session.Steps)}}</tbody>
       </table>
     </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderExecutorHarness(
+        ExecutorHarnessTarget target,
+        ApprovalRequest approval,
+        ApprovalDecision? decision = null,
+        ExecutorHarnessRunResult? result = null,
+        ExecutorHarnessArtifactWriteResult? evidenceWrite = null,
+        ApprovalArtifactWriteResult? approvalWrite = null,
+        ApprovalArtifactWriteResult? decisionWrite = null,
+        RunHistoryArtifactWriteResult? runWrite = null)
+    {
+        return $$"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Executor Harness</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Executor harness")}}
+    <section class="card">
+      <p><span class="badge approval">requiere aprobacion</span> <span class="badge safe">harness local</span> <span class="badge blocked">sin MercadoLibre</span> <span class="badge blocked">sin compra/pago/login/cookies</span></p>
+      <h1>Click benigno supervisado</h1>
+      <p>Esta pantalla es el primer harness para ejecutar un click real, pero solo sobre un objetivo benigno dentro de ONE BRAIN Pilot. No toca sitios externos, no acepta cookies, no inicia sesion, no compra, no paga y no envia mensajes.</p>
+      <p class="notice">Fail-closed: si falta aprobacion, target seguro o executor seguro, ONE BRAIN bloquea la accion y registra evidencia de bloqueo.</p>
+      {{ConceptHint("Que se va a hacer", "ONE BRAIN buscara esta misma ventana local de Pilot por titulo, resolvera el boton benigno por nombre y ejecutara un unico click UIA supervisado. Despues verificara el resultado y escribira artifacts locales.")}}
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Objetivo benigno del harness</h2>
+        <p><span class="badge safe">controlado</span> <span class="badge safe">benigno</span> <span class="badge info">solo local</span></p>
+        <button type="button" aria-label="{{Html(target.ExpectedTargetName)}}">{{Html(target.ExpectedTargetName)}}</button>
+        <div class="metric"><span>ID</span><strong>{{Html(target.HarnessId)}}</strong></div>
+        <div class="metric"><span>Target UIA</span><strong>{{Html(target.TargetRef)}}</strong></div>
+        <div class="metric"><span>Ventana</span><strong>{{Html(target.WindowTitleContains)}}</strong></div>
+        <div class="metric"><span>Executor seguro</span><strong>{{SpanishBool(target.HasSafeExecutor)}}</strong></div>
+      </div>
+      <div class="card">
+        <h2>Aprobacion requerida</h2>
+        <p>Solicitud: <strong>{{Html(approval.ApprovalRequestId)}}</strong></p>
+        <p>Estado: <span class="badge approval">{{Html(approval.Status)}}</span></p>
+        <p>{{Html(approval.Description)}}</p>
+        <form method="post" action="/executor-harness/click">
+          <p><button type="submit">Aprobar y ejecutar click benigno supervisado</button></p>
+        </form>
+        <p>Este boton no habilita clicks generales. Solo intenta el objetivo local mostrado a la izquierda.</p>
+      </div>
+    </section>
+
+    {{ExecutorHarnessResultBlock(result, evidenceWrite, approvalWrite, decisionWrite, runWrite, decision)}}
   </main>
 </body>
 </html>
@@ -1396,7 +1457,7 @@ public static class PilotHomePageRenderer
     <a class="button" href="/runs">Historial</a>
     <a class="button" href="/ai/config">Configuracion</a>
   </nav>
-  <p>Links secundarios: <a href="/variables">datos</a> - <a href="/flows">flujos supervisados</a> - <a href="/playback/demo">playback demo</a> - <a href="/approvals/demo">aprobaciones</a> - <a href="/ai/audit">decisiones de IA</a> - <a href="/memory">procesos aprendidos</a> - <a href="/app-profiles">apps y sitios</a></p>
+  <p>Links secundarios: <a href="/variables">datos</a> - <a href="/flows">flujos supervisados</a> - <a href="/playback/demo">playback demo</a> - <a href="/executor-harness">click benigno supervisado</a> - <a href="/approvals/demo">aprobaciones</a> - <a href="/ai/audit">decisiones de IA</a> - <a href="/memory">procesos aprendidos</a> - <a href="/app-profiles">apps y sitios</a></p>
   {{SafetyAlwaysVisible()}}
 </section>
 """;
@@ -2077,6 +2138,46 @@ wouldCallProvider={result.Decision.WouldCallProvider}
         return "<p><span class=\"badge " + badgeClass + "\">" + Html(actionResult.Message) + "</span></p>" +
                "<p>Evidencia: " + Html(string.Join("; ", actionResult.Evidence)) + "</p>" +
                "<p>Rutas de evidencia generada: <span class=\"path\">" + Html(string.Join("; ", artifacts)) + "</span></p>";
+    }
+
+    private static string ExecutorHarnessResultBlock(
+        ExecutorHarnessRunResult? result,
+        ExecutorHarnessArtifactWriteResult? evidenceWrite,
+        ApprovalArtifactWriteResult? approvalWrite,
+        ApprovalArtifactWriteResult? decisionWrite,
+        RunHistoryArtifactWriteResult? runWrite,
+        ApprovalDecision? decision)
+    {
+        if (result == null)
+            return """
+<section class="card">
+  <h2>Resultado y evidencia</h2>
+  <p class="notice">Todavia no se ejecuto el harness. Primero revisa el objetivo benigno y confirma la aprobacion humana.</p>
+  <p><span class="badge safe">0 cookies</span> <span class="badge safe">0 login</span> <span class="badge safe">0 carrito</span> <span class="badge safe">0 compra</span> <span class="badge safe">0 pago</span></p>
+</section>
+""";
+
+        var badgeClass = result.Success ? "safe" : "blocked";
+        var paths = new[]
+        {
+            evidenceWrite?.Success == true ? evidenceWrite.RelativePath : "",
+            approvalWrite?.Success == true ? approvalWrite.RelativePath : "",
+            decisionWrite?.Success == true ? decisionWrite.RelativePath : "",
+            runWrite?.Success == true ? runWrite.RelativePath : ""
+        }.Where(value => !string.IsNullOrWhiteSpace(value)).ToList();
+
+        return $$"""
+<section class="card">
+  <h2>Resultado y evidencia</h2>
+  <p><span class="badge {{badgeClass}}">{{Html(result.Status)}}</span> {{Html(result.Message)}}</p>
+  <p>Decision: <strong>{{Html(decision?.Decision ?? "-")}}</strong> / ExecutionAllowed: <strong>{{SpanishBool(decision?.ExecutionAllowed == true)}}</strong></p>
+  <p>Verificacion posterior: target encontrado={{SpanishBool(result.Verification.TargetFound)}}; click observado={{SpanishBool(result.Verification.ClickObserved)}}; estado={{Html(result.Verification.Status)}}.</p>
+  <p>Safety del run: {{Safety(result.RunHistory.SafetyCounters)}}</p>
+  <p>Evidencia: {{Html(string.Join("; ", result.Evidence))}}</p>
+  <p>Rutas locales generadas: <span class="path">{{Html(paths.Count == 0 ? "sin artifacts escritos" : string.Join("; ", paths))}}</span></p>
+  <p><span class="badge safe">0 cookies</span> <span class="badge safe">0 login</span> <span class="badge safe">0 carrito</span> <span class="badge safe">0 compra</span> <span class="badge safe">0 pago</span></p>
+</section>
+""";
     }
 
     private static string CurrentPlaybackStepBlock(PromotedFlowStep? step, SupervisedPlaybackSession session)

@@ -1,12 +1,18 @@
+using OneBrain.Actions.Uia;
+using OneBrain.Core.Actions;
 using OneBrain.Pilot;
 using OneBrain.Core.AI;
 using OneBrain.Core.AppProfiles;
 using OneBrain.Core.Approval;
+using OneBrain.Core.ExecutorHarness;
 using OneBrain.Core.Flows;
 using OneBrain.Core.History;
 using OneBrain.Core.Memory;
 using OneBrain.Core.Recording;
 using OneBrain.Core.Recipes.Editing;
+using OneBrain.Observation.Uia;
+using OneBrain.Observation.Windows;
+using FlaUI.UIA3;
 
 var root = ResolveRepoRoot(GetArg(args, "--root") ?? Directory.GetCurrentDirectory());
 var dotnet = GetArg(args, "--dotnet")
@@ -102,6 +108,38 @@ app.MapGet("/playback/demo", () =>
 
     var session = SupervisedPlaybackService.Start(flow);
     return Results.Content(PilotHomePageRenderer.RenderSupervisedPlayback(flow, session, dataOrigin: origin), "text/html");
+});
+
+app.MapGet("/executor-harness", () =>
+{
+    var target = ExecutorHarnessDemoFixture.CreateTarget();
+    var approval = ExecutorHarnessService.CreateApprovalRequest(target);
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarness(target, approval), "text/html");
+});
+
+app.MapPost("/executor-harness/click", () =>
+{
+    var target = ExecutorHarnessDemoFixture.CreateTarget();
+    var approval = ExecutorHarnessService.CreateApprovalRequest(target);
+    var decision = ApprovalPolicy.Decide(
+        approval,
+        ApprovalDecisionKinds.Approved,
+        "Aprobado para un unico click benigno en harness local controlado.",
+        decidedBy: "pilot-human-supervisor",
+        executionAllowed: true,
+        notes:
+        [
+            "scope: ONE BRAIN Pilot local harness only",
+            "no external site, no login, no cookies, no cart, no purchase, no payment"
+        ]);
+
+    var result = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new PilotUiaHarnessClickExecutor());
+    var evidenceWrite = ExecutorHarnessArtifactStore.Write(root, ExecutorHarnessService.ToEvidenceRecord(result));
+    var approvalWrite = ApprovalArtifactWriter.WriteRequest(root, approval);
+    var decisionWrite = ApprovalArtifactWriter.WriteDecision(root, decision);
+    var runWrite = RunHistoryStore.Write(root, result.RunHistory);
+
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarness(target, approval, decision, result, evidenceWrite, approvalWrite, decisionWrite, runWrite), "text/html");
 });
 
 app.MapPost("/playback/demo/confirm", async (HttpContext context) =>
@@ -450,4 +488,60 @@ static IReadOnlyDictionary<string, string> BuildUnsafeAttempts(IFormCollection f
     }
 
     return attempts;
+}
+
+sealed class PilotUiaHarnessClickExecutor : IExecutorHarnessClickExecutor
+{
+    public ExecutorHarnessExecutorResult Click(ExecutorHarnessClickCommand command)
+    {
+        var result = new UiaActionExecutor().Execute(new ActionRequest(
+            Kind: "click",
+            TargetRef: command.TargetRef,
+            Text: null,
+            ProcessName: null,
+            WindowTitle: command.WindowTitleContains));
+
+        var postActionSignals = VerifyPostActionState(command);
+        return new ExecutorHarnessExecutorResult(
+            Success: result.Success,
+            Message: result.Message,
+            TargetFound: result.Success && postActionSignals.TargetVisible,
+            Clicks: result.Success ? 1 : 0,
+            Signals:
+            [
+                $"windowTitleContains={command.WindowTitleContains}",
+                $"targetRef={command.TargetRef}",
+                result.UsedFallback ? "executor used fallback" : "executor used direct target resolution",
+                result.Message,
+                $"postAction.windowFound={postActionSignals.WindowFound.ToString().ToLowerInvariant()}",
+                $"postAction.targetVisible={postActionSignals.TargetVisible.ToString().ToLowerInvariant()}",
+                $"postAction.targetName={postActionSignals.TargetName}"
+            ]);
+    }
+
+    private static (bool WindowFound, bool TargetVisible, string TargetName) VerifyPostActionState(ExecutorHarnessClickCommand command)
+    {
+        try
+        {
+            var finder = new WindowFinder();
+            var hwnd = finder.FindWindow(null, command.WindowTitleContains);
+            if (hwnd == IntPtr.Zero)
+                return (false, false, "");
+
+            using var automation = new UIA3Automation();
+            var root = automation.FromHandle(hwnd);
+            var elements = new List<FlaUI.Core.AutomationElements.AutomationElement>();
+            UiaTreeWalker.Walk(root, elements, UiaTreeWalker.DefaultMaxElements, UiaTreeWalker.DefaultMaxDepth);
+            var target = elements.FirstOrDefault(element =>
+                UiaTreeWalker.SafeName(element).Equals(command.ExpectedTargetName, StringComparison.OrdinalIgnoreCase));
+
+            return target == null
+                ? (true, false, "")
+                : (true, true, UiaTreeWalker.SafeName(target));
+        }
+        catch
+        {
+            return (false, false, "");
+        }
+    }
 }

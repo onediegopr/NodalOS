@@ -25,6 +25,7 @@ public static class ApprovalActionKinds
     public const string InstallSoftware = "install_software";
     public const string PrepareMessage = "prepare_message";
     public const string ViewReport = "view_report";
+    public const string BenignHarnessClick = "benign_harness_click";
 }
 
 public static class ApprovalDecisionKinds

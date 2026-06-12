@@ -157,7 +157,9 @@ public static class ApprovalPolicy
         string decision,
         string reason,
         string decidedBy = "human",
-        DateTimeOffset? decidedAtUtc = null)
+        DateTimeOffset? decidedAtUtc = null,
+        bool executionAllowed = false,
+        IReadOnlyList<string>? notes = null)
     {
         var normalizedDecision = string.Equals(decision, ApprovalDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase)
             ? ApprovalDecisionKinds.Approved
@@ -167,6 +169,29 @@ public static class ApprovalPolicy
         if (normalizedDecision == ApprovalDecisionKinds.Rejected && string.IsNullOrWhiteSpace(sanitizedReason))
             sanitizedReason = "rejection reason required";
 
+        var scopedExecutorHarnessAction =
+            string.Equals(request.Source, "executor_harness", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(request.ActionKind, ApprovalActionKinds.BenignHarnessClick, StringComparison.OrdinalIgnoreCase);
+        var canExecute = executionAllowed &&
+                         scopedExecutorHarnessAction &&
+                         normalizedDecision == ApprovalDecisionKinds.Approved &&
+                         !request.FailClosed;
+        var allNotes = new List<string>
+        {
+            canExecute
+                ? "decision permits only the explicitly scoped safe executor harness action"
+                : "decision recorded for audit only",
+            canExecute
+                ? "executionAllowed is true only for a benign controlled harness target"
+                : "executionAllowed remains false because no safe action executor exists in this hito"
+        };
+        if (request.FailClosed && executionAllowed)
+            allNotes.Add("execution request stayed blocked because approval request is fail-closed");
+        if (executionAllowed && !scopedExecutorHarnessAction)
+            allNotes.Add("execution request ignored because this is not the benign executor harness action");
+        if (notes != null)
+            allNotes.AddRange(notes.Select(SensitiveTextSanitizer.Sanitize));
+
         return new ApprovalDecision(
             ApprovalDecisionId: $"decision-{Guid.NewGuid():N}",
             ApprovalRequestId: request.ApprovalRequestId,
@@ -174,12 +199,8 @@ public static class ApprovalPolicy
             Decision: normalizedDecision,
             Reason: sanitizedReason,
             DecidedBy: SensitiveTextSanitizer.Sanitize(decidedBy),
-            ExecutionAllowed: false,
-            Notes:
-            [
-                "decision recorded for audit only",
-                "executionAllowed remains false because no safe action executor exists in this hito"
-            ]);
+            ExecutionAllowed: canExecute,
+            Notes: allNotes);
     }
 
     private static string HashSegment(params string?[] values)
