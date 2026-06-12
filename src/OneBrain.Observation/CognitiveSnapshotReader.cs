@@ -45,26 +45,14 @@ public sealed class CognitiveSnapshotReader
         var window = _windowReader.ReadFromHandle(hwnd);
         if (window is null) return null;
 
-        AutomationElement? root;
-        try
-        {
-            root = automation.FromHandle(hwnd);
-        }
-        catch
-        {
-            return null;
-        }
-
-        if (root is null) return null;
-
         // Use browser-optimised limits and role set for known browser processes.
         var effectiveProcess = processName ?? window.ProcessName;
         bool isBrowser       = UiaTreeWalker.IsBrowserProcess(effectiveProcess);
         var maxElements      = isBrowser ? UiaTreeWalker.BrowserMaxElements : UiaTreeWalker.DefaultMaxElements;
         var alwaysInclude    = isBrowser ? UiaTreeWalker.BrowserRelevantRoles : null;
 
-        var (elements, truncated) = _elementReader.ReadFromRootDetailed(
-            root, maxElements, alwaysInclude, relaxOffscreen: isBrowser);
+        var (elements, truncated) = _elementReader.ReadFromHandleDetailed(
+            automation, hwnd, maxElements, alwaysInclude, relaxOffscreen: isBrowser);
         return new CognitiveSnapshot(window, elements, truncated);
     }
 }

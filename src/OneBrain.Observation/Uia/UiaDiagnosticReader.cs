@@ -43,49 +43,71 @@ public sealed class UiaDiagnosticReader
         bool    raw            = false)
     {
         using var automation = new UIA3Automation();
-        AutomationElement? root;
-        try { root = automation.FromHandle(hwnd); } catch { return Array.Empty<UiaDiagnosticEntry>(); }
-        if (root == null) return Array.Empty<UiaDiagnosticEntry>();
-
-        bool isBrowser = UiaTreeWalker.IsBrowserProcess(processName);
-
-        var all     = new List<UiaDiagnosticEntry>(256);
-        int counter = 0;
-        WalkFull(root, all, isBrowser, 0, "Window", ref counter);
-
-        if (raw) return all;
-
-        IEnumerable<UiaDiagnosticEntry> filtered = all;
-
-        if (containsFilter != null)
+        AutomationElement? root = null;
+        IDisposable? cache = null;
+        try
         {
-            filtered = all.Where(e =>
-                Contains(e.Name,         containsFilter) ||
-                Contains(e.HelpText,     containsFilter) ||
-                Contains(e.LegacyName,   containsFilter) ||
-                Contains(e.LabeledByName,containsFilter) ||
-                Contains(e.AutomationId, containsFilter) ||
-                Contains(e.ClassName,    containsFilter) ||
-                Contains(e.Path,         containsFilter));
+            cache = UiaSnapshotCacheRequestFactory.Create(automation).Activate();
+            root = automation.FromHandle(hwnd);
+        }
+        catch
+        {
+            cache?.Dispose();
+            try { root = automation.FromHandle(hwnd); } catch { return Array.Empty<UiaDiagnosticEntry>(); }
         }
 
-        if (roleFilter != null)
-            filtered = filtered.Where(e =>
-                e.Role.Equals(roleFilter, StringComparison.OrdinalIgnoreCase));
-
-        // Default (no explicit filter): show elements that carry some content or are walker-included.
-        if (containsFilter == null && roleFilter == null)
+        if (root == null)
         {
-            filtered = all.Where(e =>
-                e.IncludedByWalker                           ||
-                !string.IsNullOrEmpty(e.Name)               ||
-                !string.IsNullOrEmpty(e.AutomationId)       ||
-                !string.IsNullOrEmpty(e.HelpText)           ||
-                !string.IsNullOrEmpty(e.LegacyName)         ||
-                !string.IsNullOrEmpty(e.LabeledByName));
+            cache?.Dispose();
+            return Array.Empty<UiaDiagnosticEntry>();
         }
 
-        return filtered.ToList();
+        try
+        {
+            bool isBrowser = UiaTreeWalker.IsBrowserProcess(processName);
+
+            var all     = new List<UiaDiagnosticEntry>(256);
+            int counter = 0;
+            WalkFull(root, all, isBrowser, 0, "Window", ref counter);
+
+            if (raw) return all;
+
+            IEnumerable<UiaDiagnosticEntry> filtered = all;
+
+            if (containsFilter != null)
+            {
+                filtered = all.Where(e =>
+                    Contains(e.Name,         containsFilter) ||
+                    Contains(e.HelpText,     containsFilter) ||
+                    Contains(e.LegacyName,   containsFilter) ||
+                    Contains(e.LabeledByName,containsFilter) ||
+                    Contains(e.AutomationId, containsFilter) ||
+                    Contains(e.ClassName,    containsFilter) ||
+                    Contains(e.Path,         containsFilter));
+            }
+
+            if (roleFilter != null)
+                filtered = filtered.Where(e =>
+                    e.Role.Equals(roleFilter, StringComparison.OrdinalIgnoreCase));
+
+            // Default (no explicit filter): show elements that carry some content or are walker-included.
+            if (containsFilter == null && roleFilter == null)
+            {
+                filtered = all.Where(e =>
+                    e.IncludedByWalker                           ||
+                    !string.IsNullOrEmpty(e.Name)               ||
+                    !string.IsNullOrEmpty(e.AutomationId)       ||
+                    !string.IsNullOrEmpty(e.HelpText)           ||
+                    !string.IsNullOrEmpty(e.LegacyName)         ||
+                    !string.IsNullOrEmpty(e.LabeledByName));
+            }
+
+            return filtered.ToList();
+        }
+        finally
+        {
+            cache?.Dispose();
+        }
     }
 
     // ── Internal depth-first walk ─────────────────────────────────────────────

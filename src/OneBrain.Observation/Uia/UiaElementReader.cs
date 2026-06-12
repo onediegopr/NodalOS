@@ -21,6 +21,41 @@ public sealed class UiaElementReader
     public IReadOnlyList<UiElementSnapshot> ReadFromRoot(AutomationElement root)
         => ReadFromRootDetailed(root).Elements;
 
+    public (IReadOnlyList<UiElementSnapshot> Elements, bool WasTruncated) ReadFromHandleDetailed(
+        UIA3Automation automation,
+        IntPtr hwnd,
+        int maxElements = UiaTreeWalker.DefaultMaxElements,
+        IReadOnlySet<string>? alwaysIncludeRoles = null,
+        bool relaxOffscreen = false,
+        UiaSnapshotOptions? options = null)
+    {
+        options ??= UiaSnapshotOptions.Default;
+
+        if (options.UseCacheRequest)
+        {
+            try
+            {
+                using var cache = UiaSnapshotCacheRequestFactory.Create(automation, options).Activate();
+                var root = automation.FromHandle(hwnd);
+                return ReadFromRootDetailed(root, maxElements, alwaysIncludeRoles, relaxOffscreen);
+            }
+            catch
+            {
+                // CacheRequest is an optimisation. If UIA or provider caching fails, preserve old behaviour.
+            }
+        }
+
+        try
+        {
+            var root = automation.FromHandle(hwnd);
+            return ReadFromRootDetailed(root, maxElements, alwaysIncludeRoles, relaxOffscreen);
+        }
+        catch
+        {
+            return (Array.Empty<UiElementSnapshot>(), false);
+        }
+    }
+
     /// <summary>
     /// Full read. Returns element list plus a flag that is true when the walk
     /// was capped at <paramref name="maxElements"/> (tree may have more nodes).

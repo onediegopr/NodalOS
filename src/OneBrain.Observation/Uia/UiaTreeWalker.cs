@@ -100,6 +100,13 @@ public static class UiaTreeWalker
 
     public static IEnumerable<AutomationElement> SafeChildren(AutomationElement e)
     {
+        try
+        {
+            var cached = e.CachedChildren;
+            if (cached.Length > 0) return cached;
+        }
+        catch { }
+
         try { return e.FindAllChildren(); } catch { return []; }
     }
 
