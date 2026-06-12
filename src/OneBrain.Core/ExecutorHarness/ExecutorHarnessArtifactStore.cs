@@ -243,6 +243,8 @@ public static class ExecutorHarnessArtifactStore
             ActionKind: contract?.ActionKind ?? "unknown",
             SafetyDecision: contract?.SafetyMatrix.Status ?? evidence.Status,
             VerificationResult: verification,
+            StepCount: evidence.Steps?.Count ?? 0,
+            FlowStatus: evidence.FlowStatus ?? "",
             LogicalPath: relativePath,
             ReplayPath: "/executor-harness/replay",
             TraceLink: trace);

@@ -138,6 +138,18 @@ app.MapGet("/executor-harness/evidence", () =>
     return Results.Content(PilotHomePageRenderer.RenderExecutorHarnessEvidenceIndex(index), "text/html");
 });
 
+app.MapGet("/executor-harness/flow", () =>
+{
+    var flow = ExecutorHarnessService.BuildFlowPlan();
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarnessFlow(flow, dryRunOnly: false), "text/html");
+});
+
+app.MapGet("/executor-harness/flow/dry-run", () =>
+{
+    var flow = ExecutorHarnessService.BuildFlowPlan();
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarnessFlow(flow, dryRunOnly: true), "text/html");
+});
+
 app.MapPost("/executor-harness/click", () =>
 {
     var target = ExecutorHarnessDemoFixture.CreateTarget();

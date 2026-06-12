@@ -664,7 +664,7 @@ public static class PilotHomePageRenderer
       <p>Esta pantalla es el primer harness para ejecutar un click real, pero solo sobre un objetivo benigno dentro de ONE BRAIN Pilot. No toca sitios externos, no acepta cookies, no inicia sesion, no compra, no paga y no envia mensajes.</p>
       <p class="notice">Fail-closed: si falta aprobacion, target seguro o executor seguro, ONE BRAIN bloquea la accion y registra evidencia de bloqueo.</p>
       {{ConceptHint("Que se va a hacer", "ONE BRAIN buscara esta misma ventana local de Pilot por titulo, resolvera el boton benigno por nombre y ejecutara un unico click UIA supervisado. Despues verificara el resultado y escribira artifacts locales.")}}
-      <p><a class="button ghost" href="/executor-harness/dry-run">Ver dry-run explicable</a> <a class="button ghost" href="/executor-harness/replay">Ver replay de evidencia</a> <a class="button ghost" href="/executor-harness/evidence">Ver indice de evidencia</a></p>
+      <p><a class="button ghost" href="/executor-harness/dry-run">Ver dry-run explicable</a> <a class="button ghost" href="/executor-harness/flow">Ver flow multi-step</a> <a class="button ghost" href="/executor-harness/replay">Ver replay de evidencia</a> <a class="button ghost" href="/executor-harness/evidence">Ver indice de evidencia</a></p>
     </section>
 
     <section class="grid">
@@ -746,6 +746,39 @@ public static class PilotHomePageRenderer
       <p><a class="button" href="/executor-harness">Volver al harness</a> <a class="button ghost" href="/executor-harness/replay">Ver replay del ultimo artifact</a></p>
     </section>
     {{ExecutorHarnessEvidenceIndexBlock(index)}}
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderExecutorHarnessFlow(ExecutorHarnessFlowPlan flow, bool dryRunOnly)
+    {
+        var title = dryRunOnly ? "Dry-run del flow multi-step" : "Flow multi-step del harness";
+        var summary = dryRunOnly
+            ? "Plan read-only de varios pasos benignos. No ejecuta acciones ni llama al executor UIA."
+            : "Vista de flujo benigno local de varios pasos. Muestra pasos, safety y recovery policy sin ejecutar acciones.";
+
+        return $$"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Flow multi-step harness</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Flow harness")}}
+    <section class="card">
+      <p><span class="badge info">read-only</span> <span class="badge safe">local only</span> <span class="badge blocked">fail-closed</span></p>
+      <h1>{{Html(title)}}</h1>
+      <p>{{Html(summary)}}</p>
+      <p class="notice">Si un paso falla o queda bloqueado, ONE BRAIN no continua automaticamente. Registra evidencia del paso y requiere intervencion humana.</p>
+      <p><a class="button" href="/executor-harness">Volver al harness</a> <a class="button ghost" href="/executor-harness/flow/dry-run">Ver version dry-run</a> <a class="button ghost" href="/executor-harness/evidence">Ver indice de evidencia</a></p>
+    </section>
+    {{ExecutorHarnessFlowBlock(flow, dryRunOnly)}}
   </main>
 </body>
 </html>
@@ -2291,6 +2324,8 @@ wouldCallProvider={result.Decision.WouldCallProvider}
   <div class="metric"><span>Approval request</span><strong>{{Html(evidence.ApprovalRequestId)}}</strong></div>
   <div class="metric"><span>Approval decision</span><strong>{{Html(evidence.ApprovalDecisionId ?? "-")}}</strong></div>
   <div class="metric"><span>Trace link</span><strong>{{Html(replay.TraceLink?.TraceId ?? "-")}}</strong></div>
+  <div class="metric"><span>Flow</span><strong>{{Html(string.IsNullOrWhiteSpace(evidence.FlowId) ? "-" : $"{evidence.FlowId} / {evidence.FlowStatus}")}}</strong></div>
+  <div class="metric"><span>Step count</span><strong>{{evidence.Steps?.Count ?? 0}}</strong></div>
   <div class="metric"><span>Post-state</span><strong>{{Html(evidence.Verification.Status)}} - target={{SpanishBool(evidence.Verification.TargetFound)}} click={{SpanishBool(evidence.Verification.ClickObserved)}}</strong></div>
   <div class="metric"><span>Safety counters</span><strong>{{Safety(evidence.SafetyCounters)}}</strong></div>
   <p><strong>Contrato:</strong> {{Html(contract == null ? "artifact antiguo sin contrato embebido" : contract.ContractId)}}</p>
@@ -2298,6 +2333,7 @@ wouldCallProvider={result.Decision.WouldCallProvider}
   <p><strong>Matriz:</strong> {{Html(contract == null ? "-" : contract.SafetyMatrix.Status)}}</p>
   <p><strong>Comando:</strong> {{Html(contract == null ? "-" : $"{contract.ActionKind} -> {contract.TargetConstraints.TargetRef}")}}</p>
   <p><strong>Run trace:</strong> {{Html(replay.TraceLink == null ? "-" : $"{replay.TraceLink.RunId}; approval={replay.TraceLink.ApprovalDecision}; post={replay.TraceLink.PostStateResult}")}}</p>
+  {{ExecutorHarnessReplayStepsBlock(evidence)}}
   <p><strong>Notas:</strong> {{Html(string.Join("; ", evidence.Notes.Concat(replay.Notes)))}}</p>
 </section>
 """;
@@ -2322,7 +2358,7 @@ wouldCallProvider={result.Decision.WouldCallProvider}
   <h2>Evidencia local indexada</h2>
   <p><span class="badge info">{{Html(index.Status)}}</span> {{Html(index.Message)}}</p>
   <table>
-    <thead><tr><th>Evidence</th><th>Accion</th><th>Safety</th><th>Verificacion</th><th>Trace</th><th>Ruta</th></tr></thead>
+    <thead><tr><th>Evidence</th><th>Accion</th><th>Safety</th><th>Verificacion</th><th>Steps</th><th>Trace</th><th>Ruta</th></tr></thead>
     <tbody>{{ExecutorHarnessEvidenceIndexRows(index.Items)}}</tbody>
   </table>
   <p class="notice">El indice es read-only: no abre artifacts, no hace clicks y no ejecuta replay activo.</p>
@@ -2342,6 +2378,7 @@ wouldCallProvider={result.Decision.WouldCallProvider}
                 .Append("<td><span class=\"badge ").Append(item.SafetyDecision == "allowed" ? "safe" : "blocked").Append("\">")
                 .Append(Html(item.SafetyDecision)).Append("</span></td>")
                 .Append("<td>").Append(Html(item.VerificationResult)).Append("</td>")
+                .Append("<td>").Append(item.StepCount == 0 ? "sin steps embebidos" : Html($"{item.StepCount} step(s) / {item.FlowStatus}")).Append("</td>")
                 .Append("<td>").Append(Html(trace.TraceId)).Append("<br><small>")
                 .Append(Html(trace.IsSynthetic ? "trace local sintetico, no run id real completo" : trace.RunId))
                 .Append("</small><br><small>")
@@ -2353,6 +2390,72 @@ wouldCallProvider={result.Decision.WouldCallProvider}
         }
 
         return builder.ToString();
+    }
+
+    private static string ExecutorHarnessFlowBlock(ExecutorHarnessFlowPlan flow, bool dryRunOnly)
+    {
+        return $$"""
+<section class="card">
+  <h2>Resumen del flow</h2>
+  <p><span class="badge {{(flow.Status == "ready_if_supervised" ? "approval" : "blocked")}}">{{Html(flow.Status)}}</span> {{Html(flow.Summary)}}</p>
+  <div class="metric"><span>Flow ID</span><strong>{{Html(flow.FlowId)}}</strong></div>
+  <div class="metric"><span>Failure recovery policy</span><strong>{{Html(flow.FailureRecoveryPolicy)}}</strong></div>
+  <div class="metric"><span>Step count</span><strong>{{flow.Steps.Count}}</strong></div>
+  <p><strong>Notas:</strong> {{Html(string.Join("; ", flow.Notes))}}</p>
+  <p class="notice">{{Html(dryRunOnly ? "Este dry-run no ejecuta pasos reales." : "Esta vista no ejecuta pasos reales; solo muestra el flujo y su politica de recuperacion.")}}</p>
+</section>
+<section class="card">
+  <h2>Pasos del flow</h2>
+  <table>
+    <thead><tr><th>Step</th><th>Accion</th><th>Target</th><th>Resolucion</th><th>Post-state esperado</th><th>Safety</th></tr></thead>
+    <tbody>{{ExecutorHarnessFlowRows(flow.Steps)}}</tbody>
+  </table>
+</section>
+""";
+    }
+
+    private static string ExecutorHarnessFlowRows(IReadOnlyList<ExecutorHarnessFlowStep> steps)
+    {
+        var builder = new StringBuilder();
+        foreach (var step in steps)
+        {
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(step.StepId)).Append("<br><small>").Append(Html(step.Title)).Append("</small></td>")
+                .Append("<td>").Append(Html(step.ActionKind)).Append("</td>")
+                .Append("<td>").Append(Html($"{step.TargetConstraints.TargetRef} / {step.TargetConstraints.ExpectedTargetName}")).Append("</td>")
+                .Append("<td>").Append(Html($"{step.ResolvedTarget.Status} - {step.ResolvedTarget.Message}")).Append("</td>")
+                .Append("<td>").Append(Html($"{step.ExpectedPostState.ExpectedTargetName}; click esperado={step.ExpectedPostState.ExpectedClickCount}")).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(step.SafetyDecision.Allowed ? "approval" : "blocked").Append("\">")
+                .Append(Html(step.SafetyDecision.Status)).Append("</span><br><small>")
+                .Append(Html(step.SafetyDecision.Blocked.Count == 0 ? "sin bloqueos" : string.Join("; ", step.SafetyDecision.Blocked)))
+                .Append("</small></td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string ExecutorHarnessReplayStepsBlock(ExecutorHarnessEvidenceRecord evidence)
+    {
+        if (evidence.Steps == null || evidence.Steps.Count == 0)
+            return "<p><strong>Steps:</strong> artifact anterior o single-step sin steps embebidos.</p>";
+
+        var builder = new StringBuilder();
+        builder.Append("<table><thead><tr><th>Step</th><th>Estado</th><th>Accion</th><th>Safety</th><th>Verificacion</th><th>Bloqueo</th></tr></thead><tbody>");
+        foreach (var step in evidence.Steps)
+        {
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(step.StepId)).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(step.Status == ExecutorHarnessStatuses.Succeeded ? "safe" : "blocked").Append("\">").Append(Html(step.Status)).Append("</span></td>")
+                .Append("<td>").Append(Html(step.ActionKind)).Append("<br><small>").Append(Html(step.CommandSummary)).Append("</small></td>")
+                .Append("<td>").Append(Html(step.SafetyDecision)).Append("</td>")
+                .Append("<td>").Append(Html(step.VerificationResult)).Append("</td>")
+                .Append("<td>").Append(Html(string.IsNullOrWhiteSpace(step.BlockedReason) ? "-" : step.BlockedReason)).Append("</td>")
+                .Append("</tr>");
+        }
+
+        builder.Append("</tbody></table>");
+        return "<h3>Steps embebidos</h3>" + builder;
     }
 
     private static string CurrentPlaybackStepBlock(PromotedFlowStep? step, SupervisedPlaybackSession session)

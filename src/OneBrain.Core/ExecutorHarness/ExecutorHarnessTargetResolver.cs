@@ -15,8 +15,7 @@ public static class ExecutorHarnessTargetResolver
             issues.Add("app profile is not the local Pilot harness");
         if (!string.Equals(target.WindowTitleContains, "ONE BRAIN Pilot", StringComparison.OrdinalIgnoreCase))
             issues.Add("window target is not the local Pilot harness");
-        if (!string.Equals(target.TargetRef, $"name:{ExecutorHarnessDemoFixture.TargetName}", StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(target.ExpectedTargetName, ExecutorHarnessDemoFixture.TargetName, StringComparison.OrdinalIgnoreCase))
+        if (!ExecutorHarnessDemoFixture.IsAllowlistedTargetIdentity(target.TargetRef, target.ExpectedTargetName))
             issues.Add("target identity is not the benign harness target");
         if (!target.ControlledSurface)
             issues.Add("target is not a controlled harness surface");

@@ -193,6 +193,20 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Flow_Dry_Run_Has_At_Least_Two_Steps_And_Does_Not_Execute()
+    {
+        var flow = ExecutorHarnessService.BuildFlowPlan();
+
+        Assert.AreEqual(ExecutorHarnessDemoFixture.FlowId, flow.FlowId);
+        Assert.IsTrue(flow.Steps.Count >= 2);
+        Assert.AreEqual("fail_closed_dry_run", flow.Status);
+        Assert.AreEqual("step-1", flow.Steps[0].StepId);
+        Assert.AreEqual("step-2", flow.Steps[1].StepId);
+        Assert.IsFalse(flow.Steps[0].SafetyDecision.Allowed);
+        StringAssert.Contains(flow.FailureRecoveryPolicy, "fail_closed");
+    }
+
+    [TestMethod]
     public void Harness_Executes_One_Benign_Click_And_Verifies_Post_Action()
     {
         var target = ExecutorHarnessDemoFixture.CreateTarget();
@@ -317,6 +331,27 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Flow_Evidence_Record_Serializes_Steps_And_Replay_Shows_Them()
+    {
+        var root = NewTempRoot();
+        var targets = ExecutorHarnessDemoFixture.CreateFlowTargets();
+        var request = ExecutorHarnessService.CreateApprovalRequest(targets[0]);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+        var flowResult = ExecutorHarnessService.ExecuteSupervisedFlow(targets, decision, new FakeHarnessExecutor(true));
+        var evidence = ExecutorHarnessService.ToEvidenceRecord(flowResult);
+        var write = ExecutorHarnessArtifactStore.Write(root, evidence);
+
+        var replay = ExecutorHarnessArtifactStore.ReadLatest(root);
+
+        Assert.IsTrue(write.Success, write.Error);
+        Assert.IsTrue(flowResult.Success);
+        Assert.IsNotNull(replay.Evidence);
+        Assert.AreEqual(2, replay.Evidence.Steps?.Count);
+        Assert.AreEqual(ExecutorHarnessDemoFixture.FlowId, replay.Evidence.FlowId);
+        Assert.AreEqual(ExecutorHarnessStatuses.Succeeded, replay.Evidence.FlowStatus);
+    }
+
+    [TestMethod]
     public void Harness_Evidence_Index_Returns_Empty_State_When_No_Evidence_Exists()
     {
         var root = NewTempRoot();
@@ -357,6 +392,24 @@ public sealed class ExecutorHarnessSupervisedClickTests
         Assert.AreEqual("/executor-harness/replay", item.TraceLink.ReplayPath);
         Assert.AreEqual("approved", item.TraceLink.ApprovalDecision);
         StringAssert.Contains(item.TraceLink.PostStateResult, "verified");
+    }
+
+    [TestMethod]
+    public void Harness_Evidence_Index_Shows_Step_Count_For_Flow_Evidence()
+    {
+        var root = NewTempRoot();
+        var targets = ExecutorHarnessDemoFixture.CreateFlowTargets();
+        var request = ExecutorHarnessService.CreateApprovalRequest(targets[0]);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+        var flowResult = ExecutorHarnessService.ExecuteSupervisedFlow(targets, decision, new FakeHarnessExecutor(true));
+        var write = ExecutorHarnessArtifactStore.Write(root, ExecutorHarnessService.ToEvidenceRecord(flowResult));
+
+        var index = ExecutorHarnessArtifactStore.ReadIndex(root);
+
+        Assert.IsTrue(write.Success, write.Error);
+        Assert.AreEqual(1, index.Items.Count);
+        Assert.AreEqual(2, index.Items[0].StepCount);
+        Assert.AreEqual(ExecutorHarnessStatuses.Succeeded, index.Items[0].FlowStatus);
     }
 
     [TestMethod]
@@ -401,6 +454,91 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Replay_Remains_Compatible_With_Old_Evidence_Without_Steps()
+    {
+        var root = NewTempRoot();
+        var evidence = new ExecutorHarnessEvidenceRecord(
+            EvidenceId: "legacy-evidence",
+            CreatedAtUtc: "2026-06-12T12:00:00Z",
+            HarnessId: ExecutorHarnessDemoFixture.HarnessId,
+            Status: ExecutorHarnessStatuses.Succeeded,
+            Message: "legacy single-step evidence",
+            ApprovalRequestId: "approval-legacy",
+            ApprovalDecisionId: "decision-legacy",
+            Verification: new ExecutorHarnessPostActionVerification(true, ExecutorHarnessStatuses.Succeeded, "ok", true, true, ["postAction.windowFound=true"]),
+            SafetyCounters: new RunSafetyCounters(1, 0, 0, 0, 0, 0),
+            Notes: ["legacy"]);
+        var write = ExecutorHarnessArtifactStore.Write(root, evidence);
+
+        var replay = ExecutorHarnessArtifactStore.ReadLatest(root);
+
+        Assert.IsTrue(write.Success, write.Error);
+        Assert.IsNotNull(replay.Evidence);
+        Assert.IsNull(replay.Evidence.Steps);
+        Assert.AreEqual("", replay.Evidence.FlowId ?? "");
+    }
+
+    [TestMethod]
+    public void Harness_Flow_Failure_Policy_Blocks_Continuation_When_Step_Fails()
+    {
+        var targets = ExecutorHarnessDemoFixture.CreateFlowTargets();
+        var request = ExecutorHarnessService.CreateApprovalRequest(targets[0]);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+
+        var result = ExecutorHarnessService.ExecuteSupervisedFlow(targets, decision, new ScriptedFlowHarnessExecutor(
+            new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+            {
+                [targets[0].ExpectedTargetName] = true,
+                [targets[1].ExpectedTargetName] = false
+            }));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(ExecutorHarnessStatuses.Blocked, result.Status);
+        Assert.IsFalse(result.RecoveryDecision.ContinueAllowed);
+        Assert.AreEqual("step-2", result.RecoveryDecision.FailedStepId);
+        Assert.AreEqual(2, result.Steps.Count);
+        StringAssert.Contains(result.Message, "post-action verification failed");
+    }
+
+    [TestMethod]
+    public void Harness_Flow_Fails_Closed_For_Invalid_Target_In_Step()
+    {
+        var targets = ExecutorHarnessDemoFixture.CreateFlowTargets().ToList();
+        targets[1] = targets[1] with
+        {
+            TargetRef = "name:Comprar",
+            ExpectedTargetName = "Comprar"
+        };
+        var request = ExecutorHarnessService.CreateApprovalRequest(targets[0]);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+
+        var result = ExecutorHarnessService.ExecuteSupervisedFlow(targets, decision, new FakeHarnessExecutor(true));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("step-2", result.RecoveryDecision.FailedStepId);
+        StringAssert.Contains(result.Message, "target identity is not the benign harness target");
+        Assert.AreEqual(1, result.RunHistory.SafetyCounters.Clicks);
+    }
+
+    [TestMethod]
+    public void Harness_Flow_Fails_Closed_For_Invalid_Action_Kind_In_Step()
+    {
+        var targets = ExecutorHarnessDemoFixture.CreateFlowTargets().ToList();
+        targets[1] = targets[1] with
+        {
+            ActionKind = ApprovalActionKinds.Purchase
+        };
+        var request = ExecutorHarnessService.CreateApprovalRequest(targets[0]);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+
+        var result = ExecutorHarnessService.ExecuteSupervisedFlow(targets, decision, new FakeHarnessExecutor(true));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("step-2", result.RecoveryDecision.FailedStepId);
+        StringAssert.Contains(result.Message, "action kind is outside benign harness scope");
+    }
+
+    [TestMethod]
     public void Pilot_Render_Shows_Executor_Harness_Safety_And_Evidence()
     {
         var target = ExecutorHarnessDemoFixture.CreateTarget();
@@ -414,6 +552,7 @@ public sealed class ExecutorHarnessSupervisedClickTests
 
         var html = PilotHomePageRenderer.RenderExecutorHarness(target, request);
         var indexHtml = PilotHomePageRenderer.RenderExecutorHarnessEvidenceIndex(index);
+        var flowHtml = PilotHomePageRenderer.RenderExecutorHarnessFlow(ExecutorHarnessService.BuildFlowPlan(), dryRunOnly: true);
         var home = PilotHomePageRenderer.Render();
 
         StringAssert.Contains(html, "Click benigno supervisado");
@@ -424,9 +563,13 @@ public sealed class ExecutorHarnessSupervisedClickTests
         StringAssert.Contains(html, "Dry-run explicable antes de ejecutar");
         StringAssert.Contains(html, "Ver replay de evidencia");
         StringAssert.Contains(html, "Ver indice de evidencia");
+        StringAssert.Contains(html, "Ver flow multi-step");
         StringAssert.Contains(indexHtml, "Indice de evidencia del executor harness");
         StringAssert.Contains(indexHtml, "read-only");
         StringAssert.Contains(indexHtml, "no ejecuta acciones");
+        StringAssert.Contains(flowHtml, "Flow multi-step");
+        StringAssert.Contains(flowHtml, "step-1");
+        StringAssert.Contains(flowHtml, "step-2");
         StringAssert.Contains(home, "href=\"/executor-harness\"");
     }
 
@@ -493,6 +636,53 @@ public sealed class ExecutorHarnessSupervisedClickTests
             return new ExecutorHarnessExecutorResult(
                 Success: success,
                 Message: success ? "fake benign click executed" : "fake click failed",
+                TargetFound: success,
+                Clicks: success ? 1 : 0,
+                Signals: signals,
+                TargetResolution: targetResolution,
+                PostActionState: postActionState);
+        }
+    }
+
+    private sealed class ScriptedFlowHarnessExecutor(
+        IReadOnlyDictionary<string, bool> outcomes) : IExecutorHarnessClickExecutor
+    {
+        public ExecutorHarnessExecutorResult Click(ExecutorHarnessClickCommand command)
+        {
+            var success = outcomes.TryGetValue(command.ExpectedTargetName, out var value) && value;
+            var targetResolution = ExecutorHarnessTargetResolver.ResolveCommand(command);
+            var signals = new List<string>
+            {
+                command.HarnessId,
+                command.TargetRef,
+                "fake executor; no real click in tests"
+            };
+            if (success)
+            {
+                signals.Add("postAction.windowFound=true");
+                signals.Add("postAction.targetVisible=true");
+                signals.Add($"postAction.targetName={command.ExpectedTargetName}");
+            }
+
+            var postActionState = new ExecutorHarnessPostActionState(
+                WindowFound: success,
+                TargetVisible: success,
+                TargetName: success ? command.ExpectedTargetName : "",
+                ObservedClicks: success ? 1 : 0,
+                ClickCountVerified: success,
+                Signals: success
+                    ?
+                    [
+                        "postAction.windowFound=true",
+                        "postAction.targetVisible=true",
+                        $"postAction.targetName={command.ExpectedTargetName}",
+                        "postAction.observedClicks=1"
+                    ]
+                    : ["postAction.windowFound=false", "postAction.targetVisible=false"]);
+
+            return new ExecutorHarnessExecutorResult(
+                Success: success,
+                Message: success ? "fake benign click executed" : "post-action verification failed",
                 TargetFound: success,
                 Clicks: success ? 1 : 0,
                 Signals: signals,

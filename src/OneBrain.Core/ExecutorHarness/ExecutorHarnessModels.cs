@@ -62,6 +62,23 @@ public sealed record ExecutorHarnessPostActionExpectation(
     int ExpectedClickCount,
     IReadOnlyList<string> RequiredSignals);
 
+public sealed record ExecutorHarnessFlowStep(
+    string StepId,
+    string Title,
+    string ActionKind,
+    ExecutorHarnessTargetConstraints TargetConstraints,
+    ExecutorHarnessTargetResolution ResolvedTarget,
+    ExecutorHarnessPostActionExpectation ExpectedPostState,
+    ExecutorHarnessSafetyMatrixEvaluation SafetyDecision);
+
+public sealed record ExecutorHarnessFlowPlan(
+    string FlowId,
+    string Status,
+    string Summary,
+    IReadOnlyList<ExecutorHarnessFlowStep> Steps,
+    string FailureRecoveryPolicy,
+    IReadOnlyList<string> Notes);
+
 public sealed record ExecutorHarnessInteractionContract(
     string ContractId,
     string CreatedAtUtc,
@@ -131,6 +148,40 @@ public sealed record ExecutorHarnessPostActionVerification(
     bool ClickObserved,
     IReadOnlyList<string> Signals);
 
+public sealed record ExecutorHarnessStepEvidence(
+    string StepId,
+    string Status,
+    string ActionKind,
+    ExecutorHarnessInteractionContract? InteractionContract,
+    ExecutorHarnessTargetResolution? TargetResolution,
+    string ApprovalDecision,
+    string SafetyDecision,
+    string CommandSummary,
+    ExecutorHarnessPreActionState? PreActionState,
+    ExecutorHarnessPostActionState? PostActionState,
+    string VerificationResult,
+    string BlockedReason,
+    IReadOnlyList<string> Notes);
+
+public sealed record ExecutorHarnessFailureRecoveryDecision(
+    string PolicyName,
+    bool ContinueAllowed,
+    string Status,
+    string Message,
+    string FailedStepId,
+    IReadOnlyList<string> Notes);
+
+public sealed record ExecutorHarnessFlowRunResult(
+    bool Success,
+    string FlowId,
+    string Status,
+    string Message,
+    IReadOnlyList<ExecutorHarnessStepEvidence> Steps,
+    ExecutorHarnessFailureRecoveryDecision RecoveryDecision,
+    RunHistoryRecord RunHistory,
+    IReadOnlyList<string> ArtifactPaths,
+    IReadOnlyList<string> Notes);
+
 public sealed record ExecutorHarnessRunResult(
     bool Success,
     string Status,
@@ -156,7 +207,11 @@ public sealed record ExecutorHarnessEvidenceRecord(
     ExecutorHarnessPostActionVerification Verification,
     RunSafetyCounters SafetyCounters,
     IReadOnlyList<string> Notes,
-    ExecutorHarnessInteractionContract? InteractionContract = null);
+    ExecutorHarnessInteractionContract? InteractionContract = null,
+    string? FlowId = null,
+    string? FlowStatus = null,
+    string? FailureRecoveryPolicy = null,
+    IReadOnlyList<ExecutorHarnessStepEvidence>? Steps = null);
 
 public sealed record ExecutorHarnessArtifactWriteResult
 {
@@ -211,6 +266,8 @@ public sealed record ExecutorHarnessEvidenceIndexItem(
     string ActionKind,
     string SafetyDecision,
     string VerificationResult,
+    int StepCount,
+    string FlowStatus,
     string LogicalPath,
     string ReplayPath,
     ExecutorHarnessRunTraceLink TraceLink);

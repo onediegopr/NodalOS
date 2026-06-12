@@ -6,6 +6,31 @@ namespace OneBrain.Core.ExecutorHarness;
 
 public static class ExecutorHarnessService
 {
+    public static ExecutorHarnessFlowPlan BuildFlowPlan(
+        ApprovalDecision? decision = null,
+        DateTimeOffset? now = null)
+    {
+        var steps = ExecutorHarnessDemoFixture.CreateFlowTargets()
+            .Select((target, index) => BuildFlowStep(target, $"step-{index + 1}", decision, now))
+            .ToList();
+
+        var blockedSteps = steps.Count(step => !step.SafetyDecision.Allowed);
+        return new ExecutorHarnessFlowPlan(
+            FlowId: ExecutorHarnessDemoFixture.FlowId,
+            Status: blockedSteps == 0 ? "ready_if_supervised" : "fail_closed_dry_run",
+            Summary: blockedSteps == 0
+                ? "Flow dry-run ready: all benign local steps are allowlisted, but execution still requires supervised approval."
+                : "Flow dry-run blocked: at least one benign local step remains fail-closed until approval and all safety checks pass.",
+            Steps: steps,
+            FailureRecoveryPolicy: "fail_closed_stop_on_first_failed_step",
+            Notes:
+            [
+                "multi-step harness flow is local-only and benign",
+                "no target is configurable from user input",
+                "if any step fails, ONE BRAIN stops and requires human intervention"
+            ]);
+    }
+
     public static ExecutorHarnessDryRunExplanation BuildDryRunExplanation(
         ExecutorHarnessTarget target,
         ApprovalDecision? decision = null,
@@ -47,6 +72,77 @@ public static class ExecutorHarnessService
                 "dry-run does not click",
                 "dry-run does not write runtime evidence"
             ]);
+    }
+
+    public static ExecutorHarnessFlowRunResult ExecuteSupervisedFlow(
+        IReadOnlyList<ExecutorHarnessTarget> targets,
+        ApprovalDecision? decision,
+        IExecutorHarnessClickExecutor executor,
+        DateTimeOffset? now = null)
+    {
+        var timestamp = Timestamp(now);
+        var stepEvidence = new List<ExecutorHarnessStepEvidence>();
+        var flowId = ExecutorHarnessDemoFixture.FlowId;
+
+        foreach (var (target, index) in targets.Select((target, index) => (target, index)))
+        {
+            var stepId = $"step-{index + 1}";
+            var approval = CreateApprovalRequest(target, now);
+            var contract = BuildInteractionContract(target, approval, decision, dryRunOnly: false, now: now);
+            var commandSummary = $"{target.ActionKind} -> {target.TargetRef}";
+
+            if (!contract.SafetyMatrix.Allowed || !contract.ApprovalState.ExecutionAllowed)
+            {
+                var blockedReason = contract.SafetyMatrix.Blocked.Count == 0
+                    ? "approval is required before executor can run"
+                    : string.Join("; ", contract.SafetyMatrix.Blocked);
+
+                stepEvidence.Add(new ExecutorHarnessStepEvidence(
+                    StepId: stepId,
+                    Status: ExecutorHarnessStatuses.Blocked,
+                    ActionKind: target.ActionKind,
+                    InteractionContract: contract,
+                    TargetResolution: contract.ResolvedTarget,
+                    ApprovalDecision: decision?.Decision ?? "missing",
+                    SafetyDecision: contract.SafetyMatrix.Status,
+                    CommandSummary: commandSummary,
+                    PreActionState: contract.PreActionState,
+                    PostActionState: null,
+                    VerificationResult: "not_executed",
+                    BlockedReason: blockedReason,
+                    Notes:
+                    [
+                        "flow stopped before executing this step",
+                        "failure recovery policy requires human intervention"
+                    ]));
+
+                return BuildFlowFailureResult(flowId, stepEvidence, stepId, blockedReason, timestamp);
+            }
+
+            var result = ExecuteSupervisedClick(target, decision, executor, now);
+            var postActionState = BuildPostActionStateFromVerification(target, result.Verification, result.TargetResolution);
+            stepEvidence.Add(new ExecutorHarnessStepEvidence(
+                StepId: stepId,
+                Status: result.Status,
+                ActionKind: target.ActionKind,
+                InteractionContract: contract,
+                TargetResolution: result.TargetResolution,
+                ApprovalDecision: decision?.Decision ?? "missing",
+                SafetyDecision: result.SafetyMatrix?.Status ?? ExecutorHarnessStatuses.Blocked,
+                CommandSummary: commandSummary,
+                PreActionState: contract.PreActionState,
+                PostActionState: postActionState,
+                VerificationResult: result.Verification.Status,
+                BlockedReason: result.Success ? "" : result.Message,
+                Notes: result.Evidence));
+
+            if (!result.Success)
+            {
+                return BuildFlowFailureResult(flowId, stepEvidence, stepId, result.Message, timestamp);
+            }
+        }
+
+        return BuildFlowSuccessResult(flowId, stepEvidence, timestamp);
     }
 
     public static ExecutorHarnessInteractionContract BuildInteractionContract(
@@ -221,6 +317,49 @@ public static class ExecutorHarnessService
             InteractionContract: contract);
     }
 
+    public static ExecutorHarnessEvidenceRecord ToEvidenceRecord(ExecutorHarnessFlowRunResult result, DateTimeOffset? now = null)
+    {
+        var timestamp = Timestamp(now);
+        var firstStep = result.Steps.FirstOrDefault();
+        var verification = firstStep?.VerificationResult == ExecutorHarnessStatuses.Succeeded && result.Success
+            ? new ExecutorHarnessPostActionVerification(
+                Success: true,
+                Status: ExecutorHarnessStatuses.Succeeded,
+                Message: "multi-step harness flow verified",
+                TargetFound: true,
+                ClickObserved: true,
+                Signals: result.Steps.SelectMany(step => step.Notes).ToList())
+            : new ExecutorHarnessPostActionVerification(
+                Success: false,
+                Status: result.Status,
+                Message: result.Message,
+                TargetFound: false,
+                ClickObserved: false,
+                Signals: result.Steps.SelectMany(step => step.Notes).ToList());
+
+        return new ExecutorHarnessEvidenceRecord(
+            EvidenceId: $"evidence-{Guid.NewGuid():N}",
+            CreatedAtUtc: timestamp,
+            HarnessId: ExecutorHarnessDemoFixture.HarnessId,
+            Status: result.Status,
+            Message: SensitiveTextSanitizer.Sanitize(result.Message),
+            ApprovalRequestId: firstStep?.InteractionContract?.ApprovalState.ApprovalRequestId ?? "",
+            ApprovalDecisionId: firstStep?.InteractionContract?.ApprovalState.ApprovalDecisionId,
+            Verification: verification,
+            SafetyCounters: result.RunHistory.SafetyCounters,
+            Notes:
+            [
+                "multi-step harness flow evidence",
+                "step-level evidence is embedded when available",
+                "failure recovery policy is fail-closed stop on first failed step"
+            ],
+            InteractionContract: firstStep?.InteractionContract,
+            FlowId: result.FlowId,
+            FlowStatus: result.Status,
+            FailureRecoveryPolicy: result.RecoveryDecision.PolicyName,
+            Steps: result.Steps);
+    }
+
     private static ExecutorHarnessPostActionVerification VerifyPostAction(ExecutorHarnessTarget target, ExecutorHarnessExecutorResult executorResult)
     {
         var postActionState = BuildPostActionState(executorResult);
@@ -291,6 +430,156 @@ public static class ExecutorHarnessService
             ObservedClicks: executorResult.Clicks,
             ClickCountVerified: executorResult.Clicks == 1,
             Signals: signals.Where(signal => signal.StartsWith("postAction.", StringComparison.OrdinalIgnoreCase)).ToList());
+    }
+
+    private static ExecutorHarnessPostActionState BuildPostActionStateFromVerification(
+        ExecutorHarnessTarget target,
+        ExecutorHarnessPostActionVerification verification,
+        ExecutorHarnessTargetResolution? targetResolution)
+    {
+        var targetName = verification.TargetFound ? target.ExpectedTargetName : "";
+        var windowFound = targetResolution?.Success == true;
+        return new ExecutorHarnessPostActionState(
+            WindowFound: windowFound,
+            TargetVisible: verification.TargetFound,
+            TargetName: targetName,
+            ObservedClicks: verification.ClickObserved ? 1 : 0,
+            ClickCountVerified: verification.ClickObserved,
+            Signals: verification.Signals.Where(signal => signal.StartsWith("postAction.", StringComparison.OrdinalIgnoreCase)).ToList());
+    }
+
+    private static ExecutorHarnessFlowStep BuildFlowStep(
+        ExecutorHarnessTarget target,
+        string stepId,
+        ApprovalDecision? decision,
+        DateTimeOffset? now)
+    {
+        var approval = CreateApprovalRequest(target, now);
+        var contract = BuildInteractionContract(target, approval, decision, dryRunOnly: true, now: now);
+        return new ExecutorHarnessFlowStep(
+            StepId: stepId,
+            Title: target.Title,
+            ActionKind: target.ActionKind,
+            TargetConstraints: contract.TargetConstraints,
+            ResolvedTarget: contract.ResolvedTarget,
+            ExpectedPostState: contract.PostActionExpectation,
+            SafetyDecision: contract.SafetyMatrix);
+    }
+
+    private static ExecutorHarnessFlowRunResult BuildFlowFailureResult(
+        string flowId,
+        IReadOnlyList<ExecutorHarnessStepEvidence> steps,
+        string failedStepId,
+        string reason,
+        string timestamp)
+    {
+        var verifiedStepCount = steps.Count(step => step.VerificationResult == ExecutorHarnessStatuses.Succeeded);
+        var recovery = new ExecutorHarnessFailureRecoveryDecision(
+            PolicyName: "fail_closed_stop_on_first_failed_step",
+            ContinueAllowed: false,
+            Status: ExecutorHarnessStatuses.Blocked,
+            Message: "Flow stopped after the first failed or blocked step.",
+            FailedStepId: failedStepId,
+            Notes:
+            [
+                "no further step may continue automatically",
+                "human intervention is required before retrying the flow"
+            ]);
+
+        return new ExecutorHarnessFlowRunResult(
+            Success: false,
+            FlowId: flowId,
+            Status: ExecutorHarnessStatuses.Blocked,
+            Message: reason,
+            Steps: steps,
+            RecoveryDecision: recovery,
+            RunHistory: new RunHistoryRecord(
+                RunId: $"run-{flowId}-{Guid.NewGuid():N}",
+                StartedAtUtc: timestamp,
+                EndedAtUtc: timestamp,
+                Status: RunHistoryStatuses.Blocked,
+                Source: RunHistorySources.Pilot,
+                RecipeId: null,
+                CandidateFlowId: flowId,
+                ApprovalRequestId: steps.LastOrDefault()?.InteractionContract?.ApprovalState.ApprovalRequestId,
+                ApprovalDecisionId: steps.LastOrDefault()?.InteractionContract?.ApprovalState.ApprovalDecisionId,
+                RecordingSessionId: null,
+                TimelineId: null,
+                ConfidenceId: null,
+                AiRoutingDecisionId: null,
+                ExitCode: 1,
+                SafetyCounters: new RunSafetyCounters(verifiedStepCount, 0, 0, 0, 0, 0),
+                ArtifactPaths: [$"artifacts/executor-harness/{flowId}-evidence.json"],
+                ErrorSummary: SensitiveTextSanitizer.Sanitize(reason),
+                Notes:
+                [
+                    "multi-step harness flow blocked",
+                    "failure recovery policy stopped the flow",
+                    "0 cookies, 0 login, 0 cart, 0 purchase, 0 payment"
+                ]),
+            ArtifactPaths: [$"artifacts/executor-harness/{flowId}-evidence.json"],
+            Notes:
+            [
+                "flow did not continue after the failed step",
+                "manual review is required"
+            ]);
+    }
+
+    private static ExecutorHarnessFlowRunResult BuildFlowSuccessResult(
+        string flowId,
+        IReadOnlyList<ExecutorHarnessStepEvidence> steps,
+        string timestamp)
+    {
+        var clickCount = steps.Count(step => step.VerificationResult == ExecutorHarnessStatuses.Succeeded);
+        var recovery = new ExecutorHarnessFailureRecoveryDecision(
+            PolicyName: "fail_closed_stop_on_first_failed_step",
+            ContinueAllowed: false,
+            Status: ExecutorHarnessStatuses.Succeeded,
+            Message: "Flow completed without triggering recovery.",
+            FailedStepId: "",
+            Notes:
+            [
+                "flow finished with all benign local steps verified",
+                "no automatic continuation policy is needed after success"
+            ]);
+
+        return new ExecutorHarnessFlowRunResult(
+            Success: true,
+            FlowId: flowId,
+            Status: ExecutorHarnessStatuses.Succeeded,
+            Message: "multi-step harness flow completed",
+            Steps: steps,
+            RecoveryDecision: recovery,
+            RunHistory: new RunHistoryRecord(
+                RunId: $"run-{flowId}-{Guid.NewGuid():N}",
+                StartedAtUtc: timestamp,
+                EndedAtUtc: timestamp,
+                Status: RunHistoryStatuses.Succeeded,
+                Source: RunHistorySources.Pilot,
+                RecipeId: null,
+                CandidateFlowId: flowId,
+                ApprovalRequestId: steps.FirstOrDefault()?.InteractionContract?.ApprovalState.ApprovalRequestId,
+                ApprovalDecisionId: steps.FirstOrDefault()?.InteractionContract?.ApprovalState.ApprovalDecisionId,
+                RecordingSessionId: null,
+                TimelineId: null,
+                ConfidenceId: null,
+                AiRoutingDecisionId: null,
+                ExitCode: 0,
+                SafetyCounters: new RunSafetyCounters(clickCount, 0, 0, 0, 0, 0),
+                ArtifactPaths: [$"artifacts/executor-harness/{flowId}-evidence.json"],
+                ErrorSummary: "",
+                Notes:
+                [
+                    "multi-step harness flow succeeded",
+                    $"{clickCount} benign local harness steps verified",
+                    "0 cookies, 0 login, 0 cart, 0 purchase, 0 payment"
+                ]),
+            ArtifactPaths: [$"artifacts/executor-harness/{flowId}-evidence.json"],
+            Notes:
+            [
+                "all steps were verified before completion",
+                "flow remains local-only and benign"
+            ]);
     }
 
     private static ExecutorHarnessRunResult BuildResult(
