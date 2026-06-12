@@ -18,6 +18,8 @@ public sealed class PilotShellTests
         StringAssert.Contains(html, "Generar reporte Markdown");
         StringAssert.Contains(html, "Generar reporte HTML");
         StringAssert.Contains(html, "Ver safety guarantees");
+        StringAssert.Contains(html, "Start recording demo/shadow");
+        StringAssert.Contains(html, "/recording/demo");
     }
 
     [TestMethod]

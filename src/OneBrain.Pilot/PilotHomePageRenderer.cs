@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using OneBrain.Core.Recording;
 
 namespace OneBrain.Pilot;
 
@@ -159,6 +160,7 @@ public static class PilotHomePageRenderer
           {{QuickAction("Generar reporte Markdown", "quiero reporte markdown demo")}}
           {{QuickAction("Generar reporte HTML", "genera html demo")}}
           {{QuickAction("Ver safety guarantees", "ver safety guarantees")}}
+          <a class="button ghost" href="/recording/demo">Start recording demo/shadow</a>
         </div>
       </div>
     </section>
@@ -187,6 +189,12 @@ public static class PilotHomePageRenderer
         {{BlockedList(plan)}}
       </div>
 
+      <div class="card">
+        <h2>Observe and learn</h2>
+        <p>Recording/shadow mode v0 is fixture-backed in Pilot. It shows candidate timeline and human annotations without real playback or sensitive actions.</p>
+        <p><a class="button ghost" href="/recording/demo">Open recording timeline demo</a></p>
+      </div>
+
       <div class="card full">
         <h2>Execution result</h2>
         <p>Exit code: <strong>{{Html(result?.ExitCode?.ToString() ?? "-")}}</strong></p>
@@ -200,6 +208,126 @@ public static class PilotHomePageRenderer
 </body>
 </html>
 """;
+    }
+
+    public static string RenderRecordingDemo(RecipeTimeline timeline)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Recording Shadow Demo</title>
+  <style>
+    :root { --ink: #17211a; --muted: #5c6b60; --paper: #f5f1e7; --panel: #fffaf0; --line: #d7cdb7; --accent: #e66b2d; --safe: #226b45; --risk: #8a352d; }
+    body { margin: 0; color: var(--ink); font-family: "Aptos", "Segoe UI", sans-serif; background: linear-gradient(135deg, #f7f2df, #e4eadc); }
+    main { max-width: 1120px; margin: 0 auto; padding: 40px 24px; }
+    .card { background: rgba(255,250,240,.9); border: 1px solid var(--line); border-radius: 26px; padding: 24px; box-shadow: 0 20px 70px rgba(43,32,16,.14); margin-bottom: 18px; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 6vw, 72px); line-height: .95; margin: 8px 0 12px; letter-spacing: -.045em; }
+    h2 { margin-top: 0; }
+    p, li { color: var(--muted); line-height: 1.5; }
+    .badge { display: inline-block; border-radius: 999px; padding: 5px 10px; font-weight: 800; font-size: 12px; background: #eadfca; }
+    .safe { color: var(--safe); background: #dcebdd; }
+    .risk { color: var(--risk); background: #f6e7e6; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 18px; overflow: hidden; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; background: #efe6d4; }
+    textarea, select, input { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 10px; background: #fffdf6; font: inherit; }
+    button, .button { border: 0; border-radius: 999px; padding: 11px 16px; color: #fffaf0; background: var(--ink); font-weight: 800; text-decoration: none; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">shadow mode</span> <span class="badge safe">no playback</span> <span class="badge safe">no clicks</span></p>
+      <h1>Recording timeline demo</h1>
+      <p>This is a local fixture/mock for the first observe-and-learn UX. It does not capture secrets, execute actions, replay actions, or generate executable recipes.</p>
+      <p><a class="button" href="/">Back to Pilot</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Timeline</h2>
+      <table>
+        <thead>
+          <tr><th>Step</th><th>Offset</th><th>Event</th><th>Window/app</th><th>Element</th><th>Confidence</th><th>Suggested label</th><th>Risk</th><th>Approval</th></tr>
+        </thead>
+        <tbody>
+          {{TimelineRows(timeline)}}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Human annotations</h2>
+      <div class="grid">
+        <form method="post" action="/recording/demo/annotate">
+          <label>Step number<input name="stepNumber" value="1"></label>
+          <label>Annotation type
+            <select name="annotationType">
+              <option value="search_customer">este bloque es buscar cliente</option>
+              <option value="prepare_message">este bloque es preparar mensaje</option>
+              <option value="requires_approval">este paso requiere aprobacion</option>
+              <option value="variable">este dato debe ser variable</option>
+              <option value="ignore">este paso se puede ignorar</option>
+              <option value="sensitive">este paso es sensible</option>
+              <option value="free_note">nota libre</option>
+            </select>
+          </label>
+          <label>Note<textarea name="text">nota libre</textarea></label>
+          <p><button type="submit">Preview annotation</button></p>
+        </form>
+        <div>
+          <h3>Current fixture annotations</h3>
+          <ul>{{AnnotationRows(timeline)}}</ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    private static string TimelineRows(RecipeTimeline timeline)
+    {
+        var builder = new StringBuilder();
+        foreach (var step in timeline.Steps)
+        {
+            var riskClass = step.RiskLevel == "high" ? "risk" : "safe";
+            builder.Append("<tr>")
+                .Append("<td>").Append(step.StepNumber).Append("</td>")
+                .Append("<td>").Append(step.OffsetMs).Append("ms</td>")
+                .Append("<td>").Append(Html(step.EventType)).Append("</td>")
+                .Append("<td>").Append(Html(step.WindowOrApp)).Append("</td>")
+                .Append("<td>").Append(Html(step.ElementSummary)).Append("</td>")
+                .Append("<td>").Append(step.Confidence.ToString("0.00")).Append("</td>")
+                .Append("<td>").Append(Html(step.SuggestedActionLabel)).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(riskClass).Append("\">").Append(Html(step.RiskLevel)).Append("</span></td>")
+                .Append("<td>").Append(step.RequiresApproval ? "true" : "false").Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string AnnotationRows(RecipeTimeline timeline)
+    {
+        var builder = new StringBuilder();
+        foreach (var annotation in timeline.Annotations)
+        {
+            builder.Append("<li>")
+                .Append(Html(annotation.AnnotationType))
+                .Append(" step ")
+                .Append(Html(annotation.StepNumber?.ToString() ?? "-"))
+                .Append(": ")
+                .Append(Html(annotation.Text))
+                .Append("</li>");
+        }
+
+        return builder.Length == 0 ? "<li>No annotations yet.</li>" : builder.ToString();
     }
 
     private static string QuickAction(string label, string task)

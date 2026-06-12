@@ -1,4 +1,5 @@
 using OneBrain.Pilot;
+using OneBrain.Core.Recording;
 
 var root = GetArg(args, "--root") ?? Directory.GetCurrentDirectory();
 var dotnet = GetArg(args, "--dotnet")
@@ -37,6 +38,28 @@ app.MapGet("/api/intent", (string? task) =>
 });
 
 app.MapGet("/api/safety", () => Results.Json(PilotSafetySummary.ZeroReadOnly));
+
+app.MapGet("/recording/demo", () =>
+{
+    var timeline = RecordingDemoFixture.CreateTimeline();
+    return Results.Content(PilotHomePageRenderer.RenderRecordingDemo(timeline), "text/html");
+});
+
+app.MapPost("/recording/demo/annotate", async (HttpContext context) =>
+{
+    var form = await context.Request.ReadFormAsync();
+    var stepNumber = int.TryParse(form["stepNumber"].FirstOrDefault(), out var parsedStep) ? parsedStep : (int?)null;
+    var annotationType = form["annotationType"].FirstOrDefault() ?? "free_note";
+    var text = form["text"].FirstOrDefault() ?? "";
+
+    var baseTimeline = RecordingDemoFixture.CreateTimeline();
+    var annotations = baseTimeline.Annotations
+        .Concat([HumanAnnotationBuilder.Create(stepNumber, annotationType, text)])
+        .ToList();
+    var timeline = RecipeTimelineBuilder.Build(RecordingDemoFixture.CreateSession(), annotations);
+
+    return Results.Content(PilotHomePageRenderer.RenderRecordingDemo(timeline), "text/html");
+});
 
 app.Run();
 
