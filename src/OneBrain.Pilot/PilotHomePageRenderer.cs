@@ -1,9 +1,11 @@
 using System.Net;
 using System.Text;
 using OneBrain.Core.AI;
+using OneBrain.Core.AppProfiles;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Confidence;
 using OneBrain.Core.History;
+using OneBrain.Core.Memory;
 using OneBrain.Core.Recording;
 using OneBrain.Core.Recipes.Editing;
 
@@ -172,6 +174,8 @@ public static class PilotHomePageRenderer
           <a class="button ghost" href="/ai/audit">AI audit log</a>
           <a class="button ghost" href="/recipes">Recipe editor</a>
           <a class="button ghost" href="/variables">Variable manager</a>
+          <a class="button ghost" href="/memory">Process memory</a>
+          <a class="button ghost" href="/app-profiles">App profiles</a>
         </div>
       </div>
     </section>
@@ -228,6 +232,18 @@ public static class PilotHomePageRenderer
         <h2>Recipes and variables</h2>
         <p>Inspect allowlisted recipes, create safe metadata drafts, review variables, and run linter checks before any promotion. Stable recipe JSON is not overwritten from Pilot.</p>
         <p><a class="button ghost" href="/recipes">Open recipe editor</a> <a class="button ghost" href="/variables">Open variable manager</a></p>
+      </div>
+
+      <div class="card">
+        <h2>Process memory</h2>
+        <p>Search learned/observed processes by text, tags, app, domain, status, and confidence. Retrieval is deterministic and suggestions never execute actions.</p>
+        <p><a class="button ghost" href="/memory">Open process memory</a></p>
+      </div>
+
+      <div class="card">
+        <h2>App profiles</h2>
+        <p>Inspect safe app/site profiles, capabilities, risk policy, and external-fragile diagnostics. Profiles do not enable clicks, login, cookies, purchase, or payment by default.</p>
+        <p><a class="button ghost" href="/app-profiles">Open app profiles</a></p>
       </div>
 
       <div class="card full">
@@ -717,6 +733,205 @@ public static class PilotHomePageRenderer
 """;
     }
 
+    public static string RenderProcessMemory(IReadOnlyList<ProcessMemoryEntry> entries, WorkflowRetrievalResult retrieval)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Process Memory</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">retrieval only</span> <span class="badge safe">no execution</span> <span class="badge safe">no embeddings</span> <span class="badge safe">no OpenAI call</span></p>
+      <h1>Process memory</h1>
+      <p>Search learned or observed processes by text, tag, app/site, domain, status, and confidence. This v0 uses deterministic scoring only and never executes a workflow.</p>
+      <p><a class="button" href="/">Back to Pilot</a> <a class="button" href="/app-profiles">App profiles</a></p>
+      <form method="get" action="/memory/search" class="grid">
+        <label>Text<input name="q" value="{{Html(retrieval.Query.Text)}}"></label>
+        <label>Tag<input name="tag" value="{{Html(string.Join(',', retrieval.Query.Tags ?? []))}}"></label>
+        <label>App/site<input name="appOrSite" value="{{Html(retrieval.Query.AppOrSite)}}"></label>
+        <label>Domain<input name="domain" value="{{Html(retrieval.Query.Domain)}}"></label>
+        <label>Status<input name="status" value="{{Html(retrieval.Query.Status)}}"></label>
+        <p><button type="submit">Search memory</button></p>
+      </form>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Memory entries</h2>
+        <table>
+          <thead><tr><th>Process</th><th>Status</th><th>App/site</th><th>Domain</th><th>Risk</th><th>Confidence</th><th>Tags</th></tr></thead>
+          <tbody>{{ProcessMemoryRows(entries)}}</tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Retrieval matches</h2>
+        <table>
+          <thead><tr><th>Match</th><th>Score</th><th>Safe</th><th>Review</th><th>Links</th><th>Reasons</th></tr></thead>
+          <tbody>{{WorkflowRetrievalRows(retrieval.Matches)}}</tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderProcessMemoryDetail(ProcessMemoryEntry? entry)
+    {
+        if (entry == null)
+            return RenderProcessMemory([], new WorkflowRetrievalResult(new WorkflowRetrievalQuery(), []));
+
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Process Memory Detail</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">memory detail</span> <span class="badge safe">no execution</span> <span class="badge warn">human review for risky suggestions</span></p>
+      <h1>{{Html(entry.Title)}}</h1>
+      <p>{{Html(entry.Description)}}</p>
+      <p><a class="button" href="/memory">Back to memory</a></p>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Metadata</h2>
+        <div class="metric"><span>ID</span><strong>{{Html(entry.Id)}}</strong></div>
+        <div class="metric"><span>Status</span><strong>{{Html(entry.Status)}}</strong></div>
+        <div class="metric"><span>Source</span><strong>{{Html(entry.Source)}}</strong></div>
+        <div class="metric"><span>App/site</span><strong>{{Html(entry.AppOrSite)}}</strong></div>
+        <div class="metric"><span>Domain</span><strong>{{Html(entry.Domain)}}</strong></div>
+        <div class="metric"><span>Risk / confidence</span><strong>{{Html(entry.RiskLevel)}} / {{entry.ConfidenceScore}}</strong></div>
+      </div>
+      <div class="card">
+        <h2>Links</h2>
+        <ul>{{ProcessMemoryLinkRows(entry)}}</ul>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Step summary</h2>
+        <ul>{{ListRows(entry.Summary.StepSummaries)}}</ul>
+      </div>
+      <div class="card">
+        <h2>Evidence</h2>
+        <ul>{{ProcessMemoryEvidenceRows(entry)}}</ul>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderAppProfiles(IReadOnlyList<AppProfile> profiles)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - App Profiles</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">profile manager v0</span> <span class="badge safe">no execution</span> <span class="badge risk">login/cookies/payment/purchase blocked</span></p>
+      <h1>App profile manager</h1>
+      <p>Inspect safe app/site profile fixtures and runtime profile artifacts. Profile changes do not enable unsafe actions by default and external-fragile profiles require diagnosticAllowed.</p>
+      <p><a class="button" href="/">Back to Pilot</a> <a class="button" href="/memory">Process memory</a></p>
+    </section>
+    <section class="card">
+      <h2>Profiles</h2>
+      <table>
+        <thead><tr><th>Profile</th><th>Kind</th><th>Status</th><th>Domain/process</th><th>Capabilities</th><th>Policy</th><th>Validation</th></tr></thead>
+        <tbody>{{AppProfileRows(profiles)}}</tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderAppProfileDetail(AppProfile? profile)
+    {
+        if (profile == null)
+            return RenderAppProfiles([]);
+
+        var validation = AppProfilePolicy.Validate(profile);
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - App Profile Detail</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">read-only by default</span> <span class="badge safe">diagnostic policy visible</span> <span class="badge risk">unsafe actions blocked</span></p>
+      <h1>{{Html(profile.Name)}}</h1>
+      <p><a class="button" href="/app-profiles">Back to app profiles</a></p>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Profile</h2>
+        <div class="metric"><span>ID</span><strong>{{Html(profile.Id)}}</strong></div>
+        <div class="metric"><span>Kind/status</span><strong>{{Html(profile.Kind)}} / {{Html(profile.Status)}}</strong></div>
+        <div class="metric"><span>Domain</span><strong>{{Html(profile.SiteDomain ?? "-")}}</strong></div>
+        <div class="metric"><span>Process</span><strong>{{Html(profile.ProcessName ?? "-")}}</strong></div>
+        <div class="metric"><span>Version</span><strong>{{profile.Version.Version}} / {{Html(profile.Version.Status)}}</strong></div>
+      </div>
+      <div class="card">
+        <h2>Risk policy</h2>
+        <ul>
+          <li>Read-only by default: {{profile.RiskPolicy.ReadOnlyByDefault}}</li>
+          <li>Diagnostic allowed: {{profile.RiskPolicy.DiagnosticAllowed}}</li>
+          <li>Submit requires approval: {{profile.RiskPolicy.RequiresApprovalForSubmit}}</li>
+          <li>Blocks login: {{profile.RiskPolicy.BlocksLogin}}</li>
+          <li>Blocks cookies: {{profile.RiskPolicy.BlocksCookies}}</li>
+          <li>Blocks payment: {{profile.RiskPolicy.BlocksPayment}}</li>
+          <li>Blocks purchase: {{profile.RiskPolicy.BlocksPurchase}}</li>
+          <li>Allows safe click: {{profile.RiskPolicy.AllowsSafeClick}}</li>
+        </ul>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="card">
+        <h2>Capabilities</h2>
+        <ul>{{ListRows(profile.SupportedCapabilities)}}</ul>
+      </div>
+      <div class="card">
+        <h2>Validation</h2>
+        <p>Can activate: <strong>{{validation.CanActivate}}</strong> / Requires validation before promotion: <strong>{{validation.RequiresValidationBeforePromotion}}</strong></p>
+        <table>
+          <thead><tr><th>Severity</th><th>Code</th><th>Message</th><th>Remediation</th></tr></thead>
+          <tbody>{{AppProfileIssueRows(validation.Issues)}}</tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
     private static string TimelineRows(RecipeTimeline timeline)
     {
         var builder = new StringBuilder();
@@ -998,6 +1213,139 @@ wouldCallProvider={result.Decision.WouldCallProvider}
         return builder.ToString();
     }
 
+    private static string ProcessMemoryRows(IReadOnlyList<ProcessMemoryEntry> entries)
+    {
+        if (entries.Count == 0)
+            return "<tr><td colspan=\"7\">No process memory entries found.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var entry in entries)
+        {
+            var statusClass = entry.Status is ProcessMemoryStatuses.Stable or ProcessMemoryStatuses.Supervised ? "safe" :
+                entry.Status is ProcessMemoryStatuses.Rejected or ProcessMemoryStatuses.Archived ? "risk" : "warn";
+            builder.Append("<tr>")
+                .Append("<td><a href=\"/memory/").Append(Html(entry.Id)).Append("\">").Append(Html(entry.Title)).Append("</a><br><small>").Append(Html(entry.Id)).Append("</small></td>")
+                .Append("<td><span class=\"badge ").Append(statusClass).Append("\">").Append(Html(entry.Status)).Append("</span></td>")
+                .Append("<td>").Append(Html(entry.AppOrSite)).Append("</td>")
+                .Append("<td>").Append(Html(entry.Domain)).Append("</td>")
+                .Append("<td>").Append(Html(entry.RiskLevel)).Append("</td>")
+                .Append("<td>").Append(entry.ConfidenceScore).Append("</td>")
+                .Append("<td>").Append(Html(string.Join(", ", entry.Tags))).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string WorkflowRetrievalRows(IReadOnlyList<WorkflowRetrievalMatch> matches)
+    {
+        if (matches.Count == 0)
+            return "<tr><td colspan=\"6\">No retrieval matches yet.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var match in matches)
+        {
+            var safeClass = match.SafeToSuggest ? "safe" : "risk";
+            builder.Append("<tr>")
+                .Append("<td><a href=\"/memory/").Append(Html(match.ProcessMemoryId)).Append("\">").Append(Html(match.Title)).Append("</a><br><small>").Append(Html(match.ProcessMemoryId)).Append("</small></td>")
+                .Append("<td>").Append(match.Score.ToString("0.00")).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(safeClass).Append("\">").Append(match.SafeToSuggest ? "safe" : "not safe").Append("</span></td>")
+                .Append("<td>").Append(match.RequiresHumanReview ? "true" : "false").Append("</td>")
+                .Append("<td>").Append(Html(FirstNonEmpty(match.RecipeId, match.CandidateFlowId, match.TimelineId, "-"))).Append("</td>")
+                .Append("<td>").Append(Html(string.Join("; ", match.Reasons))).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string ProcessMemoryLinkRows(ProcessMemoryEntry entry)
+    {
+        var rows = new[]
+        {
+            ("recordingSessionId", entry.Links.RecordingSessionId),
+            ("timelineId", entry.Links.TimelineId),
+            ("candidateFlowId", entry.Links.CandidateFlowId),
+            ("recipeDraftId", entry.Links.RecipeDraftId),
+            ("recipeId", entry.Links.RecipeId),
+            ("approvalRequestId", entry.Links.ApprovalRequestId),
+            ("approvalDecisionId", entry.Links.ApprovalDecisionId),
+            ("runId", entry.Links.RunId),
+            ("aiAuditId", entry.Links.AiAuditId),
+            ("confidenceId", entry.Links.ConfidenceId)
+        };
+
+        var builder = new StringBuilder();
+        foreach (var (name, value) in rows.Where(row => !string.IsNullOrWhiteSpace(row.Item2)))
+            builder.Append("<li>").Append(Html(name)).Append(": ").Append(Html(value)).Append("</li>");
+
+        return builder.Length == 0 ? "<li>No linked artifacts.</li>" : builder.ToString();
+    }
+
+    private static string ProcessMemoryEvidenceRows(ProcessMemoryEntry entry)
+    {
+        var builder = new StringBuilder();
+        foreach (var link in entry.EvidenceLinks)
+            builder.Append("<li>").Append(Html(link.Kind)).Append(": <span class=\"path\">").Append(Html(link.RelativePath)).Append("</span> - ").Append(Html(link.Label)).Append("</li>");
+        foreach (var path in entry.ArtifactPaths)
+            builder.Append("<li>artifact: <span class=\"path\">").Append(Html(path)).Append("</span></li>");
+
+        return builder.Length == 0 ? "<li>No evidence links.</li>" : builder.ToString();
+    }
+
+    private static string AppProfileRows(IReadOnlyList<AppProfile> profiles)
+    {
+        if (profiles.Count == 0)
+            return "<tr><td colspan=\"7\">No app profiles found.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var profile in profiles)
+        {
+            var validation = AppProfilePolicy.Validate(profile);
+            var statusClass = validation.CanActivate ? "safe" : "risk";
+            builder.Append("<tr>")
+                .Append("<td><a href=\"/app-profiles/").Append(Html(profile.Id)).Append("\">").Append(Html(profile.Name)).Append("</a><br><small>").Append(Html(profile.Id)).Append("</small></td>")
+                .Append("<td>").Append(Html(profile.Kind)).Append("</td>")
+                .Append("<td>").Append(Html(profile.Status)).Append("</td>")
+                .Append("<td>").Append(Html(profile.SiteDomain ?? profile.ProcessName ?? "-")).Append("</td>")
+                .Append("<td>").Append(Html(string.Join(", ", profile.SupportedCapabilities))).Append("</td>")
+                .Append("<td>").Append(Html($"readOnly={profile.RiskPolicy.ReadOnlyByDefault}; diagnostic={profile.RiskPolicy.DiagnosticAllowed}; loginBlocked={profile.RiskPolicy.BlocksLogin}; paymentBlocked={profile.RiskPolicy.BlocksPayment}; purchaseBlocked={profile.RiskPolicy.BlocksPurchase}")).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(statusClass).Append("\">").Append(validation.CanActivate ? "valid" : "blocked").Append("</span></td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string AppProfileIssueRows(IReadOnlyList<AppProfileValidationIssue> issues)
+    {
+        if (issues.Count == 0)
+            return "<tr><td colspan=\"4\">No validation issues.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var issue in issues)
+        {
+            var severityClass = issue.Severity is "blocked" or "error" ? "risk" : issue.Severity == "warning" ? "warn" : "safe";
+            builder.Append("<tr>")
+                .Append("<td><span class=\"badge ").Append(severityClass).Append("\">").Append(Html(issue.Severity)).Append("</span></td>")
+                .Append("<td>").Append(Html(issue.Code)).Append("</td>")
+                .Append("<td>").Append(Html(issue.Message)).Append("</td>")
+                .Append("<td>").Append(Html(issue.Remediation)).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string ListRows(IEnumerable<string> items)
+    {
+        var builder = new StringBuilder();
+        foreach (var item in items)
+            builder.Append("<li>").Append(Html(item)).Append("</li>");
+
+        return builder.Length == 0 ? "<li>-</li>" : builder.ToString();
+    }
+
     private static string DraftResultBlock(RecipeDraft? draft, RecipeDraftArtifactWriteResult? write)
     {
         if (draft == null)
@@ -1044,6 +1392,11 @@ wouldCallProvider={result.Decision.WouldCallProvider}
     private static string Safety(RunSafetyCounters counters)
     {
         return Html($"clicks={counters.Clicks}; cookies={counters.CookiesAccepted}; login={counters.Login}; cart={counters.Cart}; purchase={counters.Purchase}; payment={counters.Payment}");
+    }
+
+    private static string FirstNonEmpty(params string?[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? "";
     }
 
     private static string BuildAIProfileStatus(AIModelProfile profile)

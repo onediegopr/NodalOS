@@ -1,7 +1,9 @@
 using OneBrain.Pilot;
 using OneBrain.Core.AI;
+using OneBrain.Core.AppProfiles;
 using OneBrain.Core.Approval;
 using OneBrain.Core.History;
+using OneBrain.Core.Memory;
 using OneBrain.Core.Recording;
 using OneBrain.Core.Recipes.Editing;
 
@@ -209,6 +211,62 @@ app.MapGet("/recipes/{id}/variables", (string id) =>
     var json = File.ReadAllText(Path.Combine(root, recipe.RecipePath.Replace('/', Path.DirectorySeparatorChar)));
     var variables = RecipeVariableManager.ExtractVariablesFromJson(json);
     return Results.Content(PilotHomePageRenderer.RenderVariables(variables, $"Variables for {recipe.Label}"), "text/html");
+});
+
+app.MapGet("/memory", (string? q, string? tag, string? appOrSite, string? domain, string? status) =>
+{
+    var entries = ProcessMemoryStore.ReadAll(root);
+    if (entries.Count == 0)
+        entries = ProcessMemoryDemoFixture.CreateEntries();
+
+    var tags = string.IsNullOrWhiteSpace(tag) ? [] : SplitCsv(tag);
+    var query = new WorkflowRetrievalQuery(
+        Text: q,
+        Tags: tags,
+        AppOrSite: appOrSite,
+        Domain: domain,
+        Status: status);
+    var retrieval = WorkflowRetrievalService.Search(entries, query);
+    return Results.Content(PilotHomePageRenderer.RenderProcessMemory(entries, retrieval), "text/html");
+});
+
+app.MapGet("/memory/search", (string? q, string? tag, string? appOrSite, string? domain, string? status) =>
+{
+    var entries = ProcessMemoryStore.ReadAll(root);
+    if (entries.Count == 0)
+        entries = ProcessMemoryDemoFixture.CreateEntries();
+
+    var query = new WorkflowRetrievalQuery(
+        Text: q,
+        Tags: string.IsNullOrWhiteSpace(tag) ? [] : SplitCsv(tag),
+        AppOrSite: appOrSite,
+        Domain: domain,
+        Status: status);
+    var retrieval = WorkflowRetrievalService.Search(entries, query);
+    return Results.Content(PilotHomePageRenderer.RenderProcessMemory(entries, retrieval), "text/html");
+});
+
+app.MapGet("/memory/{id}", (string id) =>
+{
+    var entry = ProcessMemoryStore.ReadById(root, id) ??
+                ProcessMemoryDemoFixture.CreateEntries().FirstOrDefault(candidate => string.Equals(candidate.Id, id, StringComparison.OrdinalIgnoreCase));
+    return Results.Content(PilotHomePageRenderer.RenderProcessMemoryDetail(entry), "text/html");
+});
+
+app.MapGet("/app-profiles", () =>
+{
+    var profiles = AppProfileStore.ReadAll(root);
+    if (profiles.Count == 0)
+        profiles = AppProfileDemoFixture.CreateProfiles();
+
+    return Results.Content(PilotHomePageRenderer.RenderAppProfiles(profiles), "text/html");
+});
+
+app.MapGet("/app-profiles/{id}", (string id) =>
+{
+    var profile = AppProfileStore.ReadById(root, id) ??
+                  AppProfileDemoFixture.CreateProfiles().FirstOrDefault(candidate => string.Equals(candidate.Id, id, StringComparison.OrdinalIgnoreCase));
+    return Results.Content(PilotHomePageRenderer.RenderAppProfileDetail(profile), "text/html");
 });
 
 app.Run();
