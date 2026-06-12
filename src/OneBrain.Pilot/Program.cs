@@ -1,4 +1,5 @@
 using OneBrain.Pilot;
+using OneBrain.Core.Approval;
 using OneBrain.Core.Recording;
 
 var root = GetArg(args, "--root") ?? Directory.GetCurrentDirectory();
@@ -59,6 +60,26 @@ app.MapPost("/recording/demo/annotate", async (HttpContext context) =>
     var timeline = RecipeTimelineBuilder.Build(RecordingDemoFixture.CreateSession(), annotations);
 
     return Results.Content(PilotHomePageRenderer.RenderRecordingDemo(timeline), "text/html");
+});
+
+app.MapGet("/approvals/demo", () =>
+{
+    var request = BusinessFlowDemoFixture.CreateSendMessageApproval();
+    var confidence = BusinessFlowDemoFixture.CreateConfidenceProfile();
+    return Results.Content(PilotHomePageRenderer.RenderApprovalDemo(request, confidence), "text/html");
+});
+
+app.MapPost("/approvals/demo/decide", async (HttpContext context) =>
+{
+    var form = await context.Request.ReadFormAsync();
+    var decisionKind = form["decision"].FirstOrDefault() ?? ApprovalDecisionKinds.Rejected;
+    var reason = form["reason"].FirstOrDefault() ?? "";
+
+    var request = BusinessFlowDemoFixture.CreateSendMessageApproval();
+    var confidence = BusinessFlowDemoFixture.CreateConfidenceProfile();
+    var decision = ApprovalPolicy.Decide(request, decisionKind, reason, decidedBy: "pilot-demo");
+
+    return Results.Content(PilotHomePageRenderer.RenderApprovalDemo(request, confidence, decision), "text/html");
 });
 
 app.Run();

@@ -1,5 +1,7 @@
 using System.Net;
 using System.Text;
+using OneBrain.Core.Approval;
+using OneBrain.Core.Confidence;
 using OneBrain.Core.Recording;
 
 namespace OneBrain.Pilot;
@@ -161,6 +163,7 @@ public static class PilotHomePageRenderer
           {{QuickAction("Generar reporte HTML", "genera html demo")}}
           {{QuickAction("Ver safety guarantees", "ver safety guarantees")}}
           <a class="button ghost" href="/recording/demo">Start recording demo/shadow</a>
+          <a class="button ghost" href="/approvals/demo">Review approval demo</a>
         </div>
       </div>
     </section>
@@ -193,6 +196,12 @@ public static class PilotHomePageRenderer
         <h2>Observe and learn</h2>
         <p>Recording/shadow mode v0 is fixture-backed in Pilot. It shows candidate timeline and human annotations without real playback or sensitive actions.</p>
         <p><a class="button ghost" href="/recording/demo">Open recording timeline demo</a></p>
+      </div>
+
+      <div class="card">
+        <h2>Approval and confidence</h2>
+        <p>Review a supervised business-flow fixture. Approve/reject records an audit decision only; no send, submit, login, purchase, payment, script, or playback is executed.</p>
+        <p><a class="button ghost" href="/approvals/demo">Open approval demo</a></p>
       </div>
 
       <div class="card full">
@@ -284,6 +293,90 @@ public static class PilotHomePageRenderer
           <ul>{{AnnotationRows(timeline)}}</ul>
         </div>
       </div>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderApprovalDemo(ApprovalRequest request, RecipeConfidenceProfile confidence, ApprovalDecision? decision = null)
+    {
+        var decisionStatus = decision == null ? "pending_decision" : decision.Decision;
+        var decisionReason = decision == null ? "-" : decision.Reason;
+
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Approval Demo</title>
+  <style>
+    :root { --ink: #17211a; --muted: #5c6b60; --paper: #f5f1e7; --panel: #fffaf0; --line: #d7cdb7; --accent: #e66b2d; --safe: #226b45; --risk: #8a352d; }
+    body { margin: 0; color: var(--ink); font-family: "Aptos", "Segoe UI", sans-serif; background: linear-gradient(135deg, #f7f2df, #e4eadc); }
+    main { max-width: 1120px; margin: 0 auto; padding: 40px 24px; }
+    .card { background: rgba(255,250,240,.92); border: 1px solid var(--line); border-radius: 26px; padding: 24px; box-shadow: 0 20px 70px rgba(43,32,16,.14); margin-bottom: 18px; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 6vw, 72px); line-height: .95; margin: 8px 0 12px; letter-spacing: -.045em; }
+    h2 { margin-top: 0; }
+    p, li { color: var(--muted); line-height: 1.5; }
+    .badge { display: inline-block; border-radius: 999px; padding: 5px 10px; font-weight: 800; font-size: 12px; background: #eadfca; }
+    .safe { color: var(--safe); background: #dcebdd; }
+    .risk { color: var(--risk); background: #f6e7e6; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .metric { border-bottom: 1px solid var(--line); padding: 10px 0; }
+    .metric strong { display: block; font-size: 20px; color: var(--ink); }
+    textarea, input { width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 10px; background: #fffdf6; font: inherit; }
+    button, .button { border: 0; border-radius: 999px; padding: 11px 16px; color: #fffaf0; background: var(--ink); font-weight: 800; text-decoration: none; }
+    button.reject { background: var(--risk); }
+    code { display: block; white-space: pre-wrap; border-radius: 16px; padding: 14px; background: #211f1a; color: #fbf1d5; }
+    @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge risk">approval required</span> <span class="badge safe">audit only</span> <span class="badge safe">no execution</span></p>
+      <h1>Approval demo</h1>
+      <p>This supervised business-flow fixture prepares a message preview and stops before send. Approval/rejection is recorded for audit only; no action executor runs in this hito.</p>
+      <p><a class="button" href="/">Back to Pilot</a></p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Pending approval</h2>
+        <div class="metric"><span>Request</span><strong>{{Html(request.ApprovalRequestId)}}</strong></div>
+        <div class="metric"><span>Action kind</span><strong>{{Html(request.ActionKind)}}</strong></div>
+        <div class="metric"><span>Risk</span><strong>{{Html(request.RiskLevel)}}</strong></div>
+        <div class="metric"><span>Fail closed</span><strong>{{request.FailClosed}}</strong></div>
+        <div class="metric"><span>Requires approval</span><strong>{{request.RequiresApproval}}</strong></div>
+        <p>{{Html(request.Description)}}</p>
+        <code>{{Html(request.Preview)}}</code>
+      </div>
+
+      <div class="card">
+        <h2>Recipe confidence</h2>
+        <div class="metric"><span>Candidate flow</span><strong>{{Html(confidence.CandidateFlowId)}}</strong></div>
+        <div class="metric"><span>Status</span><strong>{{Html(confidence.Status)}}</strong></div>
+        <div class="metric"><span>Confidence score</span><strong>{{confidence.ConfidenceScore}}</strong></div>
+        <div class="metric"><span>Risk level</span><strong>{{Html(confidence.RiskLevel)}}</strong></div>
+        <div class="metric"><span>Runs</span><strong>{{confidence.Runs}}</strong></div>
+        <p>Critical candidate flows remain blocked until explicit human approval policy exists. This demo does not create an executable recipe.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Human decision</h2>
+      <form method="post" action="/approvals/demo/decide">
+        <label>Reason required for reject<textarea name="reason">No enviar todavia; requiere revision humana.</textarea></label>
+        <p>
+          <button type="submit" name="decision" value="approved">Approve fixture decision</button>
+          <button class="reject" type="submit" name="decision" value="rejected">Reject fixture decision</button>
+        </p>
+      </form>
+      <p>Decision status: <strong>{{Html(decisionStatus)}}</strong></p>
+      <p>Decision reason: <strong>{{Html(decisionReason)}}</strong></p>
+      <p><span class="badge safe">ExecutionAllowed=false</span> <span class="badge safe">0 clicks</span> <span class="badge safe">0 cookies</span> <span class="badge safe">0 login</span> <span class="badge safe">0 cart</span> <span class="badge safe">0 purchase</span> <span class="badge safe">0 payment</span></p>
     </section>
   </main>
 </body>
