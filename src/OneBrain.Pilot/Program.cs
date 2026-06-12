@@ -132,6 +132,12 @@ app.MapGet("/executor-harness/replay", () =>
     return Results.Content(PilotHomePageRenderer.RenderExecutorHarnessReplay(replay), "text/html");
 });
 
+app.MapGet("/executor-harness/evidence", () =>
+{
+    var index = ExecutorHarnessArtifactStore.ReadIndex(root);
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarnessEvidenceIndex(index), "text/html");
+});
+
 app.MapPost("/executor-harness/click", () =>
 {
     var target = ExecutorHarnessDemoFixture.CreateTarget();

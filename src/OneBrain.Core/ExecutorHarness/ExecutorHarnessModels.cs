@@ -180,4 +180,37 @@ public sealed record ExecutorHarnessEvidenceReplay(
     string Message,
     string RelativePath,
     ExecutorHarnessEvidenceRecord? Evidence,
+    IReadOnlyList<string> Notes,
+    ExecutorHarnessRunTraceLink? TraceLink = null);
+
+public sealed record ExecutorHarnessRunTraceLink(
+    string TraceId,
+    bool IsSynthetic,
+    string RunId,
+    string ApprovalRequestId,
+    string? ApprovalDecisionId,
+    string ApprovalDecision,
+    string SafetyDecision,
+    string EvidencePath,
+    string ReplayPath,
+    string PostStateResult,
+    string BlockedReason,
     IReadOnlyList<string> Notes);
+
+public sealed record ExecutorHarnessEvidenceIndex(
+    bool Success,
+    string Status,
+    string Message,
+    IReadOnlyList<ExecutorHarnessEvidenceIndexItem> Items,
+    IReadOnlyList<string> Notes);
+
+public sealed record ExecutorHarnessEvidenceIndexItem(
+    string EvidenceId,
+    string TimestampUtc,
+    string HarnessId,
+    string ActionKind,
+    string SafetyDecision,
+    string VerificationResult,
+    string LogicalPath,
+    string ReplayPath,
+    ExecutorHarnessRunTraceLink TraceLink);

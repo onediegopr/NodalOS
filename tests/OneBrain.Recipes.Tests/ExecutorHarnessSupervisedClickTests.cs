@@ -137,6 +137,21 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Safety_Matrix_Fails_Closed_For_Invalid_Action_Kind()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget() with { ActionKind = ApprovalActionKinds.Purchase };
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+
+        var result = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(ExecutorHarnessStatuses.Blocked, result.Status);
+        StringAssert.Contains(result.Message, "action kind is outside benign harness scope");
+        Assert.AreEqual(0, result.RunHistory.SafetyCounters.Clicks);
+    }
+
+    [TestMethod]
     public void Harness_Interaction_Contract_Captures_Target_Approval_Safety_And_Post_State_Expectation()
     {
         var target = ExecutorHarnessDemoFixture.CreateTarget();
@@ -302,12 +317,103 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Evidence_Index_Returns_Empty_State_When_No_Evidence_Exists()
+    {
+        var root = NewTempRoot();
+
+        var index = ExecutorHarnessArtifactStore.ReadIndex(root);
+
+        Assert.IsTrue(index.Success);
+        Assert.AreEqual("empty", index.Status);
+        Assert.AreEqual(0, index.Items.Count);
+        StringAssert.Contains(index.Message, "No executor harness evidence");
+        StringAssert.Contains(string.Join(" ", index.Notes), "read-only");
+    }
+
+    [TestMethod]
+    public void Harness_Evidence_Index_Lists_Evidence_With_Trace_Link()
+    {
+        var root = NewTempRoot();
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+        var result = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true));
+        var write = ExecutorHarnessArtifactStore.Write(root, ExecutorHarnessService.ToEvidenceRecord(result));
+
+        var index = ExecutorHarnessArtifactStore.ReadIndex(root);
+
+        Assert.IsTrue(write.Success, write.Error);
+        Assert.IsTrue(index.Success, index.Message);
+        Assert.AreEqual("indexed", index.Status);
+        Assert.AreEqual(1, index.Items.Count);
+        var item = index.Items[0];
+        Assert.AreEqual(target.HarnessId, item.HarnessId);
+        Assert.AreEqual(ApprovalActionKinds.BenignHarnessClick, item.ActionKind);
+        Assert.AreEqual("allowed", item.SafetyDecision);
+        Assert.AreEqual(ExecutorHarnessStatuses.Succeeded, item.VerificationResult);
+        StringAssert.Contains(item.LogicalPath, "artifacts/executor-harness");
+        Assert.IsTrue(item.TraceLink.IsSynthetic);
+        StringAssert.Contains(item.TraceLink.RunId, "local-trace");
+        Assert.AreEqual("/executor-harness/replay", item.TraceLink.ReplayPath);
+        Assert.AreEqual("approved", item.TraceLink.ApprovalDecision);
+        StringAssert.Contains(item.TraceLink.PostStateResult, "verified");
+    }
+
+    [TestMethod]
+    public void Harness_Evidence_Index_Lists_Latest_First()
+    {
+        var root = NewTempRoot();
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+        var first = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true));
+        var second = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true));
+        var firstWrite = ExecutorHarnessArtifactStore.Write(root, ExecutorHarnessService.ToEvidenceRecord(first, new DateTimeOffset(2026, 06, 12, 12, 0, 0, TimeSpan.Zero)));
+        Thread.Sleep(20);
+        var secondEvidence = ExecutorHarnessService.ToEvidenceRecord(second, new DateTimeOffset(2026, 06, 12, 12, 1, 0, TimeSpan.Zero));
+        var secondWrite = ExecutorHarnessArtifactStore.Write(root, secondEvidence);
+
+        var index = ExecutorHarnessArtifactStore.ReadIndex(root);
+
+        Assert.IsTrue(firstWrite.Success, firstWrite.Error);
+        Assert.IsTrue(secondWrite.Success, secondWrite.Error);
+        Assert.AreEqual(2, index.Items.Count);
+        Assert.AreEqual(secondEvidence.EvidenceId, index.Items[0].EvidenceId);
+    }
+
+    [TestMethod]
+    public void Harness_Replay_Exposes_Run_Trace_Link_Without_Executing()
+    {
+        var root = NewTempRoot();
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+        var result = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true));
+        _ = ExecutorHarnessArtifactStore.Write(root, ExecutorHarnessService.ToEvidenceRecord(result));
+
+        var replay = ExecutorHarnessArtifactStore.ReadLatest(root);
+
+        Assert.IsNotNull(replay.TraceLink);
+        Assert.IsTrue(replay.TraceLink.IsSynthetic);
+        StringAssert.Contains(replay.TraceLink.EvidencePath, "artifacts/executor-harness");
+        Assert.AreEqual("/executor-harness/replay", replay.TraceLink.ReplayPath);
+        StringAssert.Contains(string.Join(" ", replay.TraceLink.Notes), "does not yet embed full run history id");
+    }
+
+    [TestMethod]
     public void Pilot_Render_Shows_Executor_Harness_Safety_And_Evidence()
     {
         var target = ExecutorHarnessDemoFixture.CreateTarget();
         var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var index = new ExecutorHarnessEvidenceIndex(
+            Success: true,
+            Status: "empty",
+            Message: "No executor harness evidence exists yet.",
+            Items: [],
+            Notes: ["evidence index is read-only"]);
 
         var html = PilotHomePageRenderer.RenderExecutorHarness(target, request);
+        var indexHtml = PilotHomePageRenderer.RenderExecutorHarnessEvidenceIndex(index);
         var home = PilotHomePageRenderer.Render();
 
         StringAssert.Contains(html, "Click benigno supervisado");
@@ -317,6 +423,10 @@ public sealed class ExecutorHarnessSupervisedClickTests
         StringAssert.Contains(html, "Objetivo benigno del harness");
         StringAssert.Contains(html, "Dry-run explicable antes de ejecutar");
         StringAssert.Contains(html, "Ver replay de evidencia");
+        StringAssert.Contains(html, "Ver indice de evidencia");
+        StringAssert.Contains(indexHtml, "Indice de evidencia del executor harness");
+        StringAssert.Contains(indexHtml, "read-only");
+        StringAssert.Contains(indexHtml, "no ejecuta acciones");
         StringAssert.Contains(home, "href=\"/executor-harness\"");
     }
 

@@ -664,7 +664,7 @@ public static class PilotHomePageRenderer
       <p>Esta pantalla es el primer harness para ejecutar un click real, pero solo sobre un objetivo benigno dentro de ONE BRAIN Pilot. No toca sitios externos, no acepta cookies, no inicia sesion, no compra, no paga y no envia mensajes.</p>
       <p class="notice">Fail-closed: si falta aprobacion, target seguro o executor seguro, ONE BRAIN bloquea la accion y registra evidencia de bloqueo.</p>
       {{ConceptHint("Que se va a hacer", "ONE BRAIN buscara esta misma ventana local de Pilot por titulo, resolvera el boton benigno por nombre y ejecutara un unico click UIA supervisado. Despues verificara el resultado y escribira artifacts locales.")}}
-      <p><a class="button ghost" href="/executor-harness/dry-run">Ver dry-run explicable</a> <a class="button ghost" href="/executor-harness/replay">Ver replay de evidencia</a></p>
+      <p><a class="button ghost" href="/executor-harness/dry-run">Ver dry-run explicable</a> <a class="button ghost" href="/executor-harness/replay">Ver replay de evidencia</a> <a class="button ghost" href="/executor-harness/evidence">Ver indice de evidencia</a></p>
     </section>
 
     <section class="grid">
@@ -719,6 +719,33 @@ public static class PilotHomePageRenderer
       <p><a class="button" href="/executor-harness">Volver al harness</a></p>
     </section>
     {{ExecutorHarnessReplayBlock(replay)}}
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderExecutorHarnessEvidenceIndex(ExecutorHarnessEvidenceIndex index)
+    {
+        return $$"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Indice de evidencia harness</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Indice evidencia harness")}}
+    <section class="card">
+      <p><span class="badge info">read-only</span> <span class="badge safe">sin click</span> <span class="badge safe">sin auto-open</span></p>
+      <h1>Indice de evidencia del executor harness</h1>
+      <p>Lista artifacts locales bajo <span class="path">artifacts/executor-harness/</span>. No abre archivos, no ejecuta acciones y no inventa datos reales si no existen.</p>
+      <p><a class="button" href="/executor-harness">Volver al harness</a> <a class="button ghost" href="/executor-harness/replay">Ver replay del ultimo artifact</a></p>
+    </section>
+    {{ExecutorHarnessEvidenceIndexBlock(index)}}
   </main>
 </body>
 </html>
@@ -2263,15 +2290,69 @@ wouldCallProvider={result.Decision.WouldCallProvider}
   <div class="metric"><span>Harness</span><strong>{{Html(evidence.HarnessId)}}</strong></div>
   <div class="metric"><span>Approval request</span><strong>{{Html(evidence.ApprovalRequestId)}}</strong></div>
   <div class="metric"><span>Approval decision</span><strong>{{Html(evidence.ApprovalDecisionId ?? "-")}}</strong></div>
+  <div class="metric"><span>Trace link</span><strong>{{Html(replay.TraceLink?.TraceId ?? "-")}}</strong></div>
   <div class="metric"><span>Post-state</span><strong>{{Html(evidence.Verification.Status)}} - target={{SpanishBool(evidence.Verification.TargetFound)}} click={{SpanishBool(evidence.Verification.ClickObserved)}}</strong></div>
   <div class="metric"><span>Safety counters</span><strong>{{Safety(evidence.SafetyCounters)}}</strong></div>
   <p><strong>Contrato:</strong> {{Html(contract == null ? "artifact antiguo sin contrato embebido" : contract.ContractId)}}</p>
   <p><strong>Resolucion de target:</strong> {{Html(contract == null ? "-" : $"{contract.ResolvedTarget.Status} - {contract.ResolvedTarget.Message}")}}</p>
   <p><strong>Matriz:</strong> {{Html(contract == null ? "-" : contract.SafetyMatrix.Status)}}</p>
   <p><strong>Comando:</strong> {{Html(contract == null ? "-" : $"{contract.ActionKind} -> {contract.TargetConstraints.TargetRef}")}}</p>
+  <p><strong>Run trace:</strong> {{Html(replay.TraceLink == null ? "-" : $"{replay.TraceLink.RunId}; approval={replay.TraceLink.ApprovalDecision}; post={replay.TraceLink.PostStateResult}")}}</p>
   <p><strong>Notas:</strong> {{Html(string.Join("; ", evidence.Notes.Concat(replay.Notes)))}}</p>
 </section>
 """;
+    }
+
+    private static string ExecutorHarnessEvidenceIndexBlock(ExecutorHarnessEvidenceIndex index)
+    {
+        if (index.Items.Count == 0)
+        {
+            return $$"""
+<section class="card">
+  <h2>Estado del indice</h2>
+  <p><span class="badge disabled">{{Html(index.Status)}}</span> {{Html(index.Message)}}</p>
+  <p>No hay evidencia runtime del harness todavia. Esta pantalla no muestra fixtures como datos reales.</p>
+  <p>{{Html(string.Join("; ", index.Notes))}}</p>
+</section>
+""";
+        }
+
+        return $$"""
+<section class="card">
+  <h2>Evidencia local indexada</h2>
+  <p><span class="badge info">{{Html(index.Status)}}</span> {{Html(index.Message)}}</p>
+  <table>
+    <thead><tr><th>Evidence</th><th>Accion</th><th>Safety</th><th>Verificacion</th><th>Trace</th><th>Ruta</th></tr></thead>
+    <tbody>{{ExecutorHarnessEvidenceIndexRows(index.Items)}}</tbody>
+  </table>
+  <p class="notice">El indice es read-only: no abre artifacts, no hace clicks y no ejecuta replay activo.</p>
+</section>
+""";
+    }
+
+    private static string ExecutorHarnessEvidenceIndexRows(IReadOnlyList<ExecutorHarnessEvidenceIndexItem> items)
+    {
+        var builder = new StringBuilder();
+        foreach (var item in items)
+        {
+            var trace = item.TraceLink;
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(item.EvidenceId)).Append("<br><small>").Append(Html(item.TimestampUtc)).Append("</small></td>")
+                .Append("<td>").Append(Html(item.ActionKind)).Append("<br><small>").Append(Html(item.HarnessId)).Append("</small></td>")
+                .Append("<td><span class=\"badge ").Append(item.SafetyDecision == "allowed" ? "safe" : "blocked").Append("\">")
+                .Append(Html(item.SafetyDecision)).Append("</span></td>")
+                .Append("<td>").Append(Html(item.VerificationResult)).Append("</td>")
+                .Append("<td>").Append(Html(trace.TraceId)).Append("<br><small>")
+                .Append(Html(trace.IsSynthetic ? "trace local sintetico, no run id real completo" : trace.RunId))
+                .Append("</small><br><small>")
+                .Append(Html($"approval={trace.ApprovalDecision}; post={trace.PostStateResult}"))
+                .Append("</small></td>")
+                .Append("<td><span class=\"path\">").Append(Html(item.LogicalPath)).Append("</span><br><a href=\"")
+                .Append(Html(item.ReplayPath)).Append("\">Replay read-only</a></td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
     }
 
     private static string CurrentPlaybackStepBlock(PromotedFlowStep? step, SupervisedPlaybackSession session)
