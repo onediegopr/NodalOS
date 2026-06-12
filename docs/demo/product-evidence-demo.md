@@ -1,12 +1,13 @@
 # ONE BRAIN Product Evidence Demo
 
-Esta demo muestra un flujo local, estable y reproducible para generar evidencia de producto, resumen con scoring y reporte Markdown humano.
+Esta demo muestra un flujo local, estable y reproducible para generar evidencia de producto, resumen con scoring, reporte Markdown humano y export HTML local opcional.
 
 ## Que muestra la demo
 
 - Lee evidencia de producto versionada desde `samples/product-evidence/`.
 - Construye un summary local con conteos, quality status y readiness.
 - Genera un Markdown presentable bajo `artifacts/product-evidence-demo-reports/`.
+- Puede generar HTML local presentable bajo `artifacts/product-evidence-demo-html-reports/`.
 - Muestra campos faltantes de forma explicita, por ejemplo `missing_price`.
 - Diferencia evidencia visible normalizada de `rawSignals`.
 - Permite demostrar el pipeline sin depender de sitios externos vivos.
@@ -62,8 +63,17 @@ Runtime outputs ignorados por Git:
 
 - `artifacts/product-evidence-demo-summary/`
 - `artifacts/product-evidence-demo-reports/`
+- `artifacts/product-evidence-demo-html-reports/`
 
 Estos archivos no se commitean.
+
+## HTML local opcional
+
+El reporte HTML usa los mismos samples y summary que el Markdown. No abre navegador ni usa red.
+
+```powershell
+& $dotnet run --project src/OneBrain.Cli -- recipe run tools/recipes/demo-product-evidence-html-report.json
+```
 
 ## Como encontrar el ultimo Markdown
 

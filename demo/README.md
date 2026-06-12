@@ -18,12 +18,19 @@ powershell -ExecutionPolicy Bypass -File tools/scripts/run-demo-product-evidence
 
 El script imprime `LATEST_DEMO_MARKDOWN` con la ruta del ultimo Markdown generado.
 
+HTML opcional:
+
+```powershell
+& $dotnet run --project src/OneBrain.Cli -- recipe run tools/recipes/demo-product-evidence-html-report.json
+```
+
 ## Outputs runtime
 
 Los outputs se escriben bajo `artifacts/`, que esta ignorado por Git:
 
 - `artifacts/product-evidence-demo-summary/`
 - `artifacts/product-evidence-demo-reports/`
+- `artifacts/product-evidence-demo-html-reports/`
 
 No se commitean artifacts runtime.
 

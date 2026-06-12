@@ -114,6 +114,7 @@ git status --ignored --short artifacts
 - JSON artifacts.
 - Summary artifacts.
 - Markdown report.
+- HTML report export local.
 - Quality score / grade / readiness.
 
 ### Demo
@@ -156,6 +157,7 @@ git status --ignored --short artifacts
 - Outputs runtime:
   - `artifacts/product-evidence-demo-summary/`
   - `artifacts/product-evidence-demo-reports/`
+  - `artifacts/product-evidence-demo-html-reports/`
 - El script imprime `LATEST_DEMO_MARKDOWN`.
 
 ### Que muestra
@@ -163,6 +165,7 @@ git status --ignored --short artifacts
 - ProductEvidence.
 - Summary.
 - Markdown.
+- HTML local opcional.
 - Score/grade/readiness.
 - `partial` vs `ready_for_comparison`.
 
@@ -200,8 +203,8 @@ git status --ignored --short artifacts
 
 ## 10. Que sigue recomendado
 
-- HITO-079+080 - HTML Report Export + Report Asset Styling.
-- HITO-081+082 - Demo Report Snapshot Tests + Golden Files.
+- HITO-079+080+081 - HTML Report Export + Styled Demo Report + Golden Snapshot Tests.
+- HITO-082+083 - Demo Report Snapshot Expansion + Golden Files.
 - HITO-083+084 - Live Evidence Robustness / External Block Classification.
 - HITO-085+086 - Approval UX / Remote Review Concept.
 - HITO-087+088 - Local/Private Enterprise Mode Notes.
@@ -244,7 +247,7 @@ Safety vigente:
 - No global taskkill
 
 Proximo hito recomendado:
-HITO-079+080 - HTML Report Export + Report Asset Styling.
+HITO-082+083 - Demo Report Snapshot Expansion + Golden Files.
 
 Antes de tocar archivos:
 - verificar repo remoto onediegopr/OneBrain;

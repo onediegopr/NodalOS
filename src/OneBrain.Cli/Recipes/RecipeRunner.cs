@@ -264,6 +264,7 @@ public sealed class RecipeRunner
                 "artifact.writeproductevidence" => ExecuteWriteProductEvidenceArtifact(step, sw),
                 "artifact.summarizeproductevidence" => ExecuteSummarizeProductEvidenceArtifacts(step, sw),
                 "report.writeproductevidencemarkdown" => ExecuteWriteProductEvidenceMarkdownReport(step, sw),
+                "report.writeproductevidencehtml" => ExecuteWriteProductEvidenceHtmlReport(step, sw),
                 "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
@@ -1865,6 +1866,48 @@ public sealed class RecipeRunner
     }
 
     private void SetProductEvidenceMarkdownVars(string prefix, ProductEvidenceMarkdownWriteResult result)
+    {
+        _ctx.Variables[prefix + ".success"] = result.Success ? "true" : "false";
+        _ctx.Variables[prefix + ".path"] = result.Path;
+        _ctx.Variables[prefix + ".relativePath"] = result.RelativePath;
+        _ctx.Variables[prefix + ".error"] = result.Error;
+    }
+
+    private RecipeStepRunResult ExecuteWriteProductEvidenceHtmlReport(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var prefix = step.SaveAs ?? "productEvidenceHtmlReport";
+        var summaryPrefix = ResolveArg(step, "summaryFrom") ?? "productEvidenceSummary";
+        var summaryJson = _ctx.Variables.GetValueOrDefault(summaryPrefix + ".json", "");
+        if (string.IsNullOrWhiteSpace(summaryJson))
+            return Fail(step, sw, $"report.writeProductEvidenceHtml: no summary JSON found for prefix '{summaryPrefix}'. Run artifact.summarizeProductEvidence first.");
+
+        ProductEvidenceSummary? summary;
+        try
+        {
+            summary = System.Text.Json.JsonSerializer.Deserialize<ProductEvidenceSummary>(summaryJson,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+        catch (Exception ex)
+        {
+            return Fail(step, sw, $"report.writeProductEvidenceHtml: invalid summary JSON: {ex.Message}");
+        }
+
+        if (summary == null)
+            return Fail(step, sw, "report.writeProductEvidenceHtml: summary JSON parsed as null.");
+
+        var outputDir = ResolveArg(step, "outputDir");
+        var result = ProductEvidenceHtmlWriter.Write(Directory.GetCurrentDirectory(), summary, outputDir);
+        SetProductEvidenceHtmlVars(prefix, result);
+
+        sw.Stop();
+        return new RecipeStepRunResult(step.Id, step.Kind, result.Success,
+            result.Success
+                ? $"Product evidence HTML report written: {result.RelativePath}"
+                : $"report.writeProductEvidenceHtml failed: {result.Error}",
+            sw.ElapsedMilliseconds, result);
+    }
+
+    private void SetProductEvidenceHtmlVars(string prefix, ProductEvidenceHtmlWriteResult result)
     {
         _ctx.Variables[prefix + ".success"] = result.Success ? "true" : "false";
         _ctx.Variables[prefix + ".path"] = result.Path;

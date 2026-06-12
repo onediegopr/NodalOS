@@ -1,0 +1,40 @@
+{
+  "name": "demo-product-evidence-html-report",
+  "description": "Deterministic local demo HTML report from versioned sample product evidence artifacts. No browser, no web, no clicks.",
+  "metadata": {
+    "category": "demo",
+    "cleanupRisk": "none",
+    "autoRegression": true,
+    "readOnly": true,
+    "localOnly": true,
+    "commercialClicksAllowed": false,
+    "sampleInputDir": "samples/product-evidence",
+    "summaryOutputDir": "artifacts/product-evidence-demo-summary",
+    "htmlOutputDir": "artifacts/product-evidence-demo-html-reports"
+  },
+  "steps": [
+    {
+      "id": "summarize-demo-evidence",
+      "kind": "artifact.summarizeProductEvidence",
+      "saveAs": "demoSummary",
+      "args": {
+        "inputDir": "samples/product-evidence",
+        "outputDir": "artifacts/product-evidence-demo-summary"
+      }
+    },
+    {
+      "id": "write-demo-html",
+      "kind": "report.writeProductEvidenceHtml",
+      "saveAs": "demoHtml",
+      "args": {
+        "summaryFrom": "demoSummary",
+        "outputDir": "artifacts/product-evidence-demo-html-reports"
+      }
+    },
+    {
+      "id": "report-demo-html",
+      "kind": "note",
+      "text": "Demo Product Evidence HTML Report: sourceArtifactCount={{demoSummary.sourceArtifactCount}} | validArtifactCount={{demoSummary.validArtifactCount}} | invalidArtifactCount={{demoSummary.invalidArtifactCount}} | productsWithPrice={{demoSummary.productsWithPrice}} | productsNeedingPriceVerification={{demoSummary.productsMissingPrice}} | averageEvidenceScore={{demoSummary.averageEvidenceScore}} | readyForComparisonCount={{demoSummary.readyForComparisonCount}} | htmlOutputPath={{demoHtml.relativePath}} | local-only demo: no browser, no web, no clicks, no cookies, no login, no cart, no purchase, no payment."
+    }
+  ]
+}
