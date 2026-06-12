@@ -8,6 +8,7 @@ Esta demo muestra un flujo local, estable y reproducible para generar evidencia 
 - Construye un summary local con conteos, quality status y readiness.
 - Genera un Markdown presentable bajo `artifacts/product-evidence-demo-reports/`.
 - Puede generar HTML local presentable bajo `artifacts/product-evidence-demo-html-reports/`.
+- Incluye un snapshot HTML versionado bajo `samples/product-evidence-html/` para referencia visual estable.
 - Muestra campos faltantes de forma explicita, por ejemplo `missing_price`.
 - Diferencia evidencia visible normalizada de `rawSignals`.
 - Permite demostrar el pipeline sin depender de sitios externos vivos.
@@ -67,6 +68,12 @@ Runtime outputs ignorados por Git:
 
 Estos archivos no se commitean.
 
+Snapshot versionado:
+
+- `samples/product-evidence-html/demo-product-evidence-report.html`
+
+El snapshot usa `GENERATED_AT_UTC`, no contiene rutas locales absolutas y no contiene paths runtime bajo `artifacts/`.
+
 ## HTML local opcional
 
 El reporte HTML usa los mismos samples y summary que el Markdown. No abre navegador ni usa red.
@@ -74,6 +81,8 @@ El reporte HTML usa los mismos samples y summary que el Markdown. No abre navega
 ```powershell
 & $dotnet run --project src/OneBrain.Cli -- recipe run tools/recipes/demo-product-evidence-html-report.json
 ```
+
+El HTML generado no se abre automaticamente. Es un archivo local para abrir manualmente si se quiere presentar el reporte.
 
 ## Como encontrar el ultimo Markdown
 
@@ -138,6 +147,7 @@ La demo estable confirma:
 - no compra;
 - no pago;
 - no WhatsApp.
+- no apertura automatica de HTML.
 
 ## Limitaciones honestas
 
@@ -146,3 +156,4 @@ La demo estable confirma:
 - No reemplaza revision humana final.
 - `rawSignals` no equivalen a evidencia visible normalizada.
 - Si un sitio externo bloquea en corridas live, debe reportarse como `partial` o `diagnostic`, sin bypass.
+- No es PDF todavia.

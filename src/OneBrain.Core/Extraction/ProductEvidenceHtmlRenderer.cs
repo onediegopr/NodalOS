@@ -28,7 +28,9 @@ public static class ProductEvidenceHtmlRenderer
         sb.AppendLine("      <p class=\"subtitle\">Local, auditable product evidence summary with explicit missing fields, scoring, and readiness.</p>");
         sb.AppendLine("    </header>");
 
+        AppendReportIntro(sb);
         AppendSummary(sb, summary);
+        AppendDecisionReadiness(sb);
         AppendProducts(sb, summary);
         AppendNotes(sb, summary);
         AppendInvalidArtifacts(sb, summary);
@@ -56,16 +58,43 @@ public static class ProductEvidenceHtmlRenderer
         sb.AppendLine("    .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }");
         sb.AppendLine("    .metric { color: var(--muted); font: 700 12px Verdana, sans-serif; text-transform: uppercase; letter-spacing: .08em; }");
         sb.AppendLine("    .value { margin-top: 8px; font: 700 28px Verdana, sans-serif; color: var(--accent); }");
+        sb.AppendLine("    .intro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 22px; }");
+        sb.AppendLine("    .intro-card { background: rgba(255,255,255,.72); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; }");
+        sb.AppendLine("    .intro-card h2 { margin-top: 0; }");
         sb.AppendLine("    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; background: var(--card); }");
         sb.AppendLine("    table { width: 100%; border-collapse: collapse; font-family: Verdana, sans-serif; font-size: 13px; }");
         sb.AppendLine("    th, td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }");
         sb.AppendLine("    th { background: var(--soft); color: #25352b; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }");
         sb.AppendLine("    tr:last-child td { border-bottom: 0; }");
         sb.AppendLine("    .number { text-align: right; }");
-        sb.AppendLine("    .pill { display: inline-block; border-radius: 999px; background: #f5ebdc; color: #7a4e1c; padding: 4px 9px; font-weight: 700; }");
+        sb.AppendLine("    .badge { display: inline-block; border-radius: 999px; padding: 4px 9px; font-weight: 700; border: 1px solid transparent; }");
+        sb.AppendLine("    .badge-excellent, .badge-ready-for-comparison { background: #e6f4ea; color: #1f6b43; border-color: #b9dfc5; }");
+        sb.AppendLine("    .badge-good { background: #edf5ff; color: #285b91; border-color: #bdd7f5; }");
+        sb.AppendLine("    .badge-partial, .badge-needs-price-verification, .badge-missing-price { background: #fff1dc; color: #86520e; border-color: #e8c58f; }");
+        sb.AppendLine("    .badge-weak, .badge-insufficient, .badge-diagnostic, .badge-diagnostic-only { background: #f6e7e6; color: #8a352d; border-color: #e2b7b2; }");
         sb.AppendLine("    .notes, .invalid { background: rgba(255,255,255,.72); border: 1px solid var(--line); border-radius: 18px; padding: 18px 22px; }");
         sb.AppendLine("    li { margin: 7px 0; }");
         sb.AppendLine("  </style>");
+    }
+
+    private static void AppendReportIntro(StringBuilder sb)
+    {
+        sb.AppendLine("    <section class=\"intro-grid\" aria-label=\"report context\">");
+        AppendIntroCard(sb, "What this report shows",
+            "Normalized product evidence, summary metrics, explicit missing fields, score, grade, and decision readiness.");
+        AppendIntroCard(sb, "Safety guarantees",
+            "No live web access is required for the stable demo. This report does not execute clicks, login, cookies, cart, purchase, or payment actions.");
+        AppendIntroCard(sb, "Decision readiness",
+            "Missing price means the visible evidence did not confirm price. Ready items can be compared; partial items need verification.");
+        sb.AppendLine("    </section>");
+    }
+
+    private static void AppendIntroCard(StringBuilder sb, string title, string text)
+    {
+        sb.AppendLine("      <article class=\"intro-card\">");
+        sb.AppendLine($"        <h2>{Html(title)}</h2>");
+        sb.AppendLine($"        <p>{Html(text)}</p>");
+        sb.AppendLine("      </article>");
     }
 
     private static void AppendSummary(StringBuilder sb, ProductEvidenceSummary summary)
@@ -126,10 +155,10 @@ public static class ProductEvidenceHtmlRenderer
                 sb.Append(Html(ValueOrDash(item.ExtractionConfidence)));
                 sb.Append("</td><td class=\"number\">");
                 sb.Append(item.EvidenceScore.ToString(CultureInfo.InvariantCulture));
-                sb.Append("</td><td><span class=\"pill\">");
-                sb.Append(Html(ValueOrDash(item.EvidenceGrade)));
-                sb.Append("</span></td><td>");
-                sb.Append(Html(ValueOrDash(item.DecisionReadiness)));
+                sb.Append("</td><td>");
+                AppendBadge(sb, item.EvidenceGrade);
+                sb.Append("</td><td>");
+                AppendBadge(sb, item.DecisionReadiness);
                 sb.Append("</td><td>");
                 sb.Append(Html(item.BlockedOrMissingFields.Count == 0 ? Dash : string.Join(", ", item.BlockedOrMissingFields)));
                 sb.AppendLine("</td></tr>");
@@ -140,6 +169,29 @@ public static class ProductEvidenceHtmlRenderer
         sb.AppendLine("        </table>");
         sb.AppendLine("      </div>");
         sb.AppendLine("    </section>");
+    }
+
+    private static void AppendDecisionReadiness(StringBuilder sb)
+    {
+        sb.AppendLine("    <section aria-labelledby=\"readiness-heading\">");
+        sb.AppendLine("      <h2 id=\"readiness-heading\">Decision readiness</h2>");
+        sb.AppendLine("      <div class=\"notes\"><ul>");
+        sb.AppendLine("        <li><span class=\"badge badge-ready-for-comparison\">ready_for_comparison</span> means captured evidence is enough for demo comparison.</li>");
+        sb.AppendLine("        <li><span class=\"badge badge-needs-price-verification\">needs_price_verification</span> means product evidence is useful but price needs human verification.</li>");
+        sb.AppendLine("        <li><span class=\"badge badge-partial\">partial</span> evidence is intentionally explicit; missing fields are not invented.</li>");
+        sb.AppendLine("      </ul></div>");
+        sb.AppendLine("    </section>");
+    }
+
+    private static void AppendBadge(StringBuilder sb, string? value)
+    {
+        var label = ValueOrDash(value);
+        var cssToken = label.Replace('_', '-').Replace(' ', '-').ToLowerInvariant();
+        sb.Append("<span class=\"badge badge-");
+        sb.Append(Html(cssToken));
+        sb.Append("\">");
+        sb.Append(Html(label));
+        sb.Append("</span>");
     }
 
     private static void AppendNotes(StringBuilder sb, ProductEvidenceSummary summary)

@@ -8,7 +8,7 @@ Documento maestro para retomar desarrollo, presentar el estado o iniciar un nuev
 - Ruta local: `C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo`
 - Repo esperado: `onediegopr/OneBrain`
 - Branch base: `master`
-- Ultimo commit confirmado: `02d90b0 freeze demo qa and public storyline`
+- Ultimo commit confirmado: `2e8c4eb add html product evidence reports`
 - SDK portable obligatorio: `C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Herramientas\dotnet-sdk-11.0.100-preview.5.26302.115-win-x64\dotnet.exe`
 - No usar global dotnet.
 
@@ -17,6 +17,7 @@ Documento maestro para retomar desarrollo, presentar el estado o iniciar un nuev
 Ultimos commits relevantes:
 
 - `02d90b0 freeze demo qa and public storyline`
+- `2e8c4eb add html product evidence reports`
 - `5916dec package product evidence demo snapshot`
 - `428127a document product evidence demo walkthrough`
 - `31e3dcd add one-command product evidence demo runner`
@@ -32,11 +33,12 @@ Ultimos commits relevantes:
 ## 3. Validacion actual esperada
 
 - Build OK: `0 errors`, `0 warnings`
-- Tests: `189/189 PASS`
-- Validacion del handoff actual: `200/200 PASS`
+- Tests baseline freeze: `189/189 PASS`
+- Validacion del handoff actual: `221/221 PASS`
 - Negative recipe: `NEGATIVE_EXIT_CODE=1`
 - Demo script: OK
 - Demo dry-run/run: OK
+- Demo HTML dry-run/run: OK
 - `artifacts/` ignorado por Git
 - `git status --short`: limpio
 
@@ -115,6 +117,7 @@ git status --ignored --short artifacts
 - Summary artifacts.
 - Markdown report.
 - HTML report export local.
+- HTML snapshot fixture versionado.
 - Quality score / grade / readiness.
 
 ### Demo
@@ -150,6 +153,7 @@ git status --ignored --short artifacts
 - Script: `tools/scripts/run-demo-product-evidence.ps1`
 - Recipe: `tools/recipes/demo-product-evidence-report.json`
 - Samples: `samples/product-evidence/`
+- HTML snapshot fixture: `samples/product-evidence-html/demo-product-evidence-report.html`
 - Docs:
   - `demo/`
   - `docs/demo/`
@@ -159,6 +163,7 @@ git status --ignored --short artifacts
   - `artifacts/product-evidence-demo-reports/`
   - `artifacts/product-evidence-demo-html-reports/`
 - El script imprime `LATEST_DEMO_MARKDOWN`.
+- El HTML generado no se abre automaticamente.
 
 ### Que muestra
 
@@ -166,6 +171,7 @@ git status --ignored --short artifacts
 - Summary.
 - Markdown.
 - HTML local opcional.
+- Snapshot HTML sanitizado.
 - Score/grade/readiness.
 - `partial` vs `ready_for_comparison`.
 
@@ -190,25 +196,23 @@ git status --ignored --short artifacts
 
 ## 9. Porcentaje actualizado
 
-- Core tecnico: 90-92%
+- Core tecnico: 91-93%
 - Safety: 90-92%
 - Cleanup: 88-90%
-- Validacion/CI confiable: 89-91%
+- Validacion/CI confiable: 90-92%
 - Web read-only: 87-89%
 - Retail public read-only: 82-84%
-- Evidence/reporting: 85-88%
-- Demo/reproducibilidad: 90-92%
-- MVP comercial serio: 68-71%
-- Producto completo/pro: 46-49%
+- Evidence/reporting: 89-92%
+- Demo/reproducibilidad: 92-94%
+- MVP comercial serio: 71-74%
+- Producto completo/pro: 49-52%
 
 ## 10. Que sigue recomendado
 
-- HITO-079+080+081 - HTML Report Export + Styled Demo Report + Golden Snapshot Tests.
-- HITO-082+083 - Demo Report Snapshot Expansion + Golden Files.
-- HITO-083+084 - Live Evidence Robustness / External Block Classification.
-- HITO-085+086 - Approval UX / Remote Review Concept.
-- HITO-087+088 - Local/Private Enterprise Mode Notes.
-- HITO-089+090 - Commercial MVP Landing Narrative.
+- HITO-085+086 - Live Evidence Robustness / External Block Classification.
+- HITO-087+088 - Approval UX / Remote Review Concept.
+- HITO-089+090 - Local/Private Enterprise Mode Notes.
+- HITO-091+092 - Commercial MVP Landing Narrative.
 
 ## 11. Prompt de arranque para nuevo chat
 
@@ -220,12 +224,14 @@ REPO ESPERADO: onediegopr/OneBrain
 Continuar desde master limpio.
 
 Estado base:
-- Ultimo commit: 02d90b0 freeze demo qa and public storyline
+- Ultimo commit: 2e8c4eb add html product evidence reports
 - Build esperado: 0 errors, 0 warnings
-- Tests esperados: 189/189 PASS
+- Tests esperados: 221/221 PASS
 - NEGATIVE_EXIT_CODE=1
 - Demo runner: tools/scripts/run-demo-product-evidence.ps1
 - Demo recipe: tools/recipes/demo-product-evidence-report.json
+- Demo HTML recipe: tools/recipes/demo-product-evidence-html-report.json
+- HTML snapshot fixture: samples/product-evidence-html/demo-product-evidence-report.html
 - Runtime artifacts bajo artifacts/ ignorado por Git
 - Firefox fixture quarantined diagnostic/flaky/autoRegression=false
 
@@ -247,12 +253,12 @@ Safety vigente:
 - No global taskkill
 
 Proximo hito recomendado:
-HITO-082+083 - Demo Report Snapshot Expansion + Golden Files.
+HITO-085+086 - Live Evidence Robustness / External Block Classification.
 
 Antes de tocar archivos:
 - verificar repo remoto onediegopr/OneBrain;
 - verificar branch master limpio;
-- verificar ultimo commit 02d90b0;
+- verificar ultimo commit 2e8c4eb;
 - usar SDK portable, no global dotnet.
 ```
 

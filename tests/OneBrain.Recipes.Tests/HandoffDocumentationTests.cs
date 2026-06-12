@@ -16,7 +16,7 @@ public sealed class HandoffDocumentationTests
     {
         var handoff = ReadHandoff();
 
-        StringAssert.Contains(handoff, "02d90b0");
+        StringAssert.Contains(handoff, "2e8c4eb");
     }
 
     [TestMethod]
@@ -25,6 +25,7 @@ public sealed class HandoffDocumentationTests
         var handoff = ReadHandoff();
 
         StringAssert.Contains(handoff, "189/189 PASS");
+        StringAssert.Contains(handoff, "221/221 PASS");
     }
 
     [TestMethod]
@@ -83,8 +84,8 @@ public sealed class HandoffDocumentationTests
     {
         var handoff = ReadHandoff();
 
-        StringAssert.Contains(handoff, "HITO-079+080");
-        StringAssert.Contains(handoff, "HITO-089+090");
+        StringAssert.Contains(handoff, "HITO-085+086");
+        StringAssert.Contains(handoff, "HITO-091+092");
     }
 
     [TestMethod]

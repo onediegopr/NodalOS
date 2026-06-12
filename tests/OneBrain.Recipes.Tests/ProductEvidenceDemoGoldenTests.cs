@@ -59,6 +59,20 @@ public sealed class ProductEvidenceDemoGoldenTests
     }
 
     [TestMethod]
+    public void Demo_Html_Includes_Polished_Demo_Sections_And_Badges()
+    {
+        var html = ProductEvidenceHtmlRenderer.Render(BuildDemoSummary());
+
+        StringAssert.Contains(html, "What this report shows");
+        StringAssert.Contains(html, "Safety guarantees");
+        StringAssert.Contains(html, "Decision readiness");
+        StringAssert.Contains(html, "badge badge-excellent");
+        StringAssert.Contains(html, "badge badge-partial");
+        StringAssert.Contains(html, "badge badge-ready-for-comparison");
+        StringAssert.Contains(html, "badge badge-needs-price-verification");
+    }
+
+    [TestMethod]
     public void Demo_Html_Does_Not_Promote_Sodimac_Raw_Price()
     {
         var summary = BuildDemoSummary();
@@ -82,6 +96,26 @@ public sealed class ProductEvidenceDemoGoldenTests
         Assert.IsFalse(recipe.Contains("\"invoke\"", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(recipe, "samples/product-evidence");
         StringAssert.Contains(recipe, "artifacts/product-evidence-demo-html-reports");
+    }
+
+    [TestMethod]
+    public void Demo_Html_Versioned_Fixture_Is_Sanitized()
+    {
+        var fixturePath = Path.Combine(GetRepoRoot(), "samples", "product-evidence-html", "demo-product-evidence-report.html");
+        Assert.IsTrue(File.Exists(fixturePath), "Versioned HTML fixture should exist.");
+
+        var fixture = File.ReadAllText(fixturePath);
+
+        StringAssert.Contains(fixture, "<!doctype html>");
+        StringAssert.Contains(fixture, "Product Evidence Report");
+        StringAssert.Contains(fixture, "GENERATED_AT_UTC");
+        StringAssert.Contains(fixture, "ready_for_comparison");
+        StringAssert.Contains(fixture, "needs_price_verification");
+        StringAssert.Contains(fixture, "199.00");
+        StringAssert.Contains(fixture, "\u2014");
+        Assert.IsFalse(fixture.Contains("C:\\Users\\", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(fixture.Contains("artifacts/", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(fixture.Contains("artifacts\\", StringComparison.OrdinalIgnoreCase));
     }
 
     private static ProductEvidenceSummary BuildDemoSummary()

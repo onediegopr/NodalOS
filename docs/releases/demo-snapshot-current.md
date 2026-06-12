@@ -5,11 +5,13 @@ Snapshot documental del estado actual de la demo estable de evidencia de product
 ## Base
 
 - Fecha: 2026-06-11
-- Ultimo commit base: `428127a document product evidence demo walkthrough`
-- Tests esperados: `169/169 PASS`
+- Ultimo commit base: `2e8c4eb add html product evidence reports`
+- Tests esperados: `221/221 PASS`
 - Demo script: `tools/scripts/run-demo-product-evidence.ps1`
 - Demo recipe: `tools/recipes/demo-product-evidence-report.json`
+- Demo HTML recipe: `tools/recipes/demo-product-evidence-html-report.json`
 - Samples versionados: `samples/product-evidence/`
+- HTML snapshot versionado: `samples/product-evidence-html/demo-product-evidence-report.html`
 
 ## Hitos incluidos
 
@@ -25,6 +27,10 @@ Snapshot documental del estado actual de la demo estable de evidencia de product
 - HITO-068+069: demo pack con samples estables.
 - HITO-070+071: one-command demo runner.
 - HITO-072+073: README y walkthrough de demo.
+- HITO-074+075: packaging y release snapshot.
+- HITO-076+077: QA freeze y public storyline.
+- HITO-078: handoff maestro.
+- HITO-079+080+081: HTML report export, styled demo report y golden snapshot tests.
 
 ## Capacidades actuales
 
@@ -33,8 +39,10 @@ Snapshot documental del estado actual de la demo estable de evidencia de product
 - JSON artifacts locales.
 - Summary multi-producto.
 - Markdown report humano.
+- HTML report local presentable.
 - Evidence score, grade y decision readiness.
 - Samples estables versionados.
+- Snapshot HTML sanitizado bajo `samples/`.
 - Demo local one-command.
 - README y walkthrough para demo comercial/tecnica.
 
@@ -59,6 +67,7 @@ Snapshot documental del estado actual de la demo estable de evidencia de product
 - No acepta cookies.
 - No genera PDF.
 - No tiene UI final.
+- No abre HTML automaticamente.
 - No garantiza extraccion live en sitios externos.
 - No intenta resolver bloqueos externos.
 
@@ -83,18 +92,26 @@ powershell -ExecutionPolicy Bypass -File tools/scripts/run-demo-product-evidence
 
 El script imprime `LATEST_DEMO_MARKDOWN` con el Markdown generado bajo `artifacts/product-evidence-demo-reports/`.
 
+HTML local:
+
+```powershell
+& $dotnet run --project src/OneBrain.Cli -- recipe run tools/recipes/demo-product-evidence-html-report.json
+```
+
+El HTML generado queda bajo `artifacts/product-evidence-demo-html-reports/` y no se versiona. El fixture estable versionado queda en `samples/product-evidence-html/demo-product-evidence-report.html`.
+
 ## Estado porcentual estimado
 
-- Core tecnico: 89-91%
-- Safety: 89-91%
+- Core tecnico: 91-93%
+- Safety: 90-92%
 - Cleanup: 88-90%
-- Validacion/CI confiable: 88-90%
+- Validacion/CI confiable: 90-92%
 - Web read-only: 87-89%
 - Retail public read-only: 82-84%
-- Evidence/reporting: 84-87%
-- Demo/reproducibilidad: 85-88%
-- MVP comercial serio: 65-68%
-- Producto completo/pro: 43-46%
+- Evidence/reporting: 89-92%
+- Demo/reproducibilidad: 92-94%
+- MVP comercial serio: 71-74%
+- Producto completo/pro: 49-52%
 
 ## Claims y limites que no se deben vender como promesas
 

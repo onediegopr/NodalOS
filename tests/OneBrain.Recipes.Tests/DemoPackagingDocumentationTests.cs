@@ -47,7 +47,7 @@ public sealed class DemoPackagingDocumentationTests
     {
         var snapshot = ReadDoc("docs/releases/demo-snapshot-current.md");
 
-        StringAssert.Contains(snapshot, "428127a");
+        StringAssert.Contains(snapshot, "2e8c4eb");
     }
 
     [TestMethod]

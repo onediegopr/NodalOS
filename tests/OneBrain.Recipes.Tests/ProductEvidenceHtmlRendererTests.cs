@@ -35,6 +35,18 @@ public sealed class ProductEvidenceHtmlRendererTests
     }
 
     [TestMethod]
+    public void Render_Includes_Report_Context_Sections()
+    {
+        var html = ProductEvidenceHtmlRenderer.Render(CreateSummary());
+
+        StringAssert.Contains(html, "What this report shows");
+        StringAssert.Contains(html, "Safety guarantees");
+        StringAssert.Contains(html, "Decision readiness");
+        StringAssert.Contains(html, "No live web access is required for the stable demo.");
+        StringAssert.Contains(html, "Missing price means the visible evidence did not confirm price.");
+    }
+
+    [TestMethod]
     public void Render_Includes_Products_Table()
     {
         var html = ProductEvidenceHtmlRenderer.Render(CreateSummary());
@@ -52,6 +64,15 @@ public sealed class ProductEvidenceHtmlRendererTests
         StringAssert.Contains(html, "<th class=\"number\">Score</th>");
         StringAssert.Contains(html, "<th>Grade</th>");
         StringAssert.Contains(html, "needs_price_verification");
+    }
+
+    [TestMethod]
+    public void Render_Includes_Badge_Classes_For_Quality_And_Readiness()
+    {
+        var html = ProductEvidenceHtmlRenderer.Render(CreateSummary());
+
+        StringAssert.Contains(html, "badge badge-partial");
+        StringAssert.Contains(html, "badge badge-needs-price-verification");
     }
 
     [TestMethod]
