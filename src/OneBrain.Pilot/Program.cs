@@ -114,7 +114,22 @@ app.MapGet("/executor-harness", () =>
 {
     var target = ExecutorHarnessDemoFixture.CreateTarget();
     var approval = ExecutorHarnessService.CreateApprovalRequest(target);
-    return Results.Content(PilotHomePageRenderer.RenderExecutorHarness(target, approval), "text/html");
+    var dryRun = ExecutorHarnessService.BuildDryRunExplanation(target);
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarness(target, approval, dryRun: dryRun), "text/html");
+});
+
+app.MapGet("/executor-harness/dry-run", () =>
+{
+    var target = ExecutorHarnessDemoFixture.CreateTarget();
+    var approval = ExecutorHarnessService.CreateApprovalRequest(target);
+    var dryRun = ExecutorHarnessService.BuildDryRunExplanation(target);
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarness(target, approval, dryRun: dryRun), "text/html");
+});
+
+app.MapGet("/executor-harness/replay", () =>
+{
+    var replay = ExecutorHarnessArtifactStore.ReadLatest(root);
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarnessReplay(replay), "text/html");
 });
 
 app.MapPost("/executor-harness/click", () =>
@@ -138,8 +153,9 @@ app.MapPost("/executor-harness/click", () =>
     var approvalWrite = ApprovalArtifactWriter.WriteRequest(root, approval);
     var decisionWrite = ApprovalArtifactWriter.WriteDecision(root, decision);
     var runWrite = RunHistoryStore.Write(root, result.RunHistory);
+    var dryRun = ExecutorHarnessService.BuildDryRunExplanation(target, decision);
 
-    return Results.Content(PilotHomePageRenderer.RenderExecutorHarness(target, approval, decision, result, evidenceWrite, approvalWrite, decisionWrite, runWrite), "text/html");
+    return Results.Content(PilotHomePageRenderer.RenderExecutorHarness(target, approval, decision, result, evidenceWrite, approvalWrite, decisionWrite, runWrite, dryRun), "text/html");
 });
 
 app.MapPost("/playback/demo/confirm", async (HttpContext context) =>

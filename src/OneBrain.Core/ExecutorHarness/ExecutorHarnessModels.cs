@@ -31,6 +31,63 @@ public sealed record ExecutorHarnessClickCommand(
     string ExpectedTargetName,
     string ActionKind);
 
+public sealed record ExecutorHarnessWindowConstraints(
+    string TitleContains,
+    bool LocalPilotOnly,
+    bool ExternalNavigationBlocked);
+
+public sealed record ExecutorHarnessTargetConstraints(
+    string TargetRef,
+    string ExpectedTargetName,
+    bool AllowOnlyExactBenignHarnessTarget,
+    bool UserConfigurableTargetAllowed);
+
+public sealed record ExecutorHarnessApprovalState(
+    string ApprovalRequestId,
+    string? ApprovalDecisionId,
+    bool RequiresApproval,
+    bool Approved,
+    bool ExecutionAllowed,
+    bool FailClosed);
+
+public sealed record ExecutorHarnessPreActionState(
+    bool DryRunOnly,
+    bool ExecutorWillRun,
+    IReadOnlyList<string> Checks);
+
+public sealed record ExecutorHarnessPostActionExpectation(
+    bool WindowMustRemainVisible,
+    bool TargetMustRemainVisible,
+    string ExpectedTargetName,
+    int ExpectedClickCount,
+    IReadOnlyList<string> RequiredSignals);
+
+public sealed record ExecutorHarnessInteractionContract(
+    string ContractId,
+    string CreatedAtUtc,
+    string HarnessId,
+    string AppProfileId,
+    ExecutorHarnessWindowConstraints WindowConstraints,
+    ExecutorHarnessTargetConstraints TargetConstraints,
+    ExecutorHarnessTargetResolution ResolvedTarget,
+    string ActionKind,
+    ExecutorHarnessApprovalState ApprovalState,
+    ExecutorHarnessSafetyMatrixEvaluation SafetyMatrix,
+    ExecutorHarnessPreActionState PreActionState,
+    ExecutorHarnessPostActionExpectation PostActionExpectation,
+    string LogicalEvidencePath);
+
+public sealed record ExecutorHarnessDryRunExplanation(
+    ExecutorHarnessInteractionContract Contract,
+    bool WouldExecute,
+    string Status,
+    string Summary,
+    string Element,
+    string SelectionReason,
+    IReadOnlyList<string> SafetyRules,
+    IReadOnlyList<string> BlockingConditions,
+    IReadOnlyList<string> Notes);
+
 public sealed record ExecutorHarnessTargetResolution(
     bool Success,
     string Status,
@@ -98,7 +155,8 @@ public sealed record ExecutorHarnessEvidenceRecord(
     string? ApprovalDecisionId,
     ExecutorHarnessPostActionVerification Verification,
     RunSafetyCounters SafetyCounters,
-    IReadOnlyList<string> Notes);
+    IReadOnlyList<string> Notes,
+    ExecutorHarnessInteractionContract? InteractionContract = null);
 
 public sealed record ExecutorHarnessArtifactWriteResult
 {
@@ -114,4 +172,12 @@ public sealed record ExecutorHarnessSafetyMatrixEvaluation(
     IReadOnlyList<string> Passed,
     IReadOnlyList<string> Blocked,
     IReadOnlyList<string> RequiresApproval,
+    IReadOnlyList<string> Notes);
+
+public sealed record ExecutorHarnessEvidenceReplay(
+    bool Success,
+    string Status,
+    string Message,
+    string RelativePath,
+    ExecutorHarnessEvidenceRecord? Evidence,
     IReadOnlyList<string> Notes);

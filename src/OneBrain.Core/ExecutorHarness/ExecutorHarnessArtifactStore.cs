@@ -38,6 +38,74 @@ public static class ExecutorHarnessArtifactStore
         }
     }
 
+    public static ExecutorHarnessEvidenceReplay ReadLatest(string baseDirectory)
+    {
+        try
+        {
+            var root = GetRoot(baseDirectory);
+            if (!Directory.Exists(root))
+            {
+                return new ExecutorHarnessEvidenceReplay(
+                    Success: true,
+                    Status: "empty",
+                    Message: "No executor harness evidence exists yet.",
+                    RelativePath: "",
+                    Evidence: null,
+                    Notes: ["runtime artifacts are local only", "no action was executed by replay"]);
+            }
+
+            var latest = Directory.GetFiles(root, "*-executor-harness.json")
+                .Select(path => new FileInfo(path))
+                .OrderByDescending(file => file.LastWriteTimeUtc)
+                .FirstOrDefault();
+
+            if (latest == null)
+            {
+                return new ExecutorHarnessEvidenceReplay(
+                    Success: true,
+                    Status: "empty",
+                    Message: "No executor harness evidence exists yet.",
+                    RelativePath: "",
+                    Evidence: null,
+                    Notes: ["runtime artifacts are local only", "no action was executed by replay"]);
+            }
+
+            EnsureInsideRoot(root, latest.FullName);
+            var envelope = JsonSerializer.Deserialize<ExecutorHarnessEvidenceEnvelope>(
+                File.ReadAllText(latest.FullName),
+                JsonOptions);
+
+            if (envelope?.Evidence == null)
+            {
+                return new ExecutorHarnessEvidenceReplay(
+                    Success: false,
+                    Status: ExecutorHarnessStatuses.Failed,
+                    Message: "Executor harness evidence could not be parsed.",
+                    RelativePath: ToRelativePath(baseDirectory, latest.FullName),
+                    Evidence: null,
+                    Notes: ["replay is read-only"]);
+            }
+
+            return new ExecutorHarnessEvidenceReplay(
+                Success: true,
+                Status: envelope.Evidence.Status,
+                Message: "Executor harness evidence replay loaded.",
+                RelativePath: ToRelativePath(baseDirectory, latest.FullName),
+                Evidence: envelope.Evidence,
+                Notes: ["replay is read-only", "no click is executed by replay", "artifacts remain local runtime data"]);
+        }
+        catch (Exception ex)
+        {
+            return new ExecutorHarnessEvidenceReplay(
+                Success: false,
+                Status: ExecutorHarnessStatuses.Failed,
+                Message: ex.Message,
+                RelativePath: "",
+                Evidence: null,
+                Notes: ["replay failed closed"]);
+        }
+    }
+
     public static string BuildFileName(ExecutorHarnessEvidenceRecord evidence)
     {
         return $"{TimestampSegment(evidence.CreatedAtUtc)}-{SanitizeSegment(evidence.EvidenceId)}-executor-harness.json";

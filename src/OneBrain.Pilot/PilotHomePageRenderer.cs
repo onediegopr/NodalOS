@@ -642,8 +642,10 @@ public static class PilotHomePageRenderer
         ExecutorHarnessArtifactWriteResult? evidenceWrite = null,
         ApprovalArtifactWriteResult? approvalWrite = null,
         ApprovalArtifactWriteResult? decisionWrite = null,
-        RunHistoryArtifactWriteResult? runWrite = null)
+        RunHistoryArtifactWriteResult? runWrite = null,
+        ExecutorHarnessDryRunExplanation? dryRun = null)
     {
+        dryRun ??= ExecutorHarnessService.BuildDryRunExplanation(target, decision);
         return $$"""
 <!doctype html>
 <html lang="es">
@@ -662,6 +664,7 @@ public static class PilotHomePageRenderer
       <p>Esta pantalla es el primer harness para ejecutar un click real, pero solo sobre un objetivo benigno dentro de ONE BRAIN Pilot. No toca sitios externos, no acepta cookies, no inicia sesion, no compra, no paga y no envia mensajes.</p>
       <p class="notice">Fail-closed: si falta aprobacion, target seguro o executor seguro, ONE BRAIN bloquea la accion y registra evidencia de bloqueo.</p>
       {{ConceptHint("Que se va a hacer", "ONE BRAIN buscara esta misma ventana local de Pilot por titulo, resolvera el boton benigno por nombre y ejecutara un unico click UIA supervisado. Despues verificara el resultado y escribira artifacts locales.")}}
+      <p><a class="button ghost" href="/executor-harness/dry-run">Ver dry-run explicable</a> <a class="button ghost" href="/executor-harness/replay">Ver replay de evidencia</a></p>
     </section>
 
     <section class="grid">
@@ -687,7 +690,35 @@ public static class PilotHomePageRenderer
       </div>
     </section>
 
+    {{ExecutorHarnessDryRunBlock(dryRun)}}
     {{ExecutorHarnessResultBlock(result, evidenceWrite, approvalWrite, decisionWrite, runWrite, decision)}}
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderExecutorHarnessReplay(ExecutorHarnessEvidenceReplay replay)
+    {
+        return $$"""
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Replay evidencia harness</title>
+  {{SharedPilotStyle()}}
+</head>
+<body>
+  <main>
+    {{PilotChrome("Replay evidencia harness")}}
+    <section class="card">
+      <p><span class="badge info">read-only</span> <span class="badge safe">sin click</span> <span class="badge safe">sin auto-open</span></p>
+      <h1>Replay de evidencia del executor harness</h1>
+      <p>Esta pantalla reconstruye el ultimo artifact local de <span class="path">artifacts/executor-harness/</span>. No ejecuta acciones, no abre archivos y no hace clicks.</p>
+      <p><a class="button" href="/executor-harness">Volver al harness</a></p>
+    </section>
+    {{ExecutorHarnessReplayBlock(replay)}}
   </main>
 </body>
 </html>
@@ -2180,6 +2211,65 @@ wouldCallProvider={result.Decision.WouldCallProvider}
   <p>Evidencia: {{Html(string.Join("; ", result.Evidence))}}</p>
   <p>Rutas locales generadas: <span class="path">{{Html(paths.Count == 0 ? "sin artifacts escritos" : string.Join("; ", paths))}}</span></p>
   <p><span class="badge safe">0 cookies</span> <span class="badge safe">0 login</span> <span class="badge safe">0 carrito</span> <span class="badge safe">0 compra</span> <span class="badge safe">0 pago</span></p>
+</section>
+""";
+    }
+
+    private static string ExecutorHarnessDryRunBlock(ExecutorHarnessDryRunExplanation dryRun)
+    {
+        var contract = dryRun.Contract;
+        var badgeClass = dryRun.WouldExecute ? "approval" : "blocked";
+        return $$"""
+<section class="card">
+  <h2>Dry-run explicable antes de ejecutar</h2>
+  <p><span class="badge {{badgeClass}}">{{Html(dryRun.Status)}}</span> {{Html(dryRun.Summary)}}</p>
+  <div class="metric"><span>Elemento que se tocaria</span><strong>{{Html(dryRun.Element)}}</strong></div>
+  <div class="metric"><span>Por que fue seleccionado</span><strong>{{Html(dryRun.SelectionReason)}}</strong></div>
+  <div class="metric"><span>Contrato</span><strong>{{Html(contract.ContractId)}}</strong></div>
+  <div class="metric"><span>Target resuelto</span><strong>{{Html(contract.ResolvedTarget.Status)}} - {{Html(contract.ResolvedTarget.Message)}}</strong></div>
+  <div class="metric"><span>Matriz de seguridad</span><strong>{{Html(contract.SafetyMatrix.Status)}}</strong></div>
+  <div class="metric"><span>ExecutionAllowed</span><strong>{{SpanishBool(contract.ApprovalState.ExecutionAllowed)}}</strong></div>
+  <div class="metric"><span>Dry-run only</span><strong>{{SpanishBool(contract.PreActionState.DryRunOnly)}}</strong></div>
+  <p><strong>Reglas aplicadas:</strong> {{Html(string.Join("; ", dryRun.SafetyRules))}}</p>
+  <p><strong>Condiciones que bloquearian:</strong> {{Html(dryRun.BlockingConditions.Count == 0 ? "sin bloqueos" : string.Join("; ", dryRun.BlockingConditions))}}</p>
+  <p><strong>Expectativa post-accion:</strong> ventana visible, target visible, nombre {{Html(contract.PostActionExpectation.ExpectedTargetName)}} y {{contract.PostActionExpectation.ExpectedClickCount}} click.</p>
+  <p class="notice">Este dry-run no llama al executor UIA, no hace click y no escribe evidencia runtime.</p>
+</section>
+""";
+    }
+
+    private static string ExecutorHarnessReplayBlock(ExecutorHarnessEvidenceReplay replay)
+    {
+        if (replay.Evidence == null)
+        {
+            return $$"""
+<section class="card">
+  <h2>Estado de replay</h2>
+  <p><span class="badge disabled">{{Html(replay.Status)}}</span> {{Html(replay.Message)}}</p>
+  <p>No hay evidencia runtime del harness todavia. Cuando exista un artifact local, aparecera aca como reconstruccion read-only.</p>
+  <p>{{Html(string.Join("; ", replay.Notes))}}</p>
+</section>
+""";
+        }
+
+        var evidence = replay.Evidence;
+        var contract = evidence.InteractionContract;
+        return $$"""
+<section class="card">
+  <h2>Artifact reconstruido</h2>
+  <p><span class="badge info">{{Html(replay.Status)}}</span> {{Html(replay.Message)}}</p>
+  <div class="metric"><span>Ruta de evidencia</span><strong>{{Html(replay.RelativePath)}}</strong></div>
+  <div class="metric"><span>Evidence ID</span><strong>{{Html(evidence.EvidenceId)}}</strong></div>
+  <div class="metric"><span>Harness</span><strong>{{Html(evidence.HarnessId)}}</strong></div>
+  <div class="metric"><span>Approval request</span><strong>{{Html(evidence.ApprovalRequestId)}}</strong></div>
+  <div class="metric"><span>Approval decision</span><strong>{{Html(evidence.ApprovalDecisionId ?? "-")}}</strong></div>
+  <div class="metric"><span>Post-state</span><strong>{{Html(evidence.Verification.Status)}} - target={{SpanishBool(evidence.Verification.TargetFound)}} click={{SpanishBool(evidence.Verification.ClickObserved)}}</strong></div>
+  <div class="metric"><span>Safety counters</span><strong>{{Safety(evidence.SafetyCounters)}}</strong></div>
+  <p><strong>Contrato:</strong> {{Html(contract == null ? "artifact antiguo sin contrato embebido" : contract.ContractId)}}</p>
+  <p><strong>Resolucion de target:</strong> {{Html(contract == null ? "-" : $"{contract.ResolvedTarget.Status} - {contract.ResolvedTarget.Message}")}}</p>
+  <p><strong>Matriz:</strong> {{Html(contract == null ? "-" : contract.SafetyMatrix.Status)}}</p>
+  <p><strong>Comando:</strong> {{Html(contract == null ? "-" : $"{contract.ActionKind} -> {contract.TargetConstraints.TargetRef}")}}</p>
+  <p><strong>Notas:</strong> {{Html(string.Join("; ", evidence.Notes.Concat(replay.Notes)))}}</p>
 </section>
 """;
     }

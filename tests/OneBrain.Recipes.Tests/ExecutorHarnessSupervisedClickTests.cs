@@ -137,6 +137,47 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Interaction_Contract_Captures_Target_Approval_Safety_And_Post_State_Expectation()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+
+        var contract = ExecutorHarnessService.BuildInteractionContract(target, request, decision, dryRunOnly: false);
+
+        Assert.AreEqual(target.HarnessId, contract.HarnessId);
+        Assert.AreEqual(target.AppProfileId, contract.AppProfileId);
+        Assert.AreEqual(target.WindowTitleContains, contract.WindowConstraints.TitleContains);
+        Assert.AreEqual(target.TargetRef, contract.TargetConstraints.TargetRef);
+        Assert.IsFalse(contract.TargetConstraints.UserConfigurableTargetAllowed);
+        Assert.IsTrue(contract.ResolvedTarget.Success);
+        Assert.IsTrue(contract.ApprovalState.Approved);
+        Assert.IsTrue(contract.ApprovalState.ExecutionAllowed);
+        Assert.AreEqual("allowed", contract.SafetyMatrix.Status);
+        Assert.IsFalse(contract.PreActionState.DryRunOnly);
+        Assert.IsTrue(contract.PreActionState.ExecutorWillRun);
+        Assert.IsTrue(string.Equals(target.ExpectedTargetName, contract.PostActionExpectation.ExpectedTargetName, StringComparison.Ordinal));
+        if (contract.PostActionExpectation.ExpectedClickCount != 1)
+            Assert.Fail($"Expected click count 1, got {contract.PostActionExpectation.ExpectedClickCount}.");
+        StringAssert.Contains(contract.LogicalEvidencePath, "artifacts/executor-harness");
+    }
+
+    [TestMethod]
+    public void Harness_Dry_Run_Explains_Fail_Closed_Without_Calling_Executor()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+
+        var dryRun = ExecutorHarnessService.BuildDryRunExplanation(target);
+
+        Assert.IsFalse(dryRun.WouldExecute);
+        Assert.AreEqual("fail_closed_dry_run", dryRun.Status);
+        Assert.IsTrue(dryRun.Contract.PreActionState.DryRunOnly);
+        Assert.IsFalse(dryRun.Contract.PreActionState.ExecutorWillRun);
+        CollectionAssert.Contains(dryRun.BlockingConditions.ToList(), "approval decision is required");
+        StringAssert.Contains(string.Join(" ", dryRun.Notes), "does not click");
+    }
+
+    [TestMethod]
     public void Harness_Executes_One_Benign_Click_And_Verifies_Post_Action()
     {
         var target = ExecutorHarnessDemoFixture.CreateTarget();
@@ -211,6 +252,56 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Evidence_Record_Embeds_Interaction_Contract_For_Replay()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+        var result = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true));
+
+        var evidence = ExecutorHarnessService.ToEvidenceRecord(result);
+
+        Assert.IsNotNull(evidence.InteractionContract);
+        Assert.AreEqual(target.HarnessId, evidence.InteractionContract.HarnessId);
+        Assert.AreEqual("allowed", evidence.InteractionContract.SafetyMatrix.Status);
+        Assert.IsTrue(evidence.InteractionContract.ApprovalState.ExecutionAllowed);
+    }
+
+    [TestMethod]
+    public void Harness_Replay_Returns_Empty_State_When_No_Evidence_Exists()
+    {
+        var root = NewTempRoot();
+
+        var replay = ExecutorHarnessArtifactStore.ReadLatest(root);
+
+        Assert.IsTrue(replay.Success);
+        Assert.AreEqual("empty", replay.Status);
+        Assert.IsNull(replay.Evidence);
+        StringAssert.Contains(replay.Message, "No executor harness evidence");
+    }
+
+    [TestMethod]
+    public void Harness_Replay_Reads_Latest_Evidence_Read_Only()
+    {
+        var root = NewTempRoot();
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+        var result = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true));
+        var write = ExecutorHarnessArtifactStore.Write(root, ExecutorHarnessService.ToEvidenceRecord(result));
+
+        var replay = ExecutorHarnessArtifactStore.ReadLatest(root);
+
+        Assert.IsTrue(write.Success, write.Error);
+        Assert.IsTrue(replay.Success, replay.Message);
+        Assert.IsNotNull(replay.Evidence);
+        Assert.AreEqual(result.Target.HarnessId, replay.Evidence.HarnessId);
+        Assert.IsNotNull(replay.Evidence.InteractionContract);
+        StringAssert.Contains(replay.RelativePath, "artifacts/executor-harness");
+        StringAssert.Contains(string.Join(" ", replay.Notes), "no click is executed");
+    }
+
+    [TestMethod]
     public void Pilot_Render_Shows_Executor_Harness_Safety_And_Evidence()
     {
         var target = ExecutorHarnessDemoFixture.CreateTarget();
@@ -224,6 +315,8 @@ public sealed class ExecutorHarnessSupervisedClickTests
         StringAssert.Contains(html, "sin MercadoLibre");
         StringAssert.Contains(html, "sin compra/pago/login/cookies");
         StringAssert.Contains(html, "Objetivo benigno del harness");
+        StringAssert.Contains(html, "Dry-run explicable antes de ejecutar");
+        StringAssert.Contains(html, "Ver replay de evidencia");
         StringAssert.Contains(home, "href=\"/executor-harness\"");
     }
 

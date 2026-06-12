@@ -6,6 +6,110 @@ namespace OneBrain.Core.ExecutorHarness;
 
 public static class ExecutorHarnessService
 {
+    public static ExecutorHarnessDryRunExplanation BuildDryRunExplanation(
+        ExecutorHarnessTarget target,
+        ApprovalDecision? decision = null,
+        DateTimeOffset? now = null)
+    {
+        var approval = CreateApprovalRequest(target, now);
+        var contract = BuildInteractionContract(target, approval, decision, dryRunOnly: true, now: now);
+        var blocking = contract.SafetyMatrix.Blocked
+            .Concat(contract.ApprovalState.RequiresApproval && !contract.ApprovalState.ExecutionAllowed
+                ? ["approval is required before executor can run"]
+                : Array.Empty<string>())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return new ExecutorHarnessDryRunExplanation(
+            Contract: contract,
+            WouldExecute: contract.SafetyMatrix.Allowed && contract.ApprovalState.ExecutionAllowed,
+            Status: contract.SafetyMatrix.Allowed && contract.ApprovalState.ExecutionAllowed ? "would_execute_if_submitted" : "fail_closed_dry_run",
+            Summary: contract.SafetyMatrix.Allowed && contract.ApprovalState.ExecutionAllowed
+                ? "Dry-run: the scoped benign harness click would be allowed if the supervised POST is submitted."
+                : "Dry-run: execution remains blocked until scoped approval and all safety checks pass.",
+            Element: $"{target.TargetRef} ({target.ExpectedTargetName})",
+            SelectionReason: contract.ResolvedTarget.Success
+                ? "Selected only because it matches the exact benign local Pilot harness target."
+                : contract.ResolvedTarget.Message,
+            SafetyRules:
+            [
+                "only one allowlisted harness id is accepted",
+                "only one local Pilot app profile is accepted",
+                "only the exact benign target name is accepted",
+                "no user-configurable target is accepted",
+                "approval and ExecutionAllowed=true are required",
+                "post-action state must verify the same target and exactly one click"
+            ],
+            BlockingConditions: blocking,
+            Notes:
+            [
+                "dry-run does not call the UIA executor",
+                "dry-run does not click",
+                "dry-run does not write runtime evidence"
+            ]);
+    }
+
+    public static ExecutorHarnessInteractionContract BuildInteractionContract(
+        ExecutorHarnessTarget target,
+        ApprovalRequest approval,
+        ApprovalDecision? decision,
+        bool dryRunOnly,
+        DateTimeOffset? now = null)
+    {
+        var targetResolution = ExecutorHarnessTargetResolver.ResolveTarget(target);
+        var safetyMatrix = ExecutorHarnessSafetyMatrix.Evaluate(target, decision);
+        var approved = decision != null &&
+                       string.Equals(decision.Decision, ApprovalDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase);
+        var executionAllowed = decision?.ExecutionAllowed == true && safetyMatrix.Allowed;
+
+        return new ExecutorHarnessInteractionContract(
+            ContractId: $"contract-{Guid.NewGuid():N}",
+            CreatedAtUtc: Timestamp(now),
+            HarnessId: target.HarnessId,
+            AppProfileId: target.AppProfileId,
+            WindowConstraints: new ExecutorHarnessWindowConstraints(
+                TitleContains: target.WindowTitleContains,
+                LocalPilotOnly: true,
+                ExternalNavigationBlocked: true),
+            TargetConstraints: new ExecutorHarnessTargetConstraints(
+                TargetRef: target.TargetRef,
+                ExpectedTargetName: target.ExpectedTargetName,
+                AllowOnlyExactBenignHarnessTarget: true,
+                UserConfigurableTargetAllowed: false),
+            ResolvedTarget: targetResolution,
+            ActionKind: target.ActionKind,
+            ApprovalState: new ExecutorHarnessApprovalState(
+                ApprovalRequestId: approval.ApprovalRequestId,
+                ApprovalDecisionId: decision?.ApprovalDecisionId,
+                RequiresApproval: approval.RequiresApproval,
+                Approved: approved,
+                ExecutionAllowed: executionAllowed,
+                FailClosed: approval.FailClosed || !safetyMatrix.Allowed),
+            SafetyMatrix: safetyMatrix,
+            PreActionState: new ExecutorHarnessPreActionState(
+                DryRunOnly: dryRunOnly,
+                ExecutorWillRun: !dryRunOnly && executionAllowed,
+                Checks:
+                [
+                    targetResolution.Success ? "target resolution passed" : "target resolution blocked",
+                    safetyMatrix.Allowed ? "safety matrix allowed" : "safety matrix blocked",
+                    executionAllowed ? "approval allows scoped execution" : "approval does not allow execution"
+                ]),
+            PostActionExpectation: new ExecutorHarnessPostActionExpectation(
+                WindowMustRemainVisible: true,
+                TargetMustRemainVisible: true,
+                ExpectedTargetName: target.ExpectedTargetName,
+                ExpectedClickCount: 1,
+                RequiredSignals:
+                [
+                    "postAction.windowFound=true",
+                    "postAction.targetVisible=true",
+                    $"postAction.targetName={target.ExpectedTargetName}",
+                    "postAction.observedClicks=1"
+                ]),
+            LogicalEvidencePath: $"{ExecutorHarnessArtifactStore.RelativeDirectory}/{target.HarnessId}-evidence.json");
+    }
+
     public static ApprovalRequest CreateApprovalRequest(ExecutorHarnessTarget target, DateTimeOffset? now = null)
     {
         return ApprovalPolicy.CreateRequest(
@@ -91,6 +195,13 @@ public static class ExecutorHarnessService
     public static ExecutorHarnessEvidenceRecord ToEvidenceRecord(ExecutorHarnessRunResult result, DateTimeOffset? now = null)
     {
         var timestamp = Timestamp(now);
+        var contract = BuildInteractionContract(
+            result.Target,
+            result.ApprovalRequest,
+            result.ApprovalDecision,
+            dryRunOnly: false,
+            now: now);
+
         return new ExecutorHarnessEvidenceRecord(
             EvidenceId: $"evidence-{Guid.NewGuid():N}",
             CreatedAtUtc: timestamp,
@@ -106,7 +217,8 @@ public static class ExecutorHarnessService
                 "first real click is scoped to a benign local harness target",
                 "no MercadoLibre, no external commercial website, no login, no cookies, no cart, no purchase, no payment",
                 "post-action verification is required before marking the harness result succeeded"
-            ]);
+            ],
+            InteractionContract: contract);
     }
 
     private static ExecutorHarnessPostActionVerification VerifyPostAction(ExecutorHarnessTarget target, ExecutorHarnessExecutorResult executorResult)
