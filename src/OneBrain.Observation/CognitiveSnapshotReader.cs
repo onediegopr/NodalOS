@@ -1,6 +1,7 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
 using OneBrain.Core.Models;
+using OneBrain.Observation.Sessions;
 using OneBrain.Observation.Uia;
 using OneBrain.Observation.Windows;
 
@@ -14,30 +15,29 @@ public sealed class CognitiveSnapshotReader
 
     public CognitiveSnapshot? Read(string? processName = null, string? windowTitle = null)
     {
-        using var automation = new UIA3Automation();
+        using var session = new PerceptionSession();
+        return Read(session, processName, windowTitle);
+    }
 
-        var hwnd = IntPtr.Zero;
-
-        if (!string.IsNullOrEmpty(processName) || !string.IsNullOrEmpty(windowTitle))
-        {
-            hwnd = _windowFinder.FindWindow(processName, windowTitle);
-        }
-        else
-        {
-            hwnd = ForegroundWindowReader.GetForegroundWindow();
-        }
-
+    public CognitiveSnapshot? Read(PerceptionSession session, string? processName = null, string? windowTitle = null)
+    {
+        var hwnd = ResolveHwnd(processName, windowTitle);
         if (hwnd == IntPtr.Zero) return null;
-
-        return ReadCore(automation, hwnd, processName);
+        return ReadCore(session.Automation, hwnd, processName);
     }
 
     /// <summary>Read snapshot from a specific HWND. Bypasses process/title search.</summary>
     public CognitiveSnapshot? ReadFromHwnd(IntPtr hwnd, string? processName = null)
     {
         if (hwnd == IntPtr.Zero) return null;
-        using var automation = new UIA3Automation();
-        return ReadCore(automation, hwnd, processName);
+        using var session = new PerceptionSession();
+        return ReadFromHwnd(session, hwnd, processName);
+    }
+
+    public CognitiveSnapshot? ReadFromHwnd(PerceptionSession session, IntPtr hwnd, string? processName = null)
+    {
+        if (hwnd == IntPtr.Zero) return null;
+        return ReadCore(session.Automation, hwnd, processName);
     }
 
     private CognitiveSnapshot? ReadCore(UIA3Automation automation, IntPtr hwnd, string? processName)
@@ -54,5 +54,13 @@ public sealed class CognitiveSnapshotReader
         var (elements, truncated) = _elementReader.ReadFromHandleDetailed(
             automation, hwnd, maxElements, alwaysInclude, relaxOffscreen: isBrowser);
         return new CognitiveSnapshot(window, elements, truncated);
+    }
+
+    private IntPtr ResolveHwnd(string? processName, string? windowTitle)
+    {
+        if (!string.IsNullOrEmpty(processName) || !string.IsNullOrEmpty(windowTitle))
+            return _windowFinder.FindWindow(processName, windowTitle);
+
+        return ForegroundWindowReader.GetForegroundWindow();
     }
 }

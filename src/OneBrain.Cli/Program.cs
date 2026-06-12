@@ -1,4 +1,5 @@
 using OneBrain.Cli;
+using OneBrain.Cli.Diagnostics;
 using OneBrain.Cli.Recipes;
 using System.Text.Json;
 using OneBrain.Core.Actions;
@@ -307,10 +308,23 @@ else if (cmd == "recipe")
 // ── diagnose uia ─────────────────────────────────────────────────────────────
 else if (cmd == "diagnose")
 {
-    if (argsList.Count < 2 || argsList[1].ToLowerInvariant() != "uia")
+    if (argsList.Count < 2)
     {
-        Console.WriteLine("Usage: diagnose uia --process VALUE [--window VALUE]");
-        Console.WriteLine("                    [--contains TEXT] [--role ROLE] [--raw]");
+        PrintDiagnoseUsage();
+        return;
+    }
+
+    var diagnoseMode = argsList[1].ToLowerInvariant();
+
+    if (diagnoseMode == "baseline")
+    {
+        HandleDiagnoseBaseline(argsList);
+        return;
+    }
+
+    if (diagnoseMode != "uia")
+    {
+        PrintDiagnoseUsage();
         return;
     }
 
@@ -601,6 +615,7 @@ Console.WriteLine("        [--name TEXT | --role ROLE | --title-contains TEXT] [
     Console.WriteLine("  diagnose uia --process msedge --contains \"ONE Brain\"");
     Console.WriteLine("  diagnose uia --process msedge --role Edit");
     Console.WriteLine("  diagnose uia --process msedge --raw");
+    Console.WriteLine("  diagnose baseline --process Notepad --iterations 5");
     Console.WriteLine("  wait --process msedge --name \"ONE Brain Search\" --timeout 5000");
     Console.WriteLine("  wait --process msedge --title-contains \"ONE Brain\" --timeout 5000");
       Console.WriteLine("  actv type   --process msedge --name \"ONE Brain Search\" \"hola\"");
@@ -1037,4 +1052,35 @@ static void PrintVisualUsage()
     Console.WriteLine("visual capture region --x X --y Y --width W --height H [--out PATH]");
     Console.WriteLine("visual capture fullscreen --allow-fullscreen [--out PATH]");
     Console.WriteLine("visual verify changed --before PATH --after PATH [--threshold N] [--output-diff PATH]");
+}
+
+static void PrintDiagnoseUsage()
+{
+    Console.WriteLine("Usage: diagnose uia --process VALUE [--window VALUE]");
+    Console.WriteLine("                    [--contains TEXT] [--role ROLE] [--raw]");
+    Console.WriteLine("       diagnose baseline --process VALUE [--iterations N]");
+}
+
+static void HandleDiagnoseBaseline(List<string> argsList)
+{
+    string? process = null;
+    var iterations = 5;
+
+    for (int i = 2; i < argsList.Count; i++)
+    {
+        var a = argsList[i];
+        if (a == "--process" && i + 1 < argsList.Count)
+            process = argsList[++i];
+        else if (a == "--iterations" && i + 1 < argsList.Count)
+            int.TryParse(argsList[++i], out iterations);
+    }
+
+    if (string.IsNullOrWhiteSpace(process))
+    {
+        Console.Error.WriteLine("Error: --process required for diagnose baseline.");
+        return;
+    }
+
+    var result = BaselineDiagnosticRunner.Run(process, iterations);
+    Console.WriteLine(BaselineDiagnosticRunner.SerializeForCli(result));
 }

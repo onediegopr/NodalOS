@@ -1,5 +1,6 @@
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
+using OneBrain.Observation.Sessions;
 using OneBrain.Observation.Windows;
 
 namespace OneBrain.Observation.Uia;
@@ -42,7 +43,29 @@ public sealed class UiaDiagnosticReader
         string? roleFilter     = null,
         bool    raw            = false)
     {
-        using var automation = new UIA3Automation();
+        using var session = new PerceptionSession();
+        return ReadFromHandle(session, hwnd, processName, containsFilter, roleFilter, raw);
+    }
+
+    public IReadOnlyList<UiaDiagnosticEntry> ReadFromHandle(
+        PerceptionSession session,
+        IntPtr  hwnd,
+        string? processName    = null,
+        string? containsFilter = null,
+        string? roleFilter     = null,
+        bool    raw            = false)
+    {
+        return ReadFromHandleCore(session.Automation, hwnd, processName, containsFilter, roleFilter, raw);
+    }
+
+    private IReadOnlyList<UiaDiagnosticEntry> ReadFromHandleCore(
+        UIA3Automation automation,
+        IntPtr  hwnd,
+        string? processName,
+        string? containsFilter,
+        string? roleFilter,
+        bool    raw)
+    {
         AutomationElement? root = null;
         IDisposable? cache = null;
         try

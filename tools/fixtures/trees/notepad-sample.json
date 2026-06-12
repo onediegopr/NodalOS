@@ -1,0 +1,371 @@
+{
+  "schemaVersion": 1,
+  "root": {
+    "role": "Window",
+    "name": "Bloc de notas",
+    "automationId": "",
+    "className": "Notepad",
+    "runtimeId": "fixture-root",
+    "bounds": { "x": 0, "y": 0, "width": 800, "height": 600 },
+    "enabled": true,
+    "offscreen": false,
+    "patterns": [ "Window" ],
+    "children": [
+      {
+        "role": "TitleBar",
+        "name": "Barra de titulo",
+        "automationId": "TitleBar",
+        "className": "UIA_TitleBar",
+        "runtimeId": "fixture-titlebar",
+        "bounds": { "x": 0, "y": 0, "width": 800, "height": 32 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [],
+        "children": [
+          {
+            "role": "Button",
+            "name": "Minimizar",
+            "automationId": "Minimize",
+            "className": "Button",
+            "runtimeId": "fixture-titlebar-minimize",
+            "bounds": { "x": 700, "y": 0, "width": 32, "height": 32 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          },
+          {
+            "role": "Button",
+            "name": "Maximizar",
+            "automationId": "Maximize",
+            "className": "Button",
+            "runtimeId": "fixture-titlebar-maximize",
+            "bounds": { "x": 732, "y": 0, "width": 32, "height": 32 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          },
+          {
+            "role": "Button",
+            "name": "Cerrar",
+            "automationId": "Close",
+            "className": "Button",
+            "runtimeId": "fixture-titlebar-close",
+            "bounds": { "x": 764, "y": 0, "width": 36, "height": 32 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "role": "MenuBar",
+        "name": "Barra de menus",
+        "automationId": "MenuBar",
+        "className": "MenuBar",
+        "runtimeId": "fixture-menubar",
+        "bounds": { "x": 0, "y": 32, "width": 800, "height": 24 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [],
+        "children": [
+          {
+            "role": "MenuItem",
+            "name": "Archivo",
+            "automationId": "File",
+            "className": "MenuItem",
+            "runtimeId": "fixture-menu-file",
+            "bounds": { "x": 0, "y": 32, "width": 70, "height": 24 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          },
+          {
+            "role": "MenuItem",
+            "name": "Edicion",
+            "automationId": "Edit",
+            "className": "MenuItem",
+            "runtimeId": "fixture-menu-edit",
+            "bounds": { "x": 70, "y": 32, "width": 70, "height": 24 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          },
+          {
+            "role": "MenuItem",
+            "name": "Formato",
+            "automationId": "Format",
+            "className": "MenuItem",
+            "runtimeId": "fixture-menu-format",
+            "bounds": { "x": 140, "y": 32, "width": 80, "height": 24 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          },
+          {
+            "role": "MenuItem",
+            "name": "Ver",
+            "automationId": "View",
+            "className": "MenuItem",
+            "runtimeId": "fixture-menu-view",
+            "bounds": { "x": 220, "y": 32, "width": 60, "height": 24 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          },
+          {
+            "role": "MenuItem",
+            "name": "Ayuda",
+            "automationId": "Help",
+            "className": "MenuItem",
+            "runtimeId": "fixture-menu-help",
+            "bounds": { "x": 280, "y": 32, "width": 70, "height": 24 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "role": "Document",
+        "name": "Editor",
+        "automationId": "TextEditor",
+        "className": "Edit",
+        "runtimeId": "fixture-document",
+        "bounds": { "x": 0, "y": 56, "width": 800, "height": 500 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [ "Value", "Text" ],
+        "children": [
+          {
+            "role": "Paragraph",
+            "name": "Linea 1",
+            "automationId": "Paragraph1",
+            "className": "TextBlock",
+            "runtimeId": "fixture-paragraph-1",
+            "bounds": { "x": 12, "y": 72, "width": 200, "height": 20 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Text" ],
+            "children": [
+              {
+                "role": "Text",
+                "name": "Hola",
+                "automationId": "Word1",
+                "className": "Run",
+                "runtimeId": "fixture-word-1",
+                "bounds": { "x": 12, "y": 72, "width": 40, "height": 20 },
+                "enabled": true,
+                "offscreen": false,
+                "patterns": [],
+                "children": []
+              },
+              {
+                "role": "Text",
+                "name": "ONE",
+                "automationId": "Word2",
+                "className": "Run",
+                "runtimeId": "fixture-word-2",
+                "bounds": { "x": 56, "y": 72, "width": 40, "height": 20 },
+                "enabled": true,
+                "offscreen": false,
+                "patterns": [],
+                "children": []
+              },
+              {
+                "role": "Text",
+                "name": "BRAIN",
+                "automationId": "Word3",
+                "className": "Run",
+                "runtimeId": "fixture-word-3",
+                "bounds": { "x": 100, "y": 72, "width": 60, "height": 20 },
+                "enabled": true,
+                "offscreen": false,
+                "patterns": [],
+                "children": []
+              }
+            ]
+          },
+          {
+            "role": "Paragraph",
+            "name": "Linea 2",
+            "automationId": "Paragraph2",
+            "className": "TextBlock",
+            "runtimeId": "fixture-paragraph-2",
+            "bounds": { "x": 12, "y": 96, "width": 320, "height": 20 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Text" ],
+            "children": [
+              {
+                "role": "Text",
+                "name": "Diagnostico",
+                "automationId": "Word4",
+                "className": "Run",
+                "runtimeId": "fixture-word-4",
+                "bounds": { "x": 12, "y": 96, "width": 90, "height": 20 },
+                "enabled": true,
+                "offscreen": false,
+                "patterns": [],
+                "children": []
+              },
+              {
+                "role": "Text",
+                "name": "solo",
+                "automationId": "Word5",
+                "className": "Run",
+                "runtimeId": "fixture-word-5",
+                "bounds": { "x": 108, "y": 96, "width": 40, "height": 20 },
+                "enabled": true,
+                "offscreen": false,
+                "patterns": [],
+                "children": []
+              },
+              {
+                "role": "Text",
+                "name": "lectura",
+                "automationId": "Word6",
+                "className": "Run",
+                "runtimeId": "fixture-word-6",
+                "bounds": { "x": 152, "y": 96, "width": 60, "height": 20 },
+                "enabled": true,
+                "offscreen": false,
+                "patterns": [],
+                "children": []
+              }
+            ]
+          },
+          {
+            "role": "Caret",
+            "name": "Cursor",
+            "automationId": "Caret",
+            "className": "Caret",
+            "runtimeId": "fixture-caret",
+            "bounds": { "x": 214, "y": 96, "width": 2, "height": 20 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [],
+            "children": []
+          }
+        ]
+      },
+      {
+        "role": "ScrollBar",
+        "name": "Scroll vertical",
+        "automationId": "VerticalScrollBar",
+        "className": "ScrollBar",
+        "runtimeId": "fixture-scroll-vertical",
+        "bounds": { "x": 784, "y": 56, "width": 16, "height": 500 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [ "Value" ],
+        "children": [
+          {
+            "role": "Button",
+            "name": "Arriba",
+            "automationId": "ScrollUp",
+            "className": "Button",
+            "runtimeId": "fixture-scroll-up",
+            "bounds": { "x": 784, "y": 56, "width": 16, "height": 16 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          },
+          {
+            "role": "Thumb",
+            "name": "Thumb",
+            "automationId": "ScrollThumb",
+            "className": "Thumb",
+            "runtimeId": "fixture-scroll-thumb",
+            "bounds": { "x": 784, "y": 72, "width": 16, "height": 80 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Value" ],
+            "children": []
+          },
+          {
+            "role": "Button",
+            "name": "Abajo",
+            "automationId": "ScrollDown",
+            "className": "Button",
+            "runtimeId": "fixture-scroll-down",
+            "bounds": { "x": 784, "y": 540, "width": 16, "height": 16 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Invoke" ],
+            "children": []
+          }
+        ]
+      },
+      {
+        "role": "StatusBar",
+        "name": "Barra de estado",
+        "automationId": "StatusBar",
+        "className": "StatusBar",
+        "runtimeId": "fixture-statusbar",
+        "bounds": { "x": 0, "y": 556, "width": 800, "height": 44 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [],
+        "children": [
+          {
+            "role": "Text",
+            "name": "Ln 2, Col 12",
+            "automationId": "CaretPosition",
+            "className": "Text",
+            "runtimeId": "fixture-status-caret",
+            "bounds": { "x": 10, "y": 568, "width": 100, "height": 18 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [],
+            "children": []
+          },
+          {
+            "role": "Text",
+            "name": "Windows (CRLF)",
+            "automationId": "LineEndings",
+            "className": "Text",
+            "runtimeId": "fixture-status-crlf",
+            "bounds": { "x": 120, "y": 568, "width": 120, "height": 18 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [],
+            "children": []
+          },
+          {
+            "role": "Text",
+            "name": "UTF-8",
+            "automationId": "Encoding",
+            "className": "Text",
+            "runtimeId": "fixture-status-encoding",
+            "bounds": { "x": 250, "y": 568, "width": 80, "height": 18 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [],
+            "children": []
+          },
+          {
+            "role": "Text",
+            "name": "100%",
+            "automationId": "Zoom",
+            "className": "Text",
+            "runtimeId": "fixture-status-zoom",
+            "bounds": { "x": 340, "y": 568, "width": 60, "height": 18 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}
