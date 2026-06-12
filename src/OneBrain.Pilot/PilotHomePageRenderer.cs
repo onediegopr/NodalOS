@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using OneBrain.Core.AI;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Confidence;
 using OneBrain.Core.Recording;
@@ -164,6 +165,7 @@ public static class PilotHomePageRenderer
           {{QuickAction("Ver safety guarantees", "ver safety guarantees")}}
           <a class="button ghost" href="/recording/demo">Start recording demo/shadow</a>
           <a class="button ghost" href="/approvals/demo">Review approval demo</a>
+          <a class="button ghost" href="/ai/config">AI model router config</a>
         </div>
       </div>
     </section>
@@ -202,6 +204,12 @@ public static class PilotHomePageRenderer
         <h2>Approval and confidence</h2>
         <p>Review a supervised business-flow fixture. Approve/reject records an audit decision only; no send, submit, login, purchase, payment, script, or playback is executed.</p>
         <p><a class="button ghost" href="/approvals/demo">Open approval demo</a></p>
+      </div>
+
+      <div class="card">
+        <h2>AI model router</h2>
+        <p>Configure OpenAI profile routing centrally. Pilot shows masked secrets and dry-run routing only; no provider call is made in this hito.</p>
+        <p><a class="button ghost" href="/ai/config">Open AI config console</a></p>
       </div>
 
       <div class="card full">
@@ -384,6 +392,67 @@ public static class PilotHomePageRenderer
 """;
     }
 
+    public static string RenderAIConfigConsole(IReadOnlyList<AIModelProfile> profiles, AIModelRouterResult? testResult = null)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - AI Config</title>
+  <style>
+    :root { --ink: #17211a; --muted: #5c6b60; --paper: #f5f1e7; --panel: #fffaf0; --line: #d7cdb7; --safe: #226b45; --risk: #8a352d; }
+    body { margin: 0; color: var(--ink); font-family: "Aptos", "Segoe UI", sans-serif; background: linear-gradient(135deg, #f7f2df, #e4eadc); }
+    main { max-width: 1180px; margin: 0 auto; padding: 40px 24px; }
+    .card { background: rgba(255,250,240,.92); border: 1px solid var(--line); border-radius: 26px; padding: 24px; box-shadow: 0 20px 70px rgba(43,32,16,.14); margin-bottom: 18px; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 6vw, 72px); line-height: .95; margin: 8px 0 12px; letter-spacing: -.045em; }
+    p, li { color: var(--muted); line-height: 1.5; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 18px; overflow: hidden; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; background: #efe6d4; }
+    .badge { display: inline-block; border-radius: 999px; padding: 5px 10px; font-weight: 800; font-size: 12px; background: #eadfca; }
+    .safe { color: var(--safe); background: #dcebdd; }
+    .risk { color: var(--risk); background: #f6e7e6; }
+    button, .button { border: 0; border-radius: 999px; padding: 11px 16px; color: #fffaf0; background: var(--ink); font-weight: 800; text-decoration: none; }
+    code { display: block; white-space: pre-wrap; border-radius: 16px; padding: 14px; background: #211f1a; color: #fbf1d5; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">OpenAI primary</span> <span class="badge safe">central router</span> <span class="badge safe">masked secrets</span> <span class="badge safe">dry-run only</span></p>
+      <h1>AI model router config</h1>
+      <p>All future provider calls must go through OneBrain.AI.ModelRouter. This console reads local environment configuration, masks keys, and runs deterministic routing tests without calling OpenAI.</p>
+      <p><a class="button" href="/">Back to Pilot</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Official profiles</h2>
+      <table>
+        <thead>
+          <tr><th>Profile</th><th>Provider</th><th>Model</th><th>Secret</th><th>Enabled</th><th>Monthly budget</th><th>Per task</th><th>Max risk</th><th>Fallback</th><th>Status</th><th>Usage logging</th></tr>
+        </thead>
+        <tbody>
+          {{AIProfileRows(profiles)}}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Test configuration</h2>
+      <form method="post" action="/ai/config/test">
+        <p><button type="submit">Run dry-run routing test</button></p>
+      </form>
+      {{AIRoutingResultBlock(testResult)}}
+      <p>No API key is displayed in full. Missing model/key/config fails closed before any future provider call.</p>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
     private static string TimelineRows(RecipeTimeline timeline)
     {
         var builder = new StringBuilder();
@@ -469,6 +538,57 @@ public static class PilotHomePageRenderer
             return "<p>No process output.</p>";
 
         return "<code>" + Html(output.Trim()) + "</code>";
+    }
+
+    private static string AIProfileRows(IReadOnlyList<AIModelProfile> profiles)
+    {
+        var builder = new StringBuilder();
+        foreach (var profile in profiles)
+        {
+            var status = BuildAIProfileStatus(profile);
+            var statusClass = status == "configured" ? "safe" : "risk";
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(profile.DisplayName)).Append("<br><small>").Append(Html(profile.ProfileId)).Append("</small></td>")
+                .Append("<td>").Append(Html(profile.Provider)).Append("</td>")
+                .Append("<td>").Append(Html(string.IsNullOrWhiteSpace(profile.Model) ? "[not configured]" : profile.Model)).Append("</td>")
+                .Append("<td>").Append(Html(profile.ApiKeyMasked)).Append("<br><small>").Append(Html(profile.ApiKeySecretName)).Append("</small></td>")
+                .Append("<td>").Append(profile.Enabled ? "enabled" : "disabled").Append("</td>")
+                .Append("<td>").Append(profile.MonthlyBudgetUsd.ToString("0.00")).Append("</td>")
+                .Append("<td>").Append(profile.MaxCostPerTaskUsd.ToString("0.00")).Append("</td>")
+                .Append("<td>").Append(Html(profile.MaxRiskLevel)).Append("</td>")
+                .Append("<td>").Append(Html(string.IsNullOrWhiteSpace(profile.FallbackProfileId) ? "-" : profile.FallbackProfileId)).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(statusClass).Append("\">").Append(Html(status)).Append("</span></td>")
+                .Append("<td>").Append(profile.UsageLoggingEnabled ? "enabled" : "disabled").Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string AIRoutingResultBlock(AIModelRouterResult? result)
+    {
+        if (result == null)
+            return "<p>No dry-run test executed.</p>";
+
+        return "<code>" + Html($"""
+status={result.Decision.Status}
+success={result.Decision.Success}
+selectedProfile={result.Decision.SelectedProfileId ?? "-"}
+reason={result.Decision.Reason}
+failClosed={result.Decision.FailClosed}
+wouldCallProvider={result.Decision.WouldCallProvider}
+""") + "</code>";
+    }
+
+    private static string BuildAIProfileStatus(AIModelProfile profile)
+    {
+        if (!profile.Enabled)
+            return "disabled";
+        if (string.IsNullOrWhiteSpace(profile.Model))
+            return "missing_model";
+        if (!profile.ApiKeyConfigured && !string.Equals(profile.Provider, AIProviderKinds.Mock, StringComparison.OrdinalIgnoreCase))
+            return "missing_key";
+        return "configured";
     }
 
     private static string Html(string? value)

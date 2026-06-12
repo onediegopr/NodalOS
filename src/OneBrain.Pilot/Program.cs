@@ -1,4 +1,5 @@
 using OneBrain.Pilot;
+using OneBrain.Core.AI;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Recording;
 
@@ -80,6 +81,32 @@ app.MapPost("/approvals/demo/decide", async (HttpContext context) =>
     var decision = ApprovalPolicy.Decide(request, decisionKind, reason, decidedBy: "pilot-demo");
 
     return Results.Content(PilotHomePageRenderer.RenderApprovalDemo(request, confidence, decision), "text/html");
+});
+
+app.MapGet("/ai/config", () =>
+{
+    var profiles = AIModelConfiguration.LoadOfficialProfiles();
+    return Results.Content(PilotHomePageRenderer.RenderAIConfigConsole(profiles), "text/html");
+});
+
+app.MapPost("/ai/config/test", () =>
+{
+    var profiles = AIModelConfiguration.LoadOfficialProfiles();
+    var policy = new AIModelRoutingPolicy(profiles, []);
+    var result = new AIModelRouter().Route(new AIModelRoutingRequest(
+        TaskText: "mostrame la demo",
+        Capability: AIModelCapabilities.Intent,
+        RiskLevel: AIRiskLevels.Low,
+        RequiresVision: false,
+        IsAmbiguous: false,
+        IsIrreversible: false,
+        EstimatedCostUsd: 0.01m,
+        EstimatedCalls: 1,
+        Environment: "local",
+        Profile: "pilot"),
+        policy);
+
+    return Results.Content(PilotHomePageRenderer.RenderAIConfigConsole(profiles, result), "text/html");
 });
 
 app.Run();
