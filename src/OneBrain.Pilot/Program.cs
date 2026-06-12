@@ -1,6 +1,7 @@
 using OneBrain.Pilot;
 using OneBrain.Core.AI;
 using OneBrain.Core.Approval;
+using OneBrain.Core.History;
 using OneBrain.Core.Recording;
 
 var root = GetArg(args, "--root") ?? Directory.GetCurrentDirectory();
@@ -107,6 +108,31 @@ app.MapPost("/ai/config/test", () =>
         policy);
 
     return Results.Content(PilotHomePageRenderer.RenderAIConfigConsole(profiles, result), "text/html");
+});
+
+app.MapGet("/runs", () =>
+{
+    var runs = RunHistoryStore.ReadAll(root);
+    if (runs.Count == 0)
+        runs = HistoryDemoFixture.CreateRunHistory();
+
+    return Results.Content(PilotHomePageRenderer.RenderRunHistory(runs), "text/html");
+});
+
+app.MapGet("/runs/{id}", (string id) =>
+{
+    var run = RunHistoryStore.ReadById(root, id);
+    var runs = run == null ? HistoryDemoFixture.CreateRunHistory().Where(candidate => candidate.RunId == id).ToList() : [run];
+    return Results.Content(PilotHomePageRenderer.RenderRunHistory(runs), "text/html");
+});
+
+app.MapGet("/ai/audit", () =>
+{
+    var audits = AIAuditLogStore.ReadAll(root);
+    if (audits.Count == 0)
+        audits = HistoryDemoFixture.CreateAIAudit();
+
+    return Results.Content(PilotHomePageRenderer.RenderAIAuditLog(audits), "text/html");
 });
 
 app.Run();

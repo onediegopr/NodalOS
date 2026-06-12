@@ -3,6 +3,7 @@ using System.Text;
 using OneBrain.Core.AI;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Confidence;
+using OneBrain.Core.History;
 using OneBrain.Core.Recording;
 
 namespace OneBrain.Pilot;
@@ -166,6 +167,8 @@ public static class PilotHomePageRenderer
           <a class="button ghost" href="/recording/demo">Start recording demo/shadow</a>
           <a class="button ghost" href="/approvals/demo">Review approval demo</a>
           <a class="button ghost" href="/ai/config">AI model router config</a>
+          <a class="button ghost" href="/runs">Execution history</a>
+          <a class="button ghost" href="/ai/audit">AI audit log</a>
         </div>
       </div>
     </section>
@@ -210,6 +213,12 @@ public static class PilotHomePageRenderer
         <h2>AI model router</h2>
         <p>Configure OpenAI profile routing centrally. Pilot shows masked secrets and dry-run routing only; no provider call is made in this hito.</p>
         <p><a class="button ghost" href="/ai/config">Open AI config console</a></p>
+      </div>
+
+      <div class="card">
+        <h2>History and audit</h2>
+        <p>Browse local run history and AI routing audit decisions. Runtime artifacts remain local under artifacts/ and are not committed.</p>
+        <p><a class="button ghost" href="/runs">Open run history</a> <a class="button ghost" href="/ai/audit">Open AI audit</a></p>
       </div>
 
       <div class="card full">
@@ -453,6 +462,111 @@ public static class PilotHomePageRenderer
 """;
     }
 
+    public static string RenderRunHistory(IReadOnlyList<RunHistoryRecord> runs)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - Run History</title>
+  <style>
+    :root { --ink: #17211a; --muted: #5c6b60; --paper: #f5f1e7; --panel: #fffaf0; --line: #d7cdb7; --safe: #226b45; --risk: #8a352d; --warn: #9a5a10; }
+    body { margin: 0; color: var(--ink); font-family: "Aptos", "Segoe UI", sans-serif; background: linear-gradient(135deg, #f7f2df, #e4eadc); }
+    main { max-width: 1220px; margin: 0 auto; padding: 40px 24px; }
+    .card { background: rgba(255,250,240,.92); border: 1px solid var(--line); border-radius: 26px; padding: 24px; box-shadow: 0 20px 70px rgba(43,32,16,.14); margin-bottom: 18px; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 6vw, 72px); line-height: .95; margin: 8px 0 12px; letter-spacing: -.045em; }
+    p, li { color: var(--muted); line-height: 1.5; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 18px; overflow: hidden; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; background: #efe6d4; }
+    .badge { display: inline-block; border-radius: 999px; padding: 5px 10px; font-weight: 800; font-size: 12px; background: #eadfca; }
+    .safe { color: var(--safe); background: #dcebdd; }
+    .risk { color: var(--risk); background: #f6e7e6; }
+    .warn { color: var(--warn); background: #f3e2bf; }
+    .path { word-break: break-all; }
+    .button { display: inline-block; border-radius: 999px; padding: 11px 16px; color: #fffaf0; background: var(--ink); font-weight: 800; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">runtime artifacts local only</span> <span class="badge safe">no secrets stored</span> <span class="badge safe">0 clicks baseline</span></p>
+      <h1>Execution history</h1>
+      <p>Recent local runs with recipe/flow identifiers, safety counters, linked artifacts, approval/confidence/AI references, and sanitized errors. If no runtime history exists, Pilot shows safe fixture examples.</p>
+      <p><a class="button" href="/">Back to Pilot</a></p>
+    </section>
+
+    <section class="card">
+      <h2>Recent runs</h2>
+      <table>
+        <thead>
+          <tr><th>Run</th><th>Status</th><th>Time</th><th>Source</th><th>Recipe / flow</th><th>Safety</th><th>Approval</th><th>Confidence / AI</th><th>Artifacts</th><th>Error</th></tr>
+        </thead>
+        <tbody>
+          {{RunHistoryRows(runs)}}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
+    public static string RenderAIAuditLog(IReadOnlyList<AIAuditRecord> audits)
+    {
+        return $$"""
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Pilot - AI Audit</title>
+  <style>
+    :root { --ink: #17211a; --muted: #5c6b60; --paper: #f5f1e7; --panel: #fffaf0; --line: #d7cdb7; --safe: #226b45; --risk: #8a352d; --warn: #9a5a10; }
+    body { margin: 0; color: var(--ink); font-family: "Aptos", "Segoe UI", sans-serif; background: linear-gradient(135deg, #f7f2df, #e4eadc); }
+    main { max-width: 1220px; margin: 0 auto; padding: 40px 24px; }
+    .card { background: rgba(255,250,240,.92); border: 1px solid var(--line); border-radius: 26px; padding: 24px; box-shadow: 0 20px 70px rgba(43,32,16,.14); margin-bottom: 18px; }
+    h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 6vw, 72px); line-height: .95; margin: 8px 0 12px; letter-spacing: -.045em; }
+    p, li { color: var(--muted); line-height: 1.5; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 18px; overflow: hidden; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; background: #efe6d4; }
+    .badge { display: inline-block; border-radius: 999px; padding: 5px 10px; font-weight: 800; font-size: 12px; background: #eadfca; }
+    .safe { color: var(--safe); background: #dcebdd; }
+    .risk { color: var(--risk); background: #f6e7e6; }
+    .warn { color: var(--warn); background: #f3e2bf; }
+    .button { display: inline-block; border-radius: 999px; padding: 11px 16px; color: #fffaf0; background: var(--ink); font-weight: 800; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <p><span class="badge safe">no provider call</span> <span class="badge safe">no prompts stored by default</span> <span class="badge safe">no API keys</span></p>
+      <h1>AI usage audit</h1>
+      <p>Audit entries explain which profile was recommended or used, why routing happened, whether fallback/budget applied, whether a step requires approval, and whether the decision failed closed. This hito records mock/local decisions only.</p>
+      <p><a class="button" href="/">Back to Pilot</a> <a class="button" href="/ai/config">AI config</a></p>
+    </section>
+
+    <section class="card">
+      <h2>AI routing decisions</h2>
+      <table>
+        <thead>
+          <tr><th>Audit</th><th>Profile</th><th>Provider/model</th><th>Task/risk</th><th>Vision</th><th>Human approval</th><th>Fallback</th><th>Budget</th><th>Cost/tokens</th><th>Status/reason</th></tr>
+        </thead>
+        <tbody>
+          {{AIAuditRows(audits)}}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
+""";
+    }
+
     private static string TimelineRows(RecipeTimeline timeline)
     {
         var builder = new StringBuilder();
@@ -578,6 +692,63 @@ reason={result.Decision.Reason}
 failClosed={result.Decision.FailClosed}
 wouldCallProvider={result.Decision.WouldCallProvider}
 """) + "</code>";
+    }
+
+    private static string RunHistoryRows(IReadOnlyList<RunHistoryRecord> runs)
+    {
+        if (runs.Count == 0)
+            return "<tr><td colspan=\"10\">No run history found.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var run in runs)
+        {
+            var statusClass = run.Status is "succeeded" or "diagnostic" ? "safe" : run.Status == "blocked" ? "warn" : "risk";
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(run.RunId)).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(statusClass).Append("\">").Append(Html(run.Status)).Append("</span></td>")
+                .Append("<td>").Append(Html(run.StartedAtUtc)).Append("<br>").Append(Html(run.EndedAtUtc ?? "-")).Append("</td>")
+                .Append("<td>").Append(Html(run.Source)).Append("</td>")
+                .Append("<td>").Append(Html(run.RecipeId ?? run.CandidateFlowId ?? "-")).Append("</td>")
+                .Append("<td>").Append(Safety(run.SafetyCounters)).Append("</td>")
+                .Append("<td>").Append(Html(run.ApprovalDecisionId ?? run.ApprovalRequestId ?? "-")).Append("</td>")
+                .Append("<td>").Append(Html(run.ConfidenceId ?? "-")).Append("<br>").Append(Html(run.AiRoutingDecisionId ?? "-")).Append("</td>")
+                .Append("<td class=\"path\">").Append(Html(string.Join("\n", run.ArtifactPaths))).Append("</td>")
+                .Append("<td>").Append(Html(string.IsNullOrWhiteSpace(run.ErrorSummary) ? "-" : run.ErrorSummary)).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string AIAuditRows(IReadOnlyList<AIAuditRecord> audits)
+    {
+        if (audits.Count == 0)
+            return "<tr><td colspan=\"10\">No AI audit logs found.</td></tr>";
+
+        var builder = new StringBuilder();
+        foreach (var audit in audits)
+        {
+            var statusClass = audit.ResultStatus is "routed" or "mocked" ? "safe" : "risk";
+            builder.Append("<tr>")
+                .Append("<td>").Append(Html(audit.AiAuditId)).Append("<br>").Append(Html(audit.TimestampUtc)).Append("</td>")
+                .Append("<td>").Append(Html(audit.RecommendedProfileId ?? "-")).Append("<br>used: ").Append(Html(audit.UsedProfileId ?? "-")).Append("</td>")
+                .Append("<td>").Append(Html(audit.Provider)).Append("<br>").Append(Html(audit.Model)).Append("</td>")
+                .Append("<td>").Append(Html(audit.TaskType)).Append("<br>").Append(Html(audit.RiskLevel)).Append("</td>")
+                .Append("<td>").Append(audit.RequiresVision ? "true" : "false").Append("</td>")
+                .Append("<td>").Append(audit.RequiresHumanApproval ? "true" : "false").Append("</td>")
+                .Append("<td>").Append(audit.FallbackUsed ? Html($"{audit.FallbackFrom} -> {audit.FallbackTo}") : "-").Append("</td>")
+                .Append("<td>").Append(Html(audit.BudgetDecision)).Append("</td>")
+                .Append("<td>est ").Append(audit.EstimatedCostUsd.ToString("0.0000")).Append("<br>actual ").Append(audit.ActualCostUsd?.ToString("0.0000") ?? "-").Append("<br>tokens ").Append(Html($"{audit.TokensIn?.ToString() ?? "-"} / {audit.TokensOut?.ToString() ?? "-"}")).Append("</td>")
+                .Append("<td><span class=\"badge ").Append(statusClass).Append("\">").Append(Html(audit.ResultStatus)).Append("</span><br>").Append(Html(audit.Reason)).Append("</td>")
+                .Append("</tr>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string Safety(RunSafetyCounters counters)
+    {
+        return Html($"clicks={counters.Clicks}; cookies={counters.CookiesAccepted}; login={counters.Login}; cart={counters.Cart}; purchase={counters.Purchase}; payment={counters.Payment}");
     }
 
     private static string BuildAIProfileStatus(AIModelProfile profile)
