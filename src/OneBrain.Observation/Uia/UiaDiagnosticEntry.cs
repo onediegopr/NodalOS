@@ -10,6 +10,7 @@ public sealed record UiaDiagnosticEntry(
     string Path,
     string Role,
     string Name,
+    string RuntimeId,
     string AutomationId,
     string ClassName,
     string HelpText,

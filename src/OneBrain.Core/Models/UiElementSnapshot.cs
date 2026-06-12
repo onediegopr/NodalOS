@@ -11,4 +11,5 @@ public sealed record UiElementSnapshot(
     bool IsOffscreen,
     bool IsKeyboardFocusable,
     IReadOnlyList<string> Patterns,
-    IReadOnlyList<string> Actions);
+    IReadOnlyList<string> Actions,
+    string RuntimeId = "");

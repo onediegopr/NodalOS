@@ -17,6 +17,7 @@ public sealed record RecipeStepDefinition
     public string? Url { get; init; }
     public int? TimeoutMs { get; init; }
     public int? IntervalMs { get; init; }
+    public bool? Poll { get; init; }
     public bool? ContinueOnError { get; init; }
     public string? Out { get; init; }
     public string? Before { get; init; }

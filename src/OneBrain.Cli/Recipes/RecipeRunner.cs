@@ -13,6 +13,7 @@ using OneBrain.Core.Models;
 using OneBrain.Core.Recipes;
 using OneBrain.Core.Visual;
 using OneBrain.Observation;
+using OneBrain.Observation.Uia;
 using OneBrain.Observation.Visual;
 using OneBrain.Observation.Windows;
 using OneBrain.Verification.Engine;
@@ -722,11 +723,12 @@ public sealed class RecipeRunner
         if (string.IsNullOrWhiteSpace(proc) && string.IsNullOrWhiteSpace(win))
             return Fail(step, sw, "wait requires 'process' or 'window' field.");
 
-        if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(role) && string.IsNullOrWhiteSpace(titleContains) && string.IsNullOrWhiteSpace(automationId))
-            return Fail(step, sw, "wait requires 'name', 'role', 'titleContains', or 'automationId'.");
-
         var timeout = step.TimeoutMs ?? _currentRecipe?.DefaultTimeoutMs ?? 10000;
         var interval = Math.Max(100, step.IntervalMs ?? 500);
+        var forcePoll = step.Poll == true ||
+            (step.Args?.TryGetValue("poll", out var pollValue) == true &&
+             bool.TryParse(pollValue, out var parsedPoll) &&
+             parsedPoll);
 
         var searchCriteria = new List<string>();
         if (!string.IsNullOrEmpty(proc)) searchCriteria.Add($"process: '{proc}'");
@@ -735,8 +737,65 @@ public sealed class RecipeRunner
         if (!string.IsNullOrEmpty(role)) searchCriteria.Add($"role: '{role}'");
         if (!string.IsNullOrEmpty(automationId)) searchCriteria.Add($"automationId: '{automationId}'");
         if (!string.IsNullOrEmpty(titleContains)) searchCriteria.Add($"titleContains: '{titleContains}'");
+        if (searchCriteria.Count == 0 || searchCriteria.All(c => c.StartsWith("process:", StringComparison.Ordinal) || c.StartsWith("window:", StringComparison.Ordinal)))
+            searchCriteria.Add("window-open");
         
         var criteriaStr = string.Join(", ", searchCriteria);
+
+        if (string.IsNullOrEmpty(titleContains) &&
+            string.IsNullOrEmpty(name) &&
+            string.IsNullOrEmpty(role) &&
+            string.IsNullOrEmpty(automationId))
+        {
+            var windowOpenResult = UiaEventWaiter.WaitForWindowOpen(
+                proc,
+                win,
+                timeout,
+                interval,
+                _stepCts?.Token ?? CancellationToken.None,
+                forcePolling: forcePoll);
+
+            if (windowOpenResult.Success)
+            {
+                SaveOutput(step, windowOpenResult.Match);
+                return new RecipeStepRunResult(step.Id, step.Kind, true,
+                    $"Window opened after {windowOpenResult.ElapsedMs}ms ({windowOpenResult.Attempts} attempts, usedEvents={windowOpenResult.UsedEvents}, fallbackPolling={windowOpenResult.FellBackToPolling}): [{criteriaStr}]",
+                    windowOpenResult.ElapsedMs,
+                    windowOpenResult.Match);
+            }
+
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"Timeout after {timeout}ms ({windowOpenResult.Attempts} attempts, usedEvents={windowOpenResult.UsedEvents}, fallbackPolling={windowOpenResult.FellBackToPolling}) waiting for: [{criteriaStr}]. Last title: '{windowOpenResult.LastWindowTitle}'",
+                windowOpenResult.ElapsedMs);
+        }
+
+        if (!string.IsNullOrEmpty(titleContains) &&
+            string.IsNullOrEmpty(name) &&
+            string.IsNullOrEmpty(role) &&
+            string.IsNullOrEmpty(automationId))
+        {
+            var eventResult = UiaEventWaiter.WaitForTitleContains(
+                proc,
+                win,
+                titleContains,
+                timeout,
+                interval,
+                _stepCts?.Token ?? CancellationToken.None,
+                forcePolling: forcePoll);
+
+            if (eventResult.Success)
+            {
+                SaveOutput(step, eventResult.Match);
+                return new RecipeStepRunResult(step.Id, step.Kind, true,
+                    $"Found after {eventResult.ElapsedMs}ms ({eventResult.Attempts} attempts, usedEvents={eventResult.UsedEvents}, fallbackPolling={eventResult.FellBackToPolling}): [{criteriaStr}]",
+                    eventResult.ElapsedMs,
+                    eventResult.Match);
+            }
+
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"Timeout after {timeout}ms ({eventResult.Attempts} attempts, usedEvents={eventResult.UsedEvents}, fallbackPolling={eventResult.FellBackToPolling}) waiting for: [{criteriaStr}]. Last title: '{eventResult.LastWindowTitle}'",
+                eventResult.ElapsedMs);
+        }
 
         var reader = new CognitiveSnapshotReader();
         int attempts = 0;

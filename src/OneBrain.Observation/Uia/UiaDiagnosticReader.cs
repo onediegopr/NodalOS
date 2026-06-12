@@ -128,6 +128,7 @@ public sealed class UiaDiagnosticReader
 
             var role  = UiaTreeWalker.SafeRole(e);
             var name  = UiaTreeWalker.SafeName(e);
+            var rid   = UiaTreeWalker.SafeRuntimeId(e);
             var id    = UiaTreeWalker.SafeId(e);
             var cls   = UiaTreeWalker.SafeClass(e);
             var help  = UiaTreeWalker.SafeHelpText(e);
@@ -170,6 +171,7 @@ public sealed class UiaDiagnosticReader
                 Path:            curPath,
                 Role:            role,
                 Name:            name,
+                RuntimeId:       rid,
                 AutomationId:    id,
                 ClassName:       cls,
                 HelpText:        help,

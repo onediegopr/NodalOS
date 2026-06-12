@@ -99,7 +99,8 @@ public sealed class UiaElementReader
             IsOffscreen:         UiaTreeWalker.SafeOffscreen(e),
             IsKeyboardFocusable: false,
             Patterns:            patterns,
-            Actions:             actions);
+            Actions:             actions,
+            RuntimeId:           UiaTreeWalker.SafeRuntimeId(e));
     }
 
     private static IReadOnlyList<string> DeriveActions(AutomationElement e, IReadOnlyList<string> patterns)

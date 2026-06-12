@@ -27,6 +27,7 @@ public static class UiaSnapshotPropertySet
         "AutomationId",
         "ControlType",
         "ClassName",
+        "RuntimeId",
         "BoundingRectangle",
         "IsEnabled",
         "IsOffscreen",
@@ -90,6 +91,7 @@ public static class UiaSnapshotCacheRequestFactory
         request.Add(element.AutomationId);
         request.Add(element.ControlType);
         request.Add(element.ClassName);
+        request.Add(element.RuntimeId);
         request.Add(element.BoundingRectangle);
         request.Add(element.IsEnabled);
         request.Add(element.IsOffscreen);

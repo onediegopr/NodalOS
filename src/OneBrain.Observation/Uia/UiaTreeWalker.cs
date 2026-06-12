@@ -47,6 +47,18 @@ public static class UiaTreeWalker
         try { return e.ClassName ?? ""; } catch { return ""; }
     }
 
+    public static string SafeRuntimeId(AutomationElement e)
+    {
+        try { return FormatRuntimeId(e.FrameworkAutomationElement.RuntimeId); } catch { return ""; }
+    }
+
+    public static string FormatRuntimeId(int[]? runtimeId)
+    {
+        return runtimeId is { Length: > 0 }
+            ? string.Join(".", runtimeId)
+            : "";
+    }
+
     public static string SafeHelpText(AutomationElement e)
     {
         try { return e.HelpText ?? ""; } catch { return ""; }
@@ -162,6 +174,44 @@ public static class UiaTreeWalker
         var roles = alwaysIncludeRoles ?? CoreIncludeRoles;
         WalkCore(root, results, 0, maxElements, maxDepth, roles, relaxOffscreenForRoles);
         return results.Count >= maxElements;
+    }
+
+    public static AutomationElement? FindByRuntimeId(
+        AutomationElement root,
+        string runtimeId,
+        int maxElements = DefaultMaxElements,
+        int maxDepth = DefaultMaxDepth)
+    {
+        if (string.IsNullOrWhiteSpace(runtimeId)) return null;
+        var visited = 0;
+        return FindByRuntimeIdCore(root, runtimeId, 0, maxElements, maxDepth, ref visited);
+    }
+
+    private static AutomationElement? FindByRuntimeIdCore(
+        AutomationElement e,
+        string runtimeId,
+        int depth,
+        int maxElements,
+        int maxDepth,
+        ref int visited)
+    {
+        if (visited >= maxElements || depth > maxDepth) return null;
+        visited++;
+
+        try
+        {
+            if (SafeRuntimeId(e) == runtimeId) return e;
+
+            foreach (var child in SafeChildren(e))
+            {
+                var found = FindByRuntimeIdCore(child, runtimeId, depth + 1, maxElements, maxDepth, ref visited);
+                if (found != null) return found;
+                if (visited >= maxElements) break;
+            }
+        }
+        catch { }
+
+        return null;
     }
 
     private static void WalkCore(

@@ -344,6 +344,7 @@ else if (cmd == "wait")
     string? waitName = null, waitRole = null, waitTitleContains = null;
     int timeout  = 5000;
     int interval = 500;
+    bool forcePoll = false;
 
     for (int i = 1; i < argsList.Count; i++)
     {
@@ -355,6 +356,7 @@ else if (cmd == "wait")
         else if (a == "--title-contains" && i + 1 < argsList.Count) waitTitleContains = argsList[++i];
         else if (a == "--timeout"        && i + 1 < argsList.Count) int.TryParse(argsList[++i], out timeout);
         else if (a == "--interval"       && i + 1 < argsList.Count) int.TryParse(argsList[++i], out interval);
+        else if (a == "--poll") forcePoll = true;
     }
 
     if (waitProc == null && waitWin == null)
@@ -362,21 +364,65 @@ else if (cmd == "wait")
         Console.Error.WriteLine("Error: --process or --window required for wait.");
         return;
     }
-    if (waitName == null && waitRole == null && waitTitleContains == null)
-    {
-        Console.Error.WriteLine("Error: specify one of --name, --role, --title-contains.");
-        return;
-    }
-
     interval = Math.Max(100, interval);
     var selectorUsed = waitTitleContains != null    ? $"title-contains:{waitTitleContains}"
                      : waitName != null && waitRole != null ? $"name:{waitName}+role:{waitRole}"
                      : waitName != null              ? $"name:{waitName}"
-                                                     : $"role:{waitRole}";
+                     : waitRole != null              ? $"role:{waitRole}"
+                                                     : "window-open";
     var reader   = new CognitiveSnapshotReader();
     var sw       = System.Diagnostics.Stopwatch.StartNew();
     int attempts = 0;
     string lastTitle = "";
+
+    if (waitName == null && waitRole == null && waitTitleContains == null)
+    {
+        var result = UiaEventWaiter.WaitForWindowOpen(
+            waitProc,
+            waitWin,
+            timeout,
+            interval,
+            forcePolling: forcePoll);
+
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            Success         = result.Success,
+            ElapsedMs       = result.ElapsedMs,
+            Attempts        = result.Attempts,
+            SelectorUsed    = selectorUsed,
+            Message         = result.Message,
+            LastWindowTitle = result.LastWindowTitle,
+            UsedEvents      = result.UsedEvents,
+            FellBackToPolling = result.FellBackToPolling,
+            MatchedElement  = result.Match
+        }, new JsonSerializerOptions { WriteIndented = true }));
+        return;
+    }
+
+    if (waitTitleContains != null && waitName == null && waitRole == null)
+    {
+        var result = UiaEventWaiter.WaitForTitleContains(
+            waitProc,
+            waitWin,
+            waitTitleContains,
+            timeout,
+            interval,
+            forcePolling: forcePoll);
+
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            Success         = result.Success,
+            ElapsedMs       = result.ElapsedMs,
+            Attempts        = result.Attempts,
+            SelectorUsed    = selectorUsed,
+            Message         = result.Message,
+            LastWindowTitle = result.LastWindowTitle,
+            UsedEvents      = result.UsedEvents,
+            FellBackToPolling = result.FellBackToPolling,
+            MatchedElement  = result.Match
+        }, new JsonSerializerOptions { WriteIndented = true }));
+        return;
+    }
 
     while (sw.ElapsedMilliseconds < timeout)
     {
@@ -524,8 +570,8 @@ static void PrintUsage()
     Console.WriteLine("  record inspect --out PATH");
     Console.WriteLine("  diagnose uia --process VALUE [--window VALUE]");
     Console.WriteLine("               [--contains TEXT] [--role ROLE] [--raw]");
-    Console.WriteLine("  wait  --process VALUE [--window VALUE]");
-    Console.WriteLine("        (--name TEXT | --role ROLE | --title-contains TEXT)");
+Console.WriteLine("  wait  --process VALUE [--window VALUE]");
+Console.WriteLine("        [--name TEXT | --role ROLE | --title-contains TEXT] [--poll]");
     Console.WriteLine("        [--timeout MS]  [--interval MS]");
     Console.WriteLine("  visual capture window --process VALUE [--window VALUE] [--out PATH]");
     Console.WriteLine("  visual capture element --process VALUE [--window VALUE]");
