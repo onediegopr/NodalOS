@@ -31,12 +31,35 @@ public sealed record ExecutorHarnessClickCommand(
     string ExpectedTargetName,
     string ActionKind);
 
+public sealed record ExecutorHarnessTargetResolution(
+    bool Success,
+    string Status,
+    string Message,
+    string HarnessId,
+    string AppProfileId,
+    string WindowTitleContains,
+    string TargetRef,
+    string ExpectedTargetName,
+    bool ControlledSurface,
+    bool LocalOnly,
+    IReadOnlyList<string> Signals);
+
+public sealed record ExecutorHarnessPostActionState(
+    bool WindowFound,
+    bool TargetVisible,
+    string TargetName,
+    int ObservedClicks,
+    bool ClickCountVerified,
+    IReadOnlyList<string> Signals);
+
 public sealed record ExecutorHarnessExecutorResult(
     bool Success,
     string Message,
     bool TargetFound,
     int Clicks,
-    IReadOnlyList<string> Signals);
+    IReadOnlyList<string> Signals,
+    ExecutorHarnessTargetResolution? TargetResolution = null,
+    ExecutorHarnessPostActionState? PostActionState = null);
 
 public interface IExecutorHarnessClickExecutor
 {
@@ -61,7 +84,9 @@ public sealed record ExecutorHarnessRunResult(
     ExecutorHarnessPostActionVerification Verification,
     RunHistoryRecord RunHistory,
     IReadOnlyList<string> Evidence,
-    IReadOnlyList<string> ArtifactPaths);
+    IReadOnlyList<string> ArtifactPaths,
+    ExecutorHarnessSafetyMatrixEvaluation? SafetyMatrix = null,
+    ExecutorHarnessTargetResolution? TargetResolution = null);
 
 public sealed record ExecutorHarnessEvidenceRecord(
     string EvidenceId,
@@ -82,3 +107,11 @@ public sealed record ExecutorHarnessArtifactWriteResult
     public string RelativePath { get; init; } = "";
     public string Error { get; init; } = "";
 }
+
+public sealed record ExecutorHarnessSafetyMatrixEvaluation(
+    bool Allowed,
+    string Status,
+    IReadOnlyList<string> Passed,
+    IReadOnlyList<string> Blocked,
+    IReadOnlyList<string> RequiresApproval,
+    IReadOnlyList<string> Notes);

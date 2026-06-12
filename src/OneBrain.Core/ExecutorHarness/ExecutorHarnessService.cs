@@ -44,9 +44,11 @@ public static class ExecutorHarnessService
     {
         var timestamp = Timestamp(now);
         var approval = CreateApprovalRequest(target, now);
-        var guardIssues = Guard(target, decision);
-        if (guardIssues.Count > 0)
+        var targetResolution = ExecutorHarnessTargetResolver.ResolveTarget(target);
+        var safetyMatrix = ExecutorHarnessSafetyMatrix.Evaluate(target, decision);
+        if (!safetyMatrix.Allowed)
         {
+            var guardIssues = safetyMatrix.Blocked;
             var verification = new ExecutorHarnessPostActionVerification(
                 Success: false,
                 Status: ExecutorHarnessStatuses.Blocked,
@@ -54,7 +56,7 @@ public static class ExecutorHarnessService
                 TargetFound: false,
                 ClickObserved: false,
                 Signals: guardIssues);
-            return BuildResult(target, approval, decision, verification, ExecutorHarnessStatuses.Blocked, "blocked before executor", timestamp);
+            return BuildResult(target, approval, decision, verification, ExecutorHarnessStatuses.Blocked, "blocked before executor", timestamp, safetyMatrix, targetResolution);
         }
 
         ExecutorHarnessExecutorResult executorResult;
@@ -65,7 +67,7 @@ public static class ExecutorHarnessService
                 WindowTitleContains: target.WindowTitleContains,
                 TargetRef: target.TargetRef,
                 ExpectedTargetName: target.ExpectedTargetName,
-                ActionKind: "click"));
+                ActionKind: target.ActionKind));
         }
         catch (Exception ex)
         {
@@ -74,7 +76,16 @@ public static class ExecutorHarnessService
 
         var verificationResult = VerifyPostAction(target, executorResult);
         var status = verificationResult.Success ? ExecutorHarnessStatuses.Succeeded : ExecutorHarnessStatuses.Failed;
-        return BuildResult(target, approval, decision, verificationResult, status, verificationResult.Message, timestamp);
+        return BuildResult(
+            target,
+            approval,
+            decision,
+            verificationResult,
+            status,
+            verificationResult.Message,
+            timestamp,
+            safetyMatrix,
+            executorResult.TargetResolution ?? targetResolution);
     }
 
     public static ExecutorHarnessEvidenceRecord ToEvidenceRecord(ExecutorHarnessRunResult result, DateTimeOffset? now = null)
@@ -98,44 +109,13 @@ public static class ExecutorHarnessService
             ]);
     }
 
-    private static IReadOnlyList<string> Guard(ExecutorHarnessTarget target, ApprovalDecision? decision)
-    {
-        var issues = new List<string>();
-        if (!string.Equals(target.HarnessId, ExecutorHarnessDemoFixture.HarnessId, StringComparison.OrdinalIgnoreCase))
-            issues.Add("harness id is not allowlisted");
-        if (!string.Equals(target.AppProfileId, "onebrain-pilot-local", StringComparison.OrdinalIgnoreCase))
-            issues.Add("app profile is not the local Pilot harness");
-        if (!string.Equals(target.WindowTitleContains, "ONE BRAIN Pilot", StringComparison.OrdinalIgnoreCase))
-            issues.Add("window target is not the local Pilot harness");
-        if (!string.Equals(target.TargetRef, $"name:{ExecutorHarnessDemoFixture.TargetName}", StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(target.ExpectedTargetName, ExecutorHarnessDemoFixture.TargetName, StringComparison.OrdinalIgnoreCase))
-            issues.Add("target identity is not the benign harness target");
-        if (!target.ControlledSurface)
-            issues.Add("target is not a controlled harness surface");
-        if (!target.IsBenign)
-            issues.Add("target is not marked benign");
-        if (!target.HasSafeExecutor)
-            issues.Add("safe executor is missing");
-        if (!string.Equals(target.ActionKind, ApprovalActionKinds.BenignHarnessClick, StringComparison.OrdinalIgnoreCase))
-            issues.Add("action kind is not the benign harness click action");
-        if (string.IsNullOrWhiteSpace(target.TargetRef) || string.IsNullOrWhiteSpace(target.ExpectedTargetName))
-            issues.Add("target identity is incomplete");
-        if (decision == null)
-            issues.Add("approval decision is required");
-        else
-        {
-            if (!string.Equals(decision.Decision, ApprovalDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase))
-                issues.Add("approval decision is not approved");
-            if (!decision.ExecutionAllowed)
-                issues.Add("approval decision does not allow executor harness action");
-        }
-
-        return issues;
-    }
-
     private static ExecutorHarnessPostActionVerification VerifyPostAction(ExecutorHarnessTarget target, ExecutorHarnessExecutorResult executorResult)
     {
+        var postActionState = BuildPostActionState(executorResult);
+        var targetResolution = executorResult.TargetResolution ?? ExecutorHarnessTargetResolver.ResolveTarget(target);
         var signals = executorResult.Signals
+            .Concat(targetResolution.Signals)
+            .Concat(postActionState.Signals)
             .Concat(
             [
                 $"target={target.ExpectedTargetName}",
@@ -155,17 +135,20 @@ public static class ExecutorHarnessService
                 Signals: signals);
         }
 
-        var hasIndependentWindowCheck = signals.Contains("postAction.windowFound=true", StringComparer.OrdinalIgnoreCase);
-        var hasIndependentTargetCheck = signals.Contains("postAction.targetVisible=true", StringComparer.OrdinalIgnoreCase);
-
-        if (!executorResult.TargetFound || executorResult.Clicks != 1 || !hasIndependentWindowCheck || !hasIndependentTargetCheck)
+        if (!targetResolution.Success ||
+            !postActionState.WindowFound ||
+            !postActionState.TargetVisible ||
+            !string.Equals(postActionState.TargetName, target.ExpectedTargetName, StringComparison.OrdinalIgnoreCase) ||
+            !postActionState.ClickCountVerified ||
+            !executorResult.TargetFound ||
+            executorResult.Clicks != 1)
         {
             return new ExecutorHarnessPostActionVerification(
                 Success: false,
                 Status: ExecutorHarnessStatuses.Failed,
                 Message: "post-action verification failed",
                 TargetFound: executorResult.TargetFound,
-                ClickObserved: executorResult.Clicks == 1 && hasIndependentWindowCheck && hasIndependentTargetCheck,
+                ClickObserved: postActionState.ClickCountVerified && postActionState.WindowFound && postActionState.TargetVisible,
                 Signals: signals);
         }
 
@@ -178,6 +161,26 @@ public static class ExecutorHarnessService
             Signals: signals);
     }
 
+    private static ExecutorHarnessPostActionState BuildPostActionState(ExecutorHarnessExecutorResult executorResult)
+    {
+        if (executorResult.PostActionState != null)
+            return executorResult.PostActionState;
+
+        var signals = executorResult.Signals;
+        var windowFound = signals.Contains("postAction.windowFound=true", StringComparer.OrdinalIgnoreCase);
+        var targetVisible = signals.Contains("postAction.targetVisible=true", StringComparer.OrdinalIgnoreCase);
+        var targetName = signals.FirstOrDefault(signal => signal.StartsWith("postAction.targetName=", StringComparison.OrdinalIgnoreCase))?
+            .Split('=', 2)[1] ?? "";
+
+        return new ExecutorHarnessPostActionState(
+            WindowFound: windowFound,
+            TargetVisible: targetVisible,
+            TargetName: targetName,
+            ObservedClicks: executorResult.Clicks,
+            ClickCountVerified: executorResult.Clicks == 1,
+            Signals: signals.Where(signal => signal.StartsWith("postAction.", StringComparison.OrdinalIgnoreCase)).ToList());
+    }
+
     private static ExecutorHarnessRunResult BuildResult(
         ExecutorHarnessTarget target,
         ApprovalRequest approval,
@@ -185,7 +188,9 @@ public static class ExecutorHarnessService
         ExecutorHarnessPostActionVerification verification,
         string status,
         string errorSummary,
-        string timestamp)
+        string timestamp,
+        ExecutorHarnessSafetyMatrixEvaluation safetyMatrix,
+        ExecutorHarnessTargetResolution targetResolution)
     {
         var success = status == ExecutorHarnessStatuses.Succeeded;
         var safety = success ? new RunSafetyCounters(1, 0, 0, 0, 0, 0) : RunSafetyCounters.Zero;
@@ -212,6 +217,7 @@ public static class ExecutorHarnessService
             [
                 "executor harness supervised click",
                 success ? "exactly 1 benign local harness click observed" : "no click executed or verified",
+                $"safety matrix: {safetyMatrix.Status}",
                 "0 cookies, 0 login, 0 cart, 0 purchase, 0 payment"
             ]);
 
@@ -234,7 +240,9 @@ public static class ExecutorHarnessService
             Verification: verification,
             RunHistory: record,
             Evidence: evidence,
-            ArtifactPaths: artifactPaths);
+            ArtifactPaths: artifactPaths,
+            SafetyMatrix: safetyMatrix,
+            TargetResolution: targetResolution);
     }
 
     private static string Timestamp(DateTimeOffset? now)

@@ -494,6 +494,27 @@ sealed class PilotUiaHarnessClickExecutor : IExecutorHarnessClickExecutor
 {
     public ExecutorHarnessExecutorResult Click(ExecutorHarnessClickCommand command)
     {
+        var targetResolution = ExecutorHarnessTargetResolver.ResolveCommand(command);
+        if (!targetResolution.Success)
+        {
+            var blockedPostState = new ExecutorHarnessPostActionState(
+                WindowFound: false,
+                TargetVisible: false,
+                TargetName: "",
+                ObservedClicks: 0,
+                ClickCountVerified: false,
+                Signals: ["postAction.blockedBeforeUia=true"]);
+
+            return new ExecutorHarnessExecutorResult(
+                Success: false,
+                Message: targetResolution.Message,
+                TargetFound: false,
+                Clicks: 0,
+                Signals: targetResolution.Signals,
+                TargetResolution: targetResolution,
+                PostActionState: blockedPostState);
+        }
+
         var result = new UiaActionExecutor().Execute(new ActionRequest(
             Kind: "click",
             TargetRef: command.TargetRef,
@@ -502,6 +523,20 @@ sealed class PilotUiaHarnessClickExecutor : IExecutorHarnessClickExecutor
             WindowTitle: command.WindowTitleContains));
 
         var postActionSignals = VerifyPostActionState(command);
+        var postActionState = new ExecutorHarnessPostActionState(
+            WindowFound: postActionSignals.WindowFound,
+            TargetVisible: postActionSignals.TargetVisible,
+            TargetName: postActionSignals.TargetName,
+            ObservedClicks: result.Success ? 1 : 0,
+            ClickCountVerified: result.Success && postActionSignals.WindowFound && postActionSignals.TargetVisible,
+            Signals:
+            [
+                $"postAction.windowFound={postActionSignals.WindowFound.ToString().ToLowerInvariant()}",
+                $"postAction.targetVisible={postActionSignals.TargetVisible.ToString().ToLowerInvariant()}",
+                $"postAction.targetName={postActionSignals.TargetName}",
+                $"postAction.observedClicks={(result.Success ? 1 : 0)}"
+            ]);
+
         return new ExecutorHarnessExecutorResult(
             Success: result.Success,
             Message: result.Message,
@@ -516,7 +551,9 @@ sealed class PilotUiaHarnessClickExecutor : IExecutorHarnessClickExecutor
                 $"postAction.windowFound={postActionSignals.WindowFound.ToString().ToLowerInvariant()}",
                 $"postAction.targetVisible={postActionSignals.TargetVisible.ToString().ToLowerInvariant()}",
                 $"postAction.targetName={postActionSignals.TargetName}"
-            ]);
+            ],
+            TargetResolution: targetResolution,
+            PostActionState: postActionState);
     }
 
     private static (bool WindowFound, bool TargetVisible, string TargetName) VerifyPostActionState(ExecutorHarnessClickCommand command)

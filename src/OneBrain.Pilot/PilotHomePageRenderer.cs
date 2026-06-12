@@ -679,6 +679,7 @@ public static class PilotHomePageRenderer
         <p>Solicitud: <strong>{{Html(approval.ApprovalRequestId)}}</strong></p>
         <p>Estado: <span class="badge approval">{{Html(approval.Status)}}</span></p>
         <p>{{Html(approval.Description)}}</p>
+        <p class="notice">Matriz de seguridad: solo permite el target local allowlisted, con aprobacion humana, executor seguro y verificacion posterior. Si algo falta, bloquea antes de hacer click.</p>
         <form method="post" action="/executor-harness/click">
           <p><button type="submit">Aprobar y ejecutar click benigno supervisado</button></p>
         </form>
@@ -2172,6 +2173,9 @@ wouldCallProvider={result.Decision.WouldCallProvider}
   <p><span class="badge {{badgeClass}}">{{Html(result.Status)}}</span> {{Html(result.Message)}}</p>
   <p>Decision: <strong>{{Html(decision?.Decision ?? "-")}}</strong> / ExecutionAllowed: <strong>{{SpanishBool(decision?.ExecutionAllowed == true)}}</strong></p>
   <p>Verificacion posterior: target encontrado={{SpanishBool(result.Verification.TargetFound)}}; click observado={{SpanishBool(result.Verification.ClickObserved)}}; estado={{Html(result.Verification.Status)}}.</p>
+  <p>Resolucion de target: <strong>{{Html(result.TargetResolution?.Status ?? "-")}}</strong> - {{Html(result.TargetResolution?.Message ?? "-")}}</p>
+  <p>Matriz de seguridad: <strong>{{Html(result.SafetyMatrix?.Status ?? "-")}}</strong></p>
+  <p>Bloqueos de matriz: {{Html(result.SafetyMatrix == null || result.SafetyMatrix.Blocked.Count == 0 ? "sin bloqueos" : string.Join("; ", result.SafetyMatrix.Blocked))}}</p>
   <p>Safety del run: {{Safety(result.RunHistory.SafetyCounters)}}</p>
   <p>Evidencia: {{Html(string.Join("; ", result.Evidence))}}</p>
   <p>Rutas locales generadas: <span class="path">{{Html(paths.Count == 0 ? "sin artifacts escritos" : string.Join("; ", paths))}}</span></p>

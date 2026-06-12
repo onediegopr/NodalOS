@@ -91,6 +91,52 @@ public sealed class ExecutorHarnessSupervisedClickTests
     }
 
     [TestMethod]
+    public void Harness_Target_Resolver_Rejects_External_Or_Non_Local_Targets()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget() with
+        {
+            WindowTitleContains = "https://example.invalid",
+            TargetRef = "name:Pagar ahora"
+        };
+
+        var resolution = ExecutorHarnessTargetResolver.ResolveTarget(target);
+
+        Assert.IsFalse(resolution.Success);
+        Assert.AreEqual(ExecutorHarnessStatuses.Blocked, resolution.Status);
+        StringAssert.Contains(resolution.Message, "window target is not the local Pilot harness");
+        StringAssert.Contains(resolution.Message, "target identity is not the benign harness target");
+        StringAssert.Contains(resolution.Message, "external navigation signal");
+    }
+
+    [TestMethod]
+    public void Harness_Safety_Matrix_Allows_Only_Approved_Benign_Local_Target()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+
+        var matrix = ExecutorHarnessSafetyMatrix.Evaluate(target, decision);
+
+        Assert.IsTrue(matrix.Allowed);
+        Assert.AreEqual("allowed", matrix.Status);
+        CollectionAssert.Contains(matrix.Passed.ToList(), "target resolved to allowlisted local harness");
+        CollectionAssert.Contains(matrix.Passed.ToList(), "execution allowed by scoped approval decision");
+    }
+
+    [TestMethod]
+    public void Harness_Safety_Matrix_Fails_Closed_Without_Scoped_Approval()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+
+        var matrix = ExecutorHarnessSafetyMatrix.Evaluate(target, null);
+
+        Assert.IsFalse(matrix.Allowed);
+        Assert.AreEqual(ExecutorHarnessStatuses.Blocked, matrix.Status);
+        CollectionAssert.Contains(matrix.RequiresApproval.ToList(), "approval decision is required");
+        CollectionAssert.Contains(matrix.Blocked.ToList(), "approval decision is required");
+    }
+
+    [TestMethod]
     public void Harness_Executes_One_Benign_Click_And_Verifies_Post_Action()
     {
         var target = ExecutorHarnessDemoFixture.CreateTarget();
@@ -122,6 +168,24 @@ public sealed class ExecutorHarnessSupervisedClickTests
         var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
 
         var result = ExecutorHarnessService.ExecuteSupervisedClick(target, decision, new FakeHarnessExecutor(true, includePostActionSignals: false));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(ExecutorHarnessStatuses.Failed, result.Status);
+        StringAssert.Contains(result.Message, "post-action verification failed");
+        Assert.AreEqual(0, result.RunHistory.SafetyCounters.Clicks);
+    }
+
+    [TestMethod]
+    public void Harness_Fails_When_Post_Action_Target_Name_Does_Not_Match()
+    {
+        var target = ExecutorHarnessDemoFixture.CreateTarget();
+        var request = ExecutorHarnessService.CreateApprovalRequest(target);
+        var decision = ApprovalPolicy.Decide(request, ApprovalDecisionKinds.Approved, "Approved.", executionAllowed: true);
+
+        var result = ExecutorHarnessService.ExecuteSupervisedClick(
+            target,
+            decision,
+            new FakeHarnessExecutor(true, postActionTargetName: "Otro boton"));
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual(ExecutorHarnessStatuses.Failed, result.Status);
@@ -186,10 +250,15 @@ public sealed class ExecutorHarnessSupervisedClickTests
         return Path.Combine(root, "tools", "scripts", "run-onebrain-pilot.ps1");
     }
 
-    private sealed class FakeHarnessExecutor(bool success, bool includePostActionSignals = true) : IExecutorHarnessClickExecutor
+    private sealed class FakeHarnessExecutor(
+        bool success,
+        bool includePostActionSignals = true,
+        string? postActionTargetName = null) : IExecutorHarnessClickExecutor
     {
         public ExecutorHarnessExecutorResult Click(ExecutorHarnessClickCommand command)
         {
+            var targetResolution = ExecutorHarnessTargetResolver.ResolveCommand(command);
+            var targetName = postActionTargetName ?? command.ExpectedTargetName;
             var signals = new List<string>
             {
                 command.HarnessId,
@@ -202,12 +271,30 @@ public sealed class ExecutorHarnessSupervisedClickTests
                 signals.Add("postAction.targetVisible=true");
             }
 
+            var postActionState = new ExecutorHarnessPostActionState(
+                WindowFound: includePostActionSignals,
+                TargetVisible: includePostActionSignals,
+                TargetName: includePostActionSignals ? targetName : "",
+                ObservedClicks: success ? 1 : 0,
+                ClickCountVerified: success && includePostActionSignals,
+                Signals: includePostActionSignals
+                    ?
+                    [
+                        "postAction.windowFound=true",
+                        "postAction.targetVisible=true",
+                        $"postAction.targetName={targetName}",
+                        $"postAction.observedClicks={(success ? 1 : 0)}"
+                    ]
+                    : ["postAction.windowFound=false", "postAction.targetVisible=false"]);
+
             return new ExecutorHarnessExecutorResult(
                 Success: success,
                 Message: success ? "fake benign click executed" : "fake click failed",
                 TargetFound: success,
                 Clicks: success ? 1 : 0,
-                Signals: signals);
+                Signals: signals,
+                TargetResolution: targetResolution,
+                PostActionState: postActionState);
         }
     }
 }
