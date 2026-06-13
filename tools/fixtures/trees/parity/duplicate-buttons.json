@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "root": {
+    "role": "Window",
+    "name": "Duplicate Buttons Harness",
+    "automationId": "DuplicateWindow",
+    "className": "Window",
+    "runtimeId": "dup-root",
+    "bounds": { "x": 0, "y": 0, "width": 900, "height": 600 },
+    "enabled": true,
+    "offscreen": false,
+    "patterns": [ "Window" ],
+    "children": [
+      {
+        "role": "Button",
+        "name": "Enviar",
+        "automationId": "",
+        "className": "Button",
+        "runtimeId": "dup-button-1",
+        "bounds": { "x": 100, "y": 120, "width": 120, "height": 32 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [ "Invoke" ],
+        "children": []
+      },
+      {
+        "role": "Button",
+        "name": "Enviar",
+        "automationId": "",
+        "className": "Button",
+        "runtimeId": "dup-button-2",
+        "bounds": { "x": 260, "y": 120, "width": 120, "height": 32 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [ "Invoke" ],
+        "children": []
+      }
+    ]
+  }
+}

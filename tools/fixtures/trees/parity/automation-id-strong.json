@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "root": {
+    "role": "Window",
+    "name": "Automation Id Strong",
+    "automationId": "AutomationIdWindow",
+    "className": "Window",
+    "runtimeId": "auto-root",
+    "bounds": { "x": 0, "y": 0, "width": 900, "height": 600 },
+    "enabled": true,
+    "offscreen": false,
+    "patterns": [ "Window" ],
+    "children": [
+      {
+        "role": "Edit",
+        "name": "Busqueda Renombrada",
+        "helpText": "ONE Brain Search",
+        "automationId": "OneBrainSearchInput",
+        "className": "TextBox",
+        "runtimeId": "auto-edit-1",
+        "bounds": { "x": 100, "y": 120, "width": 260, "height": 28 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [ "Value" ],
+        "children": []
+      }
+    ]
+  }
+}

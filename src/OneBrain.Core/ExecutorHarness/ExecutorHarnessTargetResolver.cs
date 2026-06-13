@@ -1,13 +1,19 @@
 using OneBrain.Core.Approval;
+using OneBrain.Core.Contracts;
+using OneBrain.Core.Models;
+using OneBrain.Core.Selectors;
 
 namespace OneBrain.Core.ExecutorHarness;
 
 public static class ExecutorHarnessTargetResolver
 {
+    // Temporary adapter: harness target resolution now delegates identity matching
+    // to SelectorEngine, while this file still owns allowlist/policy checks.
     public static ExecutorHarnessTargetResolution ResolveTarget(ExecutorHarnessTarget target)
     {
         var signals = new List<string>();
         var issues = new List<string>();
+        var selectorMatches = ResolveSelector(target, issues, signals);
 
         if (!string.Equals(target.HarnessId, ExecutorHarnessDemoFixture.HarnessId, StringComparison.OrdinalIgnoreCase))
             issues.Add("harness id is not allowlisted");
@@ -15,9 +21,6 @@ public static class ExecutorHarnessTargetResolver
             issues.Add("app profile is not the local Pilot harness");
         if (!string.Equals(target.WindowTitleContains, "ONE BRAIN Pilot", StringComparison.OrdinalIgnoreCase))
             issues.Add("window target is not the local Pilot harness");
-        if (!string.Equals(target.TargetRef, $"name:{ExecutorHarnessDemoFixture.TargetName}", StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(target.ExpectedTargetName, ExecutorHarnessDemoFixture.TargetName, StringComparison.OrdinalIgnoreCase))
-            issues.Add("target identity is not the benign harness target");
         if (!target.ControlledSurface)
             issues.Add("target is not a controlled harness surface");
         if (!target.IsBenign)
@@ -38,6 +41,7 @@ public static class ExecutorHarnessTargetResolver
         signals.Add($"expectedTargetName={target.ExpectedTargetName}");
         signals.Add($"controlledSurface={target.ControlledSurface.ToString().ToLowerInvariant()}");
         signals.Add("localOnly=true");
+        signals.AddRange(selectorMatches);
 
         var success = issues.Count == 0;
         return new ExecutorHarnessTargetResolution(
@@ -79,5 +83,51 @@ public static class ExecutorHarnessTargetResolver
                value.Contains("checkout", StringComparison.OrdinalIgnoreCase) ||
                value.Contains("pago", StringComparison.OrdinalIgnoreCase) ||
                value.Contains("payment", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static IReadOnlyList<string> ResolveSelector(
+        ExecutorHarnessTarget target,
+        ICollection<string> issues,
+        ICollection<string> signals)
+    {
+        if (!SelectorEngine.TryParseLegacySelector(target.TargetRef, out var selector))
+        {
+            issues.Add("target selector is not supported");
+            return ["selector=invalid"];
+        }
+
+        var allowlistedIdentity = new ElementIdentity("", "Button", ExecutorHarnessDemoFixture.TargetName, "onebrain-benign-harness-target")
+        {
+            Role = "Button",
+            ControlType = "Button",
+            ClassName = "Button",
+            AncestorPath = "Window:ONE BRAIN Pilot > Group:ExecutorHarness",
+            WindowTitle = "ONE BRAIN Pilot",
+            ProcessName = "OneBrain.Pilot",
+            Provenance = Provenance.Fixture
+        };
+
+        selector = selector with
+        {
+            Provenance = Provenance.Fixture,
+            ExpectedIdentity = allowlistedIdentity
+        };
+
+        var resolution = SelectorEngine.Resolve(selector, [allowlistedIdentity]);
+        signals.Add($"selectorEngine.success={resolution.Success.ToString().ToLowerInvariant()}");
+        signals.Add($"selectorEngine.confidence={resolution.Confidence:0.00}");
+
+        if (!resolution.Success)
+        {
+            issues.Add(resolution.Ambiguous
+                ? "target identity is ambiguous for the benign harness target"
+                : "target identity is not the benign harness target");
+            return resolution.Reasons.Select(reason => $"selectorEngine={reason}").ToList();
+        }
+
+        if (!string.Equals(target.ExpectedTargetName, ExecutorHarnessDemoFixture.TargetName, StringComparison.OrdinalIgnoreCase))
+            issues.Add("target identity is not the benign harness target");
+
+        return resolution.Reasons.Select(reason => $"selectorEngine={reason}").ToList();
     }
 }

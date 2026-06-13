@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "root": {
+    "role": "Window",
+    "name": "ONE BRAIN Pilot",
+    "automationId": "PilotWindow",
+    "className": "Window",
+    "runtimeId": "parity-root",
+    "bounds": { "x": 0, "y": 0, "width": 1200, "height": 800 },
+    "enabled": true,
+    "offscreen": false,
+    "patterns": [ "Window" ],
+    "children": [
+      {
+        "role": "Group",
+        "name": "Search Panel",
+        "automationId": "SearchPanel",
+        "className": "Group",
+        "runtimeId": "parity-search-panel",
+        "bounds": { "x": 40, "y": 80, "width": 600, "height": 120 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [],
+        "children": [
+          {
+            "role": "Text",
+            "name": "ONE Brain Search",
+            "automationId": "SearchLabel",
+            "className": "TextBlock",
+            "runtimeId": "parity-search-label",
+            "bounds": { "x": 50, "y": 90, "width": 200, "height": 24 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [],
+            "children": []
+          },
+          {
+            "role": "Edit",
+            "name": "",
+            "helpText": "ONE Brain Search",
+            "legacyName": "ONE Brain Search",
+            "labeledByName": "ONE Brain Search",
+            "automationId": "OneBrainSearchInput",
+            "className": "TextBox",
+            "runtimeId": "parity-search-edit",
+            "bounds": { "x": 50, "y": 120, "width": 320, "height": 28 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Value" ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

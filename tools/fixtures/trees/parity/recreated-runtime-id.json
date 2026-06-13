@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "root": {
+    "role": "Window",
+    "name": "Recreated Runtime Id",
+    "automationId": "RecreatedWindow",
+    "className": "Window",
+    "runtimeId": "recreated-root",
+    "bounds": { "x": 0, "y": 0, "width": 900, "height": 600 },
+    "enabled": true,
+    "offscreen": false,
+    "patterns": [ "Window" ],
+    "children": [
+      {
+        "role": "Group",
+        "name": "Form",
+        "automationId": "MainForm",
+        "className": "Group",
+        "runtimeId": "recreated-form",
+        "bounds": { "x": 80, "y": 100, "width": 500, "height": 180 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [],
+        "children": [
+          {
+            "role": "Edit",
+            "name": "Cliente",
+            "automationId": "CustomerInput",
+            "className": "TextBox",
+            "runtimeId": "recreated-new-runtime",
+            "bounds": { "x": 100, "y": 140, "width": 220, "height": 28 },
+            "enabled": true,
+            "offscreen": false,
+            "patterns": [ "Value" ],
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

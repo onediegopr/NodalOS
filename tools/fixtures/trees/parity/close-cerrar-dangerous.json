@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "root": {
+    "role": "Window",
+    "name": "Dangerous Close Dialog",
+    "automationId": "DangerousWindow",
+    "className": "Window",
+    "runtimeId": "danger-root",
+    "bounds": { "x": 0, "y": 0, "width": 640, "height": 320 },
+    "enabled": true,
+    "offscreen": false,
+    "patterns": [ "Window" ],
+    "children": [
+      {
+        "role": "Button",
+        "name": "Close",
+        "automationId": "CloseButtonEn",
+        "className": "Button",
+        "runtimeId": "danger-close-en",
+        "bounds": { "x": 380, "y": 220, "width": 100, "height": 32 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [ "Invoke" ],
+        "children": []
+      },
+      {
+        "role": "Button",
+        "name": "Cerrar",
+        "automationId": "CloseButtonEs",
+        "className": "Button",
+        "runtimeId": "danger-close-es",
+        "bounds": { "x": 500, "y": 220, "width": 100, "height": 32 },
+        "enabled": true,
+        "offscreen": false,
+        "patterns": [ "Invoke" ],
+        "children": []
+      }
+    ]
+  }
+}

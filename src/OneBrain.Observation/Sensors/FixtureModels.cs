@@ -12,6 +12,10 @@ public sealed record FixtureControlNode
 {
     public string Role { get; init; } = "";
     public string Name { get; init; } = "";
+    public string HelpText { get; init; } = "";
+    public string LegacyName { get; init; } = "";
+    public string LegacyValue { get; init; } = "";
+    public string LabeledByName { get; init; } = "";
     public string AutomationId { get; init; } = "";
     public string ClassName { get; init; } = "";
     public string RuntimeId { get; init; } = "";

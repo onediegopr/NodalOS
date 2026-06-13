@@ -4,6 +4,9 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Input;
 using FlaUI.UIA3;
 using OneBrain.Core.Actions;
+using OneBrain.Core.Contracts;
+using OneBrain.Core.Models;
+using OneBrain.Core.Selectors;
 using OneBrain.Safety.Policies;
 using OneBrain.Observation.Windows;
 using OneBrain.Observation.Uia;
@@ -205,78 +208,110 @@ public sealed class UiaActionExecutor
             return idx >= 1 && idx <= elements.Count ? elements[idx - 1] : null;
         }
 
-        var parts = selector.Split(':', 2);
-        if (parts.Length < 2) return null;
+        if (!SelectorEngine.TryParseLegacySelector(selector, out var parsedSelector))
+            return null;
 
-        var selectorKind = parts[0].ToLowerInvariant();
-        var val          = parts[1];
+        var selectorForAction = AdaptSelectorForAction(parsedSelector, actionKind);
+        var candidates = elements.Select(BuildCandidate).ToList();
+        var resolution = SelectorEngine.Resolve(
+            selectorForAction,
+            candidates.Select(candidate => candidate.Identity).ToList());
 
-        return selectorKind switch
+        if (!resolution.Success || resolution.BestMatch == null)
+            return null;
+
+        return candidates.FirstOrDefault(candidate => IsSameIdentity(candidate.Identity, resolution.BestMatch))
+            ?.Element;
+    }
+
+    private static SelectorDefinition AdaptSelectorForAction(SelectorDefinition selector, string actionKind)
+    {
+        var kind = actionKind.ToLowerInvariant();
+        if (selector.ExpectedIdentity != null)
+            return selector;
+
+        var expectedControlType = kind switch
         {
-            "role"          => elements.FirstOrDefault(e => SafeRole(e).Equals(val, StringComparison.OrdinalIgnoreCase)),
-            // --name: collect all matching candidates, then pick best for actionKind.
-            // Edge exposes label Text nodes before the actual Edit in tree order, so
-            // FirstOrDefault would silently return the label instead of the input.
-            "name"          => BestNameMatch(elements, val, actionKind),
-            "automation-id" => elements.FirstOrDefault(e => SafeId(e).Equals(val, StringComparison.OrdinalIgnoreCase)),
-            "class"         => elements.FirstOrDefault(e => SafeClass(e).Equals(val, StringComparison.OrdinalIgnoreCase)),
-            _               => null
+            "type" or "type_text" => "Edit",
+            "invoke" or "click" or "press" => "Button",
+            _ => ""
+        };
+
+        if (expectedControlType.Length == 0)
+            return selector;
+
+        return selector with
+        {
+            ExpectedIdentity = new ElementIdentity("", "", selector.Name ?? "", selector.AutomationId ?? "")
+            {
+                Role = expectedControlType,
+                ControlType = expectedControlType,
+                HelpText = selector.HelpText ?? "",
+                LegacyName = selector.LegacyName ?? "",
+                ClassName = selector.ClassName ?? "",
+                AncestorPath = selector.AncestorPath ?? "",
+                Provenance = Provenance.Uia
+            }
         };
     }
 
-    private static AutomationElement? BestNameMatch(
-        List<AutomationElement> elements, string val, string actionKind)
+    private static CandidateAdapter BuildCandidate(AutomationElement element)
     {
-        var candidates = elements.Where(e => MatchesName(e, val)).ToList();
-        if (candidates.Count == 0) return null;
-        if (candidates.Count == 1) return candidates[0];
+        var role = SafeRole(element);
+        var identity = new ElementIdentity(
+            UiaTreeWalker.SafeRuntimeId(element),
+            role,
+            SafeName(element),
+            SafeId(element))
+        {
+            Role = role,
+            ControlType = role,
+            HelpText = UiaTreeWalker.SafeHelpText(element),
+            LegacyName = UiaTreeWalker.SafeLegacyName(element),
+            LabeledByName = UiaTreeWalker.SafeLabeledByName(element),
+            ClassName = SafeClass(element),
+            AncestorPath = BuildAncestorPath(element),
+            Provenance = Provenance.Uia
+        };
 
-        var kind = actionKind.ToLowerInvariant();
-
-        if (kind == "type" || kind == "type_text")
-            return candidates.OrderBy(RankForType).First();
-
-        if (kind == "invoke")
-            return candidates.OrderBy(RankForInvoke).First();
-
-        return candidates[0];
+        return new CandidateAdapter(element, identity);
     }
 
-    // Rank candidates for type/type_text: prefer Edit > Document > ValuePattern holder > other.
-    // Text/StaticText label nodes get rank 99 so they are never chosen when a real input exists.
-    private static int RankForType(AutomationElement e)
+    private static string BuildAncestorPath(AutomationElement element)
     {
-        var role = SafeRole(e);
-        if (role.Equals("Edit", StringComparison.OrdinalIgnoreCase))
+        var segments = new List<string>();
+
+        try
         {
-            try { return e.Patterns.Value.IsSupported ? 0 : 1; } catch { return 1; }
+            var current = element.Parent;
+            while (current != null)
+            {
+                var role = SafeRole(current);
+                var name = SafeName(current);
+                var segment = string.IsNullOrWhiteSpace(name) ? role : $"{role}:{name}";
+                if (!string.IsNullOrWhiteSpace(segment))
+                    segments.Add(segment);
+                current = current.Parent;
+            }
         }
-        if (role.Equals("Document", StringComparison.OrdinalIgnoreCase)) return 2;
-        if (role.Equals("Text",     StringComparison.OrdinalIgnoreCase)) return 99;
-        try { return e.Patterns.Value.IsSupported ? 3 : 50; } catch { return 50; }
+        catch
+        {
+            return "";
+        }
+
+        segments.Reverse();
+        return string.Join(" > ", segments);
     }
 
-    // Rank candidates for invoke: prefer Button > MenuItem > InvokePattern holder > other.
-    private static int RankForInvoke(AutomationElement e)
+    private static bool IsSameIdentity(ElementIdentity left, ElementIdentity right)
     {
-        var role = SafeRole(e);
-        if (role.Equals("Button",   StringComparison.OrdinalIgnoreCase))
-        {
-            try { return e.Patterns.Invoke.IsSupported ? 0 : 1; } catch { return 1; }
-        }
-        if (role.Equals("MenuItem", StringComparison.OrdinalIgnoreCase))
-        {
-            try { return e.Patterns.Invoke.IsSupported ? 2 : 3; } catch { return 3; }
-        }
-        if (role.Equals("Text", StringComparison.OrdinalIgnoreCase)) return 99;
-        try { return e.Patterns.Invoke.IsSupported ? 4 : 50; } catch { return 50; }
+        return string.Equals(left.RuntimeId, right.RuntimeId, StringComparison.Ordinal) &&
+               string.Equals(left.AutomationId, right.AutomationId, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.EffectiveControlType, right.EffectiveControlType, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.Name, right.Name, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.ClassName, right.ClassName, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.AncestorPath, right.AncestorPath, StringComparison.OrdinalIgnoreCase);
     }
-
-    private static bool MatchesName(AutomationElement e, string val)
-        => SafeName(e).Contains(val, StringComparison.OrdinalIgnoreCase) ||
-           UiaTreeWalker.SafeHelpText(e).Contains(val, StringComparison.OrdinalIgnoreCase) ||
-           UiaTreeWalker.SafeLegacyName(e).Contains(val, StringComparison.OrdinalIgnoreCase) ||
-           UiaTreeWalker.SafeLabeledByName(e).Contains(val, StringComparison.OrdinalIgnoreCase);
 
     private static string BuildNotFoundMessage(
         string selector, List<AutomationElement> elements, bool truncated, bool isBrowser)
@@ -332,4 +367,6 @@ public sealed class UiaActionExecutor
         System.Threading.Thread.Sleep(300);
         return GetForegroundWindow() == expectedHwnd;
     }
+
+    private sealed record CandidateAdapter(AutomationElement Element, ElementIdentity Identity);
 }
