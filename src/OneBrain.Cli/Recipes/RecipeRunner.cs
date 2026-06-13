@@ -43,6 +43,7 @@ public sealed class RecipeRunner
     private static Func<IntPtr, string, string, int, WebTargetResult>? s_targetObserveResolverOverride = null;
     private static Func<IUiaPatternExecutor>? s_safeClickPatternExecutorFactoryOverride = null;
     private static Func<IDesktopOwnershipMonitor>? s_safeClickOwnershipMonitorFactoryOverride = null;
+    private static Func<WebTargetResult, string, ActionResult>? s_safeClickLegacyWebActionOverride = null;
     private RecipeDefinition? _currentRecipe;
     private CancellationTokenSource? _stepCts;
     private readonly RecipeExecutionContext _ctx = new();
@@ -2187,6 +2188,8 @@ public sealed class RecipeRunner
             ?? step.Args?.GetValueOrDefault("dispatchpath")
             ?? "";
 
+        SetSafeClickLegacyUsageVars(prefix, usedElClick: false, usedUiaActionExecutor: false);
+
         if (string.IsNullOrWhiteSpace(dispatchPath))
             return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
 
@@ -2324,17 +2327,39 @@ public sealed class RecipeRunner
                     // Execute click via FlaUI on the selected element
                     try
                     {
+                        if (s_safeClickLegacyWebActionOverride != null)
+                        {
+                            var overrideResult = s_safeClickLegacyWebActionOverride(resolution, targetText);
+                            SetSafeClickLegacyUsageVars(prefix, usedElClick: !resolution.HasInvoke, usedUiaActionExecutor: false);
+                            if (overrideResult.Success)
+                            {
+                                SetSafeClickVars(prefix, targetText, "success", $"clicked via WebTargetResolver on {resolution.SelectedControlType}");
+                                TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+                                sw.Stop();
+                                return new RecipeStepRunResult(step.Id, step.Kind, true,
+                                    $"safe.click: clicked '{targetText}' ({resolution.SelectedControlType})", sw.ElapsedMilliseconds);
+                            }
+
+                            SetSafeClickVars(prefix, targetText, "failed", overrideResult.Message ?? "legacy web action override failed");
+                            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+                            sw.Stop();
+                            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                                $"safe.click: {overrideResult.Message ?? "legacy web action override failed"}", sw.ElapsedMilliseconds);
+                        }
+
                         if (long.TryParse(resolution.SelectedHwnd, out var selHwnd))
                         {
                             using var automation = new FlaUI.UIA3.UIA3Automation();
                             var el = WebTargetResolver.FindElementByName(new IntPtr(selHwnd), targetText);
                             if (el != null)
                             {
-                                if (el.Patterns.Invoke.IsSupported)
+                                var usedElClick = !el.Patterns.Invoke.IsSupported;
+                                if (!usedElClick)
                                     el.Patterns.Invoke.Pattern.Invoke();
                                 else
                                     el.Click();
 
+                                SetSafeClickLegacyUsageVars(prefix, usedElClick, usedUiaActionExecutor: false);
                                 SetSafeClickVars(prefix, targetText, "success", $"clicked via WebTargetResolver on {resolution.SelectedControlType}");
                                 TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
                                 sw.Stop();
@@ -2369,6 +2394,7 @@ public sealed class RecipeRunner
                 result = new UiaActionExecutor().Execute(req2);
             }
 
+            SetSafeClickLegacyUsageVars(prefix, usedElClick: false, usedUiaActionExecutor: true);
             SetSafeClickVars(prefix, targetText, result.Success ? "success" : "failed",
                 result.Message ?? (result.Success ? "clicked" : "failed"));
             TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
@@ -2667,9 +2693,13 @@ public sealed class RecipeRunner
 
     private void TrySetSafeClickPlanVars(string prefix, string approvalPrefix, string targetText, string mode)
     {
+        var manifest = TryReadApprovalManifest(approvalPrefix);
+        var observedIdentity = ReadSafeClickObservedIdentity(prefix);
+        var invokePatternAvailable = ReadSafeClickInvokeAvailability(prefix);
+        var (usedElClick, usedUiaActionExecutor) = ReadSafeClickLegacyUsage(prefix);
+
         try
         {
-            var manifest = TryReadApprovalManifest(approvalPrefix);
             var plan = SafeClickPlanner.Plan(new SafeClickPlanInput
             {
                 Mode = mode,
@@ -2692,19 +2722,49 @@ public sealed class RecipeRunner
             _ctx.Variables[prefix + ".plan.wouldDispatch"] = plan.WouldDispatch ? "true" : "false";
             _ctx.Variables[prefix + ".plan.wouldUseUnsafeFallback"] = plan.WouldUseUnsafeFallback ? "true" : "false";
             _ctx.Variables[prefix + ".plan.reasons"] = plan.Reasons.Count == 0 ? "" : string.Join(" | ", plan.Reasons);
+
+            var readiness = SafeClickShadowReadinessEvaluator.Evaluate(
+                manifest,
+                plan,
+                observedIdentity,
+                invokePatternAvailable,
+                usesElClick: usedElClick,
+                usesUiaActionExecutor: usedUiaActionExecutor);
+            SetSafeClickFsmReadyVars(prefix, readiness);
         }
         catch (Exception ex)
         {
-            _ctx.Variables[prefix + ".plan.projectedState"] = StepState.Blocked.ToString();
-            _ctx.Variables[prefix + ".plan.failureKind"] = FailureKind.Unverified.ToString();
-            _ctx.Variables[prefix + ".plan.blockReason"] = "PlannerUnavailable";
-            _ctx.Variables[prefix + ".plan.identityStrength"] = IdentityStrength.None.ToString();
+            var fallbackPlan = new SafeClickExecutionPlan(
+                ProjectedState: StepState.Blocked,
+                FailureKind: FailureKind.Unverified,
+                BlockReason: "PlannerUnavailable",
+                IdentityStrength: IdentityStrength.None,
+                ContractValid: false,
+                BindingVerdict: null,
+                ParityAgrees: null,
+                WouldDispatch: false,
+                WouldUseUnsafeFallback: false,
+                Reasons: [$"planner unavailable: {ex.Message}"]);
+
+            _ctx.Variables[prefix + ".plan.projectedState"] = fallbackPlan.ProjectedState.ToString();
+            _ctx.Variables[prefix + ".plan.failureKind"] = fallbackPlan.FailureKind?.ToString() ?? "";
+            _ctx.Variables[prefix + ".plan.blockReason"] = fallbackPlan.BlockReason ?? "";
+            _ctx.Variables[prefix + ".plan.identityStrength"] = fallbackPlan.IdentityStrength.ToString();
             _ctx.Variables[prefix + ".plan.contractValid"] = "false";
             _ctx.Variables[prefix + ".plan.bindingVerdict"] = "";
             _ctx.Variables[prefix + ".plan.parityAgrees"] = "";
             _ctx.Variables[prefix + ".plan.wouldDispatch"] = "false";
             _ctx.Variables[prefix + ".plan.wouldUseUnsafeFallback"] = "false";
-            _ctx.Variables[prefix + ".plan.reasons"] = $"planner unavailable: {ex.Message}";
+            _ctx.Variables[prefix + ".plan.reasons"] = fallbackPlan.Reasons.Count == 0 ? "" : string.Join(" | ", fallbackPlan.Reasons);
+
+            var readiness = SafeClickShadowReadinessEvaluator.Evaluate(
+                manifest,
+                fallbackPlan,
+                observedIdentity,
+                invokePatternAvailable,
+                usesElClick: usedElClick,
+                usesUiaActionExecutor: usedUiaActionExecutor);
+            SetSafeClickFsmReadyVars(prefix, readiness);
         }
     }
 
@@ -3005,6 +3065,21 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsm.ledgerJson"] = JsonSerializer.Serialize(result.Ledger.Entries);
     }
 
+    private void SetSafeClickFsmReadyVars(string prefix, SafeClickShadowReadiness readiness)
+    {
+        _ctx.Variables[prefix + ".fsmReady.success"] = readiness.Success ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.reason"] = readiness.Reason;
+        _ctx.Variables[prefix + ".fsmReady.projectedState"] = readiness.ProjectedState.ToString();
+        _ctx.Variables[prefix + ".fsmReady.identityStrength"] = readiness.IdentityStrength.ToString();
+        _ctx.Variables[prefix + ".fsmReady.hasTargetObserve"] = readiness.HasTargetObserve ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.hasApprovalV3"] = readiness.HasApprovalV3 ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.hasRuntimeId"] = readiness.HasRuntimeId ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.runtimeIdentityMatch"] = readiness.RuntimeIdentityMatch.ToString();
+        _ctx.Variables[prefix + ".fsmReady.wouldRequireLegacy"] = readiness.WouldRequireLegacy ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.eligible"] = readiness.EligibleForFsm ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.summary"] = readiness.Summary;
+    }
+
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
     {
         return s_targetObserveResolverOverride?.Invoke(sessionHwnd, targetText, processName, maxDescendants)
@@ -3132,6 +3207,76 @@ public sealed class RecipeRunner
         }
 
         return IdentityStrength.None;
+    }
+
+    private void SetSafeClickLegacyUsageVars(string prefix, bool usedElClick, bool usedUiaActionExecutor)
+    {
+        var usedUnsafeFallback = usedElClick || usedUiaActionExecutor;
+        _ctx.Variables[prefix + ".legacy.usedElClick"] = usedElClick ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.usedUiaActionExecutor"] = usedUiaActionExecutor ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.usedUnsafeFallback"] = usedUnsafeFallback ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.summary"] =
+            $"elClick={(usedElClick ? "true" : "false")};uiaActionExecutor={(usedUiaActionExecutor ? "true" : "false")};unsafeFallback={(usedUnsafeFallback ? "true" : "false")}";
+    }
+
+    private (bool UsedElClick, bool UsedUiaActionExecutor) ReadSafeClickLegacyUsage(string prefix)
+    {
+        var usedElClick = string.Equals(_ctx.Variables.GetValueOrDefault(prefix + ".legacy.usedElClick", "false"), "true", StringComparison.OrdinalIgnoreCase);
+        var usedUiaActionExecutor = string.Equals(_ctx.Variables.GetValueOrDefault(prefix + ".legacy.usedUiaActionExecutor", "false"), "true", StringComparison.OrdinalIgnoreCase);
+        return (usedElClick, usedUiaActionExecutor);
+    }
+
+    private ElementIdentity? ReadSafeClickObservedIdentity(string prefix)
+    {
+        var selectedName = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.selectedName", "");
+        var selectedControlType = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.selectedControlType", "");
+        var selectedBoundingRect = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.selectedBoundingRect", "");
+        var runtimeId = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.runtimeId", "");
+        var automationId = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.automationId", "");
+        var className = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.className", "");
+        var frameworkId = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.frameworkId", "");
+        var ancestorPath = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.ancestorPath", "");
+        var processName = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.processName", "");
+        var windowTitle = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.windowTitle", "");
+
+        if (string.IsNullOrWhiteSpace(selectedName) &&
+            string.IsNullOrWhiteSpace(selectedControlType) &&
+            string.IsNullOrWhiteSpace(selectedBoundingRect) &&
+            string.IsNullOrWhiteSpace(runtimeId) &&
+            string.IsNullOrWhiteSpace(automationId) &&
+            string.IsNullOrWhiteSpace(className) &&
+            string.IsNullOrWhiteSpace(frameworkId) &&
+            string.IsNullOrWhiteSpace(ancestorPath) &&
+            string.IsNullOrWhiteSpace(processName) &&
+            string.IsNullOrWhiteSpace(windowTitle))
+        {
+            return null;
+        }
+
+        return new ElementIdentity
+        {
+            RuntimeId = runtimeId,
+            AutomationId = automationId,
+            Name = selectedName,
+            Role = selectedControlType,
+            ControlType = selectedControlType,
+            ClassName = className,
+            FrameworkId = frameworkId,
+            AncestorPath = ancestorPath,
+            ProcessName = processName,
+            WindowTitle = windowTitle,
+            BoundsHint = selectedBoundingRect,
+            Provenance = string.IsNullOrWhiteSpace(runtimeId) ? Provenance.Inferred : Provenance.Uia
+        };
+    }
+
+    private bool? ReadSafeClickInvokeAvailability(string prefix)
+    {
+        var rawHasInvoke = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.hasInvoke", "");
+        if (bool.TryParse(rawHasInvoke, out var hasInvoke))
+            return hasInvoke;
+
+        return null;
     }
 
     private static string? EmptyToNull(string? value) =>
