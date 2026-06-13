@@ -4,12 +4,15 @@ using OneBrain.Pilot;
 using OneBrain.Core.AI;
 using OneBrain.Core.AppProfiles;
 using OneBrain.Core.Approval;
+using OneBrain.Core.Contracts;
+using OneBrain.Core.Execution;
 using OneBrain.Core.ExecutorHarness;
 using OneBrain.Core.Flows;
 using OneBrain.Core.History;
 using OneBrain.Core.Memory;
 using OneBrain.Core.Recording;
 using OneBrain.Core.Recipes.Editing;
+using OneBrain.Core.Selectors;
 using OneBrain.Observation.Uia;
 using OneBrain.Observation.Windows;
 using FlaUI.UIA3;
@@ -514,6 +517,8 @@ static IReadOnlyDictionary<string, string> BuildUnsafeAttempts(IFormCollection f
 
 sealed class PilotUiaHarnessClickExecutor : IExecutorHarnessClickExecutor
 {
+    private readonly UiaPatternExecutor _patternExecutor = new();
+
     public ExecutorHarnessExecutorResult Click(ExecutorHarnessClickCommand command)
     {
         var targetResolution = ExecutorHarnessTargetResolver.ResolveCommand(command);
@@ -537,12 +542,23 @@ sealed class PilotUiaHarnessClickExecutor : IExecutorHarnessClickExecutor
                 PostActionState: blockedPostState);
         }
 
-        var result = new UiaActionExecutor().Execute(new ActionRequest(
-            Kind: "click",
+        SelectorEngine.TryParseLegacySelector(command.TargetRef, out var selector);
+        var expectedIdentity = targetResolution.ObservedIdentity ?? ExecutorHarnessTargetResolver.BuildAllowlistedIdentity();
+        selector ??= SelectorEngine.GenerateSelector(expectedIdentity);
+        selector = selector with
+        {
+            ExpectedIdentity = expectedIdentity,
+            Provenance = Provenance.Uia
+        };
+
+        var result = _patternExecutor.Invoke(new PatternExecutionRequest(
+            ActionKind: command.ActionKind,
             TargetRef: command.TargetRef,
-            Text: null,
-            ProcessName: null,
-            WindowTitle: command.WindowTitleContains));
+            ExpectedTargetName: command.ExpectedTargetName,
+            ProcessName: "OneBrain.Pilot",
+            WindowTitleContains: command.WindowTitleContains,
+            Selector: selector,
+            ExpectedIdentity: expectedIdentity));
 
         var postActionSignals = VerifyPostActionState(command);
         var postActionState = new ExecutorHarnessPostActionState(
@@ -561,15 +577,15 @@ sealed class PilotUiaHarnessClickExecutor : IExecutorHarnessClickExecutor
 
         return new ExecutorHarnessExecutorResult(
             Success: result.Success,
-            Message: result.Message,
+            Message: result.Reasons.LastOrDefault() ?? (result.Success ? "uia invoke executed" : "uia invoke failed"),
             TargetFound: result.Success && postActionSignals.TargetVisible,
             Clicks: result.Success ? 1 : 0,
             Signals:
             [
                 $"windowTitleContains={command.WindowTitleContains}",
                 $"targetRef={command.TargetRef}",
-                result.UsedFallback ? "executor used fallback" : "executor used direct target resolution",
-                result.Message,
+                "executor used ui pattern invoke",
+                .. result.Reasons,
                 $"postAction.windowFound={postActionSignals.WindowFound.ToString().ToLowerInvariant()}",
                 $"postAction.targetVisible={postActionSignals.TargetVisible.ToString().ToLowerInvariant()}",
                 $"postAction.targetName={postActionSignals.TargetName}"

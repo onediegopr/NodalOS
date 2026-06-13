@@ -44,6 +44,7 @@ public static class ExecutorHarnessTargetResolver
         signals.AddRange(selectorMatches);
 
         var success = issues.Count == 0;
+        var allowlistedIdentity = BuildAllowlistedIdentity();
         return new ExecutorHarnessTargetResolution(
             Success: success,
             Status: success ? "resolved" : ExecutorHarnessStatuses.Blocked,
@@ -55,7 +56,10 @@ public static class ExecutorHarnessTargetResolver
             ExpectedTargetName: target.ExpectedTargetName,
             ControlledSurface: target.ControlledSurface,
             LocalOnly: success,
-            Signals: signals.Concat(issues.Select(issue => $"blocked={issue}")).ToList());
+            Signals: signals.Concat(issues.Select(issue => $"blocked={issue}")).ToList(),
+            ObservedIdentity: success ? allowlistedIdentity : null,
+            Candidates: [allowlistedIdentity],
+            MatchVerdict: success ? "Same" : "Different");
     }
 
     public static ExecutorHarnessTargetResolution ResolveCommand(ExecutorHarnessClickCommand command)
@@ -96,17 +100,7 @@ public static class ExecutorHarnessTargetResolver
             return ["selector=invalid"];
         }
 
-        var allowlistedIdentity = new ElementIdentity("", "Button", ExecutorHarnessDemoFixture.TargetName, "onebrain-benign-harness-target")
-        {
-            Role = "Button",
-            ControlType = "Button",
-            ClassName = "Button",
-            AncestorPath = "Window:ONE BRAIN Pilot > Group:ExecutorHarness",
-            WindowTitle = "ONE BRAIN Pilot",
-            ProcessName = "OneBrain.Pilot",
-            Provenance = Provenance.Fixture
-        };
-
+        var allowlistedIdentity = BuildAllowlistedIdentity();
         selector = selector with
         {
             Provenance = Provenance.Fixture,
@@ -129,5 +123,19 @@ public static class ExecutorHarnessTargetResolver
             issues.Add("target identity is not the benign harness target");
 
         return resolution.Reasons.Select(reason => $"selectorEngine={reason}").ToList();
+    }
+
+    public static ElementIdentity BuildAllowlistedIdentity()
+    {
+        return new ElementIdentity("fixture-benign-harness-target", "Button", ExecutorHarnessDemoFixture.TargetName, "onebrain-benign-harness-target")
+        {
+            Role = "Button",
+            ControlType = "Button",
+            ClassName = "Button",
+            AncestorPath = "Window:ONE BRAIN Pilot > Group:ExecutorHarness",
+            WindowTitle = "ONE BRAIN Pilot",
+            ProcessName = "OneBrain.Pilot",
+            Provenance = Provenance.Fixture
+        };
     }
 }

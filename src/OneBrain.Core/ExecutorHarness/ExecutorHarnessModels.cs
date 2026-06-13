@@ -1,5 +1,8 @@
 using OneBrain.Core.Approval;
+using OneBrain.Core.Contracts;
+using OneBrain.Core.Execution;
 using OneBrain.Core.History;
+using OneBrain.Core.Models;
 
 namespace OneBrain.Core.ExecutorHarness;
 
@@ -75,7 +78,9 @@ public sealed record ExecutorHarnessInteractionContract(
     ExecutorHarnessSafetyMatrixEvaluation SafetyMatrix,
     ExecutorHarnessPreActionState PreActionState,
     ExecutorHarnessPostActionExpectation PostActionExpectation,
-    string LogicalEvidencePath);
+    string LogicalEvidencePath,
+    RecipeSafetyContract? SafetyContract = null,
+    ApprovalBinding? ApprovalBinding = null);
 
 public sealed record ExecutorHarnessDryRunExplanation(
     ExecutorHarnessInteractionContract Contract,
@@ -99,7 +104,10 @@ public sealed record ExecutorHarnessTargetResolution(
     string ExpectedTargetName,
     bool ControlledSurface,
     bool LocalOnly,
-    IReadOnlyList<string> Signals);
+    IReadOnlyList<string> Signals,
+    ElementIdentity? ObservedIdentity = null,
+    IReadOnlyList<ElementIdentity>? Candidates = null,
+    string? MatchVerdict = null);
 
 public sealed record ExecutorHarnessPostActionState(
     bool WindowFound,
@@ -143,7 +151,12 @@ public sealed record ExecutorHarnessRunResult(
     IReadOnlyList<string> Evidence,
     IReadOnlyList<string> ArtifactPaths,
     ExecutorHarnessSafetyMatrixEvaluation? SafetyMatrix = null,
-    ExecutorHarnessTargetResolution? TargetResolution = null);
+    ExecutorHarnessTargetResolution? TargetResolution = null,
+    StepState FinalState = StepState.Created,
+    FailureKind? FailureKind = null,
+    IReadOnlyList<StepTransitionEvidence>? TransitionEvidence = null,
+    RecipeSafetyContract? SafetyContract = null,
+    ApprovalBinding? ApprovalBinding = null);
 
 public sealed record ExecutorHarnessEvidenceRecord(
     string EvidenceId,
@@ -156,7 +169,9 @@ public sealed record ExecutorHarnessEvidenceRecord(
     ExecutorHarnessPostActionVerification Verification,
     RunSafetyCounters SafetyCounters,
     IReadOnlyList<string> Notes,
-    ExecutorHarnessInteractionContract? InteractionContract = null);
+    ExecutorHarnessInteractionContract? InteractionContract = null,
+    FailureKind? FailureKind = null,
+    IReadOnlyList<StepTransitionEvidence>? TransitionEvidence = null);
 
 public sealed record ExecutorHarnessArtifactWriteResult
 {

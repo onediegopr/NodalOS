@@ -1,6 +1,11 @@
 using OneBrain.Core.Approval;
+using OneBrain.Core.Contracts;
+using OneBrain.Core.Execution;
 using OneBrain.Core.History;
+using OneBrain.Core.Identity;
+using OneBrain.Core.Models;
 using OneBrain.Core.Recording;
+using OneBrain.Core.Selectors;
 
 namespace OneBrain.Core.ExecutorHarness;
 
@@ -58,6 +63,8 @@ public static class ExecutorHarnessService
     {
         var targetResolution = ExecutorHarnessTargetResolver.ResolveTarget(target);
         var safetyMatrix = ExecutorHarnessSafetyMatrix.Evaluate(target, decision);
+        var approvalBinding = BuildApprovalBinding(target, decision);
+        var safetyContract = BuildSafetyContract(target, approvalBinding);
         var approved = decision != null &&
                        string.Equals(decision.Decision, ApprovalDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase);
         var executionAllowed = decision?.ExecutionAllowed == true && safetyMatrix.Allowed;
@@ -107,7 +114,9 @@ public static class ExecutorHarnessService
                     $"postAction.targetName={target.ExpectedTargetName}",
                     "postAction.observedClicks=1"
                 ]),
-            LogicalEvidencePath: $"{ExecutorHarnessArtifactStore.RelativeDirectory}/{target.HarnessId}-evidence.json");
+            LogicalEvidencePath: $"{ExecutorHarnessArtifactStore.RelativeDirectory}/{target.HarnessId}-evidence.json",
+            SafetyContract: safetyContract,
+            ApprovalBinding: approvalBinding);
     }
 
     public static ApprovalRequest CreateApprovalRequest(ExecutorHarnessTarget target, DateTimeOffset? now = null)
@@ -146,10 +155,22 @@ public static class ExecutorHarnessService
         IExecutorHarnessClickExecutor executor,
         DateTimeOffset? now = null)
     {
+        return ExecuteSupervisedClick(target, decision, executor, new PassiveDesktopOwnershipMonitor(), now);
+    }
+
+    internal static ExecutorHarnessRunResult ExecuteSupervisedClick(
+        ExecutorHarnessTarget target,
+        ApprovalDecision? decision,
+        IExecutorHarnessClickExecutor executor,
+        IDesktopOwnershipMonitor ownershipMonitor,
+        DateTimeOffset? now = null)
+    {
         var timestamp = Timestamp(now);
         var approval = CreateApprovalRequest(target, now);
         var targetResolution = ExecutorHarnessTargetResolver.ResolveTarget(target);
         var safetyMatrix = ExecutorHarnessSafetyMatrix.Evaluate(target, decision);
+        var approvalBinding = BuildApprovalBinding(target, decision);
+        var safetyContract = BuildSafetyContract(target, approvalBinding);
         if (!safetyMatrix.Allowed)
         {
             var guardIssues = safetyMatrix.Blocked;
@@ -160,26 +181,45 @@ public static class ExecutorHarnessService
                 TargetFound: false,
                 ClickObserved: false,
                 Signals: guardIssues);
-            return BuildResult(target, approval, decision, verification, ExecutorHarnessStatuses.Blocked, "blocked before executor", timestamp, safetyMatrix, targetResolution);
+            return BuildResult(
+                target,
+                approval,
+                decision,
+                verification,
+                ExecutorHarnessStatuses.Blocked,
+                "blocked before executor",
+                timestamp,
+                safetyMatrix,
+                targetResolution,
+                finalState: StepState.Blocked,
+                failureKind: FailureKind.PolicyDenied,
+                transitionEvidence: [],
+                safetyContract: safetyContract,
+                approvalBinding: approvalBinding);
         }
 
-        ExecutorHarnessExecutorResult executorResult;
-        try
-        {
-            executorResult = executor.Click(new ExecutorHarnessClickCommand(
-                HarnessId: target.HarnessId,
-                WindowTitleContains: target.WindowTitleContains,
+        var selector = safetyContract.Selector ?? throw new InvalidOperationException("safe execution contract selector is required");
+        var observedIdentity = targetResolution.ObservedIdentity ?? ExecutorHarnessTargetResolver.BuildAllowlistedIdentity();
+        var fsm = new SafeExecutionFsm(
+            new ContractValidator(),
+            new ApprovalBindingValidator(),
+            ownershipMonitor,
+            new LegacyHarnessExecutorAdapter(executor, target),
+            new HarnessStepVerifier(target));
+        var fsmResult = fsm.Execute(new SafeExecutionRequest(
+            Contract: safetyContract,
+            Candidates: targetResolution.Candidates ?? [observedIdentity],
+            DispatchRequest: new PatternExecutionRequest(
+                ActionKind: target.ActionKind,
                 TargetRef: target.TargetRef,
                 ExpectedTargetName: target.ExpectedTargetName,
-                ActionKind: target.ActionKind));
-        }
-        catch (Exception ex)
-        {
-            executorResult = new ExecutorHarnessExecutorResult(false, $"executor error: {ex.Message}", false, 0, ["executor threw"]);
-        }
+                ProcessName: "OneBrain.Pilot",
+                WindowTitleContains: target.WindowTitleContains,
+                Selector: selector,
+                ExpectedIdentity: safetyContract.ExpectedIdentity!)));
 
-        var verificationResult = VerifyPostAction(target, executorResult);
-        var status = verificationResult.Success ? ExecutorHarnessStatuses.Succeeded : ExecutorHarnessStatuses.Failed;
+        var verificationResult = BuildVerificationFromFsm(target, fsmResult, targetResolution);
+        var status = verificationResult.Success ? ExecutorHarnessStatuses.Succeeded : fsmResult.FinalState == StepState.Blocked ? ExecutorHarnessStatuses.Blocked : ExecutorHarnessStatuses.Failed;
         return BuildResult(
             target,
             approval,
@@ -189,7 +229,14 @@ public static class ExecutorHarnessService
             verificationResult.Message,
             timestamp,
             safetyMatrix,
-            executorResult.TargetResolution ?? targetResolution);
+            fsmResult.DispatchResult?.ObservedIdentity != null
+                ? targetResolution with { ObservedIdentity = fsmResult.DispatchResult.ObservedIdentity }
+                : targetResolution,
+            fsmResult.FinalState,
+            fsmResult.FailureKind,
+            fsmResult.Ledger.Entries,
+            safetyContract,
+            approvalBinding);
     }
 
     public static ExecutorHarnessEvidenceRecord ToEvidenceRecord(ExecutorHarnessRunResult result, DateTimeOffset? now = null)
@@ -218,58 +265,47 @@ public static class ExecutorHarnessService
                 "no MercadoLibre, no external commercial website, no login, no cookies, no cart, no purchase, no payment",
                 "post-action verification is required before marking the harness result succeeded"
             ],
-            InteractionContract: contract);
+            InteractionContract: contract,
+            FailureKind: result.FailureKind,
+            TransitionEvidence: result.TransitionEvidence);
     }
 
-    private static ExecutorHarnessPostActionVerification VerifyPostAction(ExecutorHarnessTarget target, ExecutorHarnessExecutorResult executorResult)
+    private static ExecutorHarnessPostActionVerification BuildVerificationFromFsm(
+        ExecutorHarnessTarget target,
+        SafeExecutionResult fsmResult,
+        ExecutorHarnessTargetResolution targetResolution)
     {
-        var postActionState = BuildPostActionState(executorResult);
-        var targetResolution = executorResult.TargetResolution ?? ExecutorHarnessTargetResolver.ResolveTarget(target);
-        var signals = executorResult.Signals
+        var dispatchResult = fsmResult.DispatchResult;
+        var signals = (dispatchResult?.Signals ?? Array.Empty<string>())
             .Concat(targetResolution.Signals)
-            .Concat(postActionState.Signals)
+            .Concat(fsmResult.Reasons)
             .Concat(
             [
                 $"target={target.ExpectedTargetName}",
-                $"clicks={executorResult.Clicks}"
+                $"clicks={dispatchResult?.ObservedActions ?? 0}"
             ])
             .Select(SensitiveTextSanitizer.Sanitize)
             .ToList();
 
-        if (!executorResult.Success)
+        if (fsmResult.Success)
         {
             return new ExecutorHarnessPostActionVerification(
-                Success: false,
-                Status: ExecutorHarnessStatuses.Failed,
-                Message: SensitiveTextSanitizer.Sanitize(executorResult.Message),
-                TargetFound: executorResult.TargetFound,
-                ClickObserved: false,
-                Signals: signals);
-        }
-
-        if (!targetResolution.Success ||
-            !postActionState.WindowFound ||
-            !postActionState.TargetVisible ||
-            !string.Equals(postActionState.TargetName, target.ExpectedTargetName, StringComparison.OrdinalIgnoreCase) ||
-            !postActionState.ClickCountVerified ||
-            !executorResult.TargetFound ||
-            executorResult.Clicks != 1)
-        {
-            return new ExecutorHarnessPostActionVerification(
-                Success: false,
-                Status: ExecutorHarnessStatuses.Failed,
-                Message: "post-action verification failed",
-                TargetFound: executorResult.TargetFound,
-                ClickObserved: postActionState.ClickCountVerified && postActionState.WindowFound && postActionState.TargetVisible,
+                Success: true,
+                Status: ExecutorHarnessStatuses.Succeeded,
+                Message: "post-action verification passed",
+                TargetFound: true,
+                ClickObserved: true,
                 Signals: signals);
         }
 
         return new ExecutorHarnessPostActionVerification(
-            Success: true,
-            Status: ExecutorHarnessStatuses.Succeeded,
-            Message: "post-action verification passed",
-            TargetFound: true,
-            ClickObserved: true,
+            Success: false,
+            Status: fsmResult.FinalState == StepState.Blocked ? ExecutorHarnessStatuses.Blocked : ExecutorHarnessStatuses.Failed,
+            Message: fsmResult.BlockReason == "NotVerified" || string.IsNullOrWhiteSpace(fsmResult.BlockReason)
+                ? "post-action verification failed"
+                : fsmResult.BlockReason,
+            TargetFound: dispatchResult?.TargetVisible == true,
+            ClickObserved: dispatchResult?.ObservedActions == 1 && dispatchResult.TargetVisible,
             Signals: signals);
     }
 
@@ -302,7 +338,12 @@ public static class ExecutorHarnessService
         string errorSummary,
         string timestamp,
         ExecutorHarnessSafetyMatrixEvaluation safetyMatrix,
-        ExecutorHarnessTargetResolution targetResolution)
+        ExecutorHarnessTargetResolution targetResolution,
+        StepState finalState,
+        FailureKind? failureKind,
+        IReadOnlyList<StepTransitionEvidence> transitionEvidence,
+        RecipeSafetyContract safetyContract,
+        ApprovalBinding approvalBinding)
     {
         var success = status == ExecutorHarnessStatuses.Succeeded;
         var safety = success ? new RunSafetyCounters(1, 0, 0, 0, 0, 0) : RunSafetyCounters.Zero;
@@ -354,11 +395,134 @@ public static class ExecutorHarnessService
             Evidence: evidence,
             ArtifactPaths: artifactPaths,
             SafetyMatrix: safetyMatrix,
-            TargetResolution: targetResolution);
+            TargetResolution: targetResolution,
+            FinalState: finalState,
+            FailureKind: failureKind,
+            TransitionEvidence: transitionEvidence,
+            SafetyContract: safetyContract,
+            ApprovalBinding: approvalBinding);
+    }
+
+    private static ApprovalBinding BuildApprovalBinding(ExecutorHarnessTarget target, ApprovalDecision? decision)
+    {
+        SelectorEngine.TryParseLegacySelector(target.TargetRef, out var selector);
+        var expectedIdentity = ExecutorHarnessTargetResolver.BuildAllowlistedIdentity();
+        selector ??= SelectorEngine.GenerateSelector(expectedIdentity);
+        selector = selector with
+        {
+            Provenance = Provenance.Fixture,
+            ExpectedIdentity = expectedIdentity
+        };
+
+        var digest = ElementFingerprintBuilder.Build(expectedIdentity);
+        return new ApprovalBinding(
+            ApprovalDecisionId: decision?.ApprovalDecisionId ?? "pending-approval",
+            ApprovedIdentityDigest: digest,
+            Selector: selector,
+            ActionKind: target.ActionKind,
+            Mode: "supervised_harness",
+            PolicyVersion: "hito-135/v1",
+            EvidenceHash: digest);
+    }
+
+    private static RecipeSafetyContract BuildSafetyContract(ExecutorHarnessTarget target, ApprovalBinding binding)
+    {
+        var expectedIdentity = ExecutorHarnessTargetResolver.BuildAllowlistedIdentity();
+        return new RecipeSafetyContract(
+            SchemaVersion: 1,
+            ContractId: $"contract-{target.HarnessId}",
+            ActionKind: target.ActionKind,
+            ExpectedIdentity: expectedIdentity,
+            Selector: binding.Selector,
+            WindowConstraints: new ExecutionWindowConstraints(LocalPilotOnly: true, ExternalNavigationBlocked: true),
+            Reversible: false,
+            MaxActions: 1,
+            ActionCeiling: ActionCeiling.FullActionWithPreflight,
+            Provenance: Provenance.Fixture,
+            TrustLevel: TrustLevel.ProfileVerified,
+            ApprovalRef: binding);
     }
 
     private static string Timestamp(DateTimeOffset? now)
     {
         return (now ?? DateTimeOffset.UtcNow).UtcDateTime.ToString("o");
+    }
+
+    private sealed class HarnessStepVerifier(ExecutorHarnessTarget target) : IStepVerifier
+    {
+        public StepVerificationResult Verify(RecipeSafetyContract contract, PatternExecutionResult dispatchResult)
+        {
+            var reasons = (dispatchResult.Signals ?? Array.Empty<string>())
+                .Concat(dispatchResult.Reasons)
+                .ToList();
+
+            if (!dispatchResult.Success)
+            {
+                return new StepVerificationResult(
+                    Success: false,
+                    FailureKind: dispatchResult.FailureKind ?? FailureKind.Unverified,
+                    MatchVerdict: "Different",
+                    Reasons: reasons,
+                    ObservedIdentity: dispatchResult.ObservedIdentity);
+            }
+
+            var matchesExpectedName = string.Equals(dispatchResult.TargetName, target.ExpectedTargetName, StringComparison.OrdinalIgnoreCase);
+            var verified = dispatchResult.WindowFound &&
+                           dispatchResult.TargetVisible &&
+                           matchesExpectedName &&
+                           dispatchResult.ObservedActions == 1;
+
+            return new StepVerificationResult(
+                Success: verified,
+                FailureKind: verified ? null : FailureKind.Unverified,
+                MatchVerdict: verified ? "Same" : "Different",
+                Reasons: verified ? reasons.Concat(["post-action verification passed"]).ToList() : reasons.Concat(["post-action verification failed"]).ToList(),
+                ObservedIdentity: dispatchResult.ObservedIdentity);
+        }
+    }
+
+    private sealed class LegacyHarnessExecutorAdapter(
+        IExecutorHarnessClickExecutor executor,
+        ExecutorHarnessTarget target) : IUiaPatternExecutor
+    {
+        public PatternExecutionResult Invoke(PatternExecutionRequest request)
+        {
+            try
+            {
+                var result = executor.Click(new ExecutorHarnessClickCommand(
+                    HarnessId: target.HarnessId,
+                    WindowTitleContains: target.WindowTitleContains,
+                    TargetRef: target.TargetRef,
+                    ExpectedTargetName: target.ExpectedTargetName,
+                    ActionKind: target.ActionKind));
+                var postAction = result.PostActionState ?? BuildPostActionState(result);
+                return new PatternExecutionResult(
+                    Success: result.Success,
+                    FailureKind: result.Success ? null : FailureKind.Unverified,
+                    Reasons: result.Signals.Concat([result.Message]).ToList(),
+                    ObservedIdentity: result.TargetResolution?.ObservedIdentity,
+                    WindowFound: postAction.WindowFound,
+                    TargetVisible: postAction.TargetVisible,
+                    TargetName: postAction.TargetName,
+                    ObservedActions: result.Clicks,
+                    Signals: postAction.Signals);
+            }
+            catch (Exception ex)
+            {
+                return new PatternExecutionResult(
+                    Success: false,
+                    FailureKind: FailureKind.Unverified,
+                    Reasons: [$"executor error: {ex.Message}"]);
+            }
+        }
+    }
+
+    private sealed class PassiveDesktopOwnershipMonitor : IDesktopOwnershipMonitor
+    {
+        private static readonly OwnershipSnapshot Snapshot = new(0, 0, "", DateTimeOffset.UnixEpoch);
+
+        public OwnershipSnapshot Capture() => Snapshot;
+        public bool HumanInputSince(OwnershipSnapshot baseline) => false;
+        public bool ForegroundChanged(OwnershipSnapshot baseline) => false;
     }
 }
