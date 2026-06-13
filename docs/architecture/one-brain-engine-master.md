@@ -583,6 +583,32 @@ Variables:
 * safeClick.legacy.*
 * safeClick.migration.*
 
+### 9.4 RuntimeId stability hardening
+
+H148 agrega re-observe previo al dispatch default web eligible.
+
+Regla:
+
+```text
+target.observe / approval-v3 strong
+    ↓
+re-observe justo antes del default FSM dispatch
+    ↓
+RuntimeId + digest siguen Same
+    ↓
+dispatch FSM
+```
+
+Si el RuntimeId cambió, falta identidad fuerte, el target desaparece o queda ambiguo:
+
+* se bloquea fail-closed
+* no hay fallback silencioso a legacy
+* no se usa el.Click
+* no se usa UiaActionExecutor
+* se emiten safeClick.runtimeStability.* y métricas de migración
+
+No cambia desktop, no retira legacy y no amplía rollout.
+
 ---
 
 ## 10. SafeClickStepVerifier

@@ -147,6 +147,219 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
+    public void DefaultWebEligibleReobservesBeforeDispatch()
+    {
+        var calls = 0;
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) =>
+            {
+                calls++;
+                return CreateStrongResolution();
+            },
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(2, calls);
+        Assert.AreEqual("true", result.Variables!["safeClick.runtimeStability.reobserveAttempted"]);
+        Assert.AreEqual("Same", result.Variables["safeClick.runtimeStability.reobserveMatch"]);
+    }
+
+    [TestMethod]
+    public void DefaultWebEligibleStableRuntimeContinuesToFsm()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("Succeeded", result.Variables["safeClick.fsm.finalState"]);
+        Assert.AreEqual("ReobservedStable", result.Variables["safeClick.runtimeStability.verdict"]);
+    }
+
+    [TestMethod]
+    public void DefaultWebEligibleChangedRuntimeBlocksBeforeDispatch()
+    {
+        var result = RunStaleRouted();
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Blocked", result.Variables!["safeClick.fsm.finalState"]);
+        Assert.AreEqual(FailureKind.Stale.ToString(), result.Variables["safeClick.fsm.failureKind"]);
+        Assert.AreEqual("ApprovalInvalidated", result.Variables["safeClick.fsm.blockReason"]);
+        Assert.AreEqual("ReobservedChanged", result.Variables["safeClick.runtimeStability.verdict"]);
+    }
+
+    [TestMethod]
+    public void DefaultWebEligibleMissingRuntimeBlocksBeforeDispatch()
+    {
+        var call = 0;
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) =>
+            {
+                call++;
+                return call == 1 ? CreateStrongResolution() : CreateMissingRuntimeResolution();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(FailureKind.Stale.ToString(), result.Variables!["safeClick.fsm.failureKind"]);
+        Assert.AreEqual("ApprovalInvalidatedMissingIdentity", result.Variables["safeClick.fsm.blockReason"]);
+        Assert.AreEqual("Missing", result.Variables["safeClick.runtimeStability.verdict"]);
+    }
+
+    [TestMethod]
+    public void DefaultWebEligibleDoesNotAcceptLikelySame()
+    {
+        var call = 0;
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) =>
+            {
+                call++;
+                return call == 1 ? CreateStrongResolution() : CreateMissingRuntimeResolution();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Missing", result.Variables!["safeClick.runtimeStability.reobserveMatch"]);
+        Assert.AreEqual("true", result.Variables["safeClick.fsm.blockedWithoutLegacyFallback"]);
+    }
+
+    [TestMethod]
+    public void ReobserveFailureBlocksFailClosed()
+    {
+        var call = 0;
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) =>
+            {
+                call++;
+                return call == 1 ? CreateStrongResolution() : CreateNotFoundResolution();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(FailureKind.NotFound.ToString(), result.Variables!["safeClick.fsm.failureKind"]);
+        Assert.AreEqual("ApprovalTargetNotFound", result.Variables["safeClick.fsm.blockReason"]);
+        Assert.AreEqual("false", result.Variables["safeClick.runtimeStability.reobserveSucceeded"]);
+    }
+
+    [TestMethod]
+    public void ReobserveBlockDoesNotFallbackToLegacy()
+    {
+        var result = RunStaleRouted();
+
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("true", result.Variables["safeClick.fsm.blockedWithoutLegacyFallback"]);
+    }
+
+    [TestMethod]
+    public void ReobserveBlockDoesNotCallElClick()
+    {
+        var result = RunStaleRouted();
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedElClick"]);
+    }
+
+    [TestMethod]
+    public void ReobserveBlockDoesNotCallUiaActionExecutor()
+    {
+        var result = RunStaleRouted();
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedUiaActionExecutor"]);
+    }
+
+    [TestMethod]
+    public void RuntimeStabilityVariablesWritten()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsTrue(result.Variables!.ContainsKey("safeClick.runtimeStability.verdict"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.runtimeStability.reobserveAttempted"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.runtimeStability.reobserveSucceeded"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.runtimeStability.reobserveMatch"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.runtimeStability.blockReason"));
+    }
+
+    [TestMethod]
+    public void RuntimeStabilityMetricsWritten()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual("1", result.Variables!["safeClick.migration.runtimeStabilityChecked"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.runtimeStable"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.reobserveAttempted"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.reobserveSucceeded"]);
+    }
+
+    [TestMethod]
+    public void DispatchPathLegacyDoesNotReobserve()
+    {
+        var calls = 0;
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) =>
+            {
+                calls++;
+                return CreateStrongResolution();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy")));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.runtimeStabilityChecked"]);
+        Assert.AreEqual(1, calls);
+    }
+
+    [TestMethod]
+    public void DefaultDisabledDoesNotReobserve()
+    {
+        var calls = 0;
+        var result = RunRouting(
+            SafeClickDefaultMode.Disabled,
+            resolver: (_, _, _, _) =>
+            {
+                calls++;
+                return CreateStrongResolution();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.runtimeStabilityChecked"]);
+        Assert.AreEqual(1, calls);
+    }
+
+    [TestMethod]
+    public void DesktopExcludedDoesNotReobserveForDefault()
+    {
+        var result = RunDesktopRouting(
+            SafeClickDefaultMode.WebEligible,
+            (_, _, _) => CreateStrongDesktopObservation(),
+            () => new RecipeRunner().Run(BuildDesktopObserveRecipe()));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.runtimeStabilityChecked"]);
+        Assert.IsFalse(result.Variables.ContainsKey("safeClick.runtimeStability.reobserveAttempted"));
+    }
+
+    [TestMethod]
     public void KillSwitchDisabledRevertsToLegacy()
     {
         var result = RunRouting(
@@ -618,6 +831,50 @@ public sealed class SafeClickGradualEnableTests
             ShadowAgreesWithLegacy = resolution.ShadowAgreesWithLegacy,
             ShadowEngineSelectedName = resolution.ShadowEngineSelectedName,
             ShadowReasons = resolution.ShadowReasons
+        };
+    }
+
+    private static WebTargetResult CreateMissingRuntimeResolution()
+    {
+        var resolution = CreateStrongResolution();
+        return new WebTargetResult
+        {
+            Found = resolution.Found,
+            CandidateCount = resolution.CandidateCount,
+            WindowsSearched = resolution.WindowsSearched,
+            SelectedName = resolution.SelectedName,
+            SelectedControlType = resolution.SelectedControlType,
+            SelectedHwnd = resolution.SelectedHwnd,
+            SelectedBoundingRect = resolution.SelectedBoundingRect,
+            SelectedRuntimeId = "",
+            SelectedAutomationId = resolution.SelectedAutomationId,
+            SelectedClassName = resolution.SelectedClassName,
+            SelectedHelpText = resolution.SelectedHelpText,
+            SelectedLegacyName = resolution.SelectedLegacyName,
+            SelectedFrameworkId = resolution.SelectedFrameworkId,
+            SelectedAncestorPath = resolution.SelectedAncestorPath,
+            SelectedProcessName = resolution.SelectedProcessName,
+            SelectedWindowTitle = resolution.SelectedWindowTitle,
+            SelectedHelpTextPresent = resolution.SelectedHelpTextPresent,
+            SelectedLegacyNamePresent = resolution.SelectedLegacyNamePresent,
+            HasInvoke = resolution.HasInvoke,
+            Reason = "same weak identity but runtime id missing",
+            ShadowEngineFound = resolution.ShadowEngineFound,
+            ShadowEngineVerdict = "LikelySame",
+            ShadowAgreesWithLegacy = resolution.ShadowAgreesWithLegacy,
+            ShadowEngineSelectedName = resolution.ShadowEngineSelectedName,
+            ShadowReasons = "weak signals match"
+        };
+    }
+
+    private static WebTargetResult CreateNotFoundResolution()
+    {
+        return new WebTargetResult
+        {
+            Found = false,
+            CandidateCount = 0,
+            WindowsSearched = 1,
+            Reason = "target not found during re-observe"
         };
     }
 

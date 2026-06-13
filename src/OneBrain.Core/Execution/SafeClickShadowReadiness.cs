@@ -39,7 +39,16 @@ public sealed record SafeClickMigrationMetrics(
     int DesktopUiaObservable,
     int DesktopUiaStrong,
     int DesktopUiaWeak,
-    int DesktopMissingIdentity);
+    int DesktopMissingIdentity,
+    int RuntimeStabilityChecked = 0,
+    int RuntimeStable = 0,
+    int RuntimeChanged = 0,
+    int RuntimeMissing = 0,
+    int ReobserveAttempted = 0,
+    int ReobserveSucceeded = 0,
+    int ReobserveChanged = 0,
+    int DefaultDispatchBlockedByStaleIdentity = 0,
+    int DefaultDispatchBlockedByMissingIdentity = 0);
 
 public sealed record SafeClickShadowReadiness(
     bool Success,

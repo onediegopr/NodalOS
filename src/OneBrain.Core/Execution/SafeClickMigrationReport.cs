@@ -49,6 +49,15 @@ public sealed record SafeClickMigrationSummary(
     int DesktopUiaStrong,
     int DesktopUiaWeak,
     int DesktopMissingIdentity,
+    int RuntimeStabilityChecked,
+    int RuntimeStable,
+    int RuntimeChanged,
+    int RuntimeMissing,
+    int ReobserveAttempted,
+    int ReobserveSucceeded,
+    int ReobserveChanged,
+    int DefaultDispatchBlockedByStaleIdentity,
+    int DefaultDispatchBlockedByMissingIdentity,
     IReadOnlyDictionary<SafeClickMigrationReadinessReason, int> BlockingReasons)
 {
     public double ReadinessPercent =>
@@ -101,6 +110,15 @@ public static class SafeClickMigrationReportBuilder
             DesktopUiaStrong: items.Sum(item => item.Metrics.DesktopUiaStrong),
             DesktopUiaWeak: items.Sum(item => item.Metrics.DesktopUiaWeak),
             DesktopMissingIdentity: items.Sum(item => item.Metrics.DesktopMissingIdentity),
+            RuntimeStabilityChecked: items.Sum(item => item.Metrics.RuntimeStabilityChecked),
+            RuntimeStable: items.Sum(item => item.Metrics.RuntimeStable),
+            RuntimeChanged: items.Sum(item => item.Metrics.RuntimeChanged),
+            RuntimeMissing: items.Sum(item => item.Metrics.RuntimeMissing),
+            ReobserveAttempted: items.Sum(item => item.Metrics.ReobserveAttempted),
+            ReobserveSucceeded: items.Sum(item => item.Metrics.ReobserveSucceeded),
+            ReobserveChanged: items.Sum(item => item.Metrics.ReobserveChanged),
+            DefaultDispatchBlockedByStaleIdentity: items.Sum(item => item.Metrics.DefaultDispatchBlockedByStaleIdentity),
+            DefaultDispatchBlockedByMissingIdentity: items.Sum(item => item.Metrics.DefaultDispatchBlockedByMissingIdentity),
             BlockingReasons: blockingReasons);
 
         var json = JsonSerializer.Serialize(summary);

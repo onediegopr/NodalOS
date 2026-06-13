@@ -62,6 +62,15 @@ public sealed class RecipeRunner
     private int _safeClickExplicitLegacyOptOutCount;
     private int _safeClickDesktopExcludedFromDefaultCount;
     private int _safeClickUnknownDispatchPathBlockedCount;
+    private int _safeClickRuntimeStabilityCheckedCount;
+    private int _safeClickRuntimeStableCount;
+    private int _safeClickRuntimeChangedCount;
+    private int _safeClickRuntimeMissingCount;
+    private int _safeClickReobserveAttemptedCount;
+    private int _safeClickReobserveSucceededCount;
+    private int _safeClickReobserveChangedCount;
+    private int _safeClickDefaultBlockedByStaleIdentityCount;
+    private int _safeClickDefaultBlockedByMissingIdentityCount;
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false, string? approvalMode = null)
     {
@@ -76,6 +85,15 @@ public sealed class RecipeRunner
         _safeClickExplicitLegacyOptOutCount = 0;
         _safeClickDesktopExcludedFromDefaultCount = 0;
         _safeClickUnknownDispatchPathBlockedCount = 0;
+        _safeClickRuntimeStabilityCheckedCount = 0;
+        _safeClickRuntimeStableCount = 0;
+        _safeClickRuntimeChangedCount = 0;
+        _safeClickRuntimeMissingCount = 0;
+        _safeClickReobserveAttemptedCount = 0;
+        _safeClickReobserveSucceededCount = 0;
+        _safeClickReobserveChangedCount = 0;
+        _safeClickDefaultBlockedByStaleIdentityCount = 0;
+        _safeClickDefaultBlockedByMissingIdentityCount = 0;
 
         var denySensitive = string.Equals(approvalMode, "deny", StringComparison.OrdinalIgnoreCase);
         var reportSensitive = string.Equals(approvalMode, "auto", StringComparison.OrdinalIgnoreCase) || denySensitive;
@@ -2345,7 +2363,33 @@ public sealed class RecipeRunner
         {
             _safeClickDefaultFsmRoutedCount++;
             SetSafeClickDefaultRouteVars(prefix, routedByDefault: true, reason: "WebEligible", eligible: true, scope: "web-uia");
-            var routedResult = ExecuteSafeClickSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
+            var runtimeStability = ReobserveRuntimeStabilityForDefaultDispatch(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                routeManifest,
+                out var reobservedResolution,
+                out var blockedResult);
+            SetSafeClickRuntimeStabilityVars(prefix, runtimeStability);
+
+            if (blockedResult != null)
+            {
+                _safeClickDefaultFsmBlockedCount++;
+                _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
+                return blockedResult;
+            }
+
+            var routedResult = ExecuteSafeClickSafeExecutor(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                reobservedResolution);
             if (!routedResult.Success)
             {
                 _safeClickDefaultFsmBlockedCount++;
@@ -2395,6 +2439,177 @@ public sealed class RecipeRunner
 
         var validation = ValidateSafeExecutorManifest(manifest);
         return validation?.BlockReason ?? "NotWebEligible";
+    }
+
+    private SafeClickRuntimeStability ReobserveRuntimeStabilityForDefaultDispatch(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode,
+        ApprovalManifest? manifest,
+        out WebTargetResult? reobservedResolution,
+        out RecipeStepRunResult? blockedResult)
+    {
+        reobservedResolution = null;
+        blockedResult = null;
+        _safeClickRuntimeStabilityCheckedCount++;
+        _safeClickReobserveAttemptedCount++;
+
+        var sessionHwnd = FindOwnedBrowserSessionHwnd();
+        if (sessionHwnd == IntPtr.Zero)
+        {
+            var stability = SafeClickRuntimeStabilityEvaluator.Evaluate(
+                manifest,
+                observedIdentity: null,
+                reobserveAttempted: true,
+                reobserveSucceeded: false);
+            TrackRuntimeStability(stability);
+            blockedResult = BlockDefaultDispatchForRuntimeStability(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                FailureKind.SourceUnavailable,
+                "OwnedBrowserSessionRequired",
+                "safe-executor dispatch requires owned browser session",
+                stability);
+            return stability;
+        }
+
+        var proc = step.Args?.GetValueOrDefault("proc") ?? "msedge";
+        try
+        {
+            reobservedResolution = ResolveSafeClickTarget(sessionHwnd, targetText, proc);
+            SetResolutionVars(prefix, reobservedResolution);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+
+            var ambiguous = reobservedResolution.CandidateCount > 1 ||
+                            reobservedResolution.Reason.Contains("ambiguous", StringComparison.OrdinalIgnoreCase);
+            if (!reobservedResolution.Found || ambiguous)
+            {
+                var observedIdentity = reobservedResolution.Found
+                    ? WebTargetResultIdentityMapper.ToSelectedIdentity(reobservedResolution)
+                    : null;
+                var stability = SafeClickRuntimeStabilityEvaluator.Evaluate(
+                    manifest,
+                    observedIdentity,
+                    reobserveAttempted: true,
+                    reobserveSucceeded: false);
+                TrackRuntimeStability(stability);
+
+                var failureKind = ambiguous ? FailureKind.Ambiguous : FailureKind.NotFound;
+                var blockReason = ambiguous ? "ApprovalAmbiguous" : "ApprovalTargetNotFound";
+                var reason = ambiguous
+                    ? $"ambiguous: {reobservedResolution.CandidateCount} candidates"
+                    : string.IsNullOrWhiteSpace(reobservedResolution.Reason)
+                        ? "target not found during runtime identity re-observe"
+                        : reobservedResolution.Reason;
+                blockedResult = BlockDefaultDispatchForRuntimeStability(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    failureKind,
+                    blockReason,
+                    reason,
+                    stability);
+                return stability;
+            }
+
+            var selectedIdentity = WebTargetResultIdentityMapper.ToSelectedIdentity(reobservedResolution);
+            var runtimeStability = SafeClickRuntimeStabilityEvaluator.Evaluate(
+                manifest,
+                selectedIdentity,
+                reobserveAttempted: true,
+                reobserveSucceeded: true);
+            TrackRuntimeStability(runtimeStability);
+            SetSafeClickRuntimeStabilityVars(prefix, runtimeStability);
+
+            if (!runtimeStability.AllowsDefaultDispatch)
+            {
+                var missing = runtimeStability.StabilityVerdict == SafeClickRuntimeStabilityVerdict.Missing ||
+                              runtimeStability.ReobserveMatch == RuntimeIdentityMatch.Missing;
+                blockedResult = BlockDefaultDispatchForRuntimeStability(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    FailureKind.Stale,
+                    missing ? "ApprovalInvalidatedMissingIdentity" : "ApprovalInvalidated",
+                    missing
+                        ? "runtime identity missing before default FSM dispatch"
+                        : "runtime identity changed before default FSM dispatch",
+                    runtimeStability);
+            }
+
+            return runtimeStability;
+        }
+        catch (Exception ex)
+        {
+            var stability = SafeClickRuntimeStabilityEvaluator.Evaluate(
+                manifest,
+                observedIdentity: null,
+                reobserveAttempted: true,
+                reobserveSucceeded: false);
+            TrackRuntimeStability(stability);
+            blockedResult = BlockDefaultDispatchForRuntimeStability(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                FailureKind.Stale,
+                "ApprovalInvalidatedMissingIdentity",
+                $"runtime identity re-observe failed: {ex.Message}",
+                stability);
+            return stability;
+        }
+    }
+
+    private RecipeStepRunResult BlockDefaultDispatchForRuntimeStability(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode,
+        FailureKind failureKind,
+        string blockReason,
+        string reason,
+        SafeClickRuntimeStability stability)
+    {
+        if (blockReason.Contains("MissingIdentity", StringComparison.OrdinalIgnoreCase) ||
+            blockReason.Contains("TargetNotFound", StringComparison.OrdinalIgnoreCase))
+        {
+            _safeClickDefaultBlockedByMissingIdentityCount++;
+        }
+        else if (blockReason.Contains("Invalidated", StringComparison.OrdinalIgnoreCase) ||
+                 failureKind == FailureKind.Stale)
+        {
+            _safeClickDefaultBlockedByStaleIdentityCount++;
+        }
+
+        SetSafeClickVars(prefix, targetText, "blocked", reason);
+        _ctx.Variables[prefix + ".method"] = "FSM safe.click";
+        SetSafeClickRuntimeStabilityVars(prefix, stability with { BlockReason = blockReason });
+        SetSafeClickFsmVars(prefix, StepState.Blocked, failureKind, blockReason, [reason]);
+        TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+        sw.Stop();
+        return new RecipeStepRunResult(
+            step.Id,
+            step.Kind,
+            false,
+            $"safe.click: {reason}",
+            sw.ElapsedMilliseconds);
     }
 
     private void InitSafeClickDefaultRouteVars(string prefix, SafeClickDefaultMode mode)
@@ -2632,7 +2847,8 @@ public sealed class RecipeRunner
         string targetText,
         string prefix,
         string approvalPrefix,
-        string mode)
+        string mode,
+        WebTargetResult? preResolvedResolution = null)
     {
         var hasOwned = false;
         foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
@@ -2740,7 +2956,7 @@ public sealed class RecipeRunner
 
         try
         {
-            var resolution = ResolveSafeClickTarget(sessionHwnd, targetText, proc);
+            var resolution = preResolvedResolution ?? ResolveSafeClickTarget(sessionHwnd, targetText, proc);
             SetResolutionVars(prefix, resolution);
             TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
 
@@ -3295,6 +3511,34 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsmReady.summary"] = readiness.Summary;
     }
 
+    private void SetSafeClickRuntimeStabilityVars(string prefix, SafeClickRuntimeStability stability)
+    {
+        _ctx.Variables[prefix + ".runtimeStability.verdict"] = stability.StabilityVerdict.ToString();
+        _ctx.Variables[prefix + ".runtimeStability.observeAgeMs"] = stability.ObserveAgeMs?.ToString(CultureInfo.InvariantCulture) ?? "";
+        _ctx.Variables[prefix + ".runtimeStability.reobserveAttempted"] = stability.ReobserveAttempted ? "true" : "false";
+        _ctx.Variables[prefix + ".runtimeStability.reobserveSucceeded"] = stability.ReobserveSucceeded ? "true" : "false";
+        _ctx.Variables[prefix + ".runtimeStability.reobserveMatch"] = stability.ReobserveMatch.ToString();
+        _ctx.Variables[prefix + ".runtimeStability.blockReason"] = stability.BlockReason ?? "";
+    }
+
+    private void TrackRuntimeStability(SafeClickRuntimeStability stability)
+    {
+        if (stability.StabilityVerdict is SafeClickRuntimeStabilityVerdict.ReobservedStable or SafeClickRuntimeStabilityVerdict.Stable)
+            _safeClickRuntimeStableCount++;
+
+        if (stability.StabilityVerdict is SafeClickRuntimeStabilityVerdict.ReobservedChanged or SafeClickRuntimeStabilityVerdict.Changed)
+            _safeClickRuntimeChangedCount++;
+
+        if (stability.StabilityVerdict == SafeClickRuntimeStabilityVerdict.Missing)
+            _safeClickRuntimeMissingCount++;
+
+        if (stability.ReobserveSucceeded)
+            _safeClickReobserveSucceededCount++;
+
+        if (stability.StabilityVerdict == SafeClickRuntimeStabilityVerdict.ReobservedChanged)
+            _safeClickReobserveChangedCount++;
+    }
+
     private void SetSafeClickMigrationSummaryVars()
     {
         if (_safeClickShadowReadiness.Count == 0)
@@ -3332,6 +3576,17 @@ public sealed class RecipeRunner
         _ctx.Variables["safeClick.migration.explicitLegacyOptOut"] = _safeClickExplicitLegacyOptOutCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.desktopExcludedFromDefault"] = _safeClickDesktopExcludedFromDefaultCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.unknownDispatchPathBlocked"] = _safeClickUnknownDispatchPathBlockedCount.ToString(CultureInfo.InvariantCulture);
+
+        // HITO-148 — runtime identity stability metrics for web eligible default dispatch.
+        _ctx.Variables["safeClick.migration.runtimeStabilityChecked"] = _safeClickRuntimeStabilityCheckedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.runtimeStable"] = _safeClickRuntimeStableCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.runtimeChanged"] = _safeClickRuntimeChangedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.runtimeMissing"] = _safeClickRuntimeMissingCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.reobserveAttempted"] = _safeClickReobserveAttemptedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.reobserveSucceeded"] = _safeClickReobserveSucceededCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.reobserveChanged"] = _safeClickReobserveChangedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultBlockedByStaleIdentity"] = _safeClickDefaultBlockedByStaleIdentityCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultBlockedByMissingIdentity"] = _safeClickDefaultBlockedByMissingIdentityCount.ToString(CultureInfo.InvariantCulture);
     }
 
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
