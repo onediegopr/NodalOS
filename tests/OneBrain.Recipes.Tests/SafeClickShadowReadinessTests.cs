@@ -12,13 +12,14 @@ namespace OneBrain.Recipes.Tests;
 public sealed class SafeClickShadowReadinessTests
 {
     [TestMethod]
-    public void LegacyPathBehaviorUnchanged()
+    public void LegacyPathBlocksRetired()
     {
         var result = new RecipeRunner().Run(BuildDesktopLegacyRecipe());
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
-        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.reason"]);
+        Assert.AreEqual("Blocked", result.Variables["safeClick.fsm.finalState"]);
     }
 
     [TestMethod]
@@ -36,7 +37,7 @@ public sealed class SafeClickShadowReadinessTests
     {
         var result = new RecipeRunner().Run(BuildDesktopLegacyRecipe());
 
-        Assert.IsFalse(result.Variables!.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("Blocked", result.Variables!["safeClick.fsm.finalState"]);
         Assert.AreEqual("false", result.Variables["safeClick.executed"]);
     }
 
@@ -46,7 +47,7 @@ public sealed class SafeClickShadowReadinessTests
         var result = new RecipeRunner().Run(BuildDesktopLegacyRecipe());
 
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("failed", result.Variables!["safeClick.result"]);
+        Assert.AreEqual("blocked", result.Variables!["safeClick.result"]);
         Assert.IsTrue(result.Variables.ContainsKey("safeClick.fsmReady.eligible"));
     }
 
@@ -142,22 +143,23 @@ public sealed class SafeClickShadowReadinessTests
     }
 
     [TestMethod]
-    public void LegacyUsageCountsUiaActionExecutor()
+    public void LegacyRetirementDoesNotCountUiaActionExecutor()
     {
         var result = new RecipeRunner().Run(BuildDesktopLegacyRecipe());
 
-        Assert.AreEqual("true", result.Variables!["safeClick.legacy.usedUiaActionExecutor"]);
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedUiaActionExecutor"]);
         Assert.AreEqual("false", result.Variables["safeClick.legacy.usedElClick"]);
-        Assert.AreEqual("true", result.Variables["safeClick.legacy.usedUnsafeFallback"]);
+        Assert.AreEqual("false", result.Variables["safeClick.legacy.usedUnsafeFallback"]);
     }
 
     [TestMethod]
-    public void LegacyBehaviorStillUnchanged()
+    public void LegacyBehaviorNowBlocksRetired()
     {
         var result = new RecipeRunner().Run(BuildDesktopLegacyRecipe());
 
         Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
-        Assert.AreEqual("failed", result.Variables["safeClick.result"]);
+        Assert.AreEqual("blocked", result.Variables["safeClick.result"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.reason"]);
         Assert.IsTrue(result.Variables.ContainsKey("safeClick.summary"));
     }
 

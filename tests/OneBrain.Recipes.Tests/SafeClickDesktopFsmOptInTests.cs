@@ -190,14 +190,15 @@ public sealed class SafeClickDesktopFsmOptInTests
     }
 
     [TestMethod]
-    public void DesktopWithoutDispatchPathStillLegacy()
+    public void DesktopWithoutDispatchPathBlocksLegacyRetiredWhenDefaultDisabled()
     {
         var result = RunDesktopSafeExecutor(
             resolver: (_, _, _) => CreateStrongDesktopObservation(),
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.routedOptIn"]);
         Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
     }
@@ -251,20 +252,21 @@ public sealed class SafeClickDesktopFsmOptInTests
     }
 
     [TestMethod]
-    public void DesktopDefaultModeDoesNotRouteYet()
+    public void DesktopWebEligibleModeBlocksLegacyRetired()
     {
         var result = RunDesktopSafeExecutor(
             resolver: (_, _, _) => CreateStrongDesktopObservation(),
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
-        Assert.AreEqual("DesktopExcludedFromDefault", result.Variables["safeClick.fsm.defaultRouteReason"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.fsm.defaultRouteReason"]);
     }
 
     [TestMethod]
-    public void DefaultModeDisabledKeepsDesktopLegacy()
+    public void DefaultModeDisabledBlocksDesktopLegacyRetired()
     {
         var result = RunDesktopSafeExecutor(
             SafeClickDefaultMode.Disabled,
@@ -272,13 +274,14 @@ public sealed class SafeClickDesktopFsmOptInTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("disabled", result.Variables["safeClick.fsm.defaultMode"]);
         Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.routedByDefault"]);
     }
 
     [TestMethod]
-    public void DefaultModeLegacyKeepsDesktopLegacy()
+    public void DefaultModeLegacyBlocksDesktopLegacyRetired()
     {
         var result = RunDesktopSafeExecutor(
             SafeClickDefaultMode.Legacy,
@@ -286,7 +289,8 @@ public sealed class SafeClickDesktopFsmOptInTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("legacy", result.Variables["safeClick.fsm.defaultMode"]);
         Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.routedByDefault"]);
     }
@@ -300,7 +304,8 @@ public sealed class SafeClickDesktopFsmOptInTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("web-eligible", result.Variables["safeClick.fsm.defaultMode"]);
         Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.routedByDefault"]);
         Assert.AreEqual("DesktopEligibleButDefaultDisabled", result.Variables["safeClick.desktopFsm.defaultRouteReason"]);
@@ -325,7 +330,7 @@ public sealed class SafeClickDesktopFsmOptInTests
     }
 
     [TestMethod]
-    public void DefaultModeDesktopEligibleKeepsIneligibleDesktopLegacy()
+    public void DefaultModeDesktopEligibleBlocksIneligibleDesktopAfterRetirement()
     {
         var result = RunDesktopSafeExecutor(
             SafeClickDefaultMode.DesktopEligible,
@@ -333,7 +338,8 @@ public sealed class SafeClickDesktopFsmOptInTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
         Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.defaultRouteEligible"]);
     }
@@ -363,7 +369,8 @@ public sealed class SafeClickDesktopFsmOptInTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopApprovalV2Recipe(dispatchPath: null)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.defaultRouteEligible"]);
     }
 
@@ -377,7 +384,7 @@ public sealed class SafeClickDesktopFsmOptInTests
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
 
         Assert.AreEqual("false", result.Variables!["safeClick.fsmReady.desktopEligible"]);
-        Assert.AreEqual("UIA safe.click", result.Variables["safeClick.method"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.reason"]);
     }
 
     [TestMethod]
@@ -562,7 +569,7 @@ public sealed class SafeClickDesktopFsmOptInTests
     }
 
     [TestMethod]
-    public void DispatchPathLegacyStillWorks()
+    public void DispatchPathLegacyBlocksLegacyDispatchRetired()
     {
         var result = RunDesktopSafeExecutor(
             SafeClickDefaultMode.DesktopEligible,
@@ -570,8 +577,10 @@ public sealed class SafeClickDesktopFsmOptInTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: "legacy")));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("LegacyDispatchRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("true", result.Variables["safeClick.legacy.explicitOptOut"]);
+        Assert.AreEqual("true", result.Variables["safeClick.retirement.legacyDispatchRejected"]);
     }
 
     [TestMethod]
@@ -637,6 +646,7 @@ public sealed class SafeClickDesktopFsmOptInTests
         var result = new RecipeRunner().Run(BuildDesktopApprovalV2Recipe(dispatchPath: null));
 
         Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.reason"]);
     }
 
     [TestMethod]
@@ -644,7 +654,7 @@ public sealed class SafeClickDesktopFsmOptInTests
     {
         var result = new RecipeRunner().Run(BuildDesktopApprovalV2Recipe(dispatchPath: null));
 
-        Assert.IsFalse(result.Variables!.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("Blocked", result.Variables!["safeClick.fsm.finalState"]);
     }
 
     private static RecipeRunResult RunSuccessfulDesktop()

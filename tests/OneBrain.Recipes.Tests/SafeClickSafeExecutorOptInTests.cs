@@ -13,13 +13,14 @@ namespace OneBrain.Recipes.Tests;
 public sealed class SafeClickSafeExecutorOptInTests
 {
     [TestMethod]
-    public void SafeClickLegacyWithoutDispatchPathUnchanged()
+    public void SafeClickWithoutDispatchPathBlocksLegacyRetired()
     {
         var result = new RecipeRunner().Run(BuildLegacyRecipe());
 
         Assert.IsFalse(result.Success);
         Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
-        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.reason"]);
+        Assert.AreEqual("Blocked", result.Variables["safeClick.fsm.finalState"]);
     }
 
     [TestMethod]

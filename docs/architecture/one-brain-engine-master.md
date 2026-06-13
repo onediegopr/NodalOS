@@ -540,10 +540,10 @@ Pendiente de retiro.
 Sin dispatchPath:
 
 ```text
-safe.click legacy
+safe.click legacy retired
 ```
 
-Comportamiento histórico intacto.
+Desde H154, el legacy ejecutable de `safe.click` queda retirado. `dispatchPath=legacy` bloquea `LegacyDispatchRetired`; sin `dispatchPath`, los steps no elegibles para FSM bloquean `SafeClickLegacyRetired`. Las variables de deprecación se preservan como evidencia, pero no se ejecuta acción legacy.
 
 ### 9.2 Safe-executor opt-in
 
@@ -636,7 +636,7 @@ Requisitos:
 * contrato valido
 * sin unsafe fallback
 
-Desktop sin `dispatchPath` sigue legacy aunque sea eligible.
+H150 mantiene desktop sin default FSM; H151 habilita desktop default sólo si el kill-switch lo permite y el step es estrictamente elegible.
 
 H150 agrega readiness y metricas desktop:
 
@@ -654,7 +654,7 @@ ONEBRAIN_SAFE_CLICK_FSM_DEFAULT=all-eligible
 
 Desktop default exige `DesktopEligibleForFsm`, re-observe de RuntimeId antes del dispatch y bloqueo fail-closed si la identidad cambia o falta.
 
-No hay flip general, no se retira legacy, no se retira `el.Click` y no se retira `UiaActionExecutor`.
+No hay flip general. Desde H154, `safe.click` no ejecuta legacy, `el.Click` ni `UiaActionExecutor`.
 
 ### 9.6 Legacy deprecation y retirement readiness
 
@@ -674,7 +674,9 @@ H153 agrega un gate local por corrida:
 * `safeClick.retirement.blockingReasons`
 * `safeClick.retirement.reportJson`
 
-El gate mide si es seguro retirar legacy, pero no lo retira. No se puede afirmar uso historico cero sin persistencia temporal real.
+El gate mide si es seguro retirar legacy. H154 ejecuta el retiro del camino legacy de `safe.click`: `dispatchPath=legacy` queda bloqueado, `disabled/legacy` ya no ejecutan acción legacy y los no elegibles bloquean `SafeClickLegacyRetired`.
+
+Las clases legacy globales pueden seguir existiendo si otros flujos las usan, pero no son alcanzables desde el dispatch de `safe.click`.
 
 ---
 
@@ -1034,7 +1036,7 @@ Siguientes pasos:
 * HITO-149/150 — Desktop FSM Dispatch Path + Desktop Gradual Readiness **(implementado: desktop `dispatchPath=safe-executor` opt-in con source `uia`, readiness y metricas desktop; NO default desktop; NO retiro legacy)**
 * HITO-151 — Desktop Gradual Enablement eligible-only **(implementado: kill-switch `desktop-eligible` y `all-eligible`, desktop default solo eligible, re-observe desktop antes del dispatch, sin fallback silencioso; NO retira legacy)**
 * HITO-152/153 — Legacy Deprecation + Retirement Readiness Gate **(implementado: legacy queda deprecated con owner/reason/reviewBy, readiness gate local; NO retira legacy, `el.Click` ni `UiaActionExecutor`)**
-* HITO-154 — Safe.Click Legacy Retirement
+* HITO-154 — Safe.Click Legacy Retirement **(implementado: `safe.click` queda FSM-only para ejecución; `dispatchPath=legacy` bloquea `LegacyDispatchRetired`; default disabled/legacy e ineligible bloquean `SafeClickLegacyRetired`; no `el.Click` ni `UiaActionExecutor` desde `safe.click`)**
 * HITO-155 — Auditoria integral Claude del nucleo
 
 ### Fase siguiente: percepción robusta

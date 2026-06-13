@@ -87,6 +87,10 @@ public sealed class RecipeRunner
     private int _safeClickLegacyOptOutMissingReviewByCount;
     private int _safeClickLegacyOptOutNonCompliantCount;
     private int _safeClickLegacyDeprecationWarningCount;
+    private int _safeClickLegacyExecutionBlockedCount;
+    private int _safeClickLegacyDispatchRejectedCount;
+    private int _safeClickIneligibleBlockedAfterRetirementCount;
+    private int _safeClickSafeExecutorRequiredCount;
     private int _safeClickDefaultLegacyUseCount;
     private int _safeClickDefaultElClickUseCount;
     private int _safeClickDefaultUiaActionExecutorUseCount;
@@ -134,6 +138,10 @@ public sealed class RecipeRunner
         _safeClickLegacyOptOutMissingReviewByCount = 0;
         _safeClickLegacyOptOutNonCompliantCount = 0;
         _safeClickLegacyDeprecationWarningCount = 0;
+        _safeClickLegacyExecutionBlockedCount = 0;
+        _safeClickLegacyDispatchRejectedCount = 0;
+        _safeClickIneligibleBlockedAfterRetirementCount = 0;
+        _safeClickSafeExecutorRequiredCount = 0;
         _safeClickDefaultLegacyUseCount = 0;
         _safeClickDefaultElClickUseCount = 0;
         _safeClickDefaultUiaActionExecutorUseCount = 0;
@@ -2368,15 +2376,15 @@ public sealed class RecipeRunner
             return ExecuteSafeClickSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
         }
 
-        // Explicit legacy opt-out: still supported, marked deprecated, no behavior change.
+        // Explicit legacy opt-out is now retired: preserve deprecation evidence, but do not execute.
         if (dispatchPath.Equals("legacy", StringComparison.OrdinalIgnoreCase))
         {
             _safeClickExplicitLegacyOptOutCount++;
             var deprecationPolicy = EvaluateSafeClickLegacyDeprecationPolicy(step);
             TrackSafeClickLegacyDeprecationPolicy(deprecationPolicy);
             SetSafeClickLegacyOptOutVars(prefix, deprecationPolicy);
-            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "ExplicitLegacyDispatchPath", eligible: false, scope: "explicit-legacy");
-            return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "LegacyDispatchRetired", eligible: false, scope: "legacy-retired");
+            return BlockSafeClickLegacyRetired(step, sw, targetText, prefix, approvalPrefix, mode, dispatchPath, ineligibleAfterRetirement: false);
         }
 
         // Any other explicit value is fail-closed.
@@ -2422,10 +2430,9 @@ public sealed class RecipeRunner
                 _safeClickDesktopDefaultEligibleButNotEnabledCount++;
 
             var legacyReason = defaultMode == SafeClickDefaultMode.Legacy ? "KillSwitchLegacy" : "KillSwitchDisabled";
-            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: legacyReason, eligible: webRouteEligible || desktopRouteEligible, scope: "legacy");
-            SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: false, routedByDefault: false, eligible: desktopRouteEligible, reason: legacyReason, scope: "legacy");
-            MarkSafeClickDefaultLegacyUse(prefix);
-            return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "SafeClickLegacyRetired", eligible: webRouteEligible || desktopRouteEligible, scope: "legacy-retired");
+            SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: false, routedByDefault: false, eligible: desktopRouteEligible, reason: legacyReason, scope: "legacy-retired");
+            return BlockSafeClickLegacyRetired(step, sw, targetText, prefix, approvalPrefix, mode, dispatchPath: "", ineligibleAfterRetirement: true);
         }
 
         if (webDefaultEnabled)
@@ -2533,13 +2540,9 @@ public sealed class RecipeRunner
         var ineligibleReason = desktopSource
             ? ResolveDesktopDefaultIneligibleReason(prefix, routeManifest, desktopRouteEligible, desktopDefaultEnabled)
             : ResolveDefaultIneligibleReason(routeManifest, desktopExcluded: false);
-        var generalIneligibleReason = desktopSource && !desktopDefaultEnabled
-            ? "DesktopExcludedFromDefault"
-            : ineligibleReason;
-        SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: generalIneligibleReason, eligible: webRouteEligible || desktopRouteEligible, scope: "legacy");
-        SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: desktopDefaultEnabled, routedByDefault: false, eligible: desktopRouteEligible, reason: ineligibleReason, scope: "legacy");
-        MarkSafeClickDefaultLegacyUse(prefix);
-        return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+        SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "SafeClickLegacyRetired", eligible: webRouteEligible || desktopRouteEligible, scope: "legacy-retired");
+        SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: desktopDefaultEnabled, routedByDefault: false, eligible: desktopRouteEligible, reason: ineligibleReason, scope: "legacy-retired");
+        return BlockSafeClickLegacyRetired(step, sw, targetText, prefix, approvalPrefix, mode, dispatchPath: "", ineligibleAfterRetirement: true);
     }
 
     private static SafeClickDefaultMode ResolveSafeClickFsmDefaultMode()
@@ -3065,6 +3068,87 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".legacy.deprecationPolicy.severity"] = policy.DeprecationSeverity.ToString();
     }
 
+    private RecipeStepRunResult BlockSafeClickLegacyRetired(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode,
+        string? dispatchPath,
+        bool ineligibleAfterRetirement)
+    {
+        var preflight = ClickPreflightEvaluator.Evaluate(targetText);
+        if (preflight.Blocked)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", preflight.Reason);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"safe.click: target blocked: {preflight.Reason}", sw.ElapsedMilliseconds);
+        }
+
+        var bindingError = ValidateApprovalBinding(approvalPrefix, targetText, mode);
+        if (bindingError != null)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", bindingError);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                $"safe.click: approval binding invalid: {bindingError}", sw.ElapsedMilliseconds);
+        }
+
+        var execAllowed = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".executionAllowedInThisHito", "false");
+        if (execAllowed != "true")
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", "executionAllowedInThisHito is false");
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(step.Id, step.Kind, false,
+                "safe.click: approval does not allow execution.", sw.ElapsedMilliseconds);
+        }
+
+        var policy = SafeClickLegacyRetirementPolicyEvaluator.Evaluate(dispatchPath, ineligibleAfterRetirement);
+        TrackSafeClickLegacyRetirementPolicy(policy);
+        SetSafeClickLegacyRetirementPolicyVars(prefix, policy);
+        SetSafeClickVars(prefix, targetText, "blocked", policy.Reason);
+        SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, policy.Reason, [policy.RequiredAction]);
+        TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+        sw.Stop();
+        return new RecipeStepRunResult(
+            step.Id,
+            step.Kind,
+            false,
+            $"safe.click: {policy.Reason}. {policy.RequiredAction}.",
+            sw.ElapsedMilliseconds);
+    }
+
+    private void TrackSafeClickLegacyRetirementPolicy(SafeClickLegacyRetirementPolicy policy)
+    {
+        if (policy.Blocked)
+            _safeClickLegacyExecutionBlockedCount++;
+        if (policy.LegacyDispatchRejected)
+            _safeClickLegacyDispatchRejectedCount++;
+        if (policy.IneligibleAfterRetirement)
+            _safeClickIneligibleBlockedAfterRetirementCount++;
+        if (policy.Blocked)
+            _safeClickSafeExecutorRequiredCount++;
+    }
+
+    private void SetSafeClickLegacyRetirementPolicyVars(string prefix, SafeClickLegacyRetirementPolicy policy)
+    {
+        _ctx.Variables[prefix + ".legacy.retired"] = policy.Retired ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.retirementPolicy.enabled"] = policy.Enabled ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.retirementPolicy.reason"] = policy.Reason;
+        _ctx.Variables[prefix + ".legacy.retirementPolicy.blocked"] = policy.Blocked ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.retirementPolicy.dispatchPath"] = policy.DispatchPath;
+        _ctx.Variables[prefix + ".legacy.retirementPolicy.requiredAction"] = policy.RequiredAction;
+        _ctx.Variables[prefix + ".retirement.blockedLegacyExecution"] = policy.Blocked ? "true" : "false";
+        _ctx.Variables[prefix + ".retirement.blockReason"] = policy.Reason;
+        _ctx.Variables[prefix + ".retirement.ineligibleAfterRetirement"] = policy.IneligibleAfterRetirement ? "true" : "false";
+        _ctx.Variables[prefix + ".retirement.legacyDispatchRejected"] = policy.LegacyDispatchRejected ? "true" : "false";
+    }
+
     private RecipeStepRunResult ExecuteSafeClickLegacy(
         RecipeStepDefinition step,
         Stopwatch sw,
@@ -3073,6 +3157,9 @@ public sealed class RecipeRunner
         string approvalPrefix,
         string mode)
     {
+        if (SafeClickLegacyRetirementPolicyEvaluator.Evaluate("", ineligibleAfterRetirement: true).Blocked)
+            return BlockSafeClickLegacyRetired(step, sw, targetText, prefix, approvalPrefix, mode, dispatchPath: "", ineligibleAfterRetirement: true);
+
         // 1. Verify browser session owned (required only for non-controlled)
         var hasOwned = false;
         foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
@@ -3212,7 +3299,7 @@ public sealed class RecipeRunner
                                 if (!usedElClick)
                                     el.Patterns.Invoke.Pattern.Invoke();
                                 else
-                                    el.Click();
+                                    throw new InvalidOperationException("SafeClickLegacyRetired");
 
                                 SetSafeClickLegacyUsageVars(prefix, usedElClick, usedUiaActionExecutor: false);
                                 SetSafeClickVars(prefix, targetText, "success", $"clicked via WebTargetResolver on {resolution.SelectedControlType}");
@@ -3237,17 +3324,8 @@ public sealed class RecipeRunner
                 }
             }
 
-            // Fallback to UIA action executor for desktop apps
-            var req = new ActionRequest("invoke", $"name:{targetText}", null, proc, null,
-                CancellationToken: _stepCts?.Token);
-
-            result = new UiaActionExecutor().Execute(req);
-            if (!result.Success && result.Message?.Contains("not supported") == true)
-            {
-                var req2 = new ActionRequest("click", $"name:{targetText}", null, proc, null,
-                    CancellationToken: _stepCts?.Token);
-                result = new UiaActionExecutor().Execute(req2);
-            }
+            // The legacy desktop fallback is retired for safe.click.
+            result = new ActionResult(false, "SafeClickLegacyRetired");
 
             SetSafeClickLegacyUsageVars(prefix, usedElClick: false, usedUiaActionExecutor: true);
             SetSafeClickVars(prefix, targetText, result.Success ? "success" : "failed",
@@ -4407,6 +4485,15 @@ public sealed class RecipeRunner
         _ctx.Variables["safeClick.migration.legacyOptOutMissingReviewBy"] = _safeClickLegacyOptOutMissingReviewByCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.legacyOptOutNonCompliant"] = _safeClickLegacyOptOutNonCompliantCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.legacyDeprecationWarnings"] = _safeClickLegacyDeprecationWarningCount.ToString(CultureInfo.InvariantCulture);
+
+        // HITO-154 — safe.click legacy execution is retired; these are per-run local counters.
+        _ctx.Variables["safeClick.migration.legacyRetired"] = "1";
+        _ctx.Variables["safeClick.migration.legacyExecutionBlocked"] = _safeClickLegacyExecutionBlockedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyDispatchRejected"] = _safeClickLegacyDispatchRejectedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.ineligibleBlockedAfterRetirement"] = _safeClickIneligibleBlockedAfterRetirementCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.safeExecutorRequired"] = _safeClickSafeExecutorRequiredCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.elClickReachableFromSafeClick"] = "0";
+        _ctx.Variables["safeClick.migration.uiaActionExecutorReachableFromSafeClick"] = "0";
 
         // HITO-153 — per-run retirement readiness gate. This is not historical telemetry.
         var retirement = SafeClickLegacyRetirementReadinessEvaluator.Evaluate(

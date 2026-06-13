@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneBrain.Cli.Recipes;
 using OneBrain.Cli.Safety;
@@ -14,7 +15,7 @@ namespace OneBrain.Recipes.Tests;
 public sealed class SafeClickGradualEnableTests
 {
     [TestMethod]
-    public void DefaultModeDisabledKeepsLegacyWithoutDispatchPath()
+    public void DefaultModeDisabledBlocksLegacyRetiredWithoutDispatchPath()
     {
         var result = RunRouting(
             SafeClickDefaultMode.Disabled,
@@ -22,10 +23,13 @@ public sealed class SafeClickGradualEnableTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("blocked", result.Variables!["safeClick.result"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.reason"]);
         Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
         Assert.AreEqual("disabled", result.Variables["safeClick.fsm.defaultMode"]);
-        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("Blocked", result.Variables["safeClick.fsm.finalState"]);
+        Assert.AreEqual("true", result.Variables["safeClick.legacy.retirementPolicy.blocked"]);
     }
 
     [TestMethod]
@@ -62,7 +66,7 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
-    public void DefaultModeWebEligibleKeepsIneligibleWebOnLegacy()
+    public void DefaultModeWebEligibleBlocksIneligibleWebAfterRetirement()
     {
         var result = RunRouting(
             SafeClickDefaultMode.WebEligible,
@@ -70,10 +74,11 @@ public sealed class SafeClickGradualEnableTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: false)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
-        Assert.AreEqual("legacy", result.Variables["safeClick.fsm.defaultRouteScope"]);
-        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("legacy-retired", result.Variables["safeClick.fsm.defaultRouteScope"]);
+        Assert.AreEqual("true", result.Variables["safeClick.retirement.ineligibleAfterRetirement"]);
     }
 
     [TestMethod]
@@ -84,9 +89,10 @@ public sealed class SafeClickGradualEnableTests
             (_, _, _) => CreateStrongDesktopObservation(),
             () => new RecipeRunner().Run(BuildDesktopObserveRecipe()));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
-        Assert.AreEqual("DesktopExcludedFromDefault", result.Variables["safeClick.fsm.defaultRouteReason"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.fsm.defaultRouteReason"]);
         Assert.AreEqual("1", result.Variables["safeClick.migration.desktopExcludedFromDefault"]);
     }
 
@@ -107,7 +113,7 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
-    public void DispatchPathLegacyUsesLegacyAndMarksDeprecated()
+    public void DispatchPathLegacyBlocksRetiredAndMarksDeprecated()
     {
         var result = RunRouting(
             SafeClickDefaultMode.WebEligible,
@@ -115,11 +121,13 @@ public sealed class SafeClickGradualEnableTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy")));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("LegacyDispatchRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("true", result.Variables["safeClick.legacy.explicitOptOut"]);
         Assert.AreEqual("true", result.Variables["safeClick.legacy.deprecated"]);
         Assert.AreEqual("ExplicitLegacyDispatchPath", result.Variables["safeClick.legacy.reason"]);
-        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("true", result.Variables["safeClick.retirement.legacyDispatchRejected"]);
+        Assert.AreEqual("Blocked", result.Variables["safeClick.fsm.finalState"]);
     }
 
     [TestMethod]
@@ -182,7 +190,7 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
-    public void LegacyDeprecationDoesNotBlockYet()
+    public void LegacyDeprecationNowBlocksButKeepsWarningEvidence()
     {
         var result = RunRouting(
             SafeClickDefaultMode.WebEligible,
@@ -191,7 +199,7 @@ public sealed class SafeClickGradualEnableTests
             () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy")));
 
         Assert.IsFalse(result.Success);
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("LegacyDispatchRetired", result.Variables!["safeClick.reason"]);
         Assert.AreEqual("Warning", result.Variables["safeClick.legacy.deprecationPolicy.severity"]);
     }
 
@@ -250,7 +258,29 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
-    public void RetirementReadinessFalseWhenLegacyPathUsed()
+    public void SafeClickDispatchDoesNotReachLegacyExecutors()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory != null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
+            directory = directory.Parent;
+
+        Assert.IsNotNull(directory);
+        var source = File.ReadAllText(Path.Combine(directory.FullName, "src", "OneBrain.Cli", "Recipes", "RecipeRunner.cs"));
+        var start = source.IndexOf("private RecipeStepRunResult ExecuteSafeClick(", StringComparison.Ordinal);
+        var end = source.IndexOf("private static SafeClickDefaultMode ResolveSafeClickFsmDefaultMode", StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0);
+        Assert.IsTrue(end > start);
+
+        var executeSafeClickBody = source[start..end];
+        Assert.IsFalse(executeSafeClickBody.Contains("ExecuteSafeClickLegacy(", StringComparison.Ordinal));
+        Assert.IsFalse(executeSafeClickBody.Contains(".Click(", StringComparison.Ordinal));
+        Assert.IsFalse(executeSafeClickBody.Contains("new UiaActionExecutor", StringComparison.Ordinal));
+        Assert.IsFalse(executeSafeClickBody.Contains("SendInput", StringComparison.Ordinal));
+        Assert.IsFalse(executeSafeClickBody.Contains("GetClickablePoint", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void RetirementBlocksLegacyWithoutCountingLegacyPathUsed()
     {
         var result = RunRouting(
             SafeClickDefaultMode.Disabled,
@@ -258,26 +288,28 @@ public sealed class SafeClickGradualEnableTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
 
-        Assert.AreEqual("false", result.Variables!["safeClick.retirement.ready"]);
-        StringAssert.Contains(result.Variables["safeClick.retirement.blockingReasons"], "LegacyPathUsed");
+        Assert.AreEqual("true", result.Variables!["safeClick.retirement.ready"]);
+        Assert.AreEqual("0", result.Variables["safeClick.retirement.legacyPathUsed"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.legacyExecutionBlocked"]);
     }
 
     [TestMethod]
-    public void RetirementReadinessFalseWhenUiaActionExecutorUsed()
+    public void RetirementBlocksLegacyWithoutUiaActionExecutorUse()
     {
         var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
 
-        Assert.AreEqual("false", result.Variables!["safeClick.retirement.ready"]);
-        StringAssert.Contains(result.Variables["safeClick.retirement.blockingReasons"], "UiaActionExecutorUsed");
+        Assert.AreEqual("true", result.Variables!["safeClick.retirement.ready"]);
+        Assert.AreEqual("0", result.Variables["safeClick.retirement.uiaActionExecutorUsed"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.uiaActionExecutorReachableFromSafeClick"]);
     }
 
     [TestMethod]
-    public void RetirementReadinessFalseWhenUnsafeFallbackUsed()
+    public void RetirementBlocksLegacyWithoutUnsafeFallbackUse()
     {
         var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
 
-        Assert.AreEqual("1", result.Variables!["safeClick.retirement.unsafeFallbackUsed"]);
-        StringAssert.Contains(result.Variables["safeClick.retirement.blockingReasons"], "UnsafeFallbackUsed");
+        Assert.AreEqual("0", result.Variables!["safeClick.retirement.unsafeFallbackUsed"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.elClickReachableFromSafeClick"]);
     }
 
     [TestMethod]
@@ -537,7 +569,7 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
-    public void KillSwitchDisabledRevertsToLegacy()
+    public void KillSwitchDisabledBlocksLegacyRetired()
     {
         var result = RunRouting(
             SafeClickDefaultMode.Disabled,
@@ -545,12 +577,13 @@ public sealed class SafeClickGradualEnableTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
-        Assert.AreEqual("KillSwitchDisabled", result.Variables["safeClick.fsm.defaultRouteReason"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables!["safeClick.reason"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.fsm.defaultRouteReason"]);
     }
 
     [TestMethod]
-    public void KillSwitchLegacyRevertsToLegacy()
+    public void KillSwitchLegacyBlocksLegacyRetired()
     {
         var result = RunRouting(
             SafeClickDefaultMode.Legacy,
@@ -558,9 +591,9 @@ public sealed class SafeClickGradualEnableTests
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
 
-        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
-        Assert.AreEqual("legacy", result.Variables["safeClick.fsm.defaultMode"]);
-        Assert.AreEqual("KillSwitchLegacy", result.Variables["safeClick.fsm.defaultRouteReason"]);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("legacy", result.Variables!["safeClick.fsm.defaultMode"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.fsm.defaultRouteReason"]);
     }
 
     [TestMethod]
@@ -590,6 +623,7 @@ public sealed class SafeClickGradualEnableTests
         Assert.AreEqual("true", result.Variables!["safeClick.legacy.explicitOptOut"]);
         Assert.AreEqual("true", result.Variables["safeClick.legacy.deprecated"]);
         Assert.AreEqual("ExplicitLegacyDispatchPath", result.Variables["safeClick.legacy.reason"]);
+        Assert.AreEqual("LegacyDispatchRetired", result.Variables["safeClick.reason"]);
         Assert.AreEqual("1", result.Variables["safeClick.migration.explicitLegacyOptOut"]);
     }
 
@@ -641,7 +675,7 @@ public sealed class SafeClickGradualEnableTests
         var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
 
         Assert.AreEqual("false", result.Variables!["safeClick.fsm.routedByDefault"]);
-        Assert.AreEqual("UIA safe.click", result.Variables["safeClick.method"]);
+        Assert.AreEqual("SafeClickLegacyRetired", result.Variables["safeClick.reason"]);
     }
 
     [TestMethod]
@@ -652,7 +686,7 @@ public sealed class SafeClickGradualEnableTests
         var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
 
         Assert.AreEqual("false", result.Variables!["safeClick.fsm.routedByDefault"]);
-        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+        Assert.AreEqual("Blocked", result.Variables["safeClick.fsm.finalState"]);
     }
 
     // ── Recipe builders ────────────────────────────────────────────────────
