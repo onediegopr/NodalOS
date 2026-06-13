@@ -8,12 +8,14 @@ using OneBrain.Cli.Browser;
 using OneBrain.Cli.Safety;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Extraction;
+using OneBrain.Core.Execution;
 using OneBrain.Core.Profiles;
 using OneBrain.Core.Safety;
 using OneBrain.Core.Actions;
 using OneBrain.Core.Contracts;
 using OneBrain.Core.Models;
 using OneBrain.Core.Recipes;
+using OneBrain.Core.Selectors;
 using OneBrain.Core.Selectors.Web;
 using OneBrain.Core.Visual;
 using OneBrain.Observation;
@@ -2098,6 +2100,7 @@ public sealed class RecipeRunner
         if (!hasOwned && mode != "controlled")
         {
             SetSafeClickVars(prefix, targetText, "blocked", "no owned browser session");
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
             sw.Stop();
             return new RecipeStepRunResult(step.Id, step.Kind, false,
                 "safe.click: no owned browser session active.", sw.ElapsedMilliseconds);
@@ -2108,6 +2111,7 @@ public sealed class RecipeRunner
         if (pr.Blocked)
         {
             SetSafeClickVars(prefix, targetText, "blocked", pr.Reason);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
             sw.Stop();
             return new RecipeStepRunResult(step.Id, step.Kind, false,
                 $"safe.click: target blocked: {pr.Reason}", sw.ElapsedMilliseconds);
@@ -2118,6 +2122,7 @@ public sealed class RecipeRunner
         if (bindingError != null)
         {
             SetSafeClickVars(prefix, targetText, "blocked", bindingError);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
             sw.Stop();
             return new RecipeStepRunResult(step.Id, step.Kind, false,
                 $"safe.click: approval binding invalid: {bindingError}", sw.ElapsedMilliseconds);
@@ -2128,6 +2133,7 @@ public sealed class RecipeRunner
         if (execAllowed != "true")
         {
             SetSafeClickVars(prefix, targetText, "blocked", "executionAllowedInThisHito is false");
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
             sw.Stop();
             return new RecipeStepRunResult(step.Id, step.Kind, false,
                 "safe.click: approval does not allow execution.", sw.ElapsedMilliseconds);
@@ -2168,6 +2174,7 @@ public sealed class RecipeRunner
                 {
                     var resolution = WebTargetResolver.Resolve(sessionHwnd, targetText, proc);
                     SetResolutionVars(prefix, resolution);
+                    TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
 
                     if (!resolution.Found)
                     {
@@ -2178,12 +2185,14 @@ public sealed class RecipeRunner
                         if (resolution.CandidateCount > 1 && resolution.Reason.Contains("ambiguous"))
                         {
                             SetSafeClickVars(prefix, targetText, "blocked", $"ambiguous: {resolution.CandidateCount} candidates");
+                            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
                             sw.Stop();
                             return new RecipeStepRunResult(step.Id, step.Kind, false,
                                 $"safe.click: ambiguous target ({resolution.CandidateCount} candidates)", sw.ElapsedMilliseconds);
                         }
 
                         SetSafeClickVars(prefix, targetText, "failed", resolution.Reason);
+                        TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
                         sw.Stop();
                         return new RecipeStepRunResult(step.Id, step.Kind, false,
                             $"safe.click: {resolution.Reason}", sw.ElapsedMilliseconds);
@@ -2204,16 +2213,19 @@ public sealed class RecipeRunner
                                     el.Click();
 
                                 SetSafeClickVars(prefix, targetText, "success", $"clicked via WebTargetResolver on {resolution.SelectedControlType}");
+                                TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
                                 sw.Stop();
                                 return new RecipeStepRunResult(step.Id, step.Kind, true,
                                     $"safe.click: clicked '{targetText}' ({resolution.SelectedControlType})", sw.ElapsedMilliseconds);
                             }
                         }
                         SetSafeClickVars(prefix, targetText, "failed", "element disappeared after resolution");
+                        TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
                     }
                     catch (Exception ex)
                     {
                         SetSafeClickVars(prefix, targetText, "failed", ex.Message);
+                        TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
                     }
 
                     sw.Stop();
@@ -2236,6 +2248,7 @@ public sealed class RecipeRunner
 
             SetSafeClickVars(prefix, targetText, result.Success ? "success" : "failed",
                 result.Message ?? (result.Success ? "clicked" : "failed"));
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
 
             sw.Stop();
             return new RecipeStepRunResult(step.Id, step.Kind, result.Success,
@@ -2244,6 +2257,7 @@ public sealed class RecipeRunner
         catch (Exception ex)
         {
             SetSafeClickVars(prefix, targetText, "failed", ex.Message);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
             sw.Stop();
             return new RecipeStepRunResult(step.Id, step.Kind, false,
                 $"safe.click: {ex.Message}", sw.ElapsedMilliseconds);
@@ -2258,6 +2272,176 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".reason"] = reason;
         _ctx.Variables[prefix + ".result"] = result;
         _ctx.Variables[prefix + ".summary"] = $"safe.click {targetText}: {result} ({reason})";
+    }
+
+    private void TrySetSafeClickPlanVars(string prefix, string approvalPrefix, string targetText, string mode)
+    {
+        try
+        {
+            var manifest = TryReadApprovalManifest(approvalPrefix);
+            var plan = SafeClickPlanner.Plan(new SafeClickPlanInput
+            {
+                Mode = mode,
+                TargetText = targetText,
+                ActionKind = "click",
+                Manifest = manifest,
+                Candidates = ReadSafeClickPlanCandidates(prefix),
+                Reversible = false
+            });
+
+            _ctx.Variables[prefix + ".plan.projectedState"] = plan.ProjectedState.ToString();
+            _ctx.Variables[prefix + ".plan.failureKind"] = plan.FailureKind?.ToString() ?? "";
+            _ctx.Variables[prefix + ".plan.blockReason"] = plan.BlockReason ?? "";
+            _ctx.Variables[prefix + ".plan.identityStrength"] = plan.IdentityStrength.ToString();
+            _ctx.Variables[prefix + ".plan.contractValid"] = plan.ContractValid ? "true" : "false";
+            _ctx.Variables[prefix + ".plan.bindingVerdict"] = plan.BindingVerdict ?? "";
+            _ctx.Variables[prefix + ".plan.parityAgrees"] = plan.ParityAgrees.HasValue
+                ? (plan.ParityAgrees.Value ? "true" : "false")
+                : "";
+            _ctx.Variables[prefix + ".plan.wouldDispatch"] = plan.WouldDispatch ? "true" : "false";
+            _ctx.Variables[prefix + ".plan.wouldUseUnsafeFallback"] = plan.WouldUseUnsafeFallback ? "true" : "false";
+            _ctx.Variables[prefix + ".plan.reasons"] = plan.Reasons.Count == 0 ? "" : string.Join(" | ", plan.Reasons);
+        }
+        catch (Exception ex)
+        {
+            _ctx.Variables[prefix + ".plan.projectedState"] = StepState.Blocked.ToString();
+            _ctx.Variables[prefix + ".plan.failureKind"] = FailureKind.Unverified.ToString();
+            _ctx.Variables[prefix + ".plan.blockReason"] = "PlannerUnavailable";
+            _ctx.Variables[prefix + ".plan.identityStrength"] = IdentityStrength.None.ToString();
+            _ctx.Variables[prefix + ".plan.contractValid"] = "false";
+            _ctx.Variables[prefix + ".plan.bindingVerdict"] = "";
+            _ctx.Variables[prefix + ".plan.parityAgrees"] = "";
+            _ctx.Variables[prefix + ".plan.wouldDispatch"] = "false";
+            _ctx.Variables[prefix + ".plan.wouldUseUnsafeFallback"] = "false";
+            _ctx.Variables[prefix + ".plan.reasons"] = $"planner unavailable: {ex.Message}";
+        }
+    }
+
+    private ApprovalManifest? TryReadApprovalManifest(string approvalPrefix)
+    {
+        var target = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".targetText", "");
+        var mode = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".mode", "");
+        var policyVersion = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".policyVersion", "");
+        var evidenceHash = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".evidenceHash", "");
+
+        if (string.IsNullOrWhiteSpace(target) &&
+            string.IsNullOrWhiteSpace(mode) &&
+            string.IsNullOrWhiteSpace(policyVersion) &&
+            string.IsNullOrWhiteSpace(evidenceHash))
+        {
+            return null;
+        }
+
+        SelectorDefinition? selector = null;
+        var selectorJson = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.selector", "");
+        if (!string.IsNullOrWhiteSpace(selectorJson))
+        {
+            try
+            {
+                selector = JsonSerializer.Deserialize<SelectorDefinition>(selectorJson);
+            }
+            catch
+            {
+                selector = null;
+            }
+        }
+
+        var identityStrength = IdentityStrength.None;
+        if (Enum.TryParse(_ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.strength", ""), ignoreCase: true, out IdentityStrength parsedStrength))
+            identityStrength = parsedStrength;
+
+        bool? shadowAgrees = null;
+        var rawShadowAgrees = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.shadowAgreesWithLegacy", "");
+        if (bool.TryParse(rawShadowAgrees, out var parsedShadowAgrees))
+            shadowAgrees = parsedShadowAgrees;
+
+        return new ApprovalManifest
+        {
+            TargetText = target,
+            Mode = mode,
+            Decision = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".decision", ""),
+            RiskCategory = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".riskCategory", ""),
+            RiskLevel = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".riskLevel", ""),
+            EvidenceHash = evidenceHash,
+            PolicyVersion = policyVersion,
+            ExecutionAllowedInThisHito = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".executionAllowedInThisHito", "false") == "true",
+            IdentitySchemaVersion = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.schemaVersion", ""),
+            ApprovedIdentityDigest = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.digest", ""),
+            ApprovedSelector = selector,
+            IdentityStrength = identityStrength,
+            IdentitySource = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.source", ""),
+            ShadowAgreesWithLegacy = shadowAgrees,
+            IdentityBindingHash = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.bindingHash", "")
+        };
+    }
+
+    private IReadOnlyList<WebCandidate> ReadSafeClickPlanCandidates(string prefix)
+    {
+        var candidatesJson = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.candidatesJson", "");
+        if (!string.IsNullOrWhiteSpace(candidatesJson))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(candidatesJson);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    return doc.RootElement
+                        .EnumerateArray()
+                        .Select(element => new WebCandidate
+                        {
+                            RuntimeId = ReadJsonString(element, "runtimeId"),
+                            Name = ReadJsonString(element, "name"),
+                            ControlType = ReadJsonString(element, "controlType"),
+                            AutomationId = ReadJsonString(element, "automationId"),
+                            BoundingRect = ReadJsonString(element, "boundingRect"),
+                            IsEnabled = ReadJsonBool(element, "isEnabled", defaultValue: true),
+                            IsOffscreen = ReadJsonBool(element, "isOffscreen", defaultValue: false),
+                            HasInvoke = ReadJsonBool(element, "hasInvoke", defaultValue: false)
+                        })
+                        .ToList();
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        var selectedName = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.selectedName", "");
+        var selectedControlType = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.selectedControlType", "");
+        var selectedBoundingRect = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.selectedBoundingRect", "");
+        if (string.IsNullOrWhiteSpace(selectedName) &&
+            string.IsNullOrWhiteSpace(selectedControlType) &&
+            string.IsNullOrWhiteSpace(selectedBoundingRect))
+        {
+            return Array.Empty<WebCandidate>();
+        }
+
+        return
+        [
+            new WebCandidate
+            {
+                Name = selectedName,
+                ControlType = selectedControlType,
+                BoundingRect = selectedBoundingRect,
+                IsEnabled = true,
+                IsOffscreen = false,
+                HasInvoke = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.hasInvoke", "false") == "true"
+            }
+        ];
+    }
+
+    private static string? ReadJsonString(JsonElement element, string propertyName)
+    {
+        return element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+    }
+
+    private static bool ReadJsonBool(JsonElement element, string propertyName, bool defaultValue)
+    {
+        return element.TryGetProperty(propertyName, out var property) && property.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? property.GetBoolean()
+            : defaultValue;
     }
 
     private string? ValidateApprovalBinding(string approvalPrefix, string targetText, string mode)

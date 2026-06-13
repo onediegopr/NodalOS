@@ -13,13 +13,15 @@ public static class WebCandidateMapper
 
         return new ElementIdentity
         {
-            RuntimeId = "",
+            RuntimeId = candidate.RuntimeId ?? "",
             Name = candidate.Name ?? "",
             Role = controlType,
             ControlType = controlType,
             AutomationId = candidate.AutomationId ?? "",
             BoundsHint = candidate.BoundingRect ?? "",
-            Provenance = Provenance.Inferred
+            Provenance = string.IsNullOrWhiteSpace(candidate.RuntimeId)
+                ? Provenance.Inferred
+                : Provenance.Uia
         };
     }
 }
