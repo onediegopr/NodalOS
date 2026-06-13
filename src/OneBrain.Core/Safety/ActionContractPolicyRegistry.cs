@@ -4,6 +4,7 @@ public static class ActionContractPolicyRegistry
 {
     private static readonly IActionContractPolicy Click = new ClickActionContractPolicy();
     private static readonly IActionContractPolicy Read = new ReadActionContractPolicy();
+    private static readonly IActionContractPolicy Type = new TypeActionContractPolicy();
     private static readonly IActionContractPolicy Harness = new HarnessActionContractPolicy();
     private static readonly IActionContractPolicy Deny = new DenyByDefaultActionContractPolicy();
 
@@ -16,6 +17,7 @@ public static class ActionContractPolicyRegistry
         {
             "click" => Click,
             "read" => Read,
+            "type" => Type,
             "benign_harness_click" => Harness,
             _ => Deny
         };

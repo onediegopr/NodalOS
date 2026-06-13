@@ -26,7 +26,8 @@ public static class SensitiveActionClassifier
         "app.close",
         "browser.open",
         "browser.close",
-        "safe.click"
+        "safe.click",
+        "safe.type"
     };
 
     private static readonly HashSet<string> CanonicalBenignKinds = new(StringComparer.OrdinalIgnoreCase)

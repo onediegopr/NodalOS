@@ -21,4 +21,5 @@ public sealed record RecipeSafetyContract(
     ActionCeiling ActionCeiling,
     Provenance Provenance,
     TrustLevel TrustLevel,
-    ApprovalBinding? ApprovalRef);
+    ApprovalBinding? ApprovalRef,
+    string ApprovedValueDigest = "");

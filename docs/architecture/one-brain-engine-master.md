@@ -511,7 +511,34 @@ Soporta RootHwnd aditivo.
 
 Define qué roles son ejecutables.
 
-### 8.3 el.Click
+### 8.3 UiaTypeExecutor
+
+Executor seguro de escritura para `safe.type`.
+
+Usa exclusivamente:
+
+```text
+ValuePattern.SetValue(ApprovedText)
+```
+
+Garantias:
+
+* binding contra identidad viva antes del executor
+* `InvokeTimeIdentityGate` justo antes de `SetValue`
+* `TypeSurfacePolicy`
+* ownership pre-commit
+* readback `ValueAfter == ApprovedText`
+* password fields bloqueados
+* sin SendInput
+* sin teclado simulado
+* sin coordenadas
+* sin GetClickablePoint
+* sin InvokePattern
+* sin click
+* sin clipboard
+* sin fallback silencioso
+
+### 8.4 el.Click
 
 Legacy.
 
@@ -521,7 +548,7 @@ Prohibido en path safe-executor.
 
 Pendiente de retiro.
 
-### 8.4 UiaActionExecutor
+### 8.5 UiaActionExecutor
 
 Legacy/fallback.
 
@@ -945,7 +972,6 @@ Falta:
 
 Faltan acciones seguras:
 
-* safe.type
 * safe.select
 * safe.download
 * safe.upload
@@ -953,6 +979,8 @@ Faltan acciones seguras:
 * safe.modal.confirm
 
 Implementado:
+
+* safe.type - escritura UIA por `ValuePattern.SetValue` con contrato `ActionKind=type`, `TypeSurfacePolicy`, `UiaTypeExecutor`, `SafeTypeStepVerifier`, binding contra identidad viva, ownership pre-commit, readback y bloqueo de password fields.
 
 * safe.read — read-only UIA con contrato `ActionKind=read`, `ReadSurfacePolicy`, `UiaReadExecutor`, `SafeReadStepVerifier`, approval-v3 strong y evidence ledger.
 
@@ -1043,6 +1071,7 @@ Siguientes pasos:
 * HITO-155 — Auditoria integral Claude del nucleo
 * HITO-156 — Core Engine Hardening Before safe.type **(implementado: invoke-time identity gate antes de `InvokePattern.Invoke()`, policy explicita para contratos `click`, ledger pre-FSM para bloqueos, legacy muerto de `safe.click` aislado; NO implementa `safe.type`)**
 * HITO-158 — safe.read + Action Contract Policy Registry + Invoke-Time Gate Testable **(implementado: registry de políticas por `ActionKind`, gate invoke-time puro/testeable, `safe.read` read-only con `ValuePattern`/`TextPattern`; NO implementa `safe.type`)**
+* HITO-159 - safe.type UIA ValuePattern **(implementado: primera escritura segura por `ValuePattern.SetValue`, policy `type`, binding contra identidad viva, ownership pre-commit, readback, password fields bloqueados; NO implementa form fill ni submit)**
 
 ### Fase siguiente: percepción robusta
 
@@ -1055,7 +1084,6 @@ Siguientes pasos:
 
 ### Fase siguiente: más acciones seguras
 
-* safe.type
 * safe.select
 * safe.download
 * safe.upload
