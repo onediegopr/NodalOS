@@ -911,10 +911,11 @@ Avance aproximado: 80%
 
 Siguientes pasos:
 
-* HITO-147 — Gradual Enablement / FSM default for eligible steps
-* HITO-148 — Legacy opt-out deprecated
-* HITO-149 — Legacy retirement safe.click
-* HITO-150 — Audit final safe.click engine
+* HITO-147 — Gradual Enablement / FSM default for eligible steps **(implementado: web eligible-only, kill-switch `ONEBRAIN_SAFE_CLICK_FSM_DEFAULT`, predicado endurecido con InvokePattern + rol allowlisted + web-uia, opt-out `dispatchPath=legacy` deprecated, sin fallback silencioso; NO retira legacy; desktop excluido del default)**
+* HITO-148 — Web Stabilization + RuntimeId Hardening
+* HITO-149 — Legacy opt-out deprecated
+* HITO-150 — Legacy retirement safe.click
+* HITO-151 — Audit final safe.click engine
 
 ### Fase siguiente: percepción robusta
 

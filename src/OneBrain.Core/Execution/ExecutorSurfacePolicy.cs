@@ -45,6 +45,16 @@ public static class ExecutorSurfacePolicy
             RequiredPattern: InvokePattern);
     }
 
+    /// <summary>
+    /// True when the role is in the executor surface allowlist, independent of pattern support.
+    /// Fail-closed: empty/unknown roles return false.
+    /// </summary>
+    public static bool IsRoleAllowed(string? role)
+    {
+        var normalizedRole = role?.Trim();
+        return !string.IsNullOrWhiteSpace(normalizedRole) && IsAllowlistedRole(normalizedRole);
+    }
+
     private static bool IsAllowlistedRole(string role)
     {
         return role.Equals("Button", StringComparison.OrdinalIgnoreCase) ||

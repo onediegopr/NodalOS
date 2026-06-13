@@ -57,7 +57,10 @@ public sealed record SafeClickShadowReadiness(
     bool WouldRequireLegacy,
     bool EligibleForFsm,
     SafeClickMigrationMetrics Metrics,
-    IReadOnlyList<string> Reasons)
+    IReadOnlyList<string> Reasons,
+    bool InvokePatternAvailable = false,
+    bool RoleAllowedForSafeExecutor = false,
+    bool IsWebUia = false)
 {
     public string Summary =>
         EligibleForFsm
@@ -86,6 +89,16 @@ public static class SafeClickShadowReadinessEvaluator
         var hasTargetObserve = HasTargetObserve(manifest);
         var hasRuntimeId = observedIdentity?.IsStrong == true;
         var runtimeIdentityMatch = ResolveRuntimeIdentityMatch(manifest, observedIdentity, hasApprovalV3);
+        var isDesktopSource = string.Equals(identitySource, "uia", StringComparison.OrdinalIgnoreCase);
+        var isWebSource = string.Equals(identitySource, "web-uia", StringComparison.OrdinalIgnoreCase);
+
+        // HITO-147: hardened eligibility. The executor dispatch is only safe when the resolved
+        // target exposes InvokePattern on an allowlisted role, and only web-uia is in scope for
+        // default routing. Desktop never becomes default-eligible in this hito.
+        var invokePatternStrict = invokePatternAvailable == true;
+        var roleAllowed = observedIdentity != null &&
+                          ExecutorSurfacePolicy.IsRoleAllowed(observedIdentity.EffectiveControlType);
+
         var eligibleForFsm = hasApprovalV3 &&
                              hasTargetObserve &&
                              plan.IdentityStrength == IdentityStrength.Strong &&
@@ -93,7 +106,10 @@ public static class SafeClickShadowReadinessEvaluator
                              runtimeIdentityMatch == RuntimeIdentityMatch.Same &&
                              plan.ProjectedState == StepState.Bound &&
                              plan.ContractValid &&
-                             !plan.WouldUseUnsafeFallback;
+                             !plan.WouldUseUnsafeFallback &&
+                             invokePatternStrict &&
+                             roleAllowed &&
+                             isWebSource;
         var reason = ResolveReason(
             manifest,
             plan,
@@ -101,11 +117,12 @@ public static class SafeClickShadowReadinessEvaluator
             hasApprovalV3,
             hasRuntimeId,
             runtimeIdentityMatch,
+            invokePatternStrict,
+            roleAllowed,
+            isWebSource,
             eligibleForFsm);
         var readinessReason = ParseReason(reason);
         var reasons = BuildReasons(reason, plan.Reasons);
-        var isDesktopSource = string.Equals(identitySource, "uia", StringComparison.OrdinalIgnoreCase);
-        var isWebSource = string.Equals(identitySource, "web-uia", StringComparison.OrdinalIgnoreCase);
         var metrics = new SafeClickMigrationMetrics(
             TotalClicks: 1,
             EligibleForFsm: eligibleForFsm ? 1 : 0,
@@ -149,7 +166,10 @@ public static class SafeClickShadowReadinessEvaluator
             WouldRequireLegacy: !eligibleForFsm,
             EligibleForFsm: eligibleForFsm,
             Metrics: metrics,
-            Reasons: reasons);
+            Reasons: reasons,
+            InvokePatternAvailable: invokePatternStrict,
+            RoleAllowedForSafeExecutor: roleAllowed,
+            IsWebUia: isWebSource);
     }
 
     private static bool HasTargetObserve(ApprovalManifest? manifest)
@@ -198,6 +218,9 @@ public static class SafeClickShadowReadinessEvaluator
         bool hasApprovalV3,
         bool hasRuntimeId,
         RuntimeIdentityMatch runtimeIdentityMatch,
+        bool invokePatternStrict,
+        bool roleAllowed,
+        bool isWebSource,
         bool eligibleForFsm)
     {
         if (eligibleForFsm)
@@ -223,6 +246,15 @@ public static class SafeClickShadowReadinessEvaluator
 
         if (plan.WouldUseUnsafeFallback)
             return "WouldUseLegacyFallback";
+
+        if (!invokePatternStrict)
+            return "InvokePatternUnavailable";
+
+        if (!roleAllowed)
+            return "RoleNotAllowed";
+
+        if (!isWebSource)
+            return "NotWebUia";
 
         if (plan.FailureKind == FailureKind.Ambiguous)
             return "Ambiguous";
@@ -272,6 +304,9 @@ public static class SafeClickShadowReadinessEvaluator
             "RuntimeIdMissing" => SafeClickMigrationReadinessReason.RuntimeIdMissing,
             "RuntimeIdChanged" => SafeClickMigrationReadinessReason.RuntimeIdChanged,
             "WouldUseLegacyFallback" => SafeClickMigrationReadinessReason.WouldUseLegacyFallback,
+            "InvokePatternUnavailable" => SafeClickMigrationReadinessReason.InvokePatternUnavailable,
+            "RoleNotAllowed" => SafeClickMigrationReadinessReason.RoleNotAllowed,
+            "NotWebUia" => SafeClickMigrationReadinessReason.NotWebUia,
             "Ambiguous" => SafeClickMigrationReadinessReason.Ambiguous,
             "NotFound" => SafeClickMigrationReadinessReason.NotFound,
             "MissingManifest" => SafeClickMigrationReadinessReason.MissingManifest,

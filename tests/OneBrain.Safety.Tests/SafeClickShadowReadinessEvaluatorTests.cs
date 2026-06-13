@@ -178,6 +178,81 @@ public sealed class SafeClickShadowReadinessEvaluatorTests
         Assert.AreEqual(0, readiness.Metrics.WebUiaEligible);
     }
 
+    [TestMethod]
+    public void EligibleRequiresInvokePatternAvailable()
+    {
+        var strongIdentity = CreateStrongIdentity();
+        var manifest = ApprovalManifestBuilder.Build(
+            ClickPreflightEvaluator.Evaluate("Categorias"),
+            "controlled",
+            new ApprovedIdentityInput(strongIdentity, "web-uia", null));
+
+        var withInvoke = SafeClickShadowReadinessEvaluator.Evaluate(
+            manifest,
+            CreatePlan(IdentityStrength.Strong, StepState.Bound, null, null),
+            observedIdentity: strongIdentity,
+            invokePatternAvailable: true);
+
+        var withoutInvoke = SafeClickShadowReadinessEvaluator.Evaluate(
+            manifest,
+            CreatePlan(IdentityStrength.Strong, StepState.Bound, null, null),
+            observedIdentity: strongIdentity,
+            invokePatternAvailable: false);
+
+        Assert.IsTrue(withInvoke.EligibleForFsm);
+        Assert.IsFalse(withoutInvoke.EligibleForFsm);
+        Assert.AreEqual("InvokePatternUnavailable", withoutInvoke.Reason);
+    }
+
+    [TestMethod]
+    public void EligibleRequiresAllowedRole()
+    {
+        var allowedRole = CreateStrongIdentity();
+        var deniedRole = CreateStrongIdentity() with { Role = "Edit", ControlType = "Edit" };
+        var manifest = ApprovalManifestBuilder.Build(
+            ClickPreflightEvaluator.Evaluate("Categorias"),
+            "controlled",
+            new ApprovedIdentityInput(allowedRole, "web-uia", null));
+
+        var allowed = SafeClickShadowReadinessEvaluator.Evaluate(
+            manifest,
+            CreatePlan(IdentityStrength.Strong, StepState.Bound, null, null),
+            observedIdentity: allowedRole,
+            invokePatternAvailable: true);
+
+        var denied = SafeClickShadowReadinessEvaluator.Evaluate(
+            manifest,
+            CreatePlan(IdentityStrength.Strong, StepState.Bound, null, null),
+            observedIdentity: deniedRole,
+            invokePatternAvailable: true);
+
+        Assert.IsTrue(allowed.RoleAllowedForSafeExecutor);
+        Assert.IsTrue(allowed.EligibleForFsm);
+        Assert.IsFalse(denied.RoleAllowedForSafeExecutor);
+        Assert.IsFalse(denied.EligibleForFsm);
+        Assert.AreEqual("RoleNotAllowed", denied.Reason);
+    }
+
+    [TestMethod]
+    public void EligibleRequiresWebUiaForDefault()
+    {
+        var strongIdentity = CreateStrongIdentity();
+        var desktopManifest = ApprovalManifestBuilder.Build(
+            ClickPreflightEvaluator.Evaluate("Categorias"),
+            "controlled",
+            new ApprovedIdentityInput(strongIdentity, "uia", null));
+
+        var desktop = SafeClickShadowReadinessEvaluator.Evaluate(
+            desktopManifest,
+            CreatePlan(IdentityStrength.Strong, StepState.Bound, null, null),
+            observedIdentity: strongIdentity,
+            invokePatternAvailable: true);
+
+        Assert.IsFalse(desktop.IsWebUia);
+        Assert.IsFalse(desktop.EligibleForFsm);
+        Assert.AreEqual("NotWebUia", desktop.Reason);
+    }
+
     private static SafeClickExecutionPlan CreatePlan(
         IdentityStrength identityStrength,
         StepState projectedState,

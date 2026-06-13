@@ -1,0 +1,660 @@
+using System.Reflection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OneBrain.Cli.Recipes;
+using OneBrain.Cli.Safety;
+using OneBrain.Core.Actions;
+using OneBrain.Core.Contracts;
+using OneBrain.Core.Execution;
+using OneBrain.Core.Recipes;
+using OneBrain.Core.Safety;
+
+namespace OneBrain.Recipes.Tests;
+
+[TestClass]
+public sealed class SafeClickGradualEnableTests
+{
+    [TestMethod]
+    public void DefaultModeDisabledKeepsLegacyWithoutDispatchPath()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.Disabled,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("disabled", result.Variables["safeClick.fsm.defaultMode"]);
+        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+    }
+
+    [TestMethod]
+    public void DefaultModeWebEligibleRoutesEligibleWebToFsm()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("Succeeded", result.Variables["safeClick.fsm.finalState"]);
+        Assert.AreEqual("true", result.Variables["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("web-uia", result.Variables["safeClick.fsm.defaultRouteScope"]);
+        Assert.AreEqual("WebEligible", result.Variables["safeClick.fsm.defaultRouteReason"]);
+    }
+
+    [TestMethod]
+    public void DefaultModeWebEligibleKeepsIneligibleWebOnLegacy()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: false)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("legacy", result.Variables["safeClick.fsm.defaultRouteScope"]);
+        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+    }
+
+    [TestMethod]
+    public void DefaultModeWebEligibleExcludesDesktop()
+    {
+        var result = RunDesktopRouting(
+            SafeClickDefaultMode.WebEligible,
+            (_, _, _) => CreateStrongDesktopObservation(),
+            () => new RecipeRunner().Run(BuildDesktopObserveRecipe()));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("DesktopExcludedFromDefault", result.Variables["safeClick.fsm.defaultRouteReason"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.desktopExcludedFromDefault"]);
+    }
+
+    [TestMethod]
+    public void DispatchPathSafeExecutorStillUsesOptInFsm()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.Disabled,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "safe-executor")));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("Succeeded", result.Variables["safeClick.fsm.finalState"]);
+        Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("explicit-safe-executor", result.Variables["safeClick.fsm.defaultRouteScope"]);
+    }
+
+    [TestMethod]
+    public void DispatchPathLegacyUsesLegacyAndMarksDeprecated()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy")));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("true", result.Variables["safeClick.legacy.explicitOptOut"]);
+        Assert.AreEqual("true", result.Variables["safeClick.legacy.deprecated"]);
+        Assert.AreEqual("ExplicitLegacyDispatchPath", result.Variables["safeClick.legacy.reason"]);
+        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+    }
+
+    [TestMethod]
+    public void UnknownDispatchPathStillPolicyDenied()
+    {
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe(dispatchPath: "typo"));
+
+        Assert.IsFalse(result.Success);
+        StringAssert.Contains(result.Steps.Last().Message, "dispatchPath 'typo' is not allowed");
+        Assert.AreEqual("Blocked", result.Variables!["safeClick.fsm.finalState"]);
+        Assert.AreEqual(FailureKind.PolicyDenied.ToString(), result.Variables["safeClick.fsm.failureKind"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.unknownDispatchPathBlocked"]);
+    }
+
+    [TestMethod]
+    public void FsmBlockDoesNotFallbackToLegacy()
+    {
+        var result = RunStaleRouted();
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("Blocked", result.Variables["safeClick.fsm.finalState"]);
+        Assert.AreEqual("true", result.Variables["safeClick.fsm.blockedWithoutLegacyFallback"]);
+    }
+
+    [TestMethod]
+    public void FsmBlockDoesNotCallElClick()
+    {
+        var result = RunStaleRouted();
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedElClick"]);
+        Assert.AreEqual("false", result.Variables["safeClick.legacy.usedUnsafeFallback"]);
+    }
+
+    [TestMethod]
+    public void FsmBlockDoesNotCallUiaActionExecutor()
+    {
+        var result = RunStaleRouted();
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedUiaActionExecutor"]);
+    }
+
+    [TestMethod]
+    public void KillSwitchDisabledRevertsToLegacy()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.Disabled,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("KillSwitchDisabled", result.Variables["safeClick.fsm.defaultRouteReason"]);
+    }
+
+    [TestMethod]
+    public void KillSwitchLegacyRevertsToLegacy()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.Legacy,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("legacy", result.Variables["safeClick.fsm.defaultMode"]);
+        Assert.AreEqual("KillSwitchLegacy", result.Variables["safeClick.fsm.defaultRouteReason"]);
+    }
+
+    [TestMethod]
+    public void DefaultRoutingWritesVariables()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsTrue(result.Variables!.ContainsKey("safeClick.fsm.defaultEnabled"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.fsm.defaultMode"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.fsm.routedByDefault"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.fsm.defaultRouteReason"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.fsm.defaultRouteEligible"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.fsm.defaultRouteScope"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.fsm.blockedWithoutLegacyFallback"));
+        Assert.AreEqual("1", result.Variables["safeClick.migration.defaultFsmRouted"]);
+    }
+
+    [TestMethod]
+    public void ExplicitLegacyWritesDeprecatedVariables()
+    {
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe(dispatchPath: "legacy"));
+
+        Assert.AreEqual("true", result.Variables!["safeClick.legacy.explicitOptOut"]);
+        Assert.AreEqual("true", result.Variables["safeClick.legacy.deprecated"]);
+        Assert.AreEqual("ExplicitLegacyDispatchPath", result.Variables["safeClick.legacy.reason"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.explicitLegacyOptOut"]);
+    }
+
+    [TestMethod]
+    public void ApprovalV2StillUnchanged()
+    {
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
+
+        Assert.AreEqual(ApprovalManifestBuilder.PolicyVersion, result.Variables!["approval.policyVersion"]);
+    }
+
+    [TestMethod]
+    public void EvidenceHashStillUnchanged()
+    {
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
+        var expectedHash = ApprovalManifestBuilder.ComputeEvidenceHash(
+            "Categorias",
+            "controlled",
+            "allowedForFuture",
+            "safe-readonly",
+            "low",
+            ApprovalManifestBuilder.PolicyVersion);
+
+        Assert.AreEqual(expectedHash, result.Variables!["approval.evidenceHash"]);
+    }
+
+    [TestMethod]
+    public void PolicyVersionStillUnchanged()
+    {
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
+
+        Assert.AreEqual("approval-v2", result.Variables!["approval.policyVersion"]);
+    }
+
+    [TestMethod]
+    public void ValidateApprovalBindingStillUnchanged()
+    {
+        var result = new RecipeRunner().Run(BuildForgedBindingRecipe());
+
+        Assert.IsFalse(result.Success);
+        StringAssert.Contains(result.Steps.Last().Message, "target mismatch");
+    }
+
+    [TestMethod]
+    public void RegionSelectorStillUntouched()
+    {
+        // Default routing never engages the visual RegionSelector path; the legacy stack stays on the
+        // unchanged default route, proving HITO-147 did not alter that subsystem.
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
+
+        Assert.AreEqual("false", result.Variables!["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("UIA safe.click", result.Variables["safeClick.method"]);
+    }
+
+    [TestMethod]
+    public void BasicActionVerifierStillUntouched()
+    {
+        // BasicActionVerifier.TargetExists lives in the legacy verification path; default routing leaves
+        // it untouched, so a legacy run still behaves exactly as before.
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
+
+        Assert.AreEqual("false", result.Variables!["safeClick.fsm.routedByDefault"]);
+        Assert.IsFalse(result.Variables.ContainsKey("safeClick.fsm.finalState"));
+    }
+
+    // ── Recipe builders ────────────────────────────────────────────────────
+
+    private static RecipeDefinition BuildWebRecipe(bool includeObserve, string? dispatchPath = null)
+    {
+        var steps = new List<RecipeStepDefinition>
+        {
+            new()
+            {
+                Id = "preflight",
+                Kind = "preflight.click",
+                SaveAs = "clickPreflight",
+                Args = new Dictionary<string, string> { ["targettext"] = "More information..." }
+            }
+        };
+
+        if (includeObserve)
+        {
+            steps.Add(new RecipeStepDefinition
+            {
+                Id = "observe",
+                Kind = "target.observe",
+                SaveAs = "clickPreflight",
+                Args = new Dictionary<string, string>
+                {
+                    ["targetText"] = "More information...",
+                    ["proc"] = "msedge"
+                }
+            });
+        }
+
+        steps.Add(new RecipeStepDefinition
+        {
+            Id = "approval",
+            Kind = "approval.manifest",
+            SaveAs = "approval",
+            Args = new Dictionary<string, string> { ["from"] = "clickPreflight", ["mode"] = "controlled" }
+        });
+
+        steps.Add(new RecipeStepDefinition
+        {
+            Id = "safe-click",
+            Kind = "safe.click",
+            SaveAs = "safeClick",
+            Args = BuildSafeClickArgs("More information...", dispatchPath)
+        });
+
+        return new RecipeDefinition("safe-click-gradual-web")
+        {
+            Variables = BuildOwnedSessionVariables(),
+            Steps = steps
+        };
+    }
+
+    private static RecipeDefinition BuildDesktopObserveRecipe()
+    {
+        var preflight = ClickPreflightEvaluator.Evaluate("Categorias");
+        return new RecipeDefinition("safe-click-gradual-desktop")
+        {
+            Variables = new Dictionary<string, string>
+            {
+                ["clickPreflight.evidenceJson"] = preflight.EvidenceJson ?? ""
+            },
+            Steps =
+            [
+                new RecipeStepDefinition
+                {
+                    Id = "observe",
+                    Kind = "target.observe.desktop",
+                    SaveAs = "clickPreflight",
+                    Args = new Dictionary<string, string>
+                    {
+                        ["targetText"] = "Categorias",
+                        ["processName"] = "explorer",
+                        ["window"] = "ONE Brain"
+                    }
+                },
+                new RecipeStepDefinition
+                {
+                    Id = "approval",
+                    Kind = "approval.manifest",
+                    SaveAs = "approval",
+                    Args = new Dictionary<string, string> { ["from"] = "clickPreflight", ["mode"] = "controlled" }
+                },
+                new RecipeStepDefinition
+                {
+                    Id = "safe-click",
+                    Kind = "safe.click",
+                    SaveAs = "safeClick",
+                    Args = new Dictionary<string, string>
+                    {
+                        ["targettext"] = "Categorias",
+                        ["mode"] = "controlled",
+                        ["approvalprefix"] = "approval",
+                        ["proc"] = "process-that-does-not-exist-onebrain"
+                    }
+                }
+            ]
+        };
+    }
+
+    private static RecipeDefinition BuildLegacyControlledRecipe(string? dispatchPath = null)
+    {
+        return new RecipeDefinition("safe-click-gradual-legacy")
+        {
+            Variables = BuildControlledApprovalVariables("Categorias"),
+            Steps =
+            [
+                new RecipeStepDefinition
+                {
+                    Id = "safe-click",
+                    Kind = "safe.click",
+                    SaveAs = "safeClick",
+                    Args = BuildSafeClickArgs("Categorias", dispatchPath, proc: "ApplicationFrameHost")
+                }
+            ]
+        };
+    }
+
+    private static RecipeDefinition BuildForgedBindingRecipe()
+    {
+        var variables = BuildControlledApprovalVariables("Siete");
+        return new RecipeDefinition("safe-click-gradual-forged")
+        {
+            Variables = variables,
+            Steps =
+            [
+                new RecipeStepDefinition
+                {
+                    Id = "safe-click",
+                    Kind = "safe.click",
+                    SaveAs = "safeClick",
+                    Args = BuildSafeClickArgs("Ocho", dispatchPath: null, proc: "ApplicationFrameHost")
+                }
+            ]
+        };
+    }
+
+    private static Dictionary<string, string> BuildControlledApprovalVariables(string targetText)
+    {
+        return new Dictionary<string, string>
+        {
+            ["approval.targetText"] = targetText,
+            ["approval.mode"] = "controlled",
+            ["approval.policyVersion"] = ApprovalManifestBuilder.PolicyVersion,
+            ["approval.decision"] = "allowedForFuture",
+            ["approval.riskCategory"] = "safe-readonly",
+            ["approval.riskLevel"] = "low",
+            ["approval.evidenceHash"] = ApprovalManifestBuilder.ComputeEvidenceHash(
+                targetText,
+                "controlled",
+                "allowedForFuture",
+                "safe-readonly",
+                "low",
+                ApprovalManifestBuilder.PolicyVersion),
+            ["approval.executionAllowedInThisHito"] = "true"
+        };
+    }
+
+    private static Dictionary<string, string> BuildSafeClickArgs(string targetText, string? dispatchPath, string proc = "msedge")
+    {
+        var args = new Dictionary<string, string>
+        {
+            ["targettext"] = targetText,
+            ["mode"] = "controlled",
+            ["approvalprefix"] = "approval",
+            ["proc"] = proc
+        };
+
+        if (!string.IsNullOrWhiteSpace(dispatchPath))
+            args["dispatchPath"] = dispatchPath;
+
+        return args;
+    }
+
+    private static Dictionary<string, string> BuildOwnedSessionVariables()
+    {
+        return new Dictionary<string, string>
+        {
+            ["browser.hwnd"] = "1234",
+            ["browser.owned"] = "true",
+            ["browser.process"] = "msedge"
+        };
+    }
+
+    // ── Execution overrides ────────────────────────────────────────────────
+
+    private static RecipeRunResult RunStaleRouted()
+    {
+        var call = 0;
+        return RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) =>
+            {
+                call++;
+                return call == 1 ? CreateStrongResolution() : CreateChangedRuntimeResolution();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+    }
+
+    private static IUiaPatternExecutor SuccessfulExecutor()
+    {
+        var observedIdentity = WebTargetResultIdentityMapper.ToSelectedIdentity(CreateStrongResolution())!;
+        return new FakePatternExecutor(_ => new PatternExecutionResult(
+            Success: true,
+            FailureKind: null,
+            Reasons: ["invoke ok"],
+            ObservedIdentity: observedIdentity,
+            WindowFound: true,
+            TargetVisible: true,
+            TargetName: observedIdentity.Name,
+            ObservedActions: 1,
+            Signals: ["postAction.windowFound=true", "postAction.targetVisible=true"]));
+    }
+
+    private static IUiaPatternExecutor ThrowingExecutor()
+    {
+        return new FakePatternExecutor(_ => throw new AssertFailedException("pattern executor should not be called"));
+    }
+
+    private static T RunRouting<T>(
+        SafeClickDefaultMode mode,
+        Func<IntPtr, string, string, int, WebTargetResult> resolver,
+        IUiaPatternExecutor executor,
+        Func<T> action)
+    {
+        var modeField = GetField("s_safeClickFsmDefaultModeOverride");
+        var resolverField = GetField("s_targetObserveResolverOverride");
+        var executorFactoryField = GetField("s_safeClickPatternExecutorFactoryOverride");
+        var ownershipFactoryField = GetField("s_safeClickOwnershipMonitorFactoryOverride");
+        var legacyWebActionField = GetField("s_safeClickLegacyWebActionOverride");
+
+        var previousMode = modeField.GetValue(null);
+        var previousResolver = resolverField.GetValue(null);
+        var previousExecutorFactory = executorFactoryField.GetValue(null);
+        var previousOwnershipFactory = ownershipFactoryField.GetValue(null);
+        var previousLegacyWebAction = legacyWebActionField.GetValue(null);
+
+        modeField.SetValue(null, (Func<SafeClickDefaultMode>)(() => mode));
+        resolverField.SetValue(null, resolver);
+        executorFactoryField.SetValue(null, (Func<IUiaPatternExecutor>)(() => executor));
+        ownershipFactoryField.SetValue(null, (Func<IDesktopOwnershipMonitor>)(() => new PassiveOwnershipMonitor()));
+        // Suppress any real legacy web click in tests (no real clicks, no real UIA invoke).
+        legacyWebActionField.SetValue(null, (Func<WebTargetResult, string, ActionResult>)((_, _) => new ActionResult(false, "legacy web action suppressed in test")));
+
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            modeField.SetValue(null, previousMode);
+            resolverField.SetValue(null, previousResolver);
+            executorFactoryField.SetValue(null, previousExecutorFactory);
+            ownershipFactoryField.SetValue(null, previousOwnershipFactory);
+            legacyWebActionField.SetValue(null, previousLegacyWebAction);
+        }
+    }
+
+    private static T RunDesktopRouting<T>(
+        SafeClickDefaultMode mode,
+        Func<string, string?, string?, DesktopTargetObservationResult> desktopResolver,
+        Func<T> action)
+    {
+        var modeField = GetField("s_safeClickFsmDefaultModeOverride");
+        var desktopField = GetField("s_targetObserveDesktopOverride");
+
+        var previousMode = modeField.GetValue(null);
+        var previousDesktop = desktopField.GetValue(null);
+
+        modeField.SetValue(null, (Func<SafeClickDefaultMode>)(() => mode));
+        desktopField.SetValue(null, desktopResolver);
+
+        try
+        {
+            return action();
+        }
+        finally
+        {
+            modeField.SetValue(null, previousMode);
+            desktopField.SetValue(null, previousDesktop);
+        }
+    }
+
+    private static FieldInfo GetField(string name)
+    {
+        var field = typeof(RecipeRunner).GetField(name, BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(field, $"static field '{name}' not found");
+        return field;
+    }
+
+    private static WebTargetResult CreateStrongResolution()
+    {
+        return new WebTargetResult
+        {
+            Found = true,
+            CandidateCount = 1,
+            WindowsSearched = 1,
+            SelectedName = "More information...",
+            SelectedControlType = "Hyperlink",
+            SelectedHwnd = "4321",
+            SelectedBoundingRect = "10,10,120,24",
+            SelectedRuntimeId = "42.1.9",
+            SelectedAutomationId = "more-information-link",
+            SelectedClassName = "Chrome_RenderWidgetHostHWND",
+            SelectedHelpText = "Open more information",
+            SelectedLegacyName = "More information...",
+            SelectedFrameworkId = "UIA",
+            SelectedAncestorPath = "Window:ONE Brain > Pane:Catalog > Document:Main",
+            SelectedProcessName = "msedge",
+            SelectedWindowTitle = "ONE Brain",
+            SelectedHelpTextPresent = true,
+            SelectedLegacyNamePresent = true,
+            HasInvoke = true,
+            Reason = "exact match",
+            ShadowEngineFound = true,
+            ShadowEngineVerdict = "Same",
+            ShadowAgreesWithLegacy = true,
+            ShadowEngineSelectedName = "More information...",
+            ShadowReasons = "runtime id matches"
+        };
+    }
+
+    private static WebTargetResult CreateChangedRuntimeResolution()
+    {
+        var resolution = CreateStrongResolution();
+        return new WebTargetResult
+        {
+            Found = resolution.Found,
+            CandidateCount = resolution.CandidateCount,
+            WindowsSearched = resolution.WindowsSearched,
+            SelectedName = resolution.SelectedName,
+            SelectedControlType = resolution.SelectedControlType,
+            SelectedHwnd = resolution.SelectedHwnd,
+            SelectedBoundingRect = resolution.SelectedBoundingRect,
+            SelectedRuntimeId = "42.1.10",
+            SelectedAutomationId = resolution.SelectedAutomationId,
+            SelectedClassName = resolution.SelectedClassName,
+            SelectedHelpText = resolution.SelectedHelpText,
+            SelectedLegacyName = resolution.SelectedLegacyName,
+            SelectedFrameworkId = resolution.SelectedFrameworkId,
+            SelectedAncestorPath = resolution.SelectedAncestorPath,
+            SelectedProcessName = resolution.SelectedProcessName,
+            SelectedWindowTitle = resolution.SelectedWindowTitle,
+            SelectedHelpTextPresent = resolution.SelectedHelpTextPresent,
+            SelectedLegacyNamePresent = resolution.SelectedLegacyNamePresent,
+            HasInvoke = resolution.HasInvoke,
+            Reason = resolution.Reason,
+            ShadowEngineFound = resolution.ShadowEngineFound,
+            ShadowEngineVerdict = resolution.ShadowEngineVerdict,
+            ShadowAgreesWithLegacy = resolution.ShadowAgreesWithLegacy,
+            ShadowEngineSelectedName = resolution.ShadowEngineSelectedName,
+            ShadowReasons = resolution.ShadowReasons
+        };
+    }
+
+    private static DesktopTargetObservationResult CreateStrongDesktopObservation()
+    {
+        return new DesktopTargetObservationResult
+        {
+            Found = true,
+            CandidateCount = 1,
+            Reason = "exact desktop observe match",
+            SelectedName = "Categorias",
+            SelectedControlType = "Button",
+            SelectedBoundingRect = "10,10,120,24",
+            SelectedRuntimeId = "42.7.9",
+            SelectedAutomationId = "categories-button",
+            SelectedClassName = "Button",
+            SelectedFrameworkId = "WPF",
+            SelectedAncestorPath = "Window:ONE Brain > Pane:Catalog",
+            SelectedProcessName = "explorer",
+            SelectedWindowTitle = "ONE Brain",
+            SelectedHelpTextPresent = true,
+            SelectedLegacyNamePresent = true,
+            HasInvoke = true
+        };
+    }
+
+    private sealed class FakePatternExecutor(Func<PatternExecutionRequest, PatternExecutionResult> handler) : IUiaPatternExecutor
+    {
+        public PatternExecutionResult Invoke(PatternExecutionRequest request) => handler(request);
+    }
+
+    private sealed class PassiveOwnershipMonitor : IDesktopOwnershipMonitor
+    {
+        private static readonly OwnershipSnapshot Snapshot = new(0, 0, "", DateTimeOffset.UnixEpoch);
+
+        public OwnershipSnapshot Capture() => Snapshot;
+        public bool HumanInputSince(OwnershipSnapshot baseline) => false;
+        public bool ForegroundChanged(OwnershipSnapshot baseline) => false;
+    }
+}

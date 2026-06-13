@@ -48,10 +48,20 @@ public sealed class RecipeRunner
     private static Func<IUiaPatternExecutor>? s_safeClickPatternExecutorFactoryOverride = null;
     private static Func<IDesktopOwnershipMonitor>? s_safeClickOwnershipMonitorFactoryOverride = null;
     private static Func<WebTargetResult, string, ActionResult>? s_safeClickLegacyWebActionOverride = null;
+    private static Func<SafeClickDefaultMode>? s_safeClickFsmDefaultModeOverride = null;
     private RecipeDefinition? _currentRecipe;
     private CancellationTokenSource? _stepCts;
     private readonly RecipeExecutionContext _ctx = new();
     private readonly Dictionary<string, SafeClickShadowReadiness> _safeClickShadowReadiness = new(StringComparer.OrdinalIgnoreCase);
+
+    // HITO-147 — local-first default-routing counters (reset per run; emitted as additive vars).
+    private int _safeClickDefaultFsmEnabledCount;
+    private int _safeClickDefaultFsmRoutedCount;
+    private int _safeClickDefaultFsmEligibleButNotEnabledCount;
+    private int _safeClickDefaultFsmBlockedCount;
+    private int _safeClickExplicitLegacyOptOutCount;
+    private int _safeClickDesktopExcludedFromDefaultCount;
+    private int _safeClickUnknownDispatchPathBlockedCount;
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false, string? approvalMode = null)
     {
@@ -59,6 +69,13 @@ public sealed class RecipeRunner
         _ctx.Variables.Clear();
         _ctx.Notes.Clear();
         _safeClickShadowReadiness.Clear();
+        _safeClickDefaultFsmEnabledCount = 0;
+        _safeClickDefaultFsmRoutedCount = 0;
+        _safeClickDefaultFsmEligibleButNotEnabledCount = 0;
+        _safeClickDefaultFsmBlockedCount = 0;
+        _safeClickExplicitLegacyOptOutCount = 0;
+        _safeClickDesktopExcludedFromDefaultCount = 0;
+        _safeClickUnknownDispatchPathBlockedCount = 0;
 
         var denySensitive = string.Equals(approvalMode, "deny", StringComparison.OrdinalIgnoreCase);
         var reportSensitive = string.Equals(approvalMode, "auto", StringComparison.OrdinalIgnoreCase) || denySensitive;
@@ -2262,19 +2279,38 @@ public sealed class RecipeRunner
             : !string.IsNullOrWhiteSpace(approvalMode)
                 ? approvalMode
                 : "controlled";
-        var dispatchPath = step.Args?.GetValueOrDefault("dispatchPath")
+        var dispatchPath = (step.Args?.GetValueOrDefault("dispatchPath")
             ?? step.Args?.GetValueOrDefault("dispatchpath")
-            ?? "";
+            ?? "").Trim();
 
         SetSafeClickLegacyUsageVars(prefix, usedElClick: false, usedUiaActionExecutor: false);
 
-        if (string.IsNullOrWhiteSpace(dispatchPath))
-            return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+        var defaultMode = ResolveSafeClickFsmDefaultMode();
+        InitSafeClickDefaultRouteVars(prefix, defaultMode);
 
-        if (!dispatchPath.Equals("safe-executor", StringComparison.OrdinalIgnoreCase))
+        // Explicit opt-in always wins and is unchanged from HITO-143.
+        if (dispatchPath.Equals("safe-executor", StringComparison.OrdinalIgnoreCase))
         {
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "ExplicitSafeExecutor", eligible: true, scope: "explicit-safe-executor");
+            return ExecuteSafeClickSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
+        }
+
+        // Explicit legacy opt-out: still supported, marked deprecated, no behavior change.
+        if (dispatchPath.Equals("legacy", StringComparison.OrdinalIgnoreCase))
+        {
+            _safeClickExplicitLegacyOptOutCount++;
+            SetSafeClickLegacyOptOutVars(prefix);
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "ExplicitLegacyDispatchPath", eligible: false, scope: "explicit-legacy");
+            return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+        }
+
+        // Any other explicit value is fail-closed.
+        if (!string.IsNullOrWhiteSpace(dispatchPath))
+        {
+            _safeClickUnknownDispatchPathBlockedCount++;
             SetSafeClickVars(prefix, targetText, "blocked", $"dispatchPath '{dispatchPath}' is not allowed");
-            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, "DispatchPathPolicyDenied", ["dispatchPath must be 'safe-executor' when specified"]);
+            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, "DispatchPathPolicyDenied", ["dispatchPath must be 'safe-executor' or 'legacy' when specified"]);
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "UnknownDispatchPath", eligible: false, scope: "blocked");
             TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
             sw.Stop();
             return new RecipeStepRunResult(
@@ -2285,7 +2321,106 @@ public sealed class RecipeRunner
                 sw.ElapsedMilliseconds);
         }
 
-        return ExecuteSafeClickSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
+        // No dispatchPath: the global kill-switch decides default routing.
+        var routeManifest = TryReadApprovalManifest(approvalPrefix);
+        var desktopExcluded = IsDesktopIdentitySource(routeManifest);
+        if (desktopExcluded)
+            _safeClickDesktopExcludedFromDefaultCount++;
+
+        var webRouteEligible = IsWebDefaultRouteEligible(routeManifest);
+
+        if (defaultMode != SafeClickDefaultMode.WebEligible)
+        {
+            if (webRouteEligible)
+                _safeClickDefaultFsmEligibleButNotEnabledCount++;
+
+            var legacyReason = defaultMode == SafeClickDefaultMode.Legacy ? "KillSwitchLegacy" : "KillSwitchDisabled";
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: legacyReason, eligible: webRouteEligible, scope: "legacy");
+            return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+        }
+
+        // Kill-switch is web-eligible: route strictly eligible web steps to the FSM, no silent fallback.
+        _safeClickDefaultFsmEnabledCount++;
+        if (webRouteEligible)
+        {
+            _safeClickDefaultFsmRoutedCount++;
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: true, reason: "WebEligible", eligible: true, scope: "web-uia");
+            var routedResult = ExecuteSafeClickSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
+            if (!routedResult.Success)
+            {
+                _safeClickDefaultFsmBlockedCount++;
+                _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
+            }
+
+            return routedResult;
+        }
+
+        SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: ResolveDefaultIneligibleReason(routeManifest, desktopExcluded), eligible: false, scope: "legacy");
+        return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+    }
+
+    private static SafeClickDefaultMode ResolveSafeClickFsmDefaultMode()
+    {
+        if (s_safeClickFsmDefaultModeOverride != null)
+            return s_safeClickFsmDefaultModeOverride();
+
+        return SafeClickDefaultModePolicy.Parse(
+            Environment.GetEnvironmentVariable(SafeClickDefaultModePolicy.EnvironmentVariableName));
+    }
+
+    private static bool IsDesktopIdentitySource(ApprovalManifest? manifest)
+    {
+        return manifest != null &&
+               string.Equals(manifest.IdentitySource, "uia", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsWebDefaultRouteEligible(ApprovalManifest? manifest)
+    {
+        if (manifest == null)
+            return false;
+
+        if (ValidateSafeExecutorManifest(manifest) != null)
+            return false;
+
+        return string.Equals(manifest.IdentitySource, "web-uia", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string ResolveDefaultIneligibleReason(ApprovalManifest? manifest, bool desktopExcluded)
+    {
+        if (manifest == null)
+            return "MissingManifest";
+
+        if (desktopExcluded)
+            return "DesktopExcludedFromDefault";
+
+        var validation = ValidateSafeExecutorManifest(manifest);
+        return validation?.BlockReason ?? "NotWebEligible";
+    }
+
+    private void InitSafeClickDefaultRouteVars(string prefix, SafeClickDefaultMode mode)
+    {
+        _ctx.Variables[prefix + ".fsm.defaultEnabled"] = mode == SafeClickDefaultMode.WebEligible ? "true" : "false";
+        _ctx.Variables[prefix + ".fsm.defaultMode"] = SafeClickDefaultModePolicy.ToWireValue(mode);
+        _ctx.Variables[prefix + ".fsm.routedByDefault"] = "false";
+        _ctx.Variables[prefix + ".fsm.defaultRouteReason"] = "";
+        _ctx.Variables[prefix + ".fsm.defaultRouteEligible"] = "false";
+        _ctx.Variables[prefix + ".fsm.defaultRouteScope"] = "";
+        _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "false";
+    }
+
+    private void SetSafeClickDefaultRouteVars(string prefix, bool routedByDefault, string reason, bool eligible, string scope)
+    {
+        _ctx.Variables[prefix + ".fsm.routedByDefault"] = routedByDefault ? "true" : "false";
+        _ctx.Variables[prefix + ".fsm.defaultRouteReason"] = reason;
+        _ctx.Variables[prefix + ".fsm.defaultRouteEligible"] = eligible ? "true" : "false";
+        _ctx.Variables[prefix + ".fsm.defaultRouteScope"] = scope;
+    }
+
+    private void SetSafeClickLegacyOptOutVars(string prefix)
+    {
+        _ctx.Variables[prefix + ".legacy.explicitOptOut"] = "true";
+        _ctx.Variables[prefix + ".legacy.deprecated"] = "true";
+        _ctx.Variables[prefix + ".legacy.reason"] = "ExplicitLegacyDispatchPath";
     }
 
     private RecipeStepRunResult ExecuteSafeClickLegacy(
@@ -3188,6 +3323,15 @@ public sealed class RecipeRunner
         _ctx.Variables["safeClick.migration.desktopUiaStrong"] = summary.DesktopUiaStrong.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.desktopUiaWeak"] = summary.DesktopUiaWeak.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.desktopMissingIdentity"] = summary.DesktopMissingIdentity.ToString(CultureInfo.InvariantCulture);
+
+        // HITO-147 — additive default-routing metrics (local-first).
+        _ctx.Variables["safeClick.migration.defaultFsmEnabled"] = _safeClickDefaultFsmEnabledCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultFsmRouted"] = _safeClickDefaultFsmRoutedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultFsmEligibleButNotEnabled"] = _safeClickDefaultFsmEligibleButNotEnabledCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultFsmBlocked"] = _safeClickDefaultFsmBlockedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.explicitLegacyOptOut"] = _safeClickExplicitLegacyOptOutCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopExcludedFromDefault"] = _safeClickDesktopExcludedFromDefaultCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.unknownDispatchPathBlocked"] = _safeClickUnknownDispatchPathBlockedCount.ToString(CultureInfo.InvariantCulture);
     }
 
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)

@@ -17,7 +17,10 @@ public enum SafeClickMigrationReadinessReason
     PolicyDenied = 10,
     MissingManifest = 11,
     Blocked = 12,
-    Unknown = 13
+    Unknown = 13,
+    InvokePatternUnavailable = 14,
+    RoleNotAllowed = 15,
+    NotWebUia = 16
 }
 
 public sealed record SafeClickMigrationSummary(
