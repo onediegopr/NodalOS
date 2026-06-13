@@ -73,6 +73,14 @@ public sealed class RecipeRunner
     private int _safeClickDefaultBlockedByMissingIdentityCount;
     private int _safeClickDesktopOptInRoutedCount;
     private int _safeClickDesktopOptInBlockedCount;
+    private int _safeClickDesktopDefaultFsmEnabledCount;
+    private int _safeClickDesktopDefaultFsmRoutedCount;
+    private int _safeClickDesktopDefaultEligibleButNotEnabledCount;
+    private int _safeClickDesktopDefaultBlockedCount;
+    private int _safeClickDesktopDefaultBlockedByStaleIdentityCount;
+    private int _safeClickAllEligibleModeEnabledCount;
+    private int _safeClickDefaultFsmScopeWebCount;
+    private int _safeClickDefaultFsmScopeDesktopCount;
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false, string? approvalMode = null)
     {
@@ -98,6 +106,14 @@ public sealed class RecipeRunner
         _safeClickDefaultBlockedByMissingIdentityCount = 0;
         _safeClickDesktopOptInRoutedCount = 0;
         _safeClickDesktopOptInBlockedCount = 0;
+        _safeClickDesktopDefaultFsmEnabledCount = 0;
+        _safeClickDesktopDefaultFsmRoutedCount = 0;
+        _safeClickDesktopDefaultEligibleButNotEnabledCount = 0;
+        _safeClickDesktopDefaultBlockedCount = 0;
+        _safeClickDesktopDefaultBlockedByStaleIdentityCount = 0;
+        _safeClickAllEligibleModeEnabledCount = 0;
+        _safeClickDefaultFsmScopeWebCount = 0;
+        _safeClickDefaultFsmScopeDesktopCount = 0;
 
         var denySensitive = string.Equals(approvalMode, "deny", StringComparison.OrdinalIgnoreCase);
         var reportSensitive = string.Equals(approvalMode, "auto", StringComparison.OrdinalIgnoreCase) || denySensitive;
@@ -2352,28 +2368,47 @@ public sealed class RecipeRunner
 
         // No dispatchPath: the global kill-switch decides default routing.
         var routeManifest = TryReadApprovalManifest(approvalPrefix);
-        var desktopExcluded = IsDesktopIdentitySource(routeManifest);
-        if (desktopExcluded)
-            _safeClickDesktopExcludedFromDefaultCount++;
-
+        var desktopSource = IsDesktopIdentitySource(routeManifest);
         var webRouteEligible = IsWebDefaultRouteEligible(routeManifest);
+        var desktopRouteEligible = false;
+        if (desktopSource)
+        {
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            desktopRouteEligible =
+                _safeClickShadowReadiness.TryGetValue(prefix, out var readiness) &&
+                readiness.DesktopEligibleForFsm;
+        }
 
-        if (defaultMode != SafeClickDefaultMode.WebEligible)
+        var webDefaultEnabled = defaultMode is SafeClickDefaultMode.WebEligible or SafeClickDefaultMode.AllEligible;
+        var desktopDefaultEnabled = defaultMode is SafeClickDefaultMode.DesktopEligible or SafeClickDefaultMode.AllEligible;
+        if (defaultMode == SafeClickDefaultMode.AllEligible)
+            _safeClickAllEligibleModeEnabledCount++;
+
+        if (!webDefaultEnabled && !desktopDefaultEnabled)
         {
             if (webRouteEligible)
                 _safeClickDefaultFsmEligibleButNotEnabledCount++;
+            if (desktopRouteEligible)
+                _safeClickDesktopDefaultEligibleButNotEnabledCount++;
 
             var legacyReason = defaultMode == SafeClickDefaultMode.Legacy ? "KillSwitchLegacy" : "KillSwitchDisabled";
-            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: legacyReason, eligible: webRouteEligible, scope: "legacy");
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: legacyReason, eligible: webRouteEligible || desktopRouteEligible, scope: "legacy");
+            SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: false, routedByDefault: false, eligible: desktopRouteEligible, reason: legacyReason, scope: "legacy");
             return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
         }
 
-        // Kill-switch is web-eligible: route strictly eligible web steps to the FSM, no silent fallback.
-        _safeClickDefaultFsmEnabledCount++;
-        if (webRouteEligible)
+        if (webDefaultEnabled)
+            _safeClickDefaultFsmEnabledCount++;
+        if (desktopDefaultEnabled)
+            _safeClickDesktopDefaultFsmEnabledCount++;
+
+        // Kill-switch enables web default: route strictly eligible web steps to the FSM, no silent fallback.
+        if (webDefaultEnabled && webRouteEligible)
         {
             _safeClickDefaultFsmRoutedCount++;
+            _safeClickDefaultFsmScopeWebCount++;
             SetSafeClickDefaultRouteVars(prefix, routedByDefault: true, reason: "WebEligible", eligible: true, scope: "web-uia");
+            SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: desktopDefaultEnabled, routedByDefault: false, eligible: desktopRouteEligible, reason: desktopRouteEligible ? "DesktopEligibleButWebRouteWon" : "NotDesktopEligible", scope: "web-uia");
             var runtimeStability = ReobserveRuntimeStabilityForDefaultDispatch(
                 step,
                 sw,
@@ -2410,7 +2445,68 @@ public sealed class RecipeRunner
             return routedResult;
         }
 
-        SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: ResolveDefaultIneligibleReason(routeManifest, desktopExcluded), eligible: false, scope: "legacy");
+        // Kill-switch enables desktop default: route strictly eligible desktop steps to the FSM, no silent fallback.
+        if (desktopDefaultEnabled && desktopRouteEligible)
+        {
+            _safeClickDesktopDefaultFsmRoutedCount++;
+            _safeClickDefaultFsmScopeDesktopCount++;
+            SetSafeClickDefaultRouteVars(prefix, routedByDefault: true, reason: "DesktopEligible", eligible: true, scope: "desktop-uia");
+            SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: true, routedByDefault: true, eligible: true, reason: "DesktopEligible", scope: "desktop-uia");
+            var runtimeStability = ReobserveDesktopRuntimeStabilityForDefaultDispatch(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                routeManifest,
+                out var reobservedDesktopResolution,
+                out var blockedResult);
+            SetSafeClickRuntimeStabilityVars(prefix, runtimeStability);
+            SetSafeClickDesktopRuntimeStabilityVars(prefix, runtimeStability);
+
+            if (blockedResult != null)
+            {
+                _safeClickDesktopDefaultBlockedCount++;
+                _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
+                _ctx.Variables[prefix + ".desktopFsm.blockedWithoutLegacyFallback"] = "true";
+                return blockedResult;
+            }
+
+            var routedResult = ExecuteSafeClickDesktopSafeExecutor(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                reobservedDesktopResolution,
+                routedByDefault: true);
+            if (!routedResult.Success)
+            {
+                _safeClickDesktopDefaultBlockedCount++;
+                _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
+                _ctx.Variables[prefix + ".desktopFsm.blockedWithoutLegacyFallback"] = "true";
+            }
+
+            return routedResult;
+        }
+
+        if (webRouteEligible && !webDefaultEnabled)
+            _safeClickDefaultFsmEligibleButNotEnabledCount++;
+        if (desktopRouteEligible && !desktopDefaultEnabled)
+            _safeClickDesktopDefaultEligibleButNotEnabledCount++;
+        if (desktopSource && !desktopDefaultEnabled)
+            _safeClickDesktopExcludedFromDefaultCount++;
+
+        var ineligibleReason = desktopSource
+            ? ResolveDesktopDefaultIneligibleReason(prefix, routeManifest, desktopRouteEligible, desktopDefaultEnabled)
+            : ResolveDefaultIneligibleReason(routeManifest, desktopExcluded: false);
+        var generalIneligibleReason = desktopSource && !desktopDefaultEnabled
+            ? "DesktopExcludedFromDefault"
+            : ineligibleReason;
+        SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: generalIneligibleReason, eligible: webRouteEligible || desktopRouteEligible, scope: "legacy");
+        SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: desktopDefaultEnabled, routedByDefault: false, eligible: desktopRouteEligible, reason: ineligibleReason, scope: "legacy");
         return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
     }
 
@@ -2462,6 +2558,24 @@ public sealed class RecipeRunner
 
         var validation = ValidateSafeExecutorManifest(manifest);
         return validation?.BlockReason ?? "NotWebEligible";
+    }
+
+    private string ResolveDesktopDefaultIneligibleReason(string prefix, ApprovalManifest? manifest, bool desktopEligible, bool desktopDefaultEnabled)
+    {
+        if (!desktopDefaultEnabled)
+            return desktopEligible ? "DesktopEligibleButDefaultDisabled" : "DesktopDefaultDisabled";
+
+        if (manifest == null)
+            return "MissingManifest";
+
+        var validation = ValidateSafeExecutorManifest(manifest, requiredIdentitySource: "uia");
+        if (validation != null)
+            return validation.Value.BlockReason;
+
+        if (!_safeClickShadowReadiness.TryGetValue(prefix, out var readiness))
+            return desktopEligible ? "DesktopEligible" : "DesktopNotEligible";
+
+        return readiness.DesktopEligibleForFsm ? "DesktopEligible" : readiness.Reason;
     }
 
     private SafeClickRuntimeStability ReobserveRuntimeStabilityForDefaultDispatch(
@@ -2635,9 +2749,162 @@ public sealed class RecipeRunner
             sw.ElapsedMilliseconds);
     }
 
+    private SafeClickRuntimeStability ReobserveDesktopRuntimeStabilityForDefaultDispatch(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode,
+        ApprovalManifest? manifest,
+        out DesktopTargetObservationResult? reobservedResolution,
+        out RecipeStepRunResult? blockedResult)
+    {
+        reobservedResolution = null;
+        blockedResult = null;
+        _safeClickRuntimeStabilityCheckedCount++;
+        _safeClickReobserveAttemptedCount++;
+
+        var processName = EmptyToNull(R(step.Args?.GetValueOrDefault("proc")
+            ?? step.Args?.GetValueOrDefault("processName")
+            ?? step.Process));
+        var windowTitle = EmptyToNull(R(step.Args?.GetValueOrDefault("window")
+            ?? step.Args?.GetValueOrDefault("windowTitle")
+            ?? step.Args?.GetValueOrDefault("titleContains")
+            ?? step.Window
+            ?? step.TitleContains));
+
+        try
+        {
+            reobservedResolution = ResolveTargetObserveDesktop(targetText, processName, windowTitle);
+            SetDesktopResolutionVars(prefix, reobservedResolution);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+
+            if (!reobservedResolution.Found)
+            {
+                var observedIdentity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(reobservedResolution);
+                var stability = SafeClickRuntimeStabilityEvaluator.Evaluate(
+                    manifest,
+                    observedIdentity,
+                    reobserveAttempted: true,
+                    reobserveSucceeded: false);
+                TrackRuntimeStability(stability);
+                var failureKind = MapDesktopTargetObserveFailureKind(reobservedResolution);
+                blockedResult = BlockDefaultDispatchForDesktopRuntimeStability(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    failureKind,
+                    failureKind == FailureKind.Ambiguous ? "ApprovalAmbiguous" : "ApprovalTargetNotFound",
+                    string.IsNullOrWhiteSpace(reobservedResolution.Reason) ? "desktop target not found during runtime identity re-observe" : reobservedResolution.Reason,
+                    stability);
+                return stability;
+            }
+
+            var selectedIdentity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(reobservedResolution);
+            var runtimeStability = SafeClickRuntimeStabilityEvaluator.Evaluate(
+                manifest,
+                selectedIdentity,
+                reobserveAttempted: true,
+                reobserveSucceeded: true);
+            TrackRuntimeStability(runtimeStability);
+            SetSafeClickRuntimeStabilityVars(prefix, runtimeStability);
+            SetSafeClickDesktopRuntimeStabilityVars(prefix, runtimeStability);
+
+            if (!runtimeStability.AllowsDefaultDispatch)
+            {
+                var missing = runtimeStability.StabilityVerdict == SafeClickRuntimeStabilityVerdict.Missing ||
+                              runtimeStability.ReobserveMatch == RuntimeIdentityMatch.Missing;
+                blockedResult = BlockDefaultDispatchForDesktopRuntimeStability(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    FailureKind.Stale,
+                    missing ? "ApprovalInvalidatedMissingIdentity" : "ApprovalInvalidated",
+                    missing
+                        ? "desktop runtime identity missing before default FSM dispatch"
+                        : "desktop runtime identity changed before default FSM dispatch",
+                    runtimeStability);
+            }
+
+            return runtimeStability;
+        }
+        catch (Exception ex)
+        {
+            var stability = SafeClickRuntimeStabilityEvaluator.Evaluate(
+                manifest,
+                observedIdentity: null,
+                reobserveAttempted: true,
+                reobserveSucceeded: false);
+            TrackRuntimeStability(stability);
+            blockedResult = BlockDefaultDispatchForDesktopRuntimeStability(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                FailureKind.Stale,
+                "ApprovalInvalidatedMissingIdentity",
+                $"desktop runtime identity re-observe failed: {ex.Message}",
+                stability);
+            return stability;
+        }
+    }
+
+    private RecipeStepRunResult BlockDefaultDispatchForDesktopRuntimeStability(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode,
+        FailureKind failureKind,
+        string blockReason,
+        string reason,
+        SafeClickRuntimeStability stability)
+    {
+        _safeClickDesktopDefaultBlockedByStaleIdentityCount++;
+        if (blockReason.Contains("MissingIdentity", StringComparison.OrdinalIgnoreCase) ||
+            blockReason.Contains("TargetNotFound", StringComparison.OrdinalIgnoreCase))
+        {
+            _safeClickDefaultBlockedByMissingIdentityCount++;
+        }
+        else if (blockReason.Contains("Invalidated", StringComparison.OrdinalIgnoreCase) ||
+                 failureKind == FailureKind.Stale)
+        {
+            _safeClickDefaultBlockedByStaleIdentityCount++;
+        }
+
+        SetSafeClickVars(prefix, targetText, "blocked", reason);
+        _ctx.Variables[prefix + ".method"] = "FSM safe.click";
+        SetSafeClickRuntimeStabilityVars(prefix, stability with { BlockReason = blockReason });
+        SetSafeClickDesktopRuntimeStabilityVars(prefix, stability with { BlockReason = blockReason });
+        _ctx.Variables[prefix + ".desktopFsm.blockedByStaleIdentity"] = failureKind == FailureKind.Stale ? "true" : "false";
+        _ctx.Variables[prefix + ".desktopFsm.blockedWithoutLegacyFallback"] = "true";
+        SetSafeClickFsmVars(prefix, StepState.Blocked, failureKind, blockReason, [reason]);
+        TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+        sw.Stop();
+        return new RecipeStepRunResult(
+            step.Id,
+            step.Kind,
+            false,
+            $"safe.click: {reason}",
+            sw.ElapsedMilliseconds);
+    }
+
     private void InitSafeClickDefaultRouteVars(string prefix, SafeClickDefaultMode mode)
     {
-        _ctx.Variables[prefix + ".fsm.defaultEnabled"] = mode == SafeClickDefaultMode.WebEligible ? "true" : "false";
+        _ctx.Variables[prefix + ".fsm.defaultEnabled"] =
+            mode is SafeClickDefaultMode.WebEligible or SafeClickDefaultMode.DesktopEligible or SafeClickDefaultMode.AllEligible
+                ? "true"
+                : "false";
         _ctx.Variables[prefix + ".fsm.defaultMode"] = SafeClickDefaultModePolicy.ToWireValue(mode);
         _ctx.Variables[prefix + ".fsm.routedByDefault"] = "false";
         _ctx.Variables[prefix + ".fsm.defaultRouteReason"] = "";
@@ -2655,6 +2922,17 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".desktopFsm.routedOptIn"] = "false";
         _ctx.Variables[prefix + ".desktopFsm.blockReason"] = "";
         _ctx.Variables[prefix + ".desktopFsm.verdict"] = "";
+        _ctx.Variables[prefix + ".desktopFsm.defaultEnabled"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.routedByDefault"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.defaultRouteEligible"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.defaultRouteReason"] = "";
+        _ctx.Variables[prefix + ".desktopFsm.defaultRouteScope"] = "";
+        _ctx.Variables[prefix + ".desktopFsm.blockedWithoutLegacyFallback"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.runtimeStabilityChecked"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.runtimeStabilityVerdict"] = "";
+        _ctx.Variables[prefix + ".desktopFsm.reobserveAttempted"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.reobserveSucceeded"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.blockedByStaleIdentity"] = "false";
     }
 
     private void SetSafeClickDefaultRouteVars(string prefix, bool routedByDefault, string reason, bool eligible, string scope)
@@ -2663,6 +2941,25 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsm.defaultRouteReason"] = reason;
         _ctx.Variables[prefix + ".fsm.defaultRouteEligible"] = eligible ? "true" : "false";
         _ctx.Variables[prefix + ".fsm.defaultRouteScope"] = scope;
+    }
+
+    private void SetSafeClickDesktopDefaultVars(
+        string prefix,
+        SafeClickDefaultMode mode,
+        bool defaultEnabled,
+        bool routedByDefault,
+        bool eligible,
+        string reason,
+        string scope)
+    {
+        _ctx.Variables[prefix + ".desktopFsm.defaultEnabled"] = defaultEnabled ? "true" : "false";
+        _ctx.Variables[prefix + ".desktopFsm.routedByDefault"] = routedByDefault ? "true" : "false";
+        _ctx.Variables[prefix + ".desktopFsm.defaultRouteEligible"] = eligible ? "true" : "false";
+        _ctx.Variables[prefix + ".desktopFsm.defaultRouteReason"] = reason;
+        _ctx.Variables[prefix + ".desktopFsm.defaultRouteScope"] = scope;
+        _ctx.Variables[prefix + ".desktopFsm.enabled"] = defaultEnabled ? "true" : _ctx.Variables[prefix + ".desktopFsm.enabled"];
+        _ctx.Variables[prefix + ".desktopFsm.identitySource"] = scope == "desktop-uia" ? "uia" : _ctx.Variables[prefix + ".desktopFsm.identitySource"];
+        _ctx.Variables[prefix + ".fsm.defaultMode"] = SafeClickDefaultModePolicy.ToWireValue(mode);
     }
 
     private void SetSafeClickLegacyOptOutVars(string prefix)
@@ -3150,11 +3447,15 @@ public sealed class RecipeRunner
         string targetText,
         string prefix,
         string approvalPrefix,
-        string mode)
+        string mode,
+        DesktopTargetObservationResult? preResolvedResolution = null,
+        bool routedByDefault = false)
     {
-        _safeClickDesktopOptInRoutedCount++;
+        if (!routedByDefault)
+            _safeClickDesktopOptInRoutedCount++;
         _ctx.Variables[prefix + ".desktopFsm.enabled"] = "true";
-        _ctx.Variables[prefix + ".desktopFsm.routedOptIn"] = "true";
+        _ctx.Variables[prefix + ".desktopFsm.routedOptIn"] = routedByDefault ? "false" : "true";
+        _ctx.Variables[prefix + ".desktopFsm.routedByDefault"] = routedByDefault ? "true" : "false";
         _ctx.Variables[prefix + ".desktopFsm.identitySource"] = "uia";
 
         var preflight = ClickPreflightEvaluator.Evaluate(targetText);
@@ -3169,7 +3470,8 @@ public sealed class RecipeRunner
                 mode,
                 FailureKind.PolicyDenied,
                 "PreflightBlocked",
-                preflight.Reason);
+                preflight.Reason,
+                countOptInBlock: !routedByDefault);
         }
 
         var bindingError = ValidateApprovalBinding(approvalPrefix, targetText, mode);
@@ -3184,7 +3486,8 @@ public sealed class RecipeRunner
                 mode,
                 FailureKind.PolicyDenied,
                 "LegacyApprovalBindingInvalid",
-                bindingError);
+                bindingError,
+                countOptInBlock: !routedByDefault);
         }
 
         var execAllowed = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".executionAllowedInThisHito", "false");
@@ -3199,7 +3502,8 @@ public sealed class RecipeRunner
                 mode,
                 FailureKind.PolicyDenied,
                 "ExecutionNotAllowedInThisHito",
-                "approval does not allow execution in this hito");
+                "approval does not allow execution in this hito",
+                countOptInBlock: !routedByDefault);
         }
 
         var manifest = TryReadApprovalManifest(approvalPrefix);
@@ -3215,7 +3519,8 @@ public sealed class RecipeRunner
                 mode,
                 manifestValidation.Value.FailureKind,
                 manifestValidation.Value.BlockReason,
-                manifestValidation.Value.Reason);
+                manifestValidation.Value.Reason,
+                countOptInBlock: !routedByDefault);
         }
 
         var processName = EmptyToNull(R(step.Args?.GetValueOrDefault("proc")
@@ -3229,7 +3534,7 @@ public sealed class RecipeRunner
 
         try
         {
-            var resolution = ResolveTargetObserveDesktop(targetText, processName, windowTitle);
+            var resolution = preResolvedResolution ?? ResolveTargetObserveDesktop(targetText, processName, windowTitle);
             SetDesktopResolutionVars(prefix, resolution);
             TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
 
@@ -3246,7 +3551,8 @@ public sealed class RecipeRunner
                     mode,
                     failureKind,
                     blockReason,
-                    string.IsNullOrWhiteSpace(resolution.Reason) ? "desktop target not found" : resolution.Reason);
+                    string.IsNullOrWhiteSpace(resolution.Reason) ? "desktop target not found" : resolution.Reason,
+                    countOptInBlock: !routedByDefault);
             }
 
             var surfaceDecision = ExecutorSurfacePolicy.Decide(resolution.SelectedControlType, resolution.HasInvoke);
@@ -3261,7 +3567,8 @@ public sealed class RecipeRunner
                     mode,
                     surfaceDecision.FailureKind ?? FailureKind.PolicyDenied,
                     "ExecutorSurfaceDenied",
-                    surfaceDecision.Reason);
+                    surfaceDecision.Reason,
+                    countOptInBlock: !routedByDefault);
             }
 
             var rootHwnd = ParseHandle(resolution.RootHwnd);
@@ -3278,7 +3585,8 @@ public sealed class RecipeRunner
                     mode,
                     FailureKind.PolicyDenied,
                     "DesktopRootRequired",
-                    "desktop safe-executor dispatch requires observed root hwnd");
+                    "desktop safe-executor dispatch requires observed root hwnd",
+                    countOptInBlock: !routedByDefault);
             }
 
             var contract = BuildSafeExecutorContract(manifest!, "click", out var contractReason, out var contractFailureKind);
@@ -3293,7 +3601,8 @@ public sealed class RecipeRunner
                     mode,
                     contractFailureKind,
                     "ApprovalV3StrongIdentityRequired",
-                    contractReason);
+                    contractReason,
+                    countOptInBlock: !routedByDefault);
             }
 
             var candidates = BuildDesktopSafeExecutorCandidates(prefix, resolution);
@@ -3308,7 +3617,8 @@ public sealed class RecipeRunner
                     mode,
                     FailureKind.NotFound,
                     "ApprovalTargetNotFound",
-                    "desktop safe-executor path could not build any candidates");
+                    "desktop safe-executor path could not build any candidates",
+                    countOptInBlock: !routedByDefault);
             }
 
             var expectedIdentity = contract.ExpectedIdentity ?? DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(resolution);
@@ -3323,7 +3633,8 @@ public sealed class RecipeRunner
                     mode,
                     FailureKind.PolicyDenied,
                     "ApprovalV3StrongIdentityRequired",
-                    "desktop safe-executor contract is missing expected identity");
+                    "desktop safe-executor contract is missing expected identity",
+                    countOptInBlock: !routedByDefault);
             }
 
             contract = contract with { ExpectedIdentity = expectedIdentity };
@@ -3369,7 +3680,8 @@ public sealed class RecipeRunner
                     sw.ElapsedMilliseconds);
             }
 
-            _safeClickDesktopOptInBlockedCount++;
+            if (!routedByDefault)
+                _safeClickDesktopOptInBlockedCount++;
             _ctx.Variables[prefix + ".desktopFsm.blockReason"] = fsmResult.BlockReason;
             _ctx.Variables[prefix + ".desktopFsm.verdict"] = fsmResult.FinalState.ToString();
             _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
@@ -3394,7 +3706,8 @@ public sealed class RecipeRunner
                 mode,
                 FailureKind.Unverified,
                 "SafeExecutorError",
-                $"desktop safe-executor path failed: {ex.Message}");
+                $"desktop safe-executor path failed: {ex.Message}",
+                countOptInBlock: !routedByDefault);
         }
     }
 
@@ -3407,13 +3720,16 @@ public sealed class RecipeRunner
         string mode,
         FailureKind failureKind,
         string blockReason,
-        string reason)
+        string reason,
+        bool countOptInBlock = true)
     {
-        _safeClickDesktopOptInBlockedCount++;
+        if (countOptInBlock)
+            _safeClickDesktopOptInBlockedCount++;
         _ctx.Variables[prefix + ".desktopFsm.eligible"] = "false";
         _ctx.Variables[prefix + ".desktopFsm.blockReason"] = blockReason;
         _ctx.Variables[prefix + ".desktopFsm.verdict"] = "Blocked";
         _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
+        _ctx.Variables[prefix + ".desktopFsm.blockedWithoutLegacyFallback"] = "true";
         SetSafeClickVars(prefix, targetText, "blocked", reason);
         _ctx.Variables[prefix + ".method"] = "FSM safe.click";
         SetSafeClickFsmVars(prefix, StepState.Blocked, failureKind, blockReason, [reason]);
@@ -3889,6 +4205,16 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".runtimeStability.blockReason"] = stability.BlockReason ?? "";
     }
 
+    private void SetSafeClickDesktopRuntimeStabilityVars(string prefix, SafeClickRuntimeStability stability)
+    {
+        _ctx.Variables[prefix + ".desktopFsm.runtimeStabilityChecked"] = stability.ReobserveAttempted ? "true" : "false";
+        _ctx.Variables[prefix + ".desktopFsm.runtimeStabilityVerdict"] = stability.StabilityVerdict.ToString();
+        _ctx.Variables[prefix + ".desktopFsm.reobserveAttempted"] = stability.ReobserveAttempted ? "true" : "false";
+        _ctx.Variables[prefix + ".desktopFsm.reobserveSucceeded"] = stability.ReobserveSucceeded ? "true" : "false";
+        _ctx.Variables[prefix + ".desktopFsm.blockedByStaleIdentity"] =
+            stability.AllowsDefaultDispatch ? "false" : "true";
+    }
+
     private void TrackRuntimeStability(SafeClickRuntimeStability stability)
     {
         if (stability.StabilityVerdict is SafeClickRuntimeStabilityVerdict.ReobservedStable or SafeClickRuntimeStabilityVerdict.Stable)
@@ -3966,6 +4292,16 @@ public sealed class RecipeRunner
         _ctx.Variables["safeClick.migration.desktopRootAvailable"] = summary.DesktopRootAvailable.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.desktopOptInRouted"] = _safeClickDesktopOptInRoutedCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.desktopOptInBlocked"] = _safeClickDesktopOptInBlockedCount.ToString(CultureInfo.InvariantCulture);
+
+        // HITO-151 — desktop eligible-only default routing metrics.
+        _ctx.Variables["safeClick.migration.desktopDefaultFsmEnabled"] = _safeClickDesktopDefaultFsmEnabledCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopDefaultFsmRouted"] = _safeClickDesktopDefaultFsmRoutedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopDefaultEligibleButNotEnabled"] = _safeClickDesktopDefaultEligibleButNotEnabledCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopDefaultBlocked"] = _safeClickDesktopDefaultBlockedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopDefaultBlockedByStaleIdentity"] = _safeClickDesktopDefaultBlockedByStaleIdentityCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.allEligibleModeEnabled"] = _safeClickAllEligibleModeEnabledCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultFsmScopeWeb"] = _safeClickDefaultFsmScopeWebCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultFsmScopeDesktop"] = _safeClickDefaultFsmScopeDesktopCount.ToString(CultureInfo.InvariantCulture);
     }
 
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)

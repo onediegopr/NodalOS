@@ -46,6 +46,22 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
+    public void DefaultModeAllEligibleRoutesEligibleWebToFsm()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.AllEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("all-eligible", result.Variables["safeClick.fsm.defaultMode"]);
+        Assert.AreEqual("web-uia", result.Variables["safeClick.fsm.defaultRouteScope"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.defaultFsmScopeWeb"]);
+    }
+
+    [TestMethod]
     public void DefaultModeWebEligibleKeepsIneligibleWebOnLegacy()
     {
         var result = RunRouting(

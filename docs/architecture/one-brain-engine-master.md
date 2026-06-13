@@ -645,7 +645,16 @@ H150 agrega readiness y metricas desktop:
 * `safeClick.fsmReady.desktopRootAvailable`
 * `safeClick.migration.desktop*`
 
-No hay default desktop, no se retira legacy, no se retira `el.Click` y no se retira `UiaActionExecutor`.
+H151 habilita desktop default solamente bajo kill-switch:
+
+```text
+ONEBRAIN_SAFE_CLICK_FSM_DEFAULT=desktop-eligible
+ONEBRAIN_SAFE_CLICK_FSM_DEFAULT=all-eligible
+```
+
+Desktop default exige `DesktopEligibleForFsm`, re-observe de RuntimeId antes del dispatch y bloqueo fail-closed si la identidad cambia o falta.
+
+No hay flip general, no se retira legacy, no se retira `el.Click` y no se retira `UiaActionExecutor`.
 
 ---
 
@@ -703,6 +712,14 @@ Campos principales:
 * DesktopRootAvailable
 * DesktopOptInRouted
 * DesktopOptInBlocked
+* DesktopDefaultFsmEnabled
+* DesktopDefaultFsmRouted
+* DesktopDefaultEligibleButNotEnabled
+* DesktopDefaultBlocked
+* DesktopDefaultBlockedByStaleIdentity
+* AllEligibleModeEnabled
+* DefaultFsmScopeWeb
+* DefaultFsmScopeDesktop
 
 Objetivo:
 
@@ -987,8 +1004,9 @@ Siguientes pasos:
 * HITO-147 — Gradual Enablement / FSM default for eligible steps **(implementado: web eligible-only, kill-switch `ONEBRAIN_SAFE_CLICK_FSM_DEFAULT`, predicado endurecido con InvokePattern + rol allowlisted + web-uia, opt-out `dispatchPath=legacy` deprecated, sin fallback silencioso; NO retira legacy; desktop excluido del default)**
 * HITO-148 — Web Stabilization + RuntimeId Hardening **(implementado: re-observe web antes del default dispatch, RuntimeId stability, bloqueo stale fail-closed, sin desktop default)**
 * HITO-149/150 — Desktop FSM Dispatch Path + Desktop Gradual Readiness **(implementado: desktop `dispatchPath=safe-executor` opt-in con source `uia`, readiness y metricas desktop; NO default desktop; NO retiro legacy)**
-* HITO-151 — Legacy Deprecation o Desktop Gradual Enablement, segun metricas
-* HITO-152 — Legacy retirement safe.click, si metricas y auditoria lo permiten
+* HITO-151 — Desktop Gradual Enablement eligible-only **(implementado: kill-switch `desktop-eligible` y `all-eligible`, desktop default solo eligible, re-observe desktop antes del dispatch, sin fallback silencioso; NO retira legacy)**
+* HITO-152 — Legacy Deprecation
+* HITO-153 — Legacy retirement safe.click, si metricas y auditoria lo permiten
 
 ### Fase siguiente: percepción robusta
 

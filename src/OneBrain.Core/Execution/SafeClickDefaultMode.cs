@@ -14,7 +14,13 @@ public enum SafeClickDefaultMode
     WebEligible = 1,
 
     /// <summary>safe.click without dispatchPath is forced to legacy (explicit revert).</summary>
-    Legacy = 2
+    Legacy = 2,
+
+    /// <summary>safe.click without dispatchPath may use the FSM only when strictly desktop-eligible.</summary>
+    DesktopEligible = 3,
+
+    /// <summary>safe.click without dispatchPath may use the FSM when strictly web-eligible or desktop-eligible.</summary>
+    AllEligible = 4
 }
 
 /// <summary>
@@ -31,6 +37,8 @@ public static class SafeClickDefaultModePolicy
         return value switch
         {
             "web-eligible" => SafeClickDefaultMode.WebEligible,
+            "desktop-eligible" => SafeClickDefaultMode.DesktopEligible,
+            "all-eligible" => SafeClickDefaultMode.AllEligible,
             "legacy" => SafeClickDefaultMode.Legacy,
             "disabled" => SafeClickDefaultMode.Disabled,
             _ => SafeClickDefaultMode.Disabled
@@ -42,6 +50,8 @@ public static class SafeClickDefaultModePolicy
         return mode switch
         {
             SafeClickDefaultMode.WebEligible => "web-eligible",
+            SafeClickDefaultMode.DesktopEligible => "desktop-eligible",
+            SafeClickDefaultMode.AllEligible => "all-eligible",
             SafeClickDefaultMode.Legacy => "legacy",
             _ => "disabled"
         };

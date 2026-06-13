@@ -264,6 +264,326 @@ public sealed class SafeClickDesktopFsmOptInTests
     }
 
     [TestMethod]
+    public void DefaultModeDisabledKeepsDesktopLegacy()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.Disabled,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("disabled", result.Variables["safeClick.fsm.defaultMode"]);
+        Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.routedByDefault"]);
+    }
+
+    [TestMethod]
+    public void DefaultModeLegacyKeepsDesktopLegacy()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.Legacy,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("legacy", result.Variables["safeClick.fsm.defaultMode"]);
+        Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.routedByDefault"]);
+    }
+
+    [TestMethod]
+    public void DefaultModeWebEligibleDoesNotRouteDesktop()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("web-eligible", result.Variables["safeClick.fsm.defaultMode"]);
+        Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.routedByDefault"]);
+        Assert.AreEqual("DesktopEligibleButDefaultDisabled", result.Variables["safeClick.desktopFsm.defaultRouteReason"]);
+    }
+
+    [TestMethod]
+    public void DefaultModeDesktopEligibleRoutesEligibleDesktopToFsm()
+    {
+        var identity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(CreateStrongDesktopObservation())!;
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: new FakePatternExecutor(_ => SuccessfulDispatch(identity)),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("true", result.Variables["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("desktop-uia", result.Variables["safeClick.fsm.defaultRouteScope"]);
+        Assert.AreEqual("true", result.Variables["safeClick.desktopFsm.routedByDefault"]);
+        Assert.AreEqual("DesktopEligible", result.Variables["safeClick.desktopFsm.defaultRouteReason"]);
+    }
+
+    [TestMethod]
+    public void DefaultModeDesktopEligibleKeepsIneligibleDesktopLegacy()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateWeakDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
+        Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.defaultRouteEligible"]);
+    }
+
+    [TestMethod]
+    public void DefaultModeAllEligibleRoutesEligibleDesktopToFsm()
+    {
+        var identity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(CreateStrongDesktopObservation())!;
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.AllEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: new FakePatternExecutor(_ => SuccessfulDispatch(identity)),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("all-eligible", result.Variables!["safeClick.fsm.defaultMode"]);
+        Assert.AreEqual("desktop-uia", result.Variables["safeClick.fsm.defaultRouteScope"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.allEligibleModeEnabled"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultRequiresApprovalV3()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopApprovalV2Recipe(dispatchPath: null)));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.defaultRouteEligible"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultRequiresStrongIdentity()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateWeakDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.fsmReady.desktopEligible"]);
+        Assert.AreEqual("UIA safe.click", result.Variables["safeClick.method"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultRequiresRuntimeId()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateWeakDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.fsmReady.hasRuntimeId"]);
+        Assert.AreEqual("false", result.Variables["safeClick.desktopFsm.defaultRouteEligible"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultRequiresSameRuntime()
+    {
+        var result = RunDesktopDefaultChangedRuntime();
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(FailureKind.Stale.ToString(), result.Variables!["safeClick.fsm.failureKind"]);
+        Assert.AreEqual("ApprovalInvalidated", result.Variables["safeClick.fsm.blockReason"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultRequiresInvokePattern()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation() with { HasInvoke = false },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.fsmReady.desktopEligible"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.desktopInvokePatternAvailable"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultRequiresAllowedRole()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation() with { SelectedControlType = "Edit" },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.fsmReady.desktopEligible"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.desktopRoleAllowed"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultRequiresRootHwnd()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation() with { RootHwnd = "" },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.fsmReady.desktopEligible"]);
+        Assert.AreEqual("0", result.Variables["safeClick.migration.desktopRootAvailable"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultDoesNotAcceptLikelySame()
+    {
+        var result = RunDesktopDefaultMissingRuntime();
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Missing", result.Variables!["safeClick.desktopFsm.runtimeStabilityVerdict"]);
+        Assert.AreEqual("true", result.Variables["safeClick.fsm.blockedWithoutLegacyFallback"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultReobservesBeforeDispatch()
+    {
+        var calls = 0;
+        var identity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(CreateStrongDesktopObservation())!;
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) =>
+            {
+                calls++;
+                return CreateStrongDesktopObservation();
+            },
+            executor: new FakePatternExecutor(_ => SuccessfulDispatch(identity)),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(2, calls);
+        Assert.AreEqual("true", result.Variables!["safeClick.desktopFsm.reobserveAttempted"]);
+        Assert.AreEqual("ReobservedStable", result.Variables["safeClick.desktopFsm.runtimeStabilityVerdict"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultChangedRuntimeBlocksBeforeDispatch()
+    {
+        var result = RunDesktopDefaultChangedRuntime();
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("ReobservedChanged", result.Variables!["safeClick.desktopFsm.runtimeStabilityVerdict"]);
+        Assert.AreEqual("true", result.Variables["safeClick.desktopFsm.blockedByStaleIdentity"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultMissingRuntimeBlocksBeforeDispatch()
+    {
+        var result = RunDesktopDefaultMissingRuntime();
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("Missing", result.Variables!["safeClick.desktopFsm.runtimeStabilityVerdict"]);
+        Assert.AreEqual("ApprovalInvalidatedMissingIdentity", result.Variables["safeClick.fsm.blockReason"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultBlockDoesNotFallbackToLegacy()
+    {
+        var result = RunDesktopDefaultChangedRuntime();
+
+        Assert.AreEqual("FSM safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("true", result.Variables["safeClick.desktopFsm.blockedWithoutLegacyFallback"]);
+        Assert.AreEqual("false", result.Variables["safeClick.legacy.usedUnsafeFallback"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultBlockDoesNotCallElClick()
+    {
+        var result = RunDesktopDefaultChangedRuntime();
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedElClick"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultBlockDoesNotCallUiaActionExecutor()
+    {
+        var result = RunDesktopDefaultChangedRuntime();
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedUiaActionExecutor"]);
+    }
+
+    [TestMethod]
+    public void DesktopDefaultVariablesWritten()
+    {
+        var identity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(CreateStrongDesktopObservation())!;
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: new FakePatternExecutor(_ => SuccessfulDispatch(identity)),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.IsTrue(result.Variables!.ContainsKey("safeClick.desktopFsm.defaultEnabled"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.desktopFsm.routedByDefault"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.desktopFsm.defaultRouteEligible"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.desktopFsm.defaultRouteReason"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.desktopFsm.defaultRouteScope"));
+        Assert.IsTrue(result.Variables.ContainsKey("safeClick.desktopFsm.runtimeStabilityChecked"));
+    }
+
+    [TestMethod]
+    public void DesktopDefaultMetricsWritten()
+    {
+        var identity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(CreateStrongDesktopObservation())!;
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: new FakePatternExecutor(_ => SuccessfulDispatch(identity)),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+
+        Assert.AreEqual("1", result.Variables!["safeClick.migration.desktopDefaultFsmEnabled"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.desktopDefaultFsmRouted"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.defaultFsmScopeDesktop"]);
+    }
+
+    [TestMethod]
+    public void DispatchPathSafeExecutorDesktopStillWorks()
+    {
+        var result = RunSuccessfulDesktop();
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("true", result.Variables!["safeClick.desktopFsm.routedOptIn"]);
+    }
+
+    [TestMethod]
+    public void DispatchPathLegacyStillWorks()
+    {
+        var result = RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) => CreateStrongDesktopObservation(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: "legacy")));
+
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("true", result.Variables["safeClick.legacy.explicitOptOut"]);
+    }
+
+    [TestMethod]
+    public void UnknownDispatchPathStillPolicyDenied()
+    {
+        var result = new RecipeRunner().Run(BuildDesktopApprovalV2Recipe(dispatchPath: "typo"));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(FailureKind.PolicyDenied.ToString(), result.Variables!["safeClick.fsm.failureKind"]);
+    }
+
+    [TestMethod]
     public void DesktopMetricsWritten()
     {
         var result = RunDesktopSafeExecutor(
@@ -347,6 +667,34 @@ public sealed class SafeClickDesktopFsmOptInTests
             },
             executor: ThrowingExecutor(),
             () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: "safe-executor")));
+    }
+
+    private static RecipeRunResult RunDesktopDefaultChangedRuntime()
+    {
+        var call = 0;
+        return RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) =>
+            {
+                call++;
+                return call == 1 ? CreateStrongDesktopObservation() : CreateChangedDesktopObservation();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
+    }
+
+    private static RecipeRunResult RunDesktopDefaultMissingRuntime()
+    {
+        var call = 0;
+        return RunDesktopSafeExecutor(
+            SafeClickDefaultMode.DesktopEligible,
+            resolver: (_, _, _) =>
+            {
+                call++;
+                return call == 1 ? CreateStrongDesktopObservation() : CreateWeakDesktopObservation();
+            },
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildDesktopRecipe(dispatchPath: null)));
     }
 
     private static RecipeDefinition BuildDesktopRecipe(string? dispatchPath)
@@ -447,6 +795,15 @@ public sealed class SafeClickDesktopFsmOptInTests
         IUiaPatternExecutor executor,
         Func<T> action)
     {
+        return RunDesktopSafeExecutor(SafeClickDefaultMode.WebEligible, resolver, executor, action);
+    }
+
+    private static T RunDesktopSafeExecutor<T>(
+        SafeClickDefaultMode defaultMode,
+        Func<string, string?, string?, DesktopTargetObservationResult> resolver,
+        IUiaPatternExecutor executor,
+        Func<T> action)
+    {
         var desktopField = GetField("s_targetObserveDesktopOverride");
         var executorFactoryField = GetField("s_safeClickPatternExecutorFactoryOverride");
         var ownershipFactoryField = GetField("s_safeClickOwnershipMonitorFactoryOverride");
@@ -460,7 +817,7 @@ public sealed class SafeClickDesktopFsmOptInTests
         desktopField.SetValue(null, resolver);
         executorFactoryField.SetValue(null, (Func<IUiaPatternExecutor>)(() => executor));
         ownershipFactoryField.SetValue(null, (Func<IDesktopOwnershipMonitor>)(() => new PassiveOwnershipMonitor()));
-        modeField.SetValue(null, (Func<SafeClickDefaultMode>)(() => SafeClickDefaultMode.WebEligible));
+        modeField.SetValue(null, (Func<SafeClickDefaultMode>)(() => defaultMode));
 
         try
         {

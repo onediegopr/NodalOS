@@ -57,7 +57,15 @@ public sealed record SafeClickMigrationMetrics(
     int DesktopRoleAllowed = 0,
     int DesktopRootAvailable = 0,
     int DesktopOptInRouted = 0,
-    int DesktopOptInBlocked = 0);
+    int DesktopOptInBlocked = 0,
+    int DesktopDefaultFsmEnabled = 0,
+    int DesktopDefaultFsmRouted = 0,
+    int DesktopDefaultEligibleButNotEnabled = 0,
+    int DesktopDefaultBlocked = 0,
+    int DesktopDefaultBlockedByStaleIdentity = 0,
+    int AllEligibleModeEnabled = 0,
+    int DefaultFsmScopeWeb = 0,
+    int DefaultFsmScopeDesktop = 0);
 
 public sealed record SafeClickShadowReadiness(
     bool Success,
