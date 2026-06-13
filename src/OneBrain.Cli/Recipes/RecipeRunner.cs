@@ -46,6 +46,7 @@ public sealed class RecipeRunner
     private static Func<IntPtr, string, string, int, WebTargetResult>? s_targetObserveResolverOverride = null;
     private static Func<string, string?, string?, DesktopTargetObservationResult>? s_targetObserveDesktopOverride = null;
     private static Func<IUiaPatternExecutor>? s_safeClickPatternExecutorFactoryOverride = null;
+    private static Func<IUiaReadExecutor>? s_safeReadExecutorFactoryOverride = null;
     private static Func<IDesktopOwnershipMonitor>? s_safeClickOwnershipMonitorFactoryOverride = null;
     private static Func<WebTargetResult, string, ActionResult>? s_safeClickLegacyWebActionOverride = null;
     private static Func<SafeClickDefaultMode>? s_safeClickFsmDefaultModeOverride = null;
@@ -382,6 +383,7 @@ public sealed class RecipeRunner
                 "target.observe"          => ExecuteTargetObserve(step, sw),
                 "target.observe.desktop"  => ExecuteTargetObserveDesktop(step, sw),
                 "approval.manifest"       => ExecuteApprovalManifest(step, sw),
+                "safe.read"               => ExecuteSafeRead(step, sw),
                 "safe.click"              => ExecuteSafeClick(step, sw),
                 "diagnose.msaa"           => ExecuteDiagnoseMsaa(step, sw),
                 _ => new RecipeStepRunResult(step.Id, step.Kind, false, $"Unsupported step kind: {step.Kind}", sw.ElapsedMilliseconds)
@@ -2339,6 +2341,129 @@ public sealed class RecipeRunner
             $"Approval manifest: {manifest.Title} → blocked={manifest.Blocked}, executable={manifest.ExecutionAllowedInThisHito}", sw.ElapsedMilliseconds, manifest);
     }
 
+    private RecipeStepRunResult ExecuteSafeRead(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var targetText = step.Args?.GetValueOrDefault("targettext")
+            ?? step.Args?.GetValueOrDefault("target")
+            ?? "";
+        if (string.IsNullOrWhiteSpace(targetText))
+            return Fail(step, sw, "safe.read requires 'targetText' or 'target'.");
+
+        var prefix = step.SaveAs ?? "safeRead";
+        var approvalPrefix = step.Args?.GetValueOrDefault("approvalprefix") ?? "approval";
+        var manifest = TryReadApprovalManifest(approvalPrefix);
+        var manifestValidation = ValidateSafeExecutorManifest(manifest, requiredIdentitySource: "");
+        if (manifestValidation != null)
+        {
+            SetSafeReadVars(prefix, success: false, "", "", manifestValidation.Value.FailureKind, manifestValidation.Value.Reason);
+            SetSafeReadEvidenceVars(prefix, StepState.Blocked, manifestValidation.Value.FailureKind, manifestValidation.Value.BlockReason, [manifestValidation.Value.Reason]);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.read: {manifestValidation.Value.Reason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var contract = BuildSafeExecutorContract(manifest!, "read", out var contractReason, out var contractFailureKind);
+        if (contract == null)
+        {
+            SetSafeReadVars(prefix, success: false, "", "", contractFailureKind, contractReason);
+            SetSafeReadEvidenceVars(prefix, StepState.Blocked, contractFailureKind, "ApprovalV3StrongIdentityRequired", [contractReason]);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.read: {contractReason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var contractValidation = new ContractValidator().Validate(contract);
+        if (!contractValidation.IsValid)
+        {
+            var reason = contractValidation.Reasons.Count == 0
+                ? "safe.read contract invalid"
+                : string.Join(" | ", contractValidation.Reasons);
+            SetSafeReadVars(prefix, success: false, "", "", contractValidation.FailureKind, reason);
+            SetSafeReadEvidenceVars(prefix, StepState.Blocked, contractValidation.FailureKind, "ContractInvalid", contractValidation.Reasons);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.read: {reason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var candidates = contract.ExpectedIdentity == null
+            ? Array.Empty<ElementIdentity>()
+            : new[] { contract.ExpectedIdentity };
+        var binding = new ApprovalBindingValidator().Validate(
+            contract.ApprovalRef!,
+            contract.ExpectedIdentity!,
+            candidates,
+            reversible: true);
+        if (!binding.Success)
+        {
+            var reason = binding.Reasons.Count == 0
+                ? binding.BlockReason
+                : string.Join(" | ", binding.Reasons);
+            SetSafeReadVars(prefix, success: false, "", "", binding.FailureKind, reason);
+            SetSafeReadEvidenceVars(prefix, StepState.Blocked, binding.FailureKind, binding.BlockReason, binding.Reasons);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.read: {reason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var rootHwnd = ParseHandle(_ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.rootHwnd", ""));
+        var readExecutor = s_safeReadExecutorFactoryOverride?.Invoke() ?? new UiaReadExecutor();
+        var readResult = readExecutor.Read(new PatternReadRequest(
+            ActionKind: "read",
+            TargetRef: targetText,
+            ExpectedTargetName: contract.ExpectedIdentity?.Name ?? targetText,
+            ProcessName: contract.ExpectedIdentity?.ProcessName,
+            WindowTitleContains: contract.ExpectedIdentity?.WindowTitle,
+            Selector: contract.Selector!,
+            ExpectedIdentity: contract.ExpectedIdentity!,
+            RootHwnd: rootHwnd,
+            ReadMode: step.Args?.GetValueOrDefault("readMode") ?? ""));
+
+        var verification = new SafeReadStepVerifier().Verify(contract, readResult);
+        var ledger = BuildSafeReadLedger(contract, binding, readResult, verification);
+        SetSafeReadEvidenceVars(prefix, ledger, readResult, verification);
+
+        if (!readResult.Success || !verification.Success)
+        {
+            var failureKind = readResult.FailureKind ?? verification.FailureKind ?? FailureKind.Unverified;
+            var reason = readResult.Reasons.Concat(verification.Reasons).LastOrDefault()
+                ?? "safe.read failed";
+            SetSafeReadVars(prefix, success: false, "", readResult.PatternUsed, failureKind, reason, readResult, verification);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.read: {reason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        SetSafeReadVars(prefix, success: true, readResult.Value, readResult.PatternUsed, null, "", readResult, verification);
+        sw.Stop();
+        return new RecipeStepRunResult(
+            step.Id,
+            step.Kind,
+            true,
+            "safe.read: read completed via UIA read-only executor",
+            sw.ElapsedMilliseconds,
+            readResult.Value);
+    }
+
     private RecipeStepRunResult ExecuteSafeClick(RecipeStepDefinition step, Stopwatch sw)
     {
         var targetText = step.Args?.GetValueOrDefault("targettext") ?? "";
@@ -4237,12 +4362,15 @@ public sealed class RecipeRunner
             string.IsNullOrWhiteSpace(manifest.ApprovedIdentityDigest) ||
             manifest.ApprovedSelector == null ||
             string.IsNullOrWhiteSpace(manifest.IdentityBindingHash) ||
-            !string.Equals(manifest.IdentitySource, requiredIdentitySource, StringComparison.OrdinalIgnoreCase))
+            (!string.IsNullOrWhiteSpace(requiredIdentitySource) &&
+             !string.Equals(manifest.IdentitySource, requiredIdentitySource, StringComparison.OrdinalIgnoreCase)))
         {
             return (
                 FailureKind.PolicyDenied,
                 "ApprovalV3StrongIdentityRequired",
-                $"safe-executor dispatch requires approval manifest v3 with strong {requiredIdentitySource} identity");
+                string.IsNullOrWhiteSpace(requiredIdentitySource)
+                    ? "safe-executor dispatch requires approval manifest v3 with strong identity"
+                    : $"safe-executor dispatch requires approval manifest v3 with strong {requiredIdentitySource} identity");
         }
 
         if (manifest.ApprovedSelector.ExpectedIdentity == null || !manifest.ApprovedSelector.ExpectedIdentity.IsStrong)
@@ -4275,18 +4403,21 @@ public sealed class RecipeRunner
 
         reason = "";
         failureKind = FailureKind.PolicyDenied;
+        var normalizedActionKind = string.IsNullOrWhiteSpace(actionKind) ? "click" : actionKind.Trim().ToLowerInvariant();
+        var isRead = string.Equals(normalizedActionKind, "read", StringComparison.OrdinalIgnoreCase);
+
         return new RecipeSafetyContract(
             SchemaVersion: 1,
-            ContractId: $"safe-click-{manifest.IdentityBindingHash}",
-            ActionKind: string.IsNullOrWhiteSpace(actionKind) ? "click" : actionKind,
+            ContractId: isRead ? $"safe-read-{manifest.IdentityBindingHash}" : $"safe-click-{manifest.IdentityBindingHash}",
+            ActionKind: normalizedActionKind,
             ExpectedIdentity: expectedIdentity,
             Selector: selector,
             WindowConstraints: new ExecutionWindowConstraints(
                 LocalPilotOnly: false,
                 ExternalNavigationBlocked: true),
-            Reversible: false,
+            Reversible: isRead,
             MaxActions: 1,
-            ActionCeiling: ActionCeiling.FullActionWithPreflight,
+            ActionCeiling: isRead ? ActionCeiling.ReadOnly : ActionCeiling.FullActionWithPreflight,
             Provenance: Provenance.Uia,
             TrustLevel: TrustLevel.ProfileVerified,
             ApprovalRef: binding);
@@ -4323,6 +4454,158 @@ public sealed class RecipeRunner
         return long.TryParse(rawHandle, out var handle)
             ? new IntPtr(handle)
             : null;
+    }
+
+    private void SetSafeReadVars(
+        string prefix,
+        bool success,
+        string value,
+        string patternUsed,
+        FailureKind? failureKind,
+        string reason,
+        PatternReadResult? readResult = null,
+        StepVerificationResult? verification = null)
+    {
+        _ctx.Variables[prefix + ".success"] = success ? "true" : "false";
+        _ctx.Variables[prefix + ".value"] = value ?? "";
+        _ctx.Variables[prefix + ".patternUsed"] = patternUsed ?? "";
+        _ctx.Variables[prefix + ".failureKind"] = failureKind?.ToString() ?? "";
+        _ctx.Variables[prefix + ".reason"] = reason ?? "";
+        _ctx.Variables[prefix + ".identity.verdict"] =
+            verification?.MatchVerdict ??
+            readResult?.InvokeTimeIdentityVerdict ??
+            "";
+        _ctx.Variables[prefix + ".identity.expectedDigest"] =
+            readResult?.ExpectedIdentityDigest ?? "";
+        _ctx.Variables[prefix + ".identity.observedDigest"] =
+            readResult?.ObservedIdentityDigest ?? "";
+    }
+
+    private void SetSafeReadEvidenceVars(
+        string prefix,
+        StepState finalState,
+        FailureKind? failureKind,
+        string blockReason,
+        IReadOnlyList<string> reasons)
+    {
+        var ledger = BuildPreFsmLedger(finalState, failureKind, blockReason ?? "", reasons);
+        _ctx.Variables[prefix + ".evidence.transitionCount"] = ledger.Count.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables[prefix + ".evidence.ledgerJson"] = JsonSerializer.Serialize(ledger);
+    }
+
+    private void SetSafeReadEvidenceVars(
+        string prefix,
+        EvidenceLedger ledger,
+        PatternReadResult readResult,
+        StepVerificationResult verification)
+    {
+        _ctx.Variables[prefix + ".evidence.transitionCount"] = ledger.Entries.Count.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables[prefix + ".evidence.ledgerJson"] = JsonSerializer.Serialize(ledger.Entries);
+        _ctx.Variables[prefix + ".identity.verdict"] = verification.MatchVerdict;
+        _ctx.Variables[prefix + ".identity.expectedDigest"] = readResult.ExpectedIdentityDigest;
+        _ctx.Variables[prefix + ".identity.observedDigest"] = readResult.ObservedIdentityDigest;
+    }
+
+    private static EvidenceLedger BuildSafeReadLedger(
+        RecipeSafetyContract contract,
+        ApprovalBindingResult binding,
+        PatternReadResult readResult,
+        StepVerificationResult verification)
+    {
+        var ledger = new EvidenceLedger();
+        ledger.Append(
+            occurredAtUtc: DateTimeOffset.UtcNow,
+            fromState: StepState.Created,
+            toState: StepState.Validated,
+            @event: StepTransition.ContractValid,
+            failureKind: null,
+            blockReason: null,
+            contractId: contract.ContractId,
+            approvalDecisionId: contract.ApprovalRef?.ApprovalDecisionId,
+            approvedIdentityDigest: contract.ApprovalRef?.ApprovedIdentityDigest,
+            observedIdentityDigest: null,
+            matchVerdict: null,
+            ownershipSnapshotHash: null,
+            reasons: ["contract valid"]);
+        ledger.Append(
+            occurredAtUtc: DateTimeOffset.UtcNow,
+            fromState: StepState.Validated,
+            toState: StepState.Bound,
+            @event: StepTransition.BindingSame,
+            failureKind: null,
+            blockReason: null,
+            contractId: contract.ContractId,
+            approvalDecisionId: contract.ApprovalRef?.ApprovalDecisionId,
+            approvedIdentityDigest: contract.ApprovalRef?.ApprovedIdentityDigest,
+            observedIdentityDigest: binding.ObservedIdentityDigest,
+            matchVerdict: binding.MatchVerdict,
+            ownershipSnapshotHash: null,
+            reasons: binding.Reasons);
+        ledger.Append(
+            occurredAtUtc: DateTimeOffset.UtcNow,
+            fromState: StepState.Bound,
+            toState: StepState.Executing,
+            @event: StepTransition.DispatchStarted,
+            failureKind: null,
+            blockReason: null,
+            contractId: contract.ContractId,
+            approvalDecisionId: contract.ApprovalRef?.ApprovalDecisionId,
+            approvedIdentityDigest: contract.ApprovalRef?.ApprovedIdentityDigest,
+            observedIdentityDigest: binding.ObservedIdentityDigest,
+            matchVerdict: binding.MatchVerdict,
+            ownershipSnapshotHash: null,
+            reasons: ["read dispatch started"]);
+
+        if (!readResult.Success)
+        {
+            ledger.Append(
+                occurredAtUtc: DateTimeOffset.UtcNow,
+                fromState: StepState.Executing,
+                toState: StepState.Failed,
+                @event: StepTransition.ExecutorError,
+                failureKind: readResult.FailureKind ?? FailureKind.Unverified,
+                blockReason: "ExecutorError",
+                contractId: contract.ContractId,
+                approvalDecisionId: contract.ApprovalRef?.ApprovalDecisionId,
+                approvedIdentityDigest: contract.ApprovalRef?.ApprovedIdentityDigest,
+                observedIdentityDigest: readResult.ObservedIdentityDigest,
+                matchVerdict: readResult.InvokeTimeIdentityVerdict,
+                ownershipSnapshotHash: null,
+                reasons: readResult.Reasons);
+            return ledger;
+        }
+
+        ledger.Append(
+            occurredAtUtc: DateTimeOffset.UtcNow,
+            fromState: StepState.Executing,
+            toState: StepState.Verifying,
+            @event: StepTransition.ExecutorReturned,
+            failureKind: null,
+            blockReason: null,
+            contractId: contract.ContractId,
+            approvalDecisionId: contract.ApprovalRef?.ApprovalDecisionId,
+            approvedIdentityDigest: contract.ApprovalRef?.ApprovedIdentityDigest,
+            observedIdentityDigest: readResult.ObservedIdentityDigest,
+            matchVerdict: readResult.InvokeTimeIdentityVerdict,
+            ownershipSnapshotHash: null,
+            reasons: readResult.Reasons);
+
+        ledger.Append(
+            occurredAtUtc: DateTimeOffset.UtcNow,
+            fromState: StepState.Verifying,
+            toState: verification.Success ? StepState.Succeeded : StepState.Failed,
+            @event: verification.Success ? StepTransition.Verified : StepTransition.NotVerified,
+            failureKind: verification.Success ? null : verification.FailureKind ?? FailureKind.Unverified,
+            blockReason: verification.Success ? null : "NotVerified",
+            contractId: contract.ContractId,
+            approvalDecisionId: contract.ApprovalRef?.ApprovalDecisionId,
+            approvedIdentityDigest: contract.ApprovalRef?.ApprovedIdentityDigest,
+            observedIdentityDigest: readResult.ObservedIdentityDigest,
+            matchVerdict: verification.MatchVerdict,
+            ownershipSnapshotHash: null,
+            reasons: verification.Reasons);
+
+        return ledger;
     }
 
     private void SetSafeClickFsmVars(

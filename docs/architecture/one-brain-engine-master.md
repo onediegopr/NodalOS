@@ -947,11 +947,14 @@ Faltan acciones seguras:
 
 * safe.type
 * safe.select
-* safe.read
 * safe.download
 * safe.upload
 * safe.form.fill
 * safe.modal.confirm
+
+Implementado:
+
+* safe.read — read-only UIA con contrato `ActionKind=read`, `ReadSurfacePolicy`, `UiaReadExecutor`, `SafeReadStepVerifier`, approval-v3 strong y evidence ledger.
 
 Cada acción necesita:
 
@@ -1039,6 +1042,7 @@ Siguientes pasos:
 * HITO-154 — Safe.Click Legacy Retirement **(implementado: `safe.click` queda FSM-only para ejecución; `dispatchPath=legacy` bloquea `LegacyDispatchRetired`; default disabled/legacy e ineligible bloquean `SafeClickLegacyRetired`; no `el.Click` ni `UiaActionExecutor` desde `safe.click`)**
 * HITO-155 — Auditoria integral Claude del nucleo
 * HITO-156 — Core Engine Hardening Before safe.type **(implementado: invoke-time identity gate antes de `InvokePattern.Invoke()`, policy explicita para contratos `click`, ledger pre-FSM para bloqueos, legacy muerto de `safe.click` aislado; NO implementa `safe.type`)**
+* HITO-158 — safe.read + Action Contract Policy Registry + Invoke-Time Gate Testable **(implementado: registry de políticas por `ActionKind`, gate invoke-time puro/testeable, `safe.read` read-only con `ValuePattern`/`TextPattern`; NO implementa `safe.type`)**
 
 ### Fase siguiente: percepción robusta
 
@@ -1053,7 +1057,6 @@ Siguientes pasos:
 
 * safe.type
 * safe.select
-* safe.read
 * safe.download
 * safe.upload
 * safe.form.fill

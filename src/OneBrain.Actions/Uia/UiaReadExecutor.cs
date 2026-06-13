@@ -9,11 +9,11 @@ using OneBrain.Observation.Windows;
 
 namespace OneBrain.Actions.Uia;
 
-public sealed class UiaPatternExecutor : IUiaPatternExecutor
+public sealed class UiaReadExecutor : IUiaReadExecutor
 {
     private readonly WindowFinder _windowFinder = new();
 
-    public PatternExecutionResult Invoke(PatternExecutionRequest request)
+    public PatternReadResult Read(PatternReadRequest request)
     {
         try
         {
@@ -24,51 +24,46 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
                 root = rootAutomation.FromHandle(rootHwnd);
                 if (root == null)
                 {
-                    return new PatternExecutionResult(
+                    return new PatternReadResult(
                         Success: false,
                         FailureKind: FailureKind.NotFound,
                         Reasons: [$"uia root '{rootHwnd}' not found"]);
                 }
 
-                return InvokeAgainstRoot(request, rootAutomation, root);
+                return ReadAgainstRoot(request, root);
             }
 
             var hwnd = _windowFinder.FindWindow(request.ProcessName, request.WindowTitleContains);
             if (hwnd == IntPtr.Zero)
             {
-                return new PatternExecutionResult(
+                return new PatternReadResult(
                     Success: false,
                     FailureKind: FailureKind.NotFound,
                     Reasons: [$"window '{request.ProcessName ?? request.WindowTitleContains}' not found"]);
             }
 
-            _windowFinder.Activate(hwnd);
-
             using var automation = new UIA3Automation();
             root = automation.FromHandle(hwnd);
             if (root == null)
             {
-                return new PatternExecutionResult(
+                return new PatternReadResult(
                     Success: false,
                     FailureKind: FailureKind.NotFound,
                     Reasons: ["uia root not available for requested window"]);
             }
 
-            return InvokeAgainstRoot(request, automation, root);
+            return ReadAgainstRoot(request, root);
         }
         catch (Exception ex)
         {
-            return new PatternExecutionResult(
+            return new PatternReadResult(
                 Success: false,
                 FailureKind: FailureKind.Unverified,
-                Reasons: [$"uia invoke failed: {ex.Message}"]);
+                Reasons: [$"uia read failed: {ex.Message}"]);
         }
     }
 
-    private static PatternExecutionResult InvokeAgainstRoot(
-        PatternExecutionRequest request,
-        UIA3Automation uiaAutomation,
-        AutomationElement root)
+    private static PatternReadResult ReadAgainstRoot(PatternReadRequest request, AutomationElement root)
     {
         try
         {
@@ -79,7 +74,7 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
             var resolution = SelectorEngine.Resolve(request.Selector, candidates);
             if (!resolution.Success || resolution.BestMatch == null)
             {
-                return new PatternExecutionResult(
+                return new PatternReadResult(
                     Success: false,
                     FailureKind: resolution.FailureKind ?? FailureKind.NotFound,
                     Reasons: resolution.Reasons);
@@ -88,19 +83,16 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
             var match = elements.FirstOrDefault(element => SameIdentity(BuildIdentity(element), resolution.BestMatch));
             if (match == null)
             {
-                return new PatternExecutionResult(
+                return new PatternReadResult(
                     Success: false,
                     FailureKind: FailureKind.NotFound,
                     Reasons: ["resolved identity could not be reattached to a UIA element"]);
             }
 
-            var role = UiaTreeWalker.SafeRole(match);
-            var invokeSupported = match.Patterns.Invoke.IsSupported;
-            var surfaceDecision = ExecutorSurfacePolicy.Decide(role, invokeSupported);
             var invokeTimeDecision = InvokeTimeIdentityGate.Evaluate(request.ExpectedIdentity, resolution.BestMatch);
             if (!invokeTimeDecision.Allowed)
             {
-                return InvokeTimeBlocked(
+                return ReadIdentityBlocked(
                     invokeTimeDecision.Verdict is "Stale" or "Different"
                         ? FailureKind.Stale
                         : FailureKind.PolicyDenied,
@@ -108,17 +100,27 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
                     resolution.BestMatch);
             }
 
-            if (!surfaceDecision.Allowed)
+            var role = UiaTreeWalker.SafeRole(match);
+            var readSurface = ReadSurfacePolicy.Decide(
+                role,
+                valueSupported: match.Patterns.Value.IsSupported,
+                textSupported: match.Patterns.Text.IsSupported,
+                invokeSupported: match.Patterns.Invoke.IsSupported,
+                mutationPatternSupported:
+                    match.Patterns.Toggle.IsSupported ||
+                    match.Patterns.SelectionItem.IsSupported ||
+                    match.Patterns.ExpandCollapse.IsSupported);
+
+            if (!readSurface.Allowed)
             {
-                return new PatternExecutionResult(
+                return new PatternReadResult(
                     Success: false,
-                    FailureKind: surfaceDecision.FailureKind ?? FailureKind.PolicyDenied,
+                    FailureKind: readSurface.FailureKind ?? FailureKind.PolicyDenied,
                     Reasons:
                     [
-                        surfaceDecision.Reason,
-                        $"role={surfaceDecision.Role ?? "unknown"}",
-                        $"pattern={surfaceDecision.RequiredPattern}",
-                        "executorSurface=allowlisted"
+                        readSurface.Reason,
+                        $"role={readSurface.Role ?? "unknown"}",
+                        "readSurface=read-only"
                     ],
                     ObservedIdentity: resolution.BestMatch,
                     InvokeTimeIdentityChecked: true,
@@ -128,31 +130,34 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
                     ObservedIdentityDigest: invokeTimeDecision.ObservedIdentityDigest);
             }
 
-            match.Patterns.Invoke.Pattern.Invoke();
-
+            var value = readSurface.PatternUsed == "ValuePattern"
+                ? ReadValuePattern(match)
+                : ReadTextPattern(match);
             var targetVisible = elements.Any(element =>
                 string.Equals(UiaTreeWalker.SafeName(element), request.ExpectedTargetName, StringComparison.OrdinalIgnoreCase));
-            return new PatternExecutionResult(
+
+            return new PatternReadResult(
                 Success: true,
                 FailureKind: null,
                 Reasons:
                 [
-                    "uia invoke executed",
-                    $"role={surfaceDecision.Role}",
-                    $"pattern={surfaceDecision.RequiredPattern}",
-                    "executorSurface=allowlisted"
+                    "uia read completed",
+                    $"role={readSurface.Role ?? "unknown"}",
+                    $"pattern={readSurface.PatternUsed}",
+                    "readSurface=read-only"
                 ],
+                Value: value,
+                PatternUsed: readSurface.PatternUsed,
                 ObservedIdentity: resolution.BestMatch,
                 WindowFound: true,
                 TargetVisible: targetVisible,
-                TargetName: request.ExpectedTargetName,
-                ObservedActions: 1,
+                MutationObserved: false,
                 Signals:
                 [
-                    $"postAction.windowFound=true",
-                    $"postAction.targetVisible={targetVisible.ToString().ToLowerInvariant()}",
-                    $"postAction.targetName={request.ExpectedTargetName}",
-                    "postAction.observedClicks=1",
+                    $"read.windowFound=true",
+                    $"read.targetVisible={targetVisible.ToString().ToLowerInvariant()}",
+                    $"read.patternUsed={readSurface.PatternUsed}",
+                    "read.mutationObserved=false",
                     "invokeTimeIdentity.checked=true",
                     $"invokeTimeIdentity.verdict={invokeTimeDecision.Verdict}",
                     $"invokeTimeIdentity.expectedDigest={invokeTimeDecision.ExpectedIdentityDigest}",
@@ -166,19 +171,19 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
         }
         catch (Exception ex)
         {
-            return new PatternExecutionResult(
+            return new PatternReadResult(
                 Success: false,
                 FailureKind: FailureKind.Unverified,
-                Reasons: [$"uia invoke failed: {ex.Message}"]);
+                Reasons: [$"uia read failed: {ex.Message}"]);
         }
     }
 
-    private static PatternExecutionResult InvokeTimeBlocked(
+    private static PatternReadResult ReadIdentityBlocked(
         FailureKind failureKind,
         InvokeTimeIdentityDecision decision,
         ElementIdentity observedIdentity)
     {
-        return new PatternExecutionResult(
+        return new PatternReadResult(
             Success: false,
             FailureKind: failureKind,
             Reasons:
@@ -196,6 +201,35 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
             InvokeTimeIdentityReason: decision.Reason,
             ExpectedIdentityDigest: decision.ExpectedIdentityDigest,
             ObservedIdentityDigest: decision.ObservedIdentityDigest);
+    }
+
+    private static string ReadValuePattern(AutomationElement element)
+    {
+        try
+        {
+            var pattern = element.Patterns.Value.Pattern;
+            var value = pattern.GetType().GetProperty("Value")?.GetValue(pattern);
+            return value?.ToString() ?? "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static string ReadTextPattern(AutomationElement element)
+    {
+        try
+        {
+            var pattern = element.Patterns.Text.Pattern;
+            var range = pattern.GetType().GetProperty("DocumentRange")?.GetValue(pattern);
+            var getText = range?.GetType().GetMethod("GetText", [typeof(int)]);
+            return getText?.Invoke(range, [4096])?.ToString() ?? "";
+        }
+        catch
+        {
+            return "";
+        }
     }
 
     private static ElementIdentity BuildIdentity(AutomationElement element)

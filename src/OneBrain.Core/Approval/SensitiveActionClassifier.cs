@@ -50,6 +50,7 @@ public static class SensitiveActionClassifier
         "profile.load",
         "report.writeproductevidencehtml",
         "report.writeproductevidencemarkdown",
+        "safe.read",
         "sleep",
         "snapshot.read",
         "target.observe",
