@@ -19,6 +19,13 @@ public static class WebCandidateMapper
             ControlType = controlType,
             AutomationId = candidate.AutomationId ?? "",
             BoundsHint = candidate.BoundingRect ?? "",
+            ClassName = candidate.ClassName ?? "",
+            HelpText = candidate.HelpText ?? "",
+            LegacyName = candidate.LegacyName ?? "",
+            FrameworkId = candidate.FrameworkId ?? "",
+            AncestorPath = candidate.AncestorPath ?? "",
+            ProcessName = candidate.ProcessName ?? "",
+            WindowTitle = candidate.WindowTitle ?? "",
             Provenance = string.IsNullOrWhiteSpace(candidate.RuntimeId)
                 ? Provenance.Inferred
                 : Provenance.Uia

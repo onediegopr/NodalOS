@@ -2394,6 +2394,13 @@ public sealed class RecipeRunner
                             ControlType = ReadJsonString(element, "controlType"),
                             AutomationId = ReadJsonString(element, "automationId"),
                             BoundingRect = ReadJsonString(element, "boundingRect"),
+                            ClassName = ReadJsonString(element, "className"),
+                            HelpText = ReadJsonString(element, "helpText"),
+                            LegacyName = ReadJsonString(element, "legacyName"),
+                            FrameworkId = ReadJsonString(element, "frameworkId"),
+                            AncestorPath = ReadJsonString(element, "ancestorPath"),
+                            ProcessName = ReadJsonString(element, "processName"),
+                            WindowTitle = ReadJsonString(element, "windowTitle"),
                             IsEnabled = ReadJsonBool(element, "isEnabled", defaultValue: true),
                             IsOffscreen = ReadJsonBool(element, "isOffscreen", defaultValue: false),
                             HasInvoke = ReadJsonBool(element, "hasInvoke", defaultValue: false)
@@ -2420,9 +2427,13 @@ public sealed class RecipeRunner
         [
             new WebCandidate
             {
+                RuntimeId = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.runtimeId", "")),
                 Name = selectedName,
                 ControlType = selectedControlType,
                 BoundingRect = selectedBoundingRect,
+                ClassName = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.className", "")),
+                FrameworkId = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.frameworkId", "")),
+                AncestorPath = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.ancestorPath", "")),
                 IsEnabled = true,
                 IsOffscreen = false,
                 HasInvoke = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.hasInvoke", "false") == "true"
@@ -2500,9 +2511,37 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".resolution.shadow.agreesWithLegacy"] = r.ShadowAgreesWithLegacy ? "true" : "false";
         _ctx.Variables[prefix + ".resolution.shadow.selectedName"] = r.ShadowEngineSelectedName ?? "";
         _ctx.Variables[prefix + ".resolution.shadow.reasons"] = r.ShadowReasons ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.runtimeIdPresent"] = !string.IsNullOrWhiteSpace(r.SelectedRuntimeId) ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.identity.runtimeId"] = r.SelectedRuntimeId ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.strength"] = ResolveResolutionIdentityStrength(r).ToString();
+        _ctx.Variables[prefix + ".resolution.identity.ancestorPath"] = r.SelectedAncestorPath ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.frameworkId"] = r.SelectedFrameworkId ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.className"] = r.SelectedClassName ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.helpTextPresent"] = r.SelectedHelpTextPresent ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.identity.legacyNamePresent"] = r.SelectedLegacyNamePresent ? "true" : "false";
         if (r.ChildHwndDiagnostics.Count > 0)
             _ctx.Variables[prefix + ".resolution.childHwndDiagnostics"] = string.Join(" | ", r.ChildHwndDiagnostics);
     }
+
+    private static IdentityStrength ResolveResolutionIdentityStrength(WebTargetResult result)
+    {
+        if (!string.IsNullOrWhiteSpace(result.SelectedRuntimeId))
+            return IdentityStrength.Strong;
+
+        if (!string.IsNullOrWhiteSpace(result.SelectedName) ||
+            !string.IsNullOrWhiteSpace(result.SelectedControlType) ||
+            !string.IsNullOrWhiteSpace(result.SelectedClassName) ||
+            !string.IsNullOrWhiteSpace(result.SelectedFrameworkId) ||
+            !string.IsNullOrWhiteSpace(result.SelectedAncestorPath))
+        {
+            return IdentityStrength.Weak;
+        }
+
+        return IdentityStrength.None;
+    }
+
+    private static string? EmptyToNull(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 
     // ── diagnose.msaa ─────────────────────────────────────────────────────────
     private void SetApprovalIdentityVars(string prefix, ApprovalManifest manifest)

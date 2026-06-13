@@ -20,6 +20,12 @@ public sealed class WebTargetResolverShadowTests
             SelectedControlType = "Hyperlink",
             SelectedHwnd = "1234",
             SelectedBoundingRect = "10,10,120,24",
+            SelectedRuntimeId = "42.1.9",
+            SelectedClassName = "Chrome_RenderWidgetHostHWND",
+            SelectedFrameworkId = "UIA",
+            SelectedAncestorPath = "Window:ONE Brain > Pane:Main > Document:App",
+            SelectedHelpTextPresent = true,
+            SelectedLegacyNamePresent = true,
             HasInvoke = true,
             HasClickablePoint = false,
             CandidatesJson = "[{}]",
@@ -51,6 +57,12 @@ public sealed class WebTargetResolverShadowTests
         Assert.AreEqual(legacy.SelectedControlType, projected.SelectedControlType);
         Assert.AreEqual(legacy.SelectedHwnd, projected.SelectedHwnd);
         Assert.AreEqual(legacy.SelectedBoundingRect, projected.SelectedBoundingRect);
+        Assert.AreEqual(legacy.SelectedRuntimeId, projected.SelectedRuntimeId);
+        Assert.AreEqual(legacy.SelectedClassName, projected.SelectedClassName);
+        Assert.AreEqual(legacy.SelectedFrameworkId, projected.SelectedFrameworkId);
+        Assert.AreEqual(legacy.SelectedAncestorPath, projected.SelectedAncestorPath);
+        Assert.AreEqual(legacy.SelectedHelpTextPresent, projected.SelectedHelpTextPresent);
+        Assert.AreEqual(legacy.SelectedLegacyNamePresent, projected.SelectedLegacyNamePresent);
         Assert.AreEqual(legacy.HasInvoke, projected.HasInvoke);
         Assert.AreEqual(legacy.HasClickablePoint, projected.HasClickablePoint);
         Assert.AreEqual(legacy.CandidatesJson, projected.CandidatesJson);

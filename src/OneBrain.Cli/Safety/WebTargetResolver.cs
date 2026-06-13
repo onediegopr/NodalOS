@@ -4,6 +4,7 @@ using System.Text.Json;
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
 using OneBrain.Core.Selectors.Web;
+using OneBrain.Observation.Uia;
 using OneBrain.Observation.Windows;
 
 namespace OneBrain.Cli.Safety;
@@ -94,7 +95,15 @@ public static class WebTargetResolver
                                 IsOffscreen = el.IsOffscreen,
                                 BoundingRect = $"{el.BoundingRectangle.Left},{el.BoundingRectangle.Top},{el.BoundingRectangle.Width},{el.BoundingRectangle.Height}",
                                 Hwnd = hwnd, HasInvoke = SafePattern(el, e => e.Patterns.Invoke.IsSupported),
-                                HasClickablePoint = SafeClickable(el)
+                                HasClickablePoint = SafeClickable(el),
+                                RuntimeId = EmptyToNull(UiaTreeWalker.SafeRuntimeId(el)),
+                                ClassName = EmptyToNull(UiaTreeWalker.SafeClass(el)),
+                                HelpText = EmptyToNull(SanitizeIdentityText(UiaTreeWalker.SafeHelpText(el))),
+                                LegacyName = EmptyToNull(SanitizeIdentityText(UiaTreeWalker.SafeLegacyName(el))),
+                                FrameworkId = EmptyToNull(SafeFrameworkId(el)),
+                                AncestorPath = EmptyToNull(BuildShallowAncestorPath(el, maxDepth: 4)),
+                                ProcessName = EmptyToNull(processName),
+                                WindowTitle = EmptyToNull(SanitizeIdentityText(diag.Title))
                             });
                         }
                     }
@@ -194,6 +203,12 @@ public static class WebTargetResolver
             SelectedName = c.Name, SelectedControlType = c.ControlType,
             SelectedHwnd = c.Hwnd.ToString(), SelectedBoundingRect = c.BoundingRect,
             HasInvoke = c.HasInvoke, HasClickablePoint = c.HasClickablePoint,
+            SelectedRuntimeId = c.RuntimeId,
+            SelectedClassName = c.ClassName,
+            SelectedFrameworkId = c.FrameworkId,
+            SelectedAncestorPath = c.AncestorPath,
+            SelectedHelpTextPresent = !string.IsNullOrWhiteSpace(c.HelpText),
+            SelectedLegacyNamePresent = !string.IsNullOrWhiteSpace(c.LegacyName),
             Reason = "exact match",
             WindowsSearched = windows,
             ChildHwndDiagnostics = diagnostics.Select(d => d.ToSummary()).ToList()
@@ -214,10 +229,18 @@ public static class WebTargetResolver
             var webCandidates = candidates
                 .Select(candidate => new WebCandidate
                 {
+                    RuntimeId = candidate.RuntimeId,
                     Name = candidate.Name,
                     ControlType = candidate.ControlType,
                     AutomationId = candidate.AutomationId,
                     BoundingRect = candidate.BoundingRect,
+                    ClassName = candidate.ClassName,
+                    HelpText = candidate.HelpText,
+                    LegacyName = candidate.LegacyName,
+                    FrameworkId = candidate.FrameworkId,
+                    AncestorPath = candidate.AncestorPath,
+                    ProcessName = candidate.ProcessName,
+                    WindowTitle = candidate.WindowTitle,
                     IsEnabled = candidate.IsEnabled,
                     IsOffscreen = candidate.IsOffscreen,
                     HasInvoke = candidate.HasInvoke
@@ -254,6 +277,12 @@ public static class WebTargetResolver
             CandidatesJson = legacy.CandidatesJson,
             Reason = legacy.Reason,
             ChildHwndDiagnostics = legacy.ChildHwndDiagnostics,
+            SelectedRuntimeId = legacy.SelectedRuntimeId,
+            SelectedClassName = legacy.SelectedClassName,
+            SelectedFrameworkId = legacy.SelectedFrameworkId,
+            SelectedAncestorPath = legacy.SelectedAncestorPath,
+            SelectedHelpTextPresent = legacy.SelectedHelpTextPresent,
+            SelectedLegacyNamePresent = legacy.SelectedLegacyNamePresent,
             ShadowEngineFound = shadowParity.EngineFound,
             ShadowEngineVerdict = shadowParity.EngineVerdict,
             ShadowAgreesWithLegacy = shadowParity.AgreesWithLegacy,
@@ -284,6 +313,102 @@ public static class WebTargetResolver
 
     private static bool SafePattern(AutomationElement el, Func<AutomationElement, bool> check) { try { return check(el); } catch { return false; } }
     private static bool SafeClickable(AutomationElement el) { try { var p = el.GetClickablePoint(); return p.X > 0 || p.Y > 0; } catch { return false; } }
+
+    private static string SafeFrameworkId(AutomationElement element)
+    {
+        try
+        {
+            var frameworkIdProperty = element.GetType().GetProperty("FrameworkId");
+            var frameworkIdValue = frameworkIdProperty?.GetValue(element);
+            if (frameworkIdValue is string frameworkId && !string.IsNullOrWhiteSpace(frameworkId))
+                return frameworkId.Trim();
+
+            var frameworkTypeProperty = element.GetType().GetProperty("FrameworkType");
+            var frameworkTypeValue = frameworkTypeProperty?.GetValue(element);
+            return frameworkTypeValue?.ToString()?.Trim() ?? "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static string BuildShallowAncestorPath(AutomationElement element, int maxDepth)
+    {
+        if (maxDepth <= 0)
+            return "";
+
+        try
+        {
+            var segments = new List<string>();
+            var current = element.Parent;
+            var depth = 0;
+
+            while (current != null && depth < maxDepth)
+            {
+                var segment = BuildAncestorSegment(current);
+                if (!string.IsNullOrWhiteSpace(segment))
+                    segments.Add(segment);
+
+                current = current.Parent;
+                depth++;
+            }
+
+            if (segments.Count == 0)
+                return "";
+
+            segments.Reverse();
+            return string.Join(" > ", segments);
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static string BuildAncestorSegment(AutomationElement element)
+    {
+        var role = SafeControlType(element);
+        var name = SanitizeIdentityText(SafeElementName(element), maxLength: 32);
+
+        if (string.IsNullOrWhiteSpace(role) && string.IsNullOrWhiteSpace(name))
+            return "";
+
+        if (string.IsNullOrWhiteSpace(name))
+            return role;
+
+        return string.IsNullOrWhiteSpace(role)
+            ? name
+            : $"{role}:{name}";
+    }
+
+    private static string SafeControlType(AutomationElement element)
+    {
+        try { return element.ControlType.ToString() ?? ""; } catch { return ""; }
+    }
+
+    private static string SafeElementName(AutomationElement element)
+    {
+        try { return element.Name ?? ""; } catch { return ""; }
+    }
+
+    private static string SanitizeIdentityText(string? value, int maxLength = 64)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        var normalized = string.Join(" ", value
+            .Trim()
+            .Split([' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries));
+
+        if (normalized.Length <= maxLength)
+            return normalized;
+
+        return normalized[..maxLength];
+    }
+
+    private static string? EmptyToNull(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 
     /// <summary>Find a UIA element by name using recursive tree walk (finds content deep inside Document panes).</summary>
     public static AutomationElement? FindElementByName(IntPtr hwnd, string nameContains, int max = 2000)
@@ -324,6 +449,12 @@ public sealed class WebTargetResult
     public string Reason { get; init; } = "";
     /// <summary>Per-HWND diagnostic summary (for recipe variable exposure).</summary>
     public IReadOnlyList<string> ChildHwndDiagnostics { get; init; } = Array.Empty<string>();
+    public string? SelectedRuntimeId { get; init; }
+    public string? SelectedClassName { get; init; }
+    public string? SelectedFrameworkId { get; init; }
+    public string? SelectedAncestorPath { get; init; }
+    public bool SelectedHelpTextPresent { get; init; }
+    public bool SelectedLegacyNamePresent { get; init; }
     public bool ShadowEngineFound { get; init; }
     public string? ShadowEngineVerdict { get; init; }
     public bool ShadowAgreesWithLegacy { get; init; }
@@ -342,6 +473,14 @@ public sealed class CandidateInfo
     public bool HasClickablePoint { get; init; }
     public string BoundingRect { get; init; } = "";
     public IntPtr Hwnd { get; init; }
+    public string? RuntimeId { get; init; }
+    public string? ClassName { get; init; }
+    public string? HelpText { get; init; }
+    public string? LegacyName { get; init; }
+    public string? FrameworkId { get; init; }
+    public string? AncestorPath { get; init; }
+    public string? ProcessName { get; init; }
+    public string? WindowTitle { get; init; }
 }
 
 /// <summary>Per-HWND diagnostic snapshot during child-HWND enumeration.</summary>

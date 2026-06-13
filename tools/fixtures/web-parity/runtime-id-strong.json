@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "targetText": "Categorias",
+  "legacySelectedName": "Categorias",
+  "candidates": [
+    {
+      "runtimeId": "42.1.9",
+      "name": "Categorias",
+      "controlType": "Button",
+      "automationId": "categories-button",
+      "boundingRect": "10,10,120,24",
+      "className": "Chrome_RenderWidgetHostHWND",
+      "helpText": "Abrir categorias",
+      "legacyName": "Categorias",
+      "frameworkId": "UIA",
+      "ancestorPath": "Window:ONE Brain > Pane:Catalog > Document:Main",
+      "processName": "msedge",
+      "windowTitle": "ONE Brain",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": true
+    }
+  ]
+}

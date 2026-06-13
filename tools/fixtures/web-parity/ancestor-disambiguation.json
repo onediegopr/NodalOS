@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "targetText": "Continue",
+  "legacySelectedName": "",
+  "candidates": [
+    {
+      "name": "Continue",
+      "controlType": "Button",
+      "automationId": "",
+      "boundingRect": "10,10,100,28",
+      "className": "Chrome_RenderWidgetHostHWND",
+      "frameworkId": "UIA",
+      "ancestorPath": "Window:ONE Brain > Pane:Primary > Document:Main",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": true
+    },
+    {
+      "name": "Continue",
+      "controlType": "Button",
+      "automationId": "",
+      "boundingRect": "140,10,100,28",
+      "className": "Chrome_RenderWidgetHostHWND",
+      "frameworkId": "UIA",
+      "ancestorPath": "Window:ONE Brain > Pane:Secondary > Document:Main",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": true
+    }
+  ]
+}
