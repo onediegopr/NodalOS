@@ -1038,6 +1038,7 @@ Siguientes pasos:
 * HITO-152/153 — Legacy Deprecation + Retirement Readiness Gate **(implementado: legacy queda deprecated con owner/reason/reviewBy, readiness gate local; NO retira legacy, `el.Click` ni `UiaActionExecutor`)**
 * HITO-154 — Safe.Click Legacy Retirement **(implementado: `safe.click` queda FSM-only para ejecución; `dispatchPath=legacy` bloquea `LegacyDispatchRetired`; default disabled/legacy e ineligible bloquean `SafeClickLegacyRetired`; no `el.Click` ni `UiaActionExecutor` desde `safe.click`)**
 * HITO-155 — Auditoria integral Claude del nucleo
+* HITO-156 — Core Engine Hardening Before safe.type **(implementado: invoke-time identity gate antes de `InvokePattern.Invoke()`, policy explicita para contratos `click`, ledger pre-FSM para bloqueos, legacy muerto de `safe.click` aislado; NO implementa `safe.type`)**
 
 ### Fase siguiente: percepción robusta
 

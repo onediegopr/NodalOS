@@ -23,7 +23,12 @@ public sealed record PatternExecutionResult(
     bool TargetVisible = false,
     string TargetName = "",
     int ObservedActions = 0,
-    IReadOnlyList<string>? Signals = null);
+    IReadOnlyList<string>? Signals = null,
+    bool InvokeTimeIdentityChecked = false,
+    string InvokeTimeIdentityVerdict = "",
+    string InvokeTimeIdentityReason = "",
+    string ExpectedIdentityDigest = "",
+    string ObservedIdentityDigest = "");
 
 public interface IUiaPatternExecutor
 {

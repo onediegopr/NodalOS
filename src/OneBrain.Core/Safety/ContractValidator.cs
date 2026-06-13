@@ -30,6 +30,8 @@ public sealed class ContractValidator
             reasons.Add("action ceiling does not allow benign action");
         if (contract.ActionCeiling > SourceActionPolicy.Resolve(contract.Provenance))
             reasons.Add("action ceiling exceeds source action policy");
+        if (string.Equals(contract.ActionKind, "click", StringComparison.OrdinalIgnoreCase))
+            ValidateClickContract(contract, reasons);
 
         return reasons.Count == 0
             ? new ContractValidation(true, null, ["contract valid"])
@@ -38,4 +40,24 @@ public sealed class ContractValidator
 
     private static ContractValidation Invalid(string reason) =>
         new(false, FailureKind.PolicyDenied, [reason]);
+
+    private static void ValidateClickContract(RecipeSafetyContract contract, List<string> reasons)
+    {
+        if (contract.Reversible)
+            reasons.Add("ClickMustBeIrreversible");
+        if (contract.MaxActions != 1)
+            reasons.Add("ClickMaxActionsMustBeOne");
+        if (contract.ApprovalRef == null)
+            reasons.Add("ClickRequiresApprovalRef");
+        if (contract.ExpectedIdentity == null || !contract.ExpectedIdentity.IsStrong)
+            reasons.Add("ClickRequiresStrongIdentity");
+        if (contract.Selector == null)
+            reasons.Add("ClickRequiresSelector");
+        if (contract.ActionCeiling != ActionCeiling.FullActionWithPreflight)
+            reasons.Add("ClickRequiresFullActionWithPreflight");
+        if (contract.Provenance != Provenance.Uia)
+            reasons.Add("ClickRequiresUiaProvenance");
+        if (contract.TrustLevel < TrustLevel.ProfileVerified)
+            reasons.Add("ClickRequiresProfileVerifiedTrust");
+    }
 }

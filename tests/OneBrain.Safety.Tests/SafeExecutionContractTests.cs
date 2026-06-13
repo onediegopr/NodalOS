@@ -73,6 +73,57 @@ public sealed class SafeExecutionContractTests
     }
 
     [TestMethod]
+    public void ClickContractPolicyAcceptsExistingValidSafeClickContract()
+    {
+        var identity = CreateIdentity();
+        var contract = CreateClickContract(identity);
+
+        var validation = new ContractValidator().Validate(contract);
+
+        Assert.IsTrue(validation.IsValid);
+    }
+
+    [TestMethod]
+    public void ClickContractRejectsReversibleTrue()
+    {
+        var identity = CreateIdentity();
+        var validation = new ContractValidator().Validate(CreateClickContract(identity) with { Reversible = true });
+
+        Assert.IsFalse(validation.IsValid);
+        CollectionAssert.Contains(validation.Reasons.ToList(), "ClickMustBeIrreversible");
+    }
+
+    [TestMethod]
+    public void ClickContractRequiresMaxActionsOne()
+    {
+        var identity = CreateIdentity();
+        var validation = new ContractValidator().Validate(CreateClickContract(identity) with { MaxActions = 2 });
+
+        Assert.IsFalse(validation.IsValid);
+        CollectionAssert.Contains(validation.Reasons.ToList(), "ClickMaxActionsMustBeOne");
+    }
+
+    [TestMethod]
+    public void ClickContractRequiresStrongIdentity()
+    {
+        var identity = CreateIdentity(runtimeId: "");
+        var validation = new ContractValidator().Validate(CreateClickContract(identity));
+
+        Assert.IsFalse(validation.IsValid);
+        CollectionAssert.Contains(validation.Reasons.ToList(), "ClickRequiresStrongIdentity");
+    }
+
+    [TestMethod]
+    public void ClickContractRequiresApprovalRef()
+    {
+        var identity = CreateIdentity();
+        var validation = new ContractValidator().Validate(CreateClickContract(identity) with { ApprovalRef = null });
+
+        Assert.IsFalse(validation.IsValid);
+        CollectionAssert.Contains(validation.Reasons.ToList(), "ClickRequiresApprovalRef");
+    }
+
+    [TestMethod]
     public void ApprovalBindingValidator_Blocks_Text_Match_When_Identity_Changes()
     {
         var expected = CreateIdentity(name: "Enviar", runtimeId: "btn-1", automationId: "send-button");
@@ -199,6 +250,31 @@ public sealed class SafeExecutionContractTests
             Mode: "supervised",
             PolicyVersion: "test",
             EvidenceHash: ElementFingerprintBuilder.Build(identity));
+    }
+
+    private static RecipeSafetyContract CreateClickContract(ElementIdentity identity)
+    {
+        var selector = SelectorEngine.GenerateSelector(identity);
+        return new RecipeSafetyContract(
+            SchemaVersion: 1,
+            ContractId: "click-contract-1",
+            ActionKind: "click",
+            ExpectedIdentity: identity,
+            Selector: selector,
+            WindowConstraints: new ExecutionWindowConstraints(true, true),
+            Reversible: false,
+            MaxActions: 1,
+            ActionCeiling: ActionCeiling.FullActionWithPreflight,
+            Provenance: Provenance.Uia,
+            TrustLevel: TrustLevel.ProfileVerified,
+            ApprovalRef: new ApprovalBinding(
+                ApprovalDecisionId: "decision-click",
+                ApprovedIdentityDigest: ElementFingerprintBuilder.Build(identity),
+                Selector: selector,
+                ActionKind: "click",
+                Mode: "controlled",
+                PolicyVersion: "test",
+                EvidenceHash: ElementFingerprintBuilder.Build(identity)));
     }
 
     private static PatternExecutionRequest CreateDispatch(RecipeSafetyContract contract, ElementIdentity identity)

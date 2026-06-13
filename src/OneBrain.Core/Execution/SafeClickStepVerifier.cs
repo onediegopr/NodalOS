@@ -20,7 +20,9 @@ public sealed class SafeClickStepVerifier : IStepVerifier
             return new StepVerificationResult(
                 Success: false,
                 FailureKind: dispatchResult.FailureKind ?? FailureKind.Unverified,
-                MatchVerdict: "Different",
+                MatchVerdict: string.IsNullOrWhiteSpace(dispatchResult.InvokeTimeIdentityVerdict)
+                    ? "Different"
+                    : dispatchResult.InvokeTimeIdentityVerdict,
                 Reasons: reasons.Count == 0 ? ["dispatch failed before verification"] : reasons,
                 ObservedIdentity: dispatchResult.ObservedIdentity);
         }

@@ -92,7 +92,7 @@ public sealed class SafeClickPlannerTests
     }
 
     [TestMethod]
-    public void ReversibleLikelySameCanProjectBound()
+    public void ReversibleLikelySameBlocksForSafeClick()
     {
         var manifest = ApprovalManifestBuilder.Build(
             ClickPreflightEvaluator.Evaluate("Categorias"),
@@ -118,8 +118,9 @@ public sealed class SafeClickPlannerTests
             ]
         });
 
-        Assert.AreEqual(StepState.Bound, plan.ProjectedState);
-        Assert.AreEqual("LikelySame", plan.BindingVerdict);
+        Assert.AreEqual(StepState.Blocked, plan.ProjectedState);
+        Assert.IsFalse(plan.ContractValid);
+        CollectionAssert.Contains(plan.Reasons.ToList(), "ClickMustBeIrreversible");
         Assert.IsFalse(plan.WouldDispatch);
     }
 

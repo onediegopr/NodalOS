@@ -76,6 +76,29 @@ public sealed class SafeClickStepVerifierTests
         Assert.AreEqual(FailureKind.Unverified, result.FailureKind);
     }
 
+    [TestMethod]
+    public void VerifyPropagatesInvokeTimeIdentityMismatchVerdict()
+    {
+        var expected = CreateIdentity("42.1.9");
+        var observed = CreateIdentity("42.1.10");
+        var contract = CreateContract(expected);
+        var dispatch = new PatternExecutionResult(
+            Success: false,
+            FailureKind: FailureKind.Stale,
+            Reasons: ["InvokeTimeIdentityMismatch"],
+            ObservedIdentity: observed,
+            InvokeTimeIdentityChecked: true,
+            InvokeTimeIdentityVerdict: "Different",
+            InvokeTimeIdentityReason: "InvokeTimeIdentityMismatch");
+
+        var result = new SafeClickStepVerifier().Verify(contract, dispatch);
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(FailureKind.Stale, result.FailureKind);
+        Assert.AreEqual("Different", result.MatchVerdict);
+        CollectionAssert.Contains(result.Reasons.ToList(), "InvokeTimeIdentityMismatch");
+    }
+
     private static RecipeSafetyContract CreateContract(ElementIdentity expected)
     {
         var selector = new SelectorDefinition

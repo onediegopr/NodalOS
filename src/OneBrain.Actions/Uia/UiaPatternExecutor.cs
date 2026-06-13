@@ -2,6 +2,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
 using OneBrain.Core.Contracts;
 using OneBrain.Core.Execution;
+using OneBrain.Core.Identity;
 using OneBrain.Core.Models;
 using OneBrain.Core.Selectors;
 using OneBrain.Observation.Uia;
@@ -97,6 +98,35 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
             var role = UiaTreeWalker.SafeRole(match);
             var invokeSupported = match.Patterns.Invoke.IsSupported;
             var surfaceDecision = ExecutorSurfacePolicy.Decide(role, invokeSupported);
+            var observedDigest = ElementFingerprintBuilder.Build(resolution.BestMatch);
+            if (request.ExpectedIdentity == null || !request.ExpectedIdentity.IsStrong)
+            {
+                return InvokeTimeBlocked(
+                    FailureKind.PolicyDenied,
+                    "InvokeTimeExpectedIdentityRequired",
+                    request.ExpectedIdentity,
+                    resolution.BestMatch,
+                    "",
+                    observedDigest);
+            }
+
+            var expectedDigest = ElementFingerprintBuilder.Build(request.ExpectedIdentity);
+            var invokeTimeMatch = ElementMatcher.Match(request.ExpectedIdentity, [resolution.BestMatch]);
+            if (invokeTimeMatch.Verdict != ElementMatchVerdict.Same)
+            {
+                return InvokeTimeBlocked(
+                    invokeTimeMatch.Verdict is ElementMatchVerdict.Stale or ElementMatchVerdict.Different
+                        ? FailureKind.Stale
+                        : FailureKind.PolicyDenied,
+                    "InvokeTimeIdentityMismatch",
+                    request.ExpectedIdentity,
+                    resolution.BestMatch,
+                    expectedDigest,
+                    observedDigest,
+                    invokeTimeMatch.Verdict.ToString(),
+                    invokeTimeMatch.ReasonsFor.Concat(invokeTimeMatch.ReasonsAgainst).ToList());
+            }
+
             if (!surfaceDecision.Allowed)
             {
                 return new PatternExecutionResult(
@@ -109,7 +139,12 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
                         $"pattern={surfaceDecision.RequiredPattern}",
                         "executorSurface=allowlisted"
                     ],
-                    ObservedIdentity: resolution.BestMatch);
+                    ObservedIdentity: resolution.BestMatch,
+                    InvokeTimeIdentityChecked: true,
+                    InvokeTimeIdentityVerdict: invokeTimeMatch.Verdict.ToString(),
+                    InvokeTimeIdentityReason: "Same",
+                    ExpectedIdentityDigest: expectedDigest,
+                    ObservedIdentityDigest: observedDigest);
             }
 
             match.Patterns.Invoke.Pattern.Invoke();
@@ -136,8 +171,17 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
                     $"postAction.windowFound=true",
                     $"postAction.targetVisible={targetVisible.ToString().ToLowerInvariant()}",
                     $"postAction.targetName={request.ExpectedTargetName}",
-                    "postAction.observedClicks=1"
-                ]);
+                    "postAction.observedClicks=1",
+                    "invokeTimeIdentity.checked=true",
+                    $"invokeTimeIdentity.verdict={invokeTimeMatch.Verdict}",
+                    $"invokeTimeIdentity.expectedDigest={expectedDigest}",
+                    $"invokeTimeIdentity.observedDigest={observedDigest}"
+                ],
+                InvokeTimeIdentityChecked: true,
+                InvokeTimeIdentityVerdict: invokeTimeMatch.Verdict.ToString(),
+                InvokeTimeIdentityReason: "Same",
+                ExpectedIdentityDigest: expectedDigest,
+                ObservedIdentityDigest: observedDigest);
         }
         catch (Exception ex)
         {
@@ -146,6 +190,36 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
                 FailureKind: FailureKind.Unverified,
                 Reasons: [$"uia invoke failed: {ex.Message}"]);
         }
+    }
+
+    private static PatternExecutionResult InvokeTimeBlocked(
+        FailureKind failureKind,
+        string reason,
+        ElementIdentity? expectedIdentity,
+        ElementIdentity observedIdentity,
+        string expectedDigest,
+        string observedDigest,
+        string verdict = "Unknown",
+        IReadOnlyList<string>? matchReasons = null)
+    {
+        return new PatternExecutionResult(
+            Success: false,
+            FailureKind: failureKind,
+            Reasons:
+            [
+                reason,
+                .. matchReasons ?? [],
+                "invokeTimeIdentity.checked=true",
+                $"invokeTimeIdentity.verdict={verdict}",
+                $"invokeTimeIdentity.expectedDigest={expectedDigest}",
+                $"invokeTimeIdentity.observedDigest={observedDigest}"
+            ],
+            ObservedIdentity: observedIdentity,
+            InvokeTimeIdentityChecked: true,
+            InvokeTimeIdentityVerdict: verdict,
+            InvokeTimeIdentityReason: reason,
+            ExpectedIdentityDigest: expectedDigest,
+            ObservedIdentityDigest: observedDigest);
     }
 
     private static ElementIdentity BuildIdentity(AutomationElement element)

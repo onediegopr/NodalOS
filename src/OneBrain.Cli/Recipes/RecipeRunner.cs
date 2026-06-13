@@ -4336,9 +4336,10 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsm.failureKind"] = failureKind?.ToString() ?? "";
         _ctx.Variables[prefix + ".fsm.blockReason"] = blockReason ?? "";
         _ctx.Variables[prefix + ".fsm.success"] = (finalState == StepState.Succeeded).ToString().ToLowerInvariant();
-        _ctx.Variables[prefix + ".fsm.transitionCount"] = "0";
         _ctx.Variables[prefix + ".fsm.reasons"] = reasons.Count == 0 ? "" : string.Join(" | ", reasons);
-        _ctx.Variables[prefix + ".fsm.ledgerJson"] = "[]";
+        var preFsmLedger = BuildPreFsmLedger(finalState, failureKind, blockReason ?? "", reasons);
+        _ctx.Variables[prefix + ".fsm.transitionCount"] = preFsmLedger.Count.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables[prefix + ".fsm.ledgerJson"] = JsonSerializer.Serialize(preFsmLedger);
     }
 
     private void SetSafeClickFsmVars(string prefix, SafeExecutionResult result)
@@ -4350,6 +4351,33 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsm.transitionCount"] = result.Ledger.Entries.Count.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables[prefix + ".fsm.reasons"] = result.Reasons.Count == 0 ? "" : string.Join(" | ", result.Reasons);
         _ctx.Variables[prefix + ".fsm.ledgerJson"] = JsonSerializer.Serialize(result.Ledger.Entries);
+    }
+
+    private static IReadOnlyList<StepTransitionEvidence> BuildPreFsmLedger(
+        StepState finalState,
+        FailureKind? failureKind,
+        string blockReason,
+        IReadOnlyList<string> reasons)
+    {
+        if (finalState is not (StepState.Blocked or StepState.Failed or StepState.Aborted))
+            return [];
+
+        var ledger = new EvidenceLedger();
+        ledger.Append(
+            occurredAtUtc: DateTimeOffset.UtcNow,
+            fromState: StepState.Created,
+            toState: finalState,
+            @event: StepTransition.ContractInvalid,
+            failureKind: failureKind ?? FailureKind.PolicyDenied,
+            blockReason: blockReason,
+            contractId: "pre-fsm",
+            approvalDecisionId: null,
+            approvedIdentityDigest: null,
+            observedIdentityDigest: null,
+            matchVerdict: null,
+            ownershipSnapshotHash: null,
+            reasons: reasons);
+        return ledger.Entries;
     }
 
     private void SetSafeClickFsmReadyVars(string prefix, SafeClickShadowReadiness readiness)

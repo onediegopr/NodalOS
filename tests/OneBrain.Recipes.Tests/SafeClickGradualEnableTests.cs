@@ -30,6 +30,8 @@ public sealed class SafeClickGradualEnableTests
         Assert.AreEqual("disabled", result.Variables["safeClick.fsm.defaultMode"]);
         Assert.AreEqual("Blocked", result.Variables["safeClick.fsm.finalState"]);
         Assert.AreEqual("true", result.Variables["safeClick.legacy.retirementPolicy.blocked"]);
+        Assert.AreEqual("1", result.Variables["safeClick.fsm.transitionCount"]);
+        Assert.AreNotEqual("[]", result.Variables["safeClick.fsm.ledgerJson"]);
     }
 
     [TestMethod]
@@ -79,6 +81,8 @@ public sealed class SafeClickGradualEnableTests
         Assert.AreEqual("false", result.Variables["safeClick.fsm.routedByDefault"]);
         Assert.AreEqual("legacy-retired", result.Variables["safeClick.fsm.defaultRouteScope"]);
         Assert.AreEqual("true", result.Variables["safeClick.retirement.ineligibleAfterRetirement"]);
+        Assert.AreEqual("1", result.Variables["safeClick.fsm.transitionCount"]);
+        Assert.AreNotEqual("[]", result.Variables["safeClick.fsm.ledgerJson"]);
     }
 
     [TestMethod]
@@ -227,6 +231,8 @@ public sealed class SafeClickGradualEnableTests
         Assert.AreEqual("Blocked", result.Variables!["safeClick.fsm.finalState"]);
         Assert.AreEqual(FailureKind.PolicyDenied.ToString(), result.Variables["safeClick.fsm.failureKind"]);
         Assert.AreEqual("1", result.Variables["safeClick.migration.unknownDispatchPathBlocked"]);
+        Assert.AreEqual("1", result.Variables["safeClick.fsm.transitionCount"]);
+        Assert.AreNotEqual("[]", result.Variables["safeClick.fsm.ledgerJson"]);
     }
 
     [TestMethod]
