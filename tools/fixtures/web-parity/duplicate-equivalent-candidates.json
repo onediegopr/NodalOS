@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "targetText": "Continue",
+  "legacySelectedName": "",
+  "candidates": [
+    {
+      "name": "Continue",
+      "controlType": "Button",
+      "automationId": "",
+      "boundingRect": "10,10,100,28",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": true
+    },
+    {
+      "name": "Continue",
+      "controlType": "Button",
+      "automationId": "",
+      "boundingRect": "140,10,100,28",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": true
+    }
+  ]
+}

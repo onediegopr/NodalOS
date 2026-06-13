@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "targetText": "More information...",
+  "legacySelectedName": "More information...",
+  "candidates": [
+    {
+      "name": "More information...",
+      "controlType": "Hyperlink",
+      "automationId": "",
+      "boundingRect": "10,10,120,24",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": true
+    }
+  ]
+}

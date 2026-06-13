@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "targetText": "Pricing",
+  "legacySelectedName": "Pricing",
+  "candidates": [
+    {
+      "name": "Pricing",
+      "controlType": "Hyperlink",
+      "automationId": "",
+      "boundingRect": "60,20,80,20",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": true
+    }
+  ]
+}

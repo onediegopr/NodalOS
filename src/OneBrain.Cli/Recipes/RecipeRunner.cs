@@ -2306,6 +2306,11 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".resolution.reason"] = r.Reason;
         _ctx.Variables[prefix + ".resolution.hasInvoke"] = r.HasInvoke ? "true" : "false";
         _ctx.Variables[prefix + ".resolution.hasClickablePoint"] = r.HasClickablePoint ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.shadow.found"] = r.ShadowEngineFound ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.shadow.verdict"] = r.ShadowEngineVerdict ?? "";
+        _ctx.Variables[prefix + ".resolution.shadow.agreesWithLegacy"] = r.ShadowAgreesWithLegacy ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.shadow.selectedName"] = r.ShadowEngineSelectedName ?? "";
+        _ctx.Variables[prefix + ".resolution.shadow.reasons"] = r.ShadowReasons ?? "";
         if (r.ChildHwndDiagnostics.Count > 0)
             _ctx.Variables[prefix + ".resolution.childHwndDiagnostics"] = string.Join(" | ", r.ChildHwndDiagnostics);
     }

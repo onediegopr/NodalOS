@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "targetText": "",
+  "legacySelectedName": "Buscar",
+  "candidates": [
+    {
+      "name": "Buscar",
+      "controlType": "Edit",
+      "automationId": "OneBrainSearchInput",
+      "boundingRect": "20,20,180,28",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": false
+    },
+    {
+      "name": "ONE Brain Search",
+      "controlType": "Text",
+      "automationId": "",
+      "boundingRect": "20,0,180,18",
+      "isEnabled": true,
+      "isOffscreen": false,
+      "hasInvoke": false
+    }
+  ]
+}

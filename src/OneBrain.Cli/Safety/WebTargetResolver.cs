@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using FlaUI.Core.AutomationElements;
 using FlaUI.UIA3;
+using OneBrain.Core.Selectors.Web;
 using OneBrain.Observation.Windows;
 
 namespace OneBrain.Cli.Safety;
@@ -103,29 +104,31 @@ public static class WebTargetResolver
             diagnostics.Add(diag);
         }
 
+        var shadowParity = EvaluateShadowParity(allCandidates, normalized, legacySelectedName: null);
+
         if (allCandidates.Count == 0)
-            return new WebTargetResult
+            return ApplyShadowParity(new WebTargetResult
             {
                 Reason = $"not found in {allHwnds.Count} windows",
                 WindowsSearched = allHwnds.Count,
                 ChildHwndDiagnostics = diagnostics.Select(d => d.ToSummary()).ToList()
-            };
+            }, shadowParity);
 
         if (allCandidates.Count > 1)
         {
             var good = allCandidates.Where(c => c.IsEnabled && !c.IsOffscreen).ToList();
-            if (good.Count == 1) return BuildSuccess(good[0], allCandidates, allHwnds.Count, diagnostics);
-            return new WebTargetResult
+            if (good.Count == 1) return BuildSuccess(good[0], allCandidates, allHwnds.Count, diagnostics, shadowParity);
+            return ApplyShadowParity(new WebTargetResult
             {
                 CandidateCount = allCandidates.Count,
                 Reason = $"ambiguous: {allCandidates.Count}",
                 CandidatesJson = JsonSerializer.Serialize(allCandidates.Take(5)),
                 WindowsSearched = allHwnds.Count,
                 ChildHwndDiagnostics = diagnostics.Select(d => d.ToSummary()).ToList()
-            };
+            }, shadowParity);
         }
 
-        return BuildSuccess(allCandidates[0], allCandidates, allHwnds.Count, diagnostics);
+        return BuildSuccess(allCandidates[0], allCandidates, allHwnds.Count, diagnostics, shadowParity);
     }
 
     // ── Child HWND enumeration (recursive) ────────────────────────────────────
@@ -176,16 +179,16 @@ public static class WebTargetResolver
 
     // ── Build success result ─────────────────────────────────────────────────
 
-    private static WebTargetResult BuildSuccess(CandidateInfo c, List<CandidateInfo> all, int windows, List<ChildHwndDiagnostic> diagnostics)
+    private static WebTargetResult BuildSuccess(CandidateInfo c, List<CandidateInfo> all, int windows, List<ChildHwndDiagnostic> diagnostics, WebSelectorParity shadowParity)
     {
         if (!c.IsEnabled || c.IsOffscreen || (!c.HasInvoke && !c.HasClickablePoint))
-            return new WebTargetResult
+            return ApplyShadowParity(new WebTargetResult
             {
                 CandidateCount = 1, Reason = "target not actionable",
                 CandidatesJson = JsonSerializer.Serialize(all.Take(5)), WindowsSearched = windows,
                 ChildHwndDiagnostics = diagnostics.Select(d => d.ToSummary()).ToList()
-            };
-        return new WebTargetResult
+            }, shadowParity);
+        return ApplyShadowParity(new WebTargetResult
         {
             Found = true, CandidateCount = 1,
             SelectedName = c.Name, SelectedControlType = c.ControlType,
@@ -194,6 +197,68 @@ public static class WebTargetResolver
             Reason = "exact match",
             WindowsSearched = windows,
             ChildHwndDiagnostics = diagnostics.Select(d => d.ToSummary()).ToList()
+        }, shadowParity with
+        {
+            AgreesWithLegacy = shadowParity.EngineFound &&
+                string.Equals(shadowParity.EngineSelectedName, c.Name, StringComparison.OrdinalIgnoreCase)
+        });
+    }
+
+    private static WebSelectorParity EvaluateShadowParity(
+        IReadOnlyList<CandidateInfo> candidates,
+        string targetText,
+        string? legacySelectedName)
+    {
+        try
+        {
+            var webCandidates = candidates
+                .Select(candidate => new WebCandidate
+                {
+                    Name = candidate.Name,
+                    ControlType = candidate.ControlType,
+                    AutomationId = candidate.AutomationId,
+                    BoundingRect = candidate.BoundingRect,
+                    IsEnabled = candidate.IsEnabled,
+                    IsOffscreen = candidate.IsOffscreen,
+                    HasInvoke = candidate.HasInvoke
+                })
+                .ToList();
+
+            return WebSelectorBridge.Evaluate(webCandidates, targetText, legacySelectedName);
+        }
+        catch (Exception ex)
+        {
+            return new WebSelectorParity
+            {
+                EngineFound = false,
+                EngineVerdict = "ShadowUnavailable",
+                AgreesWithLegacy = false,
+                Reasons = [$"shadow bridge unavailable: {ex.Message}"]
+            };
+        }
+    }
+
+    private static WebTargetResult ApplyShadowParity(WebTargetResult legacy, WebSelectorParity shadowParity)
+    {
+        return new WebTargetResult
+        {
+            Found = legacy.Found,
+            CandidateCount = legacy.CandidateCount,
+            WindowsSearched = legacy.WindowsSearched,
+            SelectedName = legacy.SelectedName,
+            SelectedControlType = legacy.SelectedControlType,
+            SelectedHwnd = legacy.SelectedHwnd,
+            SelectedBoundingRect = legacy.SelectedBoundingRect,
+            HasInvoke = legacy.HasInvoke,
+            HasClickablePoint = legacy.HasClickablePoint,
+            CandidatesJson = legacy.CandidatesJson,
+            Reason = legacy.Reason,
+            ChildHwndDiagnostics = legacy.ChildHwndDiagnostics,
+            ShadowEngineFound = shadowParity.EngineFound,
+            ShadowEngineVerdict = shadowParity.EngineVerdict,
+            ShadowAgreesWithLegacy = shadowParity.AgreesWithLegacy,
+            ShadowEngineSelectedName = shadowParity.EngineSelectedName,
+            ShadowReasons = shadowParity.Reasons.Count == 0 ? null : string.Join(" | ", shadowParity.Reasons)
         };
     }
 
@@ -259,6 +324,11 @@ public sealed class WebTargetResult
     public string Reason { get; init; } = "";
     /// <summary>Per-HWND diagnostic summary (for recipe variable exposure).</summary>
     public IReadOnlyList<string> ChildHwndDiagnostics { get; init; } = Array.Empty<string>();
+    public bool ShadowEngineFound { get; init; }
+    public string? ShadowEngineVerdict { get; init; }
+    public bool ShadowAgreesWithLegacy { get; init; }
+    public string? ShadowEngineSelectedName { get; init; }
+    public string? ShadowReasons { get; init; }
 }
 
 public sealed class CandidateInfo
