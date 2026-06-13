@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using FlaUI.Core.AutomationElements;
+using FlaUI.UIA3;
 using OneBrain.Actions.Uia;
 using OneBrain.Cli.Accessibility;
 using OneBrain.Cli.Browser;
@@ -9,6 +11,7 @@ using OneBrain.Cli.Safety;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Extraction;
 using OneBrain.Core.Execution;
+using OneBrain.Core.Identity;
 using OneBrain.Core.Profiles;
 using OneBrain.Core.Safety;
 using OneBrain.Core.Actions;
@@ -41,18 +44,21 @@ public sealed class RecipeRunner
     private const int DefaultStepTimeoutMs = 15000;
     private const int OuterGraceMs = 3000;
     private static Func<IntPtr, string, string, int, WebTargetResult>? s_targetObserveResolverOverride = null;
+    private static Func<string, string?, string?, DesktopTargetObservationResult>? s_targetObserveDesktopOverride = null;
     private static Func<IUiaPatternExecutor>? s_safeClickPatternExecutorFactoryOverride = null;
     private static Func<IDesktopOwnershipMonitor>? s_safeClickOwnershipMonitorFactoryOverride = null;
     private static Func<WebTargetResult, string, ActionResult>? s_safeClickLegacyWebActionOverride = null;
     private RecipeDefinition? _currentRecipe;
     private CancellationTokenSource? _stepCts;
     private readonly RecipeExecutionContext _ctx = new();
+    private readonly Dictionary<string, SafeClickShadowReadiness> _safeClickShadowReadiness = new(StringComparer.OrdinalIgnoreCase);
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false, string? approvalMode = null)
     {
         _currentRecipe = recipe;
         _ctx.Variables.Clear();
         _ctx.Notes.Clear();
+        _safeClickShadowReadiness.Clear();
 
         var denySensitive = string.Equals(approvalMode, "deny", StringComparison.OrdinalIgnoreCase);
         var reportSensitive = string.Equals(approvalMode, "auto", StringComparison.OrdinalIgnoreCase) || denySensitive;
@@ -176,6 +182,8 @@ public sealed class RecipeRunner
 
         sw.Stop();
 
+        SetSafeClickMigrationSummaryVars();
+
         return new RecipeRunResult(
             Success: failed == 0,
             Recipe: recipe.Name,
@@ -281,6 +289,7 @@ public sealed class RecipeRunner
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
                 "target.observe"          => ExecuteTargetObserve(step, sw),
+                "target.observe.desktop"  => ExecuteTargetObserveDesktop(step, sw),
                 "approval.manifest"       => ExecuteApprovalManifest(step, sw),
                 "safe.click"              => ExecuteSafeClick(step, sw),
                 "diagnose.msaa"           => ExecuteDiagnoseMsaa(step, sw),
@@ -2130,6 +2139,75 @@ public sealed class RecipeRunner
         }
     }
 
+    private RecipeStepRunResult ExecuteTargetObserveDesktop(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var prefix = step.SaveAs ?? "target.desktop";
+        var targetText = R(step.Args?.GetValueOrDefault("targetText")
+            ?? step.Args?.GetValueOrDefault("targettext")
+            ?? step.Args?.GetValueOrDefault("target")
+            ?? step.Name);
+        if (string.IsNullOrWhiteSpace(targetText))
+            return Fail(step, sw, "target.observe.desktop requires 'targetText' or 'target'.");
+
+        var processName = EmptyToNull(R(step.Args?.GetValueOrDefault("proc")
+            ?? step.Args?.GetValueOrDefault("processName")
+            ?? step.Process));
+        var windowTitle = EmptyToNull(R(step.Args?.GetValueOrDefault("window")
+            ?? step.Args?.GetValueOrDefault("windowTitle")
+            ?? step.Args?.GetValueOrDefault("titleContains")
+            ?? step.Window
+            ?? step.TitleContains));
+        var mode = R(step.Args?.GetValueOrDefault("mode"));
+
+        _ctx.Variables[prefix + ".targetText"] = targetText;
+        if (!string.IsNullOrWhiteSpace(mode))
+            _ctx.Variables[prefix + ".mode"] = mode;
+
+        try
+        {
+            var result = ResolveTargetObserveDesktop(targetText, processName, windowTitle);
+            ApplyDesktopTargetObserveResult(prefix, result, MapDesktopTargetObserveFailureKind(result));
+
+            sw.Stop();
+            if (result.Found)
+            {
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    true,
+                    $"target.observe.desktop: observed '{result.SelectedName}' ({result.SelectedControlType})",
+                    sw.ElapsedMilliseconds);
+            }
+
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                true,
+                $"target.observe.desktop: {result.Reason}",
+                sw.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            ApplyDesktopTargetObserveResult(
+                prefix,
+                new DesktopTargetObservationResult
+                {
+                    Found = false,
+                    CandidateCount = 0,
+                    Reason = ex.Message
+                },
+                FailureKind.SourceUnavailable);
+
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                true,
+                $"target.observe.desktop: {ex.Message}",
+                sw.ElapsedMilliseconds);
+        }
+    }
+
     private RecipeStepRunResult ExecuteApprovalManifest(RecipeStepDefinition step, Stopwatch sw)
     {
         var fromPrefix = step.Args?.GetValueOrDefault("from") ?? "";
@@ -2731,6 +2809,7 @@ public sealed class RecipeRunner
                 usesElClick: usedElClick,
                 usesUiaActionExecutor: usedUiaActionExecutor);
             SetSafeClickFsmReadyVars(prefix, readiness);
+            _safeClickShadowReadiness[prefix] = readiness;
         }
         catch (Exception ex)
         {
@@ -2765,6 +2844,7 @@ public sealed class RecipeRunner
                 usesElClick: usedElClick,
                 usesUiaActionExecutor: usedUiaActionExecutor);
             SetSafeClickFsmReadyVars(prefix, readiness);
+            _safeClickShadowReadiness[prefix] = readiness;
         }
     }
 
@@ -3080,10 +3160,176 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsmReady.summary"] = readiness.Summary;
     }
 
+    private void SetSafeClickMigrationSummaryVars()
+    {
+        if (_safeClickShadowReadiness.Count == 0)
+            return;
+
+        var report = SafeClickMigrationReportBuilder.Build(_safeClickShadowReadiness.Values);
+        var summary = report.Summary;
+        var blockingReasons = summary.BlockingReasons.Count == 0
+            ? ""
+            : string.Join("|",
+                summary.BlockingReasons
+                    .OrderByDescending(entry => entry.Value)
+                    .ThenBy(entry => entry.Key.ToString(), StringComparer.Ordinal)
+                    .Select(entry => $"{entry.Key}={entry.Value}"));
+
+        _ctx.Variables["safeClick.migration.total"] = summary.TotalSafeClicks.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.eligibleForFsm"] = summary.EligibleForFsm.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.notEligibleForFsm"] = summary.NotEligibleForFsm.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.blockingReasons"] = blockingReasons;
+        _ctx.Variables["safeClick.migration.readinessPercent"] = summary.ReadinessPercent.ToString("0.##", CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyFallbackCount"] = summary.WouldUseUnsafeFallback.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.summary"] = report.Markdown;
+        _ctx.Variables["safeClick.migration.reportJson"] = report.Json;
+        _ctx.Variables["safeClick.migration.webUiaEligible"] = summary.WebUiaEligible.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopUiaObservable"] = summary.DesktopUiaObservable.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopUiaStrong"] = summary.DesktopUiaStrong.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopUiaWeak"] = summary.DesktopUiaWeak.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopMissingIdentity"] = summary.DesktopMissingIdentity.ToString(CultureInfo.InvariantCulture);
+    }
+
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
     {
         return s_targetObserveResolverOverride?.Invoke(sessionHwnd, targetText, processName, maxDescendants)
             ?? WebTargetResolver.Resolve(sessionHwnd, targetText, processName, maxDescendants);
+    }
+
+    private static DesktopTargetObservationResult ResolveTargetObserveDesktop(string targetText, string? processName, string? windowTitle)
+    {
+        return s_targetObserveDesktopOverride?.Invoke(targetText, processName, windowTitle)
+            ?? ResolveTargetObserveDesktopCore(targetText, processName, windowTitle);
+    }
+
+    private static DesktopTargetObservationResult ResolveTargetObserveDesktopCore(string targetText, string? processName, string? windowTitle)
+    {
+        if (string.IsNullOrWhiteSpace(targetText))
+        {
+            return new DesktopTargetObservationResult
+            {
+                Found = false,
+                CandidateCount = 0,
+                Reason = "desktop target input is empty"
+            };
+        }
+
+        if (string.IsNullOrWhiteSpace(processName) && string.IsNullOrWhiteSpace(windowTitle))
+        {
+            return new DesktopTargetObservationResult
+            {
+                Found = false,
+                CandidateCount = 0,
+                Reason = "desktop observe requires processName or window filter"
+            };
+        }
+
+        var windows = new WindowFinder().FindAllWindows(processName, windowTitle);
+        if (windows.Count == 0)
+        {
+            return new DesktopTargetObservationResult
+            {
+                Found = false,
+                CandidateCount = 0,
+                Reason = "no matching desktop windows"
+            };
+        }
+
+        var selector = new SelectorDefinition
+        {
+            SchemaVersion = 1,
+            Provenance = Provenance.Inferred,
+            Name = targetText
+        };
+
+        var candidates = new List<DesktopObservedCandidate>();
+        using var automation = new UIA3Automation();
+
+        foreach (var hwnd in windows)
+        {
+            AutomationElement? root = null;
+            try { root = automation.FromHandle(hwnd); } catch { }
+            if (root == null)
+                continue;
+
+            var resolvedProcessName = processName ?? "";
+            var resolvedWindowTitle = EmptyToNull(UiaTreeWalker.SafeName(root)) ?? windowTitle ?? "";
+            var elements = new List<AutomationElement>();
+            UiaTreeWalker.Walk(root, elements, UiaTreeWalker.DefaultMaxElements, UiaTreeWalker.DefaultMaxDepth);
+
+            foreach (var element in elements)
+            {
+                var candidate = BuildDesktopObservedCandidate(element, resolvedProcessName, resolvedWindowTitle);
+                if (candidate != null)
+                    candidates.Add(candidate);
+            }
+        }
+
+        if (candidates.Count == 0)
+        {
+            return new DesktopTargetObservationResult
+            {
+                Found = false,
+                CandidateCount = 0,
+                Reason = $"no observable desktop candidates in {windows.Count} windows"
+            };
+        }
+
+        var resolution = SelectorEngine.Resolve(selector, candidates.Select(candidate => candidate.Identity).ToList());
+        if (!resolution.Success || resolution.BestMatch == null)
+        {
+            var candidateCount = resolution.Ambiguous ? resolution.Matches.Count : 0;
+            var reason = resolution.Ambiguous
+                ? $"ambiguous: {candidateCount} equivalent desktop targets"
+                : $"not found in {windows.Count} windows";
+
+            return new DesktopTargetObservationResult
+            {
+                Found = false,
+                CandidateCount = candidateCount,
+                Reason = reason
+            };
+        }
+
+        var selected = candidates.FirstOrDefault(candidate => SameElementIdentity(candidate.Identity, resolution.BestMatch));
+        if (selected == null)
+        {
+            return new DesktopTargetObservationResult
+            {
+                Found = false,
+                CandidateCount = 0,
+                Reason = "selected desktop identity could not be reattached"
+            };
+        }
+
+        return new DesktopTargetObservationResult
+        {
+            Found = true,
+            CandidateCount = 1,
+            Reason = "exact desktop observe match",
+            SelectedName = selected.Identity.Name,
+            SelectedControlType = selected.Identity.EffectiveControlType,
+            SelectedBoundingRect = selected.Identity.BoundsHint,
+            SelectedRuntimeId = EmptyToNull(selected.Identity.RuntimeId),
+            SelectedAutomationId = EmptyToNull(selected.Identity.AutomationId),
+            SelectedClassName = EmptyToNull(selected.Identity.ClassName),
+            SelectedFrameworkId = EmptyToNull(selected.Identity.FrameworkId),
+            SelectedAncestorPath = EmptyToNull(selected.Identity.AncestorPath),
+            SelectedProcessName = EmptyToNull(selected.Identity.ProcessName),
+            SelectedWindowTitle = EmptyToNull(selected.Identity.WindowTitle),
+            SelectedHelpText = null,
+            SelectedLegacyName = null,
+            SelectedHelpTextPresent = selected.HelpTextPresent,
+            SelectedLegacyNamePresent = selected.LegacyNamePresent,
+            HasInvoke = selected.HasInvoke
+        };
+    }
+
+    private void ApplyDesktopTargetObserveResult(string prefix, DesktopTargetObservationResult result, FailureKind failureKind)
+    {
+        SetDesktopResolutionVars(prefix, result);
+        SetDesktopObservedIdentityVars(prefix, result);
+        _ctx.Variables[prefix + ".failureKind"] = failureKind.ToString();
     }
 
     private static WebTargetResult ResolveSafeClickTarget(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
@@ -3146,6 +3392,30 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".identity.shadowReasons"] = result.ShadowReasons ?? "";
     }
 
+    private void SetDesktopObservedIdentityVars(string prefix, DesktopTargetObservationResult result)
+    {
+        var identity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(result);
+        var strength = DesktopTargetObservationResultIdentityMapper.ResolveIdentityStrength(result);
+
+        _ctx.Variables[prefix + ".identity.source"] = "uia";
+        _ctx.Variables[prefix + ".identity.strength"] = strength.ToString();
+        _ctx.Variables[prefix + ".identity.runtimeId"] = identity?.RuntimeId ?? "";
+        _ctx.Variables[prefix + ".identity.automationId"] = identity?.AutomationId ?? "";
+        _ctx.Variables[prefix + ".identity.name"] = identity?.Name ?? "";
+        _ctx.Variables[prefix + ".identity.role"] = identity?.Role ?? "";
+        _ctx.Variables[prefix + ".identity.controlType"] = identity?.ControlType ?? "";
+        _ctx.Variables[prefix + ".identity.className"] = identity?.ClassName ?? "";
+        _ctx.Variables[prefix + ".identity.frameworkId"] = identity?.FrameworkId ?? "";
+        _ctx.Variables[prefix + ".identity.ancestorPath"] = identity?.AncestorPath ?? "";
+        _ctx.Variables[prefix + ".identity.processName"] = identity?.ProcessName ?? "";
+        _ctx.Variables[prefix + ".identity.windowTitle"] = identity?.WindowTitle ?? "";
+        _ctx.Variables[prefix + ".identity.boundsHint"] = identity?.BoundsHint ?? "";
+        _ctx.Variables[prefix + ".identity.provenance"] = (identity?.Provenance ?? Provenance.Inferred).ToString();
+        _ctx.Variables[prefix + ".identity.helpTextPresent"] = result.SelectedHelpTextPresent ? "true" : "false";
+        _ctx.Variables[prefix + ".identity.legacyNamePresent"] = result.SelectedLegacyNamePresent ? "true" : "false";
+        _ctx.Variables[prefix + ".identity.digest"] = identity == null ? "" : ElementFingerprintBuilder.Build(identity);
+    }
+
     private static FailureKind MapTargetObserveFailureKind(WebTargetResult result)
     {
         if (result.Found)
@@ -3155,6 +3425,20 @@ public sealed class RecipeRunner
             return FailureKind.Ambiguous;
 
         if (result.Reason.Contains("invalid input", StringComparison.OrdinalIgnoreCase))
+            return FailureKind.SourceUnavailable;
+
+        return FailureKind.NotFound;
+    }
+
+    private static FailureKind MapDesktopTargetObserveFailureKind(DesktopTargetObservationResult result)
+    {
+        if (result.Found)
+            return FailureKind.Unverified;
+
+        if (result.CandidateCount > 1 || result.Reason.Contains("ambiguous", StringComparison.OrdinalIgnoreCase))
+            return FailureKind.Ambiguous;
+
+        if (result.Reason.Contains("requires processName or window filter", StringComparison.OrdinalIgnoreCase))
             return FailureKind.SourceUnavailable;
 
         return FailureKind.NotFound;
@@ -3207,6 +3491,29 @@ public sealed class RecipeRunner
         }
 
         return IdentityStrength.None;
+    }
+
+    private void SetDesktopResolutionVars(string prefix, DesktopTargetObservationResult result)
+    {
+        _ctx.Variables[prefix + ".resolution.found"] = result.Found ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.candidateCount"] = result.CandidateCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables[prefix + ".resolution.selectedName"] = result.SelectedName ?? "";
+        _ctx.Variables[prefix + ".resolution.selectedControlType"] = result.SelectedControlType ?? "";
+        _ctx.Variables[prefix + ".resolution.selectedBoundingRect"] = result.SelectedBoundingRect ?? "";
+        _ctx.Variables[prefix + ".resolution.method"] = "DesktopTargetObserve";
+        _ctx.Variables[prefix + ".resolution.reason"] = result.Reason;
+        _ctx.Variables[prefix + ".resolution.hasInvoke"] = result.HasInvoke ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.identity.runtimeIdPresent"] = !string.IsNullOrWhiteSpace(result.SelectedRuntimeId) ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.identity.runtimeId"] = result.SelectedRuntimeId ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.strength"] = DesktopTargetObservationResultIdentityMapper.ResolveIdentityStrength(result).ToString();
+        _ctx.Variables[prefix + ".resolution.identity.automationId"] = result.SelectedAutomationId ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.ancestorPath"] = result.SelectedAncestorPath ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.frameworkId"] = result.SelectedFrameworkId ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.className"] = result.SelectedClassName ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.processName"] = result.SelectedProcessName ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.windowTitle"] = result.SelectedWindowTitle ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.helpTextPresent"] = result.SelectedHelpTextPresent ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.identity.legacyNamePresent"] = result.SelectedLegacyNamePresent ? "true" : "false";
     }
 
     private void SetSafeClickLegacyUsageVars(string prefix, bool usedElClick, bool usedUiaActionExecutor)
@@ -3268,6 +3575,132 @@ public sealed class RecipeRunner
             BoundsHint = selectedBoundingRect,
             Provenance = string.IsNullOrWhiteSpace(runtimeId) ? Provenance.Inferred : Provenance.Uia
         };
+    }
+
+    private static DesktopObservedCandidate? BuildDesktopObservedCandidate(
+        AutomationElement element,
+        string processName,
+        string windowTitle)
+    {
+        try
+        {
+            var runtimeId = UiaTreeWalker.SafeRuntimeId(element);
+            var automationId = UiaTreeWalker.SafeId(element);
+            var name = UiaTreeWalker.SafeName(element);
+            var controlType = UiaTreeWalker.SafeRole(element);
+            var className = UiaTreeWalker.SafeClass(element);
+            var frameworkId = UiaTreeWalker.SafeFrameworkId(element);
+            var helpText = UiaTreeWalker.SafeHelpText(element);
+            var legacyName = UiaTreeWalker.SafeLegacyName(element);
+            var ancestorPath = BuildDesktopAncestorPath(element, 4);
+            var boundsHint = BuildDesktopBoundsHint(element);
+
+            if (string.IsNullOrWhiteSpace(runtimeId) &&
+                string.IsNullOrWhiteSpace(automationId) &&
+                string.IsNullOrWhiteSpace(name) &&
+                string.IsNullOrWhiteSpace(controlType) &&
+                string.IsNullOrWhiteSpace(className) &&
+                string.IsNullOrWhiteSpace(frameworkId) &&
+                string.IsNullOrWhiteSpace(ancestorPath))
+            {
+                return null;
+            }
+
+            var identity = new ElementIdentity
+            {
+                RuntimeId = runtimeId,
+                AutomationId = automationId,
+                Name = name,
+                HelpText = helpText,
+                LegacyName = legacyName,
+                Role = controlType,
+                ControlType = controlType,
+                ClassName = className,
+                FrameworkId = frameworkId,
+                ProcessName = processName,
+                WindowTitle = windowTitle,
+                AncestorPath = ancestorPath,
+                BoundsHint = boundsHint,
+                Provenance = string.IsNullOrWhiteSpace(runtimeId) ? Provenance.Inferred : Provenance.Uia
+            };
+
+            return new DesktopObservedCandidate(
+                identity,
+                SafeInvokeSupported(element),
+                HelpTextPresent: !string.IsNullOrWhiteSpace(helpText),
+                LegacyNamePresent: !string.IsNullOrWhiteSpace(legacyName));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool SafeInvokeSupported(AutomationElement element)
+    {
+        try
+        {
+            return element.Patterns.Invoke.IsSupported;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string BuildDesktopBoundsHint(AutomationElement element)
+    {
+        try
+        {
+            var bounds = element.BoundingRectangle;
+            return $"{bounds.Left},{bounds.Top},{bounds.Width},{bounds.Height}";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static string BuildDesktopAncestorPath(AutomationElement element, int maxDepth)
+    {
+        if (maxDepth <= 0)
+            return "";
+
+        var segments = new List<string>();
+        try
+        {
+            var current = element.Parent;
+            var depth = 0;
+            while (current != null && depth < maxDepth)
+            {
+                var role = UiaTreeWalker.SafeRole(current);
+                var name = UiaTreeWalker.SafeName(current);
+                var segment = string.IsNullOrWhiteSpace(name) ? role : $"{role}:{name}";
+                if (!string.IsNullOrWhiteSpace(segment))
+                    segments.Add(segment);
+                current = current.Parent;
+                depth++;
+            }
+        }
+        catch
+        {
+            return "";
+        }
+
+        segments.Reverse();
+        return string.Join(" > ", segments);
+    }
+
+    private static bool SameElementIdentity(ElementIdentity left, ElementIdentity right)
+    {
+        if (!string.IsNullOrWhiteSpace(left.RuntimeId) && !string.IsNullOrWhiteSpace(right.RuntimeId))
+            return string.Equals(left.RuntimeId, right.RuntimeId, StringComparison.Ordinal);
+
+        return string.Equals(left.AutomationId, right.AutomationId, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.EffectiveControlType, right.EffectiveControlType, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.Name, right.Name, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.ClassName, right.ClassName, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.AncestorPath, right.AncestorPath, StringComparison.OrdinalIgnoreCase);
     }
 
     private bool? ReadSafeClickInvokeAvailability(string prefix)
@@ -3569,4 +4002,10 @@ public sealed class RecipeRunner
 
         return vars;
     }
+
+    private sealed record DesktopObservedCandidate(
+        ElementIdentity Identity,
+        bool HasInvoke,
+        bool HelpTextPresent,
+        bool LegacyNamePresent);
 }

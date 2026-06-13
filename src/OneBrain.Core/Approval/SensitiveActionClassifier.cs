@@ -53,6 +53,7 @@ public static class SensitiveActionClassifier
         "sleep",
         "snapshot.read",
         "target.observe",
+        "target.observe.desktop",
         "visual.capture",
         "visual.capture.element",
         "visual.capture.window",

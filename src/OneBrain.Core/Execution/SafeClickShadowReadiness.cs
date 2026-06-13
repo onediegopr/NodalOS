@@ -27,17 +27,28 @@ public sealed record SafeClickMigrationMetrics(
     int RuntimeIdMissing,
     int RuntimeIdStable,
     int RuntimeIdChanged,
+    int RuntimeIdUnknown,
     int UsesElClick,
     int UsesUiaActionExecutor,
     int InvokePatternAvailable,
-    int InvokePatternUnavailable);
+    int InvokePatternUnavailable,
+    int InvokePatternUnknown,
+    int WouldRequireLegacy,
+    int WouldUseUnsafeFallback,
+    int WebUiaEligible,
+    int DesktopUiaObservable,
+    int DesktopUiaStrong,
+    int DesktopUiaWeak,
+    int DesktopMissingIdentity);
 
 public sealed record SafeClickShadowReadiness(
     bool Success,
     bool Blocked,
     string Reason,
+    SafeClickMigrationReadinessReason ReadinessReason,
     StepState ProjectedState,
     IdentityStrength IdentityStrength,
+    string IdentitySource,
     bool HasTargetObserve,
     bool HasApprovalV3,
     bool HasRuntimeId,
@@ -71,6 +82,7 @@ public static class SafeClickShadowReadinessEvaluator
                                 manifest.IdentitySchemaVersion,
                                 ApprovalManifestBuilder.IdentitySchemaVersion,
                                 StringComparison.Ordinal);
+        var identitySource = (manifest?.IdentitySource ?? "").Trim();
         var hasTargetObserve = HasTargetObserve(manifest);
         var hasRuntimeId = observedIdentity?.IsStrong == true;
         var runtimeIdentityMatch = ResolveRuntimeIdentityMatch(manifest, observedIdentity, hasApprovalV3);
@@ -90,7 +102,10 @@ public static class SafeClickShadowReadinessEvaluator
             hasRuntimeId,
             runtimeIdentityMatch,
             eligibleForFsm);
+        var readinessReason = ParseReason(reason);
         var reasons = BuildReasons(reason, plan.Reasons);
+        var isDesktopSource = string.Equals(identitySource, "uia", StringComparison.OrdinalIgnoreCase);
+        var isWebSource = string.Equals(identitySource, "web-uia", StringComparison.OrdinalIgnoreCase);
         var metrics = new SafeClickMigrationMetrics(
             TotalClicks: 1,
             EligibleForFsm: eligibleForFsm ? 1 : 0,
@@ -104,17 +119,28 @@ public static class SafeClickShadowReadinessEvaluator
             RuntimeIdMissing: hasRuntimeId ? 0 : 1,
             RuntimeIdStable: runtimeIdentityMatch == RuntimeIdentityMatch.Same ? 1 : 0,
             RuntimeIdChanged: runtimeIdentityMatch == RuntimeIdentityMatch.Different ? 1 : 0,
+            RuntimeIdUnknown: runtimeIdentityMatch == RuntimeIdentityMatch.Unknown ? 1 : 0,
             UsesElClick: usesElClick ? 1 : 0,
             UsesUiaActionExecutor: usesUiaActionExecutor ? 1 : 0,
             InvokePatternAvailable: invokePatternAvailable == true ? 1 : 0,
-            InvokePatternUnavailable: invokePatternAvailable == false ? 1 : 0);
+            InvokePatternUnavailable: invokePatternAvailable == false ? 1 : 0,
+            InvokePatternUnknown: invokePatternAvailable.HasValue ? 0 : 1,
+            WouldRequireLegacy: !eligibleForFsm ? 1 : 0,
+            WouldUseUnsafeFallback: plan.WouldUseUnsafeFallback ? 1 : 0,
+            WebUiaEligible: isWebSource && eligibleForFsm ? 1 : 0,
+            DesktopUiaObservable: isDesktopSource ? 1 : 0,
+            DesktopUiaStrong: isDesktopSource && plan.IdentityStrength == IdentityStrength.Strong ? 1 : 0,
+            DesktopUiaWeak: isDesktopSource && plan.IdentityStrength == IdentityStrength.Weak ? 1 : 0,
+            DesktopMissingIdentity: isDesktopSource && plan.IdentityStrength == IdentityStrength.None ? 1 : 0);
 
         return new SafeClickShadowReadiness(
             Success: eligibleForFsm,
             Blocked: !eligibleForFsm,
             Reason: reason,
+            ReadinessReason: readinessReason,
             ProjectedState: plan.ProjectedState,
             IdentityStrength: plan.IdentityStrength,
+            IdentitySource: identitySource,
             HasTargetObserve: hasTargetObserve,
             HasApprovalV3: hasApprovalV3,
             HasRuntimeId: hasRuntimeId,
@@ -232,5 +258,26 @@ public static class SafeClickShadowReadinessEvaluator
         }
 
         return reasons;
+    }
+
+    private static SafeClickMigrationReadinessReason ParseReason(string reason)
+    {
+        return reason switch
+        {
+            "Ready" => SafeClickMigrationReadinessReason.Ready,
+            "ApprovalV2" => SafeClickMigrationReadinessReason.ApprovalV2,
+            "MissingTargetObserve" => SafeClickMigrationReadinessReason.MissingTargetObserve,
+            "MissingIdentity" => SafeClickMigrationReadinessReason.MissingIdentity,
+            "WeakIdentity" => SafeClickMigrationReadinessReason.WeakIdentity,
+            "RuntimeIdMissing" => SafeClickMigrationReadinessReason.RuntimeIdMissing,
+            "RuntimeIdChanged" => SafeClickMigrationReadinessReason.RuntimeIdChanged,
+            "WouldUseLegacyFallback" => SafeClickMigrationReadinessReason.WouldUseLegacyFallback,
+            "Ambiguous" => SafeClickMigrationReadinessReason.Ambiguous,
+            "NotFound" => SafeClickMigrationReadinessReason.NotFound,
+            "MissingManifest" => SafeClickMigrationReadinessReason.MissingManifest,
+            "PolicyDenied" => SafeClickMigrationReadinessReason.PolicyDenied,
+            "Blocked" => SafeClickMigrationReadinessReason.Blocked,
+            _ => SafeClickMigrationReadinessReason.Unknown
+        };
     }
 }

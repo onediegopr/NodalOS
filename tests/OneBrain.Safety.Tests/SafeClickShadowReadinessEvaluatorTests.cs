@@ -157,6 +157,27 @@ public sealed class SafeClickShadowReadinessEvaluatorTests
         Assert.AreEqual(1, readiness.Metrics.InvokePatternUnavailable);
     }
 
+    [TestMethod]
+    public void DesktopIdentityFeedsShadowReadiness()
+    {
+        var strongIdentity = CreateStrongIdentity();
+        var manifest = ApprovalManifestBuilder.Build(
+            ClickPreflightEvaluator.Evaluate("Categorias"),
+            "controlled",
+            new ApprovedIdentityInput(strongIdentity, "uia", null));
+
+        var readiness = SafeClickShadowReadinessEvaluator.Evaluate(
+            manifest,
+            CreatePlan(IdentityStrength.Strong, StepState.Blocked, FailureKind.NotFound, "NotFound"),
+            observedIdentity: null,
+            invokePatternAvailable: null);
+
+        Assert.AreEqual("uia", readiness.IdentitySource);
+        Assert.AreEqual(1, readiness.Metrics.DesktopUiaObservable);
+        Assert.AreEqual(1, readiness.Metrics.DesktopUiaStrong);
+        Assert.AreEqual(0, readiness.Metrics.WebUiaEligible);
+    }
+
     private static SafeClickExecutionPlan CreatePlan(
         IdentityStrength identityStrength,
         StepState projectedState,

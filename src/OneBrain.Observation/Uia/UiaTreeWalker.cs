@@ -47,6 +47,25 @@ public static class UiaTreeWalker
         try { return e.ClassName ?? ""; } catch { return ""; }
     }
 
+    public static string SafeFrameworkId(AutomationElement e)
+    {
+        try
+        {
+            var frameworkIdProperty = e.GetType().GetProperty("FrameworkId");
+            var frameworkIdValue = frameworkIdProperty?.GetValue(e);
+            if (frameworkIdValue is string frameworkId && !string.IsNullOrWhiteSpace(frameworkId))
+                return frameworkId.Trim();
+
+            var frameworkTypeProperty = e.GetType().GetProperty("FrameworkType");
+            var frameworkTypeValue = frameworkTypeProperty?.GetValue(e);
+            return frameworkTypeValue?.ToString()?.Trim() ?? "";
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
     public static string SafeRuntimeId(AutomationElement e)
     {
         try { return FormatRuntimeId(e.FrameworkAutomationElement.RuntimeId); } catch { return ""; }
