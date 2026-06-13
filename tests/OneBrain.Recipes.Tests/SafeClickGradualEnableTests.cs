@@ -123,6 +123,93 @@ public sealed class SafeClickGradualEnableTests
     }
 
     [TestMethod]
+    public void LegacyDispatchPathWithOwnerReasonReviewByIsCompliant()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(
+                includeObserve: true,
+                dispatchPath: "legacy",
+                legacyOwner: "migration",
+                legacyReason: "Target lacks InvokePattern",
+                legacyReviewBy: "2026-07-31")));
+
+        Assert.AreEqual("true", result.Variables!["safeClick.legacy.deprecationPolicy.isLegacyDispatch"]);
+        Assert.AreEqual("true", result.Variables["safeClick.legacy.deprecationPolicy.isDeprecated"]);
+        Assert.AreEqual("true", result.Variables["safeClick.legacy.deprecationPolicy.isCompliant"]);
+        Assert.AreEqual("Warning", result.Variables["safeClick.legacy.deprecationPolicy.severity"]);
+    }
+
+    [TestMethod]
+    public void LegacyDispatchPathMissingOwnerWarns()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy", legacyReason: "temporary", legacyReviewBy: "2026-07-31")));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.deprecationPolicy.isCompliant"]);
+        StringAssert.Contains(result.Variables["safeClick.legacy.deprecationPolicy.violationReason"], "MissingOwner");
+    }
+
+    [TestMethod]
+    public void LegacyDispatchPathMissingReasonWarns()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy", legacyOwner: "migration", legacyReviewBy: "2026-07-31")));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.deprecationPolicy.isCompliant"]);
+        StringAssert.Contains(result.Variables["safeClick.legacy.deprecationPolicy.violationReason"], "MissingReason");
+    }
+
+    [TestMethod]
+    public void LegacyDispatchPathMissingReviewByWarns()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy", legacyOwner: "migration", legacyReason: "temporary")));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.legacy.deprecationPolicy.isCompliant"]);
+        StringAssert.Contains(result.Variables["safeClick.legacy.deprecationPolicy.violationReason"], "MissingReviewBy");
+    }
+
+    [TestMethod]
+    public void LegacyDeprecationDoesNotBlockYet()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy")));
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual("UIA safe.click", result.Variables!["safeClick.method"]);
+        Assert.AreEqual("Warning", result.Variables["safeClick.legacy.deprecationPolicy.severity"]);
+    }
+
+    [TestMethod]
+    public void LegacyDeprecationMetricsWritten()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy")));
+
+        Assert.AreEqual("1", result.Variables!["safeClick.migration.legacyExplicitOptOutTotal"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.legacyOptOutNonCompliant"]);
+        Assert.AreEqual("1", result.Variables["safeClick.migration.legacyDeprecationWarnings"]);
+    }
+
+    [TestMethod]
     public void UnknownDispatchPathStillPolicyDenied()
     {
         var result = new RecipeRunner().Run(BuildLegacyControlledRecipe(dispatchPath: "typo"));
@@ -160,6 +247,80 @@ public sealed class SafeClickGradualEnableTests
         var result = RunStaleRouted();
 
         Assert.AreEqual("false", result.Variables!["safeClick.legacy.usedUiaActionExecutor"]);
+    }
+
+    [TestMethod]
+    public void RetirementReadinessFalseWhenLegacyPathUsed()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.Disabled,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.retirement.ready"]);
+        StringAssert.Contains(result.Variables["safeClick.retirement.blockingReasons"], "LegacyPathUsed");
+    }
+
+    [TestMethod]
+    public void RetirementReadinessFalseWhenUiaActionExecutorUsed()
+    {
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
+
+        Assert.AreEqual("false", result.Variables!["safeClick.retirement.ready"]);
+        StringAssert.Contains(result.Variables["safeClick.retirement.blockingReasons"], "UiaActionExecutorUsed");
+    }
+
+    [TestMethod]
+    public void RetirementReadinessFalseWhenUnsafeFallbackUsed()
+    {
+        var result = new RecipeRunner().Run(BuildLegacyControlledRecipe());
+
+        Assert.AreEqual("1", result.Variables!["safeClick.retirement.unsafeFallbackUsed"]);
+        StringAssert.Contains(result.Variables["safeClick.retirement.blockingReasons"], "UnsafeFallbackUsed");
+    }
+
+    [TestMethod]
+    public void RetirementReadinessFalseWhenLegacyOptOutNonCompliant()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: ThrowingExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true, dispatchPath: "legacy")));
+
+        Assert.AreEqual("false", result.Variables!["safeClick.retirement.ready"]);
+        StringAssert.Contains(result.Variables["safeClick.retirement.blockingReasons"], "NonCompliantLegacyOptOut");
+    }
+
+    [TestMethod]
+    public void RetirementReadinessTrueWhenNoBlockingReasons()
+    {
+        var result = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual("true", result.Variables!["safeClick.retirement.ready"]);
+        Assert.AreEqual("", result.Variables["safeClick.retirement.blockingReasons"]);
+    }
+
+    [TestMethod]
+    public void RetirementReadinessReportIsDeterministic()
+    {
+        var first = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+        var second = RunRouting(
+            SafeClickDefaultMode.WebEligible,
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            executor: SuccessfulExecutor(),
+            () => new RecipeRunner().Run(BuildWebRecipe(includeObserve: true)));
+
+        Assert.AreEqual(first.Variables!["safeClick.retirement.reportJson"], second.Variables!["safeClick.retirement.reportJson"]);
     }
 
     [TestMethod]
@@ -496,7 +657,12 @@ public sealed class SafeClickGradualEnableTests
 
     // ── Recipe builders ────────────────────────────────────────────────────
 
-    private static RecipeDefinition BuildWebRecipe(bool includeObserve, string? dispatchPath = null)
+    private static RecipeDefinition BuildWebRecipe(
+        bool includeObserve,
+        string? dispatchPath = null,
+        string? legacyOwner = null,
+        string? legacyReason = null,
+        string? legacyReviewBy = null)
     {
         var steps = new List<RecipeStepDefinition>
         {
@@ -537,7 +703,7 @@ public sealed class SafeClickGradualEnableTests
             Id = "safe-click",
             Kind = "safe.click",
             SaveAs = "safeClick",
-            Args = BuildSafeClickArgs("More information...", dispatchPath)
+            Args = BuildSafeClickArgs("More information...", dispatchPath, legacyOwner: legacyOwner, legacyReason: legacyReason, legacyReviewBy: legacyReviewBy)
         });
 
         return new RecipeDefinition("safe-click-gradual-web")
@@ -652,7 +818,13 @@ public sealed class SafeClickGradualEnableTests
         };
     }
 
-    private static Dictionary<string, string> BuildSafeClickArgs(string targetText, string? dispatchPath, string proc = "msedge")
+    private static Dictionary<string, string> BuildSafeClickArgs(
+        string targetText,
+        string? dispatchPath,
+        string proc = "msedge",
+        string? legacyOwner = null,
+        string? legacyReason = null,
+        string? legacyReviewBy = null)
     {
         var args = new Dictionary<string, string>
         {
@@ -664,6 +836,12 @@ public sealed class SafeClickGradualEnableTests
 
         if (!string.IsNullOrWhiteSpace(dispatchPath))
             args["dispatchPath"] = dispatchPath;
+        if (!string.IsNullOrWhiteSpace(legacyOwner))
+            args["legacyOwner"] = legacyOwner;
+        if (!string.IsNullOrWhiteSpace(legacyReason))
+            args["legacyReason"] = legacyReason;
+        if (!string.IsNullOrWhiteSpace(legacyReviewBy))
+            args["legacyReviewBy"] = legacyReviewBy;
 
         return args;
     }

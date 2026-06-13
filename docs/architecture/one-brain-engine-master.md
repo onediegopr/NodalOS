@@ -656,6 +656,26 @@ Desktop default exige `DesktopEligibleForFsm`, re-observe de RuntimeId antes del
 
 No hay flip general, no se retira legacy, no se retira `el.Click` y no se retira `UiaActionExecutor`.
 
+### 9.6 Legacy deprecation y retirement readiness
+
+H152 formaliza `dispatchPath=legacy` como deuda explicita.
+
+Metadata canonica:
+
+* `legacyOwner`
+* `legacyReason`
+* `legacyReviewBy`
+
+En H152 la falta de metadata no bloquea; marca `Warning`, variables `safeClick.legacy.deprecationPolicy.*` y metricas de opt-out no compliant.
+
+H153 agrega un gate local por corrida:
+
+* `safeClick.retirement.ready`
+* `safeClick.retirement.blockingReasons`
+* `safeClick.retirement.reportJson`
+
+El gate mide si es seguro retirar legacy, pero no lo retira. No se puede afirmar uso historico cero sin persistencia temporal real.
+
 ---
 
 ## 10. SafeClickStepVerifier
@@ -720,6 +740,14 @@ Campos principales:
 * AllEligibleModeEnabled
 * DefaultFsmScopeWeb
 * DefaultFsmScopeDesktop
+* LegacyExplicitOptOutTotal
+* LegacyOptOutCompliant
+* LegacyOptOutNonCompliant
+* LegacyDeprecationWarnings
+* RetirementReady
+* DefaultLegacyUse
+* DefaultElClickUse
+* DefaultUiaActionExecutorUse
 
 Objetivo:
 
@@ -1005,8 +1033,9 @@ Siguientes pasos:
 * HITO-148 — Web Stabilization + RuntimeId Hardening **(implementado: re-observe web antes del default dispatch, RuntimeId stability, bloqueo stale fail-closed, sin desktop default)**
 * HITO-149/150 — Desktop FSM Dispatch Path + Desktop Gradual Readiness **(implementado: desktop `dispatchPath=safe-executor` opt-in con source `uia`, readiness y metricas desktop; NO default desktop; NO retiro legacy)**
 * HITO-151 — Desktop Gradual Enablement eligible-only **(implementado: kill-switch `desktop-eligible` y `all-eligible`, desktop default solo eligible, re-observe desktop antes del dispatch, sin fallback silencioso; NO retira legacy)**
-* HITO-152 — Legacy Deprecation
-* HITO-153 — Legacy retirement safe.click, si metricas y auditoria lo permiten
+* HITO-152/153 — Legacy Deprecation + Retirement Readiness Gate **(implementado: legacy queda deprecated con owner/reason/reviewBy, readiness gate local; NO retira legacy, `el.Click` ni `UiaActionExecutor`)**
+* HITO-154 — Safe.Click Legacy Retirement
+* HITO-155 — Auditoria integral Claude del nucleo
 
 ### Fase siguiente: percepción robusta
 

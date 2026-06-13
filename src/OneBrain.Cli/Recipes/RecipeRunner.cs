@@ -81,6 +81,20 @@ public sealed class RecipeRunner
     private int _safeClickAllEligibleModeEnabledCount;
     private int _safeClickDefaultFsmScopeWebCount;
     private int _safeClickDefaultFsmScopeDesktopCount;
+    private int _safeClickLegacyExplicitOptOutCompliantCount;
+    private int _safeClickLegacyOptOutMissingOwnerCount;
+    private int _safeClickLegacyOptOutMissingReasonCount;
+    private int _safeClickLegacyOptOutMissingReviewByCount;
+    private int _safeClickLegacyOptOutNonCompliantCount;
+    private int _safeClickLegacyDeprecationWarningCount;
+    private int _safeClickDefaultLegacyUseCount;
+    private int _safeClickDefaultElClickUseCount;
+    private int _safeClickDefaultUiaActionExecutorUseCount;
+    private int _safeClickDefaultUnsafeFallbackUseCount;
+    private readonly HashSet<string> _safeClickDefaultLegacyPrefixes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _safeClickDefaultElClickCounted = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _safeClickDefaultUiaActionExecutorCounted = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _safeClickDefaultUnsafeFallbackCounted = new(StringComparer.OrdinalIgnoreCase);
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false, string? approvalMode = null)
     {
@@ -114,6 +128,20 @@ public sealed class RecipeRunner
         _safeClickAllEligibleModeEnabledCount = 0;
         _safeClickDefaultFsmScopeWebCount = 0;
         _safeClickDefaultFsmScopeDesktopCount = 0;
+        _safeClickLegacyExplicitOptOutCompliantCount = 0;
+        _safeClickLegacyOptOutMissingOwnerCount = 0;
+        _safeClickLegacyOptOutMissingReasonCount = 0;
+        _safeClickLegacyOptOutMissingReviewByCount = 0;
+        _safeClickLegacyOptOutNonCompliantCount = 0;
+        _safeClickLegacyDeprecationWarningCount = 0;
+        _safeClickDefaultLegacyUseCount = 0;
+        _safeClickDefaultElClickUseCount = 0;
+        _safeClickDefaultUiaActionExecutorUseCount = 0;
+        _safeClickDefaultUnsafeFallbackUseCount = 0;
+        _safeClickDefaultLegacyPrefixes.Clear();
+        _safeClickDefaultElClickCounted.Clear();
+        _safeClickDefaultUiaActionExecutorCounted.Clear();
+        _safeClickDefaultUnsafeFallbackCounted.Clear();
 
         var denySensitive = string.Equals(approvalMode, "deny", StringComparison.OrdinalIgnoreCase);
         var reportSensitive = string.Equals(approvalMode, "auto", StringComparison.OrdinalIgnoreCase) || denySensitive;
@@ -2344,7 +2372,9 @@ public sealed class RecipeRunner
         if (dispatchPath.Equals("legacy", StringComparison.OrdinalIgnoreCase))
         {
             _safeClickExplicitLegacyOptOutCount++;
-            SetSafeClickLegacyOptOutVars(prefix);
+            var deprecationPolicy = EvaluateSafeClickLegacyDeprecationPolicy(step);
+            TrackSafeClickLegacyDeprecationPolicy(deprecationPolicy);
+            SetSafeClickLegacyOptOutVars(prefix, deprecationPolicy);
             SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "ExplicitLegacyDispatchPath", eligible: false, scope: "explicit-legacy");
             return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
         }
@@ -2394,6 +2424,7 @@ public sealed class RecipeRunner
             var legacyReason = defaultMode == SafeClickDefaultMode.Legacy ? "KillSwitchLegacy" : "KillSwitchDisabled";
             SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: legacyReason, eligible: webRouteEligible || desktopRouteEligible, scope: "legacy");
             SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: false, routedByDefault: false, eligible: desktopRouteEligible, reason: legacyReason, scope: "legacy");
+            MarkSafeClickDefaultLegacyUse(prefix);
             return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
         }
 
@@ -2507,6 +2538,7 @@ public sealed class RecipeRunner
             : ineligibleReason;
         SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: generalIneligibleReason, eligible: webRouteEligible || desktopRouteEligible, scope: "legacy");
         SetSafeClickDesktopDefaultVars(prefix, defaultMode, defaultEnabled: desktopDefaultEnabled, routedByDefault: false, eligible: desktopRouteEligible, reason: ineligibleReason, scope: "legacy");
+        MarkSafeClickDefaultLegacyUse(prefix);
         return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
     }
 
@@ -2962,11 +2994,75 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsm.defaultMode"] = SafeClickDefaultModePolicy.ToWireValue(mode);
     }
 
-    private void SetSafeClickLegacyOptOutVars(string prefix)
+    private SafeClickLegacyDeprecationPolicy EvaluateSafeClickLegacyDeprecationPolicy(RecipeStepDefinition step)
+    {
+        var owner = step.Args?.GetValueOrDefault("legacyOwner")
+            ?? step.Args?.GetValueOrDefault("legacyowner")
+            ?? step.Args?.GetValueOrDefault("owner");
+        var reason = step.Args?.GetValueOrDefault("legacyReason")
+            ?? step.Args?.GetValueOrDefault("legacyreason")
+            ?? step.Args?.GetValueOrDefault("reason");
+        var reviewBy = step.Args?.GetValueOrDefault("legacyReviewBy")
+            ?? step.Args?.GetValueOrDefault("legacyreviewby")
+            ?? step.Args?.GetValueOrDefault("reviewBy")
+            ?? step.Args?.GetValueOrDefault("reviewby");
+
+        return SafeClickLegacyDeprecationPolicyEvaluator.Evaluate(
+            isLegacyDispatch: true,
+            owner,
+            reason,
+            reviewBy);
+    }
+
+    private void TrackSafeClickLegacyDeprecationPolicy(SafeClickLegacyDeprecationPolicy policy)
+    {
+        if (!policy.IsLegacyDispatch)
+            return;
+
+        if (policy.DeprecationSeverity == SafeClickLegacyDeprecationSeverity.Warning)
+            _safeClickLegacyDeprecationWarningCount++;
+
+        if (policy.IsCompliant)
+        {
+            _safeClickLegacyExplicitOptOutCompliantCount++;
+            return;
+        }
+
+        _safeClickLegacyOptOutNonCompliantCount++;
+        var violations = policy.ViolationReason.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (violations.Contains("MissingOwner", StringComparer.OrdinalIgnoreCase))
+            _safeClickLegacyOptOutMissingOwnerCount++;
+        if (violations.Contains("MissingReason", StringComparer.OrdinalIgnoreCase))
+            _safeClickLegacyOptOutMissingReasonCount++;
+        if (violations.Contains("MissingReviewBy", StringComparer.OrdinalIgnoreCase))
+            _safeClickLegacyOptOutMissingReviewByCount++;
+    }
+
+    private void MarkSafeClickDefaultLegacyUse(string prefix)
+    {
+        if (_safeClickDefaultLegacyPrefixes.Add(prefix))
+            _safeClickDefaultLegacyUseCount++;
+    }
+
+    private void SetSafeClickLegacyOptOutVars(string prefix, SafeClickLegacyDeprecationPolicy policy)
     {
         _ctx.Variables[prefix + ".legacy.explicitOptOut"] = "true";
         _ctx.Variables[prefix + ".legacy.deprecated"] = "true";
         _ctx.Variables[prefix + ".legacy.reason"] = "ExplicitLegacyDispatchPath";
+        SetSafeClickLegacyDeprecationPolicyVars(prefix, policy);
+    }
+
+    private void SetSafeClickLegacyDeprecationPolicyVars(string prefix, SafeClickLegacyDeprecationPolicy policy)
+    {
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.enabled"] = "true";
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.isLegacyDispatch"] = policy.IsLegacyDispatch ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.isDeprecated"] = policy.IsDeprecated ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.owner"] = policy.Owner;
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.reason"] = policy.Reason;
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.reviewBy"] = policy.ReviewBy;
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.isCompliant"] = policy.IsCompliant ? "true" : "false";
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.violationReason"] = policy.ViolationReason;
+        _ctx.Variables[prefix + ".legacy.deprecationPolicy.severity"] = policy.DeprecationSeverity.ToString();
     }
 
     private RecipeStepRunResult ExecuteSafeClickLegacy(
@@ -4302,6 +4398,53 @@ public sealed class RecipeRunner
         _ctx.Variables["safeClick.migration.allEligibleModeEnabled"] = _safeClickAllEligibleModeEnabledCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.defaultFsmScopeWeb"] = _safeClickDefaultFsmScopeWebCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.defaultFsmScopeDesktop"] = _safeClickDefaultFsmScopeDesktopCount.ToString(CultureInfo.InvariantCulture);
+
+        // HITO-152 — explicit legacy opt-out deprecation metrics.
+        _ctx.Variables["safeClick.migration.legacyExplicitOptOutTotal"] = _safeClickExplicitLegacyOptOutCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyOptOutCompliant"] = _safeClickLegacyExplicitOptOutCompliantCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyOptOutMissingOwner"] = _safeClickLegacyOptOutMissingOwnerCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyOptOutMissingReason"] = _safeClickLegacyOptOutMissingReasonCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyOptOutMissingReviewBy"] = _safeClickLegacyOptOutMissingReviewByCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyOptOutNonCompliant"] = _safeClickLegacyOptOutNonCompliantCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.legacyDeprecationWarnings"] = _safeClickLegacyDeprecationWarningCount.ToString(CultureInfo.InvariantCulture);
+
+        // HITO-153 — per-run retirement readiness gate. This is not historical telemetry.
+        var retirement = SafeClickLegacyRetirementReadinessEvaluator.Evaluate(
+            totalSafeClicks: summary.TotalSafeClicks,
+            defaultFsmRouted: _safeClickDefaultFsmRoutedCount + _safeClickDesktopDefaultFsmRoutedCount,
+            explicitLegacyOptOut: _safeClickExplicitLegacyOptOutCount,
+            legacyPathUsed: _safeClickDefaultLegacyUseCount,
+            elClickUsed: _safeClickDefaultElClickUseCount,
+            uiaActionExecutorUsed: _safeClickDefaultUiaActionExecutorUseCount,
+            unsafeFallbackUsed: _safeClickDefaultUnsafeFallbackUseCount,
+            nonCompliantLegacyOptOut: _safeClickLegacyOptOutNonCompliantCount,
+            desktopExcluded: _safeClickDesktopExcludedFromDefaultCount,
+            webExcluded: Math.Max(0, summary.WebUiaEligible - _safeClickDefaultFsmScopeWebCount),
+            allEligibleModeObserved: _safeClickAllEligibleModeEnabledCount,
+            unknownDispatchPathBlocked: _safeClickUnknownDispatchPathBlockedCount);
+        SetSafeClickLegacyRetirementVars(retirement);
+    }
+
+    private void SetSafeClickLegacyRetirementVars(SafeClickLegacyRetirementReadiness retirement)
+    {
+        var blockingReasons = retirement.BlockingReasons.Count == 0 ? "" : string.Join("|", retirement.BlockingReasons);
+        _ctx.Variables["safeClick.retirement.ready"] = retirement.IsReadyForRetirement ? "true" : "false";
+        _ctx.Variables["safeClick.retirement.blockingReasons"] = blockingReasons;
+        _ctx.Variables["safeClick.retirement.legacyPathUsed"] = retirement.LegacyPathUsed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.retirement.elClickUsed"] = retirement.ElClickUsed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.retirement.uiaActionExecutorUsed"] = retirement.UiaActionExecutorUsed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.retirement.unsafeFallbackUsed"] = retirement.UnsafeFallbackUsed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.retirement.nonCompliantLegacyOptOut"] = retirement.NonCompliantLegacyOptOut.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.retirement.summary"] = retirement.Summary;
+        _ctx.Variables["safeClick.retirement.reportJson"] = retirement.ReportJson;
+
+        _ctx.Variables["safeClick.migration.retirementReady"] = retirement.IsReadyForRetirement ? "1" : "0";
+        _ctx.Variables["safeClick.migration.retirementBlocked"] = retirement.IsReadyForRetirement ? "0" : "1";
+        _ctx.Variables["safeClick.migration.retirementBlockingReasons"] = blockingReasons;
+        _ctx.Variables["safeClick.migration.defaultLegacyUse"] = retirement.LegacyPathUsed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultElClickUse"] = retirement.ElClickUsed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.defaultUiaActionExecutorUse"] = retirement.UiaActionExecutorUsed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.nonCompliantLegacyOptOut"] = retirement.NonCompliantLegacyOptOut.ToString(CultureInfo.InvariantCulture);
     }
 
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
@@ -4642,6 +4785,16 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".legacy.usedUnsafeFallback"] = usedUnsafeFallback ? "true" : "false";
         _ctx.Variables[prefix + ".legacy.summary"] =
             $"elClick={(usedElClick ? "true" : "false")};uiaActionExecutor={(usedUiaActionExecutor ? "true" : "false")};unsafeFallback={(usedUnsafeFallback ? "true" : "false")}";
+
+        if (_safeClickDefaultLegacyPrefixes.Contains(prefix))
+        {
+            if (usedElClick && _safeClickDefaultElClickCounted.Add(prefix))
+                _safeClickDefaultElClickUseCount++;
+            if (usedUiaActionExecutor && _safeClickDefaultUiaActionExecutorCounted.Add(prefix))
+                _safeClickDefaultUiaActionExecutorUseCount++;
+            if (usedUnsafeFallback && _safeClickDefaultUnsafeFallbackCounted.Add(prefix))
+                _safeClickDefaultUnsafeFallbackUseCount++;
+        }
     }
 
     private (bool UsedElClick, bool UsedUiaActionExecutor) ReadSafeClickLegacyUsage(string prefix)
