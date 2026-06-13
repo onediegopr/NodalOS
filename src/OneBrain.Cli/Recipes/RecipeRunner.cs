@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using OneBrain.Actions.Uia;
 using OneBrain.Cli.Accessibility;
 using OneBrain.Cli.Browser;
@@ -10,8 +11,10 @@ using OneBrain.Core.Extraction;
 using OneBrain.Core.Profiles;
 using OneBrain.Core.Safety;
 using OneBrain.Core.Actions;
+using OneBrain.Core.Contracts;
 using OneBrain.Core.Models;
 using OneBrain.Core.Recipes;
+using OneBrain.Core.Selectors.Web;
 using OneBrain.Core.Visual;
 using OneBrain.Observation;
 using OneBrain.Observation.Uia;
@@ -2043,7 +2046,8 @@ public sealed class RecipeRunner
         if (string.IsNullOrWhiteSpace(evidenceJson))
             return Fail(step, sw, $"approval.manifest: no evidence found for prefix '{fromPrefix}'.");
 
-        var manifest = ApprovalManifestBuilder.BuildFromEvidence(evidenceJson, mode);
+        var identityInput = TryReadApprovedIdentityInput(fromPrefix);
+        var manifest = ApprovalManifestBuilder.BuildFromEvidence(evidenceJson, mode, identityInput);
 
         var prefix = step.SaveAs ?? "approval";
 
@@ -2063,6 +2067,7 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".riskLevel"] = manifest.RiskLevel;
         _ctx.Variables[prefix + ".evidenceHash"] = manifest.EvidenceHash;
         _ctx.Variables[prefix + ".executionAllowedInThisHito"] = manifest.ExecutionAllowedInThisHito ? "true" : "false";
+        SetApprovalIdentityVars(prefix, manifest);
 
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
@@ -2316,6 +2321,167 @@ public sealed class RecipeRunner
     }
 
     // ── diagnose.msaa ─────────────────────────────────────────────────────────
+    private void SetApprovalIdentityVars(string prefix, ApprovalManifest manifest)
+    {
+        if (string.IsNullOrWhiteSpace(manifest.IdentitySchemaVersion))
+            return;
+
+        _ctx.Variables[prefix + ".identity.schemaVersion"] = manifest.IdentitySchemaVersion;
+        _ctx.Variables[prefix + ".identity.strength"] = manifest.IdentityStrength.ToString();
+
+        if (!string.IsNullOrWhiteSpace(manifest.ApprovedIdentityDigest))
+            _ctx.Variables[prefix + ".identity.digest"] = manifest.ApprovedIdentityDigest;
+
+        if (!string.IsNullOrWhiteSpace(manifest.IdentitySource))
+            _ctx.Variables[prefix + ".identity.source"] = manifest.IdentitySource;
+
+        if (manifest.ApprovedSelector != null)
+            _ctx.Variables[prefix + ".identity.selector"] = JsonSerializer.Serialize(manifest.ApprovedSelector);
+
+        if (!string.IsNullOrWhiteSpace(manifest.IdentityBindingHash))
+            _ctx.Variables[prefix + ".identity.bindingHash"] = manifest.IdentityBindingHash;
+
+        if (manifest.ShadowAgreesWithLegacy.HasValue)
+        {
+            _ctx.Variables[prefix + ".identity.shadowAgreesWithLegacy"] = manifest.ShadowAgreesWithLegacy.Value ? "true" : "false";
+            _ctx.Variables[prefix + ".identity.mismatch"] = manifest.ShadowAgreesWithLegacy.Value ? "false" : "true";
+        }
+    }
+
+    private ApprovedIdentityInput? TryReadApprovedIdentityInput(string fromPrefix)
+    {
+        var identity = ReadElementIdentity(fromPrefix);
+        var source = _ctx.Variables.GetValueOrDefault(fromPrefix + ".identity.source", "");
+        var parity = ReadWebSelectorParity(fromPrefix);
+
+        if (identity == null &&
+            string.IsNullOrWhiteSpace(source) &&
+            parity == null)
+        {
+            return null;
+        }
+
+        return new ApprovedIdentityInput(identity, source, parity);
+    }
+
+    private ElementIdentity? ReadElementIdentity(string prefix)
+    {
+        var runtimeId = _ctx.Variables.GetValueOrDefault(prefix + ".identity.runtimeId", "");
+        var automationId = _ctx.Variables.GetValueOrDefault(prefix + ".identity.automationId", "");
+        var name = _ctx.Variables.GetValueOrDefault(prefix + ".identity.name", "");
+        var helpText = _ctx.Variables.GetValueOrDefault(prefix + ".identity.helpText", "");
+        var legacyName = _ctx.Variables.GetValueOrDefault(prefix + ".identity.legacyName", "");
+        var legacyValue = _ctx.Variables.GetValueOrDefault(prefix + ".identity.legacyValue", "");
+        var labeledByName = _ctx.Variables.GetValueOrDefault(prefix + ".identity.labeledByName", "");
+        var role = _ctx.Variables.GetValueOrDefault(prefix + ".identity.role", "");
+        var controlType = _ctx.Variables.GetValueOrDefault(prefix + ".identity.controlType", "");
+        var className = _ctx.Variables.GetValueOrDefault(prefix + ".identity.className", "");
+        var frameworkId = _ctx.Variables.GetValueOrDefault(prefix + ".identity.frameworkId", "");
+        var processName = _ctx.Variables.GetValueOrDefault(prefix + ".identity.processName", "");
+        var windowTitle = _ctx.Variables.GetValueOrDefault(prefix + ".identity.windowTitle", "");
+        var ancestorPath = _ctx.Variables.GetValueOrDefault(prefix + ".identity.ancestorPath", "");
+        var parentFingerprint = _ctx.Variables.GetValueOrDefault(prefix + ".identity.parentFingerprint", "");
+        var boundsHint = _ctx.Variables.GetValueOrDefault(prefix + ".identity.boundsHint", "");
+
+        int? siblingIndex = null;
+        if (int.TryParse(_ctx.Variables.GetValueOrDefault(prefix + ".identity.siblingIndex", ""), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedSibling))
+            siblingIndex = parsedSibling;
+
+        var provenance = Provenance.Inferred;
+        if (Enum.TryParse(_ctx.Variables.GetValueOrDefault(prefix + ".identity.provenance", ""), ignoreCase: true, out Provenance parsedProvenance))
+            provenance = parsedProvenance;
+
+        if (string.IsNullOrWhiteSpace(runtimeId) &&
+            string.IsNullOrWhiteSpace(automationId) &&
+            string.IsNullOrWhiteSpace(name) &&
+            string.IsNullOrWhiteSpace(helpText) &&
+            string.IsNullOrWhiteSpace(legacyName) &&
+            string.IsNullOrWhiteSpace(legacyValue) &&
+            string.IsNullOrWhiteSpace(labeledByName) &&
+            string.IsNullOrWhiteSpace(role) &&
+            string.IsNullOrWhiteSpace(controlType) &&
+            string.IsNullOrWhiteSpace(className) &&
+            string.IsNullOrWhiteSpace(frameworkId) &&
+            string.IsNullOrWhiteSpace(processName) &&
+            string.IsNullOrWhiteSpace(windowTitle) &&
+            string.IsNullOrWhiteSpace(ancestorPath) &&
+            string.IsNullOrWhiteSpace(parentFingerprint) &&
+            string.IsNullOrWhiteSpace(boundsHint) &&
+            !siblingIndex.HasValue)
+        {
+            return null;
+        }
+
+        return new ElementIdentity
+        {
+            RuntimeId = runtimeId,
+            AutomationId = automationId,
+            Name = name,
+            HelpText = helpText,
+            LegacyName = legacyName,
+            LegacyValue = legacyValue,
+            LabeledByName = labeledByName,
+            Role = role,
+            ControlType = controlType,
+            ClassName = className,
+            FrameworkId = frameworkId,
+            ProcessName = processName,
+            WindowTitle = windowTitle,
+            AncestorPath = ancestorPath,
+            ParentFingerprint = parentFingerprint,
+            BoundsHint = boundsHint,
+            SiblingIndex = siblingIndex,
+            Provenance = provenance
+        };
+    }
+
+    private WebSelectorParity? ReadWebSelectorParity(string prefix)
+    {
+        var rawAgree = _ctx.Variables.GetValueOrDefault(prefix + ".identity.shadowAgreesWithLegacy", "");
+        if (string.IsNullOrWhiteSpace(rawAgree))
+            rawAgree = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.shadow.agreesWithLegacy", "");
+
+        var rawVerdict = _ctx.Variables.GetValueOrDefault(prefix + ".identity.shadowVerdict", "");
+        if (string.IsNullOrWhiteSpace(rawVerdict))
+            rawVerdict = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.shadow.verdict", "");
+
+        var rawSelectedName = _ctx.Variables.GetValueOrDefault(prefix + ".identity.shadowSelectedName", "");
+        if (string.IsNullOrWhiteSpace(rawSelectedName))
+            rawSelectedName = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.shadow.selectedName", "");
+
+        var rawReasons = _ctx.Variables.GetValueOrDefault(prefix + ".identity.shadowReasons", "");
+        if (string.IsNullOrWhiteSpace(rawReasons))
+            rawReasons = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.shadow.reasons", "");
+
+        var rawFound = _ctx.Variables.GetValueOrDefault(prefix + ".identity.shadowFound", "");
+        if (string.IsNullOrWhiteSpace(rawFound))
+            rawFound = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.shadow.found", "");
+
+        if (string.IsNullOrWhiteSpace(rawAgree) &&
+            string.IsNullOrWhiteSpace(rawVerdict) &&
+            string.IsNullOrWhiteSpace(rawSelectedName) &&
+            string.IsNullOrWhiteSpace(rawReasons) &&
+            string.IsNullOrWhiteSpace(rawFound))
+        {
+            return null;
+        }
+
+        var found = bool.TryParse(rawFound, out var parsedFound) && parsedFound;
+        var agrees = bool.TryParse(rawAgree, out var parsedAgree) && parsedAgree;
+        var reasons = string.IsNullOrWhiteSpace(rawReasons)
+            ? Array.Empty<string>()
+            : rawReasons.Split(" | ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        return new WebSelectorParity
+        {
+            EngineFound = found,
+            EngineVerdict = string.IsNullOrWhiteSpace(rawVerdict) ? null : rawVerdict,
+            EngineSelectedName = string.IsNullOrWhiteSpace(rawSelectedName) ? null : rawSelectedName,
+            AgreesWithLegacy = agrees,
+            Reasons = reasons
+        };
+    }
+
     private RecipeStepRunResult ExecuteDiagnoseMsaa(RecipeStepDefinition step, Stopwatch sw)
     {
         var prefix = step.SaveAs ?? "msaa";
