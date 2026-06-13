@@ -52,6 +52,7 @@ public static class SensitiveActionClassifier
         "report.writeproductevidencemarkdown",
         "sleep",
         "snapshot.read",
+        "target.observe",
         "visual.capture",
         "visual.capture.element",
         "visual.capture.window",

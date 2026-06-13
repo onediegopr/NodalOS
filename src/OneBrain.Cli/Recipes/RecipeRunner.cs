@@ -39,6 +39,7 @@ public sealed class RecipeRunner
 {
     private const int DefaultStepTimeoutMs = 15000;
     private const int OuterGraceMs = 3000;
+    private static Func<IntPtr, string, string, int, WebTargetResult>? s_targetObserveResolverOverride = null;
     private RecipeDefinition? _currentRecipe;
     private CancellationTokenSource? _stepCts;
     private readonly RecipeExecutionContext _ctx = new();
@@ -275,6 +276,7 @@ public sealed class RecipeRunner
                 "discover.actionableelements" => ExecuteDiscoverActionableElements(step, sw),
                 "plan.safenavigation"    => ExecutePlanSafeNavigation(step, sw),
                 "preflight.click"         => ExecutePreflightClick(step, sw),
+                "target.observe"          => ExecuteTargetObserve(step, sw),
                 "approval.manifest"       => ExecuteApprovalManifest(step, sw),
                 "safe.click"              => ExecuteSafeClick(step, sw),
                 "diagnose.msaa"           => ExecuteDiagnoseMsaa(step, sw),
@@ -2037,6 +2039,93 @@ public sealed class RecipeRunner
             $"Preflight: '{targetText}' → {result.Decision} ({result.RiskCategory})", sw.ElapsedMilliseconds, result);
     }
 
+    private RecipeStepRunResult ExecuteTargetObserve(RecipeStepDefinition step, Stopwatch sw)
+    {
+        var prefix = step.SaveAs ?? "targetObserve";
+        var targetText = R(step.Args?.GetValueOrDefault("targetText")
+            ?? step.Args?.GetValueOrDefault("targettext")
+            ?? step.Args?.GetValueOrDefault("target")
+            ?? step.Name);
+        if (string.IsNullOrWhiteSpace(targetText))
+            return Fail(step, sw, "target.observe requires 'targetText' or 'target'.");
+
+        var processName = R(step.Args?.GetValueOrDefault("proc")
+            ?? step.Args?.GetValueOrDefault("processName")
+            ?? step.Process
+            ?? "msedge");
+        if (string.IsNullOrWhiteSpace(processName))
+            processName = "msedge";
+
+        var mode = R(step.Args?.GetValueOrDefault("mode"));
+        _ctx.Variables[prefix + ".targetText"] = targetText;
+        if (!string.IsNullOrWhiteSpace(mode))
+            _ctx.Variables[prefix + ".mode"] = mode;
+
+        var sessionHwnd = FindOwnedBrowserSessionHwnd();
+        if (sessionHwnd == IntPtr.Zero)
+        {
+            ApplyTargetObserveResult(
+                prefix,
+                new WebTargetResult
+                {
+                    Found = false,
+                    Reason = "no owned browser session active"
+                },
+                FailureKind.SourceUnavailable);
+
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                true,
+                "target.observe: no owned browser session active.",
+                sw.ElapsedMilliseconds);
+        }
+
+        try
+        {
+            var resolution = ResolveTargetObserve(sessionHwnd, targetText, processName);
+            ApplyTargetObserveResult(prefix, resolution, MapTargetObserveFailureKind(resolution));
+
+            sw.Stop();
+            if (resolution.Found)
+            {
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    true,
+                    $"target.observe: observed '{resolution.SelectedName}' ({resolution.SelectedControlType})",
+                    sw.ElapsedMilliseconds);
+            }
+
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                true,
+                $"target.observe: {resolution.Reason}",
+                sw.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            ApplyTargetObserveResult(
+                prefix,
+                new WebTargetResult
+                {
+                    Found = false,
+                    Reason = ex.Message
+                },
+                FailureKind.SourceUnavailable);
+
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                true,
+                $"target.observe: {ex.Message}",
+                sw.ElapsedMilliseconds);
+        }
+    }
+
     private RecipeStepRunResult ExecuteApprovalManifest(RecipeStepDefinition step, Stopwatch sw)
     {
         var fromPrefix = step.Args?.GetValueOrDefault("from") ?? "";
@@ -2492,6 +2581,80 @@ public sealed class RecipeRunner
             return "approval evidenceHash mismatch";
 
         return null;
+    }
+
+    private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
+    {
+        return s_targetObserveResolverOverride?.Invoke(sessionHwnd, targetText, processName, maxDescendants)
+            ?? WebTargetResolver.Resolve(sessionHwnd, targetText, processName, maxDescendants);
+    }
+
+    private IntPtr FindOwnedBrowserSessionHwnd()
+    {
+        foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".hwnd", StringComparison.OrdinalIgnoreCase)))
+        {
+            var prefix = key[..^5];
+            if (_ctx.Variables.GetValueOrDefault(prefix + ".owned", "false") == "true" &&
+                long.TryParse(_ctx.Variables[key], out var handle))
+            {
+                return new IntPtr(handle);
+            }
+        }
+
+        return IntPtr.Zero;
+    }
+
+    private void ApplyTargetObserveResult(string prefix, WebTargetResult result, FailureKind failureKind)
+    {
+        SetResolutionVars(prefix, result);
+        SetObservedIdentityVars(prefix, result);
+        _ctx.Variables[prefix + ".failureKind"] = failureKind.ToString();
+        if (!string.IsNullOrWhiteSpace(result.CandidatesJson))
+            _ctx.Variables[prefix + ".resolution.candidatesJson"] = result.CandidatesJson;
+    }
+
+    private void SetObservedIdentityVars(string prefix, WebTargetResult result)
+    {
+        var identity = WebTargetResultIdentityMapper.ToSelectedIdentity(result);
+        var strength = WebTargetResultIdentityMapper.ResolveIdentityStrength(result);
+        var hasHelpText = !string.IsNullOrWhiteSpace(result.SelectedHelpText) || result.SelectedHelpTextPresent;
+        var hasLegacyName = !string.IsNullOrWhiteSpace(result.SelectedLegacyName) || result.SelectedLegacyNamePresent;
+
+        _ctx.Variables[prefix + ".identity.source"] = "web-uia";
+        _ctx.Variables[prefix + ".identity.strength"] = strength.ToString();
+        _ctx.Variables[prefix + ".identity.runtimeId"] = identity?.RuntimeId ?? "";
+        _ctx.Variables[prefix + ".identity.automationId"] = identity?.AutomationId ?? "";
+        _ctx.Variables[prefix + ".identity.name"] = identity?.Name ?? "";
+        _ctx.Variables[prefix + ".identity.role"] = identity?.Role ?? "";
+        _ctx.Variables[prefix + ".identity.controlType"] = identity?.ControlType ?? "";
+        _ctx.Variables[prefix + ".identity.className"] = identity?.ClassName ?? "";
+        _ctx.Variables[prefix + ".identity.frameworkId"] = identity?.FrameworkId ?? "";
+        _ctx.Variables[prefix + ".identity.ancestorPath"] = identity?.AncestorPath ?? "";
+        _ctx.Variables[prefix + ".identity.processName"] = identity?.ProcessName ?? "";
+        _ctx.Variables[prefix + ".identity.windowTitle"] = identity?.WindowTitle ?? "";
+        _ctx.Variables[prefix + ".identity.boundsHint"] = identity?.BoundsHint ?? "";
+        _ctx.Variables[prefix + ".identity.provenance"] = (identity?.Provenance ?? Provenance.Inferred).ToString();
+        _ctx.Variables[prefix + ".identity.helpTextPresent"] = hasHelpText ? "true" : "false";
+        _ctx.Variables[prefix + ".identity.legacyNamePresent"] = hasLegacyName ? "true" : "false";
+        _ctx.Variables[prefix + ".identity.shadowFound"] = result.ShadowEngineFound ? "true" : "false";
+        _ctx.Variables[prefix + ".identity.shadowAgreesWithLegacy"] = result.ShadowAgreesWithLegacy ? "true" : "false";
+        _ctx.Variables[prefix + ".identity.shadowVerdict"] = result.ShadowEngineVerdict ?? "";
+        _ctx.Variables[prefix + ".identity.shadowSelectedName"] = result.ShadowEngineSelectedName ?? "";
+        _ctx.Variables[prefix + ".identity.shadowReasons"] = result.ShadowReasons ?? "";
+    }
+
+    private static FailureKind MapTargetObserveFailureKind(WebTargetResult result)
+    {
+        if (result.Found)
+            return FailureKind.Unverified;
+
+        if (result.CandidateCount > 1 || result.Reason.Contains("ambiguous", StringComparison.OrdinalIgnoreCase))
+            return FailureKind.Ambiguous;
+
+        if (result.Reason.Contains("invalid input", StringComparison.OrdinalIgnoreCase))
+            return FailureKind.SourceUnavailable;
+
+        return FailureKind.NotFound;
     }
 
     private void SetResolutionVars(string prefix, WebTargetResult r)

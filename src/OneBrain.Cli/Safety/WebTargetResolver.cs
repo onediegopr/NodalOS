@@ -204,9 +204,14 @@ public static class WebTargetResolver
             SelectedHwnd = c.Hwnd.ToString(), SelectedBoundingRect = c.BoundingRect,
             HasInvoke = c.HasInvoke, HasClickablePoint = c.HasClickablePoint,
             SelectedRuntimeId = c.RuntimeId,
+            SelectedAutomationId = c.AutomationId,
             SelectedClassName = c.ClassName,
+            SelectedHelpText = c.HelpText,
+            SelectedLegacyName = c.LegacyName,
             SelectedFrameworkId = c.FrameworkId,
             SelectedAncestorPath = c.AncestorPath,
+            SelectedProcessName = c.ProcessName,
+            SelectedWindowTitle = c.WindowTitle,
             SelectedHelpTextPresent = !string.IsNullOrWhiteSpace(c.HelpText),
             SelectedLegacyNamePresent = !string.IsNullOrWhiteSpace(c.LegacyName),
             Reason = "exact match",
@@ -278,9 +283,14 @@ public static class WebTargetResolver
             Reason = legacy.Reason,
             ChildHwndDiagnostics = legacy.ChildHwndDiagnostics,
             SelectedRuntimeId = legacy.SelectedRuntimeId,
+            SelectedAutomationId = legacy.SelectedAutomationId,
             SelectedClassName = legacy.SelectedClassName,
+            SelectedHelpText = legacy.SelectedHelpText,
+            SelectedLegacyName = legacy.SelectedLegacyName,
             SelectedFrameworkId = legacy.SelectedFrameworkId,
             SelectedAncestorPath = legacy.SelectedAncestorPath,
+            SelectedProcessName = legacy.SelectedProcessName,
+            SelectedWindowTitle = legacy.SelectedWindowTitle,
             SelectedHelpTextPresent = legacy.SelectedHelpTextPresent,
             SelectedLegacyNamePresent = legacy.SelectedLegacyNamePresent,
             ShadowEngineFound = shadowParity.EngineFound,
@@ -450,9 +460,14 @@ public sealed class WebTargetResult
     /// <summary>Per-HWND diagnostic summary (for recipe variable exposure).</summary>
     public IReadOnlyList<string> ChildHwndDiagnostics { get; init; } = Array.Empty<string>();
     public string? SelectedRuntimeId { get; init; }
+    public string? SelectedAutomationId { get; init; }
     public string? SelectedClassName { get; init; }
+    public string? SelectedHelpText { get; init; }
+    public string? SelectedLegacyName { get; init; }
     public string? SelectedFrameworkId { get; init; }
     public string? SelectedAncestorPath { get; init; }
+    public string? SelectedProcessName { get; init; }
+    public string? SelectedWindowTitle { get; init; }
     public bool SelectedHelpTextPresent { get; init; }
     public bool SelectedLegacyNamePresent { get; init; }
     public bool ShadowEngineFound { get; init; }

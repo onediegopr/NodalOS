@@ -21,9 +21,14 @@ public sealed class WebTargetResolverShadowTests
             SelectedHwnd = "1234",
             SelectedBoundingRect = "10,10,120,24",
             SelectedRuntimeId = "42.1.9",
+            SelectedAutomationId = "help-link",
             SelectedClassName = "Chrome_RenderWidgetHostHWND",
+            SelectedHelpText = "More information help",
+            SelectedLegacyName = "More information...",
             SelectedFrameworkId = "UIA",
             SelectedAncestorPath = "Window:ONE Brain > Pane:Main > Document:App",
+            SelectedProcessName = "msedge",
+            SelectedWindowTitle = "ONE Brain",
             SelectedHelpTextPresent = true,
             SelectedLegacyNamePresent = true,
             HasInvoke = true,
@@ -58,9 +63,14 @@ public sealed class WebTargetResolverShadowTests
         Assert.AreEqual(legacy.SelectedHwnd, projected.SelectedHwnd);
         Assert.AreEqual(legacy.SelectedBoundingRect, projected.SelectedBoundingRect);
         Assert.AreEqual(legacy.SelectedRuntimeId, projected.SelectedRuntimeId);
+        Assert.AreEqual(legacy.SelectedAutomationId, projected.SelectedAutomationId);
         Assert.AreEqual(legacy.SelectedClassName, projected.SelectedClassName);
+        Assert.AreEqual(legacy.SelectedHelpText, projected.SelectedHelpText);
+        Assert.AreEqual(legacy.SelectedLegacyName, projected.SelectedLegacyName);
         Assert.AreEqual(legacy.SelectedFrameworkId, projected.SelectedFrameworkId);
         Assert.AreEqual(legacy.SelectedAncestorPath, projected.SelectedAncestorPath);
+        Assert.AreEqual(legacy.SelectedProcessName, projected.SelectedProcessName);
+        Assert.AreEqual(legacy.SelectedWindowTitle, projected.SelectedWindowTitle);
         Assert.AreEqual(legacy.SelectedHelpTextPresent, projected.SelectedHelpTextPresent);
         Assert.AreEqual(legacy.SelectedLegacyNamePresent, projected.SelectedLegacyNamePresent);
         Assert.AreEqual(legacy.HasInvoke, projected.HasInvoke);

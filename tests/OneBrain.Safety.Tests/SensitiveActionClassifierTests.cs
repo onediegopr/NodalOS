@@ -62,6 +62,13 @@ public sealed class SensitiveActionClassifierTests
     }
 
     [TestMethod]
+    public void TargetObserveIsBenign()
+    {
+        Assert.AreEqual(ActionSensitivity.Benign, SensitiveActionClassifier.ClassifyStepKind("target.observe"));
+        Assert.IsFalse(SensitiveActionClassifier.IsSensitiveStepKind("target.observe"));
+    }
+
+    [TestMethod]
     public void InspectCurrentBehaviorReportsStepKindConvergence()
     {
         var report = SensitiveActionClassifier.InspectCurrentBehavior();
