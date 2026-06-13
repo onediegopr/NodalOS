@@ -11,7 +11,8 @@ public sealed record PatternExecutionRequest(
     string? ProcessName,
     string? WindowTitleContains,
     SelectorDefinition Selector,
-    ElementIdentity ExpectedIdentity);
+    ElementIdentity ExpectedIdentity,
+    IntPtr? RootHwnd = null);
 
 public sealed record PatternExecutionResult(
     bool Success,

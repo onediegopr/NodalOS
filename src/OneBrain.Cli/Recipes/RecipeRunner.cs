@@ -19,6 +19,7 @@ using OneBrain.Core.Selectors;
 using OneBrain.Core.Selectors.Web;
 using OneBrain.Core.Visual;
 using OneBrain.Observation;
+using OneBrain.Observation.Input;
 using OneBrain.Observation.Uia;
 using OneBrain.Observation.Visual;
 using OneBrain.Observation.Windows;
@@ -40,6 +41,8 @@ public sealed class RecipeRunner
     private const int DefaultStepTimeoutMs = 15000;
     private const int OuterGraceMs = 3000;
     private static Func<IntPtr, string, string, int, WebTargetResult>? s_targetObserveResolverOverride = null;
+    private static Func<IUiaPatternExecutor>? s_safeClickPatternExecutorFactoryOverride = null;
+    private static Func<IDesktopOwnershipMonitor>? s_safeClickOwnershipMonitorFactoryOverride = null;
     private RecipeDefinition? _currentRecipe;
     private CancellationTokenSource? _stepCts;
     private readonly RecipeExecutionContext _ctx = new();
@@ -2180,7 +2183,38 @@ public sealed class RecipeRunner
             : !string.IsNullOrWhiteSpace(approvalMode)
                 ? approvalMode
                 : "controlled";
+        var dispatchPath = step.Args?.GetValueOrDefault("dispatchPath")
+            ?? step.Args?.GetValueOrDefault("dispatchpath")
+            ?? "";
 
+        if (string.IsNullOrWhiteSpace(dispatchPath))
+            return ExecuteSafeClickLegacy(step, sw, targetText, prefix, approvalPrefix, mode);
+
+        if (!dispatchPath.Equals("safe-executor", StringComparison.OrdinalIgnoreCase))
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", $"dispatchPath '{dispatchPath}' is not allowed");
+            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, "DispatchPathPolicyDenied", ["dispatchPath must be 'safe-executor' when specified"]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.click: dispatchPath '{dispatchPath}' is not allowed.",
+                sw.ElapsedMilliseconds);
+        }
+
+        return ExecuteSafeClickSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
+    }
+
+    private RecipeStepRunResult ExecuteSafeClickLegacy(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode)
+    {
         // 1. Verify browser session owned (required only for non-controlled)
         var hasOwned = false;
         foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
@@ -2353,6 +2387,274 @@ public sealed class RecipeRunner
         }
     }
 
+    private RecipeStepRunResult ExecuteSafeClickSafeExecutor(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode)
+    {
+        var hasOwned = false;
+        foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".owned")))
+            if (_ctx.Variables[key] == "true") { hasOwned = true; break; }
+
+        if (!hasOwned && mode != "controlled")
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", "no owned browser session");
+            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.SourceUnavailable, "OwnedBrowserSessionRequired", ["owned browser session is required for safe-executor dispatch"]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                "safe.click: no owned browser session active.",
+                sw.ElapsedMilliseconds);
+        }
+
+        var preflight = ClickPreflightEvaluator.Evaluate(targetText);
+        if (preflight.Blocked)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", preflight.Reason);
+            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, "PreflightBlocked", [preflight.Reason]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.click: target blocked: {preflight.Reason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var bindingError = ValidateApprovalBinding(approvalPrefix, targetText, mode);
+        if (bindingError != null)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", bindingError);
+            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, "LegacyApprovalBindingInvalid", [bindingError]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.click: approval binding invalid: {bindingError}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var execAllowed = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".executionAllowedInThisHito", "false");
+        if (execAllowed != "true")
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", "executionAllowedInThisHito is false");
+            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, "ExecutionNotAllowedInThisHito", ["approval does not allow execution in this hito"]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                "safe.click: approval does not allow execution.",
+                sw.ElapsedMilliseconds);
+        }
+
+        var manifest = TryReadApprovalManifest(approvalPrefix);
+        var manifestValidation = ValidateSafeExecutorManifest(manifest);
+        if (manifestValidation != null)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", manifestValidation.Value.Reason);
+            SetSafeClickFsmVars(prefix, StepState.Blocked, manifestValidation.Value.FailureKind, manifestValidation.Value.BlockReason, [manifestValidation.Value.Reason]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.click: {manifestValidation.Value.Reason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var sessionHwnd = FindOwnedBrowserSessionHwnd();
+        if (sessionHwnd == IntPtr.Zero)
+        {
+            SetSafeClickVars(prefix, targetText, "blocked", "safe-executor dispatch requires owned browser session");
+            SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.SourceUnavailable, "OwnedBrowserSessionRequired", ["safe-executor dispatch requires owned browser session"]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                "safe.click: no owned browser session active.",
+                sw.ElapsedMilliseconds);
+        }
+
+        var proc = step.Args?.GetValueOrDefault("proc") ?? "msedge";
+        if (proc == "msedge" && !hasOwned)
+        {
+            foreach (var key in _ctx.Variables.Keys.Where(k => k.EndsWith(".process")))
+            {
+                proc = _ctx.Variables[key];
+                break;
+            }
+        }
+
+        try
+        {
+            var resolution = ResolveSafeClickTarget(sessionHwnd, targetText, proc);
+            SetResolutionVars(prefix, resolution);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+
+            if (!resolution.Found)
+            {
+                if (!string.IsNullOrWhiteSpace(resolution.CandidatesJson))
+                    _ctx.Variables[prefix + ".resolution.candidatesJson"] = resolution.CandidatesJson;
+
+                var failureKind = resolution.CandidateCount > 1 || resolution.Reason.Contains("ambiguous", StringComparison.OrdinalIgnoreCase)
+                    ? FailureKind.Ambiguous
+                    : FailureKind.NotFound;
+                var blockReason = failureKind == FailureKind.Ambiguous ? "ApprovalAmbiguous" : "ApprovalTargetNotFound";
+                var reason = failureKind == FailureKind.Ambiguous
+                    ? $"ambiguous: {resolution.CandidateCount} candidates"
+                    : resolution.Reason;
+
+                SetSafeClickVars(prefix, targetText, "blocked", reason);
+                SetSafeClickFsmVars(prefix, StepState.Blocked, failureKind, blockReason, [reason]);
+                sw.Stop();
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    false,
+                    failureKind == FailureKind.Ambiguous
+                        ? $"safe.click: ambiguous target ({resolution.CandidateCount} candidates)"
+                        : $"safe.click: {resolution.Reason}",
+                    sw.ElapsedMilliseconds);
+            }
+
+            var contract = BuildSafeExecutorContract(manifest!, "click", out var contractReason, out var contractFailureKind);
+            if (contract == null)
+            {
+                SetSafeClickVars(prefix, targetText, "blocked", contractReason);
+                SetSafeClickFsmVars(prefix, StepState.Blocked, contractFailureKind, "ApprovalV3StrongIdentityRequired", [contractReason]);
+                sw.Stop();
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    false,
+                    $"safe.click: {contractReason}",
+                    sw.ElapsedMilliseconds);
+            }
+
+            var candidates = BuildSafeExecutorCandidates(prefix, resolution);
+            if (candidates.Count == 0)
+            {
+                SetSafeClickVars(prefix, targetText, "blocked", "safe-executor path could not build any candidates");
+                SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.NotFound, "ApprovalTargetNotFound", ["safe-executor path could not build any candidates"]);
+                sw.Stop();
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    false,
+                    "safe.click: safe-executor path could not build any candidates.",
+                    sw.ElapsedMilliseconds);
+            }
+
+            var expectedIdentity = contract.ExpectedIdentity ?? WebTargetResultIdentityMapper.ToSelectedIdentity(resolution);
+            if (expectedIdentity == null)
+            {
+                SetSafeClickVars(prefix, targetText, "blocked", "safe-executor contract is missing expected identity");
+                SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.PolicyDenied, "ApprovalV3StrongIdentityRequired", ["safe-executor contract is missing expected identity"]);
+                sw.Stop();
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    false,
+                    "safe.click: safe-executor contract is missing expected identity.",
+                    sw.ElapsedMilliseconds);
+            }
+
+            contract = contract with { ExpectedIdentity = expectedIdentity };
+
+            var rootHwnd = ParseHandle(resolution.SelectedHwnd);
+            if (rootHwnd == null || rootHwnd == IntPtr.Zero)
+            {
+                SetSafeClickVars(prefix, targetText, "blocked", "safe-executor path requires selected child hwnd");
+                SetSafeClickFsmVars(prefix, StepState.Blocked, FailureKind.NotFound, "ApprovalTargetNotFound", ["safe-executor path requires selected child hwnd"]);
+                sw.Stop();
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    false,
+                    "safe.click: safe-executor path requires selected child hwnd.",
+                    sw.ElapsedMilliseconds);
+            }
+
+            var patternExecutor = s_safeClickPatternExecutorFactoryOverride?.Invoke() ?? new UiaPatternExecutor();
+            var ownershipMonitor = s_safeClickOwnershipMonitorFactoryOverride?.Invoke() ?? new DesktopOwnershipMonitor();
+            var fsm = new SafeExecutionFsm(
+                new ContractValidator(),
+                new ApprovalBindingValidator(),
+                ownershipMonitor,
+                patternExecutor,
+                new SafeClickStepVerifier());
+
+            var fsmResult = fsm.Execute(new SafeExecutionRequest(
+                Contract: contract,
+                Candidates: candidates,
+                DispatchRequest: new PatternExecutionRequest(
+                    ActionKind: "click",
+                    TargetRef: targetText,
+                    ExpectedTargetName: resolution.SelectedName ?? targetText,
+                    ProcessName: proc,
+                    WindowTitleContains: resolution.SelectedWindowTitle,
+                    Selector: contract.Selector!,
+                    ExpectedIdentity: expectedIdentity,
+                    RootHwnd: rootHwnd)));
+
+            SetSafeClickFsmVars(prefix, fsmResult);
+
+            var reasonMessage = fsmResult.Reasons.LastOrDefault()
+                ?? (!string.IsNullOrWhiteSpace(fsmResult.BlockReason) ? fsmResult.BlockReason : fsmResult.FinalState.ToString());
+
+            if (fsmResult.Success)
+            {
+                SetSafeClickVars(prefix, targetText, "success", "executed via safe-executor fsm");
+                _ctx.Variables[prefix + ".method"] = "FSM safe.click";
+                sw.Stop();
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    true,
+                    $"safe.click: executed via safe-executor ({resolution.SelectedControlType ?? "unknown"})",
+                    sw.ElapsedMilliseconds);
+            }
+
+            var blocked = fsmResult.FinalState == StepState.Blocked;
+            SetSafeClickVars(prefix, targetText, blocked ? "blocked" : "failed", reasonMessage);
+            _ctx.Variables[prefix + ".method"] = "FSM safe.click";
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.click: {reasonMessage}",
+                sw.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            SetSafeClickVars(prefix, targetText, "failed", ex.Message);
+            SetSafeClickFsmVars(prefix, StepState.Failed, FailureKind.Unverified, "SafeExecutorError", [$"safe-executor path failed: {ex.Message}"]);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.click: {ex.Message}",
+                sw.ElapsedMilliseconds);
+        }
+    }
+
     private void SetSafeClickVars(string prefix, string targetText, string result, string reason)
     {
         _ctx.Variables[prefix + ".executed"] = result == "success" ? "true" : "false";
@@ -2519,10 +2821,13 @@ public sealed class RecipeRunner
                 RuntimeId = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.runtimeId", "")),
                 Name = selectedName,
                 ControlType = selectedControlType,
+                AutomationId = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.automationId", "")),
                 BoundingRect = selectedBoundingRect,
                 ClassName = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.className", "")),
                 FrameworkId = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.frameworkId", "")),
                 AncestorPath = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.ancestorPath", "")),
+                ProcessName = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.processName", "")),
+                WindowTitle = EmptyToNull(_ctx.Variables.GetValueOrDefault(prefix + ".resolution.identity.windowTitle", "")),
                 IsEnabled = true,
                 IsOffscreen = false,
                 HasInvoke = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.hasInvoke", "false") == "true"
@@ -2583,7 +2888,130 @@ public sealed class RecipeRunner
         return null;
     }
 
+    private (FailureKind FailureKind, string BlockReason, string Reason)? ValidateSafeExecutorManifest(ApprovalManifest? manifest)
+    {
+        if (manifest == null)
+        {
+            return (
+                FailureKind.PolicyDenied,
+                "ApprovalV3StrongIdentityRequired",
+                "safe-executor dispatch requires approval manifest v3 with strong identity");
+        }
+
+        if (!string.Equals(manifest.IdentitySchemaVersion, ApprovalManifestBuilder.IdentitySchemaVersion, StringComparison.Ordinal) ||
+            manifest.IdentityStrength != IdentityStrength.Strong ||
+            string.IsNullOrWhiteSpace(manifest.ApprovedIdentityDigest) ||
+            manifest.ApprovedSelector == null ||
+            string.IsNullOrWhiteSpace(manifest.IdentityBindingHash) ||
+            !string.Equals(manifest.IdentitySource, "web-uia", StringComparison.OrdinalIgnoreCase))
+        {
+            return (
+                FailureKind.PolicyDenied,
+                "ApprovalV3StrongIdentityRequired",
+                "safe-executor dispatch requires approval manifest v3 with strong web-uia identity");
+        }
+
+        if (manifest.ApprovedSelector.ExpectedIdentity == null || !manifest.ApprovedSelector.ExpectedIdentity.IsStrong)
+        {
+            return (
+                FailureKind.PolicyDenied,
+                "ApprovalV3StrongIdentityRequired",
+                "safe-executor dispatch requires approved selector with strong expected identity");
+        }
+
+        return null;
+    }
+
+    private RecipeSafetyContract? BuildSafeExecutorContract(
+        ApprovalManifest manifest,
+        string actionKind,
+        out string reason,
+        out FailureKind failureKind)
+    {
+        var binding = ApprovalManifestBuilder.TryBuildApprovalBinding(manifest);
+        var expectedIdentity = manifest.ApprovedSelector?.ExpectedIdentity;
+        var selector = manifest.ApprovedSelector;
+
+        if (binding == null || selector == null || expectedIdentity == null || !expectedIdentity.IsStrong)
+        {
+            reason = "safe-executor dispatch requires approval manifest v3 with strong selector-bound identity";
+            failureKind = FailureKind.PolicyDenied;
+            return null;
+        }
+
+        reason = "";
+        failureKind = FailureKind.PolicyDenied;
+        return new RecipeSafetyContract(
+            SchemaVersion: 1,
+            ContractId: $"safe-click-{manifest.IdentityBindingHash}",
+            ActionKind: string.IsNullOrWhiteSpace(actionKind) ? "click" : actionKind,
+            ExpectedIdentity: expectedIdentity,
+            Selector: selector,
+            WindowConstraints: new ExecutionWindowConstraints(
+                LocalPilotOnly: false,
+                ExternalNavigationBlocked: true),
+            Reversible: false,
+            MaxActions: 1,
+            ActionCeiling: ActionCeiling.FullActionWithPreflight,
+            Provenance: Provenance.Uia,
+            TrustLevel: TrustLevel.ProfileVerified,
+            ApprovalRef: binding);
+    }
+
+    private IReadOnlyList<ElementIdentity> BuildSafeExecutorCandidates(string prefix, WebTargetResult resolution)
+    {
+        var planCandidates = ReadSafeClickPlanCandidates(prefix)
+            .Select(WebCandidateMapper.ToElementIdentity)
+            .ToList();
+
+        if (planCandidates.Count > 0)
+            return planCandidates;
+
+        var selectedIdentity = WebTargetResultIdentityMapper.ToSelectedIdentity(resolution);
+        return selectedIdentity == null ? Array.Empty<ElementIdentity>() : [selectedIdentity];
+    }
+
+    private static IntPtr? ParseHandle(string? rawHandle)
+    {
+        return long.TryParse(rawHandle, out var handle)
+            ? new IntPtr(handle)
+            : null;
+    }
+
+    private void SetSafeClickFsmVars(
+        string prefix,
+        StepState finalState,
+        FailureKind? failureKind,
+        string blockReason,
+        IReadOnlyList<string> reasons)
+    {
+        _ctx.Variables[prefix + ".fsm.finalState"] = finalState.ToString();
+        _ctx.Variables[prefix + ".fsm.failureKind"] = failureKind?.ToString() ?? "";
+        _ctx.Variables[prefix + ".fsm.blockReason"] = blockReason ?? "";
+        _ctx.Variables[prefix + ".fsm.success"] = (finalState == StepState.Succeeded).ToString().ToLowerInvariant();
+        _ctx.Variables[prefix + ".fsm.transitionCount"] = "0";
+        _ctx.Variables[prefix + ".fsm.reasons"] = reasons.Count == 0 ? "" : string.Join(" | ", reasons);
+        _ctx.Variables[prefix + ".fsm.ledgerJson"] = "[]";
+    }
+
+    private void SetSafeClickFsmVars(string prefix, SafeExecutionResult result)
+    {
+        _ctx.Variables[prefix + ".fsm.finalState"] = result.FinalState.ToString();
+        _ctx.Variables[prefix + ".fsm.failureKind"] = result.FailureKind?.ToString() ?? "";
+        _ctx.Variables[prefix + ".fsm.blockReason"] = result.BlockReason ?? "";
+        _ctx.Variables[prefix + ".fsm.success"] = result.Success ? "true" : "false";
+        _ctx.Variables[prefix + ".fsm.transitionCount"] = result.Ledger.Entries.Count.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables[prefix + ".fsm.reasons"] = result.Reasons.Count == 0 ? "" : string.Join(" | ", result.Reasons);
+        _ctx.Variables[prefix + ".fsm.ledgerJson"] = JsonSerializer.Serialize(result.Ledger.Entries);
+    }
+
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
+    {
+        return s_targetObserveResolverOverride?.Invoke(sessionHwnd, targetText, processName, maxDescendants)
+            ?? WebTargetResolver.Resolve(sessionHwnd, targetText, processName, maxDescendants);
+    }
+
+    private static WebTargetResult ResolveSafeClickTarget(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
     {
         return s_targetObserveResolverOverride?.Invoke(sessionHwnd, targetText, processName, maxDescendants)
             ?? WebTargetResolver.Resolve(sessionHwnd, targetText, processName, maxDescendants);
@@ -2677,9 +3105,12 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".resolution.identity.runtimeIdPresent"] = !string.IsNullOrWhiteSpace(r.SelectedRuntimeId) ? "true" : "false";
         _ctx.Variables[prefix + ".resolution.identity.runtimeId"] = r.SelectedRuntimeId ?? "";
         _ctx.Variables[prefix + ".resolution.identity.strength"] = ResolveResolutionIdentityStrength(r).ToString();
+        _ctx.Variables[prefix + ".resolution.identity.automationId"] = r.SelectedAutomationId ?? "";
         _ctx.Variables[prefix + ".resolution.identity.ancestorPath"] = r.SelectedAncestorPath ?? "";
         _ctx.Variables[prefix + ".resolution.identity.frameworkId"] = r.SelectedFrameworkId ?? "";
         _ctx.Variables[prefix + ".resolution.identity.className"] = r.SelectedClassName ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.processName"] = r.SelectedProcessName ?? "";
+        _ctx.Variables[prefix + ".resolution.identity.windowTitle"] = r.SelectedWindowTitle ?? "";
         _ctx.Variables[prefix + ".resolution.identity.helpTextPresent"] = r.SelectedHelpTextPresent ? "true" : "false";
         _ctx.Variables[prefix + ".resolution.identity.legacyNamePresent"] = r.SelectedLegacyNamePresent ? "true" : "false";
         if (r.ChildHwndDiagnostics.Count > 0)

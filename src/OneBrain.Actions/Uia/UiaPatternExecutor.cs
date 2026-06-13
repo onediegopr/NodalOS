@@ -17,6 +17,22 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
     {
         try
         {
+            AutomationElement? root;
+            if (request.RootHwnd is { } rootHwnd && rootHwnd != IntPtr.Zero)
+            {
+                using var rootAutomation = new UIA3Automation();
+                root = rootAutomation.FromHandle(rootHwnd);
+                if (root == null)
+                {
+                    return new PatternExecutionResult(
+                        Success: false,
+                        FailureKind: FailureKind.NotFound,
+                        Reasons: [$"uia root '{rootHwnd}' not found"]);
+                }
+
+                return InvokeAgainstRoot(request, rootAutomation, root);
+            }
+
             var hwnd = _windowFinder.FindWindow(request.ProcessName, request.WindowTitleContains);
             if (hwnd == IntPtr.Zero)
             {
@@ -29,7 +45,33 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
             _windowFinder.Activate(hwnd);
 
             using var automation = new UIA3Automation();
-            var root = automation.FromHandle(hwnd);
+            root = automation.FromHandle(hwnd);
+            if (root == null)
+            {
+                return new PatternExecutionResult(
+                    Success: false,
+                    FailureKind: FailureKind.NotFound,
+                    Reasons: ["uia root not available for requested window"]);
+            }
+
+            return InvokeAgainstRoot(request, automation, root);
+        }
+        catch (Exception ex)
+        {
+            return new PatternExecutionResult(
+                Success: false,
+                FailureKind: FailureKind.Unverified,
+                Reasons: [$"uia invoke failed: {ex.Message}"]);
+        }
+    }
+
+    private static PatternExecutionResult InvokeAgainstRoot(
+        PatternExecutionRequest request,
+        UIA3Automation uiaAutomation,
+        AutomationElement root)
+    {
+        try
+        {
             var elements = new List<AutomationElement>();
             UiaTreeWalker.Walk(root, elements, UiaTreeWalker.DefaultMaxElements, UiaTreeWalker.DefaultMaxDepth);
 
