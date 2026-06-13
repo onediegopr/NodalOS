@@ -58,6 +58,15 @@ public sealed record SafeClickMigrationSummary(
     int ReobserveChanged,
     int DefaultDispatchBlockedByStaleIdentity,
     int DefaultDispatchBlockedByMissingIdentity,
+    int DesktopEligibleForFsm,
+    int DesktopNotEligibleForFsm,
+    int DesktopRuntimeStable,
+    int DesktopRuntimeChanged,
+    int DesktopInvokePatternAvailable,
+    int DesktopRoleAllowed,
+    int DesktopRootAvailable,
+    int DesktopOptInRouted,
+    int DesktopOptInBlocked,
     IReadOnlyDictionary<SafeClickMigrationReadinessReason, int> BlockingReasons)
 {
     public double ReadinessPercent =>
@@ -119,6 +128,15 @@ public static class SafeClickMigrationReportBuilder
             ReobserveChanged: items.Sum(item => item.Metrics.ReobserveChanged),
             DefaultDispatchBlockedByStaleIdentity: items.Sum(item => item.Metrics.DefaultDispatchBlockedByStaleIdentity),
             DefaultDispatchBlockedByMissingIdentity: items.Sum(item => item.Metrics.DefaultDispatchBlockedByMissingIdentity),
+            DesktopEligibleForFsm: items.Sum(item => item.Metrics.DesktopEligibleForFsm),
+            DesktopNotEligibleForFsm: items.Sum(item => item.Metrics.DesktopNotEligibleForFsm),
+            DesktopRuntimeStable: items.Sum(item => item.Metrics.DesktopRuntimeStable),
+            DesktopRuntimeChanged: items.Sum(item => item.Metrics.DesktopRuntimeChanged),
+            DesktopInvokePatternAvailable: items.Sum(item => item.Metrics.DesktopInvokePatternAvailable),
+            DesktopRoleAllowed: items.Sum(item => item.Metrics.DesktopRoleAllowed),
+            DesktopRootAvailable: items.Sum(item => item.Metrics.DesktopRootAvailable),
+            DesktopOptInRouted: items.Sum(item => item.Metrics.DesktopOptInRouted),
+            DesktopOptInBlocked: items.Sum(item => item.Metrics.DesktopOptInBlocked),
             BlockingReasons: blockingReasons);
 
         var json = JsonSerializer.Serialize(summary);

@@ -71,6 +71,8 @@ public sealed class RecipeRunner
     private int _safeClickReobserveChangedCount;
     private int _safeClickDefaultBlockedByStaleIdentityCount;
     private int _safeClickDefaultBlockedByMissingIdentityCount;
+    private int _safeClickDesktopOptInRoutedCount;
+    private int _safeClickDesktopOptInBlockedCount;
 
     public RecipeRunResult Run(RecipeDefinition recipe, bool forceContinueOnError = false, string? approvalMode = null)
     {
@@ -94,6 +96,8 @@ public sealed class RecipeRunner
         _safeClickReobserveChangedCount = 0;
         _safeClickDefaultBlockedByStaleIdentityCount = 0;
         _safeClickDefaultBlockedByMissingIdentityCount = 0;
+        _safeClickDesktopOptInRoutedCount = 0;
+        _safeClickDesktopOptInBlockedCount = 0;
 
         var denySensitive = string.Equals(approvalMode, "deny", StringComparison.OrdinalIgnoreCase);
         var reportSensitive = string.Equals(approvalMode, "auto", StringComparison.OrdinalIgnoreCase) || denySensitive;
@@ -2276,6 +2280,7 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".evidenceHash"] = manifest.EvidenceHash;
         _ctx.Variables[prefix + ".executionAllowedInThisHito"] = manifest.ExecutionAllowedInThisHito ? "true" : "false";
         SetApprovalIdentityVars(prefix, manifest);
+        CopyApprovalObservationVars(prefix, fromPrefix);
 
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
@@ -2305,11 +2310,17 @@ public sealed class RecipeRunner
 
         var defaultMode = ResolveSafeClickFsmDefaultMode();
         InitSafeClickDefaultRouteVars(prefix, defaultMode);
+        InitSafeClickDesktopFsmVars(prefix);
 
         // Explicit opt-in always wins and is unchanged from HITO-143.
         if (dispatchPath.Equals("safe-executor", StringComparison.OrdinalIgnoreCase))
         {
             SetSafeClickDefaultRouteVars(prefix, routedByDefault: false, reason: "ExplicitSafeExecutor", eligible: true, scope: "explicit-safe-executor");
+            var optInManifest = TryReadApprovalManifest(approvalPrefix);
+            var requestedIdentitySource = ResolveRequestedIdentitySource(step, optInManifest);
+            if (string.Equals(requestedIdentitySource, "uia", StringComparison.OrdinalIgnoreCase))
+                return ExecuteSafeClickDesktopSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
+
             return ExecuteSafeClickSafeExecutor(step, sw, targetText, prefix, approvalPrefix, mode);
         }
 
@@ -2416,6 +2427,18 @@ public sealed class RecipeRunner
     {
         return manifest != null &&
                string.Equals(manifest.IdentitySource, "uia", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ResolveRequestedIdentitySource(RecipeStepDefinition step, ApprovalManifest? manifest)
+    {
+        var requested = step.Args?.GetValueOrDefault("identitySource")
+            ?? step.Args?.GetValueOrDefault("identitysource")
+            ?? step.Args?.GetValueOrDefault("source")
+            ?? "";
+
+        return string.IsNullOrWhiteSpace(requested)
+            ? manifest?.IdentitySource ?? ""
+            : requested.Trim();
     }
 
     private bool IsWebDefaultRouteEligible(ApprovalManifest? manifest)
@@ -2621,6 +2644,17 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsm.defaultRouteEligible"] = "false";
         _ctx.Variables[prefix + ".fsm.defaultRouteScope"] = "";
         _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "false";
+    }
+
+    private void InitSafeClickDesktopFsmVars(string prefix)
+    {
+        _ctx.Variables[prefix + ".desktopFsm.enabled"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.eligible"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.identitySource"] = "";
+        _ctx.Variables[prefix + ".desktopFsm.rootHwndPresent"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.routedOptIn"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.blockReason"] = "";
+        _ctx.Variables[prefix + ".desktopFsm.verdict"] = "";
     }
 
     private void SetSafeClickDefaultRouteVars(string prefix, bool routedByDefault, string reason, bool eligible, string scope)
@@ -3110,6 +3144,289 @@ public sealed class RecipeRunner
         }
     }
 
+    private RecipeStepRunResult ExecuteSafeClickDesktopSafeExecutor(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode)
+    {
+        _safeClickDesktopOptInRoutedCount++;
+        _ctx.Variables[prefix + ".desktopFsm.enabled"] = "true";
+        _ctx.Variables[prefix + ".desktopFsm.routedOptIn"] = "true";
+        _ctx.Variables[prefix + ".desktopFsm.identitySource"] = "uia";
+
+        var preflight = ClickPreflightEvaluator.Evaluate(targetText);
+        if (preflight.Blocked)
+        {
+            return BlockDesktopSafeExecutor(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                FailureKind.PolicyDenied,
+                "PreflightBlocked",
+                preflight.Reason);
+        }
+
+        var bindingError = ValidateApprovalBinding(approvalPrefix, targetText, mode);
+        if (bindingError != null)
+        {
+            return BlockDesktopSafeExecutor(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                FailureKind.PolicyDenied,
+                "LegacyApprovalBindingInvalid",
+                bindingError);
+        }
+
+        var execAllowed = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".executionAllowedInThisHito", "false");
+        if (execAllowed != "true")
+        {
+            return BlockDesktopSafeExecutor(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                FailureKind.PolicyDenied,
+                "ExecutionNotAllowedInThisHito",
+                "approval does not allow execution in this hito");
+        }
+
+        var manifest = TryReadApprovalManifest(approvalPrefix);
+        var manifestValidation = ValidateSafeExecutorManifest(manifest, requiredIdentitySource: "uia");
+        if (manifestValidation != null)
+        {
+            return BlockDesktopSafeExecutor(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                manifestValidation.Value.FailureKind,
+                manifestValidation.Value.BlockReason,
+                manifestValidation.Value.Reason);
+        }
+
+        var processName = EmptyToNull(R(step.Args?.GetValueOrDefault("proc")
+            ?? step.Args?.GetValueOrDefault("processName")
+            ?? step.Process));
+        var windowTitle = EmptyToNull(R(step.Args?.GetValueOrDefault("window")
+            ?? step.Args?.GetValueOrDefault("windowTitle")
+            ?? step.Args?.GetValueOrDefault("titleContains")
+            ?? step.Window
+            ?? step.TitleContains));
+
+        try
+        {
+            var resolution = ResolveTargetObserveDesktop(targetText, processName, windowTitle);
+            SetDesktopResolutionVars(prefix, resolution);
+            TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+
+            if (!resolution.Found)
+            {
+                var failureKind = MapDesktopTargetObserveFailureKind(resolution);
+                var blockReason = failureKind == FailureKind.Ambiguous ? "ApprovalAmbiguous" : "ApprovalTargetNotFound";
+                return BlockDesktopSafeExecutor(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    failureKind,
+                    blockReason,
+                    string.IsNullOrWhiteSpace(resolution.Reason) ? "desktop target not found" : resolution.Reason);
+            }
+
+            var surfaceDecision = ExecutorSurfacePolicy.Decide(resolution.SelectedControlType, resolution.HasInvoke);
+            if (!surfaceDecision.Allowed)
+            {
+                return BlockDesktopSafeExecutor(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    surfaceDecision.FailureKind ?? FailureKind.PolicyDenied,
+                    "ExecutorSurfaceDenied",
+                    surfaceDecision.Reason);
+            }
+
+            var rootHwnd = ParseHandle(resolution.RootHwnd);
+            _ctx.Variables[prefix + ".desktopFsm.rootHwndPresent"] =
+                rootHwnd is { } handle && handle != IntPtr.Zero ? "true" : "false";
+            if (rootHwnd == null || rootHwnd == IntPtr.Zero)
+            {
+                return BlockDesktopSafeExecutor(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    FailureKind.PolicyDenied,
+                    "DesktopRootRequired",
+                    "desktop safe-executor dispatch requires observed root hwnd");
+            }
+
+            var contract = BuildSafeExecutorContract(manifest!, "click", out var contractReason, out var contractFailureKind);
+            if (contract == null)
+            {
+                return BlockDesktopSafeExecutor(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    contractFailureKind,
+                    "ApprovalV3StrongIdentityRequired",
+                    contractReason);
+            }
+
+            var candidates = BuildDesktopSafeExecutorCandidates(prefix, resolution);
+            if (candidates.Count == 0)
+            {
+                return BlockDesktopSafeExecutor(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    FailureKind.NotFound,
+                    "ApprovalTargetNotFound",
+                    "desktop safe-executor path could not build any candidates");
+            }
+
+            var expectedIdentity = contract.ExpectedIdentity ?? DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(resolution);
+            if (expectedIdentity == null)
+            {
+                return BlockDesktopSafeExecutor(
+                    step,
+                    sw,
+                    targetText,
+                    prefix,
+                    approvalPrefix,
+                    mode,
+                    FailureKind.PolicyDenied,
+                    "ApprovalV3StrongIdentityRequired",
+                    "desktop safe-executor contract is missing expected identity");
+            }
+
+            contract = contract with { ExpectedIdentity = expectedIdentity };
+
+            var patternExecutor = s_safeClickPatternExecutorFactoryOverride?.Invoke() ?? new UiaPatternExecutor();
+            var ownershipMonitor = s_safeClickOwnershipMonitorFactoryOverride?.Invoke() ?? new DesktopOwnershipMonitor();
+            var fsm = new SafeExecutionFsm(
+                new ContractValidator(),
+                new ApprovalBindingValidator(),
+                ownershipMonitor,
+                patternExecutor,
+                new SafeClickStepVerifier());
+
+            var fsmResult = fsm.Execute(new SafeExecutionRequest(
+                Contract: contract,
+                Candidates: candidates,
+                DispatchRequest: new PatternExecutionRequest(
+                    ActionKind: "click",
+                    TargetRef: targetText,
+                    ExpectedTargetName: resolution.SelectedName ?? targetText,
+                    ProcessName: resolution.SelectedProcessName ?? processName,
+                    WindowTitleContains: resolution.SelectedWindowTitle ?? windowTitle,
+                    Selector: contract.Selector!,
+                    ExpectedIdentity: expectedIdentity,
+                    RootHwnd: rootHwnd)));
+
+            SetSafeClickFsmVars(prefix, fsmResult);
+            var reasonMessage = fsmResult.Reasons.LastOrDefault()
+                ?? (!string.IsNullOrWhiteSpace(fsmResult.BlockReason) ? fsmResult.BlockReason : fsmResult.FinalState.ToString());
+
+            if (fsmResult.Success)
+            {
+                _ctx.Variables[prefix + ".desktopFsm.eligible"] = "true";
+                _ctx.Variables[prefix + ".desktopFsm.verdict"] = "Succeeded";
+                SetSafeClickVars(prefix, targetText, "success", "executed via desktop safe-executor fsm");
+                _ctx.Variables[prefix + ".method"] = "FSM safe.click";
+                sw.Stop();
+                return new RecipeStepRunResult(
+                    step.Id,
+                    step.Kind,
+                    true,
+                    $"safe.click: executed via desktop safe-executor ({resolution.SelectedControlType ?? "unknown"})",
+                    sw.ElapsedMilliseconds);
+            }
+
+            _safeClickDesktopOptInBlockedCount++;
+            _ctx.Variables[prefix + ".desktopFsm.blockReason"] = fsmResult.BlockReason;
+            _ctx.Variables[prefix + ".desktopFsm.verdict"] = fsmResult.FinalState.ToString();
+            _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
+            SetSafeClickVars(prefix, targetText, fsmResult.FinalState == StepState.Blocked ? "blocked" : "failed", reasonMessage);
+            _ctx.Variables[prefix + ".method"] = "FSM safe.click";
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.click: {reasonMessage}",
+                sw.ElapsedMilliseconds);
+        }
+        catch (Exception ex)
+        {
+            return BlockDesktopSafeExecutor(
+                step,
+                sw,
+                targetText,
+                prefix,
+                approvalPrefix,
+                mode,
+                FailureKind.Unverified,
+                "SafeExecutorError",
+                $"desktop safe-executor path failed: {ex.Message}");
+        }
+    }
+
+    private RecipeStepRunResult BlockDesktopSafeExecutor(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        string targetText,
+        string prefix,
+        string approvalPrefix,
+        string mode,
+        FailureKind failureKind,
+        string blockReason,
+        string reason)
+    {
+        _safeClickDesktopOptInBlockedCount++;
+        _ctx.Variables[prefix + ".desktopFsm.eligible"] = "false";
+        _ctx.Variables[prefix + ".desktopFsm.blockReason"] = blockReason;
+        _ctx.Variables[prefix + ".desktopFsm.verdict"] = "Blocked";
+        _ctx.Variables[prefix + ".fsm.blockedWithoutLegacyFallback"] = "true";
+        SetSafeClickVars(prefix, targetText, "blocked", reason);
+        _ctx.Variables[prefix + ".method"] = "FSM safe.click";
+        SetSafeClickFsmVars(prefix, StepState.Blocked, failureKind, blockReason, [reason]);
+        TrySetSafeClickPlanVars(prefix, approvalPrefix, targetText, mode);
+        sw.Stop();
+        return new RecipeStepRunResult(
+            step.Id,
+            step.Kind,
+            false,
+            $"safe.click: {reason}",
+            sw.ElapsedMilliseconds);
+    }
+
     private void SetSafeClickVars(string prefix, string targetText, string result, string reason)
     {
         _ctx.Variables[prefix + ".executed"] = result == "success" ? "true" : "false";
@@ -3123,9 +3440,12 @@ public sealed class RecipeRunner
     private void TrySetSafeClickPlanVars(string prefix, string approvalPrefix, string targetText, string mode)
     {
         var manifest = TryReadApprovalManifest(approvalPrefix);
-        var observedIdentity = ReadSafeClickObservedIdentity(prefix);
+        var observedIdentity = ReadSafeClickObservedIdentity(prefix) ?? ReadDesktopApprovalIdentityForPlanning(manifest);
         var invokePatternAvailable = ReadSafeClickInvokeAvailability(prefix);
+        invokePatternAvailable ??= ReadApprovalInvokeAvailability(approvalPrefix);
         var (usedElClick, usedUiaActionExecutor) = ReadSafeClickLegacyUsage(prefix);
+        var desktopRootAvailable = IsDesktopIdentitySource(manifest) &&
+                                   !string.IsNullOrWhiteSpace(_ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.rootHwnd", ""));
 
         try
         {
@@ -3135,7 +3455,7 @@ public sealed class RecipeRunner
                 TargetText = targetText,
                 ActionKind = "click",
                 Manifest = manifest,
-                Candidates = ReadSafeClickPlanCandidates(prefix),
+                Candidates = ReadSafeClickPlanCandidates(prefix, manifest, approvalPrefix),
                 Reversible = false
             });
 
@@ -3158,7 +3478,8 @@ public sealed class RecipeRunner
                 observedIdentity,
                 invokePatternAvailable,
                 usesElClick: usedElClick,
-                usesUiaActionExecutor: usedUiaActionExecutor);
+                usesUiaActionExecutor: usedUiaActionExecutor,
+                desktopRootAvailable: desktopRootAvailable);
             SetSafeClickFsmReadyVars(prefix, readiness);
             _safeClickShadowReadiness[prefix] = readiness;
         }
@@ -3193,7 +3514,8 @@ public sealed class RecipeRunner
                 observedIdentity,
                 invokePatternAvailable,
                 usesElClick: usedElClick,
-                usesUiaActionExecutor: usedUiaActionExecutor);
+                usesUiaActionExecutor: usedUiaActionExecutor,
+                desktopRootAvailable: desktopRootAvailable);
             SetSafeClickFsmReadyVars(prefix, readiness);
             _safeClickShadowReadiness[prefix] = readiness;
         }
@@ -3257,7 +3579,10 @@ public sealed class RecipeRunner
         };
     }
 
-    private IReadOnlyList<WebCandidate> ReadSafeClickPlanCandidates(string prefix)
+    private IReadOnlyList<WebCandidate> ReadSafeClickPlanCandidates(
+        string prefix,
+        ApprovalManifest? manifest = null,
+        string? approvalPrefix = null)
     {
         var candidatesJson = _ctx.Variables.GetValueOrDefault(prefix + ".resolution.candidatesJson", "");
         if (!string.IsNullOrWhiteSpace(candidatesJson))
@@ -3302,6 +3627,32 @@ public sealed class RecipeRunner
             string.IsNullOrWhiteSpace(selectedControlType) &&
             string.IsNullOrWhiteSpace(selectedBoundingRect))
         {
+            var approvedIdentity = manifest?.ApprovedSelector?.ExpectedIdentity;
+            if (approvedIdentity != null &&
+                string.Equals(manifest?.IdentitySource, "uia", StringComparison.OrdinalIgnoreCase))
+            {
+                return
+                [
+                    new WebCandidate
+                    {
+                        RuntimeId = EmptyToNull(approvedIdentity.RuntimeId),
+                        Name = approvedIdentity.Name,
+                        ControlType = approvedIdentity.EffectiveControlType,
+                        AutomationId = EmptyToNull(approvedIdentity.AutomationId),
+                        BoundingRect = approvedIdentity.BoundsHint,
+                        ClassName = EmptyToNull(approvedIdentity.ClassName),
+                        FrameworkId = EmptyToNull(approvedIdentity.FrameworkId),
+                        AncestorPath = EmptyToNull(approvedIdentity.AncestorPath),
+                        ProcessName = EmptyToNull(approvedIdentity.ProcessName),
+                        WindowTitle = EmptyToNull(approvedIdentity.WindowTitle),
+                        IsEnabled = true,
+                        IsOffscreen = false,
+                        HasInvoke = !string.IsNullOrWhiteSpace(approvalPrefix) &&
+                                    _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.hasInvoke", "false") == "true"
+                    }
+                ];
+            }
+
             return Array.Empty<WebCandidate>();
         }
 
@@ -3379,7 +3730,9 @@ public sealed class RecipeRunner
         return null;
     }
 
-    private (FailureKind FailureKind, string BlockReason, string Reason)? ValidateSafeExecutorManifest(ApprovalManifest? manifest)
+    private (FailureKind FailureKind, string BlockReason, string Reason)? ValidateSafeExecutorManifest(
+        ApprovalManifest? manifest,
+        string requiredIdentitySource = "web-uia")
     {
         if (manifest == null)
         {
@@ -3394,12 +3747,12 @@ public sealed class RecipeRunner
             string.IsNullOrWhiteSpace(manifest.ApprovedIdentityDigest) ||
             manifest.ApprovedSelector == null ||
             string.IsNullOrWhiteSpace(manifest.IdentityBindingHash) ||
-            !string.Equals(manifest.IdentitySource, "web-uia", StringComparison.OrdinalIgnoreCase))
+            !string.Equals(manifest.IdentitySource, requiredIdentitySource, StringComparison.OrdinalIgnoreCase))
         {
             return (
                 FailureKind.PolicyDenied,
                 "ApprovalV3StrongIdentityRequired",
-                "safe-executor dispatch requires approval manifest v3 with strong web-uia identity");
+                $"safe-executor dispatch requires approval manifest v3 with strong {requiredIdentitySource} identity");
         }
 
         if (manifest.ApprovedSelector.ExpectedIdentity == null || !manifest.ApprovedSelector.ExpectedIdentity.IsStrong)
@@ -3462,6 +3815,19 @@ public sealed class RecipeRunner
         return selectedIdentity == null ? Array.Empty<ElementIdentity>() : [selectedIdentity];
     }
 
+    private IReadOnlyList<ElementIdentity> BuildDesktopSafeExecutorCandidates(string prefix, DesktopTargetObservationResult resolution)
+    {
+        var planCandidates = ReadSafeClickPlanCandidates(prefix)
+            .Select(WebCandidateMapper.ToElementIdentity)
+            .ToList();
+
+        if (planCandidates.Count > 0)
+            return planCandidates;
+
+        var selectedIdentity = DesktopTargetObservationResultIdentityMapper.ToSelectedIdentity(resolution);
+        return selectedIdentity == null ? Array.Empty<ElementIdentity>() : [selectedIdentity];
+    }
+
     private static IntPtr? ParseHandle(string? rawHandle)
     {
         return long.TryParse(rawHandle, out var handle)
@@ -3508,6 +3874,8 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".fsmReady.runtimeIdentityMatch"] = readiness.RuntimeIdentityMatch.ToString();
         _ctx.Variables[prefix + ".fsmReady.wouldRequireLegacy"] = readiness.WouldRequireLegacy ? "true" : "false";
         _ctx.Variables[prefix + ".fsmReady.eligible"] = readiness.EligibleForFsm ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.desktopEligible"] = readiness.DesktopEligibleForFsm ? "true" : "false";
+        _ctx.Variables[prefix + ".fsmReady.desktopRootAvailable"] = readiness.DesktopRootAvailable ? "true" : "false";
         _ctx.Variables[prefix + ".fsmReady.summary"] = readiness.Summary;
     }
 
@@ -3587,6 +3955,17 @@ public sealed class RecipeRunner
         _ctx.Variables["safeClick.migration.reobserveChanged"] = _safeClickReobserveChangedCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.defaultBlockedByStaleIdentity"] = _safeClickDefaultBlockedByStaleIdentityCount.ToString(CultureInfo.InvariantCulture);
         _ctx.Variables["safeClick.migration.defaultBlockedByMissingIdentity"] = _safeClickDefaultBlockedByMissingIdentityCount.ToString(CultureInfo.InvariantCulture);
+
+        // HITO-150 — desktop readiness metrics remain shadow-only; no desktop default routing.
+        _ctx.Variables["safeClick.migration.desktopEligibleForFsm"] = summary.DesktopEligibleForFsm.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopNotEligibleForFsm"] = summary.DesktopNotEligibleForFsm.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopRuntimeStable"] = summary.DesktopRuntimeStable.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopRuntimeChanged"] = summary.DesktopRuntimeChanged.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopInvokePatternAvailable"] = summary.DesktopInvokePatternAvailable.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopRoleAllowed"] = summary.DesktopRoleAllowed.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopRootAvailable"] = summary.DesktopRootAvailable.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopOptInRouted"] = _safeClickDesktopOptInRoutedCount.ToString(CultureInfo.InvariantCulture);
+        _ctx.Variables["safeClick.migration.desktopOptInBlocked"] = _safeClickDesktopOptInBlockedCount.ToString(CultureInfo.InvariantCulture);
     }
 
     private static WebTargetResult ResolveTargetObserve(IntPtr sessionHwnd, string targetText, string processName, int maxDescendants = 500)
@@ -3658,7 +4037,7 @@ public sealed class RecipeRunner
 
             foreach (var element in elements)
             {
-                var candidate = BuildDesktopObservedCandidate(element, resolvedProcessName, resolvedWindowTitle);
+                var candidate = BuildDesktopObservedCandidate(element, resolvedProcessName, resolvedWindowTitle, hwnd);
                 if (candidate != null)
                     candidates.Add(candidate);
             }
@@ -3718,6 +4097,7 @@ public sealed class RecipeRunner
             SelectedWindowTitle = EmptyToNull(selected.Identity.WindowTitle),
             SelectedHelpText = null,
             SelectedLegacyName = null,
+            RootHwnd = selected.RootHwnd.ToString(CultureInfo.InvariantCulture),
             SelectedHelpTextPresent = selected.HelpTextPresent,
             SelectedLegacyNamePresent = selected.LegacyNamePresent,
             HasInvoke = selected.HasInvoke
@@ -3809,6 +4189,8 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".identity.processName"] = identity?.ProcessName ?? "";
         _ctx.Variables[prefix + ".identity.windowTitle"] = identity?.WindowTitle ?? "";
         _ctx.Variables[prefix + ".identity.boundsHint"] = identity?.BoundsHint ?? "";
+        _ctx.Variables[prefix + ".identity.rootHwnd"] = result.RootHwnd ?? "";
+        _ctx.Variables[prefix + ".identity.hasInvoke"] = result.HasInvoke ? "true" : "false";
         _ctx.Variables[prefix + ".identity.provenance"] = (identity?.Provenance ?? Provenance.Inferred).ToString();
         _ctx.Variables[prefix + ".identity.helpTextPresent"] = result.SelectedHelpTextPresent ? "true" : "false";
         _ctx.Variables[prefix + ".identity.legacyNamePresent"] = result.SelectedLegacyNamePresent ? "true" : "false";
@@ -3902,6 +4284,7 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".resolution.method"] = "DesktopTargetObserve";
         _ctx.Variables[prefix + ".resolution.reason"] = result.Reason;
         _ctx.Variables[prefix + ".resolution.hasInvoke"] = result.HasInvoke ? "true" : "false";
+        _ctx.Variables[prefix + ".resolution.rootHwnd"] = result.RootHwnd ?? "";
         _ctx.Variables[prefix + ".resolution.identity.runtimeIdPresent"] = !string.IsNullOrWhiteSpace(result.SelectedRuntimeId) ? "true" : "false";
         _ctx.Variables[prefix + ".resolution.identity.runtimeId"] = result.SelectedRuntimeId ?? "";
         _ctx.Variables[prefix + ".resolution.identity.strength"] = DesktopTargetObservationResultIdentityMapper.ResolveIdentityStrength(result).ToString();
@@ -3976,10 +4359,31 @@ public sealed class RecipeRunner
         };
     }
 
+    private static ElementIdentity? ReadDesktopApprovalIdentityForPlanning(ApprovalManifest? manifest)
+    {
+        if (manifest == null ||
+            !string.Equals(manifest.IdentitySource, "uia", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return manifest.ApprovedSelector?.ExpectedIdentity;
+    }
+
+    private bool? ReadApprovalInvokeAvailability(string approvalPrefix)
+    {
+        var rawHasInvoke = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.hasInvoke", "");
+        if (bool.TryParse(rawHasInvoke, out var hasInvoke))
+            return hasInvoke;
+
+        return null;
+    }
+
     private static DesktopObservedCandidate? BuildDesktopObservedCandidate(
         AutomationElement element,
         string processName,
-        string windowTitle)
+        string windowTitle,
+        IntPtr rootHwnd)
     {
         try
         {
@@ -4025,6 +4429,7 @@ public sealed class RecipeRunner
 
             return new DesktopObservedCandidate(
                 identity,
+                rootHwnd,
                 SafeInvokeSupported(element),
                 HelpTextPresent: !string.IsNullOrWhiteSpace(helpText),
                 LegacyNamePresent: !string.IsNullOrWhiteSpace(legacyName));
@@ -4140,6 +4545,17 @@ public sealed class RecipeRunner
             _ctx.Variables[prefix + ".identity.shadowAgreesWithLegacy"] = manifest.ShadowAgreesWithLegacy.Value ? "true" : "false";
             _ctx.Variables[prefix + ".identity.mismatch"] = manifest.ShadowAgreesWithLegacy.Value ? "false" : "true";
         }
+    }
+
+    private void CopyApprovalObservationVars(string approvalPrefix, string fromPrefix)
+    {
+        var rootHwnd = _ctx.Variables.GetValueOrDefault(fromPrefix + ".identity.rootHwnd", "");
+        if (!string.IsNullOrWhiteSpace(rootHwnd))
+            _ctx.Variables[approvalPrefix + ".identity.rootHwnd"] = rootHwnd;
+
+        var hasInvoke = _ctx.Variables.GetValueOrDefault(fromPrefix + ".identity.hasInvoke", "");
+        if (!string.IsNullOrWhiteSpace(hasInvoke))
+            _ctx.Variables[approvalPrefix + ".identity.hasInvoke"] = hasInvoke;
     }
 
     private ApprovedIdentityInput? TryReadApprovedIdentityInput(string fromPrefix)
@@ -4404,6 +4820,7 @@ public sealed class RecipeRunner
 
     private sealed record DesktopObservedCandidate(
         ElementIdentity Identity,
+        IntPtr RootHwnd,
         bool HasInvoke,
         bool HelpTextPresent,
         bool LegacyNamePresent);

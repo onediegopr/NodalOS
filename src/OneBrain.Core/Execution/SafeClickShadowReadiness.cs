@@ -48,7 +48,16 @@ public sealed record SafeClickMigrationMetrics(
     int ReobserveSucceeded = 0,
     int ReobserveChanged = 0,
     int DefaultDispatchBlockedByStaleIdentity = 0,
-    int DefaultDispatchBlockedByMissingIdentity = 0);
+    int DefaultDispatchBlockedByMissingIdentity = 0,
+    int DesktopEligibleForFsm = 0,
+    int DesktopNotEligibleForFsm = 0,
+    int DesktopRuntimeStable = 0,
+    int DesktopRuntimeChanged = 0,
+    int DesktopInvokePatternAvailable = 0,
+    int DesktopRoleAllowed = 0,
+    int DesktopRootAvailable = 0,
+    int DesktopOptInRouted = 0,
+    int DesktopOptInBlocked = 0);
 
 public sealed record SafeClickShadowReadiness(
     bool Success,
@@ -69,7 +78,9 @@ public sealed record SafeClickShadowReadiness(
     IReadOnlyList<string> Reasons,
     bool InvokePatternAvailable = false,
     bool RoleAllowedForSafeExecutor = false,
-    bool IsWebUia = false)
+    bool IsWebUia = false,
+    bool DesktopEligibleForFsm = false,
+    bool DesktopRootAvailable = false)
 {
     public string Summary =>
         EligibleForFsm
@@ -85,7 +96,8 @@ public static class SafeClickShadowReadinessEvaluator
         ElementIdentity? observedIdentity,
         bool? invokePatternAvailable = null,
         bool usesElClick = false,
-        bool usesUiaActionExecutor = false)
+        bool usesUiaActionExecutor = false,
+        bool desktopRootAvailable = false)
     {
         ArgumentNullException.ThrowIfNull(plan);
 
@@ -119,6 +131,18 @@ public static class SafeClickShadowReadinessEvaluator
                              invokePatternStrict &&
                              roleAllowed &&
                              isWebSource;
+        var desktopEligibleForFsm = hasApprovalV3 &&
+                                    hasTargetObserve &&
+                                    plan.IdentityStrength == IdentityStrength.Strong &&
+                                    hasRuntimeId &&
+                                    runtimeIdentityMatch == RuntimeIdentityMatch.Same &&
+                                    plan.ProjectedState == StepState.Bound &&
+                                    plan.ContractValid &&
+                                    !plan.WouldUseUnsafeFallback &&
+                                    invokePatternStrict &&
+                                    roleAllowed &&
+                                    isDesktopSource &&
+                                    desktopRootAvailable;
         var reason = ResolveReason(
             manifest,
             plan,
@@ -157,7 +181,14 @@ public static class SafeClickShadowReadinessEvaluator
             DesktopUiaObservable: isDesktopSource ? 1 : 0,
             DesktopUiaStrong: isDesktopSource && plan.IdentityStrength == IdentityStrength.Strong ? 1 : 0,
             DesktopUiaWeak: isDesktopSource && plan.IdentityStrength == IdentityStrength.Weak ? 1 : 0,
-            DesktopMissingIdentity: isDesktopSource && plan.IdentityStrength == IdentityStrength.None ? 1 : 0);
+            DesktopMissingIdentity: isDesktopSource && plan.IdentityStrength == IdentityStrength.None ? 1 : 0,
+            DesktopEligibleForFsm: desktopEligibleForFsm ? 1 : 0,
+            DesktopNotEligibleForFsm: isDesktopSource && !desktopEligibleForFsm ? 1 : 0,
+            DesktopRuntimeStable: isDesktopSource && runtimeIdentityMatch == RuntimeIdentityMatch.Same ? 1 : 0,
+            DesktopRuntimeChanged: isDesktopSource && runtimeIdentityMatch == RuntimeIdentityMatch.Different ? 1 : 0,
+            DesktopInvokePatternAvailable: isDesktopSource && invokePatternAvailable == true ? 1 : 0,
+            DesktopRoleAllowed: isDesktopSource && roleAllowed ? 1 : 0,
+            DesktopRootAvailable: isDesktopSource && desktopRootAvailable ? 1 : 0);
 
         return new SafeClickShadowReadiness(
             Success: eligibleForFsm,
@@ -178,7 +209,9 @@ public static class SafeClickShadowReadinessEvaluator
             Reasons: reasons,
             InvokePatternAvailable: invokePatternStrict,
             RoleAllowedForSafeExecutor: roleAllowed,
-            IsWebUia: isWebSource);
+            IsWebUia: isWebSource,
+            DesktopEligibleForFsm: desktopEligibleForFsm,
+            DesktopRootAvailable: desktopRootAvailable);
     }
 
     private static bool HasTargetObserve(ApprovalManifest? manifest)

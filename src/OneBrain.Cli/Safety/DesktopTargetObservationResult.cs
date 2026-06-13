@@ -17,6 +17,7 @@ public sealed record DesktopTargetObservationResult
     public string? SelectedWindowTitle { get; init; }
     public string? SelectedHelpText { get; init; }
     public string? SelectedLegacyName { get; init; }
+    public string? RootHwnd { get; init; }
     public bool SelectedHelpTextPresent { get; init; }
     public bool SelectedLegacyNamePresent { get; init; }
     public bool HasInvoke { get; init; }

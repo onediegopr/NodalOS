@@ -167,6 +167,7 @@ Estado:
 * conectado a safe.click
 * conectado a readiness shadow
 * conectado a desktop identity shadow
+* conectado a desktop FSM opt-in
 * todavía no está en flip default FSM
 
 ### 3.2 Sensitive Action Classifier
@@ -327,7 +328,8 @@ Produce identidad desktop UIA:
 Estado:
 
 * implementado en shadow/read-only
-* sin ejecución desktop FSM
+* alimenta desktop FSM opt-in cuando hay approval-v3 fuerte
+* sin default desktop FSM
 * sin clicks reales
 * alimenta approval.manifest, shadow readiness y métricas
 
@@ -609,6 +611,42 @@ Si el RuntimeId cambió, falta identidad fuerte, el target desaparece o queda am
 
 No cambia desktop, no retira legacy y no amplía rollout.
 
+### 9.5 Desktop FSM opt-in y readiness
+
+H149 agrega un path desktop FSM opt-in para `safe.click`.
+
+Solo se activa con:
+
+```text
+dispatchPath=safe-executor
+identitySource=uia
+```
+
+o con manifest v3 fuerte cuyo `approval.identity.source = uia`.
+
+Requisitos:
+
+* `target.observe.desktop` previo
+* `approval-v3` fuerte
+* `RuntimeId` presente
+* identidad aprobada vs observada en `Same`
+* `InvokePattern` disponible
+* rol permitido por `ExecutorSurfacePolicy`
+* `RootHwnd` desktop confiable
+* contrato valido
+* sin unsafe fallback
+
+Desktop sin `dispatchPath` sigue legacy aunque sea eligible.
+
+H150 agrega readiness y metricas desktop:
+
+* `safeClick.desktopFsm.*`
+* `safeClick.fsmReady.desktopEligible`
+* `safeClick.fsmReady.desktopRootAvailable`
+* `safeClick.migration.desktop*`
+
+No hay default desktop, no se retira legacy, no se retira `el.Click` y no se retira `UiaActionExecutor`.
+
 ---
 
 ## 10. SafeClickStepVerifier
@@ -656,6 +694,15 @@ Campos principales:
 * DesktopUiaStrong
 * DesktopUiaWeak
 * DesktopMissingIdentity
+* DesktopEligibleForFsm
+* DesktopNotEligibleForFsm
+* DesktopRuntimeStable
+* DesktopRuntimeChanged
+* DesktopInvokePatternAvailable
+* DesktopRoleAllowed
+* DesktopRootAvailable
+* DesktopOptInRouted
+* DesktopOptInBlocked
 
 Objetivo:
 
@@ -938,10 +985,10 @@ Avance aproximado: 80%
 Siguientes pasos:
 
 * HITO-147 — Gradual Enablement / FSM default for eligible steps **(implementado: web eligible-only, kill-switch `ONEBRAIN_SAFE_CLICK_FSM_DEFAULT`, predicado endurecido con InvokePattern + rol allowlisted + web-uia, opt-out `dispatchPath=legacy` deprecated, sin fallback silencioso; NO retira legacy; desktop excluido del default)**
-* HITO-148 — Web Stabilization + RuntimeId Hardening
-* HITO-149 — Legacy opt-out deprecated
-* HITO-150 — Legacy retirement safe.click
-* HITO-151 — Audit final safe.click engine
+* HITO-148 — Web Stabilization + RuntimeId Hardening **(implementado: re-observe web antes del default dispatch, RuntimeId stability, bloqueo stale fail-closed, sin desktop default)**
+* HITO-149/150 — Desktop FSM Dispatch Path + Desktop Gradual Readiness **(implementado: desktop `dispatchPath=safe-executor` opt-in con source `uia`, readiness y metricas desktop; NO default desktop; NO retiro legacy)**
+* HITO-151 — Legacy Deprecation o Desktop Gradual Enablement, segun metricas
+* HITO-152 — Legacy retirement safe.click, si metricas y auditoria lo permiten
 
 ### Fase siguiente: percepción robusta
 
