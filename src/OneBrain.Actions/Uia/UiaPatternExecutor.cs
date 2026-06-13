@@ -52,23 +52,38 @@ public sealed class UiaPatternExecutor : IUiaPatternExecutor
                     Reasons: ["resolved identity could not be reattached to a UIA element"]);
             }
 
-            if (!string.Equals(UiaTreeWalker.SafeRole(match), "Button", StringComparison.OrdinalIgnoreCase))
+            var role = UiaTreeWalker.SafeRole(match);
+            var invokeSupported = match.Patterns.Invoke.IsSupported;
+            var surfaceDecision = ExecutorSurfacePolicy.Decide(role, invokeSupported);
+            if (!surfaceDecision.Allowed)
             {
                 return new PatternExecutionResult(
                     Success: false,
-                    FailureKind: FailureKind.PolicyDenied,
-                    Reasons: ["only UIA button invoke is supported in this hito"],
+                    FailureKind: surfaceDecision.FailureKind ?? FailureKind.PolicyDenied,
+                    Reasons:
+                    [
+                        surfaceDecision.Reason,
+                        $"role={surfaceDecision.Role ?? "unknown"}",
+                        $"pattern={surfaceDecision.RequiredPattern}",
+                        "executorSurface=allowlisted"
+                    ],
                     ObservedIdentity: resolution.BestMatch);
             }
 
-            match.AsButton().Invoke();
+            match.Patterns.Invoke.Pattern.Invoke();
 
             var targetVisible = elements.Any(element =>
                 string.Equals(UiaTreeWalker.SafeName(element), request.ExpectedTargetName, StringComparison.OrdinalIgnoreCase));
             return new PatternExecutionResult(
                 Success: true,
                 FailureKind: null,
-                Reasons: ["uia invoke executed"],
+                Reasons:
+                [
+                    "uia invoke executed",
+                    $"role={surfaceDecision.Role}",
+                    $"pattern={surfaceDecision.RequiredPattern}",
+                    "executorSurface=allowlisted"
+                ],
                 ObservedIdentity: resolution.BestMatch,
                 WindowFound: true,
                 TargetVisible: targetVisible,
