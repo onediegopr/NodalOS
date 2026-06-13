@@ -161,14 +161,14 @@ public sealed class SafeExecutionContractTests
     }
 
     [TestMethod]
-    public void SensitiveActionClassifier_Reports_Current_Divergence()
+    public void SensitiveActionClassifier_Reports_StepKind_Convergence()
     {
         var report = SensitiveActionClassifier.InspectCurrentBehavior();
 
         CollectionAssert.Contains(report.RecipeRunnerKinds.ToList(), "app.close");
-        CollectionAssert.DoesNotContain(report.ProgramKinds.ToList(), "app.close");
+        CollectionAssert.Contains(report.ProgramKinds.ToList(), "app.close");
         CollectionAssert.DoesNotContain(report.ApprovalPolicyKinds.ToList(), "app.close");
-        CollectionAssert.Contains(report.Differences.ToList(), "app.close");
+        Assert.AreEqual(0, report.StepKindDifferences.Count);
     }
 
     private static RecipeSafetyContract CreateContract(ElementIdentity identity, bool reversible = false)

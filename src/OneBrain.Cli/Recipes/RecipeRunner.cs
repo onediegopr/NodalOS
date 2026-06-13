@@ -5,6 +5,7 @@ using OneBrain.Actions.Uia;
 using OneBrain.Cli.Accessibility;
 using OneBrain.Cli.Browser;
 using OneBrain.Cli.Safety;
+using OneBrain.Core.Approval;
 using OneBrain.Core.Extraction;
 using OneBrain.Core.Profiles;
 using OneBrain.Core.Safety;
@@ -1527,8 +1528,7 @@ public sealed class RecipeRunner
 
     private static bool IsSensitiveStep(RecipeStepDefinition step)
     {
-        var kind = (step.Kind ?? "").ToLowerInvariant();
-        return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "app.close" or "browser.open" or "browser.close" or "safe.click";
+        return SensitiveActionClassifier.IsSensitiveStepKind(step.Kind);
     }
 
     /// <summary>Validate template variables in a recipe against known/provided sources.</summary>

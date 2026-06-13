@@ -1,16 +1,24 @@
 namespace OneBrain.Core.Approval;
 
+public enum ActionSensitivity
+{
+    Benign = 0,
+    Sensitive = 1,
+    Unknown = 2
+}
+
 public sealed record SensitiveActionClassifierReport(
     IReadOnlyList<string> ApprovalPolicyKinds,
     IReadOnlyList<string> RecipeRunnerKinds,
     IReadOnlyList<string> ProgramKinds,
-    IReadOnlyList<string> ProposedCanonicalKinds,
-    IReadOnlyList<string> Differences);
+    IReadOnlyList<string> CanonicalSensitiveStepKinds,
+    IReadOnlyList<string> CanonicalBenignStepKinds,
+    IReadOnlyList<string> StepKindDifferences);
 
 public static class SensitiveActionClassifier
 {
-    private static readonly string[] RecipeRunnerSensitiveKinds =
-    [
+    private static readonly HashSet<string> CanonicalSensitiveKinds = new(StringComparer.OrdinalIgnoreCase)
+    {
         "actv.invoke",
         "actv.type",
         "key",
@@ -19,47 +27,88 @@ public static class SensitiveActionClassifier
         "browser.open",
         "browser.close",
         "safe.click"
-    ];
+    };
 
-    private static readonly string[] ProgramSensitiveKinds =
-    [
-        "actv.invoke",
-        "actv.type",
-        "key",
-        "app.open",
-        "browser.open",
-        "browser.close",
-        "safe.click"
-    ];
+    private static readonly HashSet<string> CanonicalBenignKinds = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "approval.manifest",
+        "artifact.summarizeproductevidence",
+        "artifact.writeproductevidence",
+        "assert.contains",
+        "assert.equals",
+        "browser.read",
+        "debug.hang",
+        "delay",
+        "diagnose.msaa",
+        "discover.actionableelements",
+        "extract.productevidence",
+        "extract.visiblefields",
+        "if",
+        "note",
+        "plan.safenavigation",
+        "preflight.click",
+        "profile.load",
+        "report.writeproductevidencehtml",
+        "report.writeproductevidencemarkdown",
+        "sleep",
+        "snapshot.read",
+        "visual.capture",
+        "visual.capture.element",
+        "visual.capture.window",
+        "visual.verify.changed",
+        "wait"
+    };
+
+    public static IReadOnlyList<string> GetCanonicalSensitiveStepKinds() =>
+        CanonicalSensitiveKinds.OrderBy(kind => kind, StringComparer.OrdinalIgnoreCase).ToList();
+
+    public static IReadOnlyList<string> GetCanonicalBenignStepKinds() =>
+        CanonicalBenignKinds.OrderBy(kind => kind, StringComparer.OrdinalIgnoreCase).ToList();
+
+    public static ActionSensitivity ClassifyStepKind(string? kind)
+    {
+        var normalized = Normalize(kind);
+        if (normalized.Length == 0)
+            return ActionSensitivity.Unknown;
+
+        if (CanonicalSensitiveKinds.Contains(normalized))
+            return ActionSensitivity.Sensitive;
+
+        if (CanonicalBenignKinds.Contains(normalized))
+            return ActionSensitivity.Benign;
+
+        return ActionSensitivity.Unknown;
+    }
+
+    public static bool IsSensitiveStepKind(string? kind)
+    {
+        return ClassifyStepKind(kind) is ActionSensitivity.Sensitive or ActionSensitivity.Unknown;
+    }
 
     public static SensitiveActionClassifierReport InspectCurrentBehavior()
     {
         var approvalPolicyKinds = ApprovalPolicy.DefaultPlatformPolicy.SensitiveActionKinds
             .OrderBy(kind => kind, StringComparer.OrdinalIgnoreCase)
             .ToList();
-        var recipeRunnerKinds = RecipeRunnerSensitiveKinds
-            .OrderBy(kind => kind, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        var programKinds = ProgramSensitiveKinds
-            .OrderBy(kind => kind, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        var proposed = approvalPolicyKinds
-            .Concat(recipeRunnerKinds)
+        var recipeRunnerKinds = GetCanonicalSensitiveStepKinds();
+        var programKinds = GetCanonicalSensitiveStepKinds();
+        var canonicalSensitive = GetCanonicalSensitiveStepKinds();
+        var canonicalBenign = GetCanonicalBenignStepKinds();
+        var differences = recipeRunnerKinds
             .Concat(programKinds)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(kind => kind, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        var differences = proposed
-            .Where(kind => !(approvalPolicyKinds.Contains(kind, StringComparer.OrdinalIgnoreCase)
-                          && recipeRunnerKinds.Contains(kind, StringComparer.OrdinalIgnoreCase)
-                          && programKinds.Contains(kind, StringComparer.OrdinalIgnoreCase)))
+            .Where(kind => !canonicalSensitive.Contains(kind, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
         return new SensitiveActionClassifierReport(
             ApprovalPolicyKinds: approvalPolicyKinds,
             RecipeRunnerKinds: recipeRunnerKinds,
             ProgramKinds: programKinds,
-            ProposedCanonicalKinds: proposed,
-            Differences: differences);
+            CanonicalSensitiveStepKinds: canonicalSensitive,
+            CanonicalBenignStepKinds: canonicalBenign,
+            StepKindDifferences: differences);
     }
+
+    private static string Normalize(string? kind) =>
+        string.IsNullOrWhiteSpace(kind) ? "" : kind.Trim().ToLowerInvariant();
 }

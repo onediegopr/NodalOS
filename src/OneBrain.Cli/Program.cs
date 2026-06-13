@@ -2,6 +2,7 @@ using OneBrain.Cli;
 using OneBrain.Cli.Diagnostics;
 using OneBrain.Cli.Recipes;
 using System.Text.Json;
+using OneBrain.Core.Approval;
 using OneBrain.Core.Actions;
 using OneBrain.Core.Recipes;
 using OneBrain.Core.Visual;
@@ -998,7 +999,7 @@ static void RunDryRun(RecipeDefinition recipe)
 
 static bool IsSensitiveKind(string kind)
 {
-    return kind is "actv.invoke" or "actv.type" or "key" or "app.open" or "browser.open" or "browser.close" or "safe.click";
+    return SensitiveActionClassifier.IsSensitiveStepKind(kind);
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
