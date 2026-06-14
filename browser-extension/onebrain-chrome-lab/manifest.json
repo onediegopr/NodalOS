@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ONE BRAIN Chrome Lab",
+  "name": "NEXA",
   "version": "0.1.0",
-  "description": "Local-first Chrome lab client for ONE BRAIN.",
+  "description": "Local-first Chrome lab client for NEXA.",
   "permissions": [
     "activeTab",
     "scripting",
@@ -33,7 +33,7 @@
     "default_path": "sidepanel.html"
   },
   "action": {
-    "default_title": "ONE BRAIN Chrome Lab"
+    "default_title": "NEXA"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://*:* ws://*:*;"
