@@ -106,6 +106,14 @@ function handlePortMessage(message) {
     return;
   }
 
+  if (message.type === 'runStatus') {
+    if (message.message && message.message.message) {
+      els.lastResult.textContent = message.message.message;
+    }
+    log('engine->extension', summarize(message.message || message));
+    return;
+  }
+
   if (message.type === 'humanIntervention') {
     els.humanMessage.textContent = message.message || message.reason || 'Human intervention required.';
     els.humanCard.classList.remove('hidden');

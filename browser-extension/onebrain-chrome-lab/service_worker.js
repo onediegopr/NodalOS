@@ -228,6 +228,12 @@ function handleEngineMessage(raw) {
     return;
   }
 
+  if (message.type === 'run.status') {
+    publish({ type: 'runStatus', message });
+    publishState(message.status || 'running', message.message || '');
+    return;
+  }
+
   if (message.type === 'run.stop') {
     stopAll(message.reason || 'engineStop');
     return;

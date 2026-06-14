@@ -46,6 +46,11 @@ public sealed record ToolRequest(
     string Tool,
     Dictionary<string, object?> Args);
 
+public sealed record AgentToolDecision(
+    string Tool,
+    Dictionary<string, object?> Args,
+    string Reason);
+
 public sealed record ToolResultEnvelope(
     string Type,
     string RunId,

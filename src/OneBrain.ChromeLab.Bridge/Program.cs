@@ -50,6 +50,7 @@ app.MapPost("/api/runs", async (
     ChromeLabRunManager runs,
     ChromeLabClientRegistry clients,
     PendingToolRequestRegistry pending,
+    OpenAiAgentClient agent,
     ChromeLabOptions config,
     CancellationToken cancellationToken) =>
 {
@@ -63,7 +64,7 @@ app.MapPost("/api/runs", async (
         return Results.Ok(new RunResponse(run.RunId, "error", "No extension client connected."));
     }
 
-    if (!config.HasApiKey)
+    if (!agent.HasApiKey)
     {
         runs.Stop(run.RunId, "OpenAI API key missing");
         return Results.Ok(new RunResponse(run.RunId, "error", "OpenAI API key missing. Set OPENAI_API_KEY or config/chrome-lab.local.json."));
@@ -112,10 +113,13 @@ app.MapPost("/api/runs/{runId}/resume", async (
     string runId,
     ChromeLabRunManager runs,
     ChromeLabClientRegistry clients,
+    PendingToolRequestRegistry pending,
     CancellationToken cancellationToken) =>
 {
     var run = runs.Resume(runId);
     await clients.BroadcastAsync(new { type = "run.resume", runId }, cancellationToken);
+    if (clients.HasConnectedClients)
+        await BroadcastObserveRequestAsync(clients, pending, run.RunId, cancellationToken);
     return Results.Ok(new RunResponse(run.RunId, run.Status, run.Message));
 });
 
@@ -123,7 +127,8 @@ app.Map("/ws/extension", async (
     HttpContext context,
     ChromeLabClientRegistry clients,
     ChromeLabRunManager runs,
-    PendingToolRequestRegistry pending) =>
+    PendingToolRequestRegistry pending,
+    OpenAiAgentClient agent) =>
 {
     if (!context.WebSockets.IsWebSocketRequest)
     {
@@ -150,7 +155,7 @@ app.Map("/ws/extension", async (
                 break;
 
             var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            await HandleExtensionMessage(json, socket, runs, pending, context.RequestAborted);
+            await HandleExtensionMessage(json, socket, runs, clients, pending, agent, context.RequestAborted);
         }
     }
     finally
@@ -171,7 +176,9 @@ static async Task HandleExtensionMessage(
     string json,
     WebSocket socket,
     ChromeLabRunManager runs,
+    ChromeLabClientRegistry clients,
     PendingToolRequestRegistry pending,
+    OpenAiAgentClient agent,
     CancellationToken cancellationToken)
 {
     using var doc = JsonDocument.Parse(json);
@@ -190,21 +197,34 @@ static async Task HandleExtensionMessage(
     if (type == "tool.result" &&
         doc.RootElement.TryGetProperty("runId", out var runIdProperty) &&
         doc.RootElement.TryGetProperty("requestId", out var requestIdProperty) &&
+        doc.RootElement.TryGetProperty("success", out var successProperty) &&
         doc.RootElement.TryGetProperty("result", out var resultProperty))
     {
         var runId = runIdProperty.GetString() ?? "";
         var requestId = requestIdProperty.GetString() ?? "";
+        var success = successProperty.ValueKind is JsonValueKind.True or JsonValueKind.False && successProperty.GetBoolean();
         var completed = pending.Complete(requestId);
+        var run = runs.Get(runId);
+        if (run == null)
+            return;
+
+        if (!success)
+        {
+            var error = doc.RootElement.TryGetProperty("error", out var errorProperty) ? errorProperty.GetString() ?? "tool failed" : "tool failed";
+            runs.Stop(runId, error);
+            await SendAsync(socket, new
+            {
+                type = "run.status",
+                runId,
+                status = "error",
+                message = error
+            }, cancellationToken);
+            return;
+        }
+
         if (completed?.Tool == "navigate")
         {
-            var observeRequestId = Guid.NewGuid().ToString("n");
-            pending.Track(observeRequestId, runId, "observePage");
-            await SendAsync(socket, new ToolRequest(
-                "tool.request",
-                runId,
-                observeRequestId,
-                "observePage",
-                new Dictionary<string, object?>()), cancellationToken);
+            await BroadcastObserveRequestAsync(clients, pending, runId, cancellationToken);
             return;
         }
 
@@ -221,8 +241,96 @@ static async Task HandleExtensionMessage(
                 reason = "credentialRequired",
                 message = "Credential, login, 2FA or captcha detected. Complete manually, then resume."
             }, cancellationToken);
+            return;
+        }
+
+        if (!string.Equals(completed?.Tool, "observePage", StringComparison.Ordinal))
+        {
+            await BroadcastObserveRequestAsync(clients, pending, runId, cancellationToken);
+            return;
+        }
+
+        if (run.StopRequested || string.Equals(run.Status, "paused", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        try
+        {
+            var decision = await agent.CreateToolDecisionAsync(run.Instruction, resultProperty, cancellationToken);
+            var validation = ChromeLabToolPolicy.Validate(decision.Tool, decision.Args);
+            if (!validation.Allowed)
+                throw new InvalidOperationException($"Tool decision rejected: {validation.Reason}");
+
+            if (string.Equals(decision.Tool, "pauseForHuman", StringComparison.Ordinal))
+            {
+                runs.Pause(runId, decision.Reason.Length == 0 ? "humanInterventionRequired" : decision.Reason);
+                await SendAsync(socket, new
+                {
+                    type = "run.pause",
+                    runId,
+                    reason = "humanInterventionRequired",
+                    message = string.IsNullOrWhiteSpace(decision.Reason) ? "Manual intervention required." : decision.Reason
+                }, cancellationToken);
+                return;
+            }
+
+            if (string.Equals(decision.Tool, "stop", StringComparison.Ordinal))
+            {
+                runs.Stop(runId, decision.Reason.Length == 0 ? "agentStop" : decision.Reason);
+                await SendAsync(socket, new
+                {
+                    type = "run.stop",
+                    runId,
+                    reason = string.IsNullOrWhiteSpace(decision.Reason) ? "agentStop" : decision.Reason
+                }, cancellationToken);
+                return;
+            }
+
+            var nextRequestId = Guid.NewGuid().ToString("n");
+            pending.Track(nextRequestId, runId, decision.Tool);
+            await clients.BroadcastAsync(new ToolRequest(
+                "tool.request",
+                runId,
+                nextRequestId,
+                decision.Tool,
+                decision.Args), cancellationToken);
+            await SendAsync(socket, new
+            {
+                type = "run.status",
+                runId,
+                status = "running",
+                message = string.IsNullOrWhiteSpace(decision.Reason)
+                    ? $"Dispatching {decision.Tool}."
+                    : $"{decision.Tool}: {decision.Reason}"
+            }, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            runs.Stop(runId, ex.Message);
+            await SendAsync(socket, new
+            {
+                type = "run.status",
+                runId,
+                status = "error",
+                message = ex.Message
+            }, cancellationToken);
         }
     }
+}
+
+static async Task BroadcastObserveRequestAsync(
+    ChromeLabClientRegistry clients,
+    PendingToolRequestRegistry pending,
+    string runId,
+    CancellationToken cancellationToken)
+{
+    var observeRequestId = Guid.NewGuid().ToString("n");
+    pending.Track(observeRequestId, runId, "observePage");
+    await clients.BroadcastAsync(new ToolRequest(
+        "tool.request",
+        runId,
+        observeRequestId,
+        "observePage",
+        new Dictionary<string, object?>()), cancellationToken);
 }
 
 static string? ExtractFirstHttpUrl(string text)

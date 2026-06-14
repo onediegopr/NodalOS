@@ -122,6 +122,52 @@ public sealed class ChromeLabBridgeTests
     }
 
     [TestMethod]
+    public void OpenAiDecisionParserReadsOutputTextDecision()
+    {
+        const string response = """
+            {
+              "output": [
+                {
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "{\"tool\":\"click\",\"args\":{\"selector\":\"a[href='/login']\"},\"reason\":\"Open login\"}"
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        var decision = OpenAiAgentClient.ParseDecisionResponse(response);
+
+        Assert.AreEqual("click", decision.Tool);
+        Assert.AreEqual("Open login", decision.Reason);
+        Assert.AreEqual("a[href='/login']", decision.Args["selector"]);
+    }
+
+    [TestMethod]
+    public void OpenAiDecisionParserRejectsMissingTool()
+    {
+        const string response = """
+            {
+              "output": [
+                {
+                  "content": [
+                    {
+                      "type": "output_text",
+                      "text": "{\"args\":{},\"reason\":\"missing tool\"}"
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => OpenAiAgentClient.ParseDecisionResponse(response));
+    }
+
+    [TestMethod]
     public void ExtensionSourceHasNoApiKeyOrRemoteCode()
     {
         var root = FindRepoRoot();
