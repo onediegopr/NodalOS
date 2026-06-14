@@ -55,6 +55,15 @@ public sealed class SafeTypeTests
     }
 
     [TestMethod]
+    public void TypePolicyRequiresApprovedInputBindingHash()
+    {
+        var validation = new ContractValidator().Validate(CreateTypeContract() with { ApprovedInputBindingHash = "" });
+
+        Assert.IsFalse(validation.IsValid);
+        CollectionAssert.Contains(validation.Reasons.ToList(), "TypeRequiresApprovedInputBindingHash");
+    }
+
+    [TestMethod]
     public void TypePolicyRequiresUiaProfileVerifiedFullAction()
     {
         var badProvenance = new ContractValidator().Validate(CreateTypeContract() with { Provenance = Provenance.Inferred });
@@ -210,7 +219,10 @@ public sealed class SafeTypeTests
                 "controlled",
                 ApprovalManifestBuilder.PolicyVersion,
                 "evidence"),
-            ApprovedValueDigest: "approved-digest");
+            ApprovedValueDigest: "approved-digest",
+            ApprovedInputBindingHash: "approved-input-binding",
+            ApprovedInputBindingVersion: ApprovedInputBindingHashBuilder.BindingVersion,
+            ApprovedInputDigestAlgorithm: ApprovedInputBindingHashBuilder.DigestAlgorithm);
     }
 
     private static ElementIdentity CreateIdentity(string runtimeId = "42.1.9")

@@ -34,6 +34,10 @@ public sealed class SafeTypeActionTests
         Assert.AreEqual("true", result.Variables!["safeType.success"]);
         Assert.AreEqual("invoice-123", result.Variables["safeType.valueAfter"]);
         Assert.AreEqual(ComputeDigest("invoice-123"), result.Variables["safeType.approvedTextDigest"]);
+        Assert.AreEqual(ComputeDigest("invoice-123"), result.Variables["safeType.approvedInput.valueDigest"]);
+        Assert.AreEqual("manifest", result.Variables["safeType.approvedInput.source"]);
+        Assert.AreEqual("true", result.Variables["safeType.approvedInput.validated"]);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(result.Variables["safeType.approvedInput.bindingHash"]));
         Assert.AreEqual("ValuePattern.SetValue", result.Variables["safeType.patternUsed"]);
         Assert.AreEqual("Same", result.Variables["safeType.identity.verdict"]);
         Assert.AreEqual("true", result.Variables["safeType.ownership.checked"]);
@@ -59,7 +63,65 @@ public sealed class SafeTypeActionTests
         Assert.IsFalse(called);
         Assert.AreEqual("false", result.Variables!["safeType.success"]);
         Assert.AreEqual("PolicyDenied", result.Variables["safeType.failureKind"]);
-        Assert.AreEqual("safe.type text does not match approved text digest", result.Variables["safeType.reason"]);
+        Assert.AreEqual("safe.type text does not match manifest-bound approved input digest", result.Variables["safeType.reason"]);
+    }
+
+    [TestMethod]
+    public void SafeTypeRejectsManifestWithoutApprovedInputBinding()
+    {
+        var called = false;
+        var result = RunWithOverrides(
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            typeExecutor: new FakeTypeExecutor(_ =>
+            {
+                called = true;
+                throw new AssertFailedException("type executor should not run without approved input binding");
+            }),
+            () => new RecipeRunner().Run(BuildTypeRecipe(approvedText: "")));
+
+        Assert.IsFalse(result.Success);
+        Assert.IsFalse(called);
+        Assert.AreEqual("false", result.Variables!["safeType.success"]);
+        Assert.AreEqual("ApprovedInputBindingRequired", result.Variables["safeType.approvedInput.reason"]);
+        Assert.AreEqual("safe.type requires approved input binding from approval manifest", result.Variables["safeType.reason"]);
+    }
+
+    [TestMethod]
+    public void SafeTypeRuntimeApprovalInputVariableCannotAuthorizeText()
+    {
+        var called = false;
+        var result = RunWithOverrides(
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            typeExecutor: new FakeTypeExecutor(_ =>
+            {
+                called = true;
+                throw new AssertFailedException("type executor should not run from runtime approval input variable");
+            }),
+            () => new RecipeRunner().Run(BuildTypeRecipe(
+                approvedText: "",
+                initialApprovalInputDigest: ComputeDigest("invoice-123"))));
+
+        Assert.IsFalse(result.Success);
+        Assert.IsFalse(called);
+        Assert.AreEqual("ApprovedInputBindingRequired", result.Variables!["safeType.approvedInput.reason"]);
+    }
+
+    [TestMethod]
+    public void SafeTypeRequiresExecutionAllowedInThisHito()
+    {
+        var called = false;
+        var result = RunWithOverrides(
+            resolver: (_, _, _, _) => CreateStrongResolution(),
+            typeExecutor: new FakeTypeExecutor(_ =>
+            {
+                called = true;
+                throw new AssertFailedException("type executor should not run when executionAllowedInThisHito=false");
+            }),
+            () => new RecipeRunner().Run(BuildTypeRecipe(mode: "commercialWeb")));
+
+        Assert.IsFalse(result.Success);
+        Assert.IsFalse(called);
+        Assert.AreEqual("safe.type requires executionAllowedInThisHito=true", result.Variables!["safeType.reason"]);
     }
 
     [TestMethod]
@@ -222,7 +284,9 @@ public sealed class SafeTypeActionTests
     private static RecipeDefinition BuildTypeRecipe(
         string approvedText = "invoice-123",
         string stepText = "invoice-123",
-        string dispatchPath = "")
+        string dispatchPath = "",
+        string mode = "controlled",
+        string initialApprovalInputDigest = "")
     {
         var args = new Dictionary<string, string>
         {
@@ -233,15 +297,23 @@ public sealed class SafeTypeActionTests
         if (!string.IsNullOrWhiteSpace(dispatchPath))
             args["dispatchPath"] = dispatchPath;
 
+        var variables = new Dictionary<string, string>
+        {
+            ["browser.hwnd"] = "1234",
+            ["browser.owned"] = "true",
+            ["browser.process"] = "msedge"
+        };
+        if (!string.IsNullOrWhiteSpace(approvedText))
+            variables["typePreflight.approvedText"] = approvedText;
+        if (!string.IsNullOrWhiteSpace(initialApprovalInputDigest))
+        {
+            variables["approval.input.approvedTextDigest"] = initialApprovalInputDigest;
+            variables["approval.input.valueDigest"] = initialApprovalInputDigest;
+        }
+
         return new RecipeDefinition("safe-type")
         {
-            Variables = new Dictionary<string, string>
-            {
-                ["browser.hwnd"] = "1234",
-                ["browser.owned"] = "true",
-                ["browser.process"] = "msedge",
-                ["typePreflight.approvedText"] = approvedText
-            },
+            Variables = variables,
             Steps =
             [
                 new RecipeStepDefinition
@@ -249,7 +321,7 @@ public sealed class SafeTypeActionTests
                     Id = "preflight",
                     Kind = "preflight.click",
                     SaveAs = "typePreflight",
-                    Args = new Dictionary<string, string> { ["targettext"] = "Account number" }
+                    Args = new Dictionary<string, string> { ["targettext"] = "ver" }
                 },
                 new RecipeStepDefinition
                 {
@@ -270,7 +342,7 @@ public sealed class SafeTypeActionTests
                     Args = new Dictionary<string, string>
                     {
                         ["from"] = "typePreflight",
-                        ["mode"] = "controlled"
+                        ["mode"] = mode
                     }
                 },
                 new RecipeStepDefinition

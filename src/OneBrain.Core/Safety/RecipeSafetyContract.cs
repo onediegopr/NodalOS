@@ -22,4 +22,7 @@ public sealed record RecipeSafetyContract(
     Provenance Provenance,
     TrustLevel TrustLevel,
     ApprovalBinding? ApprovalRef,
-    string ApprovedValueDigest = "");
+    string ApprovedValueDigest = "",
+    string ApprovedInputBindingHash = "",
+    string ApprovedInputBindingVersion = "",
+    string ApprovedInputDigestAlgorithm = "");

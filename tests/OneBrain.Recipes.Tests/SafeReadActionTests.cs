@@ -154,7 +154,7 @@ public sealed class SafeReadActionTests
                     Id = "preflight",
                     Kind = "preflight.click",
                     SaveAs = "readPreflight",
-                    Args = new Dictionary<string, string> { ["targettext"] = "Account number" }
+                    Args = new Dictionary<string, string> { ["targettext"] = "ver" }
                 },
                 new RecipeStepDefinition
                 {

@@ -26,5 +26,11 @@ public sealed class TypeActionContractPolicy : IActionContractPolicy
             reasons.Add("TypeRequiresProfileVerifiedTrust");
         if (string.IsNullOrWhiteSpace(contract.ApprovedValueDigest))
             reasons.Add("TypeRequiresApprovedText");
+        if (string.IsNullOrWhiteSpace(contract.ApprovedInputBindingHash))
+            reasons.Add("TypeRequiresApprovedInputBindingHash");
+        if (string.IsNullOrWhiteSpace(contract.ApprovedInputBindingVersion))
+            reasons.Add("TypeRequiresApprovedInputBindingVersion");
+        if (string.IsNullOrWhiteSpace(contract.ApprovedInputDigestAlgorithm))
+            reasons.Add("TypeRequiresApprovedInputDigestAlgorithm");
     }
 }

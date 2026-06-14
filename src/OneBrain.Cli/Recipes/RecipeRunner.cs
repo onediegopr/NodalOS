@@ -2380,6 +2380,9 @@ public sealed class RecipeRunner
 
         var identityInput = TryReadApprovedIdentityInput(fromPrefix);
         var manifest = ApprovalManifestBuilder.BuildFromEvidence(evidenceJson, mode, identityInput);
+        var approvedInputBinding = TryBuildManifestApprovedInputBinding(manifest, fromPrefix, "type");
+        if (approvedInputBinding != null)
+            manifest = ApprovalManifestBuilder.AttachApprovedInputBinding(manifest, approvedInputBinding);
 
         var prefix = step.SaveAs ?? "approval";
 
@@ -2401,7 +2404,7 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".executionAllowedInThisHito"] = manifest.ExecutionAllowedInThisHito ? "true" : "false";
         SetApprovalIdentityVars(prefix, manifest);
         CopyApprovalObservationVars(prefix, fromPrefix);
-        CopyApprovalInputValueVars(prefix, fromPrefix);
+        SetApprovalInputVars(prefix, manifest);
 
         sw.Stop();
         return new RecipeStepRunResult(step.Id, step.Kind, true,
@@ -2430,6 +2433,20 @@ public sealed class RecipeRunner
                 step.Kind,
                 false,
                 $"safe.read: {manifestValidation.Value.Reason}",
+                sw.ElapsedMilliseconds);
+        }
+
+        var authorization = SafeExecutorAuthorizationPolicy.Evaluate(manifest, "safe.read");
+        if (!authorization.Allowed)
+        {
+            SetSafeReadVars(prefix, success: false, "", "", authorization.FailureKind, authorization.Reason);
+            SetSafeReadEvidenceVars(prefix, StepState.Blocked, authorization.FailureKind, authorization.BlockReason, [authorization.Reason]);
+            sw.Stop();
+            return new RecipeStepRunResult(
+                step.Id,
+                step.Kind,
+                false,
+                $"safe.read: {authorization.Reason}",
                 sw.ElapsedMilliseconds);
         }
 
@@ -2562,17 +2579,26 @@ public sealed class RecipeRunner
         if (manifestValidation != null)
             return BlockSafeType(step, sw, prefix, manifestValidation.Value.FailureKind, manifestValidation.Value.BlockReason, manifestValidation.Value.Reason);
 
-        var approvedDigest = FirstNonEmpty(
-            _ctx.Variables.GetValueOrDefault(approvalPrefix + ".input.approvedTextDigest", ""),
-            _ctx.Variables.GetValueOrDefault(approvalPrefix + ".input.valueDigest", ""));
-        if (string.IsNullOrWhiteSpace(approvedDigest))
-            return BlockSafeType(step, sw, prefix, FailureKind.PolicyDenied, "ApprovedTextRequired", "safe.type requires approved text digest from approval manifest");
+        var authorization = SafeExecutorAuthorizationPolicy.Evaluate(manifest, "safe.type");
+        if (!authorization.Allowed)
+            return BlockSafeType(step, sw, prefix, authorization.FailureKind, authorization.BlockReason, authorization.Reason);
 
         var resolvedDigest = ComputeApprovedValueDigest(approvedText);
-        if (!string.Equals(resolvedDigest, approvedDigest, StringComparison.Ordinal))
-            return BlockSafeType(step, sw, prefix, FailureKind.PolicyDenied, "ApprovedTextMismatch", "safe.type text does not match approved text digest");
+        var inputValidation = ValidateApprovedInputBinding(manifest!, resolvedDigest);
+        SetSafeTypeApprovedInputVars(prefix, manifest!.ApprovedInputBinding, inputValidation);
+        if (!inputValidation.Success)
+            return BlockSafeType(step, sw, prefix, inputValidation.FailureKind ?? FailureKind.PolicyDenied, inputValidation.Reason, ToSafeTypeApprovedInputFailureReason(inputValidation.Reason));
 
-        var contract = BuildSafeExecutorContract(manifest!, "type", approvedDigest, out var contractReason, out var contractFailureKind);
+        var approvedDigest = manifest.ApprovedInputBinding!.ApprovedValueDigest;
+        var contract = BuildSafeExecutorContract(
+            manifest!,
+            "type",
+            approvedDigest,
+            out var contractReason,
+            out var contractFailureKind,
+            approvedInputBindingHash: manifest.ApprovedInputBinding.ApprovedInputBindingHash,
+            approvedInputBindingVersion: manifest.ApprovedInputBinding.BindingVersion,
+            approvedInputDigestAlgorithm: manifest.ApprovedInputBinding.ApprovedValueDigestAlgorithm);
         if (contract == null)
             return BlockSafeType(step, sw, prefix, contractFailureKind, "ApprovalV3StrongIdentityRequired", contractReason);
 
@@ -4356,6 +4382,9 @@ public sealed class RecipeRunner
         if (bool.TryParse(rawShadowAgrees, out var parsedShadowAgrees))
             shadowAgrees = parsedShadowAgrees;
 
+        var manifestJson = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".manifestJson", "");
+        var approvedInputBinding = ReadApprovedInputBindingFromManifestJson(manifestJson);
+
         return new ApprovalManifest
         {
             TargetText = target,
@@ -4372,8 +4401,99 @@ public sealed class RecipeRunner
             IdentityStrength = identityStrength,
             IdentitySource = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.source", ""),
             ShadowAgreesWithLegacy = shadowAgrees,
-            IdentityBindingHash = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.bindingHash", "")
+            IdentityBindingHash = _ctx.Variables.GetValueOrDefault(approvalPrefix + ".identity.bindingHash", ""),
+            ManifestJson = manifestJson,
+            ApprovedInputBinding = approvedInputBinding,
+            ApprovedValueDigest = approvedInputBinding?.ApprovedValueDigest,
+            ApprovedInputBindingHash = approvedInputBinding?.ApprovedInputBindingHash,
+            ApprovedInputBindingVersion = approvedInputBinding?.BindingVersion,
+            ApprovedInputDigestAlgorithm = approvedInputBinding?.ApprovedValueDigestAlgorithm,
+            ApprovedInputCanonicalization = approvedInputBinding?.ApprovedValueCanonicalization
         };
+    }
+
+    private static ApprovedInputBinding? ReadApprovedInputBindingFromManifestJson(string manifestJson)
+    {
+        if (string.IsNullOrWhiteSpace(manifestJson))
+            return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(manifestJson);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("approvedInput", out var approvedInput) &&
+                approvedInput.ValueKind == JsonValueKind.Object)
+            {
+                return TryReadApprovedInputBinding(approvedInput);
+            }
+
+            var bindingVersion = ReadJsonString(root, "approvedInputBindingVersion");
+            var actionKind = ReadJsonString(root, "approvedInputActionKind");
+            var approvedValueDigest = ReadJsonString(root, "approvedValueDigest");
+            var digestAlgorithm = ReadJsonString(root, "approvedValueDigestAlgorithm");
+            var canonicalization = ReadJsonString(root, "approvedValueCanonicalization");
+            var bindingHash = ReadJsonString(root, "approvedInputBindingHash");
+            var identityBindingHash = ReadJsonString(root, "identityBindingHash");
+
+            if (string.IsNullOrWhiteSpace(bindingVersion) ||
+                string.IsNullOrWhiteSpace(actionKind) ||
+                string.IsNullOrWhiteSpace(approvedValueDigest) ||
+                string.IsNullOrWhiteSpace(digestAlgorithm) ||
+                string.IsNullOrWhiteSpace(canonicalization) ||
+                string.IsNullOrWhiteSpace(bindingHash) ||
+                string.IsNullOrWhiteSpace(identityBindingHash))
+            {
+                return null;
+            }
+
+            return new ApprovedInputBinding(
+                bindingVersion,
+                actionKind,
+                identityBindingHash,
+                identityBindingHash,
+                approvedValueDigest,
+                digestAlgorithm,
+                canonicalization,
+                bindingHash);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static ApprovedInputBinding? TryReadApprovedInputBinding(JsonElement approvedInput)
+    {
+        var bindingVersion = ReadJsonString(approvedInput, "bindingVersion");
+        var actionKind = ReadJsonString(approvedInput, "actionKind");
+        var approvalRef = ReadJsonString(approvedInput, "approvalRef");
+        var identityBindingHash = ReadJsonString(approvedInput, "identityBindingHash");
+        var approvedValueDigest = ReadJsonString(approvedInput, "approvedValueDigest");
+        var digestAlgorithm = ReadJsonString(approvedInput, "approvedValueDigestAlgorithm");
+        var canonicalization = ReadJsonString(approvedInput, "approvedValueCanonicalization");
+        var bindingHash = ReadJsonString(approvedInput, "approvedInputBindingHash");
+
+        if (string.IsNullOrWhiteSpace(bindingVersion) ||
+            string.IsNullOrWhiteSpace(actionKind) ||
+            string.IsNullOrWhiteSpace(approvalRef) ||
+            string.IsNullOrWhiteSpace(identityBindingHash) ||
+            string.IsNullOrWhiteSpace(approvedValueDigest) ||
+            string.IsNullOrWhiteSpace(digestAlgorithm) ||
+            string.IsNullOrWhiteSpace(canonicalization) ||
+            string.IsNullOrWhiteSpace(bindingHash))
+        {
+            return null;
+        }
+
+        return new ApprovedInputBinding(
+            bindingVersion,
+            actionKind,
+            approvalRef,
+            identityBindingHash,
+            approvedValueDigest,
+            digestAlgorithm,
+            canonicalization,
+            bindingHash);
     }
 
     private IReadOnlyList<WebCandidate> ReadSafeClickPlanCandidates(
@@ -4571,7 +4691,10 @@ public sealed class RecipeRunner
         string actionKind,
         string approvedValueDigest,
         out string reason,
-        out FailureKind failureKind)
+        out FailureKind failureKind,
+        string approvedInputBindingHash = "",
+        string approvedInputBindingVersion = "",
+        string approvedInputDigestAlgorithm = "")
     {
         var binding = ApprovalManifestBuilder.TryBuildApprovalBinding(manifest);
         var expectedIdentity = manifest.ApprovedSelector?.ExpectedIdentity;
@@ -4595,7 +4718,7 @@ public sealed class RecipeRunner
             ContractId: normalizedActionKind switch
             {
                 "read" => $"safe-read-{manifest.IdentityBindingHash}",
-                "type" => $"safe-type-{manifest.IdentityBindingHash}-{approvedValueDigest}",
+                "type" => $"safe-type-{manifest.IdentityBindingHash}-{approvedInputBindingHash}",
                 _ => $"safe-click-{manifest.IdentityBindingHash}"
             },
             ActionKind: normalizedActionKind,
@@ -4610,7 +4733,10 @@ public sealed class RecipeRunner
             Provenance: Provenance.Uia,
             TrustLevel: TrustLevel.ProfileVerified,
             ApprovalRef: binding,
-            ApprovedValueDigest: isType ? approvedValueDigest : "");
+            ApprovedValueDigest: isType ? approvedValueDigest : "",
+            ApprovedInputBindingHash: isType ? approvedInputBindingHash : "",
+            ApprovedInputBindingVersion: isType ? approvedInputBindingVersion : "",
+            ApprovedInputDigestAlgorithm: isType ? approvedInputDigestAlgorithm : "");
     }
 
     private IReadOnlyList<ElementIdentity> BuildSafeExecutorCandidates(string prefix, WebTargetResult resolution)
@@ -4745,6 +4871,23 @@ public sealed class RecipeRunner
         _ctx.Variables[prefix + ".mutationObserved"] = typeResult.MutationObserved ? "true" : "false";
         _ctx.Variables[prefix + ".approvedText.matchesValueAfter"] =
             string.Equals(typeResult.ValueAfter, approvedText, StringComparison.Ordinal) ? "true" : "false";
+    }
+
+    private void SetSafeTypeApprovedInputVars(
+        string prefix,
+        ApprovedInputBinding? binding,
+        ApprovedInputBindingValidationResult validation)
+    {
+        _ctx.Variables[prefix + ".approvedInput.valueDigest"] = binding?.ApprovedValueDigest ?? "";
+        _ctx.Variables[prefix + ".approvedInput.bindingHash"] = binding?.ApprovedInputBindingHash ?? "";
+        _ctx.Variables[prefix + ".approvedInput.bindingVersion"] = binding?.BindingVersion ?? "";
+        _ctx.Variables[prefix + ".approvedInput.digestAlgorithm"] = binding?.ApprovedValueDigestAlgorithm ?? "";
+        _ctx.Variables[prefix + ".approvedInput.source"] = "manifest";
+        _ctx.Variables[prefix + ".approvedInput.validated"] = validation.Success ? "true" : "false";
+        _ctx.Variables[prefix + ".approvedInput.failureKind"] = validation.FailureKind?.ToString() ?? "";
+        _ctx.Variables[prefix + ".approvedInput.reason"] = validation.Reason;
+        _ctx.Variables[prefix + ".approvedInput.expectedHash"] = validation.ExpectedHash;
+        _ctx.Variables[prefix + ".approvedInput.observedHash"] = validation.ActualHash;
     }
 
     private void SetSafeTypeEvidenceVars(string prefix, IReadOnlyList<StepTransitionEvidence> entries)
@@ -5875,20 +6018,67 @@ public sealed class RecipeRunner
             _ctx.Variables[approvalPrefix + ".identity.hasInvoke"] = hasInvoke;
     }
 
-    private void CopyApprovalInputValueVars(string approvalPrefix, string fromPrefix)
+    private ApprovedInputBinding? TryBuildManifestApprovedInputBinding(
+        ApprovalManifest manifest,
+        string fromPrefix,
+        string actionKind)
     {
         var approvedText = FirstNonEmpty(
             _ctx.Variables.GetValueOrDefault(fromPrefix + ".approvedText", ""),
             _ctx.Variables.GetValueOrDefault(fromPrefix + ".input.approvedText", ""),
             _ctx.Variables.GetValueOrDefault(fromPrefix + ".type.approvedText", ""),
             _ctx.Variables.GetValueOrDefault(fromPrefix + ".value", ""));
-        if (string.IsNullOrWhiteSpace(approvedText))
-            return;
+        if (string.IsNullOrWhiteSpace(approvedText) ||
+            string.IsNullOrWhiteSpace(manifest.IdentityBindingHash))
+        {
+            return null;
+        }
 
         var digest = ComputeApprovedValueDigest(approvedText);
-        _ctx.Variables[approvalPrefix + ".input.approvedText"] = approvedText;
-        _ctx.Variables[approvalPrefix + ".input.approvedTextDigest"] = digest;
-        _ctx.Variables[approvalPrefix + ".input.valueDigest"] = digest;
+        return ApprovedInputBindingHashBuilder.Build(
+            actionKind,
+            manifest.IdentityBindingHash!,
+            manifest.IdentityBindingHash!,
+            digest);
+    }
+
+    private void SetApprovalInputVars(string approvalPrefix, ApprovalManifest manifest)
+    {
+        var binding = manifest.ApprovedInputBinding;
+        if (binding == null)
+            return;
+
+        _ctx.Variables[approvalPrefix + ".input.approvedTextDigest"] = binding.ApprovedValueDigest;
+        _ctx.Variables[approvalPrefix + ".input.valueDigest"] = binding.ApprovedValueDigest;
+        _ctx.Variables[approvalPrefix + ".input.bindingHash"] = binding.ApprovedInputBindingHash;
+        _ctx.Variables[approvalPrefix + ".input.bindingVersion"] = binding.BindingVersion;
+        _ctx.Variables[approvalPrefix + ".input.digestAlgorithm"] = binding.ApprovedValueDigestAlgorithm;
+        _ctx.Variables[approvalPrefix + ".input.canonicalization"] = binding.ApprovedValueCanonicalization;
+        _ctx.Variables[approvalPrefix + ".input.source"] = "manifest";
+    }
+
+    private ApprovedInputBindingValidationResult ValidateApprovedInputBinding(
+        ApprovalManifest manifest,
+        string resolvedDigest)
+    {
+        return ApprovedInputBindingValidator.Validate(
+            manifest.ApprovedInputBinding,
+            "type",
+            manifest.IdentityBindingHash ?? "",
+            manifest.IdentityBindingHash ?? "",
+            resolvedDigest);
+    }
+
+    private static string ToSafeTypeApprovedInputFailureReason(string reason)
+    {
+        return reason switch
+        {
+            "ApprovedInputBindingRequired" => "safe.type requires approved input binding from approval manifest",
+            "ApprovedInputDigestMismatch" => "safe.type text does not match manifest-bound approved input digest",
+            "ApprovedInputBindingHashMismatch" => "safe.type approved input binding hash mismatch",
+            "ApprovedInputIdentityBindingMismatch" => "safe.type approved input identity binding mismatch",
+            _ => $"safe.type approved input binding rejected: {reason}"
+        };
     }
 
     private static string FirstNonEmpty(params string?[] values)

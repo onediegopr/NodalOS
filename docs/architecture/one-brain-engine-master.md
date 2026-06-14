@@ -1081,6 +1081,7 @@ Siguientes pasos:
 * HITO-158 — safe.read + Action Contract Policy Registry + Invoke-Time Gate Testable **(implementado: registry de políticas por `ActionKind`, gate invoke-time puro/testeable, `safe.read` read-only con `ValuePattern`/`TextPattern`; NO implementa `safe.type`)**
 * HITO-159 - safe.type UIA ValuePattern **(implementado: primera escritura segura por `ValuePattern.SetValue`, policy `type`, binding contra identidad viva, ownership pre-commit, readback, password fields bloqueados; NO implementa form fill ni submit)**
 * HITO-160 - Legacy Quarantine / safe path locks **(implementado: `actv.type`, `actv.invoke` y `key` bloqueados por default con `LegacyExecutionGuard`; opt-in legacy doble y auditable; `safe.*` ignora opt-in legacy)**
+* HITO-161 - Approved-Input Binding Unification **(implementado: `safe.type` exige approved input binding manifest-bound; el digest runtime `approval.input.*` queda derivado/diagnostico, no autoridad; `type` requiere binding hash en contrato; `safe.read/type` honran `executionAllowedInThisHito`)**
 
 ### Fase siguiente: percepción robusta
 

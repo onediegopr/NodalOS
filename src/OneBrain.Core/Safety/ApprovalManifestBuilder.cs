@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using OneBrain.Core.Approval;
 using OneBrain.Core.Identity;
 using OneBrain.Core.Models;
@@ -221,6 +222,48 @@ public static class ApprovalManifestBuilder
             EvidenceHash: manifest.EvidenceHash);
     }
 
+    public static ApprovalManifest AttachApprovedInputBinding(
+        ApprovalManifest manifest,
+        ApprovedInputBinding approvedInputBinding)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        ArgumentNullException.ThrowIfNull(approvedInputBinding);
+
+        var manifestNode = string.IsNullOrWhiteSpace(manifest.ManifestJson)
+            ? new JsonObject()
+            : JsonNode.Parse(manifest.ManifestJson)?.AsObject() ?? new JsonObject();
+
+        manifestNode["approvedInputBindingVersion"] = approvedInputBinding.BindingVersion;
+        manifestNode["approvedInputActionKind"] = approvedInputBinding.ActionKind;
+        manifestNode["approvedValueDigest"] = approvedInputBinding.ApprovedValueDigest;
+        manifestNode["approvedValueDigestAlgorithm"] = approvedInputBinding.ApprovedValueDigestAlgorithm;
+        manifestNode["approvedValueCanonicalization"] = approvedInputBinding.ApprovedValueCanonicalization;
+        manifestNode["approvedInputBindingHash"] = approvedInputBinding.ApprovedInputBindingHash;
+
+        manifestNode["approvedInput"] = new JsonObject
+        {
+            ["bindingVersion"] = approvedInputBinding.BindingVersion,
+            ["actionKind"] = approvedInputBinding.ActionKind,
+            ["approvalRef"] = approvedInputBinding.ApprovalRef,
+            ["identityBindingHash"] = approvedInputBinding.IdentityBindingHash,
+            ["approvedValueDigest"] = approvedInputBinding.ApprovedValueDigest,
+            ["approvedValueDigestAlgorithm"] = approvedInputBinding.ApprovedValueDigestAlgorithm,
+            ["approvedValueCanonicalization"] = approvedInputBinding.ApprovedValueCanonicalization,
+            ["approvedInputBindingHash"] = approvedInputBinding.ApprovedInputBindingHash
+        };
+
+        return manifest with
+        {
+            ManifestJson = manifestNode.ToJsonString(),
+            ApprovedInputBinding = approvedInputBinding,
+            ApprovedValueDigest = approvedInputBinding.ApprovedValueDigest,
+            ApprovedInputBindingHash = approvedInputBinding.ApprovedInputBindingHash,
+            ApprovedInputBindingVersion = approvedInputBinding.BindingVersion,
+            ApprovedInputDigestAlgorithm = approvedInputBinding.ApprovedValueDigestAlgorithm,
+            ApprovedInputCanonicalization = approvedInputBinding.ApprovedValueCanonicalization
+        };
+    }
+
     private static ApprovalIdentityMetadata? BuildIdentityMetadata(
         ApprovedIdentityInput? identityInput,
         string normalizedMode)
@@ -345,7 +388,7 @@ public static class ApprovalManifestBuilder
     }
 }
 
-public sealed class ApprovalManifest
+public sealed record ApprovalManifest
 {
     public bool Required { get; init; }
     public bool Allowed { get; init; }
@@ -370,4 +413,10 @@ public sealed class ApprovalManifest
     public string? IdentitySource { get; init; }
     public bool? ShadowAgreesWithLegacy { get; init; }
     public string? IdentityBindingHash { get; init; }
+    public ApprovedInputBinding? ApprovedInputBinding { get; init; }
+    public string? ApprovedValueDigest { get; init; }
+    public string? ApprovedInputBindingHash { get; init; }
+    public string? ApprovedInputBindingVersion { get; init; }
+    public string? ApprovedInputDigestAlgorithm { get; init; }
+    public string? ApprovedInputCanonicalization { get; init; }
 }

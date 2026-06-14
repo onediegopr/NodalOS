@@ -90,6 +90,31 @@ public sealed class LegacyQuarantineRecipeTests
     }
 
     [TestMethod]
+    public void SourceScanSafePathTransitiveHelpersNoLegacySymbols()
+    {
+        var source = File.ReadAllText(Path.Combine(FindRepoRoot(), "src", "OneBrain.Cli", "Recipes", "RecipeRunner.cs"));
+
+        AssertNoLegacySymbols(
+            ExtractMember(
+                source,
+                "private (FailureKind FailureKind, string BlockReason, string Reason)? ValidateSafeExecutorManifest(",
+                "private RecipeSafetyContract? BuildSafeExecutorContract("),
+            "ValidateSafeExecutorManifest");
+        AssertNoLegacySymbols(
+            ExtractMember(
+                source,
+                "private RecipeSafetyContract? BuildSafeExecutorContract(",
+                "private IReadOnlyList<ElementIdentity> BuildSafeExecutorCandidates("),
+            "BuildSafeExecutorContract");
+        AssertNoLegacySymbols(
+            ExtractMember(
+                source,
+                "private SafeTypeLiveTarget ResolveSafeTypeLiveTarget(",
+                "private static FailureKind MapDesktopTargetObserveFailureKind("),
+            "ResolveSafeTypeLiveTarget");
+    }
+
+    [TestMethod]
     public void ExecuteSafeClickLegacyRemovedOrBlocked()
     {
         var source = File.ReadAllText(Path.Combine(FindRepoRoot(), "src", "OneBrain.Cli", "Recipes", "RecipeRunner.cs"));
@@ -145,6 +170,11 @@ public sealed class LegacyQuarantineRecipeTests
     private static void AssertSafeMethodHasNoLegacySymbols(string source, string startMethod, string endMethod)
     {
         var method = ExtractMethod(source, startMethod, endMethod);
+        AssertNoLegacySymbols(method, startMethod);
+    }
+
+    private static void AssertNoLegacySymbols(string method, string name)
+    {
         foreach (var symbol in new[]
                  {
                      "new UiaActionExecutor",
@@ -164,8 +194,18 @@ public sealed class LegacyQuarantineRecipeTests
                      ".Click("
                  })
         {
-            Assert.IsFalse(method.Contains(symbol, StringComparison.Ordinal), $"{startMethod} contains {symbol}");
+            Assert.IsFalse(method.Contains(symbol, StringComparison.Ordinal), $"{name} contains {symbol}");
         }
+    }
+
+    private static string ExtractMember(string source, string startSignature, string endSignature)
+    {
+        var start = source.IndexOf(startSignature, StringComparison.Ordinal);
+        var end = source.IndexOf(endSignature, StringComparison.Ordinal);
+
+        Assert.IsTrue(start >= 0, $"{startSignature} not found");
+        Assert.IsTrue(end > start, $"{endSignature} not found after {startSignature}");
+        return source[start..end];
     }
 
     private static string ExtractMethod(string source, string startMethod, string endMethod)
