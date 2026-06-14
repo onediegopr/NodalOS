@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace OneBrain.ChromeLab.Bridge;
 
@@ -12,6 +14,8 @@ public sealed class ChromeLabOptions
     public string Model { get; init; } = "gpt-4.1-mini";
     public string? ApiKey { get; init; }
     public string ConnectionToken { get; init; } = "";
+    public string ConnectionTokenSource { get; init; } = "";
+    public bool ConnectionTokenGenerated { get; init; }
     public bool AllowLan { get; init; }
     public bool SelfTest { get; init; }
 
@@ -20,20 +24,35 @@ public sealed class ChromeLabOptions
 
     public static ChromeLabOptions Load(string[] args)
     {
-        var host = ReadArg(args, "--host") ?? "127.0.0.1";
-        var port = int.TryParse(ReadArg(args, "--port"), out var parsedPort) ? parsedPort : 8787;
+        var configFile = TryReadLocalConfig();
+        var host = ReadArg(args, "--host") ?? TryReadString(configFile, "Host") ?? "127.0.0.1";
+        var port = int.TryParse(ReadArg(args, "--port"), out var parsedPort)
+            ? parsedPort
+            : TryReadInt(configFile, "Port") ?? 8787;
         var model = ReadArg(args, "--model") ?? "gpt-4.1-mini";
         var selfTest = args.Any(arg => string.Equals(arg, "--self-test", StringComparison.OrdinalIgnoreCase));
-        var allowLan = args.Any(arg => string.Equals(arg, "--allow-lan", StringComparison.OrdinalIgnoreCase));
+        var allowLan = args.Any(arg => string.Equals(arg, "--allow-lan", StringComparison.OrdinalIgnoreCase)) ||
+                       TryReadBool(configFile, "AllowLan") == true;
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
         var token = Environment.GetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN");
+        var tokenSource = string.IsNullOrWhiteSpace(token) ? "" : "environment";
+        var tokenGenerated = false;
 
         if (string.IsNullOrWhiteSpace(apiKey))
             apiKey = TryReadLocalApiKey();
         if (string.IsNullOrWhiteSpace(token))
-            token = TryReadLocalConnectionToken();
+        {
+            var tokenRead = TryReadLocalConnectionToken();
+            token = tokenRead.Token;
+            tokenSource = tokenRead.Source;
+        }
         if (string.IsNullOrWhiteSpace(token))
-            token = Guid.NewGuid().ToString("n");
+        {
+            token = GenerateExtensionToken();
+            SaveGeneratedConnectionToken(token);
+            tokenSource = "config/chrome-lab.local.json";
+            tokenGenerated = true;
+        }
 
         if (!allowLan && !IsLoopbackHost(host))
             host = "127.0.0.1";
@@ -45,6 +64,8 @@ public sealed class ChromeLabOptions
             Model = model,
             ApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey,
             ConnectionToken = token,
+            ConnectionTokenSource = tokenSource,
+            ConnectionTokenGenerated = tokenGenerated,
             AllowLan = allowLan,
             SelfTest = selfTest
         };
@@ -85,16 +106,16 @@ public sealed class ChromeLabOptions
         return null;
     }
 
-    private static string? TryReadLocalConnectionToken()
+    private static (string? Token, string Source) TryReadLocalConnectionToken()
     {
         foreach (var path in GetCandidateApiKeyPaths())
         {
             var token = TryReadConnectionTokenFile(path);
             if (!string.IsNullOrWhiteSpace(token))
-                return token;
+                return (token, path);
         }
 
-        return null;
+        return (null, "");
     }
 
     private static IEnumerable<string> GetCandidateApiKeyPaths()
@@ -115,9 +136,11 @@ public sealed class ChromeLabOptions
             if (path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             {
                 using var doc = JsonDocument.Parse(File.ReadAllText(path));
-                return doc.RootElement.TryGetProperty("openAiApiKey", out var key)
-                    ? key.GetString()
-                    : null;
+                if (doc.RootElement.TryGetProperty("OpenAiApiKey", out var pascalKey))
+                    return pascalKey.GetString();
+                if (doc.RootElement.TryGetProperty("openAiApiKey", out var camelKey))
+                    return camelKey.GetString();
+                return null;
             }
 
             return File.ReadAllText(path).Trim();
@@ -128,6 +151,46 @@ public sealed class ChromeLabOptions
         }
     }
 
+    private static JsonDocument? TryReadLocalConfig()
+    {
+        foreach (var path in GetCandidateApiKeyPaths().Where(path => path.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (!File.Exists(path))
+                continue;
+            try
+            {
+                return JsonDocument.Parse(File.ReadAllText(path));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? TryReadString(JsonDocument? doc, string propertyName)
+    {
+        return doc != null && doc.RootElement.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+    }
+
+    private static int? TryReadInt(JsonDocument? doc, string propertyName)
+    {
+        return doc != null && doc.RootElement.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out var value)
+            ? value
+            : null;
+    }
+
+    private static bool? TryReadBool(JsonDocument? doc, string propertyName)
+    {
+        return doc != null && doc.RootElement.TryGetProperty(propertyName, out var property) && property.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? property.GetBoolean()
+            : null;
+    }
+
     private static string? TryReadConnectionTokenFile(string path)
     {
         if (!File.Exists(path) || !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -136,14 +199,72 @@ public sealed class ChromeLabOptions
         try
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(path));
-            return doc.RootElement.TryGetProperty("connectionToken", out var token)
-                ? token.GetString()
-                : null;
+            if (doc.RootElement.TryGetProperty("ExtensionToken", out var pascalToken))
+                return pascalToken.GetString();
+            if (doc.RootElement.TryGetProperty("connectionToken", out var camelToken))
+                return camelToken.GetString();
+            return null;
         }
         catch
         {
             return null;
         }
+    }
+
+    private static string GenerateExtensionToken()
+    {
+        Span<byte> bytes = stackalloc byte[16];
+        RandomNumberGenerator.Fill(bytes);
+        return $"nexa_{Convert.ToHexString(bytes).ToLowerInvariant()}";
+    }
+
+    private static void SaveGeneratedConnectionToken(string token)
+    {
+        var path = Path.Combine(FindRepoOrCurrentDirectory(), "config", "chrome-lab.local.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+        JsonObject root;
+        if (File.Exists(path))
+        {
+            try
+            {
+                root = JsonNode.Parse(File.ReadAllText(path)) as JsonObject ?? new JsonObject();
+            }
+            catch
+            {
+                root = new JsonObject();
+            }
+        }
+        else
+        {
+            root = new JsonObject();
+        }
+
+        if (!root.ContainsKey("OpenAiApiKey"))
+            root["OpenAiApiKey"] = "";
+        root["ExtensionToken"] = token;
+        if (!root.ContainsKey("Host"))
+            root["Host"] = "127.0.0.1";
+        if (!root.ContainsKey("Port"))
+            root["Port"] = 8787;
+        if (!root.ContainsKey("AllowLan"))
+            root["AllowLan"] = false;
+
+        var json = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(path, json);
+    }
+
+    private static string FindRepoOrCurrentDirectory()
+    {
+        var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (directory != null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "OneBrain.slnx")))
+                return directory.FullName;
+            directory = directory.Parent;
+        }
+
+        return Directory.GetCurrentDirectory();
     }
 
     private static bool IsLoopbackHost(string host)

@@ -31,6 +31,8 @@ public sealed class ChromeLabBridgeTests
 
         Assert.IsFalse(json.Contains("real-secret-value", StringComparison.Ordinal));
         Assert.IsFalse(json.Contains("OPENAI_API_KEY", StringComparison.Ordinal));
+        Assert.IsFalse(json.Contains("ExtensionToken", StringComparison.Ordinal));
+        Assert.IsFalse(json.Contains("nexa_", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -56,12 +58,14 @@ public sealed class ChromeLabBridgeTests
         Directory.CreateDirectory(tempDir);
         var originalDirectory = Directory.GetCurrentDirectory();
         var originalApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        var originalToken = Environment.GetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN");
 
         try
         {
             File.WriteAllText(Path.Combine(tempDir, "ApiKey.txt"), "test-local-key");
             Directory.SetCurrentDirectory(tempDir);
             Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", "test-token");
 
             var options = ChromeLabOptions.Load([]);
 
@@ -72,6 +76,78 @@ public sealed class ChromeLabBridgeTests
         {
             Directory.SetCurrentDirectory(originalDirectory);
             Environment.SetEnvironmentVariable("OPENAI_API_KEY", originalApiKey);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", originalToken);
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void LoadPrefersChromeLabLocalJsonForApiKeyAndExtensionToken()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "onebrain-chromelab-tests", Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(Path.Combine(tempDir, "config"));
+        var originalDirectory = Directory.GetCurrentDirectory();
+        var originalApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        var originalToken = Environment.GetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN");
+
+        try
+        {
+            File.WriteAllText(Path.Combine(tempDir, "ApiKey.txt"), "fallback-key");
+            File.WriteAllText(Path.Combine(tempDir, "config", "chrome-lab.local.json"), """
+                {
+                  "OpenAiApiKey": "json-key",
+                  "ExtensionToken": "nexa_json_token",
+                  "Host": "127.0.0.1",
+                  "Port": 8787,
+                  "AllowLan": false
+                }
+                """);
+            Directory.SetCurrentDirectory(tempDir);
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", null);
+
+            var options = ChromeLabOptions.Load([]);
+
+            Assert.AreEqual("json-key", options.ApiKey);
+            Assert.AreEqual("nexa_json_token", options.ConnectionToken);
+            Assert.IsFalse(options.ConnectionTokenGenerated);
+            StringAssert.Contains(options.ConnectionTokenSource, "chrome-lab.local.json");
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDirectory);
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", originalApiKey);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", originalToken);
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void LoadGeneratesAndPersistsExtensionTokenWhenMissing()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "onebrain-chromelab-tests", Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(tempDir);
+        var originalDirectory = Directory.GetCurrentDirectory();
+        var originalToken = Environment.GetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN");
+
+        try
+        {
+            Directory.SetCurrentDirectory(tempDir);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", null);
+
+            var options = ChromeLabOptions.Load([]);
+            var configPath = Path.Combine(tempDir, "config", "chrome-lab.local.json");
+            var configJson = File.ReadAllText(configPath);
+
+            Assert.IsTrue(options.ConnectionTokenGenerated);
+            StringAssert.StartsWith(options.ConnectionToken, "nexa_");
+            Assert.IsTrue(configJson.Contains("\"ExtensionToken\"", StringComparison.Ordinal));
+            Assert.IsTrue(configJson.Contains(options.ConnectionToken, StringComparison.Ordinal));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDirectory);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", originalToken);
             Directory.Delete(tempDir, recursive: true);
         }
     }
@@ -354,6 +430,7 @@ public sealed class ChromeLabBridgeTests
         var serviceWorker = File.ReadAllText(Path.Combine(extensionDir, "service_worker.js"));
         var manifest = File.ReadAllText(Path.Combine(extensionDir, "manifest.json"));
         var sidePanel = File.ReadAllText(Path.Combine(extensionDir, "sidepanel.js"));
+        var sidePanelHtml = File.ReadAllText(Path.Combine(extensionDir, "sidepanel.html"));
 
         Assert.IsTrue(manifest.Contains("\"alarms\"", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("chrome.alarms.create('nexa.keepalive'", StringComparison.Ordinal));
@@ -366,7 +443,27 @@ public sealed class ChromeLabBridgeTests
         Assert.IsTrue(serviceWorker.Contains("protocol_version_mismatch", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("outgoingQueue", StringComparison.Ordinal));
         Assert.IsTrue(sidePanel.Contains("runtimeDiagnostic", StringComparison.Ordinal));
-        Assert.IsTrue(sidePanel.Contains("refreshDebug", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanelHtml.Contains("Verificar conexion", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanelHtml.Contains("Reconectar extension", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanelHtml.Contains("Limpiar estado local", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanelHtml.Contains("Guardar y conectar", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanelHtml.Contains("Borrar token guardado", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void ExtensionDefinesLearningPauseResumeWithoutCapturingPausedEvents()
+    {
+        var extensionDir = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab");
+        var serviceWorker = File.ReadAllText(Path.Combine(extensionDir, "service_worker.js"));
+        var sidePanelHtml = File.ReadAllText(Path.Combine(extensionDir, "sidepanel.html"));
+        var sidePanelJs = File.ReadAllText(Path.Combine(extensionDir, "sidepanel.js"));
+
+        Assert.IsTrue(sidePanelHtml.Contains("pauseLearningBtn", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanelHtml.Contains("resumeLearningBtn", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("case 'learningPause'", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("case 'learningResume'", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("learningSession.learningState === 'paused'", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanelJs.Contains("Aprendizaje pausado", StringComparison.Ordinal));
     }
 
     [TestMethod]

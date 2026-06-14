@@ -148,6 +148,15 @@ async function handlePanelMessage(message) {
         publishState('error', String(error && error.message ? error.message : error));
       }
       break;
+    case 'saveTokenAndConnect':
+      await saveTokenAndConnect(message.config || {});
+      break;
+    case 'clearSavedToken':
+      await clearSavedToken();
+      break;
+    case 'clearLocalRuntimeState':
+      await clearLocalRuntimeState();
+      break;
     case 'disconnect':
       disconnect('userDisconnect');
       break;
@@ -185,6 +194,12 @@ async function handlePanelMessage(message) {
       break;
     case 'learningStop':
       stopLearning();
+      break;
+    case 'learningPause':
+      pauseLearning();
+      break;
+    case 'learningResume':
+      resumeLearning();
       break;
     case 'learningSaveRecipe':
       saveLearningRecipe(message.payload || {});
@@ -239,6 +254,48 @@ async function saveConfig(config) {
     port: config.port || DEFAULT_CONFIG.port,
     token: config.token || DEFAULT_CONFIG.token
   });
+}
+
+async function saveTokenAndConnect(config) {
+  const normalized = {
+    host: config.host || DEFAULT_CONFIG.host,
+    port: config.port || DEFAULT_CONFIG.port,
+    token: String(config.token || '').trim()
+  };
+  await saveConfig(normalized);
+  await connect(normalized);
+  await refreshDebug(normalized, { quiet: true });
+  publishSavedConfig();
+}
+
+async function clearSavedToken() {
+  reconnectBlocked = true;
+  reconnectBlockedReason = 'Saved token cleared';
+  await chrome.storage.local.set({ token: '' });
+  disconnect('tokenCleared');
+  publishSavedConfig();
+  publishRuntimeSnapshot();
+}
+
+async function clearLocalRuntimeState() {
+  clearReconnectTimer();
+  outgoingQueue = [];
+  currentRunId = '';
+  currentRequestId = '';
+  currentTool = '';
+  lastToolRequest = null;
+  lastToolResult = null;
+  lastRunStatus = null;
+  lastAiError = '';
+  lastConnectionError = '';
+  if (!connected) {
+    connectionState = 'disconnected';
+    reconnectBlocked = false;
+    reconnectBlockedReason = '';
+  }
+  await persistRuntimeState();
+  publishState(connected ? 'connected' : 'disconnected', 'Local runtime state cleared');
+  publishRuntimeSnapshot();
 }
 
 function connect(config) {
@@ -902,7 +959,8 @@ async function startLearning(payload) {
     parameters: [],
     sensitiveFields: [],
     humanCheckpoints: [],
-    recording: true
+    recording: true,
+    learningState: 'recording'
   };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
   await sendLearningModeToTab(true);
@@ -914,11 +972,46 @@ async function stopLearning() {
     learningSession = {
       ...learningSession,
       recording: false,
+      learningState: 'reviewing',
       updatedAt: new Date().toISOString()
     };
     await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
   }
   await sendLearningModeToTab(false);
+  publishLearningState();
+}
+
+async function pauseLearning() {
+  if (!learningSession) {
+    publish({ type: 'recipeError', message: 'No active learning session.' });
+    return;
+  }
+  learningSession = {
+    ...learningSession,
+    recording: false,
+    learningState: 'paused',
+    updatedAt: new Date().toISOString()
+  };
+  await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
+  await sendLearningModeToTab(false);
+  publish({ type: 'learningNotice', message: 'Aprendizaje pausado. Podes navegar o buscar sin que NEXA lo grabe.' });
+  publishLearningState();
+}
+
+async function resumeLearning() {
+  if (!learningSession) {
+    publish({ type: 'recipeError', message: 'No learning draft available.' });
+    return;
+  }
+  learningSession = {
+    ...learningSession,
+    recording: true,
+    learningState: 'recording',
+    updatedAt: new Date().toISOString()
+  };
+  await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
+  await sendLearningModeToTab(true);
+  publish({ type: 'learningNotice', message: 'Aprendizaje reanudado. NEXA vuelve a capturar tus acciones.' });
   publishLearningState();
 }
 
@@ -930,7 +1023,7 @@ async function clearLearningDraft() {
 }
 
 async function handleLearningEvent(event, sender) {
-  if (!learningSession || !learningSession.recording || !event) {
+  if (!learningSession || !learningSession.recording || learningSession.learningState === 'paused' || !event) {
     return;
   }
 
@@ -999,7 +1092,7 @@ async function saveLearningRecipe(payload) {
 
   const recipe = recipeFromLearningDraft(learningSession, payload);
   await upsertRecipe(recipe);
-  learningSession = { ...recipe, recording: false };
+  learningSession = { ...recipe, recording: false, learningState: 'saved' };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
   publishLearningState();
   publishRecipes();

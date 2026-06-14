@@ -23,6 +23,7 @@ Thumbs.db
 .env
 .env.*
 config/*.local.json
+**/config/*.local.json
 appsettings.Development.local.json
 ApiKey.txt
 

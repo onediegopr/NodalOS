@@ -249,7 +249,20 @@ Console.WriteLine($"{ChromeLabProtocol.ServiceName} listening on http://{options
 foreach (var ip in options.GetLocalIpAddresses())
     Console.WriteLine($"LAN candidate: http://{ip}:{options.Port}");
 Console.WriteLine(options.HasApiKey ? "OpenAI key loaded: yes" : "OpenAI key loaded: no");
-Console.WriteLine($"Connection token: {MaskToken(options.ConnectionToken)}");
+if (options.ConnectionTokenGenerated)
+{
+    Console.WriteLine("NEXA bridge started.");
+    Console.WriteLine("Extension token generated and saved in config/chrome-lab.local.json.");
+    Console.WriteLine("Open NEXA Runtime and paste this token once:");
+    Console.WriteLine();
+    Console.WriteLine(options.ConnectionToken);
+    Console.WriteLine();
+    Console.WriteLine("The extension will save it locally and will not ask again.");
+}
+else
+{
+    Console.WriteLine($"NEXA Extension Token: loaded from {TokenSourceLabel(options.ConnectionTokenSource)} ({MaskToken(options.ConnectionToken)})");
+}
 if (!options.AllowLan && !string.Equals(options.Host, "127.0.0.1", StringComparison.OrdinalIgnoreCase))
     Console.WriteLine("LAN disabled; use --allow-lan explicitly to bind outside loopback.");
 
@@ -707,6 +720,17 @@ static string MaskToken(string token)
     if (string.IsNullOrWhiteSpace(token))
         return "<missing>";
     return token.Length <= 8 ? "********" : $"{token[..4]}...{token[^4..]}";
+}
+
+static string TokenSourceLabel(string source)
+{
+    if (string.IsNullOrWhiteSpace(source))
+        return "runtime configuration";
+    if (source.Contains("chrome-lab.local.json", StringComparison.OrdinalIgnoreCase))
+        return "config/chrome-lab.local.json";
+    if (string.Equals(source, "environment", StringComparison.OrdinalIgnoreCase))
+        return "NEXA_CHROME_BRIDGE_TOKEN";
+    return source;
 }
 
 static string SafeClientLabel(string clientId)

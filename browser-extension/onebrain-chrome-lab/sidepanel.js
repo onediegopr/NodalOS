@@ -9,6 +9,7 @@ const state = {
     host: '127.0.0.1',
     port: '8787',
     token: '',
+    tokenStatus: 'missing',
     runtime: null
   },
   run: {
@@ -30,6 +31,7 @@ const state = {
   },
   learning: {
     recording: false,
+    status: 'idle',
     draft: null,
     timeline: []
   },
@@ -88,6 +90,8 @@ const el = {
   learningName: document.getElementById('learningName'),
   learningDescription: document.getElementById('learningDescription'),
   startLearningBtn: document.getElementById('startLearningBtn'),
+  pauseLearningBtn: document.getElementById('pauseLearningBtn'),
+  resumeLearningBtn: document.getElementById('resumeLearningBtn'),
   stopLearningBtn: document.getElementById('stopLearningBtn'),
   reviewRecipeBtn: document.getElementById('reviewRecipeBtn'),
   saveRecipeBtn: document.getElementById('saveRecipeBtn'),
@@ -120,6 +124,12 @@ const el = {
   hostInput: document.getElementById('hostInput'),
   portInput: document.getElementById('portInput'),
   tokenInput: document.getElementById('tokenInput'),
+  advancedTokenInput: document.getElementById('advancedTokenInput'),
+  tokenSetupCard: document.getElementById('tokenSetupCard'),
+  saveTokenConnectBtn: document.getElementById('saveTokenConnectBtn'),
+  changeTokenBtn: document.getElementById('changeTokenBtn'),
+  clearTokenBtn: document.getElementById('clearTokenBtn'),
+  clearRuntimeStateBtn: document.getElementById('clearRuntimeStateBtn'),
   connectBtn: document.getElementById('connectBtn'),
   healthBtn: document.getElementById('healthBtn'),
   reconnectBtn: document.getElementById('reconnectBtn'),
@@ -128,8 +138,11 @@ const el = {
   runtimeHost: document.getElementById('runtimeHost'),
   runtimePort: document.getElementById('runtimePort'),
   runtimeHealth: document.getElementById('runtimeHealth'),
+  runtimeToken: document.getElementById('runtimeToken'),
   runtimeClients: document.getElementById('runtimeClients'),
+  runtimeHeartbeat: document.getElementById('runtimeHeartbeat'),
   runtimeDiagnostic: document.getElementById('runtimeDiagnostic'),
+  runtimeRecommendation: document.getElementById('runtimeRecommendation'),
   runtimeProvider: document.getElementById('runtimeProvider'),
   runtimeModel: document.getElementById('runtimeModel'),
   runtimeApiKey: document.getElementById('runtimeApiKey'),
@@ -202,6 +215,8 @@ function bindEvents() {
   el.startLearningBtn.addEventListener('click', () => {
     post({ type: 'learningStart', payload: learningFormPayload() });
   });
+  el.pauseLearningBtn.addEventListener('click', () => post({ type: 'learningPause' }));
+  el.resumeLearningBtn.addEventListener('click', () => post({ type: 'learningResume' }));
   el.stopLearningBtn.addEventListener('click', () => post({ type: 'learningStop' }));
   el.reviewRecipeBtn.addEventListener('click', () => {
     state.activeTab = 'learn';
@@ -232,7 +247,46 @@ function bindEvents() {
     render();
   });
   el.refreshDebugBtn.addEventListener('click', () => {
+    state.connection.health = 'testing';
+    post({ type: 'testHealth', config: currentConfig() });
     post({ type: 'refreshDebug', config: currentConfig() });
+  });
+  el.saveTokenConnectBtn.addEventListener('click', () => {
+    state.connection.status = 'connecting';
+    post({ type: 'saveTokenAndConnect', config: currentConfig() });
+    render();
+  });
+  el.changeTokenBtn.addEventListener('click', () => {
+    const token = el.advancedTokenInput.value.trim();
+    if (!token) {
+      addLog('local', 'Token vacio.');
+      render();
+      return;
+    }
+    el.tokenInput.value = token;
+    state.connection.status = 'connecting';
+    post({ type: 'saveTokenAndConnect', config: currentConfig() });
+    render();
+  });
+  el.clearTokenBtn.addEventListener('click', () => {
+    if (confirm('Borrar el token guardado en esta extension?')) {
+      el.tokenInput.value = '';
+      el.advancedTokenInput.value = '';
+      state.connection.token = '';
+      state.connection.tokenStatus = 'missing';
+      post({ type: 'clearSavedToken' });
+      render();
+    }
+  });
+  el.clearRuntimeStateBtn.addEventListener('click', () => {
+    if (confirm('Limpiar estado local de runtime sin borrar recetas ni token?')) {
+      state.run = { runId: '', status: 'idle', requestId: '', currentTool: '', lastResult: '', lastError: '' };
+      state.runtime.lastToolRequest = null;
+      state.runtime.lastToolResult = null;
+      state.runtime.lastRunStatus = null;
+      post({ type: 'clearLocalRuntimeState' });
+      render();
+    }
   });
 
   el.importRecipeBtn.addEventListener('click', () => el.recipeImportInput.click());
@@ -259,6 +313,7 @@ function handleMessage(message) {
       state.connection.host = message.config.host || '127.0.0.1';
       state.connection.port = message.config.port || '8787';
       state.connection.token = message.config.token || '';
+      state.connection.tokenStatus = state.connection.token ? 'saved' : 'missing';
       el.hostInput.value = state.connection.host;
       el.portInput.value = state.connection.port;
       el.tokenInput.value = state.connection.token;
@@ -268,7 +323,7 @@ function handleMessage(message) {
       if (message.currentRunId) {
         state.run.runId = message.currentRunId;
       }
-      if (message.status === 'running' || message.status === 'paused' || message.status === 'stopped' || message.status === 'error') {
+      if (message.currentRunId && (message.status === 'running' || message.status === 'paused' || message.status === 'stopped' || message.status === 'error')) {
         state.run.status = message.status;
       }
       addLog('local', `${message.status}: ${message.message || ''}`);
@@ -304,6 +359,9 @@ function handleMessage(message) {
       break;
     case 'learningState':
       hydrateLearning(message.draft || null);
+      break;
+    case 'learningNotice':
+      addLog('local', message.message || 'Learning state changed');
       break;
     case 'recipes':
       state.recipes.items = Array.isArray(message.recipes) ? message.recipes : [];
@@ -394,6 +452,13 @@ function hydrateRuntime(runtime) {
   state.connection.host = connection.host || state.connection.host;
   state.connection.port = connection.port || state.connection.port;
   state.connection.health = connection.health && connection.health.ok ? 'ok' : state.connection.health;
+  if (connection.state === 'tokenError') {
+    state.connection.tokenStatus = 'invalid';
+  } else if (state.connection.token) {
+    state.connection.tokenStatus = 'saved';
+  } else {
+    state.connection.tokenStatus = 'missing';
+  }
   state.run.runId = run.runId || state.run.runId;
   state.run.requestId = run.requestId || state.run.requestId;
   state.run.currentTool = run.currentTool || state.run.currentTool;
@@ -405,6 +470,7 @@ function hydrateRuntime(runtime) {
 function hydrateLearning(draft) {
   state.learning.draft = draft;
   state.learning.recording = Boolean(draft && draft.recording);
+  state.learning.status = draft && draft.learningState ? draft.learningState : state.learning.recording ? 'recording' : draft ? 'reviewing' : 'idle';
   state.learning.timeline = draft && Array.isArray(draft.steps) ? draft.steps : [];
   if (draft) {
     el.learningName.value = draft.name || el.learningName.value;
@@ -427,7 +493,7 @@ function renderTabs() {
 }
 
 function renderHeader() {
-  el.headerStatus.textContent = `${connectionLabel()} · Run: ${state.run.status || 'idle'} · ${state.activeTab}`;
+  el.headerStatus.textContent = `Connection: ${connectionLabel()} | Run: ${state.run.runId ? state.run.status || 'idle' : 'idle'} | Tab: ${state.activeTab}`;
 }
 
 function renderOperate() {
@@ -478,7 +544,9 @@ function renderVerification() {
 
 function renderLearning() {
   const draft = state.learning.draft;
-  el.learningStatus.textContent = state.learning.recording
+  el.learningStatus.textContent = state.learning.status === 'paused'
+    ? 'Aprendizaje pausado. Podes navegar o buscar sin que NEXA lo grabe.'
+    : state.learning.recording
     ? 'Grabando. NEXA está mirando tus acciones. No se guardarán valores sensibles de contraseñas.'
     : 'No grabando';
   renderTimeline(el.learningTimeline, state.learning.timeline.map(humanizeLearningStep));
@@ -547,17 +615,22 @@ function renderRuntime() {
   const ai = runtime.ai || {};
   const extension = runtime.extension || {};
   const run = runtime.run || {};
+  const tokenStatus = tokenStatusLabel(connection);
+  el.tokenSetupCard.classList.toggle('hidden', tokenStatus !== 'faltante' && tokenStatus !== 'invalido');
   el.runtimeConnection.textContent = connection.state || (connection.connected ? 'connected' : state.connection.status);
   el.runtimeHost.textContent = state.connection.host;
   el.runtimePort.textContent = state.connection.port;
   el.runtimeHealth.textContent = state.connection.health;
+  el.runtimeToken.textContent = tokenStatus;
+  el.runtimeSocket.textContent = extension.webSocketConnected ? 'connected' : connection.state || 'disconnected';
   el.runtimeClients.textContent = String(connectedCount);
+  el.runtimeHeartbeat.textContent = heartbeatLabel(connection, clients);
   el.runtimeDiagnostic.textContent = runtimeDiagnostic(connection, clients);
+  el.runtimeRecommendation.textContent = runtimeRecommendation(connection, clients);
   el.runtimeProvider.textContent = ai.provider || 'OpenAI';
   el.runtimeModel.textContent = ai.model || '-';
   el.runtimeApiKey.textContent = ai.hasApiKeyLocal === null || ai.hasApiKeyLocal === undefined ? 'unknown' : ai.hasApiKeyLocal ? 'local key loaded' : 'missing';
   el.runtimeAiError.textContent = ai.lastError || '-';
-  el.runtimeSocket.textContent = extension.webSocketConnected ? 'connected' : connection.state || 'disconnected';
   el.runtimeClientId.textContent = extension.clientId || connection.clientId || '-';
   el.runtimeLastSeen.textContent = extension.lastSeenAt || connection.lastSeenAt || '-';
   el.runtimeProtocol.textContent = extension.protocolVersion || '-';
@@ -566,7 +639,7 @@ function renderRuntime() {
   el.runtimeContent.textContent = extension.contentScriptActive ? 'active' : 'unavailable';
   el.runId.textContent = state.run.runId || '-';
   el.runtimeRequestId.textContent = state.run.requestId || run.requestId || '-';
-  el.runtimeRunState.textContent = state.run.status || run.status || 'idle';
+  el.runtimeRunState.textContent = state.run.runId ? state.run.status || run.status || 'idle' : 'idle';
   el.runtimeTool.textContent = state.run.currentTool || run.currentTool || '-';
   el.runtimeLastError.textContent = state.run.lastError || run.lastError || '-';
   renderLogs();
@@ -580,7 +653,7 @@ function runtimeDiagnostic(connection, clients) {
     return 'Bridge caido';
   }
   if (connection.state === 'tokenError') {
-    return 'Error de token';
+    return 'Token invalido';
   }
   if (connection.state === 'protocolError') {
     return 'Error de protocolo';
@@ -595,6 +668,52 @@ function runtimeDiagnostic(connection, clients) {
     return 'Conectando';
   }
   return connection.lastError || '-';
+}
+
+function tokenStatusLabel(connection) {
+  if (connection.state === 'tokenError' || state.connection.tokenStatus === 'invalid') {
+    return 'invalido';
+  }
+  if (state.connection.token) {
+    return 'guardado';
+  }
+  if (connection.connected && !state.connection.token) {
+    return 'no requerido';
+  }
+  return 'faltante';
+}
+
+function heartbeatLabel(connection, clients) {
+  if (connection.connected) {
+    return 'OK';
+  }
+  const firstClient = clients && Array.isArray(clients.clients) ? clients.clients[0] : null;
+  if (firstClient && typeof firstClient.lastSeenMs === 'number') {
+    return firstClient.lastSeenMs < 45000 ? 'OK' : 'stale';
+  }
+  return 'unknown';
+}
+
+function runtimeRecommendation(connection, clients) {
+  if (!state.connection.runtime && state.connection.health === 'fail') {
+    return 'Verifica que el bridge este iniciado.';
+  }
+  if (connection.state === 'tokenError' || state.connection.tokenStatus === 'invalid') {
+    return 'Token invalido. Cambialo en Avanzado o pegalo de nuevo.';
+  }
+  if (!state.connection.token) {
+    return 'Pega el token de conexion generado por el bridge.';
+  }
+  if (clients && clients.connectedCount === 0 && !connection.connected) {
+    return 'Presiona Reconectar extension o recarga la extension.';
+  }
+  if (connection.state === 'reconnecting') {
+    return 'Esperando reconexion. Si persiste, verifica token y bridge.';
+  }
+  if (connection.connected) {
+    return 'Conexion lista.';
+  }
+  return connection.lastError || 'Verificar conexion.';
 }
 
 function renderLogs() {

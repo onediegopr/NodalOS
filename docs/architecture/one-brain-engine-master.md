@@ -1201,6 +1201,16 @@ Desde `NEXA Browser-004`, el lab agrega connection reliability:
 * Runtime UI con diagnostico de bridge/cliente
 * navegacion robusta para anchors HTTP/HTTPS
 
+Desde `NEXA Browser-004.1`, Runtime y Learning reciben hardening de uso real:
+
+* `config/chrome-lab.local.json` queda como config local principal ignorada por git
+* `ExtensionToken` se separa de `OpenAiApiKey`
+* si falta `ExtensionToken`, el bridge lo genera y lo guarda localmente
+* la extension guarda el token en `chrome.storage.local` y no lo pide en cada arranque
+* Runtime separa estado de conexion, run y tab activa
+* `Verificar conexion`, `Reconectar extension` y `Limpiar estado local` reemplazan controles ambiguos
+* Learning Mode agrega pausar/reanudar sin capturar eventos durante la pausa
+
 El objetivo es endurecer la capa web sin mezclarla con el motor seguro de escritorio.
 
 ---

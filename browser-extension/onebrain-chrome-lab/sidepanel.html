@@ -96,6 +96,8 @@
         <label>Descripción <textarea id="learningDescription" rows="4" wrap="soft"></textarea></label>
         <div class="control-row">
           <button id="startLearningBtn" class="primary">Empezar aprendizaje</button>
+          <button id="pauseLearningBtn">Pausar aprendizaje</button>
+          <button id="resumeLearningBtn">Reanudar aprendizaje</button>
           <button id="stopLearningBtn">Detener aprendizaje</button>
           <button id="reviewRecipeBtn">Revisar receta</button>
           <button id="saveRecipeBtn">Guardar receta</button>
@@ -159,15 +161,33 @@
     </section>
 
     <section id="tab-runtime" class="tab-panel">
-      <section class="surface connection-strip">
+      <section class="surface runtime-command">
         <label>Host <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
         <label>Puerto <input id="portInput" value="8787" autocomplete="off"></label>
-        <label>Token <input id="tokenInput" type="password" autocomplete="off" placeholder="bridge token"></label>
-        <button id="connectBtn" class="primary">Connect</button>
+        <button id="connectBtn" class="primary">Conectar / desconectar</button>
         <button id="healthBtn">Health</button>
-        <button id="reconnectBtn">Reconnect</button>
-        <button id="refreshDebugBtn">Refresh Debug</button>
+        <button id="reconnectBtn">Reconectar extension</button>
+        <button id="refreshDebugBtn">Verificar conexion</button>
+        <button id="clearRuntimeStateBtn">Limpiar estado local</button>
       </section>
+
+      <section id="tokenSetupCard" class="surface token-setup hidden">
+        <h2>Token de conexion requerido</h2>
+        <p>Pegalo una sola vez. NEXA lo guardara localmente y no volvera a pedirlo.</p>
+        <div class="connection-strip">
+          <label>Token <input id="tokenInput" type="password" autocomplete="off" placeholder="nexa_..."></label>
+          <button id="saveTokenConnectBtn" class="primary">Guardar y conectar</button>
+        </div>
+      </section>
+
+      <details class="surface">
+        <summary>Avanzado</summary>
+        <div class="connection-strip advanced-token-row">
+          <label>Cambiar token <input id="advancedTokenInput" type="password" autocomplete="off" placeholder="nuevo token"></label>
+          <button id="changeTokenBtn">Cambiar token</button>
+          <button id="clearTokenBtn" class="danger">Borrar token guardado</button>
+        </div>
+      </details>
 
       <section class="grid two">
         <article class="surface">
@@ -177,8 +197,12 @@
             <dt>Host</dt><dd id="runtimeHost">-</dd>
             <dt>Puerto</dt><dd id="runtimePort">-</dd>
             <dt>Health</dt><dd id="runtimeHealth">-</dd>
+            <dt>Token</dt><dd id="runtimeToken">-</dd>
+            <dt>WebSocket</dt><dd id="runtimeSocket">-</dd>
             <dt>Clientes</dt><dd id="runtimeClients">-</dd>
+            <dt>Heartbeat</dt><dd id="runtimeHeartbeat">-</dd>
             <dt>Diagnostico</dt><dd id="runtimeDiagnostic">-</dd>
+            <dt>Accion recomendada</dt><dd id="runtimeRecommendation">-</dd>
           </dl>
         </article>
         <article class="surface">
@@ -196,7 +220,6 @@
         <article class="surface">
           <h2>Extensión</h2>
           <dl>
-            <dt>WebSocket</dt><dd id="runtimeSocket">-</dd>
             <dt>Client ID</dt><dd id="runtimeClientId">-</dd>
             <dt>Last seen</dt><dd id="runtimeLastSeen">-</dd>
             <dt>Protocol</dt><dd id="runtimeProtocol">-</dd>
