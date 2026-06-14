@@ -118,6 +118,13 @@ function handlePortMessage(message) {
     if (message.body && message.body.runId) {
       els.runId.textContent = message.body.runId;
     }
+    if (message.body && message.body.status === 'error') {
+      setStatus('error', message.body.message || 'Run failed');
+      els.lastResult.textContent = message.body.message || 'Run failed';
+    } else if (message.body && message.body.status) {
+      setStatus(message.body.status, message.body.message || 'Run started');
+      els.lastResult.textContent = message.body.message || 'Run started';
+    }
     log('local', summarize(message.body || message));
   }
 }
