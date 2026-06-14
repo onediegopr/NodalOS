@@ -1172,6 +1172,14 @@ Desde `NEXA Browser-001`, el lab pasa a usar:
 * verificacion post-accion
 * trazabilidad visible en side panel
 
+Desde `NEXA Browser-002`, el side panel se organiza como cabina de mando con:
+
+* Operar
+* Aprender
+* Recetas
+* Runtime
+* Learning/Recipes V0 en storage local
+
 El objetivo es endurecer la capa web sin mezclarla con el motor seguro de escritorio.
 
 ---

@@ -1,5 +1,7 @@
 const PROTOCOL_VERSION = 'chrome-lab-v1';
 const DEFAULT_CONFIG = { host: '127.0.0.1', port: '8787' };
+const RECIPES_KEY = 'nexaRecipes';
+const LEARNING_DRAFT_KEY = 'nexaLearningDraft';
 
 let socket = null;
 let connected = false;
@@ -7,6 +9,14 @@ let connectingPromise = null;
 let stopped = false;
 let currentRunId = '';
 let targetTabId = null;
+let currentRequestId = '';
+let currentTool = '';
+let lastToolRequest = null;
+let lastToolResult = null;
+let lastRunStatus = null;
+let lastHealth = null;
+let lastAiError = '';
+let learningSession = null;
 const sidePorts = new Set();
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -22,6 +32,14 @@ chrome.runtime.onConnect.addListener((port) => {
   port.onDisconnect.addListener(() => sidePorts.delete(port));
   port.onMessage.addListener((message) => handlePanelMessage(message));
   publishState('local', 'Side panel connected');
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message && message.type === 'learning.event') {
+    handleLearningEvent(message.event, sender).then(() => sendResponse({ ok: true }));
+    return true;
+  }
+  return false;
 });
 
 chrome.tabs.onActivated.addListener(() => publishPageSnapshot());
@@ -66,6 +84,36 @@ async function handlePanelMessage(message) {
       break;
     case 'loadConfig':
       publishSavedConfig();
+      publishRuntimeSnapshot();
+      publishRecipes();
+      publishLearningState();
+      break;
+    case 'learningStart':
+      startLearning(message.payload || {});
+      break;
+    case 'learningStop':
+      stopLearning();
+      break;
+    case 'learningSaveRecipe':
+      saveLearningRecipe(message.payload || {});
+      break;
+    case 'learningClearDraft':
+      clearLearningDraft();
+      break;
+    case 'recipesList':
+      publishRecipes();
+      break;
+    case 'recipeSave':
+      saveRecipe(message.recipe);
+      break;
+    case 'recipeDelete':
+      deleteRecipe(message.recipeId);
+      break;
+    case 'recipeDuplicate':
+      duplicateRecipe(message.recipeId);
+      break;
+    case 'recipeRun':
+      runRecipe(message.recipeId);
       break;
     default:
       publishState('error', `Unknown panel message: ${message.type}`);
@@ -146,13 +194,25 @@ function disconnect(reason) {
 }
 
 async function testHealth(config) {
-  const url = `http://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/health`;
+  const baseUrl = `http://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}`;
+  const url = `${baseUrl}/health`;
   try {
     const response = await fetch(url);
     const body = await response.json();
+    let publicConfig = null;
+    try {
+      const configResponse = await fetch(`${baseUrl}/config/public`, { cache: 'no-store' });
+      publicConfig = await configResponse.json();
+    } catch {
+      publicConfig = null;
+    }
+    lastHealth = { ok: response.ok && body.ok, body: { ...body, publicConfig }, checkedAt: new Date().toISOString() };
     publish({ type: 'health', ok: response.ok && body.ok, body });
+    publishRuntimeSnapshot();
   } catch (error) {
+    lastHealth = { ok: false, error: String(error && error.message ? error.message : error), checkedAt: new Date().toISOString() };
     publish({ type: 'health', ok: false, error: String(error && error.message ? error.message : error) });
+    publishRuntimeSnapshot();
   }
 }
 
@@ -212,6 +272,7 @@ function handleEngineMessage(raw) {
   publish({ type: 'engineMessage', message });
   if (message.type === 'engine.hello') {
     publishState('connected', 'Engine hello received');
+    publishRuntimeSnapshot();
     return;
   }
 
@@ -227,8 +288,13 @@ function handleEngineMessage(raw) {
   }
 
   if (message.type === 'run.status') {
+    lastRunStatus = message;
+    if (message.status === 'error') {
+      lastAiError = message.message || '';
+    }
     publish({ type: 'runStatus', message });
     publishState(message.status || 'running', message.message || '');
+    publishRuntimeSnapshot();
     return;
   }
 
@@ -238,6 +304,10 @@ function handleEngineMessage(raw) {
   }
 
   if (message.type === 'tool.request') {
+    currentRequestId = message.requestId || '';
+    currentTool = message.tool || '';
+    lastToolRequest = message;
+    publishRuntimeSnapshot();
     routeToolRequest(message);
   }
 }
@@ -367,6 +437,7 @@ function waitForTabComplete(tabId, timeoutMs) {
 }
 
 function sendToolResult(request, success, result, error) {
+  lastToolResult = { request, success, result, error, at: new Date().toISOString() };
   sendToEngine({
     type: 'tool.result',
     runId: request.runId,
@@ -376,6 +447,7 @@ function sendToolResult(request, success, result, error) {
     error
   });
   publish({ type: 'toolResult', request, success, result, error });
+  publishRuntimeSnapshot();
 }
 
 function sendToEngine(message) {
@@ -394,6 +466,7 @@ function publish(message) {
 
 function publishState(status, message) {
   publish({ type: 'state', status, message, connected, stopped, currentRunId });
+  publishRuntimeSnapshot();
 }
 
 async function publishPageSnapshot() {
@@ -467,4 +540,291 @@ function notifyStopToTargetTab() {
     type: 'local.stop',
     protocolVersion: PROTOCOL_VERSION
   }).catch(() => {});
+}
+
+async function startLearning(payload) {
+  const tab = await resolveTargetTab({ allowCreate: false });
+  learningSession = {
+    recipeId: `recipe-${Date.now().toString(36)}`,
+    name: payload.name || 'Nueva receta',
+    description: payload.description || '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    startUrl: tab ? tab.url || '' : '',
+    steps: [],
+    parameters: [],
+    sensitiveFields: [],
+    humanCheckpoints: [],
+    recording: true
+  };
+  await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
+  await sendLearningModeToTab(true);
+  publishLearningState();
+}
+
+async function stopLearning() {
+  if (learningSession) {
+    learningSession = {
+      ...learningSession,
+      recording: false,
+      updatedAt: new Date().toISOString()
+    };
+    await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
+  }
+  await sendLearningModeToTab(false);
+  publishLearningState();
+}
+
+async function clearLearningDraft() {
+  learningSession = null;
+  await chrome.storage.local.remove(LEARNING_DRAFT_KEY);
+  await sendLearningModeToTab(false);
+  publishLearningState();
+}
+
+async function handleLearningEvent(event, sender) {
+  if (!learningSession || !learningSession.recording || !event) {
+    return;
+  }
+
+  const step = sanitizeLearningStep(event, sender);
+  learningSession.steps.push(step);
+  learningSession.updatedAt = new Date().toISOString();
+
+  if (step.target && Array.isArray(step.target.riskFlags)) {
+    for (const risk of step.target.riskFlags) {
+      if ((risk === 'password' || risk === 'credentialLike') && !learningSession.sensitiveFields.includes(step.target.accessibleName || step.target.visibleText || risk)) {
+        learningSession.sensitiveFields.push(step.target.accessibleName || step.target.visibleText || risk);
+      }
+    }
+  }
+
+  if (step.actionType === 'pause' || step.valueRedacted) {
+    learningSession.humanCheckpoints.push({
+      timestamp: step.timestamp,
+      reason: step.valueRedacted ? 'sensitiveField' : 'humanCheckpoint',
+      url: step.url
+    });
+  }
+
+  await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
+  publishLearningState();
+}
+
+function sanitizeLearningStep(event, sender) {
+  const target = event.target ? {
+    elementId: event.target.elementId || '',
+    tagName: event.target.tagName || '',
+    role: event.target.role || '',
+    elementKind: event.target.elementKind || '',
+    type: event.target.type || '',
+    visibleText: event.target.visibleText || '',
+    accessibleName: event.target.accessibleName || '',
+    nearbyText: event.target.nearbyText || '',
+    formContext: event.target.formContext || '',
+    bounds: event.target.bounds || null,
+    stableSelectors: Array.isArray(event.target.stableSelectors) ? event.target.stableSelectors : [],
+    bestSelector: event.target.bestSelector || null,
+    riskFlags: Array.isArray(event.target.riskFlags) ? event.target.riskFlags : [],
+    isPassword: Boolean(event.target.isPassword),
+    isCredentialLike: Boolean(event.target.isCredentialLike)
+  } : null;
+
+  return {
+    timestamp: event.timestamp || new Date().toISOString(),
+    actionType: event.actionType || 'unknown',
+    url: event.url || (sender.tab && sender.tab.url) || '',
+    title: event.title || (sender.tab && sender.tab.title) || '',
+    previousUrl: event.previousUrl || '',
+    target,
+    value: event.valueRedacted ? '' : event.value || '',
+    valueRedacted: Boolean(event.valueRedacted),
+    eventMeta: event.eventMeta || {},
+    verificationHint: event.verificationHint || {}
+  };
+}
+
+async function saveLearningRecipe(payload) {
+  if (!learningSession) {
+    publish({ type: 'recipeError', message: 'No learning draft available.' });
+    return;
+  }
+
+  const recipe = {
+    recipeId: learningSession.recipeId || `recipe-${Date.now().toString(36)}`,
+    name: payload.name || learningSession.name || 'Nueva receta',
+    description: payload.description || learningSession.description || '',
+    createdAt: learningSession.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    startUrl: learningSession.startUrl || '',
+    steps: learningSession.steps || [],
+    parameters: inferParameters(learningSession.steps || []),
+    sensitiveFields: learningSession.sensitiveFields || [],
+    humanCheckpoints: learningSession.humanCheckpoints || [],
+    status: 'draft-v0'
+  };
+  await upsertRecipe(recipe);
+  learningSession = { ...recipe, recording: false };
+  await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
+  publishLearningState();
+  publishRecipes();
+}
+
+async function saveRecipe(recipe) {
+  if (!recipe || !recipe.recipeId) {
+    publish({ type: 'recipeError', message: 'Invalid recipe payload.' });
+    return;
+  }
+  await upsertRecipe({ ...recipe, updatedAt: new Date().toISOString() });
+  publishRecipes();
+}
+
+async function upsertRecipe(recipe) {
+  const recipes = await readRecipes();
+  const index = recipes.findIndex((item) => item.recipeId === recipe.recipeId);
+  if (index >= 0) {
+    recipes[index] = recipe;
+  } else {
+    recipes.unshift(recipe);
+  }
+  await chrome.storage.local.set({ [RECIPES_KEY]: recipes });
+}
+
+async function deleteRecipe(recipeId) {
+  const recipes = await readRecipes();
+  await chrome.storage.local.set({ [RECIPES_KEY]: recipes.filter((recipe) => recipe.recipeId !== recipeId) });
+  publishRecipes();
+}
+
+async function duplicateRecipe(recipeId) {
+  const recipes = await readRecipes();
+  const source = recipes.find((recipe) => recipe.recipeId === recipeId);
+  if (!source) {
+    publish({ type: 'recipeError', message: 'Recipe not found.' });
+    return;
+  }
+
+  const copy = {
+    ...source,
+    recipeId: `recipe-${Date.now().toString(36)}`,
+    name: `${source.name || 'Receta'} copia`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  recipes.unshift(copy);
+  await chrome.storage.local.set({ [RECIPES_KEY]: recipes });
+  publishRecipes();
+}
+
+async function runRecipe(recipeId) {
+  const recipes = await readRecipes();
+  const recipe = recipes.find((item) => item.recipeId === recipeId);
+  if (!recipe) {
+    publish({ type: 'recipeError', message: 'Recipe not found.' });
+    return;
+  }
+
+  const instruction = buildRecipeInstruction(recipe);
+  await startRun(instruction);
+}
+
+function buildRecipeInstruction(recipe) {
+  const steps = (recipe.steps || []).slice(0, 20).map((step, index) => {
+    const label = step.target && (step.target.accessibleName || step.target.visibleText)
+      ? step.target.accessibleName || step.target.visibleText
+      : step.actionType;
+    return `${index + 1}. ${step.actionType}: ${label}`;
+  }).join('\n');
+  return `Ejecuta esta receta V0 con soporte navigate/click/input/human checkpoint.\nNombre: ${recipe.name}\nStartUrl: ${recipe.startUrl}\nPasos:\n${steps}`;
+}
+
+async function readRecipes() {
+  const data = await chrome.storage.local.get({ [RECIPES_KEY]: [] });
+  return Array.isArray(data[RECIPES_KEY]) ? data[RECIPES_KEY] : [];
+}
+
+async function publishRecipes() {
+  publish({ type: 'recipes', recipes: await readRecipes() });
+}
+
+async function publishLearningState() {
+  if (!learningSession) {
+    const data = await chrome.storage.local.get({ [LEARNING_DRAFT_KEY]: null });
+    learningSession = data[LEARNING_DRAFT_KEY] || null;
+  }
+  publish({ type: 'learningState', draft: learningSession });
+}
+
+function inferParameters(steps) {
+  return steps
+    .filter((step) => (step.actionType === 'input' || step.actionType === 'select') && step.target && !step.valueRedacted)
+    .map((step, index) => ({
+      name: parameterNameFor(step, index),
+      sourceStep: index,
+      required: true
+    }));
+}
+
+function parameterNameFor(step, index) {
+  const label = step.target && (step.target.name || step.target.accessibleName || step.target.visibleText)
+    ? step.target.name || step.target.accessibleName || step.target.visibleText
+    : `param_${index + 1}`;
+  return String(label).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || `param_${index + 1}`;
+}
+
+async function sendLearningModeToTab(enabled) {
+  const tab = await resolveTargetTab({ allowCreate: false });
+  if (!tab || !tab.id || restrictedUrl(tab.url || '')) {
+    return;
+  }
+
+  await chrome.tabs.sendMessage(tab.id, {
+    type: enabled ? 'learning.start' : 'learning.stop',
+    protocolVersion: PROTOCOL_VERSION
+  }).catch(() => {});
+}
+
+async function publishRuntimeSnapshot() {
+  const config = await chrome.storage.local.get(DEFAULT_CONFIG);
+  let tab = null;
+  try {
+    tab = await resolveTargetTab();
+  } catch {
+    tab = null;
+  }
+  publish({
+    type: 'runtimeSnapshot',
+    runtime: {
+      connection: {
+        connected,
+        stopped,
+        host: config.host || DEFAULT_CONFIG.host,
+        port: config.port || DEFAULT_CONFIG.port,
+        health: lastHealth
+      },
+      ai: {
+        provider: lastHealth && lastHealth.body && lastHealth.body.publicConfig ? lastHealth.body.publicConfig.aiProvider || 'OpenAI' : 'OpenAI',
+        model: lastHealth && lastHealth.body && lastHealth.body.publicConfig ? lastHealth.body.publicConfig.model || '-' : '-',
+        hasApiKeyLocal: lastHealth && lastHealth.body && lastHealth.body.publicConfig ? Boolean(lastHealth.body.publicConfig.hasApiKey) : null,
+        lastError: lastAiError
+      },
+      extension: {
+        webSocketConnected: connected,
+        tabId: tab && tab.id ? String(tab.id) : '',
+        url: tab ? tab.url || '' : '',
+        contentScriptActive: tab ? !restrictedUrl(tab.url || '') : false,
+        permissions: ['activeTab', 'scripting', 'storage', 'tabs', 'sidePanel']
+      },
+      run: {
+        runId: currentRunId,
+        requestId: currentRequestId,
+        status: stopped ? 'stopped' : connected ? 'connected' : 'idle',
+        currentTool,
+        lastToolResult,
+        lastToolRequest,
+        lastRunStatus,
+        lastError: lastToolResult && !lastToolResult.success ? lastToolResult.error : ''
+      }
+    }
+  });
 }

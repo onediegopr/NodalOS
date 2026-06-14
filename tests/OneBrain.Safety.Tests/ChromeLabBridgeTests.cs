@@ -74,7 +74,10 @@ public sealed class ChromeLabBridgeTests
         Assert.IsTrue(ChromeLabToolPolicy.Validate("resolveTarget", new Dictionary<string, object?> { ["targetText"] = "iniciar sesion" }).Allowed);
         Assert.IsTrue(ChromeLabToolPolicy.Validate("clickElement", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
         Assert.IsTrue(ChromeLabToolPolicy.Validate("readElement", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("setElementValue", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("focusElement", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
         Assert.IsTrue(ChromeLabToolPolicy.Validate("highlightElement", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("scrollElementIntoView", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
         Assert.IsFalse(ChromeLabToolPolicy.Validate("executeScript", new Dictionary<string, object?>()).Allowed);
     }
 
@@ -242,6 +245,39 @@ public sealed class ChromeLabBridgeTests
         Assert.IsFalse(combined.Contains("executeScript(", StringComparison.Ordinal));
         Assert.IsFalse(combined.Contains("https://cdn.", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(combined.Contains("<script src=\"http", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void SidePanelDefinesModeTabsAndGlobalState()
+    {
+        var extensionDir = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab");
+        var html = File.ReadAllText(Path.Combine(extensionDir, "sidepanel.html"));
+        var js = File.ReadAllText(Path.Combine(extensionDir, "sidepanel.js"));
+
+        Assert.IsTrue(html.Contains("Operar", StringComparison.Ordinal));
+        Assert.IsTrue(html.Contains("Aprender", StringComparison.Ordinal));
+        Assert.IsTrue(html.Contains("Recetas", StringComparison.Ordinal));
+        Assert.IsTrue(html.Contains("Runtime", StringComparison.Ordinal));
+        Assert.IsTrue(html.Contains("globalStopBtn", StringComparison.Ordinal));
+        Assert.IsTrue(js.Contains("const state = {", StringComparison.Ordinal));
+        Assert.IsTrue(js.Contains("learning:", StringComparison.Ordinal));
+        Assert.IsTrue(js.Contains("recipes:", StringComparison.Ordinal));
+        Assert.IsTrue(js.Contains("runtime:", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void ExtensionDefinesLearningAndRecipeStorageV0()
+    {
+        var extensionDir = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab");
+        var serviceWorker = File.ReadAllText(Path.Combine(extensionDir, "service_worker.js"));
+        var contentScript = File.ReadAllText(Path.Combine(extensionDir, "content_script.js"));
+
+        Assert.IsTrue(serviceWorker.Contains("nexaRecipes", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("nexaLearningDraft", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("learning.event", StringComparison.Ordinal));
+        Assert.IsTrue(contentScript.Contains("learning.start", StringComparison.Ordinal));
+        Assert.IsTrue(contentScript.Contains("valueRedacted", StringComparison.Ordinal));
+        Assert.IsTrue(contentScript.Contains("isPassword", StringComparison.Ordinal));
     }
 
     [TestMethod]

@@ -1,353 +1,607 @@
 let port = null;
 let portConnected = false;
 
-let connectState = 'disconnected';
-let healthState = 'untested';
-let runState = 'idle';
-let currentRunId = '';
+const state = {
+  activeTab: 'operate',
+  connection: {
+    status: 'disconnected',
+    health: 'untested',
+    host: '127.0.0.1',
+    port: '8787',
+    runtime: null
+  },
+  run: {
+    runId: '',
+    status: 'idle',
+    requestId: '',
+    currentTool: '',
+    lastResult: '',
+    lastError: ''
+  },
+  operator: {
+    goal: '',
+    plan: '',
+    action: '',
+    page: '',
+    targetResolution: null,
+    verification: null,
+    timeline: []
+  },
+  learning: {
+    recording: false,
+    draft: null,
+    timeline: []
+  },
+  recipes: {
+    items: [],
+    selectedId: ''
+  },
+  runtime: {
+    lastToolRequest: null,
+    lastToolResult: null,
+    lastRunStatus: null
+  },
+  logs: []
+};
 
-const elements = {
+const el = {
+  headerStatus: document.getElementById('headerStatus'),
+  globalStopBtn: document.getElementById('globalStopBtn'),
+  tabs: Array.from(document.querySelectorAll('.tab')),
+  panels: {
+    operate: document.getElementById('tab-operate'),
+    learn: document.getElementById('tab-learn'),
+    recipes: document.getElementById('tab-recipes'),
+    runtime: document.getElementById('tab-runtime')
+  },
+  humanBanner: document.getElementById('humanBanner'),
+  humanMessage: document.getElementById('humanMessage'),
+  resumeHumanBtn: document.getElementById('resumeHumanBtn'),
+  instructionInput: document.getElementById('instructionInput'),
+  startRunBtn: document.getElementById('startRunBtn'),
+  pauseRunBtn: document.getElementById('pauseRunBtn'),
+  resumeRunBtn: document.getElementById('resumeRunBtn'),
+  operatorGoal: document.getElementById('operatorGoal'),
+  operatorPlan: document.getElementById('operatorPlan'),
+  operatorAction: document.getElementById('operatorAction'),
+  currentTool: document.getElementById('currentTool'),
+  pageUrl: document.getElementById('pageUrl'),
+  lastResult: document.getElementById('lastResult'),
+  targetIntent: document.getElementById('targetIntent'),
+  targetText: document.getElementById('targetText'),
+  selectedElementId: document.getElementById('selectedElementId'),
+  selectedScore: document.getElementById('selectedScore'),
+  selectedSelector: document.getElementById('selectedSelector'),
+  selectedReason: document.getElementById('selectedReason'),
+  resolveCandidates: document.getElementById('resolveCandidates'),
+  verificationStatus: document.getElementById('verificationStatus'),
+  verificationUrlChanged: document.getElementById('verificationUrlChanged'),
+  verificationTitleChanged: document.getElementById('verificationTitleChanged'),
+  verificationDomChanged: document.getElementById('verificationDomChanged'),
+  verificationExpected: document.getElementById('verificationExpected'),
+  verificationReason: document.getElementById('verificationReason'),
+  operatorTimeline: document.getElementById('operatorTimeline'),
+  learningName: document.getElementById('learningName'),
+  learningDescription: document.getElementById('learningDescription'),
+  startLearningBtn: document.getElementById('startLearningBtn'),
+  stopLearningBtn: document.getElementById('stopLearningBtn'),
+  reviewRecipeBtn: document.getElementById('reviewRecipeBtn'),
+  saveRecipeBtn: document.getElementById('saveRecipeBtn'),
+  learningStatus: document.getElementById('learningStatus'),
+  learningTimeline: document.getElementById('learningTimeline'),
+  recipeDraftJson: document.getElementById('recipeDraftJson'),
+  recipeList: document.getElementById('recipeList'),
+  recipeImportInput: document.getElementById('recipeImportInput'),
+  importRecipeBtn: document.getElementById('importRecipeBtn'),
+  recipeNameInput: document.getElementById('recipeNameInput'),
+  recipeDescriptionInput: document.getElementById('recipeDescriptionInput'),
+  recipeStartUrlInput: document.getElementById('recipeStartUrlInput'),
+  recipeJsonEditor: document.getElementById('recipeJsonEditor'),
+  runRecipeBtn: document.getElementById('runRecipeBtn'),
+  saveRecipeChangesBtn: document.getElementById('saveRecipeChangesBtn'),
+  cancelRecipeEditBtn: document.getElementById('cancelRecipeEditBtn'),
+  deleteRecipeBtn: document.getElementById('deleteRecipeBtn'),
+  exportRecipeBtn: document.getElementById('exportRecipeBtn'),
   hostInput: document.getElementById('hostInput'),
   portInput: document.getElementById('portInput'),
   connectBtn: document.getElementById('connectBtn'),
   healthBtn: document.getElementById('healthBtn'),
-  statusLine: document.getElementById('statusLine'),
-  instructionInput: document.getElementById('instructionInput'),
-  startStopBtn: document.getElementById('startStopBtn'),
-  pauseResumeBtn: document.getElementById('pauseResumeBtn'),
-  humanCard: document.getElementById('humanCard'),
-  humanMessage: document.getElementById('humanMessage'),
-  resumeHumanBtn: document.getElementById('resumeHumanBtn'),
-  pageUrl: document.getElementById('pageUrl'),
-  pageTitle: document.getElementById('pageTitle'),
+  runtimeConnection: document.getElementById('runtimeConnection'),
+  runtimeHost: document.getElementById('runtimeHost'),
+  runtimePort: document.getElementById('runtimePort'),
+  runtimeHealth: document.getElementById('runtimeHealth'),
+  runtimeProvider: document.getElementById('runtimeProvider'),
+  runtimeModel: document.getElementById('runtimeModel'),
+  runtimeApiKey: document.getElementById('runtimeApiKey'),
+  runtimeAiError: document.getElementById('runtimeAiError'),
+  runtimeSocket: document.getElementById('runtimeSocket'),
   pageTab: document.getElementById('pageTab'),
-  pageReady: document.getElementById('pageReady'),
+  runtimeUrl: document.getElementById('runtimeUrl'),
+  runtimeContent: document.getElementById('runtimeContent'),
   runId: document.getElementById('runId'),
-  currentTool: document.getElementById('currentTool'),
-  lastResult: document.getElementById('lastResult'),
-  observedList: document.getElementById('observedList'),
-  selectedElementId: document.getElementById('selectedElementId'),
-  selectedSelector: document.getElementById('selectedSelector'),
-  selectedScore: document.getElementById('selectedScore'),
-  resolveCandidates: document.getElementById('resolveCandidates'),
-  verificationStatus: document.getElementById('verificationStatus'),
-  verificationReason: document.getElementById('verificationReason'),
-  verificationMeta: document.getElementById('verificationMeta'),
-  logs: document.getElementById('logs')
+  runtimeRequestId: document.getElementById('runtimeRequestId'),
+  runtimeRunState: document.getElementById('runtimeRunState'),
+  runtimeTool: document.getElementById('runtimeTool'),
+  runtimeLastError: document.getElementById('runtimeLastError'),
+  localLogs: document.getElementById('localLogs'),
+  engineLogs: document.getElementById('engineLogs'),
+  extensionLogs: document.getElementById('extensionLogs'),
+  lastToolRequest: document.getElementById('lastToolRequest'),
+  lastToolResult: document.getElementById('lastToolResult'),
+  lastRunStatus: document.getElementById('lastRunStatus')
 };
 
 connectPort();
-refreshUi();
-window.addEventListener('error', (event) => {
-  log('local', 'panel error: ' + (event.message || 'unknown'));
-});
-safePost({ type: 'loadConfig' });
+bindEvents();
+render();
+post({ type: 'loadConfig' });
 
-elements.connectBtn.addEventListener('click', () => {
-  if (connectState === 'connected' || connectState === 'running' || connectState === 'paused') {
-    safePost({ type: 'disconnect' });
+function bindEvents() {
+  el.tabs.forEach((button) => {
+    button.addEventListener('click', () => {
+      state.activeTab = button.dataset.tab;
+      renderTabs();
+    });
+  });
+
+  el.globalStopBtn.addEventListener('click', () => {
+    state.run.status = 'stopped';
+    pushTimeline('STOP solicitado');
+    post({ type: 'stop' });
+    render();
+  });
+  el.resumeHumanBtn.addEventListener('click', () => {
+    el.humanBanner.classList.add('hidden');
+    state.run.status = 'running';
+    post({ type: 'resumeHuman' });
+    render();
+  });
+
+  el.startRunBtn.addEventListener('click', () => {
+    state.operator.goal = el.instructionInput.value.trim();
+    state.operator.timeline = ['Run iniciado'];
+    state.run.status = 'running';
+    post({ type: 'startRun', instruction: state.operator.goal });
+    render();
+  });
+  el.pauseRunBtn.addEventListener('click', () => {
+    state.run.status = 'paused';
+    post({ type: 'pause' });
+    render();
+  });
+  el.resumeRunBtn.addEventListener('click', () => {
+    state.run.status = 'running';
+    post({ type: 'resume' });
+    render();
+  });
+
+  el.startLearningBtn.addEventListener('click', () => {
+    post({ type: 'learningStart', payload: learningFormPayload() });
+  });
+  el.stopLearningBtn.addEventListener('click', () => post({ type: 'learningStop' }));
+  el.reviewRecipeBtn.addEventListener('click', () => {
+    state.activeTab = 'learn';
+    renderTabs();
+    el.recipeDraftJson.focus();
+  });
+  el.saveRecipeBtn.addEventListener('click', () => {
+    post({ type: 'learningSaveRecipe', payload: learningFormPayload() });
+  });
+
+  el.connectBtn.addEventListener('click', () => {
+    if (state.connection.status === 'connected' || state.connection.status === 'running' || state.connection.status === 'paused') {
+      post({ type: 'disconnect' });
+      return;
+    }
+    state.connection.status = 'connecting';
+    post({ type: 'connect', config: currentConfig() });
+    render();
+  });
+  el.healthBtn.addEventListener('click', () => {
+    state.connection.health = 'testing';
+    post({ type: 'testHealth', config: currentConfig() });
+    render();
+  });
+
+  el.importRecipeBtn.addEventListener('click', () => el.recipeImportInput.click());
+  el.recipeImportInput.addEventListener('change', importRecipeFile);
+  el.runRecipeBtn.addEventListener('click', () => selectedRecipeId() && post({ type: 'recipeRun', recipeId: selectedRecipeId() }));
+  el.saveRecipeChangesBtn.addEventListener('click', saveEditedRecipe);
+  el.cancelRecipeEditBtn.addEventListener('click', () => selectRecipe(''));
+  el.deleteRecipeBtn.addEventListener('click', () => selectedRecipeId() && post({ type: 'recipeDelete', recipeId: selectedRecipeId() }));
+  el.exportRecipeBtn.addEventListener('click', exportSelectedRecipe);
+}
+
+function handleMessage(message) {
+  if (!message || !message.type) {
     return;
   }
 
-  setConnectState('connecting');
-  log('local', 'connect requested: ' + currentConfig().host + ':' + currentConfig().port);
-  safePost({ type: 'connect', config: currentConfig() });
-});
-
-elements.healthBtn.addEventListener('click', () => {
-  setHealthState('testing');
-  log('local', 'health requested: ' + currentConfig().host + ':' + currentConfig().port);
-  testHealthDirect();
-  safePost({ type: 'testHealth', config: currentConfig() });
-});
-
-elements.startStopBtn.addEventListener('click', () => {
-  if (runState === 'running' || runState === 'paused') {
-    resetRunSurface();
-    safePost({ type: 'stop' });
-    return;
-  }
-
-  setRunState('running');
-  safePost({ type: 'startRun', instruction: elements.instructionInput.value });
-});
-
-elements.pauseResumeBtn.addEventListener('click', () => {
-  if (runState === 'running') {
-    setRunState('paused');
-    safePost({ type: 'pause' });
-    return;
-  }
-
-  if (runState === 'paused') {
-    setRunState('running');
-    safePost({ type: 'resume' });
-  }
-});
-
-elements.resumeHumanBtn.addEventListener('click', () => {
-  elements.humanCard.classList.add('hidden');
-  safePost({ type: 'resumeHuman' });
-});
-
-function handlePortMessage(message) {
   switch (message.type) {
     case 'config':
-      elements.hostInput.value = message.config.host || '127.0.0.1';
-      elements.portInput.value = message.config.port || '8787';
-      return;
+      state.connection.host = message.config.host || '127.0.0.1';
+      state.connection.port = message.config.port || '8787';
+      el.hostInput.value = state.connection.host;
+      el.portInput.value = state.connection.port;
+      break;
     case 'state':
-      handleState(message);
-      return;
+      state.connection.status = message.status || 'disconnected';
+      if (message.currentRunId) {
+        state.run.runId = message.currentRunId;
+      }
+      if (message.status === 'running' || message.status === 'paused' || message.status === 'stopped' || message.status === 'error') {
+        state.run.status = message.status;
+      }
+      addLog('local', `${message.status}: ${message.message || ''}`);
+      break;
     case 'health':
-      handleHealth(message);
-      return;
+      state.connection.health = message.ok ? 'ok' : 'fail';
+      addLog('local', message.ok ? 'Health OK' : `Health failed: ${message.error || ''}`);
+      break;
     case 'page':
-      handlePage(message.page || {});
-      return;
+      state.operator.page = message.page && message.page.url ? message.page.url : '-';
+      break;
     case 'engineMessage':
       handleEngineMessage(message.message || {});
-      return;
+      break;
     case 'toolResult':
       handleToolResult(message);
-      return;
+      break;
     case 'runStatus':
       handleRunStatus(message.message || {});
-      return;
+      break;
     case 'humanIntervention':
-      elements.humanMessage.textContent = message.message || message.reason || 'Human intervention required.';
-      elements.humanCard.classList.remove('hidden');
-      setRunState('paused');
-      log('local', elements.humanMessage.textContent);
-      return;
+      showHumanBanner(message.message || message.reason || 'Intervención humana requerida');
+      break;
     case 'runStarted':
       handleRunStarted(message.body || {});
-      return;
+      break;
+    case 'runtimeSnapshot':
+      state.connection.runtime = message.runtime || null;
+      hydrateRuntime(message.runtime || {});
+      break;
+    case 'learningState':
+      hydrateLearning(message.draft || null);
+      break;
+    case 'recipes':
+      state.recipes.items = Array.isArray(message.recipes) ? message.recipes : [];
+      break;
+    case 'recipeError':
+      addLog('local', message.message || 'Recipe error');
+      break;
     default:
-      return;
-  }
-}
-
-function handleState(message) {
-  setConnectState(message.status || 'disconnected');
-  if (message.currentRunId) {
-    currentRunId = message.currentRunId;
-    elements.runId.textContent = currentRunId;
+      break;
   }
 
-  if (message.status === 'running') {
-    setRunState('running');
-  } else if (message.status === 'paused') {
-    setRunState('paused');
-  }
-
-  log('local', (message.status || 'state') + ': ' + (message.message || ''));
-}
-
-function handleHealth(message) {
-  setHealthState(message.ok ? 'ok' : 'fail');
-  log('local', message.ok
-    ? 'Health OK: ' + ((message.body && message.body.service) || 'bridge') + ' ' + ((message.body && message.body.version) || '')
-    : 'Health failed: ' + (message.error || 'bridge unavailable'));
-}
-
-function handlePage(page) {
-  elements.pageUrl.textContent = page.url || '-';
-  elements.pageTitle.textContent = page.title || '-';
-  elements.pageTab.textContent = page.tabId || '-';
-  elements.pageReady.textContent = page.restricted ? 'restricted' : 'available';
+  render();
 }
 
 function handleEngineMessage(message) {
-  log('engine->extension', summarize(message));
+  addLog('engine', message);
   if (message.tool) {
-    elements.currentTool.textContent = message.tool;
+    state.run.currentTool = message.tool;
+    state.operator.action = `Solicitando ${message.tool}`;
+  }
+  if (message.type === 'tool.request') {
+    state.runtime.lastToolRequest = message;
+    state.run.currentTool = message.tool || '';
+    state.run.requestId = message.requestId || '';
+    pushTimeline(humanizeToolRequest(message));
   }
 }
 
 function handleToolResult(message) {
-  elements.lastResult.textContent = message.success ? 'success' : 'error: ' + (message.error || '');
-  log('extension->engine', summarize(message));
+  addLog('extension', message);
+  state.runtime.lastToolResult = message;
+  state.run.lastResult = message.success ? 'success' : `error: ${message.error || ''}`;
+  if (!message.success) {
+    state.run.lastError = message.error || '';
+  }
 
   const tool = message.request && message.request.tool ? message.request.tool : '';
   if (tool === 'observePage' && message.result) {
-    renderObserved(message.result);
-  } else if (tool === 'resolveTarget' && message.result) {
-    renderResolution(message.result);
-  } else if ((tool === 'clickElement' || tool === 'click') && message.result) {
-    renderVerification(message.result);
-  } else if ((tool === 'setElementValue' || tool === 'setValue') && message.result) {
-    renderVerification(message.result);
-  } else if ((tool === 'highlightElement' || tool === 'highlight') && message.result) {
-    renderHighlighted(message.result);
+    pushTimeline('Observé la página');
+    state.operator.page = message.result.url || state.operator.page;
+  }
+  if (tool === 'resolveTarget' && message.result) {
+    state.operator.targetResolution = message.result;
+    const best = message.result.bestCandidate;
+    pushTimeline(best ? `Elegí un target con ${Math.round((best.score || 0) * 100)}% de confianza` : 'No encontré target confiable');
+  }
+  if ((tool === 'clickElement' || tool === 'setElementValue' || tool === 'click' || tool === 'setValue') && message.result) {
+    state.operator.verification = message.result;
+    pushTimeline(message.result.verificationStatus ? `Verificación: ${message.result.verificationStatus}` : `${tool} completado`);
   }
 }
 
 function handleRunStatus(message) {
-  if (message.message) {
-    elements.lastResult.textContent = message.message;
+  state.runtime.lastRunStatus = message;
+  state.run.status = message.status || state.run.status;
+  state.run.lastResult = message.message || state.run.lastResult;
+  if (message.status === 'error') {
+    state.run.lastError = message.message || '';
   }
-
-  if (message.status === 'running') {
-    setRunState('running');
-  } else if (message.status === 'paused') {
-    setRunState('paused');
-  } else if (message.status === 'error' || message.status === 'stopped') {
-    setRunState('idle');
-    currentRunId = '';
-    elements.runId.textContent = '-';
-  }
-
-  log('engine->extension', summarize(message));
+  addLog('engine', message);
 }
 
 function handleRunStarted(body) {
-  if (body.runId) {
-    currentRunId = body.runId;
-    elements.runId.textContent = body.runId;
-  }
-
+  state.run.runId = body.runId || '';
+  state.run.status = body.status === 'error' ? 'error' : 'running';
+  state.run.lastResult = body.message || '';
   if (body.status === 'error') {
-    setRunState('idle');
-    currentRunId = '';
-    elements.runId.textContent = '-';
-  } else if (body.status) {
-    setRunState('running');
+    state.run.lastError = body.message || '';
   }
-
-  elements.lastResult.textContent = body.message || (body.status || 'run started');
-  log('local', summarize(body));
+  addLog('local', body);
 }
 
-function renderObserved(observation) {
-  const summary = observation.elementCatalogSummary || {};
-  const top = observation.topInteractiveElements || [];
-  const pills = top.slice(0, 24).map((element) => {
-    const label = element.accessibleName || element.visibleText || element.elementId || element.tagName || 'element';
-    const risk = Array.isArray(element.riskFlags) && element.riskFlags.length > 0
-      ? ' · ' + element.riskFlags.join(',')
-      : '';
-    return '<span class="pill">' + escapeHtml(label) + risk + '</span>';
-  }).join('');
-
-  elements.observedList.innerHTML =
-    '<div class="observed-summary">' +
-    'elements=' + escapeHtml(summary.totalElements || 0) +
-    ' · clickable=' + escapeHtml(summary.clickableElements || 0) +
-    ' · credential-risk=' + escapeHtml(summary.credentialLikeElements || 0) +
-    '</div>' +
-    (pills || 'No visible elements.');
-  elements.pageReady.textContent = observation.readyState || 'unknown';
+function hydrateRuntime(runtime) {
+  const run = runtime.run || {};
+  const connection = runtime.connection || {};
+  state.connection.host = connection.host || state.connection.host;
+  state.connection.port = connection.port || state.connection.port;
+  state.connection.health = connection.health && connection.health.ok ? 'ok' : state.connection.health;
+  state.run.runId = run.runId || state.run.runId;
+  state.run.requestId = run.requestId || state.run.requestId;
+  state.run.currentTool = run.currentTool || state.run.currentTool;
+  state.runtime.lastToolRequest = run.lastToolRequest || state.runtime.lastToolRequest;
+  state.runtime.lastToolResult = run.lastToolResult || state.runtime.lastToolResult;
+  state.runtime.lastRunStatus = run.lastRunStatus || state.runtime.lastRunStatus;
 }
 
-function renderResolution(result) {
-  const best = result.bestCandidate || null;
-  elements.selectedElementId.textContent = best && best.elementId ? best.elementId : '-';
-  elements.selectedSelector.textContent = best && best.bestSelector && best.bestSelector.selector
-    ? best.bestSelector.selector
-    : '-';
-  elements.selectedScore.textContent = best && typeof best.score === 'number'
-    ? best.score.toFixed(2)
-    : '-';
+function hydrateLearning(draft) {
+  state.learning.draft = draft;
+  state.learning.recording = Boolean(draft && draft.recording);
+  state.learning.timeline = draft && Array.isArray(draft.steps) ? draft.steps : [];
+  if (draft) {
+    el.learningName.value = draft.name || el.learningName.value;
+    el.learningDescription.value = draft.description || el.learningDescription.value;
+  }
+}
 
-  const candidates = Array.isArray(result.candidates) ? result.candidates : [];
-  if (candidates.length === 0) {
-    elements.resolveCandidates.textContent = 'No candidates returned.';
+function render() {
+  renderTabs();
+  renderHeader();
+  renderOperate();
+  renderLearning();
+  renderRecipes();
+  renderRuntime();
+}
+
+function renderTabs() {
+  el.tabs.forEach((button) => button.classList.toggle('active', button.dataset.tab === state.activeTab));
+  Object.entries(el.panels).forEach(([name, panel]) => panel.classList.toggle('active', name === state.activeTab));
+}
+
+function renderHeader() {
+  el.headerStatus.textContent = `${connectionLabel()} · Run: ${state.run.status || 'idle'} · ${state.activeTab}`;
+}
+
+function renderOperate() {
+  el.operatorGoal.textContent = state.operator.goal || '-';
+  el.operatorPlan.textContent = state.operator.plan || 'observe -> resolveTarget -> action -> verify';
+  el.operatorAction.textContent = state.operator.action || '-';
+  el.currentTool.textContent = state.run.currentTool || '-';
+  el.pageUrl.textContent = state.operator.page || '-';
+  el.lastResult.textContent = state.run.lastResult || '-';
+  renderTargetResolution();
+  renderVerification();
+  renderTimeline(el.operatorTimeline, state.operator.timeline);
+}
+
+function renderTargetResolution() {
+  const resolution = state.operator.targetResolution;
+  const best = resolution && resolution.bestCandidate ? resolution.bestCandidate : null;
+  el.targetIntent.textContent = resolution ? resolution.intent || '-' : '-';
+  el.targetText.textContent = resolution ? resolution.targetText || '-' : '-';
+  el.selectedElementId.textContent = best ? best.elementId || '-' : '-';
+  el.selectedScore.textContent = best && typeof best.score === 'number' ? best.score.toFixed(2) : '-';
+  el.selectedSelector.textContent = best && best.bestSelector ? best.bestSelector.selector || '-' : '-';
+  el.selectedReason.textContent = best ? best.reason || '-' : '-';
+
+  const candidates = resolution && Array.isArray(resolution.candidates) ? resolution.candidates : [];
+  el.resolveCandidates.innerHTML = candidates.length
+    ? candidates.map(renderCandidate).join('')
+    : 'No candidates yet.';
+}
+
+function renderCandidate(candidate) {
+  const element = candidate.element || {};
+  const label = element.accessibleName || element.visibleText || candidate.elementId || '-';
+  const selector = candidate.bestSelector && candidate.bestSelector.selector ? candidate.bestSelector.selector : '-';
+  const score = typeof candidate.score === 'number' ? candidate.score.toFixed(2) : '-';
+  return `<div class="candidate"><div class="candidate-head"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(candidate.elementId || '-')}</span></div><div class="candidate-meta">score ${escapeHtml(score)} · ${escapeHtml(selector)}</div><div class="candidate-reason">${escapeHtml(candidate.reason || '')}</div></div>`;
+}
+
+function renderVerification() {
+  const verification = state.operator.verification || {};
+  el.verificationStatus.textContent = verification.verificationStatus || '-';
+  el.verificationUrlChanged.textContent = asYesNo(verification.urlChanged);
+  el.verificationTitleChanged.textContent = asYesNo(verification.titleChanged);
+  el.verificationDomChanged.textContent = asYesNo(verification.domChanged);
+  el.verificationExpected.textContent = asYesNo(verification.expectedConditionMet);
+  el.verificationReason.textContent = verification.reason || '-';
+}
+
+function renderLearning() {
+  const draft = state.learning.draft;
+  el.learningStatus.textContent = state.learning.recording
+    ? 'Grabando. NEXA está mirando tus acciones. No se guardarán valores sensibles de contraseñas.'
+    : 'No grabando';
+  renderTimeline(el.learningTimeline, state.learning.timeline.map(humanizeLearningStep));
+  el.recipeDraftJson.value = draft ? JSON.stringify(recipeDraftFromLearning(draft), null, 2) : '';
+}
+
+function renderRecipes() {
+  el.recipeList.innerHTML = state.recipes.items.length
+    ? state.recipes.items.map(renderRecipeItem).join('')
+    : 'No hay recetas guardadas.';
+  document.querySelectorAll('[data-recipe-action]').forEach((button) => {
+    button.addEventListener('click', handleRecipeAction);
+  });
+  const selected = selectedRecipe();
+  el.recipeNameInput.value = selected ? selected.name || '' : '';
+  el.recipeDescriptionInput.value = selected ? selected.description || '' : '';
+  el.recipeStartUrlInput.value = selected ? selected.startUrl || '' : '';
+  el.recipeJsonEditor.value = selected ? JSON.stringify(selected, null, 2) : '';
+}
+
+function renderRecipeItem(recipe) {
+  return `<div class="recipe-item"><div class="recipe-head"><strong>${escapeHtml(recipe.name || 'Receta')}</strong><span>${escapeHtml(recipe.status || 'draft-v0')}</span></div><div class="recipe-meta">${escapeHtml(recipe.description || '')}</div><div class="recipe-meta">${escapeHtml(recipe.createdAt || '-')} · ${escapeHtml((recipe.steps || []).length)} pasos</div><div class="recipe-actions"><button data-recipe-action="open" data-recipe-id="${escapeHtml(recipe.recipeId)}">Editar</button><button data-recipe-action="run" data-recipe-id="${escapeHtml(recipe.recipeId)}">Ejecutar</button><button data-recipe-action="duplicate" data-recipe-id="${escapeHtml(recipe.recipeId)}">Duplicar</button><button data-recipe-action="delete" data-recipe-id="${escapeHtml(recipe.recipeId)}">Borrar</button><button data-recipe-action="export" data-recipe-id="${escapeHtml(recipe.recipeId)}">Exportar JSON</button></div></div>`;
+}
+
+function renderRuntime() {
+  const runtime = state.connection.runtime || {};
+  const connection = runtime.connection || {};
+  const ai = runtime.ai || {};
+  const extension = runtime.extension || {};
+  const run = runtime.run || {};
+  el.runtimeConnection.textContent = connection.connected ? 'connected' : state.connection.status;
+  el.runtimeHost.textContent = state.connection.host;
+  el.runtimePort.textContent = state.connection.port;
+  el.runtimeHealth.textContent = state.connection.health;
+  el.runtimeProvider.textContent = ai.provider || 'OpenAI';
+  el.runtimeModel.textContent = ai.model || '-';
+  el.runtimeApiKey.textContent = ai.hasApiKeyLocal === null || ai.hasApiKeyLocal === undefined ? 'unknown' : ai.hasApiKeyLocal ? 'local key loaded' : 'missing';
+  el.runtimeAiError.textContent = ai.lastError || '-';
+  el.runtimeSocket.textContent = extension.webSocketConnected ? 'connected' : 'disconnected';
+  el.pageTab.textContent = extension.tabId || '-';
+  el.runtimeUrl.textContent = extension.url || state.operator.page || '-';
+  el.runtimeContent.textContent = extension.contentScriptActive ? 'active' : 'unavailable';
+  el.runId.textContent = state.run.runId || '-';
+  el.runtimeRequestId.textContent = state.run.requestId || run.requestId || '-';
+  el.runtimeRunState.textContent = state.run.status || run.status || 'idle';
+  el.runtimeTool.textContent = state.run.currentTool || run.currentTool || '-';
+  el.runtimeLastError.textContent = state.run.lastError || run.lastError || '-';
+  renderLogs();
+  el.lastToolRequest.textContent = stringify(state.runtime.lastToolRequest);
+  el.lastToolResult.textContent = stringify(state.runtime.lastToolResult);
+  el.lastRunStatus.textContent = stringify(state.runtime.lastRunStatus);
+}
+
+function renderLogs() {
+  el.localLogs.innerHTML = state.logs.filter((item) => item.direction === 'local').slice(0, 80).map(renderLog).join('');
+  el.engineLogs.innerHTML = state.logs.filter((item) => item.direction === 'engine').slice(0, 80).map(renderLog).join('');
+  el.extensionLogs.innerHTML = state.logs.filter((item) => item.direction === 'extension').slice(0, 80).map(renderLog).join('');
+}
+
+function renderTimeline(node, items) {
+  const list = Array.isArray(items) ? items.filter(Boolean).slice(-40) : [];
+  node.innerHTML = list.length
+    ? list.map((item) => `<li>${escapeHtml(String(item))}</li>`).join('')
+    : '<li>-</li>';
+}
+
+function handleRecipeAction(event) {
+  const action = event.currentTarget.dataset.recipeAction;
+  const recipeId = event.currentTarget.dataset.recipeId;
+  if (action === 'open') {
+    selectRecipe(recipeId);
+  } else if (action === 'run') {
+    post({ type: 'recipeRun', recipeId });
+  } else if (action === 'duplicate') {
+    post({ type: 'recipeDuplicate', recipeId });
+  } else if (action === 'delete') {
+    post({ type: 'recipeDelete', recipeId });
+  } else if (action === 'export') {
+    exportRecipe(recipeId);
+  }
+}
+
+function selectRecipe(recipeId) {
+  state.recipes.selectedId = recipeId || '';
+  renderRecipes();
+}
+
+function selectedRecipeId() {
+  return state.recipes.selectedId;
+}
+
+function selectedRecipe() {
+  return state.recipes.items.find((recipe) => recipe.recipeId === state.recipes.selectedId) || null;
+}
+
+function saveEditedRecipe() {
+  const selected = selectedRecipe();
+  if (!selected) {
     return;
   }
-
-  elements.resolveCandidates.innerHTML = candidates.map((candidate) => {
-    const label = candidate.element && (candidate.element.accessibleName || candidate.element.visibleText || candidate.element.elementId)
-      ? candidate.element.accessibleName || candidate.element.visibleText || candidate.element.elementId
-      : candidate.elementId;
-    const selector = candidate.bestSelector && candidate.bestSelector.selector ? candidate.bestSelector.selector : '-';
-    const reason = candidate.reason || (Array.isArray(candidate.reasons) ? candidate.reasons.join(' · ') : '');
-    return '<div class="candidate">' +
-      '<div class="candidate-head"><strong>' + escapeHtml(label || '-') + '</strong><span>' + escapeHtml(candidate.elementId || '-') + '</span></div>' +
-      '<div class="candidate-meta">score ' + escapeHtml((candidate.score || 0).toFixed ? candidate.score.toFixed(2) : candidate.score || '-') + ' · ' + escapeHtml(selector) + '</div>' +
-      '<div class="candidate-reason">' + escapeHtml(reason) + '</div>' +
-      '</div>';
-  }).join('');
+  let edited = selected;
+  try {
+    edited = JSON.parse(el.recipeJsonEditor.value || '{}');
+  } catch {
+    addLog('local', 'Recipe JSON inválido');
+    render();
+    return;
+  }
+  edited.recipeId = selected.recipeId;
+  edited.name = el.recipeNameInput.value || edited.name || 'Receta';
+  edited.description = el.recipeDescriptionInput.value || edited.description || '';
+  edited.startUrl = el.recipeStartUrlInput.value || edited.startUrl || '';
+  post({ type: 'recipeSave', recipe: edited });
 }
 
-function renderVerification(result) {
-  elements.verificationStatus.textContent = result.verificationStatus || '-';
-  elements.verificationReason.textContent = result.reason || '-';
-  const details = [
-    'beforeUrl=' + (result.beforeUrl || '-'),
-    'afterUrl=' + (result.afterUrl || '-'),
-    'urlChanged=' + Boolean(result.urlChanged),
-    'domChanged=' + Boolean(result.domChanged),
-    'expected=' + Boolean(result.expectedConditionMet)
-  ];
-  elements.verificationMeta.textContent = details.join(' · ');
-
-  if (result.elementId) {
-    elements.selectedElementId.textContent = result.elementId;
-  }
-  if (result.bestSelector && result.bestSelector.selector) {
-    elements.selectedSelector.textContent = result.bestSelector.selector;
+function exportSelectedRecipe() {
+  const selected = selectedRecipe();
+  if (selected) {
+    exportRecipe(selected.recipeId);
   }
 }
 
-function renderHighlighted(result) {
-  if (result.elementId) {
-    elements.selectedElementId.textContent = result.elementId;
+function exportRecipe(recipeId) {
+  const recipe = state.recipes.items.find((item) => item.recipeId === recipeId);
+  if (!recipe) {
+    return;
   }
-  elements.verificationStatus.textContent = 'highlighted';
-  elements.verificationReason.textContent = 'Candidate highlighted before action or pause.';
-  elements.verificationMeta.textContent = result.elementId ? 'element=' + result.elementId : 'highlighted';
+  const blob = new Blob([JSON.stringify(recipe, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${recipe.name || 'nexa-recipe'}.json`.replace(/[^a-z0-9._-]+/gi, '_');
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importRecipeFile(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) {
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const recipe = JSON.parse(String(reader.result || '{}'));
+      recipe.recipeId = recipe.recipeId || `recipe-${Date.now().toString(36)}`;
+      post({ type: 'recipeSave', recipe });
+    } catch {
+      addLog('local', 'No se pudo importar JSON.');
+      render();
+    }
+  };
+  reader.readAsText(file);
 }
 
 function connectPort() {
   try {
     port = chrome.runtime.connect({ name: 'onebrain-sidepanel' });
     portConnected = true;
-    port.onMessage.addListener(handlePortMessage);
+    port.onMessage.addListener(handleMessage);
     port.onDisconnect.addListener(() => {
       portConnected = false;
       port = null;
-      setConnectState('disconnected');
-      log('local', 'Service worker port disconnected');
+      state.connection.status = 'disconnected';
+      addLog('local', 'Service worker port disconnected');
+      render();
     });
-    log('local', 'Service worker port connected');
+    addLog('local', 'Service worker port connected');
   } catch (error) {
     portConnected = false;
     port = null;
-    setConnectState('error');
-    log('local', 'connectPort failed: ' + toMessage(error));
+    state.connection.status = 'error';
+    addLog('local', toMessage(error));
   }
 }
 
-function currentConfig() {
-  return {
-    host: elements.hostInput.value.trim() || '127.0.0.1',
-    port: elements.portInput.value.trim() || '8787'
-  };
-}
-
-function testHealthDirect() {
-  return fetch('http://' + currentConfig().host + ':' + currentConfig().port + '/health', { cache: 'no-store' })
-    .then((response) => response.json().then((body) => ({ response, body })))
-    .then((result) => {
-      if (result.response.ok && result.body && result.body.ok) {
-        setHealthState('ok');
-        if (connectState !== 'connected' && connectState !== 'running' && connectState !== 'paused') {
-          setConnectState('bridge-ready');
-        }
-        log('local', 'Health OK: ' + (result.body.service || 'bridge') + ' ' + (result.body.version || ''));
-        return;
-      }
-      setHealthState('fail');
-      log('local', 'Health failed: HTTP ' + result.response.status);
-    })
-    .catch((error) => {
-      setHealthState('fail');
-      log('local', 'Health failed: ' + toMessage(error));
-    });
-}
-
-function safePost(message) {
+function post(message) {
   try {
     if (!port || !portConnected) {
       connectPort();
@@ -359,200 +613,128 @@ function safePost(message) {
   } catch (error) {
     portConnected = false;
     port = null;
-    setConnectState('error');
-    log('local', 'postMessage failed: ' + toMessage(error));
+    state.connection.status = 'error';
+    addLog('local', toMessage(error));
+    render();
   }
 }
 
-function setConnectState(state) {
-  connectState = state;
-  refreshUi();
+function currentConfig() {
+  state.connection.host = el.hostInput.value.trim() || '127.0.0.1';
+  state.connection.port = el.portInput.value.trim() || '8787';
+  return { host: state.connection.host, port: state.connection.port };
 }
 
-function setHealthState(state) {
-  healthState = state;
-  refreshUi();
+function learningFormPayload() {
+  return {
+    name: el.learningName.value.trim() || 'Nueva receta',
+    description: el.learningDescription.value.trim()
+  };
 }
 
-function setRunState(state) {
-  runState = state;
-  refreshUi();
+function recipeDraftFromLearning(draft) {
+  return {
+    recipeId: draft.recipeId,
+    name: draft.name,
+    description: draft.description,
+    createdAt: draft.createdAt,
+    updatedAt: draft.updatedAt,
+    startUrl: draft.startUrl,
+    steps: draft.steps || [],
+    parameters: draft.parameters || [],
+    sensitiveFields: draft.sensitiveFields || [],
+    humanCheckpoints: draft.humanCheckpoints || []
+  };
 }
 
-function refreshUi() {
-  refreshConnectButton();
-  refreshHealthButton();
-  refreshRunButtons();
-  refreshStatusLine();
-}
-
-function refreshConnectButton() {
-  const button = elements.connectBtn;
-  switch (connectState) {
-    case 'connected':
-    case 'running':
-      button.textContent = 'Disconnect';
-      button.className = 'action-btn connected';
-      break;
-    case 'paused':
-      button.textContent = 'Disconnect';
-      button.className = 'action-btn paused';
-      break;
-    case 'connecting':
-      button.textContent = 'Connecting';
-      button.className = 'action-btn connecting';
-      break;
-    case 'bridge-ready':
-      button.textContent = 'Connect';
-      button.className = 'action-btn bridge-ready';
-      break;
-    case 'error':
-      button.textContent = 'Connect';
-      button.className = 'action-btn error';
-      break;
-    default:
-      button.textContent = 'Connect';
-      button.className = 'action-btn disconnected';
-      break;
+function humanizeToolRequest(message) {
+  const tool = message.tool || 'tool';
+  if (tool === 'observePage') {
+    return 'Observé la página';
   }
-}
-
-function refreshHealthButton() {
-  const button = elements.healthBtn;
-  switch (healthState) {
-    case 'ok':
-      button.textContent = 'Health OK';
-      button.className = 'action-btn ok';
-      break;
-    case 'testing':
-      button.textContent = 'Testing';
-      button.className = 'action-btn testing';
-      break;
-    case 'fail':
-      button.textContent = 'Health Fail';
-      button.className = 'action-btn fail';
-      break;
-    default:
-      button.textContent = 'Test Health';
-      button.className = 'action-btn fail';
-      break;
+  if (tool === 'resolveTarget') {
+    return `Busqué "${(message.args && message.args.targetText) || 'target'}"`;
   }
+  if (tool === 'clickElement') {
+    return 'Hice click sobre el target elegido';
+  }
+  if (tool === 'setElementValue') {
+    return 'Escribí en un campo no sensible';
+  }
+  return `Ejecuté ${tool}`;
 }
 
-function refreshRunButtons() {
-  const startStop = elements.startStopBtn;
-  const pauseResume = elements.pauseResumeBtn;
+function humanizeLearningStep(step) {
+  const label = step.target && (step.target.accessibleName || step.target.visibleText)
+    ? step.target.accessibleName || step.target.visibleText
+    : step.url || '';
+  if (step.actionType === 'navigate') {
+    return `Navegaste a ${step.url}`;
+  }
+  if (step.valueRedacted) {
+    return `${step.actionType}: campo sensible redactado`;
+  }
+  return `${step.actionType}: ${label || '-'}`;
+}
 
-  if (runState === 'running') {
-    startStop.textContent = 'STOP';
-    startStop.className = 'action-btn stop';
-    pauseResume.textContent = 'Pause';
-    pauseResume.className = 'action-btn paused';
-    pauseResume.disabled = false;
+function pushTimeline(text) {
+  if (!text) {
     return;
   }
-
-  if (runState === 'paused') {
-    startStop.textContent = 'STOP';
-    startStop.className = 'action-btn stop';
-    pauseResume.textContent = 'Resume';
-    pauseResume.className = 'action-btn resume';
-    pauseResume.disabled = false;
-    return;
-  }
-
-  startStop.textContent = 'Start Run';
-  startStop.className = 'action-btn start';
-  pauseResume.textContent = 'Pause';
-  pauseResume.className = 'action-btn paused disabled';
-  pauseResume.disabled = true;
+  state.operator.timeline.push(text);
+  state.operator.timeline = state.operator.timeline.slice(-40);
 }
 
-function refreshStatusLine() {
-  const parts = [];
-  let cssClass = '';
-
-  switch (connectState) {
-    case 'connected':
-      parts.push('Connected');
-      cssClass = 'connected';
-      break;
-    case 'connecting':
-      parts.push('Connecting');
-      cssClass = 'connecting';
-      break;
-    case 'bridge-ready':
-      parts.push('Bridge ready');
-      cssClass = 'bridge-ready';
-      break;
-    case 'paused':
-      parts.push('Connected');
-      cssClass = 'paused';
-      break;
-    case 'running':
-      parts.push('Connected');
-      cssClass = 'running';
-      break;
-    case 'error':
-      parts.push('Error');
-      cssClass = 'error';
-      break;
-    default:
-      parts.push('Disconnected');
-      cssClass = 'disconnected';
-      break;
-  }
-
-  switch (healthState) {
-    case 'ok':
-      parts.push('Health OK');
-      break;
-    case 'testing':
-      parts.push('Testing health');
-      break;
-    default:
-      parts.push('Health not tested');
-      break;
-  }
-
-  if (runState === 'running') {
-    parts.push('Running');
-  } else if (runState === 'paused') {
-    parts.push('Paused');
-  }
-
-  elements.statusLine.textContent = parts.join(' · ');
-  elements.statusLine.className = 'status-line ' + cssClass;
+function showHumanBanner(message) {
+  state.run.status = 'paused';
+  el.humanMessage.textContent = message || 'Completá credenciales, captcha o 2FA y luego presioná Reanudar.';
+  el.humanBanner.classList.remove('hidden');
+  pushTimeline('Pausa humana requerida');
 }
 
-function resetRunSurface() {
-  setRunState('idle');
-  currentRunId = '';
-  elements.runId.textContent = '-';
-  elements.currentTool.textContent = '-';
-  elements.lastResult.textContent = '-';
-  elements.observedList.innerHTML = 'No observation yet.';
-  elements.selectedElementId.textContent = '-';
-  elements.selectedSelector.textContent = '-';
-  elements.selectedScore.textContent = '-';
-  elements.resolveCandidates.textContent = 'No candidates yet.';
-  elements.verificationStatus.textContent = '-';
-  elements.verificationReason.textContent = '-';
-  elements.verificationMeta.textContent = 'No verification yet.';
-  elements.humanCard.classList.add('hidden');
+function addLog(direction, payload) {
+  state.logs.unshift({
+    at: new Date().toLocaleTimeString(),
+    direction,
+    payload
+  });
+  state.logs = state.logs.slice(0, 240);
 }
 
-function log(direction, message) {
-  const node = document.createElement('div');
-  node.className = 'log';
-  const time = new Date().toLocaleTimeString();
-  node.innerHTML = '<time>' + time + '</time> <strong>' + escapeHtml(direction) + '</strong><br>' + escapeHtml(message);
-  elements.logs.prepend(node);
+function renderLog(item) {
+  return `<div class="log-item"><strong>${escapeHtml(item.at)}</strong><br>${escapeHtml(summarize(item.payload))}</div>`;
+}
+
+function connectionLabel() {
+  if (state.connection.status === 'connected' || state.connection.status === 'running') {
+    return 'Connected';
+  }
+  if (state.connection.status === 'paused') {
+    return 'Connected';
+  }
+  if (state.connection.status === 'connecting') {
+    return 'Connecting';
+  }
+  return state.connection.status || 'Disconnected';
+}
+
+function asYesNo(value) {
+  if (value === true) {
+    return 'sí';
+  }
+  if (value === false) {
+    return 'no';
+  }
+  return '-';
+}
+
+function stringify(value) {
+  return value ? JSON.stringify(value, null, 2) : '-';
 }
 
 function summarize(value) {
   const text = typeof value === 'string' ? value : JSON.stringify(value);
-  return text.length > 700 ? text.slice(0, 700) + '...' : text;
+  return text && text.length > 900 ? `${text.slice(0, 900)}...` : text || '';
 }
 
 function escapeHtml(value) {

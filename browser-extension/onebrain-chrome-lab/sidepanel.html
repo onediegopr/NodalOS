@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,85 +7,200 @@
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 <body>
-  <header class="hero">
-    <div>
+  <header class="app-header">
+    <div class="brand-block">
       <h1>NEXA</h1>
+      <p id="headerStatus">Disconnected · Run: idle</p>
     </div>
+    <button id="globalStopBtn" class="stop-button">STOP</button>
   </header>
 
+  <nav class="tabs" aria-label="NEXA modes">
+    <button class="tab active" data-tab="operate">Operar</button>
+    <button class="tab" data-tab="learn">Aprender</button>
+    <button class="tab" data-tab="recipes">Recetas</button>
+    <button class="tab" data-tab="runtime">Runtime</button>
+  </nav>
+
+  <section id="humanBanner" class="human-banner hidden">
+    <div>
+      <strong>Intervención humana requerida</strong>
+      <p id="humanMessage">Completá credenciales, captcha o 2FA y luego presioná Reanudar.</p>
+    </div>
+    <button id="resumeHumanBtn">Reanudar</button>
+  </section>
+
   <main>
-    <section class="card run-card">
-      <div class="run-toolbar">
-        <div class="bridge-inline">
-        <label class="inline-field">IP <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
-        <label class="inline-field">Port <input id="portInput" value="8787" autocomplete="off"></label>
+    <section id="tab-operate" class="tab-panel active">
+      <section class="surface command-surface">
+        <label for="instructionInput">¿Qué querés que haga NEXA?</label>
+        <textarea id="instructionInput" rows="8" wrap="soft">Entrá a AFIP/ARCA y tocá iniciar sesión. Cuando pida credenciales, pausá y avisame.</textarea>
+        <div class="control-row">
+          <button id="startRunBtn" class="primary">Ejecutar</button>
+          <button id="pauseRunBtn">Pausar</button>
+          <button id="resumeRunBtn">Reanudar</button>
         </div>
-        <div class="inline-actions">
-          <button id="connectBtn" class="action-btn disconnected" title="Connect">Connect</button>
-          <button id="healthBtn" class="action-btn fail" title="Test Health">Health</button>
+      </section>
+
+      <section class="grid two">
+        <article class="surface">
+          <h2>Estado</h2>
+          <dl>
+            <dt>Objetivo</dt><dd id="operatorGoal">-</dd>
+            <dt>Plan</dt><dd id="operatorPlan">-</dd>
+            <dt>Acción</dt><dd id="operatorAction">-</dd>
+            <dt>Tool</dt><dd id="currentTool">-</dd>
+            <dt>Página</dt><dd id="pageUrl">-</dd>
+            <dt>Resultado</dt><dd id="lastResult">-</dd>
+          </dl>
+        </article>
+
+        <article class="surface">
+          <h2>Target Resolution</h2>
+          <dl>
+            <dt>Intent</dt><dd id="targetIntent">-</dd>
+            <dt>Target</dt><dd id="targetText">-</dd>
+            <dt>Elegido</dt><dd id="selectedElementId">-</dd>
+            <dt>Score</dt><dd id="selectedScore">-</dd>
+            <dt>Selector</dt><dd id="selectedSelector">-</dd>
+            <dt>Reason</dt><dd id="selectedReason">-</dd>
+          </dl>
+          <div id="resolveCandidates" class="candidate-list">No candidates yet.</div>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="surface">
+          <h2>Verification</h2>
+          <dl>
+            <dt>Status</dt><dd id="verificationStatus">-</dd>
+            <dt>URL</dt><dd id="verificationUrlChanged">-</dd>
+            <dt>Title</dt><dd id="verificationTitleChanged">-</dd>
+            <dt>DOM</dt><dd id="verificationDomChanged">-</dd>
+            <dt>Expected</dt><dd id="verificationExpected">-</dd>
+            <dt>Reason</dt><dd id="verificationReason">-</dd>
+          </dl>
+        </article>
+
+        <article class="surface">
+          <h2>Timeline operativo</h2>
+          <ol id="operatorTimeline" class="timeline"></ol>
+        </article>
+      </section>
+    </section>
+
+    <section id="tab-learn" class="tab-panel">
+      <section class="surface">
+        <h2>Aprendizaje</h2>
+        <label>Nombre de receta <input id="learningName" value="Nueva receta"></label>
+        <label>Descripción <textarea id="learningDescription" rows="4" wrap="soft"></textarea></label>
+        <div class="control-row">
+          <button id="startLearningBtn" class="primary">Empezar aprendizaje</button>
+          <button id="stopLearningBtn">Detener aprendizaje</button>
+          <button id="reviewRecipeBtn">Revisar receta</button>
+          <button id="saveRecipeBtn">Guardar receta</button>
         </div>
-      </div>
-      <p id="statusLine" class="status-line">Disconnected &middot; Health not tested.</p>
-      <div class="action-row">
-        <button id="startStopBtn" class="action-btn start" title="Start Run">Start Run</button>
-        <button id="pauseResumeBtn" class="action-btn paused disabled" title="Pause" disabled>Pause</button>
-      </div>
-      <textarea id="instructionInput" rows="8" wrap="soft">Entrar a https://www.afip.gob.ar/ y avanzar hasta el punto donde se requieran credenciales. Cuando aparezca login, clave fiscal, CUIT, captcha o 2FA, pausar e indicarme que complete manualmente.</textarea>
+        <div id="learningStatus" class="recording-state">No grabando</div>
+      </section>
+
+      <section class="surface">
+        <h2>Timeline de aprendizaje</h2>
+        <ol id="learningTimeline" class="timeline"></ol>
+      </section>
+
+      <section class="surface">
+        <h2>Recipe Draft V0</h2>
+        <textarea id="recipeDraftJson" rows="12" spellcheck="false"></textarea>
+      </section>
     </section>
 
-    <section id="humanCard" class="card human hidden">
-      <h2>Human intervention required</h2>
-      <p id="humanMessage">Complete credentials manually, then continue.</p>
-      <button id="resumeHumanBtn">Ya complete manualmente, continuar</button>
+    <section id="tab-recipes" class="tab-panel">
+      <section class="surface">
+        <div class="section-head">
+          <h2>Recetas guardadas</h2>
+          <button id="importRecipeBtn">Importar JSON</button>
+        </div>
+        <input id="recipeImportInput" class="hidden" type="file" accept="application/json">
+        <div id="recipeList" class="recipe-list">No hay recetas guardadas.</div>
+      </section>
+
+      <section class="surface">
+        <h2>Vista de receta</h2>
+        <label>Nombre <input id="recipeNameInput"></label>
+        <label>Descripción <textarea id="recipeDescriptionInput" rows="3" wrap="soft"></textarea></label>
+        <label>Start URL <input id="recipeStartUrlInput"></label>
+        <textarea id="recipeJsonEditor" rows="14" spellcheck="false"></textarea>
+        <div class="control-row">
+          <button id="runRecipeBtn" class="primary">Ejecutar receta</button>
+          <button id="saveRecipeChangesBtn">Guardar cambios</button>
+          <button id="cancelRecipeEditBtn">Cancelar</button>
+          <button id="deleteRecipeBtn" class="danger">Borrar</button>
+          <button id="exportRecipeBtn">Exportar JSON</button>
+        </div>
+        <p class="muted">Recipe replay V0: soporta navigate/click/input/human checkpoint mediante instrucción al operador.</p>
+      </section>
     </section>
 
-    <section class="card page">
-      <h2>Current page</h2>
-      <dl>
-        <dt>URL</dt><dd id="pageUrl">-</dd>
-        <dt>Title</dt><dd id="pageTitle">-</dd>
-        <dt>Tab</dt><dd id="pageTab">-</dd>
-        <dt>Ready</dt><dd id="pageReady">unknown</dd>
-      </dl>
-    </section>
+    <section id="tab-runtime" class="tab-panel">
+      <section class="surface connection-strip">
+        <label>Host <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
+        <label>Puerto <input id="portInput" value="8787" autocomplete="off"></label>
+        <button id="connectBtn" class="primary">Connect</button>
+        <button id="healthBtn">Health</button>
+      </section>
 
-    <section class="card">
-      <h2>AI / step status</h2>
-      <dl>
-        <dt>Run</dt><dd id="runId">-</dd>
-        <dt>Current tool</dt><dd id="currentTool">-</dd>
-        <dt>Last result</dt><dd id="lastResult">-</dd>
-      </dl>
-      <p class="safety">STOP armed &middot; No credentials captured</p>
-    </section>
+      <section class="grid two">
+        <article class="surface">
+          <h2>Motor local</h2>
+          <dl>
+            <dt>Estado</dt><dd id="runtimeConnection">-</dd>
+            <dt>Host</dt><dd id="runtimeHost">-</dd>
+            <dt>Puerto</dt><dd id="runtimePort">-</dd>
+            <dt>Health</dt><dd id="runtimeHealth">-</dd>
+          </dl>
+        </article>
+        <article class="surface">
+          <h2>IA</h2>
+          <dl>
+            <dt>Provider</dt><dd id="runtimeProvider">OpenAI</dd>
+            <dt>Modelo</dt><dd id="runtimeModel">-</dd>
+            <dt>API key</dt><dd id="runtimeApiKey">-</dd>
+            <dt>Error</dt><dd id="runtimeAiError">-</dd>
+          </dl>
+        </article>
+      </section>
 
-    <section class="card">
-      <h2>Target resolution</h2>
-      <dl>
-        <dt>Element</dt><dd id="selectedElementId">-</dd>
-        <dt>Selector</dt><dd id="selectedSelector">-</dd>
-        <dt>Score</dt><dd id="selectedScore">-</dd>
-      </dl>
-      <div id="resolveCandidates" class="candidate-list">No candidates yet.</div>
-    </section>
+      <section class="grid two">
+        <article class="surface">
+          <h2>Extensión</h2>
+          <dl>
+            <dt>WebSocket</dt><dd id="runtimeSocket">-</dd>
+            <dt>Tab</dt><dd id="pageTab">-</dd>
+            <dt>URL</dt><dd id="runtimeUrl">-</dd>
+            <dt>Content</dt><dd id="runtimeContent">-</dd>
+          </dl>
+        </article>
+        <article class="surface">
+          <h2>Run actual</h2>
+          <dl>
+            <dt>Run</dt><dd id="runId">-</dd>
+            <dt>Request</dt><dd id="runtimeRequestId">-</dd>
+            <dt>Estado</dt><dd id="runtimeRunState">idle</dd>
+            <dt>Tool</dt><dd id="runtimeTool">-</dd>
+            <dt>Error</dt><dd id="runtimeLastError">-</dd>
+          </dl>
+        </article>
+      </section>
 
-    <section class="card">
-      <h2>Verification</h2>
-      <dl>
-        <dt>Status</dt><dd id="verificationStatus">-</dd>
-        <dt>Reason</dt><dd id="verificationReason">-</dd>
-      </dl>
-      <div id="verificationMeta" class="verification-meta">No verification yet.</div>
-    </section>
-
-    <section class="card observed">
-      <h2>Observed elements</h2>
-      <div id="observedList" class="observed-list">No observation yet.</div>
-    </section>
-
-    <section class="card logs">
-      <h2>Logs</h2>
-      <div id="logs"></div>
+      <section class="surface">
+        <h2>Logs técnicos</h2>
+        <details open><summary>Locales</summary><div id="localLogs" class="log-pane"></div></details>
+        <details><summary>engine → extension</summary><div id="engineLogs" class="log-pane"></div></details>
+        <details><summary>extension → engine</summary><div id="extensionLogs" class="log-pane"></div></details>
+        <details><summary>Último tool.request</summary><pre id="lastToolRequest">-</pre></details>
+        <details><summary>Último tool.result</summary><pre id="lastToolResult">-</pre></details>
+        <details><summary>Último run.status</summary><pre id="lastRunStatus">-</pre></details>
+      </section>
     </section>
   </main>
 

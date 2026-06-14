@@ -3,13 +3,32 @@
   const maxCatalogElements = 250;
   const maxVisibleTextLength = 2400;
   let stopped = false;
+  let learningEnabled = false;
+  let lastLearningUrl = window.location.href;
   let nextElementId = 1;
   let highlightNode = null;
   const nodeToElementId = new WeakMap();
   const elementIdToNode = new Map();
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (!message || message.protocolVersion !== protocolVersion) {
+    if (!message) {
+      return false;
+    }
+
+    if (message.type === 'learning.start') {
+      learningEnabled = true;
+      lastLearningUrl = window.location.href;
+      sendResponse({ success: true, result: { learning: true } });
+      return true;
+    }
+
+    if (message.type === 'learning.stop') {
+      learningEnabled = false;
+      sendResponse({ success: true, result: { learning: false } });
+      return true;
+    }
+
+    if (message.protocolVersion !== protocolVersion) {
       return false;
     }
 
@@ -32,6 +51,13 @@
       }));
     return true;
   });
+
+  document.addEventListener('click', (event) => captureLearningEvent('click', event.target, event), true);
+  document.addEventListener('input', (event) => captureLearningEvent('input', event.target, event), true);
+  document.addEventListener('change', (event) => captureLearningEvent('change', event.target, event), true);
+  document.addEventListener('submit', (event) => captureLearningEvent('submit', event.target, event), true);
+  window.addEventListener('popstate', () => captureNavigationIfChanged());
+  window.setInterval(captureNavigationIfChanged, 1200);
 
   async function executeTool(tool, args) {
     if (stopped && tool !== 'observePage' && tool !== 'getElementCatalog' && tool !== 'clearHighlight') {
@@ -1036,6 +1062,106 @@
       return result.singleNodeValue instanceof Element ? result.singleNodeValue : null;
     } catch {
       return null;
+    }
+  }
+
+  function captureLearningEvent(actionType, target, event) {
+    if (!learningEnabled || isRestrictedLocation(window.location.href) || !(target instanceof Element)) {
+      return;
+    }
+
+    const element = target.closest('button, a[href], input, textarea, select, option, label, [role], [tabindex], [onclick], [contenteditable="true"], [contenteditable=""]') || target;
+    if (!(element instanceof Element)) {
+      return;
+    }
+
+    const descriptor = describeInteractiveElement(element);
+    const sensitive = descriptor.isPassword || descriptor.isCredentialLike || descriptor.riskFlags.includes('credentialLike');
+    let value = '';
+    if (!sensitive && (actionType === 'input' || actionType === 'change') && 'value' in element) {
+      value = redactValueIfSensitive(String(element.value || ''), descriptor);
+    }
+
+    const normalizedAction = actionType === 'change' && element instanceof HTMLSelectElement
+      ? 'select'
+      : actionType;
+
+    postLearningEvent({
+      timestamp: new Date().toISOString(),
+      actionType: normalizedAction,
+      url: window.location.href,
+      title: document.title,
+      target: learningTargetSummary(descriptor),
+      value,
+      valueRedacted: sensitive,
+      eventMeta: {
+        submitDetected: actionType === 'submit',
+        inputType: event && event.inputType ? String(event.inputType) : ''
+      },
+      verificationHint: {
+        beforeUrl: window.location.href,
+        expectedDomChange: normalizedAction === 'click' || normalizedAction === 'submit'
+      }
+    });
+  }
+
+  function captureNavigationIfChanged() {
+    if (!learningEnabled || isRestrictedLocation(window.location.href)) {
+      return;
+    }
+
+    if (window.location.href === lastLearningUrl) {
+      return;
+    }
+
+    const previousUrl = lastLearningUrl;
+    lastLearningUrl = window.location.href;
+    postLearningEvent({
+      timestamp: new Date().toISOString(),
+      actionType: 'navigate',
+      url: window.location.href,
+      title: document.title,
+      previousUrl,
+      target: null,
+      value: '',
+      valueRedacted: false,
+      verificationHint: {
+        beforeUrl: previousUrl,
+        expectedUrlChange: true
+      }
+    });
+  }
+
+  function learningTargetSummary(descriptor) {
+    const best = selectBestStableSelector(descriptor.stableSelectors);
+    return {
+      elementId: descriptor.elementId,
+      tagName: descriptor.tagName,
+      role: descriptor.role,
+      elementKind: descriptor.elementKind,
+      type: descriptor.type,
+      visibleText: descriptor.visibleText,
+      accessibleName: descriptor.accessibleName,
+      nearbyText: descriptor.nearbyText,
+      formContext: descriptor.formContext,
+      bounds: descriptor.bounds,
+      stableSelectors: descriptor.stableSelectors,
+      bestSelector: best,
+      riskFlags: descriptor.riskFlags,
+      isPassword: descriptor.isPassword,
+      isCredentialLike: descriptor.isCredentialLike
+    };
+  }
+
+  function postLearningEvent(event) {
+    try {
+      chrome.runtime.sendMessage({
+        type: 'learning.event',
+        protocolVersion,
+        event
+      });
+    } catch {
+      // The service worker can be temporarily asleep; learning remains best-effort.
     }
   }
 
