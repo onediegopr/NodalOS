@@ -221,6 +221,11 @@ function handleEngineMessage(raw) {
     return;
   }
 
+  if (message.type === 'run.resume') {
+    publishState('running', 'Run resumed');
+    return;
+  }
+
   if (message.type === 'run.status') {
     publish({ type: 'runStatus', message });
     publishState(message.status || 'running', message.message || '');
