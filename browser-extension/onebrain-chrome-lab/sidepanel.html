@@ -15,16 +15,20 @@
 
   <main>
     <section class="card run-card">
-      <div class="bridge-inline">
+      <div class="run-toolbar">
+        <div class="bridge-inline">
         <label class="inline-field">IP <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
         <label class="inline-field">Port <input id="portInput" value="8787" autocomplete="off"></label>
-        <button id="connectBtn" class="icon-btn disconnected" title="Connect">&#x26AB;</button>
-        <button id="healthBtn" class="icon-btn fail" title="Test Health">&#x2764;</button>
+        </div>
+        <div class="inline-actions">
+          <button id="connectBtn" class="action-btn disconnected" title="Connect">Connect</button>
+          <button id="healthBtn" class="action-btn fail" title="Test Health">Health</button>
+        </div>
       </div>
       <p id="statusLine" class="status-line">Disconnected &middot; Health not tested.</p>
       <div class="action-row">
-        <button id="startStopBtn" class="icon-btn action start" title="Start Run">&#x25B6;</button>
-        <button id="pauseResumeBtn" class="icon-btn action paused disabled" title="Pause" disabled>&#x23F8;</button>
+        <button id="startStopBtn" class="action-btn start" title="Start Run">Start Run</button>
+        <button id="pauseResumeBtn" class="action-btn paused disabled" title="Pause" disabled>Pause</button>
       </div>
       <textarea id="instructionInput" rows="8" wrap="soft">Entrar a https://www.afip.gob.ar/ y avanzar hasta el punto donde se requieran credenciales. Cuando aparezca login, clave fiscal, CUIT, captcha o 2FA, pausar e indicarme que complete manualmente.</textarea>
     </section>
@@ -53,6 +57,25 @@
         <dt>Last result</dt><dd id="lastResult">-</dd>
       </dl>
       <p class="safety">STOP armed &middot; No credentials captured</p>
+    </section>
+
+    <section class="card">
+      <h2>Target resolution</h2>
+      <dl>
+        <dt>Element</dt><dd id="selectedElementId">-</dd>
+        <dt>Selector</dt><dd id="selectedSelector">-</dd>
+        <dt>Score</dt><dd id="selectedScore">-</dd>
+      </dl>
+      <div id="resolveCandidates" class="candidate-list">No candidates yet.</div>
+    </section>
+
+    <section class="card">
+      <h2>Verification</h2>
+      <dl>
+        <dt>Status</dt><dd id="verificationStatus">-</dd>
+        <dt>Reason</dt><dd id="verificationReason">-</dd>
+      </dl>
+      <div id="verificationMeta" class="verification-meta">No verification yet.</div>
     </section>
 
     <section class="card observed">

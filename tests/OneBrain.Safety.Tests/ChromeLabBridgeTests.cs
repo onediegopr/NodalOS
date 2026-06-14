@@ -70,7 +70,37 @@ public sealed class ChromeLabBridgeTests
     public void ToolRouterAllowsOnlyKnownTools()
     {
         Assert.IsTrue(ChromeLabToolPolicy.Validate("observePage", new Dictionary<string, object?>()).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("getElementCatalog", new Dictionary<string, object?>()).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("resolveTarget", new Dictionary<string, object?> { ["targetText"] = "iniciar sesion" }).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("clickElement", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("readElement", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
+        Assert.IsTrue(ChromeLabToolPolicy.Validate("highlightElement", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" }).Allowed);
         Assert.IsFalse(ChromeLabToolPolicy.Validate("executeScript", new Dictionary<string, object?>()).Allowed);
+    }
+
+    [TestMethod]
+    public void ResolveTargetRequiresTargetText()
+    {
+        var result = ChromeLabToolPolicy.Validate("resolveTarget", new Dictionary<string, object?>());
+
+        Assert.IsFalse(result.Allowed);
+        Assert.AreEqual("TargetTextRejected", result.Reason);
+    }
+
+    [TestMethod]
+    public void ClickAllowsElementIdWithoutSelector()
+    {
+        var result = ChromeLabToolPolicy.Validate("click", new Dictionary<string, object?> { ["elementId"] = "nexa-el-1" });
+
+        Assert.IsTrue(result.Allowed);
+    }
+
+    [TestMethod]
+    public void OpenAiPromptRequiresResolveTargetAndElementIdActions()
+    {
+        Assert.IsTrue(OpenAiAgentClient.SystemPrompt.Contains("preferir resolveTarget", StringComparison.Ordinal));
+        Assert.IsTrue(OpenAiAgentClient.SystemPrompt.Contains("usa elementId", StringComparison.Ordinal));
+        Assert.IsTrue(OpenAiAgentClient.SystemPrompt.Contains("highlightElement", StringComparison.Ordinal));
     }
 
     [TestMethod]

@@ -284,12 +284,38 @@ async function routeToolRequest(message) {
 }
 
 function validateToolMessage(message) {
-  const allowed = new Set(['observePage', 'getCurrentTab', 'navigate', 'query', 'read', 'click', 'setValue', 'selectOption', 'scrollIntoView', 'waitForSelector', 'highlight', 'clearHighlight', 'pauseForHuman', 'stop']);
+  const allowed = new Set([
+    'observePage',
+    'getElementCatalog',
+    'resolveTarget',
+    'getCurrentTab',
+    'navigate',
+    'query',
+    'read',
+    'readElement',
+    'click',
+    'clickElement',
+    'setValue',
+    'setElementValue',
+    'focusElement',
+    'selectOption',
+    'scrollIntoView',
+    'scrollElementIntoView',
+    'waitForSelector',
+    'highlight',
+    'highlightElement',
+    'clearHighlight',
+    'pauseForHuman',
+    'stop'
+  ]);
   if (!allowed.has(message.tool)) {
     return { ok: false, error: 'Tool not allowed' };
   }
   if (message.tool === 'navigate' && !allowedUrl(String((message.args || {}).url || ''))) {
     return { ok: false, error: 'URL rejected' };
+  }
+  if (message.tool === 'resolveTarget' && !String((message.args || {}).targetText || '').trim()) {
+    return { ok: false, error: 'targetText required' };
   }
   return { ok: true };
 }

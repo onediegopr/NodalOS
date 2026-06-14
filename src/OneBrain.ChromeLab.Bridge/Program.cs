@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -68,7 +67,7 @@ app.MapPost("/api/runs", async (
     if (!agent.HasApiKey)
     {
         runs.Stop(run.RunId, "OpenAI API key missing");
-        return Results.Ok(new RunResponse(run.RunId, "error", "OpenAI API key missing. Set OPENAI_API_KEY or config/chrome-lab.local.json."));
+        return Results.Ok(new RunResponse(run.RunId, "error", "OpenAI API key missing. Set OPENAI_API_KEY, config/chrome-lab.local.json or ApiKey.txt."));
     }
 
     var firstUrl = ExtractFirstHttpUrl(request.Instruction);
@@ -245,6 +244,13 @@ static async Task HandleExtensionMessage(
 
         if (!string.Equals(completed?.Tool, "observePage", StringComparison.Ordinal))
         {
+            if (string.Equals(completed?.Tool, "resolveTarget", StringComparison.Ordinal) &&
+                resultProperty.ValueKind == JsonValueKind.Object)
+            {
+                await ContinueFromResolutionAsync(socket, runs, clients, pending, agent, run, runId, resultProperty, cancellationToken);
+                return;
+            }
+
             await BroadcastObserveRequestAsync(clients, pending, runId, cancellationToken);
             return;
         }
@@ -254,8 +260,8 @@ static async Task HandleExtensionMessage(
 
         try
         {
-            var decision = TryCreateDeterministicDecision(run.Instruction, resultProperty) ??
-                           await agent.CreateToolDecisionAsync(run.Instruction, resultProperty, cancellationToken);
+            var decision = await agent.CreateToolDecisionAsync(run.Instruction, resultProperty, cancellationToken);
+            decision = NormalizeDecision(decision, null);
             var validation = ChromeLabToolPolicy.Validate(decision.Tool, decision.Args);
             if (!validation.Allowed)
                 throw new InvalidOperationException($"Tool decision rejected: {validation.Reason}");
@@ -317,37 +323,6 @@ static async Task HandleExtensionMessage(
     }
 }
 
-static AgentToolDecision? TryCreateDeterministicDecision(string instruction, JsonElement observation)
-{
-    var normalizedInstruction = NormalizeForMatch(instruction);
-    if (!normalizedInstruction.Contains("iniciar sesion", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("login", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("clave fiscal", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("acceso", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("ingresar", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("autenticar", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("entrar", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("identificarse", StringComparison.Ordinal))
-    {
-        return null;
-    }
-
-    if (ShouldPauseForCredentialEntry(observation))
-        return null;
-
-    var candidate = FindClickableCandidate(observation, "buttons") ?? FindClickableCandidate(observation, "links");
-    if (candidate == null)
-        return null;
-
-    return new AgentToolDecision(
-        "click",
-        new Dictionary<string, object?>(StringComparer.Ordinal)
-        {
-            ["selector"] = candidate.Value.selector
-        },
-        $"Open login entry: {candidate.Value.text}");
-}
-
 static bool ShouldPauseForCredentialEntry(JsonElement result)
 {
     return ReadBool(result, "hasCredentialEntry") ||
@@ -361,46 +336,6 @@ static bool ReadBool(JsonElement element, string propertyName)
     return element.TryGetProperty(propertyName, out var property) &&
            property.ValueKind is JsonValueKind.True or JsonValueKind.False &&
            property.GetBoolean();
-}
-
-static (string selector, string text)? FindClickableCandidate(JsonElement observation, string propertyName)
-{
-    if (!observation.TryGetProperty(propertyName, out var items) || items.ValueKind != JsonValueKind.Array)
-        return null;
-
-    foreach (var item in items.EnumerateArray())
-    {
-        var text = item.TryGetProperty("text", out var textProperty) ? textProperty.GetString() ?? "" : "";
-        var selector = item.TryGetProperty("selector", out var selectorProperty) ? selectorProperty.GetString() ?? "" : "";
-        var normalized = NormalizeForMatch(text);
-        if (string.IsNullOrWhiteSpace(selector))
-            continue;
-
-        if (normalized.Contains("iniciar sesion", StringComparison.Ordinal) ||
-            normalized.Contains("login", StringComparison.Ordinal) ||
-            normalized.Contains("ingresar", StringComparison.Ordinal) ||
-            normalized.Contains("acceso", StringComparison.Ordinal) ||
-            normalized.Contains("entrar", StringComparison.Ordinal) ||
-            normalized.Contains("autenticar", StringComparison.Ordinal) ||
-            normalized.Contains("identificarse", StringComparison.Ordinal) ||
-            normalized.Contains("clave fiscal", StringComparison.Ordinal) ||
-            normalized.Contains("mi afip", StringComparison.Ordinal))
-        {
-            return (selector, text);
-        }
-    }
-
-    return null;
-}
-
-static string NormalizeForMatch(string value)
-{
-    return value
-        .ToLowerInvariant()
-        .Normalize(NormalizationForm.FormD)
-        .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark)
-        .Aggregate(new StringBuilder(), (builder, ch) => builder.Append(ch))
-        .ToString();
 }
 
 static async Task BroadcastObserveRequestAsync(
@@ -417,6 +352,176 @@ static async Task BroadcastObserveRequestAsync(
         observeRequestId,
         "observePage",
         new Dictionary<string, object?>()), cancellationToken);
+}
+
+static async Task ContinueFromResolutionAsync(
+    WebSocket socket,
+    ChromeLabRunManager runs,
+    ChromeLabClientRegistry clients,
+    PendingToolRequestRegistry pending,
+    OpenAiAgentClient agent,
+    ChromeLabRun run,
+    string runId,
+    JsonElement resolution,
+    CancellationToken cancellationToken)
+{
+    if (run.StopRequested || string.Equals(run.Status, "paused", StringComparison.OrdinalIgnoreCase))
+        return;
+
+    try
+    {
+        if (!TryGetResolutionCandidate(resolution, out _, out _, out var score))
+        {
+            runs.Pause(runId, "targetResolutionRequired");
+            await SendAsync(socket, new
+            {
+                type = "run.pause",
+                runId,
+                reason = "targetResolutionRequired",
+                message = "No viable target candidate resolved. Review candidates and continue manually."
+            }, cancellationToken);
+            return;
+        }
+
+        if (score < 0.35d)
+        {
+            runs.Pause(runId, "lowConfidenceTarget");
+            await SendAsync(socket, new
+            {
+                type = "run.pause",
+                runId,
+                reason = "lowConfidenceTarget",
+                message = "Target resolution confidence is too low. Review candidates and continue manually."
+            }, cancellationToken);
+            return;
+        }
+
+        var resolutionObservation = JsonSerializer.SerializeToElement(new
+        {
+            phase = "resolveTarget",
+            resolution
+        }, ChromeLabProtocol.JsonOptions);
+        var decision = await agent.CreateToolDecisionAsync(run.Instruction, resolutionObservation, cancellationToken);
+        decision = NormalizeDecision(decision, resolution);
+        var validation = ChromeLabToolPolicy.Validate(decision.Tool, decision.Args);
+        if (!validation.Allowed)
+            throw new InvalidOperationException($"Tool decision rejected: {validation.Reason}");
+
+        var nextRequestId = Guid.NewGuid().ToString("n");
+        pending.Track(nextRequestId, runId, decision.Tool);
+        await clients.BroadcastAsync(new ToolRequest(
+            "tool.request",
+            runId,
+            nextRequestId,
+            decision.Tool,
+            decision.Args), cancellationToken);
+        await SendAsync(socket, new
+        {
+            type = "run.status",
+            runId,
+            status = "running",
+            message = string.IsNullOrWhiteSpace(decision.Reason)
+                ? $"Dispatching {decision.Tool}."
+                : $"{decision.Tool}: {decision.Reason}"
+        }, cancellationToken);
+    }
+    catch (Exception ex)
+    {
+        runs.Stop(runId, ex.Message);
+        await SendAsync(socket, new
+        {
+            type = "run.status",
+            runId,
+            status = "error",
+            message = ex.Message
+        }, cancellationToken);
+    }
+}
+
+static AgentToolDecision NormalizeDecision(AgentToolDecision decision, JsonElement? resolution)
+{
+    var tool = decision.Tool;
+    Dictionary<string, object?> args = new(decision.Args, StringComparer.Ordinal);
+
+    tool = tool switch
+    {
+        "click" => "clickElement",
+        "read" => "readElement",
+        "setValue" => "setElementValue",
+        "highlight" => "highlightElement",
+        "scrollIntoView" => "scrollElementIntoView",
+        _ => tool
+    };
+
+    if (resolution is { ValueKind: JsonValueKind.Object } &&
+        TryGetResolutionCandidate(resolution.Value, out var elementId, out var stableSelectors, out var score))
+    {
+        if (string.Equals(tool, "clickElement", StringComparison.Ordinal) ||
+            string.Equals(tool, "readElement", StringComparison.Ordinal) ||
+            string.Equals(tool, "setElementValue", StringComparison.Ordinal) ||
+            string.Equals(tool, "highlightElement", StringComparison.Ordinal) ||
+            string.Equals(tool, "scrollElementIntoView", StringComparison.Ordinal) ||
+            string.Equals(tool, "focusElement", StringComparison.Ordinal) ||
+            string.Equals(tool, "selectOption", StringComparison.Ordinal))
+        {
+            if (!args.ContainsKey("elementId") && !string.IsNullOrWhiteSpace(elementId))
+                args["elementId"] = elementId;
+
+            if (!args.ContainsKey("stableSelectors") && stableSelectors is { Length: > 0 })
+                args["stableSelectors"] = stableSelectors;
+        }
+
+        if (score <= 0.65d &&
+            string.Equals(tool, "clickElement", StringComparison.Ordinal) &&
+            !args.ContainsKey("highlight"))
+        {
+            args["highlight"] = true;
+        }
+    }
+
+    return new AgentToolDecision(tool, args, decision.Reason);
+}
+
+static bool TryGetResolutionCandidate(
+    JsonElement resolution,
+    out string elementId,
+    out object?[]? stableSelectors,
+    out double score)
+{
+    elementId = "";
+    stableSelectors = null;
+    score = 0;
+
+    if (!resolution.TryGetProperty("bestCandidate", out var bestCandidate) ||
+        bestCandidate.ValueKind != JsonValueKind.Object)
+    {
+        return false;
+    }
+
+    if (bestCandidate.TryGetProperty("elementId", out var elementIdProperty) &&
+        elementIdProperty.ValueKind == JsonValueKind.String)
+    {
+        elementId = elementIdProperty.GetString() ?? "";
+    }
+
+    if (bestCandidate.TryGetProperty("score", out var scoreProperty) &&
+        scoreProperty.ValueKind == JsonValueKind.Number)
+    {
+        score = scoreProperty.GetDouble();
+    }
+
+    if (bestCandidate.TryGetProperty("element", out var elementProperty) &&
+        elementProperty.ValueKind == JsonValueKind.Object &&
+        elementProperty.TryGetProperty("stableSelectors", out var selectorsProperty) &&
+        selectorsProperty.ValueKind == JsonValueKind.Array)
+    {
+        stableSelectors = selectorsProperty
+            .EnumerateArray()
+            .Select(static selector => JsonSerializer.Deserialize<object?>(selector.GetRawText(), ChromeLabProtocol.JsonOptions))
+            .ToArray();
+    }
+
+    return !string.IsNullOrWhiteSpace(elementId);
 }
 
 static string? ExtractFirstHttpUrl(string text)

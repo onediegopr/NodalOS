@@ -1150,7 +1150,33 @@ Producto comercial usable:
 
 ---
 
-## 20. Regla de uso de este documento
+## 20. NEXA Chrome Operator Lab
+
+Existe una rama paralela browser-first llamada `NEXA Chrome Operator Lab`.
+
+No reemplaza el motor Windows/UIA.
+
+Su rol es probar arquitectura web controlada con:
+
+* bridge local .NET
+* extension Chrome MV3
+* OpenAI solo del lado bridge
+* pausa humana ante credenciales/captcha/2FA
+* STOP global
+
+Desde `NEXA Browser-001`, el lab pasa a usar:
+
+* catalogo fuerte de elementos interactivos
+* `resolveTarget`
+* acciones por `elementId`
+* verificacion post-accion
+* trazabilidad visible en side panel
+
+El objetivo es endurecer la capa web sin mezclarla con el motor seguro de escritorio.
+
+---
+
+## 21. Regla de uso de este documento
 
 Este documento debe usarse como bitácora viva.
 

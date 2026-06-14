@@ -14,6 +14,11 @@ public sealed class OpenAiAgentClient
         No puedes ejecutar JavaScript arbitrario.
         No puedes pedir ni escribir credenciales.
         Si detectas login, password, 2FA, captcha, clave fiscal, token, banco, pago o datos sensibles, debes pedir pausa humana.
+        Antes de click, read, setValue o selectOption debes preferir resolveTarget.
+        No inventes selectores si resolveTarget ya devolvio bestCandidate.
+        Si resolveTarget devuelve bestCandidate, usa elementId y stableSelectors en la siguiente accion.
+        Si la confianza es media o baja, usa highlightElement y luego pauseForHuman.
+        Despues de resume, vuelve a observar antes de actuar.
         Debes usar pasos pequenos:
         1 observe
         2 decide
@@ -40,7 +45,7 @@ public sealed class OpenAiAgentClient
     public async Task<AgentToolDecision> CreateToolDecisionAsync(string instruction, JsonElement observation, CancellationToken cancellationToken)
     {
         if (!_options.HasApiKey)
-            throw new InvalidOperationException("OpenAI API key missing. Set OPENAI_API_KEY or config/chrome-lab.local.json.");
+            throw new InvalidOperationException("OpenAI API key missing. Set OPENAI_API_KEY, config/chrome-lab.local.json or ApiKey.txt.");
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/responses");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
@@ -59,16 +64,24 @@ public sealed class OpenAiAgentClient
                         allowedTools = new[]
                         {
                             "observePage",
+                            "getElementCatalog",
+                            "resolveTarget",
                             "getCurrentTab",
                             "navigate",
                             "query",
                             "read",
+                            "readElement",
                             "click",
+                            "clickElement",
                             "setValue",
+                            "setElementValue",
+                            "focusElement",
                             "selectOption",
                             "scrollIntoView",
+                            "scrollElementIntoView",
                             "waitForSelector",
                             "highlight",
+                            "highlightElement",
                             "clearHighlight",
                             "pauseForHuman",
                             "stop"

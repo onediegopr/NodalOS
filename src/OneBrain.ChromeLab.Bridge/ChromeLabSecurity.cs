@@ -9,16 +9,24 @@ public static partial class ChromeLabToolPolicy
     private static readonly HashSet<string> AllowedTools = new(StringComparer.Ordinal)
     {
         "observePage",
+        "getElementCatalog",
+        "resolveTarget",
         "getCurrentTab",
         "navigate",
         "query",
         "read",
+        "readElement",
         "click",
+        "clickElement",
         "setValue",
+        "setElementValue",
+        "focusElement",
         "selectOption",
         "scrollIntoView",
+        "scrollElementIntoView",
         "waitForSelector",
         "highlight",
+        "highlightElement",
         "clearHighlight",
         "pauseForHuman",
         "stop"
@@ -31,9 +39,17 @@ public static partial class ChromeLabToolPolicy
 
         if (args.TryGetValue("selector", out var selectorValue) &&
             selectorValue is string selector &&
+            !string.IsNullOrWhiteSpace(selector) &&
             !IsReasonableSelector(selector))
         {
             return new ToolValidationResult(false, "SelectorRejected");
+        }
+
+        if (args.TryGetValue("elementId", out var elementIdValue) &&
+            elementIdValue is string elementId &&
+            string.IsNullOrWhiteSpace(elementId))
+        {
+            return new ToolValidationResult(false, "ElementIdRejected");
         }
 
         if (string.Equals(tool, "navigate", StringComparison.Ordinal) &&
@@ -44,11 +60,21 @@ public static partial class ChromeLabToolPolicy
             return new ToolValidationResult(false, "UrlRejected");
         }
 
-        if (string.Equals(tool, "setValue", StringComparison.Ordinal) &&
+        if ((string.Equals(tool, "setValue", StringComparison.Ordinal) ||
+             string.Equals(tool, "setElementValue", StringComparison.Ordinal)) &&
             args.TryGetValue("selector", out var setSelectorValue) &&
             LooksCredentialLike(setSelectorValue as string ?? ""))
         {
             return new ToolValidationResult(false, "CredentialFieldRejected");
+        }
+
+        if (string.Equals(tool, "resolveTarget", StringComparison.Ordinal) &&
+            (!args.TryGetValue("targetText", out var targetTextValue) ||
+             targetTextValue is not string targetText ||
+             string.IsNullOrWhiteSpace(targetText) ||
+             targetText.Length > 500))
+        {
+            return new ToolValidationResult(false, "TargetTextRejected");
         }
 
         return new ToolValidationResult(true, "Allowed");

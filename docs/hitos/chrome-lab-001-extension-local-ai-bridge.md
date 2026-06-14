@@ -72,6 +72,7 @@ Fuentes permitidas:
 ```text
 OPENAI_API_KEY
 config/chrome-lab.local.json
+ApiKey.txt
 ```
 
 Placeholder documental:
@@ -167,16 +168,24 @@ Cada tool request usa:
 ## Tools permitidas
 
 * `observePage`
+* `getElementCatalog`
+* `resolveTarget`
 * `getCurrentTab`
 * `navigate`
 * `query`
 * `read`
+* `readElement`
 * `click`
+* `clickElement`
 * `setValue`
+* `setElementValue`
+* `focusElement`
 * `selectOption`
 * `scrollIntoView`
+* `scrollElementIntoView`
 * `waitForSelector`
 * `highlight`
+* `highlightElement`
 * `clearHighlight`
 * `pauseForHuman`
 * `stop`
