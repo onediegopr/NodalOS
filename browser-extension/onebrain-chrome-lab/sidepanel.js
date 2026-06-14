@@ -1,4 +1,5 @@
-const port = chrome.runtime.connect({ name: 'onebrain-sidepanel' });
+let port = null;
+let portConnected = false;
 
 const els = {
   statusBadge: document.getElementById('statusBadge'),
@@ -27,10 +28,7 @@ const els = {
   logs: document.getElementById('logs')
 };
 
-port.onDisconnect.addListener(() => {
-  setStatus('error', 'Side panel disconnected from service worker. Reload the extension.');
-  log('local', 'Service worker port disconnected');
-});
+connectPort();
 
 window.addEventListener('error', (event) => {
   setStatus('error', event.message || 'Side panel error');
@@ -60,7 +58,7 @@ els.resumeHumanBtn.addEventListener('click', () => {
   safePost({ type: 'resumeHuman' });
 });
 
-port.onMessage.addListener((message) => {
+function handlePortMessage(message) {
   if (message.type === 'config') {
     els.hostInput.value = message.config.host || '127.0.0.1';
     els.portInput.value = message.config.port || '8787';
@@ -122,7 +120,28 @@ port.onMessage.addListener((message) => {
     }
     log('local', summarize(message.body || message));
   }
-});
+}
+
+function connectPort() {
+  try {
+    port = chrome.runtime.connect({ name: 'onebrain-sidepanel' });
+    portConnected = true;
+    port.onMessage.addListener(handlePortMessage);
+    port.onDisconnect.addListener(() => {
+      portConnected = false;
+      port = null;
+      setStatus('disconnected', 'Service worker disconnected; will reconnect on next action.');
+      log('local', 'Service worker port disconnected');
+    });
+    log('local', 'Service worker port connected');
+  } catch (error) {
+    portConnected = false;
+    port = null;
+    const text = error && error.message ? error.message : String(error);
+    setStatus('error', `Service worker connect failed: ${text}`);
+    log('local', `connectPort failed: ${text}`);
+  }
+}
 
 function currentConfig() {
   return {
@@ -157,10 +176,18 @@ async function testHealthDirect() {
 
 function safePost(message) {
   try {
+    if (!port || !portConnected) {
+      connectPort();
+    }
+    if (!port || !portConnected) {
+      throw new Error('service worker port not connected');
+    }
     port.postMessage(message);
   } catch (error) {
     const text = error && error.message ? error.message : String(error);
-    setStatus('error', `Service worker unavailable: ${text}`);
+    portConnected = false;
+    port = null;
+    setStatus('error', `Service worker unavailable: ${text}. Reload extension if this repeats.`);
     log('local', `postMessage failed: ${text}`);
   }
 }
