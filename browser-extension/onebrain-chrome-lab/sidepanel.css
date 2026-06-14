@@ -137,6 +137,12 @@ button.ghost {
   color: var(--green);
 }
 
+.badge.bridge-ready,
+.badge.connecting {
+  background: rgba(36, 87, 214, 0.12);
+  color: var(--blue);
+}
+
 .badge.paused {
   background: rgba(197, 138, 0, 0.16);
   color: var(--yellow);

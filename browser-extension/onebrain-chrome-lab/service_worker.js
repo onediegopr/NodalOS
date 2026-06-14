@@ -3,6 +3,7 @@ const DEFAULT_CONFIG = { host: '127.0.0.1', port: '8787' };
 
 let socket = null;
 let connected = false;
+let connectingPromise = null;
 let stopped = false;
 let currentRunId = '';
 const sidePorts = new Set();
@@ -34,7 +35,11 @@ async function handlePanelMessage(message) {
   switch (message.type) {
     case 'connect':
       await saveConfig(message.config);
-      connect(message.config);
+      try {
+        await connect(message.config);
+      } catch (error) {
+        publishState('error', String(error && error.message ? error.message : error));
+      }
       break;
     case 'disconnect':
       disconnect('userDisconnect');
@@ -81,30 +86,53 @@ async function saveConfig(config) {
 }
 
 function connect(config) {
+  return connectWebSocket(config);
+}
+
+function connectWebSocket(config) {
+  if (socket && socket.readyState === WebSocket.OPEN && connected) {
+    return Promise.resolve();
+  }
+
+  if (connectingPromise) {
+    return connectingPromise;
+  }
+
   disconnect('reconnect');
   stopped = false;
   const url = `ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension`;
-  socket = new WebSocket(url);
-  socket.addEventListener('open', () => {
-    connected = true;
-    publishState('connected', `Connected to ${url}`);
-    sendToEngine({
-      type: 'extension.hello',
-      protocolVersion: PROTOCOL_VERSION,
-      clientId: chrome.runtime.id,
-      extensionVersion: chrome.runtime.getManifest().version,
-      browser: 'chrome'
+
+  connectingPromise = new Promise((resolve, reject) => {
+    socket = new WebSocket(url);
+    socket.addEventListener('open', () => {
+      connected = true;
+      connectingPromise = null;
+      publishState('connected', `Connected to ${url}`);
+      sendToEngine({
+        type: 'extension.hello',
+        protocolVersion: PROTOCOL_VERSION,
+        clientId: chrome.runtime.id,
+        extensionVersion: chrome.runtime.getManifest().version,
+        browser: 'chrome'
+      });
+      resolve();
+    });
+    socket.addEventListener('message', (event) => handleEngineMessage(event.data));
+    socket.addEventListener('close', () => {
+      connected = false;
+      connectingPromise = null;
+      publishState('disconnected', 'Bridge connection closed');
+      reject(new Error('Bridge connection closed'));
+    });
+    socket.addEventListener('error', () => {
+      connected = false;
+      connectingPromise = null;
+      publishState('error', 'Bridge WebSocket error');
+      reject(new Error('Bridge WebSocket error'));
     });
   });
-  socket.addEventListener('message', (event) => handleEngineMessage(event.data));
-  socket.addEventListener('close', () => {
-    connected = false;
-    publishState('disconnected', 'Bridge connection closed');
-  });
-  socket.addEventListener('error', () => {
-    connected = false;
-    publishState('error', 'Bridge WebSocket error');
-  });
+
+  return connectingPromise;
 }
 
 function disconnect(reason) {
@@ -113,6 +141,7 @@ function disconnect(reason) {
   }
   socket = null;
   connected = false;
+  connectingPromise = null;
   publishState('disconnected', reason);
 }
 
@@ -131,6 +160,7 @@ async function startRun(instruction) {
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
   const url = `http://${config.host}:${config.port}/api/runs`;
   try {
+    await connectWebSocket(config);
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -269,6 +299,31 @@ async function navigate(url) {
     throw new Error('No active tab');
   }
   await chrome.tabs.update(tab.id, { url });
+  await waitForTabComplete(tab.id, 15000);
+}
+
+function waitForTabComplete(tabId, timeoutMs) {
+  return new Promise((resolve) => {
+    let done = false;
+    const timer = setTimeout(() => finish(), timeoutMs);
+    const listener = (updatedTabId, changeInfo) => {
+      if (updatedTabId === tabId && changeInfo.status === 'complete') {
+        finish();
+      }
+    };
+
+    function finish() {
+      if (done) {
+        return;
+      }
+      done = true;
+      clearTimeout(timer);
+      chrome.tabs.onUpdated.removeListener(listener);
+      resolve();
+    }
+
+    chrome.tabs.onUpdated.addListener(listener);
+  });
 }
 
 function sendToolResult(request, success, result, error) {

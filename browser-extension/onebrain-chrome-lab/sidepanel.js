@@ -165,7 +165,9 @@ async function testHealthDirect() {
     const body = await response.json();
     if (response.ok && body && body.ok) {
       els.healthStatus.textContent = `Health OK: ${body.service || 'bridge'} ${body.version || ''}`;
-      setStatus('connected', 'Bridge health OK');
+      if (els.statusBadge.textContent !== 'connected') {
+        setStatus('bridge-ready', 'Bridge health OK; press Connect or Start Run.');
+      }
       log('local', els.healthStatus.textContent);
       return;
     }
