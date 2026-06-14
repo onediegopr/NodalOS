@@ -6,8 +6,8 @@ let connected = false;
 let connectingPromise = null;
 let stopped = false;
 let currentRunId = '';
+let targetTabId = null;
 const sidePorts = new Set();
-const queuedToolRequests = [];
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
@@ -192,14 +192,7 @@ async function runCommand(command) {
 
 function stopAll(reason) {
   stopped = true;
-  queuedToolRequests.length = 0;
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    for (const tab of tabs) {
-      if (tab.id) {
-        chrome.tabs.sendMessage(tab.id, { type: 'local.stop', protocolVersion: PROTOCOL_VERSION }).catch(() => {});
-      }
-    }
-  });
+  notifyStopToTargetTab();
   if (currentRunId) {
     runCommand('stop');
   }
@@ -263,7 +256,7 @@ async function routeToolRequest(message) {
       return;
     }
 
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = await resolveTargetTab();
     if (!tab || !tab.id || restrictedUrl(tab.url || '')) {
       sendToolResult(message, false, null, 'Restricted or unavailable tab');
       return;
@@ -300,12 +293,22 @@ async function navigate(url) {
   if (!allowedUrl(url)) {
     throw new Error('URL rejected');
   }
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab || !tab.id) {
-    throw new Error('No active tab');
+
+  const tab = await resolveTargetTab({ allowCreate: true });
+  if (tab && tab.id) {
+    targetTabId = tab.id;
+    await chrome.tabs.update(tab.id, { url, active: true });
+    await waitForTabComplete(tab.id, 15000);
+    return;
   }
-  await chrome.tabs.update(tab.id, { url });
-  await waitForTabComplete(tab.id, 15000);
+
+  const created = await chrome.tabs.create({ url, active: true });
+  if (!created || !created.id) {
+    throw new Error('Unable to create target tab');
+  }
+
+  targetTabId = created.id;
+  await waitForTabComplete(created.id, 15000);
 }
 
 function waitForTabComplete(tabId, timeoutMs) {
@@ -364,7 +367,7 @@ function publishState(status, message) {
 
 async function publishPageSnapshot() {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = await resolveTargetTab();
     publish({
       type: 'page',
       page: {
@@ -390,4 +393,47 @@ function allowedUrl(url) {
 
 function restrictedUrl(url) {
   return /^(chrome|edge|extension):\/\//i.test(url);
+}
+
+async function resolveTargetTab(options = {}) {
+  if (targetTabId) {
+    try {
+      const tab = await chrome.tabs.get(targetTabId);
+      if (tab && tab.id && !restrictedUrl(tab.url || '')) {
+        return tab;
+      }
+    } catch {
+      targetTabId = null;
+    }
+  }
+
+  const candidates = await chrome.tabs.query({});
+  const preferred = candidates.find((tab) => tab.active && !restrictedUrl(tab.url || '') && tab.id);
+  if (preferred) {
+    targetTabId = preferred.id;
+    return preferred;
+  }
+
+  const anyAllowed = candidates.find((tab) => !restrictedUrl(tab.url || '') && tab.id);
+  if (anyAllowed) {
+    targetTabId = anyAllowed.id;
+    return anyAllowed;
+  }
+
+  if (options.allowCreate) {
+    return null;
+  }
+
+  return null;
+}
+
+function notifyStopToTargetTab() {
+  if (!targetTabId) {
+    return;
+  }
+
+  chrome.tabs.sendMessage(targetTabId, {
+    type: 'local.stop',
+    protocolVersion: PROTOCOL_VERSION
+  }).catch(() => {});
 }

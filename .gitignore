@@ -24,6 +24,7 @@ Thumbs.db
 .env.*
 config/*.local.json
 appsettings.Development.local.json
+ApiKey.txt
 
 # Recipe artifacts
 artifacts/

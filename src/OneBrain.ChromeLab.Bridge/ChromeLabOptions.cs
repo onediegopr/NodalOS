@@ -61,20 +61,40 @@ public sealed class ChromeLabOptions
 
     private static string? TryReadLocalApiKey()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "config", "chrome-lab.local.json");
-        if (!File.Exists(path))
+        foreach (var path in GetCandidateApiKeyPaths())
         {
-            path = Path.Combine(Directory.GetCurrentDirectory(), "config", "chrome-lab.local.json");
-            if (!File.Exists(path))
-                return null;
+            var apiKey = TryReadApiKeyFile(path);
+            if (!string.IsNullOrWhiteSpace(apiKey))
+                return apiKey;
         }
+
+        return null;
+    }
+
+    private static IEnumerable<string> GetCandidateApiKeyPaths()
+    {
+        yield return Path.Combine(AppContext.BaseDirectory, "config", "chrome-lab.local.json");
+        yield return Path.Combine(Directory.GetCurrentDirectory(), "config", "chrome-lab.local.json");
+        yield return Path.Combine(AppContext.BaseDirectory, "ApiKey.txt");
+        yield return Path.Combine(Directory.GetCurrentDirectory(), "ApiKey.txt");
+    }
+
+    private static string? TryReadApiKeyFile(string path)
+    {
+        if (!File.Exists(path))
+            return null;
 
         try
         {
-            using var doc = JsonDocument.Parse(File.ReadAllText(path));
-            return doc.RootElement.TryGetProperty("openAiApiKey", out var key)
-                ? key.GetString()
-                : null;
+            if (path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                using var doc = JsonDocument.Parse(File.ReadAllText(path));
+                return doc.RootElement.TryGetProperty("openAiApiKey", out var key)
+                    ? key.GetString()
+                    : null;
+            }
+
+            return File.ReadAllText(path).Trim();
         }
         catch
         {

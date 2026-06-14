@@ -40,6 +40,33 @@ public sealed class ChromeLabBridgeTests
     }
 
     [TestMethod]
+    public void LoadReadsApiKeyFromApiKeyTxtWhenEnvIsMissing()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "onebrain-chromelab-tests", Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(tempDir);
+        var originalDirectory = Directory.GetCurrentDirectory();
+        var originalApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+
+        try
+        {
+            File.WriteAllText(Path.Combine(tempDir, "ApiKey.txt"), "test-local-key");
+            Directory.SetCurrentDirectory(tempDir);
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+
+            var options = ChromeLabOptions.Load([]);
+
+            Assert.AreEqual("test-local-key", options.ApiKey);
+            Assert.IsTrue(options.HasApiKey);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDirectory);
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", originalApiKey);
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ToolRouterAllowsOnlyKnownTools()
     {
         Assert.IsTrue(ChromeLabToolPolicy.Validate("observePage", new Dictionary<string, object?>()).Allowed);
