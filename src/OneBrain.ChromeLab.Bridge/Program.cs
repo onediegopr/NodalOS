@@ -1,4 +1,6 @@
+using System.Net;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -48,6 +50,20 @@ app.MapGet("/config/public", (ChromeLabOptions config) => new PublicConfigRespon
     config.Model,
     config.HasApiKey,
     config.RequiresToken));
+
+app.MapGet("/pairing/local-token", (HttpContext context, ChromeLabOptions config) =>
+{
+    var remote = context.Connection.RemoteIpAddress;
+    if (remote is null || !IPAddress.IsLoopback(remote))
+        return Results.NotFound();
+
+    return Results.Ok(new
+    {
+        ok = true,
+        token = config.ConnectionToken,
+        source = "loopback-local-pairing"
+    });
+});
 
 app.MapGet("/runtime", (ChromeLabOptions config, ProtocolEventBuffer events, BridgeRuntimeState runtime) => new RuntimeResponse(
     true,
@@ -290,7 +306,10 @@ static async Task HandleExtensionMessage(
         if (!string.Equals(token, config.ConnectionToken, StringComparison.Ordinal))
         {
             clients.MarkError(clientId, "Invalid connection token");
-            events.Add("auth.rejected", "Invalid connection token", clientId: clientId);
+            events.Add(
+                "auth.rejected",
+                $"Invalid connection token; receivedDigest={TokenDigest(token)} expectedDigest={TokenDigest(config.ConnectionToken)} receivedLength={token.Length} expectedLength={config.ConnectionToken.Length}",
+                clientId: clientId);
             await SendAsync(socket, new
             {
                 type = "protocol.error",
@@ -738,6 +757,14 @@ static string SafeClientLabel(string clientId)
     if (string.IsNullOrWhiteSpace(clientId))
         return "<missing>";
     return clientId.Length <= 12 ? clientId : clientId[..12];
+}
+
+static string TokenDigest(string token)
+{
+    if (string.IsNullOrEmpty(token))
+        return "empty";
+    var hash = SHA256.HashData(Encoding.UTF8.GetBytes(token));
+    return Convert.ToHexString(hash)[..12].ToLowerInvariant();
 }
 
 static async Task SendAsync(WebSocket socket, object message, CancellationToken cancellationToken)

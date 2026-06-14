@@ -456,6 +456,8 @@ public sealed class ChromeLabBridgeTests
         Assert.IsTrue(program.Contains("MapGet(\"/runtime\"", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("MapGet(\"/debug\"", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("MapGet(\"/last-events\"", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("MapGet(\"/pairing/local-token\"", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("IPAddress.IsLoopback", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("ReceiveTextMessageAsync", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("EndOfMessage", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("Results.Conflict", StringComparison.Ordinal));
@@ -480,6 +482,9 @@ public sealed class ChromeLabBridgeTests
         Assert.IsTrue(serviceWorker.Contains("reconnectBlocked", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("Bridge requires a connection token", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("protocol_version_mismatch", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("tryLocalPairing", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("/pairing/local-token", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("isLoopbackHost", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("outgoingQueue", StringComparison.Ordinal));
         Assert.IsTrue(sidePanel.Contains("runtimeDiagnostic", StringComparison.Ordinal));
         Assert.IsTrue(sidePanelHtml.Contains("Verificar conexion", StringComparison.Ordinal));

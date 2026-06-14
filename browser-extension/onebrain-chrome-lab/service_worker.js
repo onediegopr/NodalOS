@@ -449,6 +449,10 @@ async function validateConnectionConfig(config) {
     }
     const publicConfig = await response.json();
     if (publicConfig && publicConfig.requiresToken && !token) {
+      const paired = await tryLocalPairing(config);
+      if (paired) {
+        return;
+      }
       blockReconnect('tokenError', 'Bridge requires a connection token. Enter the token and press Reconnect.');
       throw new Error(lastConnectionError);
     }
@@ -607,6 +611,9 @@ function handleEngineMessage(raw) {
     if (message.error === 'invalid_token' || message.error === 'protocol_version_mismatch') {
       blockReconnect(connectionState, lastConnectionError);
       closeSocketOnly('protocol rejected');
+      if (message.error === 'invalid_token') {
+        repairLocalTokenAfterAuthError().catch(() => {});
+      }
     }
     publishState('error', lastConnectionError);
     publishRuntimeSnapshot();
@@ -647,6 +654,50 @@ function handleEngineMessage(raw) {
     publishRuntimeSnapshot();
     routeToolRequest(message);
   }
+}
+
+async function repairLocalTokenAfterAuthError() {
+  const config = await chrome.storage.local.get(DEFAULT_CONFIG);
+  const paired = await tryLocalPairing(config);
+  if (!paired) {
+    return;
+  }
+  reconnectBlocked = false;
+  reconnectBlockedReason = '';
+  lastConnectionError = '';
+  await connectWebSocket({ ...config, token: paired }, { manual: true });
+}
+
+async function tryLocalPairing(config) {
+  const host = config.host || DEFAULT_CONFIG.host;
+  const port = config.port || DEFAULT_CONFIG.port;
+  if (!isLoopbackHost(host)) {
+    return '';
+  }
+  try {
+    const response = await fetch(`http://${host}:${port}/pairing/local-token`, { cache: 'no-store' });
+    if (!response.ok) {
+      return '';
+    }
+    const body = await response.json();
+    const token = String(body && body.token || '').trim();
+    if (!token) {
+      return '';
+    }
+    await chrome.storage.local.set({ host, port, token });
+    stateTokenLoadedForRuntime(host, port, token);
+    return token;
+  } catch {
+    return '';
+  }
+}
+
+function isLoopbackHost(host) {
+  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+}
+
+function stateTokenLoadedForRuntime(host, port, token) {
+  publish({ type: 'config', config: { host, port, token } });
 }
 
 async function routeToolRequest(message) {
