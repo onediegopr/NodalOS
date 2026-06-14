@@ -1,18 +1,33 @@
 let port = null;
 let portConnected = false;
 
-const els = {
-  statusBadge: document.getElementById('statusBadge'),
+var _connectState = 'disconnected';
+var _healthState = 'untested';
+var _runState = 'idle';
+var _currentRunId = '';
+
+var ICON = {
+  CONNECT: '\u26AB',
+  DISCONNECT: '\u26AA',
+  HEALTH_OK: '\u2713',
+  HEALTH_FAIL: '\u2717',
+  HEALTH_TESTING: '\u2026',
+  HEART: '\u2764',
+  START: '\u25B6',
+  STOP: '\u25A0',
+  PAUSE: '\u23F8',
+  RESUME: '\u25B6'
+};
+
+var els = {
   hostInput: document.getElementById('hostInput'),
   portInput: document.getElementById('portInput'),
   connectBtn: document.getElementById('connectBtn'),
   healthBtn: document.getElementById('healthBtn'),
-  healthStatus: document.getElementById('healthStatus'),
+  statusLine: document.getElementById('statusLine'),
   instructionInput: document.getElementById('instructionInput'),
-  startBtn: document.getElementById('startBtn'),
-  pauseBtn: document.getElementById('pauseBtn'),
-  resumeBtn: document.getElementById('resumeBtn'),
-  stopBtn: document.getElementById('stopBtn'),
+  startStopBtn: document.getElementById('startStopBtn'),
+  pauseResumeBtn: document.getElementById('pauseResumeBtn'),
   humanCard: document.getElementById('humanCard'),
   humanMessage: document.getElementById('humanMessage'),
   resumeHumanBtn: document.getElementById('resumeHumanBtn'),
@@ -28,38 +43,62 @@ const els = {
 };
 
 connectPort();
-updateConnectButton('disconnected');
-setHealthState('fail', 'Health not tested.');
+refreshAllIcons();
+refreshStatusLine();
 
-window.addEventListener('error', (event) => {
-  setStatus('error', event.message || 'Side panel error');
-  log('local', `panel error: ${event.message || 'unknown'}`);
+window.addEventListener('error', function (event) {
+  log('local', 'panel error: ' + (event.message || 'unknown'));
 });
 
 safePost({ type: 'loadConfig' });
 
-els.connectBtn.addEventListener('click', () => {
-  if (els.connectBtn.dataset.mode === 'disconnect') {
+els.connectBtn.addEventListener('click', function () {
+  if (_connectState === 'connected' || _connectState === 'running' || _connectState === 'paused') {
     safePost({ type: 'disconnect' });
     return;
   }
-
-  setStatus('connecting', 'Connecting to bridge...');
-  log('local', `connect requested: ${currentConfig().host}:${currentConfig().port}`);
+  setConnectState('connecting');
+  log('local', 'connect requested: ' + currentConfig().host + ':' + currentConfig().port);
   safePost({ type: 'connect', config: currentConfig() });
 });
-els.healthBtn.addEventListener('click', async () => {
-  setHealthState('testing', 'Testing health...');
-  els.healthStatus.textContent = 'Testing health...';
-  log('local', `health requested: ${currentConfig().host}:${currentConfig().port}`);
-  await testHealthDirect();
+
+els.healthBtn.addEventListener('click', function () {
+  setHealthState('testing');
+  log('local', 'health requested: ' + currentConfig().host + ':' + currentConfig().port);
+  testHealthDirect();
   safePost({ type: 'testHealth', config: currentConfig() });
 });
-els.startBtn.addEventListener('click', () => safePost({ type: 'startRun', instruction: els.instructionInput.value }));
-els.pauseBtn.addEventListener('click', () => safePost({ type: 'pause' }));
-els.resumeBtn.addEventListener('click', () => safePost({ type: 'resume' }));
-els.stopBtn.addEventListener('click', () => safePost({ type: 'stop' }));
-els.resumeHumanBtn.addEventListener('click', () => {
+
+els.startStopBtn.addEventListener('click', function () {
+  if (_runState === 'running' || _runState === 'paused') {
+    setRunState('idle');
+    _currentRunId = '';
+    els.runId.textContent = '-';
+    els.currentTool.textContent = '-';
+    els.lastResult.textContent = '-';
+    els.observedList.innerHTML = 'No observation yet.';
+    els.humanCard.classList.add('hidden');
+    safePost({ type: 'stop' });
+    return;
+  }
+  setRunState('running');
+  safePost({ type: 'startRun', instruction: els.instructionInput.value });
+});
+
+els.pauseResumeBtn.addEventListener('click', function () {
+  if (_runState === 'running') {
+    setRunState('paused');
+    safePost({ type: 'pause' });
+    return;
+  }
+  if (_runState === 'paused') {
+    setRunState('running');
+    safePost({ type: 'resume' });
+    return;
+  }
+});
+
+els.resumeHumanBtn.addEventListener('click', function () {
   els.humanCard.classList.add('hidden');
   safePost({ type: 'resumeHuman' });
 });
@@ -72,23 +111,32 @@ function handlePortMessage(message) {
   }
 
   if (message.type === 'state') {
-    setStatus(message.status || 'disconnected', message.message || '');
+    setConnectState(message.status || 'disconnected');
     if (message.currentRunId) {
+      _currentRunId = message.currentRunId;
       els.runId.textContent = message.currentRunId;
     }
-    log('local', `${message.status}: ${message.message || ''}`);
+    if (message.status === 'running') {
+      setRunState('running');
+    } else if (message.status === 'paused') {
+      setRunState('paused');
+    }
+    log('local', message.status + ': ' + (message.message || ''));
     return;
   }
 
   if (message.type === 'health') {
-    els.healthStatus.textContent = message.ok ? 'Health OK' : `Health failed: ${message.error || 'bad response'}`;
-    setHealthState(message.ok ? 'ok' : 'fail', els.healthStatus.textContent);
-    log('local', els.healthStatus.textContent);
+    if (message.ok) {
+      setHealthState('ok');
+    } else {
+      setHealthState('fail');
+    }
+    log('local', els.statusLine.textContent);
     return;
   }
 
   if (message.type === 'page') {
-    const page = message.page || {};
+    var page = message.page || {};
     els.pageUrl.textContent = page.url || '-';
     els.pageTitle.textContent = page.title || '-';
     els.pageTab.textContent = page.tabId || '-';
@@ -105,7 +153,7 @@ function handlePortMessage(message) {
   }
 
   if (message.type === 'toolResult') {
-    els.lastResult.textContent = message.success ? 'success' : `error: ${message.error || ''}`;
+    els.lastResult.textContent = message.success ? 'success' : 'error: ' + (message.error || '');
     log('extension->engine', summarize(message));
     if (message.result && message.result.inputs) {
       renderObserved(message.result);
@@ -117,6 +165,16 @@ function handlePortMessage(message) {
     if (message.message && message.message.message) {
       els.lastResult.textContent = message.message.message;
     }
+    var status = message.message && message.message.status ? message.message.status : '';
+    if (status === 'running') {
+      setRunState('running');
+    } else if (status === 'paused') {
+      setRunState('paused');
+    } else if (status === 'error' || status === 'stopped') {
+      setRunState('idle');
+      _currentRunId = '';
+      els.runId.textContent = '-';
+    }
     log('engine->extension', summarize(message.message || message));
     return;
   }
@@ -124,23 +182,28 @@ function handlePortMessage(message) {
   if (message.type === 'humanIntervention') {
     els.humanMessage.textContent = message.message || message.reason || 'Human intervention required.';
     els.humanCard.classList.remove('hidden');
-    setStatus('paused', els.humanMessage.textContent);
+    setRunState('paused');
     log('local', els.humanMessage.textContent);
     return;
   }
 
   if (message.type === 'runStarted') {
     if (message.body && message.body.runId) {
+      _currentRunId = message.body.runId;
       els.runId.textContent = message.body.runId;
     }
     if (message.body && message.body.status === 'error') {
-      setStatus('error', message.body.message || 'Run failed');
+      setRunState('idle');
+      _currentRunId = '';
+      els.runId.textContent = '-';
       els.lastResult.textContent = message.body.message || 'Run failed';
+      log('local', summarize(message.body || message));
     } else if (message.body && message.body.status) {
-      setStatus(message.body.status, message.body.message || 'Run started');
+      setRunState('running');
       els.lastResult.textContent = message.body.message || 'Run started';
+      log('local', summarize(message.body || message));
     }
-    log('local', summarize(message.body || message));
+    return;
   }
 }
 
@@ -149,19 +212,19 @@ function connectPort() {
     port = chrome.runtime.connect({ name: 'onebrain-sidepanel' });
     portConnected = true;
     port.onMessage.addListener(handlePortMessage);
-    port.onDisconnect.addListener(() => {
+    port.onDisconnect.addListener(function () {
       portConnected = false;
       port = null;
-      setStatus('disconnected', 'Service worker disconnected; will reconnect on next action.');
+      setConnectState('disconnected');
       log('local', 'Service worker port disconnected');
     });
     log('local', 'Service worker port connected');
   } catch (error) {
     portConnected = false;
     port = null;
-    const text = error && error.message ? error.message : String(error);
-    setStatus('error', `Service worker connect failed: ${text}`);
-    log('local', `connectPort failed: ${text}`);
+    var text = error && error.message ? error.message : String(error);
+    setConnectState('error');
+    log('local', 'connectPort failed: ' + text);
   }
 }
 
@@ -172,33 +235,26 @@ function currentConfig() {
   };
 }
 
-async function testHealthDirect() {
-  const config = currentConfig();
-  const url = `http://${config.host}:${config.port}/health`;
-  try {
-    const response = await fetch(url, { cache: 'no-store' });
-    const body = await response.json();
-    if (response.ok && body && body.ok) {
-      els.healthStatus.textContent = `Health OK: ${body.service || 'bridge'} ${body.version || ''}`;
-      setHealthState('ok', els.healthStatus.textContent);
-      if (els.statusBadge.textContent !== 'connected') {
-        setStatus('bridge-ready', 'Bridge health OK; press Connect or Start Run.');
+function testHealthDirect() {
+  return fetch('http://' + currentConfig().host + ':' + currentConfig().port + '/health', { cache: 'no-store' })
+    .then(function (response) { return response.json().then(function (body) { return { response: response, body: body }; }); })
+    .then(function (result) {
+      if (result.response.ok && result.body && result.body.ok) {
+        setHealthState('ok');
+        if (_connectState !== 'connected' && _connectState !== 'running' && _connectState !== 'paused') {
+          setConnectState('bridge-ready');
+        }
+        log('local', 'Health OK: ' + (result.body.service || 'bridge') + ' ' + (result.body.version || ''));
+        return;
       }
-      log('local', els.healthStatus.textContent);
-      return;
-    }
-
-    els.healthStatus.textContent = `Health failed: HTTP ${response.status}`;
-    setHealthState('fail', els.healthStatus.textContent);
-    setStatus('error', els.healthStatus.textContent);
-    log('local', els.healthStatus.textContent);
-  } catch (error) {
-    const message = error && error.message ? error.message : String(error);
-    els.healthStatus.textContent = `Health failed: ${message}`;
-    setHealthState('fail', els.healthStatus.textContent);
-    setStatus('error', els.healthStatus.textContent);
-    log('local', els.healthStatus.textContent);
-  }
+      setHealthState('fail');
+      log('local', 'Health failed: HTTP ' + result.response.status);
+    })
+    .catch(function (error) {
+      var message = error && error.message ? error.message : String(error);
+      setHealthState('fail');
+      log('local', 'Health failed: ' + message);
+    });
 }
 
 function safePost(message) {
@@ -211,56 +267,236 @@ function safePost(message) {
     }
     port.postMessage(message);
   } catch (error) {
-    const text = error && error.message ? error.message : String(error);
+    var text = error && error.message ? error.message : String(error);
     portConnected = false;
     port = null;
-    setStatus('error', `Service worker unavailable: ${text}. Reload extension if this repeats.`);
-    log('local', `postMessage failed: ${text}`);
+    setConnectState('error');
+    log('local', 'postMessage failed: ' + text);
   }
 }
 
-function setStatus(status, message) {
-  els.statusBadge.textContent = status;
-  els.statusBadge.className = `badge ${status}`;
-  updateConnectButton(status);
-  if (message) {
-    els.lastResult.textContent = message;
+function setConnectState(state) {
+  _connectState = state;
+  refreshConnectIcon();
+  refreshStatusLine();
+  updateActionButtons();
+}
+
+function setHealthState(state) {
+  _healthState = state;
+  refreshHealthIcon();
+  refreshStatusLine();
+}
+
+function setRunState(state) {
+  _runState = state;
+  refreshActionIcons();
+  refreshStatusLine();
+  updateActionButtons();
+}
+
+function refreshConnectIcon() {
+  var btn = els.connectBtn;
+  switch (_connectState) {
+    case 'connected':
+    case 'running':
+      btn.innerHTML = ICON.CONNECT;
+      btn.className = 'icon-btn connected';
+      btn.title = 'Disconnect';
+      break;
+    case 'connecting':
+    case 'bridge-ready':
+      btn.innerHTML = ICON.CONNECT;
+      btn.className = 'icon-btn connecting';
+      btn.title = 'Connecting...';
+      break;
+    case 'paused':
+      btn.innerHTML = ICON.CONNECT;
+      btn.className = 'icon-btn paused';
+      btn.title = 'Disconnect';
+      break;
+    case 'disconnected':
+    default:
+      btn.innerHTML = ICON.DISCONNECT;
+      btn.className = 'icon-btn disconnected';
+      btn.title = 'Connect';
+      break;
+    case 'error':
+      btn.innerHTML = ICON.DISCONNECT;
+      btn.className = 'icon-btn error';
+      btn.title = 'Connect';
+      break;
   }
 }
 
-function updateConnectButton(status) {
-  const connected = status === 'connected' || status === 'running' || status === 'paused';
-  els.connectBtn.dataset.mode = connected ? 'disconnect' : 'connect';
-  els.connectBtn.textContent = connected ? 'Disconnect' : 'Connect';
-  els.connectBtn.className = `status-btn ${connected ? 'connected' : (status || 'disconnected')}`;
+function refreshHealthIcon() {
+  var btn = els.healthBtn;
+  switch (_healthState) {
+    case 'ok':
+      btn.innerHTML = ICON.HEALTH_OK;
+      btn.className = 'icon-btn ok';
+      btn.title = 'Health OK';
+      break;
+    case 'fail':
+      btn.innerHTML = ICON.HEALTH_FAIL;
+      btn.className = 'icon-btn fail';
+      btn.title = 'Test Health';
+      break;
+    case 'testing':
+      btn.innerHTML = ICON.HEALTH_TESTING;
+      btn.className = 'icon-btn testing';
+      btn.title = 'Testing...';
+      break;
+    default:
+      btn.innerHTML = ICON.HEART;
+      btn.className = 'icon-btn fail';
+      btn.title = 'Test Health';
+      break;
+  }
 }
 
-function setHealthState(state, text) {
-  els.healthBtn.className = `health-btn ${state}`;
-  if (text) {
-    els.healthStatus.textContent = text;
+function refreshActionIcons() {
+  var ss = els.startStopBtn;
+  var pr = els.pauseResumeBtn;
+  switch (_runState) {
+    case 'running':
+      ss.innerHTML = ICON.STOP;
+      ss.className = 'icon-btn action stop';
+      ss.title = 'Stop';
+      pr.innerHTML = ICON.PAUSE;
+      pr.className = 'icon-btn action paused';
+      pr.title = 'Pause';
+      break;
+    case 'paused':
+      ss.innerHTML = ICON.STOP;
+      ss.className = 'icon-btn action stop';
+      ss.title = 'Stop';
+      pr.innerHTML = ICON.RESUME;
+      pr.className = 'icon-btn action resume';
+      pr.title = 'Resume';
+      break;
+    default:
+      ss.innerHTML = ICON.START;
+      ss.className = 'icon-btn action start';
+      ss.title = 'Start Run';
+      pr.innerHTML = ICON.PAUSE;
+      pr.className = 'icon-btn action paused disabled';
+      pr.title = 'Pause';
+      break;
   }
+}
+
+function updateActionButtons() {
+  var pr = els.pauseResumeBtn;
+  if (_runState === 'running') {
+    pr.disabled = false;
+  } else if (_runState === 'paused') {
+    pr.disabled = false;
+  } else {
+    pr.disabled = true;
+  }
+}
+
+function refreshAllIcons() {
+  refreshConnectIcon();
+  refreshHealthIcon();
+  refreshActionIcons();
+}
+
+function refreshStatusLine() {
+  var parts = [];
+  var cssClass = '';
+
+  switch (_connectState) {
+    case 'connected':
+      parts.push('Connected');
+      cssClass = 'connected';
+      break;
+    case 'connecting':
+      parts.push('Connecting...');
+      cssClass = 'connecting';
+      break;
+    case 'bridge-ready':
+      parts.push('Bridge ready');
+      cssClass = 'bridge-ready';
+      break;
+    case 'error':
+      parts.push('Error');
+      cssClass = 'error';
+      break;
+    case 'paused':
+      parts.push('Connected');
+      cssClass = 'paused';
+      break;
+    case 'running':
+      parts.push('Connected');
+      cssClass = 'running';
+      break;
+    default:
+      parts.push('Disconnected');
+      cssClass = 'disconnected';
+      break;
+  }
+
+  switch (_healthState) {
+    case 'ok':
+      parts.push('Health OK');
+      break;
+    case 'fail':
+      parts.push('Health not tested');
+      break;
+    case 'testing':
+      parts.push('Testing health...');
+      break;
+    default:
+      parts.push('Health not tested');
+      break;
+  }
+
+  switch (_runState) {
+    case 'running':
+      parts.push('Running');
+      break;
+    case 'paused':
+      parts.push('Paused');
+      break;
+    case 'stopped':
+      parts.push('Stopped');
+      break;
+    case 'error':
+      parts.push('Error');
+      break;
+  }
+
+  els.statusLine.textContent = parts.join(' \u00B7 ');
+  els.statusLine.className = 'status-line ' + cssClass;
 }
 
 function log(direction, message) {
-  const node = document.createElement('div');
+  var node = document.createElement('div');
   node.className = 'log';
-  const time = new Date().toLocaleTimeString();
-  node.innerHTML = `<time>${time}</time> <strong>${escapeHtml(direction)}</strong><br>${escapeHtml(message)}`;
+  var time = new Date().toLocaleTimeString();
+  node.innerHTML = '<time>' + time + '</time> <strong>' + escapeHtml(direction) + '</strong><br>' + escapeHtml(message);
   els.logs.prepend(node);
 }
 
 function renderObserved(observation) {
-  const inputs = (observation.inputs || []).map((input) => `<span class="pill">${escapeHtml(input.selector || input.tagName)}${input.redacted ? ' · redacted' : ''}</span>`).join('');
-  const buttons = (observation.buttons || []).map((button) => `<span class="pill">${escapeHtml(button.text || button.selector)}</span>`).join('');
-  const links = (observation.links || []).slice(0, 20).map((link) => `<span class="pill">${escapeHtml(link.text || link.href)}</span>`).join('');
-  els.observedList.innerHTML = `${inputs}${buttons}${links}` || 'No visible elements.';
+  var inputs = (observation.inputs || []).map(function (input) {
+    return '<span class="pill">' + escapeHtml(input.selector || input.tagName) + (input.redacted ? ' · redacted' : '') + '</span>';
+  }).join('');
+  var buttons = (observation.buttons || []).map(function (button) {
+    return '<span class="pill">' + escapeHtml(button.text || button.selector) + '</span>';
+  }).join('');
+  var links = (observation.links || []).slice(0, 20).map(function (link) {
+    return '<span class="pill">' + escapeHtml(link.text || link.href) + '</span>';
+  }).join('');
+  els.observedList.innerHTML = (inputs + buttons + links) || 'No visible elements.';
   els.pageReady.textContent = observation.readyState || 'unknown';
 }
 
 function summarize(value) {
-  const text = typeof value === 'string' ? value : JSON.stringify(value);
-  return text.length > 500 ? `${text.slice(0, 500)}...` : text;
+  var text = typeof value === 'string' ? value : JSON.stringify(value);
+  return text.length > 500 ? text.slice(0, 500) + '...' : text;
 }
 
 function escapeHtml(value) {

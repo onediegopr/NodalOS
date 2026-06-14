@@ -64,14 +64,14 @@
   }
 
   function observePage() {
-    const inputs = Array.from(document.querySelectorAll('input, textarea, select')).slice(0, 80).map(describeInput);
-    const buttons = Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"], [role="button"]')).slice(0, 80).map(describeElement);
-    const links = Array.from(document.querySelectorAll('a[href]')).slice(0, 80).map((link) => ({
+    const inputs = Array.from(document.querySelectorAll('input, textarea, select')).slice(0, 200).map(describeInput);
+    const buttons = Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"], [role="button"]')).slice(0, 200).map(describeElement);
+    const links = Array.from(document.querySelectorAll('a[href]')).slice(0, 200).map((link) => ({
       selector: selectorFor(link),
       text: safeText(link.innerText || link.textContent || ''),
       href: link.href
     }));
-    const forms = Array.from(document.forms).slice(0, 20).map((form) => ({
+    const forms = Array.from(document.forms).slice(0, 40).map((form) => ({
       selector: selectorFor(form),
       inputCount: form.querySelectorAll('input, textarea, select').length,
       hasPassword: Boolean(form.querySelector('input[type="password"]')),
@@ -281,7 +281,7 @@
     if (normalized.includes('2fa') || normalized.includes('two factor') || normalized.includes('otp') || normalized.includes('token') || normalized.includes('verificacion') || normalized.includes('codigo')) {
       hints.add('twoFactor');
     }
-    if (normalized.includes('password') || normalized.includes('contrasena') || normalized.includes('clave fiscal') || normalized.includes('usuario') || normalized.includes('cuit') || normalized.includes('login') || normalized.includes('iniciar sesion')) {
+    if (normalized.includes('password') || normalized.includes('contrasena') || normalized.includes('clave fiscal') || normalized.includes('usuario') || normalized.includes('cuit') || normalized.includes('login') || normalized.includes('iniciar sesion') || normalized.includes('acceso') || normalized.includes('ingresar') || normalized.includes('autenticar') || normalized.includes('entrar') || normalized.includes('identificarse')) {
       hints.add('credential');
     }
     if (inputs.some((input) => input.isPassword || input.isCredentialLike)) {
@@ -329,7 +329,9 @@
       String(element.getAttribute('autocomplete') || '').toLowerCase().includes('password') ||
       normalize(text).includes('password') ||
       normalize(text).includes('contrasena') ||
-      normalize(text).includes('clave');
+      normalize(text).includes('clave') ||
+      normalize(text).includes('acceso') ||
+      normalize(text).includes('ingresar');
   }
 
   function isOtpLike(element) {
@@ -339,7 +341,7 @@
 
   function isSensitiveSubmit(element) {
     const text = normalize(attributeText(element) + ' ' + (element.innerText || element.textContent || ''));
-    return text.includes('login') || text.includes('iniciar sesion') || text.includes('clave') || text.includes('password') || text.includes('pagar') || text.includes('submit');
+    return text.includes('login') || text.includes('iniciar sesion') || text.includes('clave') || text.includes('password') || text.includes('pagar') || text.includes('submit') || text.includes('acceso') || text.includes('ingresar') || text.includes('autenticar') || text.includes('entrar') || text.includes('identificarse');
   }
 
   function pageHasCaptchaOrTwoFactor() {
@@ -372,7 +374,7 @@
 
   function credentialLikeText(value) {
     const text = normalize(value);
-    return text.includes('password') || text.includes('contrasena') || text.includes('clave') || text.includes('token') || text.includes('otp') || text.includes('captcha') || text.includes('cuit');
+    return text.includes('password') || text.includes('contrasena') || text.includes('clave') || text.includes('token') || text.includes('otp') || text.includes('captcha') || text.includes('cuit') || text.includes('acceso') || text.includes('ingresar') || text.includes('autenticar') || text.includes('entrar') || text.includes('identificarse');
   }
 
   function isReadableValueElement(element) {

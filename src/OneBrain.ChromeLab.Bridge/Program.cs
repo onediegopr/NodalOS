@@ -322,7 +322,12 @@ static AgentToolDecision? TryCreateDeterministicDecision(string instruction, Jso
     var normalizedInstruction = NormalizeForMatch(instruction);
     if (!normalizedInstruction.Contains("iniciar sesion", StringComparison.Ordinal) &&
         !normalizedInstruction.Contains("login", StringComparison.Ordinal) &&
-        !normalizedInstruction.Contains("clave fiscal", StringComparison.Ordinal))
+        !normalizedInstruction.Contains("clave fiscal", StringComparison.Ordinal) &&
+        !normalizedInstruction.Contains("acceso", StringComparison.Ordinal) &&
+        !normalizedInstruction.Contains("ingresar", StringComparison.Ordinal) &&
+        !normalizedInstruction.Contains("autenticar", StringComparison.Ordinal) &&
+        !normalizedInstruction.Contains("entrar", StringComparison.Ordinal) &&
+        !normalizedInstruction.Contains("identificarse", StringComparison.Ordinal))
     {
         return null;
     }
@@ -374,6 +379,10 @@ static (string selector, string text)? FindClickableCandidate(JsonElement observ
         if (normalized.Contains("iniciar sesion", StringComparison.Ordinal) ||
             normalized.Contains("login", StringComparison.Ordinal) ||
             normalized.Contains("ingresar", StringComparison.Ordinal) ||
+            normalized.Contains("acceso", StringComparison.Ordinal) ||
+            normalized.Contains("entrar", StringComparison.Ordinal) ||
+            normalized.Contains("autenticar", StringComparison.Ordinal) ||
+            normalized.Contains("identificarse", StringComparison.Ordinal) ||
             normalized.Contains("clave fiscal", StringComparison.Ordinal) ||
             normalized.Contains("mi afip", StringComparison.Ordinal))
         {

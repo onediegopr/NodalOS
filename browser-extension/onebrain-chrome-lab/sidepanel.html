@@ -12,29 +12,22 @@
       <p class="eyebrow">Local browser lab</p>
       <h1>ONE BRAIN Chrome Lab</h1>
     </div>
-    <span id="statusBadge" class="badge disconnected">Disconnected</span>
   </header>
 
-  <button id="stopBtn" class="stop">STOP</button>
-
   <main>
-    <section class="card">
-      <div class="run-header">
-        <h2>Run</h2>
-        <div class="bridge-inline">
-          <label class="inline-field">IP <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
-          <label class="inline-field">Port <input id="portInput" value="8787" autocomplete="off"></label>
-          <button id="connectBtn" class="status-btn disconnected">Connect</button>
-          <button id="healthBtn" class="health-btn">Test Health</button>
-        </div>
+    <section class="card run-card">
+      <div class="bridge-inline">
+        <label class="inline-field">IP <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
+        <label class="inline-field">Port <input id="portInput" value="8787" autocomplete="off"></label>
+        <button id="connectBtn" class="icon-btn disconnected" title="Connect">&#x26AB;</button>
+        <button id="healthBtn" class="icon-btn fail" title="Test Health">&#x2764;</button>
       </div>
-      <p id="healthStatus" class="muted compact">Health not tested.</p>
-      <textarea id="instructionInput" rows="5" wrap="soft">Entrar a https://www.afip.gob.ar/ y avanzar hasta el punto donde se requieran credenciales. Cuando aparezca login, clave fiscal, CUIT, captcha o 2FA, pausar e indicarme que complete manualmente.</textarea>
-      <div class="row">
-        <button id="startBtn">Start Run</button>
-        <button id="pauseBtn" class="ghost">Pause</button>
-        <button id="resumeBtn" class="ghost">Resume</button>
+      <p id="statusLine" class="status-line">Disconnected &middot; Health not tested.</p>
+      <div class="action-row">
+        <button id="startStopBtn" class="icon-btn action start" title="Start Run">&#x25B6;</button>
+        <button id="pauseResumeBtn" class="icon-btn action paused disabled" title="Pause" disabled>&#x23F8;</button>
       </div>
+      <textarea id="instructionInput" rows="8" wrap="soft">Entrar a https://www.afip.gob.ar/ y avanzar hasta el punto donde se requieran credenciales. Cuando aparezca login, clave fiscal, CUIT, captcha o 2FA, pausar e indicarme que complete manualmente.</textarea>
     </section>
 
     <section id="humanCard" class="card human hidden">
@@ -60,7 +53,7 @@
         <dt>Current tool</dt><dd id="currentTool">-</dd>
         <dt>Last result</dt><dd id="lastResult">-</dd>
       </dl>
-      <p class="safety">STOP armed · No credentials captured</p>
+      <p class="safety">STOP armed &middot; No credentials captured</p>
     </section>
 
     <section class="card observed">
