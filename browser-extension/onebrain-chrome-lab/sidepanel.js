@@ -699,7 +699,7 @@ function runtimeRecommendation(connection, clients) {
     return 'Verifica que el bridge este iniciado.';
   }
   if (connection.state === 'tokenError' || state.connection.tokenStatus === 'invalid') {
-    return 'Token invalido. Cambialo en Avanzado o pegalo de nuevo.';
+    return 'El token guardado no coincide con el bridge. Usa Cambiar token y pega ExtensionToken desde config/chrome-lab.local.json.';
   }
   if (!state.connection.token) {
     return 'Pega el token de conexion generado por el bridge.';

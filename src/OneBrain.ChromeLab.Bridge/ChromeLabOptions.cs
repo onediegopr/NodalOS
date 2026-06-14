@@ -120,6 +120,9 @@ public sealed class ChromeLabOptions
 
     private static IEnumerable<string> GetCandidateApiKeyPaths()
     {
+        var repoOrCurrent = FindRepoOrCurrentDirectory();
+        yield return Path.Combine(repoOrCurrent, "config", "chrome-lab.local.json");
+        yield return Path.Combine(repoOrCurrent, "ApiKey.txt");
         yield return Path.Combine(AppContext.BaseDirectory, "config", "chrome-lab.local.json");
         yield return Path.Combine(Directory.GetCurrentDirectory(), "config", "chrome-lab.local.json");
         yield return Path.Combine(AppContext.BaseDirectory, "ApiKey.txt");

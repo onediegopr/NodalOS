@@ -153,6 +153,45 @@ public sealed class ChromeLabBridgeTests
     }
 
     [TestMethod]
+    public void LoadReadsRootConfigWhenStartedFromNestedProjectDirectory()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "onebrain-chromelab-tests", Guid.NewGuid().ToString("n"));
+        var nestedDir = Path.Combine(tempDir, "src", "OneBrain.ChromeLab.Bridge");
+        Directory.CreateDirectory(Path.Combine(tempDir, "config"));
+        Directory.CreateDirectory(nestedDir);
+        var originalDirectory = Directory.GetCurrentDirectory();
+        var originalApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        var originalToken = Environment.GetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN");
+
+        try
+        {
+            File.WriteAllText(Path.Combine(tempDir, "OneBrain.slnx"), "");
+            File.WriteAllText(Path.Combine(tempDir, "config", "chrome-lab.local.json"), """
+                {
+                  "OpenAiApiKey": "root-json-key",
+                  "ExtensionToken": "nexa_root_token"
+                }
+                """);
+            Directory.SetCurrentDirectory(nestedDir);
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", null);
+
+            var options = ChromeLabOptions.Load([]);
+
+            Assert.AreEqual("root-json-key", options.ApiKey);
+            Assert.AreEqual("nexa_root_token", options.ConnectionToken);
+            Assert.IsFalse(options.ConnectionTokenGenerated);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(originalDirectory);
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", originalApiKey);
+            Environment.SetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN", originalToken);
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ToolRouterAllowsOnlyKnownTools()
     {
         Assert.IsTrue(ChromeLabToolPolicy.Validate("observePage", new Dictionary<string, object?>()).Allowed);
