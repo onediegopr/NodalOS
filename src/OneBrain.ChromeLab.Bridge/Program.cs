@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -229,9 +230,7 @@ static async Task HandleExtensionMessage(
         }
 
         if (resultProperty.ValueKind == JsonValueKind.Object &&
-            resultProperty.TryGetProperty("hasCredentialLike", out var credentialLike) &&
-            credentialLike.ValueKind is JsonValueKind.True or JsonValueKind.False &&
-            credentialLike.GetBoolean())
+            ShouldPauseForCredentialEntry(resultProperty))
         {
             runs.CredentialRequired(runId, "credentialRequired");
             await SendAsync(socket, new
@@ -255,7 +254,8 @@ static async Task HandleExtensionMessage(
 
         try
         {
-            var decision = await agent.CreateToolDecisionAsync(run.Instruction, resultProperty, cancellationToken);
+            var decision = TryCreateDeterministicDecision(run.Instruction, resultProperty) ??
+                           await agent.CreateToolDecisionAsync(run.Instruction, resultProperty, cancellationToken);
             var validation = ChromeLabToolPolicy.Validate(decision.Tool, decision.Args);
             if (!validation.Allowed)
                 throw new InvalidOperationException($"Tool decision rejected: {validation.Reason}");
@@ -315,6 +315,83 @@ static async Task HandleExtensionMessage(
             }, cancellationToken);
         }
     }
+}
+
+static AgentToolDecision? TryCreateDeterministicDecision(string instruction, JsonElement observation)
+{
+    var normalizedInstruction = NormalizeForMatch(instruction);
+    if (!normalizedInstruction.Contains("iniciar sesion", StringComparison.Ordinal) &&
+        !normalizedInstruction.Contains("login", StringComparison.Ordinal) &&
+        !normalizedInstruction.Contains("clave fiscal", StringComparison.Ordinal))
+    {
+        return null;
+    }
+
+    if (ShouldPauseForCredentialEntry(observation))
+        return null;
+
+    var candidate = FindClickableCandidate(observation, "buttons") ?? FindClickableCandidate(observation, "links");
+    if (candidate == null)
+        return null;
+
+    return new AgentToolDecision(
+        "click",
+        new Dictionary<string, object?>(StringComparer.Ordinal)
+        {
+            ["selector"] = candidate.Value.selector
+        },
+        $"Open login entry: {candidate.Value.text}");
+}
+
+static bool ShouldPauseForCredentialEntry(JsonElement result)
+{
+    return ReadBool(result, "hasCredentialEntry") ||
+           ReadBool(result, "hasPasswordField") ||
+           ReadBool(result, "hasCaptchaLike") ||
+           ReadBool(result, "hasTwoFactorLike");
+}
+
+static bool ReadBool(JsonElement element, string propertyName)
+{
+    return element.TryGetProperty(propertyName, out var property) &&
+           property.ValueKind is JsonValueKind.True or JsonValueKind.False &&
+           property.GetBoolean();
+}
+
+static (string selector, string text)? FindClickableCandidate(JsonElement observation, string propertyName)
+{
+    if (!observation.TryGetProperty(propertyName, out var items) || items.ValueKind != JsonValueKind.Array)
+        return null;
+
+    foreach (var item in items.EnumerateArray())
+    {
+        var text = item.TryGetProperty("text", out var textProperty) ? textProperty.GetString() ?? "" : "";
+        var selector = item.TryGetProperty("selector", out var selectorProperty) ? selectorProperty.GetString() ?? "" : "";
+        var normalized = NormalizeForMatch(text);
+        if (string.IsNullOrWhiteSpace(selector))
+            continue;
+
+        if (normalized.Contains("iniciar sesion", StringComparison.Ordinal) ||
+            normalized.Contains("login", StringComparison.Ordinal) ||
+            normalized.Contains("ingresar", StringComparison.Ordinal) ||
+            normalized.Contains("clave fiscal", StringComparison.Ordinal) ||
+            normalized.Contains("mi afip", StringComparison.Ordinal))
+        {
+            return (selector, text);
+        }
+    }
+
+    return null;
+}
+
+static string NormalizeForMatch(string value)
+{
+    return value
+        .ToLowerInvariant()
+        .Normalize(NormalizationForm.FormD)
+        .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark)
+        .Aggregate(new StringBuilder(), (builder, ch) => builder.Append(ch))
+        .ToString();
 }
 
 static async Task BroadcastObserveRequestAsync(

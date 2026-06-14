@@ -6,7 +6,6 @@ const els = {
   hostInput: document.getElementById('hostInput'),
   portInput: document.getElementById('portInput'),
   connectBtn: document.getElementById('connectBtn'),
-  disconnectBtn: document.getElementById('disconnectBtn'),
   healthBtn: document.getElementById('healthBtn'),
   healthStatus: document.getElementById('healthStatus'),
   instructionInput: document.getElementById('instructionInput'),
@@ -29,6 +28,8 @@ const els = {
 };
 
 connectPort();
+updateConnectButton('disconnected');
+setHealthState('fail', 'Health not tested.');
 
 window.addEventListener('error', (event) => {
   setStatus('error', event.message || 'Side panel error');
@@ -38,12 +39,17 @@ window.addEventListener('error', (event) => {
 safePost({ type: 'loadConfig' });
 
 els.connectBtn.addEventListener('click', () => {
+  if (els.connectBtn.dataset.mode === 'disconnect') {
+    safePost({ type: 'disconnect' });
+    return;
+  }
+
   setStatus('connecting', 'Connecting to bridge...');
   log('local', `connect requested: ${currentConfig().host}:${currentConfig().port}`);
   safePost({ type: 'connect', config: currentConfig() });
 });
-els.disconnectBtn.addEventListener('click', () => safePost({ type: 'disconnect' }));
 els.healthBtn.addEventListener('click', async () => {
+  setHealthState('testing', 'Testing health...');
   els.healthStatus.textContent = 'Testing health...';
   log('local', `health requested: ${currentConfig().host}:${currentConfig().port}`);
   await testHealthDirect();
@@ -76,6 +82,7 @@ function handlePortMessage(message) {
 
   if (message.type === 'health') {
     els.healthStatus.textContent = message.ok ? 'Health OK' : `Health failed: ${message.error || 'bad response'}`;
+    setHealthState(message.ok ? 'ok' : 'fail', els.healthStatus.textContent);
     log('local', els.healthStatus.textContent);
     return;
   }
@@ -173,6 +180,7 @@ async function testHealthDirect() {
     const body = await response.json();
     if (response.ok && body && body.ok) {
       els.healthStatus.textContent = `Health OK: ${body.service || 'bridge'} ${body.version || ''}`;
+      setHealthState('ok', els.healthStatus.textContent);
       if (els.statusBadge.textContent !== 'connected') {
         setStatus('bridge-ready', 'Bridge health OK; press Connect or Start Run.');
       }
@@ -181,11 +189,13 @@ async function testHealthDirect() {
     }
 
     els.healthStatus.textContent = `Health failed: HTTP ${response.status}`;
+    setHealthState('fail', els.healthStatus.textContent);
     setStatus('error', els.healthStatus.textContent);
     log('local', els.healthStatus.textContent);
   } catch (error) {
     const message = error && error.message ? error.message : String(error);
     els.healthStatus.textContent = `Health failed: ${message}`;
+    setHealthState('fail', els.healthStatus.textContent);
     setStatus('error', els.healthStatus.textContent);
     log('local', els.healthStatus.textContent);
   }
@@ -212,8 +222,23 @@ function safePost(message) {
 function setStatus(status, message) {
   els.statusBadge.textContent = status;
   els.statusBadge.className = `badge ${status}`;
+  updateConnectButton(status);
   if (message) {
     els.lastResult.textContent = message;
+  }
+}
+
+function updateConnectButton(status) {
+  const connected = status === 'connected' || status === 'running' || status === 'paused';
+  els.connectBtn.dataset.mode = connected ? 'disconnect' : 'connect';
+  els.connectBtn.textContent = connected ? 'Disconnect' : 'Connect';
+  els.connectBtn.className = `status-btn ${connected ? 'connected' : (status || 'disconnected')}`;
+}
+
+function setHealthState(state, text) {
+  els.healthBtn.className = `health-btn ${state}`;
+  if (text) {
+    els.healthStatus.textContent = text;
   }
 }
 

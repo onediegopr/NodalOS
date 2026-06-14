@@ -74,10 +74,14 @@
     const forms = Array.from(document.forms).slice(0, 20).map((form) => ({
       selector: selectorFor(form),
       inputCount: form.querySelectorAll('input, textarea, select').length,
-      hasPassword: Boolean(form.querySelector('input[type="password"]'))
+      hasPassword: Boolean(form.querySelector('input[type="password"]')),
+      hasCredentialInput: Boolean(form.querySelector('input[type="password"], input[name*="user" i], input[name*="cuit" i], input[name*="login" i], input[name*="clave" i], input[autocomplete*="username" i], input[autocomplete*="current-password" i]'))
     }));
     const text = safeText(document.body ? document.body.innerText || '' : '');
     const sensitiveHints = detectSensitiveHints(text, inputs);
+    const hasCredentialForm = forms.some((form) => form.hasPassword || form.hasCredentialInput);
+    const hasCredentialInput = inputs.some((input) => input.isPassword || input.isCredentialLike);
+    const hasCredentialEntry = hasCredentialForm || hasCredentialInput;
 
     return {
       url: window.location.href,
@@ -91,7 +95,8 @@
       hasPasswordField: inputs.some((input) => input.isPassword),
       hasCaptchaLike: sensitiveHints.includes('captcha'),
       hasTwoFactorLike: sensitiveHints.includes('twoFactor'),
-      hasCredentialLike: sensitiveHints.length > 0,
+      hasCredentialLike: hasCredentialEntry || sensitiveHints.includes('credential'),
+      hasCredentialEntry,
       sensitiveHints,
       viewport: {
         width: window.innerWidth,
@@ -276,7 +281,7 @@
     if (normalized.includes('2fa') || normalized.includes('two factor') || normalized.includes('otp') || normalized.includes('token') || normalized.includes('verificacion') || normalized.includes('codigo')) {
       hints.add('twoFactor');
     }
-    if (normalized.includes('password') || normalized.includes('contrasena') || normalized.includes('clave') || normalized.includes('clave fiscal') || normalized.includes('usuario') || normalized.includes('cuit') || normalized.includes('login') || normalized.includes('iniciar sesion') || normalized.includes('afip')) {
+    if (normalized.includes('password') || normalized.includes('contrasena') || normalized.includes('clave fiscal') || normalized.includes('usuario') || normalized.includes('cuit') || normalized.includes('login') || normalized.includes('iniciar sesion')) {
       hints.add('credential');
     }
     if (inputs.some((input) => input.isPassword || input.isCredentialLike)) {

@@ -56,6 +56,23 @@ main {
   padding: 0 12px 18px;
 }
 
+.run-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.bridge-inline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
 .card {
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -72,6 +89,14 @@ label {
   font-size: 12px;
 }
 
+.inline-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  white-space: nowrap;
+}
+
 input,
 textarea {
   width: 100%;
@@ -83,8 +108,20 @@ textarea {
   font: inherit;
 }
 
+.inline-field input {
+  width: 96px;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
 textarea {
   resize: vertical;
+  min-height: 108px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 button {
@@ -100,6 +137,34 @@ button {
 button.ghost {
   background: #e7ece9;
   color: var(--ink);
+}
+
+.status-btn.connected {
+  background: var(--green);
+}
+
+.status-btn.disconnected,
+.status-btn.error {
+  background: var(--red);
+}
+
+.status-btn.connecting,
+.status-btn.bridge-ready,
+.status-btn.paused,
+.status-btn.running {
+  background: var(--blue);
+}
+
+.health-btn.ok {
+  background: var(--green);
+}
+
+.health-btn.fail {
+  background: var(--red);
+}
+
+.health-btn.testing {
+  background: var(--blue);
 }
 
 .stop {
@@ -159,6 +224,10 @@ button.ghost {
   font-size: 12px;
 }
 
+.compact {
+  margin: 0 0 10px;
+}
+
 .human {
   border-color: rgba(197, 138, 0, 0.45);
   background: #fff6dc;
@@ -215,4 +284,14 @@ dd {
   border-radius: 999px;
   padding: 5px 8px;
   background: #edf1ef;
+}
+
+@media (max-width: 460px) {
+  .run-header {
+    flex-direction: column;
+  }
+
+  .bridge-inline {
+    justify-content: flex-start;
+  }
 }
