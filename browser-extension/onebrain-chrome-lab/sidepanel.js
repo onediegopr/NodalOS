@@ -8,6 +8,7 @@ const state = {
     health: 'untested',
     host: '127.0.0.1',
     port: '8787',
+    token: '',
     runtime: null
   },
   run: {
@@ -39,6 +40,7 @@ const state = {
     run: null
   },
   runtime: {
+    debug: null,
     lastToolRequest: null,
     lastToolResult: null,
     lastRunStatus: null
@@ -117,17 +119,25 @@ const el = {
   recipeStepTimeline: document.getElementById('recipeStepTimeline'),
   hostInput: document.getElementById('hostInput'),
   portInput: document.getElementById('portInput'),
+  tokenInput: document.getElementById('tokenInput'),
   connectBtn: document.getElementById('connectBtn'),
   healthBtn: document.getElementById('healthBtn'),
+  reconnectBtn: document.getElementById('reconnectBtn'),
+  refreshDebugBtn: document.getElementById('refreshDebugBtn'),
   runtimeConnection: document.getElementById('runtimeConnection'),
   runtimeHost: document.getElementById('runtimeHost'),
   runtimePort: document.getElementById('runtimePort'),
   runtimeHealth: document.getElementById('runtimeHealth'),
+  runtimeClients: document.getElementById('runtimeClients'),
+  runtimeDiagnostic: document.getElementById('runtimeDiagnostic'),
   runtimeProvider: document.getElementById('runtimeProvider'),
   runtimeModel: document.getElementById('runtimeModel'),
   runtimeApiKey: document.getElementById('runtimeApiKey'),
   runtimeAiError: document.getElementById('runtimeAiError'),
   runtimeSocket: document.getElementById('runtimeSocket'),
+  runtimeClientId: document.getElementById('runtimeClientId'),
+  runtimeLastSeen: document.getElementById('runtimeLastSeen'),
+  runtimeProtocol: document.getElementById('runtimeProtocol'),
   pageTab: document.getElementById('pageTab'),
   runtimeUrl: document.getElementById('runtimeUrl'),
   runtimeContent: document.getElementById('runtimeContent'),
@@ -216,6 +226,14 @@ function bindEvents() {
     post({ type: 'testHealth', config: currentConfig() });
     render();
   });
+  el.reconnectBtn.addEventListener('click', () => {
+    state.connection.status = 'connecting';
+    post({ type: 'connect', config: currentConfig() });
+    render();
+  });
+  el.refreshDebugBtn.addEventListener('click', () => {
+    post({ type: 'refreshDebug', config: currentConfig() });
+  });
 
   el.importRecipeBtn.addEventListener('click', () => el.recipeImportInput.click());
   el.recipeImportInput.addEventListener('change', importRecipeFile);
@@ -240,8 +258,10 @@ function handleMessage(message) {
     case 'config':
       state.connection.host = message.config.host || '127.0.0.1';
       state.connection.port = message.config.port || '8787';
+      state.connection.token = message.config.token || '';
       el.hostInput.value = state.connection.host;
       el.portInput.value = state.connection.port;
+      el.tokenInput.value = state.connection.token;
       break;
     case 'state':
       state.connection.status = message.status || 'disconnected';
@@ -278,6 +298,9 @@ function handleMessage(message) {
     case 'runtimeSnapshot':
       state.connection.runtime = message.runtime || null;
       hydrateRuntime(message.runtime || {});
+      break;
+    case 'debugSnapshot':
+      state.runtime.debug = message.debug || { error: message.error || 'debug unavailable' };
       break;
     case 'learningState':
       hydrateLearning(message.draft || null);
@@ -518,18 +541,26 @@ function renderRecipeRun() {
 function renderRuntime() {
   const runtime = state.connection.runtime || {};
   const connection = runtime.connection || {};
+  const debug = connection.debug || state.runtime.debug || {};
+  const clients = debug.clients || {};
+  const connectedCount = typeof clients.connectedCount === 'number' ? clients.connectedCount : '-';
   const ai = runtime.ai || {};
   const extension = runtime.extension || {};
   const run = runtime.run || {};
-  el.runtimeConnection.textContent = connection.connected ? 'connected' : state.connection.status;
+  el.runtimeConnection.textContent = connection.state || (connection.connected ? 'connected' : state.connection.status);
   el.runtimeHost.textContent = state.connection.host;
   el.runtimePort.textContent = state.connection.port;
   el.runtimeHealth.textContent = state.connection.health;
+  el.runtimeClients.textContent = String(connectedCount);
+  el.runtimeDiagnostic.textContent = runtimeDiagnostic(connection, clients);
   el.runtimeProvider.textContent = ai.provider || 'OpenAI';
   el.runtimeModel.textContent = ai.model || '-';
   el.runtimeApiKey.textContent = ai.hasApiKeyLocal === null || ai.hasApiKeyLocal === undefined ? 'unknown' : ai.hasApiKeyLocal ? 'local key loaded' : 'missing';
   el.runtimeAiError.textContent = ai.lastError || '-';
-  el.runtimeSocket.textContent = extension.webSocketConnected ? 'connected' : 'disconnected';
+  el.runtimeSocket.textContent = extension.webSocketConnected ? 'connected' : connection.state || 'disconnected';
+  el.runtimeClientId.textContent = extension.clientId || connection.clientId || '-';
+  el.runtimeLastSeen.textContent = extension.lastSeenAt || connection.lastSeenAt || '-';
+  el.runtimeProtocol.textContent = extension.protocolVersion || '-';
   el.pageTab.textContent = extension.tabId || '-';
   el.runtimeUrl.textContent = extension.url || state.operator.page || '-';
   el.runtimeContent.textContent = extension.contentScriptActive ? 'active' : 'unavailable';
@@ -542,6 +573,28 @@ function renderRuntime() {
   el.lastToolRequest.textContent = stringify(state.runtime.lastToolRequest);
   el.lastToolResult.textContent = stringify(state.runtime.lastToolResult);
   el.lastRunStatus.textContent = stringify(state.runtime.lastRunStatus);
+}
+
+function runtimeDiagnostic(connection, clients) {
+  if (!state.connection.runtime && state.connection.health === 'fail') {
+    return 'Bridge caido';
+  }
+  if (connection.state === 'tokenError') {
+    return 'Error de token';
+  }
+  if (connection.state === 'protocolError') {
+    return 'Error de protocolo';
+  }
+  if (connection.connected) {
+    return 'Conectado';
+  }
+  if (clients && clients.connectedCount === 0) {
+    return 'Bridge OK, extension no conectada';
+  }
+  if (state.connection.status === 'connecting' || connection.state === 'reconnecting') {
+    return 'Conectando';
+  }
+  return connection.lastError || '-';
 }
 
 function renderLogs() {
@@ -699,7 +752,8 @@ function post(message) {
 function currentConfig() {
   state.connection.host = el.hostInput.value.trim() || '127.0.0.1';
   state.connection.port = el.portInput.value.trim() || '8787';
-  return { host: state.connection.host, port: state.connection.port };
+  state.connection.token = el.tokenInput.value.trim();
+  return { host: state.connection.host, port: state.connection.port, token: state.connection.token };
 }
 
 function learningFormPayload() {

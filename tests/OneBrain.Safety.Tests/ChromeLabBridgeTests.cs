@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Net.WebSockets;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneBrain.ChromeLab.Bridge;
 
@@ -24,7 +25,8 @@ public sealed class ChromeLabBridgeTests
             ChromeLabProtocol.Version,
             "openai",
             "gpt-4.1-mini",
-            HasApiKey: true);
+            HasApiKey: true,
+            RequiresToken: true);
         var json = JsonSerializer.Serialize(config, ChromeLabProtocol.JsonOptions);
 
         Assert.IsFalse(json.Contains("real-secret-value", StringComparison.Ordinal));
@@ -37,6 +39,14 @@ public sealed class ChromeLabBridgeTests
         var options = new ChromeLabOptions { ApiKey = null };
 
         Assert.IsFalse(options.HasApiKey);
+    }
+
+    [TestMethod]
+    public void ChromeLabOptionsRequireConnectionToken()
+    {
+        var options = new ChromeLabOptions { ConnectionToken = "local-token" };
+
+        Assert.IsTrue(options.RequiresToken);
     }
 
     [TestMethod]
@@ -182,6 +192,32 @@ public sealed class ChromeLabBridgeTests
     }
 
     [TestMethod]
+    public void ClientRegistryDiagnosticsShowsDisconnectedWhenNoHello()
+    {
+        using var socket = WebSocket.CreateFromStream(new MemoryStream(), true, null, TimeSpan.FromSeconds(1));
+        var registry = new ChromeLabClientRegistry();
+        var clientId = registry.Add(socket);
+        var diagnostics = registry.Diagnostics();
+
+        Assert.AreEqual(0, diagnostics.ConnectedCount);
+        Assert.AreEqual(clientId, diagnostics.Clients[0].ClientId);
+        Assert.IsFalse(diagnostics.Clients[0].Connected);
+    }
+
+    [TestMethod]
+    public void ProtocolEventBufferRedactsSensitiveSummaries()
+    {
+        var events = new ProtocolEventBuffer();
+
+        events.Add("debug", "password clave token raw value");
+        var snapshot = events.Snapshot();
+
+        Assert.IsFalse(snapshot[0].Summary.Contains("password", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(snapshot[0].Summary.Contains("clave", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(snapshot[0].Summary.Contains("token raw", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public void OpenAiDecisionParserReadsOutputTextDecision()
     {
         const string response = """
@@ -294,6 +330,40 @@ public sealed class ChromeLabBridgeTests
         Assert.IsTrue(serviceWorker.Contains("executeRecipeStep", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("stepResults", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("recipeRunState", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BridgeDefinesConnectionReliabilityEndpointsAndFramedWebSocketRead()
+    {
+        var program = File.ReadAllText(Path.Combine(FindRepoRoot(), "src", "OneBrain.ChromeLab.Bridge", "Program.cs"));
+
+        Assert.IsTrue(program.Contains("MapGet(\"/clients\"", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("MapGet(\"/runtime\"", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("MapGet(\"/debug\"", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("MapGet(\"/last-events\"", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("ReceiveTextMessageAsync", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("EndOfMessage", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("Results.Conflict", StringComparison.Ordinal));
+        Assert.IsTrue(program.Contains("invalid_token", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void ExtensionDefinesReconnectHeartbeatAlarmsAndSessionState()
+    {
+        var extensionDir = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab");
+        var serviceWorker = File.ReadAllText(Path.Combine(extensionDir, "service_worker.js"));
+        var manifest = File.ReadAllText(Path.Combine(extensionDir, "manifest.json"));
+        var sidePanel = File.ReadAllText(Path.Combine(extensionDir, "sidepanel.js"));
+
+        Assert.IsTrue(manifest.Contains("\"alarms\"", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("chrome.alarms.create('nexa.keepalive'", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("chrome.storage.session", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("extension.ping", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("engine.pong", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("scheduleReconnect", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("outgoingQueue", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanel.Contains("runtimeDiagnostic", StringComparison.Ordinal));
+        Assert.IsTrue(sidePanel.Contains("refreshDebug", StringComparison.Ordinal));
     }
 
     [TestMethod]

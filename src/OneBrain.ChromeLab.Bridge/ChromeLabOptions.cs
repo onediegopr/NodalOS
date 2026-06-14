@@ -11,9 +11,12 @@ public sealed class ChromeLabOptions
     public int Port { get; init; } = 8787;
     public string Model { get; init; } = "gpt-4.1-mini";
     public string? ApiKey { get; init; }
+    public string ConnectionToken { get; init; } = "";
+    public bool AllowLan { get; init; }
     public bool SelfTest { get; init; }
 
     public bool HasApiKey => !string.IsNullOrWhiteSpace(ApiKey);
+    public bool RequiresToken => !string.IsNullOrWhiteSpace(ConnectionToken);
 
     public static ChromeLabOptions Load(string[] args)
     {
@@ -21,10 +24,19 @@ public sealed class ChromeLabOptions
         var port = int.TryParse(ReadArg(args, "--port"), out var parsedPort) ? parsedPort : 8787;
         var model = ReadArg(args, "--model") ?? "gpt-4.1-mini";
         var selfTest = args.Any(arg => string.Equals(arg, "--self-test", StringComparison.OrdinalIgnoreCase));
+        var allowLan = args.Any(arg => string.Equals(arg, "--allow-lan", StringComparison.OrdinalIgnoreCase));
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        var token = Environment.GetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN");
 
         if (string.IsNullOrWhiteSpace(apiKey))
             apiKey = TryReadLocalApiKey();
+        if (string.IsNullOrWhiteSpace(token))
+            token = TryReadLocalConnectionToken();
+        if (string.IsNullOrWhiteSpace(token))
+            token = Guid.NewGuid().ToString("n");
+
+        if (!allowLan && !IsLoopbackHost(host))
+            host = "127.0.0.1";
 
         return new ChromeLabOptions
         {
@@ -32,6 +44,8 @@ public sealed class ChromeLabOptions
             Port = port,
             Model = model,
             ApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey,
+            ConnectionToken = token,
+            AllowLan = allowLan,
             SelfTest = selfTest
         };
     }
@@ -71,6 +85,18 @@ public sealed class ChromeLabOptions
         return null;
     }
 
+    private static string? TryReadLocalConnectionToken()
+    {
+        foreach (var path in GetCandidateApiKeyPaths())
+        {
+            var token = TryReadConnectionTokenFile(path);
+            if (!string.IsNullOrWhiteSpace(token))
+                return token;
+        }
+
+        return null;
+    }
+
     private static IEnumerable<string> GetCandidateApiKeyPaths()
     {
         yield return Path.Combine(AppContext.BaseDirectory, "config", "chrome-lab.local.json");
@@ -100,5 +126,30 @@ public sealed class ChromeLabOptions
         {
             return null;
         }
+    }
+
+    private static string? TryReadConnectionTokenFile(string path)
+    {
+        if (!File.Exists(path) || !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            return doc.RootElement.TryGetProperty("connectionToken", out var token)
+                ? token.GetString()
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool IsLoopbackHost(string host)
+    {
+        return string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(host, "127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(host, "::1", StringComparison.OrdinalIgnoreCase);
     }
 }

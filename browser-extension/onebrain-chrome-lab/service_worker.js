@@ -1,13 +1,30 @@
 const PROTOCOL_VERSION = 'chrome-lab-v1';
 importScripts('recipe_core.js');
 
-const DEFAULT_CONFIG = { host: '127.0.0.1', port: '8787' };
+const DEFAULT_CONFIG = { host: '127.0.0.1', port: '8787', token: '' };
 const RECIPES_KEY = 'nexaRecipes';
 const LEARNING_DRAFT_KEY = 'nexaLearningDraft';
+const SESSION_STATE_KEY = 'nexaRuntimeState';
+const OUTGOING_QUEUE_LIMIT = 40;
+const HEARTBEAT_MS = 15000;
+const BACKOFF_STEPS = [250, 500, 1000, 2000, 5000];
 
 let socket = null;
 let connected = false;
 let connectingPromise = null;
+let reconnectTimer = null;
+let heartbeatTimer = null;
+let reconnectAttempt = 0;
+let pingSeq = 0;
+let lastPingSeq = 0;
+let missedPongs = 0;
+let connectionState = 'disconnected';
+let clientId = '';
+let lastConnectedAt = '';
+let lastSeenAt = '';
+let lastConnectionError = '';
+let outgoingQueue = [];
+let runtimeDebug = null;
 let stopped = false;
 let currentRunId = '';
 let targetTabId = null;
@@ -24,7 +41,21 @@ const sidePorts = new Set();
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  initializeRuntimeLifecycle();
 });
+
+chrome.runtime.onStartup.addListener(() => {
+  initializeRuntimeLifecycle();
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name !== 'nexa.keepalive') {
+    return;
+  }
+  keepAliveTick();
+});
+
+initializeRuntimeLifecycle();
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'onebrain-sidepanel') {
@@ -52,6 +83,55 @@ chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {
   }
 });
 
+async function initializeRuntimeLifecycle() {
+  await hydrateRuntimeState();
+  chrome.alarms.create('nexa.keepalive', { periodInMinutes: 0.4 });
+  const config = await chrome.storage.local.get(DEFAULT_CONFIG);
+  if (config.host && config.port) {
+    connectWebSocket(config).catch(() => {});
+  }
+}
+
+async function hydrateRuntimeState() {
+  const session = await chrome.storage.session.get({ [SESSION_STATE_KEY]: null });
+  const saved = session[SESSION_STATE_KEY] || {};
+  clientId = saved.clientId || crypto.randomUUID();
+  currentRunId = saved.currentRunId || currentRunId || '';
+  currentRequestId = saved.currentRequestId || currentRequestId || '';
+  connectionState = saved.connectionState || connectionState;
+  lastConnectedAt = saved.lastConnectedAt || '';
+  lastSeenAt = saved.lastSeenAt || '';
+  recipeRunner = saved.recipeRunner || recipeRunner;
+  outgoingQueue = Array.isArray(saved.pendingOutgoingMessages) ? saved.pendingOutgoingMessages.slice(-OUTGOING_QUEUE_LIMIT) : [];
+  await persistRuntimeState();
+}
+
+async function persistRuntimeState() {
+  await chrome.storage.session.set({
+    [SESSION_STATE_KEY]: {
+      clientId,
+      currentRunId,
+      currentRequestId,
+      connectionState,
+      lastConnectedAt,
+      lastSeenAt,
+      recipeRunner,
+      pendingOutgoingMessages: outgoingQueue.slice(-OUTGOING_QUEUE_LIMIT)
+    }
+  }).catch(() => {});
+}
+
+async function keepAliveTick() {
+  const config = await chrome.storage.local.get(DEFAULT_CONFIG);
+  if (!socket || socket.readyState !== WebSocket.OPEN) {
+    scheduleReconnect();
+  } else {
+    sendPing();
+  }
+  await refreshDebug(config, { quiet: true });
+  await persistRuntimeState();
+}
+
 async function handlePanelMessage(message) {
   switch (message.type) {
     case 'connect':
@@ -67,6 +147,9 @@ async function handlePanelMessage(message) {
       break;
     case 'testHealth':
       testHealth(message.config);
+      break;
+    case 'refreshDebug':
+      refreshDebug(message.config || await chrome.storage.local.get(DEFAULT_CONFIG));
       break;
     case 'startRun':
       startRun(message.instruction);
@@ -147,7 +230,8 @@ async function publishSavedConfig() {
 async function saveConfig(config) {
   await chrome.storage.local.set({
     host: config.host || DEFAULT_CONFIG.host,
-    port: config.port || DEFAULT_CONFIG.port
+    port: config.port || DEFAULT_CONFIG.port,
+    token: config.token || DEFAULT_CONFIG.token
   });
 }
 
@@ -155,7 +239,11 @@ function connect(config) {
   return connectWebSocket(config);
 }
 
-function connectWebSocket(config) {
+async function connectWebSocket(config) {
+  config = config || await chrome.storage.local.get(DEFAULT_CONFIG);
+  if (!clientId) {
+    await hydrateRuntimeState();
+  }
   if (socket && socket.readyState === WebSocket.OPEN && connected) {
     return Promise.resolve();
   }
@@ -164,36 +252,57 @@ function connectWebSocket(config) {
     return connectingPromise;
   }
 
-  disconnect('reconnect');
+  clearReconnectTimer();
+  closeSocketOnly('reconnect');
   stopped = false;
+  connectionState = 'connecting';
   const url = `ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension`;
 
   connectingPromise = new Promise((resolve, reject) => {
     socket = new WebSocket(url);
     socket.addEventListener('open', () => {
       connected = true;
+      connectionState = 'connected';
       connectingPromise = null;
+      reconnectAttempt = 0;
+      missedPongs = 0;
+      lastConnectedAt = new Date().toISOString();
+      lastSeenAt = lastConnectedAt;
       publishState('connected', `Connected to ${url}`);
       sendToEngine({
         type: 'extension.hello',
         protocolVersion: PROTOCOL_VERSION,
-        clientId: chrome.runtime.id,
+        clientId,
         extensionVersion: chrome.runtime.getManifest().version,
-        browser: 'chrome'
+        browser: 'Chrome',
+        token: config.token || '',
+        resumeRunId: currentRunId || null
       });
+      flushOutgoingQueue();
+      startHeartbeat();
+      persistRuntimeState();
       resolve();
     });
     socket.addEventListener('message', (event) => handleEngineMessage(event.data));
     socket.addEventListener('close', () => {
       connected = false;
       connectingPromise = null;
-      publishState('disconnected', 'Bridge connection closed');
-      reject(new Error('Bridge connection closed'));
+      connectionState = stopped ? 'stopped' : 'reconnecting';
+      stopHeartbeat();
+      publishState(connectionState, 'Bridge connection closed');
+      persistRuntimeState();
+      scheduleReconnect();
+      resolve();
     });
     socket.addEventListener('error', () => {
       connected = false;
       connectingPromise = null;
+      connectionState = 'error';
+      lastConnectionError = 'Bridge WebSocket error';
+      stopHeartbeat();
       publishState('error', 'Bridge WebSocket error');
+      persistRuntimeState();
+      scheduleReconnect();
       reject(new Error('Bridge WebSocket error'));
     });
   });
@@ -202,13 +311,46 @@ function connectWebSocket(config) {
 }
 
 function disconnect(reason) {
-  if (socket) {
-    socket.close(1000, reason);
-  }
+  clearReconnectTimer();
+  closeSocketOnly(reason);
   socket = null;
   connected = false;
   connectingPromise = null;
+  connectionState = 'disconnected';
+  stopHeartbeat();
   publishState('disconnected', reason);
+  persistRuntimeState();
+}
+
+function closeSocketOnly(reason) {
+  if (socket) {
+    try {
+      socket.close(1000, reason);
+    } catch {
+      // Best effort close; reconnect logic owns recovery.
+    }
+  }
+}
+
+function scheduleReconnect() {
+  if (stopped || reconnectTimer) {
+    return;
+  }
+  reconnectAttempt += 1;
+  const baseDelay = BACKOFF_STEPS[Math.min(reconnectAttempt - 1, BACKOFF_STEPS.length - 1)];
+  const jitter = Math.floor(Math.random() * 120);
+  reconnectTimer = setTimeout(async () => {
+    reconnectTimer = null;
+    const config = await chrome.storage.local.get(DEFAULT_CONFIG);
+    connectWebSocket(config).catch(() => {});
+  }, baseDelay + jitter);
+}
+
+function clearReconnectTimer() {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
 }
 
 async function testHealth(config) {
@@ -224,6 +366,7 @@ async function testHealth(config) {
     } catch {
       publicConfig = null;
     }
+    await refreshDebug(config, { quiet: true });
     lastHealth = { ok: response.ok && body.ok, body: { ...body, publicConfig }, checkedAt: new Date().toISOString() };
     publish({ type: 'health', ok: response.ok && body.ok, body });
     publishRuntimeSnapshot();
@@ -231,6 +374,31 @@ async function testHealth(config) {
     lastHealth = { ok: false, error: String(error && error.message ? error.message : error), checkedAt: new Date().toISOString() };
     publish({ type: 'health', ok: false, error: String(error && error.message ? error.message : error) });
     publishRuntimeSnapshot();
+  }
+}
+
+async function refreshDebug(config, options = {}) {
+  const baseUrl = `http://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}`;
+  try {
+    const [runtimeResponse, clientsResponse, eventsResponse, debugResponse] = await Promise.all([
+      fetch(`${baseUrl}/runtime`, { cache: 'no-store' }),
+      fetch(`${baseUrl}/clients`, { cache: 'no-store' }),
+      fetch(`${baseUrl}/last-events`, { cache: 'no-store' }),
+      fetch(`${baseUrl}/debug`, { cache: 'no-store' })
+    ]);
+    runtimeDebug = {
+      runtime: await runtimeResponse.json(),
+      clients: await clientsResponse.json(),
+      events: await eventsResponse.json(),
+      debug: await debugResponse.json(),
+      checkedAt: new Date().toISOString()
+    };
+    publish({ type: 'debugSnapshot', debug: runtimeDebug });
+    publishRuntimeSnapshot();
+  } catch (error) {
+    if (!options.quiet) {
+      publish({ type: 'debugSnapshot', error: String(error && error.message ? error.message : error) });
+    }
   }
 }
 
@@ -247,6 +415,9 @@ async function startRun(instruction) {
     const body = await response.json();
     currentRunId = body.runId || '';
     publish({ type: 'runStarted', ok: response.ok, body });
+    if (!response.ok) {
+      publishState('error', body.message || body.error || 'Run rejected');
+    }
   } catch (error) {
     publishState('error', String(error && error.message ? error.message : error));
   }
@@ -289,8 +460,26 @@ function handleEngineMessage(raw) {
   }
 
   publish({ type: 'engineMessage', message });
+  lastSeenAt = new Date().toISOString();
+  persistRuntimeState();
   if (message.type === 'engine.hello') {
     publishState('connected', 'Engine hello received');
+    publishRuntimeSnapshot();
+    return;
+  }
+
+  if (message.type === 'engine.pong') {
+    if (Number(message.seq || 0) === lastPingSeq) {
+      missedPongs = 0;
+    }
+    publishRuntimeSnapshot();
+    return;
+  }
+
+  if (message.type === 'protocol.error') {
+    lastConnectionError = message.message || message.error || 'Protocol error';
+    connectionState = message.error === 'invalid_token' ? 'tokenError' : 'protocolError';
+    publishState('error', lastConnectionError);
     publishRuntimeSnapshot();
     return;
   }
@@ -471,10 +660,73 @@ function sendToolResult(request, success, result, error) {
 
 function sendToEngine(message) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    publishState('error', 'Not connected to engine');
+    enqueueOutgoing(message);
+    publishState('reconnecting', 'Not connected to engine; message queued');
+    scheduleReconnect();
     return;
   }
   socket.send(JSON.stringify(message));
+}
+
+function enqueueOutgoing(message) {
+  if (!isQueueSafe(message)) {
+    return;
+  }
+  const key = message.requestId || `${message.type}-${Date.now()}`;
+  outgoingQueue = outgoingQueue.filter((item) => item.key !== key);
+  outgoingQueue.push({ key, message, queuedAt: new Date().toISOString() });
+  if (outgoingQueue.length > OUTGOING_QUEUE_LIMIT) {
+    outgoingQueue = outgoingQueue.slice(-OUTGOING_QUEUE_LIMIT);
+  }
+  persistRuntimeState();
+}
+
+function flushOutgoingQueue() {
+  if (!socket || socket.readyState !== WebSocket.OPEN || outgoingQueue.length === 0) {
+    return;
+  }
+  const queue = outgoingQueue;
+  outgoingQueue = [];
+  for (const item of queue) {
+    socket.send(JSON.stringify(item.message));
+  }
+  persistRuntimeState();
+}
+
+function isQueueSafe(message) {
+  const text = JSON.stringify(message || {});
+  return !/(password|contrase|clave|token|otp|one-time-code)/i.test(text) || /extension\.hello|extension\.ping/.test(String(message && message.type || ''));
+}
+
+function startHeartbeat() {
+  stopHeartbeat();
+  heartbeatTimer = setInterval(sendPing, HEARTBEAT_MS);
+  sendPing();
+}
+
+function stopHeartbeat() {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+}
+
+function sendPing() {
+  if (!socket || socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+  if (lastPingSeq && missedPongs >= 2) {
+    connectionState = 'degraded';
+    publishState('reconnecting', 'Heartbeat degraded; reconnecting');
+    closeSocketOnly('heartbeat missed');
+    scheduleReconnect();
+    return;
+  }
+  pingSeq += 1;
+  lastPingSeq = pingSeq;
+  missedPongs += 1;
+  socket.send(JSON.stringify({ type: 'extension.ping', seq: pingSeq, clientId }));
+  persistRuntimeState();
 }
 
 function publish(message) {
@@ -1141,10 +1393,17 @@ async function publishRuntimeSnapshot() {
     runtime: {
       connection: {
         connected,
+        state: connectionState,
         stopped,
+        clientId,
+        lastConnectedAt,
+        lastSeenAt,
+        lastError: lastConnectionError,
+        queuedMessages: outgoingQueue.length,
         host: config.host || DEFAULT_CONFIG.host,
         port: config.port || DEFAULT_CONFIG.port,
-        health: lastHealth
+        health: lastHealth,
+        debug: runtimeDebug
       },
       ai: {
         provider: lastHealth && lastHealth.body && lastHealth.body.publicConfig ? lastHealth.body.publicConfig.aiProvider || 'OpenAI' : 'OpenAI',
@@ -1154,6 +1413,9 @@ async function publishRuntimeSnapshot() {
       },
       extension: {
         webSocketConnected: connected,
+        protocolVersion: PROTOCOL_VERSION,
+        clientId,
+        lastSeenAt,
         tabId: tab && tab.id ? String(tab.id) : '',
         url: tab ? tab.url || '' : '',
         contentScriptActive: tab ? !restrictedUrl(tab.url || '') : false,

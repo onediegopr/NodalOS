@@ -1189,6 +1189,18 @@ Desde `NEXA Browser-003`, Recipe Mode agrega:
 * retry/abort/skip seguro
 * JS fixture tests para catalogo, resolucion y recetas
 
+Desde `NEXA Browser-004`, el lab agrega connection reliability:
+
+* WebSocket bridge con lectura por frames y errores por mensaje
+* registry diagnostico de clientes
+* endpoints `/clients`, `/runtime`, `/last-events`, `/debug`
+* handshake versionado con token local
+* heartbeat `extension.ping` / `engine.pong`
+* reconnect/backoff en MV3 service worker
+* estado minimo en `chrome.storage.session`
+* Runtime UI con diagnostico de bridge/cliente
+* navegacion robusta para anchors HTTP/HTTPS
+
 El objetivo es endurecer la capa web sin mezclarla con el motor seguro de escritorio.
 
 ---

@@ -257,7 +257,14 @@
       temporaryHighlight(resolved.element, 0);
     }
     tryFocus(resolved.element);
-    resolved.element.click();
+    if (resolved.element instanceof HTMLAnchorElement &&
+        resolved.element.href &&
+        verificationRequest.expectUrlChange &&
+        isSafeNavigationHref(resolved.element.href)) {
+      window.location.href = resolved.element.href;
+    } else {
+      resolved.element.click();
+    }
     const verification = await verifyAfterAction(before, verificationRequest);
 
     return {
@@ -1735,6 +1742,15 @@
 
   function isRestrictedLocation(url) {
     return /^(chrome|edge|extension):\/\//i.test(url || '');
+  }
+
+  function isSafeNavigationHref(url) {
+    try {
+      const parsed = new URL(url, window.location.href);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
   }
 
   function normalize(value) {

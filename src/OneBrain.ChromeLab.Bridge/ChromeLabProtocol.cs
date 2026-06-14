@@ -27,7 +27,14 @@ public sealed record PublicConfigResponse(
     string ProtocolVersion,
     string AiProvider,
     string Model,
-    bool HasApiKey);
+    bool HasApiKey,
+    bool RequiresToken);
+
+public sealed record ErrorResponse(
+    bool Ok,
+    string Error,
+    string Message,
+    string DebugUrl);
 
 public sealed record StartRunRequest(
     string Instruction,
@@ -38,6 +45,40 @@ public sealed record RunResponse(
     string RunId,
     string Status,
     string Message);
+
+public sealed record RuntimeResponse(
+    bool Ok,
+    double UptimeSeconds,
+    bool HasApiKey,
+    string Provider,
+    string Model,
+    string Host,
+    int Port,
+    string? LastError);
+
+public sealed record ClientDiagnosticsResponse(
+    int ConnectedCount,
+    IReadOnlyList<ClientDiagnostics> Clients);
+
+public sealed record ClientDiagnostics(
+    string ClientId,
+    bool Connected,
+    double LastSeenMs,
+    string ProtocolVersion,
+    string ExtensionVersion,
+    string Browser,
+    string Transport,
+    string? CurrentRunId,
+    string? PendingRequestId,
+    string? LastError);
+
+public sealed record ProtocolEvent(
+    DateTimeOffset Timestamp,
+    string EventType,
+    string? RunId,
+    string? RequestId,
+    string? ClientId,
+    string Summary);
 
 public sealed record ToolRequest(
     string Type,
@@ -96,6 +137,8 @@ public sealed class ChromeLabRunManager
 
     public ChromeLabRun? Get(string runId) => _runs.TryGetValue(runId, out var run) ? run : null;
 
+    public IReadOnlyList<ChromeLabRun> Snapshot() => _runs.Values.OrderBy(run => run.RunId, StringComparer.Ordinal).ToArray();
+
     public ChromeLabRun Stop(string runId, string reason = "userStop") =>
         Update(runId, "stopped", reason, stopRequested: true, pausedReason: null);
 
@@ -131,18 +174,105 @@ public sealed class ChromeLabRunManager
 
 public sealed class ChromeLabClientRegistry
 {
-    private readonly ConcurrentDictionary<string, WebSocket> _clients = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ClientConnection> _clients = new(StringComparer.OrdinalIgnoreCase);
 
-    public bool HasConnectedClients => !_clients.IsEmpty;
+    public bool HasConnectedClients => _clients.Values.Any(client => client.Connected && client.Socket.State == WebSocketState.Open);
 
     public string Add(WebSocket socket)
     {
         var clientId = Guid.NewGuid().ToString("n");
-        _clients[clientId] = socket;
+        var now = DateTimeOffset.UtcNow;
+        _clients[clientId] = new ClientConnection(
+            clientId,
+            socket,
+            Connected: false,
+            ConnectedAt: now,
+            LastSeenAt: now,
+            LastPingAt: null,
+            LastPongAt: null,
+            ProtocolVersion: "",
+            ExtensionVersion: "",
+            Browser: "",
+            Transport: "websocket",
+            CurrentRunId: null,
+            PendingRequestId: null,
+            LastError: "Awaiting hello");
         return clientId;
     }
 
-    public void Remove(string clientId) => _clients.TryRemove(clientId, out _);
+    public void RegisterHello(
+        string clientId,
+        string protocolVersion,
+        string extensionVersion,
+        string browser,
+        string? resumeRunId)
+    {
+        _clients.AddOrUpdate(
+            clientId,
+            _ => throw new InvalidOperationException("client not found"),
+            (_, current) => current with
+            {
+                Connected = true,
+                LastSeenAt = DateTimeOffset.UtcNow,
+                ProtocolVersion = protocolVersion,
+                ExtensionVersion = extensionVersion,
+                Browser = browser,
+                CurrentRunId = resumeRunId,
+                LastError = null
+            });
+    }
+
+    public void MarkSeen(string clientId)
+    {
+        Update(clientId, current => current with { LastSeenAt = DateTimeOffset.UtcNow });
+    }
+
+    public void MarkPing(string clientId)
+    {
+        var now = DateTimeOffset.UtcNow;
+        Update(clientId, current => current with { LastSeenAt = now, LastPingAt = now });
+    }
+
+    public void MarkPong(string clientId)
+    {
+        Update(clientId, current => current with { LastSeenAt = DateTimeOffset.UtcNow, LastPongAt = DateTimeOffset.UtcNow });
+    }
+
+    public void MarkRun(string clientId, string? runId, string? requestId)
+    {
+        Update(clientId, current => current with { CurrentRunId = runId, PendingRequestId = requestId, LastSeenAt = DateTimeOffset.UtcNow });
+    }
+
+    public void MarkError(string clientId, string error)
+    {
+        Update(clientId, current => current with { LastError = Redact(error), LastSeenAt = DateTimeOffset.UtcNow });
+    }
+
+    public void Remove(string clientId)
+    {
+        Update(clientId, current => current with { Connected = false, LastError = "Disconnected", LastSeenAt = DateTimeOffset.UtcNow });
+    }
+
+    public ClientDiagnosticsResponse Diagnostics()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var clients = _clients.Values
+            .OrderByDescending(client => client.LastSeenAt)
+            .Select(client => new ClientDiagnostics(
+                client.ClientId,
+                client.Connected && client.Socket.State == WebSocketState.Open,
+                Math.Max(0, (now - client.LastSeenAt).TotalMilliseconds),
+                client.ProtocolVersion,
+                client.ExtensionVersion,
+                client.Browser,
+                client.Transport,
+                client.CurrentRunId,
+                client.PendingRequestId,
+                client.LastError))
+            .ToArray();
+
+        return new ClientDiagnosticsResponse(clients.Count(client => client.Connected), clients);
+    }
 
     public async Task BroadcastAsync(object message, CancellationToken cancellationToken)
     {
@@ -150,14 +280,75 @@ public sealed class ChromeLabClientRegistry
         var bytes = Encoding.UTF8.GetBytes(payload);
         foreach (var client in _clients.ToArray())
         {
-            if (client.Value.State != WebSocketState.Open)
+            if (!client.Value.Connected || client.Value.Socket.State != WebSocketState.Open)
             {
                 Remove(client.Key);
                 continue;
             }
 
-            await client.Value.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
+            await client.Value.Socket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
         }
+    }
+
+    private void Update(string clientId, Func<ClientConnection, ClientConnection> update)
+    {
+        _clients.AddOrUpdate(
+            clientId,
+            _ => throw new InvalidOperationException("client not found"),
+            (_, current) => update(current));
+    }
+
+    private static string Redact(string value) =>
+        string.IsNullOrWhiteSpace(value) ? "" : value.Length > 240 ? string.Concat(value.AsSpan(0, 240), "...") : value;
+}
+
+public sealed record ClientConnection(
+    string ClientId,
+    WebSocket Socket,
+    bool Connected,
+    DateTimeOffset ConnectedAt,
+    DateTimeOffset LastSeenAt,
+    DateTimeOffset? LastPingAt,
+    DateTimeOffset? LastPongAt,
+    string ProtocolVersion,
+    string ExtensionVersion,
+    string Browser,
+    string Transport,
+    string? CurrentRunId,
+    string? PendingRequestId,
+    string? LastError);
+
+public sealed class ProtocolEventBuffer
+{
+    private readonly ConcurrentQueue<ProtocolEvent> _events = new();
+    private const int MaxEvents = 200;
+
+    public string? LastError { get; private set; }
+
+    public void Add(string eventType, string summary, string? runId = null, string? requestId = null, string? clientId = null)
+    {
+        var safeSummary = Redact(summary);
+        _events.Enqueue(new ProtocolEvent(DateTimeOffset.UtcNow, eventType, runId, requestId, clientId, safeSummary));
+        if (eventType.Contains("error", StringComparison.OrdinalIgnoreCase))
+            LastError = safeSummary;
+
+        while (_events.Count > MaxEvents && _events.TryDequeue(out _))
+        {
+        }
+    }
+
+    public IReadOnlyList<ProtocolEvent> Snapshot() => _events.ToArray();
+
+    private static string Redact(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        var redacted = value
+            .Replace("password", "[redacted]", StringComparison.OrdinalIgnoreCase)
+            .Replace("clave", "[redacted]", StringComparison.OrdinalIgnoreCase)
+            .Replace("token", "[redacted]", StringComparison.OrdinalIgnoreCase);
+        return redacted.Length > 500 ? string.Concat(redacted.AsSpan(0, 500), "...") : redacted;
     }
 }
 
@@ -176,4 +367,6 @@ public sealed class PendingToolRequestRegistry
     {
         return _pending.TryRemove(requestId, out var pending) ? pending : null;
     }
+
+    public IReadOnlyDictionary<string, PendingToolRequest> Snapshot() => _pending.ToDictionary();
 }

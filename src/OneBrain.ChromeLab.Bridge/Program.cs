@@ -8,11 +8,14 @@ var options = ChromeLabOptions.Load(args);
 if (options.SelfTest)
     return await ChromeLabSelfTest.RunAsync(options);
 
+var startedAt = DateTimeOffset.UtcNow;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(options);
+builder.Services.AddSingleton(new BridgeRuntimeState(startedAt));
 builder.Services.AddSingleton<ChromeLabRunManager>();
 builder.Services.AddSingleton<ChromeLabClientRegistry>();
 builder.Services.AddSingleton<PendingToolRequestRegistry>();
+builder.Services.AddSingleton<ProtocolEventBuffer>();
 builder.Services.AddHttpClient<OpenAiAgentClient>();
 builder.Services.AddCors(cors =>
 {
@@ -43,7 +46,57 @@ app.MapGet("/config/public", (ChromeLabOptions config) => new PublicConfigRespon
     ChromeLabProtocol.Version,
     "openai",
     config.Model,
-    config.HasApiKey));
+    config.HasApiKey,
+    config.RequiresToken));
+
+app.MapGet("/runtime", (ChromeLabOptions config, ProtocolEventBuffer events, BridgeRuntimeState runtime) => new RuntimeResponse(
+    true,
+    (DateTimeOffset.UtcNow - runtime.StartedAt).TotalSeconds,
+    config.HasApiKey,
+    "OpenAI",
+    config.Model,
+    config.Host,
+    config.Port,
+    events.LastError));
+
+app.MapGet("/clients", (ChromeLabClientRegistry clients) => clients.Diagnostics());
+
+app.MapGet("/last-events", (ProtocolEventBuffer events) => events.Snapshot());
+
+app.MapGet("/debug", (
+    ChromeLabOptions config,
+    ChromeLabClientRegistry clients,
+    ChromeLabRunManager runs,
+    PendingToolRequestRegistry pending,
+    ProtocolEventBuffer events,
+    BridgeRuntimeState runtime) => new
+{
+    runtime = new RuntimeResponse(
+        true,
+        (DateTimeOffset.UtcNow - runtime.StartedAt).TotalSeconds,
+        config.HasApiKey,
+        "OpenAI",
+        config.Model,
+        config.Host,
+        config.Port,
+        events.LastError),
+    clients = clients.Diagnostics(),
+    runs = runs.Snapshot().Select(run => new
+    {
+        run.RunId,
+        run.Status,
+        run.Message,
+        run.StopRequested,
+        run.PausedReason
+    }),
+    pending = pending.Snapshot().Select(item => new
+    {
+        requestId = item.Key,
+        item.Value.RunId,
+        item.Value.Tool
+    }),
+    events = events.Snapshot()
+});
 
 app.MapPost("/api/runs", async (
     StartRunRequest request,
@@ -57,13 +110,16 @@ app.MapPost("/api/runs", async (
     if (string.IsNullOrWhiteSpace(request.Instruction))
         return Results.BadRequest(new RunResponse("", "error", "instruction is required"));
 
-    var run = runs.Start(request.Instruction);
     if (!clients.HasConnectedClients)
     {
-        runs.Stop(run.RunId, "no extension connected");
-        return Results.Ok(new RunResponse(run.RunId, "error", "No extension client connected."));
+        return Results.Conflict(new ErrorResponse(
+            false,
+            "no_extension_client",
+            "No extension client connected. Open NEXA side panel or connect the extension.",
+            "/debug"));
     }
 
+    var run = runs.Start(request.Instruction);
     if (!agent.HasApiKey)
     {
         runs.Stop(run.RunId, "OpenAI API key missing");
@@ -83,6 +139,10 @@ app.MapPost("/api/runs", async (
         firstTool,
         firstArgs);
     pending.Track(firstRequestId, run.RunId, firstTool);
+    clients.Diagnostics().Clients
+        .Where(client => client.Connected)
+        .ToList()
+        .ForEach(client => clients.MarkRun(client.ClientId, run.RunId, firstRequestId));
     await clients.BroadcastAsync(observe, cancellationToken);
     return Results.Ok(new RunResponse(run.RunId, "running", $"Run started; {firstTool} requested."));
 });
@@ -128,7 +188,9 @@ app.Map("/ws/extension", async (
     ChromeLabClientRegistry clients,
     ChromeLabRunManager runs,
     PendingToolRequestRegistry pending,
-    OpenAiAgentClient agent) =>
+    OpenAiAgentClient agent,
+    ChromeLabOptions config,
+    ProtocolEventBuffer events) =>
 {
     if (!context.WebSockets.IsWebSocketRequest)
     {
@@ -138,29 +200,48 @@ app.Map("/ws/extension", async (
 
     using var socket = await context.WebSockets.AcceptWebSocketAsync();
     var clientId = clients.Add(socket);
-    await clients.BroadcastAsync(new
-    {
-        type = "engine.hello",
-        protocolVersion = ChromeLabProtocol.Version,
-        engineVersion = ChromeLabProtocol.EngineVersion
-    }, context.RequestAborted);
+    events.Add("ws.accepted", "WebSocket accepted", clientId: clientId);
 
-    var buffer = new byte[64 * 1024];
     try
     {
         while (socket.State == WebSocketState.Open && !context.RequestAborted.IsCancellationRequested)
         {
-            var result = await socket.ReceiveAsync(buffer, context.RequestAborted);
-            if (result.MessageType == WebSocketMessageType.Close)
+            var received = await ReceiveTextMessageAsync(socket, context.RequestAborted);
+            if (received == null)
                 break;
 
-            var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            await HandleExtensionMessage(json, socket, runs, clients, pending, agent, context.RequestAborted);
+            try
+            {
+                await HandleExtensionMessage(received, socket, clientId, runs, clients, pending, agent, config, events, context.RequestAborted);
+            }
+            catch (JsonException)
+            {
+                events.Add("protocol.error", "Malformed JSON ignored", clientId: clientId);
+                clients.MarkError(clientId, "Malformed JSON ignored");
+                await SendAsync(socket, new
+                {
+                    type = "protocol.error",
+                    error = "malformed_json",
+                    message = "Malformed JSON ignored."
+                }, context.RequestAborted);
+            }
+            catch (Exception ex)
+            {
+                events.Add("protocol.error", ex.Message, clientId: clientId);
+                clients.MarkError(clientId, ex.Message);
+                await SendAsync(socket, new
+                {
+                    type = "protocol.error",
+                    error = "message_failed",
+                    message = ex.Message
+                }, context.RequestAborted);
+            }
         }
     }
     finally
     {
         clients.Remove(clientId);
+        events.Add("ws.closed", "WebSocket closed", clientId: clientId);
     }
 });
 
@@ -168,6 +249,9 @@ Console.WriteLine($"{ChromeLabProtocol.ServiceName} listening on http://{options
 foreach (var ip in options.GetLocalIpAddresses())
     Console.WriteLine($"LAN candidate: http://{ip}:{options.Port}");
 Console.WriteLine(options.HasApiKey ? "OpenAI key loaded: yes" : "OpenAI key loaded: no");
+Console.WriteLine($"Connection token: {MaskToken(options.ConnectionToken)}");
+if (!options.AllowLan && !string.Equals(options.Host, "127.0.0.1", StringComparison.OrdinalIgnoreCase))
+    Console.WriteLine("LAN disabled; use --allow-lan explicitly to bind outside loopback.");
 
 await app.RunAsync();
 return 0;
@@ -175,22 +259,84 @@ return 0;
 static async Task HandleExtensionMessage(
     string json,
     WebSocket socket,
+    string clientId,
     ChromeLabRunManager runs,
     ChromeLabClientRegistry clients,
     PendingToolRequestRegistry pending,
     OpenAiAgentClient agent,
+    ChromeLabOptions config,
+    ProtocolEventBuffer events,
     CancellationToken cancellationToken)
 {
     using var doc = JsonDocument.Parse(json);
     var type = doc.RootElement.TryGetProperty("type", out var typeProperty) ? typeProperty.GetString() ?? "" : "";
+    clients.MarkSeen(clientId);
     if (type == "extension.hello")
     {
+        var token = doc.RootElement.TryGetProperty("token", out var tokenProperty) ? tokenProperty.GetString() ?? "" : "";
+        if (!string.Equals(token, config.ConnectionToken, StringComparison.Ordinal))
+        {
+            clients.MarkError(clientId, "Invalid connection token");
+            events.Add("auth.rejected", "Invalid connection token", clientId: clientId);
+            await SendAsync(socket, new
+            {
+                type = "protocol.error",
+                error = "invalid_token",
+                message = "Invalid connection token."
+            }, cancellationToken);
+            await socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "invalid token", cancellationToken);
+            return;
+        }
+
+        var protocolVersion = doc.RootElement.TryGetProperty("protocolVersion", out var protocolProperty) ? protocolProperty.GetString() ?? "" : "";
+        if (!string.Equals(protocolVersion, ChromeLabProtocol.Version, StringComparison.Ordinal))
+        {
+            clients.MarkError(clientId, "Protocol version mismatch");
+            events.Add("protocol.rejected", "Protocol version mismatch", clientId: clientId);
+            await SendAsync(socket, new
+            {
+                type = "protocol.error",
+                error = "protocol_version_mismatch",
+                message = "Protocol version mismatch."
+            }, cancellationToken);
+            await socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, "protocol version mismatch", cancellationToken);
+            return;
+        }
+
+        var extensionClientId = doc.RootElement.TryGetProperty("clientId", out var clientProperty) ? clientProperty.GetString() ?? "" : "";
+        var extensionVersion = doc.RootElement.TryGetProperty("extensionVersion", out var versionProperty) ? versionProperty.GetString() ?? "" : "";
+        var browser = doc.RootElement.TryGetProperty("browser", out var browserProperty) ? browserProperty.GetString() ?? "" : "";
+        var resumeRunId = doc.RootElement.TryGetProperty("resumeRunId", out var resumeProperty) ? resumeProperty.GetString() : null;
+        clients.RegisterHello(clientId, protocolVersion, extensionVersion, browser, resumeRunId);
+        events.Add("extension.hello", $"Extension hello from {browser} {extensionVersion}; client {SafeClientLabel(extensionClientId)}", clientId: clientId);
         await SendAsync(socket, new
         {
             type = "engine.hello",
             protocolVersion = ChromeLabProtocol.Version,
-            engineVersion = ChromeLabProtocol.EngineVersion
+            engineVersion = ChromeLabProtocol.EngineVersion,
+            serverTime = DateTimeOffset.UtcNow,
+            resync = new
+            {
+                run = resumeRunId == null ? null : runs.Get(resumeRunId),
+                pendingRequest = (object?)null
+            }
         }, cancellationToken);
+        return;
+    }
+
+    if (type == "extension.ping")
+    {
+        clients.MarkPing(clientId);
+        var seq = doc.RootElement.TryGetProperty("seq", out var seqProperty) && seqProperty.ValueKind == JsonValueKind.Number
+            ? seqProperty.GetInt32()
+            : 0;
+        await SendAsync(socket, new
+        {
+            type = "engine.pong",
+            seq,
+            serverTime = DateTimeOffset.UtcNow
+        }, cancellationToken);
+        clients.MarkPong(clientId);
         return;
     }
 
@@ -203,6 +349,8 @@ static async Task HandleExtensionMessage(
         var runId = runIdProperty.GetString() ?? "";
         var requestId = requestIdProperty.GetString() ?? "";
         var success = successProperty.ValueKind is JsonValueKind.True or JsonValueKind.False && successProperty.GetBoolean();
+        events.Add("tool.result", $"Tool result success={success}", runId, requestId, clientId);
+        clients.MarkRun(clientId, runId, requestId);
         var completed = pending.Complete(requestId);
         var run = runs.Get(runId);
         if (run == null)
@@ -534,9 +682,45 @@ static string? ExtractFirstHttpUrl(string text)
     return UrlValidator.IsAllowedNavigationUrl(url) ? url : null;
 }
 
+static async Task<string?> ReceiveTextMessageAsync(WebSocket socket, CancellationToken cancellationToken)
+{
+    var buffer = new byte[16 * 1024];
+    using var stream = new MemoryStream();
+    while (true)
+    {
+        var result = await socket.ReceiveAsync(buffer, cancellationToken);
+        if (result.MessageType == WebSocketMessageType.Close)
+            return null;
+        if (result.MessageType != WebSocketMessageType.Text)
+            throw new InvalidOperationException("Only text WebSocket messages are supported.");
+
+        stream.Write(buffer, 0, result.Count);
+        if (result.EndOfMessage)
+            break;
+    }
+
+    return Encoding.UTF8.GetString(stream.ToArray());
+}
+
+static string MaskToken(string token)
+{
+    if (string.IsNullOrWhiteSpace(token))
+        return "<missing>";
+    return token.Length <= 8 ? "********" : $"{token[..4]}...{token[^4..]}";
+}
+
+static string SafeClientLabel(string clientId)
+{
+    if (string.IsNullOrWhiteSpace(clientId))
+        return "<missing>";
+    return clientId.Length <= 12 ? clientId : clientId[..12];
+}
+
 static async Task SendAsync(WebSocket socket, object message, CancellationToken cancellationToken)
 {
     var payload = JsonSerializer.Serialize(message, ChromeLabProtocol.JsonOptions);
     var bytes = Encoding.UTF8.GetBytes(payload);
     await socket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
 }
+
+public sealed record BridgeRuntimeState(DateTimeOffset StartedAt);

@@ -162,8 +162,11 @@
       <section class="surface connection-strip">
         <label>Host <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
         <label>Puerto <input id="portInput" value="8787" autocomplete="off"></label>
+        <label>Token <input id="tokenInput" type="password" autocomplete="off" placeholder="bridge token"></label>
         <button id="connectBtn" class="primary">Connect</button>
         <button id="healthBtn">Health</button>
+        <button id="reconnectBtn">Reconnect</button>
+        <button id="refreshDebugBtn">Refresh Debug</button>
       </section>
 
       <section class="grid two">
@@ -174,6 +177,8 @@
             <dt>Host</dt><dd id="runtimeHost">-</dd>
             <dt>Puerto</dt><dd id="runtimePort">-</dd>
             <dt>Health</dt><dd id="runtimeHealth">-</dd>
+            <dt>Clientes</dt><dd id="runtimeClients">-</dd>
+            <dt>Diagnostico</dt><dd id="runtimeDiagnostic">-</dd>
           </dl>
         </article>
         <article class="surface">
@@ -192,6 +197,9 @@
           <h2>Extensión</h2>
           <dl>
             <dt>WebSocket</dt><dd id="runtimeSocket">-</dd>
+            <dt>Client ID</dt><dd id="runtimeClientId">-</dd>
+            <dt>Last seen</dt><dd id="runtimeLastSeen">-</dd>
+            <dt>Protocol</dt><dd id="runtimeProtocol">-</dd>
             <dt>Tab</dt><dd id="pageTab">-</dd>
             <dt>URL</dt><dd id="runtimeUrl">-</dd>
             <dt>Content</dt><dd id="runtimeContent">-</dd>
