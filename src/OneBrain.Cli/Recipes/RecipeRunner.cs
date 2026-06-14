@@ -982,6 +982,10 @@ public sealed class RecipeRunner
     // ── actv.type ───────────────────────────────────────────────────────────
     private RecipeStepRunResult ExecuteActvType(RecipeStepDefinition step, Stopwatch sw)
     {
+        var legacyDecision = EvaluateLegacyExecution(step, "actv.type");
+        if (!legacyDecision.Allowed)
+            return BlockLegacyExecution(step, sw, legacyDecision);
+
         var targetRef = BuildTargetRef(step);
         if (targetRef == null)
             return Fail(step, sw, "actv.type requires a selector (role, name, automationId, or class).");
@@ -1001,6 +1005,10 @@ public sealed class RecipeRunner
     // ── actv.invoke ─────────────────────────────────────────────────────────
     private RecipeStepRunResult ExecuteActvInvoke(RecipeStepDefinition step, Stopwatch sw)
     {
+        var legacyDecision = EvaluateLegacyExecution(step, "actv.invoke");
+        if (!legacyDecision.Allowed)
+            return BlockLegacyExecution(step, sw, legacyDecision);
+
         var targetRef = BuildTargetRef(step);
         if (targetRef == null)
             return Fail(step, sw, "actv.invoke requires a selector (role, name, automationId, or class).");
@@ -1018,6 +1026,10 @@ public sealed class RecipeRunner
     // ── key ─────────────────────────────────────────────────────────────────
     private RecipeStepRunResult ExecuteKey(RecipeStepDefinition step, Stopwatch sw)
     {
+        var legacyDecision = EvaluateLegacyExecution(step, "key");
+        if (!legacyDecision.Allowed)
+            return BlockLegacyExecution(step, sw, legacyDecision);
+
         var text = R(step.Text);
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -1044,6 +1056,56 @@ public sealed class RecipeRunner
     }
 
     // ── visual.capture ─────────────────────────────────────────────────────
+    private LegacyExecutionDecision EvaluateLegacyExecution(RecipeStepDefinition step, string surface)
+    {
+        return LegacyExecutionGuard.Evaluate(
+            step.Kind,
+            surface,
+            LegacyExecutionGuard.ReadProcessEnvironment(),
+            IsExplicitLegacyOptIn(step));
+    }
+
+    private bool IsExplicitLegacyOptIn(RecipeStepDefinition step)
+    {
+        var value = ResolveArg(step, "allowLegacyActions");
+        return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(value, "1", StringComparison.Ordinal);
+    }
+
+    private RecipeStepRunResult BlockLegacyExecution(
+        RecipeStepDefinition step,
+        Stopwatch sw,
+        LegacyExecutionDecision decision)
+    {
+        var prefix = string.IsNullOrWhiteSpace(step.SaveAs) ? "legacy" : step.SaveAs!;
+
+        _ctx.Variables["legacy.success"] = "false";
+        _ctx.Variables["legacy.blocked"] = "true";
+        _ctx.Variables["legacy.stepKind"] = decision.StepKind;
+        _ctx.Variables["legacy.surface"] = decision.Surface;
+        _ctx.Variables["legacy.reason"] = decision.Reason;
+        _ctx.Variables["legacy.optInRequired"] = "true";
+        _ctx.Variables["legacy.guard.allowed"] = "false";
+        _ctx.Variables["legacy.guard.isQuarantined"] = decision.IsQuarantined ? "true" : "false";
+
+        _ctx.Variables[prefix + ".legacyBlocked"] = "true";
+        _ctx.Variables[prefix + ".success"] = "false";
+        _ctx.Variables[prefix + ".failureKind"] = FailureKind.PolicyDenied.ToString();
+        _ctx.Variables[prefix + ".reason"] = decision.Reason;
+        _ctx.Variables[prefix + ".legacy.stepKind"] = decision.StepKind;
+        _ctx.Variables[prefix + ".legacy.surface"] = decision.Surface;
+        _ctx.Variables[prefix + ".legacy.guard.allowed"] = "false";
+
+        sw.Stop();
+        return new RecipeStepRunResult(
+            step.Id,
+            step.Kind,
+            false,
+            $"{step.Kind}: legacy execution blocked: {decision.Reason}",
+            sw.ElapsedMilliseconds,
+            decision);
+    }
+
     private RecipeStepRunResult ExecuteVisualCapture(RecipeStepDefinition step, Stopwatch sw)
     {
         if (_stepCts?.IsCancellationRequested == true)

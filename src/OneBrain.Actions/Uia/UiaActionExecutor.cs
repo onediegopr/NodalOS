@@ -15,6 +15,8 @@ namespace OneBrain.Actions.Uia;
 
 public sealed class UiaActionExecutor
 {
+    // Legacy/quarantine executor. RecipeRunner gates actv.type, actv.invoke and key
+    // with LegacyExecutionGuard before this class can be reached. Do not use from safe.*.
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
 

@@ -7,6 +7,8 @@ namespace OneBrain.Verification.Engine;
 
 public sealed class BasicActionVerifier
 {
+    // Legacy/quarantine verifier for actv.* flows. RecipeRunner must pass
+    // LegacyExecutionGuard before this verifier can be reached. Do not use from safe.*.
     private readonly CognitiveSnapshotReader _reader = new();
     private readonly UiaActionExecutor _executor = new();
 

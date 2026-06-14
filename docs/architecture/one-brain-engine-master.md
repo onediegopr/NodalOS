@@ -705,6 +705,14 @@ El gate mide si es seguro retirar legacy. H154 ejecuta el retiro del camino lega
 
 Las clases legacy globales pueden seguir existiendo si otros flujos las usan, pero no son alcanzables desde el dispatch de `safe.click`.
 
+H160 agrega cuarentena deny-by-default para steps legacy de receta:
+
+* `actv.type`
+* `actv.invoke`
+* `key`
+
+Esos steps requieren opt-in explicito doble (`ONEBRAIN_ALLOW_LEGACY_ACTIONS=1` y `allowLegacyActions=true`). `safe.click`, `safe.read` y `safe.type` ignoran ese opt-in y no pueden alcanzar `UiaActionExecutor`, `BasicActionVerifier`, `GetClickablePoint`, `el.Click`, teclado simulado, coordenadas ni clipboard.
+
 ---
 
 ## 10. SafeClickStepVerifier
@@ -1072,6 +1080,7 @@ Siguientes pasos:
 * HITO-156 — Core Engine Hardening Before safe.type **(implementado: invoke-time identity gate antes de `InvokePattern.Invoke()`, policy explicita para contratos `click`, ledger pre-FSM para bloqueos, legacy muerto de `safe.click` aislado; NO implementa `safe.type`)**
 * HITO-158 — safe.read + Action Contract Policy Registry + Invoke-Time Gate Testable **(implementado: registry de políticas por `ActionKind`, gate invoke-time puro/testeable, `safe.read` read-only con `ValuePattern`/`TextPattern`; NO implementa `safe.type`)**
 * HITO-159 - safe.type UIA ValuePattern **(implementado: primera escritura segura por `ValuePattern.SetValue`, policy `type`, binding contra identidad viva, ownership pre-commit, readback, password fields bloqueados; NO implementa form fill ni submit)**
+* HITO-160 - Legacy Quarantine / safe path locks **(implementado: `actv.type`, `actv.invoke` y `key` bloqueados por default con `LegacyExecutionGuard`; opt-in legacy doble y auditable; `safe.*` ignora opt-in legacy)**
 
 ### Fase siguiente: percepción robusta
 
