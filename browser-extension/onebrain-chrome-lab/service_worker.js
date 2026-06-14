@@ -15,6 +15,8 @@ let connectingPromise = null;
 let reconnectTimer = null;
 let heartbeatTimer = null;
 let reconnectAttempt = 0;
+let reconnectBlocked = false;
+let reconnectBlockedReason = '';
 let pingSeq = 0;
 let lastPingSeq = 0;
 let missedPongs = 0;
@@ -99,6 +101,8 @@ async function hydrateRuntimeState() {
   currentRunId = saved.currentRunId || currentRunId || '';
   currentRequestId = saved.currentRequestId || currentRequestId || '';
   connectionState = saved.connectionState || connectionState;
+  reconnectBlocked = Boolean(saved.reconnectBlocked);
+  reconnectBlockedReason = saved.reconnectBlockedReason || '';
   lastConnectedAt = saved.lastConnectedAt || '';
   lastSeenAt = saved.lastSeenAt || '';
   recipeRunner = saved.recipeRunner || recipeRunner;
@@ -113,6 +117,8 @@ async function persistRuntimeState() {
       currentRunId,
       currentRequestId,
       connectionState,
+      reconnectBlocked,
+      reconnectBlockedReason,
       lastConnectedAt,
       lastSeenAt,
       recipeRunner,
@@ -124,7 +130,7 @@ async function persistRuntimeState() {
 async function keepAliveTick() {
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
   if (!socket || socket.readyState !== WebSocket.OPEN) {
-    scheduleReconnect();
+    scheduleReconnect('keepalive');
   } else {
     sendPing();
   }
@@ -236,13 +242,26 @@ async function saveConfig(config) {
 }
 
 function connect(config) {
-  return connectWebSocket(config);
+  reconnectBlocked = false;
+  reconnectBlockedReason = '';
+  lastConnectionError = '';
+  return connectWebSocket(config, { manual: true });
 }
 
-async function connectWebSocket(config) {
+async function connectWebSocket(config, options = {}) {
   config = config || await chrome.storage.local.get(DEFAULT_CONFIG);
   if (!clientId) {
     await hydrateRuntimeState();
+  }
+  if (options.manual) {
+    reconnectBlocked = false;
+    reconnectBlockedReason = '';
+    lastConnectionError = '';
+  }
+  if (reconnectBlocked && !options.manual) {
+    const blockedReason = reconnectBlockedReason || lastConnectionError || 'Reconnect blocked until configuration changes.';
+    publishState('error', blockedReason);
+    throw new Error(blockedReason);
   }
   if (socket && socket.readyState === WebSocket.OPEN && connected) {
     return Promise.resolve();
@@ -256,6 +275,7 @@ async function connectWebSocket(config) {
   closeSocketOnly('reconnect');
   stopped = false;
   connectionState = 'connecting';
+  await validateConnectionConfig(config);
   const url = `ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension`;
 
   connectingPromise = new Promise((resolve, reject) => {
@@ -287,22 +307,35 @@ async function connectWebSocket(config) {
     socket.addEventListener('close', () => {
       connected = false;
       connectingPromise = null;
-      connectionState = stopped ? 'stopped' : 'reconnecting';
       stopHeartbeat();
+      if (reconnectBlocked) {
+        connectionState = connectionState === 'tokenError' || connectionState === 'protocolError' ? connectionState : 'error';
+        publishState('error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked');
+        persistRuntimeState();
+        resolve();
+        return;
+      }
+      connectionState = stopped ? 'stopped' : 'reconnecting';
       publishState(connectionState, 'Bridge connection closed');
       persistRuntimeState();
-      scheduleReconnect();
+      scheduleReconnect('socketClose');
       resolve();
     });
     socket.addEventListener('error', () => {
       connected = false;
       connectingPromise = null;
+      stopHeartbeat();
+      if (reconnectBlocked) {
+        publishState('error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked');
+        persistRuntimeState();
+        reject(new Error(reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked'));
+        return;
+      }
       connectionState = 'error';
       lastConnectionError = 'Bridge WebSocket error';
-      stopHeartbeat();
       publishState('error', 'Bridge WebSocket error');
       persistRuntimeState();
-      scheduleReconnect();
+      scheduleReconnect('socketError');
       reject(new Error('Bridge WebSocket error'));
     });
   });
@@ -311,6 +344,8 @@ async function connectWebSocket(config) {
 }
 
 function disconnect(reason) {
+  reconnectBlocked = true;
+  reconnectBlockedReason = reason || 'Disconnected by user';
   clearReconnectTimer();
   closeSocketOnly(reason);
   socket = null;
@@ -332,8 +367,8 @@ function closeSocketOnly(reason) {
   }
 }
 
-function scheduleReconnect() {
-  if (stopped || reconnectTimer) {
+function scheduleReconnect(reason) {
+  if (stopped || reconnectTimer || reconnectBlocked) {
     return;
   }
   reconnectAttempt += 1;
@@ -342,8 +377,41 @@ function scheduleReconnect() {
   reconnectTimer = setTimeout(async () => {
     reconnectTimer = null;
     const config = await chrome.storage.local.get(DEFAULT_CONFIG);
-    connectWebSocket(config).catch(() => {});
+    connectWebSocket(config, { reason: reason || 'scheduledReconnect' }).catch(() => {});
   }, baseDelay + jitter);
+}
+
+async function validateConnectionConfig(config) {
+  const host = config.host || DEFAULT_CONFIG.host;
+  const port = config.port || DEFAULT_CONFIG.port;
+  const token = String(config.token || '').trim();
+  try {
+    const response = await fetch(`http://${host}:${port}/config/public`, { cache: 'no-store' });
+    if (!response.ok) {
+      return;
+    }
+    const publicConfig = await response.json();
+    if (publicConfig && publicConfig.requiresToken && !token) {
+      blockReconnect('tokenError', 'Bridge requires a connection token. Enter the token and press Reconnect.');
+      throw new Error(lastConnectionError);
+    }
+  } catch (error) {
+    if (reconnectBlocked) {
+      throw error;
+    }
+  }
+}
+
+function blockReconnect(state, message) {
+  reconnectBlocked = true;
+  reconnectBlockedReason = message || 'Reconnect blocked';
+  connected = false;
+  connectingPromise = null;
+  connectionState = state || 'error';
+  lastConnectionError = reconnectBlockedReason;
+  clearReconnectTimer();
+  stopHeartbeat();
+  persistRuntimeState();
 }
 
 function clearReconnectTimer() {
@@ -479,6 +547,10 @@ function handleEngineMessage(raw) {
   if (message.type === 'protocol.error') {
     lastConnectionError = message.message || message.error || 'Protocol error';
     connectionState = message.error === 'invalid_token' ? 'tokenError' : 'protocolError';
+    if (message.error === 'invalid_token' || message.error === 'protocol_version_mismatch') {
+      blockReconnect(connectionState, lastConnectionError);
+      closeSocketOnly('protocol rejected');
+    }
     publishState('error', lastConnectionError);
     publishRuntimeSnapshot();
     return;
@@ -660,9 +732,13 @@ function sendToolResult(request, success, result, error) {
 
 function sendToEngine(message) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
+    if (reconnectBlocked) {
+      publishState('error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked');
+      return;
+    }
     enqueueOutgoing(message);
     publishState('reconnecting', 'Not connected to engine; message queued');
-    scheduleReconnect();
+    scheduleReconnect('sendToEngine');
     return;
   }
   socket.send(JSON.stringify(message));
@@ -719,7 +795,7 @@ function sendPing() {
     connectionState = 'degraded';
     publishState('reconnecting', 'Heartbeat degraded; reconnecting');
     closeSocketOnly('heartbeat missed');
-    scheduleReconnect();
+    scheduleReconnect('heartbeatMissed');
     return;
   }
   pingSeq += 1;
@@ -1395,6 +1471,8 @@ async function publishRuntimeSnapshot() {
         connected,
         state: connectionState,
         stopped,
+        reconnectBlocked,
+        reconnectBlockedReason,
         clientId,
         lastConnectedAt,
         lastSeenAt,
