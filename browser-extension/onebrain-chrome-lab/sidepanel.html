@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ONE BRAIN Chrome Lab</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Local browser lab</p>
+      <h1>ONE BRAIN Chrome Lab</h1>
+    </div>
+    <span id="statusBadge" class="badge disconnected">Disconnected</span>
+  </header>
+
+  <button id="stopBtn" class="stop">STOP</button>
+
+  <main>
+    <section class="card connection">
+      <h2>Bridge connection</h2>
+      <label>Motor IP <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
+      <label>Port <input id="portInput" value="8787" autocomplete="off"></label>
+      <div class="row">
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" class="ghost">Disconnect</button>
+        <button id="healthBtn" class="ghost">Test Health</button>
+      </div>
+      <p id="healthStatus" class="muted">Health not tested.</p>
+    </section>
+
+    <section class="card">
+      <h2>Run</h2>
+      <textarea id="instructionInput" rows="5">Entrar a https://www.afip.gob.ar/ y avanzar hasta el punto donde se requieran credenciales. Cuando aparezca login, clave fiscal, CUIT, captcha o 2FA, pausar e indicarme que complete manualmente.</textarea>
+      <div class="row">
+        <button id="startBtn">Start Run</button>
+        <button id="pauseBtn" class="ghost">Pause</button>
+        <button id="resumeBtn" class="ghost">Resume</button>
+      </div>
+    </section>
+
+    <section id="humanCard" class="card human hidden">
+      <h2>Human intervention required</h2>
+      <p id="humanMessage">Complete credentials manually, then continue.</p>
+      <button id="resumeHumanBtn">Ya complete manualmente, continuar</button>
+    </section>
+
+    <section class="card page">
+      <h2>Current page</h2>
+      <dl>
+        <dt>URL</dt><dd id="pageUrl">-</dd>
+        <dt>Title</dt><dd id="pageTitle">-</dd>
+        <dt>Tab</dt><dd id="pageTab">-</dd>
+        <dt>Ready</dt><dd id="pageReady">unknown</dd>
+      </dl>
+    </section>
+
+    <section class="card">
+      <h2>AI / step status</h2>
+      <dl>
+        <dt>Run</dt><dd id="runId">-</dd>
+        <dt>Current tool</dt><dd id="currentTool">-</dd>
+        <dt>Last result</dt><dd id="lastResult">-</dd>
+      </dl>
+      <p class="safety">STOP armed · No credentials captured</p>
+    </section>
+
+    <section class="card observed">
+      <h2>Observed elements</h2>
+      <div id="observedList" class="observed-list">No observation yet.</div>
+    </section>
+
+    <section class="card logs">
+      <h2>Logs</h2>
+      <div id="logs"></div>
+    </section>
+  </main>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
