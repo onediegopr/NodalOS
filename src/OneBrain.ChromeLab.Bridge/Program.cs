@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using OneBrain.ChromeLab.Bridge;
 
 var options = ChromeLabOptions.Load(args);
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton(options);
 builder.Services.AddSingleton<ChromeLabRunManager>();
 builder.Services.AddSingleton<ChromeLabClientRegistry>();
+builder.Services.AddSingleton<PendingToolRequestRegistry>();
 builder.Services.AddHttpClient<OpenAiAgentClient>();
 builder.Services.AddCors(cors =>
 {
@@ -47,6 +49,7 @@ app.MapPost("/api/runs", async (
     StartRunRequest request,
     ChromeLabRunManager runs,
     ChromeLabClientRegistry clients,
+    PendingToolRequestRegistry pending,
     ChromeLabOptions config,
     CancellationToken cancellationToken) =>
 {
@@ -66,14 +69,21 @@ app.MapPost("/api/runs", async (
         return Results.Ok(new RunResponse(run.RunId, "error", "OpenAI API key missing. Set OPENAI_API_KEY or config/chrome-lab.local.json."));
     }
 
+    var firstUrl = ExtractFirstHttpUrl(request.Instruction);
+    var firstTool = firstUrl == null ? "observePage" : "navigate";
+    var firstArgs = firstUrl == null
+        ? new Dictionary<string, object?>()
+        : new Dictionary<string, object?> { ["url"] = firstUrl };
+    var firstRequestId = Guid.NewGuid().ToString("n");
     var observe = new ToolRequest(
         "tool.request",
         run.RunId,
-        Guid.NewGuid().ToString("n"),
-        "observePage",
-        new Dictionary<string, object?>());
+        firstRequestId,
+        firstTool,
+        firstArgs);
+    pending.Track(firstRequestId, run.RunId, firstTool);
     await clients.BroadcastAsync(observe, cancellationToken);
-    return Results.Ok(new RunResponse(run.RunId, "running", "Run started; observePage requested."));
+    return Results.Ok(new RunResponse(run.RunId, "running", $"Run started; {firstTool} requested."));
 });
 
 app.MapPost("/api/runs/{runId}/stop", async (
@@ -112,7 +122,8 @@ app.MapPost("/api/runs/{runId}/resume", async (
 app.Map("/ws/extension", async (
     HttpContext context,
     ChromeLabClientRegistry clients,
-    ChromeLabRunManager runs) =>
+    ChromeLabRunManager runs,
+    PendingToolRequestRegistry pending) =>
 {
     if (!context.WebSockets.IsWebSocketRequest)
     {
@@ -139,7 +150,7 @@ app.Map("/ws/extension", async (
                 break;
 
             var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            await HandleExtensionMessage(json, socket, runs, context.RequestAborted);
+            await HandleExtensionMessage(json, socket, runs, pending, context.RequestAborted);
         }
     }
     finally
@@ -160,6 +171,7 @@ static async Task HandleExtensionMessage(
     string json,
     WebSocket socket,
     ChromeLabRunManager runs,
+    PendingToolRequestRegistry pending,
     CancellationToken cancellationToken)
 {
     using var doc = JsonDocument.Parse(json);
@@ -177,10 +189,29 @@ static async Task HandleExtensionMessage(
 
     if (type == "tool.result" &&
         doc.RootElement.TryGetProperty("runId", out var runIdProperty) &&
+        doc.RootElement.TryGetProperty("requestId", out var requestIdProperty) &&
         doc.RootElement.TryGetProperty("result", out var resultProperty))
     {
         var runId = runIdProperty.GetString() ?? "";
-        if (resultProperty.TryGetProperty("hasCredentialLike", out var credentialLike) && credentialLike.GetBoolean())
+        var requestId = requestIdProperty.GetString() ?? "";
+        var completed = pending.Complete(requestId);
+        if (completed?.Tool == "navigate")
+        {
+            var observeRequestId = Guid.NewGuid().ToString("n");
+            pending.Track(observeRequestId, runId, "observePage");
+            await SendAsync(socket, new ToolRequest(
+                "tool.request",
+                runId,
+                observeRequestId,
+                "observePage",
+                new Dictionary<string, object?>()), cancellationToken);
+            return;
+        }
+
+        if (resultProperty.ValueKind == JsonValueKind.Object &&
+            resultProperty.TryGetProperty("hasCredentialLike", out var credentialLike) &&
+            credentialLike.ValueKind is JsonValueKind.True or JsonValueKind.False &&
+            credentialLike.GetBoolean())
         {
             runs.CredentialRequired(runId, "credentialRequired");
             await SendAsync(socket, new
@@ -192,6 +223,16 @@ static async Task HandleExtensionMessage(
             }, cancellationToken);
         }
     }
+}
+
+static string? ExtractFirstHttpUrl(string text)
+{
+    var match = Regex.Match(text ?? "", @"https?://[^\s""'<>]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    if (!match.Success)
+        return null;
+
+    var url = match.Value.TrimEnd('.', ',', ';', ')', ']');
+    return UrlValidator.IsAllowedNavigationUrl(url) ? url : null;
 }
 
 static async Task SendAsync(WebSocket socket, object message, CancellationToken cancellationToken)

@@ -108,6 +108,20 @@ public sealed class ChromeLabBridgeTests
     }
 
     [TestMethod]
+    public void PendingToolRequestRegistryTracksAndCompletesOnce()
+    {
+        var registry = new PendingToolRequestRegistry();
+
+        registry.Track("request-1", "run-1", "navigate");
+        var completed = registry.Complete("request-1");
+
+        Assert.IsNotNull(completed);
+        Assert.AreEqual("run-1", completed!.RunId);
+        Assert.AreEqual("navigate", completed.Tool);
+        Assert.IsNull(registry.Complete("request-1"));
+    }
+
+    [TestMethod]
     public void ExtensionSourceHasNoApiKeyOrRemoteCode()
     {
         var root = FindRepoRoot();

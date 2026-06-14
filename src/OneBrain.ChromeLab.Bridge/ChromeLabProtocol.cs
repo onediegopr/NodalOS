@@ -155,3 +155,20 @@ public sealed class ChromeLabClientRegistry
         }
     }
 }
+
+public sealed record PendingToolRequest(string RunId, string Tool);
+
+public sealed class PendingToolRequestRegistry
+{
+    private readonly ConcurrentDictionary<string, PendingToolRequest> _pending = new(StringComparer.OrdinalIgnoreCase);
+
+    public void Track(string requestId, string runId, string tool)
+    {
+        _pending[requestId] = new PendingToolRequest(runId, tool);
+    }
+
+    public PendingToolRequest? Complete(string requestId)
+    {
+        return _pending.TryRemove(requestId, out var pending) ? pending : null;
+    }
+}
