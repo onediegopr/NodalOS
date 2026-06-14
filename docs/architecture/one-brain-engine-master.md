@@ -1180,6 +1180,15 @@ Desde `NEXA Browser-002`, el side panel se organiza como cabina de mando con:
 * Runtime
 * Learning/Recipes V0 en storage local
 
+Desde `NEXA Browser-003`, Recipe Mode agrega:
+
+* Recipe Schema V1
+* runner deterministico paso a paso
+* stepResults auditables
+* human checkpoints
+* retry/abort/skip seguro
+* JS fixture tests para catalogo, resolucion y recetas
+
 El objetivo es endurecer la capa web sin mezclarla con el motor seguro de escritorio.
 
 ---

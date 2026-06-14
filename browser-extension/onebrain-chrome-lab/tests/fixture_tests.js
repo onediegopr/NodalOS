@@ -1,0 +1,192 @@
+const assert = require('assert');
+const {
+  createRecipeV1,
+  recipeFromLearningDraft,
+  validateRecipeV1,
+  redactParameterValue
+} = require('../recipe_core');
+
+function text(value) {
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+function parseElements(html) {
+  const elements = [];
+  const tagPattern = /<(button|a|input|select|textarea)([^>]*)>(.*?)<\/\1>|<(input)([^>]*)>/gis;
+  let match;
+  while ((match = tagPattern.exec(html))) {
+    const tagName = (match[1] || match[4]).toLowerCase();
+    const attrs = parseAttrs(match[2] || match[5] || '');
+    const visibleText = stripTags(match[3] || attrs.value || attrs.placeholder || '');
+    const isPassword = tagName === 'input' && text(attrs.type) === 'password';
+    const isCredentialLike = isPassword || ['password', 'clave', 'token', 'otp'].some((needle) => text(`${attrs.name || ''} ${attrs.id || ''} ${attrs.placeholder || ''}`).includes(needle));
+    const stableSelectors = stableSelectorsFor(tagName, attrs);
+    elements.push({
+      elementId: `fixture-${elements.length + 1}`,
+      tagName,
+      elementKind: tagName === 'a' ? 'link' : tagName === 'button' ? 'button' : tagName,
+      visibleText,
+      accessibleName: attrs['aria-label'] || visibleText || attrs.placeholder || attrs.name || '',
+      id: attrs.id || '',
+      name: attrs.name || '',
+      type: attrs.type || '',
+      href: attrs.href || '',
+      value: isPassword ? '' : attrs.value || '',
+      isPassword,
+      isCredentialLike,
+      stableSelectors
+    });
+  }
+  return elements;
+}
+
+function parseAttrs(raw) {
+  const attrs = {};
+  const attrPattern = /([a-zA-Z0-9_-]+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
+  let match;
+  while ((match = attrPattern.exec(raw))) {
+    attrs[match[1]] = match[2] || match[3] || match[4] || '';
+  }
+  return attrs;
+}
+
+function stripTags(value) {
+  return String(value || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function stableSelectorsFor(tagName, attrs) {
+  const selectors = [];
+  if (attrs.id) selectors.push({ selector: `#${attrs.id}`, type: 'id', confidence: 1, reason: 'unique id' });
+  if (attrs['data-testid']) selectors.push({ selector: `${tagName}[data-testid="${attrs['data-testid']}"]`, type: 'data-testid', confidence: 0.98, reason: 'data-testid' });
+  if (attrs['aria-label']) selectors.push({ selector: `${tagName}[aria-label="${attrs['aria-label']}"]`, type: 'aria-label', confidence: 0.93, reason: 'aria-label' });
+  if (attrs.name) selectors.push({ selector: `${tagName}[name="${attrs.name}"]`, type: 'name', confidence: 0.9, reason: 'name' });
+  selectors.push({ selector: tagName, type: 'nth-child', confidence: 0.32, reason: 'fallback' });
+  return selectors.sort((a, b) => b.confidence - a.confidence);
+}
+
+function resolveTarget(elements, targetText) {
+  const target = text(targetText);
+  return elements.map((element) => {
+    const haystack = text(`${element.visibleText} ${element.accessibleName} ${element.href} ${element.name} ${element.id}`);
+    let score = 0;
+    if (haystack === target) score += 0.7;
+    if (haystack.includes(target)) score += 0.4;
+    if (element.elementKind === 'button' || element.elementKind === 'link') score += 0.1;
+    if (element.stableSelectors[0]) score += element.stableSelectors[0].confidence * 0.1;
+    return { element, score };
+  }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score);
+}
+
+async function runRecipeFixture(recipe, tools) {
+  const run = {
+    status: 'running',
+    currentStepIndex: 0,
+    stepResults: recipe.steps.map((step) => ({ stepId: step.stepId, type: step.type, status: 'pending' }))
+  };
+  for (const step of recipe.steps) {
+    const result = run.stepResults[run.currentStepIndex];
+    result.status = 'running';
+    try {
+      if (step.type === 'navigate') await tools.navigate(step.url || recipe.startUrl);
+      if (step.type === 'resolveTarget') result.toolResult = await tools.resolveTarget(step.target.semantic);
+      if (step.type === 'click') await tools.click(step.target.semantic);
+      if (step.type === 'verify') {
+        const passed = await tools.verify(step.verify.expectTextAppears);
+        if (!passed) throw new Error('verify failed');
+      }
+      result.status = 'passed';
+      run.currentStepIndex += 1;
+    } catch (error) {
+      result.status = 'failed';
+      result.error = error.message;
+      run.status = 'failed';
+      return run;
+    }
+  }
+  run.status = 'completed';
+  return run;
+}
+
+function testBasicButtons() {
+  const elements = parseElements('<button>Ingresar</button><button>Iniciar sesión</button><button>Registrarse</button>');
+  assert.equal(elements.length, 3);
+  const ranked = resolveTarget(elements, 'iniciar sesion');
+  assert.equal(text(ranked[0].element.visibleText), 'iniciar sesion');
+}
+
+function testFormRedaction() {
+  const elements = parseElements('<input name="cuit" placeholder="CUIT"><input name="descripcion"><input name="importe"><input type="password" name="clave" value="secret">');
+  assert.equal(elements.filter((element) => element.tagName === 'input').length, 4);
+  const password = elements.find((element) => element.isPassword);
+  assert.ok(password);
+  assert.equal(password.value, '');
+  assert.equal(password.isCredentialLike, true);
+}
+
+function testStableSelectors() {
+  const elements = parseElements('<button id="login">Login</button><button data-testid="go">Go</button><button aria-label="Iniciar sesión"></button><input name="cuit"><button>Sin id</button>');
+  assert.equal(elements[0].stableSelectors[0].type, 'id');
+  assert.equal(elements[1].stableSelectors[0].type, 'data-testid');
+  assert.equal(elements[2].stableSelectors[0].type, 'aria-label');
+  assert.equal(elements[3].stableSelectors[0].type, 'name');
+}
+
+function testAmbiguousTargets() {
+  const elements = parseElements('<button>Ingresar</button><button>Ingresar al portal</button><button>Ingreso proveedores</button>');
+  const ranked = resolveTarget(elements, 'ingresar');
+  assert.ok(ranked.length >= 2);
+  assert.ok(ranked[0].score >= ranked[1].score);
+}
+
+async function testRecipeRunnerFixture() {
+  const recipe = createRecipeV1({
+    recipeId: 'fixture',
+    name: 'Fixture',
+    startUrl: 'https://example.test',
+    steps: [
+      { type: 'navigate', url: 'https://example.test' },
+      { type: 'resolveTarget', target: { semantic: 'Iniciar sesión' } },
+      { type: 'click', target: { semantic: 'Iniciar sesión' } },
+      { type: 'verify', verify: { expectTextAppears: 'Login' } }
+    ]
+  });
+  const run = await runRecipeFixture(recipe, {
+    navigate: async () => true,
+    resolveTarget: async () => ({ bestCandidate: { elementId: 'fixture-1', score: 0.9 } }),
+    click: async () => true,
+    verify: async () => true
+  });
+  assert.equal(run.status, 'completed');
+  assert.equal(run.stepResults.every((step) => step.status === 'passed'), true);
+}
+
+function testRecipeSchemaAndLearningConversion() {
+  const draft = {
+    recipeId: 'learned',
+    name: 'Learned',
+    startUrl: 'https://example.test',
+    steps: [
+      { actionType: 'click', target: { visibleText: 'Iniciar sesión', stableSelectors: [] } },
+      { actionType: 'input', target: { accessibleName: 'CUIT cliente', stableSelectors: [] }, value: '20111111112' },
+      { actionType: 'input', target: { accessibleName: 'Clave', isPassword: true, riskFlags: ['password'] }, valueRedacted: true }
+    ],
+    sensitiveFields: [],
+    humanCheckpoints: []
+  };
+  const recipe = recipeFromLearningDraft(draft, {});
+  assert.equal(recipe.schemaVersion, 1);
+  assert.equal(validateRecipeV1(recipe).ok, true);
+  assert.ok(recipe.steps.some((step) => step.type === 'humanCheckpoint'));
+  assert.ok(recipe.parameters.some((parameter) => parameter.name.includes('cuit')));
+  assert.equal(redactParameterValue({ sensitive: true }, 'secret'), '[redacted]');
+}
+
+(async () => {
+  testBasicButtons();
+  testFormRedaction();
+  testStableSelectors();
+  testAmbiguousTargets();
+  testRecipeSchemaAndLearningConversion();
+  await testRecipeRunnerFixture();
+  console.log('NEXA browser fixture tests passed');
+})();

@@ -1,4 +1,6 @@
 const PROTOCOL_VERSION = 'chrome-lab-v1';
+importScripts('recipe_core.js');
+
 const DEFAULT_CONFIG = { host: '127.0.0.1', port: '8787' };
 const RECIPES_KEY = 'nexaRecipes';
 const LEARNING_DRAFT_KEY = 'nexaLearningDraft';
@@ -17,6 +19,7 @@ let lastRunStatus = null;
 let lastHealth = null;
 let lastAiError = '';
 let learningSession = null;
+let recipeRunner = null;
 const sidePorts = new Set();
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -113,7 +116,22 @@ async function handlePanelMessage(message) {
       duplicateRecipe(message.recipeId);
       break;
     case 'recipeRun':
-      runRecipe(message.recipeId);
+      startRecipeRun(message.recipeId, message.parameters || {});
+      break;
+    case 'recipePause':
+      pauseRecipeRun('pausedByUser');
+      break;
+    case 'recipeResume':
+      resumeRecipeRun();
+      break;
+    case 'recipeRetryStep':
+      retryRecipeStep();
+      break;
+    case 'recipeSkipStep':
+      skipRecipeStep();
+      break;
+    case 'recipeAbort':
+      abortRecipeRun('abortedByUser');
       break;
     default:
       publishState('error', `Unknown panel message: ${message.type}`);
@@ -252,6 +270,7 @@ async function runCommand(command) {
 
 function stopAll(reason) {
   stopped = true;
+  abortRecipeRun(reason || 'userStop');
   notifyStopToTargetTab();
   if (currentRunId) {
     runCommand('stop');
@@ -650,19 +669,7 @@ async function saveLearningRecipe(payload) {
     return;
   }
 
-  const recipe = {
-    recipeId: learningSession.recipeId || `recipe-${Date.now().toString(36)}`,
-    name: payload.name || learningSession.name || 'Nueva receta',
-    description: payload.description || learningSession.description || '',
-    createdAt: learningSession.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    startUrl: learningSession.startUrl || '',
-    steps: learningSession.steps || [],
-    parameters: inferParameters(learningSession.steps || []),
-    sensitiveFields: learningSession.sensitiveFields || [],
-    humanCheckpoints: learningSession.humanCheckpoints || [],
-    status: 'draft-v0'
-  };
+  const recipe = recipeFromLearningDraft(learningSession, payload);
   await upsertRecipe(recipe);
   learningSession = { ...recipe, recording: false };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
@@ -675,7 +682,13 @@ async function saveRecipe(recipe) {
     publish({ type: 'recipeError', message: 'Invalid recipe payload.' });
     return;
   }
-  await upsertRecipe({ ...recipe, updatedAt: new Date().toISOString() });
+  const normalized = createRecipeV1({ ...recipe, updatedAt: new Date().toISOString() });
+  const validation = validateRecipeV1(normalized);
+  if (!validation.ok) {
+    publish({ type: 'recipeError', message: `Recipe invalid: ${validation.errors.join(', ')}` });
+    return;
+  }
+  await upsertRecipe(normalized);
   publishRecipes();
 }
 
@@ -705,7 +718,7 @@ async function duplicateRecipe(recipeId) {
   }
 
   const copy = {
-    ...source,
+    ...createRecipeV1(source),
     recipeId: `recipe-${Date.now().toString(36)}`,
     name: `${source.name || 'Receta'} copia`,
     createdAt: new Date().toISOString(),
@@ -716,31 +729,10 @@ async function duplicateRecipe(recipeId) {
   publishRecipes();
 }
 
-async function runRecipe(recipeId) {
-  const recipes = await readRecipes();
-  const recipe = recipes.find((item) => item.recipeId === recipeId);
-  if (!recipe) {
-    publish({ type: 'recipeError', message: 'Recipe not found.' });
-    return;
-  }
-
-  const instruction = buildRecipeInstruction(recipe);
-  await startRun(instruction);
-}
-
-function buildRecipeInstruction(recipe) {
-  const steps = (recipe.steps || []).slice(0, 20).map((step, index) => {
-    const label = step.target && (step.target.accessibleName || step.target.visibleText)
-      ? step.target.accessibleName || step.target.visibleText
-      : step.actionType;
-    return `${index + 1}. ${step.actionType}: ${label}`;
-  }).join('\n');
-  return `Ejecuta esta receta V0 con soporte navigate/click/input/human checkpoint.\nNombre: ${recipe.name}\nStartUrl: ${recipe.startUrl}\nPasos:\n${steps}`;
-}
-
 async function readRecipes() {
   const data = await chrome.storage.local.get({ [RECIPES_KEY]: [] });
-  return Array.isArray(data[RECIPES_KEY]) ? data[RECIPES_KEY] : [];
+  const recipes = Array.isArray(data[RECIPES_KEY]) ? data[RECIPES_KEY] : [];
+  return recipes.map((recipe) => createRecipeV1(recipe));
 }
 
 async function publishRecipes() {
@@ -756,20 +748,7 @@ async function publishLearningState() {
 }
 
 function inferParameters(steps) {
-  return steps
-    .filter((step) => (step.actionType === 'input' || step.actionType === 'select') && step.target && !step.valueRedacted)
-    .map((step, index) => ({
-      name: parameterNameFor(step, index),
-      sourceStep: index,
-      required: true
-    }));
-}
-
-function parameterNameFor(step, index) {
-  const label = step.target && (step.target.name || step.target.accessibleName || step.target.visibleText)
-    ? step.target.name || step.target.accessibleName || step.target.visibleText
-    : `param_${index + 1}`;
-  return String(label).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || `param_${index + 1}`;
+  return recipeFromLearningDraft({ steps }, {}).parameters;
 }
 
 async function sendLearningModeToTab(enabled) {
@@ -782,6 +761,371 @@ async function sendLearningModeToTab(enabled) {
     type: enabled ? 'learning.start' : 'learning.stop',
     protocolVersion: PROTOCOL_VERSION
   }).catch(() => {});
+}
+
+async function startRecipeRun(recipeId, parameters) {
+  const recipes = await readRecipes();
+  const recipe = recipes.find((item) => item.recipeId === recipeId);
+  if (!recipe) {
+    publish({ type: 'recipeError', message: 'Recipe not found.' });
+    return;
+  }
+
+  const missing = validateRecipeParameters(recipe, parameters || {});
+  if (missing.length > 0) {
+    publish({ type: 'recipeRunParameterRequired', recipe, missing });
+    return;
+  }
+
+  recipeRunner = {
+    recipeRunId: `recipe-run-${Date.now().toString(36)}`,
+    recipeId: recipe.recipeId,
+    recipe,
+    parameters: parameters || {},
+    currentStepIndex: 0,
+    currentStepId: '',
+    currentStepLabel: '',
+    status: 'running',
+    startedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    completedAt: '',
+    lastError: '',
+    lastSnapshot: null,
+    lastCandidates: [],
+    stepResults: recipe.steps.map((step) => ({
+      stepId: step.stepId,
+      type: step.type,
+      status: 'pending',
+      startedAt: '',
+      completedAt: '',
+      summary: '',
+      toolRequest: null,
+      toolResult: null,
+      verificationResult: null,
+      error: ''
+    }))
+  };
+
+  publishRecipeRunState();
+  await continueRecipeRun();
+}
+
+async function continueRecipeRun() {
+  if (!recipeRunner || recipeRunner.status !== 'running') {
+    return;
+  }
+
+  while (recipeRunner && recipeRunner.status === 'running' && recipeRunner.currentStepIndex < recipeRunner.recipe.steps.length) {
+    const step = recipeRunner.recipe.steps[recipeRunner.currentStepIndex];
+    recipeRunner.currentStepId = step.stepId;
+    recipeRunner.currentStepLabel = step.label || step.type;
+    const result = recipeRunner.stepResults[recipeRunner.currentStepIndex];
+    result.status = 'running';
+    result.startedAt = result.startedAt || new Date().toISOString();
+    recipeRunner.updatedAt = new Date().toISOString();
+    publishRecipeRunState();
+
+    try {
+      const execution = await executeRecipeStep(step);
+      result.status = execution.paused ? 'paused' : 'passed';
+      result.completedAt = new Date().toISOString();
+      result.summary = execution.summary || `${step.type} passed`;
+      result.toolRequest = execution.toolRequest || null;
+      result.toolResult = execution.toolResult || null;
+      result.verificationResult = execution.verificationResult || null;
+
+      if (execution.paused) {
+        recipeRunner.status = execution.waitingHuman ? 'waitingHuman' : 'paused';
+        publish({ type: 'humanIntervention', reason: execution.reason || 'humanCheckpoint', message: execution.message || step.label });
+        publishRecipeRunState();
+        return;
+      }
+
+      recipeRunner.currentStepIndex += 1;
+      recipeRunner.updatedAt = new Date().toISOString();
+      publishRecipeRunState();
+    } catch (error) {
+      failRecipeRun(error, result);
+      return;
+    }
+  }
+
+  if (recipeRunner && recipeRunner.currentStepIndex >= recipeRunner.recipe.steps.length) {
+    recipeRunner.status = 'completed';
+    recipeRunner.completedAt = new Date().toISOString();
+    recipeRunner.updatedAt = new Date().toISOString();
+    publishRecipeRunState();
+  }
+}
+
+async function executeRecipeStep(step) {
+  switch (step.type) {
+    case 'navigate': {
+      const url = resolveTemplate(step.url || step.value || recipeRunner.recipe.startUrl, recipeRunner.parameters);
+      if (!allowedUrl(url)) {
+        throw new Error(`URL rejected: ${url}`);
+      }
+      await navigate(url);
+      return { summary: `Navigated to ${url}`, toolRequest: { tool: 'navigate', args: { url } }, toolResult: { navigated: true, url } };
+    }
+    case 'observe': {
+      const result = await executeTabTool('observePage', {});
+      recipeRunner.lastSnapshot = result;
+      return { summary: 'Observed page', toolRequest: { tool: 'observePage', args: {} }, toolResult: result };
+    }
+    case 'resolveTarget': {
+      const args = resolveTargetArgsFromStep(step);
+      const result = await executeTabTool('resolveTarget', args);
+      recipeRunner.lastCandidates = result && Array.isArray(result.candidates) ? result.candidates : [];
+      const score = result && result.bestCandidate ? Number(result.bestCandidate.score || 0) : 0;
+      const threshold = Number(step.target && step.target.minScore || step.minScore || 0.35);
+      if (!result || !result.bestCandidate || score < threshold) {
+        throw new Error(`Target resolution failed: score ${score.toFixed(2)} below ${threshold}`);
+      }
+      step.__resolvedTarget = result.bestCandidate;
+      return { summary: `Resolved target with score ${score.toFixed(2)}`, toolRequest: { tool: 'resolveTarget', args }, toolResult: result };
+    }
+    case 'click': {
+      const target = await resolveTargetForAction(step, 'click');
+      const args = {
+        elementId: target.elementId || '',
+        stableSelectors: target.element && target.element.stableSelectors ? target.element.stableSelectors : target.stableSelectors || [],
+        verify: step.verify || { expectDomChange: true }
+      };
+      const result = await executeTabTool('clickElement', args);
+      if (result && result.verificationStatus === 'failed') {
+        throw new Error(result.reason || 'Click verification failed');
+      }
+      return { summary: `Clicked ${step.label || target.elementId}`, toolRequest: { tool: 'clickElement', args }, toolResult: result, verificationResult: result };
+    }
+    case 'input': {
+      const target = await resolveTargetForAction(step, 'input');
+      const value = resolveTemplate(String(step.value || ''), recipeRunner.parameters);
+      const args = {
+        elementId: target.elementId || '',
+        stableSelectors: target.element && target.element.stableSelectors ? target.element.stableSelectors : target.stableSelectors || [],
+        value
+      };
+      const result = await executeTabTool('setElementValue', args);
+      if (!result || result.success === false) {
+        throw new Error(result && result.reason ? result.reason : 'Input step failed');
+      }
+      return { summary: `Input ${step.label || target.elementId}`, toolRequest: { tool: 'setElementValue', args: redactToolArgs(step, args) }, toolResult: result, verificationResult: result };
+    }
+    case 'select': {
+      const target = await resolveTargetForAction(step, 'select');
+      const value = resolveTemplate(String(step.value || ''), recipeRunner.parameters);
+      const args = {
+        elementId: target.elementId || '',
+        stableSelectors: target.element && target.element.stableSelectors ? target.element.stableSelectors : target.stableSelectors || [],
+        value
+      };
+      const result = await executeTabTool('selectOption', args);
+      return { summary: `Selected ${step.label || target.elementId}`, toolRequest: { tool: 'selectOption', args: redactToolArgs(step, args) }, toolResult: result, verificationResult: result };
+    }
+    case 'wait':
+      await waitForRecipeCondition(step);
+      return { summary: step.label || 'Wait completed' };
+    case 'verify': {
+      const result = await verifyRecipeCondition(step);
+      if (!result.passed) {
+        throw new Error(result.reason || 'Verify failed');
+      }
+      return { summary: result.reason || 'Verify passed', verificationResult: result };
+    }
+    case 'humanCheckpoint':
+      return {
+        paused: true,
+        waitingHuman: true,
+        reason: 'humanCheckpoint',
+        message: step.label || step.reason || 'Intervencion humana requerida',
+        summary: step.label || 'Human checkpoint'
+      };
+    default:
+      throw new Error(`Unsupported recipe step: ${step.type}`);
+  }
+}
+
+async function resolveTargetForAction(step, intent) {
+  if (step.__resolvedTarget) {
+    return step.__resolvedTarget;
+  }
+  if (step.target && step.target.elementId) {
+    return { elementId: step.target.elementId, stableSelectors: step.target.stableSelectors || [] };
+  }
+  const args = resolveTargetArgsFromStep(step, intent);
+  const result = await executeTabTool('resolveTarget', args);
+  recipeRunner.lastCandidates = result && Array.isArray(result.candidates) ? result.candidates : [];
+  const score = result && result.bestCandidate ? Number(result.bestCandidate.score || 0) : 0;
+  const threshold = Number(step.target && step.target.minScore || 0.35);
+  if (!result || !result.bestCandidate || score < threshold) {
+    throw new Error(`Target not found for ${step.label || step.type}`);
+  }
+  return result.bestCandidate;
+}
+
+function resolveTargetArgsFromStep(step, forcedIntent) {
+  const target = step.target || {};
+  return {
+    intent: forcedIntent || target.intent || step.type,
+    targetText: target.semantic || target.observedText || step.label || '',
+    context: target.nearbyText || target.formContext || step.label || '',
+    elementKinds: target.role || [],
+    maxCandidates: 5
+  };
+}
+
+async function executeTabTool(tool, args) {
+  const tab = await resolveTargetTab();
+  if (!tab || !tab.id || restrictedUrl(tab.url || '')) {
+    throw new Error('Restricted or unavailable tab');
+  }
+  const response = await chrome.tabs.sendMessage(tab.id, { type: 'tool.execute', protocolVersion: PROTOCOL_VERSION, tool, args: args || {} });
+  if (!response || !response.success) {
+    throw new Error(response && response.error ? response.error : `${tool} failed`);
+  }
+  return response.result;
+}
+
+async function waitForRecipeCondition(step) {
+  const timeoutMs = Number(step.timeoutMs || 3000);
+  const started = Date.now();
+  while (Date.now() - started <= timeoutMs) {
+    const result = await verifyRecipeCondition(step);
+    if (result.passed) {
+      return;
+    }
+    await delay(200);
+  }
+  throw new Error(step.label || 'Wait timeout');
+}
+
+async function verifyRecipeCondition(step) {
+  const verify = step.verify || {};
+  const observation = await executeTabTool('observePage', {});
+  recipeRunner.lastSnapshot = observation;
+  if (verify.expectTextAppears) {
+    const passed = String(observation.visibleTextSummary || '').toLowerCase().includes(String(verify.expectTextAppears).toLowerCase());
+    return { passed, reason: passed ? 'Expected text found' : 'Expected text not found', observation };
+  }
+  if (verify.expectUrlContains) {
+    const passed = String(observation.url || '').includes(String(verify.expectUrlContains));
+    return { passed, reason: passed ? 'URL condition met' : 'URL condition not met', observation };
+  }
+  return { passed: true, reason: 'No verify condition required', observation };
+}
+
+function validateRecipeParameters(recipe, parameters) {
+  return (recipe.parameters || [])
+    .filter((parameter) => parameter.required && (parameters[parameter.name] === undefined || parameters[parameter.name] === null || parameters[parameter.name] === ''))
+    .map((parameter) => parameter.name);
+}
+
+function resolveTemplate(value, parameters) {
+  return String(value || '').replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (_match, name) => parameters[name] ?? '');
+}
+
+function redactToolArgs(step, args) {
+  const parameterName = String(step.value || '').match(/\{\{([a-zA-Z0-9_]+)\}\}/);
+  const parameter = parameterName ? (recipeRunner.recipe.parameters || []).find((item) => item.name === parameterName[1]) : null;
+  return { ...args, value: redactParameterValue(parameter, args.value) };
+}
+
+function failRecipeRun(error, stepResult) {
+  if (!recipeRunner) {
+    return;
+  }
+  const message = error && error.message ? error.message : String(error);
+  stepResult.status = 'failed';
+  stepResult.completedAt = new Date().toISOString();
+  stepResult.error = message;
+  stepResult.summary = message;
+  recipeRunner.status = 'failed';
+  recipeRunner.lastError = message;
+  recipeRunner.updatedAt = new Date().toISOString();
+  publishRecipeRunState();
+}
+
+function pauseRecipeRun(reason) {
+  if (!recipeRunner) {
+    return;
+  }
+  recipeRunner.status = 'paused';
+  recipeRunner.updatedAt = new Date().toISOString();
+  recipeRunner.lastError = reason || '';
+  publishRecipeRunState();
+}
+
+async function resumeRecipeRun() {
+  if (!recipeRunner) {
+    return;
+  }
+  if (recipeRunner.status === 'waitingHuman') {
+    recipeRunner.currentStepIndex += 1;
+  }
+  recipeRunner.status = 'running';
+  recipeRunner.updatedAt = new Date().toISOString();
+  publishRecipeRunState();
+  await executeTabTool('observePage', {}).then((result) => {
+    recipeRunner.lastSnapshot = result;
+    publishRecipeRunState();
+  }).catch(() => {});
+  await continueRecipeRun();
+}
+
+async function retryRecipeStep() {
+  if (!recipeRunner) {
+    return;
+  }
+  const result = recipeRunner.stepResults[recipeRunner.currentStepIndex];
+  if (result) {
+    result.status = 'pending';
+    result.error = '';
+  }
+  recipeRunner.status = 'running';
+  publishRecipeRunState();
+  await continueRecipeRun();
+}
+
+async function skipRecipeStep() {
+  if (!recipeRunner) {
+    return;
+  }
+  const step = recipeRunner.recipe.steps[recipeRunner.currentStepIndex];
+  if (!step || !['observe', 'wait', 'verify'].includes(step.type)) {
+    recipeRunner.lastError = 'Skip is only allowed for observe/wait/verify steps.';
+    publishRecipeRunState();
+    return;
+  }
+  const result = recipeRunner.stepResults[recipeRunner.currentStepIndex];
+  if (result) {
+    result.status = 'skipped';
+    result.completedAt = new Date().toISOString();
+    result.summary = 'Skipped by user';
+  }
+  recipeRunner.currentStepIndex += 1;
+  recipeRunner.status = 'running';
+  publishRecipeRunState();
+  await continueRecipeRun();
+}
+
+function abortRecipeRun(reason) {
+  if (!recipeRunner) {
+    return;
+  }
+  recipeRunner.status = 'stopped';
+  recipeRunner.completedAt = new Date().toISOString();
+  recipeRunner.lastError = reason || '';
+  publishRecipeRunState();
+}
+
+function publishRecipeRunState() {
+  publish({ type: 'recipeRunState', run: recipeRunner });
+  publishRuntimeSnapshot();
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function publishRuntimeSnapshot() {
@@ -823,7 +1167,8 @@ async function publishRuntimeSnapshot() {
         lastToolResult,
         lastToolRequest,
         lastRunStatus,
-        lastError: lastToolResult && !lastToolResult.success ? lastToolResult.error : ''
+        lastError: lastToolResult && !lastToolResult.success ? lastToolResult.error : '',
+        recipeRun: recipeRunner
       }
     }
   });

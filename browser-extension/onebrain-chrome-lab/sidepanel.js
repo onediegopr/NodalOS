@@ -34,7 +34,9 @@ const state = {
   },
   recipes: {
     items: [],
-    selectedId: ''
+    selectedId: '',
+    parameters: {},
+    run: null
   },
   runtime: {
     lastToolRequest: null,
@@ -96,12 +98,23 @@ const el = {
   recipeNameInput: document.getElementById('recipeNameInput'),
   recipeDescriptionInput: document.getElementById('recipeDescriptionInput'),
   recipeStartUrlInput: document.getElementById('recipeStartUrlInput'),
+  recipeParameterForm: document.getElementById('recipeParameterForm'),
   recipeJsonEditor: document.getElementById('recipeJsonEditor'),
   runRecipeBtn: document.getElementById('runRecipeBtn'),
+  pauseRecipeBtn: document.getElementById('pauseRecipeBtn'),
+  resumeRecipeBtn: document.getElementById('resumeRecipeBtn'),
+  retryRecipeStepBtn: document.getElementById('retryRecipeStepBtn'),
+  skipRecipeStepBtn: document.getElementById('skipRecipeStepBtn'),
+  abortRecipeBtn: document.getElementById('abortRecipeBtn'),
   saveRecipeChangesBtn: document.getElementById('saveRecipeChangesBtn'),
   cancelRecipeEditBtn: document.getElementById('cancelRecipeEditBtn'),
   deleteRecipeBtn: document.getElementById('deleteRecipeBtn'),
   exportRecipeBtn: document.getElementById('exportRecipeBtn'),
+  recipeRunId: document.getElementById('recipeRunId'),
+  recipeRunStatus: document.getElementById('recipeRunStatus'),
+  recipeCurrentStep: document.getElementById('recipeCurrentStep'),
+  recipeLastError: document.getElementById('recipeLastError'),
+  recipeStepTimeline: document.getElementById('recipeStepTimeline'),
   hostInput: document.getElementById('hostInput'),
   portInput: document.getElementById('portInput'),
   connectBtn: document.getElementById('connectBtn'),
@@ -154,6 +167,7 @@ function bindEvents() {
     el.humanBanner.classList.add('hidden');
     state.run.status = 'running';
     post({ type: 'resumeHuman' });
+    post({ type: 'recipeResume' });
     render();
   });
 
@@ -205,7 +219,12 @@ function bindEvents() {
 
   el.importRecipeBtn.addEventListener('click', () => el.recipeImportInput.click());
   el.recipeImportInput.addEventListener('change', importRecipeFile);
-  el.runRecipeBtn.addEventListener('click', () => selectedRecipeId() && post({ type: 'recipeRun', recipeId: selectedRecipeId() }));
+  el.runRecipeBtn.addEventListener('click', () => selectedRecipeId() && post({ type: 'recipeRun', recipeId: selectedRecipeId(), parameters: collectRecipeParameters() }));
+  el.pauseRecipeBtn.addEventListener('click', () => post({ type: 'recipePause' }));
+  el.resumeRecipeBtn.addEventListener('click', () => post({ type: 'recipeResume' }));
+  el.retryRecipeStepBtn.addEventListener('click', () => post({ type: 'recipeRetryStep' }));
+  el.skipRecipeStepBtn.addEventListener('click', () => post({ type: 'recipeSkipStep' }));
+  el.abortRecipeBtn.addEventListener('click', () => post({ type: 'recipeAbort' }));
   el.saveRecipeChangesBtn.addEventListener('click', saveEditedRecipe);
   el.cancelRecipeEditBtn.addEventListener('click', () => selectRecipe(''));
   el.deleteRecipeBtn.addEventListener('click', () => selectedRecipeId() && post({ type: 'recipeDelete', recipeId: selectedRecipeId() }));
@@ -265,6 +284,18 @@ function handleMessage(message) {
       break;
     case 'recipes':
       state.recipes.items = Array.isArray(message.recipes) ? message.recipes : [];
+      break;
+    case 'recipeRunState':
+      state.recipes.run = message.run || null;
+      break;
+    case 'recipeRunParameterRequired':
+      state.recipes.selectedId = message.recipe && message.recipe.recipeId ? message.recipe.recipeId : state.recipes.selectedId;
+      state.recipes.run = {
+        status: 'paused',
+        lastError: `Faltan parametros: ${(message.missing || []).join(', ')}`,
+        recipe: message.recipe || null,
+        stepResults: []
+      };
       break;
     case 'recipeError':
       addLog('local', message.message || 'Recipe error');
@@ -443,10 +474,45 @@ function renderRecipes() {
   el.recipeDescriptionInput.value = selected ? selected.description || '' : '';
   el.recipeStartUrlInput.value = selected ? selected.startUrl || '' : '';
   el.recipeJsonEditor.value = selected ? JSON.stringify(selected, null, 2) : '';
+  renderRecipeParameters(selected);
+  renderRecipeRun();
 }
 
 function renderRecipeItem(recipe) {
-  return `<div class="recipe-item"><div class="recipe-head"><strong>${escapeHtml(recipe.name || 'Receta')}</strong><span>${escapeHtml(recipe.status || 'draft-v0')}</span></div><div class="recipe-meta">${escapeHtml(recipe.description || '')}</div><div class="recipe-meta">${escapeHtml(recipe.createdAt || '-')} · ${escapeHtml((recipe.steps || []).length)} pasos</div><div class="recipe-actions"><button data-recipe-action="open" data-recipe-id="${escapeHtml(recipe.recipeId)}">Editar</button><button data-recipe-action="run" data-recipe-id="${escapeHtml(recipe.recipeId)}">Ejecutar</button><button data-recipe-action="duplicate" data-recipe-id="${escapeHtml(recipe.recipeId)}">Duplicar</button><button data-recipe-action="delete" data-recipe-id="${escapeHtml(recipe.recipeId)}">Borrar</button><button data-recipe-action="export" data-recipe-id="${escapeHtml(recipe.recipeId)}">Exportar JSON</button></div></div>`;
+  return `<div class="recipe-item"><div class="recipe-head"><strong>${escapeHtml(recipe.name || 'Receta')}</strong><span>schema ${escapeHtml(recipe.schemaVersion || 1)}</span></div><div class="recipe-meta">${escapeHtml(recipe.description || '')}</div><div class="recipe-meta">${escapeHtml(recipe.createdAt || '-')} · ${escapeHtml((recipe.steps || []).length)} pasos · ${escapeHtml((recipe.parameters || []).length)} parametros</div><div class="recipe-actions"><button data-recipe-action="open" data-recipe-id="${escapeHtml(recipe.recipeId)}">Editar</button><button data-recipe-action="run" data-recipe-id="${escapeHtml(recipe.recipeId)}">Ejecutar</button><button data-recipe-action="duplicate" data-recipe-id="${escapeHtml(recipe.recipeId)}">Duplicar</button><button data-recipe-action="delete" data-recipe-id="${escapeHtml(recipe.recipeId)}">Borrar</button><button data-recipe-action="export" data-recipe-id="${escapeHtml(recipe.recipeId)}">Exportar JSON</button></div></div>`;
+}
+
+function renderRecipeParameters(recipe) {
+  if (!recipe || !Array.isArray(recipe.parameters) || recipe.parameters.length === 0) {
+    el.recipeParameterForm.innerHTML = '<p class="muted">Sin parametros requeridos.</p>';
+    return;
+  }
+
+  el.recipeParameterForm.innerHTML = recipe.parameters.map((parameter) => {
+    const type = parameter.type === 'number' || parameter.type === 'money' ? 'number' : parameter.type === 'date' ? 'date' : parameter.type === 'boolean' ? 'checkbox' : 'text';
+    const value = state.recipes.parameters[parameter.name] || parameter.defaultValue || '';
+    if (type === 'checkbox') {
+      return `<label>${escapeHtml(parameter.label || parameter.name)} <input data-recipe-param="${escapeHtml(parameter.name)}" type="checkbox" ${value ? 'checked' : ''}></label>`;
+    }
+    return `<label>${escapeHtml(parameter.label || parameter.name)} <input data-recipe-param="${escapeHtml(parameter.name)}" type="${type}" value="${escapeHtml(value)}"></label>`;
+  }).join('');
+}
+
+function renderRecipeRun() {
+  const run = state.recipes.run || {};
+  el.recipeRunId.textContent = run.recipeRunId || '-';
+  el.recipeRunStatus.textContent = run.status || 'idle';
+  el.recipeCurrentStep.textContent = run.currentStepLabel ? `${Number(run.currentStepIndex || 0) + 1}/${run.recipe && run.recipe.steps ? run.recipe.steps.length : '-'} ${run.currentStepLabel}` : '-';
+  el.recipeLastError.textContent = run.lastError || '-';
+
+  const results = Array.isArray(run.stepResults) ? run.stepResults : [];
+  el.recipeStepTimeline.innerHTML = results.length
+    ? results.map((result, index) => {
+      const marker = result.status === 'passed' ? '✓' : result.status === 'running' ? '▶' : result.status === 'failed' ? '!' : result.status === 'skipped' ? '-' : '○';
+      const label = run.recipe && run.recipe.steps && run.recipe.steps[index] ? run.recipe.steps[index].label || result.type : result.type;
+      return `<li>${escapeHtml(marker)} ${index + 1}. ${escapeHtml(label)} · ${escapeHtml(result.status)}${result.error ? ' · ' + escapeHtml(result.error) : ''}</li>`;
+    }).join('')
+    : '<li>-</li>';
 }
 
 function renderRuntime() {
@@ -497,7 +563,8 @@ function handleRecipeAction(event) {
   if (action === 'open') {
     selectRecipe(recipeId);
   } else if (action === 'run') {
-    post({ type: 'recipeRun', recipeId });
+    selectRecipe(recipeId);
+    post({ type: 'recipeRun', recipeId, parameters: collectRecipeParameters() });
   } else if (action === 'duplicate') {
     post({ type: 'recipeDuplicate', recipeId });
   } else if (action === 'delete') {
@@ -538,6 +605,16 @@ function saveEditedRecipe() {
   edited.description = el.recipeDescriptionInput.value || edited.description || '';
   edited.startUrl = el.recipeStartUrlInput.value || edited.startUrl || '';
   post({ type: 'recipeSave', recipe: edited });
+}
+
+function collectRecipeParameters() {
+  const values = {};
+  document.querySelectorAll('[data-recipe-param]').forEach((input) => {
+    const name = input.getAttribute('data-recipe-param');
+    values[name] = input.type === 'checkbox' ? input.checked : input.value;
+  });
+  state.recipes.parameters = values;
+  return values;
 }
 
 function exportSelectedRecipe() {
@@ -634,6 +711,7 @@ function learningFormPayload() {
 
 function recipeDraftFromLearning(draft) {
   return {
+    schemaVersion: draft.schemaVersion || 1,
     recipeId: draft.recipeId,
     name: draft.name,
     description: draft.description,
@@ -643,7 +721,9 @@ function recipeDraftFromLearning(draft) {
     steps: draft.steps || [],
     parameters: draft.parameters || [],
     sensitiveFields: draft.sensitiveFields || [],
-    humanCheckpoints: draft.humanCheckpoints || []
+    humanCheckpoints: draft.humanCheckpoints || [],
+    safety: draft.safety || {},
+    metadata: draft.metadata || {}
   };
 }
 
@@ -667,14 +747,17 @@ function humanizeToolRequest(message) {
 function humanizeLearningStep(step) {
   const label = step.target && (step.target.accessibleName || step.target.visibleText)
     ? step.target.accessibleName || step.target.visibleText
+    : step.target && (step.target.semantic || step.target.observedText)
+      ? step.target.semantic || step.target.observedText
     : step.url || '';
-  if (step.actionType === 'navigate') {
+  const actionType = step.actionType || step.type || 'step';
+  if (actionType === 'navigate') {
     return `Navegaste a ${step.url}`;
   }
   if (step.valueRedacted) {
-    return `${step.actionType}: campo sensible redactado`;
+    return `${actionType}: campo sensible redactado`;
   }
-  return `${step.actionType}: ${label || '-'}`;
+  return `${actionType}: ${label || '-'}`;
 }
 
 function pushTimeline(text) {

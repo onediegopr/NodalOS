@@ -973,13 +973,13 @@
 
   function resolveLiveElement(args) {
     const elementId = args && args.elementId ? String(args.elementId) : '';
+    const selectors = normalizeStableSelectors(args && (args.stableSelectors || args.selectors) || []);
     if (elementId) {
       const direct = getElementById(elementId);
       if (direct) {
         return { element: direct, rehydrated: false };
       }
 
-      const selectors = normalizeStableSelectors(args.stableSelectors || args.selectors || []);
       const rehydrated = rehydrateElement(selectors);
       if (rehydrated) {
         nodeToElementId.set(rehydrated, elementId);
@@ -990,9 +990,16 @@
       throw new Error(`elementId not found: ${elementId}`);
     }
 
+    const rehydrated = rehydrateElement(selectors);
+    if (rehydrated) {
+      const rehydratedElementId = ensureElementId(rehydrated);
+      elementIdToNode.set(rehydratedElementId, rehydrated);
+      return { element: rehydrated, rehydrated: true };
+    }
+
     const selector = String((args && args.selector) || '');
     if (!selector) {
-      throw new Error('selector or elementId required');
+      throw new Error('selector, elementId, or stableSelectors required');
     }
 
     const element = document.querySelector(selector);

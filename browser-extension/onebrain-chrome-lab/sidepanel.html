@@ -129,15 +129,32 @@
         <label>Nombre <input id="recipeNameInput"></label>
         <label>Descripción <textarea id="recipeDescriptionInput" rows="3" wrap="soft"></textarea></label>
         <label>Start URL <input id="recipeStartUrlInput"></label>
+        <div id="recipeParameterForm" class="parameter-form"></div>
         <textarea id="recipeJsonEditor" rows="14" spellcheck="false"></textarea>
         <div class="control-row">
           <button id="runRecipeBtn" class="primary">Ejecutar receta</button>
+          <button id="pauseRecipeBtn">Pausar</button>
+          <button id="resumeRecipeBtn">Reanudar</button>
+          <button id="retryRecipeStepBtn">Reintentar paso</button>
+          <button id="skipRecipeStepBtn">Saltar paso</button>
+          <button id="abortRecipeBtn" class="danger">Abortar</button>
           <button id="saveRecipeChangesBtn">Guardar cambios</button>
           <button id="cancelRecipeEditBtn">Cancelar</button>
           <button id="deleteRecipeBtn" class="danger">Borrar</button>
           <button id="exportRecipeBtn">Exportar JSON</button>
         </div>
-        <p class="muted">Recipe replay V0: soporta navigate/click/input/human checkpoint mediante instrucción al operador.</p>
+        <p class="muted">Recipe runner V1: ejecuta pasos determinísticos y falla con razón explícita.</p>
+      </section>
+
+      <section class="surface">
+        <h2>Recipe runner</h2>
+        <dl>
+          <dt>Run</dt><dd id="recipeRunId">-</dd>
+          <dt>Estado</dt><dd id="recipeRunStatus">idle</dd>
+          <dt>Paso</dt><dd id="recipeCurrentStep">-</dd>
+          <dt>Error</dt><dd id="recipeLastError">-</dd>
+        </dl>
+        <ol id="recipeStepTimeline" class="timeline"></ol>
       </section>
     </section>
 

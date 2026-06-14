@@ -281,6 +281,35 @@ public sealed class ChromeLabBridgeTests
     }
 
     [TestMethod]
+    public void ExtensionDefinesRecipeSchemaV1AndDeterministicRunner()
+    {
+        var extensionDir = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab");
+        var recipeCore = File.ReadAllText(Path.Combine(extensionDir, "recipe_core.js"));
+        var serviceWorker = File.ReadAllText(Path.Combine(extensionDir, "service_worker.js"));
+
+        Assert.IsTrue(recipeCore.Contains("NEXA_RECIPE_SCHEMA_VERSION = 1", StringComparison.Ordinal));
+        Assert.IsTrue(recipeCore.Contains("createRecipeV1", StringComparison.Ordinal));
+        Assert.IsTrue(recipeCore.Contains("validateRecipeV1", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("startRecipeRun", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("executeRecipeStep", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("stepResults", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("recipeRunState", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void ExtensionIncludesJsFixtureTests()
+    {
+        var testPath = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab", "tests", "fixture_tests.js");
+        var tests = File.ReadAllText(testPath);
+
+        Assert.IsTrue(tests.Contains("testBasicButtons", StringComparison.Ordinal));
+        Assert.IsTrue(tests.Contains("testFormRedaction", StringComparison.Ordinal));
+        Assert.IsTrue(tests.Contains("testStableSelectors", StringComparison.Ordinal));
+        Assert.IsTrue(tests.Contains("testAmbiguousTargets", StringComparison.Ordinal));
+        Assert.IsTrue(tests.Contains("testRecipeRunnerFixture", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void ManifestVersionIsThree()
     {
         var manifestPath = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab", "manifest.json");
