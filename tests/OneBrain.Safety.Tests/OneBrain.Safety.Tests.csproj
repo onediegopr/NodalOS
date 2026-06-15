@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OneBrain.Safety\OneBrain.Safety.csproj" />
+    <ProjectReference Include="..\..\src\OneBrain.BrowserExecutor.Contracts\OneBrain.BrowserExecutor.Contracts.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.Core\OneBrain.Core.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.Actions\OneBrain.Actions.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.ChromeLab.Bridge\OneBrain.ChromeLab.Bridge.csproj" />
