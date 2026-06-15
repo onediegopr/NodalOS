@@ -176,7 +176,14 @@ public sealed record BrowserRuntimeObservedState(
     bool SensitiveAutomationCheckpointCompleted = false,
     bool SensitiveRealPilotDecisionApproved = false,
     bool ExternalLowRiskTargetAvailable = false,
-    bool ProductTrackAllowed = false)
+    bool ProductTrackAllowed = false,
+    bool ProductAdminFoundationDefined = false,
+    bool LicensingFoundationDefined = false,
+    bool FeatureFlagSensitiveRealPilotEnabled = false,
+    bool FeatureFlagProductiveVaultEnabled = false,
+    bool FeatureFlagReplayProductiveEnabled = false,
+    bool FeatureFlagRecorderProductiveEnabled = false,
+    bool ExpiredLicenseAttemptsExecution = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -266,6 +273,15 @@ public sealed record BrowserRuntimeObservedState(
         !ResponseBodyCaptureSupported &&
         !SensitiveHeaderValueCaptureSupported;
 
+    public bool ProductGovernanceAllowed =>
+        (!ProductAdminFoundationDefined || LicensingFoundationDefined) &&
+        (!LicensingFoundationDefined || ProductAdminFoundationDefined) &&
+        (!FeatureFlagSensitiveRealPilotEnabled || SensitiveRealPilotDecisionApproved) &&
+        !FeatureFlagProductiveVaultEnabled &&
+        !FeatureFlagReplayProductiveEnabled &&
+        !FeatureFlagRecorderProductiveEnabled &&
+        !ExpiredLicenseAttemptsExecution;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -281,7 +297,14 @@ public sealed record BrowserRuntimeObservedState(
         SensitiveAutomationCheckpointCompleted ||
         SensitiveRealPilotDecisionApproved ||
         ExternalLowRiskTargetAvailable ||
-        ProductTrackAllowed;
+        ProductTrackAllowed ||
+        ProductAdminFoundationDefined ||
+        LicensingFoundationDefined ||
+        FeatureFlagSensitiveRealPilotEnabled ||
+        FeatureFlagProductiveVaultEnabled ||
+        FeatureFlagReplayProductiveEnabled ||
+        FeatureFlagRecorderProductiveEnabled ||
+        ExpiredLicenseAttemptsExecution;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
