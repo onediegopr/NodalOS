@@ -218,7 +218,18 @@ public sealed record BrowserRuntimeObservedState(
     bool ProductionProfileEnablesSensitiveFeaturesByDefault = false,
     bool UpdateManifestMissingHashOrSignature = false,
     bool ReleaseChannelBypassesTenantPolicy = false,
-    bool RollbackExecutesAutomatically = false)
+    bool RollbackExecutesAutomatically = false,
+    bool InstallerDryRunDefined = false,
+    bool DeploymentPreflightDefined = false,
+    bool RollbackDryRunDefined = false,
+    bool InstallerModifiesRealSystem = false,
+    bool DeploymentDryRunEnablesRealBillingEmailSaas = false,
+    bool PublicApiBoundaryDefined = false,
+    bool PublicApiDesignOnly = true,
+    bool PublicApiNetworkExposureDisabled = true,
+    bool PublicApiExposesSecretsCookiesBodies = false,
+    bool PublicApiAllowsCrossTenantAccess = false,
+    bool PublicApiBypassesLicensing = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -349,6 +360,17 @@ public sealed record BrowserRuntimeObservedState(
         !ReleaseChannelBypassesTenantPolicy &&
         !RollbackExecutesAutomatically;
 
+    public bool InstallerDeploymentAllowed =>
+        (!InstallerDryRunDefined || (DeploymentPreflightDefined && RollbackDryRunDefined)) &&
+        !InstallerModifiesRealSystem &&
+        !DeploymentDryRunEnablesRealBillingEmailSaas;
+
+    public bool PublicApiBoundaryAllowed =>
+        (!PublicApiBoundaryDefined || (PublicApiDesignOnly && PublicApiNetworkExposureDisabled)) &&
+        !PublicApiExposesSecretsCookiesBodies &&
+        !PublicApiAllowsCrossTenantAccess &&
+        !PublicApiBypassesLicensing;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -398,7 +420,18 @@ public sealed record BrowserRuntimeObservedState(
         ProductionProfileEnablesSensitiveFeaturesByDefault ||
         UpdateManifestMissingHashOrSignature ||
         ReleaseChannelBypassesTenantPolicy ||
-        RollbackExecutesAutomatically;
+        RollbackExecutesAutomatically ||
+        InstallerDryRunDefined ||
+        DeploymentPreflightDefined ||
+        RollbackDryRunDefined ||
+        InstallerModifiesRealSystem ||
+        DeploymentDryRunEnablesRealBillingEmailSaas ||
+        PublicApiBoundaryDefined ||
+        !PublicApiDesignOnly ||
+        !PublicApiNetworkExposureDisabled ||
+        PublicApiExposesSecretsCookiesBodies ||
+        PublicApiAllowsCrossTenantAccess ||
+        PublicApiBypassesLicensing;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

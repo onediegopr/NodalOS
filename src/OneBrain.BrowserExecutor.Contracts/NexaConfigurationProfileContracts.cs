@@ -96,6 +96,15 @@ public sealed record NexaConfigurationProfile(
     public static NexaConfigurationProfile Test() =>
         Build(NexaConfigurationProfileKind.Test, NexaConfigurationProfileRiskPosture.SandboxOnly, NexaProfileVaultMode.OsBackedSynthetic, NexaProfileBrowserRuntimeMode.LocalCdpReadOnly, NexaProfileRecorderReplayMode.ReadOnlySafeMode, NexaProfileSensitiveSiteMode.SimulationOnly);
 
+    public static NexaConfigurationProfile LocalSandbox() =>
+        Build(NexaConfigurationProfileKind.LocalSandbox, NexaConfigurationProfileRiskPosture.SandboxOnly, NexaProfileVaultMode.SandboxSynthetic, NexaProfileBrowserRuntimeMode.LocalCdpReadOnly, NexaProfileRecorderReplayMode.ReadOnlySafeMode, NexaProfileSensitiveSiteMode.SimulationOnly);
+
+    public static NexaConfigurationProfile InternalPreview() =>
+        Build(NexaConfigurationProfileKind.InternalPreview, NexaConfigurationProfileRiskPosture.InternalControlled, NexaProfileVaultMode.OsBackedSynthetic, NexaProfileBrowserRuntimeMode.ControlledRuntime, NexaProfileRecorderReplayMode.ReadOnlySafeMode, NexaProfileSensitiveSiteMode.SimulationOnly);
+
+    public static NexaConfigurationProfile PrivateBeta() =>
+        Build(NexaConfigurationProfileKind.PrivateBeta, NexaConfigurationProfileRiskPosture.InternalControlled, NexaProfileVaultMode.OsBackedSynthetic, NexaProfileBrowserRuntimeMode.ControlledRuntime, NexaProfileRecorderReplayMode.ReadOnlySafeMode, NexaProfileSensitiveSiteMode.SimulationOnly);
+
     public static NexaConfigurationProfile ProductionLocked() =>
         Build(NexaConfigurationProfileKind.ProductionLocked, NexaConfigurationProfileRiskPosture.FailClosed, NexaProfileVaultMode.Disabled, NexaProfileBrowserRuntimeMode.ProductionLocked, NexaProfileRecorderReplayMode.Disabled, NexaProfileSensitiveSiteMode.Disabled);
 
