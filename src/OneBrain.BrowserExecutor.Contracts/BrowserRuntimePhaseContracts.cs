@@ -52,6 +52,20 @@ public enum BrowserRuntimeVaultState
     UnknownProvider
 }
 
+public enum BrowserRuntimeExternalAuthState
+{
+    Disabled,
+    LowRiskActive,
+    SensitiveOrCriticalActive
+}
+
+public enum BrowserRuntimeDownloadState
+{
+    Disabled,
+    SafeDownloadActive,
+    UnsafeDownloadActive
+}
+
 public sealed record BrowserRuntimeCapabilityState(
     string Name,
     bool Enabled,
@@ -84,7 +98,18 @@ public sealed record BrowserRuntimeObservedState(
     bool MinimalSandboxVaultConsentValid = false,
     bool VaultReturnsPublicValues = false,
     bool VaultCompanionExposure = false,
-    bool VaultProviderKnown = true)
+    bool VaultProviderKnown = true,
+    BrowserRuntimeExternalAuthState ExternalAuthState = BrowserRuntimeExternalAuthState.Disabled,
+    bool ExternalAuthConsentPolicyGateValid = false,
+    bool ExternalAuthTargetLowRisk = false,
+    bool ExternalAuthReadOnlyGuardActive = false,
+    BrowserRuntimeDownloadState DownloadState = BrowserRuntimeDownloadState.Disabled,
+    bool SafeDownloadAllowlistValid = false,
+    bool SafeDownloadQuarantineEnabled = false,
+    bool SafeDownloadHashRequired = false,
+    bool SafeDownloadAutoOpenEnabled = false,
+    bool SafeDownloadExecutableAllowed = false,
+    bool SafeDownloadControlledRoot = true)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -111,6 +136,21 @@ public sealed record BrowserRuntimeObservedState(
         MinimalSandboxVaultAllowed &&
         !VaultReturnsPublicValues &&
         !VaultCompanionExposure;
+
+    public bool ExternalAuthAllowed =>
+        ExternalAuthState != BrowserRuntimeExternalAuthState.SensitiveOrCriticalActive &&
+        (ExternalAuthState != BrowserRuntimeExternalAuthState.LowRiskActive ||
+         (ExternalAuthConsentPolicyGateValid && ExternalAuthTargetLowRisk && ExternalAuthReadOnlyGuardActive));
+
+    public bool SafeDownloadAllowed =>
+        DownloadState != BrowserRuntimeDownloadState.UnsafeDownloadActive &&
+        (DownloadState != BrowserRuntimeDownloadState.SafeDownloadActive ||
+         (SafeDownloadAllowlistValid &&
+          SafeDownloadQuarantineEnabled &&
+          SafeDownloadHashRequired &&
+          !SafeDownloadAutoOpenEnabled &&
+          !SafeDownloadExecutableAllowed &&
+          SafeDownloadControlledRoot));
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

@@ -234,6 +234,8 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(!state.VaultCompanionExposure, "vault not exposed to companion", passed, failed);
         Check(state.MinimalSandboxVaultAllowed, "minimal sandbox vault consent valid", passed, failed);
         Check(!state.LoginRealActive, "no real login", passed, failed);
+        Check(state.ExternalAuthAllowed, "external auth low-risk only", passed, failed);
+        Check(state.SafeDownloadAllowed, "safe download policy", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);
