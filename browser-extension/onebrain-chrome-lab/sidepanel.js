@@ -47,6 +47,7 @@ const state = {
     lastToolResult: null,
     lastRunStatus: null
   },
+  handoff: null,
   logs: []
 };
 
@@ -63,6 +64,17 @@ const el = {
   humanBanner: document.getElementById('humanBanner'),
   humanMessage: document.getElementById('humanMessage'),
   resumeHumanBtn: document.getElementById('resumeHumanBtn'),
+  handoffSurface: document.getElementById('handoffSurface'),
+  handoffTitle: document.getElementById('handoffTitle'),
+  handoffStatus: document.getElementById('handoffStatus'),
+  handoffReason: document.getElementById('handoffReason'),
+  handoffSafeUrl: document.getElementById('handoffSafeUrl'),
+  handoffInstruction: document.getElementById('handoffInstruction'),
+  handoffExpectedAction: document.getElementById('handoffExpectedAction'),
+  handoffOptions: document.getElementById('handoffOptions'),
+  handoffContinueBtn: document.getElementById('handoffContinueBtn'),
+  handoffCancelBtn: document.getElementById('handoffCancelBtn'),
+  handoffCopyLogBtn: document.getElementById('handoffCopyLogBtn'),
   instructionInput: document.getElementById('instructionInput'),
   startRunBtn: document.getElementById('startRunBtn'),
   pauseRunBtn: document.getElementById('pauseRunBtn'),
@@ -193,6 +205,9 @@ function bindEvents() {
     post({ type: 'recipeResume' });
     render();
   });
+  el.handoffContinueBtn.addEventListener('click', () => sendHandoffUiEvent('handoff.userCompleted'));
+  el.handoffCancelBtn.addEventListener('click', () => sendHandoffUiEvent('handoff.cancelled'));
+  el.handoffCopyLogBtn.addEventListener('click', copyHandoffLog);
 
   el.startRunBtn.addEventListener('click', () => {
     state.operator.goal = el.instructionInput.value.trim();
@@ -345,7 +360,17 @@ function handleMessage(message) {
       handleRunStatus(message.message || {});
       break;
     case 'humanIntervention':
+      applyHandoffState(message);
       showHumanBanner(message.message || message.reason || 'Intervención humana requerida');
+      break;
+    case 'handoff.created':
+    case 'handoff.updated':
+    case 'handoff.expired':
+    case 'handoff.resumeRequested':
+    case 'handoff.resumeVerified':
+    case 'handoff.resumeRejected':
+    case 'handoff.disconnected':
+      applyHandoffState(message);
       break;
     case 'runStarted':
       handleRunStarted(message.body || {});
@@ -390,6 +415,10 @@ function handleMessage(message) {
 
 function handleEngineMessage(message) {
   addLog('engine', message);
+  if (message.type && /^handoff\./.test(message.type)) {
+    applyHandoffState(message);
+    return;
+  }
   if (message.tool) {
     state.run.currentTool = message.tool;
     state.operator.action = `Solicitando ${message.tool}`;
@@ -482,6 +511,7 @@ function render() {
   renderTabs();
   renderHeader();
   renderOperate();
+  renderHandoff();
   renderLearning();
   renderRecipes();
   renderRuntime();
@@ -506,6 +536,139 @@ function renderOperate() {
   renderTargetResolution();
   renderVerification();
   renderTimeline(el.operatorTimeline, state.operator.timeline);
+}
+
+function renderHandoff() {
+  const handoff = state.handoff;
+  el.handoffSurface.classList.toggle('hidden', !handoff);
+  if (!handoff) {
+    return;
+  }
+  el.handoffTitle.textContent = 'NEXA necesita intervención humana';
+  el.handoffStatus.textContent = handoff.displayState || handoff.status || 'WaitingForUser';
+  el.handoffReason.textContent = handoff.reason || '-';
+  el.handoffSafeUrl.textContent = handoff.safeUrl || '-';
+  el.handoffInstruction.textContent = handoff.instruction || '-';
+  el.handoffExpectedAction.textContent = handoff.expectedUserAction || '-';
+  el.handoffOptions.textContent = (handoff.allowedOptions || []).join(', ') || '-';
+  const terminal = ['Cancelled', 'Expired', 'Failed', 'Resumed', 'Blocked'].includes(handoff.displayState);
+  el.handoffContinueBtn.disabled = terminal || handoff.displayState !== 'WaitingForUser';
+  el.handoffCancelBtn.disabled = terminal;
+}
+
+function applyHandoffState(message) {
+  const handoff = normalizeHandoff(message);
+  if (!handoff) {
+    return;
+  }
+  state.handoff = handoff;
+  state.run.status = handoff.displayState === 'Resumed' ? state.run.status : 'paused';
+  pushTimeline(`Intervención humana: ${handoff.displayState || handoff.reason || 'WaitingForUser'}`);
+}
+
+function normalizeHandoff(message) {
+  const presentation = message.presentation || message.handoff || message;
+  if (!presentation) {
+    return null;
+  }
+  const displayState = displayStateFrom(message.type, presentation.displayState || presentation.status);
+  const reason = presentation.reason || presentation.handoffReason || message.reason || 'UnknownSensitivePrompt';
+  return {
+    handoffId: redactSensitive(presentation.handoffId || presentation.id || message.handoffId || ''),
+    runId: redactSensitive(presentation.runId || message.runId || state.run.runId || ''),
+    actionId: redactSensitive(presentation.actionId || message.actionId || ''),
+    correlationId: redactSensitive(presentation.correlationId || message.correlationId || ''),
+    reason: redactSensitive(reason),
+    status: redactSensitive(presentation.status || ''),
+    displayState,
+    safeTitle: redactSensitive(presentation.safeTitle || presentation.title || ''),
+    safeUrl: redactSensitive(presentation.safeUrl || presentation.url || ''),
+    instruction: redactSensitive(presentation.instruction || instructionForReason(reason)),
+    expectedUserAction: redactSensitive(presentation.expectedUserAction || 'Completá el paso sensible manualmente y avisá cuando esté listo.'),
+    allowedOptions: Array.isArray(presentation.allowedOptions) && presentation.allowedOptions.length
+      ? presentation.allowedOptions.map(redactSensitive)
+      : ['ContinueAfterUserAction', 'Cancel', 'CopyDiagnosticLog'],
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    redacted: true,
+    diagnostics: redactSensitive(presentation.diagnostics || message.diagnostics || '')
+  };
+}
+
+function displayStateFrom(type, fallback) {
+  if (type === 'handoff.expired') return 'Expired';
+  if (type === 'handoff.resumeRequested') return 'UserCompletedPendingVerification';
+  if (type === 'handoff.resumeVerified') return 'Resumed';
+  if (type === 'handoff.resumeRejected') return 'Blocked';
+  if (type === 'handoff.disconnected') return 'Blocked';
+  if (fallback === 'UserCompleted') return 'UserCompletedPendingVerification';
+  if (fallback === 'Cancelled' || fallback === 'Expired' || fallback === 'Failed' || fallback === 'Resumed' || fallback === 'Blocked') return fallback;
+  return 'WaitingForUser';
+}
+
+function instructionForReason(reason) {
+  const normalized = String(reason || '').toLowerCase();
+  if (normalized.includes('captcha')) {
+    return 'Se detectó CAPTCHA o verificación anti-bot. NEXA no intentará resolverlo automáticamente. Resolvelo manualmente y luego presioná "Ya lo hice, continuar".';
+  }
+  if (normalized.includes('twofactor') || normalized.includes('2fa') || normalized.includes('otp')) {
+    return 'Se detectó un paso de doble factor. Completá el código o aprobación desde tu dispositivo y luego presioná "Ya lo hice, continuar".';
+  }
+  if (normalized.includes('clave')) {
+    return 'Se detectó una credencial sensible o clave fiscal. NEXA se detuvo para que la completes manualmente. No se guardará ni registrará la clave.';
+  }
+  return 'Se detectó un paso sensible: login o contraseña. NEXA se detuvo para que lo completes manualmente. Cuando termines, presioná "Ya lo hice, continuar".';
+}
+
+function sendHandoffUiEvent(type) {
+  if (!state.handoff) {
+    return;
+  }
+  const event = {
+    type,
+    handoffId: state.handoff.handoffId || '',
+    runId: state.handoff.runId || state.run.runId || '',
+    actionId: state.handoff.actionId || '',
+    correlationId: state.handoff.correlationId || '',
+    runtimeKind: 'core-governed-companion',
+    source: 'chrome-companion',
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    evidenceRefs: [],
+    proofRefs: [],
+    redacted: true,
+    diagnostics: redactSensitive({
+      displayState: state.handoff.displayState,
+      reason: state.handoff.reason,
+      safeUrl: state.handoff.safeUrl
+    })
+  };
+  state.handoff = {
+    ...state.handoff,
+    displayState: type === 'handoff.cancelled' ? 'Cancelled' : 'UserCompletedPendingVerification',
+    status: type === 'handoff.cancelled' ? 'Cancelled' : 'UserCompleted'
+  };
+  addLog('extension', event);
+  post(event);
+  render();
+}
+
+async function copyHandoffLog() {
+  const log = redactSensitive(JSON.stringify({
+    createdAt: new Date().toISOString(),
+    runtimeKind: 'core-governed-companion',
+    handoff: state.handoff,
+    run: state.run,
+    diagnostics: state.runtime,
+    logs: state.logs.slice(0, 40)
+  }, null, 2));
+  try {
+    await navigator.clipboard.writeText(log);
+    addLog('local', 'LOG de handoff copiado.');
+  } catch {
+    addLog('local', log);
+  }
+  render();
 }
 
 function renderTargetResolution() {
@@ -989,8 +1152,23 @@ function stringify(value) {
 }
 
 function summarize(value) {
-  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  const text = redactSensitive(typeof value === 'string' ? value : JSON.stringify(value));
   return text && text.length > 900 ? `${text.slice(0, 900)}...` : text || '';
+}
+
+function redactSensitive(value) {
+  if (value === null || value === undefined) {
+    return value;
+  }
+  if (typeof value === 'object') {
+    return JSON.parse(redactSensitive(JSON.stringify(value)));
+  }
+  return String(value)
+    .replace(/s[k]-[A-Za-z0-9_-]{8,}/gi, '[redacted]')
+    .replace(/authorization\s*[:=]\s*bearer\s+[A-Za-z0-9._-]+/gi, 'authorization=[redacted]')
+    .replace(/bearer\s+[A-Za-z0-9._-]+/gi, 'bearer [redacted]')
+    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]')
+    .replace(/\b(CUIT|DNI)\s*[:=]\s*\d{7,11}\b/gi, '$1=[redacted]');
 }
 
 function escapeHtml(value) {

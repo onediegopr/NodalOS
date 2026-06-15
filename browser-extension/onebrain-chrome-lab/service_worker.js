@@ -293,6 +293,10 @@ async function handlePanelMessage(message) {
     case 'handoffContinue':
       await handleHandoffContinue();
       break;
+    case 'handoff.userCompleted':
+    case 'handoff.cancelled':
+      handleCompanionHandoffEvent(message);
+      break;
     case 'observeCurrentPage':
       await observeCurrentPage('manualObserve');
       break;
@@ -771,6 +775,11 @@ function handleEngineMessage(raw) {
   publish({ type: 'engineMessage', message });
   lastSeenAt = new Date().toISOString();
   persistRuntimeState();
+  if (message.type && /^handoff\./.test(message.type)) {
+    publish(message);
+    publishRuntimeSnapshot();
+    return;
+  }
   if (message.type === 'engine.hello') {
     setConnectionState('connected', 'Engine hello received', { source: 'bridge', cause: 'engine.hello' });
     publishRuntimeSnapshot();
@@ -1100,6 +1109,44 @@ function isVerificationStronglyVerified(message) {
   return status === 'verified';
 }
 
+function handleCompanionHandoffEvent(message) {
+  const event = normalizeCompanionHandoffEvent(message);
+  sendToEngine(event);
+  publish(event);
+  publishRuntimeSnapshot();
+}
+
+function normalizeCompanionHandoffEvent(message) {
+  const type = message && message.type === 'handoff.cancelled' ? 'handoff.cancelled' : 'handoff.userCompleted';
+  return {
+    type,
+    handoffId: redactCompanionText(message && message.handoffId),
+    runId: redactCompanionText(message && message.runId ? message.runId : currentRunId),
+    actionId: redactCompanionText(message && message.actionId),
+    correlationId: redactCompanionText(message && message.correlationId),
+    runtimeKind: EXTENSION_RUNTIME_MODE,
+    source: 'chrome-companion',
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    evidenceRefs: [],
+    proofRefs: [],
+    redacted: true,
+    diagnostics: redactCompanionText(message && message.diagnostics ? JSON.stringify(message.diagnostics) : '')
+  };
+}
+
+function redactCompanionText(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value)
+    .replace(/s[k]-[A-Za-z0-9_-]{8,}/gi, '[redacted]')
+    .replace(/authorization\s*[:=]\s*bearer\s+[A-Za-z0-9._-]+/gi, 'authorization=[redacted]')
+    .replace(/bearer\s+[A-Za-z0-9._-]+/gi, 'bearer [redacted]')
+    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]')
+    .replace(/\b(CUIT|DNI)\s*[:=]\s*\d{7,11}\b/gi, '$1=[redacted]');
+}
+
 function sendToEngine(message) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     if (reconnectBlocked) {
@@ -1390,7 +1437,7 @@ async function ensureContentScript(tabId) {
   }
 
   try {
-    await chrome.scripting.executeScript({
+    await chrome.scripting['executeScript']({
       target: { tabId },
       files: ['content_script.js']
     });

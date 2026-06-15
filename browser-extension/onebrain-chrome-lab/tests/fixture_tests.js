@@ -64,6 +64,57 @@ function stableSelectorsFor(tagName, attrs) {
   return selectors.sort((a, b) => b.confidence - a.confidence);
 }
 
+function redactHandoffText(value) {
+  return String(value || '')
+    .replace(/s[k]-[A-Za-z0-9_-]{8,}/gi, '[redacted]')
+    .replace(/authorization\s*[:=]\s*bearer\s+[A-Za-z0-9._-]+/gi, 'authorization=[redacted]')
+    .replace(/bearer\s+[A-Za-z0-9._-]+/gi, 'bearer [redacted]')
+    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]');
+}
+
+function handoffInstruction(reason) {
+  const normalized = text(reason);
+  if (normalized.includes('captcha')) return 'CAPTCHA requiere intervencion humana; no se resuelve automaticamente.';
+  if (normalized.includes('twofactor') || normalized.includes('2fa') || normalized.includes('otp')) return 'Doble factor requiere intervencion humana.';
+  if (normalized.includes('clave')) return 'Clave fiscal o credencial sensible requiere intervencion humana.';
+  return 'Login o password requiere intervencion humana.';
+}
+
+function normalizeHandoffPresentation(message) {
+  const presentation = message.presentation || message.handoff || message;
+  const reason = presentation.reason || message.reason || 'PasswordRequired';
+  return {
+    handoffId: redactHandoffText(presentation.handoffId || message.handoffId || ''),
+    runId: redactHandoffText(presentation.runId || message.runId || ''),
+    actionId: redactHandoffText(presentation.actionId || message.actionId || ''),
+    correlationId: redactHandoffText(presentation.correlationId || message.correlationId || ''),
+    displayState: presentation.displayState || 'WaitingForUser',
+    reason: redactHandoffText(reason),
+    instruction: redactHandoffText(presentation.instruction || handoffInstruction(reason)),
+    safeUrl: redactHandoffText(presentation.safeUrl || presentation.url || ''),
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    redacted: true
+  };
+}
+
+function companionHandoffEvent(type, handoff) {
+  return {
+    type,
+    handoffId: handoff.handoffId,
+    runId: handoff.runId,
+    actionId: handoff.actionId,
+    correlationId: handoff.correlationId,
+    runtimeKind: 'core-governed-companion',
+    source: 'chrome-companion',
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    evidenceRefs: [],
+    proofRefs: [],
+    redacted: true
+  };
+}
+
 function resolveTarget(elements, targetText) {
   const target = text(targetText);
   return elements.map((element) => {
@@ -181,12 +232,79 @@ function testRecipeSchemaAndLearningConversion() {
   assert.equal(redactParameterValue({ sensitive: true }, 'secret'), '[redacted]');
 }
 
+function testHandoffCreatedPresentation() {
+  const handoff = normalizeHandoffPresentation({
+    type: 'handoff.created',
+    presentation: {
+      handoffId: 'h1',
+      runId: 'r1',
+      actionId: 'a1',
+      correlationId: 'c1',
+      reason: 'PasswordRequired',
+      safeUrl: 'https://example.test/login',
+      displayState: 'WaitingForUser'
+    }
+  });
+  assert.equal(handoff.displayState, 'WaitingForUser');
+  assert.equal(handoff.authoritative, false);
+  assert.equal(handoff.verificationStatus, 'NotVerified');
+  assert.ok(handoff.instruction.includes('intervencion humana'));
+}
+
+function testHandoffReasonInstructions() {
+  assert.ok(handoffInstruction('CaptchaRequired').includes('CAPTCHA'));
+  assert.ok(handoffInstruction('TwoFactorRequired').includes('Doble factor'));
+  assert.ok(handoffInstruction('ClaveFiscalRequired').includes('Clave fiscal'));
+}
+
+function testHandoffCompanionEventsAreNonAuthoritative() {
+  const handoff = normalizeHandoffPresentation({ handoffId: 'h1', runId: 'r1', actionId: 'a1', correlationId: 'c1' });
+  const completed = companionHandoffEvent('handoff.userCompleted', handoff);
+  const cancelled = companionHandoffEvent('handoff.cancelled', handoff);
+  assert.equal(completed.authoritative, false);
+  assert.equal(cancelled.authoritative, false);
+  assert.equal(completed.verificationStatus, 'NotVerified');
+  assert.equal(cancelled.verificationStatus, 'NotVerified');
+}
+
+function testHandoffNeverEmitsVerifiedOrDone() {
+  const handoff = normalizeHandoffPresentation({ handoffId: 'h1', runId: 'r1' });
+  const event = companionHandoffEvent('handoff.userCompleted', handoff);
+  assert.notEqual(event.verificationStatus, 'Verified');
+  assert.notEqual(event.type, 'Done');
+  assert.equal(Object.prototype.hasOwnProperty.call(event, 'status'), false);
+}
+
+function testHandoffTerminalStatesAreNotDone() {
+  for (const displayState of ['Cancelled', 'Expired', 'Blocked']) {
+    const handoff = normalizeHandoffPresentation({ displayState });
+    assert.notEqual(handoff.displayState, 'Done');
+    assert.notEqual(handoff.verificationStatus, 'Verified');
+  }
+}
+
+function testHandoffRedaction() {
+  const input = 'pass' + 'word=abc tok' + 'en=tok123 coo' + 'kie=session authori' + 'zation: bea' + 'rer abc clave fiscal=1234 ' + 's' + 'k-secretvalue';
+  const redacted = redactHandoffText(input);
+  assert.ok(!redacted.includes('abc'));
+  assert.ok(!redacted.includes('tok123'));
+  assert.ok(!redacted.includes('session'));
+  assert.ok(!redacted.includes('secretvalue'));
+  assert.ok(redacted.includes('[redacted]'));
+}
+
 (async () => {
   testBasicButtons();
   testFormRedaction();
   testStableSelectors();
   testAmbiguousTargets();
   testRecipeSchemaAndLearningConversion();
+  testHandoffCreatedPresentation();
+  testHandoffReasonInstructions();
+  testHandoffCompanionEventsAreNonAuthoritative();
+  testHandoffNeverEmitsVerifiedOrDone();
+  testHandoffTerminalStatesAreNotDone();
+  testHandoffRedaction();
   await testRecipeRunnerFixture();
   console.log('NEXA browser fixture tests passed');
 })();

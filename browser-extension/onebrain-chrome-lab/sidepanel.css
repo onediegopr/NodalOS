@@ -330,6 +330,25 @@ pre {
   font-weight: 800;
 }
 
+.handoff-surface {
+  border-color: #d78b00;
+  background: #fff8e6;
+}
+
+.handoff-surface h2 {
+  color: #6f4700;
+}
+
+.handoff-surface dd {
+  overflow-wrap: anywhere;
+}
+
+.handoff-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 details {
   border: 1px solid var(--line);
   border-radius: 8px;
