@@ -211,6 +211,7 @@ public static partial class BrowserCredentialRedactor
             return separatorIndex >= 0 ? text[..(separatorIndex + 1)] + Redacted : Redacted;
         });
         redacted = SecretRedactor.Redact(redacted);
+        redacted = JwtValuePattern().Replace(redacted, Redacted);
         return IdentityPattern().Replace(redacted, Redacted);
     }
 
@@ -220,7 +221,10 @@ public static partial class BrowserCredentialRedactor
             return false;
 
         var normalized = RedactedSecretPattern().Replace(value, "");
-        return SecretRedactor.ContainsSecret(normalized) || SecretLikePattern().IsMatch(normalized) || IdentityPattern().IsMatch(normalized);
+        return SecretRedactor.ContainsSecret(normalized) ||
+            SecretLikePattern().IsMatch(normalized) ||
+            JwtValuePattern().IsMatch(normalized) ||
+            IdentityPattern().IsMatch(normalized);
     }
 
     [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni|sessionid|csrf|xsrf|jwt|client_secret)\\s*[:=]\\s*[^\\s;]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
@@ -228,6 +232,9 @@ public static partial class BrowserCredentialRedactor
 
     [GeneratedRegex("\\b(\\d{2}-\\d{8}-\\d|\\d{7,8})\\b", RegexOptions.CultureInvariant)]
     private static partial Regex IdentityPattern();
+
+    [GeneratedRegex("\\b[A-Za-z0-9_-]{3,}\\.[A-Za-z0-9_-]{3,}\\.[A-Za-z0-9_-]{3,}\\b", RegexOptions.CultureInvariant)]
+    private static partial Regex JwtValuePattern();
 
     [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni|sessionid|csrf|xsrf|jwt|client_secret)\\s*[:=]\\s*\\[REDACTED\\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex RedactedSecretPattern();
