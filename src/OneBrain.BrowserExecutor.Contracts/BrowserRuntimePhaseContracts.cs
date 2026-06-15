@@ -172,7 +172,11 @@ public sealed record BrowserRuntimeObservedState(
     bool SensitiveSiteSubmitEnabled = false,
     bool SensitiveSitePaymentEnabled = false,
     bool SensitiveSiteSigningEnabled = false,
-    bool SensitiveDocumentContentCaptureEnabled = false)
+    bool SensitiveDocumentContentCaptureEnabled = false,
+    bool SensitiveAutomationCheckpointCompleted = false,
+    bool SensitiveRealPilotDecisionApproved = false,
+    bool ExternalLowRiskTargetAvailable = false,
+    bool ProductTrackAllowed = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -249,7 +253,7 @@ public sealed record BrowserRuntimeObservedState(
 
     public bool SensitiveSitesAllowed =>
         (!SensitiveSiteSurfaceActive || SensitiveSitesPolicyDefined) &&
-        !SensitiveSiteRealPilotActive &&
+        (!SensitiveSiteRealPilotActive || SensitiveRealPilotDecisionApproved) &&
         !SensitiveDocumentRealActive &&
         !SensitiveSiteIrreversibleActionActive &&
         !SensitiveSiteSubmitEnabled &&
@@ -273,7 +277,11 @@ public sealed record BrowserRuntimeObservedState(
         SensitiveSiteSubmitEnabled ||
         SensitiveSitePaymentEnabled ||
         SensitiveSiteSigningEnabled ||
-        SensitiveDocumentContentCaptureEnabled;
+        SensitiveDocumentContentCaptureEnabled ||
+        SensitiveAutomationCheckpointCompleted ||
+        SensitiveRealPilotDecisionApproved ||
+        ExternalLowRiskTargetAvailable ||
+        ProductTrackAllowed;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
