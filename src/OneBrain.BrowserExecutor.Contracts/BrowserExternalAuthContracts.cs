@@ -55,6 +55,39 @@ public sealed record BrowserExternalAuthPolicy(
     bool RequireGate,
     bool EnforceReadOnlyAfterLogin);
 
+public sealed record BrowserExternalLowRiskTargetConfig(
+    string TargetId,
+    string AllowlistedHost,
+    Uri LoginUri,
+    string DashboardVerificationSelector,
+    IReadOnlySet<string> DisallowedActions,
+    BrowserExternalAuthRiskProfile RiskProfile,
+    BrowserVaultSecretReference CredentialReference,
+    BrowserConsentScope RequiredConsentScope)
+{
+    public bool IsConfiguredSafe =>
+        !string.IsNullOrWhiteSpace(TargetId) &&
+        !string.IsNullOrWhiteSpace(AllowlistedHost) &&
+        LoginUri.Host.Equals(AllowlistedHost, StringComparison.OrdinalIgnoreCase) &&
+        RiskProfile == BrowserExternalAuthRiskProfile.LowRisk &&
+        DisallowedActions.Count > 0 &&
+        CredentialReference.Kind is BrowserSecretKind.Password or BrowserSecretKind.UnknownSensitiveSecret == false;
+}
+
+public sealed record BrowserExternalLowRiskTargetAllowlist(IReadOnlySet<string> Hosts)
+{
+    public bool Allows(Uri uri) => Hosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase);
+}
+
+public sealed record BrowserExternalLowRiskCredentialBinding(
+    string TargetId,
+    BrowserVaultSecretReference CredentialReference,
+    bool TestOwned,
+    bool ContainsRealPersonalCredential)
+{
+    public bool IsUsable => TestOwned && !ContainsRealPersonalCredential && CredentialReference.ProviderKind == BrowserVaultMinimalProviderKind.SandboxLocalEncrypted;
+}
+
 public sealed record BrowserExternalAuthAttempt(
     string RunId,
     string ActionId,

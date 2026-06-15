@@ -66,6 +66,13 @@ public enum BrowserRuntimeDownloadState
     UnsafeDownloadActive
 }
 
+public enum BrowserRuntimeUploadState
+{
+    Disabled,
+    SafeUploadActive,
+    UnsafeUploadActive
+}
+
 public sealed record BrowserRuntimeCapabilityState(
     string Name,
     bool Enabled,
@@ -109,7 +116,16 @@ public sealed record BrowserRuntimeObservedState(
     bool SafeDownloadHashRequired = false,
     bool SafeDownloadAutoOpenEnabled = false,
     bool SafeDownloadExecutableAllowed = false,
-    bool SafeDownloadControlledRoot = true)
+    bool SafeDownloadControlledRoot = true,
+    BrowserRuntimeUploadState SafeUploadState = BrowserRuntimeUploadState.Disabled,
+    bool SafeUploadAllowlistValid = false,
+    bool SafeUploadApprovalPresent = false,
+    bool SafeUploadControlledRoot = true,
+    bool SafeUploadHashRequired = false,
+    bool SafeUploadExecutableAllowed = false,
+    bool SafeUploadWildcardAllowed = false,
+    bool SafeUploadDirectoryAllowed = false,
+    bool SafeUploadExposesContentOrPath = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -151,6 +167,18 @@ public sealed record BrowserRuntimeObservedState(
           !SafeDownloadAutoOpenEnabled &&
           !SafeDownloadExecutableAllowed &&
           SafeDownloadControlledRoot));
+
+    public bool SafeUploadAllowed =>
+        SafeUploadState != BrowserRuntimeUploadState.UnsafeUploadActive &&
+        (SafeUploadState != BrowserRuntimeUploadState.SafeUploadActive ||
+         (SafeUploadAllowlistValid &&
+          SafeUploadApprovalPresent &&
+          SafeUploadControlledRoot &&
+          SafeUploadHashRequired &&
+          !SafeUploadExecutableAllowed &&
+          !SafeUploadWildcardAllowed &&
+          !SafeUploadDirectoryAllowed &&
+          !SafeUploadExposesContentOrPath));
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
