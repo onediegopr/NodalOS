@@ -246,7 +246,16 @@ public sealed record BrowserRuntimeObservedState(
     bool AuditIntegrityKeyHealthOk = true,
     bool AuditIntegrityDevFixtureInProduction = false,
     bool AuditLedgerHeadSealIncludesKeyId = true,
-    bool AuditLedgerVerifiesUsingImplicitDevKey = false)
+    bool AuditLedgerVerifiesUsingImplicitDevKey = false,
+    bool ExternalReadOnlyTargetConfigured = false,
+    bool ExternalReadOnlyTargetTestOwned = false,
+    bool ExternalReadOnlyProofAvailable = false,
+    bool ExternalReadOnlyProofBlocked = false,
+    bool ExternalReadOnlyMetadataOnly = true,
+    bool ExternalReadOnlyGuardActive = false,
+    bool ExternalReadOnlyTargetSensitive = false,
+    bool ExternalReadOnlyMutationAllowed = false,
+    bool ExternalReadOnlyBrowserCleanupConfirmed = true)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -405,6 +414,21 @@ public sealed record BrowserRuntimeObservedState(
         !AuditIntegrityDevFixtureInProduction &&
         !AuditLedgerVerifiesUsingImplicitDevKey;
 
+    public bool ExternalReadOnlyAllowed =>
+        (!ExternalReadOnlyTargetConfigured ||
+         (ExternalReadOnlyTargetTestOwned &&
+          ExternalReadOnlyProofAvailable &&
+          !ExternalReadOnlyProofBlocked &&
+          ExternalReadOnlyMetadataOnly &&
+          ExternalReadOnlyGuardActive &&
+          !ExternalReadOnlyTargetSensitive &&
+          !ExternalReadOnlyMutationAllowed &&
+          ExternalReadOnlyBrowserCleanupConfirmed &&
+          AuditIntegrityKeyCustodyAllowed &&
+          !RequestBodyCaptureSupported &&
+          !ResponseBodyCaptureSupported &&
+          !SensitiveHeaderValueCaptureSupported));
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -482,7 +506,16 @@ public sealed record BrowserRuntimeObservedState(
         !AuditIntegrityKeyHealthOk ||
         AuditIntegrityDevFixtureInProduction ||
         !AuditLedgerHeadSealIncludesKeyId ||
-        AuditLedgerVerifiesUsingImplicitDevKey;
+        AuditLedgerVerifiesUsingImplicitDevKey ||
+        ExternalReadOnlyTargetConfigured ||
+        ExternalReadOnlyTargetTestOwned ||
+        ExternalReadOnlyProofAvailable ||
+        ExternalReadOnlyProofBlocked ||
+        !ExternalReadOnlyMetadataOnly ||
+        ExternalReadOnlyGuardActive ||
+        ExternalReadOnlyTargetSensitive ||
+        ExternalReadOnlyMutationAllowed ||
+        !ExternalReadOnlyBrowserCleanupConfirmed;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

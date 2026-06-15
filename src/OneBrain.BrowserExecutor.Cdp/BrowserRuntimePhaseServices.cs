@@ -253,6 +253,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(state.PublicApiBoundaryAllowed, "public api boundary safe", passed, failed);
         Check(state.LocalProductPreProductionAllowed, "local product shell pre-production checkpoint safe", passed, failed);
         Check(state.AuditIntegrityKeyCustodyAllowed, "audit integrity key custody safe", passed, failed);
+        Check(state.ExternalReadOnlyAllowed, "external read-only target proof safe", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);
