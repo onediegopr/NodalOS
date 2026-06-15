@@ -340,7 +340,7 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
             Warnings: [],
             PayloadLimitApplied: payloadLimitApplied,
             SensitivityRedactionApplied: false,
-            EvidenceRefs: []);
+            EvidenceRefs: [Guid.NewGuid().ToString("N")]);
     }
 
     public async Task<ChromeCdpActionResult> ExecuteActionAsync(BrowserAction action, CancellationToken cancellationToken = default)
