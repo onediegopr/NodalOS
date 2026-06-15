@@ -21,7 +21,9 @@ public sealed class NexaLicensePolicyEvaluator
             return Decision(request, NexaLicenseDecisionKind.Denied, "feature not included in license");
         if (request.Feature == NexaFeatureFlag.SensitiveRealPilot && (request.License.Plan.Kind != NexaPlanKind.Enterprise || !request.SensitiveCompliancePolicyApproved))
             return Decision(request, NexaLicenseDecisionKind.Denied, "sensitive feature requires enterprise compliance policy");
-        if (request.Feature is NexaFeatureFlag.ProductiveVault or NexaFeatureFlag.RecorderProductive or NexaFeatureFlag.ReplayProductive)
+        if (request.Feature == NexaFeatureFlag.ProductiveVault && !ProductiveVaultAllowedInControlledContext(request))
+            return Decision(request, NexaLicenseDecisionKind.Denied, "productive vault requires explicit admin controlled entitlement");
+        if (request.Feature is NexaFeatureFlag.RecorderProductive or NexaFeatureFlag.ReplayProductive)
             return Decision(request, NexaLicenseDecisionKind.Denied, "productive sensitive feature disabled by default");
         if (request.Worker is not null && (!request.Worker.Active || request.Worker.Validate().IsValid == false))
             return Decision(request, NexaLicenseDecisionKind.Denied, "worker is not authorized");
@@ -38,6 +40,10 @@ public sealed class NexaLicensePolicyEvaluator
             return entitlement.Enabled;
         return license.Plan.Enables(feature);
     }
+
+    private static bool ProductiveVaultAllowedInControlledContext(NexaLicensePolicyRequest request) =>
+        request.License.ManualAdminOverride &&
+        request.License.Entitlements.Any(e => e.Feature == NexaFeatureFlag.ProductiveVault && e.Enabled);
 
     private static bool LimitExceeded(NexaPlan plan, NexaUsageCounter counter)
     {

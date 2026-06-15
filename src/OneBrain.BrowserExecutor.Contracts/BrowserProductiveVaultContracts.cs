@@ -2,12 +2,26 @@ namespace OneBrain.BrowserExecutor.Contracts;
 
 public enum BrowserProductiveVaultProviderKind
 {
+    Disabled,
+    DesignOnly,
+    SandboxLocalEncrypted,
     Null,
     InMemoryTestOnly,
     WindowsDpapi,
+    OsBackedDpapiCurrentUser,
+    OsBackedWindowsCredentialManager,
     WindowsCredentialManager,
+    ProductionExternalActive,
     ExternalVaultFuture,
     Unsupported
+}
+
+public enum BrowserProductiveVaultSecretLifecycleState
+{
+    Active,
+    Revoked,
+    Deleted,
+    Rotated
 }
 
 public enum BrowserProductiveVaultCapability
@@ -119,6 +133,13 @@ public sealed record BrowserProductiveVaultConfiguration(
                 errors.Add("OS-backed vault provider is design-only unless explicitly enabled.");
             if (!AllowSyntheticTestMode)
                 errors.Add("M13/M14 OS-backed provider requires synthetic test mode.");
+        }
+        if (ProviderKind == BrowserProductiveVaultProviderKind.OsBackedDpapiCurrentUser)
+        {
+            if (!IsConfigured || !EnableOsBackedStorage)
+                errors.Add("DPAPI CurrentUser provider requires explicit OS-backed configuration.");
+            if (!AllowSyntheticTestMode)
+                errors.Add("M39 DPAPI CurrentUser provider only accepts synthetic test mode.");
         }
         return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
     }
@@ -516,3 +537,173 @@ public sealed class BrowserSecretAuditTrail
         _events.Add(auditEvent);
     }
 }
+
+public sealed record BrowserProductiveVaultSecretReference(
+    string ReferenceId,
+    BrowserSecretKind Kind,
+    BrowserSecretScope Scope,
+    BrowserProductiveVaultProviderKind ProviderKind,
+    string Owner,
+    string Portal,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset? LastAccessedAtUtc,
+    BrowserProductiveVaultSecretLifecycleState LifecycleState,
+    string RedactedLabel)
+{
+    public bool IsRevoked => LifecycleState is BrowserProductiveVaultSecretLifecycleState.Revoked or BrowserProductiveVaultSecretLifecycleState.Deleted;
+
+    public ContractValidationResult Validate()
+    {
+        var errors = new List<string>();
+        BrowserSafeIdentifierValidator.RequireSafe(ReferenceId, nameof(ReferenceId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(Owner, nameof(Owner), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(Portal, nameof(Portal), errors);
+        if (Kind == BrowserSecretKind.UnknownSensitiveSecret)
+            errors.Add("Unknown productive vault secret kind fails closed.");
+        if (ProviderKind is BrowserProductiveVaultProviderKind.Unsupported or BrowserProductiveVaultProviderKind.ExternalVaultFuture)
+            errors.Add("Unsupported productive vault provider fails closed.");
+        if (BrowserCredentialRedactor.ContainsSecret(RedactedLabel))
+            errors.Add("Productive vault reference label contains secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
+}
+
+public sealed record BrowserProductiveVaultHealthCheck(
+    BrowserProductiveVaultProviderKind ProviderKind,
+    bool ProviderAvailable,
+    bool OsBacked,
+    bool SyntheticOnly,
+    string Status,
+    bool Redacted);
+
+public sealed record BrowserProductiveVaultAccessContext(
+    BrowserVaultConsentDecision? Consent,
+    BrowserRuntimePhaseCloseReport? GateReport,
+    NexaLicensePolicyDecision? LicenseDecision,
+    bool PolicyAllowed,
+    bool CoreBoundary,
+    DateTimeOffset NowUtc);
+
+public sealed record BrowserProductiveVaultStoreRequest(
+    string RequestId,
+    string RunId,
+    string ActionId,
+    string CorrelationId,
+    string ProfileId,
+    string SessionId,
+    BrowserProductiveVaultSecretReference Reference,
+    BrowserProductiveVaultAccessContext AccessContext,
+    string Purpose)
+{
+    public ContractValidationResult Validate()
+    {
+        var errors = BrowserVaultStoreRequest.ValidateIds(RequestId, RunId, ActionId, CorrelationId, ProfileId, SessionId);
+        errors.AddRange(Reference.Validate().Errors);
+        if (BrowserCredentialRedactor.ContainsSecret(Purpose))
+            errors.Add("Productive vault purpose contains secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
+}
+
+public sealed record BrowserProductiveVaultRetrieveRequest(
+    string RequestId,
+    string RunId,
+    string ActionId,
+    string CorrelationId,
+    string ProfileId,
+    string SessionId,
+    BrowserProductiveVaultSecretReference Reference,
+    BrowserProductiveVaultAccessContext AccessContext,
+    string Purpose)
+{
+    public ContractValidationResult Validate()
+    {
+        var errors = BrowserVaultStoreRequest.ValidateIds(RequestId, RunId, ActionId, CorrelationId, ProfileId, SessionId);
+        errors.AddRange(Reference.Validate().Errors);
+        if (BrowserCredentialRedactor.ContainsSecret(Purpose))
+            errors.Add("Productive vault purpose contains secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
+}
+
+public sealed record BrowserProductiveVaultDeleteRequest(
+    string RequestId,
+    string RunId,
+    string ActionId,
+    string CorrelationId,
+    string ProfileId,
+    string SessionId,
+    BrowserProductiveVaultSecretReference Reference,
+    BrowserProductiveVaultAccessContext AccessContext,
+    string Purpose);
+
+public sealed record BrowserProductiveVaultAuditEvent(
+    string EventId,
+    string RequestId,
+    string RunId,
+    string ActionId,
+    string CorrelationId,
+    BrowserVaultOperationKind Operation,
+    BrowserProductiveVaultDecisionKind Decision,
+    BrowserProductiveVaultProviderKind ProviderKind,
+    string ReferenceId,
+    DateTimeOffset CreatedAtUtc,
+    string RedactedSummary,
+    bool Redacted)
+{
+    public ContractValidationResult Validate()
+    {
+        var errors = BrowserVaultStoreRequest.ValidateIds(EventId, RequestId, RunId, ActionId, CorrelationId, ReferenceId);
+        if (!Redacted)
+            errors.Add("Productive vault audit must be redacted.");
+        if (BrowserCredentialRedactor.ContainsSecret(RedactedSummary))
+            errors.Add("Productive vault audit contains secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
+}
+
+public abstract record BrowserProductiveVaultOperationResult(
+    BrowserProductiveVaultDecisionKind Decision,
+    BrowserProductiveVaultSecretReference? Reference,
+    BrowserProductiveVaultProviderKind ProviderKind,
+    BrowserProductiveVaultAuditEvent AuditEvent,
+    IReadOnlyList<string> AuditRefs,
+    string Reason,
+    bool Redacted)
+{
+    public bool SecretValueReturned => false;
+    public bool Allowed => Decision == BrowserProductiveVaultDecisionKind.Allowed && Redacted && AuditEvent.Validate().IsValid;
+}
+
+public sealed record BrowserProductiveVaultStoreResult(
+    BrowserProductiveVaultDecisionKind Decision,
+    BrowserProductiveVaultSecretReference? Reference,
+    BrowserProductiveVaultProviderKind ProviderKind,
+    BrowserProductiveVaultAuditEvent AuditEvent,
+    IReadOnlyList<string> AuditRefs,
+    string Reason,
+    bool Redacted)
+    : BrowserProductiveVaultOperationResult(Decision, Reference, ProviderKind, AuditEvent, AuditRefs, Reason, Redacted);
+
+public sealed record BrowserProductiveVaultRetrieveResult(
+    BrowserProductiveVaultDecisionKind Decision,
+    BrowserProductiveVaultSecretReference? Reference,
+    BrowserProductiveVaultProviderKind ProviderKind,
+    BrowserProductiveVaultAuditEvent AuditEvent,
+    IReadOnlyList<string> AuditRefs,
+    string Reason,
+    bool Redacted)
+    : BrowserProductiveVaultOperationResult(Decision, Reference, ProviderKind, AuditEvent, AuditRefs, Reason, Redacted)
+{
+    public bool AllowsCoreBoundaryUse => Allowed;
+}
+
+public sealed record BrowserProductiveVaultDeleteResult(
+    BrowserProductiveVaultDecisionKind Decision,
+    BrowserProductiveVaultSecretReference? Reference,
+    BrowserProductiveVaultProviderKind ProviderKind,
+    BrowserProductiveVaultAuditEvent AuditEvent,
+    IReadOnlyList<string> AuditRefs,
+    string Reason,
+    bool Redacted)
+    : BrowserProductiveVaultOperationResult(Decision, Reference, ProviderKind, AuditEvent, AuditRefs, Reason, Redacted);

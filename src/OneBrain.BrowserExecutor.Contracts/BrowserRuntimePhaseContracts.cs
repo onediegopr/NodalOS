@@ -48,7 +48,9 @@ public enum BrowserRuntimeVaultState
 {
     DesignOnly,
     MinimalSandboxActive,
+    OsBackedMinimalActive,
     ProductionActive,
+    ProductionExternalActive,
     UnknownProvider
 }
 
@@ -130,6 +132,9 @@ public sealed record BrowserRuntimeObservedState(
     bool VaultReturnsPublicValues = false,
     bool VaultCompanionExposure = false,
     bool VaultProviderKnown = true,
+    bool OsBackedVaultProviderHealthy = false,
+    bool OsBackedVaultPublicDtosReferenceOnly = true,
+    bool ProductiveVaultFeatureControlledTestContext = false,
     BrowserRuntimeExternalAuthState ExternalAuthState = BrowserRuntimeExternalAuthState.Disabled,
     bool ExternalAuthConsentPolicyGateValid = false,
     bool ExternalAuthTargetLowRisk = false,
@@ -196,8 +201,8 @@ public sealed record BrowserRuntimeObservedState(
         ProfileState != BrowserRuntimeProfileState.UserProfileControlledWithConsent || ControlledProfileConsentValid;
 
     public bool ProductionVaultUnsafe =>
-        VaultState == BrowserRuntimeVaultState.ProductionActive ||
-        (RealVaultActive && VaultState != BrowserRuntimeVaultState.MinimalSandboxActive);
+        VaultState is BrowserRuntimeVaultState.ProductionActive or BrowserRuntimeVaultState.ProductionExternalActive ||
+        (RealVaultActive && VaultState is not BrowserRuntimeVaultState.MinimalSandboxActive and not BrowserRuntimeVaultState.OsBackedMinimalActive);
 
     public bool MinimalSandboxVaultAllowed =>
         VaultState != BrowserRuntimeVaultState.MinimalSandboxActive ||
@@ -208,6 +213,8 @@ public sealed record BrowserRuntimeObservedState(
         VaultState != BrowserRuntimeVaultState.UnknownProvider &&
         !ProductionVaultUnsafe &&
         MinimalSandboxVaultAllowed &&
+        (VaultState != BrowserRuntimeVaultState.OsBackedMinimalActive ||
+         (OsBackedVaultProviderHealthy && OsBackedVaultPublicDtosReferenceOnly && ProductiveVaultFeatureControlledTestContext)) &&
         !VaultReturnsPublicValues &&
         !VaultCompanionExposure;
 
@@ -277,7 +284,8 @@ public sealed record BrowserRuntimeObservedState(
         (!ProductAdminFoundationDefined || LicensingFoundationDefined) &&
         (!LicensingFoundationDefined || ProductAdminFoundationDefined) &&
         (!FeatureFlagSensitiveRealPilotEnabled || SensitiveRealPilotDecisionApproved) &&
-        !FeatureFlagProductiveVaultEnabled &&
+        (!FeatureFlagProductiveVaultEnabled ||
+         (VaultState == BrowserRuntimeVaultState.OsBackedMinimalActive && ProductiveVaultFeatureControlledTestContext && OsBackedVaultProviderHealthy && OsBackedVaultPublicDtosReferenceOnly)) &&
         !FeatureFlagReplayProductiveEnabled &&
         !FeatureFlagRecorderProductiveEnabled &&
         !ExpiredLicenseAttemptsExecution;

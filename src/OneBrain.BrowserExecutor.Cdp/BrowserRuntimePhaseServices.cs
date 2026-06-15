@@ -233,6 +233,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(!state.VaultReturnsPublicValues, "vault does not return public values", passed, failed);
         Check(!state.VaultCompanionExposure, "vault not exposed to companion", passed, failed);
         Check(state.MinimalSandboxVaultAllowed, "minimal sandbox vault consent valid", passed, failed);
+        Check(state.VaultState != BrowserRuntimeVaultState.OsBackedMinimalActive || (state.OsBackedVaultProviderHealthy && state.OsBackedVaultPublicDtosReferenceOnly && state.ProductiveVaultFeatureControlledTestContext), "OS-backed vault minimal controlled", passed, failed);
         Check(!state.LoginRealActive, "no real login", passed, failed);
         Check(state.ExternalAuthAllowed, "external auth low-risk only", passed, failed);
         Check(state.SafeDownloadAllowed, "safe download policy", passed, failed);
