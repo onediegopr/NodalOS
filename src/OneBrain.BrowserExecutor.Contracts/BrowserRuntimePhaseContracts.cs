@@ -268,7 +268,21 @@ public sealed record BrowserRuntimeObservedState(
     bool PrivatePreviewProductiveRecorderReplayEnabled = false,
     bool PrivatePreviewAuditKeyCustodyMissing = false,
     bool PrivatePreviewDiagnosticsLeak = false,
-    bool PrivatePreviewPublicApiListenerEnabled = false)
+    bool PrivatePreviewPublicApiListenerEnabled = false,
+    bool PrivatePreviewFeedbackLoopDefined = false,
+    bool PrivatePreviewFeedbackLoopLeaksSecrets = false,
+    bool VaultThreatTestsPassed = false,
+    bool VaultThreatTestsMissing = false,
+    bool VaultCompanionCanAccessRawSecret = false,
+    bool VaultSupportCanAccessRawSecret = false,
+    bool VaultAdminCanAccessRawSecret = false,
+    bool VaultPublicApiCanExposeRawSecret = false,
+    bool VaultRotationPolicyDefined = false,
+    bool VaultRecoveryPolicyDefined = false,
+    bool VaultExportPolicyDefined = false,
+    bool VaultExportCleartextBlocked = true,
+    bool VaultRecoveryFailsClosed = true,
+    bool VaultRotationExposesSecret = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -470,6 +484,22 @@ public sealed record BrowserRuntimeObservedState(
           !PrivatePreviewDiagnosticsLeak &&
           !PrivatePreviewPublicApiListenerEnabled));
 
+    public bool PrivatePreviewFeedbackAllowed =>
+        (!PrivatePreviewFeedbackLoopDefined || !PrivatePreviewFeedbackLoopLeaksSecrets);
+
+    public bool VaultThreatBoundaryAllowed =>
+        (!VaultThreatTestsPassed || !VaultThreatTestsMissing) &&
+        !VaultThreatTestsMissing &&
+        !VaultCompanionCanAccessRawSecret &&
+        !VaultSupportCanAccessRawSecret &&
+        !VaultAdminCanAccessRawSecret &&
+        !VaultPublicApiCanExposeRawSecret;
+
+    public bool VaultLifecyclePolicyAllowed =>
+        (!VaultRotationPolicyDefined || !VaultRotationExposesSecret) &&
+        (!VaultRecoveryPolicyDefined || VaultRecoveryFailsClosed) &&
+        (!VaultExportPolicyDefined || VaultExportCleartextBlocked);
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -569,7 +599,21 @@ public sealed record BrowserRuntimeObservedState(
         PrivatePreviewProductiveRecorderReplayEnabled ||
         PrivatePreviewAuditKeyCustodyMissing ||
         PrivatePreviewDiagnosticsLeak ||
-        PrivatePreviewPublicApiListenerEnabled;
+        PrivatePreviewPublicApiListenerEnabled ||
+        PrivatePreviewFeedbackLoopDefined ||
+        PrivatePreviewFeedbackLoopLeaksSecrets ||
+        VaultThreatTestsPassed ||
+        VaultThreatTestsMissing ||
+        VaultCompanionCanAccessRawSecret ||
+        VaultSupportCanAccessRawSecret ||
+        VaultAdminCanAccessRawSecret ||
+        VaultPublicApiCanExposeRawSecret ||
+        VaultRotationPolicyDefined ||
+        VaultRecoveryPolicyDefined ||
+        VaultExportPolicyDefined ||
+        !VaultExportCleartextBlocked ||
+        !VaultRecoveryFailsClosed ||
+        VaultRotationExposesSecret;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

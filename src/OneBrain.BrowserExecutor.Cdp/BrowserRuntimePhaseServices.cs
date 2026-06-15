@@ -255,6 +255,9 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(state.AuditIntegrityKeyCustodyAllowed, "audit integrity key custody safe", passed, failed);
         Check(state.ExternalReadOnlyAllowed, "external read-only target proof safe", passed, failed);
         Check(state.PrivatePreviewLocalReadinessAllowed, "private preview local safe", passed, failed);
+        Check(state.PrivatePreviewFeedbackAllowed, "private preview feedback loop safe", passed, failed);
+        Check(state.VaultThreatBoundaryAllowed, "vault threat boundary safe", passed, failed);
+        Check(state.VaultLifecyclePolicyAllowed, "vault lifecycle policy safe", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);
