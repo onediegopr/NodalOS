@@ -41,7 +41,7 @@ public sealed class BrowserRuntimePhaseGateM19Tests
 
     [TestMethod]
     public void BrowserRuntimePhaseGateFailsWhenRealProfileActive() =>
-        AssertFails(SafeState() with { RealProfileActive = true }, "no real profile");
+        AssertFails(SafeState() with { RealProfileActive = true, ProfileState = BrowserRuntimeProfileState.RawUserProfileActive }, "no raw user profile");
 
     [TestMethod]
     public void BrowserRuntimePhaseGateFailsWhenRealVaultActive() =>

@@ -226,7 +226,8 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(export.Validate().IsValid, "diagnostic replay export", passed, failed);
         Check(!state.CompanionAuthoritative, "companion non-authoritative", passed, failed);
         Check(!state.LegacyRunnerEnabled, "legacy runner disabled", passed, failed);
-        Check(!state.RealProfileActive, "no real profile", passed, failed);
+        Check(!state.RawUserProfileActive, "no raw user profile", passed, failed);
+        Check(state.ControlledProfileAllowed, "controlled profile consent valid", passed, failed);
         Check(!state.RealVaultActive, "no real vault", passed, failed);
         Check(!state.LoginRealActive, "no real login", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
@@ -258,7 +259,7 @@ public sealed class BrowserRuntimePhaseCloseGate
             ReplayDiagnosticOnlyOk: export.Validate().IsValid && !state.ReplayExecutableEnabled,
             CompanionNonAuthoritative: !state.CompanionAuthoritative,
             ServiceWorkerNotBrain: !state.LegacyRunnerEnabled,
-            NoRealProfile: !state.RealProfileActive,
+            NoRealProfile: !state.RawUserProfileActive,
             NoRealVault: !state.RealVaultActive,
             NoLoginReal: !state.LoginRealActive,
             AuditEvent: audit,

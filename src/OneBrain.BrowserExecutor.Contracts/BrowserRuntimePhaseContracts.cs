@@ -34,6 +34,16 @@ public enum BrowserNetworkHeaderRedactionReason
     PatternRedacted
 }
 
+public enum BrowserRuntimeProfileState
+{
+    None,
+    Disposable,
+    PersistentControlled,
+    UserProfileBlocked,
+    UserProfileControlledWithConsent,
+    RawUserProfileActive
+}
+
 public sealed record BrowserRuntimeCapabilityState(
     string Name,
     bool Enabled,
@@ -59,10 +69,19 @@ public sealed record BrowserRuntimeObservedState(
     bool AuditLedgerHeadSealValid,
     bool CdpLiveProofAvailable,
     bool Browser004xLegacyIsolated,
-    IReadOnlyList<BrowserRuntimeCapabilityState> Capabilities)
+    IReadOnlyList<BrowserRuntimeCapabilityState> Capabilities,
+    BrowserRuntimeProfileState ProfileState = BrowserRuntimeProfileState.None,
+    bool ControlledProfileConsentValid = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
+
+    public bool RawUserProfileActive =>
+        ProfileState == BrowserRuntimeProfileState.RawUserProfileActive ||
+        (RealProfileActive && ProfileState != BrowserRuntimeProfileState.UserProfileControlledWithConsent);
+
+    public bool ControlledProfileAllowed =>
+        ProfileState != BrowserRuntimeProfileState.UserProfileControlledWithConsent || ControlledProfileConsentValid;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
