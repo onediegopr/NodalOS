@@ -135,6 +135,31 @@ public sealed class BrowserProfileManager
         return new BrowserProfileDescriptor(id, policy.Kind, policy.Scope, path, policy.CleanupPolicy, policy.ConsentPolicy, DateTimeOffset.UtcNow);
     }
 
+    public ContractValidationResult ValidateRealUserProfileConsent(BrowserProfilePolicy policy, BrowserProfileConsentDecision? consent, DateTimeOffset now)
+    {
+        var errors = new List<string>();
+        if (policy.Kind != BrowserProfileKind.UserProfileWithExplicitConsent)
+            return ContractValidationResult.Valid;
+
+        if (!policy.AllowRealUserProfile || policy.ConsentPolicy != BrowserProfileConsentPolicy.Granted)
+            errors.Add("Real user profile requires explicit consent policy.");
+        if (consent is null || !consent.AllowsRealProfile(now))
+            errors.Add("Real user profile consent is missing, expired, denied, or revoked.");
+        if (consent is not null && consent.Request.Scope is not BrowserProfileConsentScope.Profile and not BrowserProfileConsentScope.Person and not BrowserProfileConsentScope.Portal)
+            errors.Add("Real user profile consent scope is not sufficient for profile launch.");
+
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
+
+    public BrowserProfileDescriptor CreateRealUserProfileDescriptorWithConsent(BrowserProfilePolicy policy, BrowserProfileConsentDecision consent, DateTimeOffset now)
+    {
+        var validation = ValidateRealUserProfileConsent(policy, consent, now);
+        if (!validation.IsValid)
+            throw new InvalidOperationException(string.Join("; ", validation.Errors));
+
+        throw new NotSupportedException("Real user profile launch is not implemented in M12.");
+    }
+
     public async Task CleanupProfileAsync(BrowserProfileDescriptor profile)
     {
         if (profile.CleanupPolicy != BrowserProfileCleanupPolicy.DeleteOnClose)

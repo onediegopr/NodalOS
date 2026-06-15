@@ -223,12 +223,12 @@ public static partial class BrowserCredentialRedactor
         return SecretRedactor.ContainsSecret(normalized) || SecretLikePattern().IsMatch(normalized) || IdentityPattern().IsMatch(normalized);
     }
 
-    [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni)\\s*[:=]\\s*[^\\s;]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni|sessionid|csrf|xsrf|jwt|client_secret)\\s*[:=]\\s*[^\\s;]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex SecretLikePattern();
 
     [GeneratedRegex("\\b(\\d{2}-\\d{8}-\\d|\\d{7,8})\\b", RegexOptions.CultureInvariant)]
     private static partial Regex IdentityPattern();
 
-    [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni)\\s*[:=]\\s*\\[REDACTED\\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni|sessionid|csrf|xsrf|jwt|client_secret)\\s*[:=]\\s*\\[REDACTED\\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex RedactedSecretPattern();
 }
