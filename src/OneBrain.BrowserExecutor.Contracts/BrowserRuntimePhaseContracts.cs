@@ -294,7 +294,16 @@ public sealed record BrowserRuntimeObservedState(
     bool PrivateLocalApiBypassesTenantGovernance = false,
     bool PrivateLocalApiBypassesLicensing = false,
     bool RealClientCredentialsEnabled = false,
-    bool SupportCanAccessVaultRaw = false)
+    bool SupportCanAccessVaultRaw = false,
+    bool PrivateLocalApiDiagnosticsDefined = false,
+    bool PrivateLocalApiDiagnosticsLeaksSecretsCookiesBodies = false,
+    bool EmailSandboxProviderDefined = false,
+    bool RealEmailDeliveryEnabled = false,
+    bool EmailTemplateLeaksSecrets = false,
+    bool BillingSandboxProviderDefined = false,
+    bool RealBillingEnabled = false,
+    bool PaymentCardDataStored = false,
+    bool BillingEnablesSensitiveFeaturesByDefault = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -530,6 +539,11 @@ public sealed record BrowserRuntimeObservedState(
         !RealClientCredentialsEnabled &&
         !SupportCanAccessVaultRaw;
 
+    public bool ApiEmailBillingSandboxAllowed =>
+        (!PrivateLocalApiDiagnosticsDefined || !PrivateLocalApiDiagnosticsLeaksSecretsCookiesBodies) &&
+        (!EmailSandboxProviderDefined || (!RealEmailDeliveryEnabled && !EmailTemplateLeaksSecrets)) &&
+        (!BillingSandboxProviderDefined || (!RealBillingEnabled && !PaymentCardDataStored && !BillingEnablesSensitiveFeaturesByDefault));
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -655,7 +669,16 @@ public sealed record BrowserRuntimeObservedState(
         PrivateLocalApiBypassesTenantGovernance ||
         PrivateLocalApiBypassesLicensing ||
         RealClientCredentialsEnabled ||
-        SupportCanAccessVaultRaw;
+        SupportCanAccessVaultRaw ||
+        PrivateLocalApiDiagnosticsDefined ||
+        PrivateLocalApiDiagnosticsLeaksSecretsCookiesBodies ||
+        EmailSandboxProviderDefined ||
+        RealEmailDeliveryEnabled ||
+        EmailTemplateLeaksSecrets ||
+        BillingSandboxProviderDefined ||
+        RealBillingEnabled ||
+        PaymentCardDataStored ||
+        BillingEnablesSensitiveFeaturesByDefault;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

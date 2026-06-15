@@ -260,6 +260,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(state.VaultLifecyclePolicyAllowed, "vault lifecycle policy safe", passed, failed);
         Check(state.ClientCredentialReadinessAllowed, "client credential readiness safe", passed, failed);
         Check(state.PrivateLocalApiAllowed, "private local api safe", passed, failed);
+        Check(state.ApiEmailBillingSandboxAllowed, "api diagnostics email billing sandbox safe", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);
