@@ -207,7 +207,18 @@ public sealed record BrowserRuntimeObservedState(
     bool PublicSaasActivationDisabled = true,
     bool SupportModeCanAccessSecrets = false,
     bool DiagnosticsBundleLeaksSecrets = false,
-    bool BillingMockEnablesSensitiveRealPilotByDefault = false)
+    bool BillingMockEnablesSensitiveRealPilotByDefault = false,
+    bool ConfigurationProfilesDefined = false,
+    bool ProductionLockedProfileDefined = false,
+    bool ReleaseChannelsDefined = false,
+    bool UpdateManifestDefined = false,
+    bool AutoUpdateExecutionDisabled = true,
+    bool RollbackModelDefined = false,
+    bool UnknownConfigurationProfileActive = false,
+    bool ProductionProfileEnablesSensitiveFeaturesByDefault = false,
+    bool UpdateManifestMissingHashOrSignature = false,
+    bool ReleaseChannelBypassesTenantPolicy = false,
+    bool RollbackExecutesAutomatically = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -328,6 +339,16 @@ public sealed record BrowserRuntimeObservedState(
         !DiagnosticsBundleLeaksSecrets &&
         !BillingMockEnablesSensitiveRealPilotByDefault;
 
+    public bool ReleaseConfigurationAllowed =>
+        (!ProductionLockedProfileDefined || ConfigurationProfilesDefined) &&
+        (!UpdateManifestDefined || ReleaseChannelsDefined) &&
+        AutoUpdateExecutionDisabled &&
+        !UnknownConfigurationProfileActive &&
+        !ProductionProfileEnablesSensitiveFeaturesByDefault &&
+        !UpdateManifestMissingHashOrSignature &&
+        !ReleaseChannelBypassesTenantPolicy &&
+        !RollbackExecutesAutomatically;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -366,7 +387,18 @@ public sealed record BrowserRuntimeObservedState(
         !PublicSaasActivationDisabled ||
         SupportModeCanAccessSecrets ||
         DiagnosticsBundleLeaksSecrets ||
-        BillingMockEnablesSensitiveRealPilotByDefault;
+        BillingMockEnablesSensitiveRealPilotByDefault ||
+        ConfigurationProfilesDefined ||
+        ProductionLockedProfileDefined ||
+        ReleaseChannelsDefined ||
+        UpdateManifestDefined ||
+        RollbackModelDefined ||
+        !AutoUpdateExecutionDisabled ||
+        UnknownConfigurationProfileActive ||
+        ProductionProfileEnablesSensitiveFeaturesByDefault ||
+        UpdateManifestMissingHashOrSignature ||
+        ReleaseChannelBypassesTenantPolicy ||
+        RollbackExecutesAutomatically;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

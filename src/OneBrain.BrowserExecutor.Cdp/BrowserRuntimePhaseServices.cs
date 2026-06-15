@@ -248,6 +248,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(state.ProductGovernanceAllowed, "product governance feature flags safe", passed, failed);
         Check(state.TenantGovernanceAllowed, "tenant governance and audit export safe", passed, failed);
         Check(state.PackagingBillingAllowed, "packaging diagnostics billing onboarding safe", passed, failed);
+        Check(state.ReleaseConfigurationAllowed, "configuration profiles release update safe", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);
