@@ -207,6 +207,70 @@ public sealed class BrowserSessionExportService
 public sealed class BrowserRuntimePhaseCloseGate
 {
     public BrowserRuntimePhaseCloseReport Evaluate(
+        IBrowserRuntimeSecurityProbe probe,
+        BrowserAuditLedgerExport auditExport,
+        BrowserDownloadResult download,
+        BrowserUploadResult upload,
+        BrowserNetworkCaptureSummary network,
+        BrowserSessionExportPackage export)
+    {
+        var probeResult = probe.Probe();
+        var state = probeResult.ObservedState;
+        var passed = new List<string>();
+        var failed = new List<string>();
+
+        Check(auditExport.Validate().IsValid, "audit ledger export valid", passed, failed);
+        Check(download.IsSuccess, "download manager", passed, failed);
+        Check(upload.IsSuccess, "upload manager", passed, failed);
+        Check(network.IsSafe, "network metadata-only", passed, failed);
+        Check(export.Validate().IsValid, "diagnostic replay export", passed, failed);
+        Check(!state.CompanionAuthoritative, "companion non-authoritative", passed, failed);
+        Check(!state.LegacyRunnerEnabled, "legacy runner disabled", passed, failed);
+        Check(!state.RealProfileActive, "no real profile", passed, failed);
+        Check(!state.RealVaultActive, "no real vault", passed, failed);
+        Check(!state.LoginRealActive, "no real login", passed, failed);
+        Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
+        Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
+        Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);
+        Check(!state.SensitiveHeaderValueCaptureSupported, "sensitive header values unsupported", passed, failed);
+        Check(!state.ReplayExecutableEnabled, "replay diagnostic-only", passed, failed);
+        Check(state.TargetFrameManagerHealthy, "target/frame manager healthy", passed, failed);
+        Check(state.UsesHmacLedgerIntegrity, "audit ledger HMAC integrity", passed, failed);
+        Check(state.AuditLedgerHeadSealAvailable, "audit ledger head seal available", passed, failed);
+        Check(state.AuditLedgerHeadSealValid, "audit ledger head seal valid", passed, failed);
+        Check(state.CdpLiveProofAvailable, "CDP live proof available", passed, failed);
+        Check(state.Browser004xLegacyIsolated, "Browser-004.x legacy isolated", passed, failed);
+
+        var status = failed.Count == 0 ? BrowserRuntimePhaseCloseStatus.Passed : BrowserRuntimePhaseCloseStatus.Failed;
+        var summary = status == BrowserRuntimePhaseCloseStatus.Passed
+            ? "Browser runtime phase gate passed from observed runtime state."
+            : "Browser runtime phase gate failed from observed runtime state.";
+        var audit = BrowserPersistentAuditLedger.Create(BrowserAuditLedgerEventKind.PhaseCloseGateEvaluated, "run-phase-gate", "action-phase-gate", "corr-phase-gate", "profile-runtime", "session-phase-gate", null, null, null, status.ToString(), summary);
+        return new BrowserRuntimePhaseCloseReport(
+            status,
+            summary,
+            passed,
+            failed,
+            AuditLedgerOk: auditExport.Validate().IsValid && state.UsesHmacLedgerIntegrity && state.AuditLedgerHeadSealAvailable && state.AuditLedgerHeadSealValid,
+            DownloadOk: download.IsSuccess,
+            UploadOk: upload.IsSuccess,
+            NetworkMetadataOnlyOk: network.IsSafe && state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly && !state.RequestBodyCaptureSupported && !state.ResponseBodyCaptureSupported && !state.SensitiveHeaderValueCaptureSupported,
+            ReplayDiagnosticOnlyOk: export.Validate().IsValid && !state.ReplayExecutableEnabled,
+            CompanionNonAuthoritative: !state.CompanionAuthoritative,
+            ServiceWorkerNotBrain: !state.LegacyRunnerEnabled,
+            NoRealProfile: !state.RealProfileActive,
+            NoRealVault: !state.RealVaultActive,
+            NoLoginReal: !state.LoginRealActive,
+            AuditEvent: audit,
+            ObservedState: state,
+            Warnings: probeResult.Warnings,
+            EvidenceRefs: probeResult.EvidenceRefs,
+            AuditRefs: probeResult.AuditRefs,
+            RecommendedNextAction: status == BrowserRuntimePhaseCloseStatus.Passed ? "Proceed to M21/M22 planning; do not enable real vault/profile/login yet." : "Fix failed runtime capability checks before advancing.");
+    }
+
+    [Obsolete("M19 phase gate must derive critical safety state from IBrowserRuntimeSecurityProbe. This overload is kept only for M16 compatibility tests.")]
+    public BrowserRuntimePhaseCloseReport Evaluate(
         BrowserAuditLedgerExport auditExport,
         BrowserDownloadResult download,
         BrowserUploadResult upload,
@@ -243,4 +307,16 @@ public sealed class BrowserRuntimePhaseCloseGate
         else
             failed.Add(name);
     }
+}
+
+public sealed class StaticBrowserRuntimeSecurityProbe : IBrowserRuntimeSecurityProbe
+{
+    private readonly BrowserRuntimePhaseGateProbeResult _result;
+
+    public StaticBrowserRuntimeSecurityProbe(BrowserRuntimeObservedState observedState, IReadOnlyList<string>? evidenceRefs = null, IReadOnlyList<string>? auditRefs = null, IReadOnlyList<string>? warnings = null)
+    {
+        _result = new BrowserRuntimePhaseGateProbeResult(observedState, evidenceRefs ?? [], auditRefs ?? [], warnings ?? []);
+    }
+
+    public BrowserRuntimePhaseGateProbeResult Probe() => _result;
 }

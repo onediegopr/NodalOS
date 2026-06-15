@@ -175,7 +175,27 @@ public sealed class BrowserRuntimePhaseM16Tests
         var network = new BrowserNetworkCapture().Capture(NetworkPolicy(), [NetworkEvent()]);
         var package = new BrowserSessionExportService().CreatePackage(ReplayManifest(network.Events));
 
-        return new BrowserRuntimePhaseCloseGate().Evaluate(ledger.ExportSafe(), download, upload, network, package, companionAuthoritative, serviceWorkerBrain: false, realProfileActive: false, realVaultActive: false, loginRealActive: false);
+        var observedState = new BrowserRuntimeObservedState(
+            CompanionAuthoritative: companionAuthoritative,
+            LegacyRunnerEnabled: false,
+            RealProfileActive: false,
+            RealVaultActive: false,
+            LoginRealActive: false,
+            NetworkCaptureMode: BrowserNetworkCaptureMode.MetadataOnly,
+            RequestBodyCaptureSupported: false,
+            ResponseBodyCaptureSupported: false,
+            SensitiveHeaderValueCaptureSupported: false,
+            ReplayExecutableEnabled: false,
+            DownloadMode: "fixture-controlled",
+            UploadMode: "fixture-controlled",
+            TargetFrameManagerHealthy: true,
+            AuditLedgerIntegrityProviderKind: "HMACSHA256",
+            AuditLedgerHeadSealAvailable: true,
+            AuditLedgerHeadSealValid: true,
+            CdpLiveProofAvailable: true,
+            Browser004xLegacyIsolated: true,
+            Capabilities: []);
+        return new BrowserRuntimePhaseCloseGate().Evaluate(new StaticBrowserRuntimeSecurityProbe(observedState), ledger.ExportSafe(), download, upload, network, package);
     }
 
     private static BrowserDownloadRequest DownloadRequest(string fileName) =>

@@ -34,6 +34,48 @@ public enum BrowserNetworkHeaderRedactionReason
     PatternRedacted
 }
 
+public sealed record BrowserRuntimeCapabilityState(
+    string Name,
+    bool Enabled,
+    string EvidenceRef,
+    string Details = "");
+
+public sealed record BrowserRuntimeObservedState(
+    bool CompanionAuthoritative,
+    bool LegacyRunnerEnabled,
+    bool RealProfileActive,
+    bool RealVaultActive,
+    bool LoginRealActive,
+    BrowserNetworkCaptureMode NetworkCaptureMode,
+    bool RequestBodyCaptureSupported,
+    bool ResponseBodyCaptureSupported,
+    bool SensitiveHeaderValueCaptureSupported,
+    bool ReplayExecutableEnabled,
+    string DownloadMode,
+    string UploadMode,
+    bool TargetFrameManagerHealthy,
+    string AuditLedgerIntegrityProviderKind,
+    bool AuditLedgerHeadSealAvailable,
+    bool AuditLedgerHeadSealValid,
+    bool CdpLiveProofAvailable,
+    bool Browser004xLegacyIsolated,
+    IReadOnlyList<BrowserRuntimeCapabilityState> Capabilities)
+{
+    public bool UsesHmacLedgerIntegrity =>
+        AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
+}
+
+public sealed record BrowserRuntimePhaseGateProbeResult(
+    BrowserRuntimeObservedState ObservedState,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<string> AuditRefs,
+    IReadOnlyList<string> Warnings);
+
+public interface IBrowserRuntimeSecurityProbe
+{
+    BrowserRuntimePhaseGateProbeResult Probe();
+}
+
 public sealed record BrowserDownloadPolicy(
     string ControlledDirectory,
     IReadOnlySet<string> AllowedExtensions,
@@ -294,7 +336,12 @@ public sealed record BrowserRuntimePhaseCloseReport(
     bool NoRealProfile,
     bool NoRealVault,
     bool NoLoginReal,
-    BrowserAuditLedgerEvent AuditEvent)
+    BrowserAuditLedgerEvent AuditEvent,
+    BrowserRuntimeObservedState? ObservedState = null,
+    IReadOnlyList<string>? Warnings = null,
+    IReadOnlyList<string>? EvidenceRefs = null,
+    IReadOnlyList<string>? AuditRefs = null,
+    string RecommendedNextAction = "")
 {
     public bool Passed => Status == BrowserRuntimePhaseCloseStatus.Passed && FailedChecks.Count == 0;
 }
