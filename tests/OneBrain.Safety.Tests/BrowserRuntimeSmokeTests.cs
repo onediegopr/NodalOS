@@ -4,6 +4,7 @@ using OneBrain.BrowserExecutor.Cdp;
 namespace OneBrain.Safety.Tests;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class BrowserRuntimeSmokeTests
 {
     [TestMethod]

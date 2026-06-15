@@ -73,6 +73,20 @@ public enum BrowserRuntimeUploadState
     UnsafeUploadActive
 }
 
+public enum BrowserRuntimeDocumentWorkflowState
+{
+    Disabled,
+    SandboxActive,
+    ExternalActive
+}
+
+public enum BrowserRuntimeRecorderState
+{
+    Disabled,
+    DesignOnly,
+    ExecutableActive
+}
+
 public sealed record BrowserRuntimeCapabilityState(
     string Name,
     bool Enabled,
@@ -125,7 +139,14 @@ public sealed record BrowserRuntimeObservedState(
     bool SafeUploadExecutableAllowed = false,
     bool SafeUploadWildcardAllowed = false,
     bool SafeUploadDirectoryAllowed = false,
-    bool SafeUploadExposesContentOrPath = false)
+    bool SafeUploadExposesContentOrPath = false,
+    BrowserRuntimeDocumentWorkflowState DocumentWorkflowState = BrowserRuntimeDocumentWorkflowState.Disabled,
+    bool ExternalDocumentWorkflowAllowed = false,
+    bool DocumentWorkflowSandboxVerified = false,
+    BrowserRuntimeRecorderState RecorderState = BrowserRuntimeRecorderState.Disabled,
+    bool RecorderStoresSecrets = false,
+    bool RecorderStoresCookies = false,
+    bool RecorderStoresBodies = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -179,6 +200,16 @@ public sealed record BrowserRuntimeObservedState(
           !SafeUploadWildcardAllowed &&
           !SafeUploadDirectoryAllowed &&
           !SafeUploadExposesContentOrPath));
+
+    public bool DocumentWorkflowAllowed =>
+        DocumentWorkflowState != BrowserRuntimeDocumentWorkflowState.ExternalActive &&
+        (DocumentWorkflowState != BrowserRuntimeDocumentWorkflowState.SandboxActive || DocumentWorkflowSandboxVerified);
+
+    public bool RecorderAllowed =>
+        RecorderState != BrowserRuntimeRecorderState.ExecutableActive &&
+        !RecorderStoresSecrets &&
+        !RecorderStoresCookies &&
+        !RecorderStoresBodies;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
