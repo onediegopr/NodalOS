@@ -255,7 +255,20 @@ public sealed record BrowserRuntimeObservedState(
     bool ExternalReadOnlyGuardActive = false,
     bool ExternalReadOnlyTargetSensitive = false,
     bool ExternalReadOnlyMutationAllowed = false,
-    bool ExternalReadOnlyBrowserCleanupConfirmed = true)
+    bool ExternalReadOnlyBrowserCleanupConfirmed = true,
+    bool LeakHardeningCompleted = false,
+    bool SkippedTestsAuditCompleted = false,
+    bool PrivatePreviewLocalAllowed = false,
+    bool PrivatePreviewLocalSafe = false,
+    bool M51ExternalProofDeferred = false,
+    bool PrivatePreviewAttemptsPublicSaas = false,
+    bool PrivatePreviewRealBillingEnabled = false,
+    bool PrivatePreviewRealEmailEnabled = false,
+    bool PrivatePreviewSensitiveRealPilotEnabled = false,
+    bool PrivatePreviewProductiveRecorderReplayEnabled = false,
+    bool PrivatePreviewAuditKeyCustodyMissing = false,
+    bool PrivatePreviewDiagnosticsLeak = false,
+    bool PrivatePreviewPublicApiListenerEnabled = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -429,6 +442,34 @@ public sealed record BrowserRuntimeObservedState(
           !ResponseBodyCaptureSupported &&
           !SensitiveHeaderValueCaptureSupported));
 
+    public bool PrivatePreviewLocalReadinessAllowed =>
+        (!PrivatePreviewLocalAllowed ||
+         (PrivatePreviewLocalSafe &&
+          LeakHardeningCompleted &&
+          SkippedTestsAuditCompleted &&
+          M51ExternalProofDeferred &&
+          AuditIntegrityKeyCustodyAllowed &&
+          DiagnosticsBundleDefined &&
+          !DiagnosticsBundleLeaksSecrets &&
+          PublicApiDesignOnly &&
+          PublicApiNetworkExposureDisabled &&
+          PublicSaasStillDisabled &&
+          RealBillingStillDisabled &&
+          RealBillingDisabled &&
+          RealEmailDeliveryDisabled &&
+          SensitiveRealPilotStillDisabled &&
+          !FeatureFlagSensitiveRealPilotEnabled &&
+          !FeatureFlagReplayProductiveEnabled &&
+          !FeatureFlagRecorderProductiveEnabled &&
+          !PrivatePreviewAttemptsPublicSaas &&
+          !PrivatePreviewRealBillingEnabled &&
+          !PrivatePreviewRealEmailEnabled &&
+          !PrivatePreviewSensitiveRealPilotEnabled &&
+          !PrivatePreviewProductiveRecorderReplayEnabled &&
+          !PrivatePreviewAuditKeyCustodyMissing &&
+          !PrivatePreviewDiagnosticsLeak &&
+          !PrivatePreviewPublicApiListenerEnabled));
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -515,7 +556,20 @@ public sealed record BrowserRuntimeObservedState(
         ExternalReadOnlyGuardActive ||
         ExternalReadOnlyTargetSensitive ||
         ExternalReadOnlyMutationAllowed ||
-        !ExternalReadOnlyBrowserCleanupConfirmed;
+        !ExternalReadOnlyBrowserCleanupConfirmed ||
+        LeakHardeningCompleted ||
+        SkippedTestsAuditCompleted ||
+        PrivatePreviewLocalAllowed ||
+        PrivatePreviewLocalSafe ||
+        M51ExternalProofDeferred ||
+        PrivatePreviewAttemptsPublicSaas ||
+        PrivatePreviewRealBillingEnabled ||
+        PrivatePreviewRealEmailEnabled ||
+        PrivatePreviewSensitiveRealPilotEnabled ||
+        PrivatePreviewProductiveRecorderReplayEnabled ||
+        PrivatePreviewAuditKeyCustodyMissing ||
+        PrivatePreviewDiagnosticsLeak ||
+        PrivatePreviewPublicApiListenerEnabled;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
