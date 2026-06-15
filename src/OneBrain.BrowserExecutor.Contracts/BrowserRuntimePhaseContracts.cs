@@ -196,7 +196,18 @@ public sealed record BrowserRuntimeObservedState(
     bool CrossTenantIsolationEnabled = true,
     bool AuditExportLeaksSecrets = false,
     bool SupportCanViewSecrets = false,
-    bool SensitiveFeatureEnabledWithoutTenantPolicy = false)
+    bool SensitiveFeatureEnabledWithoutTenantPolicy = false,
+    bool PackagingFoundationDefined = false,
+    bool DiagnosticsBundleDefined = false,
+    bool SupportModeMetadataOnly = true,
+    bool BillingMockDefined = false,
+    bool OnboardingMockDefined = false,
+    bool RealBillingDisabled = true,
+    bool RealEmailDeliveryDisabled = true,
+    bool PublicSaasActivationDisabled = true,
+    bool SupportModeCanAccessSecrets = false,
+    bool DiagnosticsBundleLeaksSecrets = false,
+    bool BillingMockEnablesSensitiveRealPilotByDefault = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -306,6 +317,17 @@ public sealed record BrowserRuntimeObservedState(
         !SupportCanViewSecrets &&
         !SensitiveFeatureEnabledWithoutTenantPolicy;
 
+    public bool PackagingBillingAllowed =>
+        (!DiagnosticsBundleDefined || PackagingFoundationDefined) &&
+        (!BillingMockDefined || OnboardingMockDefined) &&
+        SupportModeMetadataOnly &&
+        RealBillingDisabled &&
+        RealEmailDeliveryDisabled &&
+        PublicSaasActivationDisabled &&
+        !SupportModeCanAccessSecrets &&
+        !DiagnosticsBundleLeaksSecrets &&
+        !BillingMockEnablesSensitiveRealPilotByDefault;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -334,7 +356,17 @@ public sealed record BrowserRuntimeObservedState(
         AuditExportDefined ||
         AuditExportLeaksSecrets ||
         SupportCanViewSecrets ||
-        SensitiveFeatureEnabledWithoutTenantPolicy;
+        SensitiveFeatureEnabledWithoutTenantPolicy ||
+        PackagingFoundationDefined ||
+        DiagnosticsBundleDefined ||
+        BillingMockDefined ||
+        OnboardingMockDefined ||
+        !RealBillingDisabled ||
+        !RealEmailDeliveryDisabled ||
+        !PublicSaasActivationDisabled ||
+        SupportModeCanAccessSecrets ||
+        DiagnosticsBundleLeaksSecrets ||
+        BillingMockEnablesSensitiveRealPilotByDefault;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
