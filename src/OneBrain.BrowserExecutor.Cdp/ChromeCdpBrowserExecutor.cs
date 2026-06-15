@@ -31,6 +31,18 @@ public sealed record ChromeCdpActionResult(
 
 public sealed class ChromeCdpBrowserLauncher
 {
+    private readonly BrowserProfileManager _profileManager;
+
+    public ChromeCdpBrowserLauncher()
+        : this(new BrowserProfileManager())
+    {
+    }
+
+    public ChromeCdpBrowserLauncher(BrowserProfileManager profileManager)
+    {
+        _profileManager = profileManager;
+    }
+
     private static readonly string[] BrowserCandidates =
     [
         @"C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -47,14 +59,26 @@ public sealed class ChromeCdpBrowserLauncher
             throw new FileNotFoundException("Chrome/Edge executable was not found.", options.BrowserExecutablePath);
 
         var port = options.RemoteDebuggingPort ?? GetFreeTcpPort();
-        var userDataDir = Path.Combine(Path.GetTempPath(), "onebrain-cdp-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(userDataDir);
+        var profile = _profileManager.CreateProfile(new BrowserProfilePolicy(
+            Kind: BrowserProfileKind.Disposable,
+            Scope: BrowserStorageScope.Temporary,
+            CleanupPolicy: BrowserProfileCleanupPolicy.DeleteOnClose,
+            ConsentPolicy: BrowserProfileConsentPolicy.NotRequired,
+            AllowRealUserProfile: false,
+            ControlledRootDirectory: _profileManager.ControlledRoot));
+        var sessionPolicy = new BrowserSessionPolicy(
+            Owner: "browser-executor-cdp",
+            CorrelationId: Guid.NewGuid().ToString("N"),
+            ExpiresAfter: null,
+            CleanupPolicy: profile.CleanupPolicy);
+        var sessionManager = new BrowserSessionManager();
+        var managedSession = sessionManager.MarkState(sessionManager.CreateSession(profile, sessionPolicy).SessionId, BrowserSessionState.Launching);
 
         var arguments = new List<string>
         {
             $"--remote-debugging-address=127.0.0.1",
             $"--remote-debugging-port={port}",
-            $"--user-data-dir=\"{userDataDir}\"",
+            $"--user-data-dir=\"{profile.UserDataDir}\"",
             "--no-first-run",
             "--no-default-browser-check",
             "--disable-background-networking",
@@ -76,7 +100,8 @@ public sealed class ChromeCdpBrowserLauncher
             CreateNoWindow = options.Headless
         }) ?? throw new InvalidOperationException("Chrome process did not start.");
 
-        var session = new ChromeCdpBrowserSession(process, userDataDir, port);
+        sessionManager.MarkState(managedSession.SessionId, BrowserSessionState.Active);
+        var session = new ChromeCdpBrowserSession(process, profile, sessionManager, managedSession.SessionId, port);
         try
         {
             await session.WaitUntilReadyAsync(options.StartupTimeout ?? TimeSpan.FromSeconds(10), cancellationToken).ConfigureAwait(false);
@@ -100,21 +125,29 @@ public sealed class ChromeCdpBrowserLauncher
 public sealed class ChromeCdpBrowserSession : IAsyncDisposable
 {
     private readonly Process _process;
-    private readonly string _userDataDir;
+    private readonly BrowserProfileDescriptor _profile;
+    private readonly BrowserSessionManager _sessionManager;
+    private readonly ManagedBrowserSessionId _managedSessionId;
+    private readonly BrowserProfileManager _profileManager;
     private readonly HttpClient _http = new();
     private bool _disposed;
 
-    internal ChromeCdpBrowserSession(Process process, string userDataDir, int port)
+    internal ChromeCdpBrowserSession(Process process, BrowserProfileDescriptor profile, BrowserSessionManager sessionManager, ManagedBrowserSessionId managedSessionId, int port)
     {
         _process = process;
-        _userDataDir = userDataDir;
+        _profile = profile;
+        _sessionManager = sessionManager;
+        _managedSessionId = managedSessionId;
+        _profileManager = new BrowserProfileManager();
         Port = port;
-        BrowserSessionId = Guid.NewGuid().ToString("N");
+        BrowserSessionId = managedSessionId.Value;
     }
 
     public int Port { get; }
     public string BrowserSessionId { get; }
-    public string UserDataDir => _userDataDir;
+    public string UserDataDir => _profile.UserDataDir;
+    public BrowserProfileDescriptor Profile => _profile;
+    public BrowserSessionDescriptor ManagedSession => _sessionManager.Get(_managedSessionId);
     public int ProcessId => _process.Id;
     public Uri VersionEndpoint => new($"http://127.0.0.1:{Port}/json/version");
 
@@ -212,27 +245,9 @@ public sealed class ChromeCdpBrowserSession : IAsyncDisposable
         finally
         {
             _process.Dispose();
-            await TryDeleteDirectoryAsync(_userDataDir).ConfigureAwait(false);
-        }
-    }
-
-    private static async Task TryDeleteDirectoryAsync(string path)
-    {
-        for (var attempt = 0; attempt < 50; attempt++)
-        {
-            try
-            {
-                if (!Directory.Exists(path))
-                    return;
-
-                Directory.Delete(path, recursive: true);
-                return;
-            }
-            catch
-            {
-                // Chrome releases profile files asynchronously after process exit.
-                await Task.Delay(200).ConfigureAwait(false);
-            }
+            _sessionManager.MarkState(_managedSessionId, BrowserSessionState.CleanupPending);
+            await _profileManager.CleanupProfileAsync(_profile).ConfigureAwait(false);
+            _sessionManager.MarkState(_managedSessionId, BrowserSessionState.Disposed);
         }
     }
 }
