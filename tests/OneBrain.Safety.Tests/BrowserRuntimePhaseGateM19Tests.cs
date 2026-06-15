@@ -28,7 +28,7 @@ public sealed class BrowserRuntimePhaseGateM19Tests
         var report = PhaseReport(temp.Path, unsafeState);
 
         Assert.AreEqual(BrowserRuntimePhaseCloseStatus.Failed, report.Status);
-        CollectionAssert.Contains(report.FailedChecks.ToList(), "no real vault");
+        CollectionAssert.Contains(report.FailedChecks.ToList(), "no production vault");
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public sealed class BrowserRuntimePhaseGateM19Tests
 
     [TestMethod]
     public void BrowserRuntimePhaseGateFailsWhenRealVaultActive() =>
-        AssertFails(SafeState() with { RealVaultActive = true }, "no real vault");
+        AssertFails(SafeState() with { RealVaultActive = true }, "no production vault");
 
     [TestMethod]
     public void BrowserRuntimePhaseGateFailsWhenLoginRealActive() =>
@@ -90,7 +90,7 @@ public sealed class BrowserRuntimePhaseGateM19Tests
         Assert.IsTrue(report.Passed, string.Join("; ", report.FailedChecks));
         Assert.IsNotNull(report.ObservedState);
         Assert.IsFalse(report.ObservedState.RealVaultActive);
-        Assert.AreEqual("Proceed to M21/M22 planning; do not enable real vault/profile/login yet.", report.RecommendedNextAction);
+        Assert.AreEqual("Proceed to M23/M24 sandbox planning; production vault/profile/login remain blocked.", report.RecommendedNextAction);
         CollectionAssert.Contains(report.EvidenceRefs!.ToList(), "evidence:m18-cdp-live");
         CollectionAssert.Contains(report.AuditRefs!.ToList(), "audit:m17-hmac-head");
     }

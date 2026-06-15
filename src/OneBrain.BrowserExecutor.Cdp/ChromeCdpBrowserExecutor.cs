@@ -13,7 +13,8 @@ public sealed record ChromeCdpOptions(
     string BrowserExecutablePath,
     int? RemoteDebuggingPort = null,
     bool Headless = true,
-    TimeSpan? StartupTimeout = null);
+    TimeSpan? StartupTimeout = null,
+    BrowserProfileDescriptor? ControlledProfile = null);
 
 public sealed record ChromeCdpTargetInfo(
     string Id,
@@ -65,13 +66,15 @@ public sealed class ChromeCdpBrowserLauncher
             throw new FileNotFoundException("Chrome/Edge executable was not found.", options.BrowserExecutablePath);
 
         var port = options.RemoteDebuggingPort ?? GetFreeTcpPort();
-        var profile = _profileManager.CreateProfile(new BrowserProfilePolicy(
+        var profile = options.ControlledProfile ?? _profileManager.CreateProfile(new BrowserProfilePolicy(
             Kind: BrowserProfileKind.Disposable,
             Scope: BrowserStorageScope.Temporary,
             CleanupPolicy: BrowserProfileCleanupPolicy.DeleteOnClose,
             ConsentPolicy: BrowserProfileConsentPolicy.NotRequired,
             AllowRealUserProfile: false,
             ControlledRootDirectory: _profileManager.ControlledRoot));
+        if (profile.Kind == BrowserProfileKind.UserProfileWithExplicitConsent)
+            throw new NotSupportedException("Raw user profile launch remains disabled.");
         var sessionPolicy = new BrowserSessionPolicy(
             Owner: "browser-executor-cdp",
             CorrelationId: Guid.NewGuid().ToString("N"),
@@ -525,6 +528,21 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
     public async Task CloseTargetAsync(CancellationToken cancellationToken = default)
     {
         await SendCommandAsync("Target.closeTarget", new { targetId = _target.Id }, cancellationToken).ConfigureAwait(false);
+        await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+    }
+
+    internal async Task SubmitFormForCoreBoundaryAsync(string formSelector, CancellationToken cancellationToken = default)
+    {
+        var expression = $$"""
+(() => {
+  const form = document.querySelector({{JsonSerializer.Serialize(formSelector)}});
+  if (!form) return false;
+  if (typeof form.requestSubmit === 'function') form.requestSubmit();
+  else form.submit();
+  return true;
+})()
+""";
+        await EvaluateReturnValueAsync(expression, cancellationToken).ConfigureAwait(false);
         await Task.Delay(250, cancellationToken).ConfigureAwait(false);
     }
 

@@ -228,7 +228,11 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(!state.LegacyRunnerEnabled, "legacy runner disabled", passed, failed);
         Check(!state.RawUserProfileActive, "no raw user profile", passed, failed);
         Check(state.ControlledProfileAllowed, "controlled profile consent valid", passed, failed);
-        Check(!state.RealVaultActive, "no real vault", passed, failed);
+        Check(!state.ProductionVaultUnsafe, "no production vault", passed, failed);
+        Check(state.VaultProviderKnown && state.VaultState != BrowserRuntimeVaultState.UnknownProvider, "vault provider known", passed, failed);
+        Check(!state.VaultReturnsPublicValues, "vault does not return public values", passed, failed);
+        Check(!state.VaultCompanionExposure, "vault not exposed to companion", passed, failed);
+        Check(state.MinimalSandboxVaultAllowed, "minimal sandbox vault consent valid", passed, failed);
         Check(!state.LoginRealActive, "no real login", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
@@ -260,14 +264,14 @@ public sealed class BrowserRuntimePhaseCloseGate
             CompanionNonAuthoritative: !state.CompanionAuthoritative,
             ServiceWorkerNotBrain: !state.LegacyRunnerEnabled,
             NoRealProfile: !state.RawUserProfileActive,
-            NoRealVault: !state.RealVaultActive,
+            NoRealVault: !state.ProductionVaultUnsafe,
             NoLoginReal: !state.LoginRealActive,
             AuditEvent: audit,
             ObservedState: state,
             Warnings: probeResult.Warnings,
             EvidenceRefs: probeResult.EvidenceRefs,
             AuditRefs: probeResult.AuditRefs,
-            RecommendedNextAction: status == BrowserRuntimePhaseCloseStatus.Passed ? "Proceed to M21/M22 planning; do not enable real vault/profile/login yet." : "Fix failed runtime capability checks before advancing.");
+            RecommendedNextAction: status == BrowserRuntimePhaseCloseStatus.Passed ? "Proceed to M23/M24 sandbox planning; production vault/profile/login remain blocked." : "Fix failed runtime capability checks before advancing.");
     }
 
     [Obsolete("M19 phase gate must derive critical safety state from IBrowserRuntimeSecurityProbe. This overload is kept only for M16 compatibility tests.")]

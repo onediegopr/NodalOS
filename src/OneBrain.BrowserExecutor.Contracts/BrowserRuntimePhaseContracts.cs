@@ -44,6 +44,14 @@ public enum BrowserRuntimeProfileState
     RawUserProfileActive
 }
 
+public enum BrowserRuntimeVaultState
+{
+    DesignOnly,
+    MinimalSandboxActive,
+    ProductionActive,
+    UnknownProvider
+}
+
 public sealed record BrowserRuntimeCapabilityState(
     string Name,
     bool Enabled,
@@ -71,7 +79,12 @@ public sealed record BrowserRuntimeObservedState(
     bool Browser004xLegacyIsolated,
     IReadOnlyList<BrowserRuntimeCapabilityState> Capabilities,
     BrowserRuntimeProfileState ProfileState = BrowserRuntimeProfileState.None,
-    bool ControlledProfileConsentValid = false)
+    bool ControlledProfileConsentValid = false,
+    BrowserRuntimeVaultState VaultState = BrowserRuntimeVaultState.DesignOnly,
+    bool MinimalSandboxVaultConsentValid = false,
+    bool VaultReturnsPublicValues = false,
+    bool VaultCompanionExposure = false,
+    bool VaultProviderKnown = true)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -82,6 +95,22 @@ public sealed record BrowserRuntimeObservedState(
 
     public bool ControlledProfileAllowed =>
         ProfileState != BrowserRuntimeProfileState.UserProfileControlledWithConsent || ControlledProfileConsentValid;
+
+    public bool ProductionVaultUnsafe =>
+        VaultState == BrowserRuntimeVaultState.ProductionActive ||
+        (RealVaultActive && VaultState != BrowserRuntimeVaultState.MinimalSandboxActive);
+
+    public bool MinimalSandboxVaultAllowed =>
+        VaultState != BrowserRuntimeVaultState.MinimalSandboxActive ||
+        (MinimalSandboxVaultConsentValid && !VaultReturnsPublicValues && !VaultCompanionExposure && VaultProviderKnown);
+
+    public bool VaultModeAllowed =>
+        VaultProviderKnown &&
+        VaultState != BrowserRuntimeVaultState.UnknownProvider &&
+        !ProductionVaultUnsafe &&
+        MinimalSandboxVaultAllowed &&
+        !VaultReturnsPublicValues &&
+        !VaultCompanionExposure;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
