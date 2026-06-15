@@ -238,7 +238,15 @@ public sealed record BrowserRuntimeObservedState(
     bool RealBillingStillDisabled = true,
     bool SensitiveRealPilotStillDisabled = true,
     bool ExternalAuditRecommended = false,
-    bool RealDeployOrUpdateEnabled = false)
+    bool RealDeployOrUpdateEnabled = false,
+    bool AuditIntegrityKeyProviderConfigured = true,
+    bool AuditIntegrityKeyProviderOsBacked = false,
+    bool AuditIntegrityDefaultFailClosed = true,
+    bool AuditIntegrityDevFixtureExplicitOnly = true,
+    bool AuditIntegrityKeyHealthOk = true,
+    bool AuditIntegrityDevFixtureInProduction = false,
+    bool AuditLedgerHeadSealIncludesKeyId = true,
+    bool AuditLedgerVerifiesUsingImplicitDevKey = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -388,6 +396,15 @@ public sealed record BrowserRuntimeObservedState(
         SensitiveRealPilotStillDisabled &&
         !RealDeployOrUpdateEnabled;
 
+    public bool AuditIntegrityKeyCustodyAllowed =>
+        AuditIntegrityKeyProviderConfigured &&
+        AuditIntegrityDefaultFailClosed &&
+        AuditIntegrityDevFixtureExplicitOnly &&
+        AuditIntegrityKeyHealthOk &&
+        AuditLedgerHeadSealIncludesKeyId &&
+        !AuditIntegrityDevFixtureInProduction &&
+        !AuditLedgerVerifiesUsingImplicitDevKey;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -457,7 +474,15 @@ public sealed record BrowserRuntimeObservedState(
         !RealBillingStillDisabled ||
         !SensitiveRealPilotStillDisabled ||
         ExternalAuditRecommended ||
-        RealDeployOrUpdateEnabled;
+        RealDeployOrUpdateEnabled ||
+        !AuditIntegrityKeyProviderConfigured ||
+        AuditIntegrityKeyProviderOsBacked ||
+        !AuditIntegrityDefaultFailClosed ||
+        !AuditIntegrityDevFixtureExplicitOnly ||
+        !AuditIntegrityKeyHealthOk ||
+        AuditIntegrityDevFixtureInProduction ||
+        !AuditLedgerHeadSealIncludesKeyId ||
+        AuditLedgerVerifiesUsingImplicitDevKey;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

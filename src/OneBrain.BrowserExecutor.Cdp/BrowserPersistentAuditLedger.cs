@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Text.Json;
 using OneBrain.BrowserExecutor.Contracts;
@@ -22,7 +23,10 @@ public sealed class BrowserPersistentAuditLedger
             throw new InvalidOperationException(string.Join("; ", validation.Errors));
 
         _policy = policy;
-        _integrityProvider = integrityProvider ?? BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider();
+        _integrityProvider = integrityProvider ?? throw new InvalidOperationException("Audit ledger integrity provider is required. Default dev fixture fallback is disabled.");
+        var health = _integrityProvider.HealthCheck();
+        if (!health.Healthy || health.RawKeyExposed)
+            throw new InvalidOperationException($"Audit ledger integrity provider is unavailable: {health.Reason}");
         _ledgerFile = Path.Combine(policy.LedgerDirectory, "browser-audit-ledger.jsonl");
         if (policy.AllowFilePersistence)
             Directory.CreateDirectory(policy.LedgerDirectory);
@@ -168,16 +172,59 @@ public sealed class BrowserPersistentAuditLedger
 public sealed class BrowserAuditLedgerHmacIntegrityProvider : IBrowserAuditLedgerIntegrityProvider
 {
     private readonly byte[] _key;
+    private readonly BrowserAuditIntegrityKeyReference _keyReference;
 
-    public BrowserAuditLedgerHmacIntegrityProvider(byte[] key)
+    public BrowserAuditLedgerHmacIntegrityProvider(byte[] key, BrowserAuditIntegrityKeyReference? keyReference = null)
     {
         if (key.Length < 16)
             throw new ArgumentException("HMAC key must be at least 16 bytes.", nameof(key));
         _key = key;
+        _keyReference = keyReference ?? new BrowserAuditIntegrityKeyReference(BrowserAuditIntegrityKeyProviderKind.DevFixtureExplicit, "audit-key-dev-fixture", 1, "HMACSHA256", RawKeyExposed: false);
     }
 
-    public static BrowserAuditLedgerHmacIntegrityProvider CreateDevFixtureProvider() =>
-        new(Encoding.UTF8.GetBytes("onebrain-m17-dev-fixture-hmac-key-not-production"));
+    public BrowserAuditIntegrityKeyReference KeyReference => _keyReference;
+
+    public static BrowserAuditLedgerHmacIntegrityProvider CreateDevFixtureProvider(string explicitFixtureKeyMaterial) =>
+        new(
+            Encoding.UTF8.GetBytes(explicitFixtureKeyMaterial),
+            new BrowserAuditIntegrityKeyReference(BrowserAuditIntegrityKeyProviderKind.DevFixtureExplicit, "audit-key-dev-fixture-explicit", 1, "HMACSHA256", RawKeyExposed: false));
+
+    public static BrowserAuditLedgerHmacIntegrityProvider CreateOsBackedDpapiCurrentUserProvider(string keyDirectory, string keyId = "audit-key-dpapi-current-user", int keyVersion = 1)
+    {
+        if (!OperatingSystem.IsWindows())
+            throw new PlatformNotSupportedException("DPAPI CurrentUser audit integrity key provider is only available on Windows.");
+
+        return CreateOsBackedDpapiCurrentUserProviderWindows(keyDirectory, keyId, keyVersion);
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static BrowserAuditLedgerHmacIntegrityProvider CreateOsBackedDpapiCurrentUserProviderWindows(string keyDirectory, string keyId, int keyVersion)
+    {
+        Directory.CreateDirectory(keyDirectory);
+        var keyFile = Path.Combine(keyDirectory, $"{BrowserDownloadManager.SafeFileName(keyId)}.protected");
+        byte[] key;
+        if (File.Exists(keyFile))
+        {
+            var protectedKey = File.ReadAllBytes(keyFile);
+            key = ProtectedData.Unprotect(protectedKey, null, DataProtectionScope.CurrentUser);
+        }
+        else
+        {
+            key = RandomNumberGenerator.GetBytes(32);
+            var protectedKey = ProtectedData.Protect(key, null, DataProtectionScope.CurrentUser);
+            File.WriteAllBytes(keyFile, protectedKey);
+        }
+
+        return new(
+            key,
+            new BrowserAuditIntegrityKeyReference(BrowserAuditIntegrityKeyProviderKind.OsBackedDpapiCurrentUser, keyId, keyVersion, "HMACSHA256", RawKeyExposed: false));
+    }
+
+    public BrowserAuditIntegrityKeyHealthCheck HealthCheck() =>
+        new(_keyReference.ProviderKind, _keyReference.KeyId, _keyReference.KeyVersion, BrowserAuditIntegrityKeyStatus.Available, Healthy: _key.Length >= 16 && !_keyReference.RawKeyExposed, _keyReference.RawKeyExposed, "key available");
+
+    public static BrowserAuditIntegrityKeyRotationPolicy PlanRotation(string previousKeyId, string newKeyId, bool requested = true) =>
+        new(requested, previousKeyId, newKeyId, requested ? BrowserAuditIntegrityKeyStatus.RotationPlanned : BrowserAuditIntegrityKeyStatus.RotationBlocked, "audit integrity key rotation modeled without raw key", RawKeyExposed: false);
 
     public BrowserAuditLedgerIntegrityProof ComputeEventIntegrity(BrowserAuditLedgerEvent ledgerEvent, long sequenceNumber, string previousHash)
     {
@@ -202,12 +249,22 @@ public sealed class BrowserAuditLedgerHmacIntegrityProvider : IBrowserAuditLedge
         var lastSequence = last?.Integrity.SequenceNumber ?? 0;
         var lastHash = last?.Integrity.EventHash ?? "genesis";
         var material = CanonicalHead(ledgerId, count, lastSequence, lastHash, createdAtUtc, updatedAtUtc);
-        return new BrowserAuditLedgerHeadSeal(ledgerId, count, lastSequence, lastHash, Hmac(material), createdAtUtc, updatedAtUtc);
+        return new BrowserAuditLedgerHeadSeal(ledgerId, _keyReference.ProviderKind, _keyReference.KeyId, _keyReference.KeyVersion, _keyReference.Algorithm, count, lastSequence, lastHash, Hmac(material), createdAtUtc, updatedAtUtc);
     }
 
     public bool VerifyHeadSeal(BrowserAuditLedgerHeadSeal seal, IReadOnlyList<BrowserAuditLedgerEvent> events)
     {
         var last = events.LastOrDefault();
+        if (seal.KeyProviderKind != _keyReference.ProviderKind)
+            return false;
+        if (!FixedTimeEquals(seal.KeyId, _keyReference.KeyId))
+            return false;
+        if (seal.KeyVersion != _keyReference.KeyVersion)
+            return false;
+        if (!FixedTimeEquals(seal.IntegrityAlgorithm, _keyReference.Algorithm))
+            return false;
+        if (!HealthCheck().Healthy)
+            return false;
         if (seal.EventCount != events.Count)
             return false;
         if (seal.LastSequence != (last?.Integrity.SequenceNumber ?? 0))

@@ -169,7 +169,7 @@ public sealed class BrowserCdpLiveTests
         await page.NavigateAsync(server.Url("/network"));
         await page.DrainEventsAsync(TimeSpan.FromSeconds(2));
 
-        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(temp.Path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)));
+        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(temp.Path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)), BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key"));
         ledger.Append(BrowserPersistentAuditLedger.Create(
             BrowserAuditLedgerEventKind.NetworkCaptureRecorded,
             "run-cdp-live-audit",

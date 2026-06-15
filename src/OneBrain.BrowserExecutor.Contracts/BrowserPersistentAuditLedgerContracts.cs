@@ -70,8 +70,54 @@ public sealed record BrowserAuditLedgerIntegrityProof(
     string PreviousHash,
     string EventHash);
 
+public enum BrowserAuditIntegrityKeyProviderKind
+{
+    Disabled,
+    DevFixtureExplicit,
+    OsBackedDpapiCurrentUser,
+    ExternalFuture
+}
+
+public enum BrowserAuditIntegrityKeyStatus
+{
+    Unavailable,
+    Available,
+    RotationRequested,
+    RotationPlanned,
+    RotationBlocked,
+    RotationCompleted
+}
+
+public sealed record BrowserAuditIntegrityKeyReference(
+    BrowserAuditIntegrityKeyProviderKind ProviderKind,
+    string KeyId,
+    int KeyVersion,
+    string Algorithm,
+    bool RawKeyExposed);
+
+public sealed record BrowserAuditIntegrityKeyHealthCheck(
+    BrowserAuditIntegrityKeyProviderKind ProviderKind,
+    string KeyId,
+    int KeyVersion,
+    BrowserAuditIntegrityKeyStatus Status,
+    bool Healthy,
+    bool RawKeyExposed,
+    string Reason);
+
+public sealed record BrowserAuditIntegrityKeyRotationPolicy(
+    bool RotationRequested,
+    string? PreviousKeyId,
+    string? NewKeyId,
+    BrowserAuditIntegrityKeyStatus Status,
+    string AuditReason,
+    bool RawKeyExposed);
+
 public sealed record BrowserAuditLedgerHeadSeal(
     string LedgerId,
+    BrowserAuditIntegrityKeyProviderKind KeyProviderKind,
+    string KeyId,
+    int KeyVersion,
+    string IntegrityAlgorithm,
     int EventCount,
     long LastSequence,
     string LastEventHash,
@@ -81,6 +127,8 @@ public sealed record BrowserAuditLedgerHeadSeal(
 
 public interface IBrowserAuditLedgerIntegrityProvider
 {
+    BrowserAuditIntegrityKeyReference KeyReference { get; }
+    BrowserAuditIntegrityKeyHealthCheck HealthCheck();
     BrowserAuditLedgerIntegrityProof ComputeEventIntegrity(BrowserAuditLedgerEvent ledgerEvent, long sequenceNumber, string previousHash);
     bool VerifyEventIntegrity(BrowserAuditLedgerEvent ledgerEvent);
     BrowserAuditLedgerHeadSeal ComputeHeadSeal(string ledgerId, IReadOnlyList<BrowserAuditLedgerEvent> events, DateTimeOffset createdAtUtc, DateTimeOffset updatedAtUtc);

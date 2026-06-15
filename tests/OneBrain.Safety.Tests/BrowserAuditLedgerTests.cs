@@ -119,7 +119,7 @@ public sealed class BrowserAuditLedgerTests
     }
 
     private static BrowserPersistentAuditLedger Ledger(string path) =>
-        new(new BrowserAuditLedgerPolicy(path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)));
+        new(new BrowserAuditLedgerPolicy(path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)), BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key"));
 
     private static BrowserAuditLedgerEvent Event(BrowserAuditLedgerEventKind kind, string secretId = "synthetic-secret-1", string reason = "synthetic reason", IReadOnlyDictionary<string, string>? metadata = null) =>
         BrowserPersistentAuditLedger.Create(kind, "run-1", "action-1", "corr-1", "profile-1", "session-1", "consent-1", secretId, BrowserProductiveVaultProviderKind.InMemoryTestOnly, "Denied", reason, metadata);

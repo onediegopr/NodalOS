@@ -106,7 +106,7 @@ public sealed class BrowserRuntimePhaseGateM19Tests
 
     private static BrowserRuntimePhaseCloseReport PhaseReport(string tempPath, BrowserRuntimeObservedState state)
     {
-        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(tempPath, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)));
+        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(tempPath, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)), BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key"));
         ledger.Append(BrowserPersistentAuditLedger.Create(BrowserAuditLedgerEventKind.PhaseCloseGateEvaluated, "run-phase", "action-phase", "corr-phase", "profile-runtime", "session-phase", null, null, null, "Observed", "phase gate fixture observed"));
         var download = new BrowserDownloadManager().CompleteFixtureDownload(DownloadRequest("sample-data.csv"), DownloadPolicy(tempPath), Fixture("downloads", "sample-data.csv"));
         var uploadPath = Fixture("upload", "sample-upload.txt");

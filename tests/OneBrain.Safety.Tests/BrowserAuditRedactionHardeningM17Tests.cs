@@ -100,7 +100,7 @@ public sealed class BrowserAuditRedactionHardeningM17Tests
         var ledger = Ledger(temp.Path);
         var original = ledger.Append(AuditEvent("one"));
         var tampered = original with { Reason = "tampered" };
-        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider();
+        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key");
 
         Assert.IsFalse(provider.VerifyEventIntegrity(tampered));
     }
@@ -113,7 +113,7 @@ public sealed class BrowserAuditRedactionHardeningM17Tests
         var original = ledger.Append(AuditEvent("one"));
         var tampered = original with { Reason = "tampered" };
         var shaOnly = tampered with { Integrity = tampered.Integrity with { EventHash = BrowserAuditLedgerEvent.ComputeHash(tampered) } };
-        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider();
+        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key");
 
         Assert.IsFalse(provider.VerifyEventIntegrity(shaOnly));
     }
@@ -127,7 +127,7 @@ public sealed class BrowserAuditRedactionHardeningM17Tests
         ledger.Append(AuditEvent("two"));
         var seal = ledger.HeadSeal;
         var truncated = ledger.Events.Take(1).ToArray();
-        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider();
+        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key");
 
         Assert.IsFalse(provider.VerifyHeadSeal(seal, truncated));
     }
@@ -139,7 +139,7 @@ public sealed class BrowserAuditRedactionHardeningM17Tests
         var ledger = Ledger(temp.Path);
         ledger.Append(AuditEvent("one"));
         var seal = ledger.HeadSeal;
-        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider();
+        var provider = BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key");
 
         Assert.IsFalse(provider.VerifyHeadSeal(seal with { EventCount = 2 }, ledger.Events));
         Assert.IsFalse(provider.VerifyHeadSeal(seal with { LastSequence = 99 }, ledger.Events));
@@ -220,7 +220,7 @@ public sealed class BrowserAuditRedactionHardeningM17Tests
         new("request-1", "corr-1", "GET", "https://fixture.local/api?token=synthetic", 200, "fetch", TimeSpan.FromMilliseconds(1), [new BrowserNetworkHeaderMetadata(name, true, true, value, BrowserNetworkHeaderRedactionReason.None)], ApiCandidate: true, RequestBodyCaptured: false, ResponseBodyCaptured: false, Redacted: false);
 
     private static BrowserPersistentAuditLedger Ledger(string path) =>
-        new(new BrowserAuditLedgerPolicy(path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)), BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider());
+        new(new BrowserAuditLedgerPolicy(path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)), BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key"));
 
     private static BrowserAuditLedgerEvent AuditEvent(string reason) =>
         BrowserPersistentAuditLedger.Create(BrowserAuditLedgerEventKind.PolicyBlocked, "run-1", "action-1", "corr-1", "profile-1", "session-1", null, null, null, "Blocked", reason, new Dictionary<string, string>

@@ -166,7 +166,7 @@ public sealed class BrowserRuntimePhaseM16Tests
 
     private static BrowserRuntimePhaseCloseReport PhaseReport(string tempPath, bool companionAuthoritative = false)
     {
-        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(tempPath, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)));
+        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(tempPath, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)), BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key"));
         ledger.Append(BrowserPersistentAuditLedger.Create(BrowserAuditLedgerEventKind.ConsentRequested, "run-1", "action-1", "corr-1", "profile-1", "session-1", "consent-1", null, null, "Requested", "phase close consent requested"));
 
         var download = new BrowserDownloadManager().CompleteFixtureDownload(DownloadRequest("sample-data.csv"), DownloadPolicy(tempPath), Fixture("downloads", "sample-data.csv"));

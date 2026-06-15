@@ -413,7 +413,7 @@ internal static class BrowserSafeDownloadM26TestAccess
 {
     public static BrowserRuntimePhaseCloseReport PhaseReport(string tempPath, BrowserRuntimeObservedState state)
     {
-        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(tempPath, true, true, new BrowserAuditLedgerRetentionPolicy(null, null, true)));
+        var ledger = new BrowserPersistentAuditLedger(new BrowserAuditLedgerPolicy(tempPath, true, true, new BrowserAuditLedgerRetentionPolicy(null, null, true)), BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("onebrain-m50-explicit-test-fixture-hmac-key"));
         ledger.Append(BrowserPersistentAuditLedger.Create(BrowserAuditLedgerEventKind.PhaseCloseGateEvaluated, "run-phase", "action-phase", "corr-phase", "profile-runtime", "session-phase", null, null, null, "Observed", "phase gate observed"));
         var fixtureRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "fixtures", "browser-executor"));
         var download = new BrowserDownloadManager().CompleteFixtureDownload(new BrowserDownloadRequest("run-phase", "action-download", "corr-phase", "session-phase", "https://fixture.local/download", "sample-data.csv", "text/csv", null), new BrowserDownloadPolicy(tempPath, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt", ".csv", ".json", ".pdf", ".xlsx" }, 1024 * 1024, true, true, false), Path.Combine(fixtureRoot, "downloads", "sample-data.csv"));
@@ -424,4 +424,3 @@ internal static class BrowserSafeDownloadM26TestAccess
         return new BrowserRuntimePhaseCloseGate().Evaluate(new StaticBrowserRuntimeSecurityProbe(state, ["evidence:m18-cdp-live"], ["audit:m17-hmac-head"]), ledger.ExportSafe(), download, upload, network, new BrowserSessionExportService().CreatePackage(manifest));
     }
 }
-
