@@ -25,7 +25,7 @@ public sealed class BrowserProfileConsentTests
         var manager = new BrowserProfileConsentManager();
         var profileManager = new BrowserProfileManager();
         var request = manager.CreateRequest("profile-real", "session-1", "corr-1", BrowserProfileConsentScope.Profile, "person:test", "launch real profile with explicit consent");
-        var decision = manager.Decide(request, BrowserProfileConsentStatus.Granted, DateTimeOffset.UtcNow);
+        var decision = GrantWithCoreAuthority(manager, request);
         var policy = RealProfilePolicy(consentGranted: true);
 
         var validation = profileManager.ValidateRealUserProfileConsent(policy, decision, DateTimeOffset.UtcNow);
@@ -33,6 +33,7 @@ public sealed class BrowserProfileConsentTests
 
         Assert.IsTrue(validation.IsValid);
         Assert.IsTrue(decision.AllowsRealProfile(DateTimeOffset.UtcNow));
+        Assert.IsTrue(decision.HasAuthoritativeProof());
         StringAssert.Contains(launch.Message, "not implemented in M12");
         Assert.AreEqual(1, manager.AuditEvents.Count);
     }
@@ -48,7 +49,7 @@ public sealed class BrowserProfileConsentTests
         var revokedRequest = manager.CreateRequest("profile-real", "session-1", "corr-revoked", BrowserProfileConsentScope.Profile, "person:test", "real profile");
 
         var denied = manager.Decide(deniedRequest, BrowserProfileConsentStatus.Denied, DateTimeOffset.UtcNow);
-        var expired = manager.Decide(expiredRequest, BrowserProfileConsentStatus.Granted, DateTimeOffset.UtcNow);
+        var expired = GrantWithCoreAuthority(manager, expiredRequest);
         var revoked = manager.Revoke(revokedRequest);
 
         Assert.IsFalse(profileManager.ValidateRealUserProfileConsent(policy, denied, DateTimeOffset.UtcNow).IsValid);
@@ -62,7 +63,7 @@ public sealed class BrowserProfileConsentTests
         var manager = new BrowserProfileConsentManager();
         var profileManager = new BrowserProfileManager();
         var request = manager.CreateRequest("profile-real", "session-1", "corr-runtime", BrowserProfileConsentScope.Runtime, "person:test", "runtime-only consent");
-        var decision = manager.Decide(request, BrowserProfileConsentStatus.Granted, DateTimeOffset.UtcNow);
+        var decision = GrantWithCoreAuthority(manager, request);
 
         var validation = profileManager.ValidateRealUserProfileConsent(RealProfilePolicy(consentGranted: true), decision, DateTimeOffset.UtcNow);
 
@@ -75,7 +76,7 @@ public sealed class BrowserProfileConsentTests
     {
         var consentManager = new BrowserProfileConsentManager();
         var request = consentManager.CreateRequest("profile-real", "session-1", "corr-1", BrowserProfileConsentScope.Profile, "person:test", "real profile");
-        var consent = consentManager.Decide(request, BrowserProfileConsentStatus.Granted, DateTimeOffset.UtcNow);
+        var consent = GrantWithCoreAuthority(consentManager, request);
         var secret = new BrowserSecretReference("secret-1", BrowserSecretKind.Password, BrowserSecretScope.Person, "person:test", "fixture", DateTimeOffset.UtcNow, "Password:[REDACTED]");
         var secretRequest = new BrowserSecretAccessRequest("secret-request-1", "run-1", "action-1", "corr-1", "profile-real", "session-1", secret, BrowserSecretUsageIntent.FillCredential, DateTimeOffset.UtcNow, "synthetic password fill");
 
@@ -90,12 +91,85 @@ public sealed class BrowserProfileConsentTests
     {
         var manager = new BrowserProfileConsentManager();
         var request = manager.CreateRequest("profile-real", "session-1", "corr-1", BrowserProfileConsentScope.Profile, "person:test", BrowserCredentialRedactor.Redact("purpose token=synthetic"));
-        var decision = manager.Decide(request, BrowserProfileConsentStatus.Granted, DateTimeOffset.UtcNow);
+        var decision = GrantWithCoreAuthority(manager, request);
 
         Assert.IsTrue(decision.AuditEvent.RedactionApplied);
         Assert.IsFalse(BrowserCredentialRedactor.ContainsSecret(decision.AuditEvent.RedactedSummary));
         Assert.IsFalse(BrowserCredentialRedactor.ContainsSecret(decision.Request.Purpose));
         Assert.AreEqual(BrowserProfileConsentStatus.Granted, decision.AuditEvent.Status);
+    }
+
+    [TestMethod]
+    public void BrowserProfileConsentCompanionOnlyApprovalDoesNotGrant()
+    {
+        var manager = new BrowserProfileConsentManager();
+        var request = manager.CreateRequest("profile-real", "session-1", "corr-1", BrowserProfileConsentScope.Profile, "person:test", "real profile");
+
+        var decision = manager.Decide(
+            request,
+            BrowserProfileConsentStatus.Granted,
+            DateTimeOffset.UtcNow,
+            BrowserProfileConsentAuthorityKind.UserViaCompanionIntent,
+            approvingActor: "chrome-companion",
+            approvalSource: "sidepanel",
+            consentProofRef: "proof-companion-click",
+            consentChallengeId: request.ConsentChallengeId,
+            companionAuthoritative: true);
+
+        Assert.AreEqual(BrowserProfileConsentStatus.Invalid, decision.Status);
+        Assert.IsFalse(decision.AllowsRealProfile(DateTimeOffset.UtcNow));
+    }
+
+    [TestMethod]
+    public void BrowserProfileConsentMissingProofOrUnknownAuthorityDenies()
+    {
+        var manager = new BrowserProfileConsentManager();
+        var missingProof = manager.CreateRequest("profile-real", "session-1", "corr-missing", BrowserProfileConsentScope.Profile, "person:test", "real profile");
+        var unknownAuthority = manager.CreateRequest("profile-real", "session-1", "corr-unknown", BrowserProfileConsentScope.Profile, "person:test", "real profile");
+
+        var missing = manager.Decide(
+            missingProof,
+            BrowserProfileConsentStatus.Granted,
+            DateTimeOffset.UtcNow,
+            BrowserProfileConsentAuthorityKind.CorePolicy,
+            approvingActor: "core",
+            approvalSource: "policy",
+            consentProofRef: "",
+            consentChallengeId: missingProof.ConsentChallengeId);
+        var unknown = manager.Decide(
+            unknownAuthority,
+            BrowserProfileConsentStatus.Granted,
+            DateTimeOffset.UtcNow,
+            BrowserProfileConsentAuthorityKind.Unknown,
+            approvingActor: "core",
+            approvalSource: "policy",
+            consentProofRef: "proof",
+            consentChallengeId: unknownAuthority.ConsentChallengeId);
+
+        Assert.AreEqual(BrowserProfileConsentStatus.Invalid, missing.Status);
+        Assert.AreEqual(BrowserProfileConsentStatus.Invalid, unknown.Status);
+        Assert.IsFalse(missing.AllowsRealProfile(DateTimeOffset.UtcNow));
+        Assert.IsFalse(unknown.AllowsRealProfile(DateTimeOffset.UtcNow));
+    }
+
+    [TestMethod]
+    public void BrowserProfileConsentWrongChallengeDoesNotGrant()
+    {
+        var manager = new BrowserProfileConsentManager();
+        var request = manager.CreateRequest("profile-real", "session-1", "corr-1", BrowserProfileConsentScope.Profile, "person:test", "real profile");
+
+        var decision = manager.Decide(
+            request,
+            BrowserProfileConsentStatus.Granted,
+            DateTimeOffset.UtcNow,
+            BrowserProfileConsentAuthorityKind.CorePolicy,
+            approvingActor: "core",
+            approvalSource: "policy",
+            consentProofRef: "proof",
+            consentChallengeId: "wrong-challenge");
+
+        Assert.AreEqual(BrowserProfileConsentStatus.Invalid, decision.Status);
+        Assert.IsFalse(decision.AllowsRealProfile(DateTimeOffset.UtcNow));
     }
 
     private static BrowserProfilePolicy RealProfilePolicy(bool consentGranted) =>
@@ -106,4 +180,15 @@ public sealed class BrowserProfileConsentTests
             ConsentPolicy: consentGranted ? BrowserProfileConsentPolicy.Granted : BrowserProfileConsentPolicy.ExplicitConsentRequired,
             AllowRealUserProfile: consentGranted,
             ControlledRootDirectory: Path.Combine(Path.GetTempPath(), "onebrain-profile-consent-tests"));
+
+    private static BrowserProfileConsentDecision GrantWithCoreAuthority(BrowserProfileConsentManager manager, BrowserProfileConsentRequest request) =>
+        manager.Decide(
+            request,
+            BrowserProfileConsentStatus.Granted,
+            DateTimeOffset.UtcNow,
+            BrowserProfileConsentAuthorityKind.CorePolicy,
+            approvingActor: "core-policy",
+            approvalSource: "browser-runtime-policy",
+            consentProofRef: $"profile-consent-proof-{Guid.NewGuid():N}",
+            consentChallengeId: request.ConsentChallengeId);
 }

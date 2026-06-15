@@ -23,7 +23,7 @@ Browser Runtime introduces a formal Secret Boundary:
 M12 adds `IBrowserSecretVault` with two safe implementations:
 
 - `NullBrowserSecretVault`: denies every request by default.
-- `InMemoryTestSecretVault`: accepts only synthetic test secrets and returns references only.
+- `InMemoryTestOnlySecretVault`: accepts only synthetic test secrets and returns references only.
 
 There is no productive vault in M12. There is no DPAPI, Windows Credential Manager, cloud vault, or persistent credential storage yet.
 

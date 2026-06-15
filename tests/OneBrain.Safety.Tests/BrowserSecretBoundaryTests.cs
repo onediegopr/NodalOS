@@ -22,7 +22,7 @@ public sealed class BrowserSecretBoundaryTests
     [TestMethod]
     public async Task BrowserSecretInMemoryVaultAllowsOnlySyntheticSecretsUnderPolicy()
     {
-        var vault = new InMemoryTestSecretVault();
+        var vault = new InMemoryTestOnlySecretVault();
         var reference = vault.StoreSyntheticSecret(BrowserSecretKind.ApiKey, BrowserSecretScope.Temporary, "test-owner", "fixture", "synthetic://api-key");
         var policy = Policy(Set(BrowserSecretKind.ApiKey), Set(BrowserSecretScope.Temporary));
 
@@ -34,6 +34,68 @@ public sealed class BrowserSecretBoundaryTests
         Assert.IsNotNull(allowed.Reference);
         Assert.IsTrue(allowed.Validate().IsValid);
         Assert.IsFalse(allowed.Diagnostic.Contains("synthetic://", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task BrowserSecretInMemoryVaultReturnsCanonicalReferenceAndRejectsAlteredMetadata()
+    {
+        var vault = new InMemoryTestOnlySecretVault();
+        var reference = vault.StoreSyntheticSecret(BrowserSecretKind.ApiKey, BrowserSecretScope.Temporary, "test-owner", "fixture", "synthetic://api-key");
+        var altered = reference with { Scope = BrowserSecretScope.Runtime, RedactedLabel = "ApiKey Runtime [REDACTED]" };
+        var policy = Policy(Set(BrowserSecretKind.ApiKey), Set(BrowserSecretScope.Temporary));
+
+        var allowed = await vault.RequestAccessAsync(Request(reference), policy);
+        var denied = await vault.RequestAccessAsync(Request(altered), policy);
+
+        Assert.AreEqual(BrowserSecretAccessDecisionKind.Allowed, allowed.Decision.Decision);
+        Assert.AreEqual(reference, allowed.Reference);
+        Assert.AreEqual(BrowserSecretAccessDecisionKind.Denied, denied.Decision.Decision);
+        Assert.IsNull(denied.Reference);
+    }
+
+    [TestMethod]
+    public void BrowserSecretInMemoryVaultRejectsNonSyntheticValues()
+    {
+        var vault = new InMemoryTestOnlySecretVault();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
+            vault.StoreSyntheticSecret(BrowserSecretKind.Password, BrowserSecretScope.Temporary, "test-owner", "fixture", "password=real"));
+    }
+
+    [TestMethod]
+    public void BrowserSecretEvaluatorDoesNotExposeProductiveForcedAllowed()
+    {
+        var method = typeof(BrowserSecretAccessPolicyEvaluator).GetMethod(nameof(BrowserSecretAccessPolicyEvaluator.Decide), [typeof(BrowserSecretAccessRequest), typeof(BrowserSecretAccessPolicy)]);
+
+        Assert.IsNotNull(method);
+        Assert.IsNull(typeof(BrowserSecretAccessPolicyEvaluator).GetMethods().SingleOrDefault(methodInfo =>
+            methodInfo.Name == nameof(BrowserSecretAccessPolicyEvaluator.Decide) &&
+            methodInfo.GetParameters().Any(parameter => parameter.Name == "forcedDecision")));
+    }
+
+    [TestMethod]
+    public void BrowserSecretLikeIdentifiersFailClosedAndAuditIsRedacted()
+    {
+        var request = Request(Reference(BrowserSecretKind.ApiKey) with { SecretId = "token=raw-secret-value" }) with
+        {
+            CorrelationId = "cookie=session-value",
+            RequestId = "header.payload.signature"
+        };
+
+        var decision = new BrowserSecretAccessPolicyEvaluator().Decide(request, Policy(Set(BrowserSecretKind.ApiKey), Set(BrowserSecretScope.Temporary)));
+
+        Assert.AreEqual(BrowserSecretAccessDecisionKind.FailClosed, decision.Decision);
+        Assert.IsFalse(decision.AuditEvent.SecretId.Contains("raw-secret-value", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(decision.AuditEvent.Validate().Errors.Any(error => error.Contains("SecretId", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(BrowserCredentialRedactor.ContainsSecret(decision.AuditEvent.RedactedSummary));
+    }
+
+    [TestMethod]
+    public void BrowserSecretSafeIdentifiersRemainValid()
+    {
+        var request = Request(Reference(BrowserSecretKind.ApiKey));
+
+        Assert.IsTrue(request.Validate().IsValid);
     }
 
     [TestMethod]

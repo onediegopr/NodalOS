@@ -127,7 +127,7 @@ public sealed class BrowserProfileManager
         {
             BrowserProfileKind.Disposable => Path.Combine(Path.GetTempPath(), "onebrain-cdp-" + Guid.NewGuid().ToString("N")),
             BrowserProfileKind.PersistentControlled => Path.Combine(policy.ControlledRootDirectory, id.Value),
-            BrowserProfileKind.UserProfileWithExplicitConsent => throw new InvalidOperationException("Real user profile launch is not implemented in M7."),
+            BrowserProfileKind.UserProfileWithExplicitConsent => throw new InvalidOperationException("Real user profile launch is not implemented in M12.5."),
             _ => throw new ArgumentOutOfRangeException(nameof(policy))
         };
 
@@ -145,6 +145,8 @@ public sealed class BrowserProfileManager
             errors.Add("Real user profile requires explicit consent policy.");
         if (consent is null || !consent.AllowsRealProfile(now))
             errors.Add("Real user profile consent is missing, expired, denied, or revoked.");
+        if (consent is not null)
+            errors.AddRange(consent.Validate(now).Errors);
         if (consent is not null && consent.Request.Scope is not BrowserProfileConsentScope.Profile and not BrowserProfileConsentScope.Person and not BrowserProfileConsentScope.Portal)
             errors.Add("Real user profile consent scope is not sufficient for profile launch.");
 
@@ -157,7 +159,7 @@ public sealed class BrowserProfileManager
         if (!validation.IsValid)
             throw new InvalidOperationException(string.Join("; ", validation.Errors));
 
-        throw new NotSupportedException("Real user profile launch is not implemented in M12.");
+        throw new NotSupportedException("Real user profile launch is not implemented in M12.5.");
     }
 
     public async Task CleanupProfileAsync(BrowserProfileDescriptor profile)

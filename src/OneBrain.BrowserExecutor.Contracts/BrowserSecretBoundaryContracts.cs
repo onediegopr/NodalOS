@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace OneBrain.BrowserExecutor.Contracts;
 
 public enum BrowserSecretKind
@@ -69,6 +71,7 @@ public sealed record BrowserSecretReference(
         Require(SecretId, nameof(SecretId), errors);
         Require(Owner, nameof(Owner), errors);
         Require(RedactedLabel, nameof(RedactedLabel), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(SecretId, nameof(SecretId), errors);
         if (Kind == BrowserSecretKind.UnknownSensitiveSecret)
             errors.Add("Unknown secret references cannot be used directly.");
         if (BrowserCredentialRedactor.ContainsSecret(RedactedLabel) ||
@@ -127,6 +130,12 @@ public sealed record BrowserSecretAccessRequest(
         Require(CorrelationId, nameof(CorrelationId), errors);
         Require(ProfileId, nameof(ProfileId), errors);
         Require(SessionId, nameof(SessionId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(RequestId, nameof(RequestId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(RunId, nameof(RunId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ActionId, nameof(ActionId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(CorrelationId, nameof(CorrelationId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ProfileId, nameof(ProfileId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(SessionId, nameof(SessionId), errors);
         errors.AddRange(Secret.Validate().Errors);
         if (Intent == BrowserSecretUsageIntent.Unknown)
             errors.Add("Unknown secret usage intent must fail closed.");
@@ -162,6 +171,12 @@ public sealed record BrowserSecretAuditEvent(
         var errors = new List<string>();
         if (string.IsNullOrWhiteSpace(EventId))
             errors.Add("EventId is required.");
+        BrowserSafeIdentifierValidator.RequireSafe(EventId, nameof(EventId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(RequestId, nameof(RequestId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(RunId, nameof(RunId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ActionId, nameof(ActionId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(CorrelationId, nameof(CorrelationId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(SecretId, nameof(SecretId), errors);
         if (!RedactionApplied)
             errors.Add("Secret audit event requires redaction.");
         if (BrowserCredentialRedactor.ContainsSecret(RedactedSummary))
@@ -197,9 +212,25 @@ public sealed record BrowserSecretVaultResult(
             errors.Add("Vault result diagnostic contains unredacted secret-like content.");
         if (Reference is not null)
             errors.AddRange(Reference.Validate().Errors);
+        errors.AddRange(Decision.Request.Validate().Errors);
         errors.AddRange(Decision.AuditEvent.Validate().Errors);
         return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
     }
+}
+
+public static partial class BrowserSafeIdentifierValidator
+{
+    public static void RequireSafe(string? value, string name, List<string> errors)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return;
+
+        if (BrowserCredentialRedactor.ContainsSecret(value) || JwtLikeIdentifierPattern().IsMatch(value))
+            errors.Add($"{name} contains secret-like content.");
+    }
+
+    [GeneratedRegex("^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant)]
+    private static partial Regex JwtLikeIdentifierPattern();
 }
 
 public interface IBrowserSecretVault
@@ -231,12 +262,23 @@ public enum BrowserProfileConsentStatus
     Invalid
 }
 
+public enum BrowserProfileConsentAuthorityKind
+{
+    CorePolicy,
+    UserViaCompanionIntent,
+    AdminPolicy,
+    TestHarness,
+    Unknown
+}
+
 public sealed record BrowserProfileConsentRequest(
     string RequestId,
     string ProfileId,
     string SessionId,
     string CorrelationId,
     BrowserProfileConsentScope Scope,
+    string RequestingActor,
+    string ConsentChallengeId,
     string Owner,
     string Purpose,
     DateTimeOffset RequestedAtUtc,
@@ -244,6 +286,27 @@ public sealed record BrowserProfileConsentRequest(
     bool RedactionApplied)
 {
     public bool IsExpired(DateTimeOffset now) => ExpiresAtUtc <= now;
+
+    public ContractValidationResult Validate()
+    {
+        var errors = new List<string>();
+        BrowserSafeIdentifierValidator.RequireSafe(RequestId, nameof(RequestId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ProfileId, nameof(ProfileId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(SessionId, nameof(SessionId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(CorrelationId, nameof(CorrelationId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ConsentChallengeId, nameof(ConsentChallengeId), errors);
+        if (string.IsNullOrWhiteSpace(RequestingActor))
+            errors.Add("RequestingActor is required.");
+        if (string.IsNullOrWhiteSpace(ConsentChallengeId))
+            errors.Add("ConsentChallengeId is required.");
+        if (!RedactionApplied)
+            errors.Add("Profile consent request requires redaction.");
+        if (BrowserCredentialRedactor.ContainsSecret(RequestingActor) ||
+            BrowserCredentialRedactor.ContainsSecret(Owner) ||
+            BrowserCredentialRedactor.ContainsSecret(Purpose))
+            errors.Add("Profile consent request contains unredacted secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
 }
 
 public sealed record BrowserProfileConsentAuditEvent(
@@ -252,17 +315,68 @@ public sealed record BrowserProfileConsentAuditEvent(
     string ProfileId,
     BrowserProfileConsentScope Scope,
     BrowserProfileConsentStatus Status,
+    BrowserProfileConsentAuthorityKind AuthorityKind,
     DateTimeOffset CreatedAtUtc,
     string RedactedSummary,
-    bool RedactionApplied);
+    bool RedactionApplied)
+{
+    public ContractValidationResult Validate()
+    {
+        var errors = new List<string>();
+        BrowserSafeIdentifierValidator.RequireSafe(EventId, nameof(EventId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(RequestId, nameof(RequestId), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ProfileId, nameof(ProfileId), errors);
+        if (!RedactionApplied)
+            errors.Add("Profile consent audit requires redaction.");
+        if (BrowserCredentialRedactor.ContainsSecret(RedactedSummary))
+            errors.Add("Profile consent audit contains unredacted secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
+}
 
 public sealed record BrowserProfileConsentDecision(
     BrowserProfileConsentStatus Status,
     BrowserProfileConsentRequest Request,
     BrowserProfileConsentAuditEvent AuditEvent,
-    string Message)
+    string Message,
+    string ApprovingActor,
+    string ApprovalSource,
+    BrowserProfileConsentAuthorityKind AuthorityKind,
+    string ConsentProofRef,
+    string ConsentChallengeId,
+    bool CompanionAuthoritative,
+    DateTimeOffset IssuedAtUtc,
+    DateTimeOffset? RevokedAtUtc)
 {
     public bool AllowsRealProfile(DateTimeOffset now) =>
-        Status == BrowserProfileConsentStatus.Granted && !Request.IsExpired(now);
+        Status == BrowserProfileConsentStatus.Granted &&
+        !Request.IsExpired(now) &&
+        RevokedAtUtc is null &&
+        HasAuthoritativeProof();
+
+    public bool HasAuthoritativeProof() =>
+        !CompanionAuthoritative &&
+        AuthorityKind is BrowserProfileConsentAuthorityKind.CorePolicy or BrowserProfileConsentAuthorityKind.AdminPolicy or BrowserProfileConsentAuthorityKind.TestHarness &&
+        !string.IsNullOrWhiteSpace(ApprovingActor) &&
+        !string.IsNullOrWhiteSpace(ApprovalSource) &&
+        !string.IsNullOrWhiteSpace(ConsentProofRef) &&
+        !string.IsNullOrWhiteSpace(ConsentChallengeId) &&
+        ConsentChallengeId == Request.ConsentChallengeId;
+
+    public ContractValidationResult Validate(DateTimeOffset now)
+    {
+        var errors = new List<string>();
+        errors.AddRange(Request.Validate().Errors);
+        errors.AddRange(AuditEvent.Validate().Errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ConsentProofRef, nameof(ConsentProofRef), errors);
+        BrowserSafeIdentifierValidator.RequireSafe(ConsentChallengeId, nameof(ConsentChallengeId), errors);
+        if (Status == BrowserProfileConsentStatus.Granted && !AllowsRealProfile(now))
+            errors.Add("Granted profile consent requires authoritative proof, trusted source, challenge binding, and non-companion authority.");
+        if (BrowserCredentialRedactor.ContainsSecret(Message) ||
+            BrowserCredentialRedactor.ContainsSecret(ApprovingActor) ||
+            BrowserCredentialRedactor.ContainsSecret(ApprovalSource))
+            errors.Add("Profile consent decision contains unredacted secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
 }
 
