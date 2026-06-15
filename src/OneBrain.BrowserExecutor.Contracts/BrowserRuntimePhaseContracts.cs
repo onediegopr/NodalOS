@@ -303,7 +303,18 @@ public sealed record BrowserRuntimeObservedState(
     bool BillingSandboxProviderDefined = false,
     bool RealBillingEnabled = false,
     bool PaymentCardDataStored = false,
-    bool BillingEnablesSensitiveFeaturesByDefault = false)
+    bool BillingEnablesSensitiveFeaturesByDefault = false,
+    bool PrivateTrialSimulationSafe = false,
+    bool PrivateTrialRealBillingEnabled = false,
+    bool PrivateTrialRealEmailEnabled = false,
+    bool PrivateTrialEnablesSensitiveRealPilotByDefault = false,
+    bool ExternalLowRiskTargetSetupDefined = false,
+    bool ExternalLowRiskTargetLiveValidated = false,
+    bool ExternalLowRiskDocumentWorkflowPrepared = false,
+    bool ExternalLowRiskDocumentWorkflowBlockedWithoutTarget = false,
+    bool ExternalWorkflowRunsWithoutTargetReadiness = false,
+    bool ExternalWorkflowUsesSensitiveDocuments = false,
+    bool ExternalWorkflowBypassesSafeDownloadUpload = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -544,6 +555,13 @@ public sealed record BrowserRuntimeObservedState(
         (!EmailSandboxProviderDefined || (!RealEmailDeliveryEnabled && !EmailTemplateLeaksSecrets)) &&
         (!BillingSandboxProviderDefined || (!RealBillingEnabled && !PaymentCardDataStored && !BillingEnablesSensitiveFeaturesByDefault));
 
+    public bool PrivateTrialAndExternalPreparationAllowed =>
+        (!PrivateTrialSimulationSafe || (!PrivateTrialRealBillingEnabled && !PrivateTrialRealEmailEnabled && !PrivateTrialEnablesSensitiveRealPilotByDefault)) &&
+        (!ExternalLowRiskDocumentWorkflowPrepared || ExternalLowRiskTargetLiveValidated || ExternalLowRiskDocumentWorkflowBlockedWithoutTarget) &&
+        !ExternalWorkflowRunsWithoutTargetReadiness &&
+        !ExternalWorkflowUsesSensitiveDocuments &&
+        !ExternalWorkflowBypassesSafeDownloadUpload;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -678,7 +696,18 @@ public sealed record BrowserRuntimeObservedState(
         BillingSandboxProviderDefined ||
         RealBillingEnabled ||
         PaymentCardDataStored ||
-        BillingEnablesSensitiveFeaturesByDefault;
+        BillingEnablesSensitiveFeaturesByDefault ||
+        PrivateTrialSimulationSafe ||
+        PrivateTrialRealBillingEnabled ||
+        PrivateTrialRealEmailEnabled ||
+        PrivateTrialEnablesSensitiveRealPilotByDefault ||
+        ExternalLowRiskTargetSetupDefined ||
+        ExternalLowRiskTargetLiveValidated ||
+        ExternalLowRiskDocumentWorkflowPrepared ||
+        ExternalLowRiskDocumentWorkflowBlockedWithoutTarget ||
+        ExternalWorkflowRunsWithoutTargetReadiness ||
+        ExternalWorkflowUsesSensitiveDocuments ||
+        ExternalWorkflowBypassesSafeDownloadUpload;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
