@@ -8,6 +8,18 @@ const SESSION_STATE_KEY = 'nexaRuntimeState';
 const OUTGOING_QUEUE_LIMIT = 40;
 const HEARTBEAT_MS = 15000;
 const BACKOFF_STEPS = [250, 500, 1000, 2000, 5000];
+const EXTENSION_RUNTIME_MODE = 'core-governed-companion';
+const CORE_GOVERNED_MODE = true;
+const LEGACY_RUNNER_ENABLED = false;
+const EXTENSION_CAPABILITIES = Object.freeze({
+  companionMode: true,
+  relayMode: true,
+  coreGovernedMode: CORE_GOVERNED_MODE,
+  legacyRunnerEnabled: LEGACY_RUNNER_ENABLED,
+  serviceWorkerRunOwner: false,
+  canVerifyFinalSuccess: false,
+  contentScriptAuthoritative: false
+});
 
 let socket = null;
 let connected = false;
@@ -27,9 +39,13 @@ let lastSeenAt = '';
 let lastConnectionError = '';
 let outgoingQueue = [];
 let runtimeDebug = null;
-let stopped = false;
+let runState = 'idle';
+let stopRequestedExplicitly = false;
+let connectionStoppedByUser = false;
 let currentRunId = '';
 let targetTabId = null;
+let targetTabPinnedExplicitly = false;
+let lastTargetTabSnapshot = null;
 let currentRequestId = '';
 let currentTool = '';
 let lastToolRequest = null;
@@ -37,6 +53,25 @@ let lastToolResult = null;
 let lastRunStatus = null;
 let lastHealth = null;
 let lastAiError = '';
+let lastProtocolError = '';
+let lastWsCloseCode = 0;
+let lastWsCloseReason = '';
+let lastWsCloseWasClean = false;
+let lastWsCloseAt = '';
+let lastStateTransition = null;
+let lastContentScriptStatus = 'unknown';
+let lastContentScriptMessage = '';
+let lastContentScriptInjectedAt = '';
+let lastContentScriptLastSeenAt = '';
+let lastContentScriptLastUrl = '';
+let lastContentScriptLastError = '';
+let lastSendMessageError = '';
+let lastObserveRequestAt = '';
+let lastObserveResultAt = '';
+let lastObserveError = '';
+let lastResolvedTabAllowed = false;
+let lastObservedPage = null;
+let lastHandoffFingerprint = '';
 let learningSession = null;
 let recipeRunner = null;
 const sidePorts = new Set();
@@ -79,14 +114,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.tabs.onActivated.addListener(() => publishPageSnapshot());
-chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     publishPageSnapshot();
   }
+  handleLearningTabUpdated(tabId, changeInfo, tab).catch(() => {});
 });
+
+function shouldPreferActiveTab() {
+  const recipeStatus = recipeRunner && recipeRunner.status ? recipeRunner.status : '';
+  const learningStatus = learningSession && learningSession.learningState ? learningSession.learningState : '';
+  if (currentRunId) {
+    return false;
+  }
+  if (recipeStatus && !['completed', 'stopped', 'failed'].includes(recipeStatus)) {
+    return false;
+  }
+  if (learningStatus && ['recording', 'paused'].includes(learningStatus)) {
+    return false;
+  }
+  return true;
+}
 
 async function initializeRuntimeLifecycle() {
   await hydrateRuntimeState();
+  await hydrateLearningSession();
   chrome.alarms.create('nexa.keepalive', { periodInMinutes: 0.4 });
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
   if (config.host && config.port) {
@@ -101,11 +153,31 @@ async function hydrateRuntimeState() {
   currentRunId = saved.currentRunId || currentRunId || '';
   currentRequestId = saved.currentRequestId || currentRequestId || '';
   connectionState = saved.connectionState || connectionState;
+  runState = saved.runState || runState;
   reconnectBlocked = Boolean(saved.reconnectBlocked);
   reconnectBlockedReason = saved.reconnectBlockedReason || '';
+  stopRequestedExplicitly = Boolean(saved.stopRequestedExplicitly);
+  connectionStoppedByUser = Boolean(saved.connectionStoppedByUser);
   lastConnectedAt = saved.lastConnectedAt || '';
   lastSeenAt = saved.lastSeenAt || '';
-  recipeRunner = saved.recipeRunner || recipeRunner;
+  lastProtocolError = saved.lastProtocolError || '';
+  lastWsCloseCode = Number(saved.lastWsCloseCode || 0);
+  lastWsCloseReason = saved.lastWsCloseReason || '';
+  lastWsCloseWasClean = Boolean(saved.lastWsCloseWasClean);
+  lastWsCloseAt = saved.lastWsCloseAt || '';
+  lastStateTransition = saved.lastStateTransition || null;
+  lastContentScriptStatus = saved.lastContentScriptStatus || 'unknown';
+  lastContentScriptMessage = saved.lastContentScriptMessage || '';
+  lastContentScriptInjectedAt = saved.lastContentScriptInjectedAt || '';
+  lastContentScriptLastSeenAt = saved.lastContentScriptLastSeenAt || '';
+  lastContentScriptLastUrl = saved.lastContentScriptLastUrl || '';
+  lastContentScriptLastError = saved.lastContentScriptLastError || '';
+  lastSendMessageError = saved.lastSendMessageError || '';
+  lastObserveRequestAt = saved.lastObserveRequestAt || '';
+  lastObserveResultAt = saved.lastObserveResultAt || '';
+  lastObserveError = saved.lastObserveError || '';
+  lastResolvedTabAllowed = Boolean(saved.lastResolvedTabAllowed);
+  recipeRunner = LEGACY_RUNNER_ENABLED ? (saved.recipeRunner || recipeRunner) : null;
   outgoingQueue = Array.isArray(saved.pendingOutgoingMessages) ? saved.pendingOutgoingMessages.slice(-OUTGOING_QUEUE_LIMIT) : [];
   await persistRuntimeState();
 }
@@ -117,14 +189,43 @@ async function persistRuntimeState() {
       currentRunId,
       currentRequestId,
       connectionState,
+      runState,
       reconnectBlocked,
       reconnectBlockedReason,
+      stopRequestedExplicitly,
+      connectionStoppedByUser,
       lastConnectedAt,
       lastSeenAt,
-      recipeRunner,
+      lastProtocolError,
+      lastWsCloseCode,
+      lastWsCloseReason,
+      lastWsCloseWasClean,
+      lastWsCloseAt,
+      lastStateTransition,
+      lastContentScriptStatus,
+      lastContentScriptMessage,
+      lastContentScriptInjectedAt,
+      lastContentScriptLastSeenAt,
+      lastContentScriptLastUrl,
+      lastContentScriptLastError,
+      lastSendMessageError,
+      lastObserveRequestAt,
+      lastObserveResultAt,
+      lastObserveError,
+      lastResolvedTabAllowed,
+      recipeRunner: LEGACY_RUNNER_ENABLED ? recipeRunner : null,
       pendingOutgoingMessages: outgoingQueue.slice(-OUTGOING_QUEUE_LIMIT)
     }
   }).catch(() => {});
+}
+
+async function hydrateLearningSession() {
+  const data = await chrome.storage.local.get({ [LEARNING_DRAFT_KEY]: null });
+  learningSession = data[LEARNING_DRAFT_KEY] || null;
+  if (learningSession && learningSession.learningState !== 'recording' && learningSession.learningState !== 'paused') {
+    learningSession = null;
+    await chrome.storage.local.remove(LEARNING_DRAFT_KEY);
+  }
 }
 
 async function keepAliveTick() {
@@ -145,7 +246,7 @@ async function handlePanelMessage(message) {
       try {
         await connect(message.config);
       } catch (error) {
-        publishState('error', String(error && error.message ? error.message : error));
+        setConnectionState('error', String(error && error.message ? error.message : error), { source: 'service_worker', cause: 'connect.exception' });
       }
       break;
     case 'saveTokenAndConnect':
@@ -166,22 +267,34 @@ async function handlePanelMessage(message) {
     case 'refreshDebug':
       refreshDebug(message.config || await chrome.storage.local.get(DEFAULT_CONFIG));
       break;
+    case 'prepareCurrentTab':
+      await prepareCurrentTab();
+      break;
     case 'startRun':
       startRun(message.instruction);
       break;
     case 'pause':
+      setRunState('paused', 'Pause requested', { source: 'side_panel', cause: 'pause.click' });
       runCommand('pause');
       break;
     case 'resume':
-      stopped = false;
+      stopRequestedExplicitly = false;
+      setRunState('running', 'Resume requested', { source: 'side_panel', cause: 'resume.click' });
       runCommand('resume');
       break;
     case 'stop':
       stopAll('userStop');
       break;
     case 'resumeHuman':
-      stopped = false;
+      stopRequestedExplicitly = false;
+      setRunState('running', 'Resume requested', { source: 'side_panel', cause: 'resumeHuman.click' });
       runCommand('resume');
+      break;
+    case 'handoffContinue':
+      await handleHandoffContinue();
+      break;
+    case 'observeCurrentPage':
+      await observeCurrentPage('manualObserve');
       break;
     case 'loadConfig':
       publishSavedConfig();
@@ -238,7 +351,7 @@ async function handlePanelMessage(message) {
       abortRecipeRun('abortedByUser');
       break;
     default:
-      publishState('error', `Unknown panel message: ${message.type}`);
+      setConnectionState('error', `Unknown panel message: ${message.type}`, { source: 'side_panel', cause: 'message.unknown' });
       break;
   }
 }
@@ -288,13 +401,27 @@ async function clearLocalRuntimeState() {
   lastRunStatus = null;
   lastAiError = '';
   lastConnectionError = '';
+  lastProtocolError = '';
+  lastWsCloseCode = 0;
+  lastWsCloseReason = '';
+  lastWsCloseWasClean = false;
+  lastWsCloseAt = '';
+  lastStateTransition = null;
+  targetTabId = null;
+  targetTabPinnedExplicitly = false;
+  lastTargetTabSnapshot = null;
+  lastObservedPage = null;
+  lastHandoffFingerprint = '';
+  stopRequestedExplicitly = false;
+  connectionStoppedByUser = false;
+  runState = 'idle';
   if (!connected) {
     connectionState = 'disconnected';
     reconnectBlocked = false;
     reconnectBlockedReason = '';
   }
   await persistRuntimeState();
-  publishState(connected ? 'connected' : 'disconnected', 'Local runtime state cleared');
+  setConnectionState(connected ? 'connected' : 'disconnected', 'Local runtime state cleared', { source: 'side_panel', cause: 'runtime.clear' });
   publishRuntimeSnapshot();
 }
 
@@ -302,6 +429,8 @@ function connect(config) {
   reconnectBlocked = false;
   reconnectBlockedReason = '';
   lastConnectionError = '';
+  lastProtocolError = '';
+  connectionStoppedByUser = false;
   return connectWebSocket(config, { manual: true });
 }
 
@@ -317,7 +446,7 @@ async function connectWebSocket(config, options = {}) {
   }
   if (reconnectBlocked && !options.manual) {
     const blockedReason = reconnectBlockedReason || lastConnectionError || 'Reconnect blocked until configuration changes.';
-    publishState('error', blockedReason);
+    setConnectionState(connectionState === 'tokenError' ? 'tokenError' : 'error', blockedReason, { source: 'service_worker', cause: 'connect.blocked' });
     throw new Error(blockedReason);
   }
   if (socket && socket.readyState === WebSocket.OPEN && connected) {
@@ -330,8 +459,9 @@ async function connectWebSocket(config, options = {}) {
 
   clearReconnectTimer();
   closeSocketOnly('reconnect');
-  stopped = false;
-  connectionState = 'connecting';
+  connectionStoppedByUser = false;
+  stopRequestedExplicitly = false;
+  setConnectionState('connecting', 'Connecting to bridge', { source: 'service_worker', cause: options.reason || 'connect.requested' });
   await validateConnectionConfig(config);
   const url = `ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension`;
 
@@ -339,19 +469,20 @@ async function connectWebSocket(config, options = {}) {
     socket = new WebSocket(url);
     socket.addEventListener('open', () => {
       connected = true;
-      connectionState = 'connected';
       connectingPromise = null;
       reconnectAttempt = 0;
       missedPongs = 0;
       lastConnectedAt = new Date().toISOString();
       lastSeenAt = lastConnectedAt;
-      publishState('connected', `Connected to ${url}`);
+      setConnectionState('connected', `Connected to ${url}`, { source: 'service_worker', cause: 'socket.open' });
       sendToEngine({
         type: 'extension.hello',
         protocolVersion: PROTOCOL_VERSION,
         clientId,
         extensionVersion: chrome.runtime.getManifest().version,
         browser: 'Chrome',
+        runtimeKind: EXTENSION_RUNTIME_MODE,
+        capabilities: EXTENSION_CAPABILITIES,
         token: config.token || '',
         resumeRunId: currentRunId || null
       });
@@ -361,21 +492,33 @@ async function connectWebSocket(config, options = {}) {
       resolve();
     });
     socket.addEventListener('message', (event) => handleEngineMessage(event.data));
-    socket.addEventListener('close', () => {
+    socket.addEventListener('close', (event) => {
       connected = false;
       connectingPromise = null;
       stopHeartbeat();
+      lastWsCloseCode = Number(event.code || 0);
+      lastWsCloseReason = String(event.reason || '');
+      lastWsCloseWasClean = Boolean(event.wasClean);
+      lastWsCloseAt = new Date().toISOString();
       if (reconnectBlocked) {
-        connectionState = connectionState === 'tokenError' || connectionState === 'protocolError' ? connectionState : 'error';
-        publishState('error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked');
+        const blockedState = connectionState === 'tokenError' || connectionState === 'protocolError' ? connectionState : 'error';
+        setConnectionState(blockedState, reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked', {
+          source: 'service_worker',
+          cause: 'socket.close.blocked'
+        });
         persistRuntimeState();
         resolve();
         return;
       }
-      connectionState = stopped ? 'stopped' : 'reconnecting';
-      publishState(connectionState, 'Bridge connection closed');
+      const nextState = connectionStoppedByUser ? 'disconnected' : 'reconnecting';
+      setConnectionState(nextState, connectionStoppedByUser ? 'Bridge disconnected by user' : 'Bridge connection closed', {
+        source: 'service_worker',
+        cause: connectionStoppedByUser ? 'socket.close.user' : 'socket.close.unexpected'
+      });
       persistRuntimeState();
-      scheduleReconnect('socketClose');
+      if (!connectionStoppedByUser) {
+        scheduleReconnect('socketClose');
+      }
       resolve();
     });
     socket.addEventListener('error', () => {
@@ -383,14 +526,16 @@ async function connectWebSocket(config, options = {}) {
       connectingPromise = null;
       stopHeartbeat();
       if (reconnectBlocked) {
-        publishState('error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked');
+        setConnectionState(connectionState === 'tokenError' ? 'tokenError' : 'error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked', {
+          source: 'service_worker',
+          cause: 'socket.error.blocked'
+        });
         persistRuntimeState();
         reject(new Error(reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked'));
         return;
       }
-      connectionState = 'error';
       lastConnectionError = 'Bridge WebSocket error';
-      publishState('error', 'Bridge WebSocket error');
+      setConnectionState('error', 'Bridge WebSocket error', { source: 'service_worker', cause: 'socket.error' });
       persistRuntimeState();
       scheduleReconnect('socketError');
       reject(new Error('Bridge WebSocket error'));
@@ -401,6 +546,7 @@ async function connectWebSocket(config, options = {}) {
 }
 
 function disconnect(reason) {
+  connectionStoppedByUser = true;
   reconnectBlocked = true;
   reconnectBlockedReason = reason || 'Disconnected by user';
   clearReconnectTimer();
@@ -408,9 +554,8 @@ function disconnect(reason) {
   socket = null;
   connected = false;
   connectingPromise = null;
-  connectionState = 'disconnected';
   stopHeartbeat();
-  publishState('disconnected', reason);
+  setConnectionState('disconnected', reason || 'Disconnected by user', { source: 'side_panel', cause: reason || 'disconnect.click' });
   persistRuntimeState();
 }
 
@@ -425,7 +570,7 @@ function closeSocketOnly(reason) {
 }
 
 function scheduleReconnect(reason) {
-  if (stopped || reconnectTimer || reconnectBlocked) {
+  if (connectionStoppedByUser || reconnectTimer || reconnectBlocked) {
     return;
   }
   reconnectAttempt += 1;
@@ -470,6 +615,7 @@ function blockReconnect(state, message) {
   connectingPromise = null;
   connectionState = state || 'error';
   lastConnectionError = reconnectBlockedReason;
+  lastProtocolError = reconnectBlockedReason;
   clearReconnectTimer();
   stopHeartbeat();
   persistRuntimeState();
@@ -535,6 +681,24 @@ async function startRun(instruction) {
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
   const url = `http://${config.host}:${config.port}/api/runs`;
   try {
+    const target = await getTargetTabForRun(instruction || '');
+    if (!target || !target.id) {
+      setRunState('error', 'no_target_tab_selected', { source: 'service_worker', cause: 'run.target.missing' });
+      publish({
+        type: 'runStarted',
+        ok: false,
+        body: {
+          ok: false,
+          error: 'no_target_tab_selected',
+          message: 'Abrí o prepará una pestaña web objetivo para que NEXA pueda operar. No voy a usar ChatGPT como target implícito.'
+        }
+      });
+      publishRuntimeSnapshot();
+      return;
+    }
+    targetTabId = target.id;
+    targetTabPinnedExplicitly = true;
+    rememberTargetTab(target, 'run.start');
     await connectWebSocket(config);
     const response = await fetch(url, {
       method: 'POST',
@@ -545,16 +709,19 @@ async function startRun(instruction) {
     currentRunId = body.runId || '';
     publish({ type: 'runStarted', ok: response.ok, body });
     if (!response.ok) {
-      publishState('error', body.message || body.error || 'Run rejected');
+      setRunState('error', body.message || body.error || 'Run rejected', { source: 'bridge', cause: 'run.start.rejected' });
+      return;
     }
+    stopRequestedExplicitly = false;
+    setRunState(body.status === 'error' ? 'error' : 'running', body.message || 'Run started', { source: 'bridge', cause: 'run.start.accepted' });
   } catch (error) {
-    publishState('error', String(error && error.message ? error.message : error));
+    setRunState('error', String(error && error.message ? error.message : error), { source: 'service_worker', cause: 'run.start.exception' });
   }
 }
 
 async function runCommand(command) {
   if (!currentRunId) {
-    publishState('error', 'No active run');
+    setRunState('error', 'No active run', { source: 'service_worker', cause: `run.${command}.missing` });
     return;
   }
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
@@ -564,19 +731,29 @@ async function runCommand(command) {
     const body = await response.json();
     publish({ type: 'runCommand', command, ok: response.ok, body });
   } catch (error) {
-    publishState('error', String(error && error.message ? error.message : error));
+    setRunState('error', String(error && error.message ? error.message : error), { source: 'service_worker', cause: `run.${command}.exception` });
   }
 }
 
 function stopAll(reason) {
-  stopped = true;
+  stopRequestedExplicitly = true;
+  setRunState('stopped', reason || 'userStop', { source: 'side_panel', cause: reason || 'stop.click', stopExplicit: true });
   abortRecipeRun(reason || 'userStop');
   notifyStopToTargetTab();
   if (currentRunId) {
     runCommand('stop');
   }
   sendToEngine({ type: 'run.stop', runId: currentRunId, reason });
-  publishState('stopped', reason);
+}
+
+function applyRemoteRunStop(reason) {
+  stopRequestedExplicitly = reason === 'userStop' || reason === 'agentStop' || reason === 'engineStop';
+  setRunState('stopped', reason || 'engineStop', { source: 'bridge', cause: 'run.stop', stopExplicit: stopRequestedExplicitly });
+  abortRecipeRun(reason || 'engineStop');
+  notifyStopToTargetTab();
+  currentRunId = '';
+  currentRequestId = '';
+  currentTool = '';
 }
 
 function handleEngineMessage(raw) {
@@ -584,7 +761,10 @@ function handleEngineMessage(raw) {
   try {
     message = JSON.parse(raw);
   } catch {
-    publishState('error', 'Invalid JSON from engine');
+    setConnectionState(connectionState === 'connected' ? 'connected' : 'error', 'Invalid JSON from engine', {
+      source: 'bridge',
+      cause: 'protocol.invalidJson'
+    });
     return;
   }
 
@@ -592,7 +772,7 @@ function handleEngineMessage(raw) {
   lastSeenAt = new Date().toISOString();
   persistRuntimeState();
   if (message.type === 'engine.hello') {
-    publishState('connected', 'Engine hello received');
+    setConnectionState('connected', 'Engine hello received', { source: 'bridge', cause: 'engine.hello' });
     publishRuntimeSnapshot();
     return;
   }
@@ -607,6 +787,7 @@ function handleEngineMessage(raw) {
 
   if (message.type === 'protocol.error') {
     lastConnectionError = message.message || message.error || 'Protocol error';
+    lastProtocolError = lastConnectionError;
     connectionState = message.error === 'invalid_token' ? 'tokenError' : 'protocolError';
     if (message.error === 'invalid_token' || message.error === 'protocol_version_mismatch') {
       blockReconnect(connectionState, lastConnectionError);
@@ -615,35 +796,45 @@ function handleEngineMessage(raw) {
         repairLocalTokenAfterAuthError().catch(() => {});
       }
     }
-    publishState('error', lastConnectionError);
+    setConnectionState(connectionState, lastConnectionError, { source: 'bridge', cause: `protocol.${message.error || 'error'}` });
     publishRuntimeSnapshot();
     return;
   }
 
   if (message.type === 'run.pause') {
-    publish({ type: 'humanIntervention', reason: message.reason, message: message.message });
-    publishState('paused', message.message || message.reason);
+    publishHumanIntervention(createHumanHandoffPayload(message.reason, message.message, lastObservedPage));
+    setRunState('paused', message.message || message.reason, { source: 'bridge', cause: 'run.pause' });
     return;
   }
 
   if (message.type === 'run.resume') {
-    publishState('running', 'Run resumed');
+    stopRequestedExplicitly = false;
+    setRunState('running', 'Run resumed', { source: 'bridge', cause: 'run.resume' });
     return;
   }
 
   if (message.type === 'run.status') {
-    lastRunStatus = message;
-    if (message.status === 'error') {
-      lastAiError = message.message || '';
+    const normalizedStatus = normalizeCoreRunStatus(message);
+    lastRunStatus = normalizedStatus;
+    if (normalizedStatus.aiError || normalizedStatus.provider === 'openai') {
+      lastAiError = normalizedStatus.message || normalizedStatus.aiError || '';
+    } else if (normalizedStatus.status === 'error') {
+      lastAiError = normalizedStatus.message || '';
     }
-    publish({ type: 'runStatus', message });
-    publishState(message.status || 'running', message.message || '');
+    publish({ type: 'runStatus', message: normalizedStatus });
+    setRunState(normalizedStatus.status || 'running', normalizedStatus.message || '', { source: 'bridge', cause: 'run.status' });
+    if (normalizedStatus.status === 'completed') {
+      currentRunId = '';
+      currentRequestId = '';
+      currentTool = '';
+      stopRequestedExplicitly = false;
+    }
     publishRuntimeSnapshot();
     return;
   }
 
   if (message.type === 'run.stop') {
-    stopAll(message.reason || 'engineStop');
+    applyRemoteRunStop(message.reason || 'engineStop');
     return;
   }
 
@@ -665,6 +856,7 @@ async function repairLocalTokenAfterAuthError() {
   reconnectBlocked = false;
   reconnectBlockedReason = '';
   lastConnectionError = '';
+  lastProtocolError = '';
   await connectWebSocket({ ...config, token: paired }, { manual: true });
 }
 
@@ -701,7 +893,7 @@ function stateTokenLoadedForRuntime(host, port, token) {
 }
 
 async function routeToolRequest(message) {
-  if (stopped) {
+  if (runState === 'stopped') {
     sendToolResult(message, false, null, 'Stopped');
     return;
   }
@@ -714,8 +906,8 @@ async function routeToolRequest(message) {
 
   try {
     if (message.tool === 'navigate') {
-      await navigate(message.args.url);
-      sendToolResult(message, true, { navigated: true }, null);
+      const navigationResult = await navigate(message.args.url);
+      sendToolResult(message, true, navigationResult || { navigated: true }, null);
       return;
     }
 
@@ -725,25 +917,43 @@ async function routeToolRequest(message) {
       return;
     }
 
-    const response = await chrome.tabs.sendMessage(tab.id, {
+    const response = await sendTabMessageWithRecovery(tab, {
       type: 'tool.execute',
       protocolVersion: PROTOCOL_VERSION,
+      runId: message.runId || currentRunId || '',
+      requestId: message.requestId || currentRequestId || '',
       tool: message.tool,
       args: message.args || {}
     });
 
-    if (response && response.success && response.result && response.result.hasCredentialLike) {
-      publish({ type: 'humanIntervention', reason: 'credentialRequired', message: 'Credential/login/2FA/captcha detected.' });
+    if (response && response.success && response.result) {
+      response.result.targetTabId = tab.id;
+      response.result.targetUrl = tab.url || response.result.url || '';
+      response.result.targetTitle = tab.title || response.result.title || '';
     }
-    sendToolResult(message, Boolean(response && response.success), response ? response.result : null, response ? response.error : 'No response');
+
+    if (message.tool === 'observePage' && response && response.success && response.result) {
+      lastObservedPage = response.result;
+    }
+
+    if (response && response.success && response.result && hasStrongCredentialSignal(response.result)) {
+      publishHumanIntervention(createHumanHandoffPayload('credentialRequired', 'NEXA llego a una pantalla de acceso o validacion humana.', response.result));
+    }
+    sendToolResult(message, Boolean(response && response.success), response ? response.result : null, response ? response.error : 'No response', response ? response.errorCode : '');
   } catch (error) {
-    sendToolResult(message, false, null, String(error && error.message ? error.message : error));
+    const errorText = String(error && error.message ? error.message : error);
+    if (/Sensitive submit blocked|credential|captcha|2fa|password/i.test(errorText)) {
+      publishHumanIntervention(createHumanHandoffPayload('credentialRequired', 'NEXA se detuvo antes de una accion sensible y necesita que la resuelvas manualmente.', lastObservedPage));
+      setRunState('paused', 'Intervencion humana requerida', { source: 'service_worker', cause: 'tool.sensitive' });
+    }
+    sendToolResult(message, false, null, errorText, error && error.errorCode ? error.errorCode : '');
   }
 }
 
 function validateToolMessage(message) {
   const allowed = new Set([
     'observePage',
+    'pingContentScript',
     'getElementCatalog',
     'resolveTarget',
     'getCurrentTab',
@@ -753,6 +963,7 @@ function validateToolMessage(message) {
     'readElement',
     'click',
     'clickElement',
+    'submitElement',
     'setValue',
     'setElementValue',
     'focusElement',
@@ -762,6 +973,8 @@ function validateToolMessage(message) {
     'waitForSelector',
     'highlight',
     'highlightElement',
+    'sortResults',
+    'openCheapestResult',
     'clearHighlight',
     'pauseForHuman',
     'stop'
@@ -783,21 +996,26 @@ async function navigate(url) {
     throw new Error('URL rejected');
   }
 
-  const tab = await resolveTargetTab({ allowCreate: true });
+  const tab = await resolveTargetTab({ allowCreate: false, preferActive: false });
   if (tab && tab.id) {
     targetTabId = tab.id;
+    rememberTargetTab(tab, 'navigate');
     await chrome.tabs.update(tab.id, { url, active: true });
     await waitForTabComplete(tab.id, 15000);
-    return;
+    const updated = await chrome.tabs.get(tab.id).catch(() => null);
+    if (updated) {
+      rememberTargetTab(updated, 'navigate.complete');
+    }
+    return {
+      navigated: true,
+      tabId: String(tab.id),
+      url,
+      targetUrl: updated && updated.url ? updated.url : url,
+      openedNewTab: false
+    };
   }
 
-  const created = await chrome.tabs.create({ url, active: true });
-  if (!created || !created.id) {
-    throw new Error('Unable to create target tab');
-  }
-
-  targetTabId = created.id;
-  await waitForTabComplete(created.id, 15000);
+  throw new Error('no_target_tab_selected');
 }
 
 function waitForTabComplete(tabId, timeoutMs) {
@@ -824,28 +1042,75 @@ function waitForTabComplete(tabId, timeoutMs) {
   });
 }
 
-function sendToolResult(request, success, result, error) {
-  lastToolResult = { request, success, result, error, at: new Date().toISOString() };
-  sendToEngine({
+function sendToolResult(request, success, result, error, errorCode = '') {
+  const relayResult = {
     type: 'tool.result',
     runId: request.runId,
     requestId: request.requestId,
+    actionId: request.actionId || request.requestId || '',
+    correlationId: request.correlationId || request.requestId || request.runId || '',
+    runtimeKind: EXTENSION_RUNTIME_MODE,
+    source: 'extension-relay',
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    evidenceRefs: [],
+    redacted: true,
     success,
     result,
-    error
-  });
-  publish({ type: 'toolResult', request, success, result, error });
+    error,
+    errorCode
+  };
+  lastToolResult = { request, ...relayResult, at: new Date().toISOString() };
+  sendToEngine(relayResult);
+  publish({ type: 'toolResult', request, ...relayResult });
   publishRuntimeSnapshot();
+}
+
+function normalizeCoreRunStatus(message) {
+  const normalized = {
+    ...message,
+    runtimeKind: message.runtimeKind || 'core-browser-executor',
+    source: message.source || 'core',
+    coreGoverned: true,
+    redacted: message.redacted !== false
+  };
+  if ((message.status || '').toLowerCase() !== 'completed') {
+    return normalized;
+  }
+  if (isVerificationStronglyVerified(message)) {
+    normalized.verificationStatus = message.verificationStatus || 'Verified';
+    return normalized;
+  }
+  return {
+    ...normalized,
+    status: 'uncertain',
+    verificationStatus: message.verificationStatus || 'Uncertain',
+    errorCode: message.errorCode || 'verification_required',
+    message: message.message || 'Core-governed mode requires Verified status before completion.'
+  };
+}
+
+function isVerificationStronglyVerified(message) {
+  const status = String(
+    message.verificationStatus ||
+    (message.verification && message.verification.status) ||
+    (message.result && message.result.verificationStatus) ||
+    ''
+  ).toLowerCase();
+  return status === 'verified';
 }
 
 function sendToEngine(message) {
   if (!socket || socket.readyState !== WebSocket.OPEN) {
     if (reconnectBlocked) {
-      publishState('error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked');
+      setConnectionState(connectionState === 'tokenError' ? 'tokenError' : 'error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked', {
+        source: 'service_worker',
+        cause: 'send.blocked'
+      });
       return;
     }
     enqueueOutgoing(message);
-    publishState('reconnecting', 'Not connected to engine; message queued');
+    setConnectionState('reconnecting', 'Not connected to engine; message queued', { source: 'service_worker', cause: 'send.queued' });
     scheduleReconnect('sendToEngine');
     return;
   }
@@ -900,8 +1165,7 @@ function sendPing() {
     return;
   }
   if (lastPingSeq && missedPongs >= 2) {
-    connectionState = 'degraded';
-    publishState('reconnecting', 'Heartbeat degraded; reconnecting');
+    setConnectionState('reconnecting', 'Heartbeat degraded; reconnecting', { source: 'service_worker', cause: 'heartbeat.missed' });
     closeSocketOnly('heartbeat missed');
     scheduleReconnect('heartbeatMissed');
     return;
@@ -919,14 +1183,76 @@ function publish(message) {
   }
 }
 
-function publishState(status, message) {
-  publish({ type: 'state', status, message, connected, stopped, currentRunId });
+function publishState(status, message, details = {}) {
+  lastStateTransition = {
+    timestamp: new Date().toISOString(),
+    source: details.source || 'service_worker',
+    cause: details.cause || '',
+    status,
+    message,
+    previousConnectionState: details.previousConnectionState ?? connectionState,
+    newConnectionState: details.newConnectionState ?? connectionState,
+    previousRunState: details.previousRunState ?? runState,
+    newRunState: details.newRunState ?? runState,
+    wsCloseCode: lastWsCloseCode,
+    wsCloseReason: lastWsCloseReason,
+    wsCloseWasClean: lastWsCloseWasClean,
+    protocolError: lastProtocolError,
+    stopExplicit: details.stopExplicit ?? stopRequestedExplicitly
+  };
+  publish({
+    type: 'state',
+    status,
+    message,
+    connected,
+    currentRunId,
+    currentRequestId,
+    connectionStatus: connectionState,
+    runStatus: runState,
+    source: lastStateTransition.source,
+    cause: lastStateTransition.cause,
+    previousConnectionState: lastStateTransition.previousConnectionState,
+    newConnectionState: lastStateTransition.newConnectionState,
+    previousRunState: lastStateTransition.previousRunState,
+    newRunState: lastStateTransition.newRunState,
+    wsCloseCode: lastWsCloseCode,
+    wsCloseReason: lastWsCloseReason,
+    wsCloseWasClean: lastWsCloseWasClean,
+    protocolError: lastProtocolError,
+    stopExplicit: lastStateTransition.stopExplicit
+  });
   publishRuntimeSnapshot();
+}
+
+function setConnectionState(nextState, message, details = {}) {
+  const previousConnectionState = connectionState;
+  const previousRunState = runState;
+  connectionState = nextState;
+  publishState(nextState, message, {
+    ...details,
+    previousConnectionState,
+    newConnectionState: nextState,
+    previousRunState,
+    newRunState: runState
+  });
+}
+
+function setRunState(nextState, message, details = {}) {
+  const previousConnectionState = connectionState;
+  const previousRunState = runState;
+  runState = nextState;
+  publishState(nextState, message, {
+    ...details,
+    previousConnectionState,
+    newConnectionState: connectionState,
+    previousRunState,
+    newRunState: nextState
+  });
 }
 
 async function publishPageSnapshot() {
   try {
-    const tab = await resolveTargetTab();
+    const tab = await resolveTargetTab({ preferActive: shouldPreferActiveTab() });
     publish({
       type: 'page',
       page: {
@@ -954,11 +1280,227 @@ function restrictedUrl(url) {
   return /^(chrome|edge|extension):\/\//i.test(url);
 }
 
+function buildContentScriptUnavailableError(tab) {
+  return {
+    ok: false,
+    error: 'content_script_unavailable',
+    message: 'No content script is available in the active tab. Reload this page or choose a normal web tab.',
+    tabId: tab && tab.id ? tab.id : null,
+    url: tab && tab.url ? tab.url : ''
+  };
+}
+
+function isReceivingEndMissing(error) {
+  const text = String(error && error.message ? error.message : error || '');
+  return /Receiving end does not exist/i.test(text);
+}
+
+function isTabAllowed(tab) {
+  return Boolean(tab && tab.id && !restrictedUrl(tab.url || ''));
+}
+
+function rememberContentScriptOk(tab, message = 'Content script active') {
+  lastContentScriptStatus = 'active';
+  lastContentScriptMessage = message;
+  lastContentScriptLastSeenAt = new Date().toISOString();
+  lastContentScriptLastUrl = tab && tab.url ? tab.url : '';
+  lastContentScriptLastError = '';
+  lastSendMessageError = '';
+}
+
+function rememberContentScriptError(errorCode, message, tab, sendMessageError = '') {
+  lastContentScriptStatus = 'error';
+  lastContentScriptMessage = message || errorCode || 'Content script error';
+  lastContentScriptLastError = lastContentScriptMessage;
+  lastContentScriptLastUrl = tab && tab.url ? tab.url : '';
+  if (sendMessageError) {
+    lastSendMessageError = sendMessageError;
+  }
+}
+
+function makeChromeSendMessageError(error, tab) {
+  const text = String(error && error.message ? error.message : error || chrome.runtime.lastError && chrome.runtime.lastError.message || 'chrome.tabs.sendMessage failed');
+  rememberContentScriptError('chrome_send_message_failed', text, tab, text);
+  return {
+    success: false,
+    errorCode: 'chrome_send_message_failed',
+    error: text,
+    result: {
+      ok: false,
+      errorCode: 'chrome_send_message_failed',
+      error: text,
+      lastSendMessageError: text,
+      tabId: tab && tab.id ? tab.id : null,
+      url: tab && tab.url ? tab.url : ''
+    }
+  };
+}
+
+async function ensureContentScript(tabId) {
+  if (!tabId) {
+    lastContentScriptStatus = 'error';
+    lastContentScriptMessage = 'Active tab missing';
+    return { ok: false, error: 'invalid_tab', message: 'No active tab available.', tabId: null, url: '' };
+  }
+
+  let tab;
+  try {
+    tab = await chrome.tabs.get(tabId);
+  } catch {
+    lastContentScriptStatus = 'error';
+    lastContentScriptMessage = 'Active tab not found';
+    return { ok: false, error: 'invalid_tab', message: 'No active tab available.', tabId, url: '' };
+  }
+
+  lastResolvedTabAllowed = isTabAllowed(tab);
+  if (!lastResolvedTabAllowed) {
+    lastContentScriptStatus = 'unavailable';
+    lastContentScriptMessage = 'Restricted or unavailable tab';
+    return {
+      ok: false,
+      error: 'restricted_tab',
+      message: 'Open a normal web tab so NEXA can operate.',
+      tabId,
+      url: tab.url || ''
+    };
+  }
+
+  try {
+    const ping = await chrome.tabs.sendMessage(tabId, {
+      type: 'nexa.content.ping',
+      protocolVersion: PROTOCOL_VERSION
+    });
+    if (ping && ping.ok && Array.isArray(ping.capabilities) && ping.capabilities.includes('observePageLite')) {
+      rememberContentScriptOk(tab, 'Content script active');
+      return { ok: true, tabId, url: tab.url || '', injected: false, ping };
+    }
+    lastContentScriptMessage = 'Content script active but missing required capabilities; reinjecting';
+  } catch (error) {
+    if (!isReceivingEndMissing(error)) {
+      lastContentScriptMessage = String(error && error.message ? error.message : error);
+      rememberContentScriptError('content_script_error', lastContentScriptMessage, tab, lastContentScriptMessage);
+      return {
+        ok: false,
+        error: 'content_script_error',
+        message: lastContentScriptMessage,
+        tabId,
+        url: tab.url || ''
+      };
+    }
+  }
+
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['content_script.js']
+    });
+    await delay(150);
+    const ping = await chrome.tabs.sendMessage(tabId, {
+      type: 'nexa.content.ping',
+      protocolVersion: PROTOCOL_VERSION
+    });
+    if (ping && ping.ok && Array.isArray(ping.capabilities) && ping.capabilities.includes('observePageLite')) {
+      lastContentScriptStatus = 'injected';
+      lastContentScriptMessage = 'Content script injected';
+      lastContentScriptLastSeenAt = new Date().toISOString();
+      lastContentScriptLastUrl = tab.url || '';
+      lastContentScriptLastError = '';
+      lastSendMessageError = '';
+      lastContentScriptInjectedAt = new Date().toISOString();
+      return { ok: true, tabId, url: tab.url || '', injected: true };
+    }
+  } catch (error) {
+    lastContentScriptMessage = String(error && error.message ? error.message : error);
+    rememberContentScriptError('chrome_send_message_failed', lastContentScriptMessage, tab, lastContentScriptMessage);
+  }
+
+  const unavailable = buildContentScriptUnavailableError(tab);
+  lastContentScriptStatus = 'unavailable';
+  lastContentScriptMessage = unavailable.message;
+  return unavailable;
+}
+
+async function sendTabMessageWithRecovery(tab, message) {
+  const ensured = await ensureContentScript(tab.id);
+  if (!ensured.ok) {
+    return {
+      success: false,
+      error: ensured.message || ensured.error || 'Content script unavailable',
+      errorCode: ensured.error || 'content_script_unavailable',
+      result: {
+        ok: false,
+        errorCode: ensured.error || 'content_script_unavailable',
+        error: ensured.message || ensured.error || 'Content script unavailable',
+        tabId: tab && tab.id ? tab.id : null,
+        url: tab && tab.url ? tab.url : ''
+      }
+    };
+  }
+
+  try {
+    if (message && message.tool === 'observePage') {
+      lastObserveRequestAt = new Date().toISOString();
+      lastObserveError = '';
+    }
+    const response = await chrome.tabs.sendMessage(tab.id, message);
+    rememberContentScriptOk(tab, 'Content script responded');
+    if (message && message.tool === 'observePage') {
+      lastObserveResultAt = new Date().toISOString();
+    }
+    return response;
+  } catch (error) {
+    if (!isReceivingEndMissing(error)) {
+      const failed = makeChromeSendMessageError(error, tab);
+      if (message && message.tool === 'observePage') {
+        lastObserveError = failed.error;
+      }
+      return failed;
+    }
+
+    const retried = await ensureContentScript(tab.id);
+    if (!retried.ok) {
+      const failed = makeChromeSendMessageError(retried.message || retried.error || 'Content script unavailable', tab);
+      if (message && message.tool === 'observePage') {
+        lastObserveError = failed.error;
+      }
+      return failed;
+    }
+    try {
+      const response = await chrome.tabs.sendMessage(tab.id, message);
+      rememberContentScriptOk(tab, 'Content script responded after injection');
+      if (message && message.tool === 'observePage') {
+        lastObserveResultAt = new Date().toISOString();
+      }
+      return response;
+    } catch (retryError) {
+      const failed = makeChromeSendMessageError(retryError, tab);
+      if (message && message.tool === 'observePage') {
+        lastObserveError = failed.error;
+      }
+      return failed;
+    }
+  }
+}
+
 async function resolveTargetTab(options = {}) {
+  if (options.preferActive) {
+    const activeTab = await resolveActiveWebTab({ includeChatGpt: Boolean(options.includeChatGpt) });
+    if (activeTab) {
+      if (options.pinTarget !== false) {
+        targetTabId = activeTab.id;
+        targetTabPinnedExplicitly = Boolean(options.explicit);
+        rememberTargetTab(activeTab, options.explicit ? 'explicit.active' : 'active');
+      }
+      lastResolvedTabAllowed = true;
+      return activeTab;
+    }
+  }
+
   if (targetTabId) {
     try {
       const tab = await chrome.tabs.get(targetTabId);
       if (tab && tab.id && !restrictedUrl(tab.url || '')) {
+        rememberTargetTab(tab, 'pinned');
         return tab;
       }
     } catch {
@@ -967,23 +1509,170 @@ async function resolveTargetTab(options = {}) {
   }
 
   const candidates = await chrome.tabs.query({});
-  const preferred = candidates.find((tab) => tab.active && !restrictedUrl(tab.url || '') && tab.id);
+  const preferred = candidates.find((tab) => tab.active && isTabImplicitTargetCandidate(tab));
   if (preferred) {
     targetTabId = preferred.id;
+    targetTabPinnedExplicitly = false;
+    rememberTargetTab(preferred, 'active.implicit');
+    lastResolvedTabAllowed = true;
     return preferred;
   }
 
-  const anyAllowed = candidates.find((tab) => !restrictedUrl(tab.url || '') && tab.id);
+  const anyAllowed = candidates.find((tab) => isTabImplicitTargetCandidate(tab));
   if (anyAllowed) {
     targetTabId = anyAllowed.id;
+    targetTabPinnedExplicitly = false;
+    rememberTargetTab(anyAllowed, 'fallback.implicit');
+    lastResolvedTabAllowed = true;
     return anyAllowed;
   }
 
   if (options.allowCreate) {
+    lastResolvedTabAllowed = false;
     return null;
   }
 
+  lastResolvedTabAllowed = false;
   return null;
+}
+
+async function resolveActiveWebTab(options = {}) {
+  const activeTabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const allowed = (tab) => isTabAllowed(tab) && (options.includeChatGpt || !isChatGptTab(tab));
+  const preferred = activeTabs.find((tab) => allowed(tab));
+  if (preferred) {
+    return preferred;
+  }
+
+  const allTabs = await chrome.tabs.query({});
+  return allTabs.find((tab) => tab.active && allowed(tab)) ||
+    allTabs.find((tab) => allowed(tab)) ||
+    null;
+}
+
+async function getTargetTabForRun(instruction) {
+  const allTabs = await chrome.tabs.query({});
+  const desired = inferDesiredTargetSite(instruction);
+  if (desired) {
+    const matching = allTabs.find((tab) => isTabAllowed(tab) && desired.hosts.some((host) => String(tab.url || '').includes(host)));
+    if (matching) {
+      return matching;
+    }
+  }
+
+  if (targetTabPinnedExplicitly && targetTabId) {
+    try {
+      const pinned = await chrome.tabs.get(targetTabId);
+      if (isTabAllowed(pinned) && !isChatGptTab(pinned)) {
+        return pinned;
+      }
+    } catch {
+      targetTabId = null;
+      targetTabPinnedExplicitly = false;
+    }
+  }
+
+  const activeTabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const activeAllowed = activeTabs.find((tab) => isTabImplicitTargetCandidate(tab));
+  if (activeAllowed) {
+    return activeAllowed;
+  }
+
+  const lastMatching = allTabs.find((tab) => isTabImplicitTargetCandidate(tab) && desired && desired.hosts.some((host) => String(tab.url || '').includes(host)));
+  if (lastMatching) {
+    return lastMatching;
+  }
+
+  return allTabs.find((tab) => isTabImplicitTargetCandidate(tab)) || null;
+}
+
+function inferDesiredTargetSite(instruction) {
+  const text = normalizeText(instruction || '');
+  if (/mercado\s*libre|mercadolibre|ml argentina/.test(text)) {
+    return { label: 'Mercado Libre Argentina', hosts: ['mercadolibre.com.ar', 'listado.mercadolibre.com.ar'] };
+  }
+  if (/\b(?:chatgpt|openai)\b/.test(text)) {
+    return { label: 'ChatGPT', hosts: ['chatgpt.com'] };
+  }
+  return null;
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isTabImplicitTargetCandidate(tab) {
+  return isTabAllowed(tab) && !isChatGptTab(tab);
+}
+
+function isChatGptTab(tab) {
+  return /^https:\/\/chatgpt\.com\//i.test(String(tab && tab.url ? tab.url : ''));
+}
+
+function rememberTargetTab(tab, reason) {
+  if (!tab || !tab.id) {
+    return;
+  }
+  lastTargetTabSnapshot = {
+    tabId: String(tab.id),
+    url: tab.url || '',
+    title: tab.title || '',
+    active: Boolean(tab.active),
+    allowed: isTabAllowed(tab),
+    reason,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+async function handleLearningTabUpdated(tabId, changeInfo, tab) {
+  if (!learningSession || learningSession.learningState !== 'recording' || !learningSession.startTabId || tabId !== learningSession.startTabId) {
+    return;
+  }
+  if (changeInfo.status !== 'complete' || !tab || restrictedUrl(tab.url || '')) {
+    return;
+  }
+
+  await appendLearningNavigationIfNeeded(tab.url || '', tab.title || '', learningSession.lastKnownUrl || '');
+  await sendLearningModeToTab(true, tabId);
+  publishLearningState();
+}
+
+async function appendLearningNavigationIfNeeded(url, title, previousUrl) {
+  if (!learningSession || !url || restrictedUrl(url)) {
+    return;
+  }
+  if (learningSession.lastKnownUrl === url && Array.isArray(learningSession.steps) && learningSession.steps.length > 0) {
+    return;
+  }
+
+  const step = {
+    timestamp: new Date().toISOString(),
+    actionType: 'navigate',
+    url,
+    title,
+    previousUrl: previousUrl || learningSession.lastKnownUrl || '',
+    target: null,
+    value: '',
+    valueRedacted: false,
+    eventMeta: {},
+    verificationHint: {
+      beforeUrl: previousUrl || learningSession.lastKnownUrl || '',
+      expectedUrlChange: true
+    }
+  };
+
+  learningSession.steps.push(step);
+  learningSession.updatedAt = step.timestamp;
+  learningSession.lastKnownUrl = url;
+  learningSession.activeTabUrl = url;
+  learningSession.capturedEventCount = learningSession.steps.length;
+  learningSession.lastEventSummary = summarizeLearningEvent(step);
+  await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
 }
 
 function notifyStopToTargetTab() {
@@ -991,14 +1680,25 @@ function notifyStopToTargetTab() {
     return;
   }
 
-  chrome.tabs.sendMessage(targetTabId, {
-    type: 'local.stop',
-    protocolVersion: PROTOCOL_VERSION
+  chrome.tabs.get(targetTabId).then((tab) => {
+    if (!isTabAllowed(tab)) {
+      return;
+    }
+    return sendTabMessageWithRecovery(tab, {
+      type: 'local.stop',
+      protocolVersion: PROTOCOL_VERSION,
+      runId: currentRunId || ''
+    }).catch(() => {});
   }).catch(() => {});
 }
 
 async function startLearning(payload) {
-  const tab = await resolveTargetTab({ allowCreate: false });
+  const tab = await resolveActiveWebTab();
+  if (!tab || !tab.id) {
+    publish({ type: 'recipeError', message: 'Abri una pestaña web normal antes de comenzar aprendizaje.' });
+    return;
+  }
+  targetTabId = tab.id;
   learningSession = {
     recipeId: `recipe-${Date.now().toString(36)}`,
     name: payload.name || 'Nueva receta',
@@ -1006,20 +1706,29 @@ async function startLearning(payload) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     startUrl: tab ? tab.url || '' : '',
+    startTabId: tab.id,
+    lastKnownUrl: tab.url || '',
+    activeTabUrl: tab.url || '',
     steps: [],
     parameters: [],
     sensitiveFields: [],
     humanCheckpoints: [],
+    capturedEventCount: 0,
+    lastEventSummary: '',
     recording: true,
     learningState: 'recording'
   };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
-  await sendLearningModeToTab(true);
+  await sendLearningModeToTab(true, tab.id);
+  await appendLearningNavigationIfNeeded(tab.url || '', tab.title || '', '');
   publishLearningState();
 }
 
 async function stopLearning() {
   if (learningSession) {
+    if (!Array.isArray(learningSession.steps) || learningSession.steps.length === 0) {
+      publish({ type: 'recipeError', message: 'No se capturaron acciones. La receta no puede guardarse todavía.' });
+    }
     learningSession = {
       ...learningSession,
       recording: false,
@@ -1028,7 +1737,7 @@ async function stopLearning() {
     };
     await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
   }
-  await sendLearningModeToTab(false);
+  await sendLearningModeToTab(false, learningSession && learningSession.startTabId ? learningSession.startTabId : null);
   publishLearningState();
 }
 
@@ -1044,7 +1753,7 @@ async function pauseLearning() {
     updatedAt: new Date().toISOString()
   };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
-  await sendLearningModeToTab(false);
+  await sendLearningModeToTab(false, learningSession.startTabId || null);
   publish({ type: 'learningNotice', message: 'Aprendizaje pausado. Podes navegar o buscar sin que NEXA lo grabe.' });
   publishLearningState();
 }
@@ -1061,26 +1770,53 @@ async function resumeLearning() {
     updatedAt: new Date().toISOString()
   };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
-  await sendLearningModeToTab(true);
+  await sendLearningModeToTab(true, learningSession.startTabId || null);
   publish({ type: 'learningNotice', message: 'Aprendizaje reanudado. NEXA vuelve a capturar tus acciones.' });
   publishLearningState();
 }
 
 async function clearLearningDraft() {
+  const learningTabId = learningSession && learningSession.startTabId ? learningSession.startTabId : null;
   learningSession = null;
   await chrome.storage.local.remove(LEARNING_DRAFT_KEY);
-  await sendLearningModeToTab(false);
+  await sendLearningModeToTab(false, learningTabId);
   publishLearningState();
+}
+
+async function prepareCurrentTab() {
+  const tab = await resolveActiveWebTab({ includeChatGpt: true });
+  if (!tab || !tab.id) {
+    publish({ type: 'prepareTabResult', ok: false, error: 'invalid_tab', message: 'Open a normal web tab so NEXA can operate.' });
+    publishRuntimeSnapshot();
+    return;
+  }
+
+  targetTabId = tab.id;
+  targetTabPinnedExplicitly = true;
+  rememberTargetTab(tab, 'prepareCurrentTab');
+  const result = await ensureContentScript(tab.id);
+  publish({
+    type: 'prepareTabResult',
+    ...result
+  });
+  publishRuntimeSnapshot();
 }
 
 async function handleLearningEvent(event, sender) {
   if (!learningSession || !learningSession.recording || learningSession.learningState === 'paused' || !event) {
     return;
   }
+  if (learningSession.startTabId && sender.tab && sender.tab.id && sender.tab.id !== learningSession.startTabId) {
+    return;
+  }
 
   const step = sanitizeLearningStep(event, sender);
   learningSession.steps.push(step);
   learningSession.updatedAt = new Date().toISOString();
+  learningSession.activeTabUrl = step.url || learningSession.activeTabUrl || '';
+  learningSession.lastKnownUrl = step.url || learningSession.lastKnownUrl || '';
+  learningSession.capturedEventCount = Array.isArray(learningSession.steps) ? learningSession.steps.length : 0;
+  learningSession.lastEventSummary = summarizeLearningEvent(step);
 
   if (step.target && Array.isArray(step.target.riskFlags)) {
     for (const risk of step.target.riskFlags) {
@@ -1135,6 +1871,19 @@ function sanitizeLearningStep(event, sender) {
   };
 }
 
+function summarizeLearningEvent(step) {
+  if (!step) {
+    return '';
+  }
+  if (step.actionType === 'navigate') {
+    return `navigate ${step.url || ''}`.trim();
+  }
+  const label = step.target && (step.target.accessibleName || step.target.visibleText)
+    ? step.target.accessibleName || step.target.visibleText
+    : step.url || '';
+  return `${step.actionType || 'event'} ${label}`.trim();
+}
+
 async function saveLearningRecipe(payload) {
   if (!learningSession) {
     publish({ type: 'recipeError', message: 'No learning draft available.' });
@@ -1142,6 +1891,11 @@ async function saveLearningRecipe(payload) {
   }
 
   const recipe = recipeFromLearningDraft(learningSession, payload);
+  if (!Array.isArray(recipe.steps) || recipe.steps.length === 0) {
+    publish({ type: 'recipeError', message: 'Esta receta no tiene pasos. Captura acciones reales antes de guardar.' });
+    publishLearningState();
+    return;
+  }
   await upsertRecipe(recipe);
   learningSession = { ...recipe, recording: false, learningState: 'saved' };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
@@ -1223,19 +1977,39 @@ function inferParameters(steps) {
   return recipeFromLearningDraft({ steps }, {}).parameters;
 }
 
-async function sendLearningModeToTab(enabled) {
-  const tab = await resolveTargetTab({ allowCreate: false });
+async function sendLearningModeToTab(enabled, preferredTabId = null) {
+  const tab = preferredTabId
+    ? await chrome.tabs.get(preferredTabId).catch(() => null)
+    : await resolveActiveWebTab();
   if (!tab || !tab.id || restrictedUrl(tab.url || '')) {
     return;
   }
 
-  await chrome.tabs.sendMessage(tab.id, {
+  await sendTabMessageWithRecovery(tab, {
     type: enabled ? 'learning.start' : 'learning.stop',
     protocolVersion: PROTOCOL_VERSION
   }).catch(() => {});
 }
 
 async function startRecipeRun(recipeId, parameters) {
+  if (!LEGACY_RUNNER_ENABLED) {
+    recipeRunner = null;
+    publish({
+      type: 'recipeRunState',
+      run: {
+        recipeId,
+        status: 'blocked',
+        runtimeKind: EXTENSION_RUNTIME_MODE,
+        coreGoverned: true,
+        legacyRunnerEnabled: LEGACY_RUNNER_ENABLED,
+        errorCode: 'legacy_runner_disabled',
+        message: 'Recipe execution is core-governed. The extension companion cannot own or complete runs.'
+      }
+    });
+    publishRuntimeSnapshot();
+    return;
+  }
+
   const recipes = await readRecipes();
   const recipe = recipes.find((item) => item.recipeId === recipeId);
   if (!recipe) {
@@ -1283,6 +2057,23 @@ async function startRecipeRun(recipeId, parameters) {
 }
 
 async function continueRecipeRun() {
+  if (!LEGACY_RUNNER_ENABLED) {
+    recipeRunner = null;
+    publish({
+      type: 'recipeRunState',
+      run: {
+        status: 'blocked',
+        runtimeKind: EXTENSION_RUNTIME_MODE,
+        coreGoverned: true,
+        legacyRunnerEnabled: LEGACY_RUNNER_ENABLED,
+        errorCode: 'legacy_runner_disabled',
+        message: 'Legacy recipe runner is disabled in core-governed companion mode.'
+      }
+    });
+    publishRuntimeSnapshot();
+    return;
+  }
+
   if (!recipeRunner || recipeRunner.status !== 'running') {
     return;
   }
@@ -1452,11 +2243,53 @@ async function executeTabTool(tool, args) {
   if (!tab || !tab.id || restrictedUrl(tab.url || '')) {
     throw new Error('Restricted or unavailable tab');
   }
-  const response = await chrome.tabs.sendMessage(tab.id, { type: 'tool.execute', protocolVersion: PROTOCOL_VERSION, tool, args: args || {} });
+  const response = await sendTabMessageWithRecovery(tab, { type: 'tool.execute', protocolVersion: PROTOCOL_VERSION, tool, args: args || {} });
   if (!response || !response.success) {
     throw new Error(response && response.error ? response.error : `${tool} failed`);
   }
+  if (tool === 'observePage') {
+    lastObservedPage = response.result || null;
+  }
   return response.result;
+}
+
+async function observeCurrentPage(reason, options = {}) {
+  try {
+    const result = await executeTabTool('observePage', {});
+    const handoff = options.includeHandoff === false ? null : createResumeHandoff(result, reason);
+    publish({ type: 'observeCurrentPageResult', ok: true, result, handoff, reason });
+    publishRuntimeSnapshot();
+    return result;
+  } catch (error) {
+    const message = String(error && error.message ? error.message : error);
+    publish({ type: 'observeCurrentPageResult', ok: false, error: 'observe_failed', message, reason });
+    throw error;
+  }
+}
+
+async function handleHandoffContinue() {
+  const observation = await observeCurrentPage('handoffContinue');
+  const fingerprint = buildObservationFingerprint(observation);
+  if (fingerprint && fingerprint === lastHandoffFingerprint && looksLikeAccessScreen(observation)) {
+    publishHumanIntervention({
+      status: 'Estoy esperando que completes algo',
+      whatHappened: 'Sigo viendo la misma pantalla de acceso.',
+      whatDid: 'Reobserve la pagina antes de repetir cualquier accion.',
+      whatSee: describeObservation(observation),
+      whatNeed: 'Si todavia falta completar algo, hacelo manualmente. Si ya terminaste, verifica que la pagina haya cambiado o indicame el proximo paso.',
+      bannerMessage: 'NEXA sigue viendo la misma pantalla de acceso. Completala manualmente y luego volve a continuar.',
+      timeline: 'Reobserve la pagina y sigo esperando intervencion humana',
+      reason: 'credentialRequired'
+    });
+    setRunState('paused', 'Sigo viendo la misma pantalla de acceso', { source: 'service_worker', cause: 'handoff.sameScreen' });
+    return;
+  }
+
+  if (currentRunId) {
+    stopRequestedExplicitly = false;
+    setRunState('running', 'Reobserve la pagina y continue desde el nuevo estado', { source: 'side_panel', cause: 'handoff.continue' });
+    runCommand('resume');
+  }
 }
 
 async function waitForRecipeCondition(step) {
@@ -1596,6 +2429,102 @@ function publishRecipeRunState() {
   publishRuntimeSnapshot();
 }
 
+function publishHumanIntervention(handoff) {
+  const payload = handoff && handoff.handoff ? handoff.handoff : handoff;
+  lastHandoffFingerprint = payload && payload.fingerprint ? payload.fingerprint : lastHandoffFingerprint;
+  publish({ type: 'humanIntervention', handoff: payload, reason: payload && payload.reason ? payload.reason : 'humanIntervention', message: payload && payload.whatHappened ? payload.whatHappened : '' });
+}
+
+function createHumanHandoffPayload(reason, message, observation) {
+  const whatSee = observation ? describeObservation(observation) : 'Estoy viendo una pagina que requiere validacion humana.';
+  const payload = {
+    status: 'Estoy esperando que completes algo',
+    whatHappened: message || 'NEXA llego a un punto donde la pagina requiere una accion humana.',
+    whatDid: 'Observe la pagina y me detuve antes de tocar credenciales, captcha, 2FA o una accion sensible.',
+    whatSee,
+    whatNeed: 'Completa manualmente lo que corresponda y luego presiona "Ya lo resolvi, continuar".',
+    bannerMessage: 'Completa manualmente el acceso o validacion y luego presiona "Ya lo resolvi, continuar".',
+    timeline: 'NEXA espera intervencion humana',
+    reason: reason || 'humanIntervention',
+    fingerprint: observation ? buildObservationFingerprint(observation) : lastHandoffFingerprint
+  };
+  return payload;
+}
+
+function createResumeHandoff(observation, reason) {
+  if (!looksLikeAccessScreen(observation)) {
+    lastHandoffFingerprint = '';
+    return null;
+  }
+  return {
+    status: 'Estoy esperando que completes algo',
+    whatHappened: reason === 'handoffContinue'
+      ? 'NEXA reobservo la pagina despues de tu intervencion.'
+      : 'NEXA reobservo la pagina y detecto que sigue habiendo una etapa humana pendiente.',
+    whatDid: 'Observe la pagina actual antes de repetir cualquier accion.',
+    whatSee: describeObservation(observation),
+    whatNeed: 'Si todavia falta completar algo, hacelo manualmente. Cuando la pagina cambie, presiona "Ya lo resolvi, continuar".',
+    bannerMessage: 'NEXA sigue esperando que completes la parte humana antes de continuar.',
+    timeline: 'NEXA reobservo la pagina y sigue esperando',
+    reason: 'credentialRequired',
+    fingerprint: buildObservationFingerprint(observation)
+  };
+}
+
+function looksLikeAccessScreen(observation) {
+  return hasStrongCredentialSignal(observation);
+}
+
+function hasStrongCredentialSignal(observation) {
+  return Boolean(
+    observation &&
+    (observation.hasPasswordField ||
+      observation.hasCaptchaLike ||
+      observation.hasTwoFactorLike ||
+      observation.hasCredentialEntry)
+  );
+}
+
+function buildObservationFingerprint(observation) {
+  if (!observation) {
+    return '';
+  }
+  return [
+    observation.url || '',
+    observation.title || '',
+    observation.hasCredentialLike ? 'credential' : '',
+    observation.hasPasswordField ? 'password' : '',
+    observation.hasCaptchaLike ? 'captcha' : '',
+    observation.hasTwoFactorLike ? '2fa' : ''
+  ].join('|');
+}
+
+function describeObservation(observation) {
+  if (!observation) {
+    return 'No tengo una observacion reciente de la pagina.';
+  }
+  const parts = [];
+  if (observation.title) {
+    parts.push(`Titulo: ${observation.title}`);
+  }
+  if (observation.url) {
+    parts.push(`URL: ${observation.url}`);
+  }
+  if (observation.hasPasswordField) {
+    parts.push('La pagina muestra campos de password.');
+  }
+  if (observation.hasCredentialLike) {
+    parts.push('La pagina parece pedir credenciales o acceso.');
+  }
+  if (observation.hasCaptchaLike) {
+    parts.push('Detecte una validacion tipo captcha.');
+  }
+  if (observation.hasTwoFactorLike) {
+    parts.push('Detecte una etapa de 2FA o codigo.');
+  }
+  return parts.join(' ') || 'Estoy viendo una pagina que requiere contexto humano.';
+}
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -1604,7 +2533,7 @@ async function publishRuntimeSnapshot() {
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
   let tab = null;
   try {
-    tab = await resolveTargetTab();
+    tab = await resolveTargetTab({ preferActive: shouldPreferActiveTab() });
   } catch {
     tab = null;
   }
@@ -1614,13 +2543,19 @@ async function publishRuntimeSnapshot() {
       connection: {
         connected,
         state: connectionState,
-        stopped,
+        connectionStoppedByUser,
         reconnectBlocked,
         reconnectBlockedReason,
         clientId,
         lastConnectedAt,
         lastSeenAt,
         lastError: lastConnectionError,
+        lastProtocolError,
+        lastWsCloseCode,
+        lastWsCloseReason,
+        lastWsCloseWasClean,
+        lastWsCloseAt,
+        lastTransition: lastStateTransition,
         queuedMessages: outgoingQueue.length,
         host: config.host || DEFAULT_CONFIG.host,
         port: config.port || DEFAULT_CONFIG.port,
@@ -1636,23 +2571,47 @@ async function publishRuntimeSnapshot() {
       extension: {
         webSocketConnected: connected,
         protocolVersion: PROTOCOL_VERSION,
+        runtimeKind: EXTENSION_RUNTIME_MODE,
+        coreGovernedMode: CORE_GOVERNED_MODE,
+        capabilities: EXTENSION_CAPABILITIES,
         clientId,
         lastSeenAt,
         tabId: tab && tab.id ? String(tab.id) : '',
         url: tab ? tab.url || '' : '',
+        controlContext: 'sidepanel',
+        targetTabId: lastTargetTabSnapshot && lastTargetTabSnapshot.tabId ? lastTargetTabSnapshot.tabId : (tab && tab.id ? String(tab.id) : ''),
+        targetUrl: lastTargetTabSnapshot && lastTargetTabSnapshot.url ? lastTargetTabSnapshot.url : (tab ? tab.url || '' : ''),
+        targetTitle: lastTargetTabSnapshot && lastTargetTabSnapshot.title ? lastTargetTabSnapshot.title : (tab ? tab.title || '' : ''),
+        targetActive: lastTargetTabSnapshot ? lastTargetTabSnapshot.active : Boolean(tab && tab.active),
+        targetAllowed: lastTargetTabSnapshot ? lastTargetTabSnapshot.allowed : Boolean(tab && !restrictedUrl(tab.url || '')),
+        targetReason: lastTargetTabSnapshot ? lastTargetTabSnapshot.reason : '',
         contentScriptActive: tab ? !restrictedUrl(tab.url || '') : false,
         permissions: ['activeTab', 'scripting', 'storage', 'tabs', 'sidePanel']
       },
       run: {
         runId: currentRunId,
         requestId: currentRequestId,
-        status: stopped ? 'stopped' : connected ? 'connected' : 'idle',
+        status: runState,
+        stopRequestedExplicitly,
         currentTool,
         lastToolResult,
         lastToolRequest,
         lastRunStatus,
         lastError: lastToolResult && !lastToolResult.success ? lastToolResult.error : '',
         recipeRun: recipeRunner
+      },
+      contentScript: {
+        status: lastContentScriptStatus,
+        message: lastContentScriptMessage,
+        injectedAt: lastContentScriptInjectedAt,
+        lastSeenAt: lastContentScriptLastSeenAt,
+        lastUrl: lastContentScriptLastUrl,
+        lastError: lastContentScriptLastError,
+        lastSendMessageError,
+        lastObserveRequestAt,
+        lastObserveResultAt,
+        lastObserveError,
+        tabAllowed: lastResolvedTabAllowed
       }
     }
   });
