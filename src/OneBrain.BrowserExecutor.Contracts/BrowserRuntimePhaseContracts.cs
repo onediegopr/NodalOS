@@ -84,7 +84,17 @@ public enum BrowserRuntimeRecorderState
 {
     Disabled,
     DesignOnly,
+    ReadOnlyPrototypeActive,
+    ProductiveActive,
     ExecutableActive
+}
+
+public enum BrowserRuntimeReplayState
+{
+    Disabled,
+    SafeModeReadOnlyActive,
+    ProductiveActive,
+    SensitiveActive
 }
 
 public sealed record BrowserRuntimeCapabilityState(
@@ -146,7 +156,12 @@ public sealed record BrowserRuntimeObservedState(
     BrowserRuntimeRecorderState RecorderState = BrowserRuntimeRecorderState.Disabled,
     bool RecorderStoresSecrets = false,
     bool RecorderStoresCookies = false,
-    bool RecorderStoresBodies = false)
+    bool RecorderStoresBodies = false,
+    BrowserRuntimeReplayState ReplayState = BrowserRuntimeReplayState.Disabled,
+    bool ReplayVerificationRequired = true,
+    bool ReplayIdempotencyRequired = true,
+    bool ReplaySupportsSensitiveActions = false,
+    bool ReplaySupportsSubmitUploadPaymentDelete = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -206,10 +221,20 @@ public sealed record BrowserRuntimeObservedState(
         (DocumentWorkflowState != BrowserRuntimeDocumentWorkflowState.SandboxActive || DocumentWorkflowSandboxVerified);
 
     public bool RecorderAllowed =>
+        RecorderState != BrowserRuntimeRecorderState.ProductiveActive &&
         RecorderState != BrowserRuntimeRecorderState.ExecutableActive &&
         !RecorderStoresSecrets &&
         !RecorderStoresCookies &&
         !RecorderStoresBodies;
+
+    public bool ReplayAllowed =>
+        ReplayState != BrowserRuntimeReplayState.ProductiveActive &&
+        ReplayState != BrowserRuntimeReplayState.SensitiveActive &&
+        (ReplayState != BrowserRuntimeReplayState.SafeModeReadOnlyActive ||
+         (ReplayVerificationRequired &&
+          ReplayIdempotencyRequired &&
+          !ReplaySupportsSensitiveActions &&
+          !ReplaySupportsSubmitUploadPaymentDelete));
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
