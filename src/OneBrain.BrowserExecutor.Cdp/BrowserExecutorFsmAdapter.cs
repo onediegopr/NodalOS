@@ -27,16 +27,12 @@ public sealed record BrowserExecutorStepRequest(
     BrowserAction Action,
     BrowserExecutorCapabilities Capabilities,
     BrowserTargetContext CurrentTarget,
-    BrowserApprovalGrant? ApprovalGrant = null);
+    BrowserApprovalGrant? ApprovalGrant = null,
+    BrowserCredentialBoundaryDecision? CredentialBoundaryDecision = null,
+    string ProfileId = "",
+    string SessionId = "");
 
 public sealed record BrowserApprovalGrant(string ApprovalId, bool Approved, string ApprovedBy, DateTimeOffset ApprovedAtUtc);
-
-public sealed record BrowserHumanHandoffRequest(
-    string CorrelationId,
-    string ActionId,
-    BrowserRiskClass RiskClass,
-    string Reason,
-    BrowserTargetContext TargetContext);
 
 public sealed record BrowserPolicyDecision(
     bool Allowed,
@@ -98,6 +94,12 @@ public sealed class BrowserExecutorPolicyGate
         if (!request.Capabilities.CanExecute(request.Action))
             return BrowserPolicyDecision.Block(BrowserRuntimeErrorCode.ActionRejected, "executor capabilities or risk limit block action");
 
+        if (request.CredentialBoundaryDecision is { RequiresHuman: true })
+            return BrowserPolicyDecision.RequireApproval(request.CredentialBoundaryDecision.Message);
+
+        if (request.CredentialBoundaryDecision is { BlocksAutomation: true })
+            return BrowserPolicyDecision.Block(BrowserRuntimeErrorCode.ActionRejected, request.CredentialBoundaryDecision.Message);
+
         if (request.Action.RiskClass == BrowserRiskClass.Critical && request.ApprovalGrant?.Approved != true)
             return BrowserPolicyDecision.RequireApproval("critical browser action requires explicit approval");
 
@@ -122,6 +124,7 @@ public sealed class BrowserExecutorStepRunner
     private readonly BrowserExecutorPolicyGate _policyGate;
     private readonly IBrowserActionDispatcher _actionDispatcher;
     private readonly IBrowserVerificationDispatcher _verificationDispatcher;
+    private readonly BrowserHumanHandoffCoordinator _handoffCoordinator = new();
 
     public BrowserExecutorStepRunner(
         BrowserExecutorPolicyGate policyGate,
@@ -170,7 +173,23 @@ public sealed class BrowserExecutorStepRunner
             if (policy.RequiresApproval)
             {
                 Transition(BrowserExecutorStepState.ApprovalRequired, StepTransition.ContractInvalid, FailureKind.PolicyDenied, policy.Reason);
-                return Result(BrowserExecutorStepState.ApprovalRequired, false, policy, new BrowserHumanHandoffRequest(request.CorrelationId, request.Action.ActionId, request.Action.RiskClass, policy.Reason, request.Action.TargetContext), null, null, browserEvidence, ledger, BrowserRuntimeErrorCode.ActionRejected, policy.Reason, history);
+                var handoff = request.CredentialBoundaryDecision is not null
+                    ? _handoffCoordinator.CreateRequest(
+                        request.CredentialBoundaryDecision,
+                        request.Action,
+                        request.CorrelationId,
+                        string.IsNullOrWhiteSpace(request.ProfileId) ? "profile-unknown" : request.ProfileId,
+                        string.IsNullOrWhiteSpace(request.SessionId) ? request.Action.TargetContext.BrowserSessionId : request.SessionId)
+                    : _handoffCoordinator.CreateApprovalRequest(
+                        request.Action,
+                        request.CorrelationId,
+                        string.IsNullOrWhiteSpace(request.ProfileId) ? "profile-unknown" : request.ProfileId,
+                        string.IsNullOrWhiteSpace(request.SessionId) ? request.Action.TargetContext.BrowserSessionId : request.SessionId,
+                        policy.Reason);
+                var finalState = request.CredentialBoundaryDecision is null ? BrowserExecutorStepState.ApprovalRequired : BrowserExecutorStepState.RequiresHuman;
+                if (finalState == BrowserExecutorStepState.RequiresHuman)
+                    Transition(BrowserExecutorStepState.RequiresHuman, StepTransition.ContractInvalid, FailureKind.PolicyDenied, policy.Reason);
+                return Result(finalState, false, policy, handoff, null, null, browserEvidence, ledger, BrowserRuntimeErrorCode.ActionRejected, policy.Reason, history);
             }
 
             if (!policy.Allowed)
