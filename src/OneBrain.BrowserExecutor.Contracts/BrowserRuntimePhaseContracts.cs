@@ -282,7 +282,19 @@ public sealed record BrowserRuntimeObservedState(
     bool VaultExportPolicyDefined = false,
     bool VaultExportCleartextBlocked = true,
     bool VaultRecoveryFailsClosed = true,
-    bool VaultRotationExposesSecret = false)
+    bool VaultRotationExposesSecret = false,
+    bool ClientCredentialReadinessDefined = false,
+    bool RealClientCredentialsStillBlocked = true,
+    bool PrivateLocalApiDefined = false,
+    bool PrivateLocalApiLoopbackOnly = true,
+    bool PrivateLocalApiAuthTenantRateLimitDefined = false,
+    bool PublicApiStillDisabled = true,
+    bool PrivateLocalApiBindsPublicNetwork = false,
+    bool PrivateLocalApiExposesSecretsCookiesBodies = false,
+    bool PrivateLocalApiBypassesTenantGovernance = false,
+    bool PrivateLocalApiBypassesLicensing = false,
+    bool RealClientCredentialsEnabled = false,
+    bool SupportCanAccessVaultRaw = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -500,6 +512,24 @@ public sealed record BrowserRuntimeObservedState(
         (!VaultRecoveryPolicyDefined || VaultRecoveryFailsClosed) &&
         (!VaultExportPolicyDefined || VaultExportCleartextBlocked);
 
+    public bool PrivateLocalApiAllowed =>
+        (!PrivateLocalApiDefined ||
+         (PrivateLocalApiLoopbackOnly &&
+          PrivateLocalApiAuthTenantRateLimitDefined &&
+          PublicApiStillDisabled &&
+          RealClientCredentialsStillBlocked &&
+          !PrivateLocalApiBindsPublicNetwork &&
+          !PrivateLocalApiExposesSecretsCookiesBodies &&
+          !PrivateLocalApiBypassesTenantGovernance &&
+          !PrivateLocalApiBypassesLicensing &&
+          !RealClientCredentialsEnabled &&
+          !SupportCanAccessVaultRaw));
+
+    public bool ClientCredentialReadinessAllowed =>
+        (!ClientCredentialReadinessDefined || RealClientCredentialsStillBlocked) &&
+        !RealClientCredentialsEnabled &&
+        !SupportCanAccessVaultRaw;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -613,7 +643,19 @@ public sealed record BrowserRuntimeObservedState(
         VaultExportPolicyDefined ||
         !VaultExportCleartextBlocked ||
         !VaultRecoveryFailsClosed ||
-        VaultRotationExposesSecret;
+        VaultRotationExposesSecret ||
+        ClientCredentialReadinessDefined ||
+        !RealClientCredentialsStillBlocked ||
+        PrivateLocalApiDefined ||
+        !PrivateLocalApiLoopbackOnly ||
+        PrivateLocalApiAuthTenantRateLimitDefined ||
+        !PublicApiStillDisabled ||
+        PrivateLocalApiBindsPublicNetwork ||
+        PrivateLocalApiExposesSecretsCookiesBodies ||
+        PrivateLocalApiBypassesTenantGovernance ||
+        PrivateLocalApiBypassesLicensing ||
+        RealClientCredentialsEnabled ||
+        SupportCanAccessVaultRaw;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

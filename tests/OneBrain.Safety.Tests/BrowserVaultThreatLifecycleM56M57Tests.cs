@@ -234,4 +234,21 @@ public sealed class BrowserVaultThreatLifecycleM56M57Tests
             VaultRecoveryFailsClosed = true,
             VaultRotationExposesSecret = false
         };
+
+    internal static BrowserRuntimeObservedState StateForM60() =>
+        State() with
+        {
+            ClientCredentialReadinessDefined = true,
+            RealClientCredentialsStillBlocked = true,
+            PrivateLocalApiDefined = true,
+            PrivateLocalApiLoopbackOnly = true,
+            PrivateLocalApiAuthTenantRateLimitDefined = true,
+            PublicApiStillDisabled = true,
+            PrivateLocalApiBindsPublicNetwork = false,
+            PrivateLocalApiExposesSecretsCookiesBodies = false,
+            PrivateLocalApiBypassesTenantGovernance = false,
+            PrivateLocalApiBypassesLicensing = false,
+            RealClientCredentialsEnabled = false,
+            SupportCanAccessVaultRaw = false
+        };
 }
