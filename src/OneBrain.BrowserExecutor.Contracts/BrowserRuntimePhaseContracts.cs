@@ -229,7 +229,16 @@ public sealed record BrowserRuntimeObservedState(
     bool PublicApiNetworkExposureDisabled = true,
     bool PublicApiExposesSecretsCookiesBodies = false,
     bool PublicApiAllowsCrossTenantAccess = false,
-    bool PublicApiBypassesLicensing = false)
+    bool PublicApiBypassesLicensing = false,
+    bool LocalProductShellDefined = false,
+    bool LocalProductShellExposesSecrets = false,
+    bool PreProductionCheckpointDefined = false,
+    bool ProductAdminPrivatePreviewAllowed = false,
+    bool PublicSaasStillDisabled = true,
+    bool RealBillingStillDisabled = true,
+    bool SensitiveRealPilotStillDisabled = true,
+    bool ExternalAuditRecommended = false,
+    bool RealDeployOrUpdateEnabled = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -371,6 +380,14 @@ public sealed record BrowserRuntimeObservedState(
         !PublicApiAllowsCrossTenantAccess &&
         !PublicApiBypassesLicensing;
 
+    public bool LocalProductPreProductionAllowed =>
+        (!LocalProductShellDefined || !LocalProductShellExposesSecrets) &&
+        (!PreProductionCheckpointDefined || ExternalAuditRecommended) &&
+        PublicSaasStillDisabled &&
+        RealBillingStillDisabled &&
+        SensitiveRealPilotStillDisabled &&
+        !RealDeployOrUpdateEnabled;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -431,7 +448,16 @@ public sealed record BrowserRuntimeObservedState(
         !PublicApiNetworkExposureDisabled ||
         PublicApiExposesSecretsCookiesBodies ||
         PublicApiAllowsCrossTenantAccess ||
-        PublicApiBypassesLicensing;
+        PublicApiBypassesLicensing ||
+        LocalProductShellDefined ||
+        LocalProductShellExposesSecrets ||
+        PreProductionCheckpointDefined ||
+        ProductAdminPrivatePreviewAllowed ||
+        !PublicSaasStillDisabled ||
+        !RealBillingStillDisabled ||
+        !SensitiveRealPilotStillDisabled ||
+        ExternalAuditRecommended ||
+        RealDeployOrUpdateEnabled;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
