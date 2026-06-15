@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ONE BRAIN Browser Executor Fixture</title>
+  <style>
+    body { font-family: sans-serif; margin: 24px; }
+    button, input { font-size: 16px; margin: 8px 0; display: block; }
+    #result { margin-top: 16px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Browser Executor Fixture</h1>
+  <p id="intro">Fixture ready for CDP observation.</p>
+  <label for="nameInput">Name</label>
+  <input id="nameInput" name="name" placeholder="Type a name">
+  <button id="applyButton" type="button">Apply</button>
+  <p id="result">Result: idle</p>
+  <iframe id="childFrame" title="Child frame" srcdoc="<p id='frameText'>Frame ready</p>"></iframe>
+  <script>
+    document.getElementById('applyButton').addEventListener('click', () => {
+      const value = document.getElementById('nameInput').value || 'empty';
+      document.getElementById('result').textContent = `Result: ${value}`;
+      document.body.dataset.clicked = 'true';
+    });
+  </script>
+</body>
+</html>
