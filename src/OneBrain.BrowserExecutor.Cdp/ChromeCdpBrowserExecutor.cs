@@ -29,6 +29,12 @@ public sealed record ChromeCdpActionResult(
     BrowserEvidence Evidence,
     string? Error = null);
 
+public sealed record ChromeCdpDownloadEvent(
+    string Guid,
+    string Url,
+    string SuggestedFilename,
+    DateTimeOffset ObservedAtUtc);
+
 public sealed class ChromeCdpBrowserLauncher
 {
     private readonly BrowserProfileManager _profileManager;
@@ -258,6 +264,11 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
     private readonly ChromeCdpTargetInfo _target;
     private readonly ClientWebSocket _socket = new();
     private readonly BrowserIdempotencyLedger _idempotencyLedger = new();
+    private readonly Dictionary<string, (string Method, string Url, DateTimeOffset StartedAtUtc, IReadOnlyList<BrowserNetworkHeaderMetadata> Headers)> _networkRequests = new(StringComparer.Ordinal);
+    private readonly List<BrowserNetworkCaptureEvent> _networkEvents = [];
+    private readonly List<BrowserCdpRuntimeEvent> _runtimeEvents = [];
+    private readonly List<ChromeCdpDownloadEvent> _downloadEvents = [];
+    private readonly BrowserTargetManager _liveTargetManager = new();
     private int _nextMessageId;
     private long _generation;
     private bool _disposed;
@@ -270,6 +281,10 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
 
     public string TargetId => _target.Id;
     public long Generation => _generation;
+    public IReadOnlyList<BrowserNetworkCaptureEvent> NetworkEvents => _networkEvents.ToArray();
+    public IReadOnlyList<BrowserCdpRuntimeEvent> RuntimeEvents => _runtimeEvents.ToArray();
+    public IReadOnlyList<ChromeCdpDownloadEvent> DownloadEvents => _downloadEvents.ToArray();
+    public BrowserTargetManager LiveTargetManager => _liveTargetManager;
 
     public async Task ConnectAsync(CancellationToken cancellationToken = default)
     {
@@ -277,6 +292,21 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
         await SendCommandAsync("Runtime.enable", null, cancellationToken).ConfigureAwait(false);
         await SendCommandAsync("Page.enable", null, cancellationToken).ConfigureAwait(false);
         await SendCommandAsync("DOM.enable", null, cancellationToken).ConfigureAwait(false);
+        _liveTargetManager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.TargetCreated, _target.Id, "main", null, _target.Url, _target.Title, "cdp target connected"));
+        _liveTargetManager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameAttached, _target.Id, "main", null, _target.Url, _target.Title, "main frame connected"));
+    }
+
+    public async Task EnableLiveReadOnlyCaptureAsync(string downloadDirectory, CancellationToken cancellationToken = default)
+    {
+        await SendCommandAsync("Network.enable", null, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await SendCommandAsync("Page.setDownloadBehavior", new { behavior = "allow", downloadPath = downloadDirectory }, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException)
+        {
+            await SendCommandAsync("Browser.setDownloadBehavior", new { behavior = "allow", downloadPath = downloadDirectory }, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task NavigateAsync(Uri url, CancellationToken cancellationToken = default)
@@ -498,6 +528,16 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
         await Task.Delay(250, cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task DrainEventsAsync(TimeSpan duration, CancellationToken cancellationToken = default)
+    {
+        var deadline = DateTimeOffset.UtcNow + duration;
+        while (DateTimeOffset.UtcNow < deadline && _socket.State == WebSocketState.Open)
+        {
+            await SendCommandAsync("Runtime.evaluate", new { expression = "0", returnByValue = true }, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
     private BrowserTargetContext CreateTargetContext(string runId, Uri url, string title, string readyState)
     {
         return new BrowserTargetContext(
@@ -617,13 +657,138 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
         {
             var json = await ReceiveJsonAsync(cancellationToken).ConfigureAwait(false);
             if (!json.RootElement.TryGetProperty("id", out var responseId) || responseId.GetInt32() != id)
+            {
+                if (!json.RootElement.TryGetProperty("id", out _))
+                    ProcessCdpEvent(json.RootElement.Clone());
                 continue;
+            }
 
             if (json.RootElement.TryGetProperty("error", out var error))
                 throw new InvalidOperationException(error.ToString());
 
             return json.RootElement.Clone();
         }
+    }
+
+    private void ProcessCdpEvent(JsonElement root)
+    {
+        if (!root.TryGetProperty("method", out var methodProperty))
+            return;
+
+        var method = methodProperty.GetString() ?? "";
+        var parameters = root.TryGetProperty("params", out var p) ? p : default;
+        switch (method)
+        {
+            case "Network.requestWillBeSent":
+                CaptureNetworkRequest(parameters);
+                break;
+            case "Network.responseReceived":
+                CaptureNetworkResponse(parameters);
+                break;
+            case "Page.frameAttached":
+                CaptureFrameAttached(parameters);
+                break;
+            case "Page.frameDetached":
+                CaptureFrameDetached(parameters);
+                break;
+            case "Page.frameNavigated":
+                CaptureFrameNavigated(parameters);
+                break;
+            case "Page.downloadWillBegin":
+                CaptureDownload(parameters);
+                break;
+        }
+    }
+
+    private void CaptureNetworkRequest(JsonElement parameters)
+    {
+        var requestId = parameters.GetProperty("requestId").GetString() ?? Guid.NewGuid().ToString("N");
+        var request = parameters.GetProperty("request");
+        var method = request.GetProperty("method").GetString() ?? "GET";
+        var url = request.GetProperty("url").GetString() ?? "about:blank";
+        var headers = ReadHeaders(request.TryGetProperty("headers", out var h) ? h : default);
+        _networkRequests[requestId] = (method, url, DateTimeOffset.UtcNow, headers);
+    }
+
+    private void CaptureNetworkResponse(JsonElement parameters)
+    {
+        var requestId = parameters.GetProperty("requestId").GetString() ?? Guid.NewGuid().ToString("N");
+        var response = parameters.GetProperty("response");
+        var hasRequest = _networkRequests.TryGetValue(requestId, out var request);
+        var url = response.GetProperty("url").GetString() ?? (hasRequest ? request.Url : "about:blank");
+        var method = hasRequest ? request.Method : "GET";
+        var headers = ReadHeaders(response.TryGetProperty("headers", out var h) ? h : default)
+            .Concat(hasRequest ? request.Headers : [])
+            .ToArray();
+        var status = response.TryGetProperty("status", out var s) ? (int?)s.GetInt32() : null;
+        var type = parameters.TryGetProperty("type", out var t) ? t.GetString() ?? "Other" : "Other";
+        var duration = !hasRequest || request.StartedAtUtc == default ? TimeSpan.Zero : DateTimeOffset.UtcNow - request.StartedAtUtc;
+        var raw = new BrowserNetworkCaptureEvent(requestId, "corr-cdp-live", method, url, status, type, duration, headers, ApiCandidate: url.Contains("/api/", StringComparison.OrdinalIgnoreCase) || url.Contains("/headers", StringComparison.OrdinalIgnoreCase), RequestBodyCaptured: false, ResponseBodyCaptured: false, Redacted: false);
+        var captured = new BrowserNetworkCapture().Capture(new BrowserNetworkCapturePolicy(BrowserNetworkCaptureMode.MetadataOnly, CaptureSensitiveHeaderPresenceOnly: true, AllowDirectHttpReplay: false, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GET", "POST", "HEAD" }), [raw]);
+        _networkEvents.Add(captured.Events.Single());
+    }
+
+    private static IReadOnlyList<BrowserNetworkHeaderMetadata> ReadHeaders(JsonElement headers)
+    {
+        if (headers.ValueKind != JsonValueKind.Object)
+            return [];
+
+        var result = new List<BrowserNetworkHeaderMetadata>();
+        foreach (var property in headers.EnumerateObject())
+            result.Add(new BrowserNetworkHeaderMetadata(property.Name, Present: true, ValueCaptured: true, property.Value.ToString(), BrowserNetworkHeaderRedactionReason.None));
+        return result;
+    }
+
+    private void CaptureFrameAttached(JsonElement parameters)
+    {
+        var frameId = parameters.GetProperty("frameId").GetString() ?? "frame";
+        var parentFrameId = parameters.TryGetProperty("parentFrameId", out var parent) ? parent.GetString() : "main";
+        var evt = new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameAttached, _target.Id, frameId, parentFrameId, new Uri("about:blank"), "", "cdp frame attached");
+        _runtimeEvents.Add(evt);
+        _liveTargetManager.ApplyRuntimeEvent(evt);
+    }
+
+    private void CaptureFrameDetached(JsonElement parameters)
+    {
+        var frameId = parameters.GetProperty("frameId").GetString() ?? "frame";
+        var evt = new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameDetached, _target.Id, frameId, null, null, "", "cdp frame detached");
+        _runtimeEvents.Add(evt);
+        try
+        {
+            _liveTargetManager.ApplyRuntimeEvent(evt);
+        }
+        catch (KeyNotFoundException)
+        {
+            _liveTargetManager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameAttached, _target.Id, frameId, "main", new Uri("about:blank"), "", "cdp frame detached attach"));
+            _liveTargetManager.ApplyRuntimeEvent(evt);
+        }
+    }
+
+    private void CaptureFrameNavigated(JsonElement parameters)
+    {
+        var frame = parameters.GetProperty("frame");
+        var frameId = frame.GetProperty("id").GetString() ?? "main";
+        var parentFrameId = frame.TryGetProperty("parentId", out var parent) ? parent.GetString() : null;
+        var url = new Uri(frame.GetProperty("url").GetString() ?? "about:blank");
+        var evt = new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameNavigated, _target.Id, frameId, parentFrameId, url, "", "cdp frame navigated");
+        _runtimeEvents.Add(evt);
+        try
+        {
+            _liveTargetManager.ApplyRuntimeEvent(evt);
+        }
+        catch (KeyNotFoundException)
+        {
+            _liveTargetManager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameAttached, _target.Id, frameId, parentFrameId, url, "", "cdp frame navigated attach"));
+        }
+    }
+
+    private void CaptureDownload(JsonElement parameters)
+    {
+        _downloadEvents.Add(new ChromeCdpDownloadEvent(
+            parameters.TryGetProperty("guid", out var guid) ? guid.GetString() ?? "" : "",
+            parameters.TryGetProperty("url", out var url) ? BrowserCredentialRedactor.Redact(url.GetString()) : "",
+            parameters.TryGetProperty("suggestedFilename", out var name) ? BrowserDownloadManager.SafeFileName(name.GetString() ?? "download.bin") : "download.bin",
+            DateTimeOffset.UtcNow));
     }
 
     private async Task<JsonDocument> ReceiveJsonAsync(CancellationToken cancellationToken)

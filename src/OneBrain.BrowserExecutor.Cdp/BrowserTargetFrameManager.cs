@@ -276,9 +276,9 @@ public sealed class BrowserTargetManager
 
     public bool CanExecute(BrowserAction action, BrowserTargetRecord target, BrowserFrameContext frame)
     {
-        if (action.CanModifyState && !target.IsUsable)
+        if (!target.IsUsable)
             return false;
-        if (action.CanModifyState && !frame.CanUseForVerification)
+        if (!frame.CanUseForVerification)
             return false;
         return true;
     }
