@@ -164,11 +164,15 @@ public sealed record BrowserRuntimeObservedState(
     bool ReplaySupportsSubmitUploadPaymentDelete = false,
     bool SensitiveSitesPolicyDefined = false,
     bool SensitiveSiteReadOnlySimulationAllowed = false,
+    bool SensitiveReadOnlySimulationActive = false,
+    bool SensitiveDocumentSimulationActive = false,
     bool SensitiveSiteRealPilotActive = false,
+    bool SensitiveDocumentRealActive = false,
     bool SensitiveSiteIrreversibleActionActive = false,
     bool SensitiveSiteSubmitEnabled = false,
     bool SensitiveSitePaymentEnabled = false,
-    bool SensitiveSiteSigningEnabled = false)
+    bool SensitiveSiteSigningEnabled = false,
+    bool SensitiveDocumentContentCaptureEnabled = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -246,10 +250,12 @@ public sealed record BrowserRuntimeObservedState(
     public bool SensitiveSitesAllowed =>
         (!SensitiveSiteSurfaceActive || SensitiveSitesPolicyDefined) &&
         !SensitiveSiteRealPilotActive &&
+        !SensitiveDocumentRealActive &&
         !SensitiveSiteIrreversibleActionActive &&
         !SensitiveSiteSubmitEnabled &&
         !SensitiveSitePaymentEnabled &&
         !SensitiveSiteSigningEnabled &&
+        !SensitiveDocumentContentCaptureEnabled &&
         RecorderState != BrowserRuntimeRecorderState.ProductiveActive &&
         ReplayState != BrowserRuntimeReplayState.ProductiveActive &&
         !RequestBodyCaptureSupported &&
@@ -259,11 +265,15 @@ public sealed record BrowserRuntimeObservedState(
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
+        SensitiveReadOnlySimulationActive ||
+        SensitiveDocumentSimulationActive ||
         SensitiveSiteRealPilotActive ||
+        SensitiveDocumentRealActive ||
         SensitiveSiteIrreversibleActionActive ||
         SensitiveSiteSubmitEnabled ||
         SensitiveSitePaymentEnabled ||
-        SensitiveSiteSigningEnabled;
+        SensitiveSiteSigningEnabled ||
+        SensitiveDocumentContentCaptureEnabled;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
