@@ -30,7 +30,17 @@ public enum BrowserAuditLedgerEventKind
     HumanHandoffResumeVerified,
     HumanHandoffResumeRejected,
     PolicyBlocked,
-    RedactionApplied
+    RedactionApplied,
+    DownloadRequested,
+    DownloadBlocked,
+    DownloadCompleted,
+    UploadRequested,
+    UploadBlocked,
+    UploadPrepared,
+    NetworkCaptureRecorded,
+    SessionExportCreated,
+    DiagnosticReplayCreated,
+    PhaseCloseGateEvaluated
 }
 
 public sealed record BrowserAuditLedgerPolicy(

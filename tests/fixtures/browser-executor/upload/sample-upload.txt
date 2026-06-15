@@ -1,0 +1,1 @@
+Synthetic upload fixture for Browser Runtime M16.
