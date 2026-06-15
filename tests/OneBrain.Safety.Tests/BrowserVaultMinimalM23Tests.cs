@@ -238,7 +238,9 @@ public sealed class BrowserVaultMinimalM23Tests
             MinimalSandboxVaultConsentValid: vaultMinimal,
             VaultReturnsPublicValues: false,
             VaultCompanionExposure: false,
-            VaultProviderKnown: true);
+            VaultProviderKnown: true,
+            SensitiveSitesPolicyDefined: true,
+            SensitiveSiteReadOnlySimulationAllowed: true);
 
     internal static BrowserRuntimePhaseCloseReport GateReport(BrowserRuntimeObservedState state)
     {

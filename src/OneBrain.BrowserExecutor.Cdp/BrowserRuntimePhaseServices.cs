@@ -240,6 +240,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(state.DocumentWorkflowAllowed, "document workflow sandbox only", passed, failed);
         Check(state.RecorderAllowed, "recorder design-only", passed, failed);
         Check(state.ReplayAllowed, "replay safe-mode read-only", passed, failed);
+        Check(state.SensitiveSitesAllowed, "sensitive sites policy defined", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);

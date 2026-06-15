@@ -161,7 +161,14 @@ public sealed record BrowserRuntimeObservedState(
     bool ReplayVerificationRequired = true,
     bool ReplayIdempotencyRequired = true,
     bool ReplaySupportsSensitiveActions = false,
-    bool ReplaySupportsSubmitUploadPaymentDelete = false)
+    bool ReplaySupportsSubmitUploadPaymentDelete = false,
+    bool SensitiveSitesPolicyDefined = false,
+    bool SensitiveSiteReadOnlySimulationAllowed = false,
+    bool SensitiveSiteRealPilotActive = false,
+    bool SensitiveSiteIrreversibleActionActive = false,
+    bool SensitiveSiteSubmitEnabled = false,
+    bool SensitiveSitePaymentEnabled = false,
+    bool SensitiveSiteSigningEnabled = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -235,6 +242,28 @@ public sealed record BrowserRuntimeObservedState(
           ReplayIdempotencyRequired &&
           !ReplaySupportsSensitiveActions &&
           !ReplaySupportsSubmitUploadPaymentDelete));
+
+    public bool SensitiveSitesAllowed =>
+        (!SensitiveSiteSurfaceActive || SensitiveSitesPolicyDefined) &&
+        !SensitiveSiteRealPilotActive &&
+        !SensitiveSiteIrreversibleActionActive &&
+        !SensitiveSiteSubmitEnabled &&
+        !SensitiveSitePaymentEnabled &&
+        !SensitiveSiteSigningEnabled &&
+        RecorderState != BrowserRuntimeRecorderState.ProductiveActive &&
+        ReplayState != BrowserRuntimeReplayState.ProductiveActive &&
+        !RequestBodyCaptureSupported &&
+        !ResponseBodyCaptureSupported &&
+        !SensitiveHeaderValueCaptureSupported;
+
+    private bool SensitiveSiteSurfaceActive =>
+        SensitiveSitesPolicyDefined ||
+        SensitiveSiteReadOnlySimulationAllowed ||
+        SensitiveSiteRealPilotActive ||
+        SensitiveSiteIrreversibleActionActive ||
+        SensitiveSiteSubmitEnabled ||
+        SensitiveSitePaymentEnabled ||
+        SensitiveSiteSigningEnabled;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
