@@ -70,6 +70,23 @@ public sealed record BrowserAuditLedgerIntegrityProof(
     string PreviousHash,
     string EventHash);
 
+public sealed record BrowserAuditLedgerHeadSeal(
+    string LedgerId,
+    int EventCount,
+    long LastSequence,
+    string LastEventHash,
+    string HeadHmac,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc);
+
+public interface IBrowserAuditLedgerIntegrityProvider
+{
+    BrowserAuditLedgerIntegrityProof ComputeEventIntegrity(BrowserAuditLedgerEvent ledgerEvent, long sequenceNumber, string previousHash);
+    bool VerifyEventIntegrity(BrowserAuditLedgerEvent ledgerEvent);
+    BrowserAuditLedgerHeadSeal ComputeHeadSeal(string ledgerId, IReadOnlyList<BrowserAuditLedgerEvent> events, DateTimeOffset createdAtUtc, DateTimeOffset updatedAtUtc);
+    bool VerifyHeadSeal(BrowserAuditLedgerHeadSeal seal, IReadOnlyList<BrowserAuditLedgerEvent> events);
+}
+
 public sealed record BrowserAuditLedgerEvent(
     string EventId,
     BrowserAuditLedgerEventKind Kind,
@@ -119,29 +136,36 @@ public sealed record BrowserAuditLedgerEvent(
 
     public static string ComputeHash(BrowserAuditLedgerEvent ledgerEvent)
     {
-        var payload = new
-        {
-            ledgerEvent.EventId,
-            ledgerEvent.Kind,
-            ledgerEvent.CreatedAtUtc,
-            ledgerEvent.RunId,
-            ledgerEvent.ActionId,
-            ledgerEvent.CorrelationId,
-            ledgerEvent.ProfileId,
-            ledgerEvent.SessionId,
-            ledgerEvent.ConsentId,
-            ledgerEvent.SecretId,
-            ledgerEvent.ProviderKind,
-            ledgerEvent.Decision,
-            ledgerEvent.Reason,
-            Metadata = ledgerEvent.Metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToArray(),
-            ledgerEvent.Redacted,
-            ledgerEvent.Integrity.SequenceNumber,
-            ledgerEvent.Integrity.PreviousHash
-        };
-        var json = JsonSerializer.Serialize(payload);
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(ToCanonicalString(ledgerEvent)))).ToLowerInvariant();
     }
+
+    public static string ToCanonicalString(BrowserAuditLedgerEvent ledgerEvent)
+    {
+        var metadata = string.Join("&", ledgerEvent.Metadata
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => $"{Escape(pair.Key)}={Escape(pair.Value)}"));
+        return string.Join("|",
+            Escape(ledgerEvent.EventId),
+            ledgerEvent.Kind.ToString(),
+            ledgerEvent.CreatedAtUtc.UtcDateTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture),
+            Escape(ledgerEvent.RunId),
+            Escape(ledgerEvent.ActionId),
+            Escape(ledgerEvent.CorrelationId),
+            Escape(ledgerEvent.ProfileId),
+            Escape(ledgerEvent.SessionId),
+            Escape(ledgerEvent.ConsentId ?? ""),
+            Escape(ledgerEvent.SecretId ?? ""),
+            ledgerEvent.ProviderKind?.ToString() ?? "",
+            Escape(ledgerEvent.Decision),
+            Escape(ledgerEvent.Reason),
+            metadata,
+            ledgerEvent.Redacted ? "true" : "false",
+            ledgerEvent.Integrity.SequenceNumber.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Escape(ledgerEvent.Integrity.PreviousHash));
+    }
+
+    private static string Escape(string value) =>
+        Convert.ToBase64String(Encoding.UTF8.GetBytes(value.Normalize(NormalizationForm.FormC)));
 }
 
 public sealed record BrowserAuditLedgerExport(

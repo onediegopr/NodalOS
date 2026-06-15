@@ -22,6 +22,18 @@ public enum BrowserRuntimePhaseCloseStatus
     RequiresAudit
 }
 
+public enum BrowserNetworkCaptureMode
+{
+    MetadataOnly
+}
+
+public enum BrowserNetworkHeaderRedactionReason
+{
+    None,
+    SensitiveHeaderValueNotCaptured,
+    PatternRedacted
+}
+
 public sealed record BrowserDownloadPolicy(
     string ControlledDirectory,
     IReadOnlySet<string> AllowedExtensions,
@@ -133,10 +145,35 @@ public sealed record BrowserUploadResult(
 }
 
 public sealed record BrowserNetworkCapturePolicy(
-    bool CaptureBodies,
-    bool CaptureSensitiveHeaders,
+    BrowserNetworkCaptureMode Mode,
+    bool CaptureSensitiveHeaderPresenceOnly,
     bool AllowDirectHttpReplay,
-    IReadOnlySet<string> AllowedMethods);
+    IReadOnlySet<string> AllowedMethods)
+{
+    public bool BodiesCaptureSupported => false;
+    public bool RequestBodyCaptureSupported => false;
+    public bool ResponseBodyCaptureSupported => false;
+}
+
+public sealed record BrowserNetworkHeaderMetadata(
+    string HeaderName,
+    bool Present,
+    bool ValueCaptured,
+    string? Value,
+    BrowserNetworkHeaderRedactionReason RedactionReason)
+{
+    public ContractValidationResult Validate()
+    {
+        var errors = new List<string>();
+        if (BrowserCredentialRedactor.ContainsSecret(HeaderName))
+            errors.Add("Header name contains secret-like content.");
+        if (!ValueCaptured && Value is not null and not "[NOT_CAPTURED]")
+            errors.Add("Non-captured header value must be null or [NOT_CAPTURED].");
+        if (ValueCaptured && BrowserCredentialRedactor.ContainsSecret(Value))
+            errors.Add("Header value contains secret-like content.");
+        return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
+    }
+}
 
 public sealed record BrowserNetworkCaptureEvent(
     string RequestId,
@@ -146,9 +183,10 @@ public sealed record BrowserNetworkCaptureEvent(
     int? StatusCode,
     string ResourceType,
     TimeSpan Duration,
-    IReadOnlyDictionary<string, string> ResponseHeaders,
+    IReadOnlyList<BrowserNetworkHeaderMetadata> ResponseHeaders,
     bool ApiCandidate,
-    bool BodyCaptured,
+    bool RequestBodyCaptured,
+    bool ResponseBodyCaptured,
     bool Redacted)
 {
     public ContractValidationResult Validate()
@@ -156,12 +194,12 @@ public sealed record BrowserNetworkCaptureEvent(
         var errors = new List<string>();
         BrowserSafeIdentifierValidator.RequireSafe(RequestId, nameof(RequestId), errors);
         BrowserSafeIdentifierValidator.RequireSafe(CorrelationId, nameof(CorrelationId), errors);
-        if (BodyCaptured)
+        if (RequestBodyCaptured || ResponseBodyCaptured)
             errors.Add("Network capture cannot include bodies by default.");
         if (!Redacted)
             errors.Add("Network capture must be redacted.");
         if (BrowserCredentialRedactor.ContainsSecret(RedactedUrl) ||
-            ResponseHeaders.Any(pair => BrowserCredentialRedactor.ContainsSecret(pair.Key) || BrowserCredentialRedactor.ContainsSecret(pair.Value)))
+            ResponseHeaders.Any(header => !header.Validate().IsValid))
             errors.Add("Network capture contains secret-like content.");
         return errors.Count == 0 ? ContractValidationResult.Valid : new ContractValidationResult(false, errors);
     }
@@ -172,7 +210,7 @@ public sealed record BrowserNetworkCaptureSummary(
     BrowserAuditLedgerEvent AuditEvent,
     bool Redacted)
 {
-    public bool MetadataOnly => Events.All(e => !e.BodyCaptured);
+    public bool MetadataOnly => Events.All(e => !e.RequestBodyCaptured && !e.ResponseBodyCaptured);
     public bool IsSafe => Redacted && MetadataOnly && Events.All(e => e.Validate().IsValid);
 }
 

@@ -29,7 +29,7 @@ public sealed class BrowserAuditLedgerTests
         var appended = ledger.Append(Event(BrowserAuditLedgerEventKind.RedactionApplied, secretId: "token=raw-secret", reason: "client_secret=raw-value", metadata: new Dictionary<string, string>
         {
             ["authorization"] = "bearer raw-token",
-            ["jwt"] = "header.payload.signature"
+            ["jwt"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzeW50aGV0aWMifQ.c2lnbmF0dXJlMTIzNDU2"
         }));
         var export = ledger.ExportSafe();
         var json = File.ReadAllText(ledger.LedgerFile);
@@ -38,7 +38,7 @@ public sealed class BrowserAuditLedgerTests
         Assert.IsTrue(export.Validate().IsValid);
         Assert.IsFalse(json.Contains("raw-secret", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(json.Contains("raw-token", StringComparison.OrdinalIgnoreCase));
-        Assert.IsFalse(json.Contains("header.payload.signature", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(json.Contains("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9", StringComparison.OrdinalIgnoreCase));
     }
 
     [TestMethod]

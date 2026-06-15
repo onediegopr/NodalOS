@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OneBrain.BrowserExecutor.Contracts;
@@ -204,15 +205,17 @@ public static partial class BrowserCredentialRedactor
         if (string.IsNullOrEmpty(value))
             return "";
 
-        var redacted = SecretLikePattern().Replace(value, match =>
+        var redacted = BearerTokenPattern().Replace(value, match => $"{match.Groups[1].Value}{Redacted}");
+        redacted = SecretLikePattern().Replace(redacted, match =>
         {
             var text = match.Value;
             var separatorIndex = text.IndexOfAny(['=', ':']);
             return separatorIndex >= 0 ? text[..(separatorIndex + 1)] + Redacted : Redacted;
         });
         redacted = SecretRedactor.Redact(redacted);
-        redacted = JwtValuePattern().Replace(redacted, Redacted);
-        return IdentityPattern().Replace(redacted, Redacted);
+        redacted = JwtValuePattern().Replace(redacted, match => IsPlausibleJwt(match.Value) ? Redacted : match.Value);
+        redacted = FormattedCuitPattern().Replace(redacted, Redacted);
+        return ContextualIdentityPattern().Replace(redacted, match => $"{match.Groups[1].Value}{Redacted}");
     }
 
     public static bool ContainsSecret(string? value)
@@ -223,19 +226,52 @@ public static partial class BrowserCredentialRedactor
         var normalized = RedactedSecretPattern().Replace(value, "");
         return SecretRedactor.ContainsSecret(normalized) ||
             SecretLikePattern().IsMatch(normalized) ||
-            JwtValuePattern().IsMatch(normalized) ||
-            IdentityPattern().IsMatch(normalized);
+            BearerTokenPattern().IsMatch(normalized) ||
+            JwtValuePattern().Matches(normalized).Any(match => IsPlausibleJwt(match.Value)) ||
+            FormattedCuitPattern().IsMatch(normalized) ||
+            ContextualIdentityPattern().IsMatch(normalized);
     }
 
     [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni|sessionid|csrf|xsrf|jwt|client_secret)\\s*[:=]\\s*[^\\s;]+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex SecretLikePattern();
 
-    [GeneratedRegex("\\b(\\d{2}-\\d{8}-\\d|\\d{7,8})\\b", RegexOptions.CultureInvariant)]
-    private static partial Regex IdentityPattern();
+    [GeneratedRegex("\\b(\\d{2}-\\d{8}-\\d)\\b", RegexOptions.CultureInvariant)]
+    private static partial Regex FormattedCuitPattern();
 
-    [GeneratedRegex("\\b[A-Za-z0-9_-]{3,}\\.[A-Za-z0-9_-]{3,}\\.[A-Za-z0-9_-]{3,}\\b", RegexOptions.CultureInvariant)]
+    [GeneratedRegex("\\b((?:dni|documento|identity|cuit|cuil|taxid)\\s*[:=]?\\s*)(\\d{7,8}|\\d{2}-\\d{8}-\\d)\\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex ContextualIdentityPattern();
+
+    [GeneratedRegex("\\b(Bearer\\s+)[A-Za-z0-9._-]{8,}\\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex BearerTokenPattern();
+
+    [GeneratedRegex("\\b[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\b", RegexOptions.CultureInvariant)]
     private static partial Regex JwtValuePattern();
 
     [GeneratedRegex("(password|passwd|pass|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\\s+fiscal)?|cuit|dni|sessionid|csrf|xsrf|jwt|client_secret)\\s*[:=]\\s*\\[REDACTED\\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex RedactedSecretPattern();
+
+    private static bool IsPlausibleJwt(string value)
+    {
+        var parts = value.Split('.');
+        if (parts.Length != 3 || parts.Any(part => part.Length < 8))
+            return false;
+
+        try
+        {
+            var headerJson = Encoding.UTF8.GetString(Base64UrlDecode(parts[0]));
+            return headerJson.Contains("\"alg\"", StringComparison.OrdinalIgnoreCase) ||
+                headerJson.Contains("\"typ\"", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static byte[] Base64UrlDecode(string value)
+    {
+        var padded = value.Replace('-', '+').Replace('_', '/');
+        padded = padded.PadRight(padded.Length + ((4 - padded.Length % 4) % 4), '=');
+        return Convert.FromBase64String(padded);
+    }
 }

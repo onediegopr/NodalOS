@@ -76,14 +76,15 @@ public sealed class BrowserRuntimePhaseM16Tests
             StatusCode: 200,
             ResourceType: "fetch",
             Duration: TimeSpan.FromMilliseconds(12),
-            ResponseHeaders: new Dictionary<string, string>
-            {
-                ["authorization"] = "bearer synthetic-token",
-                ["content-type"] = "application/json",
-                ["x-debug"] = "header.payload.signature"
-            },
+            ResponseHeaders:
+            [
+                new BrowserNetworkHeaderMetadata("authorization", true, true, "bearer synthetic-token", BrowserNetworkHeaderRedactionReason.None),
+                new BrowserNetworkHeaderMetadata("content-type", true, true, "application/json", BrowserNetworkHeaderRedactionReason.None),
+                new BrowserNetworkHeaderMetadata("x-debug", true, true, SyntheticJwt(), BrowserNetworkHeaderRedactionReason.None)
+            ],
             ApiCandidate: true,
-            BodyCaptured: true,
+            RequestBodyCaptured: true,
+            ResponseBodyCaptured: true,
             Redacted: false);
 
         var summary = capture.Capture(NetworkPolicy(), [raw]);
@@ -190,10 +191,13 @@ public sealed class BrowserRuntimePhaseM16Tests
         new(directory, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".txt", ".csv", ".json", ".pdf", ".xlsx" }, 1024 * 1024, RequireApproval: true, AllowExternalTargets: false);
 
     private static BrowserNetworkCapturePolicy NetworkPolicy() =>
-        new(CaptureBodies: false, CaptureSensitiveHeaders: false, AllowDirectHttpReplay: false, AllowedMethods: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GET", "POST" });
+        new(BrowserNetworkCaptureMode.MetadataOnly, CaptureSensitiveHeaderPresenceOnly: true, AllowDirectHttpReplay: false, AllowedMethods: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GET", "POST" });
 
     private static BrowserNetworkCaptureEvent NetworkEvent() =>
-        new("request-1", "corr-1", "GET", "https://fixture.local/api/items?token=synthetic", 200, "fetch", TimeSpan.FromMilliseconds(3), new Dictionary<string, string> { ["content-type"] = "application/json" }, ApiCandidate: true, BodyCaptured: false, Redacted: true);
+        new("request-1", "corr-1", "GET", "https://fixture.local/api/items?token=synthetic", 200, "fetch", TimeSpan.FromMilliseconds(3), [new BrowserNetworkHeaderMetadata("content-type", true, true, "application/json", BrowserNetworkHeaderRedactionReason.None)], ApiCandidate: true, RequestBodyCaptured: false, ResponseBodyCaptured: false, Redacted: true);
+
+    private static string SyntheticJwt() =>
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzeW50aGV0aWMifQ.c2lnbmF0dXJlMTIzNDU2";
 
     private static BrowserSessionReplayManifest ReplayManifest(IReadOnlyList<BrowserNetworkCaptureEvent>? networkEvents = null) =>
         new(

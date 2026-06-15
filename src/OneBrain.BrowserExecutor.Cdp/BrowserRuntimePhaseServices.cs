@@ -117,7 +117,9 @@ public sealed class BrowserNetworkCapture
         "cookie",
         "set-cookie",
         "x-api-key",
-        "x-csrf-token"
+        "x-csrf-token",
+        "x-xsrf-token",
+        "proxy-authorization"
     };
 
     public BrowserNetworkCaptureSummary Capture(BrowserNetworkCapturePolicy policy, IEnumerable<BrowserNetworkCaptureEvent> rawEvents)
@@ -142,19 +144,35 @@ public sealed class BrowserNetworkCapture
     private static BrowserNetworkCaptureEvent RedactEvent(BrowserNetworkCapturePolicy policy, BrowserNetworkCaptureEvent raw)
     {
         var headers = raw.ResponseHeaders
-            .Where(pair => policy.CaptureSensitiveHeaders || !SensitiveHeaders.Contains(pair.Key))
-            .ToDictionary(
-                pair => BrowserCredentialRedactor.Redact(pair.Key),
-                pair => BrowserCredentialRedactor.Redact(pair.Value),
-                StringComparer.Ordinal);
+            .Select(header => RedactHeader(policy, header))
+            .ToArray();
         return raw with
         {
+            ResponseHeaders = headers,
             Method = policy.AllowedMethods.Contains(raw.Method, StringComparer.OrdinalIgnoreCase) ? raw.Method.ToUpperInvariant() : "BLOCKED",
             RedactedUrl = RedactUrl(raw.RedactedUrl),
-            ResponseHeaders = headers,
-            BodyCaptured = policy.CaptureBodies && false,
+            RequestBodyCaptured = false,
+            ResponseBodyCaptured = false,
             Redacted = true
         };
+    }
+
+    private static BrowserNetworkHeaderMetadata RedactHeader(BrowserNetworkCapturePolicy policy, BrowserNetworkHeaderMetadata header)
+    {
+        if (SensitiveHeaders.Contains(header.HeaderName))
+            return new BrowserNetworkHeaderMetadata(
+                BrowserCredentialRedactor.Redact(header.HeaderName),
+                Present: true,
+                ValueCaptured: false,
+                Value: "[NOT_CAPTURED]",
+                BrowserNetworkHeaderRedactionReason.SensitiveHeaderValueNotCaptured);
+
+        return new BrowserNetworkHeaderMetadata(
+            BrowserCredentialRedactor.Redact(header.HeaderName),
+            header.Present,
+            ValueCaptured: true,
+            BrowserCredentialRedactor.Redact(header.Value),
+            BrowserCredentialRedactor.ContainsSecret(header.Value) ? BrowserNetworkHeaderRedactionReason.PatternRedacted : BrowserNetworkHeaderRedactionReason.None);
     }
 
     public static string RedactUrl(string url)
