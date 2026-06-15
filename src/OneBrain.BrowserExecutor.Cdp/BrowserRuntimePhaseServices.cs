@@ -246,6 +246,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(!state.SensitiveDocumentRealActive, "sensitive real documents blocked", passed, failed);
         Check(!state.SensitiveDocumentContentCaptureEnabled, "sensitive document content capture blocked", passed, failed);
         Check(state.ProductGovernanceAllowed, "product governance feature flags safe", passed, failed);
+        Check(state.TenantGovernanceAllowed, "tenant governance and audit export safe", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);

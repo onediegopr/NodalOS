@@ -188,7 +188,15 @@ public sealed record BrowserRuntimeObservedState(
     bool FeatureFlagProductiveVaultEnabled = false,
     bool FeatureFlagReplayProductiveEnabled = false,
     bool FeatureFlagRecorderProductiveEnabled = false,
-    bool ExpiredLicenseAttemptsExecution = false)
+    bool ExpiredLicenseAttemptsExecution = false,
+    bool AdminRuntimeServiceDefined = false,
+    bool TenantGovernanceDefined = false,
+    bool AuditExportDefined = false,
+    bool AuditExportRedacted = true,
+    bool CrossTenantIsolationEnabled = true,
+    bool AuditExportLeaksSecrets = false,
+    bool SupportCanViewSecrets = false,
+    bool SensitiveFeatureEnabledWithoutTenantPolicy = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -290,6 +298,14 @@ public sealed record BrowserRuntimeObservedState(
         !FeatureFlagRecorderProductiveEnabled &&
         !ExpiredLicenseAttemptsExecution;
 
+    public bool TenantGovernanceAllowed =>
+        (!AdminRuntimeServiceDefined || ProductAdminFoundationDefined) &&
+        (!TenantGovernanceDefined || CrossTenantIsolationEnabled) &&
+        (!AuditExportDefined || AuditExportRedacted) &&
+        !AuditExportLeaksSecrets &&
+        !SupportCanViewSecrets &&
+        !SensitiveFeatureEnabledWithoutTenantPolicy;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -312,7 +328,13 @@ public sealed record BrowserRuntimeObservedState(
         FeatureFlagProductiveVaultEnabled ||
         FeatureFlagReplayProductiveEnabled ||
         FeatureFlagRecorderProductiveEnabled ||
-        ExpiredLicenseAttemptsExecution;
+        ExpiredLicenseAttemptsExecution ||
+        AdminRuntimeServiceDefined ||
+        TenantGovernanceDefined ||
+        AuditExportDefined ||
+        AuditExportLeaksSecrets ||
+        SupportCanViewSecrets ||
+        SensitiveFeatureEnabledWithoutTenantPolicy;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
