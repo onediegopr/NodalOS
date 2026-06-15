@@ -297,6 +297,14 @@ async function handlePanelMessage(message) {
     case 'handoff.cancelled':
       handleCompanionHandoffEvent(message);
       break;
+    case 'vaultConsent.userApproved':
+    case 'vaultConsent.userDenied':
+    case 'vaultConsent.cancelled':
+    case 'profileConsent.userApproved':
+    case 'profileConsent.userDenied':
+    case 'profileConsent.cancelled':
+      handleCompanionConsentEvent(message);
+      break;
     case 'observeCurrentPage':
       await observeCurrentPage('manualObserve');
       break;
@@ -1116,6 +1124,13 @@ function handleCompanionHandoffEvent(message) {
   publishRuntimeSnapshot();
 }
 
+function handleCompanionConsentEvent(message) {
+  const event = normalizeCompanionConsentEvent(message);
+  sendToEngine(event);
+  publish(event);
+  publishRuntimeSnapshot();
+}
+
 function normalizeCompanionHandoffEvent(message) {
   const type = message && message.type === 'handoff.cancelled' ? 'handoff.cancelled' : 'handoff.userCompleted';
   return {
@@ -1135,6 +1150,29 @@ function normalizeCompanionHandoffEvent(message) {
   };
 }
 
+function normalizeCompanionConsentEvent(message) {
+  const rawType = String(message && message.type || '');
+  const prefix = rawType.startsWith('profileConsent.') ? 'profileConsent' : 'vaultConsent';
+  const suffix = rawType.endsWith('.userDenied') ? 'userDenied' : rawType.endsWith('.cancelled') ? 'cancelled' : 'userApproved';
+  return {
+    type: `${prefix}.${suffix}`,
+    consentId: redactCompanionText(message && message.consentId),
+    runId: redactCompanionText(message && message.runId ? message.runId : currentRunId),
+    actionId: redactCompanionText(message && message.actionId),
+    correlationId: redactCompanionText(message && message.correlationId),
+    consentType: redactCompanionText(message && message.consentType),
+    scope: redactCompanionText(message && message.scope),
+    runtimeKind: EXTENSION_RUNTIME_MODE,
+    source: 'chrome-companion',
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    evidenceRefs: [],
+    proofRefs: [],
+    redacted: true,
+    diagnostics: redactCompanionText(message && message.diagnostics ? JSON.stringify(message.diagnostics) : '')
+  };
+}
+
 function redactCompanionText(value) {
   if (value === null || value === undefined) {
     return '';
@@ -1143,7 +1181,7 @@ function redactCompanionText(value) {
     .replace(/s[k]-[A-Za-z0-9_-]{8,}/gi, '[redacted]')
     .replace(/authorization\s*[:=]\s*bearer\s+[A-Za-z0-9._-]+/gi, 'authorization=[redacted]')
     .replace(/bearer\s+[A-Za-z0-9._-]+/gi, 'bearer [redacted]')
-    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]')
+    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?|sessionid|csrf|xsrf|jwt|client_secret)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]')
     .replace(/\b(CUIT|DNI)\s*[:=]\s*\d{7,11}\b/gi, '$1=[redacted]');
 }
 

@@ -343,6 +343,19 @@ pre {
   overflow-wrap: anywhere;
 }
 
+.consent-surface {
+  border-color: #2f6f8f;
+  background: #eef8fc;
+}
+
+.consent-surface h2 {
+  color: #16465c;
+}
+
+.consent-surface dd {
+  overflow-wrap: anywhere;
+}
+
 .handoff-actions {
   display: flex;
   gap: 8px;

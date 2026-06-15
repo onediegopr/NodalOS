@@ -48,6 +48,7 @@ const state = {
     lastRunStatus: null
   },
   handoff: null,
+  consent: null,
   logs: []
 };
 
@@ -75,6 +76,17 @@ const el = {
   handoffContinueBtn: document.getElementById('handoffContinueBtn'),
   handoffCancelBtn: document.getElementById('handoffCancelBtn'),
   handoffCopyLogBtn: document.getElementById('handoffCopyLogBtn'),
+  consentSurface: document.getElementById('consentSurface'),
+  consentTitle: document.getElementById('consentTitle'),
+  consentStatus: document.getElementById('consentStatus'),
+  consentType: document.getElementById('consentType'),
+  consentScope: document.getElementById('consentScope'),
+  consentInstruction: document.getElementById('consentInstruction'),
+  consentOptions: document.getElementById('consentOptions'),
+  consentApproveBtn: document.getElementById('consentApproveBtn'),
+  consentDenyBtn: document.getElementById('consentDenyBtn'),
+  consentCancelBtn: document.getElementById('consentCancelBtn'),
+  consentCopyLogBtn: document.getElementById('consentCopyLogBtn'),
   instructionInput: document.getElementById('instructionInput'),
   startRunBtn: document.getElementById('startRunBtn'),
   pauseRunBtn: document.getElementById('pauseRunBtn'),
@@ -208,6 +220,10 @@ function bindEvents() {
   el.handoffContinueBtn.addEventListener('click', () => sendHandoffUiEvent('handoff.userCompleted'));
   el.handoffCancelBtn.addEventListener('click', () => sendHandoffUiEvent('handoff.cancelled'));
   el.handoffCopyLogBtn.addEventListener('click', copyHandoffLog);
+  el.consentApproveBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.userApproved`));
+  el.consentDenyBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.userDenied`));
+  el.consentCancelBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.cancelled`));
+  el.consentCopyLogBtn.addEventListener('click', copyConsentLog);
 
   el.startRunBtn.addEventListener('click', () => {
     state.operator.goal = el.instructionInput.value.trim();
@@ -372,6 +388,20 @@ function handleMessage(message) {
     case 'handoff.disconnected':
       applyHandoffState(message);
       break;
+    case 'vaultConsent.created':
+    case 'vaultConsent.updated':
+    case 'vaultConsent.expired':
+    case 'vaultConsent.revoked':
+    case 'vaultConsent.grantedByCore':
+    case 'vaultConsent.deniedByCore':
+    case 'profileConsent.created':
+    case 'profileConsent.updated':
+    case 'profileConsent.expired':
+    case 'profileConsent.revoked':
+    case 'profileConsent.grantedByCore':
+    case 'profileConsent.deniedByCore':
+      applyConsentState(message);
+      break;
     case 'runStarted':
       handleRunStarted(message.body || {});
       break;
@@ -417,6 +447,10 @@ function handleEngineMessage(message) {
   addLog('engine', message);
   if (message.type && /^handoff\./.test(message.type)) {
     applyHandoffState(message);
+    return;
+  }
+  if (message.type && /^(vaultConsent|profileConsent)\./.test(message.type)) {
+    applyConsentState(message);
     return;
   }
   if (message.tool) {
@@ -512,6 +546,7 @@ function render() {
   renderHeader();
   renderOperate();
   renderHandoff();
+  renderConsent();
   renderLearning();
   renderRecipes();
   renderRuntime();
@@ -665,6 +700,146 @@ async function copyHandoffLog() {
   try {
     await navigator.clipboard.writeText(log);
     addLog('local', 'LOG de handoff copiado.');
+  } catch {
+    addLog('local', log);
+  }
+  render();
+}
+
+function renderConsent() {
+  const consent = state.consent;
+  el.consentSurface.classList.toggle('hidden', !consent);
+  if (!consent) {
+    return;
+  }
+  el.consentTitle.textContent = 'NEXA necesita autorización';
+  el.consentStatus.textContent = consent.displayState || consent.status || 'Requested';
+  el.consentType.textContent = consent.consentType || '-';
+  el.consentScope.textContent = consent.scope || '-';
+  el.consentInstruction.textContent = consent.instruction || '-';
+  el.consentOptions.textContent = (consent.allowedOptions || []).join(', ') || '-';
+  const terminal = ['Denied', 'Expired', 'Revoked', 'GrantedByCore', 'Cancelled', 'Blocked'].includes(consent.displayState);
+  el.consentApproveBtn.disabled = terminal;
+  el.consentDenyBtn.disabled = terminal;
+  el.consentCancelBtn.disabled = terminal;
+}
+
+function applyConsentState(message) {
+  const consent = normalizeConsent(message);
+  if (!consent) {
+    return;
+  }
+  state.consent = consent;
+  state.run.status = consent.displayState === 'GrantedByCore' ? state.run.status : 'paused';
+  pushTimeline(`Autorización: ${consent.displayState || consent.consentType || 'Requested'}`);
+}
+
+function normalizeConsent(message) {
+  const presentation = message.presentation || message.consent || message;
+  if (!presentation) {
+    return null;
+  }
+  const kind = String(message.type || '').startsWith('profileConsent.') ? 'profile' : 'vault';
+  const consentType = presentation.consentType || presentation.type || (kind === 'profile' ? 'ProfileRealConsent' : 'SecretUseConsent');
+  return {
+    kind,
+    consentId: redactSensitive(presentation.consentId || presentation.id || message.consentId || ''),
+    runId: redactSensitive(presentation.runId || message.runId || state.run.runId || ''),
+    actionId: redactSensitive(presentation.actionId || message.actionId || ''),
+    correlationId: redactSensitive(presentation.correlationId || message.correlationId || ''),
+    consentType: redactSensitive(consentType),
+    scope: redactSensitive(presentation.scope || message.scope || ''),
+    status: redactSensitive(presentation.status || ''),
+    displayState: consentDisplayStateFrom(message.type, presentation.displayState || presentation.status),
+    safeTitle: redactSensitive(presentation.safeTitle || presentation.title || 'NEXA necesita autorización'),
+    instruction: redactSensitive(presentation.instruction || instructionForConsent(consentType)),
+    allowedOptions: Array.isArray(presentation.allowedOptions) && presentation.allowedOptions.length
+      ? presentation.allowedOptions.map(redactSensitive)
+      : ['AuthorizeIntent', 'DenyIntent', 'Cancel', 'CopyDiagnosticLog'],
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    redacted: true,
+    diagnostics: redactSensitive(presentation.diagnostics || message.diagnostics || '')
+  };
+}
+
+function consentDisplayStateFrom(type, fallback) {
+  if (/\.expired$/.test(type || '')) return 'Expired';
+  if (/\.revoked$/.test(type || '')) return 'Revoked';
+  if (/\.grantedByCore$/.test(type || '')) return 'GrantedByCore';
+  if (/\.deniedByCore$/.test(type || '')) return 'Denied';
+  if (fallback === 'Granted') return 'GrantedByCore';
+  if (fallback === 'Denied' || fallback === 'Expired' || fallback === 'Revoked' || fallback === 'Cancelled' || fallback === 'Blocked') return fallback;
+  return 'Requested';
+}
+
+function instructionForConsent(consentType) {
+  const normalized = String(consentType || '').toLowerCase();
+  if (normalized.includes('profile')) {
+    return 'NEXA solicita autorización para perfil real futuro. Esto no autoriza secretos ni login.';
+  }
+  if (normalized.includes('storage')) {
+    return 'NEXA solicita autorización para guardar una referencia futura. No se mostrará ni guardará el valor secreto en Companion.';
+  }
+  if (normalized.includes('retrieval')) {
+    return 'NEXA solicita autorización para recuperar una referencia. Companion no recibirá el valor secreto.';
+  }
+  if (normalized.includes('cookie')) {
+    return 'NEXA solicita autorización para cookie o sesión sensible. Esto no autoriza passwords ni tokens.';
+  }
+  if (normalized.includes('delete') || normalized.includes('rotation')) {
+    return 'NEXA solicita autorización para cambiar una referencia secreta. Core debe validar antes de ejecutar.';
+  }
+  return 'NEXA solicita autorización scoped. Tu acción en Companion es intención; Core decide.';
+}
+
+function sendConsentUiEvent(type) {
+  if (!state.consent) {
+    return;
+  }
+  const event = {
+    type,
+    consentId: state.consent.consentId || '',
+    runId: state.consent.runId || state.run.runId || '',
+    actionId: state.consent.actionId || '',
+    correlationId: state.consent.correlationId || '',
+    consentType: state.consent.consentType || '',
+    scope: state.consent.scope || '',
+    runtimeKind: 'core-governed-companion',
+    source: 'chrome-companion',
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    evidenceRefs: [],
+    proofRefs: [],
+    redacted: true,
+    diagnostics: redactSensitive({
+      displayState: state.consent.displayState,
+      consentType: state.consent.consentType,
+      scope: state.consent.scope
+    })
+  };
+  state.consent = {
+    ...state.consent,
+    displayState: type.endsWith('.cancelled') ? 'Cancelled' : type.endsWith('.userDenied') ? 'Denied' : 'UserIntentPendingCore',
+    status: type.endsWith('.cancelled') ? 'Cancelled' : type.endsWith('.userDenied') ? 'Denied' : 'UserApprovedIntent'
+  };
+  addLog('extension', event);
+  post(event);
+  render();
+}
+
+async function copyConsentLog() {
+  const log = redactSensitive(JSON.stringify({
+    createdAt: new Date().toISOString(),
+    runtimeKind: 'core-governed-companion',
+    consent: state.consent,
+    run: state.run,
+    diagnostics: state.runtime,
+    logs: state.logs.slice(0, 40)
+  }, null, 2));
+  try {
+    await navigator.clipboard.writeText(log);
+    addLog('local', 'LOG de autorización copiado.');
   } catch {
     addLog('local', log);
   }
@@ -1167,7 +1342,7 @@ function redactSensitive(value) {
     .replace(/s[k]-[A-Za-z0-9_-]{8,}/gi, '[redacted]')
     .replace(/authorization\s*[:=]\s*bearer\s+[A-Za-z0-9._-]+/gi, 'authorization=[redacted]')
     .replace(/bearer\s+[A-Za-z0-9._-]+/gi, 'bearer [redacted]')
-    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]')
+    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?|sessionid|csrf|xsrf|jwt|client_secret)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]')
     .replace(/\b(CUIT|DNI)\s*[:=]\s*\d{7,11}\b/gi, '$1=[redacted]');
 }
 

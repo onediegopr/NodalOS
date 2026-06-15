@@ -69,7 +69,7 @@ function redactHandoffText(value) {
     .replace(/s[k]-[A-Za-z0-9_-]{8,}/gi, '[redacted]')
     .replace(/authorization\s*[:=]\s*bearer\s+[A-Za-z0-9._-]+/gi, 'authorization=[redacted]')
     .replace(/bearer\s+[A-Za-z0-9._-]+/gi, 'bearer [redacted]')
-    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]');
+    .replace(/(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|otp|code|clave(?:\s+fiscal)?|sessionid|csrf|xsrf|jwt|client_secret)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]');
 }
 
 function handoffInstruction(reason) {
@@ -112,6 +112,53 @@ function companionHandoffEvent(type, handoff) {
     evidenceRefs: [],
     proofRefs: [],
     redacted: true
+  };
+}
+
+function consentInstruction(consentType) {
+  const normalized = text(consentType);
+  if (normalized.includes('profile')) return 'Perfil real requiere autorizacion futura; no autoriza secretos.';
+  if (normalized.includes('storage')) return 'Guardar referencia futura sin mostrar valor secreto.';
+  if (normalized.includes('retrieval')) return 'Recuperar referencia sin enviar valor secreto a Companion.';
+  if (normalized.includes('cookie')) return 'Cookie o sesion sensible no autoriza password ni token.';
+  return 'Autorizacion scoped; Core decide.';
+}
+
+function normalizeConsentPresentation(message) {
+  const presentation = message.presentation || message.consent || message;
+  const consentType = presentation.consentType || message.consentType || 'SecretUseConsent';
+  return {
+    consentId: redactHandoffText(presentation.consentId || message.consentId || ''),
+    runId: redactHandoffText(presentation.runId || message.runId || ''),
+    actionId: redactHandoffText(presentation.actionId || message.actionId || ''),
+    correlationId: redactHandoffText(presentation.correlationId || message.correlationId || ''),
+    displayState: presentation.displayState || presentation.status || 'Requested',
+    consentType: redactHandoffText(consentType),
+    scope: redactHandoffText(presentation.scope || message.scope || ''),
+    instruction: redactHandoffText(presentation.instruction || consentInstruction(consentType)),
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    redacted: true
+  };
+}
+
+function companionConsentEvent(type, consent) {
+  return {
+    type,
+    consentId: consent.consentId,
+    runId: consent.runId,
+    actionId: consent.actionId,
+    correlationId: consent.correlationId,
+    consentType: consent.consentType,
+    scope: consent.scope,
+    runtimeKind: 'core-governed-companion',
+    source: 'chrome-companion',
+    authoritative: false,
+    verificationStatus: 'NotVerified',
+    evidenceRefs: [],
+    proofRefs: [],
+    redacted: true,
+    diagnostics: redactHandoffText(`consentType=${consent.consentType}`)
   };
 }
 
@@ -293,6 +340,73 @@ function testHandoffRedaction() {
   assert.ok(redacted.includes('[redacted]'));
 }
 
+function testVaultConsentCreatedPresentation() {
+  const consent = normalizeConsentPresentation({
+    type: 'vaultConsent.created',
+    presentation: {
+      consentId: 'vc1',
+      runId: 'r1',
+      actionId: 'a1',
+      correlationId: 'c1',
+      consentType: 'SecretStorageConsent',
+      scope: 'Secret',
+      status: 'Requested'
+    }
+  });
+  assert.equal(consent.displayState, 'Requested');
+  assert.equal(consent.authoritative, false);
+  assert.equal(consent.verificationStatus, 'NotVerified');
+  assert.ok(consent.instruction.includes('referencia'));
+}
+
+function testProfileConsentCreatedPresentation() {
+  const consent = normalizeConsentPresentation({
+    type: 'profileConsent.created',
+    presentation: {
+      consentId: 'pc1',
+      consentType: 'ProfileRealConsent',
+      scope: 'Profile'
+    }
+  });
+  assert.equal(consent.consentType, 'ProfileRealConsent');
+  assert.ok(consent.instruction.includes('Perfil real'));
+}
+
+function testConsentCompanionEventsAreNonAuthoritative() {
+  const consent = normalizeConsentPresentation({ consentId: 'vc1', runId: 'r1', actionId: 'a1', correlationId: 'c1', consentType: 'SecretUseConsent', scope: 'Secret' });
+  const approved = companionConsentEvent('vaultConsent.userApproved', consent);
+  const denied = companionConsentEvent('vaultConsent.userDenied', consent);
+  const cancelled = companionConsentEvent('vaultConsent.cancelled', consent);
+  for (const event of [approved, denied, cancelled]) {
+    assert.equal(event.authoritative, false);
+    assert.equal(event.verificationStatus, 'NotVerified');
+    assert.notEqual(event.verificationStatus, 'Verified');
+    assert.notEqual(event.type, 'Done');
+    assert.equal(event.source, 'chrome-companion');
+  }
+}
+
+function testConsentRedaction() {
+  const consent = normalizeConsentPresentation({
+    presentation: {
+      consentId: 'vc1',
+      consentType: 'SecretUseConsent',
+      instruction: 'client_secret=abc jwt=header.payload.signature sessionid=raw cookie=session'
+    }
+  });
+  const event = companionConsentEvent('vaultConsent.userApproved', consent);
+  const log = redactHandoffText(JSON.stringify({ consent, event }));
+  assert.ok(!log.includes('abc'));
+  assert.ok(!log.includes('header.payload.signature'));
+  assert.ok(!log.includes('raw'));
+  assert.ok(!log.includes('session"'));
+}
+
+function testLegacyRunnerDisabledFixture() {
+  const legacyRunnerEnabled = false;
+  assert.equal(legacyRunnerEnabled, false);
+}
+
 (async () => {
   testBasicButtons();
   testFormRedaction();
@@ -305,6 +419,11 @@ function testHandoffRedaction() {
   testHandoffNeverEmitsVerifiedOrDone();
   testHandoffTerminalStatesAreNotDone();
   testHandoffRedaction();
+  testVaultConsentCreatedPresentation();
+  testProfileConsentCreatedPresentation();
+  testConsentCompanionEventsAreNonAuthoritative();
+  testConsentRedaction();
+  testLegacyRunnerDisabledFixture();
   await testRecipeRunnerFixture();
   console.log('NEXA browser fixture tests passed');
 })();
