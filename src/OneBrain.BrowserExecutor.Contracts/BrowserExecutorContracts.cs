@@ -294,10 +294,14 @@ public sealed record BrowserVerification(
     double Confidence,
     IReadOnlyList<string> EvidenceRefs,
     string? FailureReason,
-    DateTimeOffset VerifiedAtUtc)
+    DateTimeOffset VerifiedAtUtc,
+    IReadOnlyList<string>? ProofRefs = null)
 {
+    public IReadOnlyList<string> ProofReferences => ProofRefs ?? [];
+    public bool HasSemanticProof => ProofReferences.Count > 0;
+
     public bool AllowsStepDone(bool allowSkippedByPolicy = false) =>
-        Status == BrowserVerificationStatus.Verified ||
+        (Status == BrowserVerificationStatus.Verified && HasSemanticProof) ||
         (allowSkippedByPolicy && Status == BrowserVerificationStatus.Skipped);
 
     public ContractValidationResult Validate()
@@ -311,8 +315,11 @@ public sealed record BrowserVerification(
         if (Status == BrowserVerificationStatus.Failed && string.IsNullOrWhiteSpace(FailureReason))
             errors.Add("Failed verification requires FailureReason.");
 
-        if (EvidenceRefs.Count == 0 && string.IsNullOrWhiteSpace(FailureReason))
-            errors.Add("Verification requires evidence refs or a failure reason.");
+        if (Status == BrowserVerificationStatus.Verified && !HasSemanticProof)
+            errors.Add("Verified status requires semantic proof refs.");
+
+        if (EvidenceRefs.Count == 0 && ProofReferences.Count == 0 && string.IsNullOrWhiteSpace(FailureReason))
+            errors.Add("Verification requires evidence refs, proof refs, or a failure reason.");
 
         if (Confidence is < 0 or > 1)
             errors.Add("Confidence must be between 0 and 1.");

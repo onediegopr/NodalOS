@@ -297,7 +297,8 @@ public sealed class BrowserExecutorFsmAdapterTests
             Confidence: status == BrowserVerificationStatus.Verified ? 0.95 : 0.2,
             EvidenceRefs: status == BrowserVerificationStatus.Verified ? ["verification-evidence"] : [],
             FailureReason: failureReason,
-            VerifiedAtUtc: DateTimeOffset.UtcNow);
+            VerifiedAtUtc: DateTimeOffset.UtcNow,
+            ProofRefs: status == BrowserVerificationStatus.Verified ? ["verification-proof"] : []);
 
     private static Uri FixtureUri()
     {

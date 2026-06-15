@@ -59,6 +59,16 @@ public sealed record BrowserTargetSelectionPolicy(bool RequireExplicitTarget, bo
     public static BrowserTargetSelectionPolicy Explicit(string? expectedHost = null) => new(true, true, expectedHost);
 }
 
+public sealed record BrowserCdpRuntimeEvent(
+    BrowserTargetEventType EventType,
+    string TargetId,
+    string? FrameId = null,
+    string? ParentFrameId = null,
+    Uri? Url = null,
+    string Title = "",
+    string Reason = "",
+    bool CrossOriginLimited = false);
+
 public sealed class BrowserTargetRegistry
 {
     private readonly Dictionary<string, BrowserTargetRecord> _targets = new(StringComparer.Ordinal);
@@ -163,6 +173,58 @@ public sealed class BrowserTargetManager
 {
     public BrowserTargetRegistry Registry { get; } = new();
     public BrowserFrameManager Frames { get; } = new();
+
+    public BrowserNavigationEvent ApplyRuntimeEvent(BrowserCdpRuntimeEvent runtimeEvent)
+    {
+        var url = runtimeEvent.Url ?? new Uri("about:blank");
+        BrowserNavigationEvent emitted;
+        switch (runtimeEvent.EventType)
+        {
+            case BrowserTargetEventType.TargetCreated:
+            case BrowserTargetEventType.TargetAttached:
+                var created = Registry.UpsertTarget(runtimeEvent.TargetId, url, runtimeEvent.Title, BrowserTargetState.Alive);
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, runtimeEvent.FrameId, url, created.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            case BrowserTargetEventType.TargetDestroyed:
+                var destroyed = Registry.MarkTarget(runtimeEvent.TargetId, BrowserTargetState.Destroyed, BrowserTargetEventType.TargetDestroyed);
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, runtimeEvent.FrameId, destroyed.Url, destroyed.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            case BrowserTargetEventType.TargetDetached:
+                var detached = Registry.MarkTarget(runtimeEvent.TargetId, BrowserTargetState.Detached, BrowserTargetEventType.TargetDetached);
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, runtimeEvent.FrameId, detached.Url, detached.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            case BrowserTargetEventType.NavigationStarted:
+            case BrowserTargetEventType.NavigationCommitted:
+            case BrowserTargetEventType.NavigationFinished:
+                var navigated = Registry.ApplyNavigation(runtimeEvent.TargetId, url, runtimeEvent.Title, runtimeEvent.EventType);
+                if (!string.IsNullOrWhiteSpace(runtimeEvent.FrameId))
+                    Frames.NavigateFrame(runtimeEvent.TargetId, runtimeEvent.FrameId, url);
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, runtimeEvent.FrameId, url, navigated.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            case BrowserTargetEventType.FrameAttached:
+                var frame = Frames.AttachFrame(runtimeEvent.TargetId, runtimeEvent.FrameId ?? "main", runtimeEvent.ParentFrameId, url, runtimeEvent.Title, runtimeEvent.CrossOriginLimited);
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, frame.FrameId, url, frame.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            case BrowserTargetEventType.FrameDetached:
+                var detachedFrame = Frames.DetachFrame(runtimeEvent.TargetId, runtimeEvent.FrameId ?? "main");
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, detachedFrame.FrameId, detachedFrame.Url, detachedFrame.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            case BrowserTargetEventType.FrameNavigated:
+                var frameNavigated = Frames.NavigateFrame(runtimeEvent.TargetId, runtimeEvent.FrameId ?? "main", url);
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, frameNavigated.FrameId, url, frameNavigated.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            case BrowserTargetEventType.PopupOpened:
+            case BrowserTargetEventType.WindowOpened:
+                var popup = Registry.UpsertTarget(runtimeEvent.TargetId, url, runtimeEvent.Title, BrowserTargetState.Popup);
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, runtimeEvent.FrameId, url, popup.Generation, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+            default:
+                emitted = new BrowserNavigationEvent(runtimeEvent.EventType, runtimeEvent.TargetId, runtimeEvent.FrameId, url, 0, DateTimeOffset.UtcNow, runtimeEvent.Reason);
+                break;
+        }
+
+        return emitted;
+    }
 
     public BrowserTargetRecord SelectTarget(BrowserTargetSelectionPolicy policy, string? explicitTargetId = null)
     {

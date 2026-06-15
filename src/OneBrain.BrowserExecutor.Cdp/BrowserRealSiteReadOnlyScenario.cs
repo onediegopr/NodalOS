@@ -306,7 +306,8 @@ public sealed class BrowserRealSiteReadOnlyScenario
             Confidence: confidence,
             EvidenceRefs: observation.EvidenceRefs,
             FailureReason: failureReason,
-            VerifiedAtUtc: DateTimeOffset.UtcNow);
+            VerifiedAtUtc: DateTimeOffset.UtcNow,
+            ProofRefs: status == BrowserVerificationStatus.Verified ? [$"proof:{observation.ObservationId}:{options.ExpectedHost}"] : []);
 
     private static BrowserEvidence Evidence(string runId, string stepId, string? actionId, string? verificationId, BrowserTargetContext targetContext, string summary, string? payloadRef) =>
         new(

@@ -220,7 +220,7 @@ public sealed class BrowserExecutorStepRunner
                 RedactionApplied: true,
                 SensitivityLevel: BrowserSensitivityLevel.Low));
 
-            if (verification.Status == BrowserVerificationStatus.Verified && verification.AllowsStepDone() && verification.EvidenceRefs.Count > 0 && browserEvidence.Count > 0)
+            if (verification.Status == BrowserVerificationStatus.Verified && verification.AllowsStepDone() && verification.HasSemanticProof && browserEvidence.Count > 0)
             {
                 Transition(BrowserExecutorStepState.Verified, StepTransition.Verified, null, "verification succeeded");
                 return Result(BrowserExecutorStepState.Verified, true, policy, null, actionResult, verification, browserEvidence, ledger, BrowserRuntimeErrorCode.None, "browser step verified", history);

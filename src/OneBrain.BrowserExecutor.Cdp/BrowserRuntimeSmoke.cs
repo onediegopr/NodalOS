@@ -179,7 +179,7 @@ public sealed class BrowserRuntimeSmokeRunner
                 var clickResult = await page.ExecuteActionAsync(click, cancellationToken).ConfigureAwait(false);
                 if (!clickResult.Executed)
                     throw new BrowserRuntimeSmokeException(BrowserRuntimeErrorCode.ActionRejected, clickResult.Error ?? "Click did not execute.");
-                if (clickResult.Status == BrowserVerificationStatus.Verified.ToString())
+                if (ChromeCdpPageSession.ActionResultIsVerified(clickResult))
                     throw new BrowserRuntimeSmokeException(BrowserRuntimeErrorCode.VerificationFailed, "Action result was incorrectly marked verified.");
 
                 var wait = CreateAction("smoke-run", "act-wait", "action-wait", "", await page.GetCurrentTargetContextAsync("smoke-run", cancellationToken).ConfigureAwait(false), BrowserActionType.WaitFor, "#result", null, new BrowserExpectedOutcome("wait for result", null, "Result: Gate", null), BrowserRiskClass.ReadOnly);

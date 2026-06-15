@@ -153,7 +153,8 @@ public sealed class BrowserTargetFrameManagerTests
             Confidence: 0.95,
             EvidenceRefs: [evidence.EvidenceId],
             FailureReason: null,
-            VerifiedAtUtc: DateTimeOffset.UtcNow);
+            VerifiedAtUtc: DateTimeOffset.UtcNow,
+            ProofRefs: ["proof-target-frame"]);
 
         Assert.AreEqual("target-evidence", evidence.TargetContext!.TargetId);
         Assert.AreEqual("main", evidence.TargetContext.FrameId);
@@ -161,6 +162,52 @@ public sealed class BrowserTargetFrameManagerTests
         Assert.AreEqual("main", verification.TargetContext.FrameId);
         Assert.IsTrue(evidence.Validate().IsValid);
         Assert.IsTrue(verification.Validate().IsValid);
+    }
+
+    [TestMethod]
+    public void BrowserTargetRuntimeEventHandlerMarksDetachedAndDestroyed()
+    {
+        var manager = new BrowserTargetManager();
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.TargetCreated, "target-live", Url: new Uri("https://example.com/"), Title: "Example"));
+
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.TargetDetached, "target-live", Reason: "cdp detached"));
+        var detached = manager.Registry.TryGet("target-live");
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.TargetDestroyed, "target-live", Reason: "cdp destroyed"));
+        var destroyed = manager.Registry.TryGet("target-live");
+
+        Assert.AreEqual(BrowserTargetState.Detached, detached!.State);
+        Assert.AreEqual(BrowserTargetState.Destroyed, destroyed!.State);
+    }
+
+    [TestMethod]
+    public void BrowserTargetRuntimeEventHandlerUpdatesNavigationGenerationAndFrameContext()
+    {
+        var manager = new BrowserTargetManager();
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.TargetCreated, "target-nav-live", Url: new Uri("https://example.com/start"), Title: "Start"));
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameAttached, "target-nav-live", FrameId: "main", Url: new Uri("https://example.com/start")));
+
+        var before = manager.Registry.TryGet("target-nav-live")!;
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.NavigationCommitted, "target-nav-live", FrameId: "main", Url: new Uri("https://example.com/final"), Title: "Final"));
+        var after = manager.Registry.TryGet("target-nav-live")!;
+        var tree = manager.Frames.GetTree("target-nav-live");
+
+        Assert.IsTrue(after.Generation > before.Generation);
+        Assert.AreEqual(new Uri("https://example.com/final"), after.Url);
+        Assert.AreEqual(new Uri("https://example.com/final"), tree.MainFrame.Url);
+    }
+
+    [TestMethod]
+    public void BrowserTargetRuntimeEventHandlerDetachesFrame()
+    {
+        var manager = new BrowserTargetManager();
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.TargetCreated, "target-frame-live", Url: new Uri("https://example.com/"), Title: "Example"));
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameAttached, "target-frame-live", FrameId: "child", ParentFrameId: "main", Url: new Uri("https://example.com/frame")));
+
+        manager.ApplyRuntimeEvent(new BrowserCdpRuntimeEvent(BrowserTargetEventType.FrameDetached, "target-frame-live", FrameId: "child"));
+        var tree = manager.Frames.GetTree("target-frame-live");
+
+        Assert.AreEqual(BrowserTargetState.Detached, tree.Frames["child"].State);
+        Assert.IsFalse(tree.Frames["child"].CanUseForVerification);
     }
 
     private static BrowserAction Action(BrowserTargetContext context, BrowserActionType type) =>

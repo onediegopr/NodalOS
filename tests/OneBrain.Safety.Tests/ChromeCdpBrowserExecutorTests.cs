@@ -79,7 +79,7 @@ public sealed class ChromeCdpBrowserExecutorTests
 
         Assert.IsTrue(typeResult.Executed);
         Assert.AreEqual("Executed", typeResult.Status);
-        Assert.AreNotEqual(BrowserVerificationStatus.Verified.ToString(), typeResult.Status);
+        Assert.IsFalse(ChromeCdpPageSession.ActionResultIsVerified(typeResult));
         Assert.AreEqual(BrowserVerificationStatus.Verified, typeVerification.Status);
         Assert.IsTrue(typeVerification.AllowsStepDone());
 
@@ -98,6 +98,7 @@ public sealed class ChromeCdpBrowserExecutorTests
         Assert.IsTrue(clickResult.Executed);
         Assert.AreEqual(BrowserVerificationStatus.Verified, clickVerification.Status);
         Assert.IsTrue(clickVerification.EvidenceRefs.Count > 0);
+        Assert.IsTrue(clickVerification.HasSemanticProof);
     }
 
     [TestMethod]

@@ -142,9 +142,18 @@ public sealed class BrowserExecutorContractsTests
     [TestMethod]
     public void VerificationRequiresEvidenceOrFailureReason()
     {
-        var invalid = CreateVerification(BrowserVerificationStatus.Verified, evidenceRefs: []);
+        var invalid = CreateVerification(BrowserVerificationStatus.Verified, evidenceRefs: [], proofRefs: []);
 
         Assert.IsFalse(invalid.Validate().IsValid);
+    }
+
+    [TestMethod]
+    public void VerifiedRequiresSemanticProofNotDecorativeGuidOnly()
+    {
+        var decorativeOnly = CreateVerification(BrowserVerificationStatus.Verified, evidenceRefs: ["decorative-guid"], proofRefs: []);
+
+        Assert.IsFalse(decorativeOnly.AllowsStepDone());
+        Assert.IsFalse(decorativeOnly.Validate().IsValid);
     }
 
     [TestMethod]
@@ -383,7 +392,8 @@ public sealed class BrowserExecutorContractsTests
     private static BrowserVerification CreateVerification(
         BrowserVerificationStatus status,
         IReadOnlyList<string>? evidenceRefs = null,
-        string? failureReason = null)
+        string? failureReason = null,
+        IReadOnlyList<string>? proofRefs = null)
     {
         return new BrowserVerification(
             VerificationId: "verification-1",
@@ -398,6 +408,7 @@ public sealed class BrowserExecutorContractsTests
             Confidence: status == BrowserVerificationStatus.Verified ? 0.98 : 0.4,
             EvidenceRefs: evidenceRefs ?? ["evidence-1"],
             FailureReason: failureReason,
-            VerifiedAtUtc: DateTimeOffset.UtcNow);
+            VerifiedAtUtc: DateTimeOffset.UtcNow,
+            ProofRefs: proofRefs ?? (status == BrowserVerificationStatus.Verified ? ["proof-1"] : []));
     }
 }

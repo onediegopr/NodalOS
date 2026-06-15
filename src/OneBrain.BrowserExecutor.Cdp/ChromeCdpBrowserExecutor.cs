@@ -446,8 +446,12 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
             Confidence: matched ? 0.95 : 0.2,
             EvidenceRefs: [Guid.NewGuid().ToString("N")],
             FailureReason: matched ? null : string.IsNullOrWhiteSpace(reason) ? "Expected outcome was not observed." : reason,
-            VerifiedAtUtc: DateTimeOffset.UtcNow);
+            VerifiedAtUtc: DateTimeOffset.UtcNow,
+            ProofRefs: matched ? [$"proof:{action.ActionId}:{observation.ObservationId}"] : []);
     }
+
+    public static bool ActionResultIsVerified(ChromeCdpActionResult result) =>
+        string.Equals(result.Status, "Verified", StringComparison.Ordinal);
 
     public async Task<BrowserHeartbeat> ProbeLivenessAsync(BrowserTargetContext expected, CancellationToken cancellationToken = default)
     {
