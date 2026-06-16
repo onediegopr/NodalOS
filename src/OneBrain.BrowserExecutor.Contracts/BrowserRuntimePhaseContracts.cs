@@ -353,7 +353,16 @@ public sealed record BrowserRuntimeObservedState(
     bool PrivatePreviewReadinessDashboardEnablesRealSurfaces = false,
     bool OperatorBlockerExplanationDefined = false,
     bool OperatorBlockerExplanationSpecific = true,
-    bool OperatorBlockerExplanationLeaksSecrets = false)
+    bool OperatorBlockerExplanationLeaksSecrets = false,
+    bool ExternalTestOwnedTargetContractDefined = false,
+    bool ExternalTestOwnedTargetPolicySafe = true,
+    bool ExternalProofHarnessDefined = false,
+    bool ExternalProofHarnessOptInOnly = true,
+    bool ExternalProofHarnessRunsWithoutApprovedTarget = false,
+    bool ExternalProofHarnessCapturesSensitiveMaterial = false,
+    bool ExternalReadOnlyEvidencePackDefined = false,
+    bool ExternalReadOnlyEvidencePackClosesM51M65WithoutReview = false,
+    bool ExternalReadOnlyEvidencePackLeaksSecrets = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -654,6 +663,18 @@ public sealed record BrowserRuntimeObservedState(
          OperatorBlockerExplanationSpecific &&
          !OperatorBlockerExplanationLeaksSecrets);
 
+    public bool ExternalProofPreparationAllowed =>
+        (!ExternalTestOwnedTargetContractDefined && !ExternalProofHarnessDefined && !ExternalReadOnlyEvidencePackDefined) ||
+        (ExternalTestOwnedTargetContractDefined &&
+         ExternalTestOwnedTargetPolicySafe &&
+         ExternalProofHarnessDefined &&
+         ExternalProofHarnessOptInOnly &&
+         !ExternalProofHarnessRunsWithoutApprovedTarget &&
+         !ExternalProofHarnessCapturesSensitiveMaterial &&
+         ExternalReadOnlyEvidencePackDefined &&
+         !ExternalReadOnlyEvidencePackClosesM51M65WithoutReview &&
+         !ExternalReadOnlyEvidencePackLeaksSecrets);
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -835,7 +856,16 @@ public sealed record BrowserRuntimeObservedState(
         PrivatePreviewReadinessDashboardEnablesRealSurfaces ||
         OperatorBlockerExplanationDefined ||
         !OperatorBlockerExplanationSpecific ||
-        OperatorBlockerExplanationLeaksSecrets;
+        OperatorBlockerExplanationLeaksSecrets ||
+        ExternalTestOwnedTargetContractDefined ||
+        !ExternalTestOwnedTargetPolicySafe ||
+        ExternalProofHarnessDefined ||
+        !ExternalProofHarnessOptInOnly ||
+        ExternalProofHarnessRunsWithoutApprovedTarget ||
+        ExternalProofHarnessCapturesSensitiveMaterial ||
+        ExternalReadOnlyEvidencePackDefined ||
+        ExternalReadOnlyEvidencePackClosesM51M65WithoutReview ||
+        ExternalReadOnlyEvidencePackLeaksSecrets;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

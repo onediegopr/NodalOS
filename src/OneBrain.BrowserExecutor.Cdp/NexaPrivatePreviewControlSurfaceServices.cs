@@ -58,17 +58,27 @@ public sealed class NexaCanonicalWorkspaceGuardService
 public sealed class NexaPrivatePreviewReadinessDashboardService
 {
     public NexaPrivatePreviewReadinessDashboard Build(NexaSkippedTestsAuditReport skippedReport, NexaPrivatePreviewGoNoGoReport goNoGo, NexaCanonicalWorkspaceGuardResult workspaceGuard)
+        => Build(skippedReport, goNoGo, workspaceGuard, externalEvidencePack: null);
+
+    public NexaPrivatePreviewReadinessDashboard Build(
+        NexaSkippedTestsAuditReport skippedReport,
+        NexaPrivatePreviewGoNoGoReport goNoGo,
+        NexaCanonicalWorkspaceGuardResult workspaceGuard,
+        NexaExternalReadOnlyEvidencePack? externalEvidencePack)
     {
         var externalSkipped = skippedReport.Items
             .Where(item => item.Category == NexaSkippedTestCategory.ExternalTargetBlocked)
             .ToArray();
         var localBlockedBySkipped = skippedReport.Items.Any(item => item.BlocksLocalPrivatePreview);
         var externalBlocked = externalSkipped.Length > 0;
+        var candidateProof = externalEvidencePack?.CandidateForM51M65Closure == true;
         var activeBlockers = new List<string>();
 
         if (workspaceGuard.Decision != NexaCanonicalWorkspaceGuardDecisionKind.Allowed)
             activeBlockers.Add("canonical workspace guard blocked local preview operations");
-        if (externalBlocked)
+        if (candidateProof)
+            activeBlockers.Add("external read-only candidate proof exists; M51/M65 still require explicit closure decision");
+        else if (externalBlocked)
             activeBlockers.Add("M51/M65 external target proof blocked: no test-owned external target configured");
         activeBlockers.Add("public SaaS remains blocked");
         activeBlockers.Add("real billing remains blocked");
@@ -95,7 +105,7 @@ public sealed class NexaPrivatePreviewReadinessDashboardService
             SensitiveRealPilotAllowed: false,
             SubmitPaySignDeleteAllowed: false,
             localAllowed ? "GO local private preview only" : "NO-GO local preview until local blockers are fixed",
-            externalBlocked ? "NO-GO external/live: test-owned external target missing" : "NO-GO external/live until live proof is explicitly executed");
+            candidateProof ? "NO-GO external/live until M51/M65 closure review accepts candidate proof" : externalBlocked ? "NO-GO external/live: test-owned external target missing" : "NO-GO external/live until live proof is explicitly executed");
 
         return new NexaPrivatePreviewReadinessDashboard(
             "private-preview-readiness-dashboard-local",
@@ -104,7 +114,7 @@ public sealed class NexaPrivatePreviewReadinessDashboardService
             skippedReport.Items,
             decision,
             M51Deferred: true,
-            M65Blocked: externalBlocked,
+            M65Blocked: externalBlocked && !candidateProof,
             Redacted: true);
     }
 

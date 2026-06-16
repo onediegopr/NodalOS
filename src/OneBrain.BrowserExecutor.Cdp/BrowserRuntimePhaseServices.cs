@@ -266,6 +266,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(state.EmbeddedRuntimeCompatibilityAllowed, "embedded runtime compatibility safe", passed, failed);
         Check(state.PrivatePreviewOperationsAllowed, "private preview operations safe", passed, failed);
         Check(state.PrivatePreviewControlSurfaceAllowed, "private preview control surface safe", passed, failed);
+        Check(state.ExternalProofPreparationAllowed, "external proof preparation safe", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);
