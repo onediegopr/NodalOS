@@ -275,3 +275,110 @@ public sealed record NexaLiveProofSafetyGateDecision(
     bool ClosesM51M65,
     bool ExecutesNetwork,
     bool Redacted);
+
+public enum NexaHttpsOwnershipVerificationStatus
+{
+    NotChecked,
+    DnsResolved,
+    HttpsReady,
+    HealthOk,
+    OwnershipOk,
+    MetadataMismatch,
+    VerificationFailed,
+    VerifiedTestOwnedReadOnlyTarget
+}
+
+public sealed record NexaHttpsOwnershipVerificationRequest(
+    string ExpectedBaseUrl,
+    string RequiredHealthPath,
+    string RequiredOwnershipPath,
+    IReadOnlyList<string> ExpectedProjectMetadata,
+    string DeploymentProvider,
+    string DeploymentScope,
+    string DeploymentProject,
+    bool OptInLiveNetwork);
+
+public sealed record NexaHttpsOwnershipVerificationResult(
+    NexaHttpsOwnershipVerificationStatus Status,
+    string BaseUrl,
+    string HealthUrl,
+    string OwnershipUrl,
+    int? HealthStatusCode,
+    int? OwnershipStatusCode,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<string> ReasonCodes,
+    bool RestrictionsConfirmed,
+    bool EnablesCandidateLiveProof,
+    bool ClosesM51M65,
+    bool ExecutedNetwork,
+    bool Redacted);
+
+public interface INexaReadOnlyHttpProbe
+{
+    Task<NexaReadOnlyHttpProbeResult> GetAsync(Uri uri, CancellationToken cancellationToken);
+}
+
+public sealed record NexaReadOnlyHttpProbeResult(
+    int StatusCode,
+    string RedactedText,
+    IReadOnlyList<string> HeaderNames,
+    bool CapturedCookies,
+    bool CapturedBodies,
+    bool CapturedSensitiveHeaderValues);
+
+public enum NexaFirstReadOnlyLiveProofStatus
+{
+    SkippedNoOptIn,
+    BlockedVerificationFailed,
+    BlockedPolicyViolation,
+    CandidateRunnerAllowed,
+    PassedReadOnlyProof,
+    FailedRuntime
+}
+
+public sealed record NexaFirstReadOnlyLiveProofResult(
+    NexaFirstReadOnlyLiveProofStatus Status,
+    NexaHttpsOwnershipVerificationResult Verification,
+    NexaLiveProofSafetyGateDecision SafetyGate,
+    NexaExternalReadOnlyEvidencePack EvidencePack,
+    IReadOnlyList<string> RoutesTested,
+    IReadOnlyList<string> DeniedRoutesTested,
+    IReadOnlyList<NexaOperatorBlockerExplanation> BlockerExplanations,
+    bool ExecutedNetwork,
+    bool Redacted);
+
+public enum NexaM51M65ClosureCandidateReviewDecision
+{
+    NoLiveProofExecuted,
+    LiveProofSkippedNoOptIn,
+    LiveProofFailed,
+    LiveProofPassedButReviewRequired,
+    CandidateCloseM51Only,
+    CandidateCloseM65Only,
+    CandidateCloseM51AndM65,
+    DoNotClose
+}
+
+public sealed record NexaM51M65ClosureCandidateReview(
+    string ProofId,
+    string TargetId,
+    string Domain,
+    string Provider,
+    string ScopeProject,
+    NexaHttpsOwnershipVerificationStatus TargetVerificationStatus,
+    NexaFirstReadOnlyLiveProofStatus LiveProofStatus,
+    IReadOnlyList<string> RoutesTested,
+    IReadOnlyList<string> DeniedRoutesTested,
+    NexaExternalReadOnlyEvidencePackStatus EvidencePackStatus,
+    bool RedactionOk,
+    IReadOnlyList<string> PolicyViolations,
+    IReadOnlyList<NexaOperatorBlockerExplanation> OperatorExplanations,
+    string M51Recommendation,
+    string M65Recommendation,
+    NexaM51M65ClosureCandidateReviewDecision FinalDecision,
+    bool PublicSaasStillDisabled,
+    bool RealBillingStillDisabled,
+    bool RealEmailStillDisabled,
+    bool RealCredentialsStillBlocked,
+    bool SensitiveSurfacesStillBlocked,
+    bool Redacted);

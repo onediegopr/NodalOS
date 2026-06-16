@@ -396,3 +396,349 @@ public sealed class NexaLiveProofSafetyGate
             ExecutesNetwork: false,
             Redacted: true);
 }
+
+public sealed class NexaHttpClientReadOnlyProbe(HttpClient? httpClient = null) : INexaReadOnlyHttpProbe
+{
+    private readonly HttpClient _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+
+    public async Task<NexaReadOnlyHttpProbeResult> GetAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        var text = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var headerNames = response.Headers.Select(header => header.Key)
+            .Concat(response.Content.Headers.Select(header => header.Key))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new NexaReadOnlyHttpProbeResult(
+            (int)response.StatusCode,
+            BrowserCredentialRedactor.Redact(text),
+            headerNames,
+            CapturedCookies: false,
+            CapturedBodies: false,
+            CapturedSensitiveHeaderValues: false);
+    }
+}
+
+public sealed class NexaHttpsOwnershipVerifier(INexaReadOnlyHttpProbe? probe = null)
+{
+    public static NexaHttpsOwnershipVerificationRequest DefaultRequest(bool optInLiveNetwork = false) =>
+        new(
+            $"https://{NexaTargetBindingReadinessEvaluator.RecommendedDomain}",
+            "/health/",
+            "/ownership/",
+            ["NEXA", "test-owned", "read-only", "no-real-users", "no-real-credentials", "no-real-payments", "no-submit"],
+            "Vercel",
+            "Shift Evidence",
+            "nexa-test-owned-target",
+            optInLiveNetwork);
+
+    private readonly INexaReadOnlyHttpProbe _probe = probe ?? new NexaHttpClientReadOnlyProbe();
+
+    public async Task<NexaHttpsOwnershipVerificationResult> VerifyAsync(NexaHttpsOwnershipVerificationRequest request, CancellationToken cancellationToken = default)
+    {
+        var healthUrl = Combine(request.ExpectedBaseUrl, request.RequiredHealthPath);
+        var ownershipUrl = Combine(request.ExpectedBaseUrl, request.RequiredOwnershipPath);
+        var evidence = new List<string>
+        {
+            $"baseUrl:{BrowserCredentialRedactor.Redact(request.ExpectedBaseUrl)}",
+            $"healthUrl:{BrowserCredentialRedactor.Redact(healthUrl)}",
+            $"ownershipUrl:{BrowserCredentialRedactor.Redact(ownershipUrl)}",
+            "dnsMode:delegated-to-vercel",
+            $"provider:{request.DeploymentProvider}",
+            $"scope:{request.DeploymentScope}",
+            $"project:{request.DeploymentProject}",
+            "restrictions:no-real-users/no-real-credentials/no-real-payments/no-submit/read-only"
+        };
+
+        if (!request.OptInLiveNetwork)
+            return Result(NexaHttpsOwnershipVerificationStatus.NotChecked, request, healthUrl, ownershipUrl, null, null, evidence, ["live HTTPS ownership verification opt-in missing"], restrictions: false, candidate: false, executed: false);
+        if (!Uri.TryCreate(request.ExpectedBaseUrl, UriKind.Absolute, out var baseUri) || baseUri.Scheme != Uri.UriSchemeHttps)
+            return Result(NexaHttpsOwnershipVerificationStatus.HttpsReady, request, healthUrl, ownershipUrl, null, null, evidence, ["expected base URL must be HTTPS"], restrictions: false, candidate: false, executed: false);
+        if (!string.Equals(baseUri.Host, NexaTargetBindingReadinessEvaluator.RecommendedDomain, StringComparison.OrdinalIgnoreCase))
+            return Result(NexaHttpsOwnershipVerificationStatus.VerificationFailed, request, healthUrl, ownershipUrl, null, null, evidence, ["host does not match configured test-owned target"], restrictions: false, candidate: false, executed: false);
+
+        try
+        {
+            var health = await _probe.GetAsync(new Uri(healthUrl), cancellationToken).ConfigureAwait(false);
+            if (health.StatusCode != 200)
+                return Result(NexaHttpsOwnershipVerificationStatus.VerificationFailed, request, healthUrl, ownershipUrl, health.StatusCode, null, evidence, ["health endpoint did not return HTTP 200"], restrictions: false, candidate: false, executed: true);
+            if (UnsafeCapture(health))
+                return Result(NexaHttpsOwnershipVerificationStatus.VerificationFailed, request, healthUrl, ownershipUrl, health.StatusCode, null, evidence, ["health probe captured unsafe material"], restrictions: false, candidate: false, executed: true);
+
+            var ownership = await _probe.GetAsync(new Uri(ownershipUrl), cancellationToken).ConfigureAwait(false);
+            if (ownership.StatusCode != 200)
+                return Result(NexaHttpsOwnershipVerificationStatus.VerificationFailed, request, healthUrl, ownershipUrl, health.StatusCode, ownership.StatusCode, evidence, ["ownership endpoint did not return HTTP 200"], restrictions: false, candidate: false, executed: true);
+            if (UnsafeCapture(ownership))
+                return Result(NexaHttpsOwnershipVerificationStatus.VerificationFailed, request, healthUrl, ownershipUrl, health.StatusCode, ownership.StatusCode, evidence, ["ownership probe captured unsafe material"], restrictions: false, candidate: false, executed: true);
+
+            var combined = $"{health.RedactedText}\n{ownership.RedactedText}";
+            var missing = request.ExpectedProjectMetadata
+                .Where(token => !ContainsMetadataToken(combined, token))
+                .ToArray();
+            if (missing.Length > 0)
+                return Result(NexaHttpsOwnershipVerificationStatus.MetadataMismatch, request, healthUrl, ownershipUrl, health.StatusCode, ownership.StatusCode, evidence, missing.Select(token => $"metadata missing: {token}").ToArray(), restrictions: false, candidate: false, executed: true);
+
+            return Result(NexaHttpsOwnershipVerificationStatus.VerifiedTestOwnedReadOnlyTarget, request, healthUrl, ownershipUrl, health.StatusCode, ownership.StatusCode, evidence, ["verified test-owned read-only target"], restrictions: true, candidate: true, executed: true);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
+        {
+            return Result(NexaHttpsOwnershipVerificationStatus.VerificationFailed, request, healthUrl, ownershipUrl, null, null, evidence, [$"verification failed: {ex.GetType().Name}"], restrictions: false, candidate: false, executed: true);
+        }
+    }
+
+    private static bool UnsafeCapture(NexaReadOnlyHttpProbeResult result) =>
+        result.CapturedCookies ||
+        result.CapturedBodies ||
+        result.CapturedSensitiveHeaderValues ||
+        ContainsUnsafeProofMaterial(result.RedactedText);
+
+    private static bool ContainsUnsafeProofMaterial(string value) =>
+        value.Contains("opaque-token", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("api-key", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("bearer ", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("refresh-token", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("session-cookie", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("set-cookie", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ContainsMetadataToken(string text, string token)
+    {
+        var redactedToken = BrowserCredentialRedactor.Redact(token);
+        return text.Contains(token, StringComparison.OrdinalIgnoreCase) ||
+            text.Contains(redactedToken, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static NexaHttpsOwnershipVerificationResult Result(
+        NexaHttpsOwnershipVerificationStatus status,
+        NexaHttpsOwnershipVerificationRequest request,
+        string healthUrl,
+        string ownershipUrl,
+        int? healthStatus,
+        int? ownershipStatus,
+        IReadOnlyList<string> evidence,
+        IReadOnlyList<string> reasons,
+        bool restrictions,
+        bool candidate,
+        bool executed) =>
+        new(
+            status,
+            BrowserCredentialRedactor.Redact(request.ExpectedBaseUrl),
+            BrowserCredentialRedactor.Redact(healthUrl),
+            BrowserCredentialRedactor.Redact(ownershipUrl),
+            healthStatus,
+            ownershipStatus,
+            evidence.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            restrictions,
+            candidate,
+            ClosesM51M65: false,
+            ExecutedNetwork: executed,
+            Redacted: true);
+
+    private static string Combine(string baseUrl, string path) =>
+        $"{baseUrl.TrimEnd('/')}/{path.TrimStart('/')}";
+}
+
+public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? probe = null)
+{
+    private static readonly string[] AllowedRoutes = ["/", "/health/", "/ownership/", "/products/", "/document/", "/report/"];
+    private static readonly string[] DeniedRoutes = ["/disabled-form/", "/blocked-login/", "/blocked-checkout/", "/blocked-destructive-action/"];
+
+    private readonly INexaReadOnlyHttpProbe _probe = probe ?? new NexaHttpClientReadOnlyProbe();
+    private readonly NexaHttpsOwnershipVerifier _verifier = new(probe);
+    private readonly NexaExternalProofHarness _harness = new();
+    private readonly NexaExternalReadOnlyEvidencePackBuilder _evidence = new();
+    private readonly NexaLiveProofSafetyGate _gate = new();
+    private readonly NexaOperatorBlockerExplanationService _explanations = new();
+
+    public async Task<NexaFirstReadOnlyLiveProofResult> RunAsync(bool optIn, bool executeNetwork, CancellationToken cancellationToken = default)
+    {
+        var target = CreateLiveTarget();
+        var binding = new NexaTargetBindingReadinessEvaluator().CreateDefault(
+            NexaTargetBindingDnsMode.DelegatedToVercel,
+            NexaTargetBindingVerificationStatus.OwnershipVerified);
+        var verification = executeNetwork
+            ? await _verifier.VerifyAsync(NexaHttpsOwnershipVerifier.DefaultRequest(optIn), cancellationToken).ConfigureAwait(false)
+            : ModeledVerification(optIn);
+        var safety = _gate.Evaluate(GateRequest(binding, target, optIn), DateTimeOffset.UtcNow);
+        var request = new NexaExternalProofHarnessRequest(optIn, target, NexaTargetBindingReadinessEvaluator.RecommendedDomain, "/", "GET", false, false, false, false, "operator-live-proof");
+        var harness = _harness.Evaluate(request, DateTimeOffset.UtcNow);
+
+        if (!optIn)
+        {
+            var skippedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            return Build(NexaFirstReadOnlyLiveProofStatus.SkippedNoOptIn, verification, safety, skippedPack, [], [], [safety.Explanation], executed: false);
+        }
+
+        if (verification.Status != NexaHttpsOwnershipVerificationStatus.VerifiedTestOwnedReadOnlyTarget)
+        {
+            var failedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            return Build(NexaFirstReadOnlyLiveProofStatus.BlockedVerificationFailed, verification, safety, failedPack, [], [], [safety.Explanation], executed: verification.ExecutedNetwork);
+        }
+
+        if (!safety.ReadyForReadOnlyLiveProof || !harness.CanExecuteReadOnlyNavigation)
+        {
+            var blockedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            return Build(NexaFirstReadOnlyLiveProofStatus.BlockedPolicyViolation, verification, safety, blockedPack, [], DeniedRoutes, [safety.Explanation], executed: verification.ExecutedNetwork);
+        }
+
+        if (!executeNetwork)
+        {
+            var allowedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            return Build(NexaFirstReadOnlyLiveProofStatus.CandidateRunnerAllowed, verification, safety, allowedPack, AllowedRoutes, DeniedRoutes, DeniedExplanations(), executed: false);
+        }
+
+        foreach (var route in AllowedRoutes)
+        {
+            var url = new Uri($"{NexaHttpsOwnershipVerifier.DefaultRequest(true).ExpectedBaseUrl}{route}");
+            var probeResult = await _probe.GetAsync(url, cancellationToken).ConfigureAwait(false);
+            if (probeResult.StatusCode != 200 || probeResult.CapturedCookies || probeResult.CapturedBodies || probeResult.CapturedSensitiveHeaderValues || BrowserCredentialRedactor.ContainsSecret(probeResult.RedactedText))
+            {
+                var failedPack = _evidence.Build(harness, request, runtimeExecuted: true, runtimePassed: false);
+                return Build(NexaFirstReadOnlyLiveProofStatus.FailedRuntime, verification, safety, failedPack, AllowedRoutes, DeniedRoutes, DeniedExplanations(), executed: true);
+            }
+        }
+
+        var pack = _evidence.Build(harness, request, runtimeExecuted: true, runtimePassed: true) with
+        {
+            LogRefs = ["provider:Vercel", "scope:Shift Evidence", "project:nexa-test-owned-target", "domain:nexalab.nodalos.com.ar", "routes:/,/health/,/ownership/,/products/,/document/,/report/"]
+        };
+        return Build(NexaFirstReadOnlyLiveProofStatus.PassedReadOnlyProof, verification, safety, pack, AllowedRoutes, DeniedRoutes, DeniedExplanations(), executed: true);
+    }
+
+    public static NexaExternalTestOwnedTarget CreateLiveTarget() =>
+        new(
+            "nexa-vercel-test-owned-readonly",
+            $"https://{NexaTargetBindingReadinessEvaluator.RecommendedDomain}/",
+            NexaExternalTargetOwnershipProofMode.RepositoryControlledDeployment,
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { NexaTargetBindingReadinessEvaluator.RecommendedDomain },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "afip.gob.ar", "bank.example.invalid", "banco.example.invalid", "gov.example.invalid" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/", "/health/", "/ownership/", "/products/", "/document/", "/report/" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/disabled-form/", "/blocked-login/", "/blocked-checkout/", "/blocked-destructive-action/", "/api", "/submit", "/pay", "/delete" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GET", "HEAD" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "POST", "PUT", "PATCH", "DELETE" },
+            NexaExternalTargetCredentialPolicy.NoCredentials,
+            NexaExternalTargetSubmitPolicy.ReadOnlyNoSubmit,
+            NexaExternalTargetDataSensitivityProfile.LowRiskSynthetic,
+            NexaExternalTargetEvidencePolicy.MetadataOnlyRedacted,
+            "Vercel Shift Evidence project nexa-test-owned-target, synthetic read-only target",
+            DateTimeOffset.UtcNow.AddDays(30),
+            "Shift Evidence",
+            "approval:nexalab-vercel-readonly",
+            ExplicitlyTestOwned: true);
+
+    private static NexaLiveProofSafetyGateRequest GateRequest(NexaTargetBindingConfig binding, NexaExternalTestOwnedTarget target, bool optIn) =>
+        new(binding, target, optIn, NexaTargetBindingReadinessEvaluator.RecommendedDomain, "/", "GET", false, false, false, false, false, false, false, true, false, "approval:nexalab-vercel-readonly");
+
+    private static NexaHttpsOwnershipVerificationResult ModeledVerification(bool optIn)
+    {
+        var request = NexaHttpsOwnershipVerifier.DefaultRequest(optInLiveNetwork: false);
+        var healthUrl = $"{request.ExpectedBaseUrl}/health/";
+        var ownershipUrl = $"{request.ExpectedBaseUrl}/ownership/";
+        return new NexaHttpsOwnershipVerificationResult(
+            optIn ? NexaHttpsOwnershipVerificationStatus.VerifiedTestOwnedReadOnlyTarget : NexaHttpsOwnershipVerificationStatus.NotChecked,
+            request.ExpectedBaseUrl,
+            healthUrl,
+            ownershipUrl,
+            optIn ? 200 : null,
+            optIn ? 200 : null,
+            [
+                $"baseUrl:{request.ExpectedBaseUrl}",
+                $"healthUrl:{healthUrl}",
+                $"ownershipUrl:{ownershipUrl}",
+                "provider:Vercel",
+                "scope:Shift Evidence",
+                "project:nexa-test-owned-target",
+                "mode:modeled-no-network"
+            ],
+            optIn ? ["modeled HTTPS ownership verification; live network not executed"] : ["live HTTPS ownership verification opt-in missing"],
+            RestrictionsConfirmed: optIn,
+            EnablesCandidateLiveProof: optIn,
+            ClosesM51M65: false,
+            ExecutedNetwork: false,
+            Redacted: true);
+    }
+
+    private IReadOnlyList<NexaOperatorBlockerExplanation> DeniedExplanations() =>
+    [
+        _explanations.Explain(NexaOperatorBlockerScenario.IrreversibleActionBlocked, ["live-proof-denied-route:redacted"]),
+        _explanations.Explain(NexaOperatorBlockerScenario.RealCredentialsBlocked, ["live-proof-denied-route:redacted"]),
+        _explanations.Explain(NexaOperatorBlockerScenario.RealBillingBlocked, ["live-proof-denied-route:redacted"])
+    ];
+
+    private static NexaFirstReadOnlyLiveProofResult Build(
+        NexaFirstReadOnlyLiveProofStatus status,
+        NexaHttpsOwnershipVerificationResult verification,
+        NexaLiveProofSafetyGateDecision safety,
+        NexaExternalReadOnlyEvidencePack pack,
+        IReadOnlyList<string> routes,
+        IReadOnlyList<string> deniedRoutes,
+        IReadOnlyList<NexaOperatorBlockerExplanation> explanations,
+        bool executed) =>
+        new(status, verification, safety, pack, routes, deniedRoutes, explanations, executed, Redacted: true);
+}
+
+public sealed class NexaM51M65ClosureCandidateReviewer
+{
+    public NexaM51M65ClosureCandidateReview Review(NexaFirstReadOnlyLiveProofResult proof)
+    {
+        var violations = new List<string>();
+        if (!proof.Redacted || !proof.EvidencePack.Redacted)
+            violations.Add("proof or evidence pack is not redacted");
+        if (proof.EvidencePack.RedactionSummary.Contains("cookie", StringComparison.OrdinalIgnoreCase) && !proof.EvidencePack.RedactionSummary.Contains("no cookies", StringComparison.OrdinalIgnoreCase))
+            violations.Add("cookie material detected");
+        if (proof.EvidencePack.PolicyDecisions.Any(IsSensitivePolicyText))
+            violations.Add("secret-like policy decision detected");
+
+        var decision = proof.Status switch
+        {
+            NexaFirstReadOnlyLiveProofStatus.SkippedNoOptIn => NexaM51M65ClosureCandidateReviewDecision.LiveProofSkippedNoOptIn,
+            NexaFirstReadOnlyLiveProofStatus.BlockedVerificationFailed => NexaM51M65ClosureCandidateReviewDecision.LiveProofFailed,
+            NexaFirstReadOnlyLiveProofStatus.FailedRuntime => NexaM51M65ClosureCandidateReviewDecision.LiveProofFailed,
+            NexaFirstReadOnlyLiveProofStatus.PassedReadOnlyProof when
+                proof.ExecutedNetwork &&
+                proof.Verification.Status == NexaHttpsOwnershipVerificationStatus.VerifiedTestOwnedReadOnlyTarget &&
+                proof.EvidencePack.Status == NexaExternalReadOnlyEvidencePackStatus.PassedReadOnlyProof &&
+                proof.EvidencePack.CandidateForM51M65Closure &&
+                violations.Count == 0 => NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51AndM65,
+            NexaFirstReadOnlyLiveProofStatus.PassedReadOnlyProof => NexaM51M65ClosureCandidateReviewDecision.LiveProofPassedButReviewRequired,
+            NexaFirstReadOnlyLiveProofStatus.CandidateRunnerAllowed => NexaM51M65ClosureCandidateReviewDecision.DoNotClose,
+            _ => NexaM51M65ClosureCandidateReviewDecision.NoLiveProofExecuted
+        };
+
+        if (violations.Count > 0)
+            decision = NexaM51M65ClosureCandidateReviewDecision.DoNotClose;
+
+        var canCandidate = decision == NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51AndM65;
+        return new NexaM51M65ClosureCandidateReview(
+            proof.EvidencePack.ProofId,
+            proof.EvidencePack.TargetId ?? "unknown",
+            NexaTargetBindingReadinessEvaluator.RecommendedDomain,
+            "Vercel",
+            "Shift Evidence/nexa-test-owned-target",
+            proof.Verification.Status,
+            proof.Status,
+            proof.RoutesTested,
+            proof.DeniedRoutesTested,
+            proof.EvidencePack.Status,
+            proof.Redacted && proof.EvidencePack.Redacted,
+            violations.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            proof.BlockerExplanations,
+            canCandidate ? "candidate close M51 after explicit review acceptance" : "do not close M51",
+            canCandidate ? "candidate close M65 after explicit review acceptance" : "do not close M65",
+            decision,
+            PublicSaasStillDisabled: true,
+            RealBillingStillDisabled: true,
+            RealEmailStillDisabled: true,
+            RealCredentialsStillBlocked: true,
+            SensitiveSurfacesStillBlocked: true,
+            Redacted: true);
+    }
+
+    private static bool IsSensitivePolicyText(string value) =>
+        BrowserCredentialRedactor.ContainsSecret(value) ||
+        value.Contains("token", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("cookie", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("secret", StringComparison.OrdinalIgnoreCase);
+}
