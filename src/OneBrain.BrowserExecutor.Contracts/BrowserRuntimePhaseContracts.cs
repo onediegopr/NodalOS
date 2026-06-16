@@ -389,7 +389,13 @@ public sealed record BrowserRuntimeObservedState(
     bool ExternalCdpThirdPartyUnlocked = false,
     bool ExternalCdpSensitiveUnlocked = false,
     bool ExternalCdpCredentialsUnlocked = false,
-    bool ExternalCdpIrreversibleActionsUnlocked = false)
+    bool ExternalCdpIrreversibleActionsUnlocked = false,
+    bool ProductAdminPrivatePreviewHardeningDefined = false,
+    bool OperatorUxReadinessDefined = false,
+    bool LocalPrivatePreviewReleaseGateDefined = false,
+    bool LocalPrivatePreviewReadyWithRestrictions = false,
+    bool LocalPrivatePreviewReleaseGateOpensDangerousSurfaces = false,
+    bool LocalPrivatePreviewReleaseGateInflatesExternalCdp = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -740,6 +746,21 @@ public sealed record BrowserRuntimeObservedState(
          !ExternalCdpSensitiveUnlocked &&
          !ExternalCdpCredentialsUnlocked &&
          !ExternalCdpIrreversibleActionsUnlocked);
+
+    public bool LocalPrivatePreviewReleaseGateAllowed =>
+        (!ProductAdminPrivatePreviewHardeningDefined && !OperatorUxReadinessDefined && !LocalPrivatePreviewReleaseGateDefined) ||
+        (ProductAdminPrivatePreviewHardeningDefined &&
+         OperatorUxReadinessDefined &&
+         LocalPrivatePreviewReleaseGateDefined &&
+         LocalPrivatePreviewReadyWithRestrictions &&
+         !LocalPrivatePreviewReleaseGateOpensDangerousSurfaces &&
+         !LocalPrivatePreviewReleaseGateInflatesExternalCdp &&
+         !ExternalCdpGeneralReady &&
+         PublicSaasStillDisabled &&
+         RealBillingStillDisabled &&
+         RealEmailDeliveryDisabled &&
+         RealClientCredentialsStillBlocked &&
+         SensitiveRealPilotStillDisabled);
 
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
