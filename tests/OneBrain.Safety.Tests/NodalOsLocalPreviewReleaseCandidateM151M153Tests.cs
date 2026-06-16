@@ -38,8 +38,8 @@ public sealed class NodalOsLocalPreviewReleaseCandidateM151M153Tests
         var root = json.RootElement;
 
         Assert.AreEqual("NODAL OS", root.GetProperty("productName").GetString());
-        Assert.AreEqual("LocalPreviewReleaseCandidate", root.GetProperty("readinessState").GetString());
-        Assert.AreEqual("FrozenReadyForExternalAudit", root.GetProperty("recommendation").GetString());
+        Assert.AreEqual("FrozenReadyForInternalLocalUseVerified", root.GetProperty("readinessState").GetString());
+        Assert.AreEqual("FrozenReadyForInternalLocalUseVerified", root.GetProperty("recommendation").GetString());
         Assert.IsFalse(root.GetProperty("externalGeneralCdpReady").GetBoolean());
         Assert.AreEqual(29, root.GetProperty("suiteResults").GetProperty("OneBrain.Safety.Tests").GetProperty("skipped").GetInt32());
     }

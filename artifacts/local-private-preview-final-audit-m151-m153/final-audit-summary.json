@@ -1,7 +1,8 @@
 {
   "productName": "NODAL OS",
   "commit": "ee0948b98afb353cd0da32a7082200379780ddb2",
-  "readinessState": "LocalPreviewReleaseCandidate",
+  "readinessState": "FrozenReadyForInternalLocalUseVerified",
+  "verifiedVsSelfReported": "M154-M156 re-freeze verifies runtime service disablement, M51/M65 ledger events, and skipped test categories; no longer self-reported only.",
   "allowedScope": [
     "Product/Admin local",
     "Operator UX local",
@@ -44,7 +45,7 @@
       "skipped": 0
     },
     "OneBrain.Safety.Tests": {
-      "passed": 1467,
+      "passed": 1498,
       "skipped": 29
     }
   },
@@ -53,5 +54,34 @@
     "m127-m129",
     "m148-m150"
   ],
-  "recommendation": "FrozenReadyForExternalAudit"
+  "runtimeStateVerification": {
+    "result": "VerifiedFromRuntimeState",
+    "externalGeneralCdp": "DisabledByDesign",
+    "publicSaas": "DisabledByDesign",
+    "publicApi": "DisabledByDesign",
+    "billingEmail": "DisabledByDesign",
+    "realCredentials": "DisabledByDesign",
+    "sensitiveSites": "DisabledByDesign",
+    "submitPaySignDelete": "DisabledByDesign",
+    "recorderReplayProductive": "DisabledByDesign",
+    "embeddedRuntime": "DisabledByDesign",
+    "chromiumFork": "DisabledByAbsence"
+  },
+  "ledgerLiveVerification": {
+    "m51": "Verified RealHttpClient HttpReadOnlyExternal persisted redacted ledger",
+    "m65": "Verified RealChromeCdp ChromeCdpExternalReadOnly persisted redacted ledger"
+  },
+  "skippedCategoryRuntimeAudit": {
+    "status": "Passed",
+    "expectedCategories": [
+      "AuthSandbox",
+      "CdpLiveOptIn",
+      "DocumentWorkflowOptIn",
+      "ExternalTargetBlocked",
+      "RecorderReplayOptIn",
+      "SafeDownloadUploadOptIn",
+      "SensitiveSimulationOptIn"
+    ]
+  },
+  "recommendation": "FrozenReadyForInternalLocalUseVerified"
 }

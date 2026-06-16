@@ -6,7 +6,7 @@
 - Commit audited: ee0948b98afb353cd0da32a7082200379780ddb2
 - Worktree: `C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo-m12-audit`
 - Canonical branch/remote: `origin/chrome-lab-001-extension-local-ai-bridge`
-- Readiness state: Local Private Preview Release Candidate
+- Readiness state: FrozenReadyForInternalLocalUseVerified after M154-M156 re-freeze
 
 ## Closed Evidence Scope
 
@@ -32,8 +32,16 @@
 ## Suite And Skipped Audit
 
 - OneBrain.Recipes.Tests: 635 passed, 0 skipped.
-- OneBrain.Safety.Tests: 1467 passed, 29 skipped.
-- Skipped categories: live/opt-in, external, sandbox, sensitive simulation, recorder/replay opt-in, document workflow opt-in, safe download/upload opt-in.
+- OneBrain.Safety.Tests: 1498 passed, 29 skipped after M154-M156.
+- Skipped categories verified at runtime: AuthSandbox, CdpLiveOptIn, DocumentWorkflowOptIn, ExternalTargetBlocked, RecorderReplayOptIn, SafeDownloadUploadOptIn, SensitiveSimulationOptIn.
+
+## M154-M156 Real Verification Addendum
+
+- Runtime state probe real verification derives dangerous-service flags from service evidence: disabled by design or disabled by absence, not literal readiness booleans.
+- M51 ledger live verification checks LedgerRef, LedgerHash, ProbeKind=RealHttpClient, Tooling=HttpReadOnlyExternal, PersistenceStatus=PersistedRedactedLedger, redaction, and HTTP read-only target-owned scope.
+- M65 ledger live verification checks LedgerRef, LedgerHash, ProbeKind=RealChromeCdp, Tooling=ChromeCdpExternalReadOnly, PersistenceStatus=PersistedRedactedLedger, redaction, and target-owned Chrome/CDP/DOM read-only scope.
+- Skipped category runtime audit enumerates skipped test categories and blocks count/category drift or local/private preview skips.
+- Release candidate re-freeze result: FrozenReadyForInternalLocalUseVerified.
 
 ## Allowed Scope
 
@@ -84,4 +92,4 @@
 
 ## Recommendation
 
-Freeze as Local Private Preview Release Candidate and send to Claude final audit before sustained internal local usage.
+Continue internal local private preview under ReadyWithRestrictions. The RC is verified for internal local use only, not production or public SaaS.
