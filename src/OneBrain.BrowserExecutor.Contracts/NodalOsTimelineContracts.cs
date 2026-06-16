@@ -455,3 +455,92 @@ public sealed record NodalOsRecoveryDecision(
     bool UiAuthorityBlocked,
     bool GrantsAuthority,
     bool Redacted);
+
+public readonly record struct NodalOsGroundingSnapshotId(string Value);
+
+public enum NodalOsGroundingSource
+{
+    DomMetadata,
+    ScreenshotMetadata,
+    CdpPageMetadata,
+    UiaMetadata,
+    RobustPerception,
+    Fixture
+}
+
+public enum NodalOsGroundingRedactionStatus
+{
+    Unknown,
+    RedactedSafe,
+    RedactedWithWarnings,
+    RedactionFailed,
+    BlockedSensitive
+}
+
+public enum NodalOsPageHealth
+{
+    Unknown,
+    Ready,
+    Loading,
+    Blocked,
+    Error,
+    NotLoaded
+}
+
+public enum NodalOsGroundingRisk
+{
+    None,
+    Low,
+    Medium,
+    High,
+    Critical,
+    Prohibited
+}
+
+public sealed record NodalOsGroundingEvidenceRef(
+    string RefId,
+    string Label,
+    bool Redacted);
+
+public sealed record NodalOsElementBounds(
+    int X,
+    int Y,
+    int Width,
+    int Height);
+
+public sealed record NodalOsGroundedElement(
+    string ElementId,
+    string Role,
+    string Label,
+    string RedactedSelector,
+    string RedactedTextPreview,
+    NodalOsElementBounds Bounds,
+    double Confidence,
+    NodalOsGroundingSource Source,
+    bool IsSensitive,
+    string RedactionSummary,
+    bool Redacted);
+
+public sealed record NodalOsBrowserGroundingSnapshot(
+    NodalOsGroundingSnapshotId SnapshotId,
+    string RuntimeId,
+    string? TabId,
+    string? StepId,
+    string Url,
+    string Title,
+    DateTimeOffset TimestampUtc,
+    string DomHash,
+    string ScreenshotHash,
+    string? ScreenshotRef,
+    NodalOsGroundedElement? FocusedElement,
+    IReadOnlyList<NodalOsGroundedElement> VisibleInteractables,
+    NodalOsPageHealth PageHealth,
+    NodalOsGroundingRedactionStatus RedactionStatus,
+    IReadOnlyList<NodalOsGroundingEvidenceRef> EvidenceRefs,
+    string SourceSummary,
+    string RiskSummary,
+    NodalOsGroundingRisk Risk,
+    bool PersistenceAllowed,
+    bool ScreenshotPersisted,
+    bool GrantsAuthority,
+    bool Redacted);

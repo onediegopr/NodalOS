@@ -481,6 +481,65 @@ dd {
   color: #f4c9c9;
 }
 
+.timeline-grounding-card {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+  border: 1px solid rgba(112, 176, 255, 0.24);
+  border-radius: 9px;
+  padding: 8px;
+  background: rgba(12, 31, 44, 0.26);
+}
+
+.timeline-grounding-card.status-redaction-failed,
+.timeline-grounding-card.status-blocked-sensitive {
+  border-color: rgba(255, 119, 119, 0.28);
+  background: rgba(120, 22, 31, 0.22);
+}
+
+.timeline-grounding-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #d5e6ff;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.timeline-grounding-thumb {
+  border: 1px dashed rgba(213, 230, 255, 0.28);
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #dce7df;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.timeline-grounding-thumb.muted-thumb {
+  color: #8ea59a;
+}
+
+.timeline-grounding-elements {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 16px;
+  color: #dce7df;
+}
+
+.timeline-grounding-elements small {
+  color: #8ea59a;
+}
+
+.timeline-grounding-warning {
+  border-left: 2px solid rgba(255, 119, 119, 0.55);
+  padding-left: 8px;
+  color: #ffd5d5;
+  font-size: 11px;
+}
+
 .timeline-safe-action {
   border-left: 2px solid rgba(185, 255, 213, 0.48);
   padding-left: 8px;

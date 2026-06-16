@@ -916,3 +916,316 @@ public sealed class NodalOsRecoveryTimelineAdapter
             Redacted: true);
     }
 }
+
+public sealed class NodalOsGroundingSnapshotRedactor
+{
+    public NodalOsBrowserGroundingSnapshot Redact(NodalOsBrowserGroundingSnapshot snapshot)
+    {
+        var focused = snapshot.FocusedElement is null ? null : RedactElement(snapshot.FocusedElement);
+        var interactables = snapshot.VisibleInteractables.Select(RedactElement).ToArray();
+        var hasSensitiveElement = (focused?.IsSensitive ?? false) || interactables.Any(element => element.IsSensitive);
+        var hasSecret = ContainsSecret(snapshot.Url) ||
+            ContainsSecret(snapshot.Title) ||
+            ContainsSecret(snapshot.DomHash) ||
+            ContainsSecret(snapshot.ScreenshotHash) ||
+            ContainsSecret(snapshot.ScreenshotRef) ||
+            (focused?.IsSensitive ?? false) ||
+            interactables.Any(element => ContainsSecret(element.Label) || ContainsSecret(element.RedactedTextPreview));
+        var status = snapshot.RedactionStatus;
+        if (status is NodalOsGroundingRedactionStatus.Unknown)
+            status = hasSensitiveElement ? NodalOsGroundingRedactionStatus.RedactedWithWarnings : NodalOsGroundingRedactionStatus.RedactedSafe;
+        if (hasSecret)
+            status = NodalOsGroundingRedactionStatus.RedactionFailed;
+        if (hasSensitiveElement && status == NodalOsGroundingRedactionStatus.RedactedSafe)
+            status = NodalOsGroundingRedactionStatus.RedactedWithWarnings;
+
+        var persistenceAllowed = status is NodalOsGroundingRedactionStatus.RedactedSafe or NodalOsGroundingRedactionStatus.RedactedWithWarnings;
+        var screenshotPersisted = persistenceAllowed && !string.IsNullOrWhiteSpace(snapshot.ScreenshotRef);
+        var risk = status switch
+        {
+            NodalOsGroundingRedactionStatus.RedactionFailed => NodalOsGroundingRisk.Prohibited,
+            NodalOsGroundingRedactionStatus.BlockedSensitive => NodalOsGroundingRisk.Prohibited,
+            NodalOsGroundingRedactionStatus.RedactedWithWarnings => NodalOsGroundingRisk.Medium,
+            _ => snapshot.Risk
+        };
+
+        return snapshot with
+        {
+            RuntimeId = Safe(snapshot.RuntimeId),
+            TabId = Safe(snapshot.TabId),
+            StepId = Safe(snapshot.StepId),
+            Url = Safe(snapshot.Url),
+            Title = Safe(snapshot.Title),
+            DomHash = Safe(snapshot.DomHash),
+            ScreenshotHash = persistenceAllowed ? Safe(snapshot.ScreenshotHash) : "",
+            ScreenshotRef = screenshotPersisted ? Safe(snapshot.ScreenshotRef) : null,
+            FocusedElement = focused,
+            VisibleInteractables = interactables,
+            RedactionStatus = status,
+            EvidenceRefs = persistenceAllowed
+                ? snapshot.EvidenceRefs.Select(refId => new NodalOsGroundingEvidenceRef(Safe(refId.RefId), Safe(refId.Label), Redacted: true)).ToArray()
+                : [],
+            SourceSummary = Safe(snapshot.SourceSummary),
+            RiskSummary = status is NodalOsGroundingRedactionStatus.RedactionFailed
+                ? "grounding snapshot blocked: redaction failed"
+                : Safe(snapshot.RiskSummary),
+            Risk = risk,
+            PersistenceAllowed = persistenceAllowed,
+            ScreenshotPersisted = screenshotPersisted,
+            GrantsAuthority = false,
+            Redacted = true
+        };
+    }
+
+    private static NodalOsGroundedElement RedactElement(NodalOsGroundedElement element)
+    {
+        var sensitive = element.IsSensitive ||
+            ContainsSecret(element.Label) ||
+            ContainsSecret(element.RedactedSelector) ||
+            ContainsSecret(element.RedactedTextPreview);
+        return element with
+        {
+            ElementId = Safe(element.ElementId),
+            Role = Safe(element.Role),
+            Label = sensitive ? "[REDACTED]" : Safe(element.Label),
+            RedactedSelector = sensitive ? "[REDACTED]" : Safe(element.RedactedSelector),
+            RedactedTextPreview = sensitive ? "[REDACTED]" : Safe(element.RedactedTextPreview),
+            Confidence = Math.Clamp(element.Confidence, 0, 1),
+            IsSensitive = sensitive,
+            RedactionSummary = sensitive
+                ? "sensitive element redacted; raw selector/text not persisted"
+                : Safe(element.RedactionSummary),
+            Redacted = true
+        };
+    }
+
+    private static bool ContainsSecret(string? value) => BrowserCredentialRedactor.ContainsSecret(value);
+
+    private static string Safe(string? value) => BrowserCredentialRedactor.Redact(value);
+}
+
+public sealed class NodalOsGroundingSnapshotBuilder
+{
+    private readonly NodalOsGroundingSnapshotRedactor redactor;
+
+    public NodalOsGroundingSnapshotBuilder(NodalOsGroundingSnapshotRedactor? redactor = null)
+    {
+        this.redactor = redactor ?? new NodalOsGroundingSnapshotRedactor();
+    }
+
+    public NodalOsBrowserGroundingSnapshot Create(
+        string snapshotId,
+        string runtimeId = "runtime-local",
+        string? tabId = "tab-local",
+        string? stepId = "step-local",
+        string url = "http://local/private-preview",
+        string title = "NODAL OS local preview",
+        string domHash = "dom-hash-ready",
+        string screenshotHash = "screenshot-hash-ready",
+        string? screenshotRef = "grounding-shot:redacted",
+        NodalOsPageHealth pageHealth = NodalOsPageHealth.Ready,
+        NodalOsGroundingRedactionStatus redactionStatus = NodalOsGroundingRedactionStatus.RedactedSafe,
+        IReadOnlyList<NodalOsGroundedElement>? visibleInteractables = null,
+        NodalOsGroundedElement? focusedElement = null,
+        NodalOsGroundingRisk risk = NodalOsGroundingRisk.Low)
+    {
+        var raw = new NodalOsBrowserGroundingSnapshot(
+            new NodalOsGroundingSnapshotId(BrowserCredentialRedactor.Redact(snapshotId)),
+            runtimeId,
+            tabId,
+            stepId,
+            url,
+            title,
+            DateTimeOffset.UtcNow,
+            domHash,
+            screenshotHash,
+            screenshotRef,
+            focusedElement ?? Element("focused-local", "button", "Review evidence", "#review-evidence"),
+            visibleInteractables ?? [Element("local-readiness", "button", "Open readiness", "#readiness"), Element("local-diagnostics", "button", "Open diagnostics", "#diagnostics")],
+            pageHealth,
+            redactionStatus,
+            [new NodalOsGroundingEvidenceRef($"grounding:{snapshotId}:redacted", "grounding snapshot", Redacted: true)],
+            "DOM metadata + screenshot metadata + fixture page health; no raw DOM/body/screenshot content",
+            "local fixture grounding evidence only; screenshot is debug/evidence, not authority",
+            risk,
+            PersistenceAllowed: redactionStatus is NodalOsGroundingRedactionStatus.RedactedSafe or NodalOsGroundingRedactionStatus.RedactedWithWarnings,
+            ScreenshotPersisted: !string.IsNullOrWhiteSpace(screenshotRef) && redactionStatus is NodalOsGroundingRedactionStatus.RedactedSafe or NodalOsGroundingRedactionStatus.RedactedWithWarnings,
+            GrantsAuthority: false,
+            Redacted: true);
+
+        return redactor.Redact(raw);
+    }
+
+    public static NodalOsGroundedElement Element(
+        string elementId,
+        string role,
+        string label,
+        string selector,
+        string textPreview = "",
+        bool sensitive = false,
+        double confidence = 0.9,
+        NodalOsGroundingSource source = NodalOsGroundingSource.Fixture)
+    {
+        var containsSensitive = sensitive ||
+            BrowserCredentialRedactor.ContainsSecret(label) ||
+            BrowserCredentialRedactor.ContainsSecret(selector) ||
+            BrowserCredentialRedactor.ContainsSecret(textPreview);
+        return new NodalOsGroundedElement(
+            BrowserCredentialRedactor.Redact(elementId),
+            BrowserCredentialRedactor.Redact(role),
+            BrowserCredentialRedactor.Redact(label),
+            BrowserCredentialRedactor.Redact(selector),
+            BrowserCredentialRedactor.Redact(textPreview),
+            new NodalOsElementBounds(16, 24, 160, 32),
+            confidence,
+            source,
+            containsSensitive,
+            containsSensitive ? "sensitive element redacted before fixture persistence" : "redacted element metadata only",
+            Redacted: true);
+    }
+}
+
+public sealed class NodalOsGroundingSnapshotFixtureHarness
+{
+    private readonly NodalOsGroundingSnapshotBuilder builder = new();
+
+    public IReadOnlyDictionary<string, NodalOsBrowserGroundingSnapshot> CreateFixtures() =>
+        new Dictionary<string, NodalOsBrowserGroundingSnapshot>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ready-dom"] = builder.Create("ready-dom", domHash: "dom-ready-1"),
+            ["ready-screenshot"] = builder.Create("ready-screenshot", screenshotHash: "shot-ready-1"),
+            ["focused-element"] = builder.Create("focused-element", focusedElement: NodalOsGroundingSnapshotBuilder.Element("focus-search", "textbox", "Search local evidence", "#search")),
+            ["visible-interactables"] = builder.Create("visible-interactables", visibleInteractables: [
+                NodalOsGroundingSnapshotBuilder.Element("btn-readiness", "button", "Readiness", "#readiness"),
+                NodalOsGroundingSnapshotBuilder.Element("btn-evidence", "button", "Evidence", "#evidence"),
+                NodalOsGroundingSnapshotBuilder.Element("btn-blockers", "button", "Blockers", "#blockers")
+            ]),
+            ["loading-page"] = builder.Create("loading-page", pageHealth: NodalOsPageHealth.Loading, screenshotHash: "shot-loading"),
+            ["blocked-page"] = builder.Create("blocked-page", pageHealth: NodalOsPageHealth.Blocked, screenshotHash: "shot-blocked", risk: NodalOsGroundingRisk.High),
+            ["repeated-dom-1"] = builder.Create("repeated-dom-1", domHash: "dom-repeat"),
+            ["repeated-dom-2"] = builder.Create("repeated-dom-2", domHash: "dom-repeat"),
+            ["repeated-dom-3"] = builder.Create("repeated-dom-3", domHash: "dom-repeat"),
+            ["repeated-shot-1"] = builder.Create("repeated-shot-1", screenshotHash: "shot-repeat"),
+            ["repeated-shot-2"] = builder.Create("repeated-shot-2", screenshotHash: "shot-repeat"),
+            ["repeated-shot-3"] = builder.Create("repeated-shot-3", screenshotHash: "shot-repeat"),
+            ["sensitive-screenshot"] = builder.Create("sensitive-screenshot", screenshotRef: null, redactionStatus: NodalOsGroundingRedactionStatus.BlockedSensitive, risk: NodalOsGroundingRisk.Prohibited),
+            ["redaction-failed"] = builder.Create("redaction-failed", screenshotRef: "sensitive-shot", redactionStatus: NodalOsGroundingRedactionStatus.RedactionFailed, risk: NodalOsGroundingRisk.Prohibited)
+        };
+}
+
+public sealed class NodalOsGroundingSnapshotToStagnationAdapter
+{
+    public IReadOnlyList<NodalOsRuntimeProgressSnapshot> Map(IReadOnlyList<NodalOsBrowserGroundingSnapshot> snapshots) =>
+        snapshots.Select(snapshot =>
+        {
+            var pageLoaded = snapshot.PageHealth == NodalOsPageHealth.Ready;
+            var action = snapshot.PageHealth switch
+            {
+                NodalOsPageHealth.Loading => "observe:page-loading",
+                NodalOsPageHealth.Blocked => "observe:blocked-page",
+                NodalOsPageHealth.NotLoaded => "observe:page-not-loaded",
+                _ => "observe:grounding-snapshot"
+            };
+            var error = snapshot.PageHealth switch
+            {
+                NodalOsPageHealth.Loading => "page loading",
+                NodalOsPageHealth.Blocked => "blocked page",
+                NodalOsPageHealth.Error => "page error",
+                NodalOsPageHealth.NotLoaded => "page not loaded",
+                _ => ""
+            };
+            return new NodalOsRuntimeProgressSnapshot(
+                snapshot.RuntimeId,
+                snapshot.TabId,
+                snapshot.StepId,
+                snapshot.Url,
+                snapshot.DomHash,
+                snapshot.ScreenshotHash,
+                action,
+                snapshot.FocusedElement?.RedactedSelector ?? "",
+                error,
+                VisualChanged: snapshot.PageHealth == NodalOsPageHealth.Ready && snapshot.PersistenceAllowed,
+                PageLoaded: pageLoaded,
+                CaptchaLoginTwoFactorDetected: false,
+                snapshot.TimestampUtc,
+                Redacted: true);
+        }).ToArray();
+}
+
+public sealed class NodalOsGroundingTimelineAdapter
+{
+    public NodalOsTimeline Map(NodalOsBrowserGroundingSnapshot snapshot)
+    {
+        var status = snapshot.PersistenceAllowed
+            ? NodalOsTimelineStepStatus.EvidenceReady
+            : NodalOsTimelineStepStatus.Warning;
+        var blockers = snapshot.PersistenceAllowed
+            ? Array.Empty<NodalOsTimelineBlocker>()
+            : [new NodalOsTimelineBlocker(
+                "Grounding snapshot blocked or unusable because redaction did not pass.",
+                "Do not persist screenshot/raw visual data; ask human/Core review.",
+                ["raw screenshot", "raw DOM/body", "cookies/tokens/secrets", "sensitive screenshot"],
+                NeedsHuman: true,
+                Redacted: true)];
+        var step = new NodalOsTimelineStep(
+            $"grounding-step-{snapshot.SnapshotId.Value}",
+            "Grounding snapshot",
+            "DOM + screenshot metadata are available as redacted debug/evidence only.",
+            status,
+            1,
+            new NodalOsTimelineNode("grounding-node", NodalOsTimelineNodeType.EvidenceStep, IconId: null),
+            [
+                new NodalOsTimelineSubStep($"Page health: {snapshot.PageHealth}", "", status, 1, Redacted: true),
+                new NodalOsTimelineSubStep($"Focused: {snapshot.FocusedElement?.Label ?? "none"}", "", status, 2, Redacted: true),
+                new NodalOsTimelineSubStep($"Interactables: {snapshot.VisibleInteractables.Count}", "", status, 3, Redacted: true)
+            ],
+            new NodalOsTimelineStatusCard(
+                "grounding internal-local",
+                MapRisk(snapshot.Risk),
+                snapshot.RedactionStatus.ToString(),
+                "Grounding card is evidence/debug only; Core remains authoritative.",
+                ReadyWithRestrictions: true,
+                ProductionReady: false,
+                GrantsAuthority: false,
+                Redacted: true),
+            snapshot.EvidenceRefs.Select(refId => new NodalOsTimelineEvidenceRef(refId.RefId, refId.Label, Redacted: true)).ToArray(),
+            blockers,
+            new NodalOsTimelineDecision(
+                snapshot.PersistenceAllowed ? "Review redacted grounding evidence; do not execute from screenshot." : "Stop and review redaction failure.",
+                ["raw screenshot", "raw DOM/body", "cookies/tokens/secrets", "screenshot-only action"],
+                CoreAuthorityRequired: true,
+                HumanInterventionRequired: !snapshot.PersistenceAllowed,
+                GrantsAuthority: false),
+            MapRisk(snapshot.Risk),
+            "grounding internal-local",
+            "grounding metadata redacted; no raw DOM/body, cookies, tokens, credentials, or sensitive screenshot",
+            CoreAuthorityRequired: true,
+            HumanInterventionRequired: !snapshot.PersistenceAllowed,
+            GrantsAuthority: false,
+            Redacted: true);
+
+        return new NodalOsTimeline(
+            $"timeline-grounding-{snapshot.SnapshotId.Value}",
+            "NODAL OS",
+            "Visual grounding debug",
+            snapshot.SourceSummary,
+            [step],
+            step.StatusCard,
+            ReadyWithRestrictions: true,
+            ProductionReady: false,
+            GrantsAuthority: false,
+            Redacted: true);
+    }
+
+    private static NodalOsTimelineRiskLevel MapRisk(NodalOsGroundingRisk risk) =>
+        risk switch
+        {
+            NodalOsGroundingRisk.None => NodalOsTimelineRiskLevel.None,
+            NodalOsGroundingRisk.Low => NodalOsTimelineRiskLevel.Low,
+            NodalOsGroundingRisk.Medium => NodalOsTimelineRiskLevel.Medium,
+            NodalOsGroundingRisk.High => NodalOsTimelineRiskLevel.High,
+            NodalOsGroundingRisk.Critical => NodalOsTimelineRiskLevel.Critical,
+            NodalOsGroundingRisk.Prohibited => NodalOsTimelineRiskLevel.Prohibited,
+            _ => NodalOsTimelineRiskLevel.Low
+        };
+}

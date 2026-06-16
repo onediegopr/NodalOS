@@ -28,6 +28,7 @@ const state = {
     targetResolution: null,
     verification: null,
     planPreview: null,
+    groundingSnapshot: null,
     timeline: []
   },
   learning: {
@@ -377,6 +378,10 @@ function handleMessage(message) {
     case 'runtimeStagnation':
       applyRecoveryState(message.recovery || message.signal || message.body || message);
       break;
+    case 'groundingSnapshot':
+    case 'browserGroundingSnapshot':
+      applyGroundingSnapshot(message.snapshot || message.grounding || message.body || message);
+      break;
     case 'toolResult':
       handleToolResult(message);
       break;
@@ -606,6 +611,14 @@ function applyRecoveryState(recovery) {
   state.operator.timeline = buildRecoveryTimeline(safeRecovery).concat(state.operator.timeline || []);
   state.run.status = 'paused';
   state.run.lastResult = safeRecovery.state || safeRecovery.kind || 'RecoveryRequired';
+  render();
+}
+
+function applyGroundingSnapshot(snapshot) {
+  const safeSnapshot = redactSensitive(snapshot || {});
+  state.operator.groundingSnapshot = safeSnapshot;
+  state.operator.timeline = buildGroundingTimeline(safeSnapshot).concat(state.operator.timeline || []);
+  state.run.lastResult = safeSnapshot.redactionStatus || safeSnapshot.pageHealth || 'GroundingSnapshot';
   render();
 }
 
@@ -1116,6 +1129,9 @@ function renderTimelineStep(item, index) {
   const evidence = step.evidenceRefs.length
     ? `<div class="timeline-evidence"><span>Evidencia</span>${step.evidenceRefs.map(renderEvidenceRef).join('')}</div>`
     : '';
+  const grounding = step.groundingSnapshot
+    ? renderGroundingCard(step.groundingSnapshot)
+    : '';
   const blockers = step.blockers.length
     ? `<div class="timeline-blockers">${step.blockers.map(renderTimelineBlocker).join('')}</div>`
     : '';
@@ -1152,6 +1168,7 @@ function renderTimelineStep(item, index) {
           ${human}
         </div>
         ${substeps}
+        ${grounding}
         ${evidence}
         ${blockers}
         ${safeAction}
@@ -1169,6 +1186,44 @@ function renderTimelineSubStep(subStep) {
 function renderEvidenceRef(ref) {
   const item = typeof ref === 'string' ? { refId: ref, label: 'redacted ref' } : ref;
   return `<code>${safeHtml(item.label || 'ref')}: ${safeHtml(item.refId || item.id || item.value || '')}</code>`;
+}
+
+function renderGroundingCard(snapshot) {
+  const redactionStatus = String(snapshot.redactionStatus || 'Unknown');
+  const redactionToken = cssToken(redactionStatus);
+  const persistenceAllowed = snapshot.persistenceAllowed !== false
+    && !['redactionfailed', 'redaction-failed', 'blockedsensitive', 'blocked-sensitive'].includes(redactionToken);
+  const focused = snapshot.focusedElement || snapshot.focused || null;
+  const interactables = normalizeGroundedElements(snapshot.visibleInteractables || snapshot.interactables || []);
+  const evidenceRefs = normalizeList((snapshot.evidenceRefs || []).map((ref) => ref.refId || ref.id || ref.value || ref));
+  const screenshotRef = persistenceAllowed ? (snapshot.screenshotRef || '') : '';
+  const warning = persistenceAllowed
+    ? ''
+    : '<div class="timeline-grounding-warning">Grounding blocked: redaction failed or sensitive screenshot. Raw screenshot/DOM is not persisted.</div>';
+  const thumbnail = screenshotRef
+    ? `<div class="timeline-grounding-thumb" aria-label="safe redacted screenshot thumbnail">safe thumbnail ref: ${safeHtml(screenshotRef)}</div>`
+    : '<div class="timeline-grounding-thumb muted-thumb">no safe screenshot thumbnail</div>';
+  const focusedHtml = focused
+    ? `<p><strong>Focused:</strong> ${safeHtml(focused.label || focused.role || focused.elementId || 'redacted element')} <small>${safeHtml(focused.redactedSelector || focused.selector || '')}</small></p>`
+    : '<p><strong>Focused:</strong> none</p>';
+  const elementsHtml = interactables.length
+    ? `<ul class="timeline-grounding-elements">${interactables.map((element) => `<li>${safeHtml(element.label || element.role || element.elementId || 'redacted element')} <small>${safeHtml(element.role || '')}</small></li>`).join('')}</ul>`
+    : '<p class="timeline-redaction">No visible interactables in redacted snapshot.</p>';
+
+  return `
+    <section class="timeline-grounding-card status-${redactionToken}">
+      <div class="timeline-grounding-head">
+        <strong>Grounding snapshot</strong>
+        <span>${safeHtml(snapshot.pageHealth || 'Unknown')}</span>
+      </div>
+      ${thumbnail}
+      ${focusedHtml}
+      <p><strong>Risk:</strong> ${safeHtml(snapshot.risk || snapshot.riskSummary || 'low')} · <strong>Redaction:</strong> ${safeHtml(redactionStatus)}</p>
+      ${elementsHtml}
+      ${evidenceRefs.length ? `<p class="timeline-redaction">Evidence: ${safeHtml(evidenceRefs.join(', '))}</p>` : ''}
+      ${warning}
+      <p class="timeline-redaction">Debug/evidence only. Screenshot never authorizes action; Core decides.</p>
+    </section>`;
 }
 
 function renderTimelineBlocker(blocker) {
@@ -1205,6 +1260,7 @@ function normalizeTimelineStep(item, index) {
     subSteps: subSteps.map((sub, subIndex) => normalizeTimelineSubStep(sub, subIndex)),
     evidenceRefs,
     blockers,
+    groundingSnapshot: item.groundingSnapshot || item.grounding || null,
     safeNextAction: redactSensitive(item.safeNextAction || decision.safeNextAction || 'Continue only if Core permits.'),
     blockedOptions: normalizeList(blockedOptions),
     coreAuthorityRequired: item.coreAuthorityRequired !== false && decision.coreAuthorityRequired !== false,
@@ -1371,6 +1427,36 @@ function buildRecoveryTimeline(recovery) {
   }];
 }
 
+function buildGroundingTimeline(snapshot) {
+  const status = normalizeGroundingStatus(snapshot.redactionStatus, snapshot.pageHealth);
+  const blocked = status === 'blocked' || status === 'warning';
+  return [{
+    title: 'Grounding snapshot',
+    description: 'DOM + screenshot metadata for operator debug/evidence. Screenshot is never authority.',
+    status,
+    nodeType: blocked ? 'BlockerStep' : 'EvidenceStep',
+    scopeLabel: 'grounding internal-local',
+    riskLevel: blocked ? 'high' : String(snapshot.risk || 'low'),
+    subSteps: [
+      `Page health: ${snapshot.pageHealth || 'Unknown'}`,
+      `DOM hash: ${snapshot.domHash ? 'available redacted' : 'missing'}`,
+      `Screenshot hash: ${snapshot.screenshotHash ? 'available redacted' : 'missing'}`
+    ],
+    evidenceRefs: (snapshot.evidenceRefs || []).map((ref) => ({ label: ref.label || 'grounding evidence', refId: ref.refId || ref.id || ref })),
+    blockers: blocked ? [{
+      reason: snapshot.riskSummary || 'Grounding snapshot blocked or warning due to redaction/page health.',
+      expectedOperatorAction: 'Do not persist raw screenshot/DOM. Ask Core/human review if needed.',
+      blockedOptions: ['raw screenshot', 'raw DOM/body', 'cookies/tokens/secrets', 'screenshot-only action']
+    }] : [],
+    groundingSnapshot: snapshot,
+    safeNextAction: blocked ? 'Stop and review redaction/page health.' : 'Review redacted grounding evidence only.',
+    blockedOptions: ['screenshot-only action', 'raw DOM/body persistence', 'credentials', 'submit/pay/sign/delete'],
+    coreAuthorityRequired: true,
+    humanInterventionRequired: blocked,
+    redactionSummary: 'redacted grounding metadata only; no raw DOM/body, cookies, tokens, credentials, or sensitive screenshot'
+  }];
+}
+
 function buildRecipeRunTimeline(run) {
   const results = Array.isArray(run.stepResults) ? run.stepResults : [];
   if (!results.length) {
@@ -1464,6 +1550,21 @@ function normalizePlanStatus(status) {
   return normalizeTimelineStatus(status).value;
 }
 
+function normalizeGroundingStatus(redactionStatus, pageHealth) {
+  const redaction = cssToken(redactionStatus || 'Unknown');
+  const health = cssToken(pageHealth || 'Unknown');
+  if (redaction === 'redaction-failed' || redaction === 'blockedsensitive' || redaction === 'blocked-sensitive') {
+    return 'blocked';
+  }
+  if (health === 'loading' || health === 'notloaded' || health === 'not-loaded') {
+    return 'warning';
+  }
+  if (health === 'blocked' || health === 'error') {
+    return 'blocked';
+  }
+  return 'evidence-ready';
+}
+
 function humanizeNodeType(nodeType) {
   return String(nodeType || 'ExecutionStep')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -1475,6 +1576,13 @@ function normalizeList(values) {
     .filter(Boolean)
     .map((value) => redactSensitive(String(value)))
     .filter((value, index, list) => list.indexOf(value) === index)
+    .slice(0, 8);
+}
+
+function normalizeGroundedElements(values) {
+  return (Array.isArray(values) ? values : [])
+    .filter(Boolean)
+    .map((value) => redactSensitive(value))
     .slice(0, 8);
 }
 

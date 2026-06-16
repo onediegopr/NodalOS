@@ -57,6 +57,17 @@ If NODAL OS detects repeated URL, repeated DOM/screenshot hash, repeated action,
 - Do not use recovery to bypass credentials, captcha, 2FA, submit/pay/sign/delete or sensitive sites.
 - If human input is required, complete only the local/safe action described and do not paste secrets, cookies, tokens or credentials into reports.
 
+## Reading Grounding Snapshot
+
+- Grounding snapshot is a DOM + screenshot metadata debug card inside the existing timeline.
+- The screenshot thumbnail is shown only when the snapshot is redacted/safe. It is a reference for operator review, not an action authority.
+- Page health explains whether the page is `Ready`, `Loading`, `Blocked`, `Error` or `NotLoaded`.
+- Focused element and visible interactables are redacted metadata. Do not expose credentials, tokens, cookies, raw DOM/body, or sensitive screenshots.
+- If `redaction failed` or `BlockedSensitive` appears, stop persistence, do not use the screenshot, and ask Core/human review.
+- If page health is `Loading` or `NotLoaded`, treat it as insufficient grounding and use recovery/retry only if Core permits.
+- If page health is `Blocked`, keep blockers visible and do not try a sensitive workaround.
+- Grounding can help explain stagnation, but screenshot is not a source of truth by itself. DOM/CDP/Core policy remain preferred.
+
 ## Allowed Examples
 
 - Review Product/Admin local summary.
