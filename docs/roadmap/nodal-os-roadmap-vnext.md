@@ -9,10 +9,12 @@
 - NODAL OS engineering: 97%.
 - Browser Runtime local/sandbox: 97%.
 - External HTTP read-only proof readiness: 90-95%.
+- External target-owned Chrome/CDP/DOM read-only proof readiness: 85-90%.
 - Security/evidence integrity: 92-95%.
 - M51: closed with strict HTTP read-only scope.
-- M65: deferred, `DeferredNeedsDedicatedEvidence`.
-- External Chrome/CDP/DOM proof: pending.
+- M65: closed with limited target-owned Chrome/CDP/DOM read-only scope.
+- External Chrome/CDP/DOM proof: completed only for `https://lab.nodalos.com.ar`.
+- External CDP general-ready: false.
 
 ## M51 Scope
 
@@ -36,15 +38,21 @@ M51 does not prove:
 
 ## M65 Status
 
-M65 remains deferred.
+M65 is formally closed only for:
 
-Required next evidence for M65:
+- target-owned external low-risk Chrome/CDP/DOM read-only proof;
+- target `https://lab.nodalos.com.ar`;
+- isolated temporary browser profile;
+- `ProbeKind=RealChromeCdp`;
+- `Tooling=ChromeCdpExternalReadOnly`;
+- redacted evidence persisted to `BrowserPersistentAuditLedger`;
+- `LedgerRef=audit-ledger-edb3e2fbb0a0446788dae17a269c0058`;
+- `LedgerHash=61f52af1eebf08d59a24e5fbb72e70acf0038e7a329bff6599a0ac00c757f03e`;
+- no credentials, no login real, no submit, no payment, no mutation, no sensitive site.
 
-- dedicated external low-risk/auth target plan;
-- explicit allowed and denied scenario matrix;
-- proof not derived from M51 HTTP-only evidence;
-- redacted evidence ledger;
-- no credentials, no login real, no submit, no payment, no sensitive site.
+M65 does not mean external CDP general-ready.
+
+M65 does not unlock third-party sites, sensitive sites, real credentials, submit/pay/sign/delete, production external CDP, SaaS public, public API, billing real, or email real.
 
 ## Recommended Next Blocks
 
@@ -84,7 +92,38 @@ Goal:
 - Persist evidence to HMAC ledger.
 - Do not infer from HttpClient proof.
 
-### M106+: Legacy HITO-162 Reconciliation / Rewrite
+### M115/M116/M117: Product/Admin Private Preview Hardening
+
+Goal:
+
+- Harden Product/Admin private preview after M51 and M65 limited external evidence.
+- Keep local/private authority boundaries.
+- Keep SaaS public, public API, billing real, email real, and real credentials blocked.
+
+### M118/M119/M120: Core Audit / External Proof Audit / Release Gate
+
+Goal:
+
+- Audit M51 HTTP evidence and M65 target-owned Chrome/CDP evidence.
+- Verify ledger references, redaction and scope locks.
+- Decide whether release gates need independent review before broader preview.
+
+### M121/M122/M123: HITO-162 Rewrite / Map
+
+Goal:
+
+- Re-audit the legacy HITO-162 intent.
+- Map it to the NODAL OS roadmap or rewrite it as a new block.
+- Do not resume it blindly.
+
+### M124+: Embedded Runtime Evaluation If Needed
+
+Goal:
+
+- Evaluate WebView2/CEF/embedded runtime only if a concrete limitation justifies it.
+- Chromium fork is not planned unless a hard limitation appears.
+
+### Legacy HITO-162 Reconciliation / Rewrite
 
 Goal:
 
@@ -117,6 +156,7 @@ It must be treated as a legacy milestone requiring reconciliation. It should be 
 - Use grouped milestones when they reduce coordination overhead.
 - Do not mix rename with proof/security-critical changes.
 - Do not close external/live broad capability without persisted ledger evidence.
+- Do not treat M65 as external CDP general-ready.
 - Do not open sensitive surfaces without dedicated evidence and gates.
 - Keep Core authority: Core decides, Browser Runtime executes, UI/Companion/Admin observes/transports without authority.
 - Keep percentages visible and honest.
@@ -132,4 +172,5 @@ It must be treated as a legacy milestone requiring reconciliation. It should be 
 - No AFIP, banks, ERP, fiscal, financial, or government sites.
 - No submit/pay/sign/delete.
 - No productive recorder/replay.
-- No Chrome/CDP external claim until Chrome/CDP external evidence exists.
+- No Chrome/CDP general-ready claim from target-owned proof.
+- No Chromium fork planned now.

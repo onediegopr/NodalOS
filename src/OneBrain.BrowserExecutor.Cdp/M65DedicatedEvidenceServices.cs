@@ -146,3 +146,133 @@ public sealed class M65DedicatedEvidenceReviewer
             Redacted: true);
     }
 }
+
+public sealed class M65FormalClosureReviewService
+{
+    public M65FormalClosureReview Review(M65FormalClosureReviewInput input)
+    {
+        var reasons = new List<string>();
+        if (!input.CandidateReview.CandidateCloseM65)
+            reasons.Add("M65 candidate review is required before formal closure");
+        if (!string.Equals(input.TargetBaseUrl, "https://lab.nodalos.com.ar", StringComparison.OrdinalIgnoreCase))
+            reasons.Add("M65 formal closure is limited to https://lab.nodalos.com.ar");
+        if (input.ProofKind != NexaExternalProofProbeKind.RealChromeCdp)
+            reasons.Add("RealChromeCdp proof required");
+        if (!string.Equals(input.Tooling, "ChromeCdpExternalReadOnly", StringComparison.Ordinal))
+            reasons.Add("ChromeCdpExternalReadOnly tooling required");
+        if (!input.Capabilities.Contains("BrowserNavigationReadOnly") ||
+            !input.Capabilities.Contains("DomSnapshotReadOnly") ||
+            !input.Capabilities.Contains("PageMetadataReadOnly") ||
+            !input.Capabilities.Contains("NetworkMetadataRedacted") ||
+            !input.Capabilities.Contains("CoreGoverned"))
+            reasons.Add("read-only Chrome/CDP capability set is incomplete");
+        if (!input.LedgerPersisted || string.IsNullOrWhiteSpace(input.LedgerRef) || string.IsNullOrWhiteSpace(input.LedgerHash))
+            reasons.Add("persisted redacted ledger ref and hash required");
+        if (!input.IsolatedProfile)
+            reasons.Add("isolated non-personal profile required");
+        if (!input.NoSecretsCookiesTokens)
+            reasons.Add("secret/cookie/token leak blocks M65 closure");
+        if (!input.NoFullDomOrBodyPersisted)
+            reasons.Add("full DOM/body persistence blocks M65 closure");
+        if (!input.NoSubmitMutationPaymentLogin)
+            reasons.Add("submit/mutation/payment/login blocks M65 closure");
+        if (!input.BlockedRoutesPolicyVerified)
+            reasons.Add("blocked route policy verification required");
+
+        var inflation = input.GeneralExternalCdpRequested || input.PublicSaasEnabled || input.PublicApiEnabled ||
+            input.RealBillingEnabled || input.RealEmailEnabled || input.RealCredentialsEnabled || input.SensitiveSitesEnabled;
+        if (inflation)
+            reasons.Add("scope inflation blocked: M65 does not unlock general external CDP, SaaS, public API, billing, email, credentials, or sensitive sites");
+
+        var decision = inflation
+            ? M65FormalClosureDecision.ScopeInflationBlocked
+            : reasons.Count == 0
+                ? M65FormalClosureDecision.FormallyClosedTargetOwnedReadOnlyCdp
+                : input.CandidateReview.CandidateCloseM65
+                    ? M65FormalClosureDecision.NeedsAdditionalEvidence
+                    : M65FormalClosureDecision.DoNotClose;
+
+        return new M65FormalClosureReview(
+            decision,
+            M65ClosureScope.TargetOwnedExternalLowRiskChromeCdpDomReadOnly,
+            BrowserCredentialRedactor.Redact(input.TargetBaseUrl),
+            decision == M65FormalClosureDecision.FormallyClosedTargetOwnedReadOnlyCdp
+                ? "M65 formally closed only for target-owned low-risk Chrome/CDP/DOM read-only proof."
+                : "M65 formal closure denied or still candidate-only.",
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            BrowserCredentialRedactor.Redact(input.LedgerRef),
+            BrowserCredentialRedactor.Redact(input.LedgerHash),
+            ExternalCdpGeneralReady: false,
+            PublicSaasStillDisabled: !input.PublicSaasEnabled,
+            PublicApiStillDisabled: !input.PublicApiEnabled,
+            RealBillingStillDisabled: !input.RealBillingEnabled,
+            RealEmailStillDisabled: !input.RealEmailEnabled,
+            RealCredentialsStillBlocked: !input.RealCredentialsEnabled,
+            SensitiveSitesStillBlocked: !input.SensitiveSitesEnabled,
+            Redacted: true);
+    }
+}
+
+public sealed class ExternalCdpScopeLockService
+{
+    public ExternalCdpScopeLockDecision Evaluate(ExternalCdpScopeLockRequest request)
+    {
+        var reasons = new List<string>();
+        ExternalCdpScopeLockStatus status;
+
+        if (request.GeneralExternalCdpRequested)
+        {
+            status = ExternalCdpScopeLockStatus.GeneralExternalCdpBlocked;
+            reasons.Add("general external CDP remains blocked after M65");
+        }
+        else if (request.ProductionModeRequested)
+        {
+            status = ExternalCdpScopeLockStatus.ProductionExternalCdpBlocked;
+            reasons.Add("production external CDP remains blocked");
+        }
+        else if (request.IsSensitiveTarget)
+        {
+            status = ExternalCdpScopeLockStatus.SensitiveExternalCdpBlocked;
+            reasons.Add("sensitive external targets remain blocked");
+        }
+        else if (request.IsThirdPartyTarget)
+        {
+            status = ExternalCdpScopeLockStatus.ThirdPartyExternalCdpBlocked;
+            reasons.Add("third-party external targets require separate evidence and are blocked now");
+        }
+        else if (request.CredentialsRequested || request.SubmitPaySignDeleteRequested)
+        {
+            status = ExternalCdpScopeLockStatus.RequiresDedicatedApproval;
+            reasons.Add("credentials and submit/pay/sign/delete require dedicated approval and remain blocked");
+        }
+        else if (!request.HasDedicatedApproval || !request.HasNewEvidence)
+        {
+            status = ExternalCdpScopeLockStatus.RequiresNewEvidence;
+            reasons.Add("new external CDP target or capability requires dedicated approval and new evidence");
+        }
+        else
+        {
+            status = ExternalCdpScopeLockStatus.TargetOwnedProofOnly;
+        }
+
+        var allowed = status == ExternalCdpScopeLockStatus.TargetOwnedProofOnly &&
+            request.M65FormallyClosed &&
+            request.IsTargetOwnedLabHost &&
+            string.Equals(request.RequestedTargetHost, "lab.nodalos.com.ar", StringComparison.OrdinalIgnoreCase);
+
+        if (!request.M65FormallyClosed)
+            reasons.Add("M65 formal closure required for target-owned proof status");
+        if (!request.IsTargetOwnedLabHost || !string.Equals(request.RequestedTargetHost, "lab.nodalos.com.ar", StringComparison.OrdinalIgnoreCase))
+            reasons.Add("only lab.nodalos.com.ar target-owned proof status is recognized");
+
+        return new ExternalCdpScopeLockDecision(
+            allowed ? ExternalCdpScopeLockStatus.TargetOwnedProofOnly : status,
+            allowed,
+            BrowserRuntimeExternalGeneralReady: false,
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            allowed
+                ? "External CDP status is locked to target-owned lab.nodalos.com.ar read-only proof only."
+                : "External CDP remains blocked outside the target-owned read-only proof scope.",
+            Redacted: true);
+    }
+}

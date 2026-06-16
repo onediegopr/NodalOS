@@ -142,3 +142,92 @@ public sealed record M65DedicatedEvidenceReview(
     bool RealCredentialsStillBlocked,
     bool SensitiveSurfacesStillBlocked,
     bool Redacted);
+
+public enum M65FormalClosureDecision
+{
+    CandidateOnly,
+    FormallyClosedTargetOwnedReadOnlyCdp,
+    DoNotClose,
+    NeedsAdditionalEvidence,
+    ScopeInflationBlocked
+}
+
+public enum M65ClosureScope
+{
+    TargetOwnedExternalLowRiskChromeCdpDomReadOnly,
+    GeneralExternalCdp,
+    ProductionExternalCdp,
+    SensitiveExternalCdp,
+    ThirdPartyExternalCdp
+}
+
+public sealed record M65FormalClosureReviewInput(
+    M65DedicatedEvidenceReview CandidateReview,
+    string TargetBaseUrl,
+    NexaExternalProofProbeKind ProofKind,
+    string Tooling,
+    IReadOnlyList<string> Capabilities,
+    bool LedgerPersisted,
+    string? LedgerRef,
+    string? LedgerHash,
+    bool IsolatedProfile,
+    bool NoSecretsCookiesTokens,
+    bool NoFullDomOrBodyPersisted,
+    bool NoSubmitMutationPaymentLogin,
+    bool BlockedRoutesPolicyVerified,
+    bool PublicSaasEnabled,
+    bool PublicApiEnabled,
+    bool RealBillingEnabled,
+    bool RealEmailEnabled,
+    bool RealCredentialsEnabled,
+    bool SensitiveSitesEnabled,
+    bool GeneralExternalCdpRequested);
+
+public sealed record M65FormalClosureReview(
+    M65FormalClosureDecision Decision,
+    M65ClosureScope Scope,
+    string TargetBaseUrl,
+    string Summary,
+    IReadOnlyList<string> ReasonCodes,
+    string? LedgerRef,
+    string? LedgerHash,
+    bool ExternalCdpGeneralReady,
+    bool PublicSaasStillDisabled,
+    bool PublicApiStillDisabled,
+    bool RealBillingStillDisabled,
+    bool RealEmailStillDisabled,
+    bool RealCredentialsStillBlocked,
+    bool SensitiveSitesStillBlocked,
+    bool Redacted);
+
+public enum ExternalCdpScopeLockStatus
+{
+    TargetOwnedProofOnly,
+    GeneralExternalCdpBlocked,
+    SensitiveExternalCdpBlocked,
+    ProductionExternalCdpBlocked,
+    ThirdPartyExternalCdpBlocked,
+    RequiresDedicatedApproval,
+    RequiresNewEvidence
+}
+
+public sealed record ExternalCdpScopeLockRequest(
+    bool M65FormallyClosed,
+    string RequestedTargetHost,
+    bool IsTargetOwnedLabHost,
+    bool IsThirdPartyTarget,
+    bool IsSensitiveTarget,
+    bool ProductionModeRequested,
+    bool CredentialsRequested,
+    bool SubmitPaySignDeleteRequested,
+    bool GeneralExternalCdpRequested,
+    bool HasDedicatedApproval,
+    bool HasNewEvidence);
+
+public sealed record ExternalCdpScopeLockDecision(
+    ExternalCdpScopeLockStatus Status,
+    bool Allowed,
+    bool BrowserRuntimeExternalGeneralReady,
+    IReadOnlyList<string> ReasonCodes,
+    string OperatorMessage,
+    bool Redacted);

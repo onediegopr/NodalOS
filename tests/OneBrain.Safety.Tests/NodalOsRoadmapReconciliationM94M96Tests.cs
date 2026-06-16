@@ -29,9 +29,9 @@ public sealed class NodalOsRoadmapReconciliationM94M96Tests
         StringAssert.Contains(text, "M51");
         StringAssert.Contains(text, "Closed with strict HTTP-only scope");
         StringAssert.Contains(text, "M65");
-        StringAssert.Contains(text, "Deferred");
+        StringAssert.Contains(text, "Closed with target-owned Chrome/CDP/DOM read-only scope");
         StringAssert.Contains(text, "External Chrome/CDP/DOM proof");
-        StringAssert.Contains(text, "Pending");
+        StringAssert.Contains(text, "Closed only for target-owned");
         StringAssert.Contains(text, "Rename NEXA to NODAL OS");
         StringAssert.Contains(text, "Visible rename completed");
         StringAssert.Contains(text, "Recommended action");
@@ -47,13 +47,12 @@ public sealed class NodalOsRoadmapReconciliationM94M96Tests
         StringAssert.Contains(text, "Browser Runtime local/sandbox: 97%");
         StringAssert.Contains(text, "Security/evidence integrity: 92-95%");
         StringAssert.Contains(text, "M51: closed with strict HTTP read-only scope");
-        StringAssert.Contains(text, "M65: deferred");
-        StringAssert.Contains(text, "External Chrome/CDP/DOM proof: pending");
-        StringAssert.Contains(text, "M97/M98/M99");
-        StringAssert.Contains(text, "Completed for visible/operator-facing surfaces");
-        StringAssert.Contains(text, "M100/M101/M102");
-        StringAssert.Contains(text, "M103/M104/M105");
-        StringAssert.Contains(text, "M106+");
+        StringAssert.Contains(text, "M65: closed with limited target-owned Chrome/CDP/DOM read-only scope");
+        StringAssert.Contains(text, "External CDP general-ready: false");
+        StringAssert.Contains(text, "M115/M116/M117");
+        StringAssert.Contains(text, "M118/M119/M120");
+        StringAssert.Contains(text, "M121/M122/M123");
+        StringAssert.Contains(text, "M124+");
         StringAssert.Contains(text, "HITO-162 is paused/not forgotten");
     }
 
@@ -70,7 +69,8 @@ public sealed class NodalOsRoadmapReconciliationM94M96Tests
         StringAssert.Contains(text, "No sensitive sites");
         StringAssert.Contains(text, "No submit/pay/sign/delete");
         StringAssert.Contains(text, "No productive recorder/replay");
-        StringAssert.Contains(text, "No Chrome/CDP external claim until Chrome/CDP external evidence exists");
+        StringAssert.Contains(text, "No Chrome/CDP general-ready claim from target-owned proof");
+        StringAssert.Contains(text, "No Chromium fork planned now");
     }
 
     private static string ReadDoc(params string[] relativePath)

@@ -380,7 +380,16 @@ public sealed record BrowserRuntimeObservedState(
     bool M65ClosureGateDefined = false,
     bool M65ClosesFromM51Only = false,
     bool M65RequiresChromeCdpDomProof = false,
-    bool M65CandidateWithoutDedicatedEvidence = false)
+    bool M65CandidateWithoutDedicatedEvidence = false,
+    bool M65FormalClosureReviewDefined = false,
+    bool M65ClosedTargetOwnedReadOnlyCdp = false,
+    bool ExternalCdpScopeLockDefined = false,
+    bool ExternalCdpGeneralReady = false,
+    bool ExternalCdpScopeInflationAttempted = false,
+    bool ExternalCdpThirdPartyUnlocked = false,
+    bool ExternalCdpSensitiveUnlocked = false,
+    bool ExternalCdpCredentialsUnlocked = false,
+    bool ExternalCdpIrreversibleActionsUnlocked = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -719,6 +728,18 @@ public sealed record BrowserRuntimeObservedState(
          M65RequiresChromeCdpDomProof &&
          !M65ClosesFromM51Only &&
          !M65CandidateWithoutDedicatedEvidence);
+
+    public bool ExternalCdpScopeLockAllowed =>
+        (!M65FormalClosureReviewDefined && !ExternalCdpScopeLockDefined && !M65ClosedTargetOwnedReadOnlyCdp) ||
+        (M65FormalClosureReviewDefined &&
+         ExternalCdpScopeLockDefined &&
+         M65ClosedTargetOwnedReadOnlyCdp &&
+         !ExternalCdpGeneralReady &&
+         !ExternalCdpScopeInflationAttempted &&
+         !ExternalCdpThirdPartyUnlocked &&
+         !ExternalCdpSensitiveUnlocked &&
+         !ExternalCdpCredentialsUnlocked &&
+         !ExternalCdpIrreversibleActionsUnlocked);
 
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
