@@ -1,0 +1,268 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OneBrain.BrowserExecutor.Cdp;
+using OneBrain.BrowserExecutor.Contracts;
+
+namespace OneBrain.Safety.Tests;
+
+[TestClass]
+public sealed class M65DedicatedEvidenceM100M102Tests
+{
+    [TestMethod]
+    public void M65DedicatedEvidencePlanDefinesScopeWithoutClosingM65()
+    {
+        var plan = new M65DedicatedEvidencePlanService().CreateDefaultPlan();
+
+        Assert.AreEqual(M65ClosureReadinessStatus.ScopeDefined, plan.Status);
+        Assert.IsFalse(plan.M51EvidenceSufficient);
+        Assert.IsTrue(plan.RequiresChromeCdpDomProof);
+        Assert.IsTrue(plan.Requirements.Any(r => r.Scope == M65EvidenceScope.ChromeCdpDomReadOnly && r.Status == M65EvidenceRequirementStatus.Required));
+        Assert.IsTrue(plan.PublicSaasStillDisabled);
+        Assert.IsTrue(plan.RealBillingStillDisabled);
+        Assert.IsTrue(plan.RealEmailStillDisabled);
+        Assert.IsTrue(plan.RealCredentialsStillBlocked);
+        Assert.IsTrue(plan.SensitiveSurfacesStillBlocked);
+    }
+
+    [TestMethod]
+    public void M65DedicatedEvidencePlanAdrDocumentsScopeAndDeferredStatus()
+    {
+        var doc = File.ReadAllText(SourcePath("docs", "adr", "m65-dedicated-evidence-plan-m100-m102.md"));
+
+        StringAssert.Contains(doc, "M51 is closed with strict scope");
+        StringAssert.Contains(doc, "M65 remains `DeferredNeedsDedicatedEvidence`");
+        StringAssert.Contains(doc, "M51 evidence alone");
+        StringAssert.Contains(doc, "external browser/CDP/DOM read-only proof");
+        StringAssert.Contains(doc, "SaaS, public API, billing real, email real, real credentials");
+    }
+
+    [TestMethod]
+    public void M65DedicatedEvidencePlanCanRemainScopeDefinedWithoutClosure()
+    {
+        var plan = new M65DedicatedEvidencePlanService().CreateDefaultPlan();
+        var readiness = new M65DedicatedEvidencePlanService().Assess(plan, scenarioPlanReady: false, chromeCdpDomEvidenceCollected: false);
+
+        Assert.AreEqual(M65ClosureReadinessStatus.ScopeDefined, readiness.Status);
+        Assert.IsFalse(readiness.CanClose);
+        CollectionAssert.Contains(readiness.MissingEvidence.ToArray(), "M65 scenario plan");
+    }
+
+    [TestMethod]
+    public void M65DedicatedEvidencePlanRequiresDedicatedEvidenceBeyondM51()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.RealHttpClient,
+            ledger: true,
+            readOnlyProof: true,
+            cdpDom: false));
+
+        Assert.AreEqual(M65ClosureReadinessStatus.RequiresChromeCdpDomProof, review.Status);
+        Assert.IsFalse(review.CandidateCloseM65);
+        Assert.IsTrue(review.ReasonCodes.Any(r => r.Contains("M51 HTTP evidence alone", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void M65LowRiskScenarioExpansionCatalogExists()
+    {
+        var catalog = new M65LowRiskExternalScenarioCatalogService().CreateDefaultCatalog();
+
+        Assert.IsTrue(catalog.PlanReady);
+        Assert.AreEqual("https://lab.nodalos.com.ar", catalog.TargetBaseUrl);
+        Assert.IsFalse(catalog.UsesRealCustomerData);
+        Assert.IsFalse(catalog.UsesCredentials);
+        Assert.IsFalse(catalog.AllowsSubmitMutationPaymentLogin);
+        Assert.IsTrue(catalog.Scenarios.Count >= 8);
+    }
+
+    [TestMethod]
+    public void M65LowRiskScenarioExpansionBlocksUnsafeSurfaces()
+    {
+        var catalog = new M65LowRiskExternalScenarioCatalogService().CreateDefaultCatalog();
+
+        Assert.IsTrue(catalog.Scenarios.Any(s => s.Kind == M65LowRiskScenarioKind.BlockedLoginPolicyVerification && s.DeniedActions.Contains("credentials")));
+        Assert.IsTrue(catalog.Scenarios.Any(s => s.Kind == M65LowRiskScenarioKind.BlockedCheckoutPaymentPolicyVerification && s.DeniedActions.Contains("payment")));
+        Assert.IsTrue(catalog.Scenarios.Any(s => s.Kind == M65LowRiskScenarioKind.BlockedDestructiveActionPolicyVerification && s.DeniedActions.Contains("delete")));
+        Assert.IsTrue(catalog.Scenarios.Any(s => s.Kind == M65LowRiskScenarioKind.DisabledFormPolicyVerification && s.DeniedActions.Contains("submit")));
+        Assert.IsTrue(catalog.Scenarios.All(s => s.PolicyExplanation.Contains("NODAL OS", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void M65LowRiskScenarioExpansionMarksHttpOnlyAsInsufficientWhenCdpDomRequired()
+    {
+        var catalog = new M65LowRiskExternalScenarioCatalogService().CreateDefaultCatalog();
+
+        Assert.IsTrue(catalog.Scenarios.Any(s => s.EvidenceMode == M65ScenarioEvidenceMode.HttpReadOnlyScenario));
+        Assert.IsTrue(catalog.Scenarios.Any(s => s.EvidenceMode == M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending && s.RequiredProbeKind == NexaExternalProofProbeKind.RealChromeCdp));
+        Assert.IsTrue(catalog.Scenarios.Any(s => s.EvidenceMode == M65ScenarioEvidenceMode.NotEnoughForClosure));
+    }
+
+    [TestMethod]
+    public void M65ClosureGateM51EvidenceAloneCannotCloseM65()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.RealHttpClient,
+            ledger: true,
+            readOnlyProof: true,
+            cdpDom: false));
+
+        Assert.AreNotEqual(M65ClosureReadinessStatus.CandidateCloseM65, review.Status);
+        Assert.IsFalse(review.CandidateCloseM65);
+    }
+
+    [TestMethod]
+    public void M65ClosureGateScenarioPlanAloneCannotCloseM65()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.ModeledFake,
+            ledger: false,
+            readOnlyProof: false,
+            cdpDom: false));
+
+        Assert.AreEqual(M65ClosureReadinessStatus.RequiresChromeCdpDomProof, review.Status);
+        Assert.IsFalse(review.CandidateCloseM65);
+        Assert.IsTrue(review.ReasonCodes.Any(r => r.Contains("modeled", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void M65ClosureGateMissingLedgerBlocks()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.RealChromeCdp,
+            ledger: false,
+            readOnlyProof: true,
+            cdpDom: true));
+
+        Assert.AreEqual(M65ClosureReadinessStatus.DeferredNeedsDedicatedEvidence, review.Status);
+        Assert.IsTrue(review.ReasonCodes.Any(r => r.Contains("ledger", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void M65ClosureGateSensitiveLeakBlocks()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.RealChromeCdp,
+            ledger: true,
+            readOnlyProof: true,
+            cdpDom: true,
+            secrets: true));
+
+        Assert.AreEqual(M65ClosureReadinessStatus.BlockedByPolicy, review.Status);
+        Assert.IsFalse(review.CandidateCloseM65);
+    }
+
+    [TestMethod]
+    public void M65ClosureGateMutationBlocks()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.RealChromeCdp,
+            ledger: true,
+            readOnlyProof: true,
+            cdpDom: true,
+            mutation: true));
+
+        Assert.AreEqual(M65ClosureReadinessStatus.BlockedByPolicy, review.Status);
+        Assert.IsFalse(review.CandidateCloseM65);
+    }
+
+    [TestMethod]
+    public void M65ClosureGateDedicatedEvidenceAllPresentYieldsCandidateOnly()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.RealChromeCdp,
+            ledger: true,
+            readOnlyProof: true,
+            cdpDom: true));
+
+        Assert.AreEqual(M65ClosureReadinessStatus.CandidateCloseM65, review.Status);
+        Assert.IsTrue(review.CandidateCloseM65);
+        StringAssert.Contains(review.Recommendation, "explicit human review");
+    }
+
+    [TestMethod]
+    public void M65ClosureGateCandidateDoesNotOpenSensitiveSurfaces()
+    {
+        var review = new M65DedicatedEvidenceReviewer().Review(Input(
+            proofKind: NexaExternalProofProbeKind.RealChromeCdp,
+            ledger: true,
+            readOnlyProof: true,
+            cdpDom: true));
+
+        Assert.IsTrue(review.PublicSaasStillDisabled);
+        Assert.IsTrue(review.RealBillingStillDisabled);
+        Assert.IsTrue(review.RealEmailStillDisabled);
+        Assert.IsTrue(review.RealCredentialsStillBlocked);
+        Assert.IsTrue(review.SensitiveSurfacesStillBlocked);
+    }
+
+    [TestMethod]
+    public void BrowserRuntimePhaseGateReflectsM65PlanWithoutClosure()
+    {
+        var observed = new BrowserRuntimeObservedState(
+            CompanionAuthoritative: false,
+            LegacyRunnerEnabled: false,
+            RealProfileActive: false,
+            RealVaultActive: false,
+            LoginRealActive: false,
+            BrowserNetworkCaptureMode.MetadataOnly,
+            RequestBodyCaptureSupported: false,
+            ResponseBodyCaptureSupported: false,
+            SensitiveHeaderValueCaptureSupported: false,
+            ReplayExecutableEnabled: false,
+            DownloadMode: "disabled",
+            UploadMode: "disabled",
+            TargetFrameManagerHealthy: true,
+            AuditLedgerIntegrityProviderKind: "hmac",
+            AuditLedgerHeadSealAvailable: true,
+            AuditLedgerHeadSealValid: true,
+            CdpLiveProofAvailable: false,
+            Browser004xLegacyIsolated: true,
+            Capabilities: [],
+            M65DedicatedEvidencePlanDefined: true,
+            M65LowRiskScenarioPlanReady: true,
+            M65ClosureGateDefined: true,
+            M65RequiresChromeCdpDomProof: true);
+
+        Assert.IsTrue(observed.M65DedicatedEvidenceReadinessAllowed);
+        Assert.IsFalse(observed.M65ClosesFromM51Only);
+        Assert.IsFalse(observed.M65CandidateWithoutDedicatedEvidence);
+    }
+
+    private static M65DedicatedEvidenceReviewInput Input(
+        NexaExternalProofProbeKind proofKind,
+        bool ledger,
+        bool readOnlyProof,
+        bool cdpDom,
+        bool secrets = false,
+        bool mutation = false) =>
+        new(
+            M51Closed: true,
+            ScenarioPlanReady: true,
+            proofKind,
+            proofKind == NexaExternalProofProbeKind.RealChromeCdp ? "ChromeCdpExternal" : "HttpReadOnlyExternal",
+            LedgerRefPresent: ledger,
+            TargetVerified: true,
+            ReadOnlyProofPassed: readOnlyProof,
+            ChromeCdpDomProofPassed: cdpDom,
+            SecretsCookiesTokensDetected: secrets,
+            SubmitMutationPaymentLoginDetected: mutation,
+            PolicyViolationDetected: false,
+            ScopeRequiresChromeCdpDomProof: true,
+            PublicSaasEnabled: false,
+            RealBillingEnabled: false,
+            RealEmailEnabled: false,
+            RealCredentialsEnabled: false,
+            SensitiveSurfaceEnabled: false);
+
+    private static string SourcePath(params string[] relativePath)
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "OneBrain.slnx")))
+                return Path.Combine(new[] { current.FullName }.Concat(relativePath).ToArray());
+            current = current.Parent;
+        }
+
+        Assert.Fail("Could not locate repository root.");
+        return "";
+    }
+}

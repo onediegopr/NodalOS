@@ -374,7 +374,13 @@ public sealed record BrowserRuntimeObservedState(
     bool LiveProofSafetyGateDefined = false,
     bool LiveProofSafetyGateReadyDoesNotCloseM51M65 = false,
     bool LiveProofSafetyGateRunsWithoutOptIn = false,
-    bool LiveProofSafetyGateAllowsSensitiveSurface = false)
+    bool LiveProofSafetyGateAllowsSensitiveSurface = false,
+    bool M65DedicatedEvidencePlanDefined = false,
+    bool M65LowRiskScenarioPlanReady = false,
+    bool M65ClosureGateDefined = false,
+    bool M65ClosesFromM51Only = false,
+    bool M65RequiresChromeCdpDomProof = false,
+    bool M65CandidateWithoutDedicatedEvidence = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -705,6 +711,15 @@ public sealed record BrowserRuntimeObservedState(
          !LiveProofSafetyGateRunsWithoutOptIn &&
          !LiveProofSafetyGateAllowsSensitiveSurface);
 
+    public bool M65DedicatedEvidenceReadinessAllowed =>
+        (!M65DedicatedEvidencePlanDefined && !M65LowRiskScenarioPlanReady && !M65ClosureGateDefined) ||
+        (M65DedicatedEvidencePlanDefined &&
+         M65LowRiskScenarioPlanReady &&
+         M65ClosureGateDefined &&
+         M65RequiresChromeCdpDomProof &&
+         !M65ClosesFromM51Only &&
+         !M65CandidateWithoutDedicatedEvidence);
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -906,7 +921,12 @@ public sealed record BrowserRuntimeObservedState(
         DomainBindingReadinessDefined ||
         LiveProofSafetyGateDefined ||
         LiveProofSafetyGateRunsWithoutOptIn ||
-        LiveProofSafetyGateAllowsSensitiveSurface;
+        LiveProofSafetyGateAllowsSensitiveSurface ||
+        M65DedicatedEvidencePlanDefined ||
+        M65LowRiskScenarioPlanReady ||
+        M65ClosureGateDefined ||
+        M65ClosesFromM51Only ||
+        M65CandidateWithoutDedicatedEvidence;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
