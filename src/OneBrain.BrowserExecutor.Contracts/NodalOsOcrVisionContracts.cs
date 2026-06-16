@@ -862,3 +862,232 @@ public sealed record NodalOsOcrActivationDecision(
     bool NoAuthority,
     bool RequiresHumanReview,
     bool Redacted);
+
+public enum NodalOsLocalOcrWorkerSkeletonState
+{
+    NotInstalled,
+    InstalledButDisabled,
+    SyntheticOnly,
+    AvailableForSynthetic,
+    AvailableForRedactedCropShadow,
+    DisabledByPolicy,
+    FailedHealthCheck,
+    TimedOut,
+    VersionMismatch,
+    Error
+}
+
+public enum NodalOsLocalOcrWorkerLifecycle
+{
+    Created,
+    Disabled,
+    HealthChecked,
+    SyntheticReady,
+    SyntheticRunning,
+    SyntheticCompleted,
+    Paused,
+    Failed
+}
+
+public sealed record NodalOsLocalOcrWorkerProcessPolicy(
+    bool AllowsExternalProcess,
+    bool AllowsPython,
+    bool AllowsNetwork,
+    bool AllowsRealOcr,
+    bool AllowsRawPersistence,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerTimeoutPolicy(
+    int RequestTimeoutMs,
+    int HealthCheckTimeoutMs,
+    int SyntheticRunTimeoutMs,
+    bool StopWithEvidenceOnTimeout);
+
+public sealed record NodalOsLocalOcrWorkerResourceLimits(
+    int MaxImageWidth,
+    int MaxImageHeight,
+    int MaxPages,
+    int MaxMemoryMb,
+    bool FullScreenBlocked);
+
+public sealed record NodalOsLocalOcrWorkerSkeleton(
+    string WorkerId,
+    string WorkerContractVersion,
+    NodalOsLocalOcrWorkerSkeletonState State,
+    NodalOsLocalOcrWorkerLifecycle Lifecycle,
+    NodalOsLocalOcrWorkerProcessPolicy ProcessPolicy,
+    NodalOsLocalOcrWorkerTimeoutPolicy TimeoutPolicy,
+    NodalOsLocalOcrWorkerResourceLimits ResourceLimits,
+    bool DisabledByDefault,
+    bool SyntheticOnly,
+    bool CallsRealOcr,
+    bool CallsExternalProcess,
+    bool RawPersistence,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerEnvelope(
+    string EnvelopeId,
+    string WorkerContractVersion,
+    DateTimeOffset CreatedAtUtc,
+    bool Redacted,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerRequestEnvelope(
+    NodalOsLocalOcrWorkerEnvelope Envelope,
+    string RequestId,
+    NodalOsOcrVisionProviderId ProviderId,
+    NodalOsOcrEngineHint EngineHint,
+    NodalOsGroundingSnapshotId GroundingSnapshotId,
+    string RedactionResultId,
+    NodalOsImageRedactionDecision RedactionDecision,
+    bool SafeForOcr,
+    bool OriginalRawPersisted,
+    string CropRef,
+    bool FullScreen,
+    NodalOsOcrVisionSensitivity Sensitivity,
+    bool ExternalDataTransfer,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerResponseEnvelope(
+    NodalOsLocalOcrWorkerEnvelope Envelope,
+    string ResponseId,
+    string RequestId,
+    NodalOsLocalOcrWorkerSkeletonState Status,
+    IReadOnlyList<NodalOsOcrTextBlock> TextBlocks,
+    IReadOnlyList<NodalOsOcrBoundingBox> BoundingBoxes,
+    NodalOsOcrConfidence Confidence,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<NodalOsGroundingEvidenceRef> EvidenceRefs,
+    int ProcessingTimeMs,
+    bool RequiresHumanReview,
+    bool NoAuthority,
+    bool RawPersisted,
+    bool CallsRealOcr,
+    bool CallsExternalProcess,
+    bool CallsRealSaas,
+    bool Redacted);
+
+public sealed record NodalOsLocalOcrWorkerAuditRecord(
+    string AuditId,
+    string WorkerId,
+    string RequestId,
+    string Decision,
+    IReadOnlyList<NodalOsGroundingEvidenceRef> EvidenceRefs,
+    bool RawPersisted,
+    bool CallsRealOcr,
+    bool CallsExternalProcess,
+    bool CallsRealSaas,
+    bool NoAuthority,
+    bool Redacted);
+
+public enum NodalOsOcrSyntheticActivationDecisionKind
+{
+    BlockedByDefault,
+    BlockedByMissingSyntheticOptIn,
+    BlockedByMissingRedactionEvidence,
+    BlockedByWorkerUnavailable,
+    BlockedByPolicy,
+    BlockedByNoAuthorityViolation,
+    ReadyForSyntheticOnly,
+    SyntheticRunCompleted,
+    SyntheticRunFailed
+}
+
+public sealed record NodalOsOcrSyntheticActivationReadiness(
+    bool WorkerSkeletonAvailable,
+    bool ProviderLocalStub,
+    bool EvaluationHarnessPassed,
+    bool RedactorPassed,
+    bool NoRawPersistence,
+    bool NoExternalProcess,
+    bool NoRealOcr,
+    bool NoSaas,
+    bool SyntheticOptIn,
+    bool RollbackPauseModeled,
+    bool AuditRecordGenerated,
+    bool NoAuthorityConfirmed);
+
+public sealed record NodalOsOcrSyntheticActivationDecision(
+    string DecisionId,
+    NodalOsOcrSyntheticActivationDecisionKind Decision,
+    string Reason,
+    bool RealOcrEnabled,
+    bool RealSaasEnabled,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsOcrSyntheticRunRecord(
+    string RunId,
+    DateTimeOffset CreatedAtUtc,
+    IReadOnlyList<NodalOsLocalOcrWorkerAuditRecord> AuditRecords,
+    int TotalFixtures,
+    int CompletedFixtures,
+    int BlockedFixtures,
+    bool CallsRealOcr,
+    bool CallsRealSaas,
+    bool CallsExternalProcess,
+    bool RawPersisted,
+    bool NoAuthority,
+    bool Redacted);
+
+public enum NodalOsLocalOcrWorkerFailureMode
+{
+    WorkerUnavailable,
+    VersionMismatch,
+    Timeout,
+    ResourceLimitExceeded,
+    RedactionMissing,
+    RedactionFailed,
+    SensitiveBlocked,
+    FullScreenBlocked,
+    ExternalProcessAttempted,
+    RawPersistenceAttempted,
+    AuthorityViolation,
+    UnexpectedOutput,
+    LowConfidence,
+    UnknownError
+}
+
+public enum NodalOsLocalOcrWorkerFailureDecision
+{
+    Blocked,
+    AskHuman,
+    RetrySynthetic,
+    StopWithEvidence,
+    Degraded,
+    PauseProvider
+}
+
+public enum NodalOsLocalOcrWorkerRecoveryAction
+{
+    None,
+    RetrySynthetic,
+    AskHuman,
+    StopWithEvidence,
+    PauseProvider,
+    RecheckHealth
+}
+
+public sealed record NodalOsLocalOcrWorkerIsolationAudit(
+    string AuditId,
+    bool ContractVersionCompatible,
+    bool WorkerDisabledByDefault,
+    bool SyntheticOnlyAllowed,
+    bool ResourceLimitsConfigured,
+    bool TimeoutConfigured,
+    bool NoExternalNetwork,
+    bool NoRawPersistence,
+    bool NoRealOcr,
+    bool NoProcessInvocation,
+    bool NoAuthority,
+    bool RollbackPauseAvailable,
+    IReadOnlyList<NodalOsLocalOcrWorkerFailureMode> FailureModes,
+    bool Passed);
+
+public sealed record NodalOsLocalOcrWorkerFailureResult(
+    NodalOsLocalOcrWorkerFailureMode Mode,
+    NodalOsLocalOcrWorkerFailureDecision Decision,
+    NodalOsLocalOcrWorkerRecoveryAction RecoveryAction,
+    string Reason,
+    bool NoAuthority,
+    bool Redacted);

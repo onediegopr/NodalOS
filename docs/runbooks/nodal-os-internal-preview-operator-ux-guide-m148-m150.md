@@ -115,6 +115,19 @@ If NODAL OS detects repeated URL, repeated DOM/screenshot hash, repeated action,
 - SaaS OCR remains disabled-by-default and requires opt-in, secret vault, budget, privacy and activation audit.
 - OCR/Vision remains no-authority: it cannot approve actions, click, submit, sign, pay, delete, enter credentials or bypass captcha/2FA.
 
+## Reading Local OCR Synthetic Worker Status
+
+- `ReadyForSyntheticOnly` means the worker skeleton can run synthetic fixtures only. It does not enable OCR real.
+- `WorkerUnavailable` means the skeleton or future worker is missing/disabled; pause provider and stop with evidence.
+- `RedactionMissing` means no verified redaction result exists; do not route to OCR.
+- `RedactionFailed` means the crop is unsafe or uncertain; ask human or stop with evidence.
+- `SensitiveBlocked` means policy blocked the crop; do not attempt OCR or workaround.
+- `TimedOut` means stop with evidence; do not keep retrying blindly.
+- `VersionMismatch` means the worker contract version is incompatible; block before running.
+- `RawPersistenceAttempted` or `ExternalProcessAttempted` means stop immediately and file an issue.
+- Synthetic worker results are fixture outputs only and may require human review on low confidence.
+- OCR real remains disabled until a separate audited activation gate changes that in a future phase.
+
 ## Allowed Examples
 
 - Review Product/Admin local summary.

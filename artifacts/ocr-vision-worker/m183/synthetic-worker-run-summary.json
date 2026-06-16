@@ -1,0 +1,91 @@
+{
+  "RunId": "ocr-synthetic-worker-run-m183",
+  "CreatedAtUtc": "2026-06-16T19:56:01.588973+00:00",
+  "AuditRecords": [
+    {
+      "AuditId": "local-ocr-worker-audit-70cad29143654dcaa3534af1e4ad45f9",
+      "WorkerId": "local-ocr-worker-skeleton-v1",
+      "RequestId": "synthetic-worker-clean-crop",
+      "Decision": "SyntheticOnly",
+      "EvidenceRefs": [
+        {
+          "RefId": "worker-skeleton:synthetic-worker-clean-crop:SyntheticOnly",
+          "Label": "synthetic worker evidence; no raw persistence",
+          "Redacted": true
+        }
+      ],
+      "RawPersisted": false,
+      "CallsRealOcr": false,
+      "CallsExternalProcess": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "AuditId": "local-ocr-worker-audit-f8563c3ab5384fa6b76d8be3e19769d6",
+      "WorkerId": "local-ocr-worker-skeleton-v1",
+      "RequestId": "synthetic-worker-redacted-credential-crop",
+      "Decision": "SyntheticOnly",
+      "EvidenceRefs": [
+        {
+          "RefId": "worker-skeleton:synthetic-worker-redacted-credential-crop:SyntheticOnly",
+          "Label": "synthetic worker evidence; no raw persistence",
+          "Redacted": true
+        }
+      ],
+      "RawPersisted": false,
+      "CallsRealOcr": false,
+      "CallsExternalProcess": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "AuditId": "local-ocr-worker-audit-c71fafc8bba8427abaf7faaf47c8bb38",
+      "WorkerId": "local-ocr-worker-skeleton-v1",
+      "RequestId": "synthetic-worker-blocked-sensitive-crop",
+      "Decision": "FailedHealthCheck",
+      "EvidenceRefs": [
+        {
+          "RefId": "worker-skeleton:synthetic-worker-blocked-sensitive-crop:FailedHealthCheck",
+          "Label": "synthetic worker evidence; no raw persistence",
+          "Redacted": true
+        }
+      ],
+      "RawPersisted": false,
+      "CallsRealOcr": false,
+      "CallsExternalProcess": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "AuditId": "local-ocr-worker-audit-38cf52ff0d1842f08e7f58d0ca4494d0",
+      "WorkerId": "local-ocr-worker-skeleton-v1",
+      "RequestId": "synthetic-worker-low-confidence-crop",
+      "Decision": "AvailableForSynthetic",
+      "EvidenceRefs": [
+        {
+          "RefId": "worker-skeleton:synthetic-worker-low-confidence-crop:AvailableForSynthetic",
+          "Label": "synthetic worker evidence; no raw persistence",
+          "Redacted": true
+        }
+      ],
+      "RawPersisted": false,
+      "CallsRealOcr": false,
+      "CallsExternalProcess": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    }
+  ],
+  "TotalFixtures": 4,
+  "CompletedFixtures": 3,
+  "BlockedFixtures": 1,
+  "CallsRealOcr": false,
+  "CallsRealSaas": false,
+  "CallsExternalProcess": false,
+  "RawPersisted": false,
+  "NoAuthority": true,
+  "Redacted": true
+}
