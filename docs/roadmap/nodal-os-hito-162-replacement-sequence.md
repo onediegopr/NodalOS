@@ -40,6 +40,8 @@ Scope:
 
 Goal: implement the adjacent robust perception line safely.
 
+Status after M136-M138: implemented as local fixture-first liveness, stability, overlay/empty/block detection, and semantic fallback evidence. Perception remains a Core input only and does not authorize actions.
+
 Scope:
 
 - WindowLivenessMonitor
