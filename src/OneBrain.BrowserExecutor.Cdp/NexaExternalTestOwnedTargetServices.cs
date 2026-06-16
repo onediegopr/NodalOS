@@ -272,7 +272,7 @@ public sealed class NexaProofDryRunBinding
 
 public sealed class NexaTargetBindingReadinessEvaluator
 {
-    public const string RecommendedDomain = "nexa-lab.nodalos.com.ar";
+    public const string RecommendedDomain = "nexalab.nodalos.com.ar";
 
     public NexaTargetBindingConfig CreateDefault(
         NexaTargetBindingDnsMode dnsMode = NexaTargetBindingDnsMode.Unknown,
@@ -305,7 +305,7 @@ public sealed class NexaTargetBindingReadinessEvaluator
     {
         var reasons = new List<string>();
         if (!string.Equals(config.ExpectedDomain, RecommendedDomain, StringComparison.OrdinalIgnoreCase))
-            reasons.Add("expected domain must be the approved nexa-lab.nodalos.com.ar subdomain");
+            reasons.Add("expected domain must be the approved nexalab.nodalos.com.ar subdomain");
         if (config.AllowedHosts.Count != 1 || !config.AllowedHosts.Contains(config.ExpectedDomain) || config.AllowedHosts.Contains("nodalos.com.ar"))
             reasons.Add("allowed hosts must include only the expected lab subdomain");
         if (!config.AllowedPaths.Contains(config.ExpectedHealthPath) || !config.AllowedPaths.Contains(config.ExpectedOwnershipPath))

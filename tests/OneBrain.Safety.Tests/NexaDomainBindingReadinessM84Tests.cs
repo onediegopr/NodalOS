@@ -12,8 +12,8 @@ public sealed class NexaDomainBindingReadinessM84Tests
     {
         var config = new NexaTargetBindingReadinessEvaluator().CreateDefault();
 
-        Assert.IsTrue(string.Equals(config.ExpectedDomain, "nexa-lab.nodalos.com.ar", StringComparison.Ordinal));
-        Assert.IsTrue(string.Equals(config.ExpectedBaseUrl, "https://nexa-lab.nodalos.com.ar", StringComparison.Ordinal));
+        Assert.IsTrue(string.Equals(config.ExpectedDomain, "nexalab.nodalos.com.ar", StringComparison.Ordinal));
+        Assert.IsTrue(string.Equals(config.ExpectedBaseUrl, "https://nexalab.nodalos.com.ar", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -22,7 +22,7 @@ public sealed class NexaDomainBindingReadinessM84Tests
         var config = ReadyConfig();
 
         Assert.AreEqual(1, config.AllowedHosts.Count);
-        CollectionAssert.Contains(config.AllowedHosts.ToList(), "nexa-lab.nodalos.com.ar");
+        CollectionAssert.Contains(config.AllowedHosts.ToList(), "nexalab.nodalos.com.ar");
         CollectionAssert.DoesNotContain(config.AllowedHosts.ToList(), "nodalos.com.ar");
     }
 
@@ -58,7 +58,7 @@ public sealed class NexaDomainBindingReadinessM84Tests
     {
         var config = ReadyConfig() with
         {
-            AllowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "nexa-lab.nodalos.com.ar", "nodalos.com.ar" }
+            AllowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "nexalab.nodalos.com.ar", "nodalos.com.ar" }
         };
         var decision = new NexaTargetBindingReadinessEvaluator().Evaluate(config);
 
@@ -66,8 +66,40 @@ public sealed class NexaDomainBindingReadinessM84Tests
         Assert.IsTrue(decision.ReasonCodes.Any(reason => reason.Contains("subdomain", StringComparison.OrdinalIgnoreCase)));
     }
 
+    [TestMethod]
+    public void DomainBindingReadinessDoesNotReferenceHyphenatedLegacyDomain()
+    {
+        var repoRoot = FindRepoRoot();
+        var files = Directory.GetFiles(repoRoot, "*", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}.git{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+            .Where(path => Path.GetExtension(path) is ".cs" or ".md" or ".html" or ".json" or ".txt");
+
+        var legacyDomain = "nexa" + "-lab.nodalos.com.ar";
+        var matches = files
+            .Where(path => File.ReadAllText(path).Contains(legacyDomain, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        Assert.AreEqual(0, matches.Length, string.Join(Environment.NewLine, matches));
+    }
+
     internal static NexaTargetBindingConfig ReadyConfig() =>
         new NexaTargetBindingReadinessEvaluator().CreateDefault(
             NexaTargetBindingDnsMode.CnameOnly,
             NexaTargetBindingVerificationStatus.OwnershipVerified);
+
+    private static string FindRepoRoot()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "OneBrain.slnx")))
+                return current.FullName;
+            current = current.Parent;
+        }
+
+        Assert.Fail("Could not locate repository root.");
+        return "";
+    }
 }
