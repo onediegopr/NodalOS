@@ -1091,3 +1091,128 @@ public sealed record NodalOsLocalOcrWorkerFailureResult(
     string Reason,
     bool NoAuthority,
     bool Redacted);
+
+// ── M185: Out-of-process worker transport / manifest ──────────────────────────
+
+public enum NodalOsLocalOcrWorkerTransportKind
+{
+    InProcessSynthetic,
+    OutOfProcessSynthetic,
+    LocalCliSynthetic,
+    LoopbackSynthetic,
+    FuturePythonWorker,
+    FutureContainerWorker,
+    Disabled
+}
+
+public enum NodalOsLocalOcrWorkerIpcMode
+{
+    InProcessLoopback,
+    JsonStdioContract,
+    LocalHttpLoopback,
+    CliSubprocess,
+    SyntheticOnly,
+    Disabled
+}
+
+public sealed record NodalOsLocalOcrWorkerCommandSpec(
+    string Command,
+    string[] Args,
+    int TimeoutMs,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsLocalOcrWorkerTransport(
+    NodalOsLocalOcrWorkerTransportKind TransportKind,
+    NodalOsLocalOcrWorkerIpcMode IpcMode,
+    string ContractVersion,
+    bool CanInvokeExternalProcess,
+    bool CanOpenNetwork,
+    bool CanCallRealOcr,
+    bool CanPersistRaw,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerManifest(
+    string ManifestId,
+    string ContractVersion,
+    IReadOnlyList<NodalOsLocalOcrWorkerTransportKind> SupportedTransports,
+    IReadOnlyList<NodalOsLocalOcrWorkerIpcMode> SupportedIpcModes,
+    NodalOsLocalOcrWorkerProcessPolicy ProcessPolicy,
+    NodalOsLocalOcrWorkerTimeoutPolicy TimeoutPolicy,
+    NodalOsLocalOcrWorkerResourceLimits ResourceLimits,
+    IReadOnlyList<string> AllowedPurposes,
+    IReadOnlyList<string> BlockedFeatures,
+    bool RealOcrSupported,
+    bool RealSaasSupported,
+    bool RawPersistenceAllowed,
+    bool ExternalNetworkAllowed,
+    bool ExternalProcessAllowed,
+    bool FullScreenAllowed,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerContractManifest(
+    string ContractId,
+    string ContractVersion,
+    IReadOnlyList<string> SupportedEngines,
+    bool NoRealOcr,
+    bool NoExternalNetwork,
+    bool NoRawPersistence,
+    bool NoAuthority,
+    int MaxInputWidth,
+    int MaxInputHeight,
+    int MaxPages,
+    int MaxTimeoutMs,
+    IReadOnlyList<string> AllowedPurpose,
+    IReadOnlyList<string> BlockedFeatures,
+    bool Redacted);
+
+// ── M186: IPC synthetic contract execution ────────────────────────────────────
+
+public sealed record NodalOsLocalOcrWorkerIpcContractSummary(
+    string SummaryId,
+    string ContractVersion,
+    int TotalRequests,
+    int AcceptedRequests,
+    int BlockedRequests,
+    IReadOnlyList<NodalOsLocalOcrWorkerFailureMode> FailureModes,
+    IReadOnlyList<NodalOsLocalOcrWorkerAuditRecord> AuditRecords,
+    bool NoExternalProcessInvoked,
+    bool NoNetworkInvoked,
+    bool NoRawPersistence,
+    bool NoAuthority,
+    bool Redacted,
+    DateTimeOffset CreatedAtUtc);
+
+// ── M187: Runtime isolation dry run ───────────────────────────────────────────
+
+public enum NodalOsLocalOcrWorkerRuntimeIsolationDecision
+{
+    ReadyForSyntheticOutOfProcessOnly,
+    BlockedByManifest,
+    BlockedByContractVersion,
+    BlockedByMissingRedaction,
+    BlockedByRawPersistenceRisk,
+    BlockedByNetworkRisk,
+    BlockedByAuthorityViolation,
+    BlockedByMissingAudit,
+    NotReadyForRealOcr
+}
+
+public sealed record NodalOsLocalOcrWorkerRuntimeIsolationReport(
+    string ReportId,
+    NodalOsLocalOcrWorkerRuntimeIsolationDecision Decision,
+    string Reason,
+    bool RealOcrReady,
+    bool SyntheticReady,
+    bool ManifestValid,
+    bool ContractVersionValid,
+    bool RedactionPipelineReady,
+    bool NoRawPersistence,
+    bool NoNetwork,
+    bool NoExternalProcess,
+    bool NoAuthority,
+    bool ActivationGateBlocksRealOcr,
+    bool RollbackPauseAvailable,
+    IReadOnlyList<string> Warnings,
+    DateTimeOffset CreatedAtUtc,
+    bool Redacted);

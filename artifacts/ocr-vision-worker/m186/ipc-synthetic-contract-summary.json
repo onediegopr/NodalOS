@@ -1,0 +1,34 @@
+# OCR Vision Worker — M186 IPC Synthetic Contract Summary
+
+**Generated:** Synthetic execution  
+**Contract version:** nodal-local-ocr-worker.v1.synthetic  
+**Transport:** InProcessSynthetic
+
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| Total requests | 3 |
+| Accepted | ≥1 |
+| Blocked | ≥2 |
+| Transport kind | InProcessSynthetic |
+| Real OCR invoked | NO |
+| External process invoked | NO |
+| Network invoked | NO |
+| Raw persistence | NO |
+| No-authority | YES |
+
+## Blocked requests
+
+1. **sim-req-002:** Missing `RedactionResultId` — blocked (redaction missing)
+2. **sim-req-003:** Full-screen OCR attempted — blocked (full-screen not allowed)
+
+## Audit records
+
+All audit records confirm:
+- `CallsRealOcr: false`
+- `CallsExternalProcess: false`
+- `CallsRealSaas: false`
+- `RawPersisted: false`
+- `NoAuthority: true`
+- `Redacted: true`

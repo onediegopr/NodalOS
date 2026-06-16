@@ -1,0 +1,19 @@
+# OCR Worker Contract Manifest
+
+```json
+{
+  "contractId": "<generated>",
+  "contractVersion": "nodal-local-ocr-worker.v1.synthetic",
+  "supportedEngines": ["synthetic-only"],
+  "noRealOcr": true,
+  "noExternalNetwork": true,
+  "noRawPersistence": true,
+  "noAuthority": true,
+  "maxInputWidth": 1600,
+  "maxInputHeight": 1200,
+  "maxPages": 1,
+  "maxTimeoutMs": 3000,
+  "allowedPurpose": ["synthetic-crop-ocr-read"],
+  "blockedFeatures": ["real-ocr", "paddle-ocr", "tesseract-ocr", "network-egress", "raw-persistence", "full-screen"]
+}
+```

@@ -1,0 +1,10 @@
+```json
+{
+  "fixtureId": "clean-crop",
+  "cropRef": "synth-crop-001",
+  "redactedCropVisibleText": "clean synthetic crop text",
+  "safeForOcr": true,
+  "redacted": true,
+  "sensitivity": "Low"
+}
+```
