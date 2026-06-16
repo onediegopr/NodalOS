@@ -1,0 +1,20 @@
+{
+  "RunId": "paddleocr-synthetic-run-m193",
+  "Decision": "BlockedByEnvironment",
+  "RedactionDecision": "CleanNoRedactionRequired",
+  "WorkerMode": "RedactedCropShadow",
+  "RuntimeAvailable": false,
+  "AdapterSuccess": false,
+  "CallsRealOcr": false,
+  "CallsSaas": false,
+  "RawPersisted": false,
+  "OriginalRawPersisted": false,
+  "NoAuthority": true,
+  "Warnings": [
+    "PaddleOCR runtime not installed",
+    "Python 3.13.14 is installed; PaddlePaddle/PaddleOCR wheels do not support Python 3.13",
+    "Install Python 3.10 or 3.11 and re-run setup-paddleocr.ps1"
+  ],
+  "DurationMs": 0,
+  "CreatedAtUtc": "2026-06-16T00:00:00Z"
+}
