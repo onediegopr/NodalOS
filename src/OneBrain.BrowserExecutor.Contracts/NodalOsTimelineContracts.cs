@@ -160,3 +160,81 @@ public sealed record NodalOsIssueTriageTimelineInput(
     string Category,
     string Decision,
     bool BlocksRun);
+
+public enum NodalOsTimelineUxIssueCategory
+{
+    TimelineLayout,
+    TimelineReadability,
+    TimelineStatusConfusion,
+    TimelineEvidenceClarity,
+    TimelineBlockerClarity,
+    TimelineNeedsHumanClarity,
+    TimelineRecipeMapping,
+    TimelineTaskStructuring,
+    TimelineAccessibility,
+    TimelineScopeInflationRisk,
+    TimelineSecurityLeakRisk
+}
+
+public enum NodalOsTimelineUxIssueSeverity
+{
+    Critical,
+    High,
+    Medium,
+    Low,
+    Info
+}
+
+public enum NodalOsTimelineUxIssueDecision
+{
+    MustFixBeforeNextRun,
+    ShouldFixSoon,
+    AcceptForInternalOnly,
+    NotAProblem,
+    NeedsAudit
+}
+
+public sealed record NodalOsTimelineUxIssue(
+    string IssueId,
+    NodalOsTimelineUxIssueCategory Category,
+    NodalOsTimelineUxIssueSeverity Severity,
+    NodalOsTimelineUxIssueDecision Decision,
+    string Summary,
+    bool BlocksTimelineStabilization,
+    bool Redacted);
+
+public enum NodalOsTimelineStabilizationDecision
+{
+    TimelineStableForInternalPreview,
+    TimelineContinueWithMinorFixes,
+    TimelineBlockedBySecurityLeak,
+    TimelineBlockedByScopeInflation,
+    TimelineNeedsAccessibilityFixes,
+    TimelineNeedsLayoutFixes
+}
+
+public sealed record NodalOsTimelineInternalPreviewRun(
+    string RunId,
+    string Commit,
+    string Scope,
+    IReadOnlyList<string> TimelineSurfacesReviewed,
+    IReadOnlyList<string> AllowedFlows,
+    IReadOnlyList<string> BlockedFlows,
+    IReadOnlyList<string> VisualUxFindings,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<NodalOsTimelineUxIssue> Issues,
+    string Decision,
+    bool ScopeExpanded,
+    bool Redacted);
+
+public sealed record NodalOsTimelineStabilizationReview(
+    string ReviewId,
+    NodalOsTimelineStabilizationDecision Decision,
+    IReadOnlyList<NodalOsTimelineUxIssue> Issues,
+    bool BlockersVisible,
+    bool EvidenceRedacted,
+    bool NeedsHumanClear,
+    bool CoreAuthorityVisible,
+    bool UiAuthorizesActions,
+    bool ScopeExpanded,
+    bool Redacted);

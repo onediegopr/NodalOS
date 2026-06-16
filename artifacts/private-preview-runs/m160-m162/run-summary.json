@@ -1,0 +1,72 @@
+{
+  "productName": "NODAL OS",
+  "runId": "m160-m162",
+  "commit": "4338a2321d315ed44b7c3534415e712d5f2b9c32",
+  "scope": "internal-local ReadyWithRestrictions; timeline presentation only",
+  "decision": "TimelineStableForInternalPreview",
+  "scopeExpanded": false,
+  "timelineAuthorizesActions": false,
+  "coreAuthorityRequired": true,
+  "timelineSurfacesReviewed": [
+    "task structuring",
+    "recipe preview",
+    "recipe execution summary",
+    "evidence/log summary",
+    "blocker explanation",
+    "needs-human/human intervention",
+    "operator summary",
+    "private preview run summary",
+    "issue triage summary"
+  ],
+  "allowedFlows": [
+    "local task structuring",
+    "local recipe preview",
+    "redacted evidence review",
+    "local issue triage",
+    "operator blocker review"
+  ],
+  "blockedFlows": [
+    "production/SaaS public",
+    "public API real",
+    "billing/email real",
+    "real credentials",
+    "sensitive sites",
+    "submit/pay/sign/delete",
+    "productive recorder/replay",
+    "external CDP general-ready"
+  ],
+  "visualUxFindings": [
+    "vertical nodes visible",
+    "vertical connector visible",
+    "steps stacked",
+    "subtasks indented",
+    "status cards and badges visible",
+    "blocker cards visible",
+    "evidence refs redacted",
+    "needs-human and Core authority visible"
+  ],
+  "evidenceRefs": [
+    "timeline-ui:sidepanel-renderer:m157-m159",
+    "timeline-adr:m157-m159",
+    "release-candidate:verified-internal-local-use",
+    "ledger:m51:verified:redacted",
+    "ledger:m65:verified:redacted"
+  ],
+  "issues": [
+    {
+      "issueId": "tl-readability-001",
+      "category": "TimelineReadability",
+      "severity": "Info",
+      "decision": "AcceptForInternalOnly",
+      "blocksTimelineStabilization": false,
+      "summary": "Timeline is readable in the narrow side panel; monitor spacing as recipes grow."
+    }
+  ],
+  "redaction": {
+    "secretsPersisted": false,
+    "cookiesPersisted": false,
+    "tokensPersisted": false,
+    "rawDomPersisted": false,
+    "rawBodyPersisted": false
+  }
+}

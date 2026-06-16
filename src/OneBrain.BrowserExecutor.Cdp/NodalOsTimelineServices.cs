@@ -353,3 +353,136 @@ public sealed class NodalOsTimelineAdapter
         return string.IsNullOrWhiteSpace(normalized) ? "timeline" : normalized;
     }
 }
+
+public sealed class NodalOsTimelineStabilizationReviewer
+{
+    public NodalOsTimelineStabilizationReview Review(
+        IReadOnlyList<NodalOsTimelineUxIssue> issues,
+        bool blockersVisible = true,
+        bool evidenceRedacted = true,
+        bool needsHumanClear = true,
+        bool coreAuthorityVisible = true,
+        bool uiAuthorizesActions = false,
+        bool scopeExpanded = false)
+    {
+        var redactedIssues = issues.Select(RedactIssue).ToArray();
+        var decision = Resolve(redactedIssues, blockersVisible, evidenceRedacted, needsHumanClear, coreAuthorityVisible, uiAuthorizesActions, scopeExpanded);
+        return new NodalOsTimelineStabilizationReview(
+            "timeline-stabilization-review-m160-m162",
+            decision,
+            redactedIssues,
+            blockersVisible,
+            evidenceRedacted,
+            needsHumanClear,
+            coreAuthorityVisible,
+            uiAuthorizesActions,
+            scopeExpanded,
+            Redacted: true);
+    }
+
+    public NodalOsTimelineInternalPreviewRun CreateDefaultRun(string commit)
+    {
+        var issues = new[]
+        {
+            new NodalOsTimelineUxIssue(
+                "tl-readability-001",
+                NodalOsTimelineUxIssueCategory.TimelineReadability,
+                NodalOsTimelineUxIssueSeverity.Info,
+                NodalOsTimelineUxIssueDecision.AcceptForInternalOnly,
+                "Timeline is readable in the narrow side panel; monitor spacing as recipes grow.",
+                BlocksTimelineStabilization: false,
+                Redacted: true)
+        };
+
+        return new NodalOsTimelineInternalPreviewRun(
+            "m160-m162",
+            BrowserCredentialRedactor.Redact(commit),
+            "internal-local ReadyWithRestrictions; timeline presentation only",
+            [
+                "task structuring",
+                "recipe preview",
+                "recipe execution summary",
+                "evidence/log summary",
+                "blocker explanation",
+                "needs-human/human intervention",
+                "operator summary",
+                "private preview run summary",
+                "issue triage summary"
+            ],
+            [
+                "local task structuring",
+                "local recipe preview",
+                "redacted evidence review",
+                "local issue triage",
+                "operator blocker review"
+            ],
+            [
+                "production/SaaS public",
+                "public API real",
+                "billing/email real",
+                "real credentials",
+                "sensitive sites",
+                "submit/pay/sign/delete",
+                "productive recorder/replay",
+                "external CDP general-ready"
+            ],
+            [
+                "vertical nodes visible",
+                "vertical connector visible",
+                "subtasks indented",
+                "status cards and badges visible",
+                "blocker cards visible",
+                "evidence refs redacted",
+                "needs-human and Core authority visible"
+            ],
+            [
+                "timeline-ui:sidepanel-renderer:m157-m159",
+                "timeline-adr:m157-m159",
+                "release-candidate:verified-internal-local-use",
+                "ledger:m51:verified:redacted",
+                "ledger:m65:verified:redacted"
+            ],
+            issues,
+            "TimelineStableForInternalPreview",
+            ScopeExpanded: false,
+            Redacted: true);
+    }
+
+    private static NodalOsTimelineStabilizationDecision Resolve(
+        IReadOnlyList<NodalOsTimelineUxIssue> issues,
+        bool blockersVisible,
+        bool evidenceRedacted,
+        bool needsHumanClear,
+        bool coreAuthorityVisible,
+        bool uiAuthorizesActions,
+        bool scopeExpanded)
+    {
+        if (scopeExpanded || uiAuthorizesActions ||
+            issues.Any(issue => issue.Category == NodalOsTimelineUxIssueCategory.TimelineScopeInflationRisk && issue.BlocksTimelineStabilization))
+            return NodalOsTimelineStabilizationDecision.TimelineBlockedByScopeInflation;
+
+        if (!evidenceRedacted ||
+            issues.Any(issue => issue.Category == NodalOsTimelineUxIssueCategory.TimelineSecurityLeakRisk && issue.BlocksTimelineStabilization))
+            return NodalOsTimelineStabilizationDecision.TimelineBlockedBySecurityLeak;
+
+        if (!coreAuthorityVisible || !blockersVisible || !needsHumanClear)
+            return NodalOsTimelineStabilizationDecision.TimelineNeedsAccessibilityFixes;
+
+        if (issues.Any(issue =>
+            issue.Category is NodalOsTimelineUxIssueCategory.TimelineLayout or NodalOsTimelineUxIssueCategory.TimelineReadability or NodalOsTimelineUxIssueCategory.TimelineAccessibility &&
+            issue.Severity is NodalOsTimelineUxIssueSeverity.Low or NodalOsTimelineUxIssueSeverity.Medium))
+            return NodalOsTimelineStabilizationDecision.TimelineContinueWithMinorFixes;
+
+        return NodalOsTimelineStabilizationDecision.TimelineStableForInternalPreview;
+    }
+
+    private static NodalOsTimelineUxIssue RedactIssue(NodalOsTimelineUxIssue issue) =>
+        issue with
+        {
+            Summary = BrowserCredentialRedactor.Redact(issue.Summary),
+            BlocksTimelineStabilization = issue.BlocksTimelineStabilization ||
+                issue.Severity is NodalOsTimelineUxIssueSeverity.Critical or NodalOsTimelineUxIssueSeverity.High &&
+                issue.Category is NodalOsTimelineUxIssueCategory.TimelineSecurityLeakRisk or NodalOsTimelineUxIssueCategory.TimelineScopeInflationRisk,
+            Redacted = true
+        };
+}
