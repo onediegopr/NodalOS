@@ -8,6 +8,62 @@ namespace OneBrain.Safety.Tests;
 public sealed class ChromeCdpExternalProofM103M105Tests
 {
     [TestMethod]
+    public void ChromeCdpExternalPreflightUnavailableBlocksWithoutFailingNormalSuite()
+    {
+        var result = new ChromeCdpExternalPreflightService().Evaluate(Preflight(browserPath: null, optIn: true));
+
+        Assert.AreEqual(ChromeCdpExternalPreflightStatus.ChromeCdpUnavailable, result.Status);
+        Assert.IsFalse(result.CanAttemptLiveProof);
+        Assert.IsFalse(result.LaunchesBrowser);
+    }
+
+    [TestMethod]
+    public void ChromeCdpExternalPreflightPersonalProfileBlocked()
+    {
+        var result = new ChromeCdpExternalPreflightService().Evaluate(Preflight(usesPersonalProfile: true, profileDirectory: @"C:\Users\diego\AppData\Local\Google\Chrome\User Data"));
+
+        Assert.AreEqual(ChromeCdpExternalPreflightStatus.UnsafeProfileBlocked, result.Status);
+        Assert.IsTrue(result.ReasonCodes.Any(r => r.Contains("personal", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void ChromeCdpExternalPreflightNonAllowlistedHostBlocked()
+    {
+        var result = new ChromeCdpExternalPreflightService().Evaluate(Preflight(targetHost: "example.com"));
+
+        Assert.AreNotEqual(ChromeCdpExternalPreflightStatus.ReadyForExternalCdpReadOnlyProof, result.Status);
+        Assert.IsTrue(result.ReasonCodes.Any(r => r.Contains("allowlisted", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void ChromeCdpExternalPreflightIsolatedProfileAndAllowlistedTargetReady()
+    {
+        var result = new ChromeCdpExternalPreflightService().Evaluate(Preflight());
+
+        Assert.AreEqual(ChromeCdpExternalPreflightStatus.ReadyForExternalCdpReadOnlyProof, result.Status);
+        Assert.IsTrue(result.CanAttemptLiveProof);
+    }
+
+    [TestMethod]
+    public void ChromeCdpExternalPreflightNoOptInDoesNotLaunch()
+    {
+        var result = new ChromeCdpExternalPreflightService().Evaluate(Preflight(optIn: false));
+
+        Assert.AreEqual(ChromeCdpExternalPreflightStatus.ChromeCdpAvailable, result.Status);
+        Assert.IsFalse(result.CanAttemptLiveProof);
+        Assert.IsFalse(result.LaunchesBrowser);
+    }
+
+    [TestMethod]
+    public void ChromeCdpExternalPreflightOptInReadyCanAttemptProof()
+    {
+        var result = new ChromeCdpExternalPreflightService().Evaluate(Preflight(optIn: true));
+
+        Assert.IsTrue(result.CanAttemptLiveProof);
+        Assert.AreEqual(ChromeCdpExternalPreflightStatus.ReadyForExternalCdpReadOnlyProof, result.Status);
+    }
+
+    [TestMethod]
     public void ChromeCdpExternalProbeHttpProofCannotMarkRealChromeCdp()
     {
         var harness = new NexaExternalProofHarness().Evaluate(HarnessRequest(), DateTimeOffset.UtcNow);
@@ -248,6 +304,26 @@ public sealed class ChromeCdpExternalProofM103M105Tests
             WouldPersistCookies: false,
             WouldSubmit: false,
             "operator-test");
+
+    private static ChromeCdpExternalPreflightRequest Preflight(
+        string? browserPath = "C:\\Windows\\System32\\cmd.exe",
+        bool optIn = true,
+        bool usesPersonalProfile = false,
+        string profileDirectory = "C:\\Temp\\nodal-os-isolated-cdp-profile",
+        string targetHost = "lab.nodalos.com.ar") =>
+        new(
+            optIn,
+            browserPath,
+            profileDirectory,
+            usesPersonalProfile,
+            UsesDefaultUserDataDir: false,
+            CookiesPersisted: false,
+            CredentialsAvailable: false,
+            PersonalExtensionsEnabled: false,
+            SavedPasswordsAvailable: false,
+            CdpSessionControlled: true,
+            targetHost,
+            ReadOnlyOnly: true);
 
     private static ChromeCdpExternalProbeResult PassedProbeResult() =>
         new(

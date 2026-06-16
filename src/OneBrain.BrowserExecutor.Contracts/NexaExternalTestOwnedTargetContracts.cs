@@ -239,6 +239,38 @@ public sealed record ChromeCdpExternalProofResult(
     bool ExecutedLiveCdp,
     bool Redacted);
 
+public enum ChromeCdpExternalPreflightStatus
+{
+    ChromeCdpUnavailable,
+    ChromeCdpAvailable,
+    IsolatedProfileReady,
+    UnsafeProfileBlocked,
+    CdpSessionReady,
+    CdpPreflightFailed,
+    ReadyForExternalCdpReadOnlyProof
+}
+
+public sealed record ChromeCdpExternalPreflightRequest(
+    bool OptInEnabled,
+    string? BrowserExecutablePath,
+    string ProfileDirectory,
+    bool UsesPersonalProfile,
+    bool UsesDefaultUserDataDir,
+    bool CookiesPersisted,
+    bool CredentialsAvailable,
+    bool PersonalExtensionsEnabled,
+    bool SavedPasswordsAvailable,
+    bool CdpSessionControlled,
+    string TargetHost,
+    bool ReadOnlyOnly);
+
+public sealed record ChromeCdpExternalPreflightResult(
+    ChromeCdpExternalPreflightStatus Status,
+    IReadOnlyList<string> ReasonCodes,
+    bool CanAttemptLiveProof,
+    bool LaunchesBrowser,
+    bool Redacted);
+
 public interface INexaChromeCdpExternalProbe
 {
     bool IsAvailable { get; }
