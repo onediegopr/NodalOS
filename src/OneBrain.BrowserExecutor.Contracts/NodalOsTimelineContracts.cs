@@ -238,3 +238,114 @@ public sealed record NodalOsTimelineStabilizationReview(
     bool UiAuthorizesActions,
     bool ScopeExpanded,
     bool Redacted);
+
+public enum NodalOsPlanRisk
+{
+    None,
+    Low,
+    Medium,
+    High,
+    Critical,
+    Prohibited
+}
+
+public enum NodalOsPlanApprovalRequirement
+{
+    None,
+    CoreApprovalRequired,
+    HumanApprovalRequired,
+    DedicatedEvidenceRequired,
+    AlwaysBlocked
+}
+
+public enum NodalOsPlanDomainScope
+{
+    LocalPrivatePreview,
+    TargetOwnedReadOnly,
+    ExternalGeneralBlocked,
+    SensitiveBlocked,
+    ProductionBlocked
+}
+
+public enum NodalOsPlanSensitiveAction
+{
+    None,
+    CredentialEntry,
+    Login,
+    Captcha,
+    TwoFactor,
+    Submit,
+    Payment,
+    Sign,
+    Delete,
+    SensitiveSite,
+    ProductiveRecorderReplay
+}
+
+public enum NodalOsPlanPreviewStatus
+{
+    PlanDrafted,
+    PlanPreviewReady,
+    PlanAwaitingApproval,
+    PlanApproved,
+    PlanRejected,
+    PlanEditedByHuman,
+    ExecutionStarted,
+    ExecutionBlockedByPolicy
+}
+
+public enum NodalOsPlanEvidenceRequirement
+{
+    None,
+    RedactedEvidenceRef,
+    LedgerRef,
+    PolicyDecisionRef,
+    HumanApprovalRef,
+    DedicatedEvidenceRequired
+}
+
+public sealed record NodalOsPlanPolicySummary(
+    bool CoreAuthorityRequired,
+    bool UiAuthorityBlocked,
+    bool AutoExecutionBlocked,
+    bool SensitiveActionsBlocked,
+    bool ProductionBlocked,
+    bool ExternalGeneralBlocked,
+    IReadOnlyList<string> BlockedOptions,
+    bool Redacted);
+
+public sealed record NodalOsExecutionPlanStep(
+    string StepId,
+    int Order,
+    string Title,
+    string Description,
+    NodalOsPlanRisk Risk,
+    NodalOsPlanApprovalRequirement ApprovalRequirement,
+    IReadOnlyList<NodalOsPlanEvidenceRequirement> EvidenceRequirements,
+    IReadOnlyList<NodalOsPlanSensitiveAction> SensitiveActionsDetected,
+    bool HumanApprovalRequired,
+    bool CoreAuthorityRequired,
+    bool ExecutesAutomatically,
+    string TimelineNodeType,
+    string RedactionSummary);
+
+public sealed record NodalOsExecutionPlanPreview(
+    string PlanId,
+    string Goal,
+    NodalOsPlanPreviewStatus Status,
+    DateTimeOffset CreatedAtUtc,
+    IReadOnlyList<NodalOsExecutionPlanStep> Steps,
+    IReadOnlyList<string> AllowedDomains,
+    IReadOnlyList<string> DeniedDomains,
+    IReadOnlyList<NodalOsPlanRisk> Risks,
+    IReadOnlyList<NodalOsPlanApprovalRequirement> ApprovalRequirements,
+    IReadOnlyList<NodalOsPlanEvidenceRequirement> EvidenceRequirements,
+    NodalOsPlanPolicySummary PolicySummary,
+    IReadOnlyList<NodalOsPlanSensitiveAction> SensitiveActionsDetected,
+    bool HumanApprovalRequired,
+    bool CoreAuthorityRequired,
+    bool UiAuthorityBlocked,
+    bool ExecutesAutomatically,
+    string TimelineCompatibilityMapping,
+    string RedactionSummary,
+    bool Redacted);

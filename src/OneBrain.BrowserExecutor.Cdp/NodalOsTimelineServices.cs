@@ -486,3 +486,212 @@ public sealed class NodalOsTimelineStabilizationReviewer
             Redacted = true
         };
 }
+
+public sealed class NodalOsExecutionPlanPreviewService
+{
+    private static readonly NodalOsPlanSensitiveAction[] BlockingSensitiveActions =
+    [
+        NodalOsPlanSensitiveAction.CredentialEntry,
+        NodalOsPlanSensitiveAction.Login,
+        NodalOsPlanSensitiveAction.Captcha,
+        NodalOsPlanSensitiveAction.TwoFactor,
+        NodalOsPlanSensitiveAction.Submit,
+        NodalOsPlanSensitiveAction.Payment,
+        NodalOsPlanSensitiveAction.Sign,
+        NodalOsPlanSensitiveAction.Delete,
+        NodalOsPlanSensitiveAction.SensitiveSite,
+        NodalOsPlanSensitiveAction.ProductiveRecorderReplay
+    ];
+
+    public NodalOsExecutionPlanPreview Draft(
+        string planId,
+        string goal,
+        IReadOnlyList<string> stepTitles,
+        IReadOnlyList<string>? allowedDomains = null,
+        IReadOnlyList<string>? deniedDomains = null,
+        IReadOnlyList<NodalOsPlanSensitiveAction>? sensitiveActions = null)
+    {
+        var detected = (sensitiveActions ?? []).Where(action => action != NodalOsPlanSensitiveAction.None).Distinct().ToArray();
+        var blocksByPolicy = detected.Intersect(BlockingSensitiveActions).Any();
+        var status = blocksByPolicy ? NodalOsPlanPreviewStatus.ExecutionBlockedByPolicy : NodalOsPlanPreviewStatus.PlanDrafted;
+        return Create(planId, goal, stepTitles, status, allowedDomains, deniedDomains, detected);
+    }
+
+    public NodalOsExecutionPlanPreview MarkPreviewReady(NodalOsExecutionPlanPreview preview)
+    {
+        if (preview.Status == NodalOsPlanPreviewStatus.ExecutionBlockedByPolicy)
+            return preview;
+        return preview with { Status = preview.HumanApprovalRequired ? NodalOsPlanPreviewStatus.PlanAwaitingApproval : NodalOsPlanPreviewStatus.PlanPreviewReady };
+    }
+
+    public NodalOsExecutionPlanPreview AwaitingApproval(NodalOsExecutionPlanPreview preview) =>
+        preview with { Status = NodalOsPlanPreviewStatus.PlanAwaitingApproval };
+
+    public NodalOsExecutionPlanPreview Reject(NodalOsExecutionPlanPreview preview) =>
+        preview with { Status = NodalOsPlanPreviewStatus.PlanRejected, ExecutesAutomatically = false };
+
+    private static NodalOsExecutionPlanPreview Create(
+        string planId,
+        string goal,
+        IReadOnlyList<string> stepTitles,
+        NodalOsPlanPreviewStatus status,
+        IReadOnlyList<string>? allowedDomains,
+        IReadOnlyList<string>? deniedDomains,
+        IReadOnlyList<NodalOsPlanSensitiveAction> sensitiveActions)
+    {
+        var humanApprovalRequired = sensitiveActions.Count > 0;
+        var steps = (stepTitles.Count == 0 ? ["Review current local state"] : stepTitles)
+            .Select((title, index) => Step(title, index + 1, sensitiveActions))
+            .ToArray();
+        var risks = steps.Select(step => step.Risk).Distinct().ToArray();
+        var approvals = steps.Select(step => step.ApprovalRequirement).Distinct().ToArray();
+        var evidence = steps.SelectMany(step => step.EvidenceRequirements).Distinct().ToArray();
+        var blockedOptions = new[]
+        {
+            "credentials",
+            "login/captcha/2FA automation",
+            "submit/pay/sign/delete",
+            "sensitive sites",
+            "production/SaaS public",
+            "public API real",
+            "external CDP general-ready",
+            "productive recorder/replay"
+        };
+
+        return new NodalOsExecutionPlanPreview(
+            BrowserCredentialRedactor.Redact(planId),
+            BrowserCredentialRedactor.Redact(goal),
+            status,
+            DateTimeOffset.UtcNow,
+            steps,
+            (allowedDomains ?? ["local-private-preview"]).Select(BrowserCredentialRedactor.Redact).ToArray(),
+            (deniedDomains ?? ["production", "public-saas", "sensitive-sites", "external-general"]).Select(BrowserCredentialRedactor.Redact).ToArray(),
+            risks,
+            approvals,
+            evidence,
+            new NodalOsPlanPolicySummary(
+                CoreAuthorityRequired: true,
+                UiAuthorityBlocked: true,
+                AutoExecutionBlocked: true,
+                SensitiveActionsBlocked: true,
+                ProductionBlocked: true,
+                ExternalGeneralBlocked: true,
+                blockedOptions,
+                Redacted: true),
+            sensitiveActions,
+            humanApprovalRequired,
+            CoreAuthorityRequired: true,
+            UiAuthorityBlocked: true,
+            ExecutesAutomatically: false,
+            TimelineCompatibilityMapping: "plan steps map to existing NodalOsTimelineStep objects and render through renderTimeline",
+            RedactionSummary: "plan preview metadata only; no secrets, cookies, tokens, raw DOM/body, credentials, or sensitive payloads",
+            Redacted: true);
+    }
+
+    private static NodalOsExecutionPlanStep Step(string title, int order, IReadOnlyList<NodalOsPlanSensitiveAction> sensitiveActions)
+    {
+        var hasSensitive = sensitiveActions.Count > 0;
+        return new NodalOsExecutionPlanStep(
+            $"plan-step-{order}",
+            order,
+            BrowserCredentialRedactor.Redact(title),
+            hasSensitive ? "Sensitive action detected; execution is blocked or requires human/Core policy review." : "Visible plan step; preview only.",
+            hasSensitive ? NodalOsPlanRisk.Prohibited : NodalOsPlanRisk.Low,
+            hasSensitive ? NodalOsPlanApprovalRequirement.AlwaysBlocked : NodalOsPlanApprovalRequirement.CoreApprovalRequired,
+            hasSensitive ? [NodalOsPlanEvidenceRequirement.PolicyDecisionRef, NodalOsPlanEvidenceRequirement.HumanApprovalRef] : [NodalOsPlanEvidenceRequirement.RedactedEvidenceRef],
+            sensitiveActions,
+            HumanApprovalRequired: hasSensitive,
+            CoreAuthorityRequired: true,
+            ExecutesAutomatically: false,
+            TimelineNodeType: hasSensitive ? NodalOsTimelineNodeType.BlockerStep.ToString() : NodalOsTimelineNodeType.StructuredTask.ToString(),
+            RedactionSummary: "redacted plan step only");
+    }
+}
+
+public sealed class NodalOsPlanPreviewToTimelineAdapter
+{
+    public NodalOsTimeline Map(NodalOsExecutionPlanPreview preview)
+    {
+        var status = preview.Status == NodalOsPlanPreviewStatus.ExecutionBlockedByPolicy
+            ? NodalOsTimelineStepStatus.Blocked
+            : preview.Status == NodalOsPlanPreviewStatus.PlanAwaitingApproval
+                ? NodalOsTimelineStepStatus.NeedsHuman
+                : NodalOsTimelineStepStatus.Planned;
+        var steps = preview.Steps.Select(step =>
+        {
+            var stepStatus = step.SensitiveActionsDetected.Count > 0 ? NodalOsTimelineStepStatus.Blocked : status;
+            var blockers = step.SensitiveActionsDetected.Count > 0
+                ? [new NodalOsTimelineBlocker(
+                    "Sensitive action detected in plan preview.",
+                    "Do not execute; Core policy and human review required.",
+                    preview.PolicySummary.BlockedOptions,
+                    NeedsHuman: true,
+                    Redacted: true)]
+                : Array.Empty<NodalOsTimelineBlocker>();
+            return new NodalOsTimelineStep(
+                step.StepId,
+                step.Title,
+                step.Description,
+                stepStatus,
+                step.Order,
+                new NodalOsTimelineNode($"{step.StepId}-node", Enum.Parse<NodalOsTimelineNodeType>(step.TimelineNodeType), IconId: null),
+                [],
+                new NodalOsTimelineStatusCard(
+                    "plan-preview internal-local",
+                    MapRisk(step.Risk),
+                    preview.Status.ToString(),
+                    "Plan preview is Core-owned and UI-rendered.",
+                    ReadyWithRestrictions: true,
+                    ProductionReady: false,
+                    GrantsAuthority: false,
+                    Redacted: true),
+                step.EvidenceRequirements.Select(req => new NodalOsTimelineEvidenceRef($"plan-evidence:{req}", req.ToString(), Redacted: true)).ToArray(),
+                blockers,
+                new NodalOsTimelineDecision(
+                    step.SensitiveActionsDetected.Count > 0 ? "Stop; do not execute sensitive action." : "Render plan preview and wait for Core decision.",
+                    preview.PolicySummary.BlockedOptions,
+                    CoreAuthorityRequired: true,
+                    HumanInterventionRequired: step.HumanApprovalRequired,
+                    GrantsAuthority: false),
+                MapRisk(step.Risk),
+                "plan-preview internal-local",
+                step.RedactionSummary,
+                CoreAuthorityRequired: true,
+                HumanInterventionRequired: step.HumanApprovalRequired,
+                GrantsAuthority: false,
+                Redacted: true);
+        }).ToArray();
+
+        return new NodalOsTimeline(
+            $"timeline-plan-preview-{preview.PlanId}",
+            "NODAL OS",
+            "Plan preview",
+            preview.Goal,
+            steps,
+            new NodalOsTimelineStatusCard(
+                "plan-preview internal-local",
+                steps.Any(step => step.RiskLevel == NodalOsTimelineRiskLevel.Prohibited) ? NodalOsTimelineRiskLevel.Prohibited : NodalOsTimelineRiskLevel.Low,
+                preview.Status.ToString(),
+                "Plan preview feeds existing timeline; it does not execute automatically.",
+                ReadyWithRestrictions: true,
+                ProductionReady: false,
+                GrantsAuthority: false,
+                Redacted: true),
+            ReadyWithRestrictions: true,
+            ProductionReady: false,
+            GrantsAuthority: false,
+            Redacted: true);
+    }
+
+    private static NodalOsTimelineRiskLevel MapRisk(NodalOsPlanRisk risk) =>
+        risk switch
+        {
+            NodalOsPlanRisk.None => NodalOsTimelineRiskLevel.None,
+            NodalOsPlanRisk.Low => NodalOsTimelineRiskLevel.Low,
+            NodalOsPlanRisk.Medium => NodalOsTimelineRiskLevel.Medium,
+            NodalOsPlanRisk.High => NodalOsTimelineRiskLevel.High,
+            NodalOsPlanRisk.Critical => NodalOsTimelineRiskLevel.Critical,
+            NodalOsPlanRisk.Prohibited => NodalOsTimelineRiskLevel.Prohibited,
+            _ => NodalOsTimelineRiskLevel.Low
+        };
+}
