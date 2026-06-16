@@ -77,6 +77,8 @@ Blocked:
 
 Goal: revive the process memory line under current evidence rules.
 
+Status after M142-M144: implemented as local-only process memory and workflow learning fixtures with redacted metadata, evidence boundaries, and no productive recorder/replay.
+
 Scope:
 
 - flow ledger

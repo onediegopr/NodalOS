@@ -188,8 +188,8 @@ public sealed class NodalOsSafeActionFixtureHarness
             approval,
             [
                 new("release gate ReadyWithRestrictions", true, "release-gate:ready-with-restrictions:redacted"),
-                new("identity/fingerprint v2 signal present", true, "identity:fingerprint-v2:fixture-ready"),
-                new("robust perception signal present", true, "perception:robust-fixture-ready")
+                new("identity/fingerprint v2 signal present", true, "identity:fingerprint-v2:fixture-ready:redacted"),
+                new("robust perception signal present", true, "perception:robust-fixture-ready:redacted")
             ],
             new NodalOsActionBoundary(
                 CoreAuthorityRequired: approval != NodalOsActionApprovalRequirement.NoApprovalNeededForObserveOnly,
