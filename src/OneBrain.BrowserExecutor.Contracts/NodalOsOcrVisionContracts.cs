@@ -111,7 +111,11 @@ public sealed record NodalOsOcrVisionProviderConfiguration(
     bool StoresSecrets,
     bool CallsRealApi,
     bool GrantsAuthority,
-    bool Redacted);
+    bool Redacted)
+{
+    public bool RequiresExternalDataTransfer => Policy.ExternalDataTransfer || PrivacyProfile.ExternalDataTransfer;
+    public bool IsCloud => RequiresExternalDataTransfer;
+}
 
 public sealed record NodalOsOcrVisionProviderRegistry(
     IReadOnlyList<NodalOsOcrVisionProviderConfiguration> Providers,
@@ -183,6 +187,81 @@ public sealed record NodalOsOcrRedactionSummary(
     bool ContainsSensitive,
     string Summary);
 
+public enum NodalOsImageRedactionFindingKind
+{
+    PasswordField,
+    CredentialLikeText,
+    TokenLikeText,
+    JwtLikeText,
+    CookieLikeText,
+    ApiKeyLikeText,
+    EmailLikeText,
+    PhoneLikeText,
+    CreditCardLikeText,
+    DocumentIdLikeText,
+    SensitiveKeyword,
+    UnknownSensitivePattern,
+    LowConfidence,
+    RedactionEngineUncertain
+}
+
+public enum NodalOsImageRedactionDecision
+{
+    Redacted,
+    BlockedSensitive,
+    RedactionFailed,
+    CleanNoRedactionRequired
+}
+
+public sealed record NodalOsImageRedactionFinding(
+    NodalOsImageRedactionFindingKind Kind,
+    string RedactedPreview,
+    NodalOsOcrBoundingBox? Bounds,
+    double Confidence,
+    bool BlocksOcr);
+
+public sealed record NodalOsImageRedactionPolicy(
+    bool AllowPersistence,
+    bool AllowFullScreen,
+    bool BlockSensitiveByDefault,
+    bool FailClosedOnUncertainty,
+    bool PersistRawImage,
+    bool NoAuthority);
+
+public sealed record NodalOsImageRedactionEvidence(
+    string EvidenceId,
+    IReadOnlyList<NodalOsGroundingEvidenceRef> EvidenceRefs,
+    string RedactionSummary,
+    string ModelOnlyHash,
+    bool OriginalRawPersisted,
+    bool Redacted);
+
+public sealed record NodalOsImageCropRedactionRequest(
+    string RequestId,
+    NodalOsGroundingSnapshotId? GroundingSnapshotId,
+    string? CropRef,
+    byte[] SyntheticImageBytes,
+    NodalOsOcrBoundingBox Bounds,
+    string Source,
+    NodalOsOcrVisionSensitivity Sensitivity,
+    NodalOsOcrPurpose IntendedPurpose,
+    bool AllowPersistence,
+    bool AllowFullScreen,
+    NodalOsImageRedactionPolicy Policy);
+
+public sealed record NodalOsImageCropRedactionResult(
+    string ResultId,
+    NodalOsImageRedactionDecision Decision,
+    bool CropRedacted,
+    bool SafeForOcr,
+    bool SafeForPersistence,
+    IReadOnlyList<NodalOsImageRedactionFinding> Findings,
+    string RedactedBytesRef,
+    bool OriginalRawPersisted,
+    NodalOsImageRedactionEvidence Evidence,
+    NodalOsOcrConfidence Confidence,
+    bool NoAuthority);
+
 public enum NodalOsOcrVisionSensitivity
 {
     None,
@@ -212,7 +291,10 @@ public sealed record NodalOsLocalOcrRequest(
     bool FullScreen,
     bool CropRedacted,
     NodalOsOcrPurpose Purpose,
-    bool Redacted);
+    bool Redacted)
+{
+    public NodalOsImageCropRedactionResult? RedactionResult { get; init; }
+}
 
 public sealed record NodalOsLocalOcrResult(
     string ResultId,
@@ -342,7 +424,10 @@ public sealed record NodalOsOcrVisionRoutingRequest(
     decimal MaxEstimatedCost,
     double RequiredConfidence,
     bool AllowsCloud,
-    bool Redacted);
+    bool Redacted)
+{
+    public NodalOsImageCropRedactionResult? RedactionResult { get; init; }
+}
 
 public sealed record NodalOsOcrVisionRoutingDecision(
     string DecisionId,
@@ -674,7 +759,10 @@ public sealed record NodalOsLocalOcrWorkerRequest(
     int Pages,
     int MaxLatencyMs,
     bool PersistRawImage,
-    bool Redacted);
+    bool Redacted)
+{
+    public NodalOsImageCropRedactionResult? RedactionResult { get; init; }
+}
 
 public sealed record NodalOsLocalOcrWorkerResponse(
     string ResponseId,
@@ -758,7 +846,10 @@ public sealed record NodalOsOcrActivationReadiness(
     bool EvaluationHarnessPassed,
     bool RollbackPauseConfigured,
     bool CurrentPhaseAllowsSaasReal,
-    bool Redacted);
+    bool Redacted)
+{
+    public bool RequiresExternalDataTransfer { get; init; }
+}
 
 public sealed record NodalOsOcrActivationDecision(
     string DecisionId,

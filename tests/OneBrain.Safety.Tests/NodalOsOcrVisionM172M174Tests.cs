@@ -22,6 +22,7 @@ public sealed class NodalOsOcrVisionM172M174Tests
     private readonly NodalOsOcrVisionProviderRegistryService registryService = new();
     private readonly NodalOsGroundingSnapshotBuilder groundingBuilder = new();
     private readonly NodalOsOcrVisionRouter router = new();
+    private readonly NodalOsImageCropRedactor redactor = new();
 
     [TestMethod]
     public void RegistryListsProvidersAndKeepsSaasDisabledByDefault()
@@ -118,7 +119,7 @@ public sealed class NodalOsOcrVisionM172M174Tests
 
         Assert.AreEqual(NodalOsLocalOcrStatus.BlockedByRedaction, provider.Recognize(LocalRequest(redaction: NodalOsGroundingRedactionStatus.RedactionFailed)).Status);
         Assert.AreEqual(NodalOsLocalOcrStatus.BlockedFullScreen, provider.Recognize(LocalRequest(fullScreen: true)).Status);
-        Assert.AreEqual(NodalOsLocalOcrStatus.BlockedUnredactedCrop, provider.Recognize(LocalRequest(cropRedacted: false)).Status);
+        Assert.AreEqual(NodalOsLocalOcrStatus.BlockedByRedaction, provider.Recognize(LocalRequest(cropRedacted: false)).Status);
     }
 
     [TestMethod]
@@ -206,7 +207,7 @@ public sealed class NodalOsOcrVisionM172M174Tests
         bool fullScreen = false,
         bool cropRedacted = true,
         double minConfidence = 0.7) =>
-        new(
+        new NodalOsLocalOcrRequest(
             "ocr-request-1",
             new NodalOsGroundingSnapshotId("snapshot-1"),
             cropRedacted ? "crop:redacted" : "",
@@ -222,7 +223,12 @@ public sealed class NodalOsOcrVisionM172M174Tests
             fullScreen,
             cropRedacted,
             NodalOsOcrPurpose.EvidenceDebug,
-            Redacted: true);
+            Redacted: true)
+        {
+            RedactionResult = redaction == NodalOsGroundingRedactionStatus.RedactedSafe && cropRedacted
+                ? ValidRedactionResult()
+                : null
+        };
 
     private NodalOsOcrVisionRoutingRequest RoutingRequest(
         bool domSufficient = false,
@@ -234,7 +240,7 @@ public sealed class NodalOsOcrVisionM172M174Tests
         decimal budget = 1m)
     {
         var snapshot = groundingBuilder.Create("route-snapshot", redactionStatus: redaction);
-        return new NodalOsOcrVisionRoutingRequest(
+        var request = new NodalOsOcrVisionRoutingRequest(
             "routing-request-1",
             domSufficient,
             ScreenshotHashDiffOnly: false,
@@ -251,7 +257,30 @@ public sealed class NodalOsOcrVisionM172M174Tests
             RequiredConfidence: 0.75,
             AllowsCloud: false,
             Redacted: true);
+        return request with
+        {
+            RedactionResult = redaction == NodalOsGroundingRedactionStatus.RedactedSafe
+                ? ValidRedactionResult()
+                : RedactionResult("uncertain unknown_sensitive")
+        };
     }
+
+    private NodalOsImageCropRedactionResult ValidRedactionResult() =>
+        RedactionResult("clean local fixture crop");
+
+    private NodalOsImageCropRedactionResult RedactionResult(string marker) =>
+        redactor.Redact(new NodalOsImageCropRedactionRequest(
+            "redaction-test",
+            new NodalOsGroundingSnapshotId("snapshot-1"),
+            "crop:redacted",
+            System.Text.Encoding.UTF8.GetBytes(marker),
+            new NodalOsOcrBoundingBox(1, 2, 120, 40),
+            "test-fixture",
+            NodalOsOcrVisionSensitivity.Low,
+            NodalOsOcrPurpose.EvidenceDebug,
+            AllowPersistence: false,
+            AllowFullScreen: false,
+            redactor.DefaultPolicy()));
 
     private static string SourcePath(params string[] relativePath)
     {

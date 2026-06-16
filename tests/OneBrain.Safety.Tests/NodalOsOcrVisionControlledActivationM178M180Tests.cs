@@ -24,6 +24,7 @@ public sealed class NodalOsOcrVisionControlledActivationM178M180Tests
 {
     private readonly NodalOsLocalOcrWorkerBoundaryService worker = new();
     private readonly NodalOsOcrRealActivationGate gate = new();
+    private readonly NodalOsImageCropRedactor redactor = new();
 
     [TestMethod]
     public void ControlledActivationAdrModelsStatesAndKeepsRealOcrDisabled()
@@ -162,7 +163,7 @@ public sealed class NodalOsOcrVisionControlledActivationM178M180Tests
         NodalOsGroundingRedactionStatus redaction = NodalOsGroundingRedactionStatus.RedactedSafe,
         NodalOsOcrVisionSensitivity sensitivity = NodalOsOcrVisionSensitivity.Low,
         bool fullScreen = false) =>
-        new(
+        new NodalOsLocalOcrWorkerRequest(
             "worker-request-1",
             new NodalOsGroundingSnapshotId("snapshot-worker-1"),
             "crop:redacted",
@@ -179,7 +180,29 @@ public sealed class NodalOsOcrVisionControlledActivationM178M180Tests
             Pages: 1,
             MaxLatencyMs: 1000,
             PersistRawImage: false,
-            Redacted: true);
+            Redacted: true)
+        {
+            RedactionResult = redaction == NodalOsGroundingRedactionStatus.RedactedSafe
+                ? ValidRedactionResult()
+                : null
+        };
+
+    private static NodalOsImageCropRedactionResult ValidRedactionResult()
+    {
+        var localRedactor = new NodalOsImageCropRedactor();
+        return localRedactor.Redact(new NodalOsImageCropRedactionRequest(
+            "worker-redaction-test",
+            new NodalOsGroundingSnapshotId("snapshot-worker-1"),
+            "crop:redacted",
+            System.Text.Encoding.UTF8.GetBytes("clean local worker crop"),
+            new NodalOsOcrBoundingBox(1, 2, 120, 40),
+            "test-fixture",
+            NodalOsOcrVisionSensitivity.Low,
+            NodalOsOcrPurpose.EvidenceDebug,
+            AllowPersistence: false,
+            AllowFullScreen: false,
+            localRedactor.DefaultPolicy()));
+    }
 
     private static NodalOsOcrActivationReadiness Readiness(
         bool optIn = true,
@@ -193,7 +216,7 @@ public sealed class NodalOsOcrVisionControlledActivationM178M180Tests
         NodalOsOcrVisionProviderKind kind = NodalOsOcrVisionProviderKind.LocalPaddleOcr,
         bool allowsSaas = false,
         bool currentPhaseAllowsSaas = false) =>
-        new(
+        new NodalOsOcrActivationReadiness(
             new NodalOsOcrVisionProviderId(kind == NodalOsOcrVisionProviderKind.LocalPaddleOcr ? "local-paddleocr-stub" : "cloud-openai-vision-disabled"),
             kind,
             new NodalOsOcrActivationScope(NodalOsOcrActivationScopeKind.SyntheticOnly, LocalOnly: !allowsSaas, allowsSaas, AllowsFullScreen: false, AllowsSensitive: false, "synthetic-only activation model"),
@@ -212,7 +235,10 @@ public sealed class NodalOsOcrVisionControlledActivationM178M180Tests
             EvaluationHarnessPassed: true,
             RollbackPauseConfigured: true,
             currentPhaseAllowsSaas,
-            Redacted: true);
+            Redacted: true)
+        {
+            RequiresExternalDataTransfer = allowsSaas
+        };
 
     private static string SourcePath(params string[] relativePath)
     {

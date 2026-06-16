@@ -343,7 +343,7 @@ public sealed class NodalOsOcrVisionAdminSettingsService
             provider.Status,
             provider.Policy.Enabled,
             provider.Status == NodalOsOcrVisionProviderStatus.Paused,
-            DisabledByDefault: provider.Kind.ToString().StartsWith("Cloud", StringComparison.OrdinalIgnoreCase) || provider.Kind is NodalOsOcrVisionProviderKind.LocalPaddleOcr or NodalOsOcrVisionProviderKind.LocalTesseract,
+            DisabledByDefault: provider.RequiresExternalDataTransfer || provider.Kind is NodalOsOcrVisionProviderKind.LocalPaddleOcr or NodalOsOcrVisionProviderKind.LocalTesseract,
             provider.Capabilities,
             provider.CostProfile,
             provider.PerformanceProfile,
@@ -452,6 +452,7 @@ public sealed class NodalOsOcrVisionEvaluationHarness
 {
     private readonly NodalOsOcrVisionRouter router = new();
     private readonly NodalOsGroundingSnapshotBuilder groundingBuilder = new();
+    private readonly NodalOsImageCropRedactor redactor = new();
 
     public IReadOnlyList<NodalOsOcrVisionEvaluationFixture> DefaultFixtures() =>
     [
@@ -525,7 +526,7 @@ public sealed class NodalOsOcrVisionEvaluationHarness
     private NodalOsOcrVisionRoutingRequest ToRequest(NodalOsOcrVisionEvaluationFixture fixture)
     {
         var snapshot = groundingBuilder.Create($"snapshot-{fixture.FixtureId}", redactionStatus: fixture.RedactionStatus);
-        return new NodalOsOcrVisionRoutingRequest(
+        var request = new NodalOsOcrVisionRoutingRequest(
             fixture.FixtureId,
             fixture.DomCdpUiaSufficient,
             fixture.ScreenshotHashDiffOnly,
@@ -542,7 +543,31 @@ public sealed class NodalOsOcrVisionEvaluationHarness
             RequiredConfidence: 0.75,
             AllowsCloud: false,
             Redacted: true);
+        return request with { RedactionResult = RedactionFor(fixture, snapshot) };
     }
+
+    private NodalOsImageCropRedactionResult RedactionFor(NodalOsOcrVisionEvaluationFixture fixture, NodalOsBrowserGroundingSnapshot snapshot)
+    {
+        if (fixture.RedactionStatus == NodalOsGroundingRedactionStatus.RedactionFailed)
+            return redactor.Redact(RedactionRequest(fixture, snapshot, "uncertain unknown_sensitive"));
+        if (fixture.Sensitivity >= NodalOsOcrVisionSensitivity.SensitiveSurface)
+            return redactor.Redact(RedactionRequest(fixture, snapshot, "sensitive"));
+        return redactor.Redact(RedactionRequest(fixture, snapshot, fixture.CropRedacted ? "clean local fixture crop" : "uncertain"));
+    }
+
+    private NodalOsImageCropRedactionRequest RedactionRequest(NodalOsOcrVisionEvaluationFixture fixture, NodalOsBrowserGroundingSnapshot snapshot, string marker) =>
+        new(
+            $"redaction-{fixture.FixtureId}",
+            snapshot.SnapshotId,
+            fixture.CropRedacted ? "crop:redacted" : null,
+            System.Text.Encoding.UTF8.GetBytes(marker),
+            new NodalOsOcrBoundingBox(0, 0, fixture.FullScreen ? 1920 : 320, fixture.FullScreen ? 1080 : 160),
+            "m177-synthetic-fixture",
+            fixture.Sensitivity,
+            NodalOsOcrPurpose.EvidenceDebug,
+            AllowPersistence: false,
+            AllowFullScreen: fixture.FullScreen,
+            redactor.DefaultPolicy());
 
     private static NodalOsOcrVisionEvaluationFixture Fixture(
         string id,
@@ -600,6 +625,126 @@ public sealed class NodalOsOcrVisionEvaluationHarness
     }
 }
 
+public sealed class NodalOsImageCropRedactor
+{
+    public NodalOsImageRedactionPolicy DefaultPolicy() =>
+        new(
+            AllowPersistence: false,
+            AllowFullScreen: false,
+            BlockSensitiveByDefault: true,
+            FailClosedOnUncertainty: true,
+            PersistRawImage: false,
+            NoAuthority: true);
+
+    public NodalOsImageCropRedactionResult Redact(NodalOsImageCropRedactionRequest request)
+    {
+        if (request.AllowFullScreen || request.Bounds.Width > 1600 || request.Bounds.Height > 1200)
+            return Result(request, NodalOsImageRedactionDecision.RedactionFailed, [Finding(NodalOsImageRedactionFindingKind.RedactionEngineUncertain, "full-screen or oversized crop", 0.99, blocks: true)], 0.2);
+
+        if (request.AllowPersistence || request.Policy.PersistRawImage || request.Policy.AllowPersistence)
+            return Result(request, NodalOsImageRedactionDecision.RedactionFailed, [Finding(NodalOsImageRedactionFindingKind.RedactionEngineUncertain, "raw persistence requested", 0.99, blocks: true)], 0.2);
+
+        var marker = DecodeFixture(request.SyntheticImageBytes);
+        if (string.IsNullOrWhiteSpace(marker))
+            return Result(request, NodalOsImageRedactionDecision.RedactionFailed, [Finding(NodalOsImageRedactionFindingKind.RedactionEngineUncertain, "empty crop bytes", 0.8, blocks: true)], 0.1);
+
+        var findings = Findings(marker).ToArray();
+        if (findings.Any(finding => finding.Kind is NodalOsImageRedactionFindingKind.RedactionEngineUncertain or NodalOsImageRedactionFindingKind.UnknownSensitivePattern or NodalOsImageRedactionFindingKind.LowConfidence))
+            return Result(request, NodalOsImageRedactionDecision.RedactionFailed, findings, 0.35);
+
+        if (request.Sensitivity >= NodalOsOcrVisionSensitivity.SensitiveSurface && request.Policy.BlockSensitiveByDefault)
+            return Result(request, NodalOsImageRedactionDecision.BlockedSensitive, findings.Length == 0 ? [Finding(NodalOsImageRedactionFindingKind.SensitiveKeyword, "sensitive surface", 0.95, blocks: true)] : findings, 0.85);
+
+        if (findings.Any(finding => finding.BlocksOcr))
+            return Result(request, NodalOsImageRedactionDecision.BlockedSensitive, findings, 0.9);
+
+        if (findings.Length > 0)
+            return Result(request, NodalOsImageRedactionDecision.Redacted, findings, 0.92);
+
+        return Result(request, NodalOsImageRedactionDecision.CleanNoRedactionRequired, [], 0.98);
+    }
+
+    public static bool IsValidForOcr(NodalOsImageCropRedactionResult? result) =>
+        result is
+        {
+            Decision: NodalOsImageRedactionDecision.Redacted or NodalOsImageRedactionDecision.CleanNoRedactionRequired,
+            CropRedacted: true,
+            SafeForOcr: true,
+            OriginalRawPersisted: false,
+            NoAuthority: true
+        };
+
+    public static bool IsValidForPersistence(NodalOsImageCropRedactionResult? result) =>
+        IsValidForOcr(result) && result!.SafeForPersistence && !result.Evidence.OriginalRawPersisted;
+
+    private static IReadOnlyList<NodalOsImageRedactionFinding> Findings(string marker)
+    {
+        var normalized = marker.ToLowerInvariant();
+        var findings = new List<NodalOsImageRedactionFinding>();
+        AddIf(findings, normalized.Contains("password") || normalized.Contains("passwd") || normalized.Contains("pwd="), NodalOsImageRedactionFindingKind.PasswordField, "password-like field", blocks: false);
+        AddIf(findings, normalized.Contains("credential") || normalized.Contains("login_secret"), NodalOsImageRedactionFindingKind.CredentialLikeText, "credential-like text", blocks: false);
+        AddIf(findings, normalized.Contains("token=") || normalized.Contains("bearer ") || normalized.Contains("access_token"), NodalOsImageRedactionFindingKind.TokenLikeText, "token-like text", blocks: true);
+        AddIf(findings, marker.Contains("eyJ", StringComparison.Ordinal) && marker.Count(ch => ch == '.') >= 2, NodalOsImageRedactionFindingKind.JwtLikeText, "jwt-like text", blocks: true);
+        AddIf(findings, normalized.Contains("cookie") || normalized.Contains("sessionid"), NodalOsImageRedactionFindingKind.CookieLikeText, "cookie-like text", blocks: true);
+        AddIf(findings, normalized.Contains("api_key") || normalized.Contains("apikey") || normalized.Contains("sk-"), NodalOsImageRedactionFindingKind.ApiKeyLikeText, "api-key-like text", blocks: true);
+        AddIf(findings, marker.Contains('@') && marker.Contains('.', StringComparison.Ordinal), NodalOsImageRedactionFindingKind.EmailLikeText, "email-like text", blocks: false);
+        AddIf(findings, normalized.Contains("phone:") || normalized.Contains("+1-") || normalized.Contains("+54"), NodalOsImageRedactionFindingKind.PhoneLikeText, "phone-like text", blocks: false);
+        AddIf(findings, normalized.Contains("4111 1111") || normalized.Contains("credit_card"), NodalOsImageRedactionFindingKind.CreditCardLikeText, "credit-card-like text", blocks: true);
+        AddIf(findings, normalized.Contains("document_id") || normalized.Contains("dni:") || normalized.Contains("ssn:"), NodalOsImageRedactionFindingKind.DocumentIdLikeText, "document-id-like text", blocks: false);
+        AddIf(findings, normalized.Contains("secret") || normalized.Contains("sensitive"), NodalOsImageRedactionFindingKind.SensitiveKeyword, "sensitive keyword", blocks: true);
+        AddIf(findings, normalized.Contains("unknown_sensitive"), NodalOsImageRedactionFindingKind.UnknownSensitivePattern, "unknown sensitive pattern", blocks: true);
+        AddIf(findings, normalized.Contains("low_confidence"), NodalOsImageRedactionFindingKind.LowConfidence, "low confidence redaction", blocks: true);
+        AddIf(findings, normalized.Contains("uncertain") || normalized.Contains("blurred_secret"), NodalOsImageRedactionFindingKind.RedactionEngineUncertain, "redaction uncertain", blocks: true);
+        return findings;
+    }
+
+    private static void AddIf(List<NodalOsImageRedactionFinding> findings, bool condition, NodalOsImageRedactionFindingKind kind, string preview, bool blocks)
+    {
+        if (condition)
+            findings.Add(Finding(kind, preview, 0.93, blocks));
+    }
+
+    private static NodalOsImageRedactionFinding Finding(NodalOsImageRedactionFindingKind kind, string preview, double confidence, bool blocks) =>
+        new(kind, BrowserCredentialRedactor.Redact(preview), null, confidence, blocks);
+
+    private static NodalOsImageCropRedactionResult Result(
+        NodalOsImageCropRedactionRequest request,
+        NodalOsImageRedactionDecision decision,
+        IReadOnlyList<NodalOsImageRedactionFinding> findings,
+        double confidence)
+    {
+        var safe = decision is NodalOsImageRedactionDecision.Redacted or NodalOsImageRedactionDecision.CleanNoRedactionRequired;
+        var hash = ModelOnlyHash(request.SyntheticImageBytes);
+        return new NodalOsImageCropRedactionResult(
+            $"crop-redaction-{Guid.NewGuid():N}",
+            decision,
+            CropRedacted: safe,
+            SafeForOcr: safe,
+            SafeForPersistence: safe && !request.AllowPersistence && !request.Policy.PersistRawImage,
+            findings,
+            RedactedBytesRef: safe ? $"redacted-bytes:{hash}" : string.Empty,
+            OriginalRawPersisted: false,
+            new NodalOsImageRedactionEvidence(
+                $"redaction-evidence-{Guid.NewGuid():N}",
+                [new NodalOsGroundingEvidenceRef($"redaction:{request.RequestId}:{decision}", "redacted crop evidence; raw bytes not persisted", Redacted: true)],
+                BrowserCredentialRedactor.Redact($"decision={decision}; findings={findings.Count}; raw persisted=false"),
+                hash,
+                OriginalRawPersisted: false,
+                Redacted: true),
+            new NodalOsOcrConfidence(confidence),
+            NoAuthority: true);
+    }
+
+    private static string DecodeFixture(byte[] bytes) =>
+        bytes.Length == 0 ? string.Empty : System.Text.Encoding.UTF8.GetString(bytes);
+
+    private static string ModelOnlyHash(byte[] bytes)
+    {
+        var hash = System.Security.Cryptography.SHA256.HashData(bytes);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+}
+
 public interface NodalOsLocalOcrProvider
 {
     NodalOsOcrVisionProviderId ProviderId { get; }
@@ -637,6 +782,8 @@ public abstract class NodalOsLocalOcrProviderStubBase : NodalOsLocalOcrProvider
     private static NodalOsLocalOcrStatus? BlockedStatus(NodalOsLocalOcrRequest request)
     {
         if (request.RedactionStatus is NodalOsGroundingRedactionStatus.RedactionFailed or NodalOsGroundingRedactionStatus.BlockedSensitive)
+            return NodalOsLocalOcrStatus.BlockedByRedaction;
+        if (!NodalOsImageCropRedactor.IsValidForOcr(request.RedactionResult))
             return NodalOsLocalOcrStatus.BlockedByRedaction;
         if (request.FullScreen)
             return NodalOsLocalOcrStatus.BlockedFullScreen;
@@ -707,6 +854,21 @@ public sealed class NodalOsOcrVisionRouter
 
         if (request.FullScreen)
             return Decision(request, NodalOsOcrVisionRoutingStatus.Blocked, null, NodalOsOcrVisionRoutingReason.NoProviderAllowed, "full-screen OCR is blocked by default; use redacted crops", 0m, human: true, risk: NodalOsGroundingRisk.High);
+
+        if (request.RedactionResult is null)
+            return Decision(request, NodalOsOcrVisionRoutingStatus.Blocked, null, NodalOsOcrVisionRoutingReason.RedactionFailedBlocked, "verified crop redaction result is required before OCR routing", 0m, human: true, risk: NodalOsGroundingRisk.High);
+
+        if (request.RedactionResult.Decision == NodalOsImageRedactionDecision.RedactionFailed)
+            return Decision(request, NodalOsOcrVisionRoutingStatus.Blocked, null, NodalOsOcrVisionRoutingReason.RedactionFailedBlocked, "crop redactor failed; OCR blocked", 0m, human: true, risk: NodalOsGroundingRisk.Prohibited);
+
+        if (request.RedactionResult.Decision == NodalOsImageRedactionDecision.BlockedSensitive)
+            return Decision(request, NodalOsOcrVisionRoutingStatus.AskHuman, null, NodalOsOcrVisionRoutingReason.SensitiveCloudBlocked, "crop redactor blocked sensitive content; human review required", 0m, human: true, risk: NodalOsGroundingRisk.High);
+
+        if (!NodalOsImageCropRedactor.IsValidForOcr(request.RedactionResult))
+            return Decision(request, NodalOsOcrVisionRoutingStatus.Blocked, null, NodalOsOcrVisionRoutingReason.RedactionFailedBlocked, "verified crop redaction result is not safe for OCR", 0m, human: true, risk: NodalOsGroundingRisk.High);
+
+        if (request.RedactionResult.Confidence.Value < request.RequiredConfidence)
+            return Decision(request, NodalOsOcrVisionRoutingStatus.AskHuman, null, NodalOsOcrVisionRoutingReason.LowConfidenceNeedsHuman, "redaction confidence below OCR threshold; human review required", 0m, human: true, risk: NodalOsGroundingRisk.Medium);
 
         if (!request.CropRedacted || string.IsNullOrWhiteSpace(request.CropRef))
             return Decision(request, NodalOsOcrVisionRoutingStatus.Blocked, null, NodalOsOcrVisionRoutingReason.NoProviderAllowed, "redacted crop required before OCR", 0m, human: true, risk: NodalOsGroundingRisk.High);
@@ -913,6 +1075,8 @@ public sealed class NodalOsLocalOcrWorkerBoundaryService
             return NodalOsLocalOcrWorkerError.WorkerDisabled;
         if (request.RedactionStatus is NodalOsGroundingRedactionStatus.RedactionFailed or NodalOsGroundingRedactionStatus.BlockedSensitive || !request.CropRedacted)
             return NodalOsLocalOcrWorkerError.RedactionFailed;
+        if (!NodalOsImageCropRedactor.IsValidForOcr(request.RedactionResult))
+            return NodalOsLocalOcrWorkerError.RedactionFailed;
         if (request.FullScreen && !contract.InvocationPolicy.AllowFullScreen)
             return NodalOsLocalOcrWorkerError.FullScreenBlocked;
         if (request.Sensitivity >= NodalOsOcrVisionSensitivity.SensitiveSurface && !contract.InvocationPolicy.AllowSensitiveSurfaces)
@@ -1020,7 +1184,7 @@ public sealed class NodalOsOcrRealActivationGate
         NodalOsOcrActivationReadiness readiness,
         IReadOnlyList<NodalOsOcrActivationRequirement> requirements)
     {
-        if (readiness.ProviderKind.ToString().StartsWith("Cloud", StringComparison.OrdinalIgnoreCase) && !readiness.CurrentPhaseAllowsSaasReal)
+        if (readiness.RequiresExternalDataTransfer && !readiness.CurrentPhaseAllowsSaasReal)
             return NodalOsOcrActivationDecisionKind.BlockedByDefault;
         if (!readiness.ProviderExplicitlyEnabled)
             return NodalOsOcrActivationDecisionKind.BlockedByDefault;
