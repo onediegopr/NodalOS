@@ -1,0 +1,57 @@
+{
+  "productName": "NODAL OS",
+  "commit": "2811615c00f342e5b030b4515aaa3815263a98ef",
+  "worktree": "C:\\Users\\diego\\OneDrive\\PERSONAL\\ONE Brain\\Codigo-m12-audit",
+  "branch": "origin/chrome-lab-001-extension-local-ai-bridge",
+  "readinessDecision": "ReadyWithRestrictions",
+  "m51Status": "Closed: HTTP read-only target-owned proof with persisted ledger",
+  "m65Status": "Closed: limited target-owned Chrome/CDP/DOM read-only proof with persisted ledger",
+  "externalCdpGeneralReady": false,
+  "activeBlocks": [
+    "SaaS public blocked",
+    "Public API real blocked",
+    "Real billing/email blocked",
+    "Real credentials blocked",
+    "Sensitive sites blocked",
+    "Submit/pay/sign/delete blocked",
+    "Productive recorder/replay blocked",
+    "External CDP general-ready blocked",
+    "New external targets require dedicated evidence"
+  ],
+  "evidenceRefs": [
+    "m51:http-readonly-target-owned",
+    "m65:target-owned-cdp-ledger:audit-ledger-edb3e2fbb0a0446788dae17a269c0058",
+    "m65:ledger-hash:61f52af1eebf08d59a24e5fbb72e70acf0038e7a329bff6599a0ac00c757f03e",
+    "scope-lock:external-cdp-general-false"
+  ],
+  "suiteResults": {
+    "OneBrain.Safety.Tests": {
+      "passed": 1305,
+      "skipped": 29,
+      "failed": 0
+    },
+    "OneBrain.Recipes.Tests": {
+      "passed": 635,
+      "skipped": 0,
+      "failed": 0
+    }
+  },
+  "allowedPreviewScope": [
+    "internal local private preview",
+    "local Product/Admin shell",
+    "private local API in-process",
+    "local diagnostics/evidence review",
+    "local issue triage"
+  ],
+  "deniedScope": [
+    "production",
+    "SaaS public",
+    "public API real",
+    "external CDP general-ready",
+    "third-party or sensitive sites",
+    "real credentials",
+    "real billing/email",
+    "submit/pay/sign/delete",
+    "productive recorder/replay"
+  ]
+}

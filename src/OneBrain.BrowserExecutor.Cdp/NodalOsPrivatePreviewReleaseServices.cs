@@ -195,3 +195,85 @@ public sealed class NodalOsLocalPrivatePreviewReleaseGate
             SubmitPaySignDeleteEnabled: false,
             RecorderReplayProductiveEnabled: false);
 }
+
+public sealed class NodalOsPrivatePreviewEvidenceFreezeService
+{
+    public NodalOsPrivatePreviewEvidenceFreezeResult Freeze(NodalOsReleaseEvidenceSnapshot snapshot)
+    {
+        var reasons = new List<string>();
+        if (!snapshot.CanonicalWorktree)
+            reasons.Add("canonical worktree mismatch");
+        if (snapshot.SkippedTestsActual != snapshot.SkippedTestsExpected)
+            reasons.Add("skipped tests audit mismatch");
+        if (!snapshot.ReleaseGateDecision.Contains("ReadyWithRestrictions", StringComparison.Ordinal))
+            reasons.Add("release gate decision mismatch");
+        if (!snapshot.M51EvidenceScope.Contains("HTTP read-only", StringComparison.OrdinalIgnoreCase) ||
+            snapshot.M51EvidenceScope.Contains("general", StringComparison.OrdinalIgnoreCase))
+            reasons.Add("M51 evidence scope mismatch");
+        if (!snapshot.M65EvidenceScope.Contains("target-owned Chrome/CDP/DOM read-only", StringComparison.OrdinalIgnoreCase) ||
+            snapshot.M65EvidenceScope.Contains("general-ready", StringComparison.OrdinalIgnoreCase))
+            reasons.Add("M65 evidence scope mismatch");
+
+        var inflation = snapshot.ExternalCdpGeneralReady ||
+            snapshot.PublicSaasAllowed ||
+            snapshot.PublicApiAllowed ||
+            snapshot.RealBillingAllowed ||
+            snapshot.RealEmailAllowed ||
+            snapshot.RealCredentialsAllowed ||
+            snapshot.SensitiveSitesAllowed ||
+            snapshot.SubmitPaySignDeleteAllowed;
+        if (inflation)
+            reasons.Add("scope inflation detected");
+
+        var missingEvidence = string.IsNullOrWhiteSpace(snapshot.M51EvidenceScope) ||
+            string.IsNullOrWhiteSpace(snapshot.M65EvidenceScope) ||
+            snapshot.AllowedLocalPrivatePreviewScope.Count == 0 ||
+            snapshot.DeniedPublicSensitiveScope.Count == 0;
+        if (missingEvidence)
+            reasons.Add("release evidence snapshot incomplete");
+
+        var status = !snapshot.CanonicalWorktree
+            ? NodalOsPrivatePreviewEvidenceFreezeStatus.WorktreeMismatch
+            : snapshot.SkippedTestsActual != snapshot.SkippedTestsExpected
+                ? NodalOsPrivatePreviewEvidenceFreezeStatus.SkippedTestsMismatch
+                : inflation
+                    ? NodalOsPrivatePreviewEvidenceFreezeStatus.ScopeInflationDetected
+                    : !snapshot.ReleaseGateDecision.Contains("ReadyWithRestrictions", StringComparison.Ordinal)
+                        ? NodalOsPrivatePreviewEvidenceFreezeStatus.ReleaseGateMismatch
+                        : missingEvidence
+                            ? NodalOsPrivatePreviewEvidenceFreezeStatus.EvidenceMissing
+                            : NodalOsPrivatePreviewEvidenceFreezeStatus.ReadyForExternalAudit;
+
+        return new NodalOsPrivatePreviewEvidenceFreezeResult(
+            status,
+            snapshot,
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            ReadyForExternalAudit: status == NodalOsPrivatePreviewEvidenceFreezeStatus.ReadyForExternalAudit,
+            ScopeInflationDetected: status == NodalOsPrivatePreviewEvidenceFreezeStatus.ScopeInflationDetected,
+            Redacted: true);
+    }
+
+    public static NodalOsReleaseEvidenceSnapshot DefaultSnapshot(string commit) =>
+        new(
+            "NODAL OS",
+            commit,
+            @"C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Codigo-m12-audit",
+            "origin/chrome-lab-001-extension-local-ai-bridge",
+            "M51 closed: HTTP read-only target-owned proof with persisted ledger",
+            "M65 closed: target-owned Chrome/CDP/DOM read-only proof with persisted ledger",
+            "ReadyWithRestrictions",
+            ["local Product/Admin preview", "private local API in-process", "local diagnostics", "local issue triage"],
+            ["public SaaS", "public API", "real billing/email", "real credentials", "sensitive sites", "submit/pay/sign/delete", "external CDP general-ready"],
+            ExternalCdpGeneralReady: false,
+            CanonicalWorktree: true,
+            SkippedTestsActual: 29,
+            SkippedTestsExpected: 29,
+            PublicSaasAllowed: false,
+            PublicApiAllowed: false,
+            RealBillingAllowed: false,
+            RealEmailAllowed: false,
+            RealCredentialsAllowed: false,
+            SensitiveSitesAllowed: false,
+            SubmitPaySignDeleteAllowed: false,
+            Redacted: true);
+}

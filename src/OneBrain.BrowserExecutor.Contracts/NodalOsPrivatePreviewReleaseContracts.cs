@@ -105,3 +105,45 @@ public sealed record NodalOsLocalPrivatePreviewReleaseGateDecision(
     bool SubmitPaySignDeleteStillBlocked,
     bool RecorderReplayProductiveStillBlocked,
     bool Redacted);
+
+public enum NodalOsPrivatePreviewEvidenceFreezeStatus
+{
+    EvidenceFrozen,
+    EvidenceMissing,
+    ScopeInflationDetected,
+    ReleaseGateMismatch,
+    WorktreeMismatch,
+    SkippedTestsMismatch,
+    ReadyForExternalAudit
+}
+
+public sealed record NodalOsReleaseEvidenceSnapshot(
+    string ProductName,
+    string Commit,
+    string Worktree,
+    string Branch,
+    string M51EvidenceScope,
+    string M65EvidenceScope,
+    string ReleaseGateDecision,
+    IReadOnlyList<string> AllowedLocalPrivatePreviewScope,
+    IReadOnlyList<string> DeniedPublicSensitiveScope,
+    bool ExternalCdpGeneralReady,
+    bool CanonicalWorktree,
+    int SkippedTestsActual,
+    int SkippedTestsExpected,
+    bool PublicSaasAllowed,
+    bool PublicApiAllowed,
+    bool RealBillingAllowed,
+    bool RealEmailAllowed,
+    bool RealCredentialsAllowed,
+    bool SensitiveSitesAllowed,
+    bool SubmitPaySignDeleteAllowed,
+    bool Redacted);
+
+public sealed record NodalOsPrivatePreviewEvidenceFreezeResult(
+    NodalOsPrivatePreviewEvidenceFreezeStatus Status,
+    NodalOsReleaseEvidenceSnapshot Snapshot,
+    IReadOnlyList<string> ReasonCodes,
+    bool ReadyForExternalAudit,
+    bool ScopeInflationDetected,
+    bool Redacted);
