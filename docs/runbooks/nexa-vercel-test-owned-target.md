@@ -9,7 +9,8 @@ Prepare a controlled, read-only, synthetic external target for future M51/M65 pr
 - Source folder: `apps/nexa-test-owned-target`
 - Deployment provider: Vercel
 - Plan: Hobby only, lab/no commercial use
-- Recommended domain: `nexalab.nodalos.com.ar`
+- Vercel project: `lab`
+- Recommended domain: `lab.nodalos.com.ar`
 - Required verification paths: `/health`, `/ownership`
 
 ## Vercel Setup
@@ -18,7 +19,7 @@ Prepare a controlled, read-only, synthetic external target for future M51/M65 pr
 2. Keep the project static/read-only.
 3. Do not add authentication, analytics, cookies, server functions, or mutating APIs.
 4. Use Vercel Hobby only for this lab target.
-5. Add `nexalab.nodalos.com.ar` in Project Settings > Domains.
+5. Add `lab.nodalos.com.ar` in Project Settings > Domains.
 
 ## Current DNS
 
@@ -29,17 +30,36 @@ The root domain `nodalos.com.ar` was delegated by the operator to Vercel nameser
 
 Selected subdomain:
 
-- `nexalab.nodalos.com.ar`
+- `lab.nodalos.com.ar`
+
+Current explicit DNS record:
+
+- Type: `A`
+- Name: `lab`
+- Value: `76.76.21.21`
 
 Recommended mode:
 
-1. Add `nexalab.nodalos.com.ar` to the Vercel project in Settings > Domains.
+1. Add `lab.nodalos.com.ar` to the Vercel project in Settings > Domains.
 2. Because `nodalos.com.ar` is delegated to Vercel, manage any missing records from Vercel DNS, not NIC.ar.
 3. If Vercel requests a manual CNAME, create it in Vercel DNS:
    - Type: `CNAME`
-   - Name: `nexalab`
+   - Name: `lab`
    - Value: `cname.vercel-dns.com`
 4. If Vercel shows a different CNAME value, use the exact value shown by Vercel.
+5. If Vercel uses an A record, keep `A lab -> 76.76.21.21`.
+
+## Legacy Host
+
+Previous lab host:
+
+- `nexalab.nodalos.com.ar`
+
+Current status:
+
+- Deactivated legacy host.
+- Must not be used for live proof.
+- Expected failure mode when queried after deactivation: `DEPLOYMENT_NOT_FOUND`.
 
 ## DNS Modes
 
@@ -50,16 +70,16 @@ If delegating the full domain to Vercel DNS:
 
 If keeping existing DNS and using only the subdomain:
 
-- `CNAME nexalab -> cname.vercel-dns.com`
+- `CNAME lab -> cname.vercel-dns.com`
 
-Do not assume the root domain `nodalos.com.ar` is allowed when the selected target is the `nexalab` subdomain.
+Do not assume the root domain `nodalos.com.ar` is allowed when the selected target is the `lab` subdomain.
 
 ## Verification
 
 1. Wait for DNS propagation.
-2. Confirm HTTPS is ready for `https://nexalab.nodalos.com.ar`.
-3. Open `https://nexalab.nodalos.com.ar/health` and confirm `NEXA_EXTERNAL_READONLY_TARGET_OK`.
-4. Open `https://nexalab.nodalos.com.ar/ownership` and confirm `ownership: test-owned`, `risk: low`, and `mode: read-only`.
+2. Confirm HTTPS is ready for `https://lab.nodalos.com.ar`.
+3. Open `https://lab.nodalos.com.ar/health` and confirm `NEXA_EXTERNAL_READONLY_TARGET_OK`.
+4. Open `https://lab.nodalos.com.ar/ownership` and confirm `ownership: test-owned`, `risk: low`, and `mode: read-only`.
 5. Record operator approval ref before any opt-in live proof.
 
 ## Safety Limits

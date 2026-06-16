@@ -86,12 +86,21 @@ public sealed class NexaLiveProofSafetyGateM85Tests
     [TestMethod]
     public void LiveProofSafetyGatePassedEvidencePackFutureCouldBeClosureCandidate()
     {
-        var request = new NexaExternalProofHarnessRequest(true, Target(), "nexalab.nodalos.com.ar", "/health", "GET", false, false, false, false, "operator");
+        var request = new NexaExternalProofHarnessRequest(true, Target(), "lab.nodalos.com.ar", "/health", "GET", false, false, false, false, "operator");
         var harness = new NexaExternalProofHarness().Evaluate(request, DateTimeOffset.UtcNow);
         var pack = new NexaExternalReadOnlyEvidencePackBuilder().Build(harness, request, runtimeExecuted: true, runtimePassed: true);
 
         Assert.IsTrue(pack.CandidateForM51M65Closure);
         Assert.AreEqual(NexaExternalReadOnlyEvidencePackStatus.PassedReadOnlyProof, pack.Status);
+    }
+
+    [TestMethod]
+    public void LiveProofSafetyGateLegacyNexaLabHostIsBlocked()
+    {
+        var decision = Gate(NexaDomainBindingReadinessM84Tests.ReadyConfig(), Target(), optIn: true, requestedHost: "nexalab.nodalos.com.ar");
+
+        Assert.AreEqual(NexaLiveProofSafetyGateStatus.BlockedSensitiveSurface, decision.Status);
+        Assert.IsFalse(decision.ReadyForReadOnlyLiveProof);
     }
 
     [TestMethod]
@@ -131,13 +140,14 @@ public sealed class NexaLiveProofSafetyGateM85Tests
         NexaExternalTestOwnedTarget target,
         bool optIn,
         bool operatorApprovalRequired = false,
-        string? operatorApprovalRef = "approval:operator") =>
+        string? operatorApprovalRef = "approval:operator",
+        string requestedHost = "lab.nodalos.com.ar") =>
         new NexaLiveProofSafetyGate().Evaluate(
             new NexaLiveProofSafetyGateRequest(
                 binding,
                 target,
                 optIn,
-                "nexalab.nodalos.com.ar",
+                requestedHost,
                 "/health",
                 "GET",
                 WouldUseCredentials: false,
@@ -153,7 +163,7 @@ public sealed class NexaLiveProofSafetyGateM85Tests
             DateTimeOffset.UtcNow);
 
     private static NexaExternalTestOwnedTarget Target() =>
-        NexaExternalTestOwnedTargetM77Tests.ApprovedTarget("https://nexalab.nodalos.com.ar/health") with
+        NexaExternalTestOwnedTargetM77Tests.ApprovedTarget("https://lab.nodalos.com.ar/health") with
         {
             AllowedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -169,7 +179,7 @@ public sealed class NexaLiveProofSafetyGateM85Tests
                 "/ownership"
             },
             DeniedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/api", "/login", "/checkout/submit", "/submit", "/delete", "/pay" },
-            ApprovalRef = "approval:nexalab-readonly"
+            ApprovalRef = "approval:lab-readonly"
         };
 
     private static NexaCanonicalWorkspaceGuardResult GuardAllowed() =>

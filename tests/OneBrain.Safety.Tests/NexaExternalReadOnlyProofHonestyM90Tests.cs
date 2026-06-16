@@ -41,7 +41,7 @@ public sealed class NexaExternalReadOnlyProofHonestyM90Tests
     [TestMethod]
     public void ProbeKindRealChromeCdpIsModeledButNotUsedByHttpRunner()
     {
-        var request = new NexaExternalProofHarnessRequest(true, NexaFirstReadOnlyLiveProofRunner.CreateLiveTarget(), "nexalab.nodalos.com.ar", "/", "GET", false, false, false, false, "operator");
+        var request = new NexaExternalProofHarnessRequest(true, NexaFirstReadOnlyLiveProofRunner.CreateLiveTarget(), "lab.nodalos.com.ar", "/", "GET", false, false, false, false, "operator");
         var harness = new NexaExternalProofHarness().Evaluate(request, DateTimeOffset.UtcNow);
         var pack = new NexaExternalReadOnlyEvidencePackBuilder().Build(harness, request, true, true, NexaExternalProofProbeKind.RealChromeCdp);
 

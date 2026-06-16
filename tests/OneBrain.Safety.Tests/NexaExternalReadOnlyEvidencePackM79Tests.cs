@@ -75,13 +75,13 @@ public sealed class NexaExternalReadOnlyEvidencePackM79Tests
     }
 
     [TestMethod]
-    public void PrivatePreviewReadinessReflectsCandidateProofPassedWithoutClosingExternalLive()
+    public void PrivatePreviewReadinessReflectsUnpersistedProofWithoutClosingExternalLive()
     {
         var dashboard = Dashboard(Pack(AllowedDecision(), runtimeExecuted: true, runtimePassed: true));
 
         Assert.IsFalse(dashboard.Decision.ExternalLiveAllowed);
-        Assert.IsFalse(dashboard.M65Blocked);
-        Assert.IsTrue(dashboard.Decision.GoNoGoExternalLive.Contains("closure review", StringComparison.Ordinal));
+        Assert.IsTrue(dashboard.M65Blocked);
+        Assert.IsTrue(dashboard.Decision.GoNoGoExternalLive.Contains("NO-GO external/live", StringComparison.Ordinal));
     }
 
     [TestMethod]

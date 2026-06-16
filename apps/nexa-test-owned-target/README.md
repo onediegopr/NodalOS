@@ -2,15 +2,17 @@
 
 Static Vercel target for future NEXA external read-only proof.
 
-Recommended domain: `nexalab.nodalos.com.ar`
+Recommended domain: `lab.nodalos.com.ar`
 
 ## Deploy
 
 1. Import this folder as a Vercel project.
 2. Use the Vercel Hobby plan only for lab and non-commercial proof preparation.
-3. Bind `nexalab.nodalos.com.ar`.
+3. Bind `lab.nodalos.com.ar`.
 4. Verify HTTPS.
 5. Verify `/health` and `/ownership`.
+
+Previous host `nexalab.nodalos.com.ar` is a deactivated legacy host and must not be used for live proof.
 
 ## Limits
 

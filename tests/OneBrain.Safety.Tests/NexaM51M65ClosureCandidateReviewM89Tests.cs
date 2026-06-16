@@ -91,7 +91,7 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
     [TestMethod]
     public async Task PrivatePreviewReadinessReflectsReviewCandidateWithoutExternalLiveAutoGo()
     {
-        var proof = await PassedProof();
+        var proof = await PersistedRealHttpProof();
         var dashboard = new NexaPrivatePreviewReadinessDashboardService().Build(
             new NexaSkippedTestsAuditReporter().CreateReport(),
             new NexaPrivatePreviewGoNoGoService().Evaluate(NexaPrivatePreviewGoNoGoService.SafeCriteria(), []),
@@ -99,8 +99,9 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
             proof.EvidencePack);
 
         Assert.IsFalse(dashboard.Decision.ExternalLiveAllowed);
-        Assert.IsFalse(dashboard.M65Blocked);
-        StringAssert.Contains(dashboard.Decision.GoNoGoExternalLive, "closure review");
+        Assert.IsTrue(dashboard.M65Blocked);
+        StringAssert.Contains(dashboard.Decision.GoNoGoExternalLive, "M51 closure review");
+        StringAssert.Contains(dashboard.Decision.GoNoGoExternalLive, "M65 remains deferred");
     }
 
     private static async Task<NexaM51M65ClosureCandidateReview> ReviewAsync(bool optIn, bool executeNetwork)

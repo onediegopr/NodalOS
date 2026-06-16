@@ -8,12 +8,12 @@ namespace OneBrain.Safety.Tests;
 public sealed class NexaDomainBindingReadinessM84Tests
 {
     [TestMethod]
-    public void DomainBindingReadinessDefaultUsesNexaLabDomain()
+    public void DomainBindingReadinessDefaultUsesLabDomain()
     {
         var config = new NexaTargetBindingReadinessEvaluator().CreateDefault();
 
-        Assert.IsTrue(string.Equals(config.ExpectedDomain, "nexalab.nodalos.com.ar", StringComparison.Ordinal));
-        Assert.IsTrue(string.Equals(config.ExpectedBaseUrl, "https://nexalab.nodalos.com.ar", StringComparison.Ordinal));
+        Assert.IsTrue(string.Equals(config.ExpectedDomain, "lab.nodalos.com.ar", StringComparison.Ordinal));
+        Assert.IsTrue(string.Equals(config.ExpectedBaseUrl, "https://lab.nodalos.com.ar", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -22,8 +22,9 @@ public sealed class NexaDomainBindingReadinessM84Tests
         var config = ReadyConfig();
 
         Assert.AreEqual(1, config.AllowedHosts.Count);
-        CollectionAssert.Contains(config.AllowedHosts.ToList(), "nexalab.nodalos.com.ar");
+        CollectionAssert.Contains(config.AllowedHosts.ToList(), "lab.nodalos.com.ar");
         CollectionAssert.DoesNotContain(config.AllowedHosts.ToList(), "nodalos.com.ar");
+        CollectionAssert.DoesNotContain(config.AllowedHosts.ToList(), "nexalab.nodalos.com.ar");
     }
 
     [TestMethod]
@@ -58,12 +59,26 @@ public sealed class NexaDomainBindingReadinessM84Tests
     {
         var config = ReadyConfig() with
         {
-            AllowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "nexalab.nodalos.com.ar", "nodalos.com.ar" }
+            AllowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "lab.nodalos.com.ar", "nodalos.com.ar" }
         };
         var decision = new NexaTargetBindingReadinessEvaluator().Evaluate(config);
 
         Assert.IsFalse(decision.CandidateLiveProofAllowed);
         Assert.IsTrue(decision.ReasonCodes.Any(reason => reason.Contains("subdomain", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void DomainBindingReadinessLegacyNexaLabIsNotOperationalHost()
+    {
+        var config = ReadyConfig() with
+        {
+            AllowedHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "lab.nodalos.com.ar", "nexalab.nodalos.com.ar" }
+        };
+
+        var decision = new NexaTargetBindingReadinessEvaluator().Evaluate(config);
+
+        Assert.IsFalse(decision.CandidateLiveProofAllowed);
+        Assert.IsTrue(decision.ReasonCodes.Any(reason => reason.Contains("only the expected lab subdomain", StringComparison.OrdinalIgnoreCase)));
     }
 
     [TestMethod]
@@ -76,9 +91,9 @@ public sealed class NexaDomainBindingReadinessM84Tests
             .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
             .Where(path => Path.GetExtension(path) is ".cs" or ".md" or ".html" or ".json" or ".txt");
 
-        var legacyDomain = "nexa" + "-lab.nodalos.com.ar";
+        var hyphenatedLegacyDomain = "nexa" + "-lab.nodalos.com.ar";
         var matches = files
-            .Where(path => File.ReadAllText(path).Contains(legacyDomain, StringComparison.OrdinalIgnoreCase))
+            .Where(path => File.ReadAllText(path).Contains(hyphenatedLegacyDomain, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
         Assert.AreEqual(0, matches.Length, string.Join(Environment.NewLine, matches));

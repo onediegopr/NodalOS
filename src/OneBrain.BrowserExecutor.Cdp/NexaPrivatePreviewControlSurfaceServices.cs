@@ -79,13 +79,15 @@ public sealed class NexaPrivatePreviewReadinessDashboardService
             .ToArray();
         var localBlockedBySkipped = skippedReport.Items.Any(item => item.BlocksLocalPrivatePreview);
         var externalBlocked = externalSkipped.Length > 0;
-        var candidateProof = externalEvidencePack?.CandidateForM51M65Closure == true;
+        var candidateProof = externalEvidencePack?.CandidateForM51M65Closure == true &&
+            externalEvidencePack.ProbeKind is NexaExternalProofProbeKind.RealHttpClient or NexaExternalProofProbeKind.RealChromeCdp &&
+            externalEvidencePack.PersistenceStatus == NexaExternalEvidencePersistenceStatus.PersistedRedactedLedger;
         var activeBlockers = new List<string>();
 
         if (workspaceGuard.Decision != NexaCanonicalWorkspaceGuardDecisionKind.Allowed)
             activeBlockers.Add("canonical workspace guard blocked local preview operations");
         if (candidateProof)
-            activeBlockers.Add("external read-only candidate proof exists; M51/M65 still require explicit closure decision");
+            activeBlockers.Add("external HTTP read-only candidate proof exists for M51 review; M65 remains deferred pending dedicated evidence");
         else if (liveProofSafetyGate?.ReadyForReadOnlyLiveProof == true)
             activeBlockers.Add("live proof safety gate is ready, but external proof has not executed; M51/M65 remain deferred");
         else if (externalBlocked)
@@ -115,7 +117,7 @@ public sealed class NexaPrivatePreviewReadinessDashboardService
             SensitiveRealPilotAllowed: false,
             SubmitPaySignDeleteAllowed: false,
             localAllowed ? "GO local private preview only" : "NO-GO local preview until local blockers are fixed",
-            candidateProof ? "NO-GO external/live until M51/M65 closure review accepts candidate proof" :
+            candidateProof ? "NO-GO external/live until M51 closure review accepts candidate proof; M65 remains deferred" :
             liveProofSafetyGate?.ReadyForReadOnlyLiveProof == true ? "NO-GO external/live: live gate ready but proof not executed" :
             externalBlocked ? "NO-GO external/live: test-owned external target missing" : "NO-GO external/live until live proof is explicitly executed");
 
@@ -126,7 +128,7 @@ public sealed class NexaPrivatePreviewReadinessDashboardService
             skippedReport.Items,
             decision,
             M51Deferred: true,
-            M65Blocked: externalBlocked && !candidateProof,
+            M65Blocked: true,
             Redacted: true);
     }
 

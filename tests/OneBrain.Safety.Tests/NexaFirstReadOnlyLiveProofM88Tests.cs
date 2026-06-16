@@ -55,8 +55,8 @@ public sealed class NexaFirstReadOnlyLiveProofM88Tests
         Assert.AreEqual(NexaFirstReadOnlyLiveProofStatus.PassedReadOnlyProof, result.Status);
         Assert.IsTrue(result.EvidencePack.LogRefs.Any(log => log.Contains("provider:Vercel", StringComparison.Ordinal)));
         Assert.IsTrue(result.EvidencePack.LogRefs.Any(log => log.Contains("scope:Shift Evidence", StringComparison.Ordinal)));
-        Assert.IsTrue(result.EvidencePack.LogRefs.Any(log => log.Contains("project:nexa-test-owned-target", StringComparison.Ordinal)));
-        Assert.IsTrue(result.EvidencePack.LogRefs.Any(log => log.Contains("domain:nexalab.nodalos.com.ar", StringComparison.Ordinal)));
+        Assert.IsTrue(result.EvidencePack.LogRefs.Any(log => log.Contains("project:lab", StringComparison.Ordinal)));
+        Assert.IsTrue(result.EvidencePack.LogRefs.Any(log => log.Contains("domain:lab.nodalos.com.ar", StringComparison.Ordinal)));
     }
 
     [TestMethod]

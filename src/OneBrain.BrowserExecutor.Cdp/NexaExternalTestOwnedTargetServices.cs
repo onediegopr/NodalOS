@@ -362,7 +362,8 @@ public sealed class NexaProofDryRunBinding
 
 public sealed class NexaTargetBindingReadinessEvaluator
 {
-    public const string RecommendedDomain = "nexalab.nodalos.com.ar";
+    public const string RecommendedDomain = "lab.nodalos.com.ar";
+    public const string LegacyDeactivatedDomain = "nexalab.nodalos.com.ar";
 
     public NexaTargetBindingConfig CreateDefault(
         NexaTargetBindingDnsMode dnsMode = NexaTargetBindingDnsMode.Unknown,
@@ -395,8 +396,8 @@ public sealed class NexaTargetBindingReadinessEvaluator
     {
         var reasons = new List<string>();
         if (!string.Equals(config.ExpectedDomain, RecommendedDomain, StringComparison.OrdinalIgnoreCase))
-            reasons.Add("expected domain must be the approved nexalab.nodalos.com.ar subdomain");
-        if (config.AllowedHosts.Count != 1 || !config.AllowedHosts.Contains(config.ExpectedDomain) || config.AllowedHosts.Contains("nodalos.com.ar"))
+            reasons.Add("expected domain must be the approved lab.nodalos.com.ar subdomain");
+        if (config.AllowedHosts.Count != 1 || !config.AllowedHosts.Contains(config.ExpectedDomain) || config.AllowedHosts.Contains("nodalos.com.ar") || config.AllowedHosts.Contains(LegacyDeactivatedDomain))
             reasons.Add("allowed hosts must include only the expected lab subdomain");
         if (!config.AllowedPaths.Contains(config.ExpectedHealthPath) || !config.AllowedPaths.Contains(config.ExpectedOwnershipPath))
             reasons.Add("health and ownership paths are required");
@@ -521,7 +522,7 @@ public sealed class NexaHttpsOwnershipVerifier(INexaReadOnlyHttpProbe? probe = n
             ["NEXA", "test-owned", "read-only", "no-real-users", "no-real-credentials", "no-real-payments", "no-submit"],
             "Vercel",
             "Shift Evidence",
-            "nexa-test-owned-target",
+            "lab",
             optInLiveNetwork);
 
     private readonly INexaReadOnlyHttpProbe _probe = probe ?? new NexaHttpClientReadOnlyProbe();
@@ -699,7 +700,7 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
 
         var pack = _evidence.Build(harness, request, runtimeExecuted: true, runtimePassed: true, _probeKind) with
         {
-            LogRefs = ["provider:Vercel", "scope:Shift Evidence", "project:nexa-test-owned-target", "domain:nexalab.nodalos.com.ar", "routes:/,/health/,/ownership/,/products/,/document/,/report/"]
+            LogRefs = ["provider:Vercel", "scope:Shift Evidence", "project:lab", $"domain:{NexaTargetBindingReadinessEvaluator.RecommendedDomain}", "routes:/,/health/,/ownership/,/products/,/document/,/report/"]
         };
         if (ledger is not null)
             pack = _persistence.PersistIfEligible(pack, ledger);
@@ -721,14 +722,14 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
             NexaExternalTargetSubmitPolicy.ReadOnlyNoSubmit,
             NexaExternalTargetDataSensitivityProfile.LowRiskSynthetic,
             NexaExternalTargetEvidencePolicy.MetadataOnlyRedacted,
-            "Vercel Shift Evidence project nexa-test-owned-target, synthetic read-only target",
+            "Vercel Shift Evidence project lab, synthetic read-only target",
             DateTimeOffset.UtcNow.AddDays(30),
             "Shift Evidence",
-            "approval:nexalab-vercel-readonly",
+            "approval:lab-vercel-readonly",
             ExplicitlyTestOwned: true);
 
     private static NexaLiveProofSafetyGateRequest GateRequest(NexaTargetBindingConfig binding, NexaExternalTestOwnedTarget target, bool optIn) =>
-        new(binding, target, optIn, NexaTargetBindingReadinessEvaluator.RecommendedDomain, "/", "GET", false, false, false, false, false, false, false, true, false, "approval:nexalab-vercel-readonly");
+        new(binding, target, optIn, NexaTargetBindingReadinessEvaluator.RecommendedDomain, "/", "GET", false, false, false, false, false, false, false, true, false, "approval:lab-vercel-readonly");
 
     private static NexaHttpsOwnershipVerificationResult ModeledVerification(bool optIn)
     {
@@ -748,7 +749,7 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
                 $"ownershipUrl:{ownershipUrl}",
                 "provider:Vercel",
                 "scope:Shift Evidence",
-                "project:nexa-test-owned-target",
+                "project:lab",
                 "mode:modeled-no-network"
             ],
             optIn ? ["modeled HTTPS ownership verification; live network not executed"] : ["live HTTPS ownership verification opt-in missing"],
@@ -842,7 +843,7 @@ public sealed class NexaM51M65ClosureCandidateReviewer
             proof.EvidencePack.TargetId ?? "unknown",
             NexaTargetBindingReadinessEvaluator.RecommendedDomain,
             "Vercel",
-            "Shift Evidence/nexa-test-owned-target",
+            "Shift Evidence/lab",
             proof.Verification.Status,
             proof.Status,
             proof.RoutesTested,

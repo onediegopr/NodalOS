@@ -20,7 +20,7 @@ public sealed class NexaHttpsOwnershipVerificationM87Tests
     [TestMethod]
     public async Task HttpsOwnershipVerificationHttpsPendingBlocks()
     {
-        var request = NexaHttpsOwnershipVerifier.DefaultRequest(optInLiveNetwork: true) with { ExpectedBaseUrl = "http://nexalab.nodalos.com.ar" };
+        var request = NexaHttpsOwnershipVerifier.DefaultRequest(optInLiveNetwork: true) with { ExpectedBaseUrl = "http://lab.nodalos.com.ar" };
         var result = await new NexaHttpsOwnershipVerifier(HealthyProbe()).VerifyAsync(request);
 
         Assert.AreNotEqual(NexaHttpsOwnershipVerificationStatus.VerifiedTestOwnedReadOnlyTarget, result.Status);
