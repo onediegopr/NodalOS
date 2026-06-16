@@ -362,7 +362,13 @@ public sealed record BrowserRuntimeObservedState(
     bool ExternalProofHarnessCapturesSensitiveMaterial = false,
     bool ExternalReadOnlyEvidencePackDefined = false,
     bool ExternalReadOnlyEvidencePackClosesM51M65WithoutReview = false,
-    bool ExternalReadOnlyEvidencePackLeaksSecrets = false)
+    bool ExternalReadOnlyEvidencePackLeaksSecrets = false,
+    bool TestOwnedExternalTargetFixtureDefined = false,
+    bool SyntheticExternalScenarioCatalogDefined = false,
+    bool ProofDryRunBindingDefined = false,
+    bool ProofDryRunExecutesNetwork = false,
+    bool ProofDryRunClosesM51M65 = false,
+    bool ProofDryRunLeaksSecrets = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -675,6 +681,15 @@ public sealed record BrowserRuntimeObservedState(
          !ExternalReadOnlyEvidencePackClosesM51M65WithoutReview &&
          !ExternalReadOnlyEvidencePackLeaksSecrets);
 
+    public bool ExternalProofDryRunAllowed =>
+        (!TestOwnedExternalTargetFixtureDefined && !SyntheticExternalScenarioCatalogDefined && !ProofDryRunBindingDefined) ||
+        (TestOwnedExternalTargetFixtureDefined &&
+         SyntheticExternalScenarioCatalogDefined &&
+         ProofDryRunBindingDefined &&
+         !ProofDryRunExecutesNetwork &&
+         !ProofDryRunClosesM51M65 &&
+         !ProofDryRunLeaksSecrets);
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -865,7 +880,13 @@ public sealed record BrowserRuntimeObservedState(
         ExternalProofHarnessCapturesSensitiveMaterial ||
         ExternalReadOnlyEvidencePackDefined ||
         ExternalReadOnlyEvidencePackClosesM51M65WithoutReview ||
-        ExternalReadOnlyEvidencePackLeaksSecrets;
+        ExternalReadOnlyEvidencePackLeaksSecrets ||
+        TestOwnedExternalTargetFixtureDefined ||
+        SyntheticExternalScenarioCatalogDefined ||
+        ProofDryRunBindingDefined ||
+        ProofDryRunExecutesNetwork ||
+        ProofDryRunClosesM51M65 ||
+        ProofDryRunLeaksSecrets;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

@@ -138,3 +138,59 @@ public sealed record NexaExternalReadOnlyEvidencePack(
     NexaExternalReadOnlyEvidencePackStatus Status,
     bool CandidateForM51M65Closure,
     bool Redacted);
+
+public enum NexaSyntheticExternalScenarioKind
+{
+    LandingReadOnly,
+    ProductListReadOnly,
+    DocumentReadOnly,
+    TableReportReadOnly,
+    DisabledFormBlocked,
+    LoginBlocked,
+    CheckoutPaymentBlocked,
+    DestructiveActionBlocked
+}
+
+public enum NexaSyntheticExternalScenarioSensitivity
+{
+    SyntheticOnly,
+    CredentialSurfaceBlocked,
+    PaymentSurfaceBlocked,
+    DestructiveSurfaceBlocked
+}
+
+public sealed record NexaSyntheticExternalScenario(
+    string ScenarioId,
+    NexaSyntheticExternalScenarioKind Kind,
+    string Path,
+    IReadOnlyList<string> ExpectedAllowedActions,
+    IReadOnlyList<string> ExpectedDeniedActions,
+    NexaSyntheticExternalScenarioSensitivity Sensitivity,
+    string ExpectedEvidenceBehavior,
+    NexaOperatorBlockerScenario? ExpectedBlockerExplanation,
+    bool UsesRealContent);
+
+public sealed record NexaSyntheticExternalScenarioCatalog(
+    IReadOnlyList<NexaSyntheticExternalScenario> Scenarios,
+    bool UsesInternet,
+    bool UsesRealCustomerData,
+    bool Redacted);
+
+public enum NexaProofDryRunStatus
+{
+    DryRunPrepared,
+    DryRunAllowedReadOnly,
+    DryRunBlockedByPolicy,
+    DryRunEvidenceGenerated,
+    DryRunDoesNotCloseM51M65
+}
+
+public sealed record NexaProofDryRunResult(
+    string DryRunId,
+    NexaProofDryRunStatus Status,
+    NexaSyntheticExternalScenario Scenario,
+    NexaExternalProofHarnessDecision HarnessDecision,
+    NexaExternalReadOnlyEvidencePack EvidencePack,
+    bool ExecutedNetwork,
+    bool ClosesM51M65,
+    bool Redacted);

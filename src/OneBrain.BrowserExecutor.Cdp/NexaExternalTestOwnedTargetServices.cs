@@ -166,3 +166,106 @@ public sealed class NexaExternalReadOnlyEvidencePackBuilder
             Redacted: true);
     }
 }
+
+public static class NexaTestOwnedExternalTargetFixtureFactory
+{
+    public const string FixtureHost = "nexa-test-owned.fixture.local";
+
+    public static NexaExternalTestOwnedTarget Create() =>
+        new(
+            "fixture-test-owned-readonly",
+            $"https://{FixtureHost}/landing",
+            NexaExternalTargetOwnershipProofMode.OperatorAttestation,
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { FixtureHost },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "afip.gob.ar", "bank.example.invalid", "payments.example.invalid" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/landing", "/products", "/document", "/report", "/disabled-form", "/blocked-login", "/blocked-checkout", "/blocked-delete" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/submit", "/checkout/confirm", "/delete/confirm" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GET" },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "POST", "PUT", "PATCH", "DELETE" },
+            NexaExternalTargetCredentialPolicy.NoCredentials,
+            NexaExternalTargetSubmitPolicy.ReadOnlyNoSubmit,
+            NexaExternalTargetDataSensitivityProfile.SyntheticPublic,
+            NexaExternalTargetEvidencePolicy.MetadataOnlyRedacted,
+            "fixture-approved synthetic target only; not external/live proof",
+            DateTimeOffset.UtcNow.AddDays(30),
+            "operator-fixture",
+            "approval:fixture-synthetic-readonly",
+            ExplicitlyTestOwned: true);
+}
+
+public sealed class NexaSyntheticExternalScenarioCatalogService
+{
+    public NexaSyntheticExternalScenarioCatalog CreateDefault() =>
+        new(
+            [
+                Scenario("synthetic-landing", NexaSyntheticExternalScenarioKind.LandingReadOnly, "/landing", ["read-dom", "read-title"], [], NexaSyntheticExternalScenarioSensitivity.SyntheticOnly, "metadata-only read evidence", null),
+                Scenario("synthetic-products", NexaSyntheticExternalScenarioKind.ProductListReadOnly, "/products", ["read-dom", "read-list"], [], NexaSyntheticExternalScenarioSensitivity.SyntheticOnly, "metadata-only product list evidence", null),
+                Scenario("synthetic-document", NexaSyntheticExternalScenarioKind.DocumentReadOnly, "/document", ["read-dom", "read-document-summary"], [], NexaSyntheticExternalScenarioSensitivity.SyntheticOnly, "metadata-only document summary evidence", null),
+                Scenario("synthetic-report", NexaSyntheticExternalScenarioKind.TableReportReadOnly, "/report", ["read-dom", "read-table"], [], NexaSyntheticExternalScenarioSensitivity.SyntheticOnly, "metadata-only table evidence", null),
+                Scenario("synthetic-disabled-form", NexaSyntheticExternalScenarioKind.DisabledFormBlocked, "/disabled-form", ["read-dom"], ["submit"], NexaSyntheticExternalScenarioSensitivity.SyntheticOnly, "blocked submit explanation required", NexaOperatorBlockerScenario.IrreversibleActionBlocked),
+                Scenario("synthetic-login-blocked", NexaSyntheticExternalScenarioKind.LoginBlocked, "/blocked-login", ["read-dom"], ["enter-credentials", "login"], NexaSyntheticExternalScenarioSensitivity.CredentialSurfaceBlocked, "credential blocker explanation required", NexaOperatorBlockerScenario.RealCredentialsBlocked),
+                Scenario("synthetic-checkout-blocked", NexaSyntheticExternalScenarioKind.CheckoutPaymentBlocked, "/blocked-checkout", ["read-dom"], ["checkout", "pay", "submit"], NexaSyntheticExternalScenarioSensitivity.PaymentSurfaceBlocked, "payment blocker explanation required", NexaOperatorBlockerScenario.RealBillingBlocked),
+                Scenario("synthetic-delete-blocked", NexaSyntheticExternalScenarioKind.DestructiveActionBlocked, "/blocked-delete", ["read-dom"], ["delete", "sign", "mutate"], NexaSyntheticExternalScenarioSensitivity.DestructiveSurfaceBlocked, "destructive action blocker explanation required", NexaOperatorBlockerScenario.IrreversibleActionBlocked)
+            ],
+            UsesInternet: false,
+            UsesRealCustomerData: false,
+            Redacted: true);
+
+    private static NexaSyntheticExternalScenario Scenario(
+        string id,
+        NexaSyntheticExternalScenarioKind kind,
+        string path,
+        IReadOnlyList<string> allowed,
+        IReadOnlyList<string> denied,
+        NexaSyntheticExternalScenarioSensitivity sensitivity,
+        string evidence,
+        NexaOperatorBlockerScenario? blocker) =>
+        new(id, kind, path, allowed, denied, sensitivity, evidence, blocker, UsesRealContent: false);
+}
+
+public sealed class NexaProofDryRunBinding
+{
+    private readonly NexaExternalProofHarness _harness = new();
+    private readonly NexaExternalReadOnlyEvidencePackBuilder _evidence = new();
+    private readonly NexaOperatorBlockerExplanationService _explanations = new();
+
+    public NexaProofDryRunResult Run(NexaExternalTestOwnedTarget fixtureTarget, NexaSyntheticExternalScenario scenario)
+    {
+        var blocked = scenario.ExpectedDeniedActions.Count > 0;
+        var request = new NexaExternalProofHarnessRequest(
+            OptInEnabled: true,
+            fixtureTarget,
+            NexaTestOwnedExternalTargetFixtureFactory.FixtureHost,
+            scenario.Path,
+            "GET",
+            WouldCaptureBodies: false,
+            WouldCaptureSensitiveHeaderValues: false,
+            WouldPersistCookies: false,
+            WouldSubmit: blocked,
+            "operator-fixture");
+        var harnessDecision = _harness.Evaluate(request, DateTimeOffset.UtcNow);
+        if (blocked && scenario.ExpectedBlockerExplanation is not null)
+        {
+            var explanation = _explanations.Explain(scenario.ExpectedBlockerExplanation.Value, ["proof-dry-run:redacted"]);
+            harnessDecision = harnessDecision with
+            {
+                Explanation = explanation,
+                CanExecuteReadOnlyNavigation = false
+            };
+        }
+
+        var pack = _evidence.Build(harnessDecision, request, runtimeExecuted: false, runtimePassed: false);
+        var status = blocked || harnessDecision.Decision == NexaExternalProofHarnessDecisionKind.BlockedPolicyViolation
+            ? NexaProofDryRunStatus.DryRunBlockedByPolicy
+            : NexaProofDryRunStatus.DryRunEvidenceGenerated;
+        return new NexaProofDryRunResult(
+            $"proof-dry-run-{scenario.ScenarioId}",
+            status,
+            scenario,
+            harnessDecision,
+            pack,
+            ExecutedNetwork: false,
+            ClosesM51M65: false,
+            Redacted: true);
+    }
+}
