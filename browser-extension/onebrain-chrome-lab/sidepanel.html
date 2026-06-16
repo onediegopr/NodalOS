@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NEXA</title>
+  <title>NODAL OS</title>
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 <body>
   <header class="app-header">
     <div class="brand-block">
-      <h1>NEXA</h1>
+      <h1>NODAL OS</h1>
       <p id="headerStatus">Disconnected · Run: idle</p>
     </div>
     <button id="globalStopBtn" class="stop-button">STOP</button>
   </header>
 
-  <nav class="tabs" aria-label="NEXA modes">
+  <nav class="tabs" aria-label="NODAL OS modes">
     <button class="tab active" data-tab="operate">Operar</button>
     <button class="tab" data-tab="learn">Aprender</button>
     <button class="tab" data-tab="recipes">Recetas</button>
@@ -33,8 +33,8 @@
   <main>
     <section id="tab-operate" class="tab-panel active">
       <section class="surface command-surface">
-        <label for="instructionInput">¿Qué querés que haga NEXA?</label>
-        <textarea id="instructionInput" rows="8" wrap="soft">Entrá a AFIP/ARCA y tocá iniciar sesión. Cuando pida credenciales, pausá y avisame.</textarea>
+        <label for="instructionInput">¿Qué querés que haga NODAL OS?</label>
+        <textarea id="instructionInput" rows="8" wrap="soft">Revisá el dashboard local de readiness, resumí evidencia redacted y listá blockers activos sin usar credenciales ni acciones sensibles.</textarea>
         <div class="control-row">
           <button id="startRunBtn" class="primary">Ejecutar</button>
           <button id="pauseRunBtn">Pausar</button>
@@ -43,7 +43,7 @@
       </section>
 
       <section id="handoffSurface" class="surface handoff-surface hidden" data-legacy-action="Reobservar pagina">
-        <h2 id="handoffTitle">NEXA necesita intervención humana</h2>
+        <h2 id="handoffTitle">NODAL OS necesita intervención humana</h2>
         <dl>
           <dt>Estado</dt><dd id="handoffStatus">-</dd>
           <dt>Razón</dt><dd id="handoffReason">-</dd>
@@ -60,7 +60,7 @@
       </section>
 
       <section id="consentSurface" class="surface consent-surface hidden">
-        <h2 id="consentTitle">NEXA necesita autorizaciÃ³n</h2>
+        <h2 id="consentTitle">NODAL OS necesita autorizaciÃ³n</h2>
         <dl>
           <dt>Estado</dt><dd id="consentStatus">-</dd>
           <dt>Tipo</dt><dd id="consentType">-</dd>
@@ -207,9 +207,9 @@
 
       <section id="tokenSetupCard" class="surface token-setup hidden">
         <h2>Token de conexion requerido</h2>
-        <p>Pegalo una sola vez. NEXA lo guardara localmente y no volvera a pedirlo. Si aparece token invalido, reemplazalo por el `ExtensionToken` de `config/chrome-lab.local.json`.</p>
+        <p>Pegalo una sola vez. NODAL OS lo guardara localmente y no volvera a pedirlo. Si aparece token invalido, reemplazalo por el `ExtensionToken` de `config/chrome-lab.local.json`.</p>
         <div class="connection-strip">
-          <label>Token <input id="tokenInput" type="password" autocomplete="off" placeholder="nexa_..."></label>
+          <label>Token <input id="tokenInput" type="password" autocomplete="off" placeholder="extension-token"></label>
           <button id="saveTokenConnectBtn" class="primary">Guardar y conectar</button>
         </div>
       </section>

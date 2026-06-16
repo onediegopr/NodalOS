@@ -23,6 +23,19 @@ HITO-162 replacement is stable local fixture-first:
 - Safe action expansion is local fixture-only and Core-boundary controlled.
 - Process memory/workflow learning is local-only and redacted, not productive recorder/replay.
 
+## Reading the Vertical Timeline / Stepper
+
+NODAL OS uses a vertical timeline in the side panel for task structuring, recipes, execution state, evidence, blockers and operator summaries.
+
+- Circular nodes show the ordered step sequence.
+- Indented subtasks show decomposition, not authority.
+- Status badges show planned/running/done/blocked/needs-human/evidence states.
+- Evidence refs are redacted references only.
+- Blocker cards describe why an option is stopped and what the operator should do.
+- "Core authority required" means UI/Admin/Companion cannot approve the action.
+- ReadyWithRestrictions in the timeline does not mean production.
+- Timeline output never authorizes submit/pay/sign/delete, credentials, sensitive sites, public SaaS, external general CDP or productive recorder/replay.
+
 ## Allowed Examples
 
 - Review Product/Admin local summary.
@@ -57,4 +70,3 @@ Stop and file an issue if:
 ## Issue Reporting Path
 
 Create a local private preview issue report with category, severity, decision, redacted summary, evidence refs, and next action. Do not paste secrets, cookies, tokens, raw DOM, raw UIA trees, screenshots with secrets, or unredacted logs.
-

@@ -227,7 +227,7 @@ function bindEvents() {
 
   el.startRunBtn.addEventListener('click', () => {
     state.operator.goal = el.instructionInput.value.trim();
-    state.operator.timeline = ['Run iniciado'];
+    state.operator.timeline = buildStructuredTaskTimeline(state.operator.goal);
     state.run.status = 'running';
     post({ type: 'startRun', instruction: state.operator.goal });
     render();
@@ -579,7 +579,7 @@ function renderHandoff() {
   if (!handoff) {
     return;
   }
-  el.handoffTitle.textContent = 'NEXA necesita intervención humana';
+  el.handoffTitle.textContent = 'NODAL OS necesita intervención humana';
   el.handoffStatus.textContent = handoff.displayState || handoff.status || 'WaitingForUser';
   el.handoffReason.textContent = handoff.reason || '-';
   el.handoffSafeUrl.textContent = handoff.safeUrl || '-';
@@ -644,15 +644,15 @@ function displayStateFrom(type, fallback) {
 function instructionForReason(reason) {
   const normalized = String(reason || '').toLowerCase();
   if (normalized.includes('captcha')) {
-    return 'Se detectó CAPTCHA o verificación anti-bot. NEXA no intentará resolverlo automáticamente. Resolvelo manualmente y luego presioná "Ya lo hice, continuar".';
+    return 'Se detectó CAPTCHA o verificación anti-bot. NODAL OS no intentará resolverlo automáticamente. Resolvelo manualmente y luego presioná "Ya lo hice, continuar".';
   }
   if (normalized.includes('twofactor') || normalized.includes('2fa') || normalized.includes('otp')) {
     return 'Se detectó un paso de doble factor. Completá el código o aprobación desde tu dispositivo y luego presioná "Ya lo hice, continuar".';
   }
   if (normalized.includes('clave')) {
-    return 'Se detectó una credencial sensible o clave fiscal. NEXA se detuvo para que la completes manualmente. No se guardará ni registrará la clave.';
+    return 'Se detectó una credencial sensible o clave fiscal. NODAL OS se detuvo para que la completes manualmente. No se guardará ni registrará la clave.';
   }
-  return 'Se detectó un paso sensible: login o contraseña. NEXA se detuvo para que lo completes manualmente. Cuando termines, presioná "Ya lo hice, continuar".';
+  return 'Se detectó un paso sensible: login o contraseña. NODAL OS se detuvo para que lo completes manualmente. Cuando termines, presioná "Ya lo hice, continuar".';
 }
 
 function sendHandoffUiEvent(type) {
@@ -712,7 +712,7 @@ function renderConsent() {
   if (!consent) {
     return;
   }
-  el.consentTitle.textContent = 'NEXA necesita autorización';
+  el.consentTitle.textContent = 'NODAL OS necesita autorización';
   el.consentStatus.textContent = consent.displayState || consent.status || 'Requested';
   el.consentType.textContent = consent.consentType || '-';
   el.consentScope.textContent = consent.scope || '-';
@@ -751,7 +751,7 @@ function normalizeConsent(message) {
     scope: redactSensitive(presentation.scope || message.scope || ''),
     status: redactSensitive(presentation.status || ''),
     displayState: consentDisplayStateFrom(message.type, presentation.displayState || presentation.status),
-    safeTitle: redactSensitive(presentation.safeTitle || presentation.title || 'NEXA necesita autorización'),
+    safeTitle: redactSensitive(presentation.safeTitle || presentation.title || 'NODAL OS necesita autorización'),
     instruction: redactSensitive(presentation.instruction || instructionForConsent(consentType)),
     allowedOptions: Array.isArray(presentation.allowedOptions) && presentation.allowedOptions.length
       ? presentation.allowedOptions.map(redactSensitive)
@@ -776,21 +776,21 @@ function consentDisplayStateFrom(type, fallback) {
 function instructionForConsent(consentType) {
   const normalized = String(consentType || '').toLowerCase();
   if (normalized.includes('profile')) {
-    return 'NEXA solicita autorización para perfil real futuro. Esto no autoriza secretos ni login.';
+    return 'NODAL OS solicita autorización para perfil real futuro. Esto no autoriza secretos ni login.';
   }
   if (normalized.includes('storage')) {
-    return 'NEXA solicita autorización para guardar una referencia futura. No se mostrará ni guardará el valor secreto en Companion.';
+    return 'NODAL OS solicita autorización para guardar una referencia futura. No se mostrará ni guardará el valor secreto en Companion.';
   }
   if (normalized.includes('retrieval')) {
-    return 'NEXA solicita autorización para recuperar una referencia. Companion no recibirá el valor secreto.';
+    return 'NODAL OS solicita autorización para recuperar una referencia. Companion no recibirá el valor secreto.';
   }
   if (normalized.includes('cookie')) {
-    return 'NEXA solicita autorización para cookie o sesión sensible. Esto no autoriza passwords ni tokens.';
+    return 'NODAL OS solicita autorización para cookie o sesión sensible. Esto no autoriza passwords ni tokens.';
   }
   if (normalized.includes('delete') || normalized.includes('rotation')) {
-    return 'NEXA solicita autorización para cambiar una referencia secreta. Core debe validar antes de ejecutar.';
+    return 'NODAL OS solicita autorización para cambiar una referencia secreta. Core debe validar antes de ejecutar.';
   }
-  return 'NEXA solicita autorización scoped. Tu acción en Companion es intención; Core decide.';
+  return 'NODAL OS solicita autorización scoped. Tu acción en Companion es intención; Core decide.';
 }
 
 function sendConsentUiEvent(type) {
@@ -883,9 +883,9 @@ function renderVerification() {
 function renderLearning() {
   const draft = state.learning.draft;
   el.learningStatus.textContent = state.learning.status === 'paused'
-    ? 'Aprendizaje pausado. Podes navegar o buscar sin que NEXA lo grabe.'
+    ? 'Aprendizaje pausado. Podes navegar o buscar sin que NODAL OS lo grabe.'
     : state.learning.recording
-    ? 'Grabando. NEXA está mirando tus acciones. No se guardarán valores sensibles de contraseñas.'
+    ? 'Grabando. NODAL OS está mirando tus acciones. No se guardarán valores sensibles de contraseñas.'
     : 'No grabando';
   renderTimeline(el.learningTimeline, state.learning.timeline.map(humanizeLearningStep));
   el.recipeDraftJson.value = draft ? JSON.stringify(recipeDraftFromLearning(draft), null, 2) : '';
@@ -934,14 +934,7 @@ function renderRecipeRun() {
   el.recipeCurrentStep.textContent = run.currentStepLabel ? `${Number(run.currentStepIndex || 0) + 1}/${run.recipe && run.recipe.steps ? run.recipe.steps.length : '-'} ${run.currentStepLabel}` : '-';
   el.recipeLastError.textContent = run.lastError || '-';
 
-  const results = Array.isArray(run.stepResults) ? run.stepResults : [];
-  el.recipeStepTimeline.innerHTML = results.length
-    ? results.map((result, index) => {
-      const marker = result.status === 'passed' ? '✓' : result.status === 'running' ? '▶' : result.status === 'failed' ? '!' : result.status === 'skipped' ? '-' : '○';
-      const label = run.recipe && run.recipe.steps && run.recipe.steps[index] ? run.recipe.steps[index].label || result.type : result.type;
-      return `<li>${escapeHtml(marker)} ${index + 1}. ${escapeHtml(label)} · ${escapeHtml(result.status)}${result.error ? ' · ' + escapeHtml(result.error) : ''}</li>`;
-    }).join('')
-    : '<li>-</li>';
+  renderTimeline(el.recipeStepTimeline, buildRecipeRunTimeline(run));
 }
 
 function renderRuntime() {
@@ -1062,9 +1055,290 @@ function renderLogs() {
 
 function renderTimeline(node, items) {
   const list = Array.isArray(items) ? items.filter(Boolean).slice(-40) : [];
+  node.classList.add('nodal-timeline');
+  node.setAttribute('aria-label', 'NODAL OS vertical timeline');
   node.innerHTML = list.length
-    ? list.map((item) => `<li>${escapeHtml(String(item))}</li>`).join('')
-    : '<li>-</li>';
+    ? list.map((item, index) => renderTimelineStep(item, index)).join('')
+    : renderTimelineStep({
+      title: 'NODAL OS listo',
+      description: 'Sin pasos activos. ReadyWithRestrictions no significa produccion.',
+      status: 'ready',
+      nodeType: 'StatusSummary',
+      scopeLabel: 'internal-local',
+      riskLevel: 'low',
+      safeNextAction: 'Describir una tarea local permitida.'
+    }, 0);
+}
+
+function renderTimelineStep(item, index) {
+  const step = normalizeTimelineStep(item, index);
+  const statusClass = cssToken(step.status);
+  const nodeClass = cssToken(step.nodeType);
+  const substeps = step.subSteps.length
+    ? `<ul class="timeline-substeps">${step.subSteps.map(renderTimelineSubStep).join('')}</ul>`
+    : '';
+  const evidence = step.evidenceRefs.length
+    ? `<div class="timeline-evidence"><span>Evidencia</span>${step.evidenceRefs.map(renderEvidenceRef).join('')}</div>`
+    : '';
+  const blockers = step.blockers.length
+    ? `<div class="timeline-blockers">${step.blockers.map(renderTimelineBlocker).join('')}</div>`
+    : '';
+  const blockedOptions = step.blockedOptions.length
+    ? `<div class="timeline-options"><span>No permitido</span>${step.blockedOptions.map((option) => `<b>${safeHtml(option)}</b>`).join('')}</div>`
+    : '';
+  const safeAction = step.safeNextAction
+    ? `<p class="timeline-safe-action"><strong>Next safe action:</strong> ${safeHtml(step.safeNextAction)}</p>`
+    : '';
+  const authority = step.coreAuthorityRequired
+    ? '<span class="timeline-chip core">Core authority required</span>'
+    : '<span class="timeline-chip observe">Observe-only</span>';
+  const human = step.humanInterventionRequired
+    ? '<span class="timeline-chip human">Human intervention</span>'
+    : '';
+
+  return `
+    <li class="timeline-step status-${statusClass} node-${nodeClass}">
+      <span class="timeline-node-dot" aria-hidden="true"></span>
+      <article class="timeline-card">
+        <header class="timeline-card-head">
+          <span class="timeline-order">${step.order}</span>
+          <div>
+            <h3>${safeHtml(step.title)}</h3>
+            <p>${safeHtml(step.description)}</p>
+          </div>
+          <span class="timeline-badge status-${statusClass}">${safeHtml(step.statusLabel)}</span>
+        </header>
+        <div class="timeline-meta">
+          <span>${safeHtml(step.nodeTypeLabel)}</span>
+          <span>${safeHtml(step.scopeLabel)}</span>
+          <span>risk: ${safeHtml(step.riskLevel)}</span>
+          ${authority}
+          ${human}
+        </div>
+        ${substeps}
+        ${evidence}
+        ${blockers}
+        ${safeAction}
+        ${blockedOptions}
+        <p class="timeline-redaction">${safeHtml(step.redactionSummary)}</p>
+      </article>
+    </li>`;
+}
+
+function renderTimelineSubStep(subStep) {
+  const status = cssToken(subStep.status || 'planned');
+  return `<li class="timeline-substep status-${status}"><span>${safeHtml(subStep.title)}</span><em>${safeHtml(normalizeTimelineStatus(subStep.status).label)}</em></li>`;
+}
+
+function renderEvidenceRef(ref) {
+  const item = typeof ref === 'string' ? { refId: ref, label: 'redacted ref' } : ref;
+  return `<code>${safeHtml(item.label || 'ref')}: ${safeHtml(item.refId || item.id || item.value || '')}</code>`;
+}
+
+function renderTimelineBlocker(blocker) {
+  const item = typeof blocker === 'string' ? { reason: blocker, expectedOperatorAction: 'Stop and ask Core/human review.' } : blocker;
+  return `
+    <section class="timeline-blocker-card">
+      <strong>Blocked</strong>
+      <p>${safeHtml(item.reason || 'Blocked by policy')}</p>
+      <small>${safeHtml(item.expectedOperatorAction || 'No bypass allowed.')}</small>
+    </section>`;
+}
+
+function normalizeTimelineStep(item, index) {
+  if (typeof item === 'string') {
+    return timelineStepFromText(item, index);
+  }
+
+  const status = normalizeTimelineStatus(item.status || item.stepStatus || item.state || 'planned');
+  const blockers = Array.isArray(item.blockers) ? item.blockers : [];
+  const decision = item.decision || {};
+  const statusCard = item.statusCard || {};
+  const subSteps = item.subSteps || item.subtasks || item.subtasks || item.children || [];
+  const evidenceRefs = item.evidenceRefs || item.evidence || [];
+  const blockedOptions = item.blockedOptions || decision.blockedOptions || blockers.flatMap((blocker) => blocker.blockedOptions || []);
+
+  return {
+    title: redactSensitive(item.title || item.label || `Paso ${index + 1}`),
+    description: redactSensitive(item.description || item.summary || statusCard.summary || ''),
+    status: status.value,
+    statusLabel: status.label,
+    order: item.order || item.index || index + 1,
+    nodeType: item.nodeType || (item.node && item.node.nodeType) || 'ExecutionStep',
+    nodeTypeLabel: humanizeNodeType(item.nodeType || (item.node && item.node.nodeType) || 'ExecutionStep'),
+    subSteps: subSteps.map((sub, subIndex) => normalizeTimelineSubStep(sub, subIndex)),
+    evidenceRefs,
+    blockers,
+    safeNextAction: redactSensitive(item.safeNextAction || decision.safeNextAction || 'Continue only if Core permits.'),
+    blockedOptions: normalizeList(blockedOptions),
+    coreAuthorityRequired: item.coreAuthorityRequired !== false && decision.coreAuthorityRequired !== false,
+    humanInterventionRequired: Boolean(item.humanInterventionRequired || decision.humanInterventionRequired),
+    riskLevel: redactSensitive(String(item.riskLevel || statusCard.riskLevel || 'low')).toLowerCase(),
+    scopeLabel: redactSensitive(item.scopeLabel || statusCard.scopeLabel || 'internal-local ReadyWithRestrictions'),
+    redactionSummary: redactSensitive(item.redactionSummary || 'redacted timeline metadata only; no secrets/cookies/tokens')
+  };
+}
+
+function timelineStepFromText(text, index, overrides = {}) {
+  const status = normalizeTimelineStatus(overrides.status || inferTimelineStatus(text));
+  return normalizeTimelineStep({
+    title: text,
+    description: overrides.description || 'Operator-facing timeline event.',
+    status: status.value,
+    order: index + 1,
+    nodeType: overrides.nodeType || 'ExecutionStep',
+    scopeLabel: overrides.scopeLabel || 'internal-local ReadyWithRestrictions',
+    riskLevel: overrides.riskLevel || 'low',
+    safeNextAction: overrides.safeNextAction || 'Continue only if Core permits.',
+    blockedOptions: overrides.blockedOptions || [],
+    redactionSummary: 'redacted display text only; no secrets/cookies/tokens'
+  }, index);
+}
+
+function normalizeTimelineSubStep(subStep, index) {
+  if (typeof subStep === 'string') {
+    return { title: redactSensitive(subStep), status: 'planned', order: index + 1 };
+  }
+  return {
+    title: redactSensitive(subStep.title || subStep.label || `Subtarea ${index + 1}`),
+    status: normalizeTimelineStatus(subStep.status || 'planned').value,
+    order: subStep.order || index + 1
+  };
+}
+
+function buildStructuredTaskTimeline(goal) {
+  const summary = goal ? `Pedido: ${goal}` : 'Pedido sin texto. Esperando instruccion local segura.';
+  return [
+    {
+      title: 'Entender pedido',
+      description: summary,
+      status: 'done',
+      nodeType: 'UserRequest',
+      subSteps: ['Identificar objetivo', 'Detectar constraints', 'Mantener alcance internal-local'],
+      evidenceRefs: [{ label: 'input', refId: 'operator-request:redacted' }],
+      safeNextAction: 'Estructurar tarea sin ejecutar acciones sensibles.'
+    },
+    {
+      title: 'Estructurar receta',
+      description: 'Reordenar pasos y subtareas en formato timeline antes de ejecutar.',
+      status: 'planned',
+      nodeType: 'StructuredTask',
+      subSteps: ['Crear pasos', 'Identificar subtareas', 'Registrar evidencia requerida'],
+      safeNextAction: 'Mostrar receta derivada para revision.'
+    },
+    {
+      title: 'Validar seguridad',
+      description: 'Core conserva autoridad; UI/Admin/Companion no aprueban acciones.',
+      status: 'blocked',
+      nodeType: 'BlockerStep',
+      riskLevel: 'prohibited',
+      blockers: [{
+        reason: 'Credenciales, sitios sensibles, submit/pay/sign/delete y produccion siguen bloqueados.',
+        expectedOperatorAction: 'No intentar bypass; pedir intervencion humana/Core si aparece un bloqueo.',
+        blockedOptions: ['credentials', 'submit/pay/sign/delete', 'sensitive sites', 'public SaaS', 'external general CDP']
+      }],
+      safeNextAction: 'Continuar solo con observacion/local read-only permitida.'
+    },
+    {
+      title: 'Proxima accion segura',
+      description: 'Ejecutar solo acciones locales/read-only aprobadas por Core.',
+      status: 'ready',
+      nodeType: 'SafeAction',
+      safeNextAction: 'Iniciar run local bajo ReadyWithRestrictions.',
+      blockedOptions: ['production', 'SaaS public', 'real credentials', 'real billing/email']
+    }
+  ];
+}
+
+function buildRecipeRunTimeline(run) {
+  const results = Array.isArray(run.stepResults) ? run.stepResults : [];
+  if (!results.length) {
+    return [];
+  }
+  return results.map((result, index) => {
+    const label = run.recipe && run.recipe.steps && run.recipe.steps[index] ? run.recipe.steps[index].label || result.type : result.type;
+    const status = normalizeRecipeStatus(result.status);
+    return {
+      title: `${index + 1}. ${label || 'Recipe step'}`,
+      description: result.error || 'Recipe step status rendered as redacted timeline.',
+      status,
+      nodeType: result.error ? 'BlockerStep' : 'RecipeStep',
+      evidenceRefs: result.evidenceRef ? [{ label: 'recipe evidence', refId: result.evidenceRef }] : [],
+      blockers: result.error ? [{ reason: result.error, expectedOperatorAction: 'Review blocked recipe step before retry.' }] : [],
+      safeNextAction: result.error ? 'Stop and review.' : 'Continue if Core permits.',
+      scopeLabel: 'recipe local/private preview',
+      riskLevel: result.error ? 'high' : 'low'
+    };
+  });
+}
+
+function normalizeRecipeStatus(status) {
+  const value = String(status || '').toLowerCase();
+  if (value === 'passed') return 'done';
+  if (value === 'running') return 'running';
+  if (value === 'failed') return 'failed';
+  if (value === 'skipped') return 'skipped';
+  return 'planned';
+}
+
+function inferTimelineStatus(text) {
+  const value = String(text || '').toLowerCase();
+  if (value.includes('stop') || value.includes('block') || value.includes('denied')) return 'blocked';
+  if (value.includes('fail') || value.includes('error')) return 'failed';
+  if (value.includes('human') || value.includes('intervenci')) return 'needsHuman';
+  if (value.includes('ok') || value.includes('done') || value.includes('complet')) return 'done';
+  if (value.includes('running') || value.includes('iniciado')) return 'running';
+  return 'planned';
+}
+
+function normalizeTimelineStatus(status) {
+  const value = String(status || 'planned').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  const map = {
+    pending: ['pending', 'Pendiente'],
+    planned: ['planned', 'Planned'],
+    ready: ['ready', 'Ready'],
+    running: ['running', 'Running'],
+    done: ['done', 'Done'],
+    completed: ['done', 'Done'],
+    passed: ['done', 'Done'],
+    blocked: ['blocked', 'Blocked'],
+    'needs-human': ['needs-human', 'Needs human'],
+    needshuman: ['needs-human', 'Needs human'],
+    'evidence-required': ['evidence-required', 'Evidence required'],
+    evidencerequired: ['evidence-required', 'Evidence required'],
+    'evidence-ready': ['evidence-ready', 'Evidence ready'],
+    evidenceready: ['evidence-ready', 'Evidence ready'],
+    skipped: ['skipped', 'Skipped'],
+    warning: ['warning', 'Warning'],
+    failed: ['failed', 'Failed'],
+    error: ['failed', 'Failed'],
+    'not-allowed': ['not-allowed', 'Not allowed'],
+    notallowed: ['not-allowed', 'Not allowed']
+  };
+  const normalized = map[value] || ['planned', 'Planned'];
+  return { value: normalized[0], label: normalized[1] };
+}
+
+function humanizeNodeType(nodeType) {
+  return String(nodeType || 'ExecutionStep')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/-/g, ' ');
+}
+
+function normalizeList(values) {
+  return (Array.isArray(values) ? values : [])
+    .filter(Boolean)
+    .map((value) => redactSensitive(String(value)))
+    .filter((value, index, list) => list.indexOf(value) === index)
+    .slice(0, 8);
+}
+
+function cssToken(value) {
+  return String(value || 'planned').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+}
+
+function safeHtml(value) {
+  return escapeHtml(redactSensitive(value == null ? '' : String(value)));
 }
 
 function handleRecipeAction(event) {
@@ -1143,7 +1417,7 @@ function exportRecipe(recipeId) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${recipe.name || 'nexa-recipe'}.json`.replace(/[^a-z0-9._-]+/gi, '_');
+  a.download = `${recipe.name || 'nodal-os-recipe'}.json`.replace(/[^a-z0-9._-]+/gi, '_');
   a.click();
   URL.revokeObjectURL(url);
 }
