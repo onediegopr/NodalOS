@@ -1,0 +1,79 @@
+{
+  "manifestVersion": "paddleocr-onnx-model-manifest.v1",
+  "note": "PLACEHOLDER — PaddleOCR ONNX models are NOT included in the repository. Download or convert models separately and update checksums before use.",
+  "models": [
+    {
+      "modelId": "paddleocr-det-onnx",
+      "kind": "TextDetection",
+      "version": "v4",
+      "language": "multi",
+      "source": {
+        "origin": "PaddleOCR official or Paddle2ONNX conversion",
+        "url": "https://github.com/PaddlePaddle/PaddleOCR",
+        "licenseIdentifier": "Apache-2.0",
+        "licenseUrl": "https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE",
+        "requiresAttribution": true
+      },
+      "localRelativePath": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+      "integrity": {
+        "algorithm": "SHA-256",
+        "checksum": "",
+        "fileSizeBytes": 0
+      },
+      "inputShapeDescription": "NCHW [1,3,?,?]",
+      "outputShapeDescription": "detection maps",
+      "opsetVersion": 17,
+      "status": "Missing"
+    },
+    {
+      "modelId": "paddleocr-rec-onnx",
+      "kind": "TextRecognition",
+      "version": "v4",
+      "language": "en",
+      "source": {
+        "origin": "PaddleOCR official or Paddle2ONNX conversion",
+        "url": "https://github.com/PaddlePaddle/PaddleOCR",
+        "licenseIdentifier": "Apache-2.0",
+        "licenseUrl": "https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE",
+        "requiresAttribution": true
+      },
+      "localRelativePath": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+      "integrity": {
+        "algorithm": "SHA-256",
+        "checksum": "",
+        "fileSizeBytes": 0
+      },
+      "inputShapeDescription": "NCHW [1,3,32,320]",
+      "outputShapeDescription": "text logits",
+      "opsetVersion": 17,
+      "status": "Missing"
+    },
+    {
+      "modelId": "paddleocr-cls-onnx",
+      "kind": "TextDirectionClassification",
+      "version": "v2",
+      "language": "multi",
+      "source": {
+        "origin": "PaddleOCR official or Paddle2ONNX conversion",
+        "url": "https://github.com/PaddlePaddle/PaddleOCR",
+        "licenseIdentifier": "Apache-2.0",
+        "licenseUrl": "https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE",
+        "requiresAttribution": true
+      },
+      "localRelativePath": "tools/ocr-worker/models/onnx/ch_ppocr_mobile_v2.0_cls.onnx",
+      "integrity": {
+        "algorithm": "SHA-256",
+        "checksum": "",
+        "fileSizeBytes": 0
+      },
+      "inputShapeDescription": "NCHW [1,3,48,192]",
+      "outputShapeDescription": "direction logits",
+      "opsetVersion": 17,
+      "status": "Missing"
+    }
+  ],
+  "totalMaxSizeBytes": 262144000,
+  "allRequiredPresent": false,
+  "allVerified": false,
+  "licenseReviewed": false
+}

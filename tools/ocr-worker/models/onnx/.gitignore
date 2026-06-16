@@ -1,0 +1,5 @@
+# Ignore large ONNX model files; only manifest is tracked.
+*.onnx
+*.pdmodel
+*.pdiparams
+*.pdparams
