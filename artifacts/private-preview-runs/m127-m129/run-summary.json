@@ -1,0 +1,48 @@
+{
+  "productName": "NODAL OS",
+  "runId": "private-preview-run-m127-m129",
+  "timestampUtc": "2026-06-16T00:00:00Z",
+  "commit": "8125c37d29d0456dca32bcbc99939ed4c6f9a051",
+  "scope": "second internal local private preview only; ReadyWithRestrictions",
+  "fixedIssuesVerified": [
+    {
+      "issueId": "pp-ux-001",
+      "status": "Fixed",
+      "verification": "VerifiedInSecondRun",
+      "summary": "Operator copy now explicitly states that M65 is target-owned only and does not authorize external general-ready."
+    }
+  ],
+  "allowedFlowsExecuted": [
+    "Product/Admin local readiness dashboard reviewed",
+    "evidence/log summary reviewed",
+    "M51/M65 scoped status reviewed",
+    "active blockers reviewed",
+    "operator blocker explanations reviewed",
+    "issue triage local reviewed",
+    "diagnostics reviewed",
+    "private local API in-process status reviewed"
+  ],
+  "newIssues": [],
+  "blockedFlowsObserved": [
+    "public SaaS",
+    "public API",
+    "real billing/email",
+    "real credentials",
+    "sensitive sites",
+    "submit/pay/sign/delete",
+    "productive recorder/replay",
+    "external CDP general-ready",
+    "new external targets without dedicated evidence"
+  ],
+  "evidenceRefs": [
+    "release-gate:ReadyWithRestrictions",
+    "skipped-category-audit:passed",
+    "m51:http-readonly-ledger:verified",
+    "m65:target-owned-cdp-ledger:verified",
+    "operator-ux:pp-ux-001-fixed"
+  ],
+  "proofLiveExecuted": false,
+  "openedBlockedSurface": false,
+  "decision": "ContinueInternalPreviewStable",
+  "redacted": true
+}

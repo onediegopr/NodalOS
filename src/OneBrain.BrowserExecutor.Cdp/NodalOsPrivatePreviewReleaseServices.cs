@@ -67,11 +67,11 @@ public sealed class NodalOsOperatorUxReadinessService
             ],
             [
                 "M51: closed HTTP read-only target-owned proof",
-                "M65: closed target-owned Chrome/CDP/DOM read-only proof",
-                "External general CDP: blocked",
+                "M65: closed only for lab.nodalos.com.ar target-owned Chrome/CDP/DOM read-only proof",
+                "External general CDP: blocked; M65 proof does not authorize third-party, sensitive, credential, or production browsing",
                 "Skipped tests: live/opt-in only, not blocking local preview"
             ],
-            "Last proof: M65 target-owned Chrome/CDP/DOM read-only proof against lab.nodalos.com.ar, persisted redacted ledger",
+            "Last proof: M65 target-owned Chrome/CDP/DOM read-only proof against lab.nodalos.com.ar only; external general-ready remains false.",
             [
                 "audit-ledger-edb3e2fbb0a0446788dae17a269c0058",
                 "61f52af1eebf08d59a24e5fbb72e70acf0038e7a329bff6599a0ac00c757f03e"
@@ -542,6 +542,56 @@ public sealed class NodalOsPrivatePreviewPostRunReviewService
             issueTriageUsable,
             blockersVisibleAndEffective,
             run.OpenedBlockedSurface,
+            Redacted: true);
+    }
+}
+
+public sealed class NodalOsPrivatePreviewStabilizationReviewService
+{
+    public NodalOsPrivatePreviewStabilizationReview Review(
+        string previousIssueStatus,
+        IReadOnlyList<NodalOsPrivatePreviewIssue> newIssues,
+        bool activeBlockersRemainTrue,
+        bool scopeExpanded,
+        bool productAdminReady)
+    {
+        var reasons = new List<string>();
+        if (!previousIssueStatus.Contains("Fixed", StringComparison.OrdinalIgnoreCase) &&
+            !previousIssueStatus.Contains("Accepted", StringComparison.OrdinalIgnoreCase))
+            reasons.Add("previous preview issue not resolved or accepted");
+        if (!activeBlockersRemainTrue)
+            reasons.Add("active blockers must remain true");
+        if (scopeExpanded)
+            reasons.Add("scope expansion detected");
+        if (!productAdminReady)
+            reasons.Add("Product/Admin readiness needs fixes");
+        if (newIssues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.SecurityBlocker))
+            reasons.Add("security issue detected");
+        if (newIssues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.ScopeInflationRisk))
+            reasons.Add("scope inflation issue detected");
+        if (newIssues.Any(issue => issue.Severity is NodalOsPrivatePreviewIssueSeverity.Critical or NodalOsPrivatePreviewIssueSeverity.High))
+            reasons.Add("high or critical issue detected");
+
+        var decision = scopeExpanded || newIssues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.ScopeInflationRisk)
+            ? NodalOsPrivatePreviewStabilizationDecision.BlockedByScopeInflation
+            : newIssues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.SecurityBlocker)
+                ? NodalOsPrivatePreviewStabilizationDecision.BlockedBySecurityIssue
+                : !productAdminReady
+                    ? NodalOsPrivatePreviewStabilizationDecision.NeedsProductAdminFixes
+                    : !activeBlockersRemainTrue
+                        ? NodalOsPrivatePreviewStabilizationDecision.NeedsOperatorUxFixes
+                        : newIssues.Any(issue => issue.Severity is NodalOsPrivatePreviewIssueSeverity.Low or NodalOsPrivatePreviewIssueSeverity.Medium)
+                            ? NodalOsPrivatePreviewStabilizationDecision.ContinueWithMinorFixes
+                            : NodalOsPrivatePreviewStabilizationDecision.ContinueInternalPreviewStable;
+
+        return new NodalOsPrivatePreviewStabilizationReview(
+            "private-preview-stabilization-review-m127-m129",
+            decision,
+            BrowserCredentialRedactor.Redact(previousIssueStatus),
+            newIssues,
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            activeBlockersRemainTrue,
+            scopeExpanded,
             Redacted: true);
     }
 }

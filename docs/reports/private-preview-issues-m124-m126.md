@@ -8,7 +8,7 @@ One non-blocking issue was captured during the first internal local private prev
 
 | Issue | Category | Severity | Decision | Blocks Post-Run GO |
 | --- | --- | --- | --- | --- |
-| `pp-ux-001` | UX | Low | AcceptForInternalOnly | No |
+| `pp-ux-001` | UX | Low | Fixed / VerifiedInSecondRun | No |
 
 ## Issue Details
 
@@ -18,9 +18,15 @@ Operator copy can be clearer around target-owned proof versus external general-r
 
 Recommended action:
 
-- clarify the operator-facing text in a later UX hardening block;
+- clarify the operator-facing text so M65 target-owned proof is not confused with external general-ready;
 - keep `ReadyWithRestrictions`;
 - do not expand external scope.
+
+Status after M127:
+
+- Fixed in operator UX copy.
+- Verified in the second internal local run.
+- No scope expansion introduced.
 
 ## No Critical Findings
 
@@ -28,4 +34,4 @@ No security blocker, release gate mismatch, scope inflation, evidence missing co
 
 ## Next Handling
 
-The low UX issue is accepted for internal-only preview and should be fixed soon, but it does not block continuation.
+The low UX issue is fixed and verified in the second internal local preview run. It no longer blocks stabilization.

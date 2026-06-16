@@ -284,3 +284,23 @@ public sealed record NodalOsPrivatePreviewPostRunReview(
     bool BlockersVisibleAndEffective,
     bool ScopeExpanded,
     bool Redacted);
+
+public enum NodalOsPrivatePreviewStabilizationDecision
+{
+    ContinueInternalPreviewStable,
+    ContinueWithMinorFixes,
+    BlockedBySecurityIssue,
+    BlockedByScopeInflation,
+    NeedsOperatorUxFixes,
+    NeedsProductAdminFixes
+}
+
+public sealed record NodalOsPrivatePreviewStabilizationReview(
+    string ReviewId,
+    NodalOsPrivatePreviewStabilizationDecision Decision,
+    string PreviousIssueStatus,
+    IReadOnlyList<NodalOsPrivatePreviewIssue> NewIssues,
+    IReadOnlyList<string> ReasonCodes,
+    bool ActiveBlockersRemainTrue,
+    bool ScopeExpanded,
+    bool Redacted);
