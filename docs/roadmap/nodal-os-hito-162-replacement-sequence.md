@@ -23,6 +23,8 @@ HITO-162 is rewritten as a NODAL OS roadmap sequence. The recovered intent point
 
 Goal: rebuild HITO-162 as local, deterministic identity hardening.
 
+Status after M133-M135: implemented as fixture-first contracts, evaluator, harness, and redacted evidence model. It is an informational Core input only and does not authorize actions.
+
 Scope:
 
 - approved target identity model
@@ -116,4 +118,3 @@ The HITO-162 replacement readiness is an estimated roadmap readiness value. It m
 ## Roadmap Rule
 
 Future work must continue using the current Core authority model, evidence ledger discipline, local-first fixtures, and explicit scope locks. Target-owned proof must not be generalized into production, SaaS public, sensitive-site access, or external CDP general-ready.
-
