@@ -341,7 +341,19 @@ public sealed record BrowserRuntimeObservedState(
     bool PrivatePreviewGoAllowedWithReleaseBlocker = false,
     bool PrivatePreviewGoEnablesPublicSaas = false,
     bool PrivatePreviewGoEnablesRealBillingEmail = false,
-    bool PrivatePreviewGoHidesM51Deferred = false)
+    bool PrivatePreviewGoHidesM51Deferred = false,
+    bool CanonicalWorkspaceGuardDefined = false,
+    bool CanonicalWorkspaceGuardSafe = true,
+    bool CanonicalWorkspaceGuardBlocksNonCanonical = true,
+    bool CanonicalWorkspaceGuardModifiesWorkspace = false,
+    bool PrivatePreviewReadinessDashboardDefined = false,
+    bool PrivatePreviewReadinessDashboardLocalAllowed = false,
+    bool PrivatePreviewReadinessDashboardExternalDenied = true,
+    bool PrivatePreviewReadinessDashboardHidesM51M65Blocked = false,
+    bool PrivatePreviewReadinessDashboardEnablesRealSurfaces = false,
+    bool OperatorBlockerExplanationDefined = false,
+    bool OperatorBlockerExplanationSpecific = true,
+    bool OperatorBlockerExplanationLeaksSecrets = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -626,6 +638,22 @@ public sealed record BrowserRuntimeObservedState(
            !PrivatePreviewGoEnablesRealBillingEmail &&
            !PrivatePreviewGoHidesM51Deferred)));
 
+    public bool PrivatePreviewControlSurfaceAllowed =>
+        (!CanonicalWorkspaceGuardDefined && !PrivatePreviewReadinessDashboardDefined && !OperatorBlockerExplanationDefined) ||
+        (CanonicalWorkspaceGuardDefined &&
+         CanonicalWorkspaceGuardSafe &&
+         CanonicalWorkspaceGuardBlocksNonCanonical &&
+         !CanonicalWorkspaceGuardModifiesWorkspace &&
+         PrivatePreviewReadinessDashboardDefined &&
+         (!PrivatePreviewReadinessDashboardLocalAllowed ||
+          (PublicSaasStillDisabled && RealBillingStillDisabled && RealEmailDeliveryDisabled && M51ExternalProofDeferred)) &&
+         PrivatePreviewReadinessDashboardExternalDenied &&
+         !PrivatePreviewReadinessDashboardHidesM51M65Blocked &&
+         !PrivatePreviewReadinessDashboardEnablesRealSurfaces &&
+         OperatorBlockerExplanationDefined &&
+         OperatorBlockerExplanationSpecific &&
+         !OperatorBlockerExplanationLeaksSecrets);
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -795,7 +823,19 @@ public sealed record BrowserRuntimeObservedState(
         PrivatePreviewGoAllowedWithReleaseBlocker ||
         PrivatePreviewGoEnablesPublicSaas ||
         PrivatePreviewGoEnablesRealBillingEmail ||
-        PrivatePreviewGoHidesM51Deferred;
+        PrivatePreviewGoHidesM51Deferred ||
+        CanonicalWorkspaceGuardDefined ||
+        !CanonicalWorkspaceGuardSafe ||
+        !CanonicalWorkspaceGuardBlocksNonCanonical ||
+        CanonicalWorkspaceGuardModifiesWorkspace ||
+        PrivatePreviewReadinessDashboardDefined ||
+        PrivatePreviewReadinessDashboardLocalAllowed ||
+        !PrivatePreviewReadinessDashboardExternalDenied ||
+        PrivatePreviewReadinessDashboardHidesM51M65Blocked ||
+        PrivatePreviewReadinessDashboardEnablesRealSurfaces ||
+        OperatorBlockerExplanationDefined ||
+        !OperatorBlockerExplanationSpecific ||
+        OperatorBlockerExplanationLeaksSecrets;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
