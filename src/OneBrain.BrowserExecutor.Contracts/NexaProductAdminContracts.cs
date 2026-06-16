@@ -26,6 +26,36 @@ public enum NexaRole
     Unknown
 }
 
+public static class NexaRolePolicy
+{
+    public static bool CanSatisfyMinimumRole(NexaRole actorRole, NexaRole minimumRole, bool supportMetadataOnly = false)
+    {
+        if (actorRole == NexaRole.Unknown || minimumRole == NexaRole.Unknown)
+            return false;
+        if (actorRole == NexaRole.Support)
+            return supportMetadataOnly && minimumRole is NexaRole.Support or NexaRole.Viewer;
+        if (minimumRole == NexaRole.Support)
+            return actorRole == NexaRole.Support || actorRole == NexaRole.Owner;
+
+        return Rank(actorRole) >= Rank(minimumRole);
+    }
+
+    public static bool CanMutate(NexaRole actorRole, bool supportMetadataOnly = false) =>
+        actorRole is NexaRole.Owner or NexaRole.Admin or NexaRole.Operator ||
+        (actorRole == NexaRole.Support && supportMetadataOnly);
+
+    private static int Rank(NexaRole role) =>
+        role switch
+        {
+            NexaRole.Owner => 5,
+            NexaRole.Admin => 4,
+            NexaRole.Operator => 3,
+            NexaRole.Worker => 2,
+            NexaRole.Viewer => 1,
+            _ => 0
+        };
+}
+
 public enum NexaAdminCapability
 {
     ManageAccount,

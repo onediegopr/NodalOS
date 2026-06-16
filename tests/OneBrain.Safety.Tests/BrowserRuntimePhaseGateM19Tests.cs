@@ -143,7 +143,12 @@ public sealed class BrowserRuntimePhaseGateM19Tests
                 new BrowserRuntimeCapabilityState("network", true, "evidence:network-metadata-only"),
                 new BrowserRuntimeCapabilityState("audit-ledger", true, "audit:m17-hmac-head"),
                 new BrowserRuntimeCapabilityState("cdp-live-readonly", true, "evidence:m18-cdp-live")
-            ]);
+            ],
+            PrivateLocalApiMinimumRoleEnforced: true,
+            PrivateLocalApiWorkerSupportCanAccessAdminMutation: false,
+            SkippedTestsAuditSynchronized: true,
+            RealSurfaceLeakHardeningCompleted: true,
+            RealSurfaceLeakHardeningLeaksSecrets: false);
 
     private static BrowserDownloadRequest DownloadRequest(string fileName) =>
         new("run-phase", "action-download", "corr-phase", "session-phase", "https://fixture.local/download", fileName, "text/csv", null);

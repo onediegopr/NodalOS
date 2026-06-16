@@ -314,7 +314,12 @@ public sealed record BrowserRuntimeObservedState(
     bool ExternalLowRiskDocumentWorkflowBlockedWithoutTarget = false,
     bool ExternalWorkflowRunsWithoutTargetReadiness = false,
     bool ExternalWorkflowUsesSensitiveDocuments = false,
-    bool ExternalWorkflowBypassesSafeDownloadUpload = false)
+    bool ExternalWorkflowBypassesSafeDownloadUpload = false,
+    bool PrivateLocalApiMinimumRoleEnforced = false,
+    bool PrivateLocalApiWorkerSupportCanAccessAdminMutation = false,
+    bool SkippedTestsAuditSynchronized = false,
+    bool RealSurfaceLeakHardeningCompleted = false,
+    bool RealSurfaceLeakHardeningLeaksSecrets = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -562,6 +567,13 @@ public sealed record BrowserRuntimeObservedState(
         !ExternalWorkflowUsesSensitiveDocuments &&
         !ExternalWorkflowBypassesSafeDownloadUpload;
 
+    public bool M67HardeningAllowed =>
+        PrivateLocalApiMinimumRoleEnforced &&
+        !PrivateLocalApiWorkerSupportCanAccessAdminMutation &&
+        SkippedTestsAuditSynchronized &&
+        RealSurfaceLeakHardeningCompleted &&
+        !RealSurfaceLeakHardeningLeaksSecrets;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -707,7 +719,9 @@ public sealed record BrowserRuntimeObservedState(
         ExternalLowRiskDocumentWorkflowBlockedWithoutTarget ||
         ExternalWorkflowRunsWithoutTargetReadiness ||
         ExternalWorkflowUsesSensitiveDocuments ||
-        ExternalWorkflowBypassesSafeDownloadUpload;
+        ExternalWorkflowBypassesSafeDownloadUpload ||
+        PrivateLocalApiWorkerSupportCanAccessAdminMutation ||
+        RealSurfaceLeakHardeningLeaksSecrets;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

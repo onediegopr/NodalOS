@@ -302,7 +302,12 @@ public sealed class BrowserProfileControlledActivationM22Tests
     }
 
     private static BrowserRuntimeObservedState SafeState() =>
-        new(false, false, false, false, false, BrowserNetworkCaptureMode.MetadataOnly, false, false, false, false, "fixture-controlled", "fixture-controlled", true, "HMACSHA256", true, true, true, true, [], BrowserRuntimeProfileState.None, ControlledProfileConsentValid: false);
+        new(false, false, false, false, false, BrowserNetworkCaptureMode.MetadataOnly, false, false, false, false, "fixture-controlled", "fixture-controlled", true, "HMACSHA256", true, true, true, true, [], BrowserRuntimeProfileState.None, ControlledProfileConsentValid: false,
+            PrivateLocalApiMinimumRoleEnforced: true,
+            PrivateLocalApiWorkerSupportCanAccessAdminMutation: false,
+            SkippedTestsAuditSynchronized: true,
+            RealSurfaceLeakHardeningCompleted: true,
+            RealSurfaceLeakHardeningLeaksSecrets: false);
 
     private static TempDirectory TempDir() => new();
 

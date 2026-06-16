@@ -262,6 +262,7 @@ public sealed class BrowserRuntimePhaseCloseGate
         Check(state.PrivateLocalApiAllowed, "private local api safe", passed, failed);
         Check(state.ApiEmailBillingSandboxAllowed, "api diagnostics email billing sandbox safe", passed, failed);
         Check(state.PrivateTrialAndExternalPreparationAllowed, "private trial external preparation safe", passed, failed);
+        Check(state.M67HardeningAllowed, "M67 role skipped leak hardening safe", passed, failed);
         Check(state.NetworkCaptureMode == BrowserNetworkCaptureMode.MetadataOnly, "network capture metadata-only", passed, failed);
         Check(!state.RequestBodyCaptureSupported, "request bodies unsupported", passed, failed);
         Check(!state.ResponseBodyCaptureSupported, "response bodies unsupported", passed, failed);

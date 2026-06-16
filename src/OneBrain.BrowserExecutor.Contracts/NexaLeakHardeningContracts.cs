@@ -32,7 +32,8 @@ public sealed record NexaLeakHardeningCorpus(IReadOnlyList<string> SecretValues)
                 "synthetic-query-token",
                 "synthetic-local-path-C-users-secret",
                 "synthetic-session-storage-value",
-                "synthetic-vault-raw-value"
+                "synthetic-vault-raw-value",
+                "synthetic-payment-card-value"
             ]);
 }
 
@@ -68,7 +69,15 @@ public enum NexaSkippedTestCategory
     SandboxBrowser,
     RecorderReplay,
     DownloadUpload,
-    AuthSandbox
+    AuthSandbox,
+    CdpLiveOptIn,
+    ExternalTargetBlocked,
+    SensitiveSimulationOptIn,
+    DocumentWorkflowOptIn,
+    RecorderReplayOptIn,
+    OsBackedOptIn,
+    SafeDownloadUploadOptIn,
+    Other
 }
 
 public sealed record NexaSkippedTestAuditItem(

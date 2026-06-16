@@ -240,7 +240,12 @@ public sealed class BrowserVaultMinimalM23Tests
             VaultCompanionExposure: false,
             VaultProviderKnown: true,
             SensitiveSitesPolicyDefined: true,
-            SensitiveSiteReadOnlySimulationAllowed: true);
+            SensitiveSiteReadOnlySimulationAllowed: true,
+            PrivateLocalApiMinimumRoleEnforced: true,
+            PrivateLocalApiWorkerSupportCanAccessAdminMutation: false,
+            SkippedTestsAuditSynchronized: true,
+            RealSurfaceLeakHardeningCompleted: true,
+            RealSurfaceLeakHardeningLeaksSecrets: false);
 
     internal static BrowserRuntimePhaseCloseReport GateReport(BrowserRuntimeObservedState state)
     {

@@ -79,8 +79,12 @@ public sealed class NexaPrivateLocalApiService
             reasons.Add("cross-tenant request blocked");
         if (string.IsNullOrWhiteSpace(request.TargetTenant.TenantId))
             reasons.Add("unknown tenant");
-        if (route.Mutation && auth.Context.Role == NexaRole.Viewer)
-            reasons.Add("viewer mutation blocked");
+        if (!NexaRolePolicy.CanSatisfyMinimumRole(auth.Context.Role, route.MinimumRole, route.SupportMetadataOnly))
+            reasons.Add($"role {auth.Context.Role} does not satisfy minimum role {route.MinimumRole}");
+        if (auth.Context.Role == NexaRole.Support && !route.SupportMetadataOnly)
+            reasons.Add("support can access metadata-only routes only");
+        if (route.Mutation && !NexaRolePolicy.CanMutate(auth.Context.Role, route.SupportMetadataOnly))
+            reasons.Add(auth.Context.Role == NexaRole.Viewer ? "viewer mutation blocked" : $"{auth.Context.Role} mutation blocked");
         if (auth.Context.Role == NexaRole.Worker && !string.Equals(auth.Context.WorkerId, request.TargetTenant.WorkerId, StringComparison.OrdinalIgnoreCase))
             reasons.Add("worker unauthorized");
         if (auth.Context.Role == NexaRole.Support && (request.RequestContainsSecret || request.RequestContainsCookie || request.RequestContainsBody))

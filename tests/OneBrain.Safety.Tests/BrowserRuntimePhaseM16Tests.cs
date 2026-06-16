@@ -194,7 +194,12 @@ public sealed class BrowserRuntimePhaseM16Tests
             AuditLedgerHeadSealValid: true,
             CdpLiveProofAvailable: true,
             Browser004xLegacyIsolated: true,
-            Capabilities: []);
+            Capabilities: [],
+            PrivateLocalApiMinimumRoleEnforced: true,
+            PrivateLocalApiWorkerSupportCanAccessAdminMutation: false,
+            SkippedTestsAuditSynchronized: true,
+            RealSurfaceLeakHardeningCompleted: true,
+            RealSurfaceLeakHardeningLeaksSecrets: false);
         return new BrowserRuntimePhaseCloseGate().Evaluate(new StaticBrowserRuntimeSecurityProbe(observedState), ledger.ExportSafe(), download, upload, network, package);
     }
 
