@@ -4,7 +4,8 @@
 
 - Product name: NODAL OS.
 - Historical technical names still present: NEXA, ONE BRAIN.
-- Global rename NEXA to NODAL OS: pending.
+- Visible rename NEXA to NODAL OS: completed in M97-M99.
+- Technical `Nexa*` symbol cleanup: pending compatibility task.
 - NODAL OS engineering: 97%.
 - Browser Runtime local/sandbox: 97%.
 - External HTTP read-only proof readiness: 90-95%.
@@ -47,13 +48,18 @@ Required next evidence for M65:
 
 ## Recommended Next Blocks
 
-### M97/M98/M99: Technical Rename NEXA to NODAL OS
+### M97/M98/M99: Visible Rename NEXA to NODAL OS
 
 Goal:
 
-- Rename code/docs/tests from historical NEXA to NODAL OS where appropriate.
+- Rename visible product surfaces from historical NEXA to NODAL OS where appropriate.
 - Keep compatibility aliases if required.
 - Do not mix rename with proof/security-critical changes.
+
+Status:
+
+- Completed for visible/operator-facing surfaces.
+- Technical symbol cleanup remains future work.
 
 Rules:
 
@@ -127,4 +133,3 @@ It must be treated as a legacy milestone requiring reconciliation. It should be 
 - No submit/pay/sign/delete.
 - No productive recorder/replay.
 - No Chrome/CDP external claim until Chrome/CDP external evidence exists.
-

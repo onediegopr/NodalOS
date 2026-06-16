@@ -82,7 +82,7 @@ public sealed class NexaExternalProofHarnessM78Tests
     internal static NexaExternalProofHarnessRequest Request(
         bool optIn,
         NexaExternalTestOwnedTarget? target,
-        string host = "nexa-test-owned.example.invalid",
+        string host = "nodal-os-test-owned.example.invalid",
         string path = "/status",
         string method = "GET") =>
         new(

@@ -179,7 +179,7 @@ public sealed class NexaAdminConsoleService
 
     private static NexaProductAccount CreateAccount(NexaAdminCreateAccountCommand command)
     {
-        var org = new NexaOrganization(command.TargetOrganizationId, "NEXA Runtime Org", NexaAccountStatus.Active);
+        var org = new NexaOrganization(command.TargetOrganizationId, "NODAL OS Runtime Org", NexaAccountStatus.Active);
         var workspace = new NexaWorkspace("workspace-main", org.OrganizationId, "Main Workspace", NexaAccountStatus.Active);
         if (command.AccountKind == NexaProductAccountKind.Person)
         {
@@ -195,7 +195,7 @@ public sealed class NexaAdminConsoleService
 
     private static NexaProductAccount PlaceholderAccount(string accountId, string organizationId)
     {
-        var org = new NexaOrganization(organizationId, "NEXA Placeholder Org", NexaAccountStatus.Active);
+        var org = new NexaOrganization(organizationId, "NODAL OS Placeholder Org", NexaAccountStatus.Active);
         var workspace = new NexaWorkspace("workspace-main", organizationId, "Main Workspace", NexaAccountStatus.Active);
         return new NexaProductAccount(accountId, NexaProductAccountKind.Company, NexaAccountStatus.Active, null, new NexaCompanyAccount("company-main", organizationId, ["person-owner"], [], NexaAccountStatus.Active), org, [workspace], [], []);
     }

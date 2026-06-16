@@ -23,7 +23,7 @@ Categories:
 | Private preview local | Operate local/private product/admin preview | Absorbed and active | M52-M76 | NODAL OS local private preview line | Yes | Continue hardening locally | No SaaS/public users | ADRs M52-M76 | Medium |
 | Product/Admin readiness | Local admin shell, readiness dashboard, operations | Absorbed and active | M48-M76 | Product/Admin private preview local | Yes | Continue local-only hardening | Public SaaS blocked | ADRs M48-M76 | Medium |
 | Safety/governance core | Core authority, audit, redaction, vault, gates | Absorbed and strengthened | M17-M50, M52-M93 | Core-governed NODAL OS safety spine | Yes | Preserve as non-negotiable foundation | Real credentials/sensitive sites blocked | M50, M67, M90, M91-M93 | High |
-| Rename NEXA to NODAL OS | Align technical names with official product name | Deferred | Not absorbed | Future rename block M97-M99 | Yes | Execute separately after roadmap lock | Do not mix with security/proof work | Current code still uses historical NEXA names | Medium |
+| Rename NEXA to NODAL OS | Align technical names with official product name | Visible rename completed; technical symbols remain legacy | M97-M99 | Future technical symbol cleanup | Yes | Keep compatibility aliases and audit visible naming | Do not mix technical cleanup with security/proof work | ADR M97-M99 and migration report | Medium |
 | SaaS/API public readiness | Public product/API exposure | Deferred | Not absorbed | Future dedicated SaaS/API phase | No for current phase | Keep blocked | Public exposure prohibited | Private Local API M59-M63 only | Low |
 | Billing/email real readiness | Real money and email delivery | Deferred | Sandbox/design only | Future dedicated compliance phase | No for current phase | Keep blocked | No real billing/email allowed | M62-M64 sandbox/design | Low |
 
@@ -32,4 +32,3 @@ Categories:
 The legacy line remains valuable, but HITO-162 must be rewritten or explicitly mapped before implementation.
 
 The next roadmap must not infer that external browser automation is ready from the M51 HTTP-only proof.
-

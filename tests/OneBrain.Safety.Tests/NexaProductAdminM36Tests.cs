@@ -111,7 +111,7 @@ public sealed class NexaProductAdminM36Tests
     }
 
     internal static NexaOrganization Organization() =>
-        new("org-main", "NEXA Test Org", NexaAccountStatus.Trial);
+        new("org-main", "NODAL OS Test Org", NexaAccountStatus.Trial);
 
     internal static NexaWorkspace Workspace() =>
         new("workspace-main", "org-main", "Main Workspace", NexaAccountStatus.Trial);

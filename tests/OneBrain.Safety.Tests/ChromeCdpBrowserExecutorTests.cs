@@ -72,8 +72,8 @@ public sealed class ChromeCdpBrowserExecutorTests
             target,
             BrowserActionType.TypeText,
             "#nameInput",
-            input: "NEXA",
-            expected: new BrowserExpectedOutcome("input contains typed text", null, null, "NEXA"));
+            input: "NODAL OS",
+            expected: new BrowserExpectedOutcome("input contains typed text", null, null, "NODAL OS"));
         var typeResult = await page.ExecuteActionAsync(type);
         var typeVerification = await page.VerifyAsync(type);
 
@@ -91,7 +91,7 @@ public sealed class ChromeCdpBrowserExecutorTests
             await page.GetCurrentTargetContextAsync("run-cdp-3"),
             BrowserActionType.Click,
             "#applyButton",
-            expected: new BrowserExpectedOutcome("result text changes", null, "Result: NEXA", null));
+            expected: new BrowserExpectedOutcome("result text changes", null, "Result: NODAL OS", null));
         var clickResult = await page.ExecuteActionAsync(click);
         var clickVerification = await page.VerifyAsync(click);
 

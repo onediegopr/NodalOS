@@ -362,12 +362,12 @@ public sealed class BrowserVaultConsentService
 
     private static string TitleFor(BrowserVaultConsentType type) => type switch
     {
-        BrowserVaultConsentType.ProfileRealConsent => "NEXA necesita autorizacion para perfil real",
-        BrowserVaultConsentType.SecretStorageConsent => "NEXA necesita autorizacion para guardar una referencia secreta",
-        BrowserVaultConsentType.SecretRetrievalConsent => "NEXA necesita autorizacion para recuperar una referencia secreta",
-        BrowserVaultConsentType.SecretUseConsent => "NEXA necesita autorizacion para usar una referencia secreta",
-        BrowserVaultConsentType.CookieAccessConsent => "NEXA necesita autorizacion para acceder a cookie o sesion sensible",
-        _ => "NEXA necesita autorizacion"
+            BrowserVaultConsentType.ProfileRealConsent => "NODAL OS necesita autorizacion para perfil real",
+            BrowserVaultConsentType.SecretStorageConsent => "NODAL OS necesita autorizacion para guardar una referencia secreta",
+            BrowserVaultConsentType.SecretRetrievalConsent => "NODAL OS necesita autorizacion para recuperar una referencia secreta",
+            BrowserVaultConsentType.SecretUseConsent => "NODAL OS necesita autorizacion para usar una referencia secreta",
+            BrowserVaultConsentType.CookieAccessConsent => "NODAL OS necesita autorizacion para acceder a cookie o sesion sensible",
+            _ => "NODAL OS necesita autorizacion"
     };
 
     private static string InstructionFor(BrowserVaultConsentType type) => type switch

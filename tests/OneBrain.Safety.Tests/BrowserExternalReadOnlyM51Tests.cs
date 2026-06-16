@@ -168,7 +168,7 @@ public sealed class BrowserExternalReadOnlyM51Tests
             new BrowserExternalReadOnlyTargetAllowlist(allowlist ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase) { new Uri(baseUrl).Host }),
             new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/", "/status", "/health" },
             new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "submit", "save", "delete", "publish", "pay", "upload", "confirm", "login" },
-            new BrowserExternalReadOnlyVerificationRule("NEXA", "readonly", "semantic-proof:external-readonly"),
+            new BrowserExternalReadOnlyVerificationRule("NODAL OS", "readonly", "semantic-proof:external-readonly"),
             new BrowserNetworkCapturePolicy(BrowserNetworkCaptureMode.MetadataOnly, CaptureSensitiveHeaderPresenceOnly: true, AllowDirectHttpReplay: false, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GET" }));
 
     private static BrowserExternalReadOnlyTarget Target(string baseUrl = "https://external.example.test/status?token=opaque-test-value") =>

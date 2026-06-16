@@ -134,7 +134,7 @@ public sealed class NexaPrivatePreviewReadinessDashboardService
 
     private static IReadOnlyList<NexaPrivatePreviewReadinessMetric> Metrics() =>
     [
-        new(NexaReadinessArea.Engineering, 97, Estimated: true, "NEXA engineering stable on canonical branch"),
+        new(NexaReadinessArea.Engineering, 97, Estimated: true, "NODAL OS engineering stable on canonical branch"),
         new(NexaReadinessArea.BrowserRuntimeLocal, 97, Estimated: true, "local/sandbox browser runtime remains governed"),
         new(NexaReadinessArea.PrivateLocalApi, 85, Estimated: true, "private local API ready for local preview only"),
         new(NexaReadinessArea.Vault, 86, Estimated: true, "vault readiness remains synthetic/local guarded"),
@@ -204,11 +204,11 @@ public sealed class NexaOperatorBlockerExplanationService
                 ["local product shell", "in-process private local API"],
                 ["public SaaS", "public network listener", "external users"],
                 evidence,
-                "Do not expose NEXA publicly."),
+            "Do not expose NODAL OS publicly."),
             NexaOperatorBlockerScenario.NonCanonicalWorktree => Build(
                 scenario,
                 NexaOperatorBlockerCategory.Worktree,
-                "The current workspace is not the canonical clean NEXA worktree.",
+            "The current workspace is not the canonical clean NODAL OS worktree.",
                 "Switch to Codigo-m12-audit at the canonical remote head before running preview operations.",
                 ["inspect status", "use canonical worktree"],
                 ["commit from dirty legacy Codigo", "merge legacy Browser-004.x changes"],

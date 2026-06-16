@@ -48,7 +48,7 @@ public sealed class NexaHttpsOwnershipVerificationM87Tests
     [TestMethod]
     public async Task HttpsOwnershipVerificationMetadataMismatchBlocks()
     {
-        var result = await new NexaHttpsOwnershipVerifier(new FakeProbe(200, 200, "NEXA without expected restrictions")).VerifyAsync(NexaHttpsOwnershipVerifier.DefaultRequest(optInLiveNetwork: true));
+        var result = await new NexaHttpsOwnershipVerifier(new FakeProbe(200, 200, "NODAL OS without expected restrictions")).VerifyAsync(NexaHttpsOwnershipVerifier.DefaultRequest(optInLiveNetwork: true));
 
         Assert.AreEqual(NexaHttpsOwnershipVerificationStatus.MetadataMismatch, result.Status);
         Assert.IsFalse(result.EnablesCandidateLiveProof);
@@ -79,7 +79,7 @@ public sealed class NexaHttpsOwnershipVerificationM87Tests
         new NexaHttpsOwnershipVerifier(HealthyProbe(healthStatus, ownershipStatus)).VerifyAsync(NexaHttpsOwnershipVerifier.DefaultRequest(optIn));
 
     private static FakeProbe HealthyProbe(int healthStatus = 200, int ownershipStatus = 200) =>
-        new(healthStatus, ownershipStatus, "NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit");
+        new(healthStatus, ownershipStatus, "NODAL OS test-owned read-only no-real-users no-real-credentials no-real-payments no-submit");
 
     internal sealed class FakeProbe(int healthStatus, int ownershipStatus, string text) : INexaReadOnlyHttpProbe
     {

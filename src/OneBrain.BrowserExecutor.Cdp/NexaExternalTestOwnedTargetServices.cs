@@ -259,7 +259,7 @@ public sealed class NexaExternalEvidenceLedgerPersistence
 
 public static class NexaTestOwnedExternalTargetFixtureFactory
 {
-    public const string FixtureHost = "nexa-test-owned.fixture.local";
+    public const string FixtureHost = "nodal-os-test-owned.fixture.local";
 
     public static NexaExternalTestOwnedTarget Create() =>
         new(
@@ -519,7 +519,7 @@ public sealed class NexaHttpsOwnershipVerifier(INexaReadOnlyHttpProbe? probe = n
             $"https://{NexaTargetBindingReadinessEvaluator.RecommendedDomain}",
             "/health/",
             "/ownership/",
-            ["NEXA", "test-owned", "read-only", "no-real-users", "no-real-credentials", "no-real-payments", "no-submit"],
+            ["NODAL OS", "test-owned", "read-only", "no-real-users", "no-real-credentials", "no-real-payments", "no-submit"],
             "Vercel",
             "Shift Evidence",
             "lab",
@@ -709,7 +709,7 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
 
     public static NexaExternalTestOwnedTarget CreateLiveTarget() =>
         new(
-            "nexa-vercel-test-owned-readonly",
+            "nodal-os-vercel-test-owned-readonly",
             $"https://{NexaTargetBindingReadinessEvaluator.RecommendedDomain}/",
             NexaExternalTargetOwnershipProofMode.RepositoryControlledDeployment,
             new HashSet<string>(StringComparer.OrdinalIgnoreCase) { NexaTargetBindingReadinessEvaluator.RecommendedDomain },
@@ -785,6 +785,21 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
         value.Contains("refresh-token", StringComparison.OrdinalIgnoreCase) ||
         value.Contains("session-cookie", StringComparison.OrdinalIgnoreCase) ||
         value.Contains("set-cookie", StringComparison.OrdinalIgnoreCase);
+}
+
+public static class NodalOsExternalLiveProofOptIn
+{
+    public const string CurrentEnvironmentVariable = "NODAL_OS_EXTERNAL_LIVE_PROOF_OPT_IN";
+    public const string LegacyEnvironmentVariable = "NEXA_EXTERNAL_LIVE_PROOF_OPT_IN";
+
+    public static bool IsEnabled(Func<string, string?>? getEnvironmentVariable = null)
+    {
+        var read = getEnvironmentVariable ?? Environment.GetEnvironmentVariable;
+        return IsTrue(read(CurrentEnvironmentVariable)) || IsTrue(read(LegacyEnvironmentVariable));
+    }
+
+    private static bool IsTrue(string? value) =>
+        string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed class NexaM51M65ClosureCandidateReviewer

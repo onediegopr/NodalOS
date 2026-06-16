@@ -16,7 +16,7 @@ public sealed class NodalOsRoadmapReconciliationM94M96Tests
         StringAssert.Contains(text, "external HTTP read-only proof only");
         StringAssert.Contains(text, "M65 remains deferred");
         StringAssert.Contains(text, "no Chrome/CDP external navigation");
-        StringAssert.Contains(text, "global rename from NEXA to NODAL OS is pending");
+        StringAssert.Contains(text, "visible rename from NEXA to NODAL OS was handled in M97-M99");
     }
 
     [TestMethod]
@@ -33,7 +33,7 @@ public sealed class NodalOsRoadmapReconciliationM94M96Tests
         StringAssert.Contains(text, "External Chrome/CDP/DOM proof");
         StringAssert.Contains(text, "Pending");
         StringAssert.Contains(text, "Rename NEXA to NODAL OS");
-        StringAssert.Contains(text, "Future rename block M97-M99");
+        StringAssert.Contains(text, "Visible rename completed");
         StringAssert.Contains(text, "Recommended action");
     }
 
@@ -50,6 +50,7 @@ public sealed class NodalOsRoadmapReconciliationM94M96Tests
         StringAssert.Contains(text, "M65: deferred");
         StringAssert.Contains(text, "External Chrome/CDP/DOM proof: pending");
         StringAssert.Contains(text, "M97/M98/M99");
+        StringAssert.Contains(text, "Completed for visible/operator-facing surfaces");
         StringAssert.Contains(text, "M100/M101/M102");
         StringAssert.Contains(text, "M103/M104/M105");
         StringAssert.Contains(text, "M106+");

@@ -4,7 +4,7 @@
       "source": "/(.*)",
       "headers": [
         {
-          "key": "X-Nexa-Test-Owned-Target",
+          "key": "X-Nodal-OS-Test-Owned-Target",
           "value": "read-only"
         },
         {

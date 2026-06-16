@@ -131,7 +131,7 @@ app.MapPost("/api/runs", async (
         return Results.Conflict(new ErrorResponse(
             false,
             "no_extension_client",
-            "No extension client connected. Open NEXA side panel or connect the extension.",
+            "No extension client connected. Open NODAL OS side panel or connect the extension.",
             "/debug"));
     }
 
@@ -267,9 +267,9 @@ foreach (var ip in options.GetLocalIpAddresses())
 Console.WriteLine(options.HasApiKey ? "OpenAI key loaded: yes" : "OpenAI key loaded: no");
 if (options.ConnectionTokenGenerated)
 {
-    Console.WriteLine("NEXA bridge started.");
+    Console.WriteLine("NODAL OS bridge started.");
     Console.WriteLine("Extension token generated and saved in config/chrome-lab.local.json.");
-    Console.WriteLine("Open NEXA Runtime and paste this token once:");
+    Console.WriteLine("Open NODAL OS Runtime and paste this token once:");
     Console.WriteLine();
     Console.WriteLine(options.ConnectionToken);
     Console.WriteLine();
@@ -277,7 +277,7 @@ if (options.ConnectionTokenGenerated)
 }
 else
 {
-    Console.WriteLine($"NEXA Extension Token: loaded from {TokenSourceLabel(options.ConnectionTokenSource)} ({MaskToken(options.ConnectionToken)})");
+    Console.WriteLine($"NODAL OS Extension Token: loaded from {TokenSourceLabel(options.ConnectionTokenSource)} ({MaskToken(options.ConnectionToken)})");
 }
 if (!options.AllowLan && !string.Equals(options.Host, "127.0.0.1", StringComparison.OrdinalIgnoreCase))
     Console.WriteLine("LAN disabled; use --allow-lan explicitly to bind outside loopback.");
@@ -748,7 +748,7 @@ static string TokenSourceLabel(string source)
     if (source.Contains("chrome-lab.local.json", StringComparison.OrdinalIgnoreCase))
         return "config/chrome-lab.local.json";
     if (string.Equals(source, "environment", StringComparison.OrdinalIgnoreCase))
-        return "NEXA_CHROME_BRIDGE_TOKEN";
+        return ChromeLabOptions.CurrentConnectionTokenEnvironmentVariable;
     return source;
 }
 

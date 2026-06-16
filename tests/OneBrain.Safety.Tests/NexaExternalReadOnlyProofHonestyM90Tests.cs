@@ -146,11 +146,11 @@ public sealed class NexaExternalReadOnlyProofHonestyM90Tests
         var serialized = System.Text.Json.JsonSerializer.Serialize(proof.EvidencePack);
 
         Assert.IsFalse(serialized.Contains("<html", StringComparison.OrdinalIgnoreCase));
-        Assert.IsFalse(serialized.Contains("NEXA test-owned read-only no-real-users", StringComparison.Ordinal));
+        Assert.IsFalse(serialized.Contains("NODAL OS test-owned read-only no-real-users", StringComparison.Ordinal));
     }
 
     private static Task<NexaFirstReadOnlyLiveProofResult> FakeProof() =>
-        new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")).RunAsync(optIn: true, executeNetwork: true);
+        new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NODAL OS test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")).RunAsync(optIn: true, executeNetwork: true);
 
     private static Task<NexaFirstReadOnlyLiveProofResult> RealHttpProof(bool persist, string? ledgerPath = null)
     {
@@ -168,7 +168,7 @@ public sealed class NexaExternalReadOnlyProofHonestyM90Tests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
-                Content = new StringContent("NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit <html>body-not-persistable</html>")
+                Content = new StringContent("NODAL OS test-owned read-only no-real-users no-real-credentials no-real-payments no-submit <html>body-not-persistable</html>")
             });
     }
 

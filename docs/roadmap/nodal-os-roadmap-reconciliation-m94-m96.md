@@ -4,7 +4,7 @@
 
 This document reconciles the legacy HITO roadmap line with the newer Browser Runtime, Chrome/CDP, product/admin, external proof, and private preview line.
 
-The official product name is now NODAL OS. The codebase still contains historical NEXA and ONE BRAIN names. The global rename from NEXA to NODAL OS is pending and must not be mixed with security-critical proof work.
+The official product name is now NODAL OS. The codebase still contains historical NEXA and ONE BRAIN names in technical symbols and historical records. The visible rename from NEXA to NODAL OS was handled in M97-M99; deeper technical symbol cleanup remains a separate compatibility task.
 
 ## Legacy Line Detected
 
@@ -88,7 +88,7 @@ Returning directly to HITO-162 would be risky because:
 - The product now has new blockers and gates that did not exist in the legacy roadmap.
 - M51 closure is HTTP-only and does not prove external Chrome/CDP/DOM.
 - M65 is still deferred.
-- Rename NEXA to NODAL OS is pending and should not be mixed with proof/security work.
+- Technical cleanup of remaining NEXA identifiers should not be mixed with proof/security work.
 - SaaS public, public API, billing real, email real, real credentials, sensitive sites, and submit/pay/sign/delete remain blocked.
 
 ## Reconciliation Recommendation
@@ -100,4 +100,3 @@ Treat HITO-162 as paused/not forgotten and require a rewrite or explicit mapping
 Use the absorption matrix in `docs/roadmap/nodal-os-legacy-hito-absorption-matrix.md` as the authority for whether legacy items are absorbed, still valid, superseded, deferred, deprecated, or unknown.
 
 Use `docs/roadmap/nodal-os-roadmap-vnext.md` for the next execution sequence.
-

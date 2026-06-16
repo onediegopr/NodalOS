@@ -73,7 +73,7 @@ public sealed class NexaFirstReadOnlyLiveProofM88Tests
     [TestMethod]
     public async Task FirstReadOnlyLiveProofFailedVerificationBlocksProof()
     {
-        var result = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(404, 200, "NEXA")).RunAsync(optIn: true, executeNetwork: true);
+        var result = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(404, 200, "NODAL OS")).RunAsync(optIn: true, executeNetwork: true);
 
         Assert.AreEqual(NexaFirstReadOnlyLiveProofStatus.BlockedVerificationFailed, result.Status);
         Assert.AreNotEqual(NexaExternalReadOnlyEvidencePackStatus.PassedReadOnlyProof, result.EvidencePack.Status);
@@ -82,7 +82,7 @@ public sealed class NexaFirstReadOnlyLiveProofM88Tests
     [TestMethod]
     public async Task FirstReadOnlyLiveProofOptInCanExecuteAgainstRealTargetWhenEnabled()
     {
-        var optIn = string.Equals(Environment.GetEnvironmentVariable("NEXA_EXTERNAL_LIVE_PROOF_OPT_IN"), "true", StringComparison.OrdinalIgnoreCase);
+        var optIn = NodalOsExternalLiveProofOptIn.IsEnabled();
         using var temp = new TempDirectory();
         var ledger = TestLedger(temp.Path);
         var result = await new NexaFirstReadOnlyLiveProofRunner().RunAsync(optIn, executeNetwork: optIn, optIn ? ledger : null);
@@ -101,8 +101,34 @@ public sealed class NexaFirstReadOnlyLiveProofM88Tests
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.EvidencePack.LedgerRef));
     }
 
+    [TestMethod]
+    public void FirstReadOnlyLiveProofNodalOsOptInEnvVarIsAccepted()
+    {
+        var enabled = NodalOsExternalLiveProofOptIn.IsEnabled(name =>
+            name == NodalOsExternalLiveProofOptIn.CurrentEnvironmentVariable ? "true" : null);
+
+        Assert.IsTrue(enabled);
+    }
+
+    [TestMethod]
+    public void FirstReadOnlyLiveProofLegacyNexaOptInEnvVarIsAcceptedTemporarily()
+    {
+        var enabled = NodalOsExternalLiveProofOptIn.IsEnabled(name =>
+            name == NodalOsExternalLiveProofOptIn.LegacyEnvironmentVariable ? "true" : null);
+
+        Assert.IsTrue(enabled);
+    }
+
+    [TestMethod]
+    public void FirstReadOnlyLiveProofWithoutOptInEnvVarsIsDisabled()
+    {
+        var enabled = NodalOsExternalLiveProofOptIn.IsEnabled(_ => null);
+
+        Assert.IsFalse(enabled);
+    }
+
     private static NexaFirstReadOnlyLiveProofRunner Runner() =>
-        new(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit"));
+        new(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NODAL OS test-owned read-only no-real-users no-real-credentials no-real-payments no-submit"));
 
     private static BrowserPersistentAuditLedger TestLedger(string path) =>
         new(

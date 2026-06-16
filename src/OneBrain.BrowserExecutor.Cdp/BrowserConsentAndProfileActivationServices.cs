@@ -104,7 +104,7 @@ public sealed class BrowserConsentService
         var ttl = request.ExpiresAtUtc - request.RequestedAtUtc;
         return new BrowserConsentUiModel(
             ConsentId: request.ConsentId,
-            Title: "NEXA necesita autorización",
+            Title: "NODAL OS necesita autorización",
             RequestedCapability: request.Capability.ToString(),
             Scope: request.Scope.ToString(),
             Purpose: request.Purpose,

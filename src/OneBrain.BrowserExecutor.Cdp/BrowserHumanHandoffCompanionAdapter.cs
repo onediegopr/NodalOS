@@ -120,22 +120,22 @@ public sealed class BrowserHumanHandoffCompanionAdapter
     private static string InstructionFor(BrowserHumanHandoffReason reason) => reason switch
     {
         BrowserHumanHandoffReason.PasswordRequired or BrowserHumanHandoffReason.LoginRequired =>
-            "Se detectó un paso sensible: contraseña/login. NEXA se detuvo para que lo completes manualmente. Cuando termines, presioná \"Ya lo hice, continuar\". NEXA volverá a observar la página y sólo continuará si puede verificar el estado.",
+            "Se detectó un paso sensible: contraseña/login. NODAL OS se detuvo para que lo completes manualmente. Cuando termines, presioná \"Ya lo hice, continuar\". NODAL OS volverá a observar la página y sólo continuará si puede verificar el estado.",
         BrowserHumanHandoffReason.CaptchaRequired =>
-            "Se detectó CAPTCHA o verificación anti-bot. NEXA no intentará resolverlo automáticamente. Resolvelo manualmente en el navegador y luego presioná \"Ya lo hice, continuar\".",
+            "Se detectó CAPTCHA o verificación anti-bot. NODAL OS no intentará resolverlo automáticamente. Resolvelo manualmente en el navegador y luego presioná \"Ya lo hice, continuar\".",
         BrowserHumanHandoffReason.TwoFactorRequired =>
             "Se detectó un paso de doble factor. Completá el código o aprobación desde tu dispositivo. Luego presioná \"Ya lo hice, continuar\".",
         BrowserHumanHandoffReason.ClaveFiscalRequired =>
-            "Se detectó clave fiscal. NEXA se detuvo; completá el paso manualmente. NEXA no captura ni guarda claves fiscales.",
+            "Se detectó clave fiscal. NODAL OS se detuvo; completá el paso manualmente. NODAL OS no captura ni guarda claves fiscales.",
         BrowserHumanHandoffReason.FinancialActionRequired =>
-            "Se detectó una acción financiera. NEXA se detuvo para revisión humana y no continuará sin verificación posterior.",
+            "Se detectó una acción financiera. NODAL OS se detuvo para revisión humana y no continuará sin verificación posterior.",
         _ =>
-            "NEXA necesita intervención humana. Completá el paso manualmente y luego solicitá continuar; NEXA verificará antes de avanzar."
+            "NODAL OS necesita intervención humana. Completá el paso manualmente y luego solicitá continuar; NODAL OS verificará antes de avanzar."
     };
 
     private static string ExpectedActionFor(BrowserHumanHandoffReason reason) => reason switch
     {
-        BrowserHumanHandoffReason.PasswordRequired or BrowserHumanHandoffReason.LoginRequired => "Completar credenciales manualmente sin compartirlas con NEXA.",
+            BrowserHumanHandoffReason.PasswordRequired or BrowserHumanHandoffReason.LoginRequired => "Completar credenciales manualmente sin compartirlas con NODAL OS.",
         BrowserHumanHandoffReason.CaptchaRequired => "Resolver el CAPTCHA manualmente.",
         BrowserHumanHandoffReason.TwoFactorRequired => "Completar el segundo factor manualmente.",
         BrowserHumanHandoffReason.ClaveFiscalRequired => "Completar la clave fiscal manualmente.",

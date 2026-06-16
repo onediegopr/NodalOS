@@ -15,7 +15,7 @@ public sealed class BrowserConsentM21Tests
         var ui = service.CreateUiModel(request);
 
         Assert.IsTrue(ui.Validate().IsValid);
-        Assert.AreEqual("NEXA necesita autorización", ui.Title);
+        Assert.AreEqual("NODAL OS necesita autorización", ui.Title);
         Assert.AreEqual(BrowserConsentScope.Profile.ToString(), ui.Scope);
         Assert.IsTrue(ui.Ttl > TimeSpan.Zero);
         Assert.IsTrue(ui.Risks.Count > 0);

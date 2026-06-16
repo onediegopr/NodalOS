@@ -79,7 +79,7 @@ public sealed class NexaExternalTestOwnedTargetM77Tests
         Assert.AreEqual(NexaExternalTestOwnedTargetStatus.Expired, decision.Status);
     }
 
-    internal static NexaExternalTestOwnedTarget ApprovedTarget(string url = "https://nexa-test-owned.example.invalid/status") =>
+    internal static NexaExternalTestOwnedTarget ApprovedTarget(string url = "https://nodal-os-test-owned.example.invalid/status") =>
         new(
             "target-test-owned-readonly",
             url,

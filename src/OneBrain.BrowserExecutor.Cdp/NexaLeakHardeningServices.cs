@@ -33,7 +33,7 @@ public sealed class NexaLeakHardeningEvaluator
             new NexaRedactionFuzzCase("Authorization: Bearer synthetic-bearer-token", BrowserCredentialRedactor.Redacted, MustRedact: true, PreserveSafeFragment: false),
             new NexaRedactionFuzzCase("api_key=synthetic-api-key-value", BrowserCredentialRedactor.Redacted, MustRedact: true, PreserveSafeFragment: false),
             new NexaRedactionFuzzCase("C:\\Users\\secret\\synthetic-local-path-C-users-secret", BrowserCredentialRedactor.Redacted, MustRedact: true, PreserveSafeFragment: false),
-            new NexaRedactionFuzzCase("https://preview.nexa.local/assets/readme.txt", "preview.nexa.local", MustRedact: false, PreserveSafeFragment: true),
+            new NexaRedactionFuzzCase("https://preview.nodal-os.local/assets/readme.txt", "preview.nodal-os.local", MustRedact: false, PreserveSafeFragment: true),
             new NexaRedactionFuzzCase("synthetic-report.pdf", "synthetic-report.pdf", MustRedact: false, PreserveSafeFragment: true)
         };
 

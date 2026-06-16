@@ -27,7 +27,7 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
     [TestMethod]
     public async Task M51M65ClosureCandidateReviewFailedProofDoesNotClose()
     {
-        var proof = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(500, 200, "NEXA")).RunAsync(optIn: true, executeNetwork: true);
+        var proof = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(500, 200, "NODAL OS")).RunAsync(optIn: true, executeNetwork: true);
         var review = new NexaM51M65ClosureCandidateReviewer().Review(proof);
 
         Assert.AreEqual(NexaM51M65ClosureCandidateReviewDecision.DoNotClose, review.FinalDecision);
@@ -106,12 +106,12 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
 
     private static async Task<NexaM51M65ClosureCandidateReview> ReviewAsync(bool optIn, bool executeNetwork)
     {
-        var proof = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")).RunAsync(optIn, executeNetwork);
+        var proof = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NODAL OS test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")).RunAsync(optIn, executeNetwork);
         return new NexaM51M65ClosureCandidateReviewer().Review(proof);
     }
 
     private static Task<NexaFirstReadOnlyLiveProofResult> PassedProof() =>
-        new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")).RunAsync(optIn: true, executeNetwork: true);
+        new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NODAL OS test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")).RunAsync(optIn: true, executeNetwork: true);
 
     private static async Task<NexaFirstReadOnlyLiveProofResult> PersistedRealHttpProof()
     {
@@ -147,7 +147,7 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
-                Content = new StringContent("NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")
+                Content = new StringContent("NODAL OS test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")
             });
     }
 

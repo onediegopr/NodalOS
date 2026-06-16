@@ -9,6 +9,9 @@ namespace OneBrain.ChromeLab.Bridge;
 
 public sealed class ChromeLabOptions
 {
+    public const string CurrentConnectionTokenEnvironmentVariable = "NODAL_OS_CHROME_BRIDGE_TOKEN";
+    public const string LegacyConnectionTokenEnvironmentVariable = "NEXA_CHROME_BRIDGE_TOKEN";
+
     public string Host { get; init; } = "127.0.0.1";
     public int Port { get; init; } = 8787;
     public string Model { get; init; } = "gpt-4.1-mini";
@@ -34,7 +37,9 @@ public sealed class ChromeLabOptions
         var allowLan = args.Any(arg => string.Equals(arg, "--allow-lan", StringComparison.OrdinalIgnoreCase)) ||
                        TryReadBool(configFile, "AllowLan") == true;
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-        var token = Environment.GetEnvironmentVariable("NEXA_CHROME_BRIDGE_TOKEN");
+        var token = Environment.GetEnvironmentVariable(CurrentConnectionTokenEnvironmentVariable);
+        if (string.IsNullOrWhiteSpace(token))
+            token = Environment.GetEnvironmentVariable(LegacyConnectionTokenEnvironmentVariable);
         var tokenSource = string.IsNullOrWhiteSpace(token) ? "" : "environment";
         var tokenGenerated = false;
 

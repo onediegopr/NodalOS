@@ -1,6 +1,6 @@
-# NEXA Test-Owned Read-Only Target
+# NODAL OS Test-Owned Read-Only Target
 
-Static Vercel target for future NEXA external read-only proof.
+Static Vercel target for future NODAL OS external read-only proof.
 
 Recommended domain: `lab.nodalos.com.ar`
 

@@ -36,7 +36,7 @@ public sealed class NexaEmailDeliveryProvider
             NexaEmailTemplateKind.PlanUpgradeInterest => "Plan upgrade interest",
             NexaEmailTemplateKind.SupportBundleReady => "Support bundle ready",
             NexaEmailTemplateKind.PrivatePreviewFeedbackReceived => "Private preview feedback received",
-            _ => "NEXA notification"
+            _ => "NODAL OS notification"
         };
         var body = BrowserCredentialRedactor.Redact($"Template {template} for {account}. Metadata only.");
         return new NexaEmailTemplateRenderResult(template, subject, body, Redacted: true, BrowserCredentialRedactor.ContainsSecret(subject) || BrowserCredentialRedactor.ContainsSecret(body), body.Contains("cookie", StringComparison.OrdinalIgnoreCase));

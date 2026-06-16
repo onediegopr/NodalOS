@@ -65,8 +65,8 @@ public sealed class NexaLeakHardeningM52Tests
     {
         var results = new NexaLeakHardeningEvaluator().RunDefaultFuzz();
 
-        Assert.IsTrue(results.Any(result => result.Input.Contains("preview.nexa.local", StringComparison.Ordinal) &&
-                                            result.Redacted.Contains("preview.nexa.local", StringComparison.Ordinal)));
+        Assert.IsTrue(results.Any(result => result.Input.Contains("preview.nodal-os.local", StringComparison.Ordinal) &&
+                                            result.Redacted.Contains("preview.nodal-os.local", StringComparison.Ordinal)));
         Assert.IsTrue(results.Any(result => result.Input.Contains("synthetic-report.pdf", StringComparison.Ordinal) &&
                                             result.Redacted.Contains("synthetic-report.pdf", StringComparison.Ordinal)));
     }

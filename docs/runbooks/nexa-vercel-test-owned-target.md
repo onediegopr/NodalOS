@@ -1,4 +1,4 @@
-# NEXA Vercel Test-Owned Target Runbook
+# NODAL OS Vercel Test-Owned Target Runbook
 
 ## Purpose
 
@@ -89,7 +89,7 @@ Do not assume the root domain `nodalos.com.ar` is allowed when the selected targ
 - No real personal data.
 - No real payments.
 - No submit/pay/sign/delete.
-- No NEXA SaaS public API.
+- No NODAL OS SaaS public API.
 - No billing/email real provider.
 - No external proof unless opt-in is explicitly enabled.
 

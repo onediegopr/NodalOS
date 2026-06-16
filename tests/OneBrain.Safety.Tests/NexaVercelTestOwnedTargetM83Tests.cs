@@ -44,7 +44,7 @@ public sealed class NexaVercelTestOwnedTargetM83Tests
     {
         var home = File.ReadAllText(Path.Combine(AppRoot(), "index.html"));
 
-        StringAssert.Contains(home, "project: NEXA");
+        StringAssert.Contains(home, "project: NODAL OS");
         StringAssert.Contains(home, "purpose: test-owned-read-only-target");
         StringAssert.Contains(home, "owner: synthetic-lab");
         StringAssert.Contains(home, "environment: vercel-hobby-lab");
@@ -87,7 +87,7 @@ public sealed class NexaVercelTestOwnedTargetM83Tests
         foreach (var route in new[] { "disabled-form", "blocked-login", "blocked-checkout", "blocked-destructive-action" })
         {
             var html = File.ReadAllText(Path.Combine(AppRoot(), route, "index.html"));
-            StringAssert.Contains(html, "NEXA_BLOCKED_FIXTURE");
+            StringAssert.Contains(html, "NODAL_OS_BLOCKED_FIXTURE");
             StringAssert.Contains(html, "Read-only observation allowed");
         }
     }
