@@ -1,0 +1,40 @@
+{
+  "Status": 4,
+  "ExecutedNetwork": true,
+  "VerificationStatus": 7,
+  "HealthStatusCode": 200,
+  "OwnershipStatusCode": 200,
+  "ProofId": "external-readonly-proof-e28807158b9841fa9d3a7c9b9638764c",
+  "ProbeKind": 1,
+  "Tooling": "HttpReadOnlyExternal",
+  "RuntimeProvider": "HttpReadOnlyExternal",
+  "RuntimeCapabilities": [
+    "HttpGetReadOnly",
+    "NetworkMetadataOnly",
+    "CoreGoverned"
+  ],
+  "PersistenceStatus": 2,
+  "LedgerRef": "audit-ledger-37a86b3e4e6b4377bb73003d0ad69321",
+  "LedgerSequence": 1,
+  "LedgerHash": "07619d06db0c18cbc27fc260735ab83c3756669af013299137b394fbb58effe3",
+  "PersistedAtUtc": "2026-06-16T11:51:44.1487106+00:00",
+  "RedactionSummary": "response body fetched transiently for safety scan; body not persisted; redacted metadata and safety summary only; no cookies, sensitive headers, tokens, or personal data persisted",
+  "RoutesTested": [
+    "/",
+    "/health/",
+    "/ownership/",
+    "/products/",
+    "/document/",
+    "/report/"
+  ],
+  "DeniedRoutesTested": [
+    "/disabled-form/",
+    "/blocked-login/",
+    "/blocked-checkout/",
+    "/blocked-destructive-action/"
+  ],
+  "ReviewDecision": 4,
+  "M51Recommendation": "candidate close M51 after explicit review acceptance",
+  "M65Recommendation": "M65 deferred; requires dedicated browser/CDP or auth-target evidence",
+  "LedgerPath": "C:\\Users\\diego\\OneDrive\\PERSONAL\\ONE Brain\\Codigo-m12-audit\\artifacts\\m91-m93-live-proof-ledger"
+}
