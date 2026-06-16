@@ -1,0 +1,34 @@
+{
+  "runId": "m148-m150-internal-preview-iteration-3",
+  "scope": "internal local private preview only",
+  "decision": "ContinueInternalPreviewStable",
+  "scopeExpanded": false,
+  "proofLiveExecuted": false,
+  "productName": "NODAL OS",
+  "allowedFlowsExecuted": [
+    "review Product/Admin summary",
+    "review Operator UX next action guidance",
+    "review HITO-162 replacement status",
+    "review active blockers",
+    "review redacted evidence/log refs",
+    "review local issue capture"
+  ],
+  "blockedFlowsObserved": [
+    "production/SaaS public blocked",
+    "public API real blocked",
+    "billing/email real blocked",
+    "credentials blocked",
+    "sensitive sites blocked",
+    "submit/pay/sign/delete blocked",
+    "productive recorder/replay blocked",
+    "external CDP general-ready blocked"
+  ],
+  "evidenceRefs": [
+    "product-admin-polish:m148:redacted",
+    "operator-guide:m148-m150:redacted",
+    "hito-162-replacement:stable:redacted",
+    "release-gate:ready-with-restrictions:redacted"
+  ],
+  "issues": []
+}
+
