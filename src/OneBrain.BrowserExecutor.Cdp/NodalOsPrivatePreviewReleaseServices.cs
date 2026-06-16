@@ -40,7 +40,8 @@ public sealed class NodalOsProductAdminPrivatePreviewHardeningService
                 "m65:cdp-ledger:audit-ledger-edb3e2fbb0a0446788dae17a269c0058",
                 "m65:scope-lock:target-owned-only",
                 "identity:fingerprint-v2:fixture-ready",
-                "perception:robust-fixture-ready"
+                "perception:robust-fixture-ready",
+                "safe-action:local-fixture-boundary-ready"
             ],
             Redacted: true);
 }
@@ -72,6 +73,7 @@ public sealed class NodalOsOperatorUxReadinessService
                 "M65: closed only for lab.nodalos.com.ar target-owned Chrome/CDP/DOM read-only proof",
                 "Identity/Fingerprint v2: local fixture-first readiness signal; Core authority still required",
                 "Robust perception: liveness/overlay/empty-surface/semantic fallback signals are local fixture-first and non-authoritative",
+                "Safe action expansion: local fixture-only actions require Core boundary; credentials/submit/pay/sign/delete stay blocked",
                 "External general CDP: blocked; M65 proof does not authorize third-party, sensitive, credential, or production browsing",
                 "Skipped tests: live/opt-in only, not blocking local preview"
             ],

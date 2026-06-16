@@ -56,6 +56,8 @@ Scope:
 
 Goal: prepare safe action categories without opening dangerous actions.
 
+Status after M139-M141: implemented as local fixture-first safe action taxonomy, Core approval boundary, evaluator, evidence model, and operator summaries. It does not execute or authorize sensitive real actions.
+
 Allowed design-only/local fixture candidates:
 
 - safe.select
