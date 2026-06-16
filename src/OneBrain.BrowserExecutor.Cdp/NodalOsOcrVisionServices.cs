@@ -799,3 +799,290 @@ public sealed class NodalOsOcrVisionRouter
             Redacted: true);
     }
 }
+
+public sealed class NodalOsLocalOcrWorkerBoundaryService
+{
+    public NodalOsLocalOcrWorkerContract CreateModelOnlyContract(
+        NodalOsLocalOcrWorkerHealthStatus healthStatus = NodalOsLocalOcrWorkerHealthStatus.NotInstalled,
+        bool enabled = false) =>
+        new(
+            "local-ocr-worker-boundary-v1",
+            NodalOsOcrVisionActivationState.ModelOnly,
+            Health(healthStatus, enabled),
+            NodalOsLocalOcrWorkerCapability.RedactedCrops |
+            NodalOsLocalOcrWorkerCapability.SyntheticFixtures |
+            NodalOsLocalOcrWorkerCapability.PrintedText |
+            NodalOsLocalOcrWorkerCapability.BoundingBoxes |
+            NodalOsLocalOcrWorkerCapability.JsonContract,
+            new NodalOsLocalOcrWorkerRuntimeProfile(
+                "future local worker",
+                "json contract over local process/container/cli/loopback",
+                "model-only",
+                MaxLatencyMs: 2500,
+                MaxMemoryMb: 1024,
+                PythonCoupledToCore: false,
+                InvokesExternalProcess: false),
+            new NodalOsLocalOcrWorkerInvocationPolicy(
+                OnlyRedactedCropsByDefault: true,
+                AllowFullScreen: false,
+                AllowSensitiveSurfaces: false,
+                MaxImageWidth: 1600,
+                MaxImageHeight: 1200,
+                MaxPages: 1,
+                MaxLatencyMs: 2500,
+                MaxMemoryMb: 1024,
+                AllowedEngines: [NodalOsOcrEngineHint.PaddleOcr, NodalOsOcrEngineHint.Tesseract, NodalOsOcrEngineHint.DisabledStub],
+                PersistRawImages: false,
+                RedactedEvidenceOnly: true,
+                NoAuthority: true),
+            JsonBoundary: true,
+            CorePythonDecoupled: true,
+            CallsRealOcr: false,
+            CallsRealSaas: false,
+            NoAuthority: true);
+
+    public NodalOsLocalOcrWorkerResponse InvokeModelOnly(
+        NodalOsLocalOcrWorkerContract contract,
+        NodalOsLocalOcrWorkerRequest request)
+    {
+        var error = Validate(contract, request);
+        if (error != NodalOsLocalOcrWorkerError.None)
+            return Response(contract, request, error, [], 0d, ["local OCR worker invocation blocked"]);
+
+        var confidence = request.Engine == NodalOsOcrEngineHint.Tesseract ? 0.74d : 0.88d;
+        var status = confidence < 0.8d
+            ? NodalOsLocalOcrWorkerHealthStatus.Degraded
+            : NodalOsLocalOcrWorkerHealthStatus.Available;
+        var warnings = confidence < 0.8d
+            ? new[] { "low confidence local worker fixture requires human review" }
+            : new[] { "model-only worker response; no OCR runtime invoked" };
+        return new NodalOsLocalOcrWorkerResponse(
+            $"local-ocr-worker-response-{Guid.NewGuid():N}",
+            status,
+            NodalOsLocalOcrWorkerError.None,
+            [new NodalOsOcrTextBlock("worker-block-1", "redacted worker fixture text", request.Region, new NodalOsOcrConfidence(confidence), NodalOsOcrLanguage.English, Redacted: true)],
+            new NodalOsOcrConfidence(confidence),
+            warnings.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            [new NodalOsGroundingEvidenceRef($"local-worker:{request.RequestId}:redacted", "local worker model-only evidence", Redacted: true)],
+            RequiresHumanReview: confidence < 0.8d,
+            InvokedExternalProcess: false,
+            CallsRealOcr: false,
+            CallsRealSaas: false,
+            CanApproveAction: false,
+            CanClick: false,
+            CanSubmit: false,
+            NoAuthority: true,
+            Redacted: true);
+    }
+
+    private static NodalOsLocalOcrWorkerHealth Health(NodalOsLocalOcrWorkerHealthStatus status, bool enabled)
+    {
+        var installed = status is not NodalOsLocalOcrWorkerHealthStatus.NotInstalled;
+        var available = status == NodalOsLocalOcrWorkerHealthStatus.Available && enabled;
+        var effectiveStatus = installed && !enabled
+            ? NodalOsLocalOcrWorkerHealthStatus.InstalledButDisabled
+            : status;
+        return new NodalOsLocalOcrWorkerHealth(
+            effectiveStatus,
+            installed,
+            enabled,
+            available,
+            BrowserCredentialRedactor.Redact(Reason(effectiveStatus)),
+            InvokesExternalProcess: false,
+            StoresSecrets: false,
+            NoAuthority: true);
+    }
+
+    private static string Reason(NodalOsLocalOcrWorkerHealthStatus status) =>
+        status switch
+        {
+            NodalOsLocalOcrWorkerHealthStatus.NotInstalled => "local OCR worker is not installed; OCR real disabled",
+            NodalOsLocalOcrWorkerHealthStatus.InstalledButDisabled => "local OCR worker is installed but disabled by policy",
+            NodalOsLocalOcrWorkerHealthStatus.Available => "local OCR worker boundary available for model-only synthetic requests",
+            NodalOsLocalOcrWorkerHealthStatus.Degraded => "local OCR worker degraded; human review required",
+            NodalOsLocalOcrWorkerHealthStatus.VersionMismatch => "local OCR worker version mismatch",
+            NodalOsLocalOcrWorkerHealthStatus.BlockedByPolicy => "local OCR worker blocked by policy",
+            _ => "local OCR worker error"
+        };
+
+    private static NodalOsLocalOcrWorkerError Validate(NodalOsLocalOcrWorkerContract contract, NodalOsLocalOcrWorkerRequest request)
+    {
+        if (contract.Health.Status == NodalOsLocalOcrWorkerHealthStatus.NotInstalled)
+            return NodalOsLocalOcrWorkerError.WorkerNotInstalled;
+        if (!contract.Health.Enabled || !contract.Health.Available)
+            return NodalOsLocalOcrWorkerError.WorkerDisabled;
+        if (request.RedactionStatus is NodalOsGroundingRedactionStatus.RedactionFailed or NodalOsGroundingRedactionStatus.BlockedSensitive || !request.CropRedacted)
+            return NodalOsLocalOcrWorkerError.RedactionFailed;
+        if (request.FullScreen && !contract.InvocationPolicy.AllowFullScreen)
+            return NodalOsLocalOcrWorkerError.FullScreenBlocked;
+        if (request.Sensitivity >= NodalOsOcrVisionSensitivity.SensitiveSurface && !contract.InvocationPolicy.AllowSensitiveSurfaces)
+            return NodalOsLocalOcrWorkerError.SensitiveSurfaceBlocked;
+        if (request.ImageWidth > contract.InvocationPolicy.MaxImageWidth || request.ImageHeight > contract.InvocationPolicy.MaxImageHeight)
+            return NodalOsLocalOcrWorkerError.ImageTooLarge;
+        if (request.Pages > contract.InvocationPolicy.MaxPages)
+            return NodalOsLocalOcrWorkerError.PageLimitExceeded;
+        if (request.MaxLatencyMs > contract.InvocationPolicy.MaxLatencyMs)
+            return NodalOsLocalOcrWorkerError.LatencyLimitExceeded;
+        if (!contract.InvocationPolicy.AllowedEngines.Contains(request.Engine))
+            return NodalOsLocalOcrWorkerError.EngineNotAllowed;
+        if (request.PersistRawImage || !request.Redacted)
+            return NodalOsLocalOcrWorkerError.PolicyBlocked;
+        return NodalOsLocalOcrWorkerError.None;
+    }
+
+    private static NodalOsLocalOcrWorkerResponse Response(
+        NodalOsLocalOcrWorkerContract contract,
+        NodalOsLocalOcrWorkerRequest request,
+        NodalOsLocalOcrWorkerError error,
+        IReadOnlyList<NodalOsOcrTextBlock> blocks,
+        double confidence,
+        IReadOnlyList<string> warnings) =>
+        new(
+            $"local-ocr-worker-response-{Guid.NewGuid():N}",
+            contract.Health.Status,
+            error,
+            blocks,
+            new NodalOsOcrConfidence(confidence),
+            warnings.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            [new NodalOsGroundingEvidenceRef($"local-worker:{request.RequestId}:blocked", "local worker blocked evidence", Redacted: true)],
+            RequiresHumanReview: true,
+            InvokedExternalProcess: false,
+            CallsRealOcr: false,
+            CallsRealSaas: false,
+            CanApproveAction: false,
+            CanClick: false,
+            CanSubmit: false,
+            NoAuthority: true,
+            Redacted: true);
+}
+
+public sealed class NodalOsOcrRealActivationGate
+{
+    public NodalOsOcrActivationDecision Evaluate(NodalOsOcrActivationReadiness readiness)
+    {
+        var requirements = Requirements(readiness);
+        var decision = DecisionKind(readiness, requirements);
+        var state = ActivationState(decision);
+        return new NodalOsOcrActivationDecision(
+            $"ocr-activation-{Guid.NewGuid():N}",
+            decision,
+            state,
+            requirements,
+            BrowserCredentialRedactor.Redact(Reason(decision)),
+            RealOcrEnabled: false,
+            RealSaasEnabled: false,
+            NoAuthority: true,
+            RequiresHumanReview: decision.ToString().StartsWith("Blocked", StringComparison.OrdinalIgnoreCase),
+            Redacted: true);
+    }
+
+    public NodalOsOcrActivationReadiness CurrentPhaseReadiness() =>
+        new(
+            new NodalOsOcrVisionProviderId("local-paddleocr-stub"),
+            NodalOsOcrVisionProviderKind.LocalPaddleOcr,
+            new NodalOsOcrActivationScope(NodalOsOcrActivationScopeKind.BlockedCurrentPhase, LocalOnly: true, AllowsSaas: false, AllowsFullScreen: false, AllowsSensitive: false, "current phase blocks real OCR; model-only fixture-first remains active"),
+            ProviderExplicitlyEnabled: false,
+            LocalWorkerInstalled: false,
+            LocalWorkerAvailable: false,
+            OptIn: false,
+            RedactionGatePassed: false,
+            SensitivePolicyPassed: true,
+            FullScreenDisabledOrApproved: true,
+            BudgetConfigured: false,
+            PrivacyProfileAccepted: false,
+            new NodalOsOcrActivationAuditEvidence(Present: false, [], "no real OCR activation audit exists", Redacted: true),
+            NoAuthorityConfirmed: true,
+            HumanEscalationPolicyConfigured: true,
+            EvaluationHarnessPassed: true,
+            RollbackPauseConfigured: false,
+            CurrentPhaseAllowsSaasReal: false,
+            Redacted: true);
+
+    private static IReadOnlyList<NodalOsOcrActivationRequirement> Requirements(NodalOsOcrActivationReadiness readiness) =>
+    [
+        Requirement("provider explicitly enabled", readiness.ProviderExplicitlyEnabled, "provider flag enabled", "provider remains disabled/model-only"),
+        Requirement("local worker installed", readiness.LocalWorkerInstalled, "worker installed", "worker not installed"),
+        Requirement("local worker available", readiness.LocalWorkerAvailable, "worker available", "worker unavailable"),
+        Requirement("opt-in", readiness.OptIn, "operator/admin opt-in present", "missing opt-in"),
+        Requirement("redaction gate", readiness.RedactionGatePassed, "redaction passed", "redaction failed or not evaluated"),
+        Requirement("sensitive policy", readiness.SensitivePolicyPassed, "sensitive policy passed", "sensitive surface blocked"),
+        Requirement("fullscreen policy", readiness.FullScreenDisabledOrApproved, "full-screen disabled or explicitly approved", "full-screen not approved"),
+        Requirement("budget", readiness.BudgetConfigured, "budget configured", "budget missing"),
+        Requirement("privacy", readiness.PrivacyProfileAccepted, "privacy accepted", "privacy profile not accepted"),
+        Requirement("audit evidence", readiness.AuditEvidence.Present, readiness.AuditEvidence.Summary, "audit evidence missing"),
+        Requirement("no-authority", readiness.NoAuthorityConfirmed, "OCR no-authority confirmed", "OCR authority violation"),
+        Requirement("human escalation", readiness.HumanEscalationPolicyConfigured, "human escalation policy configured", "human escalation missing"),
+        Requirement("evaluation harness", readiness.EvaluationHarnessPassed, "evaluation harness passed", "evaluation harness missing/failing"),
+        Requirement("rollback/pause", readiness.RollbackPauseConfigured, "rollback/pause configured", "rollback/pause missing")
+    ];
+
+    private static NodalOsOcrActivationDecisionKind DecisionKind(
+        NodalOsOcrActivationReadiness readiness,
+        IReadOnlyList<NodalOsOcrActivationRequirement> requirements)
+    {
+        if (readiness.ProviderKind.ToString().StartsWith("Cloud", StringComparison.OrdinalIgnoreCase) && !readiness.CurrentPhaseAllowsSaasReal)
+            return NodalOsOcrActivationDecisionKind.BlockedByDefault;
+        if (!readiness.ProviderExplicitlyEnabled)
+            return NodalOsOcrActivationDecisionKind.BlockedByDefault;
+        if (!readiness.OptIn)
+            return NodalOsOcrActivationDecisionKind.BlockedByMissingOptIn;
+        if (!readiness.LocalWorkerInstalled || !readiness.LocalWorkerAvailable)
+            return NodalOsOcrActivationDecisionKind.BlockedByMissingWorker;
+        if (!readiness.RedactionGatePassed)
+            return NodalOsOcrActivationDecisionKind.BlockedByRedaction;
+        if (!readiness.SensitivePolicyPassed || readiness.Scope.AllowsSensitive)
+            return NodalOsOcrActivationDecisionKind.BlockedBySensitivePolicy;
+        if (!readiness.FullScreenDisabledOrApproved || readiness.Scope.AllowsFullScreen)
+            return NodalOsOcrActivationDecisionKind.BlockedByRedaction;
+        if (!readiness.BudgetConfigured)
+            return NodalOsOcrActivationDecisionKind.BlockedByBudget;
+        if (!readiness.PrivacyProfileAccepted)
+            return NodalOsOcrActivationDecisionKind.BlockedByPrivacy;
+        if (!readiness.AuditEvidence.Present || !readiness.EvaluationHarnessPassed || !readiness.RollbackPauseConfigured)
+            return NodalOsOcrActivationDecisionKind.BlockedByMissingAudit;
+        if (!readiness.NoAuthorityConfirmed)
+            return NodalOsOcrActivationDecisionKind.BlockedByNoAuthorityViolation;
+        if (!readiness.HumanEscalationPolicyConfigured)
+            return NodalOsOcrActivationDecisionKind.BlockedByMissingAudit;
+        return readiness.Scope.Kind switch
+        {
+            NodalOsOcrActivationScopeKind.SyntheticOnly => NodalOsOcrActivationDecisionKind.ReadyForSyntheticOnly,
+            NodalOsOcrActivationScopeKind.RedactedCropShadow => NodalOsOcrActivationDecisionKind.ReadyForRedactedCropShadow,
+            NodalOsOcrActivationScopeKind.ControlledLocalUse => NodalOsOcrActivationDecisionKind.ReadyForControlledLocalUse,
+            _ => NodalOsOcrActivationDecisionKind.BlockedByDefault
+        };
+    }
+
+    private static NodalOsOcrVisionActivationState ActivationState(NodalOsOcrActivationDecisionKind decision) =>
+        decision switch
+        {
+            NodalOsOcrActivationDecisionKind.ReadyForSyntheticOnly => NodalOsOcrVisionActivationState.LocalWorkerEnabledForSynthetic,
+            NodalOsOcrActivationDecisionKind.ReadyForRedactedCropShadow => NodalOsOcrVisionActivationState.LocalWorkerEnabledForRedactedCrops,
+            NodalOsOcrActivationDecisionKind.ReadyForControlledLocalUse => NodalOsOcrVisionActivationState.LocalWorkerAvailable,
+            NodalOsOcrActivationDecisionKind.BlockedByBudget => NodalOsOcrVisionActivationState.BlockedByBudget,
+            NodalOsOcrActivationDecisionKind.BlockedByPrivacy => NodalOsOcrVisionActivationState.BlockedByPrivacy,
+            NodalOsOcrActivationDecisionKind.BlockedByMissingAudit => NodalOsOcrVisionActivationState.BlockedByMissingAudit,
+            _ => NodalOsOcrVisionActivationState.BlockedByPolicy
+        };
+
+    private static string Reason(NodalOsOcrActivationDecisionKind decision) =>
+        decision switch
+        {
+            NodalOsOcrActivationDecisionKind.BlockedByDefault => "real OCR is blocked by default in current phase",
+            NodalOsOcrActivationDecisionKind.BlockedByMissingOptIn => "real OCR activation requires explicit opt-in",
+            NodalOsOcrActivationDecisionKind.BlockedByMissingWorker => "local OCR worker is missing or unavailable",
+            NodalOsOcrActivationDecisionKind.BlockedByRedaction => "redaction/crop policy blocks OCR activation",
+            NodalOsOcrActivationDecisionKind.BlockedBySensitivePolicy => "sensitive policy blocks OCR activation",
+            NodalOsOcrActivationDecisionKind.BlockedByBudget => "budget is missing or insufficient",
+            NodalOsOcrActivationDecisionKind.BlockedByPrivacy => "privacy profile has not been accepted",
+            NodalOsOcrActivationDecisionKind.BlockedByMissingAudit => "audit/evaluation/rollback evidence missing",
+            NodalOsOcrActivationDecisionKind.BlockedByNoAuthorityViolation => "OCR authority violation detected",
+            NodalOsOcrActivationDecisionKind.ReadyForSyntheticOnly => "future local worker could run synthetic-only OCR under gate",
+            NodalOsOcrActivationDecisionKind.ReadyForRedactedCropShadow => "future local worker could run redacted crop shadow OCR under gate",
+            NodalOsOcrActivationDecisionKind.ReadyForControlledLocalUse => "future local worker could run controlled local OCR under gate",
+            _ => "OCR activation decision"
+        };
+
+    private static NodalOsOcrActivationRequirement Requirement(string id, bool satisfied, string evidence, string missingReason) =>
+        new(id, satisfied, BrowserCredentialRedactor.Redact(evidence), BrowserCredentialRedactor.Redact(satisfied ? string.Empty : missingReason));
+}

@@ -555,3 +555,219 @@ public sealed record NodalOsOcrVisionBenchmarkReport(
     bool CallsRealSaas,
     bool NoAuthority,
     bool Redacted);
+
+public enum NodalOsOcrVisionActivationState
+{
+    ModelOnly,
+    ShadowEvaluation,
+    LocalWorkerAvailable,
+    LocalWorkerEnabledForSynthetic,
+    LocalWorkerEnabledForRedactedCrops,
+    SaasProviderConfigured,
+    SaasProviderShadowOnly,
+    SaasProviderEnabledForApprovedDocs,
+    BlockedByPolicy,
+    BlockedByPrivacy,
+    BlockedByBudget,
+    BlockedByMissingAudit
+}
+
+public enum NodalOsLocalOcrWorkerHealthStatus
+{
+    NotInstalled,
+    InstalledButDisabled,
+    Available,
+    Degraded,
+    Error,
+    VersionMismatch,
+    BlockedByPolicy
+}
+
+[Flags]
+public enum NodalOsLocalOcrWorkerCapability
+{
+    None = 0,
+    RedactedCrops = 1 << 0,
+    SyntheticFixtures = 1 << 1,
+    PrintedText = 1 << 2,
+    BoundingBoxes = 1 << 3,
+    MultiLanguage = 1 << 4,
+    JsonContract = 1 << 5
+}
+
+public enum NodalOsLocalOcrWorkerError
+{
+    None,
+    WorkerNotInstalled,
+    WorkerDisabled,
+    RedactionFailed,
+    FullScreenBlocked,
+    SensitiveSurfaceBlocked,
+    ImageTooLarge,
+    PageLimitExceeded,
+    LatencyLimitExceeded,
+    EngineNotAllowed,
+    PolicyBlocked,
+    VersionMismatch
+}
+
+public sealed record NodalOsLocalOcrWorkerRuntimeProfile(
+    string RuntimeKind,
+    string Transport,
+    string Version,
+    int MaxLatencyMs,
+    int MaxMemoryMb,
+    bool PythonCoupledToCore,
+    bool InvokesExternalProcess);
+
+public sealed record NodalOsLocalOcrWorkerInvocationPolicy(
+    bool OnlyRedactedCropsByDefault,
+    bool AllowFullScreen,
+    bool AllowSensitiveSurfaces,
+    int MaxImageWidth,
+    int MaxImageHeight,
+    int MaxPages,
+    int MaxLatencyMs,
+    int MaxMemoryMb,
+    IReadOnlyList<NodalOsOcrEngineHint> AllowedEngines,
+    bool PersistRawImages,
+    bool RedactedEvidenceOnly,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerHealth(
+    NodalOsLocalOcrWorkerHealthStatus Status,
+    bool Installed,
+    bool Enabled,
+    bool Available,
+    string Reason,
+    bool InvokesExternalProcess,
+    bool StoresSecrets,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerContract(
+    string WorkerId,
+    NodalOsOcrVisionActivationState ActivationState,
+    NodalOsLocalOcrWorkerHealth Health,
+    NodalOsLocalOcrWorkerCapability Capabilities,
+    NodalOsLocalOcrWorkerRuntimeProfile RuntimeProfile,
+    NodalOsLocalOcrWorkerInvocationPolicy InvocationPolicy,
+    bool JsonBoundary,
+    bool CorePythonDecoupled,
+    bool CallsRealOcr,
+    bool CallsRealSaas,
+    bool NoAuthority);
+
+public sealed record NodalOsLocalOcrWorkerRequest(
+    string RequestId,
+    NodalOsGroundingSnapshotId GroundingSnapshotId,
+    string CropRef,
+    string? ScreenshotRef,
+    NodalOsOcrBoundingBox Region,
+    NodalOsOcrEngineHint Engine,
+    NodalOsOcrVisionSensitivity Sensitivity,
+    NodalOsGroundingRedactionStatus RedactionStatus,
+    bool Synthetic,
+    bool FullScreen,
+    bool CropRedacted,
+    int ImageWidth,
+    int ImageHeight,
+    int Pages,
+    int MaxLatencyMs,
+    bool PersistRawImage,
+    bool Redacted);
+
+public sealed record NodalOsLocalOcrWorkerResponse(
+    string ResponseId,
+    NodalOsLocalOcrWorkerHealthStatus WorkerStatus,
+    NodalOsLocalOcrWorkerError Error,
+    IReadOnlyList<NodalOsOcrTextBlock> TextBlocks,
+    NodalOsOcrConfidence Confidence,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<NodalOsGroundingEvidenceRef> EvidenceRefs,
+    bool RequiresHumanReview,
+    bool InvokedExternalProcess,
+    bool CallsRealOcr,
+    bool CallsRealSaas,
+    bool CanApproveAction,
+    bool CanClick,
+    bool CanSubmit,
+    bool NoAuthority,
+    bool Redacted);
+
+public enum NodalOsOcrActivationScopeKind
+{
+    SyntheticOnly,
+    RedactedCropShadow,
+    ControlledLocalUse,
+    SaasApprovedDocs,
+    BlockedCurrentPhase
+}
+
+public enum NodalOsOcrActivationDecisionKind
+{
+    BlockedByDefault,
+    BlockedByMissingOptIn,
+    BlockedByMissingWorker,
+    BlockedByRedaction,
+    BlockedBySensitivePolicy,
+    BlockedByBudget,
+    BlockedByPrivacy,
+    BlockedByMissingAudit,
+    BlockedByNoAuthorityViolation,
+    ReadyForSyntheticOnly,
+    ReadyForRedactedCropShadow,
+    ReadyForControlledLocalUse
+}
+
+public sealed record NodalOsOcrActivationScope(
+    NodalOsOcrActivationScopeKind Kind,
+    bool LocalOnly,
+    bool AllowsSaas,
+    bool AllowsFullScreen,
+    bool AllowsSensitive,
+    string Description);
+
+public sealed record NodalOsOcrActivationAuditEvidence(
+    bool Present,
+    IReadOnlyList<NodalOsGroundingEvidenceRef> EvidenceRefs,
+    string Summary,
+    bool Redacted);
+
+public sealed record NodalOsOcrActivationRequirement(
+    string RequirementId,
+    bool Satisfied,
+    string Evidence,
+    string MissingReason);
+
+public sealed record NodalOsOcrActivationReadiness(
+    NodalOsOcrVisionProviderId ProviderId,
+    NodalOsOcrVisionProviderKind ProviderKind,
+    NodalOsOcrActivationScope Scope,
+    bool ProviderExplicitlyEnabled,
+    bool LocalWorkerInstalled,
+    bool LocalWorkerAvailable,
+    bool OptIn,
+    bool RedactionGatePassed,
+    bool SensitivePolicyPassed,
+    bool FullScreenDisabledOrApproved,
+    bool BudgetConfigured,
+    bool PrivacyProfileAccepted,
+    NodalOsOcrActivationAuditEvidence AuditEvidence,
+    bool NoAuthorityConfirmed,
+    bool HumanEscalationPolicyConfigured,
+    bool EvaluationHarnessPassed,
+    bool RollbackPauseConfigured,
+    bool CurrentPhaseAllowsSaasReal,
+    bool Redacted);
+
+public sealed record NodalOsOcrActivationDecision(
+    string DecisionId,
+    NodalOsOcrActivationDecisionKind Decision,
+    NodalOsOcrVisionActivationState ActivationState,
+    IReadOnlyList<NodalOsOcrActivationRequirement> Requirements,
+    string Reason,
+    bool RealOcrEnabled,
+    bool RealSaasEnabled,
+    bool NoAuthority,
+    bool RequiresHumanReview,
+    bool Redacted);

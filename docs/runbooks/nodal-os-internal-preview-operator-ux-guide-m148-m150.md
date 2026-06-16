@@ -101,6 +101,20 @@ If NODAL OS detects repeated URL, repeated DOM/screenshot hash, repeated action,
 - Reports must say no real OCR and no SaaS OCR were executed.
 - OCR/Vision evaluation is no-authority and cannot approve actions.
 
+## Reading OCR/Vision Activation States
+
+- `ModelOnly` means contracts, stubs, routing and evaluation only. No real OCR runs.
+- `ShadowEvaluation` means future comparison-only evaluation. It is not execution authority.
+- `LocalWorkerAvailable` means a future worker may be installed, but Core policy still decides whether it can be used.
+- `LocalWorkerEnabledForSynthetic` means synthetic-only future activation after opt-in/audit. It does not permit customer data, sensitive screenshots or production.
+- `LocalWorkerEnabledForRedactedCrops` means future redacted-crop shadow mode only after audit. Full-screen OCR remains blocked by default.
+- `SaasProviderConfigured` and `SaasProviderShadowOnly` are future states requiring opt-in, secret vault, privacy, budget and audit.
+- `BlockedByPolicy`, `BlockedByPrivacy`, `BlockedByBudget` and `BlockedByMissingAudit` mean stop and do not run OCR.
+- `ReadyForSyntheticOnly` means a future local worker could run synthetic fixtures after requirements pass; it is not production readiness.
+- `ReadyForRedactedCropShadow` means a future worker could shadow redacted crops; it is not action authority.
+- SaaS OCR remains disabled-by-default and requires opt-in, secret vault, budget, privacy and activation audit.
+- OCR/Vision remains no-authority: it cannot approve actions, click, submit, sign, pay, delete, enter credentials or bypass captcha/2FA.
+
 ## Allowed Examples
 
 - Review Product/Admin local summary.
