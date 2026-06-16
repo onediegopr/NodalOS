@@ -319,7 +319,19 @@ public sealed record BrowserRuntimeObservedState(
     bool PrivateLocalApiWorkerSupportCanAccessAdminMutation = false,
     bool SkippedTestsAuditSynchronized = false,
     bool RealSurfaceLeakHardeningCompleted = false,
-    bool RealSurfaceLeakHardeningLeaksSecrets = false)
+    bool RealSurfaceLeakHardeningLeaksSecrets = false,
+    bool EmbeddedRuntimeArchitectureDecisionDefined = false,
+    bool EmbeddedRuntimeSandboxPrototypeDefined = false,
+    bool RuntimeAbstractionCompatibilityGateDefined = false,
+    bool ChromeCdpRemainsPrimaryRuntime = true,
+    bool EmbeddedRuntimeProductionDisabled = true,
+    bool WebView2CefProductionActive = false,
+    bool EmbeddedRuntimeAuthoritative = false,
+    bool ChromeCdpReplacedWithoutFutureDecision = false,
+    bool EmbeddedRuntimeCapturesCookiesOrSession = false,
+    bool EmbeddedRuntimeCapturesBodies = false,
+    bool EmbeddedRuntimeCapturesSensitiveHeaders = false,
+    bool EmbeddedRuntimeEnablesSensitiveSites = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -574,6 +586,20 @@ public sealed record BrowserRuntimeObservedState(
         RealSurfaceLeakHardeningCompleted &&
         !RealSurfaceLeakHardeningLeaksSecrets;
 
+    public bool EmbeddedRuntimeCompatibilityAllowed =>
+        (!EmbeddedRuntimeArchitectureDecisionDefined || ChromeCdpRemainsPrimaryRuntime) &&
+        (!EmbeddedRuntimeSandboxPrototypeDefined || EmbeddedRuntimeProductionDisabled) &&
+        (!RuntimeAbstractionCompatibilityGateDefined || ChromeCdpRemainsPrimaryRuntime) &&
+        ChromeCdpRemainsPrimaryRuntime &&
+        EmbeddedRuntimeProductionDisabled &&
+        !WebView2CefProductionActive &&
+        !EmbeddedRuntimeAuthoritative &&
+        !ChromeCdpReplacedWithoutFutureDecision &&
+        !EmbeddedRuntimeCapturesCookiesOrSession &&
+        !EmbeddedRuntimeCapturesBodies &&
+        !EmbeddedRuntimeCapturesSensitiveHeaders &&
+        !EmbeddedRuntimeEnablesSensitiveSites;
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -721,7 +747,19 @@ public sealed record BrowserRuntimeObservedState(
         ExternalWorkflowUsesSensitiveDocuments ||
         ExternalWorkflowBypassesSafeDownloadUpload ||
         PrivateLocalApiWorkerSupportCanAccessAdminMutation ||
-        RealSurfaceLeakHardeningLeaksSecrets;
+        RealSurfaceLeakHardeningLeaksSecrets ||
+        EmbeddedRuntimeArchitectureDecisionDefined ||
+        EmbeddedRuntimeSandboxPrototypeDefined ||
+        RuntimeAbstractionCompatibilityGateDefined ||
+        !ChromeCdpRemainsPrimaryRuntime ||
+        !EmbeddedRuntimeProductionDisabled ||
+        WebView2CefProductionActive ||
+        EmbeddedRuntimeAuthoritative ||
+        ChromeCdpReplacedWithoutFutureDecision ||
+        EmbeddedRuntimeCapturesCookiesOrSession ||
+        EmbeddedRuntimeCapturesBodies ||
+        EmbeddedRuntimeCapturesSensitiveHeaders ||
+        EmbeddedRuntimeEnablesSensitiveSites;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
