@@ -174,3 +174,17 @@ It must be treated as a legacy milestone requiring reconciliation. It should be 
 - No productive recorder/replay.
 - No Chrome/CDP general-ready claim from target-owned proof.
 - No Chromium fork planned now.
+
+## M145-M147 Update
+
+HITO-162 replacement is stable local fixture-first after M133-M144 and internal audit M145-M147.
+
+Next phase recommendation:
+
+- Product/Admin polish.
+- Continue internal local private preview iteration.
+- Run a focused Claude audit before broader local preview expansion if scope changes.
+- Keep embedded runtime evaluation future-only.
+- Keep Chromium fork not planned.
+
+External CDP general-ready remains false. Production, SaaS public, public API real, billing/email real, credentials, sensitive sites, submit/pay/sign/delete, and productive recorder/replay remain blocked.
