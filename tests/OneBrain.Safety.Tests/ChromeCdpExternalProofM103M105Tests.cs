@@ -158,6 +158,58 @@ public sealed class ChromeCdpExternalProofM103M105Tests
     }
 
     [TestMethod]
+    public void ExternalChromeCdpDomProofLiveOptInAgainstLabProducesLedgerOrTraceableFailure()
+    {
+        var optIn =
+            string.Equals(Environment.GetEnvironmentVariable("NODAL_OS_EXTERNAL_LIVE_PROOF_OPT_IN"), "true", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(Environment.GetEnvironmentVariable("NEXA_EXTERNAL_LIVE_PROOF_OPT_IN"), "true", StringComparison.OrdinalIgnoreCase);
+        if (!optIn)
+        {
+            Console.WriteLine("External Chrome/CDP live proof not executed: NODAL_OS_EXTERNAL_LIVE_PROOF_OPT_IN=true is required.");
+            return;
+        }
+
+        using var temp = new TempDirectory();
+        var proof = new ChromeCdpExternalProofRunner(new RealChromeCdpExternalProbe())
+            .RunAsync(optIn: true, TestLedger(temp.Path))
+            .GetAwaiter()
+            .GetResult();
+
+        Console.WriteLine($"Live CDP proof status: {proof.Status}");
+        Console.WriteLine($"ProbeKind: {proof.EvidencePack.ProbeKind}");
+        Console.WriteLine($"Tooling: {proof.EvidencePack.Tooling}");
+        Console.WriteLine($"PersistenceStatus: {proof.EvidencePack.PersistenceStatus}");
+        Console.WriteLine($"LedgerRef: {proof.EvidencePack.LedgerRef}");
+        Console.WriteLine($"LedgerHash: {proof.EvidencePack.LedgerHash}");
+        Console.WriteLine($"RoutesVisited: {string.Join(",", proof.ProbeResult?.RoutesVisited ?? [])}");
+        Console.WriteLine($"PolicyBlockedRoutes: {string.Join(",", proof.ProbeResult?.PolicyBlockedRoutes ?? [])}");
+        Console.WriteLine($"M65Review: {proof.M65Review.Status}");
+
+        if (proof.Status == ChromeCdpExternalProofStatus.ChromeCdpUnavailable)
+        {
+            Assert.IsFalse(proof.ExecutedLiveCdp);
+            Assert.AreEqual(NexaExternalProofProbeKind.ModeledFake, proof.EvidencePack.ProbeKind);
+            Assert.Inconclusive("External Chrome/CDP live proof unavailable in this environment.");
+        }
+
+        Assert.AreEqual(ChromeCdpExternalProofStatus.PassedReadOnlyProof, proof.Status, string.Join("; ", proof.Readiness.ReasonCodes));
+        Assert.IsTrue(proof.ExecutedLiveCdp);
+        Assert.AreEqual(NexaExternalProofProbeKind.RealChromeCdp, proof.EvidencePack.ProbeKind);
+        Assert.AreEqual("ChromeCdpExternalReadOnly", proof.EvidencePack.Tooling);
+        CollectionAssert.Contains(proof.EvidencePack.RuntimeCapabilities.ToArray(), "BrowserNavigationReadOnly");
+        CollectionAssert.Contains(proof.EvidencePack.RuntimeCapabilities.ToArray(), "DomSnapshotReadOnly");
+        CollectionAssert.Contains(proof.EvidencePack.RuntimeCapabilities.ToArray(), "PageMetadataReadOnly");
+        Assert.AreEqual(NexaExternalEvidencePersistenceStatus.PersistedRedactedLedger, proof.EvidencePack.PersistenceStatus);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(proof.EvidencePack.LedgerRef));
+        Assert.IsFalse(string.IsNullOrWhiteSpace(proof.EvidencePack.LedgerHash));
+        Assert.AreEqual(M65ClosureReadinessStatus.CandidateCloseM65, proof.M65Review.Status);
+        Assert.IsFalse(System.Text.Json.JsonSerializer.Serialize(proof.EvidencePack).Contains("<html", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(System.Text.Json.JsonSerializer.Serialize(proof.EvidencePack).Contains("<body", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(System.Text.Json.JsonSerializer.Serialize(proof.EvidencePack).Contains("cookie", StringComparison.OrdinalIgnoreCase) &&
+                       System.Text.Json.JsonSerializer.Serialize(proof.EvidencePack).Contains("value", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public void ExternalChromeCdpDomProofModelProbeCannotProduceRealChromeCdp()
     {
         var modeledResult = PassedProbeResult() with { IsRealChromeCdpSession = false };
