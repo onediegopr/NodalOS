@@ -695,3 +695,224 @@ public sealed class NodalOsPlanPreviewToTimelineAdapter
             _ => NodalOsTimelineRiskLevel.Low
         };
 }
+
+public sealed class NodalOsRuntimeStagnationDetector
+{
+    public IReadOnlyList<NodalOsRuntimeStagnationSignal> Detect(
+        IReadOnlyList<NodalOsRuntimeProgressSnapshot> snapshots,
+        int threshold = 3)
+    {
+        var safeSnapshots = snapshots.Select(RedactSnapshot).ToArray();
+        if (safeSnapshots.Length == 0)
+            return [];
+
+        var signals = new List<NodalOsRuntimeStagnationSignal>();
+        AddRepeated(signals, safeSnapshots, threshold, snapshot => snapshot.Url, NodalOsStagnationKind.RepeatedUrl);
+        AddRepeated(signals, safeSnapshots, threshold, snapshot => snapshot.DomHash, NodalOsStagnationKind.RepeatedDomHash);
+        AddRepeated(signals, safeSnapshots, threshold, snapshot => snapshot.ScreenshotHash, NodalOsStagnationKind.RepeatedScreenshotHash);
+        AddRepeated(signals, safeSnapshots, threshold, snapshot => snapshot.Action, NodalOsStagnationKind.RepeatedAction);
+        AddRepeated(signals, safeSnapshots, threshold, snapshot => $"{snapshot.Selector}:{snapshot.Error}", NodalOsStagnationKind.SelectorRepeatedFailure);
+        AddRepeated(signals, safeSnapshots, threshold, snapshot => $"{snapshot.Action}:{snapshot.Selector}", NodalOsStagnationKind.SameTargetRepeatedAction);
+
+        var clickNoVisual = safeSnapshots.Count(snapshot =>
+            snapshot.Action.Contains("click", StringComparison.OrdinalIgnoreCase) && !snapshot.VisualChanged);
+        if (clickNoVisual >= threshold)
+            signals.Add(Signal(safeSnapshots[^1], NodalOsStagnationKind.ClickNoVisualChange, clickNoVisual, threshold, NodalOsRecoveryRecommendation.Replan));
+
+        var pageNotLoaded = safeSnapshots.Count(snapshot => !snapshot.PageLoaded);
+        if (pageNotLoaded >= threshold)
+            signals.Add(Signal(safeSnapshots[^1], NodalOsStagnationKind.PageNotLoaded, pageNotLoaded, threshold, NodalOsRecoveryRecommendation.Retry));
+
+        if (safeSnapshots.Any(snapshot => snapshot.CaptchaLoginTwoFactorDetected))
+            signals.Add(Signal(safeSnapshots[^1], NodalOsStagnationKind.CaptchaLoginTwoFactorDetected, 1, 1, NodalOsRecoveryRecommendation.AskHuman, NodalOsStagnationSeverity.Blocked));
+
+        return signals.DistinctBy(signal => signal.Kind).ToArray();
+    }
+
+    private static void AddRepeated(
+        List<NodalOsRuntimeStagnationSignal> signals,
+        IReadOnlyList<NodalOsRuntimeProgressSnapshot> snapshots,
+        int threshold,
+        Func<NodalOsRuntimeProgressSnapshot, string> selector,
+        NodalOsStagnationKind kind)
+    {
+        var grouped = snapshots.Select(selector)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .GroupBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(group => group.Count())
+            .FirstOrDefault();
+        if (grouped is null || grouped.Count() < threshold)
+            return;
+
+        var recommendation = kind switch
+        {
+            NodalOsStagnationKind.RepeatedAction or NodalOsStagnationKind.SameTargetRepeatedAction => NodalOsRecoveryRecommendation.Replan,
+            NodalOsStagnationKind.SelectorRepeatedFailure => NodalOsRecoveryRecommendation.AskHuman,
+            _ => NodalOsRecoveryRecommendation.Retry
+        };
+        var severity = kind is NodalOsStagnationKind.RepeatedAction or NodalOsStagnationKind.SameTargetRepeatedAction or NodalOsStagnationKind.SelectorRepeatedFailure
+            ? NodalOsStagnationSeverity.Blocked
+            : NodalOsStagnationSeverity.Warning;
+        signals.Add(Signal(snapshots[^1], kind, grouped.Count(), threshold, recommendation, severity));
+    }
+
+    private static NodalOsRuntimeStagnationSignal Signal(
+        NodalOsRuntimeProgressSnapshot snapshot,
+        NodalOsStagnationKind kind,
+        int observed,
+        int threshold,
+        NodalOsRecoveryRecommendation recommendation,
+        NodalOsStagnationSeverity? severity = null) =>
+        new(
+            $"stagnation-{kind.ToString().ToLowerInvariant()}-{Guid.NewGuid():N}",
+            snapshot.RuntimeId,
+            snapshot.TabId,
+            snapshot.StepId,
+            kind,
+            severity ?? (observed >= threshold ? NodalOsStagnationSeverity.Warning : NodalOsStagnationSeverity.Info),
+            observed,
+            threshold,
+            recommendation,
+            [$"stagnation:{kind}:redacted"],
+            DateTimeOffset.UtcNow,
+            "redacted runtime metadata only; no cookies, tokens, credentials, DOM/body, or screenshot content",
+            GrantsAuthority: false,
+            Redacted: true);
+
+    private static NodalOsRuntimeProgressSnapshot RedactSnapshot(NodalOsRuntimeProgressSnapshot snapshot) =>
+        snapshot with
+        {
+            Url = BrowserCredentialRedactor.Redact(snapshot.Url),
+            DomHash = BrowserCredentialRedactor.Redact(snapshot.DomHash),
+            ScreenshotHash = BrowserCredentialRedactor.Redact(snapshot.ScreenshotHash),
+            Action = BrowserCredentialRedactor.Redact(snapshot.Action),
+            Selector = BrowserCredentialRedactor.Redact(snapshot.Selector),
+            Error = BrowserCredentialRedactor.Redact(snapshot.Error),
+            Redacted = true
+        };
+}
+
+public sealed class NodalOsRecoveryUxService
+{
+    public NodalOsRecoveryDecision CreateDecision(NodalOsRuntimeStagnationSignal signal)
+    {
+        var state = signal.Kind switch
+        {
+            NodalOsStagnationKind.CaptchaLoginTwoFactorDetected => NodalOsRecoveryState.BlockedByCaptchaLoginTwoFactor,
+            NodalOsStagnationKind.SelectorRepeatedFailure => NodalOsRecoveryState.WaitingForHumanInput,
+            NodalOsStagnationKind.RepeatedAction or NodalOsStagnationKind.SameTargetRepeatedAction => NodalOsRecoveryState.ReplanSuggested,
+            NodalOsStagnationKind.ClickNoVisualChange => NodalOsRecoveryState.ReplanSuggested,
+            NodalOsStagnationKind.PageNotLoaded => NodalOsRecoveryState.RetrySuggested,
+            _ => NodalOsRecoveryState.RecoveryRequired
+        };
+        var explanation = new NodalOsRecoveryExplanation(
+            $"Detected {signal.Kind} after {signal.ObservedCount}/{signal.Threshold} observations.",
+            MessageFor(state),
+            HumanActionFor(state),
+            signal.EvidenceRefs,
+            "redacted recovery explanation only",
+            Redacted: true);
+        return new NodalOsRecoveryDecision(
+            $"recovery-{Guid.NewGuid():N}",
+            state,
+            signal,
+            explanation,
+            OptionsFor(state),
+            NextSafeActionFor(state),
+            CoreAuthorityRequired: true,
+            UiAuthorityBlocked: true,
+            GrantsAuthority: false,
+            Redacted: true);
+    }
+
+    private static IReadOnlyList<NodalOsRecoveryOption> OptionsFor(NodalOsRecoveryState state)
+    {
+        var baseOptions = new List<NodalOsRecoveryOption>
+        {
+            Option("retry", "Reintentar", safe: state is NodalOsRecoveryState.RetrySuggested or NodalOsRecoveryState.RecoveryRequired, human: false),
+            Option("replan", "Replanificar", safe: true, human: false),
+            Option("ask-human", "Pedir ayuda humana", safe: true, human: true),
+            Option("partial-evidence", "Continuar con evidencia parcial", safe: true, human: false),
+            Option("finish", "Finalizar", safe: true, human: false),
+            Option("copy-log", "Copiar LOG", safe: true, human: false),
+            Option("view-evidence", "Ver evidencia", safe: true, human: false),
+            Option("report-issue", "Reportar issue", safe: true, human: false)
+        };
+        return baseOptions;
+    }
+
+    private static NodalOsRecoveryOption Option(string id, string label, bool safe, bool human) =>
+        new(id, label, safe, RequiresCoreAuthority: true, RequiresHumanInput: human, ExecutesSensitiveWorkaround: false);
+
+    private static string MessageFor(NodalOsRecoveryState state) =>
+        state switch
+        {
+            NodalOsRecoveryState.BlockedByCaptchaLoginTwoFactor => "CAPTCHA/login/2FA detected. NODAL OS will not bypass it.",
+            NodalOsRecoveryState.WaitingForHumanInput => "Repeated selector failure requires human review.",
+            NodalOsRecoveryState.ReplanSuggested => "No progress detected. Replan before retrying.",
+            NodalOsRecoveryState.RetrySuggested => "Page did not load consistently. Retry can be considered by Core.",
+            _ => "Runtime stagnation detected. Review recovery options."
+        };
+
+    private static string HumanActionFor(NodalOsRecoveryState state) =>
+        state == NodalOsRecoveryState.BlockedByCaptchaLoginTwoFactor
+            ? "Complete or cancel the sensitive step manually; do not share credentials, OTP, tokens, or cookies."
+            : "Review the cause and choose a safe option; Core remains authoritative.";
+
+    private static string NextSafeActionFor(NodalOsRecoveryState state) =>
+        state switch
+        {
+            NodalOsRecoveryState.BlockedByCaptchaLoginTwoFactor => "Ask human; no bypass.",
+            NodalOsRecoveryState.ReplanSuggested => "Replan with Core approval.",
+            NodalOsRecoveryState.RetrySuggested => "Retry only if Core approves and no sensitive action is involved.",
+            _ => "Stop with redacted evidence or ask human."
+        };
+}
+
+public sealed class NodalOsRecoveryTimelineAdapter
+{
+    public NodalOsTimeline Map(NodalOsRecoveryDecision recovery)
+    {
+        var step = new NodalOsTimelineStep(
+            $"recovery-step-{recovery.RecoveryId}",
+            "Recovery required",
+            recovery.Explanation.OperatorMessage,
+            recovery.State is NodalOsRecoveryState.WaitingForHumanInput or NodalOsRecoveryState.BlockedByCaptchaLoginTwoFactor
+                ? NodalOsTimelineStepStatus.NeedsHuman
+                : NodalOsTimelineStepStatus.Blocked,
+            1,
+            new NodalOsTimelineNode("recovery-node", NodalOsTimelineNodeType.HumanIntervention, IconId: null),
+            recovery.Options.Select((option, index) => new NodalOsTimelineSubStep(option.Label, option.Safe ? "Safe option" : "Blocked option", NodalOsTimelineStepStatus.Planned, index + 1, Redacted: true)).ToArray(),
+            new NodalOsTimelineStatusCard(
+                "recovery internal-local",
+                NodalOsTimelineRiskLevel.High,
+                recovery.State.ToString(),
+                "Recovery UX is visible only and does not execute workarounds.",
+                ReadyWithRestrictions: true,
+                ProductionReady: false,
+                GrantsAuthority: false,
+                Redacted: true),
+            recovery.Explanation.EvidenceRefs.Select(refId => new NodalOsTimelineEvidenceRef(refId, "recovery evidence", Redacted: true)).ToArray(),
+            [new NodalOsTimelineBlocker(recovery.Explanation.Cause, recovery.Explanation.RequiredHumanAction, ["credentials", "captcha/2FA bypass", "submit/pay/sign/delete", "sensitive workaround"], NeedsHuman: true, Redacted: true)],
+            new NodalOsTimelineDecision(recovery.NextSafeAction, ["credentials", "captcha/2FA bypass", "submit/pay/sign/delete", "sensitive workaround"], CoreAuthorityRequired: true, HumanInterventionRequired: true, GrantsAuthority: false),
+            NodalOsTimelineRiskLevel.High,
+            "recovery internal-local",
+            recovery.Explanation.RedactionSummary,
+            CoreAuthorityRequired: true,
+            HumanInterventionRequired: true,
+            GrantsAuthority: false,
+            Redacted: true);
+
+        return new NodalOsTimeline(
+            $"timeline-recovery-{recovery.RecoveryId}",
+            "NODAL OS",
+            "Recovery UX",
+            recovery.Explanation.Cause,
+            [step],
+            step.StatusCard,
+            ReadyWithRestrictions: true,
+            ProductionReady: false,
+            GrantsAuthority: false,
+            Redacted: true);
+    }
+}

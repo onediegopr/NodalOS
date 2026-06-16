@@ -36,6 +36,27 @@ NODAL OS uses a vertical timeline in the side panel for task structuring, recipe
 - ReadyWithRestrictions in the timeline does not mean production.
 - Timeline output never authorizes submit/pay/sign/delete, credentials, sensitive sites, public SaaS, external general CDP or productive recorder/replay.
 
+## Reading Plan Preview
+
+Plan preview is emitted by Core before execution and rendered in the existing timeline.
+
+- `PlanDrafted` means the plan is still a draft.
+- `PlanPreviewReady` means it can be reviewed by the operator.
+- `PlanAwaitingApproval` means human/Core approval is still required.
+- `PlanRejected` and `ExecutionBlockedByPolicy` do not execute.
+- Sensitive actions such as credentials, login, submit, payment, sign, delete, captcha or 2FA appear as blockers.
+- The sidepanel cannot approve or execute the plan by itself.
+
+## Reading Recovery / Stagnation
+
+If NODAL OS detects repeated URL, repeated DOM/screenshot hash, repeated action, selector failure, click with no visual change, page not loaded, modal issues or captcha/login/2FA, the timeline shows a recovery card.
+
+- Read the cause first.
+- Review redacted evidence refs.
+- Choose only safe options: retry, replan, ask human, partial evidence, finish, copy LOG, view evidence or report issue.
+- Do not use recovery to bypass credentials, captcha, 2FA, submit/pay/sign/delete or sensitive sites.
+- If human input is required, complete only the local/safe action described and do not paste secrets, cookies, tokens or credentials into reports.
+
 ## Allowed Examples
 
 - Review Product/Admin local summary.

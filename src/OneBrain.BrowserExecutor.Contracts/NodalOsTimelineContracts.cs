@@ -349,3 +349,109 @@ public sealed record NodalOsExecutionPlanPreview(
     string TimelineCompatibilityMapping,
     string RedactionSummary,
     bool Redacted);
+
+public enum NodalOsStagnationKind
+{
+    RepeatedUrl,
+    RepeatedDomHash,
+    RepeatedScreenshotHash,
+    RepeatedAction,
+    SelectorRepeatedFailure,
+    ScrollNoProgress,
+    ClickNoVisualChange,
+    InputAlreadyApplied,
+    RepeatedRuntimeError,
+    ModalUnexpected,
+    PageNotLoaded,
+    CaptchaLoginTwoFactorDetected,
+    SameTargetRepeatedAction
+}
+
+public enum NodalOsStagnationSeverity
+{
+    Info,
+    Warning,
+    Blocked
+}
+
+public enum NodalOsRecoveryRecommendation
+{
+    Retry,
+    Replan,
+    AskHuman,
+    StopWithEvidence
+}
+
+public sealed record NodalOsRuntimeProgressSnapshot(
+    string RuntimeId,
+    string? TabId,
+    string? StepId,
+    string Url,
+    string DomHash,
+    string ScreenshotHash,
+    string Action,
+    string Selector,
+    string Error,
+    bool VisualChanged,
+    bool PageLoaded,
+    bool CaptchaLoginTwoFactorDetected,
+    DateTimeOffset CreatedAtUtc,
+    bool Redacted);
+
+public sealed record NodalOsRuntimeStagnationSignal(
+    string SignalId,
+    string RuntimeId,
+    string? TabId,
+    string? StepId,
+    NodalOsStagnationKind Kind,
+    NodalOsStagnationSeverity Severity,
+    int ObservedCount,
+    int Threshold,
+    NodalOsRecoveryRecommendation Recommendation,
+    IReadOnlyList<string> EvidenceRefs,
+    DateTimeOffset CreatedAtUtc,
+    string RedactionSummary,
+    bool GrantsAuthority,
+    bool Redacted);
+
+public enum NodalOsRecoveryState
+{
+    RecoveryRequired,
+    WaitingForHumanInput,
+    ReplanSuggested,
+    RetrySuggested,
+    StopSuggested,
+    PartialResultAvailable,
+    BlockedByPolicy,
+    BlockedBySensitiveSurface,
+    BlockedByCredentials,
+    BlockedByCaptchaLoginTwoFactor
+}
+
+public sealed record NodalOsRecoveryOption(
+    string OptionId,
+    string Label,
+    bool Safe,
+    bool RequiresCoreAuthority,
+    bool RequiresHumanInput,
+    bool ExecutesSensitiveWorkaround);
+
+public sealed record NodalOsRecoveryExplanation(
+    string Cause,
+    string OperatorMessage,
+    string RequiredHumanAction,
+    IReadOnlyList<string> EvidenceRefs,
+    string RedactionSummary,
+    bool Redacted);
+
+public sealed record NodalOsRecoveryDecision(
+    string RecoveryId,
+    NodalOsRecoveryState State,
+    NodalOsRuntimeStagnationSignal Signal,
+    NodalOsRecoveryExplanation Explanation,
+    IReadOnlyList<NodalOsRecoveryOption> Options,
+    string NextSafeAction,
+    bool CoreAuthorityRequired,
+    bool UiAuthorityBlocked,
+    bool GrantsAuthority,
+    bool Redacted);

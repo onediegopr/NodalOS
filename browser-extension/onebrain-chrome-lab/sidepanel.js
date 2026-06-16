@@ -27,6 +27,7 @@ const state = {
     page: '',
     targetResolution: null,
     verification: null,
+    planPreview: null,
     timeline: []
   },
   learning: {
@@ -369,6 +370,13 @@ function handleMessage(message) {
     case 'engineMessage':
       handleEngineMessage(message.message || {});
       break;
+    case 'planPreview':
+      applyPlanPreview(message.plan || message.preview || message.body || {});
+      break;
+    case 'recovery':
+    case 'runtimeStagnation':
+      applyRecoveryState(message.recovery || message.signal || message.body || message);
+      break;
     case 'toolResult':
       handleToolResult(message);
       break;
@@ -563,7 +571,9 @@ function renderHeader() {
 
 function renderOperate() {
   el.operatorGoal.textContent = state.operator.goal || '-';
-  el.operatorPlan.textContent = state.operator.plan || 'observe -> resolveTarget -> action -> verify';
+  el.operatorPlan.textContent = state.operator.planPreview
+    ? `Plan preview: ${state.operator.planPreview.status || 'PlanDrafted'}`
+    : state.operator.plan || 'observe -> resolveTarget -> action -> verify';
   el.operatorAction.textContent = state.operator.action || '-';
   el.currentTool.textContent = state.run.currentTool || '-';
   el.pageUrl.textContent = state.operator.page || '-';
@@ -571,6 +581,32 @@ function renderOperate() {
   renderTargetResolution();
   renderVerification();
   renderTimeline(el.operatorTimeline, state.operator.timeline);
+}
+
+function applyPlanPreview(plan) {
+  const safePlan = redactSensitive(plan || {});
+  state.operator.planPreview = safePlan;
+  state.operator.goal = safePlan.goal || state.operator.goal;
+  state.operator.timeline = buildPlanPreviewTimeline(safePlan);
+  pushTimeline({
+    title: 'Plan preview recibido',
+    description: 'Core emitio un plan visible; UI solo renderiza y no ejecuta.',
+    status: safePlan.status || 'PlanDrafted',
+    nodeType: 'CoreDecision',
+    evidenceRefs: [{ label: 'plan', refId: safePlan.planId || 'plan-preview:redacted' }],
+    safeNextAction: 'Revisar plan y esperar decision de Core.',
+    coreAuthorityRequired: true,
+    blockedOptions: ['auto execution from UI', 'submit/pay/sign/delete', 'credentials', 'sensitive sites']
+  });
+  render();
+}
+
+function applyRecoveryState(recovery) {
+  const safeRecovery = redactSensitive(recovery || {});
+  state.operator.timeline = buildRecoveryTimeline(safeRecovery).concat(state.operator.timeline || []);
+  state.run.status = 'paused';
+  state.run.lastResult = safeRecovery.state || safeRecovery.kind || 'RecoveryRequired';
+  render();
 }
 
 function renderHandoff() {
@@ -1250,6 +1286,91 @@ function buildStructuredTaskTimeline(goal) {
   ];
 }
 
+function buildPlanPreviewTimeline(plan) {
+  const steps = Array.isArray(plan.steps) ? plan.steps : [];
+  const sensitiveActions = normalizeList(plan.sensitiveActionsDetected || plan.sensitiveActions || []);
+  const deniedDomains = normalizeList(plan.deniedDomains || []);
+  const allowedDomains = normalizeList(plan.allowedDomains || []);
+  const policy = plan.policySummary || {};
+  const planStatus = normalizePlanStatus(plan.status || 'PlanDrafted');
+  const hasSensitive = sensitiveActions.length > 0 || planStatus === 'blocked';
+
+  const header = {
+    title: `Plan preview: ${plan.goal || 'Objetivo local'}`,
+    description: `Estado: ${plan.status || 'PlanDrafted'}. Plan Core-owned; UI no ejecuta.`,
+    status: planStatus,
+    nodeType: hasSensitive ? 'BlockerStep' : 'CoreDecision',
+    scopeLabel: 'plan-preview internal-local',
+    riskLevel: hasSensitive ? 'prohibited' : 'low',
+    subSteps: [
+      `Allowed domains: ${allowedDomains.join(', ') || 'local-private-preview'}`,
+      `Denied domains: ${deniedDomains.join(', ') || 'production, public-saas, sensitive-sites'}`,
+      'Core authority required'
+    ],
+    evidenceRefs: [{ label: 'plan', refId: plan.planId || 'plan-preview:redacted' }],
+    blockers: hasSensitive ? [{
+      reason: `Sensitive actions detected: ${sensitiveActions.join(', ') || 'blocked by policy'}`,
+      expectedOperatorAction: 'Do not execute. Ask Core/human review.',
+      blockedOptions: policy.blockedOptions || ['credentials', 'submit/pay/sign/delete', 'sensitive sites']
+    }] : [],
+    safeNextAction: hasSensitive ? 'Stop and review policy blocker.' : 'Review plan preview; wait for Core decision.',
+    blockedOptions: policy.blockedOptions || ['auto execution from UI', 'production/SaaS public', 'external general CDP'],
+    coreAuthorityRequired: true,
+    humanInterventionRequired: planStatus === 'needs-human' || hasSensitive
+  };
+
+  const mappedSteps = steps.map((step, index) => {
+    const stepSensitive = normalizeList(step.sensitiveActionsDetected || []).length > 0;
+    return {
+      title: step.title || `Plan step ${index + 1}`,
+      description: step.description || 'Plan preview step; no automatic execution.',
+      status: stepSensitive ? 'blocked' : planStatus,
+      nodeType: stepSensitive ? 'BlockerStep' : 'StructuredTask',
+      scopeLabel: 'plan-preview internal-local',
+      riskLevel: stepSensitive ? 'prohibited' : String(step.risk || 'low'),
+      evidenceRefs: (step.evidenceRequirements || []).map((req) => ({ label: 'evidence', refId: `plan-evidence:${req}` })),
+      blockers: stepSensitive ? [{
+        reason: 'Sensitive action detected in plan step.',
+        expectedOperatorAction: 'Do not execute from UI.',
+        blockedOptions: policy.blockedOptions || ['submit/pay/sign/delete', 'credentials']
+      }] : [],
+      safeNextAction: stepSensitive ? 'Stop; Core policy review required.' : 'Wait for Core decision.',
+      coreAuthorityRequired: true,
+      humanInterventionRequired: Boolean(step.humanApprovalRequired || stepSensitive)
+    };
+  });
+
+  return [header].concat(mappedSteps);
+}
+
+function buildRecoveryTimeline(recovery) {
+  const signal = recovery.signal || recovery;
+  const explanation = recovery.explanation || {};
+  const options = Array.isArray(recovery.options) ? recovery.options : [];
+  const state = recovery.state || 'RecoveryRequired';
+  const evidenceRefs = explanation.evidenceRefs || signal.evidenceRefs || [];
+  return [{
+    title: `Recovery: ${state}`,
+    description: explanation.operatorMessage || explanation.cause || `Runtime stagnation detected: ${signal.kind || 'unknown'}`,
+    status: state,
+    nodeType: 'HumanIntervention',
+    scopeLabel: 'recovery internal-local',
+    riskLevel: 'high',
+    subSteps: options.map((option) => `${option.label || option.optionId}${option.safe === false ? ' (blocked)' : ''}`),
+    evidenceRefs: evidenceRefs.map((refId) => ({ label: 'recovery evidence', refId })),
+    blockers: [{
+      reason: explanation.cause || signal.kind || 'Recovery required',
+      expectedOperatorAction: explanation.requiredHumanAction || 'Review recovery options; Core remains authoritative.',
+      blockedOptions: ['credentials', 'captcha/2FA bypass', 'submit/pay/sign/delete', 'sensitive workaround']
+    }],
+    safeNextAction: recovery.nextSafeAction || 'Stop with evidence, replan, or ask human.',
+    blockedOptions: ['credentials', 'captcha/2FA bypass', 'submit/pay/sign/delete', 'sensitive workaround'],
+    coreAuthorityRequired: true,
+    humanInterventionRequired: true,
+    redactionSummary: 'redacted recovery metadata only; no secrets/cookies/tokens'
+  }];
+}
+
 function buildRecipeRunTimeline(run) {
   const results = Array.isArray(run.stepResults) ? run.stepResults : [];
   if (!results.length) {
@@ -1312,11 +1433,35 @@ function normalizeTimelineStatus(status) {
     warning: ['warning', 'Warning'],
     failed: ['failed', 'Failed'],
     error: ['failed', 'Failed'],
+    'plan-drafted': ['planned', 'Plan drafted'],
+    plandrafted: ['planned', 'Plan drafted'],
+    'plan-preview-ready': ['ready', 'Plan preview ready'],
+    planpreviewready: ['ready', 'Plan preview ready'],
+    'plan-awaiting-approval': ['needs-human', 'Awaiting approval'],
+    planawaitingapproval: ['needs-human', 'Awaiting approval'],
+    'plan-approved': ['ready', 'Plan approved'],
+    planapproved: ['ready', 'Plan approved'],
+    'plan-rejected': ['not-allowed', 'Plan rejected'],
+    planrejected: ['not-allowed', 'Plan rejected'],
+    'plan-edited-by-human': ['warning', 'Edited by human'],
+    planeditedbyhuman: ['warning', 'Edited by human'],
+    'execution-started': ['running', 'Execution started'],
+    executionstarted: ['running', 'Execution started'],
+    'execution-blocked-by-policy': ['blocked', 'Blocked by policy'],
+    executionblockedbypolicy: ['blocked', 'Blocked by policy'],
+    'recovery-required': ['blocked', 'Recovery required'],
+    recoveryrequired: ['blocked', 'Recovery required'],
+    'waiting-for-human-input': ['needs-human', 'Waiting for human'],
+    waitingforhumaninput: ['needs-human', 'Waiting for human'],
     'not-allowed': ['not-allowed', 'Not allowed'],
     notallowed: ['not-allowed', 'Not allowed']
   };
   const normalized = map[value] || ['planned', 'Planned'];
   return { value: normalized[0], label: normalized[1] };
+}
+
+function normalizePlanStatus(status) {
+  return normalizeTimelineStatus(status).value;
 }
 
 function humanizeNodeType(nodeType) {
