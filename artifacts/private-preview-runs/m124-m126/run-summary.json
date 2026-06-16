@@ -1,0 +1,47 @@
+{
+  "productName": "NODAL OS",
+  "runId": "private-preview-run-m124-m126",
+  "timestampUtc": "2026-06-16T00:00:00Z",
+  "commit": "c7cc1d46437f182cd19793af4e788d75ebb97687",
+  "scope": "internal local private preview only; ReadyWithRestrictions",
+  "allowedFlowsExecuted": [
+    "Product/Admin local readiness dashboard reviewed",
+    "evidence/log summary reviewed",
+    "M51/M65 scoped status reviewed",
+    "active blockers reviewed",
+    "operator blocker explanations reviewed",
+    "issue triage local reviewed",
+    "diagnostics reviewed",
+    "private local API in-process status reviewed"
+  ],
+  "blockedFlowsObserved": [
+    "public SaaS",
+    "public API",
+    "real billing/email",
+    "real credentials",
+    "sensitive sites",
+    "submit/pay/sign/delete",
+    "productive recorder/replay",
+    "external CDP general-ready"
+  ],
+  "evidenceRefs": [
+    "release-gate:ReadyWithRestrictions",
+    "skipped-category-audit:passed",
+    "m51:http-readonly-ledger:verified",
+    "m65:target-owned-cdp-ledger:verified",
+    "operator-ux:ready"
+  ],
+  "issuesFound": [
+    {
+      "issueId": "pp-ux-001",
+      "category": "Ux",
+      "severity": "Low",
+      "decision": "AcceptForInternalOnly",
+      "summary": "Operator copy can be clearer around target-owned proof versus external general-ready."
+    }
+  ],
+  "proofLiveExecuted": false,
+  "openedBlockedSurface": false,
+  "decision": "ContinueWithMinorFixes",
+  "redacted": true
+}

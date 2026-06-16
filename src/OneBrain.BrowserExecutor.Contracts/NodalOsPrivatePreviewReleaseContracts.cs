@@ -198,3 +198,89 @@ public sealed record NodalOsEvidenceLedgerVerificationResult(
     IReadOnlyList<string> ReasonCodes,
     bool Verified,
     bool Redacted);
+
+public enum NodalOsInternalLocalPreviewRunDecision
+{
+    ExecutedWithinScope,
+    BlockedByPreflight,
+    BlockedByScopeViolation
+}
+
+public sealed record NodalOsInternalLocalPreviewRunRecord(
+    string RunId,
+    DateTimeOffset TimestampUtc,
+    string Commit,
+    string Scope,
+    IReadOnlyList<string> AllowedFlowsExecuted,
+    IReadOnlyList<string> BlockedFlowsObserved,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<string> IssueRefs,
+    NodalOsInternalLocalPreviewRunDecision Decision,
+    bool ProofLiveExecuted,
+    bool OpenedBlockedSurface,
+    bool Redacted);
+
+public enum NodalOsPrivatePreviewIssueCategory
+{
+    Ux,
+    ReadinessMismatch,
+    EvidenceMissing,
+    BlockerExplanationWeak,
+    DiagnosticsWeak,
+    ProductAdminBug,
+    ReleaseGateMismatch,
+    DocumentationGap,
+    SecurityBlocker,
+    ScopeInflationRisk
+}
+
+public enum NodalOsPrivatePreviewIssueSeverity
+{
+    Critical,
+    High,
+    Medium,
+    Low,
+    Info
+}
+
+public enum NodalOsPrivatePreviewIssueDecision
+{
+    MustFixBeforeNextRun,
+    ShouldFixSoon,
+    AcceptForInternalOnly,
+    NotAProblem,
+    NeedsAudit
+}
+
+public sealed record NodalOsPrivatePreviewIssue(
+    string IssueId,
+    NodalOsPrivatePreviewIssueCategory Category,
+    NodalOsPrivatePreviewIssueSeverity Severity,
+    NodalOsPrivatePreviewIssueDecision Decision,
+    string SummaryRedacted,
+    bool BlocksPostRunGo,
+    bool Redacted);
+
+public enum NodalOsPrivatePreviewPostRunDecision
+{
+    ContinueInternalPreview,
+    ContinueWithMinorFixes,
+    BlockedByCriticalIssue,
+    BlockedBySecurityIssue,
+    BlockedByScopeInflation,
+    NeedsMoreEvidence,
+    NeedsOperatorUxFixes
+}
+
+public sealed record NodalOsPrivatePreviewPostRunReview(
+    string ReviewId,
+    NodalOsPrivatePreviewPostRunDecision Decision,
+    IReadOnlyList<NodalOsPrivatePreviewIssue> Issues,
+    IReadOnlyList<string> ReasonCodes,
+    bool ReleaseGateReadyWithRestrictions,
+    bool EvidenceLogSummaryUsable,
+    bool OperatorRunbookUsable,
+    bool IssueTriageUsable,
+    bool BlockersVisibleAndEffective,
+    bool ScopeExpanded,
+    bool Redacted);

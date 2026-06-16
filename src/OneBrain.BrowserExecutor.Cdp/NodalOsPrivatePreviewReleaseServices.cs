@@ -387,3 +387,161 @@ public sealed class NodalOsEvidenceLedgerVerifier
             Verified: status == NodalOsEvidenceLedgerVerificationStatus.Verified,
             Redacted: true);
 }
+
+public sealed class NodalOsInternalLocalPreviewRunService
+{
+    public NodalOsInternalLocalPreviewRunRecord Execute(
+        string commit,
+        NodalOsLocalPrivatePreviewReleaseGateDecision releaseGate,
+        NexaSkippedTestsCategoryAuditResult skippedAudit)
+    {
+        var preflightOk = releaseGate.ReadyWithRestrictions &&
+            skippedAudit.Passed &&
+            releaseGate.PublicSaasStillDisabled &&
+            releaseGate.PublicApiStillDisabled &&
+            releaseGate.RealBillingStillDisabled &&
+            releaseGate.RealEmailStillDisabled &&
+            releaseGate.RealCredentialsStillBlocked &&
+            releaseGate.SensitiveSurfacesStillBlocked &&
+            releaseGate.SubmitPaySignDeleteStillBlocked &&
+            releaseGate.RecorderReplayProductiveStillBlocked &&
+            !releaseGate.ExternalGeneralReady;
+
+        return new NodalOsInternalLocalPreviewRunRecord(
+            "private-preview-run-m124-m126",
+            DateTimeOffset.UtcNow,
+            commit,
+            "internal local private preview only; ReadyWithRestrictions",
+            preflightOk
+                ? [
+                    "Product/Admin local readiness dashboard reviewed",
+                    "evidence/log summary reviewed",
+                    "M51/M65 scoped status reviewed",
+                    "active blockers reviewed",
+                    "operator blocker explanations reviewed",
+                    "issue triage local reviewed",
+                    "diagnostics reviewed",
+                    "private local API in-process status reviewed"
+                ]
+                : [],
+            [
+                "public SaaS",
+                "public API",
+                "real billing/email",
+                "real credentials",
+                "sensitive sites",
+                "submit/pay/sign/delete",
+                "productive recorder/replay",
+                "external CDP general-ready"
+            ],
+            [
+                "release-gate:ReadyWithRestrictions",
+                "skipped-category-audit:passed",
+                "m51:http-readonly-ledger:verified",
+                "m65:target-owned-cdp-ledger:verified",
+                "operator-ux:ready"
+            ],
+            ["issue-report:private-preview-issues-m124-m126"],
+            preflightOk ? NodalOsInternalLocalPreviewRunDecision.ExecutedWithinScope : NodalOsInternalLocalPreviewRunDecision.BlockedByPreflight,
+            ProofLiveExecuted: false,
+            OpenedBlockedSurface: false,
+            Redacted: true);
+    }
+}
+
+public sealed class NodalOsPrivatePreviewIssueCaptureService
+{
+    public NodalOsPrivatePreviewIssue Capture(
+        string issueId,
+        NodalOsPrivatePreviewIssueCategory category,
+        NodalOsPrivatePreviewIssueSeverity severity,
+        string summary)
+    {
+        var decision = category switch
+        {
+            NodalOsPrivatePreviewIssueCategory.SecurityBlocker => NodalOsPrivatePreviewIssueDecision.MustFixBeforeNextRun,
+            NodalOsPrivatePreviewIssueCategory.ScopeInflationRisk => NodalOsPrivatePreviewIssueDecision.NeedsAudit,
+            NodalOsPrivatePreviewIssueCategory.ReleaseGateMismatch => NodalOsPrivatePreviewIssueDecision.MustFixBeforeNextRun,
+            NodalOsPrivatePreviewIssueCategory.EvidenceMissing => NodalOsPrivatePreviewIssueDecision.MustFixBeforeNextRun,
+            NodalOsPrivatePreviewIssueCategory.Ux when severity is NodalOsPrivatePreviewIssueSeverity.Low or NodalOsPrivatePreviewIssueSeverity.Info => NodalOsPrivatePreviewIssueDecision.AcceptForInternalOnly,
+            NodalOsPrivatePreviewIssueCategory.DocumentationGap when severity is NodalOsPrivatePreviewIssueSeverity.Low or NodalOsPrivatePreviewIssueSeverity.Info => NodalOsPrivatePreviewIssueDecision.ShouldFixSoon,
+            _ when severity is NodalOsPrivatePreviewIssueSeverity.Critical or NodalOsPrivatePreviewIssueSeverity.High => NodalOsPrivatePreviewIssueDecision.MustFixBeforeNextRun,
+            _ => NodalOsPrivatePreviewIssueDecision.ShouldFixSoon
+        };
+
+        var blocks = decision == NodalOsPrivatePreviewIssueDecision.MustFixBeforeNextRun ||
+            (decision == NodalOsPrivatePreviewIssueDecision.NeedsAudit &&
+             severity is NodalOsPrivatePreviewIssueSeverity.Critical or NodalOsPrivatePreviewIssueSeverity.High);
+
+        return new NodalOsPrivatePreviewIssue(
+            BrowserCredentialRedactor.Redact(issueId),
+            category,
+            severity,
+            decision,
+            BrowserCredentialRedactor.Redact(summary),
+            blocks,
+            Redacted: true);
+    }
+}
+
+public sealed class NodalOsPrivatePreviewPostRunReviewService
+{
+    public NodalOsPrivatePreviewPostRunReview Review(
+        NodalOsInternalLocalPreviewRunRecord run,
+        IReadOnlyList<NodalOsPrivatePreviewIssue> issues,
+        bool releaseGateReadyWithRestrictions,
+        bool evidenceLogSummaryUsable,
+        bool operatorRunbookUsable,
+        bool issueTriageUsable,
+        bool blockersVisibleAndEffective)
+    {
+        var reasons = new List<string>();
+        if (!releaseGateReadyWithRestrictions)
+            reasons.Add("release gate mismatch");
+        if (!evidenceLogSummaryUsable)
+            reasons.Add("evidence/log summary missing");
+        if (!operatorRunbookUsable)
+            reasons.Add("operator runbook not usable");
+        if (!issueTriageUsable)
+            reasons.Add("issue triage not usable");
+        if (!blockersVisibleAndEffective)
+            reasons.Add("blockers not visible or effective");
+        if (run.OpenedBlockedSurface)
+            reasons.Add("scope expansion detected");
+        if (issues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.ScopeInflationRisk))
+            reasons.Add("scope inflation issue detected");
+        if (issues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.SecurityBlocker))
+            reasons.Add("security blocker issue detected");
+        if (issues.Any(issue => issue.Severity == NodalOsPrivatePreviewIssueSeverity.Critical))
+            reasons.Add("critical issue detected");
+
+        var decision = run.OpenedBlockedSurface || issues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.ScopeInflationRisk)
+            ? NodalOsPrivatePreviewPostRunDecision.BlockedByScopeInflation
+            : issues.Any(issue => issue.Category == NodalOsPrivatePreviewIssueCategory.SecurityBlocker)
+                ? NodalOsPrivatePreviewPostRunDecision.BlockedBySecurityIssue
+                : issues.Any(issue => issue.Severity == NodalOsPrivatePreviewIssueSeverity.Critical)
+                    ? NodalOsPrivatePreviewPostRunDecision.BlockedByCriticalIssue
+                    : !releaseGateReadyWithRestrictions
+                        ? NodalOsPrivatePreviewPostRunDecision.BlockedByCriticalIssue
+                        : !evidenceLogSummaryUsable
+                            ? NodalOsPrivatePreviewPostRunDecision.NeedsMoreEvidence
+                            : !operatorRunbookUsable || !issueTriageUsable || !blockersVisibleAndEffective
+                                ? NodalOsPrivatePreviewPostRunDecision.NeedsOperatorUxFixes
+                                : issues.Any(issue => issue.Severity is NodalOsPrivatePreviewIssueSeverity.Low or NodalOsPrivatePreviewIssueSeverity.Medium)
+                                    ? NodalOsPrivatePreviewPostRunDecision.ContinueWithMinorFixes
+                                    : NodalOsPrivatePreviewPostRunDecision.ContinueInternalPreview;
+
+        return new NodalOsPrivatePreviewPostRunReview(
+            "private-preview-post-run-review-m124-m126",
+            decision,
+            issues,
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            releaseGateReadyWithRestrictions,
+            evidenceLogSummaryUsable,
+            operatorRunbookUsable,
+            issueTriageUsable,
+            blockersVisibleAndEffective,
+            run.OpenedBlockedSurface,
+            Redacted: true);
+    }
+}
