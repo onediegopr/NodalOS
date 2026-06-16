@@ -11,6 +11,7 @@ public enum NodalOsOnnxOcrOfflineReadinessDecision
     UnsupportedModelShape,
     PreProcessingIncomplete,
     PostProcessingIncomplete,
+    SessionLoadFailed,
     BlockedByRedaction,
     BlockedByPolicy,
     NotReady

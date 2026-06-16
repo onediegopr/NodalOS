@@ -15,7 +15,8 @@ public sealed class NodalOsOnnxOcrOfflineReadinessGate
         bool preProcessorReady,
         bool detectorPostProcessorReady,
         bool recognizerPostProcessorReady,
-        NodalOsOnnxOcrSyntheticFixtureSet? fixtureSet = null)
+        NodalOsOnnxOcrSyntheticFixtureSet? fixtureSet = null,
+        NodalOsOnnxModelSessionReadiness? sessionReadiness = null)
     {
         var requirements = new List<NodalOsOnnxOcrOfflineReadinessRequirement>();
         var warnings = new List<string>();
@@ -35,6 +36,9 @@ public sealed class NodalOsOnnxOcrOfflineReadinessGate
         requirements.Add(Requirement("detector-postprocessor", "detector-postprocessor", detectorPostProcessorReady, "detector post-processor not ready", blocks: true));
         requirements.Add(Requirement("recognizer-postprocessor", "recognizer-postprocessor", recognizerPostProcessorReady, "recognizer post-processor not ready", blocks: true));
 
+        var sessionReady = sessionReadiness?.Ready ?? false;
+        requirements.Add(Requirement("session-smoke", "session-smoke", sessionReady, sessionReadiness?.Reason ?? "session smoke not run", blocks: false));
+
         requirements.Add(Requirement("no-raw-persistence", "no raw persistence", true, "raw persistence blocked by policy", blocks: true));
         requirements.Add(Requirement("no-fullscreen", "no full-screen OCR", true, "full-screen OCR blocked by policy", blocks: true));
         requirements.Add(Requirement("no-sensitive", "no sensitive OCR", true, "sensitive OCR blocked by policy", blocks: true));
@@ -43,7 +47,7 @@ public sealed class NodalOsOnnxOcrOfflineReadinessGate
 
         var blocked = requirements.Where(r => r.BlocksReadiness && !r.Satisfied).ToList();
 
-        var decision = DetermineDecision(blocked, modelReadiness, shapesKnown, preProcessorReady, detectorPostProcessorReady, recognizerPostProcessorReady);
+        var decision = DetermineDecision(blocked, modelReadiness, shapesKnown, preProcessorReady, detectorPostProcessorReady, recognizerPostProcessorReady, sessionReadiness);
         var canAttempt = decision == NodalOsOnnxOcrOfflineReadinessDecision.ReadyForOnnxSyntheticRun;
 
         if (modelReadiness.Status == NodalOsPaddleOcrOnnxModelStatus.Missing)
@@ -58,6 +62,11 @@ public sealed class NodalOsOnnxOcrOfflineReadinessGate
         if (!shapesKnown)
         {
             warnings.Add("model shapes unknown; offline synthetic run requires verified fixture set");
+        }
+
+        if (sessionReadiness is not null && !sessionReadiness.Ready)
+        {
+            warnings.Add($"session smoke: {sessionReadiness.Status} — {sessionReadiness.Reason}");
         }
 
         return new NodalOsOnnxOcrOfflineReadinessReport(
@@ -89,7 +98,8 @@ public sealed class NodalOsOnnxOcrOfflineReadinessGate
         bool shapesKnown,
         bool preProcessorReady,
         bool detectorPostProcessorReady,
-        bool recognizerPostProcessorReady)
+        bool recognizerPostProcessorReady,
+        NodalOsOnnxModelSessionReadiness? sessionReadiness)
     {
         if (blocked.Any(r => r.Name.Contains("license")))
             return NodalOsOnnxOcrOfflineReadinessDecision.BlockedByPolicy;
@@ -113,6 +123,9 @@ public sealed class NodalOsOnnxOcrOfflineReadinessGate
 
         if (blocked.Any(r => r.Name is "detector-postprocessor" or "recognizer-postprocessor"))
             return NodalOsOnnxOcrOfflineReadinessDecision.PostProcessingIncomplete;
+
+        if (sessionReadiness is not null && !sessionReadiness.Ready)
+            return NodalOsOnnxOcrOfflineReadinessDecision.SessionLoadFailed;
 
         if (blocked.Any(r => r.Name.Contains("redaction")))
             return NodalOsOnnxOcrOfflineReadinessDecision.BlockedByRedaction;
