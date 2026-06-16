@@ -5,6 +5,18 @@ using OneBrain.BrowserExecutor.Contracts;
 namespace OneBrain.Safety.Tests;
 
 [TestClass]
+[TestCategory("PixelRedaction")]
+[TestCategory("ImagePixelRedaction")]
+[TestCategory("RealImageRedaction")]
+[TestCategory("OcrImageRedaction")]
+[TestCategory("OcrRedactionPrecondition")]
+[TestCategory("OcrVisionNoAuthority")]
+[TestCategory("OcrVisionPrivacy")]
+[TestCategory("BrowserGroundingSnapshot")]
+[TestCategory("PrivatePreviewReadiness")]
+[TestCategory("LocalPreviewReleaseCandidate")]
+[TestCategory("NodalOsNamingAudit")]
+[TestCategory("BrowserRuntimePhaseGate")]
 public sealed class NodalOsPixelRedactionM188Tests
 {
     private const int W = 64;
