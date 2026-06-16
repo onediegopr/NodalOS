@@ -79,6 +79,28 @@ If NODAL OS detects repeated URL, repeated DOM/screenshot hash, repeated action,
 - OCR does not authorize actions, clicks, submit/pay/sign/delete, credential entry, login, CAPTCHA/2FA bypass, sensitive sites or production flows.
 - Prefer redacted crops over full-screen screenshots whenever OCR is considered in a future phase.
 
+## Reading OCR/Vision Provider Settings
+
+- `Disabled` means the provider cannot run.
+- `Testing` means model-only local stub state; no real OCR runtime is installed or invoked.
+- `ShadowOnly` means future comparison state only; no execution.
+- `Fallback` means fallback decision metadata, commonly human review.
+- `Paused` means do not route to that provider, even model-only.
+- `RequiresApiKey` only shows API key state. No real API key is stored.
+- `Missing`, `PlaceholderConfigured`, `SecretVaultRequired` and `Disabled` are configuration states, not secrets.
+- `ExternalDataTransfer=true` means future SaaS transfer risk. Current phase keeps those providers disabled-by-default.
+- Priority/fallback changes are model-only and do not make a provider executable.
+- If a provider shows `allowedForFullScreen=false`, full-screen OCR remains blocked; use redacted crops only.
+
+## Reading OCR/Vision Evaluation Reports
+
+- Evaluation reports use synthetic fixtures only.
+- `selectedProvider` is a routing expectation, not a real OCR execution.
+- `cloud candidate disabled` means SaaS might fit the future case but is blocked now.
+- `budget exceeded`, `redaction failed`, `full-screen blocked` and `sensitive blocked` require stop/human review.
+- Reports must say no real OCR and no SaaS OCR were executed.
+- OCR/Vision evaluation is no-authority and cannot approve actions.
+
 ## Allowed Examples
 
 - Review Product/Admin local summary.

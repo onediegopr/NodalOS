@@ -361,3 +361,197 @@ public sealed record NodalOsOcrVisionRoutingDecision(
     IReadOnlyList<NodalOsGroundingEvidenceRef> EvidenceRefs,
     bool CallsRealSaas,
     bool Redacted);
+
+public enum NodalOsOcrVisionApiKeyState
+{
+    Missing,
+    PlaceholderConfigured,
+    SecretVaultRequired,
+    Disabled
+}
+
+public enum NodalOsOcrVisionAdminDecisionKind
+{
+    Viewed,
+    ModelOnlyUpdated,
+    Paused,
+    Resumed,
+    Reordered,
+    BlockedRealApiKey,
+    BlockedExecutableProvider,
+    NoAuthority
+}
+
+public sealed record NodalOsOcrVisionProviderBudgetSettings(
+    decimal DailyBudget,
+    decimal MonthlyBudget,
+    decimal MaxCostPerPage,
+    decimal MaxCostPerImage,
+    string Currency,
+    bool ModelOnly);
+
+public sealed record NodalOsOcrVisionProviderAdminView(
+    NodalOsOcrVisionProviderId ProviderId,
+    string DisplayName,
+    NodalOsOcrVisionProviderKind Kind,
+    NodalOsOcrVisionProviderStatus Status,
+    bool Enabled,
+    bool Paused,
+    bool DisabledByDefault,
+    NodalOsOcrVisionProviderCapability Capabilities,
+    NodalOsOcrVisionProviderCostProfile CostProfile,
+    NodalOsOcrVisionProviderPerformanceProfile PerformanceProfile,
+    NodalOsOcrVisionProviderPrivacyProfile PrivacyProfile,
+    bool RequiresApiKey,
+    NodalOsOcrVisionApiKeyState ApiKeyState,
+    bool ExternalDataTransfer,
+    bool AllowedForSensitive,
+    bool AllowedForCrops,
+    bool AllowedForFullScreen,
+    int Priority,
+    IReadOnlyList<NodalOsOcrVisionProviderId> FallbackOrder,
+    NodalOsOcrVisionProviderBudgetSettings BudgetSettings,
+    double MinConfidence,
+    int MaxLatencyMs,
+    IReadOnlyList<string> BlockedReasons,
+    string LastEvaluationSummary,
+    bool Executable,
+    bool GrantsAuthority,
+    bool Redacted);
+
+public sealed record NodalOsOcrVisionProviderRoutingRuleView(
+    string RuleId,
+    string CaseSummary,
+    NodalOsOcrVisionRoutingReason Reason,
+    IReadOnlyList<NodalOsOcrVisionProviderId> PreferredProviders,
+    IReadOnlyList<NodalOsOcrVisionProviderId> FallbackProviders,
+    bool RequiresHumanReview,
+    bool NoAuthority);
+
+public sealed record NodalOsOcrVisionAdminSettings(
+    string SettingsId,
+    IReadOnlyList<NodalOsOcrVisionProviderAdminView> Providers,
+    IReadOnlyList<NodalOsOcrVisionProviderRoutingRuleView> RoutingRules,
+    bool StoresApiKeys,
+    bool CallsRealApi,
+    bool ProviderExecutable,
+    bool GrantsAuthority,
+    bool Redacted);
+
+public sealed record NodalOsOcrVisionProviderToggleRequest(
+    NodalOsOcrVisionProviderId ProviderId,
+    bool Enabled,
+    NodalOsOcrVisionApiKeyState ApiKeyState,
+    bool ModelOnly,
+    string Reason);
+
+public sealed record NodalOsOcrVisionProviderPriorityUpdate(
+    NodalOsOcrVisionProviderId ProviderId,
+    int Priority,
+    IReadOnlyList<NodalOsOcrVisionProviderId> FallbackOrder,
+    bool ModelOnly);
+
+public sealed record NodalOsOcrVisionProviderPauseRequest(
+    NodalOsOcrVisionProviderId ProviderId,
+    bool Pause,
+    string Reason,
+    bool ModelOnly);
+
+public sealed record NodalOsOcrVisionAdminDecision(
+    string DecisionId,
+    NodalOsOcrVisionAdminDecisionKind Decision,
+    NodalOsOcrVisionProviderId ProviderId,
+    string Reason,
+    bool StoresApiKeys,
+    bool CallsRealApi,
+    bool ProviderExecutable,
+    bool GrantsAuthority,
+    bool Redacted);
+
+public enum NodalOsSaasOcrConnectorBlockReason
+{
+    CannotRunWithoutOptIn,
+    CannotRunWithoutSecretVault,
+    CannotRunOnSensitiveByDefault,
+    CannotRunIfBudgetMissing,
+    CannotRunIfRedactionFailed,
+    CannotRunInProductionCurrentPhase,
+    DisabledByDefault
+}
+
+public sealed record NodalOsSaasOcrProviderExecutionProbe(
+    NodalOsOcrVisionProviderId ProviderId,
+    NodalOsOcrVisionProviderKind Kind,
+    bool WouldCallHttp,
+    bool StoresSecret,
+    bool RefusesExecution,
+    IReadOnlyList<NodalOsSaasOcrConnectorBlockReason> BlockReasons,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsOcrVisionExpectedOutput(
+    NodalOsOcrVisionRoutingStatus ExpectedStatus,
+    NodalOsOcrVisionRoutingReason ExpectedReason,
+    string? ExpectedProviderId,
+    bool RequiresHumanEscalation,
+    bool NoAuthority);
+
+public sealed record NodalOsOcrVisionEvaluationMetric(
+    string Name,
+    string Value,
+    bool Passed);
+
+public sealed record NodalOsOcrVisionEvaluationFixture(
+    string FixtureId,
+    string Description,
+    NodalOsOcrVisionCaseClassification CaseClassification,
+    NodalOsOcrVisionComplexity Complexity,
+    NodalOsOcrVisionQuality Quality,
+    NodalOsOcrVisionSensitivity Sensitivity,
+    bool DomCdpUiaSufficient,
+    bool ScreenshotHashDiffOnly,
+    bool CropRedacted,
+    bool FullScreen,
+    decimal Budget,
+    NodalOsGroundingRedactionStatus RedactionStatus,
+    NodalOsOcrVisionExpectedOutput ExpectedOutput,
+    bool Synthetic,
+    bool Redacted);
+
+public sealed record NodalOsOcrVisionEvaluationCase(
+    string CaseId,
+    NodalOsOcrVisionEvaluationFixture Fixture,
+    NodalOsOcrVisionRoutingRequest RoutingRequest);
+
+public sealed record NodalOsOcrVisionProviderScore(
+    NodalOsOcrVisionProviderId ProviderId,
+    string ExpectedConfidenceBand,
+    string ExpectedLatencyBand,
+    decimal EstimatedCost,
+    NodalOsGroundingRisk PrivacyRisk,
+    bool Selected,
+    bool Fallback,
+    bool NoAuthority);
+
+public sealed record NodalOsOcrVisionEvaluationResult(
+    string ResultId,
+    NodalOsOcrVisionEvaluationFixture Fixture,
+    NodalOsOcrVisionRoutingDecision Decision,
+    IReadOnlyList<NodalOsOcrVisionProviderScore> ProviderScores,
+    IReadOnlyList<NodalOsOcrVisionEvaluationMetric> Metrics,
+    bool Passed,
+    bool CallsRealOcr,
+    bool CallsRealSaas,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsOcrVisionBenchmarkReport(
+    string ReportId,
+    DateTimeOffset CreatedAtUtc,
+    IReadOnlyList<NodalOsOcrVisionEvaluationResult> Results,
+    int TotalCases,
+    int PassedCases,
+    bool CallsRealOcr,
+    bool CallsRealSaas,
+    bool NoAuthority,
+    bool Redacted);

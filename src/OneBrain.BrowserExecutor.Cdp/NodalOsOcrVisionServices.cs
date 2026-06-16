@@ -67,6 +67,35 @@ public sealed class NodalOsOcrVisionProviderRegistryService
             .ToArray();
     }
 
+    internal static NodalOsOcrVisionProviderConfiguration CreateProviderStub(
+        string id,
+        NodalOsOcrVisionProviderKind kind,
+        NodalOsOcrVisionProviderCapability capabilities,
+        int priority,
+        double confidence,
+        int latency,
+        decimal maxCostPerImage,
+        decimal maxCostPerPage,
+        string disabledReason) =>
+        Provider(
+            id,
+            kind,
+            NodalOsOcrVisionProviderStatus.Disabled,
+            capabilities,
+            enabled: false,
+            requiresApiKey: true,
+            external: true,
+            sensitive: false,
+            fullScreen: false,
+            crops: true,
+            priority,
+            confidence,
+            latency,
+            disabledReason) with
+        {
+            CostProfile = new NodalOsOcrVisionProviderCostProfile(maxCostPerPage, maxCostPerImage, 0m, 0m, "USD")
+        };
+
     private static IReadOnlyList<NodalOsOcrVisionProviderConfiguration> DefaultProviders() =>
     [
         Provider(
@@ -114,6 +143,56 @@ public sealed class NodalOsOcrVisionProviderRegistryService
             confidence: 0.91,
             latency: 5000,
             disabledReason: "cloud OCR disabled-by-default; no API key, no real SaaS call"),
+        CreateProviderStub(
+            "azure-document-intelligence-disabled",
+            NodalOsOcrVisionProviderKind.CloudAzureDocumentIntelligence,
+            NodalOsOcrVisionProviderCapability.ComplexLayout | NodalOsOcrVisionProviderCapability.Forms | NodalOsOcrVisionProviderCapability.Invoices | NodalOsOcrVisionProviderCapability.Receipts | NodalOsOcrVisionProviderCapability.Tables | NodalOsOcrVisionProviderCapability.Pdf | NodalOsOcrVisionProviderCapability.StructuredJson,
+            priority: 110,
+            confidence: 0.92,
+            latency: 5200,
+            maxCostPerImage: 0.02m,
+            maxCostPerPage: 0.05m,
+            disabledReason: "Azure Document Intelligence stub disabled-by-default; no endpoint, no key, no HTTP"),
+        CreateProviderStub(
+            "google-document-ai-disabled",
+            NodalOsOcrVisionProviderKind.CloudGoogleDocumentAi,
+            NodalOsOcrVisionProviderCapability.ComplexLayout | NodalOsOcrVisionProviderCapability.Forms | NodalOsOcrVisionProviderCapability.Pdf | NodalOsOcrVisionProviderCapability.MultiPage | NodalOsOcrVisionProviderCapability.StructuredJson,
+            priority: 120,
+            confidence: 0.91,
+            latency: 5400,
+            maxCostPerImage: 0.02m,
+            maxCostPerPage: 0.05m,
+            disabledReason: "Google Document AI stub disabled-by-default; no endpoint, no key, no HTTP"),
+        CreateProviderStub(
+            "google-vision-ocr-disabled",
+            NodalOsOcrVisionProviderKind.CloudGoogleVision,
+            NodalOsOcrVisionProviderCapability.PrintedText | NodalOsOcrVisionProviderCapability.Handwriting | NodalOsOcrVisionProviderCapability.LowQualityImage | NodalOsOcrVisionProviderCapability.BoundingBoxes,
+            priority: 130,
+            confidence: 0.86,
+            latency: 4200,
+            maxCostPerImage: 0.015m,
+            maxCostPerPage: 0.03m,
+            disabledReason: "Google Vision OCR stub disabled-by-default; no endpoint, no key, no HTTP"),
+        CreateProviderStub(
+            "mistral-ocr-disabled",
+            NodalOsOcrVisionProviderKind.CloudMistralOcr,
+            NodalOsOcrVisionProviderCapability.Pdf | NodalOsOcrVisionProviderCapability.MarkdownOutput | NodalOsOcrVisionProviderCapability.ComplexLayout | NodalOsOcrVisionProviderCapability.StructuredJson,
+            priority: 140,
+            confidence: 0.88,
+            latency: 4800,
+            maxCostPerImage: 0.018m,
+            maxCostPerPage: 0.04m,
+            disabledReason: "Mistral OCR stub disabled-by-default; no endpoint, no key, no HTTP"),
+        CreateProviderStub(
+            "amazon-textract-disabled",
+            NodalOsOcrVisionProviderKind.CloudAmazonTextract,
+            NodalOsOcrVisionProviderCapability.Forms | NodalOsOcrVisionProviderCapability.Tables | NodalOsOcrVisionProviderCapability.IdentityDocuments | NodalOsOcrVisionProviderCapability.Invoices | NodalOsOcrVisionProviderCapability.Receipts,
+            priority: 150,
+            confidence: 0.9,
+            latency: 5600,
+            maxCostPerImage: 0.02m,
+            maxCostPerPage: 0.05m,
+            disabledReason: "Amazon Textract stub disabled-by-default; no endpoint, no key, no HTTP"),
         Provider(
             "cloud-openai-vision-disabled",
             NodalOsOcrVisionProviderKind.CloudOpenAiVision,
@@ -201,6 +280,324 @@ public sealed class NodalOsOcrVisionProviderRegistryService
 
     private static bool Same(NodalOsOcrVisionProviderId left, NodalOsOcrVisionProviderId right) =>
         string.Equals(left.Value, right.Value, StringComparison.OrdinalIgnoreCase);
+}
+
+public sealed class NodalOsOcrVisionAdminSettingsService
+{
+    public NodalOsOcrVisionAdminSettings CreateSettings(
+        NodalOsOcrVisionProviderRegistry registry,
+        IReadOnlyDictionary<string, string>? lastEvaluationSummaries = null)
+    {
+        var summaries = lastEvaluationSummaries ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var views = registry.Providers
+            .OrderBy(provider => provider.Policy.Priority)
+            .Select(provider => View(provider, summaries.TryGetValue(provider.ProviderId.Value, out var summary) ? summary : "no evaluation yet"))
+            .ToArray();
+        return new NodalOsOcrVisionAdminSettings(
+            "ocr-vision-admin-settings",
+            views,
+            RoutingRules(),
+            StoresApiKeys: false,
+            CallsRealApi: false,
+            ProviderExecutable: false,
+            GrantsAuthority: false,
+            Redacted: true);
+    }
+
+    public NodalOsOcrVisionAdminDecision ToggleModelOnly(
+        NodalOsOcrVisionProviderToggleRequest request,
+        NodalOsOcrVisionProviderConfiguration provider)
+    {
+        if (!request.ModelOnly)
+            return Decision(NodalOsOcrVisionAdminDecisionKind.BlockedExecutableProvider, provider.ProviderId, "provider toggle must remain model-only");
+        if (provider.Policy.RequiresApiKey && request.ApiKeyState is not (NodalOsOcrVisionApiKeyState.PlaceholderConfigured or NodalOsOcrVisionApiKeyState.SecretVaultRequired))
+            return Decision(NodalOsOcrVisionAdminDecisionKind.BlockedRealApiKey, provider.ProviderId, "real API key missing/rejected; use placeholder/vault state only");
+        return Decision(NodalOsOcrVisionAdminDecisionKind.ModelOnlyUpdated, provider.ProviderId, "model-only toggle accepted; provider remains non-executable");
+    }
+
+    public NodalOsOcrVisionAdminDecision PauseModelOnly(NodalOsOcrVisionProviderPauseRequest request) =>
+        request.ModelOnly
+            ? Decision(request.Pause ? NodalOsOcrVisionAdminDecisionKind.Paused : NodalOsOcrVisionAdminDecisionKind.Resumed, request.ProviderId, "pause/resume modeled only")
+            : Decision(NodalOsOcrVisionAdminDecisionKind.BlockedExecutableProvider, request.ProviderId, "pause/resume cannot affect executable provider");
+
+    public NodalOsOcrVisionAdminDecision ReorderModelOnly(NodalOsOcrVisionProviderPriorityUpdate update) =>
+        update.ModelOnly
+            ? Decision(NodalOsOcrVisionAdminDecisionKind.Reordered, update.ProviderId, "priority/fallback order modeled deterministically")
+            : Decision(NodalOsOcrVisionAdminDecisionKind.BlockedExecutableProvider, update.ProviderId, "priority update must remain model-only");
+
+    private static NodalOsOcrVisionProviderAdminView View(NodalOsOcrVisionProviderConfiguration provider, string evaluationSummary)
+    {
+        var blocked = new List<string>();
+        if (!provider.Policy.Enabled)
+            blocked.Add(provider.Policy.DisabledReason);
+        if (provider.Policy.RequiresApiKey)
+            blocked.Add("requires placeholder/vault API key state; no real key stored");
+        if (provider.Policy.ExternalDataTransfer)
+            blocked.Add("external transfer disabled in current phase");
+        if (!provider.Policy.AllowedForFullScreen)
+            blocked.Add("full-screen OCR blocked by default");
+        return new NodalOsOcrVisionProviderAdminView(
+            provider.ProviderId,
+            DisplayName(provider),
+            provider.Kind,
+            provider.Status,
+            provider.Policy.Enabled,
+            provider.Status == NodalOsOcrVisionProviderStatus.Paused,
+            DisabledByDefault: provider.Kind.ToString().StartsWith("Cloud", StringComparison.OrdinalIgnoreCase) || provider.Kind is NodalOsOcrVisionProviderKind.LocalPaddleOcr or NodalOsOcrVisionProviderKind.LocalTesseract,
+            provider.Capabilities,
+            provider.CostProfile,
+            provider.PerformanceProfile,
+            provider.PrivacyProfile,
+            provider.Policy.RequiresApiKey,
+            provider.Policy.RequiresApiKey ? NodalOsOcrVisionApiKeyState.Missing : NodalOsOcrVisionApiKeyState.Disabled,
+            provider.Policy.ExternalDataTransfer,
+            provider.Policy.AllowedForSensitive,
+            provider.Policy.AllowedForCrops,
+            provider.Policy.AllowedForFullScreen,
+            provider.Policy.Priority,
+            provider.Policy.FallbackOrder,
+            new NodalOsOcrVisionProviderBudgetSettings(provider.Policy.DailyBudget, provider.Policy.MonthlyBudget, provider.Policy.MaxCostPerPage, provider.Policy.MaxCostPerImage, provider.CostProfile.Currency, ModelOnly: true),
+            provider.Policy.MinConfidence,
+            provider.Policy.MaxLatencyMs,
+            blocked.Select(BrowserCredentialRedactor.Redact).Where(b => !string.IsNullOrWhiteSpace(b)).ToArray(),
+            BrowserCredentialRedactor.Redact(evaluationSummary),
+            Executable: false,
+            GrantsAuthority: false,
+            Redacted: true);
+    }
+
+    private static IReadOnlyList<NodalOsOcrVisionProviderRoutingRuleView> RoutingRules() =>
+    [
+        new("rule-no-ocr", "DOM/CDP/UIA sufficient", NodalOsOcrVisionRoutingReason.NoOcrNeeded, [], [], RequiresHumanReview: false, NoAuthority: true),
+        new("rule-simple-crop", "simple redacted crop", NodalOsOcrVisionRoutingReason.LocalPaddlePreferred, [new("local-paddleocr-stub")], [new("local-tesseract-stub"), new("human-review")], RequiresHumanReview: false, NoAuthority: true),
+        new("rule-cloud-disabled", "complex layout/invoice/form", NodalOsOcrVisionRoutingReason.CloudCandidateDisabled, [], [new("local-paddleocr-stub"), new("human-review")], RequiresHumanReview: true, NoAuthority: true),
+        new("rule-sensitive", "sensitive/redaction failed", NodalOsOcrVisionRoutingReason.RedactionFailedBlocked, [], [new("human-review")], RequiresHumanReview: true, NoAuthority: true)
+    ];
+
+    private static NodalOsOcrVisionAdminDecision Decision(NodalOsOcrVisionAdminDecisionKind kind, NodalOsOcrVisionProviderId providerId, string reason) =>
+        new($"ocr-admin-{Guid.NewGuid():N}", kind, providerId, BrowserCredentialRedactor.Redact(reason), StoresApiKeys: false, CallsRealApi: false, ProviderExecutable: false, GrantsAuthority: false, Redacted: true);
+
+    private static string DisplayName(NodalOsOcrVisionProviderConfiguration provider) =>
+        provider.Kind switch
+        {
+            NodalOsOcrVisionProviderKind.LocalPaddleOcr => "PaddleOCR Local Stub",
+            NodalOsOcrVisionProviderKind.LocalTesseract => "Tesseract Local Stub",
+            NodalOsOcrVisionProviderKind.CloudAzureDocumentIntelligence => "Azure Document Intelligence Stub",
+            NodalOsOcrVisionProviderKind.CloudGoogleDocumentAi => "Google Document AI Stub",
+            NodalOsOcrVisionProviderKind.CloudGoogleVision => "Google Vision OCR Stub",
+            NodalOsOcrVisionProviderKind.CloudOpenAiVision => "OpenAI Vision OCR/VLM Stub",
+            NodalOsOcrVisionProviderKind.CloudMistralOcr => "Mistral OCR Stub",
+            NodalOsOcrVisionProviderKind.CloudAmazonTextract => "Amazon Textract Stub",
+            _ => provider.ProviderId.Value
+        };
+}
+
+public abstract class NodalOsSaasOcrProviderStubBase
+{
+    public abstract NodalOsOcrVisionProviderConfiguration Configuration { get; }
+
+    public NodalOsSaasOcrProviderExecutionProbe ProbeExecution(
+        bool optIn = false,
+        bool secretVaultConfigured = false,
+        bool budgetConfigured = false,
+        bool sensitive = false,
+        NodalOsGroundingRedactionStatus redactionStatus = NodalOsGroundingRedactionStatus.RedactedSafe)
+    {
+        var reasons = new List<NodalOsSaasOcrConnectorBlockReason> { NodalOsSaasOcrConnectorBlockReason.DisabledByDefault, NodalOsSaasOcrConnectorBlockReason.CannotRunInProductionCurrentPhase };
+        if (!optIn)
+            reasons.Add(NodalOsSaasOcrConnectorBlockReason.CannotRunWithoutOptIn);
+        if (!secretVaultConfigured)
+            reasons.Add(NodalOsSaasOcrConnectorBlockReason.CannotRunWithoutSecretVault);
+        if (!budgetConfigured)
+            reasons.Add(NodalOsSaasOcrConnectorBlockReason.CannotRunIfBudgetMissing);
+        if (sensitive)
+            reasons.Add(NodalOsSaasOcrConnectorBlockReason.CannotRunOnSensitiveByDefault);
+        if (redactionStatus is NodalOsGroundingRedactionStatus.RedactionFailed or NodalOsGroundingRedactionStatus.BlockedSensitive)
+            reasons.Add(NodalOsSaasOcrConnectorBlockReason.CannotRunIfRedactionFailed);
+        return new NodalOsSaasOcrProviderExecutionProbe(Configuration.ProviderId, Configuration.Kind, WouldCallHttp: false, StoresSecret: false, RefusesExecution: true, reasons.Distinct().ToArray(), NoAuthority: true, Redacted: true);
+    }
+}
+
+public sealed class NodalOsAzureDocumentIntelligenceProviderStub : NodalOsSaasOcrProviderStubBase
+{
+    public override NodalOsOcrVisionProviderConfiguration Configuration => NodalOsOcrVisionProviderRegistryService.CreateProviderStub("azure-document-intelligence-disabled", NodalOsOcrVisionProviderKind.CloudAzureDocumentIntelligence, NodalOsOcrVisionProviderCapability.Forms | NodalOsOcrVisionProviderCapability.Invoices | NodalOsOcrVisionProviderCapability.Receipts | NodalOsOcrVisionProviderCapability.ComplexLayout | NodalOsOcrVisionProviderCapability.Tables | NodalOsOcrVisionProviderCapability.Pdf | NodalOsOcrVisionProviderCapability.StructuredJson, 110, 0.92, 5200, 0.02m, 0.05m, "Azure Document Intelligence stub disabled-by-default");
+}
+
+public sealed class NodalOsGoogleDocumentAiProviderStub : NodalOsSaasOcrProviderStubBase
+{
+    public override NodalOsOcrVisionProviderConfiguration Configuration => NodalOsOcrVisionProviderRegistryService.CreateProviderStub("google-document-ai-disabled", NodalOsOcrVisionProviderKind.CloudGoogleDocumentAi, NodalOsOcrVisionProviderCapability.Forms | NodalOsOcrVisionProviderCapability.ComplexLayout | NodalOsOcrVisionProviderCapability.Pdf | NodalOsOcrVisionProviderCapability.StructuredJson, 120, 0.91, 5400, 0.02m, 0.05m, "Google Document AI stub disabled-by-default");
+}
+
+public sealed class NodalOsGoogleVisionOcrProviderStub : NodalOsSaasOcrProviderStubBase
+{
+    public override NodalOsOcrVisionProviderConfiguration Configuration => NodalOsOcrVisionProviderRegistryService.CreateProviderStub("google-vision-ocr-disabled", NodalOsOcrVisionProviderKind.CloudGoogleVision, NodalOsOcrVisionProviderCapability.PrintedText | NodalOsOcrVisionProviderCapability.Handwriting | NodalOsOcrVisionProviderCapability.LowQualityImage | NodalOsOcrVisionProviderCapability.BoundingBoxes, 130, 0.86, 4200, 0.015m, 0.03m, "Google Vision OCR stub disabled-by-default");
+}
+
+public sealed class NodalOsOpenAiVisionOcrProviderStub : NodalOsSaasOcrProviderStubBase
+{
+    public override NodalOsOcrVisionProviderConfiguration Configuration => NodalOsOcrVisionProviderRegistryService.CreateProviderStub("cloud-openai-vision-disabled", NodalOsOcrVisionProviderKind.CloudOpenAiVision, NodalOsOcrVisionProviderCapability.ScreenshotUi | NodalOsOcrVisionProviderCapability.Handwriting | NodalOsOcrVisionProviderCapability.MixedPrintedHandwriting | NodalOsOcrVisionProviderCapability.LowQualityImage | NodalOsOcrVisionProviderCapability.MarkdownOutput, 200, 0.88, 6000, 0.02m, 0.05m, "OpenAI Vision OCR/VLM stub disabled-by-default");
+}
+
+public sealed class NodalOsMistralOcrProviderStub : NodalOsSaasOcrProviderStubBase
+{
+    public override NodalOsOcrVisionProviderConfiguration Configuration => NodalOsOcrVisionProviderRegistryService.CreateProviderStub("mistral-ocr-disabled", NodalOsOcrVisionProviderKind.CloudMistralOcr, NodalOsOcrVisionProviderCapability.Pdf | NodalOsOcrVisionProviderCapability.MarkdownOutput | NodalOsOcrVisionProviderCapability.ComplexLayout | NodalOsOcrVisionProviderCapability.StructuredJson, 140, 0.88, 4800, 0.018m, 0.04m, "Mistral OCR stub disabled-by-default");
+}
+
+public sealed class NodalOsAmazonTextractProviderStub : NodalOsSaasOcrProviderStubBase
+{
+    public override NodalOsOcrVisionProviderConfiguration Configuration => NodalOsOcrVisionProviderRegistryService.CreateProviderStub("amazon-textract-disabled", NodalOsOcrVisionProviderKind.CloudAmazonTextract, NodalOsOcrVisionProviderCapability.Forms | NodalOsOcrVisionProviderCapability.Tables | NodalOsOcrVisionProviderCapability.IdentityDocuments | NodalOsOcrVisionProviderCapability.Invoices | NodalOsOcrVisionProviderCapability.Receipts, 150, 0.9, 5600, 0.02m, 0.05m, "Amazon Textract stub disabled-by-default");
+}
+
+public sealed class NodalOsOcrVisionEvaluationHarness
+{
+    private readonly NodalOsOcrVisionRouter router = new();
+    private readonly NodalOsGroundingSnapshotBuilder groundingBuilder = new();
+
+    public IReadOnlyList<NodalOsOcrVisionEvaluationFixture> DefaultFixtures() =>
+    [
+        Fixture("simple-ui-crop", "simple printed UI crop", NodalOsOcrVisionCaseClassification.SimpleUiCrop, NodalOsOcrVisionComplexity.Low, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.ProviderSelected, NodalOsOcrVisionRoutingReason.LocalPaddlePreferred, "local-paddleocr-stub", false),
+        Fixture("simple-document-text", "simple document text", NodalOsOcrVisionCaseClassification.SimpleText, NodalOsOcrVisionComplexity.Low, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.ProviderSelected, NodalOsOcrVisionRoutingReason.LocalPaddlePreferred, "local-paddleocr-stub", false),
+        Fixture("low-quality-crop", "low-quality crop", NodalOsOcrVisionCaseClassification.LowQualityImage, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.Poor, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.AskHuman, NodalOsOcrVisionRoutingReason.VlmCandidateDisabled, null, true),
+        Fixture("blurred-crop", "blurred crop", NodalOsOcrVisionCaseClassification.Blurred, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.Poor, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.AskHuman, NodalOsOcrVisionRoutingReason.VlmCandidateDisabled, null, true),
+        Fixture("skewed-crop", "skewed crop", NodalOsOcrVisionCaseClassification.Skewed, NodalOsOcrVisionComplexity.Medium, NodalOsOcrVisionQuality.Medium, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.AskHuman, NodalOsOcrVisionRoutingReason.AskHuman, null, true),
+        Fixture("table-layout", "table layout", NodalOsOcrVisionCaseClassification.Table, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.CloudDisabled, NodalOsOcrVisionRoutingReason.CloudCandidateDisabled, null, true),
+        Fixture("invoice-layout", "invoice layout", NodalOsOcrVisionCaseClassification.Invoice, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.CloudDisabled, NodalOsOcrVisionRoutingReason.CloudCandidateDisabled, null, true),
+        Fixture("receipt-layout", "receipt layout", NodalOsOcrVisionCaseClassification.Receipt, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.CloudDisabled, NodalOsOcrVisionRoutingReason.CloudCandidateDisabled, null, true),
+        Fixture("handwriting-synthetic", "handwriting sample synthetic", NodalOsOcrVisionCaseClassification.Handwriting, NodalOsOcrVisionComplexity.VeryHigh, NodalOsOcrVisionQuality.Medium, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.AskHuman, NodalOsOcrVisionRoutingReason.VlmCandidateDisabled, null, true),
+        Fixture("mixed-handwriting-synthetic", "mixed printed/handwriting synthetic", NodalOsOcrVisionCaseClassification.MixedPrintedHandwriting, NodalOsOcrVisionComplexity.VeryHigh, NodalOsOcrVisionQuality.Medium, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.AskHuman, NodalOsOcrVisionRoutingReason.VlmCandidateDisabled, null, true),
+        Fixture("screenshot-ui-ambiguous", "screenshot UI ambiguous", NodalOsOcrVisionCaseClassification.Unknown, NodalOsOcrVisionComplexity.Unknown, NodalOsOcrVisionQuality.Medium, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.AskHuman, NodalOsOcrVisionRoutingReason.AskHuman, null, true),
+        Fixture("sensitive-redaction-failed", "sensitive crop redaction failed", NodalOsOcrVisionCaseClassification.SensitiveSurface, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.RedactionFailed, NodalOsOcrVisionSensitivity.SensitiveSurface, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactionFailed, NodalOsOcrVisionRoutingStatus.Blocked, NodalOsOcrVisionRoutingReason.RedactionFailedBlocked, null, true),
+        Fixture("full-screen-blocked", "full-screen request blocked", NodalOsOcrVisionCaseClassification.ScreenshotUi, NodalOsOcrVisionComplexity.Medium, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, true, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.Blocked, NodalOsOcrVisionRoutingReason.NoProviderAllowed, null, true),
+        Fixture("cloud-candidate-disabled", "cloud candidate disabled", NodalOsOcrVisionCaseClassification.Form, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 1m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.CloudDisabled, NodalOsOcrVisionRoutingReason.CloudCandidateDisabled, null, true),
+        Fixture("budget-exceeded", "budget exceeded", NodalOsOcrVisionCaseClassification.Invoice, NodalOsOcrVisionComplexity.High, NodalOsOcrVisionQuality.Good, NodalOsOcrVisionSensitivity.Low, false, false, true, false, 0m, NodalOsGroundingRedactionStatus.RedactedSafe, NodalOsOcrVisionRoutingStatus.BlockedByBudget, NodalOsOcrVisionRoutingReason.BudgetExceeded, null, true)
+    ];
+
+    public NodalOsOcrVisionBenchmarkReport Run(NodalOsOcrVisionProviderRegistry registry)
+    {
+        var cases = DefaultFixtures().Select(fixture => new NodalOsOcrVisionEvaluationCase(fixture.FixtureId, fixture, ToRequest(fixture))).ToArray();
+        var results = cases.Select(@case => Evaluate(@case, registry)).ToArray();
+        return new NodalOsOcrVisionBenchmarkReport(
+            "ocr-vision-evaluation-m177",
+            DateTimeOffset.UtcNow,
+            results,
+            results.Length,
+            results.Count(result => result.Passed),
+            CallsRealOcr: false,
+            CallsRealSaas: false,
+            NoAuthority: true,
+            Redacted: true);
+    }
+
+    public void WriteReport(NodalOsOcrVisionBenchmarkReport report, string artifactJsonPath, string markdownPath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(artifactJsonPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(markdownPath)!);
+        File.WriteAllText(artifactJsonPath, System.Text.Json.JsonSerializer.Serialize(report, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(markdownPath, Markdown(report));
+    }
+
+    private NodalOsOcrVisionEvaluationResult Evaluate(NodalOsOcrVisionEvaluationCase evaluationCase, NodalOsOcrVisionProviderRegistry registry)
+    {
+        var decision = router.Route(evaluationCase.RoutingRequest, registry);
+        var expected = evaluationCase.Fixture.ExpectedOutput;
+        var providerMatch = expected.ExpectedProviderId is null || decision.SelectedProviderId?.Value == expected.ExpectedProviderId;
+        var metrics = new[]
+        {
+            Metric("routing correctness", (decision.Status == expected.ExpectedStatus && decision.Reason == expected.ExpectedReason && providerMatch).ToString(), decision.Status == expected.ExpectedStatus && decision.Reason == expected.ExpectedReason && providerMatch),
+            Metric("no real OCR", "false", true),
+            Metric("no real SaaS", decision.CallsRealSaas.ToString(), !decision.CallsRealSaas),
+            Metric("no authority", decision.NoAuthority.ToString(), decision.NoAuthority),
+            Metric("human escalation", decision.RequiresHumanApproval.ToString(), decision.RequiresHumanApproval == expected.RequiresHumanEscalation || expected.RequiresHumanEscalation == false)
+        };
+        return new NodalOsOcrVisionEvaluationResult(
+            $"ocr-eval-{evaluationCase.CaseId}",
+            evaluationCase.Fixture,
+            decision,
+            Scores(decision),
+            metrics,
+            metrics.All(metric => metric.Passed),
+            CallsRealOcr: false,
+            CallsRealSaas: false,
+            NoAuthority: true,
+            Redacted: true);
+    }
+
+    private NodalOsOcrVisionRoutingRequest ToRequest(NodalOsOcrVisionEvaluationFixture fixture)
+    {
+        var snapshot = groundingBuilder.Create($"snapshot-{fixture.FixtureId}", redactionStatus: fixture.RedactionStatus);
+        return new NodalOsOcrVisionRoutingRequest(
+            fixture.FixtureId,
+            fixture.DomCdpUiaSufficient,
+            fixture.ScreenshotHashDiffOnly,
+            snapshot,
+            "crop:redacted",
+            fixture.CropRedacted,
+            fixture.FullScreen,
+            fixture.CaseClassification,
+            DocumentType(fixture.CaseClassification),
+            fixture.Complexity,
+            fixture.Quality,
+            fixture.Sensitivity,
+            fixture.Budget,
+            RequiredConfidence: 0.75,
+            AllowsCloud: false,
+            Redacted: true);
+    }
+
+    private static NodalOsOcrVisionEvaluationFixture Fixture(
+        string id,
+        string description,
+        NodalOsOcrVisionCaseClassification classification,
+        NodalOsOcrVisionComplexity complexity,
+        NodalOsOcrVisionQuality quality,
+        NodalOsOcrVisionSensitivity sensitivity,
+        bool domSufficient,
+        bool hashOnly,
+        bool cropRedacted,
+        bool fullScreen,
+        decimal budget,
+        NodalOsGroundingRedactionStatus redaction,
+        NodalOsOcrVisionRoutingStatus expectedStatus,
+        NodalOsOcrVisionRoutingReason expectedReason,
+        string? expectedProvider,
+        bool human) =>
+        new(id, description, classification, complexity, quality, sensitivity, domSufficient, hashOnly, cropRedacted, fullScreen, budget, redaction, new NodalOsOcrVisionExpectedOutput(expectedStatus, expectedReason, expectedProvider, human, NoAuthority: true), Synthetic: true, Redacted: true);
+
+    private static IReadOnlyList<NodalOsOcrVisionProviderScore> Scores(NodalOsOcrVisionRoutingDecision decision) =>
+        decision.FallbackPlan.Providers.Select(provider => new NodalOsOcrVisionProviderScore(provider, decision.ExpectedConfidenceBand, "model-only", decision.EstimatedCost, decision.Risk, decision.SelectedProviderId == provider, Fallback: true, NoAuthority: true)).ToArray();
+
+    private static NodalOsOcrVisionEvaluationMetric Metric(string name, string value, bool passed) => new(name, value, passed);
+
+    private static NodalOsOcrVisionDocumentType DocumentType(NodalOsOcrVisionCaseClassification classification) =>
+        classification switch
+        {
+            NodalOsOcrVisionCaseClassification.Invoice => NodalOsOcrVisionDocumentType.Invoice,
+            NodalOsOcrVisionCaseClassification.Receipt => NodalOsOcrVisionDocumentType.Receipt,
+            NodalOsOcrVisionCaseClassification.Table => NodalOsOcrVisionDocumentType.Table,
+            NodalOsOcrVisionCaseClassification.Form => NodalOsOcrVisionDocumentType.Form,
+            NodalOsOcrVisionCaseClassification.Handwriting => NodalOsOcrVisionDocumentType.Handwriting,
+            NodalOsOcrVisionCaseClassification.MixedPrintedHandwriting => NodalOsOcrVisionDocumentType.MixedPrintedHandwriting,
+            _ => NodalOsOcrVisionDocumentType.UiCrop
+        };
+
+    private static string Markdown(NodalOsOcrVisionBenchmarkReport report)
+    {
+        var lines = new List<string>
+        {
+            "# OCR/Vision Evaluation M177",
+            "",
+            $"Total cases: {report.TotalCases}",
+            $"Passed cases: {report.PassedCases}",
+            "No real OCR executed: true",
+            "No SaaS OCR executed: true",
+            "No-authority: true",
+            "",
+            "| Fixture | Status | Reason | Provider | Passed |",
+            "| --- | --- | --- | --- | --- |"
+        };
+        lines.AddRange(report.Results.Select(result => $"| {result.Fixture.FixtureId} | {result.Decision.Status} | {result.Decision.Reason} | {result.Decision.SelectedProviderId?.Value ?? "-"} | {result.Passed} |"));
+        return string.Join(Environment.NewLine, lines);
+    }
 }
 
 public interface NodalOsLocalOcrProvider

@@ -1,0 +1,1735 @@
+{
+  "ReportId": "ocr-vision-evaluation-m177",
+  "CreatedAtUtc": "2026-06-16T19:09:44.1320801+00:00",
+  "Results": [
+    {
+      "ResultId": "ocr-eval-simple-ui-crop",
+      "Fixture": {
+        "FixtureId": "simple-ui-crop",
+        "Description": "simple printed UI crop",
+        "CaseClassification": 1,
+        "Complexity": 0,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 1,
+          "ExpectedReason": 1,
+          "ExpectedProviderId": "local-paddleocr-stub",
+          "RequiresHumanEscalation": false,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-e9103ba513454a8e88a169f6798152f2",
+        "Status": 1,
+        "SelectedProviderId": {
+          "Value": "local-paddleocr-stub"
+        },
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "local-paddleocr-stub"
+            },
+            {
+              "Value": "local-tesseract-stub"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "local OCR stubs first, human review if low confidence or blocked"
+        },
+        "Reason": 1,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": false,
+        "NoAuthority": true,
+        "BlockedReason": "simple redacted crop routes to local PaddleOCR stub",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-simple-ui-crop:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "local-paddleocr-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 1,
+          "Selected": true,
+          "Fallback": true,
+          "NoAuthority": true
+        },
+        {
+          "ProviderId": {
+            "Value": "local-tesseract-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "False",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-simple-document-text",
+      "Fixture": {
+        "FixtureId": "simple-document-text",
+        "Description": "simple document text",
+        "CaseClassification": 0,
+        "Complexity": 0,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 1,
+          "ExpectedReason": 1,
+          "ExpectedProviderId": "local-paddleocr-stub",
+          "RequiresHumanEscalation": false,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-0cc26f32e7e6448ba9b38ab1fa11f882",
+        "Status": 1,
+        "SelectedProviderId": {
+          "Value": "local-paddleocr-stub"
+        },
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "local-paddleocr-stub"
+            },
+            {
+              "Value": "local-tesseract-stub"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "local OCR stubs first, human review if low confidence or blocked"
+        },
+        "Reason": 1,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": false,
+        "NoAuthority": true,
+        "BlockedReason": "simple redacted crop routes to local PaddleOCR stub",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-simple-document-text:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "local-paddleocr-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 1,
+          "Selected": true,
+          "Fallback": true,
+          "NoAuthority": true
+        },
+        {
+          "ProviderId": {
+            "Value": "local-tesseract-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "False",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-low-quality-crop",
+      "Fixture": {
+        "FixtureId": "low-quality-crop",
+        "Description": "low-quality crop",
+        "CaseClassification": 11,
+        "Complexity": 2,
+        "Quality": 2,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 3,
+          "ExpectedReason": 4,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-343361a357f14186a0c296b3fba1b276",
+        "Status": 3,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 4,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "VLM candidate disabled-by-default; ask human or future configured fallback",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-low-quality-crop:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-blurred-crop",
+      "Fixture": {
+        "FixtureId": "blurred-crop",
+        "Description": "blurred crop",
+        "CaseClassification": 12,
+        "Complexity": 2,
+        "Quality": 2,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 3,
+          "ExpectedReason": 4,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-cc8873104ba64714815b9d0351788965",
+        "Status": 3,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 4,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "VLM candidate disabled-by-default; ask human or future configured fallback",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-blurred-crop:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-skewed-crop",
+      "Fixture": {
+        "FixtureId": "skewed-crop",
+        "Description": "skewed crop",
+        "CaseClassification": 13,
+        "Complexity": 1,
+        "Quality": 1,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 3,
+          "ExpectedReason": 10,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-e4937a7b0ce242c989dcd09cfdd409ef",
+        "Status": 3,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 10,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "unknown OCR case requires human review",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-skewed-crop:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-table-layout",
+      "Fixture": {
+        "FixtureId": "table-layout",
+        "Description": "table layout",
+        "CaseClassification": 4,
+        "Complexity": 2,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 7,
+          "ExpectedReason": 3,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-fbf5ce37884349cd8a5981d4d6db3496",
+        "Status": 7,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "local-paddleocr-stub"
+            },
+            {
+              "Value": "local-tesseract-stub"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "local OCR stubs first, human review if low confidence or blocked"
+        },
+        "Reason": 3,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "cloud document OCR candidate remains disabled-by-default; use local fallback or human review",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-table-layout:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "local-paddleocr-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        },
+        {
+          "ProviderId": {
+            "Value": "local-tesseract-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-invoice-layout",
+      "Fixture": {
+        "FixtureId": "invoice-layout",
+        "Description": "invoice layout",
+        "CaseClassification": 6,
+        "Complexity": 2,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 7,
+          "ExpectedReason": 3,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-bdeb5ddb87934df9924f0f527a4a2e9e",
+        "Status": 7,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "local-paddleocr-stub"
+            },
+            {
+              "Value": "local-tesseract-stub"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "local OCR stubs first, human review if low confidence or blocked"
+        },
+        "Reason": 3,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "cloud document OCR candidate remains disabled-by-default; use local fallback or human review",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-invoice-layout:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "local-paddleocr-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        },
+        {
+          "ProviderId": {
+            "Value": "local-tesseract-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-receipt-layout",
+      "Fixture": {
+        "FixtureId": "receipt-layout",
+        "Description": "receipt layout",
+        "CaseClassification": 7,
+        "Complexity": 2,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 7,
+          "ExpectedReason": 3,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-be999310c083403c9277c6b1e486ca6c",
+        "Status": 7,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "local-paddleocr-stub"
+            },
+            {
+              "Value": "local-tesseract-stub"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "local OCR stubs first, human review if low confidence or blocked"
+        },
+        "Reason": 3,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "cloud document OCR candidate remains disabled-by-default; use local fallback or human review",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-receipt-layout:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "local-paddleocr-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        },
+        {
+          "ProviderId": {
+            "Value": "local-tesseract-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-handwriting-synthetic",
+      "Fixture": {
+        "FixtureId": "handwriting-synthetic",
+        "Description": "handwriting sample synthetic",
+        "CaseClassification": 9,
+        "Complexity": 3,
+        "Quality": 1,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 3,
+          "ExpectedReason": 4,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-1dd5aac38fae4d539f9d70a1c9acc24b",
+        "Status": 3,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 4,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "VLM candidate disabled-by-default; ask human or future configured fallback",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-handwriting-synthetic:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-mixed-handwriting-synthetic",
+      "Fixture": {
+        "FixtureId": "mixed-handwriting-synthetic",
+        "Description": "mixed printed/handwriting synthetic",
+        "CaseClassification": 10,
+        "Complexity": 3,
+        "Quality": 1,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 3,
+          "ExpectedReason": 4,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-93827699bfee4b11b2947ded83caa05c",
+        "Status": 3,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 4,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "VLM candidate disabled-by-default; ask human or future configured fallback",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-mixed-handwriting-synthetic:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-screenshot-ui-ambiguous",
+      "Fixture": {
+        "FixtureId": "screenshot-ui-ambiguous",
+        "Description": "screenshot UI ambiguous",
+        "CaseClassification": 15,
+        "Complexity": 4,
+        "Quality": 1,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 3,
+          "ExpectedReason": 10,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-3e5faee71ab34e8da5afc7dbf0ce0b08",
+        "Status": 3,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 10,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "unknown OCR case requires human review",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-screenshot-ui-ambiguous:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-sensitive-redaction-failed",
+      "Fixture": {
+        "FixtureId": "sensitive-redaction-failed",
+        "Description": "sensitive crop redaction failed",
+        "CaseClassification": 14,
+        "Complexity": 2,
+        "Quality": 3,
+        "Sensitivity": 4,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 3,
+        "ExpectedOutput": {
+          "ExpectedStatus": 4,
+          "ExpectedReason": 6,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-39445bf5f08145a9924fd1e33389000c",
+        "Status": 4,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 6,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 5,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "redaction failed; OCR blocked",
+        "EvidenceRefs": [],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 5,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-full-screen-blocked",
+      "Fixture": {
+        "FixtureId": "full-screen-blocked",
+        "Description": "full-screen request blocked",
+        "CaseClassification": 2,
+        "Complexity": 1,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": true,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 4,
+          "ExpectedReason": 9,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-5b32f85c1fb84ffab0ceb660da2acfbf",
+        "Status": 4,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 9,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 3,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "full-screen OCR is blocked by default; use redacted crops",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-full-screen-blocked:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0,
+          "PrivacyRisk": 3,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-cloud-candidate-disabled",
+      "Fixture": {
+        "FixtureId": "cloud-candidate-disabled",
+        "Description": "cloud candidate disabled",
+        "CaseClassification": 5,
+        "Complexity": 2,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 1,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 7,
+          "ExpectedReason": 3,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-484e45053c2a45c9bafaf96fbdfbbaff",
+        "Status": 7,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "local-paddleocr-stub"
+            },
+            {
+              "Value": "local-tesseract-stub"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "local OCR stubs first, human review if low confidence or blocked"
+        },
+        "Reason": 3,
+        "BudgetDecision": {
+          "Allowed": true,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 1,
+          "Reason": "within budget"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 1,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "cloud document OCR candidate remains disabled-by-default; use local fallback or human review",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-cloud-candidate-disabled:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "local-paddleocr-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        },
+        {
+          "ProviderId": {
+            "Value": "local-tesseract-stub"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 1,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    },
+    {
+      "ResultId": "ocr-eval-budget-exceeded",
+      "Fixture": {
+        "FixtureId": "budget-exceeded",
+        "Description": "budget exceeded",
+        "CaseClassification": 6,
+        "Complexity": 2,
+        "Quality": 0,
+        "Sensitivity": 1,
+        "DomCdpUiaSufficient": false,
+        "ScreenshotHashDiffOnly": false,
+        "CropRedacted": true,
+        "FullScreen": false,
+        "Budget": 0,
+        "RedactionStatus": 1,
+        "ExpectedOutput": {
+          "ExpectedStatus": 5,
+          "ExpectedReason": 8,
+          "ExpectedProviderId": null,
+          "RequiresHumanEscalation": true,
+          "NoAuthority": true
+        },
+        "Synthetic": true,
+        "Redacted": true
+      },
+      "Decision": {
+        "DecisionId": "ocr-route-75a3fe152176475d876fe6989457728d",
+        "Status": 5,
+        "SelectedProviderId": null,
+        "FallbackPlan": {
+          "Providers": [
+            {
+              "Value": "human-review"
+            }
+          ],
+          "HumanReviewFallback": true,
+          "Summary": "human-in-the-loop required"
+        },
+        "Reason": 8,
+        "BudgetDecision": {
+          "Allowed": false,
+          "EstimatedCost": 0.02,
+          "MaxAllowedCost": 0,
+          "Reason": "budget exceeded"
+        },
+        "EstimatedCost": 0.02,
+        "ExpectedConfidenceBand": "medium",
+        "Risk": 2,
+        "PrivacyNote": "OCR/Vision routing is redacted, crop-first, no-authority; SaaS disabled unless future configured approval exists.",
+        "RequiresHumanApproval": true,
+        "NoAuthority": true,
+        "BlockedReason": "estimated OCR cost exceeds request budget",
+        "EvidenceRefs": [
+          {
+            "RefId": "grounding:snapshot-budget-exceeded:redacted",
+            "Label": "grounding snapshot",
+            "Redacted": true
+          }
+        ],
+        "CallsRealSaas": false,
+        "Redacted": true
+      },
+      "ProviderScores": [
+        {
+          "ProviderId": {
+            "Value": "human-review"
+          },
+          "ExpectedConfidenceBand": "medium",
+          "ExpectedLatencyBand": "model-only",
+          "EstimatedCost": 0.02,
+          "PrivacyRisk": 2,
+          "Selected": false,
+          "Fallback": true,
+          "NoAuthority": true
+        }
+      ],
+      "Metrics": [
+        {
+          "Name": "routing correctness",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "no real OCR",
+          "Value": "false",
+          "Passed": true
+        },
+        {
+          "Name": "no real SaaS",
+          "Value": "False",
+          "Passed": true
+        },
+        {
+          "Name": "no authority",
+          "Value": "True",
+          "Passed": true
+        },
+        {
+          "Name": "human escalation",
+          "Value": "True",
+          "Passed": true
+        }
+      ],
+      "Passed": true,
+      "CallsRealOcr": false,
+      "CallsRealSaas": false,
+      "NoAuthority": true,
+      "Redacted": true
+    }
+  ],
+  "TotalCases": 15,
+  "PassedCases": 15,
+  "CallsRealOcr": false,
+  "CallsRealSaas": false,
+  "NoAuthority": true,
+  "Redacted": true
+}
