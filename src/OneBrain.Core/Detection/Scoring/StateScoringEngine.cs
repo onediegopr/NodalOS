@@ -63,6 +63,12 @@ public sealed class StateScoringEngine : IStateScoringEngine
         };
 
         var max = scores.MaxBy(s => s.Item2);
+
+        // BUG C-2: con todas las dimensiones en 0, MaxBy retorna el primer elemento (Captcha) con
+        // score 0 => falso positivo. Sin señal dominante real se reporta None.
+        if (max.Item2 <= 0.0)
+            return (InteractionState.None, 0.0);
+
         return max;
     }
 

@@ -8,7 +8,7 @@ using OneBrain.Core.Detection.Contracts;
 /// </summary>
 public sealed class StateSafetyPolicyEngine : ISafetyPolicyEngine
 {
-    private const double MINIMUM_CONFIDENCE = 0.60;
+    public const double MINIMUM_CONFIDENCE = 0.60;
 
     public Task<StateDecision> EvaluateStateAsync(StateDetectionResult result, CancellationToken ct = default)
     {
@@ -24,13 +24,21 @@ public sealed class StateSafetyPolicyEngine : ISafetyPolicyEngine
             InteractionState.TimeoutOrHang => StateDecision.Wait(TimeSpan.FromSeconds(3), "P-TIMEOUT-001"),
             InteractionState.JavaScriptDialog => StateDecision.RequiresHuman("P-JSDIALOG-001"),
             InteractionState.FrameNavigated => StateDecision.TriggerSelectorRecovery("P-NAVIGATION-001"),
-            InteractionState.None => result.ConfidenceScore >= MINIMUM_CONFIDENCE
-                ? StateDecision.Proceed("P-NONE-HIGH-CONFIDENCE")
-                : StateDecision.Proceed("P-NONE"),
-            _ => result.ConfidenceScore >= MINIMUM_CONFIDENCE
-                ? StateDecision.Proceed()
-                : StateDecision.RequiresHuman("P-LOW-CONFIDENCE-001")
+            InteractionState.None => StateDecision.Proceed("P-NONE"),
+            _ => StateDecision.RequiresHuman("P-UNKNOWN-001")
         };
+
+        // BUG C-1: una señal de estado concreta (no None) con confianza por debajo del piso no puede
+        // avanzar el flujo. Las decisiones que avanzan (Proceed/Wait/TriggerSelectorRecovery) se degradan
+        // a RequiresHuman. None es el baseline limpio (confianza 0 por construcción) y queda excluido.
+        if (result.DetectedState != InteractionState.None &&
+            result.ConfidenceScore < MINIMUM_CONFIDENCE &&
+            decision.Type is StateDecisionType.Proceed
+                or StateDecisionType.Wait
+                or StateDecisionType.TriggerSelectorRecovery)
+        {
+            decision = StateDecision.RequiresHuman("P-LOW-CONFIDENCE-001");
+        }
 
         return Task.FromResult(decision);
     }

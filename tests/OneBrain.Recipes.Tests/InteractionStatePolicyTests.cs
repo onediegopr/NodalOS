@@ -47,7 +47,7 @@ public sealed class InteractionStatePolicyTests
     public async Task Policy_Loading_Waits()
     {
         var engine = new StateSafetyPolicyEngine();
-        var result = new StateDetectionResult { DetectedState = InteractionState.Loading };
+        var result = new StateDetectionResult { DetectedState = InteractionState.Loading, ConfidenceScore = 0.95 };
         var decision = await engine.EvaluateStateAsync(result);
         Assert.AreEqual(StateDecisionType.Wait, decision.Type);
         Assert.IsTrue(decision.WaitDuration > TimeSpan.Zero);
@@ -57,7 +57,7 @@ public sealed class InteractionStatePolicyTests
     public async Task Policy_LayoutChanged_TriggersSelectorRecovery()
     {
         var engine = new StateSafetyPolicyEngine();
-        var result = new StateDetectionResult { DetectedState = InteractionState.LayoutChanged };
+        var result = new StateDetectionResult { DetectedState = InteractionState.LayoutChanged, ConfidenceScore = 0.95 };
         var decision = await engine.EvaluateStateAsync(result);
         Assert.AreEqual(StateDecisionType.TriggerSelectorRecovery, decision.Type);
     }
@@ -76,7 +76,7 @@ public sealed class InteractionStatePolicyTests
     public async Task Policy_Timeout_Waits()
     {
         var engine = new StateSafetyPolicyEngine();
-        var result = new StateDetectionResult { DetectedState = InteractionState.TimeoutOrHang };
+        var result = new StateDetectionResult { DetectedState = InteractionState.TimeoutOrHang, ConfidenceScore = 0.95 };
         var decision = await engine.EvaluateStateAsync(result);
         Assert.AreEqual(StateDecisionType.Wait, decision.Type);
     }
@@ -94,7 +94,7 @@ public sealed class InteractionStatePolicyTests
     public async Task Policy_FrameNavigated_TriggersSelectorRecovery()
     {
         var engine = new StateSafetyPolicyEngine();
-        var result = new StateDetectionResult { DetectedState = InteractionState.FrameNavigated };
+        var result = new StateDetectionResult { DetectedState = InteractionState.FrameNavigated, ConfidenceScore = 0.95 };
         var decision = await engine.EvaluateStateAsync(result);
         Assert.AreEqual(StateDecisionType.TriggerSelectorRecovery, decision.Type);
     }
@@ -112,7 +112,7 @@ public sealed class InteractionStatePolicyTests
     public async Task Policy_ModalOverlay_Proceed()
     {
         var engine = new StateSafetyPolicyEngine();
-        var result = new StateDetectionResult { DetectedState = InteractionState.ModalOverlay };
+        var result = new StateDetectionResult { DetectedState = InteractionState.ModalOverlay, ConfidenceScore = 0.95 };
         var decision = await engine.EvaluateStateAsync(result);
         Assert.AreEqual(StateDecisionType.Proceed, decision.Type);
     }
