@@ -68,6 +68,17 @@ If NODAL OS detects repeated URL, repeated DOM/screenshot hash, repeated action,
 - If page health is `Blocked`, keep blockers visible and do not try a sensitive workaround.
 - Grounding can help explain stagnation, but screenshot is not a source of truth by itself. DOM/CDP/Core policy remain preferred.
 
+## Reading OCR/Vision Routing
+
+- `NoOcrNeeded` means DOM/CDP/UIA or screenshot hash/diff already gives enough safe context. Do not force OCR.
+- `LocalOnly` or a local provider decision means only model-only/local OCR stubs are in scope; no real OCR is executed in this phase.
+- `CloudDisabled` means a SaaS OCR/VLM provider might be a future candidate, but it is disabled-by-default and no API call/key is used.
+- `AskHuman` means confidence, sensitivity, quality or provider policy requires human review.
+- `RedactionFailed` means OCR is blocked. Do not process or persist screenshots/crops.
+- OCR routing decisions may appear as timeline evidence/status cards in future UI, but OCR does not authorize actions.
+- OCR does not authorize actions, clicks, submit/pay/sign/delete, credential entry, login, CAPTCHA/2FA bypass, sensitive sites or production flows.
+- Prefer redacted crops over full-screen screenshots whenever OCR is considered in a future phase.
+
 ## Allowed Examples
 
 - Review Product/Admin local summary.
