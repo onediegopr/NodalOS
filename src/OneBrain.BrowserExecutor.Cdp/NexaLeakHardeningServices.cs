@@ -265,3 +265,49 @@ public sealed class NexaSkippedTestsAuditReporter
     private static NexaSkippedTestAuditItem Item(string name, NexaSkippedTestCategory category, string reason, string env, bool blocksLocalPreview, string action) =>
         new(name, category, reason, env, blocksLocalPreview, action);
 }
+
+public sealed class NexaSkippedTestsCategoryAuditor
+{
+    private static readonly HashSet<NexaSkippedTestCategory> ExpectedCategories = new()
+    {
+        NexaSkippedTestCategory.AuthSandbox,
+        NexaSkippedTestCategory.CdpLiveOptIn,
+        NexaSkippedTestCategory.DocumentWorkflowOptIn,
+        NexaSkippedTestCategory.ExternalTargetBlocked,
+        NexaSkippedTestCategory.RecorderReplayOptIn,
+        NexaSkippedTestCategory.SafeDownloadUploadOptIn,
+        NexaSkippedTestCategory.SensitiveSimulationOptIn
+    };
+
+    public NexaSkippedTestsCategoryAuditResult Audit(NexaSkippedTestsAuditReport report, int expectedCount = 29)
+    {
+        var actualCategories = report.Items.Select(item => item.Category).ToHashSet();
+        var reasons = new List<string>();
+
+        if (report.Items.Count != expectedCount)
+            reasons.Add("skipped test count mismatch");
+
+        var missing = ExpectedCategories.Except(actualCategories).ToArray();
+        if (missing.Length > 0)
+            reasons.Add($"missing skipped categories: {string.Join(",", missing)}");
+
+        var unexpected = actualCategories.Except(ExpectedCategories).ToArray();
+        if (unexpected.Length > 0)
+            reasons.Add($"unexpected skipped categories: {string.Join(",", unexpected)}");
+
+        if (report.Items.Any(item => item.BlocksLocalPrivatePreview))
+            reasons.Add("local/private preview skip is not allowlisted");
+
+        if (report.Items.Any(item => string.IsNullOrWhiteSpace(item.OptInEnvironmentVariable)))
+            reasons.Add("skipped item missing opt-in environment variable");
+
+        return new NexaSkippedTestsCategoryAuditResult(
+            expectedCount,
+            report.Items.Count,
+            ExpectedCategories,
+            actualCategories,
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            Passed: reasons.Count == 0 && report.Completed && report.Redacted,
+            Redacted: true);
+    }
+}

@@ -86,6 +86,31 @@ public sealed record NodalOsLocalPrivatePreviewReleaseGateInput(
     bool SubmitPaySignDeleteEnabled,
     bool RecorderReplayProductiveEnabled);
 
+public sealed record NodalOsReleaseGateStateSnapshot(
+    bool BuildOk,
+    bool TestsOk,
+    bool WorktreeCanonical,
+    bool M51EvidenceAvailable,
+    bool M65EvidenceAvailable,
+    bool ProductAdminReady,
+    bool OperatorRunbookExists,
+    bool BlockerExplanationsReady,
+    bool EvidenceLogSummaryReady,
+    bool ExternalGeneralReady,
+    bool PublicSaasEnabled,
+    bool PublicApiEnabled,
+    bool RealBillingEnabled,
+    bool RealEmailEnabled,
+    bool RealCredentialsEnabled,
+    bool SensitiveSitesEnabled,
+    bool SubmitPaySignDeleteEnabled,
+    bool RecorderReplayProductiveEnabled);
+
+public interface INodalOsRuntimeStateProbe
+{
+    NodalOsReleaseGateStateSnapshot Probe();
+}
+
 public sealed record NodalOsLocalPrivatePreviewReleaseGateDecision(
     NodalOsLocalPrivatePreviewReleaseGateStatus Status,
     NodalOsLocalPrivatePreviewScope Scope,
@@ -138,6 +163,7 @@ public sealed record NodalOsReleaseEvidenceSnapshot(
     bool RealCredentialsAllowed,
     bool SensitiveSitesAllowed,
     bool SubmitPaySignDeleteAllowed,
+    bool EvidenceLedgerVerified,
     bool Redacted);
 
 public sealed record NodalOsPrivatePreviewEvidenceFreezeResult(
@@ -146,4 +172,29 @@ public sealed record NodalOsPrivatePreviewEvidenceFreezeResult(
     IReadOnlyList<string> ReasonCodes,
     bool ReadyForExternalAudit,
     bool ScopeInflationDetected,
+    bool Redacted);
+
+public enum NodalOsEvidenceLedgerVerificationStatus
+{
+    Verified,
+    MissingLedgerRef,
+    LedgerHashMismatch,
+    PersistenceStatusMismatch,
+    ScopeMismatch,
+    UnsafeLedgerContent
+}
+
+public sealed record NodalOsEvidenceLedgerVerificationRequest(
+    string ExpectedLedgerRef,
+    string ExpectedLedgerHash,
+    NexaExternalEvidencePersistenceStatus PersistenceStatus,
+    string ExpectedScope,
+    NexaExternalProofProbeKind ExpectedProbeKind);
+
+public sealed record NodalOsEvidenceLedgerVerificationResult(
+    NodalOsEvidenceLedgerVerificationStatus Status,
+    string? LedgerRef,
+    string? LedgerHash,
+    IReadOnlyList<string> ReasonCodes,
+    bool Verified,
     bool Redacted);

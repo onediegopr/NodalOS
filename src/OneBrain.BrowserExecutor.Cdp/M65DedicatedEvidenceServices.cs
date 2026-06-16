@@ -168,6 +168,8 @@ public sealed class M65FormalClosureReviewService
             reasons.Add("read-only Chrome/CDP capability set is incomplete");
         if (!input.LedgerPersisted || string.IsNullOrWhiteSpace(input.LedgerRef) || string.IsNullOrWhiteSpace(input.LedgerHash))
             reasons.Add("persisted redacted ledger ref and hash required");
+        if (!input.LedgerVerified)
+            reasons.Add("ledger event must be verified against BrowserPersistentAuditLedger");
         if (!input.IsolatedProfile)
             reasons.Add("isolated non-personal profile required");
         if (!input.NoSecretsCookiesTokens)

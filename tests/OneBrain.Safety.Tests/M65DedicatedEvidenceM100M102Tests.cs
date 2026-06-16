@@ -471,7 +471,8 @@ public sealed class M65DedicatedEvidenceM100M102Tests
             RealEmailEnabled: false,
             RealCredentialsEnabled: false,
             SensitiveSitesEnabled: false,
-            GeneralExternalCdpRequested: generalExternalCdp);
+            GeneralExternalCdpRequested: generalExternalCdp,
+            LedgerVerified: ledger);
 
     private static ExternalCdpScopeLockRequest ScopeRequest(
         string host = "lab.nodalos.com.ar",

@@ -181,7 +181,8 @@ public sealed record M65FormalClosureReviewInput(
     bool RealEmailEnabled,
     bool RealCredentialsEnabled,
     bool SensitiveSitesEnabled,
-    bool GeneralExternalCdpRequested);
+    bool GeneralExternalCdpRequested,
+    bool LedgerVerified = false);
 
 public sealed record M65FormalClosureReview(
     M65FormalClosureDecision Decision,

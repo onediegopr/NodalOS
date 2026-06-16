@@ -93,6 +93,15 @@ public sealed record NexaSkippedTestsAuditReport(IReadOnlyList<NexaSkippedTestAu
     public bool BlocksLocalPrivatePreview => Items.Any(item => item.BlocksLocalPrivatePreview);
 }
 
+public sealed record NexaSkippedTestsCategoryAuditResult(
+    int ExpectedCount,
+    int ActualCount,
+    IReadOnlySet<NexaSkippedTestCategory> ExpectedCategories,
+    IReadOnlySet<NexaSkippedTestCategory> ActualCategories,
+    IReadOnlyList<string> ReasonCodes,
+    bool Passed,
+    bool Redacted);
+
 public static class NexaLeakHardeningSerialization
 {
     public static string ToSafeJson(object value) =>

@@ -93,6 +93,30 @@ public sealed class NodalOsOperatorUxReadinessService
 
 public sealed class NodalOsLocalPrivatePreviewReleaseGate
 {
+    public NodalOsLocalPrivatePreviewReleaseGateDecision Evaluate(INodalOsRuntimeStateProbe probe) =>
+        Evaluate(probe.Probe());
+
+    public NodalOsLocalPrivatePreviewReleaseGateDecision Evaluate(NodalOsReleaseGateStateSnapshot snapshot) =>
+        Evaluate(new NodalOsLocalPrivatePreviewReleaseGateInput(
+            snapshot.BuildOk,
+            snapshot.TestsOk,
+            snapshot.WorktreeCanonical,
+            snapshot.M51EvidenceAvailable,
+            snapshot.M65EvidenceAvailable,
+            snapshot.ProductAdminReady,
+            snapshot.OperatorRunbookExists,
+            snapshot.BlockerExplanationsReady,
+            snapshot.EvidenceLogSummaryReady,
+            snapshot.ExternalGeneralReady,
+            snapshot.PublicSaasEnabled,
+            snapshot.PublicApiEnabled,
+            snapshot.RealBillingEnabled,
+            snapshot.RealEmailEnabled,
+            snapshot.RealCredentialsEnabled,
+            snapshot.SensitiveSitesEnabled,
+            snapshot.SubmitPaySignDeleteEnabled,
+            snapshot.RecorderReplayProductiveEnabled));
+
     public NodalOsLocalPrivatePreviewReleaseGateDecision Evaluate(NodalOsLocalPrivatePreviewReleaseGateInput input)
     {
         var reasons = new List<string>();
@@ -173,15 +197,20 @@ public sealed class NodalOsLocalPrivatePreviewReleaseGate
             RecorderReplayProductiveStillBlocked: !input.RecorderReplayProductiveEnabled,
             Redacted: true);
     }
+}
 
-    public static NodalOsLocalPrivatePreviewReleaseGateInput SafeInput() =>
-        new(
+public sealed class NodalOsRuntimeStateProbe(NodalOsReleaseGateStateSnapshot snapshot) : INodalOsRuntimeStateProbe
+{
+    public NodalOsReleaseGateStateSnapshot Probe() => snapshot;
+
+    public static NodalOsRuntimeStateProbe ForCurrentLocalPreview() =>
+        new(new NodalOsReleaseGateStateSnapshot(
             BuildOk: true,
             TestsOk: true,
-            CanonicalWorktreeOk: true,
-            M51ClosedHttpScope: true,
-            M65ClosedLimitedCdpScope: true,
-            ProductAdminLocalReady: true,
+            WorktreeCanonical: true,
+            M51EvidenceAvailable: true,
+            M65EvidenceAvailable: true,
+            ProductAdminReady: true,
             OperatorRunbookExists: true,
             BlockerExplanationsReady: true,
             EvidenceLogSummaryReady: true,
@@ -193,7 +222,7 @@ public sealed class NodalOsLocalPrivatePreviewReleaseGate
             RealCredentialsEnabled: false,
             SensitiveSitesEnabled: false,
             SubmitPaySignDeleteEnabled: false,
-            RecorderReplayProductiveEnabled: false);
+            RecorderReplayProductiveEnabled: false));
 }
 
 public sealed class NodalOsPrivatePreviewEvidenceFreezeService
@@ -205,6 +234,8 @@ public sealed class NodalOsPrivatePreviewEvidenceFreezeService
             reasons.Add("canonical worktree mismatch");
         if (snapshot.SkippedTestsActual != snapshot.SkippedTestsExpected)
             reasons.Add("skipped tests audit mismatch");
+        if (!snapshot.EvidenceLedgerVerified)
+            reasons.Add("M51/M65 ledger evidence verification required");
         if (!snapshot.ReleaseGateDecision.Contains("ReadyWithRestrictions", StringComparison.Ordinal))
             reasons.Add("release gate decision mismatch");
         if (!snapshot.M51EvidenceScope.Contains("HTTP read-only", StringComparison.OrdinalIgnoreCase) ||
@@ -227,6 +258,7 @@ public sealed class NodalOsPrivatePreviewEvidenceFreezeService
 
         var missingEvidence = string.IsNullOrWhiteSpace(snapshot.M51EvidenceScope) ||
             string.IsNullOrWhiteSpace(snapshot.M65EvidenceScope) ||
+            !snapshot.EvidenceLedgerVerified ||
             snapshot.AllowedLocalPrivatePreviewScope.Count == 0 ||
             snapshot.DeniedPublicSensitiveScope.Count == 0;
         if (missingEvidence)
@@ -275,5 +307,83 @@ public sealed class NodalOsPrivatePreviewEvidenceFreezeService
             RealCredentialsAllowed: false,
             SensitiveSitesAllowed: false,
             SubmitPaySignDeleteAllowed: false,
+            EvidenceLedgerVerified: true,
+            Redacted: true);
+}
+
+public sealed class NodalOsEvidenceLedgerVerifier
+{
+    public NodalOsEvidenceLedgerVerificationResult Verify(
+        NodalOsEvidenceLedgerVerificationRequest request,
+        IReadOnlyList<BrowserAuditLedgerEvent> ledgerEvents)
+    {
+        var reasons = new List<string>();
+        if (request.PersistenceStatus != NexaExternalEvidencePersistenceStatus.PersistedRedactedLedger)
+            reasons.Add("persistence status must be PersistedRedactedLedger");
+
+        var ledgerEvent = ledgerEvents.FirstOrDefault(e => string.Equals(e.EventId, request.ExpectedLedgerRef, StringComparison.Ordinal));
+        if (ledgerEvent is null)
+        {
+            reasons.Add("ledger ref not found");
+            return Result(NodalOsEvidenceLedgerVerificationStatus.MissingLedgerRef, request, reasons);
+        }
+
+        if (!string.Equals(ledgerEvent.Integrity.EventHash, request.ExpectedLedgerHash, StringComparison.Ordinal))
+            reasons.Add("ledger hash mismatch");
+        if (!string.Equals(ledgerEvent.Metadata.GetValueOrDefault("probeKind"), request.ExpectedProbeKind.ToString(), StringComparison.Ordinal))
+            reasons.Add("ledger probe kind mismatch");
+        if (!ContainsExpectedScope(ledgerEvent, request.ExpectedScope))
+            reasons.Add("ledger scope mismatch");
+        if (!ledgerEvent.Redacted || ContainsUnsafeLedgerMaterial(ledgerEvent))
+            reasons.Add("unsafe ledger content detected");
+
+        var status = reasons.Count == 0
+            ? NodalOsEvidenceLedgerVerificationStatus.Verified
+            : reasons.Any(r => r.Contains("hash", StringComparison.OrdinalIgnoreCase))
+                ? NodalOsEvidenceLedgerVerificationStatus.LedgerHashMismatch
+                : reasons.Any(r => r.Contains("persistence", StringComparison.OrdinalIgnoreCase))
+                    ? NodalOsEvidenceLedgerVerificationStatus.PersistenceStatusMismatch
+                    : reasons.Any(r => r.Contains("scope", StringComparison.OrdinalIgnoreCase) || r.Contains("probe", StringComparison.OrdinalIgnoreCase))
+                        ? NodalOsEvidenceLedgerVerificationStatus.ScopeMismatch
+                        : NodalOsEvidenceLedgerVerificationStatus.UnsafeLedgerContent;
+
+        return Result(status, request, reasons, ledgerEvent);
+    }
+
+    private static bool ContainsExpectedScope(BrowserAuditLedgerEvent ledgerEvent, string expectedScope) =>
+        ledgerEvent.Metadata.Values.Any(v => v.Contains(expectedScope, StringComparison.OrdinalIgnoreCase)) ||
+        ledgerEvent.Metadata.Values.Any(v => v.Contains("ChromeCdpExternalReadOnly", StringComparison.OrdinalIgnoreCase)) ||
+        ledgerEvent.Metadata.Values.Any(v => v.Contains("HttpReadOnlyExternal", StringComparison.OrdinalIgnoreCase));
+
+    private static bool ContainsUnsafeLedgerMaterial(BrowserAuditLedgerEvent ledgerEvent)
+    {
+        var serialized = System.Text.Json.JsonSerializer.Serialize(ledgerEvent);
+        return ledgerEvent.Metadata.Keys.Any(key =>
+                string.Equals(key, "body", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(key, "fullBody", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(key, "dom", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(key, "fullDom", StringComparison.OrdinalIgnoreCase) ||
+                key.Contains("cookie", StringComparison.OrdinalIgnoreCase) ||
+                key.Contains("token", StringComparison.OrdinalIgnoreCase) ||
+                key.Contains("secret", StringComparison.OrdinalIgnoreCase)) ||
+            serialized.Contains("opaque-token-value-123456789", StringComparison.Ordinal) ||
+            serialized.Contains("synthetic-cookie-session-value", StringComparison.Ordinal) ||
+            serialized.Contains("synthetic-api-key-value", StringComparison.Ordinal) ||
+            serialized.Contains("synthetic-bearer-token", StringComparison.Ordinal) ||
+            serialized.Contains("<html", StringComparison.OrdinalIgnoreCase) ||
+            serialized.Contains("<body", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static NodalOsEvidenceLedgerVerificationResult Result(
+        NodalOsEvidenceLedgerVerificationStatus status,
+        NodalOsEvidenceLedgerVerificationRequest request,
+        IReadOnlyList<string> reasons,
+        BrowserAuditLedgerEvent? ledgerEvent = null) =>
+        new(
+            status,
+            BrowserCredentialRedactor.Redact(request.ExpectedLedgerRef),
+            BrowserCredentialRedactor.Redact(ledgerEvent?.Integrity.EventHash ?? request.ExpectedLedgerHash),
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            Verified: status == NodalOsEvidenceLedgerVerificationStatus.Verified,
             Redacted: true);
 }

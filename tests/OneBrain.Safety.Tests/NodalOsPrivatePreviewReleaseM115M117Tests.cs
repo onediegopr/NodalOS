@@ -100,7 +100,7 @@ public sealed class NodalOsPrivatePreviewReleaseM115M117Tests
     public void LocalPrivatePreviewReleaseGateBlocksNonCanonicalWorktree()
     {
         var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(
-            NodalOsLocalPrivatePreviewReleaseGate.SafeInput() with { CanonicalWorktreeOk = false });
+            SafeInput() with { CanonicalWorktreeOk = false });
 
         Assert.AreEqual(NodalOsLocalPrivatePreviewReleaseGateStatus.BlockedByWorktree, decision.Status);
         Assert.IsFalse(decision.ReadyWithRestrictions);
@@ -110,7 +110,7 @@ public sealed class NodalOsPrivatePreviewReleaseM115M117Tests
     public void LocalPrivatePreviewReleaseGateBlocksMissingEvidence()
     {
         var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(
-            NodalOsLocalPrivatePreviewReleaseGate.SafeInput() with { M65ClosedLimitedCdpScope = false });
+            SafeInput() with { M65ClosedLimitedCdpScope = false });
 
         Assert.AreEqual(NodalOsLocalPrivatePreviewReleaseGateStatus.BlockedByMissingEvidence, decision.Status);
         Assert.IsTrue(decision.ReasonCodes.Any(r => r.Contains("M65", StringComparison.OrdinalIgnoreCase)));
@@ -119,7 +119,7 @@ public sealed class NodalOsPrivatePreviewReleaseM115M117Tests
     [TestMethod]
     public void LocalPrivatePreviewReleaseGateReadyWithRestrictionsWhenLocalConditionsPass()
     {
-        var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(NodalOsLocalPrivatePreviewReleaseGate.SafeInput());
+        var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(SafeInput());
 
         Assert.AreEqual(NodalOsLocalPrivatePreviewReleaseGateStatus.ReadyWithRestrictions, decision.Status);
         Assert.IsTrue(decision.ReadyWithRestrictions);
@@ -129,7 +129,7 @@ public sealed class NodalOsPrivatePreviewReleaseM115M117Tests
     [TestMethod]
     public void LocalPrivatePreviewReleaseGateMaintainsDangerousSurfacesBlocked()
     {
-        var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(NodalOsLocalPrivatePreviewReleaseGate.SafeInput());
+        var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(SafeInput());
 
         Assert.IsTrue(decision.PublicSaasStillDisabled);
         Assert.IsTrue(decision.PublicApiStillDisabled);
@@ -145,7 +145,7 @@ public sealed class NodalOsPrivatePreviewReleaseM115M117Tests
     public void LocalPrivatePreviewReleaseGateBlocksExternalGeneralInflation()
     {
         var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(
-            NodalOsLocalPrivatePreviewReleaseGate.SafeInput() with { ExternalGeneralReady = true });
+            SafeInput() with { ExternalGeneralReady = true });
 
         Assert.AreEqual(NodalOsLocalPrivatePreviewReleaseGateStatus.BlockedByExternalGeneral, decision.Status);
         Assert.IsFalse(decision.ExternalGeneralReady);
@@ -154,7 +154,7 @@ public sealed class NodalOsPrivatePreviewReleaseM115M117Tests
     [TestMethod]
     public void LocalPrivatePreviewReleaseGateExposesNextSteps()
     {
-        var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(NodalOsLocalPrivatePreviewReleaseGate.SafeInput());
+        var decision = new NodalOsLocalPrivatePreviewReleaseGate().Evaluate(SafeInput());
 
         StringAssert.Contains(decision.NextStep, "internal local private preview");
         Assert.IsTrue(decision.AllowedInternalActions.Any(a => a.Contains("Product/Admin", StringComparison.Ordinal)));
@@ -223,4 +223,25 @@ public sealed class NodalOsPrivatePreviewReleaseM115M117Tests
         Assert.Fail("Could not locate repository root.");
         return "";
     }
+
+    private static NodalOsLocalPrivatePreviewReleaseGateInput SafeInput() =>
+        new(
+            BuildOk: true,
+            TestsOk: true,
+            CanonicalWorktreeOk: true,
+            M51ClosedHttpScope: true,
+            M65ClosedLimitedCdpScope: true,
+            ProductAdminLocalReady: true,
+            OperatorRunbookExists: true,
+            BlockerExplanationsReady: true,
+            EvidenceLogSummaryReady: true,
+            ExternalGeneralReady: false,
+            PublicSaasEnabled: false,
+            PublicApiEnabled: false,
+            RealBillingEnabled: false,
+            RealEmailEnabled: false,
+            RealCredentialsEnabled: false,
+            SensitiveSitesEnabled: false,
+            SubmitPaySignDeleteEnabled: false,
+            RecorderReplayProductiveEnabled: false);
 }
