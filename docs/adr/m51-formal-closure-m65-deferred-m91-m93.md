@@ -70,6 +70,22 @@ M51 may be marked closed only after explicit review accepts a proof with:
 - no persisted secrets, cookies, tokens, or body
 - no mutation, submit, payment, checkout, or real login
 
+## M91-M93 Live Evidence
+
+The M92 opt-in live proof against `https://lab.nodalos.com.ar` passed with persisted redacted ledger evidence:
+
+- Proof id: `external-readonly-proof-e28807158b9841fa9d3a7c9b9638764c`
+- Probe kind: `RealHttpClient`
+- Tooling: `HttpReadOnlyExternal`
+- Persistence status: `PersistedRedactedLedger`
+- Ledger ref: `audit-ledger-37a86b3e4e6b4377bb73003d0ad69321`
+- Ledger sequence: `1`
+- Ledger hash: `07619d06db0c18cbc27fc260735ab83c3756669af013299137b394fbb58effe3`
+- Persisted at UTC: `2026-06-16T11:51:44.1487106+00:00`
+- Evidence path: `artifacts/m91-m93-live-proof-ledger`
+
+The review result is `CandidateCloseM51Only`. Formal M51 closure is acceptable only as an explicit release/roadmap decision based on this persisted evidence.
+
 ## M65 Decision
 
 M65 remains `DeferredNeedsDedicatedEvidence`.
@@ -87,4 +103,3 @@ The M51 HTTP read-only proof is not enough to close M65 because M65 is about ext
 - No submit/pay/sign/delete.
 - No Productive recorder/replay.
 - No UI/Companion/Admin authority.
-
