@@ -368,7 +368,13 @@ public sealed record BrowserRuntimeObservedState(
     bool ProofDryRunBindingDefined = false,
     bool ProofDryRunExecutesNetwork = false,
     bool ProofDryRunClosesM51M65 = false,
-    bool ProofDryRunLeaksSecrets = false)
+    bool ProofDryRunLeaksSecrets = false,
+    bool VercelTestOwnedTargetAppDefined = false,
+    bool DomainBindingReadinessDefined = false,
+    bool LiveProofSafetyGateDefined = false,
+    bool LiveProofSafetyGateReadyDoesNotCloseM51M65 = false,
+    bool LiveProofSafetyGateRunsWithoutOptIn = false,
+    bool LiveProofSafetyGateAllowsSensitiveSurface = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -690,6 +696,15 @@ public sealed record BrowserRuntimeObservedState(
          !ProofDryRunClosesM51M65 &&
          !ProofDryRunLeaksSecrets);
 
+    public bool VercelTestOwnedTargetReadinessAllowed =>
+        (!VercelTestOwnedTargetAppDefined && !DomainBindingReadinessDefined && !LiveProofSafetyGateDefined) ||
+        (VercelTestOwnedTargetAppDefined &&
+         DomainBindingReadinessDefined &&
+         LiveProofSafetyGateDefined &&
+         LiveProofSafetyGateReadyDoesNotCloseM51M65 &&
+         !LiveProofSafetyGateRunsWithoutOptIn &&
+         !LiveProofSafetyGateAllowsSensitiveSurface);
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -886,7 +901,12 @@ public sealed record BrowserRuntimeObservedState(
         ProofDryRunBindingDefined ||
         ProofDryRunExecutesNetwork ||
         ProofDryRunClosesM51M65 ||
-        ProofDryRunLeaksSecrets;
+        ProofDryRunLeaksSecrets ||
+        VercelTestOwnedTargetAppDefined ||
+        DomainBindingReadinessDefined ||
+        LiveProofSafetyGateDefined ||
+        LiveProofSafetyGateRunsWithoutOptIn ||
+        LiveProofSafetyGateAllowsSensitiveSurface;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(

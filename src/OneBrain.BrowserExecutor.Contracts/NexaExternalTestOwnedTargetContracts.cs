@@ -194,3 +194,84 @@ public sealed record NexaProofDryRunResult(
     bool ExecutedNetwork,
     bool ClosesM51M65,
     bool Redacted);
+
+public enum NexaTargetBindingDeploymentProvider
+{
+    VercelHobbyLab,
+    Unknown
+}
+
+public enum NexaTargetBindingDnsMode
+{
+    DelegatedToVercel,
+    CnameOnly,
+    Unknown
+}
+
+public enum NexaTargetBindingVerificationStatus
+{
+    NotConfigured,
+    DnsPending,
+    VercelPending,
+    HttpsReady,
+    OwnershipVerified
+}
+
+public sealed record NexaTargetBindingConfig(
+    string ExpectedDomain,
+    string ExpectedBaseUrl,
+    string ExpectedOwnershipPath,
+    string ExpectedHealthPath,
+    IReadOnlySet<string> AllowedHosts,
+    IReadOnlySet<string> AllowedPaths,
+    IReadOnlySet<string> DeniedPaths,
+    NexaTargetBindingDeploymentProvider DeploymentProvider,
+    NexaTargetBindingDnsMode DnsMode,
+    NexaTargetBindingVerificationStatus VerificationStatus);
+
+public sealed record NexaTargetBindingDecision(
+    NexaTargetBindingConfig Config,
+    IReadOnlyList<string> ReasonCodes,
+    bool CandidateLiveProofAllowed,
+    bool ExecutesNetwork,
+    bool Redacted);
+
+public enum NexaLiveProofSafetyGateStatus
+{
+    LiveProofNotConfigured,
+    DnsPending,
+    HttpsPending,
+    OwnershipPending,
+    TargetPolicyRejected,
+    HarnessOptInMissing,
+    OperatorApprovalMissing,
+    ReadyForReadOnlyLiveProof,
+    BlockedSensitiveSurface
+}
+
+public sealed record NexaLiveProofSafetyGateRequest(
+    NexaTargetBindingConfig? Binding,
+    NexaExternalTestOwnedTarget? Target,
+    bool HarnessOptInEnabled,
+    string RequestedHost,
+    string RequestedPath,
+    string RequestedMethod,
+    bool WouldUseCredentials,
+    bool WouldPersistPersonalCookies,
+    bool WouldCaptureSensitiveHeaderValues,
+    bool WouldCaptureBodies,
+    bool WouldSubmit,
+    bool WouldMutate,
+    bool WouldUsePaymentOrCheckoutOrRealLogin,
+    bool EvidencePackReady,
+    bool OperatorApprovalRequired,
+    string? OperatorApprovalRef);
+
+public sealed record NexaLiveProofSafetyGateDecision(
+    NexaLiveProofSafetyGateStatus Status,
+    IReadOnlyList<string> ReasonCodes,
+    NexaOperatorBlockerExplanation Explanation,
+    bool ReadyForReadOnlyLiveProof,
+    bool ClosesM51M65,
+    bool ExecutesNetwork,
+    bool Redacted);

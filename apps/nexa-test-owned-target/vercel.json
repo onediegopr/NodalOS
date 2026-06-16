@@ -1,0 +1,29 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Nexa-Test-Owned-Target",
+          "value": "read-only"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=(), payment=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; img-src 'self'; style-src 'self'; script-src 'none'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'"
+        }
+      ]
+    }
+  ]
+}

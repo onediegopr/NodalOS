@@ -1,0 +1,5 @@
+User-agent: *
+Disallow:
+
+# NEXA synthetic read-only lab target.
+# No real users, credentials, payments, mutation, or personal data.

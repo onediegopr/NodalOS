@@ -269,3 +269,130 @@ public sealed class NexaProofDryRunBinding
             Redacted: true);
     }
 }
+
+public sealed class NexaTargetBindingReadinessEvaluator
+{
+    public const string RecommendedDomain = "nexa-lab.nodalos.com.ar";
+
+    public NexaTargetBindingConfig CreateDefault(
+        NexaTargetBindingDnsMode dnsMode = NexaTargetBindingDnsMode.Unknown,
+        NexaTargetBindingVerificationStatus verificationStatus = NexaTargetBindingVerificationStatus.NotConfigured) =>
+        new(
+            RecommendedDomain,
+            $"https://{RecommendedDomain}",
+            "/ownership",
+            "/health",
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { RecommendedDomain },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "/",
+                "/products",
+                "/document",
+                "/report",
+                "/disabled-form",
+                "/blocked-login",
+                "/blocked-checkout",
+                "/blocked-destructive-action",
+                "/health",
+                "/ownership"
+            },
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "/api", "/login", "/checkout/submit", "/submit", "/delete", "/pay" },
+            NexaTargetBindingDeploymentProvider.VercelHobbyLab,
+            dnsMode,
+            verificationStatus);
+
+    public NexaTargetBindingDecision Evaluate(NexaTargetBindingConfig config)
+    {
+        var reasons = new List<string>();
+        if (!string.Equals(config.ExpectedDomain, RecommendedDomain, StringComparison.OrdinalIgnoreCase))
+            reasons.Add("expected domain must be the approved nexa-lab.nodalos.com.ar subdomain");
+        if (config.AllowedHosts.Count != 1 || !config.AllowedHosts.Contains(config.ExpectedDomain) || config.AllowedHosts.Contains("nodalos.com.ar"))
+            reasons.Add("allowed hosts must include only the expected lab subdomain");
+        if (!config.AllowedPaths.Contains(config.ExpectedHealthPath) || !config.AllowedPaths.Contains(config.ExpectedOwnershipPath))
+            reasons.Add("health and ownership paths are required");
+        if (config.DnsMode == NexaTargetBindingDnsMode.Unknown)
+            reasons.Add("DNS mode is unknown");
+        if (config.VerificationStatus != NexaTargetBindingVerificationStatus.OwnershipVerified)
+            reasons.Add("HTTPS and ownership verification are not complete");
+
+        var allowed = reasons.Count == 0 &&
+            config.DeploymentProvider == NexaTargetBindingDeploymentProvider.VercelHobbyLab &&
+            config.ExpectedBaseUrl == $"https://{config.ExpectedDomain}";
+
+        return new NexaTargetBindingDecision(
+            config,
+            reasons.Count == 0 ? ["domain binding is candidate-ready for future opt-in live proof"] : reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            CandidateLiveProofAllowed: allowed,
+            ExecutesNetwork: false,
+            Redacted: true);
+    }
+}
+
+public sealed class NexaLiveProofSafetyGate
+{
+    private readonly NexaTargetBindingReadinessEvaluator _binding = new();
+    private readonly NexaExternalTestOwnedTargetEvaluator _target = new();
+    private readonly NexaOperatorBlockerExplanationService _explanations = new();
+
+    public NexaLiveProofSafetyGateDecision Evaluate(NexaLiveProofSafetyGateRequest request, DateTimeOffset nowUtc)
+    {
+        if (request.Binding is null)
+            return Decision(NexaLiveProofSafetyGateStatus.LiveProofNotConfigured, ["target binding is not configured"], NexaOperatorBlockerScenario.MissingTestOwnedExternalTarget);
+
+        var bindingDecision = _binding.Evaluate(request.Binding);
+        if (request.Binding.DnsMode == NexaTargetBindingDnsMode.Unknown || request.Binding.VerificationStatus is NexaTargetBindingVerificationStatus.DnsPending or NexaTargetBindingVerificationStatus.VercelPending)
+            return Decision(NexaLiveProofSafetyGateStatus.DnsPending, bindingDecision.ReasonCodes, NexaOperatorBlockerScenario.MissingTestOwnedExternalTarget);
+        if (request.Binding.VerificationStatus == NexaTargetBindingVerificationStatus.NotConfigured)
+            return Decision(NexaLiveProofSafetyGateStatus.HttpsPending, bindingDecision.ReasonCodes, NexaOperatorBlockerScenario.MissingTestOwnedExternalTarget);
+        if (request.Binding.VerificationStatus == NexaTargetBindingVerificationStatus.HttpsReady)
+            return Decision(NexaLiveProofSafetyGateStatus.OwnershipPending, ["ownership endpoint is not verified"], NexaOperatorBlockerScenario.MissingTestOwnedExternalTarget);
+        if (!bindingDecision.CandidateLiveProofAllowed)
+            return Decision(NexaLiveProofSafetyGateStatus.DnsPending, bindingDecision.ReasonCodes, NexaOperatorBlockerScenario.MissingTestOwnedExternalTarget);
+
+        var targetDecision = _target.Evaluate(request.Target, nowUtc);
+        if (targetDecision.Status == NexaExternalTestOwnedTargetStatus.BlockedSensitiveSurface)
+            return Decision(NexaLiveProofSafetyGateStatus.BlockedSensitiveSurface, targetDecision.ReasonCodes, NexaOperatorBlockerScenario.IrreversibleActionBlocked);
+        if (!targetDecision.AllowsReadOnlyProof || request.Target is null)
+            return Decision(NexaLiveProofSafetyGateStatus.TargetPolicyRejected, targetDecision.ReasonCodes, NexaOperatorBlockerScenario.CorePermissionMissing);
+        if (!request.HarnessOptInEnabled)
+            return Decision(NexaLiveProofSafetyGateStatus.HarnessOptInMissing, ["external live proof harness opt-in is missing"], NexaOperatorBlockerScenario.SkippedTestsBlockExternalLive);
+        if (request.OperatorApprovalRequired && string.IsNullOrWhiteSpace(request.OperatorApprovalRef))
+            return Decision(NexaLiveProofSafetyGateStatus.OperatorApprovalMissing, ["operator approval reference is required"], NexaOperatorBlockerScenario.CorePermissionMissing);
+
+        var violations = new List<string>();
+        if (!request.Target.AllowedHosts.Contains(request.RequestedHost) || !request.Binding.AllowedHosts.Contains(request.RequestedHost))
+            violations.Add("requested host is not allowlisted by target and binding");
+        if (!request.Target.AllowedPaths.Contains(request.RequestedPath) || !request.Binding.AllowedPaths.Contains(request.RequestedPath) || request.Binding.DeniedPaths.Contains(request.RequestedPath))
+            violations.Add("requested path is not allowlisted for read-only proof");
+        if (!string.Equals(request.RequestedMethod, "GET", StringComparison.OrdinalIgnoreCase) || !request.Target.AllowedMethods.Contains(request.RequestedMethod))
+            violations.Add("only GET read-only proof is allowed");
+        if (request.WouldUseCredentials || request.WouldPersistPersonalCookies || request.WouldCaptureSensitiveHeaderValues || request.WouldCaptureBodies ||
+            request.WouldSubmit || request.WouldMutate || request.WouldUsePaymentOrCheckoutOrRealLogin)
+            violations.Add("credentials, cookies, bodies, sensitive headers, submit, mutation, payment, checkout, and real login are blocked");
+        if (!request.EvidencePackReady)
+            violations.Add("evidence pack readiness is required before live proof");
+
+        if (violations.Count > 0)
+            return Decision(NexaLiveProofSafetyGateStatus.BlockedSensitiveSurface, violations, NexaOperatorBlockerScenario.IrreversibleActionBlocked);
+
+        return Decision(
+            NexaLiveProofSafetyGateStatus.ReadyForReadOnlyLiveProof,
+            ["ready for future opt-in read-only live proof; proof has not executed and M51/M65 remain blocked"],
+            NexaOperatorBlockerScenario.SkippedTestsBlockExternalLive,
+            ready: true);
+    }
+
+    private NexaLiveProofSafetyGateDecision Decision(
+        NexaLiveProofSafetyGateStatus status,
+        IReadOnlyList<string> reasons,
+        NexaOperatorBlockerScenario scenario,
+        bool ready = false) =>
+        new(
+            status,
+            reasons.Select(BrowserCredentialRedactor.Redact).ToArray(),
+            _explanations.Explain(scenario, ["live-proof-safety-gate:redacted"]),
+            ready,
+            ClosesM51M65: false,
+            ExecutesNetwork: false,
+            Redacted: true);
+}

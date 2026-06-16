@@ -1,0 +1,81 @@
+:root {
+  color: #13211c;
+  background: #f4efe3;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(76, 121, 92, 0.18), transparent 32rem),
+    linear-gradient(135deg, #f7f0df 0%, #e7f0e7 100%);
+}
+
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 24px 0;
+}
+
+a {
+  color: #244f3a;
+  font-weight: 700;
+}
+
+.card {
+  border: 1px solid #c9b98f;
+  border-radius: 18px;
+  background: rgba(255, 252, 244, 0.88);
+  box-shadow: 0 14px 42px rgba(36, 49, 38, 0.12);
+  padding: 24px;
+}
+
+.metadata,
+.fixture {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #e5eddf;
+}
+
+.blocked {
+  border-color: #a65338;
+  background: #f7e6df;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #244f3a;
+  color: #fff;
+  font-size: 0.84rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 18px;
+}
+
+th,
+td {
+  border-bottom: 1px solid #d8cba8;
+  padding: 10px;
+  text-align: left;
+}
+
+.disabled-control {
+  opacity: 0.55;
+  pointer-events: none;
+}
