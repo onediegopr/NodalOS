@@ -83,7 +83,9 @@ public sealed class NexaFirstReadOnlyLiveProofM88Tests
     public async Task FirstReadOnlyLiveProofOptInCanExecuteAgainstRealTargetWhenEnabled()
     {
         var optIn = string.Equals(Environment.GetEnvironmentVariable("NEXA_EXTERNAL_LIVE_PROOF_OPT_IN"), "true", StringComparison.OrdinalIgnoreCase);
-        var result = await new NexaFirstReadOnlyLiveProofRunner().RunAsync(optIn, executeNetwork: optIn);
+        using var temp = new TempDirectory();
+        var ledger = TestLedger(temp.Path);
+        var result = await new NexaFirstReadOnlyLiveProofRunner().RunAsync(optIn, executeNetwork: optIn, optIn ? ledger : null);
 
         if (!optIn)
         {
@@ -95,8 +97,28 @@ public sealed class NexaFirstReadOnlyLiveProofM88Tests
         Assert.AreEqual(NexaFirstReadOnlyLiveProofStatus.PassedReadOnlyProof, result.Status);
         Assert.IsTrue(result.ExecutedNetwork);
         Assert.AreEqual(NexaExternalReadOnlyEvidencePackStatus.PassedReadOnlyProof, result.EvidencePack.Status);
+        Assert.AreEqual(NexaExternalEvidencePersistenceStatus.PersistedRedactedLedger, result.EvidencePack.PersistenceStatus);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(result.EvidencePack.LedgerRef));
     }
 
     private static NexaFirstReadOnlyLiveProofRunner Runner() =>
         new(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit"));
+
+    private static BrowserPersistentAuditLedger TestLedger(string path) =>
+        new(
+            new BrowserAuditLedgerPolicy(path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)),
+            BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("nodal-m90-explicit-test-fixture-hmac-key"));
+
+    private sealed class TempDirectory : IDisposable
+    {
+        public string Path { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"nodal-m90-live-{Guid.NewGuid():N}");
+
+        public TempDirectory() => Directory.CreateDirectory(Path);
+
+        public void Dispose()
+        {
+            if (Directory.Exists(Path))
+                Directory.Delete(Path, recursive: true);
+        }
+    }
 }

@@ -126,7 +126,12 @@ public sealed class NexaExternalProofHarness
 
 public sealed class NexaExternalReadOnlyEvidencePackBuilder
 {
-    public NexaExternalReadOnlyEvidencePack Build(NexaExternalProofHarnessDecision harnessDecision, NexaExternalProofHarnessRequest request, bool runtimeExecuted, bool runtimePassed)
+    public NexaExternalReadOnlyEvidencePack Build(
+        NexaExternalProofHarnessDecision harnessDecision,
+        NexaExternalProofHarnessRequest request,
+        bool runtimeExecuted,
+        bool runtimePassed,
+        NexaExternalProofProbeKind probeKind = NexaExternalProofProbeKind.ModeledFake)
     {
         var status = harnessDecision.Decision switch
         {
@@ -141,21 +146,23 @@ public sealed class NexaExternalReadOnlyEvidencePackBuilder
 
         var candidate = status == NexaExternalReadOnlyEvidencePackStatus.PassedReadOnlyProof &&
             harnessDecision.TargetDecision.Status == NexaExternalTestOwnedTargetStatus.ApprovedReadOnlyTestOwned;
+        var tooling = ToolingFor(probeKind);
+        var capabilities = CapabilitiesFor(probeKind);
 
         return new NexaExternalReadOnlyEvidencePack(
             $"external-readonly-proof-{Guid.NewGuid():N}",
             harnessDecision.TargetDecision.Target?.TargetId,
             harnessDecision.TargetDecision.Status,
             DateTimeOffset.UtcNow,
-            "ChromeCdpExternal",
-            ["NavigationReadOnly", "DomReadOnly", "NetworkMetadataOnly", "CoreGoverned"],
+            tooling,
+            capabilities,
             BrowserCredentialRedactor.Redact($"{request.RequestedMethod} {request.RequestedPath}"),
             harnessDecision.CanExecuteReadOnlyNavigation ? "read-only navigation" : "none",
             ["POST", "PUT", "PATCH", "DELETE", "submit", "pay", "sign", "delete", "upload"],
             BrowserCredentialRedactor.Redact(request.RequestedHost),
             BrowserCredentialRedactor.Redact(request.RequestedPath),
             BrowserCredentialRedactor.Redact(request.RequestedMethod),
-            "metadata-only; no cookies, bodies, sensitive headers, tokens, or personal data persisted",
+            "response body fetched transiently for safety scan; body not persisted; redacted metadata and safety summary only; no cookies, sensitive headers, tokens, or personal data persisted",
             [],
             ["external-proof-harness:redacted"],
             harnessDecision.ReasonCodes,
@@ -163,7 +170,90 @@ public sealed class NexaExternalReadOnlyEvidencePackBuilder
             candidate ? "candidate proof passed; M51/M65 still require explicit closure decision" : "external/live remains blocked or deferred",
             status,
             candidate,
-            Redacted: true);
+            Redacted: true,
+            probeKind,
+            probeKind == NexaExternalProofProbeKind.ModeledFake ? NexaExternalEvidencePersistenceStatus.NotPersistedModeled : NexaExternalEvidencePersistenceStatus.NotPersisted,
+            tooling);
+    }
+
+    private static string ToolingFor(NexaExternalProofProbeKind probeKind) =>
+        probeKind switch
+        {
+            NexaExternalProofProbeKind.RealHttpClient => "HttpReadOnlyExternal",
+            NexaExternalProofProbeKind.RealChromeCdp => "ChromeCdpExternal",
+            _ => "ModeledFake"
+        };
+
+    private static IReadOnlyList<string> CapabilitiesFor(NexaExternalProofProbeKind probeKind) =>
+        probeKind switch
+        {
+            NexaExternalProofProbeKind.RealHttpClient => ["HttpGetReadOnly", "NetworkMetadataOnly", "CoreGoverned"],
+            NexaExternalProofProbeKind.RealChromeCdp => ["NavigationReadOnly", "DomReadOnly", "NetworkMetadataOnly", "CoreGoverned"],
+            _ => ["ModeledReadOnly", "CoreGoverned"]
+        };
+}
+
+public sealed class NexaExternalEvidenceLedgerPersistence
+{
+    public NexaExternalReadOnlyEvidencePack PersistIfEligible(NexaExternalReadOnlyEvidencePack pack, BrowserPersistentAuditLedger ledger)
+    {
+        if (pack.ProbeKind == NexaExternalProofProbeKind.ModeledFake)
+            return pack with { PersistenceStatus = NexaExternalEvidencePersistenceStatus.NotPersistedModeled };
+        if (pack.Status != NexaExternalReadOnlyEvidencePackStatus.PassedReadOnlyProof ||
+            pack.TargetApprovalStatus != NexaExternalTestOwnedTargetStatus.ApprovedReadOnlyTestOwned ||
+            !pack.Redacted ||
+            ContainsUnsafeMaterial(pack))
+            return pack with { PersistenceStatus = NexaExternalEvidencePersistenceStatus.PersistenceFailed };
+
+        var ledgerEvent = BrowserPersistentAuditLedger.Create(
+            BrowserAuditLedgerEventKind.NetworkCaptureRecorded,
+            "external-readonly-proof",
+            "external-proof-persist",
+            pack.ProofId,
+            "external-test-owned-profile",
+            "external-readonly-session",
+            null,
+            null,
+            null,
+            "PassedReadOnlyProofPersisted",
+            "redacted external read-only proof evidence persisted; response body not persisted",
+            new Dictionary<string, string>
+            {
+                ["proofId"] = pack.ProofId,
+                ["targetId"] = pack.TargetId ?? "unknown",
+                ["probeKind"] = pack.ProbeKind.ToString(),
+                ["tooling"] = pack.Tooling,
+                ["host"] = pack.VisitedHost ?? "unknown",
+                ["path"] = pack.VisitedPath ?? "unknown",
+                ["method"] = pack.Method,
+                ["status"] = pack.Status.ToString(),
+                ["redactionSummary"] = pack.RedactionSummary,
+                ["bodyPolicy"] = "body transiently scanned and not persisted"
+            });
+        var appended = ledger.Append(ledgerEvent);
+        var seal = ledger.HeadSeal;
+
+        return pack with
+        {
+            PersistenceStatus = NexaExternalEvidencePersistenceStatus.PersistedRedactedLedger,
+            LedgerRef = appended.EventId,
+            LedgerSequence = appended.Integrity.SequenceNumber,
+            LedgerHash = appended.Integrity.EventHash,
+            PersistedAtUtc = appended.CreatedAtUtc,
+            LogRefs = pack.LogRefs.Concat([$"ledgerRef:{appended.EventId}", $"ledgerSequence:{appended.Integrity.SequenceNumber}", $"ledgerHash:{appended.Integrity.EventHash}", $"headSeal:{seal.LastEventHash}"]).ToArray()
+        };
+    }
+
+    private static bool ContainsUnsafeMaterial(NexaExternalReadOnlyEvidencePack pack)
+    {
+        var serialized = System.Text.Json.JsonSerializer.Serialize(pack);
+        return serialized.Contains("opaque-token-value-123456789", StringComparison.Ordinal) ||
+            serialized.Contains("synthetic-cookie-session-value", StringComparison.Ordinal) ||
+            serialized.Contains("synthetic-api-key-value", StringComparison.Ordinal) ||
+            serialized.Contains("synthetic-bearer-token", StringComparison.Ordinal) ||
+            serialized.Contains("set-cookie", StringComparison.OrdinalIgnoreCase) ||
+            serialized.Contains("<html", StringComparison.OrdinalIgnoreCase) ||
+            serialized.Contains("<body", StringComparison.OrdinalIgnoreCase);
     }
 }
 
@@ -549,10 +639,17 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
     private readonly NexaHttpsOwnershipVerifier _verifier = new(probe);
     private readonly NexaExternalProofHarness _harness = new();
     private readonly NexaExternalReadOnlyEvidencePackBuilder _evidence = new();
+    private readonly NexaExternalEvidenceLedgerPersistence _persistence = new();
     private readonly NexaLiveProofSafetyGate _gate = new();
     private readonly NexaOperatorBlockerExplanationService _explanations = new();
+    private readonly NexaExternalProofProbeKind _probeKind = probe is null || probe is NexaHttpClientReadOnlyProbe
+        ? NexaExternalProofProbeKind.RealHttpClient
+        : NexaExternalProofProbeKind.ModeledFake;
 
-    public async Task<NexaFirstReadOnlyLiveProofResult> RunAsync(bool optIn, bool executeNetwork, CancellationToken cancellationToken = default)
+    public Task<NexaFirstReadOnlyLiveProofResult> RunAsync(bool optIn, bool executeNetwork, CancellationToken cancellationToken = default) =>
+        RunAsync(optIn, executeNetwork, ledger: null, cancellationToken);
+
+    public async Task<NexaFirstReadOnlyLiveProofResult> RunAsync(bool optIn, bool executeNetwork, BrowserPersistentAuditLedger? ledger, CancellationToken cancellationToken = default)
     {
         var target = CreateLiveTarget();
         var binding = new NexaTargetBindingReadinessEvaluator().CreateDefault(
@@ -567,25 +664,25 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
 
         if (!optIn)
         {
-            var skippedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            var skippedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false, _probeKind);
             return Build(NexaFirstReadOnlyLiveProofStatus.SkippedNoOptIn, verification, safety, skippedPack, [], [], [safety.Explanation], executed: false);
         }
 
         if (verification.Status != NexaHttpsOwnershipVerificationStatus.VerifiedTestOwnedReadOnlyTarget)
         {
-            var failedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            var failedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false, _probeKind);
             return Build(NexaFirstReadOnlyLiveProofStatus.BlockedVerificationFailed, verification, safety, failedPack, [], [], [safety.Explanation], executed: verification.ExecutedNetwork);
         }
 
         if (!safety.ReadyForReadOnlyLiveProof || !harness.CanExecuteReadOnlyNavigation)
         {
-            var blockedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            var blockedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false, _probeKind);
             return Build(NexaFirstReadOnlyLiveProofStatus.BlockedPolicyViolation, verification, safety, blockedPack, [], DeniedRoutes, [safety.Explanation], executed: verification.ExecutedNetwork);
         }
 
         if (!executeNetwork)
         {
-            var allowedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false);
+            var allowedPack = _evidence.Build(harness, request, runtimeExecuted: false, runtimePassed: false, _probeKind);
             return Build(NexaFirstReadOnlyLiveProofStatus.CandidateRunnerAllowed, verification, safety, allowedPack, AllowedRoutes, DeniedRoutes, DeniedExplanations(), executed: false);
         }
 
@@ -593,17 +690,19 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
         {
             var url = new Uri($"{NexaHttpsOwnershipVerifier.DefaultRequest(true).ExpectedBaseUrl}{route}");
             var probeResult = await _probe.GetAsync(url, cancellationToken).ConfigureAwait(false);
-            if (probeResult.StatusCode != 200 || probeResult.CapturedCookies || probeResult.CapturedBodies || probeResult.CapturedSensitiveHeaderValues || BrowserCredentialRedactor.ContainsSecret(probeResult.RedactedText))
+            if (probeResult.StatusCode != 200 || probeResult.CapturedCookies || probeResult.CapturedBodies || probeResult.CapturedSensitiveHeaderValues || ContainsUnsafeProofMaterial(probeResult.RedactedText))
             {
-                var failedPack = _evidence.Build(harness, request, runtimeExecuted: true, runtimePassed: false);
+                var failedPack = _evidence.Build(harness, request, runtimeExecuted: true, runtimePassed: false, _probeKind);
                 return Build(NexaFirstReadOnlyLiveProofStatus.FailedRuntime, verification, safety, failedPack, AllowedRoutes, DeniedRoutes, DeniedExplanations(), executed: true);
             }
         }
 
-        var pack = _evidence.Build(harness, request, runtimeExecuted: true, runtimePassed: true) with
+        var pack = _evidence.Build(harness, request, runtimeExecuted: true, runtimePassed: true, _probeKind) with
         {
             LogRefs = ["provider:Vercel", "scope:Shift Evidence", "project:nexa-test-owned-target", "domain:nexalab.nodalos.com.ar", "routes:/,/health/,/ownership/,/products/,/document/,/report/"]
         };
+        if (ledger is not null)
+            pack = _persistence.PersistIfEligible(pack, ledger);
         return Build(NexaFirstReadOnlyLiveProofStatus.PassedReadOnlyProof, verification, safety, pack, AllowedRoutes, DeniedRoutes, DeniedExplanations(), executed: true);
     }
 
@@ -677,6 +776,14 @@ public sealed class NexaFirstReadOnlyLiveProofRunner(INexaReadOnlyHttpProbe? pro
         IReadOnlyList<NexaOperatorBlockerExplanation> explanations,
         bool executed) =>
         new(status, verification, safety, pack, routes, deniedRoutes, explanations, executed, Redacted: true);
+
+    private static bool ContainsUnsafeProofMaterial(string value) =>
+        value.Contains("opaque-token", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("api-key", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("bearer ", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("refresh-token", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("session-cookie", StringComparison.OrdinalIgnoreCase) ||
+        value.Contains("set-cookie", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed class NexaM51M65ClosureCandidateReviewer
@@ -690,6 +797,19 @@ public sealed class NexaM51M65ClosureCandidateReviewer
             violations.Add("cookie material detected");
         if (proof.EvidencePack.PolicyDecisions.Any(IsSensitivePolicyText))
             violations.Add("secret-like policy decision detected");
+        if (proof.EvidencePack.ProbeKind == NexaExternalProofProbeKind.ModeledFake)
+            violations.Add("modeled fake probe cannot support closure candidate");
+        if (proof.EvidencePack.ProbeKind == NexaExternalProofProbeKind.RealHttpClient &&
+            (proof.EvidencePack.Tooling != "HttpReadOnlyExternal" ||
+             proof.EvidencePack.RuntimeProvider != "HttpReadOnlyExternal" ||
+             proof.EvidencePack.RuntimeCapabilities.Contains("ChromeCdpExternal") ||
+             proof.EvidencePack.RuntimeCapabilities.Contains("DomReadOnly") ||
+             proof.EvidencePack.RuntimeCapabilities.Contains("NavigationReadOnly")))
+            violations.Add("HttpClient proof tooling/capabilities are not honest");
+        if (proof.EvidencePack.ProbeKind is NexaExternalProofProbeKind.RealHttpClient or NexaExternalProofProbeKind.RealChromeCdp &&
+            (string.IsNullOrWhiteSpace(proof.EvidencePack.LedgerRef) ||
+             proof.EvidencePack.PersistenceStatus != NexaExternalEvidencePersistenceStatus.PersistedRedactedLedger))
+            violations.Add("real proof requires persisted redacted ledger evidence");
 
         var decision = proof.Status switch
         {
@@ -701,6 +821,9 @@ public sealed class NexaM51M65ClosureCandidateReviewer
                 proof.Verification.Status == NexaHttpsOwnershipVerificationStatus.VerifiedTestOwnedReadOnlyTarget &&
                 proof.EvidencePack.Status == NexaExternalReadOnlyEvidencePackStatus.PassedReadOnlyProof &&
                 proof.EvidencePack.CandidateForM51M65Closure &&
+                proof.EvidencePack.ProbeKind is NexaExternalProofProbeKind.RealHttpClient or NexaExternalProofProbeKind.RealChromeCdp &&
+                !string.IsNullOrWhiteSpace(proof.EvidencePack.LedgerRef) &&
+                proof.EvidencePack.PersistenceStatus == NexaExternalEvidencePersistenceStatus.PersistedRedactedLedger &&
                 violations.Count == 0 => NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51AndM65,
             NexaFirstReadOnlyLiveProofStatus.PassedReadOnlyProof => NexaM51M65ClosureCandidateReviewDecision.LiveProofPassedButReviewRequired,
             NexaFirstReadOnlyLiveProofStatus.CandidateRunnerAllowed => NexaM51M65ClosureCandidateReviewDecision.DoNotClose,
@@ -710,7 +833,10 @@ public sealed class NexaM51M65ClosureCandidateReviewer
         if (violations.Count > 0)
             decision = NexaM51M65ClosureCandidateReviewDecision.DoNotClose;
 
-        var canCandidate = decision == NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51AndM65;
+        if (decision == NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51AndM65)
+            decision = NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51Only;
+
+        var canCandidate = decision == NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51Only;
         return new NexaM51M65ClosureCandidateReview(
             proof.EvidencePack.ProofId,
             proof.EvidencePack.TargetId ?? "unknown",
@@ -726,7 +852,7 @@ public sealed class NexaM51M65ClosureCandidateReviewer
             violations.Select(BrowserCredentialRedactor.Redact).ToArray(),
             proof.BlockerExplanations,
             canCandidate ? "candidate close M51 after explicit review acceptance" : "do not close M51",
-            canCandidate ? "candidate close M65 after explicit review acceptance" : "do not close M65",
+            canCandidate ? "M65 deferred; requires dedicated browser/CDP or auth-target evidence" : "M65 deferred; requires dedicated evidence",
             decision,
             PublicSaasStillDisabled: true,
             RealBillingStillDisabled: true,

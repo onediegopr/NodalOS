@@ -12,7 +12,7 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
     {
         var review = await ReviewAsync(optIn: false, executeNetwork: false);
 
-        Assert.AreEqual(NexaM51M65ClosureCandidateReviewDecision.LiveProofSkippedNoOptIn, review.FinalDecision);
+        Assert.AreEqual(NexaM51M65ClosureCandidateReviewDecision.DoNotClose, review.FinalDecision);
         StringAssert.Contains(review.M51Recommendation, "do not close M51");
     }
 
@@ -30,13 +30,13 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
         var proof = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(500, 200, "NEXA")).RunAsync(optIn: true, executeNetwork: true);
         var review = new NexaM51M65ClosureCandidateReviewer().Review(proof);
 
-        Assert.AreEqual(NexaM51M65ClosureCandidateReviewDecision.LiveProofFailed, review.FinalDecision);
+        Assert.AreEqual(NexaM51M65ClosureCandidateReviewDecision.DoNotClose, review.FinalDecision);
     }
 
     [TestMethod]
     public async Task M51M65ClosureCandidateReviewSecretsDetectedDoesNotClose()
     {
-        var proof = await PassedProof();
+        var proof = await PersistedRealHttpProof();
         var unsafeProof = proof with
         {
             EvidencePack = proof.EvidencePack with
@@ -63,23 +63,23 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
         };
         var review = new NexaM51M65ClosureCandidateReviewer().Review(unsafeProof);
 
-        Assert.AreNotEqual(NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51AndM65, review.FinalDecision);
+        Assert.AreNotEqual(NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51Only, review.FinalDecision);
     }
 
     [TestMethod]
     public async Task M51M65ClosureCandidateReviewVerifiedPassedReadOnlyProofIsCandidate()
     {
-        var review = new NexaM51M65ClosureCandidateReviewer().Review(await PassedProof());
+        var review = new NexaM51M65ClosureCandidateReviewer().Review(await PersistedRealHttpProof());
 
-        Assert.AreEqual(NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51AndM65, review.FinalDecision);
+        Assert.AreEqual(NexaM51M65ClosureCandidateReviewDecision.CandidateCloseM51Only, review.FinalDecision);
         StringAssert.Contains(review.M51Recommendation, "candidate close M51");
-        StringAssert.Contains(review.M65Recommendation, "candidate close M65");
+        StringAssert.Contains(review.M65Recommendation, "M65 deferred");
     }
 
     [TestMethod]
     public async Task M51M65ClosureCandidateReviewCandidateDoesNotOpenRealSurfaces()
     {
-        var review = new NexaM51M65ClosureCandidateReviewer().Review(await PassedProof());
+        var review = new NexaM51M65ClosureCandidateReviewer().Review(await PersistedRealHttpProof());
 
         Assert.IsTrue(review.PublicSaasStillDisabled);
         Assert.IsTrue(review.RealBillingStillDisabled);
@@ -112,6 +112,19 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
     private static Task<NexaFirstReadOnlyLiveProofResult> PassedProof() =>
         new NexaFirstReadOnlyLiveProofRunner(new NexaHttpsOwnershipVerificationM87Tests.FakeProbe(200, 200, "NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")).RunAsync(optIn: true, executeNetwork: true);
 
+    private static async Task<NexaFirstReadOnlyLiveProofResult> PersistedRealHttpProof()
+    {
+        using var temp = new TempDirectory();
+        var ledger = TestLedger(temp.Path);
+        var proof = await new NexaFirstReadOnlyLiveProofRunner(new NexaHttpClientReadOnlyProbe(new HttpClient(new StaticHttpHandler()))).RunAsync(optIn: true, executeNetwork: true, ledger);
+        return proof;
+    }
+
+    private static BrowserPersistentAuditLedger TestLedger(string path) =>
+        new(
+            new BrowserAuditLedgerPolicy(path, AllowFilePersistence: true, RedactBeforePersist: true, new BrowserAuditLedgerRetentionPolicy(null, null, DeleteOnCleanup: true)),
+            BrowserAuditLedgerHmacIntegrityProvider.CreateDevFixtureProvider("nodal-m90-explicit-test-fixture-hmac-key"));
+
     private static NexaCanonicalWorkspaceGuardResult GuardAllowed() =>
         new(
             NexaCanonicalWorkspaceGuardDecisionKind.Allowed,
@@ -127,4 +140,26 @@ public sealed class NexaM51M65ClosureCandidateReviewM89Tests
             BlockingReasons: [],
             OperatorMessage: "allowed",
             ModifiedWorkspace: false);
+
+    private sealed class StaticHttpHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("NEXA test-owned read-only no-real-users no-real-credentials no-real-payments no-submit")
+            });
+    }
+
+    private sealed class TempDirectory : IDisposable
+    {
+        public string Path { get; } = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"nodal-m90-{Guid.NewGuid():N}");
+
+        public TempDirectory() => Directory.CreateDirectory(Path);
+
+        public void Dispose()
+        {
+            if (Directory.Exists(Path))
+                Directory.Delete(Path, recursive: true);
+        }
+    }
 }

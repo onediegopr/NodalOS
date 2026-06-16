@@ -116,6 +116,21 @@ public enum NexaExternalReadOnlyEvidencePackStatus
     PassedReadOnlyProof
 }
 
+public enum NexaExternalProofProbeKind
+{
+    ModeledFake,
+    RealHttpClient,
+    RealChromeCdp
+}
+
+public enum NexaExternalEvidencePersistenceStatus
+{
+    NotPersisted,
+    NotPersistedModeled,
+    PersistedRedactedLedger,
+    PersistenceFailed
+}
+
 public sealed record NexaExternalReadOnlyEvidencePack(
     string ProofId,
     string? TargetId,
@@ -137,7 +152,14 @@ public sealed record NexaExternalReadOnlyEvidencePack(
     string FinalGoNoGo,
     NexaExternalReadOnlyEvidencePackStatus Status,
     bool CandidateForM51M65Closure,
-    bool Redacted);
+    bool Redacted,
+    NexaExternalProofProbeKind ProbeKind = NexaExternalProofProbeKind.ModeledFake,
+    NexaExternalEvidencePersistenceStatus PersistenceStatus = NexaExternalEvidencePersistenceStatus.NotPersisted,
+    string Tooling = "ModeledFake",
+    string? LedgerRef = null,
+    long? LedgerSequence = null,
+    string? LedgerHash = null,
+    DateTimeOffset? PersistedAtUtc = null);
 
 public enum NexaSyntheticExternalScenarioKind
 {
