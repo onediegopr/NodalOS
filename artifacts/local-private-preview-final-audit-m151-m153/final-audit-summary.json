@@ -1,0 +1,57 @@
+{
+  "productName": "NODAL OS",
+  "commit": "ee0948b98afb353cd0da32a7082200379780ddb2",
+  "readinessState": "LocalPreviewReleaseCandidate",
+  "allowedScope": [
+    "Product/Admin local",
+    "Operator UX local",
+    "readiness dashboard",
+    "diagnostics/evidence review",
+    "issue triage local",
+    "private local API in-process",
+    "local fixture-first HITO-162 replacement signals"
+  ],
+  "deniedScope": [
+    "production",
+    "public SaaS",
+    "public API real",
+    "billing/email real",
+    "real credentials",
+    "sensitive sites",
+    "submit/pay/sign/delete",
+    "productive recorder/replay",
+    "external CDP general-ready",
+    "new external targets without dedicated evidence"
+  ],
+  "m51Status": "closed HTTP read-only target-owned proof with persisted ledger",
+  "m65Status": "closed target-owned Chrome/CDP/DOM read-only proof with persisted ledger",
+  "hito162Status": "stable local fixture-first replacement",
+  "externalGeneralCdpReady": false,
+  "activeBlockers": [
+    "production/SaaS public blocked",
+    "public API real blocked",
+    "billing/email real blocked",
+    "real credentials blocked",
+    "sensitive sites blocked",
+    "submit/pay/sign/delete blocked",
+    "productive recorder/replay blocked",
+    "external CDP general-ready blocked",
+    "new external targets require dedicated evidence"
+  ],
+  "suiteResults": {
+    "OneBrain.Recipes.Tests": {
+      "passed": 635,
+      "skipped": 0
+    },
+    "OneBrain.Safety.Tests": {
+      "passed": 1467,
+      "skipped": 29
+    }
+  },
+  "privatePreviewRuns": [
+    "m124-m126",
+    "m127-m129",
+    "m148-m150"
+  ],
+  "recommendation": "FrozenReadyForExternalAudit"
+}
