@@ -331,7 +331,17 @@ public sealed record BrowserRuntimeObservedState(
     bool EmbeddedRuntimeCapturesCookiesOrSession = false,
     bool EmbeddedRuntimeCapturesBodies = false,
     bool EmbeddedRuntimeCapturesSensitiveHeaders = false,
-    bool EmbeddedRuntimeEnablesSensitiveSites = false)
+    bool EmbeddedRuntimeEnablesSensitiveSites = false,
+    bool PrivatePreviewOperatorFlowDefined = false,
+    bool PrivatePreviewOperatorFlowLeaksSecrets = false,
+    bool PrivatePreviewIssueTriageDefined = false,
+    bool PrivatePreviewGoNoGoDefined = false,
+    bool PrivatePreviewLocalGoAllowed = false,
+    bool PrivatePreviewGoAllowedWithSecurityBlocker = false,
+    bool PrivatePreviewGoAllowedWithReleaseBlocker = false,
+    bool PrivatePreviewGoEnablesPublicSaas = false,
+    bool PrivatePreviewGoEnablesRealBillingEmail = false,
+    bool PrivatePreviewGoHidesM51Deferred = false)
 {
     public bool UsesHmacLedgerIntegrity =>
         AuditLedgerIntegrityProviderKind.Contains("hmac", StringComparison.OrdinalIgnoreCase);
@@ -600,6 +610,22 @@ public sealed record BrowserRuntimeObservedState(
         !EmbeddedRuntimeCapturesSensitiveHeaders &&
         !EmbeddedRuntimeEnablesSensitiveSites;
 
+    public bool PrivatePreviewOperationsAllowed =>
+        (!PrivatePreviewOperatorFlowDefined && !PrivatePreviewIssueTriageDefined && !PrivatePreviewGoNoGoDefined && !PrivatePreviewLocalGoAllowed) ||
+        (!PrivatePreviewOperatorFlowLeaksSecrets &&
+         PrivatePreviewIssueTriageDefined &&
+         PrivatePreviewGoNoGoDefined &&
+         (!PrivatePreviewLocalGoAllowed ||
+          (PublicSaasStillDisabled &&
+           RealBillingStillDisabled &&
+           RealEmailDeliveryDisabled &&
+           M51ExternalProofDeferred &&
+           !PrivatePreviewGoAllowedWithSecurityBlocker &&
+           !PrivatePreviewGoAllowedWithReleaseBlocker &&
+           !PrivatePreviewGoEnablesPublicSaas &&
+           !PrivatePreviewGoEnablesRealBillingEmail &&
+           !PrivatePreviewGoHidesM51Deferred)));
+
     private bool SensitiveSiteSurfaceActive =>
         SensitiveSitesPolicyDefined ||
         SensitiveSiteReadOnlySimulationAllowed ||
@@ -759,7 +785,17 @@ public sealed record BrowserRuntimeObservedState(
         EmbeddedRuntimeCapturesCookiesOrSession ||
         EmbeddedRuntimeCapturesBodies ||
         EmbeddedRuntimeCapturesSensitiveHeaders ||
-        EmbeddedRuntimeEnablesSensitiveSites;
+        EmbeddedRuntimeEnablesSensitiveSites ||
+        PrivatePreviewOperatorFlowDefined ||
+        PrivatePreviewOperatorFlowLeaksSecrets ||
+        PrivatePreviewIssueTriageDefined ||
+        PrivatePreviewGoNoGoDefined ||
+        PrivatePreviewLocalGoAllowed ||
+        PrivatePreviewGoAllowedWithSecurityBlocker ||
+        PrivatePreviewGoAllowedWithReleaseBlocker ||
+        PrivatePreviewGoEnablesPublicSaas ||
+        PrivatePreviewGoEnablesRealBillingEmail ||
+        PrivatePreviewGoHidesM51Deferred;
 }
 
 public sealed record BrowserRuntimePhaseGateProbeResult(
