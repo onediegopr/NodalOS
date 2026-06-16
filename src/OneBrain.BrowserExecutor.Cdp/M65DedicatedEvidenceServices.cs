@@ -10,9 +10,9 @@ public sealed class M65DedicatedEvidencePlanService
             "https://lab.nodalos.com.ar",
             [
                 Requirement(M65EvidenceScope.HttpReadOnlyExpansion, M65EvidenceRequirementStatus.NotSufficientAlone, NexaExternalProofProbeKind.RealHttpClient, "HttpReadOnlyExternal", "HTTP read-only expansion is useful evidence but cannot close M65 alone."),
-                Requirement(M65EvidenceScope.ChromeCdpDomReadOnly, M65EvidenceRequirementStatus.Required, NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternal", "M65 requires dedicated browser/CDP/DOM read-only proof or an explicit later scope reduction."),
+                Requirement(M65EvidenceScope.ChromeCdpDomReadOnly, M65EvidenceRequirementStatus.Required, NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternalReadOnly", "M65 requires dedicated browser/CDP/DOM read-only proof or an explicit later scope reduction."),
                 Requirement(M65EvidenceScope.PolicyBlockedUnsafeRoutes, M65EvidenceRequirementStatus.Required, NexaExternalProofProbeKind.RealHttpClient, "CorePolicyGate", "Unsafe routes must be blocked before mutation, credential, payment, or destructive action."),
-                Requirement(M65EvidenceScope.DedicatedLowRiskWorkflow, M65EvidenceRequirementStatus.Required, NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternal", "A dedicated low-risk external scenario workflow must be evidenced separately from M51.")
+                Requirement(M65EvidenceScope.DedicatedLowRiskWorkflow, M65EvidenceRequirementStatus.Required, NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternalReadOnly", "A dedicated low-risk external scenario workflow must be evidenced separately from M51.")
             ],
             M65ClosureReadinessStatus.ScopeDefined,
             M51EvidenceSufficient: false,
@@ -49,14 +49,14 @@ public sealed class M65LowRiskExternalScenarioCatalogService
             "https://lab.nodalos.com.ar",
             [
                 Scenario("m65-landing-readonly", "/", M65LowRiskScenarioKind.LandingReadOnlyVerification, ["GET", "read metadata"], [], NexaExternalProofProbeKind.RealHttpClient, "HttpReadOnlyExternal", "redacted ledger evidence", "low", "NODAL OS may verify the landing page read-only; no submit or mutation.", true, true, M65ScenarioEvidenceMode.HttpReadOnlyScenario),
-                Scenario("m65-document-readonly", "/document/", M65LowRiskScenarioKind.DocumentReadOnlyVerification, ["GET", "read synthetic document metadata"], [], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternal", "DOM read-only evidence plus ledger ref", "low", "NODAL OS must prove browser/DOM read-only behavior for M65 closure.", true, true, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
-                Scenario("m65-report-readonly", "/report/", M65LowRiskScenarioKind.StructuredTableReportReadOnly, ["GET", "read synthetic table"], [], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternal", "DOM table evidence plus ledger ref", "low", "NODAL OS must prove structured report read-only behavior without body persistence.", true, true, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
+                Scenario("m65-document-readonly", "/document/", M65LowRiskScenarioKind.DocumentReadOnlyVerification, ["GET", "read synthetic document metadata"], [], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternalReadOnly", "DOM read-only evidence plus ledger ref", "low", "NODAL OS must prove browser/DOM read-only behavior for M65 closure.", true, true, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
+                Scenario("m65-report-readonly", "/report/", M65LowRiskScenarioKind.StructuredTableReportReadOnly, ["GET", "read synthetic table"], [], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternalReadOnly", "DOM table evidence plus ledger ref", "low", "NODAL OS must prove structured report read-only behavior without body persistence.", true, true, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
                 Scenario("m65-disabled-form-blocked", "/disabled-form/", M65LowRiskScenarioKind.DisabledFormPolicyVerification, ["GET policy preflight"], ["submit"], NexaExternalProofProbeKind.RealHttpClient, "CorePolicyGate", "policy blocked before mutation", "low", "NODAL OS blocks disabled form submit before any mutating action.", true, true, M65ScenarioEvidenceMode.PolicyOnlyScenario),
                 Scenario("m65-login-blocked", "/blocked-login/", M65LowRiskScenarioKind.BlockedLoginPolicyVerification, ["GET policy preflight"], ["credentials", "login"], NexaExternalProofProbeKind.RealHttpClient, "CorePolicyGate", "credential flow blocked", "blocked", "NODAL OS blocks real login and credential entry.", true, true, M65ScenarioEvidenceMode.PolicyOnlyScenario),
                 Scenario("m65-checkout-blocked", "/blocked-checkout/", M65LowRiskScenarioKind.BlockedCheckoutPaymentPolicyVerification, ["GET policy preflight"], ["checkout", "payment", "submit"], NexaExternalProofProbeKind.RealHttpClient, "CorePolicyGate", "payment flow blocked", "blocked", "NODAL OS blocks checkout/payment surfaces.", true, true, M65ScenarioEvidenceMode.PolicyOnlyScenario),
                 Scenario("m65-destructive-blocked", "/blocked-destructive-action/", M65LowRiskScenarioKind.BlockedDestructiveActionPolicyVerification, ["GET policy preflight"], ["delete", "sign", "mutate"], NexaExternalProofProbeKind.RealHttpClient, "CorePolicyGate", "destructive action blocked", "blocked", "NODAL OS blocks delete/sign/mutate actions.", true, true, M65ScenarioEvidenceMode.PolicyOnlyScenario),
-                Scenario("m65-multipage-readonly", "/products/ -> /document/ -> /report/", M65LowRiskScenarioKind.SyntheticMultiPageReadOnlyWorkflow, ["GET", "read DOM", "navigate read-only"], [], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternal", "multi-page DOM read-only ledger evidence", "low", "NODAL OS requires a synthetic multi-page browser workflow before M65 candidate closure.", true, true, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
-                Scenario("m65-safe-filter-readonly", "/products/?filter=synthetic", M65LowRiskScenarioKind.SafeSearchFilterReadOnly, ["GET", "read filtered synthetic list"], ["POST search"], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternal", "read-only filter evidence", "low", "NODAL OS may only use safe static filters without server mutation.", true, false, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
+                Scenario("m65-multipage-readonly", "/products/ -> /document/ -> /report/", M65LowRiskScenarioKind.SyntheticMultiPageReadOnlyWorkflow, ["GET", "read DOM", "navigate read-only"], [], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternalReadOnly", "multi-page DOM read-only ledger evidence", "low", "NODAL OS requires a synthetic multi-page browser workflow before M65 candidate closure.", true, true, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
+                Scenario("m65-safe-filter-readonly", "/products/?filter=synthetic", M65LowRiskScenarioKind.SafeSearchFilterReadOnly, ["GET", "read filtered synthetic list"], ["POST search"], NexaExternalProofProbeKind.RealChromeCdp, "ChromeCdpExternalReadOnly", "read-only filter evidence", "low", "NODAL OS may only use safe static filters without server mutation.", true, false, M65ScenarioEvidenceMode.BrowserCdpDomScenarioPending),
                 Scenario("m65-download-metadata-only", "/document/", M65LowRiskScenarioKind.SyntheticDownloadMetadataOnly, ["metadata inspection"], ["file download"], NexaExternalProofProbeKind.RealHttpClient, "HttpReadOnlyExternal", "metadata-only, no file download", "low", "NODAL OS may model download metadata but cannot treat it as closure evidence.", true, false, M65ScenarioEvidenceMode.NotEnoughForClosure)
             ],
             UsesRealCustomerData: false,
@@ -105,6 +105,12 @@ public sealed class M65DedicatedEvidenceReviewer
             reasons.Add("dedicated read-only proof required");
         if (input.ProofKind == NexaExternalProofProbeKind.ModeledFake)
             reasons.Add("modeled/fake proof cannot close M65");
+        if (input.ProofKind == NexaExternalProofProbeKind.RealChromeCdp &&
+            !string.Equals(input.Tooling, "ChromeCdpExternalReadOnly", StringComparison.Ordinal))
+            reasons.Add("Chrome/CDP proof requires ChromeCdpExternalReadOnly tooling");
+        if (input.ProofKind == NexaExternalProofProbeKind.RealHttpClient &&
+            input.ScopeRequiresChromeCdpDomProof)
+            reasons.Add("HTTP proof does not satisfy Chrome/CDP/DOM evidence requirement");
         if (input.SecretsCookiesTokensDetected)
             reasons.Add("secret/cookie/token leak blocks M65");
         if (input.SubmitMutationPaymentLoginDetected)
@@ -120,6 +126,8 @@ public sealed class M65DedicatedEvidenceReviewer
             ? M65ClosureReadinessStatus.BlockedByPolicy
             : input.ScopeRequiresChromeCdpDomProof && !input.ChromeCdpDomProofPassed
                 ? M65ClosureReadinessStatus.RequiresChromeCdpDomProof
+                : input.ProofKind == NexaExternalProofProbeKind.RealHttpClient && input.ScopeRequiresChromeCdpDomProof
+                    ? M65ClosureReadinessStatus.RequiresChromeCdpDomProof
                 : reasons.Count > 0
                     ? M65ClosureReadinessStatus.DeferredNeedsDedicatedEvidence
                     : M65ClosureReadinessStatus.CandidateCloseM65;

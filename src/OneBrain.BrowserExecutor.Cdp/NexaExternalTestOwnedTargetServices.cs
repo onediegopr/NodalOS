@@ -180,7 +180,7 @@ public sealed class NexaExternalReadOnlyEvidencePackBuilder
         probeKind switch
         {
             NexaExternalProofProbeKind.RealHttpClient => "HttpReadOnlyExternal",
-            NexaExternalProofProbeKind.RealChromeCdp => "ChromeCdpExternal",
+            NexaExternalProofProbeKind.RealChromeCdp => "ChromeCdpExternalReadOnly",
             _ => "ModeledFake"
         };
 
@@ -188,7 +188,7 @@ public sealed class NexaExternalReadOnlyEvidencePackBuilder
         probeKind switch
         {
             NexaExternalProofProbeKind.RealHttpClient => ["HttpGetReadOnly", "NetworkMetadataOnly", "CoreGoverned"],
-            NexaExternalProofProbeKind.RealChromeCdp => ["NavigationReadOnly", "DomReadOnly", "NetworkMetadataOnly", "CoreGoverned"],
+            NexaExternalProofProbeKind.RealChromeCdp => ["BrowserNavigationReadOnly", "DomSnapshotReadOnly", "PageMetadataReadOnly", "NetworkMetadataRedacted", "CoreGoverned"],
             _ => ["ModeledReadOnly", "CoreGoverned"]
         };
 }

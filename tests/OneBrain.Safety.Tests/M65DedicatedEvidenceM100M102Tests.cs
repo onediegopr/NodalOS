@@ -237,7 +237,7 @@ public sealed class M65DedicatedEvidenceM100M102Tests
             M51Closed: true,
             ScenarioPlanReady: true,
             proofKind,
-            proofKind == NexaExternalProofProbeKind.RealChromeCdp ? "ChromeCdpExternal" : "HttpReadOnlyExternal",
+            proofKind == NexaExternalProofProbeKind.RealChromeCdp ? "ChromeCdpExternalReadOnly" : "HttpReadOnlyExternal",
             LedgerRefPresent: ledger,
             TargetVerified: true,
             ReadOnlyProofPassed: readOnlyProof,

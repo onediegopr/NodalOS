@@ -161,6 +161,96 @@ public sealed record NexaExternalReadOnlyEvidencePack(
     string? LedgerHash = null,
     DateTimeOffset? PersistedAtUtc = null);
 
+public sealed record ChromeCdpDomReadOnlySnapshot(
+    string Url,
+    string Title,
+    IReadOnlyList<string> MetadataKeys,
+    int ElementCount,
+    bool FullDomPersisted,
+    bool ContainsSensitiveMaterial,
+    bool Redacted);
+
+public sealed record ChromeCdpReadOnlyEvidencePolicy(
+    bool RequireRealChromeCdpSession,
+    bool RequireNavigationEvidence,
+    bool RequireDomPageMetadata,
+    bool BlockFullDomPersistence,
+    bool BlockSubmitMutationLoginPayment,
+    bool BlockCookiesTokensSecrets,
+    IReadOnlySet<string> AllowedHosts,
+    IReadOnlySet<string> AllowedPaths);
+
+public enum ChromeCdpExternalProbeStatus
+{
+    SkippedNoOptIn,
+    ChromeCdpUnavailable,
+    TargetPolicyBlocked,
+    NavigationFailed,
+    DomReadOnlyFailed,
+    SafetyRejected,
+    PassedReadOnlyDomProof
+}
+
+public sealed record ChromeCdpExternalProbeResult(
+    ChromeCdpExternalProbeStatus Status,
+    bool IsRealChromeCdpSession,
+    bool NavigatedToAllowedTarget,
+    bool DomOrPageMetadataCaptured,
+    string BrowserVersion,
+    string TargetUrl,
+    IReadOnlyList<string> RoutesVisited,
+    IReadOnlyList<string> PolicyBlockedRoutes,
+    ChromeCdpDomReadOnlySnapshot? Snapshot,
+    bool SubmittedOrMutated,
+    bool UsedCredentials,
+    bool UsedLoginOrPayment,
+    bool PersistedCookies,
+    bool CapturedSensitiveHeaderValues,
+    bool PersistedFullDomOrBody,
+    bool SecretsCookiesTokensDetected,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<string> ReasonCodes,
+    bool Redacted);
+
+public enum ChromeCdpExternalProofStatus
+{
+    SkippedNoOptIn,
+    ChromeCdpUnavailable,
+    BlockedPolicyViolation,
+    FailedRuntime,
+    PassedReadOnlyProof
+}
+
+public sealed record ChromeCdpExternalProofReadiness(
+    bool OptInEnabled,
+    bool TargetVerified,
+    bool LiveProofSafetyGatePassed,
+    bool ChromeCdpAvailable,
+    bool ReadyForReadOnlyDomProof,
+    IReadOnlyList<string> ReasonCodes,
+    bool Redacted);
+
+public sealed record ChromeCdpExternalProofResult(
+    ChromeCdpExternalProofStatus Status,
+    ChromeCdpExternalProofReadiness Readiness,
+    ChromeCdpExternalProbeResult? ProbeResult,
+    NexaExternalReadOnlyEvidencePack EvidencePack,
+    M65DedicatedEvidenceReview M65Review,
+    bool ExecutedLiveCdp,
+    bool Redacted);
+
+public interface INexaChromeCdpExternalProbe
+{
+    bool IsAvailable { get; }
+
+    Task<ChromeCdpExternalProbeResult> ProbeReadOnlyAsync(
+        ChromeCdpReadOnlyEvidencePolicy policy,
+        NexaExternalTestOwnedTarget target,
+        IReadOnlyList<string> allowedRoutes,
+        IReadOnlyList<string> blockedRoutes,
+        CancellationToken cancellationToken);
+}
+
 public enum NexaSyntheticExternalScenarioKind
 {
     LandingReadOnly,

@@ -24,7 +24,12 @@ public enum M65ClosureReadinessStatus
     CandidateCloseM65,
     DoNotClose,
     BlockedByPolicy,
-    RequiresChromeCdpDomProof
+    RequiresChromeCdpDomProof,
+    ChromeCdpDomProofSkippedNoOptIn,
+    ChromeCdpDomProofUnavailable,
+    ChromeCdpDomProofFailed,
+    ChromeCdpDomProofPassed,
+    ReviewRequired
 }
 
 public sealed record M65EvidenceRequirement(

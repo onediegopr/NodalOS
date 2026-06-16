@@ -46,8 +46,8 @@ public sealed class NexaExternalReadOnlyProofHonestyM90Tests
         var pack = new NexaExternalReadOnlyEvidencePackBuilder().Build(harness, request, true, true, NexaExternalProofProbeKind.RealChromeCdp);
 
         Assert.AreEqual(NexaExternalProofProbeKind.RealChromeCdp, pack.ProbeKind);
-        Assert.AreEqual("ChromeCdpExternal", pack.Tooling);
-        CollectionAssert.Contains(pack.RuntimeCapabilities.ToList(), "DomReadOnly");
+        Assert.AreEqual("ChromeCdpExternalReadOnly", pack.Tooling);
+        CollectionAssert.Contains(pack.RuntimeCapabilities.ToList(), "DomSnapshotReadOnly");
     }
 
     [TestMethod]
