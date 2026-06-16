@@ -47,7 +47,13 @@ public sealed record NodalOsPaddleOcrOnnxModelRef(
     string InputShapeDescription,
     string OutputShapeDescription,
     int OpsetVersion,
-    NodalOsPaddleOcrOnnxModelStatus Status);
+    NodalOsPaddleOcrOnnxModelStatus Status)
+{
+    public IReadOnlyList<string> InputNames { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> OutputNames { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<int> ExpectedInputShape { get; init; } = Array.Empty<int>();
+    public IReadOnlyList<int> ExpectedOutputShape { get; init; } = Array.Empty<int>();
+}
 
 public sealed record NodalOsPaddleOcrOnnxModelManifest(
     string ManifestId,
@@ -77,5 +83,56 @@ public sealed record NodalOsPaddleOcrOnnxModelAcquisitionPlan(
     long MaxTotalModelSizeBytes,
     bool RequiresLicenseReview,
     bool RequiresManualDownload,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsPaddleOcrOnnxModelVerificationResult(
+    string VerificationId,
+    string ModelId,
+    bool FileExists,
+    bool SizeMatches,
+    bool ChecksumMatches,
+    bool LicenseAccepted,
+    bool ShapeKnown,
+    NodalOsPaddleOcrOnnxModelStatus Status,
+    string Reason,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsPaddleOcrOnnxModelIntegrityCheck(
+    string CheckId,
+    string ModelId,
+    string Algorithm,
+    string ExpectedChecksum,
+    string? ActualChecksum,
+    long ExpectedSizeBytes,
+    long ActualSizeBytes,
+    bool Match,
+    string Reason,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsPaddleOcrOnnxModelCatalog(
+    string CatalogId,
+    string ManifestVersion,
+    IReadOnlyList<NodalOsPaddleOcrOnnxModelRef> RequiredModels,
+    IReadOnlyList<NodalOsPaddleOcrOnnxModelRef> OptionalModels,
+    long TotalMaxSizeBytes,
+    bool AllRequiredPresent,
+    bool AllRequiredVerified,
+    bool LicenseReviewed,
+    bool NoAuthority,
+    bool Redacted);
+
+public sealed record NodalOsPaddleOcrOnnxModelReadinessDetail(
+    string ReadinessId,
+    bool Ready,
+    NodalOsPaddleOcrOnnxModelStatus Status,
+    string Reason,
+    bool CanRunOcr,
+    bool ModelsVerified,
+    bool LicenseReviewed,
+    bool SizeWithinLimits,
+    bool ShapesKnown,
     bool NoAuthority,
     bool Redacted);
