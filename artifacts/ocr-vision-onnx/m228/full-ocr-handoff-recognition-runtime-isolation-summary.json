@@ -1,0 +1,67 @@
+{
+  "milestones": ["M226", "M227", "M228"],
+  "baseHead": "7170763",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "remote": "https://github.com/onediegopr/NodalOS.git",
+  "worktree": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit",
+  "forbiddenPathUsed": false,
+  "models": {
+    "detection": "ch_PP-OCRv4_det.onnx",
+    "recognition": "ch_PP-OCRv4_rec.onnx",
+    "classification": "ch_ppocr_mobile_v2.0_cls.onnx",
+    "verified": true,
+    "trackedOnnx": false
+  },
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime 1.18.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "handoffProbe": {
+    "modes": ["--handoff-crash-probe", "--handoff-crash-child"],
+    "boxKinds": ["DetectorProduced", "ManualSafe", "Degenerate", "OutOfBounds", "EmptyCrop", "TooSmall"],
+    "invalidBoxesBlockBeforeRuntime": true,
+    "outOfBoundsCropBlocksBeforeRuntime": true,
+    "emptyCropBlocksBeforeRuntime": true,
+    "tooSmallCropBlocksBeforeRuntime": true,
+    "rawPersistence": false,
+    "runsOutOfProcess": true
+  },
+  "recognizerRuntimeProbe": {
+    "modes": ["--recognizer-runtime-probe", "--recognizer-runtime-child"],
+    "tensorKinds": ["Zero", "Ones", "Gradient", "SyntheticTextCrop", "HighContrastManualCrop", "DetectorDerivedCrop"],
+    "capturesTensorStats": true,
+    "capturesOutputMetadata": true,
+    "capturesClassCount": true,
+    "sessionCreated": true,
+    "inputMetadata": "x=[-1,3,-1,-1]",
+    "outputMetadata": "softmax_2.tmp_0=[-1,-1,97]",
+    "zeroTensorResult": "NativeRuntimeCrashContained",
+    "onesTensorResult": "NativeRuntimeCrashContained",
+    "gradientTensorResult": "NativeRuntimeCrashContained",
+    "syntheticTextCropResult": "NativeRuntimeCrashContained",
+    "highContrastManualCropResult": "NativeRuntimeCrashContained",
+    "detectorDerivedCropResult": "NativeRuntimeCrashContained",
+    "crashExitCode": -1073741676,
+    "crashExitCodeHex": "0xC0000094",
+    "crashStage": "RecognitionRun/session.Run"
+  },
+  "dictionary": {
+    "recognizerOutputClasses": 97,
+    "asciiCharacters": 86,
+    "asciiPlusBlank": 87,
+    "status": "BlockedByDictionaryClassCountMismatch",
+    "decodeAllowed": false,
+    "inventedText": false
+  },
+  "safety": {
+    "productiveOcrEnabled": false,
+    "shadowModeEnabled": false,
+    "saaSOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "riskyOcrInProcess": false
+  },
+  "decision": "READY_FOR_RECOGNIZER_RUNTIME_EXPERIMENT"
+}
