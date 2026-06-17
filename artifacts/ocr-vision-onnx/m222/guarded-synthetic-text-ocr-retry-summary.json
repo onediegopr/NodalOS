@@ -1,0 +1,94 @@
+{
+  "milestone": "M220-M222",
+  "decision": "M220+M221+M222 CERRADO / BLOCKED_BY_MODEL_RUNTIME",
+  "worktree": "C:\\Users\\diego\\OneDrive\\PERSONAL\\ONE Brain\\Codigo-m12-audit",
+  "baseCommit": "791a546",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "models": [
+    {
+      "role": "detection",
+      "file": "ch_PP-OCRv4_det.onnx",
+      "sha256": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9",
+      "sizeBytes": 4745517,
+      "status": "PresentAndVerified"
+    },
+    {
+      "role": "recognition",
+      "file": "ch_PP-OCRv4_rec.onnx",
+      "sha256": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+      "sizeBytes": 7653044,
+      "status": "PresentAndVerified"
+    },
+    {
+      "role": "classification",
+      "file": "ch_ppocr_mobile_v2.0_cls.onnx",
+      "sha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c",
+      "sizeBytes": 585532,
+      "status": "PresentAndVerified"
+    }
+  ],
+  "onnxGitStatus": {
+    "gitignored": true,
+    "trackedOnnxFiles": 0,
+    "modelsCommitted": false
+  },
+  "guardedRetry": {
+    "riskyOcrRanInProcess": false,
+    "riskyOcrRanOutOfProcess": true,
+    "parentSurvived": true,
+    "tempCleanup": true,
+    "childCleanup": true,
+    "timeout": false,
+    "rawPersistence": false,
+    "callsSaas": false,
+    "noAuthority": true,
+    "probes": [
+      { "fixture": "LargeCenteredText", "text": "TEST", "size": "320x128", "render": "PixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null },
+      { "fixture": "WidePaddingText", "text": "NODAL", "size": "640x160", "render": "PixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null },
+      { "fixture": "AlphanumericText", "text": "ABC123", "size": "640x160", "render": "AntiAliasedPixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null },
+      { "fixture": "NumericText", "text": "12345", "size": "640x320", "render": "PixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null },
+      { "fixture": "SoftBorderText", "text": "SAFE TEXT", "size": "640x640", "render": "AntiAliasedPixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null },
+      { "fixture": "WhiteBackgroundText", "text": "TEST", "size": "640x160", "render": "PixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null },
+      { "fixture": "PixelFontText", "text": "TEST", "size": "640x320", "render": "PixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null },
+      { "fixture": "AntiAliasedPixelFontText", "text": "TEST", "size": "640x320", "render": "AntiAliasedPixelFont", "status": "NativeRuntimeCrashContained", "exitCode": -1073741676, "exitHex": "0xC0000094", "crashKind": "NativeAbort", "boxesDetected": null, "recognitionAttempts": null }
+    ]
+  },
+  "detectionDiagnosis": {
+    "status": "NativeRuntimeCrashContained",
+    "stage": "DetectionRun/session.Run",
+    "boxesDetected": null,
+    "outputNames": [],
+    "outputShapes": [],
+    "postprocessingReached": false,
+    "provider": "CPUExecutionProvider",
+    "finding": "child native abort prevents boxes and recognition"
+  },
+  "recognitionDiagnosis": {
+    "reachable": false,
+    "reason": "no detector boxes because detection crashes in child",
+    "model": "ch_PP-OCRv4_rec.onnx",
+    "expectedInputShape": [1, 3, 32, 320],
+    "expectedOutputShape": [40, 1, 97],
+    "outputName": "softmax_2.tmp_0"
+  },
+  "dictionaryCtc": {
+    "currentDictionaryId": "en-ascii",
+    "currentDictionaryCharacterCount": 86,
+    "currentDictionaryClassCountIncludingBlank": 87,
+    "recognizerOutputClassCount": 97,
+    "status": "ClassCountMismatch",
+    "decodeAllowed": false,
+    "positiveRecognitionAllowed": false,
+    "noAuthority": true
+  },
+  "privacyAuthority": {
+    "noProductiveOcr": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "shadowModeBlocked": true
+  },
+  "nextRouteRecommendation": "runtime/model execution diagnosis before dictionary completion"
+}

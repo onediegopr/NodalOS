@@ -23,6 +23,7 @@ public sealed class NodalOsOnnxOutOfProcessGuard
         [unchecked((int)0xC00000FD)] = NodalOsOnnxNativeRuntimeCrashKind.NativeAccessViolation, // STATUS_STACK_OVERFLOW
         [unchecked((int)0xC0000409)] = NodalOsOnnxNativeRuntimeCrashKind.NativeAbort,           // STATUS_STACK_BUFFER_OVERRUN / fail-fast
         [unchecked((int)0xC000001D)] = NodalOsOnnxNativeRuntimeCrashKind.NativeAbort,           // STATUS_ILLEGAL_INSTRUCTION
+        [unchecked((int)0xC0000094)] = NodalOsOnnxNativeRuntimeCrashKind.NativeAbort,           // STATUS_INTEGER_DIVIDE_BY_ZERO
         [139] = NodalOsOnnxNativeRuntimeCrashKind.NativeAccessViolation,                        // 128 + SIGSEGV
         [134] = NodalOsOnnxNativeRuntimeCrashKind.NativeAbort                                    // 128 + SIGABRT
     };

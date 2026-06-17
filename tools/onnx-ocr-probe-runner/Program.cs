@@ -21,12 +21,17 @@ if (options.TryGetValue("self-test", out var mode))
     return RunSelfTest(mode);
 }
 
+if (options.ContainsKey("guard-probe"))
+{
+    return RunGuardProbe(options);
+}
+
 if (options.ContainsKey("probe"))
 {
     return RunProbe(options);
 }
 
-Console.Error.WriteLine("usage: --self-test <mode> | --probe --repo-root <dir> [--request <file>]");
+Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --probe --repo-root <dir> [--request <file>]");
 return 64;
 
 static Dictionary<string, string> ParseArgs(string[] argv)
@@ -85,6 +90,62 @@ static int RunSelfTest(string mode)
             Console.Error.WriteLine($"unknown self-test mode: {mode}");
             return 64;
     }
+}
+
+static int RunGuardProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? root
+        : Directory.GetCurrentDirectory();
+
+    var fixture = options.TryGetValue("fixture", out var fixtureName) &&
+                  Enum.TryParse<NodalOsOnnxNativeRuntimeCrashFixtureKind>(fixtureName, ignoreCase: true, out var parsedFixture)
+        ? parsedFixture
+        : NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText;
+
+    var render = options.TryGetValue("render", out var renderName) &&
+                 Enum.TryParse<NodalOsSyntheticOcrTextRenderMode>(renderName, ignoreCase: true, out var parsedRender)
+        ? parsedRender
+        : NodalOsSyntheticOcrTextRenderMode.PixelFont;
+
+    var width = options.TryGetValue("width", out var widthText) && int.TryParse(widthText, out var parsedWidth)
+        ? parsedWidth
+        : 640;
+    var height = options.TryGetValue("height", out var heightText) && int.TryParse(heightText, out var parsedHeight)
+        ? parsedHeight
+        : 160;
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 60000;
+
+    var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+        $"m220-{fixture}-{width}x{height}-{Guid.NewGuid():N}",
+        fixture,
+        render,
+        width,
+        height,
+        NodalOsOnnxNativeRuntimeCrashStage.DetectionRun,
+        NodalOsOcrVisionSensitivity.Low,
+        FullScreen: false,
+        Sensitive: false,
+        OriginalRawPersisted: false,
+        Synthetic: true,
+        NoAuthority: true,
+        RunOutOfProcess: true);
+
+    var runner = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "OneBrain.Tools.OnnxOcrProbeRunner.exe");
+    var guardRequest = new NodalOsOnnxOutOfProcessGuardRequest(
+        $"guard-m220-{Guid.NewGuid():N}",
+        request,
+        runner,
+        new[] { "--probe", "--repo-root", repoRoot },
+        timeoutMs,
+        MaxOutputBytes: 64 * 1024,
+        AllowRawPersistence: false);
+
+    var result = new NodalOsOnnxOutOfProcessGuard().Run(guardRequest);
+    Console.Out.WriteLine(JsonSerializer.Serialize(result));
+    return 0;
 }
 
 static int RunProbe(Dictionary<string, string> options)
@@ -210,9 +271,11 @@ static byte[] BuildFixtureImage(
         var text = request.FixtureKind switch
         {
             NodalOsOnnxNativeRuntimeCrashFixtureKind.NumericText => "12345",
-            NodalOsOnnxNativeRuntimeCrashFixtureKind.AlphanumericText => "A1",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.AlphanumericText => "ABC123",
             NodalOsOnnxNativeRuntimeCrashFixtureKind.LettersText => "AB",
             NodalOsOnnxNativeRuntimeCrashFixtureKind.SmallCenteredText => "A",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.WidePaddingText => "NODAL",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.SoftBorderText => "SAFE TEXT",
             _ => "TEST"
         };
         var generator = new NodalOsSyntheticOcrTextFixtureGenerator();

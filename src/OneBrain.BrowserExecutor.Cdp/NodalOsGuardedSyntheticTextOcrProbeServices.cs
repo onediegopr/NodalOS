@@ -81,8 +81,8 @@ public sealed class NodalOsGuardedSyntheticTextOcrProbeMatrixBuilder
         [
             Fixture("large-centered", "TEST", NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText, NodalOsSyntheticOcrTextRenderMode.AntiAliasedPixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
             Fixture("small-centered", "TEST", NodalOsOnnxNativeRuntimeCrashFixtureKind.SmallCenteredText, NodalOsSyntheticOcrTextRenderMode.PixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
-            Fixture("wide-padding", "TEST", NodalOsOnnxNativeRuntimeCrashFixtureKind.WidePaddingText, NodalOsSyntheticOcrTextRenderMode.PixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
-            Fixture("soft-border", "TEST", NodalOsOnnxNativeRuntimeCrashFixtureKind.SoftBorderText, NodalOsSyntheticOcrTextRenderMode.AntiAliasedPixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
+            Fixture("wide-padding", "NODAL", NodalOsOnnxNativeRuntimeCrashFixtureKind.WidePaddingText, NodalOsSyntheticOcrTextRenderMode.PixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
+            Fixture("soft-border", "SAFE TEXT", NodalOsOnnxNativeRuntimeCrashFixtureKind.SoftBorderText, NodalOsSyntheticOcrTextRenderMode.AntiAliasedPixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
             Fixture("white-background", "TEST", NodalOsOnnxNativeRuntimeCrashFixtureKind.WhiteBackgroundText, NodalOsSyntheticOcrTextRenderMode.PixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
             Fixture("light-gray-background", "TEST", NodalOsOnnxNativeRuntimeCrashFixtureKind.LightGrayBackgroundText, NodalOsSyntheticOcrTextRenderMode.PixelFont, NodalOsSyntheticOcrTextColorScheme.GrayOnWhite, "light-gray", "dark-gray"),
             Fixture("pure-black-text", "TEST", NodalOsOnnxNativeRuntimeCrashFixtureKind.PureBlackText, NodalOsSyntheticOcrTextRenderMode.PixelFont, NodalOsSyntheticOcrTextColorScheme.BlackOnWhite, "white", "black"),
