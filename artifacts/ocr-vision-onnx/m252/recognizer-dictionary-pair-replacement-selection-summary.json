@@ -1,0 +1,64 @@
+{
+  "milestone": "M250+M251+M252",
+  "decision": "READY_FOR_RECOGNIZER_DICTIONARY_PAIR_ACQUISITION",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "currentPair": {
+    "model": "en_PP-OCRv4_rec_mobile.onnx",
+    "localFileName": "ch_PP-OCRv4_rec.onnx",
+    "modelSha256": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+    "outputClassCount": 97,
+    "dictionary": "en_dict.txt",
+    "dictionaryTokenCount": 95,
+    "expectedClassesWithBlankIndex0": 96,
+    "status": "RejectedCountMismatch"
+  },
+  "selectedCandidate": {
+    "candidateId": "rapidocr-modelscope-ppocrv5-en-mobile-onnx",
+    "provider": "RapidAI/RapidOCR + ModelScope",
+    "modelUrl": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx",
+    "modelSha256": "c3461add59bb4323ecba96a492ab75e06dda42467c9e3d0c18db5d1d21924be8",
+    "modelSizePinned": false,
+    "dictionaryUrl": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile/ppocrv5_en_dict.txt",
+    "dictionarySha256": "e025a66d31f327ba0c232e03f407ae8d105e1e709e7ccb3f408aa778c24e70d6",
+    "dictionarySizeBytes": 1416,
+    "dictionaryTokenCount": 436,
+    "ctcBlankIndex": 0,
+    "expectedOutputClassCount": 437,
+    "decision": "CandidateAcceptedForAcquisition"
+  },
+  "candidates": [
+    {
+      "candidateId": "rapidocr-modelscope-ppocrv5-en-mobile-onnx",
+      "decision": "CandidateAcceptedForAcquisition"
+    },
+    {
+      "candidateId": "rapidocr-modelscope-ppocrv5-latin-mobile-onnx",
+      "decision": "CandidateNeedsManualReview"
+    },
+    {
+      "candidateId": "rapidocr-modelscope-ppocrv4-en-current-onnx",
+      "decision": "RejectedCountMismatch"
+    },
+    {
+      "candidateId": "paddleocr-huggingface-ppocrv4-mobile-rec",
+      "decision": "RejectedNoOnnx"
+    }
+  ],
+  "execution": {
+    "newModelDownloaded": false,
+    "decodeAttempted": false,
+    "productiveOcrEnabled": false,
+    "shadowModeEnabled": false
+  },
+  "safety": {
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true
+  }
+}

@@ -131,6 +131,27 @@ public enum NodalOsRecognizerDictionaryPairDecision
     NotReady
 }
 
+public enum NodalOsRecognizerDictionaryPairCandidateDecision
+{
+    CandidateAcceptedForAcquisition,
+    CandidateNeedsManualReview,
+    RejectedNoExplicitDictionary,
+    RejectedCountMismatch,
+    RejectedNoOnnx,
+    RejectedUnpinnable,
+    RejectedUnofficial,
+    RejectedModelRisk
+}
+
+public enum NodalOsRecognizerDictionaryPairReplacementDecision
+{
+    ReadyForRecognizerDictionaryPairAcquisition,
+    ReadyForManualPairApproval,
+    BlockedByNoCompatibleRecognizerDictionaryPair,
+    BlockedByUnpinnablePair,
+    NotReady
+}
+
 public sealed record NodalOsOcrDictionaryManifest(
     string DictionaryId,
     string Language,
@@ -335,6 +356,63 @@ public sealed record NodalOsRecognizerDictionaryPairCompatibility(
     bool DecodeAllowed,
     bool ProductiveOcrBlocked,
     bool ShadowModeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsRecognizerDictionaryPairCandidateSource(
+    string SourceId,
+    string Provider,
+    string ModelUrlOrRef,
+    string? DictionaryUrlOrRef,
+    string License,
+    string Provenance,
+    bool Official,
+    bool Verifiable);
+
+public sealed record NodalOsRecognizerDictionaryPairCandidate(
+    string CandidateId,
+    NodalOsRecognizerDictionaryPairCandidateSource Source,
+    string ModelFileName,
+    string DictionaryFileName,
+    string ModelTypeVersion,
+    string Language,
+    string ExpectedInputShape,
+    int? ExpectedOutputClassCount,
+    int? DictionaryTokenCount,
+    int CtcBlankIndex,
+    bool OnnxAvailable,
+    bool ModelHashPinned,
+    bool ModelSizePinned,
+    string? ModelSha256,
+    long? ModelSizeBytes,
+    bool DictionaryExplicit,
+    bool DictionaryHashPinned,
+    bool DictionarySizePinned,
+    string? DictionarySha256,
+    long? DictionarySizeBytes,
+    bool CompatibleWithOnnxRuntime1221,
+    string Risks);
+
+public sealed record NodalOsRecognizerDictionaryPairCandidateAudit(
+    string AuditId,
+    NodalOsRecognizerDictionaryPairCandidate Candidate,
+    NodalOsRecognizerDictionaryPairCandidateDecision Decision,
+    bool DecodeAttempted,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsRecognizerDictionaryPairCompatibilityMatrix(
+    string MatrixId,
+    IReadOnlyList<NodalOsRecognizerDictionaryPairCandidateAudit> CandidateAudits,
+    NodalOsRecognizerDictionaryPairCandidateAudit? SelectedCandidate,
+    NodalOsRecognizerDictionaryPairReplacementDecision Decision,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool DecodeBlocked,
     bool NoRawPersistence,
     bool NoFullScreen,
     bool NoSensitive,

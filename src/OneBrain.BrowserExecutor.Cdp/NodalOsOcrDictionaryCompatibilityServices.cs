@@ -324,6 +324,205 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             reason);
     }
 
+    public IReadOnlyList<NodalOsRecognizerDictionaryPairCandidate> CreateM250ReplacementCandidates()
+    {
+        return
+        [
+            new NodalOsRecognizerDictionaryPairCandidate(
+                "rapidocr-modelscope-ppocrv5-en-mobile-onnx",
+                new NodalOsRecognizerDictionaryPairCandidateSource(
+                    "rapidocr-default-models-ppocrv5-en",
+                    "RapidAI/RapidOCR + ModelScope",
+                    "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx",
+                    "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile/ppocrv5_en_dict.txt",
+                    "Apache-2.0 lineage",
+                    "RapidOCR default_models.yaml lists ONNX recognizer SHA and explicit dict_url",
+                    Official: true,
+                    Verifiable: true),
+                "en_PP-OCRv5_rec_mobile.onnx",
+                "ppocrv5_en_dict.txt",
+                "PP-OCRv5 mobile recognition",
+                "en",
+                "NCHW [1,3,48,W] or model metadata to be confirmed during acquisition",
+                ExpectedOutputClassCount: 437,
+                DictionaryTokenCount: 436,
+                CtcBlankIndex: 0,
+                OnnxAvailable: true,
+                ModelHashPinned: true,
+                ModelSizePinned: false,
+                "c3461add59bb4323ecba96a492ab75e06dda42467c9e3d0c18db5d1d21924be8",
+                ModelSizeBytes: null,
+                DictionaryExplicit: true,
+                DictionaryHashPinned: true,
+                DictionarySizePinned: true,
+                "e025a66d31f327ba0c232e03f407ae8d105e1e709e7ccb3f408aa778c24e70d6",
+                1416,
+                CompatibleWithOnnxRuntime1221: true,
+                "runtime not yet tested locally; model size not pinned until controlled acquisition"),
+            new NodalOsRecognizerDictionaryPairCandidate(
+                "rapidocr-modelscope-ppocrv5-latin-mobile-onnx",
+                new NodalOsRecognizerDictionaryPairCandidateSource(
+                    "rapidocr-default-models-ppocrv5-latin",
+                    "RapidAI/RapidOCR + ModelScope",
+                    "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile.onnx",
+                    "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile/ppocrv5_latin_dict.txt",
+                    "Apache-2.0 lineage",
+                    "RapidOCR default_models.yaml lists ONNX recognizer SHA and explicit dict_url",
+                    Official: true,
+                    Verifiable: true),
+                "latin_PP-OCRv5_rec_mobile.onnx",
+                "ppocrv5_latin_dict.txt",
+                "PP-OCRv5 mobile recognition",
+                "latin",
+                "NCHW [1,3,48,W] or model metadata to be confirmed during acquisition",
+                ExpectedOutputClassCount: 503,
+                DictionaryTokenCount: 502,
+                CtcBlankIndex: 0,
+                OnnxAvailable: true,
+                ModelHashPinned: true,
+                ModelSizePinned: false,
+                "b20bd37c168a570f583afbc8cd7925603890efbcdc000a59e22c269d160b5f5a",
+                ModelSizeBytes: null,
+                DictionaryExplicit: true,
+                DictionaryHashPinned: true,
+                DictionarySizePinned: true,
+                "3c0a8a79b612653c25f765271714f71281e4e955962c153e272b7b8c1d2b13ff",
+                1634,
+                CompatibleWithOnnxRuntime1221: true,
+                "broader charset than required for current English synthetic fixtures; higher migration impact"),
+            new NodalOsRecognizerDictionaryPairCandidate(
+                "rapidocr-modelscope-ppocrv4-en-current-onnx",
+                new NodalOsRecognizerDictionaryPairCandidateSource(
+                    "rapidocr-default-models-ppocrv4-en-current",
+                    "RapidAI/RapidOCR + ModelScope",
+                    RapidOcrModelScopeEnglishDictionaryUrl.Replace("/paddle/", "/onnx/").Replace("/en_PP-OCRv4_rec_mobile/en_dict.txt", ".onnx"),
+                    RapidOcrModelScopeEnglishDictionaryUrl,
+                    "Apache-2.0 lineage",
+                    "current verified model/dictionary pair under investigation",
+                    Official: true,
+                    Verifiable: true),
+                "en_PP-OCRv4_rec_mobile.onnx",
+                "en_dict.txt",
+                "PP-OCRv4 mobile recognition",
+                "en",
+                "NCHW [1,3,32,W]",
+                ExpectedOutputClassCount: 97,
+                DictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                CtcBlankIndex: 0,
+                OnnxAvailable: true,
+                ModelHashPinned: true,
+                ModelSizePinned: true,
+                "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+                7653044,
+                DictionaryExplicit: true,
+                DictionaryHashPinned: true,
+                DictionarySizePinned: true,
+                EnglishDictionarySha256,
+                EnglishDictionarySizeBytes,
+                CompatibleWithOnnxRuntime1221: true,
+                "rejected because 95 dictionary tokens plus CTC blank index 0 explains 96 classes, not 97"),
+            new NodalOsRecognizerDictionaryPairCandidate(
+                "paddleocr-huggingface-ppocrv4-mobile-rec",
+                new NodalOsRecognizerDictionaryPairCandidateSource(
+                    "huggingface-paddlepaddle-ppocrv4-mobile-rec",
+                    "PaddlePaddle/HuggingFace",
+                    "https://huggingface.co/PaddlePaddle/PP-OCRv4_mobile_rec",
+                    null,
+                    "Apache-2.0",
+                    "model card/config source only; ONNX availability not established",
+                    Official: true,
+                    Verifiable: true),
+                "PP-OCRv4_mobile_rec",
+                "not-explicit",
+                "PP-OCRv4 mobile recognition",
+                "multi",
+                "unknown",
+                ExpectedOutputClassCount: null,
+                DictionaryTokenCount: null,
+                CtcBlankIndex: 0,
+                OnnxAvailable: false,
+                ModelHashPinned: false,
+                ModelSizePinned: false,
+                ModelSha256: null,
+                ModelSizeBytes: null,
+                DictionaryExplicit: false,
+                DictionaryHashPinned: false,
+                DictionarySizePinned: false,
+                DictionarySha256: null,
+                DictionarySizeBytes: null,
+                CompatibleWithOnnxRuntime1221: false,
+                "metadata-only candidate; no explicit ONNX+dictionary pair")
+        ];
+    }
+
+    public NodalOsRecognizerDictionaryPairCandidateAudit AuditReplacementCandidate(
+        NodalOsRecognizerDictionaryPairCandidate candidate)
+    {
+        var decision =
+            !candidate.Source.Official ? NodalOsRecognizerDictionaryPairCandidateDecision.RejectedUnofficial :
+            !candidate.OnnxAvailable ? NodalOsRecognizerDictionaryPairCandidateDecision.RejectedNoOnnx :
+            !candidate.DictionaryExplicit ? NodalOsRecognizerDictionaryPairCandidateDecision.RejectedNoExplicitDictionary :
+            !candidate.ModelHashPinned || !candidate.DictionaryHashPinned || !candidate.DictionarySizePinned ? NodalOsRecognizerDictionaryPairCandidateDecision.RejectedUnpinnable :
+            candidate.ExpectedOutputClassCount is not null && candidate.DictionaryTokenCount is not null &&
+            candidate.ExpectedOutputClassCount != candidate.DictionaryTokenCount + 1 ? NodalOsRecognizerDictionaryPairCandidateDecision.RejectedCountMismatch :
+            candidate.CandidateId.Contains("latin", StringComparison.OrdinalIgnoreCase) ? NodalOsRecognizerDictionaryPairCandidateDecision.CandidateNeedsManualReview :
+            NodalOsRecognizerDictionaryPairCandidateDecision.CandidateAcceptedForAcquisition;
+
+        var reason = decision switch
+        {
+            NodalOsRecognizerDictionaryPairCandidateDecision.CandidateAcceptedForAcquisition => "official ONNX recognizer and explicit dictionary are pinnable and class count is explained by dictionary tokens plus CTC blank",
+            NodalOsRecognizerDictionaryPairCandidateDecision.CandidateNeedsManualReview => "candidate is explicit and pinnable but has broader language scope and higher migration impact",
+            NodalOsRecognizerDictionaryPairCandidateDecision.RejectedCountMismatch => "candidate model output class count is not explained by dictionary token count plus CTC blank",
+            NodalOsRecognizerDictionaryPairCandidateDecision.RejectedNoOnnx => "candidate lacks approved ONNX model availability",
+            NodalOsRecognizerDictionaryPairCandidateDecision.RejectedNoExplicitDictionary => "candidate lacks explicit dictionary URL/ref",
+            NodalOsRecognizerDictionaryPairCandidateDecision.RejectedUnpinnable => "candidate lacks required hash/size pinning evidence",
+            NodalOsRecognizerDictionaryPairCandidateDecision.RejectedUnofficial => "candidate source is not official/verifiable",
+            _ => "candidate has unresolved model risk"
+        };
+
+        return new NodalOsRecognizerDictionaryPairCandidateAudit(
+            $"recognizer-dictionary-pair-candidate-audit-{Guid.NewGuid():N}",
+            candidate,
+            decision,
+            DecodeAttempted: false,
+            NoAuthority: true,
+            reason);
+    }
+
+    public NodalOsRecognizerDictionaryPairCompatibilityMatrix CreateM251CompatibilityMatrix()
+    {
+        var audits = CreateM250ReplacementCandidates()
+            .Select(AuditReplacementCandidate)
+            .ToArray();
+        var selected = audits.FirstOrDefault(audit =>
+            audit.Decision == NodalOsRecognizerDictionaryPairCandidateDecision.CandidateAcceptedForAcquisition);
+
+        var decision = selected is not null
+            ? NodalOsRecognizerDictionaryPairReplacementDecision.ReadyForRecognizerDictionaryPairAcquisition
+            : audits.Any(audit => audit.Decision == NodalOsRecognizerDictionaryPairCandidateDecision.CandidateNeedsManualReview)
+                ? NodalOsRecognizerDictionaryPairReplacementDecision.ReadyForManualPairApproval
+                : audits.Any(audit => audit.Decision == NodalOsRecognizerDictionaryPairCandidateDecision.RejectedUnpinnable)
+                    ? NodalOsRecognizerDictionaryPairReplacementDecision.BlockedByUnpinnablePair
+                    : NodalOsRecognizerDictionaryPairReplacementDecision.BlockedByNoCompatibleRecognizerDictionaryPair;
+
+        return new NodalOsRecognizerDictionaryPairCompatibilityMatrix(
+            $"recognizer-dictionary-pair-compatibility-matrix-{Guid.NewGuid():N}",
+            audits,
+            selected,
+            decision,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            DecodeBlocked: true,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: true,
+            selected is null
+                ? "no candidate reached acquisition readiness"
+                : $"selected {selected.Candidate.CandidateId} for controlled acquisition planning; no model download or decode executed");
+    }
+
     public NodalOsRecognizerClassSemantics AuditRecognizerClassSemantics()
     {
         var mappings = new[]
