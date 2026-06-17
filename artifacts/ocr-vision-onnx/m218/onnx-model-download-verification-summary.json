@@ -1,0 +1,60 @@
+{
+  "milestone": "M218",
+  "baseCommitExpected": "704827c",
+  "baseCommitActual": "704827c",
+  "worktree": "C:/Users/diego/OneDrive/PERSONAL/ONE Brain/Codigo-m12-audit",
+  "forbiddenWorktreeUsed": false,
+  "powershell": {
+    "pwshFound": false,
+    "windowsPowerShellFound": true,
+    "windowsPowerShellVersion": "5.1.26100.8655",
+    "scriptsRequire": "PowerShell 7.2+",
+    "windowsPowerShellCompatible": false,
+    "compatibilityError": "verify-models.ps1 has #Requires -Version 7.2 and Windows PowerShell 5.1 rejects it"
+  },
+  "scripts": {
+    "downloadCommand": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/download-models.ps1 -Confirm",
+    "verifyCommand": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/verify-models.ps1",
+    "downloadExecuted": false,
+    "verifyExecutedWithPwsh": false,
+    "verifyCompatibilityAttemptedWithWindowsPowerShell": true
+  },
+  "models": {
+    "detection": {
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+      "status": "Missing",
+      "presentAndVerified": false
+    },
+    "recognition": {
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+      "status": "Missing",
+      "presentAndVerified": false
+    },
+    "classification": {
+      "file": "tools/ocr-worker/models/onnx/ch_ppocr_mobile_v2.0_cls.onnx",
+      "status": "PresentAndVerified",
+      "presentAndVerified": true,
+      "sha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c",
+      "sizeBytes": 585532
+    }
+  },
+  "git": {
+    "onnxGitignored": true,
+    "onnxModelsCommitted": false
+  },
+  "guardedRetry": {
+    "executed": false,
+    "reason": "detector and recognizer remain missing because PowerShell 7.2+ is unavailable"
+  },
+  "safety": {
+    "noProductiveOcr": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "noShadowMode": true,
+    "noRiskyOcrInProcess": true
+  },
+  "decision": "M218 CERRADO / BLOCKED_BY_PWSH_MISSING"
+}
