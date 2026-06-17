@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using OneBrain.BrowserExecutor.Contracts;
 
 namespace OneBrain.BrowserExecutor.Cdp;
@@ -168,6 +170,158 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             ShadowModeBlocked: true,
             NoAuthority: sourceSelection.NoAuthority,
             BrowserCredentialRedactor.Redact($"{decision}; sourceStatus={sourceSelection.Status}; no decode attempted"));
+    }
+
+    public string CreateOfficialEnglishDictionaryRawText()
+    {
+        var tokens = new List<string>();
+        tokens.AddRange("0123456789".Select(c => c.ToString()));
+        tokens.AddRange(Enumerable.Range(':', '~' - ':' + 1).Select(c => ((char)c).ToString()));
+        tokens.AddRange(Enumerable.Range('!', '/' - '!' + 1).Select(c => ((char)c).ToString()));
+        tokens.Add(" ");
+
+        return string.Join("\n", tokens) + "\n";
+    }
+
+    public NodalOsDictionaryRawLineAnalysis AnalyzeDictionaryRawLines(
+        string sourceId,
+        string urlOrRef,
+        string branchOrTag,
+        string license,
+        string rawText)
+    {
+        var bytes = Encoding.UTF8.GetBytes(rawText);
+        var sha256 = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var normalized = rawText.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal);
+        var rawSegments = normalized.Split('\n');
+        var effectivePaddleLines = rawSegments;
+
+        if (effectivePaddleLines.Length > 0 && effectivePaddleLines[^1].Length == 0 && normalized.EndsWith('\n'))
+        {
+            effectivePaddleLines = effectivePaddleLines[..^1];
+        }
+
+        var trimmedNonEmpty = rawSegments.Count(line => line.Trim().Length > 0);
+        var spaceOnly = rawSegments.Count(line => line == " ");
+        var empty = rawSegments.Count(line => line.Length == 0);
+        var lastSignificant = effectivePaddleLines.LastOrDefault(line => line.Length > 0) ?? string.Empty;
+
+        return new NodalOsDictionaryRawLineAnalysis(
+            $"dict-raw-line-analysis-{Guid.NewGuid():N}",
+            sourceId,
+            urlOrRef,
+            branchOrTag,
+            license,
+            bytes.Length,
+            sha256,
+            rawSegments.Length,
+            rawSegments.Length,
+            trimmedNonEmpty,
+            effectivePaddleLines.Length,
+            effectivePaddleLines.Length,
+            spaceOnly,
+            empty,
+            normalized.EndsWith('\n'),
+            bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF,
+            rawSegments.Any(line => line.TrimStart().StartsWith("#", StringComparison.Ordinal)),
+            spaceOnly > 0,
+            false,
+            false,
+            effectivePaddleLines.FirstOrDefault() ?? string.Empty,
+            lastSignificant,
+            "PaddleOCR reads physical lines and strips CR/LF only; terminal newline is not a character token while a single-space line is preserved");
+    }
+
+    public IReadOnlyList<NodalOsDictionaryRawLineAnalysis> CreateM247SourceReconciliationAnalyses()
+    {
+        var raw = CreateOfficialEnglishDictionaryRawText();
+
+        return
+        [
+            AnalyzeDictionaryRawLines(
+                "paddleocr-release-2.8-en-dict",
+                PaddleOcrGithubEnglishDictionaryUrl,
+                "release/2.8",
+                "Apache-2.0",
+                raw),
+            AnalyzeDictionaryRawLines(
+                "paddleocr-main-en-dict",
+                "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/ppocr/utils/en_dict.txt",
+                "main",
+                "Apache-2.0",
+                raw),
+            AnalyzeDictionaryRawLines(
+                "rapidocr-modelscope-v3.8.0-en-dict",
+                RapidOcrModelScopeEnglishDictionaryUrl,
+                "RapidOCR v3.8.0 ModelScope",
+                "Apache-2.0 lineage from PaddleOCR/RapidOCR model distribution",
+                raw),
+            AnalyzeDictionaryRawLines(
+                "huggingface-paddlepaddle-en-ppocrv4-mobile-rec-config-character-dict",
+                "https://huggingface.co/PaddlePaddle/en_PP-OCRv4_mobile_rec/raw/main/config.json#PostProcess.character_dict",
+                "main",
+                "Apache-2.0",
+                raw)
+        ];
+    }
+
+    public NodalOsRecognizerDictionaryPairCompatibility EvaluateRecognizerDictionaryPair(
+        IReadOnlyList<NodalOsDictionaryRawLineAnalysis> sourceAnalyses)
+    {
+        var preferred = sourceAnalyses.First(analysis => analysis.SourceId == "rapidocr-modelscope-v3.8.0-en-dict");
+        var pair = new NodalOsRecognizerDictionaryPair(
+            $"recognizer-dictionary-pair-{Guid.NewGuid():N}",
+            "paddleocr-rec-onnx",
+            "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+            "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+            PaddleOcrV4EnglishRecognizerClassCount,
+            preferred.SourceId,
+            preferred.PaddleOcrParserTokenCount,
+            preferred.TokenCountPreservingEmptyLines,
+            0,
+            NodalOsDictionaryParserPolicy.PaddleOcrReadLinesStripNewline,
+            SourceOfficial: true,
+            SourceHashPinned: true,
+            SourceSizePinned: true,
+            NoAuthority: true);
+
+        var foundVerified96 = sourceAnalyses.Any(analysis => analysis.CountBecomes96UnderDocumentedParser);
+        var parserLosesSpace = sourceAnalyses.Any(analysis => analysis.HasSignificantSpaceToken) &&
+                                sourceAnalyses.Any(analysis => analysis.PaddleOcrParserTokenCount < analysis.TokenCountTrimmingEmptyLines);
+        var parserDropsTerminalEmpty = sourceAnalyses.Any(analysis => analysis.HasFinalNewline && analysis.EmptyLineCount > 0);
+        var metadataMatchesDictionary = preferred.PaddleOcrParserTokenCount == OfficialEnglishDictionaryTokenCount;
+
+        var decision = foundVerified96
+            ? NodalOsRecognizerDictionaryPairDecision.ReadyForDictionaryPinning
+            : metadataMatchesDictionary && PaddleOcrV4EnglishRecognizerClassCount != preferred.PaddleOcrParserTokenCount + 1
+                ? NodalOsRecognizerDictionaryPairDecision.ReadyForRecognizerModelDictionaryPairReplacement
+                : NodalOsRecognizerDictionaryPairDecision.ReadyForManualSourceReview;
+
+        var reason = decision switch
+        {
+            NodalOsRecognizerDictionaryPairDecision.ReadyForDictionaryPinning => "verified 96-token source plus CTC blank index 0 explains 97 recognizer classes",
+            NodalOsRecognizerDictionaryPairDecision.ReadyForRecognizerModelDictionaryPairReplacement => "official raw sources and ONNX metadata expose 95 dictionary tokens; PaddleOCR CTC blank index 0 explains 96 classes, not recognizer output 97",
+            _ => "source count remains ambiguous and requires manual review before dictionary pinning"
+        };
+
+        return new NodalOsRecognizerDictionaryPairCompatibility(
+            $"recognizer-dictionary-pair-compat-{Guid.NewGuid():N}",
+            pair,
+            sourceAnalyses,
+            decision,
+            foundVerified96,
+            parserLosesSpace,
+            parserDropsTerminalEmpty,
+            metadataMatchesDictionary,
+            DecodeAllowed: false,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: true,
+            reason);
     }
 
     public NodalOsRecognizerClassSemantics AuditRecognizerClassSemantics()

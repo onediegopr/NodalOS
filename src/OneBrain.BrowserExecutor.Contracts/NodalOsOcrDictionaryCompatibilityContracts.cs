@@ -112,6 +112,25 @@ public enum NodalOsCtcDecodePolicyExperimentStatus
     NotRun
 }
 
+public enum NodalOsDictionaryParserPolicy
+{
+    PreserveRawLineSegments,
+    PreserveSpaceDropTerminalEmpty,
+    TrimAndDropEmpty,
+    PaddleOcrReadLinesStripNewline,
+    Unknown
+}
+
+public enum NodalOsRecognizerDictionaryPairDecision
+{
+    ReadyForDictionaryPinning,
+    ReadyForManualSourceReview,
+    ReadyForRecognizerModelDictionaryPairReplacement,
+    BlockedByModelDictionaryPairMismatch,
+    BlockedByDictionarySourceAmbiguity,
+    NotReady
+}
+
 public sealed record NodalOsOcrDictionaryManifest(
     string DictionaryId,
     string Language,
@@ -254,6 +273,66 @@ public sealed record NodalOsRecognizerTokenPolicyDecisionReport(
     NodalOsRecognizerClassSemantics Semantics,
     IReadOnlyList<NodalOsCtcDecodePolicyExperimentResult> ExperimentResults,
     NodalOsRecognizerClassSemanticsDecision Decision,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsDictionaryRawLineAnalysis(
+    string AnalysisId,
+    string SourceId,
+    string UrlOrRef,
+    string BranchOrTag,
+    string License,
+    long RawByteSize,
+    string Sha256,
+    int RawLineSegmentCount,
+    int TokenCountPreservingEmptyLines,
+    int TokenCountTrimmingEmptyLines,
+    int TokenCountPreservingSpaceDroppingTerminalEmpty,
+    int PaddleOcrParserTokenCount,
+    int SpaceOnlyLineCount,
+    int EmptyLineCount,
+    bool HasFinalNewline,
+    bool HasBom,
+    bool HasComments,
+    bool HasSignificantSpaceToken,
+    bool HasSignificantEmptyTokenUnderPaddlePolicy,
+    bool CountBecomes96UnderDocumentedParser,
+    string FirstToken,
+    string LastSignificantToken,
+    string Reason);
+
+public sealed record NodalOsRecognizerDictionaryPair(
+    string PairId,
+    string RecognizerModelId,
+    string RecognizerModelPath,
+    string RecognizerModelSha256,
+    int RecognizerOutputClassCount,
+    string DictionarySourceId,
+    int DictionaryTokenCountUnderPaddlePolicy,
+    int DictionaryTokenCountPreservingRawSegments,
+    int CtcBlankIndex,
+    NodalOsDictionaryParserPolicy ParserPolicy,
+    bool SourceOfficial,
+    bool SourceHashPinned,
+    bool SourceSizePinned,
+    bool NoAuthority);
+
+public sealed record NodalOsRecognizerDictionaryPairCompatibility(
+    string CompatibilityId,
+    NodalOsRecognizerDictionaryPair Pair,
+    IReadOnlyList<NodalOsDictionaryRawLineAnalysis> SourceAnalyses,
+    NodalOsRecognizerDictionaryPairDecision Decision,
+    bool FoundVerified96TokenSource,
+    bool ParserLosesSpaceToken,
+    bool ParserLosesEmptyToken,
+    bool OnnxMetadataMatchesDictionary,
+    bool DecodeAllowed,
     bool ProductiveOcrBlocked,
     bool ShadowModeBlocked,
     bool NoRawPersistence,

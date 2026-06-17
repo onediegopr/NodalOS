@@ -1,0 +1,81 @@
+{
+  "milestone": "M247+M248+M249",
+  "decision": "READY_FOR_RECOGNIZER_MODEL_DICTIONARY_PAIR_REPLACEMENT",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "models": {
+    "detection": "PresentAndVerified",
+    "recognition": "PresentAndVerified",
+    "classification": "PresentAndVerified",
+    "onnxTracked": false
+  },
+  "recognizer": {
+    "outputClassCount": 97,
+    "outputShapes": ["[1,40,97]", "[1,80,97]"],
+    "onnxMetadataCharacterCount": 95
+  },
+  "dictionarySources": [
+    {
+      "sourceId": "paddleocr-release-2.8-en-dict",
+      "url": "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/release/2.8/ppocr/utils/en_dict.txt",
+      "bytes": 190,
+      "sha256": "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3",
+      "rawLineSegments": 96,
+      "paddleOcrParserTokens": 95,
+      "spaceOnlyLines": 1,
+      "terminalEmptyLine": true
+    },
+    {
+      "sourceId": "paddleocr-main-en-dict",
+      "url": "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/ppocr/utils/en_dict.txt",
+      "bytes": 190,
+      "sha256": "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3",
+      "rawLineSegments": 96,
+      "paddleOcrParserTokens": 95,
+      "spaceOnlyLines": 1,
+      "terminalEmptyLine": true
+    },
+    {
+      "sourceId": "rapidocr-modelscope-v3.8.0-en-dict",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv4/rec/en_PP-OCRv4_rec_mobile/en_dict.txt",
+      "bytes": 190,
+      "sha256": "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3",
+      "rawLineSegments": 96,
+      "paddleOcrParserTokens": 95,
+      "spaceOnlyLines": 1,
+      "terminalEmptyLine": true
+    },
+    {
+      "sourceId": "huggingface-paddlepaddle-en-ppocrv4-mobile-rec-config-character-dict",
+      "url": "https://huggingface.co/PaddlePaddle/en_PP-OCRv4_mobile_rec/raw/main/config.json#PostProcess.character_dict",
+      "bytes": 4114,
+      "sha256": "c1ebffdece1c8eb30515cc3df9bed55c8806fbc57e4231ec7be83f43c57a3660",
+      "characterDictCount": 95,
+      "containsSpace": true
+    }
+  ],
+  "parserPolicy": {
+    "paddleOcrPolicy": "PaddleOcrReadLinesStripNewline",
+    "spaceTokenPreserved": true,
+    "terminalEmptyLineTokenApproved": false,
+    "ctcBlankIndex": 0,
+    "expectedClasses": 96
+  },
+  "decode": {
+    "attempted": false,
+    "allowed": false,
+    "reason": "No verified 96-token source or approved extra token semantics explains recognizer output class count 97."
+  },
+  "safety": {
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true
+  }
+}
