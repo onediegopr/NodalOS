@@ -170,6 +170,211 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             BrowserCredentialRedactor.Redact($"{decision}; sourceStatus={sourceSelection.Status}; no decode attempted"));
     }
 
+    public NodalOsRecognizerClassSemantics AuditRecognizerClassSemantics()
+    {
+        var mappings = new[]
+        {
+            Mapping(
+                "dict-only",
+                NodalOsRecognizerTokenPolicy.DictionaryCharsOnly,
+                dictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                expectedClassCount: OfficialEnglishDictionaryTokenCount,
+                blankIndex: null,
+                compatible: false,
+                decodeAllowed: false,
+                evidenceSource: "mathematical baseline only",
+                riskLevel: "high",
+                reason: "dictionary chars only cannot explain CTC recognizer classes"),
+            Mapping(
+                "paddle-ctc-blank-at-start",
+                NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAtStart,
+                dictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                expectedClassCount: OfficialEnglishDictionaryTokenCount + 1,
+                blankIndex: 0,
+                compatible: false,
+                decodeAllowed: false,
+                evidenceSource: "PaddleOCR CTCLabelDecode adds blank at index 0 and ignores token 0",
+                riskLevel: "low",
+                reason: "official CTC policy explains 96 classes, not recognizer output 97"),
+            Mapping(
+                "blank-at-end",
+                NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAtEnd,
+                dictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                expectedClassCount: OfficialEnglishDictionaryTokenCount + 1,
+                blankIndex: OfficialEnglishDictionaryTokenCount,
+                compatible: false,
+                decodeAllowed: false,
+                evidenceSource: "legacy local assumption from M238-M243",
+                riskLevel: "medium",
+                reason: "blank at end also explains 96 classes, not 97"),
+            Mapping(
+                "blank-plus-unknown",
+                NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndUnknown,
+                dictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                expectedClassCount: OfficialEnglishDictionaryTokenCount + 2,
+                blankIndex: 0,
+                compatible: true,
+                decodeAllowed: false,
+                evidenceSource: "hypothesis only; no official source identified an unknown token for this CTC model",
+                riskLevel: "high",
+                reason: "explains 97 arithmetically but lacks approved token semantics"),
+            Mapping(
+                "blank-plus-padding",
+                NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndPadding,
+                dictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                expectedClassCount: OfficialEnglishDictionaryTokenCount + 2,
+                blankIndex: 0,
+                compatible: true,
+                decodeAllowed: false,
+                evidenceSource: "hypothesis only; padding special token belongs to other decoder families, not proven for this CTC model",
+                riskLevel: "high",
+                reason: "explains 97 arithmetically but lacks evidence for padding token"),
+            Mapping(
+                "model-dictionary-mismatch",
+                NodalOsRecognizerTokenPolicy.ModelDictionaryMismatch,
+                dictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                expectedClassCount: OfficialEnglishDictionaryTokenCount + 1,
+                blankIndex: 0,
+                compatible: false,
+                decodeAllowed: false,
+                evidenceSource: "official dictionary and ONNX metadata expose 95 tokens while recognizer output exposes 97 classes",
+                riskLevel: "high",
+                reason: "model output class count remains unexplained by approved dictionary semantics")
+        };
+
+        return new NodalOsRecognizerClassSemantics(
+            $"recognizer-class-semantics-{Guid.NewGuid():N}",
+            PaddleOcrV4EnglishRecognizerClassCount,
+            OfficialEnglishDictionaryTokenCount,
+            mappings,
+            SelectedMapping: null,
+            NodalOsRecognizerClassSemanticsDecision.ReadyForRecognizerModelDictionarySourceReview,
+            DecodeAllowed: false,
+            NoAuthority: true,
+            "no approved token policy explains 97 classes; source/model pair requires review");
+    }
+
+    public IReadOnlyList<NodalOsCtcDecodePolicyCandidate> CreateCtcDecodePolicyCandidates()
+    {
+        return
+        [
+            new NodalOsCtcDecodePolicyCandidate(
+                "paddle-ctc-blank-at-start",
+                NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAtStart,
+                NodalOsRecognizerSpecialTokenPolicy.BlankAtStart,
+                OfficialEnglishDictionaryTokenCount,
+                PaddleOcrV4EnglishRecognizerClassCount,
+                BlankIndex: 0,
+                ExtraTokenIndex: null,
+                EvidenceApproved: true,
+                HypothesisOnly: false,
+                EvidenceSource: "PaddleOCR CTCLabelDecode",
+                Reason: "official blank policy but class count is 95+1=96, not 97"),
+            new NodalOsCtcDecodePolicyCandidate(
+                "hypothesis-blank-start-unknown",
+                NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndUnknown,
+                NodalOsRecognizerSpecialTokenPolicy.BlankAndUnknown,
+                OfficialEnglishDictionaryTokenCount,
+                PaddleOcrV4EnglishRecognizerClassCount,
+                BlankIndex: 0,
+                ExtraTokenIndex: 96,
+                EvidenceApproved: false,
+                HypothesisOnly: true,
+                EvidenceSource: "hypothesis only",
+                Reason: "would explain 97 but no approved source defines unknown index 96"),
+            new NodalOsCtcDecodePolicyCandidate(
+                "hypothesis-blank-start-padding",
+                NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndPadding,
+                NodalOsRecognizerSpecialTokenPolicy.BlankAndPadding,
+                OfficialEnglishDictionaryTokenCount,
+                PaddleOcrV4EnglishRecognizerClassCount,
+                BlankIndex: 0,
+                ExtraTokenIndex: 96,
+                EvidenceApproved: false,
+                HypothesisOnly: true,
+                EvidenceSource: "hypothesis only",
+                Reason: "would explain 97 but padding is not proven for this CTC recognizer")
+        ];
+    }
+
+    public NodalOsCtcDecodePolicyExperimentResult EvaluateCtcDecodePolicyCandidate(
+        NodalOsCtcDecodePolicyCandidate candidate)
+    {
+        var expectedClassCount = candidate.TokenPolicy switch
+        {
+            NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAtStart => candidate.DictionaryTokenCount + 1,
+            NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAtEnd => candidate.DictionaryTokenCount + 1,
+            NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndUnknown => candidate.DictionaryTokenCount + 2,
+            NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndPadding => candidate.DictionaryTokenCount + 2,
+            NodalOsRecognizerTokenPolicy.DictionaryPlusTwoSpecialTokens => candidate.DictionaryTokenCount + 2,
+            _ => candidate.DictionaryTokenCount
+        };
+
+        if (candidate.HypothesisOnly || !candidate.EvidenceApproved)
+        {
+            return DecodePolicyResult(
+                candidate,
+                NodalOsCtcDecodePolicyExperimentStatus.HypothesisOnlyDecodeBlocked,
+                decodeAllowed: false,
+                "candidate policy is hypothesis-only; decode blocked");
+        }
+
+        if (expectedClassCount != candidate.ModelClassCount)
+        {
+            return DecodePolicyResult(
+                candidate,
+                NodalOsCtcDecodePolicyExperimentStatus.ClassCountMismatch,
+                decodeAllowed: false,
+                $"candidate expects {expectedClassCount} classes but model exposes {candidate.ModelClassCount}");
+        }
+
+        if (candidate.BlankIndex is null or < 0)
+        {
+            return DecodePolicyResult(
+                candidate,
+                NodalOsCtcDecodePolicyExperimentStatus.UnsupportedBlankIndex,
+                decodeAllowed: false,
+                "candidate blank index is unsupported");
+        }
+
+        return DecodePolicyResult(
+            candidate,
+            NodalOsCtcDecodePolicyExperimentStatus.ApprovedDecodeAllowed,
+            decodeAllowed: true,
+            "approved token policy permits decode but result remains no-authority");
+    }
+
+    public NodalOsRecognizerTokenPolicyDecisionReport DecideTokenPolicyReadiness(
+        NodalOsRecognizerClassSemantics semantics,
+        IReadOnlyList<NodalOsCtcDecodePolicyExperimentResult> experiments)
+    {
+        var approvedDecode = experiments.Any(e =>
+            e.Status == NodalOsCtcDecodePolicyExperimentStatus.ApprovedDecodeAllowed &&
+            e.DecodeAllowed);
+        var hypothesisOnly = experiments.Any(e => e.Status == NodalOsCtcDecodePolicyExperimentStatus.HypothesisOnlyDecodeBlocked);
+        var classMismatch = experiments.Any(e => e.Status == NodalOsCtcDecodePolicyExperimentStatus.ClassCountMismatch);
+
+        var decision = approvedDecode
+            ? NodalOsRecognizerClassSemanticsDecision.ReadyForApprovedTokenPolicyDecode
+            : hypothesisOnly || classMismatch
+                ? NodalOsRecognizerClassSemanticsDecision.ReadyForRecognizerModelDictionarySourceReview
+                : NodalOsRecognizerClassSemanticsDecision.BlockedByTokenPolicyUnknown;
+
+        return new NodalOsRecognizerTokenPolicyDecisionReport(
+            $"token-policy-decision-{Guid.NewGuid():N}",
+            semantics,
+            experiments,
+            decision,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: semantics.NoAuthority && experiments.All(e => e.NoAuthority),
+            BrowserCredentialRedactor.Redact($"{decision}; approvedDecode={approvedDecode}; no positive OCR claimed"));
+    }
+
     public NodalOsOcrDictionaryManifestEntry CreatePaddleOcrV4EnglishManifestEntryWithoutApprovedSource()
     {
         return new NodalOsOcrDictionaryManifestEntry(
@@ -191,6 +396,52 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             Committed: false,
             NoAuthority: true);
     }
+
+    private static NodalOsRecognizerClassMapping Mapping(
+        string mappingId,
+        NodalOsRecognizerTokenPolicy tokenPolicy,
+        int dictionaryTokenCount,
+        int expectedClassCount,
+        int? blankIndex,
+        bool compatible,
+        bool decodeAllowed,
+        string evidenceSource,
+        string riskLevel,
+        string reason) =>
+        new(
+            mappingId,
+            tokenPolicy,
+            dictionaryTokenCount,
+            PaddleOcrV4EnglishRecognizerClassCount,
+            expectedClassCount,
+            blankIndex,
+            tokenPolicy == NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndUnknown ? 96 : null,
+            tokenPolicy == NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndPadding ? 96 : null,
+            tokenPolicy == NodalOsRecognizerTokenPolicy.DictionaryPlusBlankAndSpace ? 96 : null,
+            compatible,
+            decodeAllowed,
+            evidenceSource,
+            riskLevel,
+            BrowserCredentialRedactor.Redact(reason));
+
+    private static NodalOsCtcDecodePolicyExperimentResult DecodePolicyResult(
+        NodalOsCtcDecodePolicyCandidate candidate,
+        NodalOsCtcDecodePolicyExperimentStatus status,
+        bool decodeAllowed,
+        string reason) =>
+        new(
+            $"ctc-policy-experiment-{Guid.NewGuid():N}",
+            candidate,
+            status,
+            DecodeAttempted: false,
+            decodeAllowed,
+            DecodedText: null,
+            Confidence: null,
+            RequiresHumanReview: true,
+            NoRawPersistence: true,
+            NoSensitive: true,
+            NoAuthority: true,
+            BrowserCredentialRedactor.Redact(reason));
 
     public NodalOsOcrDictionaryAcquisitionPlan CreateSourceSelectionAcquisitionPlan(
         NodalOsOcrDictionaryManifestEntry entry)

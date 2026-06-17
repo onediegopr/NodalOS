@@ -66,6 +66,52 @@ public enum NodalOsOcrDictionarySourceAuditStatus
     SourceRejectedUnpinnable
 }
 
+public enum NodalOsRecognizerTokenPolicy
+{
+    DictionaryCharsOnly,
+    DictionaryPlusBlankAtEnd,
+    DictionaryPlusBlankAtStart,
+    DictionaryPlusBlankAndUnknown,
+    DictionaryPlusBlankAndSpace,
+    DictionaryPlusBlankAndPadding,
+    DictionaryPlusTwoSpecialTokens,
+    ModelDictionaryMismatch,
+    Unknown
+}
+
+public enum NodalOsRecognizerSpecialTokenPolicy
+{
+    None,
+    BlankAtStart,
+    BlankAtEnd,
+    BlankAndUnknown,
+    BlankAndPadding,
+    BlankAndSpace,
+    TwoSpecialTokens,
+    Unknown
+}
+
+public enum NodalOsRecognizerClassSemanticsDecision
+{
+    ReadyForSyntheticTextDecodeFixtures,
+    ReadyForApprovedTokenPolicyDecode,
+    ReadyForRecognizerModelDictionarySourceReview,
+    BlockedByTokenPolicyUnknown,
+    BlockedByDictionaryModelMismatch,
+    NotReady
+}
+
+public enum NodalOsCtcDecodePolicyExperimentStatus
+{
+    ApprovedDecodeAllowed,
+    HypothesisOnlyDecodeBlocked,
+    ClassCountMismatch,
+    UnsupportedBlankIndex,
+    LowConfidenceRequiresHumanReview,
+    EmptyDecode,
+    NotRun
+}
+
 public sealed record NodalOsOcrDictionaryManifest(
     string DictionaryId,
     string Language,
@@ -146,6 +192,74 @@ public sealed record NodalOsOcrDictionaryAcquisitionGateReport(
     bool RollbackTouchesOnnxModels,
     bool ProductiveOcrBlocked,
     bool ShadowModeBlocked,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsRecognizerClassMapping(
+    string MappingId,
+    NodalOsRecognizerTokenPolicy TokenPolicy,
+    int DictionaryTokenCount,
+    int ModelClassCount,
+    int ExpectedClassCount,
+    int? BlankIndex,
+    int? UnknownIndex,
+    int? PaddingIndex,
+    int? SpaceIndex,
+    bool Compatible,
+    bool DecodeAllowed,
+    string EvidenceSource,
+    string RiskLevel,
+    string Reason);
+
+public sealed record NodalOsRecognizerClassSemantics(
+    string SemanticsId,
+    int ModelClassCount,
+    int DictionaryTokenCount,
+    IReadOnlyList<NodalOsRecognizerClassMapping> CandidateMappings,
+    NodalOsRecognizerClassMapping? SelectedMapping,
+    NodalOsRecognizerClassSemanticsDecision Decision,
+    bool DecodeAllowed,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsCtcDecodePolicyCandidate(
+    string CandidateId,
+    NodalOsRecognizerTokenPolicy TokenPolicy,
+    NodalOsRecognizerSpecialTokenPolicy SpecialTokenPolicy,
+    int DictionaryTokenCount,
+    int ModelClassCount,
+    int? BlankIndex,
+    int? ExtraTokenIndex,
+    bool EvidenceApproved,
+    bool HypothesisOnly,
+    string EvidenceSource,
+    string Reason);
+
+public sealed record NodalOsCtcDecodePolicyExperimentResult(
+    string ResultId,
+    NodalOsCtcDecodePolicyCandidate Candidate,
+    NodalOsCtcDecodePolicyExperimentStatus Status,
+    bool DecodeAttempted,
+    bool DecodeAllowed,
+    string? DecodedText,
+    double? Confidence,
+    bool RequiresHumanReview,
+    bool NoRawPersistence,
+    bool NoSensitive,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsRecognizerTokenPolicyDecisionReport(
+    string ReportId,
+    NodalOsRecognizerClassSemantics Semantics,
+    IReadOnlyList<NodalOsCtcDecodePolicyExperimentResult> ExperimentResults,
+    NodalOsRecognizerClassSemanticsDecision Decision,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
     bool NoAuthority,
     string Reason);
 
