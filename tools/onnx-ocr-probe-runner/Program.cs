@@ -17,6 +17,7 @@ using OneBrain.BrowserExecutor.Contracts;
 //   --handoff-crash-probe --repo-root <dir>                   Parent matrix: detector-to-recognizer child probes through guard.
 //   --recognizer-runtime-probe --repo-root <dir>               Parent matrix: recognizer-only child probes through guard.
 //   --recognizer-runtime-experiment --repo-root <dir>          Parent matrix: recognizer-only tensor/layout/session-option probes through guard.
+//   --extra-class-argmax-probe --repo-root <dir>               Parent matrix: PP-OCRv5 extra-class argmax/probability probes through guard.
 //   --probe --repo-root <dir>                                 Real ONNX inference on a synthetic fixture.
 //   --request <file>                                          Probe request JSON (written by the guard).
 //
@@ -69,12 +70,22 @@ if (options.ContainsKey("recognizer-runtime-child"))
     return RunRecognizerRuntimeChild(options);
 }
 
+if (options.ContainsKey("extra-class-argmax-probe"))
+{
+    return RunExtraClassArgmaxProbe(options);
+}
+
+if (options.ContainsKey("extra-class-argmax-child"))
+{
+    return RunExtraClassArgmaxChild(options);
+}
+
 if (options.ContainsKey("probe"))
 {
     return RunProbe(options);
 }
 
-Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --recognizer-runtime-experiment --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
+Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --recognizer-runtime-experiment --repo-root <dir> | --extra-class-argmax-probe --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
 return 64;
 
 static Dictionary<string, string> ParseArgs(string[] argv)
@@ -435,7 +446,7 @@ static int RunHandoffCrashProbe(Dictionary<string, string> options)
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
         ? root
         : Directory.GetCurrentDirectory();
-    var runner = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "OneBrain.Tools.OnnxOcrProbeRunner.exe");
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
     var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
         ? parsedTimeout
         : 60000;
@@ -560,7 +571,7 @@ static int RunRecognizerRuntimeProbe(Dictionary<string, string> options)
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
         ? Path.GetFullPath(root)
         : Directory.GetCurrentDirectory();
-    var runner = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "OneBrain.Tools.OnnxOcrProbeRunner.exe");
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
     var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
         ? parsedTimeout
         : 60000;
@@ -620,7 +631,7 @@ static int RunRecognizerRuntimeExperiment(Dictionary<string, string> options)
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
         ? Path.GetFullPath(root)
         : Directory.GetCurrentDirectory();
-    var runner = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "OneBrain.Tools.OnnxOcrProbeRunner.exe");
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
     var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
         ? parsedTimeout
         : 60000;
@@ -728,6 +739,240 @@ static int RunRecognizerRuntimeExperiment(Dictionary<string, string> options)
     }
 
     Console.Out.WriteLine(JsonSerializer.Serialize(results));
+    return 0;
+}
+
+static int RunExtraClassArgmaxProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 60000;
+    var threshold = options.TryGetValue("negligible-threshold", out var thresholdText) &&
+                    double.TryParse(thresholdText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedThreshold)
+        ? parsedThreshold
+        : 0.001d;
+
+    var fixtures = new[]
+    {
+        ("normal", "TEST"),
+        ("normal", "NODAL"),
+        ("normal", "12345"),
+        ("normal", "ABC123"),
+        ("normal", "HighContrastCrop"),
+        ("normal", "DetectorDerivedCrop"),
+        ("extreme", "Black"),
+        ("extreme", "White"),
+        ("extreme", "DeterministicNoise"),
+        ("extreme", "Gradient"),
+        ("extreme", "ThinLines"),
+        ("extreme", "Checkerboard"),
+        ("extreme", "OutOfDictionary"),
+        ("extreme", "InvalidEmptyCrop")
+    };
+
+    var results = new List<object>();
+    foreach (var (group, fixture) in fixtures)
+    {
+        if (fixture.Equals("InvalidEmptyCrop", StringComparison.OrdinalIgnoreCase))
+        {
+            results.Add(new
+            {
+                FixtureGroup = group,
+                FixtureId = fixture,
+                Status = NodalOsExtraClassArgmaxProbeStatus.ProbeBlockedByInvalidInput.ToString(),
+                RanOutOfProcess = false,
+                ParentSurvived = true,
+                TempCleanup = true,
+                RawPersisted = false,
+                CallsSaas = false,
+                NoAuthority = true,
+                Reason = "empty crop fixture blocked before recognizer runtime"
+            });
+            continue;
+        }
+
+        var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+            $"extra-class-{fixture}-{Guid.NewGuid():N}",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+            NodalOsSyntheticOcrTextRenderMode.PixelFont,
+            320,
+            32,
+            NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+            NodalOsOcrVisionSensitivity.Low,
+            FullScreen: false,
+            Sensitive: false,
+            OriginalRawPersisted: false,
+            Synthetic: true,
+            NoAuthority: true,
+            RunOutOfProcess: true);
+
+        var childArguments = runnerPrefix.Concat(new[]
+        {
+            "--extra-class-argmax-child",
+            "--repo-root", repoRoot,
+            "--fixture", fixture,
+            "--fixture-group", group,
+            "--negligible-threshold", threshold.ToString("R", System.Globalization.CultureInfo.InvariantCulture)
+        }).ToArray();
+
+        var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+            $"extra-class-guard-{fixture}-{Guid.NewGuid():N}",
+            request,
+            runner,
+            childArguments,
+            timeoutMs,
+            MaxOutputBytes: 128 * 1024,
+            AllowRawPersistence: false));
+
+        results.Add(new
+        {
+            FixtureGroup = group,
+            FixtureId = fixture,
+            Status = MapExtraClassStatus(guardResult).ToString(),
+            guardResult.ExitCode,
+            ExitCodeHex = guardResult.ExitCode is null ? null : $"0x{unchecked((uint)guardResult.ExitCode.Value):X8}",
+            guardResult.TimedOut,
+            guardResult.ParentSurvived,
+            TempCleanup = guardResult.TempFilesCleaned,
+            guardResult.OrphanProcessLeft,
+            guardResult.RawPersisted,
+            guardResult.CallsSaas,
+            guardResult.NoAuthority,
+            guardResult.StdErrSummary,
+            SummaryJson = guardResult.Reason
+        });
+    }
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(new
+    {
+        Mode = "extra-class-argmax-probe",
+        Recognizer = "PP-OCRv5 English candidate",
+        ExtraClassIndex = 437,
+        ExpectedOutputClassCount = 438,
+        BlankIndex = 0,
+        NegligibleProbabilityThreshold = threshold,
+        DecodeAttempted = false,
+        ProductiveOcrBlocked = true,
+        ShadowModeBlocked = true,
+        NoRawPersistence = results.All(result => !JsonSerializer.Serialize(result).Contains("\"RawPersisted\":true", StringComparison.Ordinal)),
+        NoSaas = results.All(result => !JsonSerializer.Serialize(result).Contains("\"CallsSaas\":true", StringComparison.Ordinal)),
+        NoAuthority = true,
+        Results = results
+    }));
+    return 0;
+}
+
+static int RunExtraClassArgmaxChild(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var fixture = options.TryGetValue("fixture", out var fixtureText) && !string.IsNullOrWhiteSpace(fixtureText)
+        ? fixtureText
+        : "TEST";
+    var fixtureGroup = options.TryGetValue("fixture-group", out var groupText) && !string.IsNullOrWhiteSpace(groupText)
+        ? groupText
+        : "normal";
+    var threshold = options.TryGetValue("negligible-threshold", out var thresholdText) &&
+                    double.TryParse(thresholdText, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsedThreshold)
+        ? parsedThreshold
+        : 0.001d;
+
+    if (fixture.Equals("InvalidEmptyCrop", StringComparison.OrdinalIgnoreCase))
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"extra-class-{Guid.NewGuid():N}",
+            "RecognizerTensorPreparation",
+            NodalOsExtraClassArgmaxProbeStatus.ProbeBlockedByInvalidInput.ToString(),
+            BoxesDetected: null,
+            RecognitionAttempts: 0,
+            CallsSaas: false,
+            RawPersisted: false,
+            NoAuthority: true,
+            "empty crop blocked before runtime"));
+        return 0;
+    }
+
+    var shape = new[] { 1, 3, 32, 320 };
+    var tensor = BuildExtraClassTensor(fixture, shape);
+    var stats = NodalOsDetectorRecognizerCompatibilityDiagnosisBuilder.CalculateStats(tensor, shape, "NCHW", "RGB");
+    if (stats.HasNaN || stats.HasInfinity || tensor.Length != shape.Aggregate(1, (a, b) => a * b))
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"extra-class-{Guid.NewGuid():N}",
+            "RecognizerTensorPreparation",
+            NodalOsExtraClassArgmaxProbeStatus.ProbeBlockedByInvalidInput.ToString(),
+            BoxesDetected: null,
+            RecognitionAttempts: 0,
+            CallsSaas: false,
+            RawPersisted: false,
+            NoAuthority: true,
+            "invalid synthetic tensor blocked before runtime"));
+        return 0;
+    }
+
+    var modelPath = Path.GetFullPath(Path.Combine(repoRoot, "tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx"));
+    Console.Error.WriteLine($"stage=model-file model={modelPath} exists={File.Exists(modelPath)}");
+    Console.Error.WriteLine($"stage=tensor fixture={fixture} group={fixtureGroup} shape=[{string.Join(",", shape)}] min={stats.Min:R} max={stats.Max:R} mean={stats.Mean:R}");
+
+    using var session = new InferenceSession(modelPath);
+    var inputName = session.InputMetadata.Keys.FirstOrDefault() ?? "x";
+    var inputMetadata = string.Join(";", session.InputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    var outputMetadata = string.Join(";", session.OutputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    Console.Error.WriteLine($"stage=session-created runtime={typeof(InferenceSession).Assembly.GetName().Version} provider=CPUExecutionProvider inputs={inputMetadata} outputs={outputMetadata}");
+
+    using var outputs = session.Run([NamedOnnxValue.CreateFromTensor(inputName, new DenseTensor<float>(tensor, shape))]);
+    var first = outputs.First().AsTensor<float>();
+    var outputShape = first.Dimensions.ToArray();
+    var values = first.ToArray();
+    var analysis = AnalyzeExtraClassOutput(values, outputShape, extraClassIndex: 437, blankIndex: 0, threshold);
+    var status = analysis.ExtraClassArgmaxCount > 0
+        ? NodalOsExtraClassArgmaxProbeStatus.ExtraClassArgmaxObserved
+        : analysis.OutputClassCount != 438
+            ? NodalOsExtraClassArgmaxProbeStatus.ProbeRuntimeFailed
+            : analysis.ExtraClassMaxProbability > threshold
+                ? NodalOsExtraClassArgmaxProbeStatus.ExtraClassProbabilityNonTrivial
+                : NodalOsExtraClassArgmaxProbeStatus.ExtraClassNeverArgmax;
+
+    var summary = new
+    {
+        ProbeId = $"extra-class-{fixture}-{Guid.NewGuid():N}",
+        FixtureId = fixture,
+        FixtureGroup = fixtureGroup,
+        Status = status.ToString(),
+        OutputShape = outputShape,
+        OutputClassCount = analysis.OutputClassCount,
+        ExtraClassIndex = 437,
+        ExtraClassArgmaxCount = analysis.ExtraClassArgmaxCount,
+        ExtraClassMaxProbability = analysis.ExtraClassMaxProbability,
+        ExtraClassAverageProbability = analysis.ExtraClassAverageProbability,
+        BlankIndex = 0,
+        BlankArgmaxCount = analysis.BlankArgmaxCount,
+        DominantClassIndexes = analysis.DominantClassIndexes,
+        Timesteps = analysis.Timesteps,
+        Threshold = threshold,
+        DecodeAttempted = false,
+        CallsSaas = false,
+        RawPersisted = false,
+        FullScreen = false,
+        Sensitive = false,
+        NoAuthority = true
+    };
+
+    EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+        summary.ProbeId,
+        "RecognitionRun",
+        status.ToString(),
+        BoxesDetected: null,
+        RecognitionAttempts: 1,
+        CallsSaas: false,
+        RawPersisted: false,
+        NoAuthority: true,
+        JsonSerializer.Serialize(summary)));
     return 0;
 }
 
@@ -1272,6 +1517,214 @@ static float[] BuildRecognizerTensor(NodalOsRecognizerRuntimeTensorKind tensorKi
     return tensor;
 }
 
+static float[] BuildExtraClassTensor(string fixture, int[] shape)
+{
+    var channels = shape[1];
+    var height = shape[2];
+    var width = shape[3];
+    var tensor = new float[shape.Aggregate(1, (a, b) => a * b)];
+
+    for (var c = 0; c < channels; c++)
+    {
+        for (var y = 0; y < height; y++)
+        {
+            for (var x = 0; x < width; x++)
+            {
+                var idx = c * height * width + y * width + x;
+                tensor[idx] = fixture.ToLowerInvariant() switch
+                {
+                    "black" => -1f,
+                    "white" => 1f,
+                    "deterministicnoise" => DeterministicNoise(x, y, c),
+                    "gradient" => (float)(x + y) / Math.Max(1, width + height),
+                    "thinlines" => y % 5 == 0 || x % 29 == 0 ? -1f : 1f,
+                    "checkerboard" => ((x / 6) + (y / 6)) % 2 == 0 ? -1f : 1f,
+                    "highcontrastcrop" => (x / 12) % 2 == 0 && y > height / 5 && y < height * 4 / 5 ? -1f : 1f,
+                    "detectorderivedcrop" => InRectangle(x, y, width, height) ? -1f : 1f,
+                    "outofdictionary" => InOutOfDictionaryPattern(x, y, width, height) ? -1f : 1f,
+                    "12345" => InDigitBars(x, y, width, height) ? -1f : 1f,
+                    "abc123" => InAlphaNumericBars(x, y, width, height) ? -1f : 1f,
+                    "nodal" => InWordLikeBars(x, y, width, height, 5) ? -1f : 1f,
+                    _ => InWordLikeBars(x, y, width, height, 4) ? -1f : 1f
+                };
+            }
+        }
+    }
+
+    return tensor;
+}
+
+static ExtraClassOutputAnalysis AnalyzeExtraClassOutput(
+    float[] values,
+    int[] outputShape,
+    int extraClassIndex,
+    int blankIndex,
+    double negligibleThreshold)
+{
+    var classCount = outputShape.Length >= 1 ? outputShape[^1] : 0;
+    var timesteps = classCount > 0 ? values.Length / classCount : 0;
+    if (classCount <= 0 || timesteps <= 0)
+        return new ExtraClassOutputAnalysis(classCount, 0, 0, 0d, 0d, 0, []);
+
+    var argmaxCounts = new int[classCount];
+    var extraSum = 0d;
+    var extraMax = 0d;
+    var extraArgmax = 0;
+    var blankArgmax = 0;
+
+    for (var t = 0; t < timesteps; t++)
+    {
+        var offset = t * classCount;
+        var useRawProbabilities = LooksLikeProbabilityVector(values, offset, classCount);
+        var maxLogit = float.NegativeInfinity;
+        if (!useRawProbabilities)
+        {
+            for (var i = 0; i < classCount; i++)
+                maxLogit = Math.Max(maxLogit, values[offset + i]);
+        }
+
+        var denominator = 0d;
+        if (!useRawProbabilities)
+        {
+            for (var i = 0; i < classCount; i++)
+                denominator += Math.Exp(values[offset + i] - maxLogit);
+        }
+
+        var argmax = 0;
+        var argmaxProbability = double.NegativeInfinity;
+        for (var i = 0; i < classCount; i++)
+        {
+            var probability = useRawProbabilities
+                ? values[offset + i]
+                : Math.Exp(values[offset + i] - maxLogit) / denominator;
+            if (probability > argmaxProbability)
+            {
+                argmaxProbability = probability;
+                argmax = i;
+            }
+        }
+
+        var extraProbability = extraClassIndex >= 0 && extraClassIndex < classCount
+            ? useRawProbabilities
+                ? values[offset + extraClassIndex]
+                : Math.Exp(values[offset + extraClassIndex] - maxLogit) / denominator
+            : 0d;
+
+        extraSum += extraProbability;
+        extraMax = Math.Max(extraMax, extraProbability);
+        argmaxCounts[argmax]++;
+        if (argmax == extraClassIndex) extraArgmax++;
+        if (argmax == blankIndex) blankArgmax++;
+    }
+
+    var dominant = argmaxCounts
+        .Select((count, index) => new { count, index })
+        .OrderByDescending(item => item.count)
+        .ThenBy(item => item.index)
+        .Where(item => item.count > 0)
+        .Take(8)
+        .Select(item => item.index)
+        .ToArray();
+
+    return new ExtraClassOutputAnalysis(
+        classCount,
+        timesteps,
+        extraArgmax,
+        extraMax,
+        timesteps == 0 ? 0d : extraSum / timesteps,
+        blankArgmax,
+        dominant);
+
+    static bool LooksLikeProbabilityVector(float[] values, int offset, int classCount)
+    {
+        var sum = 0d;
+        for (var i = 0; i < classCount; i++)
+        {
+            var value = values[offset + i];
+            if (value < -0.000001f || float.IsNaN(value) || float.IsInfinity(value))
+                return false;
+            sum += value;
+        }
+
+        return sum is > 0.98d and < 1.02d;
+    }
+}
+
+static NodalOsExtraClassArgmaxProbeStatus MapExtraClassStatus(NodalOsOnnxOutOfProcessGuardResult guardResult)
+{
+    if (guardResult.TimedOut)
+        return NodalOsExtraClassArgmaxProbeStatus.ProbeTimedOut;
+    if (guardResult.ExitCode is not 0)
+        return NodalOsExtraClassArgmaxProbeStatus.ProbeRuntimeFailed;
+
+    try
+    {
+        using var document = JsonDocument.Parse(guardResult.Reason);
+        if (document.RootElement.TryGetProperty("Status", out var status) &&
+            Enum.TryParse<NodalOsExtraClassArgmaxProbeStatus>(status.GetString(), ignoreCase: true, out var parsed))
+        {
+            return parsed;
+        }
+    }
+    catch (JsonException)
+    {
+        // Fall through to runtime failure; the parent still survived and captured the reason.
+    }
+
+    return NodalOsExtraClassArgmaxProbeStatus.ProbeRuntimeFailed;
+}
+
+static (string Command, string[] PrefixArguments) ResolveCurrentRunnerInvocation()
+{
+    var processPath = Environment.ProcessPath ?? string.Empty;
+    var assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+    if (!string.IsNullOrWhiteSpace(processPath) &&
+        Path.GetFileNameWithoutExtension(processPath).Equals("dotnet", StringComparison.OrdinalIgnoreCase) &&
+        File.Exists(assemblyPath))
+    {
+        return (processPath, [assemblyPath]);
+    }
+
+    if (!string.IsNullOrWhiteSpace(processPath))
+        return (processPath, []);
+
+    var exePath = Path.Combine(AppContext.BaseDirectory, "OneBrain.Tools.OnnxOcrProbeRunner.exe");
+    return (exePath, []);
+}
+
+static float DeterministicNoise(int x, int y, int c)
+{
+    unchecked
+    {
+        var value = (uint)(x * 1103515245 + y * 12345 + c * 2654435761);
+        return ((value % 2000) / 1000f) - 1f;
+    }
+}
+
+static bool InDigitBars(int x, int y, int width, int height) =>
+    y > height / 5 && y < height * 4 / 5 && (x / Math.Max(1, width / 18)) % 3 == 0;
+
+static bool InAlphaNumericBars(int x, int y, int width, int height) =>
+    y > height / 6 && y < height * 5 / 6 && ((x / Math.Max(1, width / 20)) + (y / 4)) % 4 == 0;
+
+static bool InWordLikeBars(int x, int y, int width, int height, int characters)
+{
+    var left = width / 5;
+    var right = width * 4 / 5;
+    if (x < left || x > right || y < height / 5 || y > height * 4 / 5) return false;
+    var charWidth = Math.Max(1, (right - left) / Math.Max(1, characters));
+    var local = (x - left) % charWidth;
+    return local < Math.Max(1, charWidth / 4) || y is var row && row % 11 == 0;
+}
+
+static bool InOutOfDictionaryPattern(int x, int y, int width, int height)
+{
+    var centerX = width / 2;
+    var centerY = height / 2;
+    return Math.Abs(x - centerX) == Math.Abs(y - centerY) ||
+           Math.Abs(x - centerX) + Math.Abs(y - centerY) < Math.Min(width, height) / 5;
+}
+
 static int EmitHandoffChild(
     NodalOsFullOcrHandoffBoxKind boxKind,
     NodalOsFullOcrHandoffProbeStatus status,
@@ -1431,3 +1884,12 @@ static void EmitReport(NodalOsOnnxOutOfProcessRunnerReport report)
 {
     Console.Out.WriteLine(JsonSerializer.Serialize(report));
 }
+
+internal sealed record ExtraClassOutputAnalysis(
+    int OutputClassCount,
+    int Timesteps,
+    int ExtraClassArgmaxCount,
+    double ExtraClassMaxProbability,
+    double ExtraClassAverageProbability,
+    int BlankArgmaxCount,
+    IReadOnlyList<int> DominantClassIndexes);

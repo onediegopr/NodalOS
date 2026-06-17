@@ -1494,6 +1494,93 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             compatible.Reason);
     }
 
+    public NodalOsExtraClassRiskClassification ClassifyExtraClassRisk(
+        IReadOnlyList<NodalOsExtraClassArgmaxProbeResult> results,
+        double negligibleProbabilityThreshold)
+    {
+        if (results.Count == 0 || !results.All(result => result.NoAuthority && !result.RawPersisted && !result.CallsSaas))
+            return NodalOsExtraClassRiskClassification.NotReady;
+
+        if (results.Any(result => result.ProbabilitySummary.OutputClassCount != 438))
+            return NodalOsExtraClassRiskClassification.BlockedByUnexpectedClassCount;
+
+        if (results.Any(result => result.ProbabilitySummary.ExtraClassArgmaxCount > 0 ||
+                                  result.Status == NodalOsExtraClassArgmaxProbeStatus.ExtraClassArgmaxObserved))
+            return NodalOsExtraClassRiskClassification.BlockedByExtraClassArgmaxObserved;
+
+        if (results.Any(result => result.ProbabilitySummary.ExtraClassMaxProbability > negligibleProbabilityThreshold ||
+                                  result.Status == NodalOsExtraClassArgmaxProbeStatus.ExtraClassProbabilityNonTrivial))
+            return NodalOsExtraClassRiskClassification.ManualReviewRequired;
+
+        return NodalOsExtraClassRiskClassification.IgnoredExtraClassCandidate;
+    }
+
+    public NodalOsIgnoredExtraClassPolicyCandidate CreateIgnoredExtraClassPolicyCandidate(
+        IReadOnlyList<NodalOsExtraClassArgmaxProbeResult> results,
+        double negligibleProbabilityThreshold)
+    {
+        var classification = ClassifyExtraClassRisk(results, negligibleProbabilityThreshold);
+        var reason = classification switch
+        {
+            NodalOsExtraClassRiskClassification.IgnoredExtraClassCandidate => "class 437 was never argmax and stayed below the negligible probability threshold; manual approval is still required before decode",
+            NodalOsExtraClassRiskClassification.BlockedByExtraClassArgmaxObserved => "class 437 appeared as argmax in at least one fixture; ignoring it is unsafe",
+            NodalOsExtraClassRiskClassification.ManualReviewRequired => "class 437 was not argmax but probability was non-trivial; manual/Claude review is required",
+            NodalOsExtraClassRiskClassification.BlockedByUnexpectedClassCount => "PP-OCRv5 output class count differed from expected 438",
+            _ => "extra class probe evidence is incomplete or failed safety gates"
+        };
+
+        return new NodalOsIgnoredExtraClassPolicyCandidate(
+            $"ignored-extra-class-policy-candidate-{Guid.NewGuid():N}",
+            classification,
+            negligibleProbabilityThreshold,
+            DecodeApproved: false,
+            RequiresManualApproval: classification == NodalOsExtraClassRiskClassification.IgnoredExtraClassCandidate,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoAuthority: true,
+            BrowserCredentialRedactor.Redact(reason));
+    }
+
+    public NodalOsExtraClassArgmaxProbeDecisionReport DecideExtraClassDecodePolicyReadiness(
+        IReadOnlyList<NodalOsExtraClassArgmaxProbeResult> results,
+        double negligibleProbabilityThreshold)
+    {
+        var candidate = CreateIgnoredExtraClassPolicyCandidate(results, negligibleProbabilityThreshold);
+        var noRaw = results.All(result => !result.RawPersisted);
+        var noFullScreen = results.All(result => !result.FullScreen);
+        var noSensitive = results.All(result => !result.Sensitive);
+        var noSaas = results.All(result => !result.CallsSaas);
+        var noAuthority = results.Count > 0 && results.All(result => result.NoAuthority) && candidate.NoAuthority;
+
+        var decision = candidate.RiskClassification switch
+        {
+            NodalOsExtraClassRiskClassification.IgnoredExtraClassCandidate when noRaw && noFullScreen && noSensitive && noSaas && noAuthority
+                => NodalOsExtraClassDecodePolicyReadiness.ReadyForManualIgnoredExtraClassPolicyApproval,
+            NodalOsExtraClassRiskClassification.BlockedByExtraClassArgmaxObserved
+                => NodalOsExtraClassDecodePolicyReadiness.BlockedByExtraClassArgmaxObserved,
+            NodalOsExtraClassRiskClassification.ManualReviewRequired
+                => NodalOsExtraClassDecodePolicyReadiness.BlockedByExtraClassNontrivialProbability,
+            NodalOsExtraClassRiskClassification.BlockedByUnexpectedClassCount
+                => NodalOsExtraClassDecodePolicyReadiness.ReadyForRecognizerModelReplacement,
+            _ => NodalOsExtraClassDecodePolicyReadiness.NotReady
+        };
+
+        return new NodalOsExtraClassArgmaxProbeDecisionReport(
+            $"extra-class-argmax-decision-{Guid.NewGuid():N}",
+            results,
+            candidate,
+            decision,
+            DecodeAttempted: false,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            noRaw,
+            noFullScreen,
+            noSensitive,
+            noSaas,
+            noAuthority,
+            BrowserCredentialRedactor.Redact($"{decision}; risk={candidate.RiskClassification}; threshold={negligibleProbabilityThreshold:R}; decode remains blocked until manual approval"));
+    }
+
     private static NodalOsOcrCtcDecoderCompatibility Ctc(
         int recognizerOutputClassCount,
         int dictionaryClassCountIncludingBlank,

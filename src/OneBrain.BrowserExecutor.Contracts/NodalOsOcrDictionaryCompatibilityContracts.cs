@@ -195,6 +195,36 @@ public enum NodalOsRecognizerDictionaryPairReplacementDecision
     NotReady
 }
 
+public enum NodalOsExtraClassArgmaxProbeStatus
+{
+    ExtraClassNeverArgmax,
+    ExtraClassArgmaxObserved,
+    ExtraClassProbabilityNegligible,
+    ExtraClassProbabilityNonTrivial,
+    ProbeBlockedByInvalidInput,
+    ProbeRuntimeFailed,
+    ProbeTimedOut
+}
+
+public enum NodalOsExtraClassRiskClassification
+{
+    IgnoredExtraClassCandidate,
+    BlockedByExtraClassArgmaxObserved,
+    ManualReviewRequired,
+    BlockedByUnexpectedClassCount,
+    NotReady
+}
+
+public enum NodalOsExtraClassDecodePolicyReadiness
+{
+    ReadyForManualIgnoredExtraClassPolicyApproval,
+    ReadyForClaudeExtraClassAuditWithProbeEvidence,
+    BlockedByExtraClassArgmaxObserved,
+    BlockedByExtraClassNontrivialProbability,
+    ReadyForRecognizerModelReplacement,
+    NotReady
+}
+
 public sealed record NodalOsOcrDictionaryManifest(
     string DictionaryId,
     string Language,
@@ -569,6 +599,60 @@ public sealed record NodalOsOcrRecognizerReplacementStrategyMatrix(
     bool ProductiveOcrBlocked,
     bool ShadowModeBlocked,
     bool DecodeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsExtraClassProbabilitySummary(
+    int ExtraClassIndex,
+    int OutputClassCount,
+    int Timesteps,
+    int ExtraClassArgmaxCount,
+    double ExtraClassMaxProbability,
+    double ExtraClassAverageProbability,
+    int BlankIndex,
+    int BlankArgmaxCount,
+    IReadOnlyList<int> DominantClassIndexes);
+
+public sealed record NodalOsExtraClassArgmaxProbeResult(
+    string ProbeId,
+    string FixtureId,
+    string FixtureGroup,
+    NodalOsExtraClassArgmaxProbeStatus Status,
+    IReadOnlyList<int> OutputShape,
+    NodalOsExtraClassProbabilitySummary ProbabilitySummary,
+    bool RanOutOfProcess,
+    bool ParentSurvived,
+    bool TempCleanup,
+    bool RawPersisted,
+    bool Sensitive,
+    bool FullScreen,
+    bool CallsSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsIgnoredExtraClassPolicyCandidate(
+    string CandidateId,
+    NodalOsExtraClassRiskClassification RiskClassification,
+    double NegligibleProbabilityThreshold,
+    bool DecodeApproved,
+    bool RequiresManualApproval,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsExtraClassArgmaxProbeDecisionReport(
+    string ReportId,
+    IReadOnlyList<NodalOsExtraClassArgmaxProbeResult> ProbeResults,
+    NodalOsIgnoredExtraClassPolicyCandidate PolicyCandidate,
+    NodalOsExtraClassDecodePolicyReadiness Decision,
+    bool DecodeAttempted,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
     bool NoRawPersistence,
     bool NoFullScreen,
     bool NoSensitive,

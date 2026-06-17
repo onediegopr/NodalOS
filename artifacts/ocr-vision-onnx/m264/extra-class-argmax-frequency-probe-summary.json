@@ -1,0 +1,64 @@
+{
+  "milestone": "M262-M264",
+  "decision": "M262+M263+M264 CERRADO / BLOCKED_BY_EXTRA_CLASS_NONTRIVIAL_PROBABILITY",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "model": {
+    "recognizer": "en_PP-OCRv5_rec_mobile.onnx",
+    "dictionary": "ppocrv5_en_dict.txt",
+    "dictionaryTokens": 436,
+    "blankIndex": 0,
+    "expectedClassCount": 437,
+    "observedClassCount": 438
+  },
+  "probe": {
+    "mode": "--extra-class-argmax-probe",
+    "outputShape": "[1,40,438]",
+    "outputClassCount": 438,
+    "extraClassIndex": 437,
+    "negligibleProbabilityThreshold": 0.001,
+    "normalFixtures": ["TEST", "NODAL", "12345", "ABC123", "HighContrastCrop", "DetectorDerivedCrop"],
+    "extremeFixtures": ["Black", "White", "DeterministicNoise", "Gradient", "ThinLines", "Checkerboard", "OutOfDictionary", "InvalidEmptyCrop"],
+    "extraClassArgmaxCount": 0,
+    "extraClassArgmaxFixtures": [],
+    "extraClassMaxProbability": 0.28353992104530334,
+    "extraClassAverageProbabilityMax": 0.11832536425208673,
+    "blankIndexBehavior": "blank index 0 was dominant on most synthetic/extreme fixtures",
+    "riskClassification": "ManualReviewRequired",
+    "policyCandidateStatus": "BlockedByExtraClassNontrivialProbability"
+  },
+  "results": [
+    {"fixture":"TEST","group":"normal","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.006049194373190403,"extraClassAverageProbability":0.0003459132923799402,"blankArgmaxCount":14,"dominantClassIndexes":[0,35,17,37,49,41,48,50]},
+    {"fixture":"NODAL","group":"normal","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.00561612518504262,"extraClassAverageProbability":0.0006766940032782998,"blankArgmaxCount":21,"dominantClassIndexes":[0,35,37,49,17,48,50,39]},
+    {"fixture":"12345","group":"normal","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.28353992104530334,"extraClassAverageProbability":0.11832536425208673,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"ABC123","group":"normal","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.0013852466363459826,"extraClassAverageProbability":0.0002338095976938348,"blankArgmaxCount":22,"dominantClassIndexes":[0,75,4,6]},
+    {"fixture":"HighContrastCrop","group":"normal","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.009588144719600677,"extraClassAverageProbability":0.003846854894072749,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"DetectorDerivedCrop","group":"normal","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.018164407461881638,"extraClassAverageProbability":0.005160853853885783,"blankArgmaxCount":37,"dominantClassIndexes":[0,35,39,59]},
+    {"fixture":"Black","group":"extreme","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.04457041248679161,"extraClassAverageProbability":0.03775421182799619,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"White","group":"extreme","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.05238724127411842,"extraClassAverageProbability":0.043566674008616246,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"DeterministicNoise","group":"extreme","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.03556954115629196,"extraClassAverageProbability":0.01450828839733731,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"Gradient","group":"extreme","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.02607089839875698,"extraClassAverageProbability":0.015231635418604127,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"ThinLines","group":"extreme","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.032856691628694534,"extraClassAverageProbability":0.015457652113400399,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"Checkerboard","group":"extreme","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.002016042824834585,"extraClassAverageProbability":0.0011714985434082338,"blankArgmaxCount":39,"dominantClassIndexes":[0,59]},
+    {"fixture":"OutOfDictionary","group":"extreme","status":"ExtraClassProbabilityNonTrivial","outputShape":[1,40,438],"extraClassArgmaxCount":0,"extraClassMaxProbability":0.01840442419052124,"extraClassAverageProbability":0.009666402610309887,"blankArgmaxCount":40,"dominantClassIndexes":[0]},
+    {"fixture":"InvalidEmptyCrop","group":"extreme","status":"ProbeBlockedByInvalidInput","blockedBeforeRuntime":true}
+  ],
+  "decode": {
+    "attempted": false,
+    "reason": "class/token policy remains unapproved and class 437 probability is non-trivial"
+  },
+  "safety": {
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "riskyOcrInProcess": false,
+    "riskyOcrOutOfProcess": true
+  }
+}
