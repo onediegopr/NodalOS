@@ -249,3 +249,144 @@ public sealed class NodalOsRecognizerRuntimeCompatibilityDecisionService
             BrowserCredentialRedactor.Redact(reason));
     }
 }
+
+public sealed class NodalOsOnnxRuntimeVersionExperimentPlanner
+{
+    public NodalOsOnnxRuntimeVersionExperimentPlan CreateDefaultPlan(string packageReferenceProject) =>
+        new(
+            BaselineVersion: "1.18.1",
+            CandidateVersions: ["1.18.1", "1.22.1", "1.23.2", "1.25.0"],
+            PackageReferenceProject: packageReferenceProject,
+            Reversible: true,
+            CpuProviderOnly: true,
+            ProductiveOcrBlocked: true,
+            NoAuthority: true);
+}
+
+public sealed class NodalOsOnnxRuntimeVersionDecisionService
+{
+    public NodalOsOnnxRuntimeVersionDecisionReport Decide(
+        IReadOnlyList<NodalOsOnnxRuntimeVersionExperimentResult> results,
+        string baselineVersion,
+        string finalPackageVersion,
+        bool detectorSanityRequired,
+        bool dictionaryMismatch,
+        bool parentSurvived,
+        bool noRawPersistence,
+        bool noAuthority)
+    {
+        if (results.Count == 0 || !parentSurvived || !noRawPersistence || !noAuthority || !detectorSanityRequired)
+        {
+            return Report(
+                NodalOsOnnxRuntimeVersionDecision.NotReady,
+                baselineVersion,
+                finalPackageVersion,
+                results,
+                detectorSanityRequired,
+                dictionaryMismatch,
+                "runtime version experiment gates not satisfied");
+        }
+
+        if (results.Any(r => !r.RestoreSucceeded || r.Status == NodalOsOnnxRuntimeVersionExperimentStatus.RuntimeVersionRestoreFailed))
+        {
+            return Report(
+                NodalOsOnnxRuntimeVersionDecision.BlockedByRuntimeRestore,
+                baselineVersion,
+                finalPackageVersion,
+                results,
+                detectorSanityRequired,
+                dictionaryMismatch,
+                "one or more ONNX Runtime candidate versions failed restore");
+        }
+
+        if (results.Any(r => !r.BuildSucceeded || r.Status == NodalOsOnnxRuntimeVersionExperimentStatus.BuildFailed))
+        {
+            return Report(
+                NodalOsOnnxRuntimeVersionDecision.BlockedByRuntimeRestore,
+                baselineVersion,
+                finalPackageVersion,
+                results,
+                detectorSanityRequired,
+                dictionaryMismatch,
+                "one or more ONNX Runtime candidate versions failed build");
+        }
+
+        var successful = results
+            .Where(r => r.RestoreSucceeded && r.BuildSucceeded && r.DetectorSanitySucceeded && r.AnyRecognizerRunSucceeded)
+            .ToList();
+
+        if (successful.Count > 0 && dictionaryMismatch)
+        {
+            return Report(
+                NodalOsOnnxRuntimeVersionDecision.ReadyForDictionaryCompletion,
+                baselineVersion,
+                finalPackageVersion,
+                results,
+                detectorSanityRequired,
+                dictionaryMismatch,
+                "a runtime version avoided recognizer crash; dictionary/CTC remains the next blocking gate");
+        }
+
+        if (successful.Count > 0)
+        {
+            return Report(
+                NodalOsOnnxRuntimeVersionDecision.ReadyForOnnxRuntimeUpgrade,
+                baselineVersion,
+                finalPackageVersion,
+                results,
+                detectorSanityRequired,
+                dictionaryMismatch,
+                "a runtime version avoided recognizer crash and detector sanity stayed green");
+        }
+
+        var allVersionsCrashed = results.All(r =>
+            r.RestoreSucceeded &&
+            r.BuildSucceeded &&
+            r.DetectorSanitySucceeded &&
+            !r.AnyRecognizerRunSucceeded &&
+            r.AnyRecognizerCrashContained);
+
+        if (allVersionsCrashed)
+        {
+            return Report(
+                NodalOsOnnxRuntimeVersionDecision.ReadyForRecognizerModelReplacement,
+                baselineVersion,
+                finalPackageVersion,
+                results,
+                detectorSanityRequired,
+                dictionaryMismatch,
+                "all tested ONNX Runtime versions preserved detector sanity but recognizer still crashed");
+        }
+
+        return Report(
+            NodalOsOnnxRuntimeVersionDecision.BlockedByRecognizerModelRuntime,
+            baselineVersion,
+            finalPackageVersion,
+            results,
+            detectorSanityRequired,
+            dictionaryMismatch,
+            "recognizer runtime remains blocked without a clean runtime upgrade candidate");
+    }
+
+    private static NodalOsOnnxRuntimeVersionDecisionReport Report(
+        NodalOsOnnxRuntimeVersionDecision decision,
+        string baselineVersion,
+        string finalPackageVersion,
+        IReadOnlyList<NodalOsOnnxRuntimeVersionExperimentResult> results,
+        bool detectorSanityRequired,
+        bool dictionaryMismatch,
+        string reason) =>
+        new(
+            $"onnx-runtime-version-decision-{Guid.NewGuid():N}",
+            decision,
+            baselineVersion,
+            finalPackageVersion,
+            BranchLeftAtBaseline: string.Equals(baselineVersion, finalPackageVersion, StringComparison.OrdinalIgnoreCase),
+            AnyVersionAvoidedCrash: results.Any(r => r.AnyRecognizerRunSucceeded && r.DetectorSanitySucceeded),
+            detectorSanityRequired,
+            dictionaryMismatch,
+            ShadowModeBlocked: true,
+            ProductiveOcrBlocked: true,
+            NoAuthority: results.Count == 0 || results.All(r => r.NoAuthority),
+            BrowserCredentialRedactor.Redact(reason));
+}

@@ -1,0 +1,118 @@
+{
+  "milestones": ["M232", "M233", "M234"],
+  "baseHead": "a0c2631",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "remote": "https://github.com/onediegopr/NodalOS.git",
+  "worktree": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit",
+  "forbiddenPathUsed": false,
+  "baselineVersion": "1.18.1",
+  "candidateVersions": ["1.22.1", "1.23.2", "1.25.0"],
+  "provider": "CPUExecutionProvider",
+  "model": "ch_PP-OCRv4_rec.onnx",
+  "recognizerMetadata": {
+    "input": "x=[-1,3,-1,-1]",
+    "output": "softmax_2.tmp_0=[-1,-1,97]",
+    "classCount": 97
+  },
+  "packageReference": {
+    "project": "src/OneBrain.BrowserExecutor.Cdp/OneBrain.BrowserExecutor.Cdp.csproj",
+    "initialVersion": "1.18.1",
+    "finalVersion": "1.18.1",
+    "changedDuringExperiment": true,
+    "revertedToBaseline": true
+  },
+  "results": [
+    {
+      "version": "1.18.1",
+      "restore": "Succeeded",
+      "build": "Succeeded",
+      "detectorSanity": "Succeeded",
+      "recognizerZero": "NativeRuntimeCrashContained",
+      "recognizerOnes": "NativeRuntimeCrashContained",
+      "recognizerGradient": "NativeRuntimeCrashContained",
+      "recognizerCrop": "NativeRuntimeCrashContained",
+      "outputShape": null,
+      "exitCode": -1073741676,
+      "exitCodeHex": "0xC0000094",
+      "crashStage": "RecognitionRun/session.Run",
+      "avoidedCrash": false
+    },
+    {
+      "version": "1.22.1",
+      "restore": "Succeeded",
+      "build": "Succeeded",
+      "detectorSanity": "Succeeded",
+      "recognizerZero": "RunSucceeded",
+      "recognizerOnes": "RunSucceeded",
+      "recognizerGradient": "RunSucceeded",
+      "recognizerCrop": "RunSucceeded",
+      "outputShape": "softmax_2.tmp_0=[1,40,97]",
+      "candidateWidth640OutputShape": "softmax_2.tmp_0=[1,80,97]",
+      "exitCode": 0,
+      "exitCodeHex": "0x00000000",
+      "crashStage": "",
+      "avoidedCrash": true
+    },
+    {
+      "version": "1.23.2",
+      "restore": "Succeeded",
+      "build": "Succeeded",
+      "detectorSanity": "Succeeded",
+      "recognizerZero": "RunSucceeded",
+      "recognizerOnes": "RunSucceeded",
+      "recognizerGradient": "RunSucceeded",
+      "recognizerCrop": "RunSucceeded",
+      "outputShape": "softmax_2.tmp_0=[1,40,97]",
+      "candidateWidth640OutputShape": "softmax_2.tmp_0=[1,80,97]",
+      "exitCode": 0,
+      "exitCodeHex": "0x00000000",
+      "crashStage": "",
+      "avoidedCrash": true
+    },
+    {
+      "version": "1.25.0",
+      "restore": "Succeeded",
+      "build": "Succeeded",
+      "detectorSanity": "Succeeded",
+      "recognizerZero": "RunSucceeded",
+      "recognizerOnes": "RunSucceeded",
+      "recognizerGradient": "RunSucceeded",
+      "recognizerCrop": "RunSucceeded",
+      "outputShape": "softmax_2.tmp_0=[1,40,97]",
+      "candidateWidth640OutputShape": "softmax_2.tmp_0=[1,80,97]",
+      "exitCode": 0,
+      "exitCodeHex": "0x00000000",
+      "crashStage": "",
+      "avoidedCrash": true
+    }
+  ],
+  "dictionary": {
+    "recognizerOutputClasses": 97,
+    "asciiCharacters": 86,
+    "asciiPlusBlank": 87,
+    "status": "BlockedByDictionaryClassCountMismatch",
+    "decodeAllowed": false,
+    "deferred": true
+  },
+  "safety": {
+    "productiveOcrEnabled": false,
+    "shadowModeEnabled": false,
+    "saaSOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "riskyRecognizerInProcess": false,
+    "riskyRecognizerOutOfProcess": true,
+    "modelsGitignoredUntracked": true,
+    "parentSurvived": true,
+    "tempCleanup": true
+  },
+  "evidence": {
+    "anyVersionAvoidedCrash": true,
+    "minimumSuccessfulCandidate": "1.22.1",
+    "branchLeftAtBaseline": true,
+    "nextRoute": "upgrade ONNX Runtime first, then complete dictionary/CTC"
+  },
+  "decision": "READY_FOR_ONNX_RUNTIME_UPGRADE"
+}

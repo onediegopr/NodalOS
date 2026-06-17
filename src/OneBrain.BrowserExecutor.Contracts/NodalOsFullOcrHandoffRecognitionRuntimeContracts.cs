@@ -124,6 +124,31 @@ public enum NodalOsRecognizerRuntimeCompatibilityDecision
     NotReady
 }
 
+public enum NodalOsOnnxRuntimeVersionExperimentStatus
+{
+    NotRun,
+    RestoreSucceeded,
+    RuntimeVersionRestoreFailed,
+    BuildSucceeded,
+    BuildFailed,
+    DetectorSanitySucceeded,
+    DetectorSanityFailed,
+    RecognizerRunSucceeded,
+    RecognizerNativeRuntimeCrashContained,
+    ProbeFailed,
+    OutputMetadataCaptured
+}
+
+public enum NodalOsOnnxRuntimeVersionDecision
+{
+    ReadyForOnnxRuntimeUpgrade,
+    ReadyForDictionaryCompletion,
+    ReadyForRecognizerModelReplacement,
+    BlockedByRecognizerModelRuntime,
+    BlockedByRuntimeRestore,
+    NotReady
+}
+
 public sealed record NodalOsRecognizerRuntimeSessionOptionsMetadata(
     NodalOsRecognizerRuntimeSessionOptionKind OptionKind,
     string Description,
@@ -245,6 +270,54 @@ public sealed record NodalOsRecognizerModelCompatibilityFinding(
     bool CropOnlyCrash,
     bool InvalidShapeDetected,
     bool DictionaryMismatchDetected,
+    bool ShadowModeBlocked,
+    bool ProductiveOcrBlocked,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsOnnxRuntimeVersionExperimentPlan(
+    string BaselineVersion,
+    IReadOnlyList<string> CandidateVersions,
+    string PackageReferenceProject,
+    bool Reversible,
+    bool CpuProviderOnly,
+    bool ProductiveOcrBlocked,
+    bool NoAuthority);
+
+public sealed record NodalOsOnnxRuntimeVersionExperimentResult(
+    string RuntimeVersion,
+    string RequestedPackageVersion,
+    string RestoredPackageVersion,
+    string NativeRuntimeObserved,
+    bool RestoreSucceeded,
+    bool BuildSucceeded,
+    bool DetectorSanitySucceeded,
+    bool RecognizerZeroSucceeded,
+    bool RecognizerOnesSucceeded,
+    bool RecognizerGradientSucceeded,
+    bool RecognizerCropSucceeded,
+    bool AnyRecognizerRunSucceeded,
+    bool AnyRecognizerCrashContained,
+    int? ExitCode,
+    string? ExitCodeHex,
+    string CrashStage,
+    bool ParentSurvived,
+    bool TempFilesCleaned,
+    bool RawPersisted,
+    bool CallsSaas,
+    bool NoAuthority,
+    NodalOsOnnxRuntimeVersionExperimentStatus Status,
+    string Reason);
+
+public sealed record NodalOsOnnxRuntimeVersionDecisionReport(
+    string ReportId,
+    NodalOsOnnxRuntimeVersionDecision Decision,
+    string BaselineVersion,
+    string FinalPackageVersion,
+    bool BranchLeftAtBaseline,
+    bool AnyVersionAvoidedCrash,
+    bool DetectorSanityRequired,
+    bool DictionaryMismatchStillBlocksDecode,
     bool ShadowModeBlocked,
     bool ProductiveOcrBlocked,
     bool NoAuthority,
