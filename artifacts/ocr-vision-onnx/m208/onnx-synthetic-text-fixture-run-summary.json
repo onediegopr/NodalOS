@@ -1,0 +1,113 @@
+{
+  "reportId": "onnx-synthetic-text-fixture-run-m208",
+  "createdAtUtc": "2026-06-16T00:00:00Z",
+  "milestones": ["M206", "M207", "M208"],
+  "models": [
+    {
+      "modelId": "paddleocr-det-onnx",
+      "kind": "TextDetection",
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+      "sha256": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9",
+      "status": "VerifiedButCrashesOnTextFixtures"
+    },
+    {
+      "modelId": "paddleocr-rec-onnx",
+      "kind": "TextRecognition",
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+      "sha256": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+      "status": "VerifiedNotReached"
+    },
+    {
+      "modelId": "paddleocr-cls-onnx",
+      "kind": "TextDirectionClassification",
+      "file": "tools/ocr-worker/models/onnx/ch_ppocr_mobile_v2.0_cls.onnx",
+      "sha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c",
+      "status": "VerifiedOptional"
+    }
+  ],
+  "fixtureGenerator": {
+    "defaultRenderMode": "AntiAliasedPixelFont",
+    "defaultDimensions": { "width": 640, "height": 640 },
+    "defaultTexts": ["TEST", "NODAL", "HELLO", "SAFE", "ABC123", "12345"],
+    "colorSchemes": ["BlackOnWhite", "WhiteOnBlack", "GrayOnWhite"],
+    "sensitiveTextBlocked": true,
+    "rawPersistenceBlocked": true,
+    "fullScreenBlocked": true
+  },
+  "safeShapeDiagnostics": [
+    {
+      "name": "StripeFixture",
+      "dimensions": { "width": 64, "height": 32 },
+      "status": "NoTextDetected",
+      "boxes": 0,
+      "recognitionAttempts": 0,
+      "hostCrashed": false
+    },
+    {
+      "name": "SmallSolidRectangle",
+      "dimensions": { "width": 128, "height": 64 },
+      "status": "NoTextDetected",
+      "boxes": 0,
+      "recognitionAttempts": 0,
+      "hostCrashed": false
+    },
+    {
+      "name": "LargeSolidRectangle",
+      "dimensions": { "width": 640, "height": 640 },
+      "status": "NoTextDetected",
+      "boxes": 0,
+      "recognitionAttempts": 0,
+      "hostCrashed": false
+    },
+    {
+      "name": "LargeCircle",
+      "dimensions": { "width": 640, "height": 640 },
+      "status": "NoTextDetected",
+      "boxes": 0,
+      "recognitionAttempts": 0,
+      "hostCrashed": false
+    }
+  ],
+  "quarantinedTextFixtures": [
+    {
+      "name": "PixelFont_TEST",
+      "renderMode": "AntiAliasedPixelFont",
+      "status": "HostCrashedNativeOnnxRuntime",
+      "boxes": null,
+      "recognitionAttempts": null
+    },
+    {
+      "name": "ThickHorizontalBars",
+      "renderMode": "BarPattern",
+      "status": "HostCrashedNativeOnnxRuntime",
+      "boxes": null,
+      "recognitionAttempts": null
+    }
+  ],
+  "testSummary": {
+    "m206Tests": { "passed": 10, "failed": 0, "skipped": 0 },
+    "m207Tests": { "passed": 12, "failed": 0, "skipped": 7 },
+    "m208Tests": { "passed": 0, "failed": 0, "skipped": 0 }
+  },
+  "readinessDecision": "BlockedByModelRuntime",
+  "canAttemptRedactedCropShadow": false,
+  "canContinueWithMoreFixtures": false,
+  "blocker": "Native ONNX Runtime host crash on synthetic text-like fixtures. No successful detection+recognition run observed.",
+  "compliance": {
+    "realDocumentsOrScreens": false,
+    "saasOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "productionPublicOcrBlocked": true,
+    "cdpPipelineIntegrated": false
+  },
+  "nextSteps": [
+    "Investigate detector crash root cause (ONNX Runtime version, preprocessing, or out-of-process execution).",
+    "Consider isolated worker process for ONNX inference to turn crashes into recoverable BlockedByModelRuntime results.",
+    "Optionally evaluate real font rendering (SkiaSharp) for more detector-friendly fixtures.",
+    "Re-run quarantined M207 tests only after a validated fix.",
+    "Do not advance to redacted-crop shadow mode without a successful text fixture run."
+  ]
+}

@@ -94,6 +94,8 @@ public sealed class NodalOsOnnxOcrResultNormalizer
             NodalOsOnnxOcrInferenceStatus.PreProcessingFailed => NodalOsOnnxOcrNormalizedStatus.PreProcessingFailed,
             NodalOsOnnxOcrInferenceStatus.DetectionFailed => NodalOsOnnxOcrNormalizedStatus.DetectionFailed,
             NodalOsOnnxOcrInferenceStatus.RecognitionFailed => NodalOsOnnxOcrNormalizedStatus.RecognitionFailed,
+            NodalOsOnnxOcrInferenceStatus.RecognitionEmpty => NodalOsOnnxOcrNormalizedStatus.RequiresHumanReview,
+            NodalOsOnnxOcrInferenceStatus.DictionaryMismatch => NodalOsOnnxOcrNormalizedStatus.RequiresHumanReview,
             _ => NodalOsOnnxOcrNormalizedStatus.Failed
         };
 

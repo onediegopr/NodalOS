@@ -8,6 +8,8 @@ public enum NodalOsOnnxOcrPostProcessingStatus
 {
     Success,
     Empty,
+    RecognitionEmpty,
+    DictionaryMismatch,
     UnsupportedModelShape,
     ThresholdTooHigh,
     BoxCountExceeded,

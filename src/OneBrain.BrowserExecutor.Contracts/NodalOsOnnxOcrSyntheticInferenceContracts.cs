@@ -17,9 +17,12 @@ public enum NodalOsOnnxOcrInferenceStatus
     PreProcessingFailed,
     DetectionFailed,
     RecognitionFailed,
+    RecognitionEmpty,
+    DictionaryMismatch,
     NoTextDetected,
     LowConfidence,
     RequiresHumanReview,
+    BlockedByModelRuntime,
     Failed
 }
 
@@ -95,3 +98,40 @@ public sealed record NodalOsOnnxOcrSyntheticInferenceResult(
     bool RequiresHumanReview,
     TimeSpan Duration,
     IReadOnlyList<string> Warnings);
+
+public enum NodalOsOnnxOcrSyntheticTextRunDecision
+{
+    PositiveTextDetected,
+    DetectionBoxesFoundRecognitionLowConfidence,
+    DetectionBoxesFoundRecognitionEmpty,
+    DetectionBoxesFoundRecognitionBlockedByDictionary,
+    NoTextDetected,
+    BlockedByModelRuntime,
+    BlockedByPreProcessing,
+    BlockedByPostProcessing,
+    Failed
+}
+
+public sealed record NodalOsOnnxOcrSyntheticTextFixtureResult(
+    string ResultId,
+    NodalOsSyntheticOcrTextFixture Fixture,
+    NodalOsOnnxOcrSyntheticInferenceResult InferenceResult,
+    NodalOsOnnxOcrSyntheticTextRunDecision Decision);
+
+public sealed record NodalOsOnnxOcrSyntheticTextRunResult(
+    string RunId,
+    DateTimeOffset CreatedAtUtc,
+    IReadOnlyList<NodalOsOnnxOcrSyntheticTextFixtureResult> FixtureResults,
+    NodalOsOnnxOcrSyntheticTextRunDecision AggregateDecision,
+    int FixturesRun,
+    int BoxesDetected,
+    int RecognitionAttempts,
+    int RecognitionSuccesses,
+    int RecognitionLowConfidence,
+    int RecognitionEmpty,
+    int DictionaryMismatches,
+    bool CallsRealOcr,
+    bool CallsSaas,
+    bool RawPersisted,
+    bool NoAuthority,
+    string Reason);

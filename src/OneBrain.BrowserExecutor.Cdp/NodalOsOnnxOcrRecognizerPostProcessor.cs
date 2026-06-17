@@ -74,6 +74,31 @@ public sealed class NodalOsOnnxOcrRecognizerPostProcessor
         var text = _dictionary.DecodeCtc(sequence, _dictionary.Characters, blankIndex);
         var aggregation = _confidenceAggregator.Aggregate(confidences);
 
+        var outOfRangeCount = sequence.Count(i => i != blankIndex && (i < 0 || i >= _dictionary.Characters.Count));
+        var dictionaryMismatch = outOfRangeCount > sequence.Count / 2;
+
+        if (dictionaryMismatch)
+        {
+            return new NodalOsOnnxOcrRecognizerPostProcessingResult(
+                $"rec-post-{Guid.NewGuid():N}",
+                NodalOsOnnxOcrPostProcessingStatus.DictionaryMismatch,
+                new[] { new NodalOsOnnxOcrRecognitionCandidate($"candidate-{Guid.NewGuid():N}", "", 0.0, sequence, true, true) },
+                NoAuthority: true,
+                Redacted: true,
+                "recognizer output indices do not match dictionary; dictionary mismatch");
+        }
+
+        if (string.IsNullOrEmpty(text))
+        {
+            return new NodalOsOnnxOcrRecognizerPostProcessingResult(
+                $"rec-post-{Guid.NewGuid():N}",
+                NodalOsOnnxOcrPostProcessingStatus.RecognitionEmpty,
+                new[] { new NodalOsOnnxOcrRecognitionCandidate($"candidate-{Guid.NewGuid():N}", "", aggregation.AverageConfidence, sequence, true, true) },
+                NoAuthority: true,
+                Redacted: true,
+                "recognizer decoded empty text");
+        }
+
         var lowConfidence = !aggregation.AllAboveThreshold || aggregation.AverageConfidence < confidenceThreshold;
         var status = lowConfidence ? NodalOsOnnxOcrPostProcessingStatus.RequiresHumanReview : NodalOsOnnxOcrPostProcessingStatus.Success;
 

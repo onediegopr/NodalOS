@@ -7,6 +7,8 @@ public enum NodalOsOnnxSyntheticOcrReadinessDecision
 {
     ReadyForRedactedCropShadow,
     ReadyForMoreSyntheticFixtures,
+    ReadyForDictionaryCompletion,
+    BlockedByDictionary,
     BlockedByModelRuntime,
     BlockedByPreProcessing,
     BlockedByPostProcessing,

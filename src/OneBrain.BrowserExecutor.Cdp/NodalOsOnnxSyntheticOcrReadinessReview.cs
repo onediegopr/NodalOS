@@ -91,6 +91,9 @@ public sealed class NodalOsOnnxSyntheticOcrReadinessReview
         if (!sessionsLoaded)
             return NodalOsOnnxSyntheticOcrReadinessDecision.BlockedByModelRuntime;
 
+        if (inferenceResult.Status == NodalOsOnnxOcrInferenceStatus.BlockedByModelRuntime)
+            return NodalOsOnnxSyntheticOcrReadinessDecision.BlockedByModelRuntime;
+
         if (blocked.Any(r => r.Name.Contains("pre-processing") || r.Name.Contains("crop")))
             return NodalOsOnnxSyntheticOcrReadinessDecision.BlockedByPreProcessing;
 

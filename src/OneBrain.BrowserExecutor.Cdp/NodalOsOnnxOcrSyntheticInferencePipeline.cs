@@ -285,6 +285,8 @@ public sealed class NodalOsOnnxOcrSyntheticInferencePipeline
             {
                 NodalOsOnnxOcrPostProcessingStatus.Success => RecognitionResult(NodalOsOnnxOcrInferenceStatus.Success, decoded.Candidates, sw.ElapsedMilliseconds, model, "recognition completed"),
                 NodalOsOnnxOcrPostProcessingStatus.RequiresHumanReview => RecognitionResult(NodalOsOnnxOcrInferenceStatus.LowConfidence, decoded.Candidates, sw.ElapsedMilliseconds, model, "low confidence; requires human review"),
+                NodalOsOnnxOcrPostProcessingStatus.RecognitionEmpty => RecognitionResult(NodalOsOnnxOcrInferenceStatus.RecognitionEmpty, decoded.Candidates, sw.ElapsedMilliseconds, model, "recognizer decoded empty text"),
+                NodalOsOnnxOcrPostProcessingStatus.DictionaryMismatch => RecognitionResult(NodalOsOnnxOcrInferenceStatus.DictionaryMismatch, decoded.Candidates, sw.ElapsedMilliseconds, model, "recognizer dictionary mismatch"),
                 NodalOsOnnxOcrPostProcessingStatus.UnsupportedModelShape => RecognitionResult(NodalOsOnnxOcrInferenceStatus.RecognitionFailed, [], sw.ElapsedMilliseconds, model, $"unsupported recognizer output shape [{string.Join(",", outputShape)}]"),
                 _ => RecognitionResult(NodalOsOnnxOcrInferenceStatus.RecognitionFailed, [], sw.ElapsedMilliseconds, model, decoded.Reason)
             };
