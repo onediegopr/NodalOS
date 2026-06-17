@@ -8,6 +8,11 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
     public const int PaddleOcrV4EnglishExpectedCharsetCount = PaddleOcrV4EnglishRecognizerClassCount - 1;
     public const string PaddleOcrV4EnglishDictionaryId = "paddleocr-en-ppocrv4-rec-ctc-dictionary";
     public const string PaddleOcrV4EnglishDictionaryRelativePath = "tools/ocr-worker/models/onnx/dictionaries/paddleocr-ppocrv4-en-dict.txt";
+    public const string RapidOcrModelScopeEnglishDictionaryUrl = "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv4/rec/en_PP-OCRv4_rec_mobile/en_dict.txt";
+    public const string PaddleOcrGithubEnglishDictionaryUrl = "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/release/2.8/ppocr/utils/en_dict.txt";
+    public const string EnglishDictionarySha256 = "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3";
+    public const long EnglishDictionarySizeBytes = 190;
+    public const int OfficialEnglishDictionaryTokenCount = 95;
 
     public NodalOsOcrDictionaryManifest CreateCurrentAsciiManifest(bool verified = false)
     {
@@ -20,6 +25,149 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             ExpectedSha256: null,
             verified,
             NoAuthority: true);
+    }
+
+    public IReadOnlyList<NodalOsOcrDictionarySourceCandidate> CreateM241SourceAuditCandidates()
+    {
+        return
+        [
+            new NodalOsOcrDictionarySourceCandidate(
+                "rapidocr-modelscope-v3.8.0-en-ppocrv4-en-dict",
+                RapidOcrModelScopeEnglishDictionaryUrl,
+                "RapidAI/ModelScope",
+                "RapidAI/RapidOCR v3.8.0",
+                "Apache-2.0 lineage from PaddleOCR/RapidOCR model distribution",
+                OfficialEnglishDictionaryTokenCount,
+                BlankIncluded: false,
+                Official: true,
+                Verifiable: true,
+                EnglishDictionarySha256,
+                EnglishDictionarySizeBytes,
+                CompatibleWithRecognizerClassCount: false,
+                $"official source has {OfficialEnglishDictionaryTokenCount} tokens; required {PaddleOcrV4EnglishExpectedCharsetCount} tokens before CTC blank"),
+            new NodalOsOcrDictionarySourceCandidate(
+                "paddleocr-github-release-2.8-en-dict",
+                PaddleOcrGithubEnglishDictionaryUrl,
+                "PaddlePaddle",
+                "PaddlePaddle/PaddleOCR release/2.8",
+                "Apache-2.0",
+                OfficialEnglishDictionaryTokenCount,
+                BlankIncluded: false,
+                Official: true,
+                Verifiable: true,
+                EnglishDictionarySha256,
+                EnglishDictionarySizeBytes,
+                CompatibleWithRecognizerClassCount: false,
+                $"official source has {OfficialEnglishDictionaryTokenCount} tokens; required {PaddleOcrV4EnglishExpectedCharsetCount} tokens before CTC blank"),
+            new NodalOsOcrDictionarySourceCandidate(
+                "onnx-recognizer-embedded-character-metadata",
+                "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx#metadata:character",
+                "RapidAI/ModelScope",
+                "Verified local ONNX recognizer metadata",
+                "Model artifact provenance pinned by ONNX manifest hash",
+                OfficialEnglishDictionaryTokenCount,
+                BlankIncluded: false,
+                Official: true,
+                Verifiable: true,
+                "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+                7653044,
+                CompatibleWithRecognizerClassCount: false,
+                $"embedded ONNX metadata exposes {OfficialEnglishDictionaryTokenCount} tokens; required {PaddleOcrV4EnglishExpectedCharsetCount} tokens before CTC blank")
+        ];
+    }
+
+    public NodalOsOcrDictionarySourceSelectionReport AuditSourceCandidates(
+        IReadOnlyList<NodalOsOcrDictionarySourceCandidate> candidates)
+    {
+        var officialCandidates = candidates.Where(c => c.Official && c.Verifiable).ToArray();
+        var selected = officialCandidates.FirstOrDefault(c =>
+            c.CompatibleWithRecognizerClassCount && c.Sha256 is not null && c.SizeBytes is not null);
+
+        if (selected is not null)
+        {
+            return new NodalOsOcrDictionarySourceSelectionReport(
+                $"dict-source-selection-{Guid.NewGuid():N}",
+                NodalOsOcrDictionarySourceAuditStatus.SourceSelected,
+                candidates,
+                selected,
+                HashPinned: true,
+                SizePinned: true,
+                NoDecodeAttempted: true,
+                NoAuthority: true,
+                "official compatible dictionary source selected and pinned");
+        }
+
+        if (officialCandidates.Any(c => !c.CompatibleWithRecognizerClassCount))
+        {
+            return new NodalOsOcrDictionarySourceSelectionReport(
+                $"dict-source-selection-{Guid.NewGuid():N}",
+                NodalOsOcrDictionarySourceAuditStatus.SourceRejectedCountMismatch,
+                candidates,
+                SelectedSource: null,
+                HashPinned: officialCandidates.Any(c => c.Sha256 is not null),
+                SizePinned: officialCandidates.Any(c => c.SizeBytes is not null),
+                NoDecodeAttempted: true,
+                NoAuthority: true,
+                $"official candidates are verifiable but expose {OfficialEnglishDictionaryTokenCount} tokens; required {PaddleOcrV4EnglishExpectedCharsetCount}");
+        }
+
+        if (candidates.Any(c => !c.Official))
+        {
+            return new NodalOsOcrDictionarySourceSelectionReport(
+                $"dict-source-selection-{Guid.NewGuid():N}",
+                NodalOsOcrDictionarySourceAuditStatus.SourceRejectedUnofficial,
+                candidates,
+                SelectedSource: null,
+                HashPinned: false,
+                SizePinned: false,
+                NoDecodeAttempted: true,
+                NoAuthority: true,
+                "only unofficial candidates were available and no ADR permits them");
+        }
+
+        return new NodalOsOcrDictionarySourceSelectionReport(
+            $"dict-source-selection-{Guid.NewGuid():N}",
+            NodalOsOcrDictionarySourceAuditStatus.NoApprovedSourceFound,
+            candidates,
+            SelectedSource: null,
+            HashPinned: false,
+            SizePinned: false,
+            NoDecodeAttempted: true,
+            NoAuthority: true,
+            "no official verifiable dictionary source found");
+    }
+
+    public NodalOsOcrDictionaryAcquisitionGateReport EvaluateAcquisitionGate(
+        NodalOsOcrDictionarySourceSelectionReport sourceSelection)
+    {
+        var decision = sourceSelection.Status switch
+        {
+            NodalOsOcrDictionarySourceAuditStatus.SourceSelected => NodalOsOcrDictionaryReadinessDecision.ReadyForDictionaryDownload,
+            NodalOsOcrDictionarySourceAuditStatus.SourceRejectedCountMismatch => NodalOsOcrDictionaryReadinessDecision.BlockedByDictionaryCountMismatch,
+            NodalOsOcrDictionarySourceAuditStatus.SourceCandidateFoundNeedsHash => NodalOsOcrDictionaryReadinessDecision.BlockedByDictionaryHashPinning,
+            NodalOsOcrDictionarySourceAuditStatus.SourceRejectedUnpinnable => NodalOsOcrDictionaryReadinessDecision.BlockedByDictionaryHashPinning,
+            NodalOsOcrDictionarySourceAuditStatus.SourceRejectedUnofficial => NodalOsOcrDictionaryReadinessDecision.BlockedByDictionarySource,
+            _ => NodalOsOcrDictionaryReadinessDecision.ReadyForManualDictionarySourceApproval
+        };
+
+        var sourcePinned = sourceSelection.SelectedSource is not null;
+        var compatible = sourceSelection.SelectedSource?.CompatibleWithRecognizerClassCount == true;
+
+        return new NodalOsOcrDictionaryAcquisitionGateReport(
+            $"dict-acquisition-gate-{Guid.NewGuid():N}",
+            decision,
+            sourceSelection,
+            sourcePinned,
+            sourceSelection.HashPinned,
+            sourceSelection.SizePinned,
+            compatible,
+            ScriptsActive: decision == NodalOsOcrDictionaryReadinessDecision.ReadyForDictionaryDownload,
+            DownloadExecuted: false,
+            RollbackTouchesOnnxModels: false,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoAuthority: sourceSelection.NoAuthority,
+            BrowserCredentialRedactor.Redact($"{decision}; sourceStatus={sourceSelection.Status}; no decode attempted"));
     }
 
     public NodalOsOcrDictionaryManifestEntry CreatePaddleOcrV4EnglishManifestEntryWithoutApprovedSource()

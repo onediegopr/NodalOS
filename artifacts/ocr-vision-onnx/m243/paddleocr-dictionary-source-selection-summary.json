@@ -1,0 +1,112 @@
+{
+  "milestones": ["M241", "M242", "M243"],
+  "baseHead": "b2154b4",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "remote": "https://github.com/onediegopr/NodalOS.git",
+  "worktree": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit",
+  "forbiddenPathUsed": false,
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "models": {
+    "detection": "PresentAndVerified",
+    "recognition": "PresentAndVerified",
+    "classification": "PresentAndVerified",
+    "onnxGitignored": true,
+    "onnxTracked": false
+  },
+  "recognizer": {
+    "outputClassCount": 97,
+    "requiredDictionaryTokens": 96,
+    "requiredBlankTokens": 1,
+    "requiredBlankPolicy": "BlankAppendedAtEnd"
+  },
+  "existingDictionary": {
+    "id": "en-ascii",
+    "tokens": 86,
+    "tokensIncludingBlank": 87,
+    "status": "ClassCountMismatch",
+    "decodeAllowed": false
+  },
+  "sourceAuditCandidates": [
+    {
+      "sourceId": "rapidocr-modelscope-v3.8.0-en-ppocrv4-en-dict",
+      "url": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv4/rec/en_PP-OCRv4_rec_mobile/en_dict.txt",
+      "provider": "RapidAI/ModelScope",
+      "license": "Apache-2.0 lineage",
+      "official": true,
+      "verifiable": true,
+      "sha256": "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3",
+      "sizeBytes": 190,
+      "tokenCount": 95,
+      "blankIncluded": false,
+      "compatibleWith97Classes": false,
+      "decision": "SourceRejectedCountMismatch"
+    },
+    {
+      "sourceId": "paddleocr-github-release-2.8-en-dict",
+      "url": "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/release/2.8/ppocr/utils/en_dict.txt",
+      "provider": "PaddlePaddle",
+      "license": "Apache-2.0",
+      "official": true,
+      "verifiable": true,
+      "sha256": "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3",
+      "sizeBytes": 190,
+      "tokenCount": 95,
+      "blankIncluded": false,
+      "compatibleWith97Classes": false,
+      "decision": "SourceRejectedCountMismatch"
+    },
+    {
+      "sourceId": "onnx-recognizer-embedded-character-metadata",
+      "url": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx#metadata:character",
+      "provider": "RapidAI/ModelScope",
+      "license": "Model artifact provenance pinned by manifest",
+      "official": true,
+      "verifiable": true,
+      "sha256": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+      "sizeBytes": 7653044,
+      "tokenCount": 95,
+      "blankIncluded": false,
+      "compatibleWith97Classes": false,
+      "decision": "SourceRejectedCountMismatch"
+    }
+  ],
+  "sourceSelection": {
+    "status": "SourceRejectedCountMismatch",
+    "selectedSource": null,
+    "hashPinnedForRejectedCandidates": true,
+    "sizePinnedForRejectedCandidates": true
+  },
+  "manifest": {
+    "updatedToPinned": false,
+    "reason": "no candidate matched required token count"
+  },
+  "acquisition": {
+    "scriptsActive": false,
+    "downloadExecuted": false,
+    "dictionaryPresent": false,
+    "dictionaryVerified": false,
+    "rollbackTouchesOnnxModels": false
+  },
+  "decode": {
+    "attempted": false,
+    "reason": "no compatible verified dictionary source",
+    "decodedText": null,
+    "confidence": null
+  },
+  "safety": {
+    "productiveOcrEnabled": false,
+    "saaSOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "shadowModeEnabled": false,
+    "cdpPipelineIntegrated": false,
+    "riskyOcrInProcess": false
+  },
+  "decision": "BLOCKED_BY_DICTIONARY_COUNT_MISMATCH"
+}

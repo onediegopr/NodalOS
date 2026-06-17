@@ -44,11 +44,26 @@ public enum NodalOsOcrDictionaryBlankTokenPolicy
 public enum NodalOsOcrDictionaryReadinessDecision
 {
     ReadyForDictionarySourceSelection,
+    ReadyForDictionaryDownload,
+    ReadyForManualDictionarySourceApproval,
     ReadyForSyntheticTextDecodeFixtures,
     ReadyForMoreSyntheticFixtures,
+    BlockedByDictionarySource,
     BlockedByDictionaryClassCountMismatch,
+    BlockedByDictionaryCountMismatch,
     BlockedByDictionaryHashMismatch,
+    BlockedByDictionaryHashPinning,
     NotReady
+}
+
+public enum NodalOsOcrDictionarySourceAuditStatus
+{
+    SourceSelected,
+    SourceCandidateFoundNeedsHash,
+    NoApprovedSourceFound,
+    SourceRejectedCountMismatch,
+    SourceRejectedUnofficial,
+    SourceRejectedUnpinnable
 }
 
 public sealed record NodalOsOcrDictionaryManifest(
@@ -89,6 +104,48 @@ public sealed record NodalOsOcrDictionaryAcquisitionPlan(
     IReadOnlyList<string> Commands,
     string Decision,
     bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsOcrDictionarySourceCandidate(
+    string SourceId,
+    string UrlOrRef,
+    string Provider,
+    string Repository,
+    string License,
+    int ExpectedCharacterCount,
+    bool BlankIncluded,
+    bool Official,
+    bool Verifiable,
+    string? Sha256,
+    long? SizeBytes,
+    bool CompatibleWithRecognizerClassCount,
+    string Risk);
+
+public sealed record NodalOsOcrDictionarySourceSelectionReport(
+    string ReportId,
+    NodalOsOcrDictionarySourceAuditStatus Status,
+    IReadOnlyList<NodalOsOcrDictionarySourceCandidate> Candidates,
+    NodalOsOcrDictionarySourceCandidate? SelectedSource,
+    bool HashPinned,
+    bool SizePinned,
+    bool NoDecodeAttempted,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsOcrDictionaryAcquisitionGateReport(
+    string GateId,
+    NodalOsOcrDictionaryReadinessDecision Decision,
+    NodalOsOcrDictionarySourceSelectionReport SourceSelection,
+    bool SourcePinned,
+    bool HashPinned,
+    bool SizePinned,
+    bool CharacterCountCompatible,
+    bool ScriptsActive,
+    bool DownloadExecuted,
+    bool RollbackTouchesOnnxModels,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
     bool NoAuthority,
     string Reason);
 

@@ -87,8 +87,8 @@ public sealed class NodalOsPaddleOcrDictionaryCompatibilityM238M240Tests
         var entry = new NodalOsOcrDictionaryCompatibilityService().CreatePaddleOcrV4EnglishManifestEntryWithoutApprovedSource();
 
         Assert.AreEqual("paddleocr-en-ppocrv4-rec-ctc-dictionary", entry.DictionaryId);
-        Assert.AreEqual(96, entry.ExpectedCharsetCount);
-        Assert.AreEqual(97, entry.ExpectedRecognizerClassCount);
+        Assert.IsTrue(EqualityComparer<int>.Default.Equals(entry.ExpectedCharsetCount, 96));
+        Assert.IsTrue(EqualityComparer<int>.Default.Equals(entry.ExpectedRecognizerClassCount, 97));
         Assert.AreEqual(NodalOsOcrDictionaryBlankTokenPolicy.BlankAppendedAtEnd, entry.BlankTokenPolicy);
         Assert.AreEqual(96, entry.CtcBlankIndex);
         Assert.IsNull(entry.SourceUrl);
