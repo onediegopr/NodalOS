@@ -1,0 +1,100 @@
+{
+  "milestones": ["M238", "M239", "M240"],
+  "baseHead": "0d12eb5",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "remote": "https://github.com/onediegopr/NodalOS.git",
+  "worktree": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit",
+  "forbiddenPathUsed": false,
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "models": {
+    "detection": "ch_PP-OCRv4_det.onnx",
+    "recognition": "ch_PP-OCRv4_rec.onnx",
+    "classification": "ch_ppocr_mobile_v2.0_cls.onnx",
+    "initialVerificationInThisBlock": {
+      "detection": "Missing",
+      "recognition": "Missing",
+      "classification": "Verified"
+    },
+    "downloadModelsScriptExecuted": true,
+    "finalVerificationStatus": "PresentAndVerified",
+    "hashes": {
+      "detection": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9",
+      "recognition": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+      "classification": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c"
+    },
+    "sizes": {
+      "detection": 4745517,
+      "recognition": 7653044,
+      "classification": 585532
+    },
+    "onnxGitignored": true,
+    "onnxTracked": false
+  },
+  "recognizer": {
+    "outputName": "softmax_2.tmp_0",
+    "outputShape": [1, 40, 97],
+    "candidateWidth640OutputShape": [1, 80, 97],
+    "classCount": 97
+  },
+  "existingDictionary": {
+    "id": "en-ascii",
+    "characters": 86,
+    "blankTokens": 1,
+    "charactersIncludingBlank": 87,
+    "status": "ClassCountMismatch",
+    "decodeAllowed": false
+  },
+  "requiredDictionary": {
+    "dictionaryId": "paddleocr-en-ppocrv4-rec-ctc-dictionary",
+    "role": "RecognitionCtcCharset",
+    "expectedFileName": "paddleocr-ppocrv4-en-dict.txt",
+    "expectedRelativePath": "tools/ocr-worker/models/onnx/dictionaries/paddleocr-ppocrv4-en-dict.txt",
+    "expectedCharsetCount": 96,
+    "expectedRecognizerClassCount": 97,
+    "blankTokenPolicy": "BlankAppendedAtEnd",
+    "ctcBlankIndex": 96,
+    "newlineHandling": "UTF-8 one token per line; CRLF/LF normalized before hashing and loading",
+    "sourceUrl": null,
+    "sourceRef": "not-selected",
+    "expectedSha256": null,
+    "expectedSizeBytes": null,
+    "acquisitionStatus": "SourceNotSelected",
+    "gitignored": true,
+    "committed": false
+  },
+  "acquisition": {
+    "sourceApproved": false,
+    "downloadAllowed": false,
+    "scriptsCreated": false,
+    "scriptsExecuted": false,
+    "plannedScripts": [
+      "tools/ocr-worker/models/onnx/download-dictionaries.ps1",
+      "tools/ocr-worker/models/onnx/verify-dictionaries.ps1",
+      "tools/ocr-worker/models/onnx/rollback-dictionaries.ps1"
+    ],
+    "reason": "dictionary source URL, SHA-256, and expected size are not approved"
+  },
+  "decode": {
+    "attempted": false,
+    "reason": "no compatible verified dictionary is available",
+    "decodedText": null,
+    "confidence": null,
+    "noAuthority": true
+  },
+  "safety": {
+    "productiveOcrEnabled": false,
+    "saaSOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "shadowModeEnabled": false,
+    "cdpPipelineIntegrated": false,
+    "riskyOcrInProcess": false
+  },
+  "decision": "READY_FOR_DICTIONARY_SOURCE_SELECTION"
+}

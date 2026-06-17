@@ -4,6 +4,11 @@ namespace OneBrain.BrowserExecutor.Cdp;
 
 public sealed class NodalOsOcrDictionaryCompatibilityService
 {
+    public const int PaddleOcrV4EnglishRecognizerClassCount = 97;
+    public const int PaddleOcrV4EnglishExpectedCharsetCount = PaddleOcrV4EnglishRecognizerClassCount - 1;
+    public const string PaddleOcrV4EnglishDictionaryId = "paddleocr-en-ppocrv4-rec-ctc-dictionary";
+    public const string PaddleOcrV4EnglishDictionaryRelativePath = "tools/ocr-worker/models/onnx/dictionaries/paddleocr-ppocrv4-en-dict.txt";
+
     public NodalOsOcrDictionaryManifest CreateCurrentAsciiManifest(bool verified = false)
     {
         return new NodalOsOcrDictionaryManifest(
@@ -15,6 +20,162 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             ExpectedSha256: null,
             verified,
             NoAuthority: true);
+    }
+
+    public NodalOsOcrDictionaryManifestEntry CreatePaddleOcrV4EnglishManifestEntryWithoutApprovedSource()
+    {
+        return new NodalOsOcrDictionaryManifestEntry(
+            PaddleOcrV4EnglishDictionaryId,
+            NodalOsOcrDictionaryRole.RecognitionCtcCharset,
+            ExpectedFileName: "paddleocr-ppocrv4-en-dict.txt",
+            PaddleOcrV4EnglishDictionaryRelativePath,
+            ExpectedCharsetCount: PaddleOcrV4EnglishExpectedCharsetCount,
+            ExpectedRecognizerClassCount: PaddleOcrV4EnglishRecognizerClassCount,
+            NodalOsOcrDictionaryBlankTokenPolicy.BlankAppendedAtEnd,
+            CtcBlankIndex: PaddleOcrV4EnglishExpectedCharsetCount,
+            NewlineHandling: "UTF-8 one token per line; CRLF/LF normalized before hashing and loading",
+            SourceUrl: null,
+            SourceRef: "not-selected; no approved source/hash exists in current manifest or M200-M237 reports",
+            ExpectedSha256: null,
+            ExpectedSizeBytes: null,
+            NodalOsOcrDictionaryAvailabilityStatus.SourceNotSelected,
+            Gitignored: true,
+            Committed: false,
+            NoAuthority: true);
+    }
+
+    public NodalOsOcrDictionaryAcquisitionPlan CreateSourceSelectionAcquisitionPlan(
+        NodalOsOcrDictionaryManifestEntry entry)
+    {
+        return new NodalOsOcrDictionaryAcquisitionPlan(
+            $"dict-acquisition-plan-{Guid.NewGuid():N}",
+            entry,
+            SourceApproved: false,
+            DownloadAllowed: false,
+            PlannedScripts:
+            [
+                "tools/ocr-worker/models/onnx/download-dictionaries.ps1",
+                "tools/ocr-worker/models/onnx/verify-dictionaries.ps1",
+                "tools/ocr-worker/models/onnx/rollback-dictionaries.ps1"
+            ],
+            Commands:
+            [
+                "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/download-dictionaries.ps1 -Confirm",
+                "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/verify-dictionaries.ps1"
+            ],
+            Decision: "READY_FOR_DICTIONARY_SOURCE_SELECTION",
+            NoSaas: true,
+            NoAuthority: true,
+            Reason: "dictionary source URL, SHA-256, and expected size must be selected before any download");
+    }
+
+    public NodalOsOcrDictionaryCompatibilityResult EvaluateManifestEntry(
+        NodalOsOcrDictionaryManifestEntry entry,
+        int? actualCharsetCount,
+        string? actualSha256,
+        long? actualSizeBytes,
+        bool actualCommitted)
+    {
+        if (actualCommitted && entry.Gitignored)
+        {
+            var ctc = Ctc(
+                entry.ExpectedRecognizerClassCount,
+                dictionaryClassCountIncludingBlank: 0,
+                NodalOsOcrDictionaryCompatibilityStatus.UnexpectedCommittedDictionary,
+                decodeAllowed: false,
+                "dictionary is unexpectedly committed while policy requires gitignored runtime acquisition");
+            return Result(NodalOsOcrDictionaryCompatibilityStatus.UnexpectedCommittedDictionary, null, ctc, ctc.Reason);
+        }
+
+        if (entry.ExpectedSha256 is not null &&
+            actualSha256 is not null &&
+            !string.Equals(entry.ExpectedSha256, actualSha256, StringComparison.OrdinalIgnoreCase))
+        {
+            var ctc = Ctc(
+                entry.ExpectedRecognizerClassCount,
+                (actualCharsetCount ?? 0) + 1,
+                NodalOsOcrDictionaryCompatibilityStatus.HashMismatch,
+                decodeAllowed: false,
+                "dictionary SHA-256 does not match manifest");
+            return Result(NodalOsOcrDictionaryCompatibilityStatus.HashMismatch, null, ctc, ctc.Reason);
+        }
+
+        if (actualCharsetCount is not null && actualCharsetCount.Value != entry.ExpectedCharsetCount)
+        {
+            var ctc = Ctc(
+                entry.ExpectedRecognizerClassCount,
+                actualCharsetCount.Value + 1,
+                NodalOsOcrDictionaryCompatibilityStatus.ClassCountMismatch,
+                decodeAllowed: false,
+                $"dictionary charset count {actualCharsetCount.Value} does not match expected {entry.ExpectedCharsetCount}");
+            return Result(NodalOsOcrDictionaryCompatibilityStatus.ClassCountMismatch, null, ctc, ctc.Reason);
+        }
+
+        if (entry.ExpectedSizeBytes is not null &&
+            actualSizeBytes is not null &&
+            entry.ExpectedSizeBytes.Value != actualSizeBytes.Value)
+        {
+            var ctc = Ctc(
+                entry.ExpectedRecognizerClassCount,
+                (actualCharsetCount ?? entry.ExpectedCharsetCount) + 1,
+                NodalOsOcrDictionaryCompatibilityStatus.DictionaryUnverified,
+                decodeAllowed: false,
+                "dictionary size does not match manifest");
+            return Result(NodalOsOcrDictionaryCompatibilityStatus.DictionaryUnverified, null, ctc, ctc.Reason);
+        }
+
+        if (entry.SourceUrl is null || entry.ExpectedSha256 is null || entry.ExpectedSizeBytes is null)
+        {
+            var ctc = Ctc(
+                entry.ExpectedRecognizerClassCount,
+                entry.ExpectedCharsetCount + 1,
+                NodalOsOcrDictionaryCompatibilityStatus.SourceNotSelected,
+                decodeAllowed: false,
+                "dictionary source, hash, or size is not approved");
+            return Result(NodalOsOcrDictionaryCompatibilityStatus.SourceNotSelected, null, ctc, ctc.Reason);
+        }
+
+        var manifest = new NodalOsOcrDictionaryManifest(
+            entry.DictionaryId,
+            "en",
+            entry.ExpectedCharsetCount,
+            BlankTokenCount: 1,
+            entry.SourceRef,
+            entry.ExpectedSha256,
+            Verified: true,
+            entry.NoAuthority);
+
+        return Evaluate(manifest, entry.ExpectedRecognizerClassCount);
+    }
+
+    public NodalOsOcrDictionaryReadinessReport DecideReadiness(
+        NodalOsOcrDictionaryManifestEntry entry,
+        NodalOsOcrDictionaryCompatibilityResult compatibility,
+        NodalOsOcrDictionaryAcquisitionPlan acquisitionPlan,
+        bool dictionaryPresent,
+        bool hashVerified,
+        bool decodeAttempted)
+    {
+        var decision = Decide(entry, compatibility, acquisitionPlan, hashVerified, decodeAttempted);
+
+        return new NodalOsOcrDictionaryReadinessReport(
+            $"dictionary-readiness-{Guid.NewGuid():N}",
+            decision,
+            entry,
+            compatibility,
+            acquisitionPlan,
+            dictionaryPresent,
+            hashVerified,
+            decodeAttempted,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: entry.NoAuthority && compatibility.NoAuthority && acquisitionPlan.NoAuthority,
+            Reason: BrowserCredentialRedactor.Redact(
+                $"{decision}; dictionary={compatibility.Status}; sourceApproved={acquisitionPlan.SourceApproved}; decodeAttempted={decodeAttempted}"));
     }
 
     public NodalOsOcrDictionaryCompatibilityResult Evaluate(
@@ -109,6 +270,38 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             RequiresHumanReview: true,
             NoAuthority: true,
             BrowserCredentialRedactor.Redact(reason));
+
+    private static NodalOsOcrDictionaryReadinessDecision Decide(
+        NodalOsOcrDictionaryManifestEntry entry,
+        NodalOsOcrDictionaryCompatibilityResult compatibility,
+        NodalOsOcrDictionaryAcquisitionPlan acquisitionPlan,
+        bool hashVerified,
+        bool decodeAttempted)
+    {
+        if (decodeAttempted && !compatibility.CtcDecoderCompatibility.DecodeAllowed)
+            return NodalOsOcrDictionaryReadinessDecision.BlockedByDictionaryClassCountMismatch;
+
+        if (compatibility.Status == NodalOsOcrDictionaryCompatibilityStatus.HashMismatch)
+            return NodalOsOcrDictionaryReadinessDecision.BlockedByDictionaryHashMismatch;
+
+        if (!entry.NoAuthority || !compatibility.NoAuthority || !acquisitionPlan.NoAuthority)
+            return NodalOsOcrDictionaryReadinessDecision.NotReady;
+
+        if (!acquisitionPlan.SourceApproved ||
+            entry.SourceUrl is null ||
+            entry.ExpectedSha256 is null ||
+            entry.ExpectedSizeBytes is null ||
+            compatibility.Status == NodalOsOcrDictionaryCompatibilityStatus.SourceNotSelected)
+            return NodalOsOcrDictionaryReadinessDecision.ReadyForDictionarySourceSelection;
+
+        if (compatibility.Status == NodalOsOcrDictionaryCompatibilityStatus.ClassCountMismatch)
+            return NodalOsOcrDictionaryReadinessDecision.BlockedByDictionaryClassCountMismatch;
+
+        if (compatibility.Status == NodalOsOcrDictionaryCompatibilityStatus.Compatible && hashVerified)
+            return NodalOsOcrDictionaryReadinessDecision.ReadyForSyntheticTextDecodeFixtures;
+
+        return NodalOsOcrDictionaryReadinessDecision.NotReady;
+    }
 }
 
 public sealed class NodalOsGuardedSyntheticTextOcrRetryReadinessReview

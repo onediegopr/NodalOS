@@ -9,7 +9,46 @@ public enum NodalOsOcrDictionaryCompatibilityStatus
     MissingDictionary,
     ClassCountMismatch,
     DictionaryUnverified,
+    HashMismatch,
+    SourceNotSelected,
+    UnexpectedCommittedDictionary,
     Unknown
+}
+
+public enum NodalOsOcrDictionaryRole
+{
+    RecognitionCtcCharset
+}
+
+public enum NodalOsOcrDictionaryAvailabilityStatus
+{
+    PresentAndVerified,
+    Missing,
+    SourceNotSelected,
+    HashMismatch,
+    SizeMismatch,
+    CountMismatch,
+    Unverified,
+    IgnoredCorrectly,
+    UnexpectedCommittedDictionary,
+    Unknown
+}
+
+public enum NodalOsOcrDictionaryBlankTokenPolicy
+{
+    BlankAppendedAtEnd,
+    BlankAtIndexZero,
+    Unknown
+}
+
+public enum NodalOsOcrDictionaryReadinessDecision
+{
+    ReadyForDictionarySourceSelection,
+    ReadyForSyntheticTextDecodeFixtures,
+    ReadyForMoreSyntheticFixtures,
+    BlockedByDictionaryClassCountMismatch,
+    BlockedByDictionaryHashMismatch,
+    NotReady
 }
 
 public sealed record NodalOsOcrDictionaryManifest(
@@ -21,6 +60,37 @@ public sealed record NodalOsOcrDictionaryManifest(
     string? ExpectedSha256,
     bool Verified,
     bool NoAuthority);
+
+public sealed record NodalOsOcrDictionaryManifestEntry(
+    string DictionaryId,
+    NodalOsOcrDictionaryRole Role,
+    string ExpectedFileName,
+    string ExpectedRelativePath,
+    int ExpectedCharsetCount,
+    int ExpectedRecognizerClassCount,
+    NodalOsOcrDictionaryBlankTokenPolicy BlankTokenPolicy,
+    int CtcBlankIndex,
+    string NewlineHandling,
+    string? SourceUrl,
+    string SourceRef,
+    string? ExpectedSha256,
+    long? ExpectedSizeBytes,
+    NodalOsOcrDictionaryAvailabilityStatus AcquisitionStatus,
+    bool Gitignored,
+    bool Committed,
+    bool NoAuthority);
+
+public sealed record NodalOsOcrDictionaryAcquisitionPlan(
+    string PlanId,
+    NodalOsOcrDictionaryManifestEntry ManifestEntry,
+    bool SourceApproved,
+    bool DownloadAllowed,
+    IReadOnlyList<string> PlannedScripts,
+    IReadOnlyList<string> Commands,
+    string Decision,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
 
 public sealed record NodalOsOcrCtcDecoderCompatibility(
     string CompatibilityId,
@@ -40,6 +110,24 @@ public sealed record NodalOsOcrDictionaryCompatibilityResult(
     NodalOsOcrCtcDecoderCompatibility CtcDecoderCompatibility,
     bool RecognitionSuccessAllowed,
     bool RequiresHumanReview,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsOcrDictionaryReadinessReport(
+    string ReportId,
+    NodalOsOcrDictionaryReadinessDecision Decision,
+    NodalOsOcrDictionaryManifestEntry ManifestEntry,
+    NodalOsOcrDictionaryCompatibilityResult Compatibility,
+    NodalOsOcrDictionaryAcquisitionPlan AcquisitionPlan,
+    bool DictionaryPresent,
+    bool HashVerified,
+    bool DecodeAttempted,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
     bool NoAuthority,
     string Reason);
 
