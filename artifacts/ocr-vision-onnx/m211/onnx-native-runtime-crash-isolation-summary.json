@@ -1,0 +1,98 @@
+{
+  "reportId": "onnx-native-runtime-crash-isolation-m211",
+  "createdAtUtc": "2026-06-17T00:00:00Z",
+  "milestones": ["M209", "M210", "M211"],
+  "worktree": "Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "baseCommit": "be6b5b3",
+  "models": [
+    {
+      "modelId": "paddleocr-det-onnx",
+      "kind": "TextDetection",
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+      "status": "VerifiedButCrashesOnTextFixturesInProcess"
+    },
+    {
+      "modelId": "paddleocr-rec-onnx",
+      "kind": "TextRecognition",
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+      "status": "VerifiedNotReached"
+    }
+  ],
+  "m209CrashMatrix": {
+    "fixtures": [
+      "StripeSafe", "SmallRectangle", "LargeRectangle", "LargeCircle",
+      "AntiAliasedPixelFontText", "PixelFontText", "ThickHorizontalBars",
+      "NumericText", "AlphanumericText"
+    ],
+    "dimensions": [
+      { "width": 128, "height": 64 },
+      { "width": 256, "height": 96 },
+      { "width": 320, "height": 128 },
+      { "width": 640, "height": 640 },
+      { "width": 320, "height": 48 }
+    ],
+    "runtimeStages": ["SessionCreation", "DetectionRun", "RecognitionRun"],
+    "safetyClasses": {
+      "SafeInProcess": ["StripeSafe", "SmallRectangle", "LargeRectangle", "LargeCircle"],
+      "QuarantinedOutOfProcessOnly": ["AntiAliasedPixelFontText", "PixelFontText", "ThickHorizontalBars", "NumericText", "AlphanumericText"],
+      "BlockedBeforeRuntime": ["full-screen", "sensitive", "raw-persisted", "non-synthetic"]
+    },
+    "neverRunsInProcessInSuite": true
+  },
+  "m210OutOfProcessGuard": {
+    "runner": "tools/onnx-ocr-probe-runner (OneBrain.Tools.OnnxOcrProbeRunner)",
+    "preLaunchSafetyGate": true,
+    "tempWorkingDir": true,
+    "timeout": true,
+    "processTreeKilledOnTimeout": true,
+    "exitCodeMapping": {
+      "0xC0000005": "NativeAccessViolation -> NativeRuntimeCrash",
+      "0xC00000FD": "NativeAccessViolation -> NativeRuntimeCrash",
+      "0xC0000409": "NativeAbort -> NativeRuntimeCrash",
+      "0xC000001D": "NativeAbort -> NativeRuntimeCrash",
+      "139": "NativeAccessViolation -> NativeRuntimeCrash",
+      "134": "NativeAbort -> NativeRuntimeCrash",
+      "timeout": "TimedOut",
+      "invalidOutput": "BlockedByModelRuntime",
+      "nonZeroOther": "ProcessCrashed",
+      "cleanZeroValidJson": "child-reported controlled status"
+    },
+    "parentSurvives": true,
+    "noOrphanProcesses": true,
+    "tempFilesCleaned": true,
+    "noRawPersistence": true
+  },
+  "crashFindings": {
+    "stage": "session.Run (detection run)",
+    "detectionVsRecognition": "detection run reached first; host dies there for text fixtures, recognition not reached",
+    "fixtureDependent": true,
+    "sizeDependent": false,
+    "tensorShapeDependent": false,
+    "renderModeDependent": true,
+    "postProcessingDependent": false,
+    "guardContainsCrash": true
+  },
+  "readinessDecision": "ReadyForOutOfProcessOnly",
+  "canAttemptRedactedCropShadow": false,
+  "canRunGuardedSyntheticText": true,
+  "shadowModeBlocked": true,
+  "compliance": {
+    "realDocumentsOrScreens": false,
+    "saasOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "productionPublicOcrBlocked": true,
+    "cdpPipelineIntegrated": false,
+    "redactedCropShadowMode": false
+  },
+  "nextSteps": [
+    "M212+: attempt synthetic text OCR only through the out-of-process guard; never in-process, never as authority.",
+    "In parallel, evaluate alternative detector model export and ONNX Runtime version.",
+    "Evaluate real font rendering (e.g. SkiaSharp) for detector-friendly, non-crashing fixtures.",
+    "Do not advance to redacted-crop shadow mode until a guarded synthetic text run succeeds end-to-end."
+  ],
+  "finalDecision": "M209+M210+M211 CERRADO / READY_FOR_OUT_OF_PROCESS_ONLY"
+}
