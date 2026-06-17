@@ -1,0 +1,98 @@
+{
+  "milestone": "M271-M273",
+  "decision": "M271+M272+M273 CERRADO / READY_FOR_APPROVED_EXTRA_CLASS_POLICY",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "rootCause": {
+    "status": "SpaceTokenFromUseSpaceCharConfirmed",
+    "extraClassMeaning": "space character \" \" appended by PaddleOCR use_space_char=true at the last index (N+1)",
+    "charsetFormula": "['blank'] + dictionary[1..N] + [' '] = N + 2 classes",
+    "outputAxisOrder": "[B,T,C] (class = last axis)",
+    "outputIsSoftmax": true,
+    "doNotReapplySoftmax": true,
+    "appliesToBothFamilies": true
+  },
+  "ppOcrV4": {
+    "dictionaryTokens": 95,
+    "blankIndex": 0,
+    "spaceIndex": 96,
+    "totalClassCount": 97,
+    "formula": "blank(0) + dict(1..95) + space(96) = 97",
+    "matchesObserved": true
+  },
+  "ppOcrV5": {
+    "dictionaryTokens": 436,
+    "blankIndex": 0,
+    "spaceIndex": 437,
+    "totalClassCount": 438,
+    "formula": "blank(0) + dict(1..436) + space(437) = 438",
+    "matchesObserved": true,
+    "dictionarySha256": "e025a66d31f327ba0c232e03f407ae8d105e1e709e7ccb3f408aa778c24e70d6",
+    "dictionaryBytes": 1416,
+    "dictionaryLfLines": 436,
+    "dictionaryHasBom": false,
+    "dictionaryHasSpaceOrEmptyLine": false
+  },
+  "officialEvidence": [
+    "PaddleOCR ppocr/postprocess/rec_postprocess.py BaseRecLabelDecode.__init__ appends ' ' when use_space_char=true (after dictionary read, before add_special_char)",
+    "CTCLabelDecode.add_special_char prepends 'blank' at index 0",
+    "configs/rec/PP-OCRv5/PP-OCRv5_*_rec.yml set use_space_char: true",
+    "Identical +1 across PP-OCRv4 (97) and PP-OCRv5 (438) is uniquely explained by use_space_char (exactly one appended token)"
+  ],
+  "behavioralEvidence": {
+    "source": "M262-M264 out-of-process argmax probe",
+    "extraClassArgmaxCount": 0,
+    "extraClassMaxProbability": 0.28353992104530334,
+    "extraClassMaxProbabilityFixture": "12345",
+    "interpretation": "space is the non-trivial runner-up in padding/separator columns, never winning argmax; consistent with a real space token competing with the CTC blank, inconsistent with dead padding (~0) or unknown (would spike on OutOfDictionary)"
+  },
+  "rejectedHypotheses": [
+    {"id": "ignored-extra-class", "reason": "arithmetic-only; silently loses real spaces"},
+    {"id": "unknown-token", "reason": "CTCLabelDecode adds no unknown token"},
+    {"id": "padding-token", "reason": "CTC path has no padding token"},
+    {"id": "eos-sos", "reason": "attention decoders only, not CTC"},
+    {"id": "parser-loses-space", "reason": "dictionary has no space/empty line"},
+    {"id": "export-artifact", "reason": "no positive evidence; superseded by space-token evidence"}
+  ],
+  "decoderHarness": {
+    "service": "NodalOsPaddleOcrSpaceTokenDecoderService",
+    "mode": "hypothesis-only deterministic greedy CTC over synthetic [T,C] softmax fixtures",
+    "syntheticCharset": "blank + 0-9 + space (classCount=12, spaceIndex=11)",
+    "policyComparison": [
+      {"policy": "OfficialSpaceToken", "fixture": "12 34", "decoded": "12 34", "evidenceApproved": true},
+      {"policy": "HypothesisIgnoreExtraClass", "fixture": "12 34", "decoded": "1234", "evidenceApproved": false},
+      {"policy": "HypothesisUnknownToken", "fixture": "12 34", "decoded": "12�34", "evidenceApproved": false},
+      {"policy": "HypothesisPaddingToken", "fixture": "12 34", "decoded": "1234", "evidenceApproved": false},
+      {"policy": "BlankOnlyClassCountMismatch", "fixture": "12", "decoded": null, "classCountMismatch": true}
+    ],
+    "blankDominantTopKFixture": {
+      "argmaxAlwaysBlank": true,
+      "spaceIsTopTwo": true,
+      "spaceRunnerUpProbability": 0.28,
+      "decoded": ""
+    }
+  },
+  "decodePolicyApproval": {
+    "approvedPolicy": "OfficialSpaceToken",
+    "extraClassSemanticsResolved": true,
+    "approvedPolicyIsSpaceToken": true,
+    "decodeSuccessClaimed": false,
+    "scope": "index->space mapping only; does not enable productive OCR"
+  },
+  "safety": {
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "noSaas": true,
+    "noApiKeys": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "noOnnxCommitted": true,
+    "noGitignoredDictionaryCommitted": true,
+    "riskyOcrInProcess": false
+  }
+}
