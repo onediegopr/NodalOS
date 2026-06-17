@@ -1,0 +1,49 @@
+{
+  "block": "M268",
+  "purpose": "Claude-first alternative local OCR family review pack",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "detector": {
+    "status": "RuntimeOk"
+  },
+  "ppocrv4": {
+    "recognizerRuntime": "RuntimeOk",
+    "dictionaryTokens": 95,
+    "blankIndex": 0,
+    "expectedClasses": 96,
+    "observedClasses": 97,
+    "decodeStatus": "Blocked"
+  },
+  "ppocrv5": {
+    "recognizerRuntime": "RuntimeOk",
+    "dictionaryTokens": 436,
+    "blankIndex": 0,
+    "expectedClasses": 437,
+    "observedClasses": 438,
+    "extraClassIndex": 437,
+    "extraClassArgmaxCount": 0,
+    "extraClassMaxProbability": 0.28353992104530334,
+    "extraClassAverageProbability": 0.11832536425208673,
+    "decodeStatus": "Blocked"
+  },
+  "claudeQuestions": [
+    "Should NODAL OS continue with PaddleOCR/RapidOCR ONNX despite the extra class?",
+    "Is dictionary+blank+1 a known safe PaddleOCR/RapidOCR convention?",
+    "Should PP-OCRv5 Latin or Chinese/general be probed?",
+    "Does PP-OCRv6 provide an explicit verifiable ONNX+dictionary pair?",
+    "Should Tesseract local be fallback or temporary recognizer?",
+    "What is the safest local no-authority OCR path?"
+  ],
+  "safety": {
+    "productiveOcrBlocked": true,
+    "saasOcrExecuted": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "noAuthority": true,
+    "shadowModeBlocked": true
+  }
+}

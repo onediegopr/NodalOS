@@ -1,0 +1,75 @@
+{
+  "block": "M268+M269+M270",
+  "decision": "M268+M269+M270 CERRADO / READY_FOR_PPOCRV6_REVIEW",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "ocrStateSummary": {
+    "detector": "RuntimeOk",
+    "ppocrv4": "RuntimeOkDecodeBlockedByClassMismatch",
+    "ppocrv5English": "RuntimeOkDecodeBlockedByNontrivialExtraClass",
+    "productiveOcr": "Blocked",
+    "shadowMode": "Blocked"
+  },
+  "strategyMatrix": [
+    {
+      "option": "A",
+      "candidate": "Continue PaddleOCR/RapidOCR and seek manual policy approval",
+      "status": "RejectedHypothesisPolicy"
+    },
+    {
+      "option": "B",
+      "candidate": "Probe PP-OCRv5 Latin",
+      "status": "ViableNeedsProbe"
+    },
+    {
+      "option": "C",
+      "candidate": "Probe PP-OCRv5 Chinese/general",
+      "status": "ViableNeedsProbe"
+    },
+    {
+      "option": "D",
+      "candidate": "Review PP-OCRv6 ONNX+dictionary",
+      "status": "Recommended"
+    },
+    {
+      "option": "E",
+      "candidate": "PaddleOCR detector + Tesseract recognizer fallback",
+      "status": "FallbackOnly"
+    },
+    {
+      "option": "F",
+      "candidate": "Tesseract full fallback",
+      "status": "FallbackOnly"
+    },
+    {
+      "option": "G",
+      "candidate": "Review another ONNX OCR family",
+      "status": "ViableNeedsManualReview"
+    },
+    {
+      "option": "H",
+      "candidate": "Keep OCR blocked",
+      "status": "Blocked"
+    }
+  ],
+  "execution": {
+    "implementationExecuted": false,
+    "modelDictionaryDownloadExecuted": false,
+    "decodeAttempted": false,
+    "riskyOcrInProcessExecuted": false,
+    "riskyOcrOutOfProcessExecuted": false
+  },
+  "safety": {
+    "productiveOcrBlocked": true,
+    "saasOcrExecuted": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "noAuthority": true,
+    "shadowModeBlocked": true
+  },
+  "nextRoute": "Claude-audited PP-OCRv6 ONNX+dictionary review before any implementation."
+}

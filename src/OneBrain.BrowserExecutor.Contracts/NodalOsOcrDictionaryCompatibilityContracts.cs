@@ -217,6 +217,29 @@ public enum NodalOsAlternativeRecognizerFamilyDecision
     NotReady
 }
 
+public enum NodalOsAlternativeLocalOcrFamilyDecision
+{
+    ReadyForPpOcrV5LatinProbe,
+    ReadyForPpOcrV5ChineseGeneralProbe,
+    ReadyForPpOcrV6Review,
+    ReadyForTesseractLocalFallbackReview,
+    ReadyForAlternativeOnnxOcrFamilyReview,
+    ReadyForManualIgnoredExtraClassPolicyApproval,
+    OcrLocalRecognizerStrategyBlocked,
+    NotReady
+}
+
+public enum NodalOsAlternativeLocalOcrFamilyCandidateStatus
+{
+    Recommended,
+    ViableNeedsProbe,
+    ViableNeedsManualReview,
+    RejectedHypothesisPolicy,
+    RejectedUnclearModelDictionaryPair,
+    FallbackOnly,
+    Blocked
+}
+
 public enum NodalOsExtraClassArgmaxProbeStatus
 {
     ExtraClassNeverArgmax,
@@ -672,6 +695,56 @@ public sealed record NodalOsCleanRecognizerCompatibilityMatrix(
     bool ShadowModeBlocked,
     bool DecodeBlocked,
     bool DownloadExecuted,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsAlternativeLocalOcrFamilyCandidate(
+    string CandidateId,
+    string Name,
+    string OptionLabel,
+    bool LocalOffline,
+    bool PrivacyCompatible,
+    bool NoAuthorityCompatible,
+    string ExpectedQuality,
+    string AcquisitionEase,
+    string ModelDictionaryClarity,
+    string DotNetRuntimeEase,
+    string MaintenanceRisk,
+    string SilentErrorRisk,
+    string TechnicalCost,
+    string EvidenceAuditability,
+    string FutureShadowModePath,
+    bool RequiresManualApproval,
+    bool ProductiveOcrBlocked,
+    bool NoRawPersistence,
+    NodalOsAlternativeLocalOcrFamilyCandidateStatus Status,
+    string Reason);
+
+public sealed record NodalOsOcrFallbackStrategy(
+    string StrategyId,
+    string Name,
+    bool LocalOnly,
+    bool SaaSFree,
+    bool ProductiveOcrBlocked,
+    bool NoAuthority,
+    string Scope,
+    string Risk);
+
+public sealed record NodalOsOcrEngineStrategy(
+    string StrategyId,
+    IReadOnlyList<NodalOsAlternativeLocalOcrFamilyCandidate> Candidates,
+    NodalOsAlternativeLocalOcrFamilyCandidate RecommendedCandidate,
+    NodalOsOcrFallbackStrategy FallbackStrategy,
+    NodalOsAlternativeLocalOcrFamilyDecision Decision,
+    bool CleanModelDictionaryPairPreferred,
+    bool ManualApprovalRequiredForIgnoredExtraClass,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool DecodeBlocked,
     bool NoRawPersistence,
     bool NoFullScreen,
     bool NoSensitive,
