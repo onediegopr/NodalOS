@@ -20,6 +20,7 @@ using OneBrain.BrowserExecutor.Contracts;
 //   --extra-class-argmax-probe --repo-root <dir>               Parent matrix: PP-OCRv5 extra-class argmax/probability probes through guard.
 //   --onnx-synthetic-recognizer-decode-probe --repo-root <dir> Parent: official-space synthetic recognizer decode probe.
 //   --synthetic-image-recognizer-crop-probe --repo-root <dir>  Parent: generated crop fixtures through recognizer guard.
+//   --synthetic-detector-to-recognizer-pipeline-probe --repo-root <dir> Parent: synthetic full image detector->recognizer pipeline.
 //   --probe --repo-root <dir>                                 Real ONNX inference on a synthetic fixture.
 //   --request <file>                                          Probe request JSON (written by the guard).
 //
@@ -102,12 +103,22 @@ if (options.ContainsKey("synthetic-image-recognizer-crop-child"))
     return RunSyntheticImageRecognizerCropChild(options);
 }
 
+if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-probe"))
+{
+    return RunSyntheticDetectorToRecognizerPipelineProbe(options);
+}
+
+if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-child"))
+{
+    return RunSyntheticDetectorToRecognizerPipelineChild(options);
+}
+
 if (options.ContainsKey("probe"))
 {
     return RunProbe(options);
 }
 
-Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --recognizer-runtime-experiment --repo-root <dir> | --extra-class-argmax-probe --repo-root <dir> | --onnx-synthetic-recognizer-decode-probe --repo-root <dir> | --synthetic-image-recognizer-crop-probe --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
+Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --recognizer-runtime-experiment --repo-root <dir> | --extra-class-argmax-probe --repo-root <dir> | --onnx-synthetic-recognizer-decode-probe --repo-root <dir> | --synthetic-image-recognizer-crop-probe --repo-root <dir> | --synthetic-detector-to-recognizer-pipeline-probe --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
 return 64;
 
 static Dictionary<string, string> ParseArgs(string[] argv)
@@ -1254,6 +1265,409 @@ static int RunSyntheticImageRecognizerCropChild(Dictionary<string, string> optio
     return 0;
 }
 
+static int RunSyntheticDetectorToRecognizerPipelineProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 120000;
+
+    var detectorRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
+    var recognizerRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
+    var dictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
+    var detectorAvailable = File.Exists(Path.Combine(repoRoot, detectorRelativePath));
+    var recognizerAvailable = File.Exists(Path.Combine(repoRoot, recognizerRelativePath));
+    var dictionaryAvailable = File.Exists(Path.Combine(repoRoot, dictionaryRelativePath));
+
+    var fixtures = new[]
+    {
+        new { Text = "MARMOLES PVC", Variant = "centered-line", HorizontalPadding = 48, VerticalPadding = 48 },
+        new { Text = "PVC WALL", Variant = "upper-left-line", HorizontalPadding = 16, VerticalPadding = 12 },
+        new { Text = "GENOVA", Variant = "centered-no-space", HorizontalPadding = 96, VerticalPadding = 42 },
+        new { Text = "ROMA", Variant = "wide-padding-no-space", HorizontalPadding = 128, VerticalPadding = 48 },
+        new { Text = "12 34", Variant = "centered-numeric-space", HorizontalPadding = 96, VerticalPadding = 48 }
+    };
+
+    var results = new List<object>();
+    if (detectorAvailable && recognizerAvailable && dictionaryAvailable)
+    {
+        foreach (var fixture in fixtures)
+        {
+            var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+                $"synthetic-detector-recognizer-{Guid.NewGuid():N}",
+                NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+                NodalOsSyntheticOcrTextRenderMode.PixelFont,
+                640,
+                160,
+                NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+                NodalOsOcrVisionSensitivity.Low,
+                FullScreen: false,
+                Sensitive: false,
+                OriginalRawPersisted: false,
+                Synthetic: true,
+                NoAuthority: true,
+                RunOutOfProcess: true);
+
+            var args = new List<string>(runnerPrefix)
+            {
+                "--synthetic-detector-to-recognizer-pipeline-child",
+                "--repo-root", repoRoot,
+                "--fixture-text", fixture.Text,
+                "--fixture-variant", fixture.Variant,
+                "--horizontal-padding", fixture.HorizontalPadding.ToString(),
+                "--vertical-padding", fixture.VerticalPadding.ToString(),
+                "--detector-model-relative", detectorRelativePath,
+                "--recognizer-model-relative", recognizerRelativePath,
+                "--dictionary-relative", dictionaryRelativePath,
+                "--expected-class-count", "438",
+                "--dictionary-token-count", "436"
+            };
+
+            var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+                $"synthetic-detector-recognizer-guard-{Guid.NewGuid():N}",
+                request,
+                runner,
+                args,
+                timeoutMs,
+                MaxOutputBytes: 256 * 1024,
+                AllowRawPersistence: false));
+
+            results.Add(new
+            {
+                FixtureText = fixture.Text,
+                FixtureVariant = fixture.Variant,
+                Attempted = true,
+                OutOfProcessGuardUsed = true,
+                guardResult.ExitCode,
+                ExitCodeHex = guardResult.ExitCode is null ? null : $"0x{unchecked((uint)guardResult.ExitCode.Value):X8}",
+                guardResult.TimedOut,
+                guardResult.ParentSurvived,
+                guardResult.ChildLaunched,
+                guardResult.TempFilesCleaned,
+                guardResult.OrphanProcessLeft,
+                guardResult.RawPersisted,
+                guardResult.CallsSaas,
+                guardResult.NoAuthority,
+                Status = guardResult.ProbeResult.Status.ToString(),
+                CrashKind = guardResult.ProbeResult.CrashKind.ToString(),
+                guardResult.StdErrSummary,
+                ChildSummary = TryParseJsonElement(guardResult.Reason),
+                guardResult.Reason
+            });
+        }
+    }
+
+    var attempted = results.Count > 0;
+    var detectorBoxesTotal = SumChildInt(results, "DetectorBoxesCount");
+    var recognizedCropsTotal = SumChildInt(results, "RecognizerAttempts");
+    var exactMatches = CountChildMatches(results, "Exact");
+    var normalizedMatches = CountChildMatches(results, "Normalized");
+    var mismatches = CountChildMatches(results, "Mismatch");
+    var runtimeSucceeded = attempted && results.All(r =>
+        string.Equals((string?)r.GetType().GetProperty("Status")!.GetValue(r), "Passed", StringComparison.Ordinal));
+    var readinessDecision = !detectorAvailable || !recognizerAvailable || !dictionaryAvailable
+        ? "BLOCKED_BY_MODEL_OR_DICTIONARY_AVAILABILITY"
+        : detectorBoxesTotal <= 0
+            ? "BLOCKED_BY_SYNTHETIC_DETECTOR_BOX_EVIDENCE"
+            : !runtimeSucceeded
+                ? "BLOCKED_BY_DETECTOR_TO_RECOGNIZER_CROP_PREPROCESSING"
+                : exactMatches + normalizedMatches > 0
+                    ? "READY_FOR_INTERNAL_CONTROLLED_REAL_IMAGE_FIXTURES"
+                    : "BLOCKED_BY_SYNTHETIC_PIPELINE_DECODE_EVIDENCE";
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(new
+    {
+        Milestone = "M286-M288",
+        BaseCommit = "88faecb",
+        ReadinessDecision = readinessDecision,
+        InternalDevelopmentOnly = true,
+        PublicProductReady = false,
+        NoSaaS = true,
+        NoApiKeys = true,
+        NoSensitive = true,
+        RealScreenUsed = false,
+        RealDocumentUsed = false,
+        SyntheticImagesOnly = true,
+        RawPersistenceOfRealData = false,
+        OfficialSpacePolicy = true,
+        BlankIndex = 0,
+        SpaceIndex = 437,
+        SpaceIndexFormula = "N+1",
+        RecognizerOutputLayout = "[B,T,C]",
+        RecognizerSoftmaxReapplied = false,
+        DetectorProbeAttempted = attempted,
+        DetectorProbeSucceeded = detectorBoxesTotal > 0,
+        RecognizerProbeAttempted = attempted && detectorBoxesTotal > 0,
+        RecognizerProbeSucceeded = recognizedCropsTotal > 0 && runtimeSucceeded,
+        OutOfProcessGuardUsed = attempted,
+        ParentSurvived = !attempted || results.All(r => (bool)r.GetType().GetProperty("ParentSurvived")!.GetValue(r)!),
+        SyntheticFullImageFixturesCount = fixtures.Length,
+        DetectedBoxesTotal = detectorBoxesTotal,
+        RecognizedCropsTotal = recognizedCropsTotal,
+        ExactMatches = exactMatches,
+        NormalizedMatches = normalizedMatches,
+        Mismatches = mismatches,
+        ModelsCommitted = false,
+        DictionariesCommitted = false,
+        DetectorAvailable = detectorAvailable,
+        RecognizerAvailable = recognizerAvailable,
+        DictionaryAvailable = dictionaryAvailable,
+        DetectorModelRelativePath = detectorRelativePath,
+        RecognizerModelRelativePath = recognizerRelativePath,
+        DictionaryRelativePath = dictionaryRelativePath,
+        Fixtures = results
+    }));
+    return 0;
+}
+
+static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var fixtureText = options.TryGetValue("fixture-text", out var configuredFixtureText)
+        ? configuredFixtureText
+        : "TEST";
+    var fixtureVariant = options.TryGetValue("fixture-variant", out var configuredVariant)
+        ? configuredVariant
+        : "centered-line";
+    var horizontalPadding = options.TryGetValue("horizontal-padding", out var hPadText) && int.TryParse(hPadText, out var parsedHPad)
+        ? parsedHPad
+        : 48;
+    var verticalPadding = options.TryGetValue("vertical-padding", out var vPadText) && int.TryParse(vPadText, out var parsedVPad)
+        ? parsedVPad
+        : 48;
+    var detectorRelativePath = options.TryGetValue("detector-model-relative", out var configuredDetectorPath)
+        ? configuredDetectorPath
+        : Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
+    var recognizerRelativePath = options.TryGetValue("recognizer-model-relative", out var configuredRecognizerPath)
+        ? configuredRecognizerPath
+        : Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
+    var dictionaryRelativePath = options.TryGetValue("dictionary-relative", out var configuredDictionaryPath)
+        ? configuredDictionaryPath
+        : Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
+    var expectedClassCount = options.TryGetValue("expected-class-count", out var expectedClassText) &&
+                             int.TryParse(expectedClassText, out var parsedExpectedClassCount)
+        ? parsedExpectedClassCount
+        : 438;
+    var dictionaryTokenCount = options.TryGetValue("dictionary-token-count", out var dictionaryText) &&
+                               int.TryParse(dictionaryText, out var parsedDictionaryTokenCount)
+        ? parsedDictionaryTokenCount
+        : 436;
+
+    var detectorPath = Path.GetFullPath(Path.Combine(repoRoot, detectorRelativePath));
+    var recognizerPath = Path.GetFullPath(Path.Combine(repoRoot, recognizerRelativePath));
+    var dictionaryPath = Path.GetFullPath(Path.Combine(repoRoot, dictionaryRelativePath));
+    if (!File.Exists(detectorPath) || !File.Exists(recognizerPath) || !File.Exists(dictionaryPath))
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"synthetic-detector-recognizer-{Guid.NewGuid():N}",
+            "ModelAvailability",
+            "BlockedByModelRuntime",
+            null,
+            null,
+            false,
+            false,
+            true,
+            "detector, recognizer, or dictionary missing"));
+        return 0;
+    }
+
+    var fixture = BuildSyntheticFullImageFixture(fixtureText, fixtureVariant, horizontalPadding, verticalPadding);
+    var imagePrep = new NodalOsOnnxOcrImagePreProcessor().Prepare(
+        fixture.ImageBytes,
+        fixture.Width,
+        fixture.Height,
+        fixture.RedactionResult,
+        NodalOsOcrVisionSensitivity.Low,
+        allowFullScreen: false,
+        allowRawPersistence: false);
+    if (imagePrep.Status != NodalOsOnnxOcrPreProcessingStatus.Success)
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"synthetic-detector-recognizer-{Guid.NewGuid():N}",
+            "ImagePreProcessing",
+            "InvalidTensorShape",
+            null,
+            null,
+            false,
+            false,
+            true,
+            imagePrep.Reason));
+        return 0;
+    }
+
+    var detPrep = new NodalOsOnnxOcrDetectorPreProcessor().Prepare(imagePrep, targetWidth: 640, targetHeight: 640);
+    using var detectorSession = new InferenceSession(detectorPath);
+    var detectorInputName = detectorSession.InputMetadata.Keys.FirstOrDefault() ?? "x";
+    var detectorInputMetadata = string.Join(";", detectorSession.InputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    var detectorOutputMetadata = string.Join(";", detectorSession.OutputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    Console.Error.WriteLine($"stage=detector-session-created input={detectorInputName} metadata={detectorInputMetadata} outputs={detectorOutputMetadata}");
+    using var detectorOutputs = detectorSession.Run([NamedOnnxValue.CreateFromTensor(detectorInputName, new DenseTensor<float>(detPrep.InputTensor, detPrep.InputShape))]);
+    var detectorOutput = detectorOutputs.First().AsTensor<float>();
+    var detectorOutputShape = detectorOutput.Dimensions.ToArray();
+    var detectorOutputValues = detectorOutput.ToArray();
+    var detectorPost = DecodeDetectorWithFallbackThresholds(detectorOutputValues, detectorOutputShape, fixture.Width, fixture.Height, out var thresholdUsed);
+    var validBoxes = detectorPost.TextBoxes
+        .Where(b => b.Valid && b.CropWidth > 1 && b.CropHeight > 1)
+        .OrderBy(b => b.CropY)
+        .ThenBy(b => b.CropX)
+        .ToArray();
+
+    if (validBoxes.Length == 0)
+    {
+        var noBoxSummary = JsonSerializer.Serialize(new
+        {
+            FixtureText = fixtureText,
+            FixtureVariant = fixtureVariant,
+            DetectorInputMetadata = detectorInputMetadata,
+            DetectorOutputMetadata = detectorOutputMetadata,
+            DetectorOutputShape = detectorOutputShape,
+            DetectorThresholdUsed = thresholdUsed,
+            DetectorBoxesCount = 0,
+            RecognizerAttempts = 0,
+            MatchKind = "NoBox",
+            NoAuthority = true,
+            SyntheticImagesOnly = true,
+            RealScreenUsed = false,
+            RealDocumentUsed = false,
+            RawPersistenceOfRealData = false
+        });
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"synthetic-detector-recognizer-{Guid.NewGuid():N}",
+            "DetectorPostProcessing",
+            "NoTextDetected",
+            0,
+            0,
+            false,
+            false,
+            true,
+            noBoxSummary));
+        return 0;
+    }
+
+    var selectedBox = validBoxes
+        .OrderByDescending(b => b.CropWidth * b.CropHeight)
+        .ThenBy(b => b.CropY)
+        .ThenBy(b => b.CropX)
+        .First();
+    var crop = ExtractCropForProbe(imagePrep, ExpandBox(selectedBox, fixture.Width, fixture.Height, padding: 6));
+    if (crop is null)
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"synthetic-detector-recognizer-{Guid.NewGuid():N}",
+            "CropExtraction",
+            "InvalidTensorShape",
+            validBoxes.Length,
+            0,
+            false,
+            false,
+            true,
+            "detector box could not be cropped safely"));
+        return 0;
+    }
+
+    var dictionaryTokens = File.ReadAllLines(dictionaryPath);
+    var recognizerShape = new[] { 1, 3, 48, 320 };
+    var recognizerTensor = BuildRecognizerTensorFromImageCrop(crop, recognizerShape, out var recognizerPreprocessing);
+    var recognizerStats = NodalOsDetectorRecognizerCompatibilityDiagnosisBuilder.CalculateStats(recognizerTensor, recognizerShape, "NCHW", "RGB");
+    using var recognizerSession = new InferenceSession(recognizerPath);
+    var recognizerInputName = recognizerSession.InputMetadata.Keys.FirstOrDefault() ?? "x";
+    var recognizerInputMetadata = string.Join(";", recognizerSession.InputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    var recognizerOutputMetadata = string.Join(";", recognizerSession.OutputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    using var recognizerOutputs = recognizerSession.Run([NamedOnnxValue.CreateFromTensor(recognizerInputName, new DenseTensor<float>(recognizerTensor, recognizerShape))]);
+    var recognizerOutput = recognizerOutputs.First().AsTensor<float>();
+    var recognizerOutputShape = recognizerOutput.Dimensions.ToArray();
+    var recognizerValues = recognizerOutput.ToArray();
+    var classCount = recognizerOutputShape.Length == 3 ? recognizerOutputShape[2] : recognizerOutputShape.LastOrDefault();
+    var softmax = AnalyzeSoftmaxRows(recognizerValues, classCount);
+    var blankIndex = 0;
+    var spaceIndex = dictionaryTokenCount + 1;
+    var officialSpacePolicy = classCount == expectedClassCount && spaceIndex == expectedClassCount - 1;
+    var decode = DecodePaddleOcrOfficialSpaceOutput(recognizerValues, classCount, blankIndex, spaceIndex, dictionaryTokens);
+    var normalizedExpected = NormalizeNoAuthorityPreview(fixtureText);
+    var normalizedDecoded = NormalizeNoAuthorityPreview(decode.DecodedText);
+    var matchKind = string.Equals(decode.DecodedText, fixtureText, StringComparison.Ordinal)
+        ? "Exact"
+        : string.Equals(normalizedDecoded, normalizedExpected, StringComparison.Ordinal)
+            ? "Normalized"
+            : "Mismatch";
+    var status = detectorPost.TextBoxes.Count > 0 && softmax.LooksLikeSoftmax && officialSpacePolicy
+        ? "Passed"
+        : "BlockedByModelRuntime";
+
+    var summary = JsonSerializer.Serialize(new
+    {
+        FixtureText = fixtureText,
+        FixtureVariant = fixtureVariant,
+        ImageWidth = fixture.Width,
+        ImageHeight = fixture.Height,
+        DetectorInputMetadata = detectorInputMetadata,
+        DetectorOutputMetadata = detectorOutputMetadata,
+        DetectorInputShape = detPrep.InputShape,
+        DetectorOutputShape = detectorOutputShape,
+        DetectorThresholdUsed = thresholdUsed,
+        DetectorPostprocessStatus = detectorPost.Status.ToString(),
+        DetectorBoxesCount = validBoxes.Length,
+        SelectedCrop = new
+        {
+            selectedBox.CropX,
+            selectedBox.CropY,
+            selectedBox.CropWidth,
+            selectedBox.CropHeight,
+            selectedBox.Confidence
+        },
+        RecognizerPreprocessing = recognizerPreprocessing,
+        RecognizerTensorStats = recognizerStats,
+        RecognizerTensorShape = recognizerShape,
+        RecognizerInputMetadata = recognizerInputMetadata,
+        RecognizerOutputMetadata = recognizerOutputMetadata,
+        RecognizerOutputShape = recognizerOutputShape,
+        RecognizerOutputLayout = recognizerOutputShape.Length == 3 ? "[B,T,C]" : "Unexpected",
+        OutputClassCount = classCount,
+        ExpectedClassCount = expectedClassCount,
+        DictionaryTokenCount = dictionaryTokenCount,
+        BlankIndex = blankIndex,
+        SpaceIndex = spaceIndex,
+        OfficialSpacePolicy = officialSpacePolicy,
+        SoftmaxEvidence = softmax,
+        SoftmaxReapplied = false,
+        DecodePolicyApplied = "OfficialSpaceToken",
+        DecodedPreviewNonAuthoritative = decode.DecodedText,
+        MeanConfidence = decode.MeanConfidence,
+        EmittedTokens = decode.EmittedTokens,
+        MatchKind = matchKind,
+        RecognizerAttempts = 1,
+        UsefulOcrClaimed = false,
+        PublicProductReady = false,
+        ProductiveOcr = false,
+        ShadowMode = false,
+        NoAuthority = true,
+        NoSaaS = true,
+        NoApiKeys = true,
+        NoSensitive = true,
+        SyntheticImagesOnly = true,
+        RealScreenUsed = false,
+        RealDocumentUsed = false,
+        RawPersistenceOfRealData = false
+    });
+
+    EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+        $"synthetic-detector-recognizer-{Guid.NewGuid():N}",
+        "RecognitionRun",
+        status,
+        validBoxes.Length,
+        1,
+        false,
+        false,
+        true,
+        summary));
+    return 0;
+}
+
 static int RunRecognizerRuntimeExperiment(Dictionary<string, string> options)
 {
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
@@ -2163,6 +2577,136 @@ static int CountChildMatches(List<object> results, string matchKind)
     }
 
     return count;
+}
+
+static int SumChildInt(List<object> results, string propertyName)
+{
+    var sum = 0;
+    foreach (var result in results)
+    {
+        var child = result.GetType().GetProperty("ChildSummary")?.GetValue(result);
+        if (child is not JsonElement element ||
+            element.ValueKind != JsonValueKind.Object ||
+            !element.TryGetProperty(propertyName, out var value) ||
+            value.ValueKind != JsonValueKind.Number)
+        {
+            continue;
+        }
+
+        sum += value.GetInt32();
+    }
+
+    return sum;
+}
+
+static NodalOsSyntheticOcrTextFixture BuildSyntheticFullImageFixture(
+    string text,
+    string variant,
+    int horizontalPadding,
+    int verticalPadding)
+{
+    var generator = new NodalOsSyntheticOcrTextFixtureGenerator();
+    var renderMode = variant.Contains("upper-left", StringComparison.OrdinalIgnoreCase)
+        ? NodalOsSyntheticOcrTextRenderMode.PixelFont
+        : NodalOsSyntheticOcrTextRenderMode.AntiAliasedPixelFont;
+    return generator.Generate(
+        text,
+        new NodalOsSyntheticOcrTextFixtureOptions(
+            640,
+            160,
+            NodalOsSyntheticOcrTextColorScheme.BlackOnWhite,
+            renderMode,
+            horizontalPadding,
+            verticalPadding,
+            CharacterSpacing: 8,
+            AllowRawPersistence: false,
+            AllowFullScreen: false));
+}
+
+static NodalOsOnnxOcrDetectorPostProcessingResult DecodeDetectorWithFallbackThresholds(
+    float[] detectorOutput,
+    int[] detectorOutputShape,
+    int width,
+    int height,
+    out float thresholdUsed)
+{
+    var thresholds = new[] { 0.30f, 0.20f, 0.10f, 0.05f };
+    NodalOsOnnxOcrDetectorPostProcessingResult? best = null;
+    thresholdUsed = thresholds[0];
+    foreach (var threshold in thresholds)
+    {
+        var decoded = new NodalOsOnnxOcrDetectorPostProcessor().Decode(
+            detectorOutput,
+            detectorOutputShape,
+            width,
+            height,
+            threshold);
+        if (best is null || decoded.TextBoxes.Count > best.TextBoxes.Count)
+        {
+            best = decoded;
+            thresholdUsed = threshold;
+        }
+
+        if (decoded.TextBoxes.Any(b => b.Valid && b.CropWidth > 1 && b.CropHeight > 1))
+            return decoded;
+    }
+
+    return best ?? new NodalOsOnnxOcrDetectorPostProcessor().Decode(
+        detectorOutput,
+        detectorOutputShape,
+        width,
+        height,
+        thresholds[0]);
+}
+
+static NodalOsOnnxOcrTextBox ExpandBox(NodalOsOnnxOcrTextBox box, int width, int height, int padding)
+{
+    var x = Math.Max(0, box.CropX - padding);
+    var y = Math.Max(0, box.CropY - padding);
+    var right = Math.Min(width, box.CropX + box.CropWidth + padding);
+    var bottom = Math.Min(height, box.CropY + box.CropHeight + padding);
+    return new NodalOsOnnxOcrTextBox(
+        box.BoxId,
+        box.Polygon,
+        box.Confidence,
+        x,
+        y,
+        Math.Max(1, right - x),
+        Math.Max(1, bottom - y),
+        box.Valid);
+}
+
+static float[] BuildRecognizerTensorFromImageCrop(
+    NodalOsOnnxOcrImagePreProcessingResult crop,
+    int[] shape,
+    out string preprocessingSummary)
+{
+    var channels = shape[1];
+    var targetHeight = shape[2];
+    var targetWidth = shape[3];
+    var tensor = new float[shape.Aggregate(1, (a, b) => a * b)];
+    var scaleX = (float)crop.Width / targetWidth;
+    var scaleY = (float)crop.Height / targetHeight;
+
+    for (var c = 0; c < channels; c++)
+    {
+        for (var y = 0; y < targetHeight; y++)
+        {
+            for (var x = 0; x < targetWidth; x++)
+            {
+                var srcX = Math.Clamp((int)(x * scaleX), 0, crop.Width - 1);
+                var srcY = Math.Clamp((int)(y * scaleY), 0, crop.Height - 1);
+                var srcIdx = (srcY * crop.Width + srcX) * 4;
+                var value = srcIdx + c < crop.NormalizedData.Length ? crop.NormalizedData[srcIdx + c] : 1f;
+                var dstIdx = c * targetHeight * targetWidth + y * targetWidth + x;
+                tensor[dstIdx] = (value - 0.5f) / 0.5f;
+            }
+        }
+    }
+
+    preprocessingSummary =
+        $"detector crop resized to [1,3,{targetHeight},{targetWidth}]; normalization=(pixel/255-0.5)/0.5; sourceCrop={crop.Width}x{crop.Height}; persisted=false";
+    return tensor;
 }
 
 static float[] BuildSyntheticImageRecognizerCropTensor(string text, int[] shape, out string preprocessingSummary)
