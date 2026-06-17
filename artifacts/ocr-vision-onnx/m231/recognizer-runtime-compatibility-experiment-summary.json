@@ -1,0 +1,84 @@
+{
+  "milestones": ["M229", "M230", "M231"],
+  "baseHead": "6066a06",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "remote": "https://github.com/onediegopr/NodalOS.git",
+  "worktree": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit",
+  "forbiddenPathUsed": false,
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime 1.18.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "models": {
+    "detection": "ch_PP-OCRv4_det.onnx",
+    "recognition": "ch_PP-OCRv4_rec.onnx",
+    "classification": "ch_ppocr_mobile_v2.0_cls.onnx",
+    "recognitionSha256": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+    "recognitionSize": 7653044,
+    "verified": true,
+    "trackedOnnx": false
+  },
+  "recognizerMetadata": {
+    "input": "x=[-1,3,-1,-1]",
+    "output": "softmax_2.tmp_0=[-1,-1,97]",
+    "classCount": 97
+  },
+  "matrix": {
+    "mode": "--recognizer-runtime-experiment",
+    "tensorKinds": ["Zero", "Ones", "Gradient", "Checker", "SyntheticTextCrop", "HighContrastManualCrop", "DetectorDerivedCrop"],
+    "layouts": ["NCHW", "NHWC skipped unsupported"],
+    "shapes": ["[1,3,32,320]", "[1,3,32,640]", "Invalid blocked before runtime"],
+    "sessionOptions": ["Default", "GraphOptimizationDisabled", "GraphOptimizationBasic", "SingleThreaded", "MemoryPatternDisabled", "CpuArenaDisabled", "SequentialExecution", "DeterministicMinimal"]
+  },
+  "observedFromM228": {
+    "zeroTensor": "NativeRuntimeCrashContained",
+    "onesTensor": "NativeRuntimeCrashContained",
+    "gradientTensor": "NativeRuntimeCrashContained",
+    "syntheticTextCrop": "NativeRuntimeCrashContained",
+    "highContrastManualCrop": "NativeRuntimeCrashContained",
+    "detectorDerivedCrop": "NativeRuntimeCrashContained",
+    "exitCode": -1073741676,
+    "exitCodeHex": "0xC0000094",
+    "crashStage": "RecognitionRun/session.Run"
+  },
+  "observedFromM229": {
+    "zeroDefault": "NativeRuntimeCrashContained",
+    "onesDefault": "NativeRuntimeCrashContained",
+    "gradientDefault": "NativeRuntimeCrashContained",
+    "syntheticCropDefault": "NativeRuntimeCrashContained",
+    "highContrastCropDefault": "NativeRuntimeCrashContained",
+    "detectorDerivedCropDefault": "NativeRuntimeCrashContained",
+    "candidateWidth640": "NativeRuntimeCrashContained",
+    "nhwc": "UnsupportedLayout",
+    "invalidShape": "InvalidTensorShape",
+    "sessionOptionAvoidedCrash": false,
+    "postProcessingReached": false,
+    "graphOptimizationDisabled": "BlockedByModelRuntime",
+    "graphOptimizationBasic": "BlockedByModelRuntime",
+    "singleThreaded": "BlockedByModelRuntime",
+    "memoryPatternDisabled": "NativeRuntimeCrashContained",
+    "cpuArenaDisabled": "NativeRuntimeCrashContained",
+    "sequentialExecution": "NativeRuntimeCrashContained",
+    "deterministicMinimal": "BlockedByModelRuntime"
+  },
+  "dictionary": {
+    "recognizerOutputClasses": 97,
+    "asciiCharacters": 86,
+    "asciiPlusBlank": 87,
+    "status": "BlockedByDictionaryClassCountMismatch",
+    "decodeAllowed": false,
+    "deferred": true
+  },
+  "safety": {
+    "productiveOcrEnabled": false,
+    "shadowModeEnabled": false,
+    "saaSOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "riskyRecognizerInProcess": false,
+    "riskyRecognizerOutOfProcess": true
+  },
+  "decision": "READY_FOR_ONNX_RUNTIME_VERSION_EXPERIMENT"
+}

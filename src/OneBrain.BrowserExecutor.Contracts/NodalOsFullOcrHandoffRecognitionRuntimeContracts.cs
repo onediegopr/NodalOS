@@ -52,9 +52,36 @@ public enum NodalOsRecognizerRuntimeTensorKind
     Zero,
     Ones,
     Gradient,
+    Checker,
     SyntheticTextCrop,
     HighContrastManualCrop,
     DetectorDerivedCrop
+}
+
+public enum NodalOsRecognizerRuntimeProbeLayout
+{
+    Nchw,
+    Nhwc
+}
+
+public enum NodalOsRecognizerRuntimeShapeKind
+{
+    CurrentPipelineFixed,
+    PaddleOcrCandidate320,
+    PaddleOcrCandidate640,
+    Invalid
+}
+
+public enum NodalOsRecognizerRuntimeSessionOptionKind
+{
+    Default,
+    GraphOptimizationDisabled,
+    GraphOptimizationBasic,
+    SingleThreaded,
+    MemoryPatternDisabled,
+    CpuArenaDisabled,
+    SequentialExecution,
+    DeterministicMinimal
 }
 
 public enum NodalOsRecognizerRuntimeProbeStatus
@@ -64,6 +91,7 @@ public enum NodalOsRecognizerRuntimeProbeStatus
     OutputMetadataCaptured,
     NativeRuntimeCrashContained,
     InvalidTensorShape,
+    UnsupportedLayout,
     TimedOut,
     BlockedByModelRuntime,
     BlockedByDictionaryClassCountMismatch,
@@ -81,6 +109,48 @@ public enum NodalOsFullOcrRuntimeDecision
     BlockedByDictionary,
     NotReady
 }
+
+public enum NodalOsRecognizerRuntimeCompatibilityDecision
+{
+    ReadyForOnnxRuntimeVersionExperiment,
+    ReadyForRecognizerModelReplacement,
+    ReadyForRecognizerSessionOptionsFix,
+    ReadyForRecognizerPreprocessingFix,
+    ReadyForDictionaryCompletion,
+    BlockedByRecognizerModelRuntime,
+    BlockedByRecognizerModelCompatibility,
+    BlockedByRecognizerInputShape,
+    BlockedByDictionary,
+    NotReady
+}
+
+public sealed record NodalOsRecognizerRuntimeSessionOptionsMetadata(
+    NodalOsRecognizerRuntimeSessionOptionKind OptionKind,
+    string Description,
+    bool CpuExecutionProviderOnly,
+    bool GraphOptimizationDisabled,
+    bool GraphOptimizationBasic,
+    int? IntraOpThreads,
+    int? InterOpThreads,
+    bool MemoryPatternDisabled,
+    bool CpuArenaDisabled,
+    bool SequentialExecution,
+    bool DeterministicMinimal);
+
+public sealed record NodalOsRecognizerRuntimeExperiment(
+    string ExperimentId,
+    NodalOsRecognizerRuntimeTensorKind TensorKind,
+    NodalOsRecognizerRuntimeProbeLayout Layout,
+    NodalOsRecognizerRuntimeShapeKind ShapeKind,
+    int[] InputShape,
+    NodalOsRecognizerRuntimeSessionOptionsMetadata SessionOptions,
+    bool RequiresOutOfProcessGuard,
+    bool AllowInProcess,
+    bool Synthetic,
+    bool FullScreen,
+    bool Sensitive,
+    bool RawPersisted,
+    bool NoAuthority);
 
 public sealed record NodalOsFullOcrHandoffProbeResult(
     string ResultId,
@@ -132,6 +202,51 @@ public sealed record NodalOsRecognizerRuntimeProbeResult(
     bool TempFilesCleaned,
     bool RawPersisted,
     bool CallsSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsRecognizerRuntimeCompatibilityResult(
+    string ResultId,
+    NodalOsRecognizerRuntimeExperiment Experiment,
+    NodalOsRecognizerRuntimeProbeStatus Status,
+    string RuntimePackageVersion,
+    string RuntimeNativeLibrary,
+    string Provider,
+    string OsArchitecture,
+    string ModelPath,
+    long ModelSizeBytes,
+    string ModelSha256,
+    IReadOnlyList<string> InputNames,
+    IReadOnlyList<string> OutputNames,
+    IReadOnlyList<int[]> OutputShapes,
+    NodalOsOnnxTensorStats TensorStats,
+    int? OutputClassCount,
+    int? OutputTimeSteps,
+    int? ExitCode,
+    string? ExitCodeHex,
+    string CrashStage,
+    bool SessionCreated,
+    bool RunAttempted,
+    bool ParentSurvived,
+    bool TempFilesCleaned,
+    bool OrphanProcessLeft,
+    bool RawPersisted,
+    bool CallsSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsRecognizerModelCompatibilityFinding(
+    string FindingId,
+    NodalOsRecognizerRuntimeCompatibilityDecision Decision,
+    bool RecognizerModelVerified,
+    bool AnyRunSucceeded,
+    bool AnySessionOptionAvoidedCrash,
+    bool AllCoreTensorsCrashed,
+    bool CropOnlyCrash,
+    bool InvalidShapeDetected,
+    bool DictionaryMismatchDetected,
+    bool ShadowModeBlocked,
+    bool ProductiveOcrBlocked,
     bool NoAuthority,
     string Reason);
 

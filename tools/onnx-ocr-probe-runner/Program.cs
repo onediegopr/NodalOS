@@ -16,6 +16,7 @@ using OneBrain.BrowserExecutor.Contracts;
 //   --detector-crash-child --repo-root <dir> --tensor <kind>   Child: detector-only session/run, may natively crash.
 //   --handoff-crash-probe --repo-root <dir>                   Parent matrix: detector-to-recognizer child probes through guard.
 //   --recognizer-runtime-probe --repo-root <dir>               Parent matrix: recognizer-only child probes through guard.
+//   --recognizer-runtime-experiment --repo-root <dir>          Parent matrix: recognizer-only tensor/layout/session-option probes through guard.
 //   --probe --repo-root <dir>                                 Real ONNX inference on a synthetic fixture.
 //   --request <file>                                          Probe request JSON (written by the guard).
 //
@@ -58,6 +59,11 @@ if (options.ContainsKey("recognizer-runtime-probe"))
     return RunRecognizerRuntimeProbe(options);
 }
 
+if (options.ContainsKey("recognizer-runtime-experiment"))
+{
+    return RunRecognizerRuntimeExperiment(options);
+}
+
 if (options.ContainsKey("recognizer-runtime-child"))
 {
     return RunRecognizerRuntimeChild(options);
@@ -68,7 +74,7 @@ if (options.ContainsKey("probe"))
     return RunProbe(options);
 }
 
-Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
+Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --recognizer-runtime-experiment --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
 return 64;
 
 static Dictionary<string, string> ParseArgs(string[] argv)
@@ -544,7 +550,7 @@ static int RunHandoffCrashChild(Dictionary<string, string> options)
 static int RunRecognizerRuntimeProbe(Dictionary<string, string> options)
 {
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
-        ? root
+        ? Path.GetFullPath(root)
         : Directory.GetCurrentDirectory();
     var runner = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "OneBrain.Tools.OnnxOcrProbeRunner.exe");
     var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
@@ -573,7 +579,7 @@ static int RunRecognizerRuntimeProbe(Dictionary<string, string> options)
             $"rec-runtime-guard-{Guid.NewGuid():N}",
             request,
             runner,
-            ["--recognizer-runtime-child", "--repo-root", repoRoot, "--tensor", tensorKind.ToString()],
+            ["--recognizer-runtime-child", "--repo-root", repoRoot, "--tensor", tensorKind.ToString(), "--layout", NodalOsRecognizerRuntimeProbeLayout.Nchw.ToString(), "--shape-kind", NodalOsRecognizerRuntimeShapeKind.CurrentPipelineFixed.ToString(), "--session-option", NodalOsRecognizerRuntimeSessionOptionKind.Default.ToString()],
             timeoutMs,
             MaxOutputBytes: 64 * 1024,
             AllowRawPersistence: false));
@@ -601,17 +607,166 @@ static int RunRecognizerRuntimeProbe(Dictionary<string, string> options)
     return 0;
 }
 
+static int RunRecognizerRuntimeExperiment(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var runner = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "OneBrain.Tools.OnnxOcrProbeRunner.exe");
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 60000;
+
+    var experiments = new NodalOsRecognizerRuntimeExperimentBuilder().BuildMinimalMatrix();
+    var results = new List<object>();
+
+    foreach (var experiment in experiments)
+    {
+        if (experiment.Layout == NodalOsRecognizerRuntimeProbeLayout.Nhwc)
+        {
+            results.Add(new
+            {
+                experiment.ExperimentId,
+                TensorKind = experiment.TensorKind.ToString(),
+                Layout = experiment.Layout.ToString(),
+                ShapeKind = experiment.ShapeKind.ToString(),
+                Shape = experiment.InputShape,
+                SessionOption = experiment.SessionOptions.OptionKind.ToString(),
+                Status = NodalOsRecognizerRuntimeProbeStatus.UnsupportedLayout.ToString(),
+                RanOutOfProcess = false,
+                ParentSurvived = true,
+                RawPersisted = false,
+                CallsSaas = false,
+                NoAuthority = true,
+                Reason = "NHWC skipped: recognizer metadata and pipeline expect NCHW [1,3,H,W]"
+            });
+            continue;
+        }
+
+        if (experiment.ShapeKind == NodalOsRecognizerRuntimeShapeKind.Invalid || experiment.InputShape.Any(d => d <= 0))
+        {
+            results.Add(new
+            {
+                experiment.ExperimentId,
+                TensorKind = experiment.TensorKind.ToString(),
+                Layout = experiment.Layout.ToString(),
+                ShapeKind = experiment.ShapeKind.ToString(),
+                Shape = experiment.InputShape,
+                SessionOption = experiment.SessionOptions.OptionKind.ToString(),
+                Status = NodalOsRecognizerRuntimeProbeStatus.InvalidTensorShape.ToString(),
+                RanOutOfProcess = false,
+                ParentSurvived = true,
+                RawPersisted = false,
+                CallsSaas = false,
+                NoAuthority = true,
+                Reason = "invalid recognizer shape blocked before runtime"
+            });
+            continue;
+        }
+
+        var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+            experiment.ExperimentId,
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+            NodalOsSyntheticOcrTextRenderMode.PixelFont,
+            experiment.InputShape[3],
+            experiment.InputShape[2],
+            NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+            NodalOsOcrVisionSensitivity.Low,
+            FullScreen: false,
+            Sensitive: false,
+            OriginalRawPersisted: false,
+            Synthetic: true,
+            NoAuthority: true,
+            RunOutOfProcess: true);
+
+        var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+            $"rec-runtime-exp-guard-{Guid.NewGuid():N}",
+            request,
+            runner,
+            [
+                "--recognizer-runtime-child",
+                "--repo-root", repoRoot,
+                "--tensor", experiment.TensorKind.ToString(),
+                "--layout", experiment.Layout.ToString(),
+                "--shape-kind", experiment.ShapeKind.ToString(),
+                "--session-option", experiment.SessionOptions.OptionKind.ToString()
+            ],
+            timeoutMs,
+            MaxOutputBytes: 64 * 1024,
+            AllowRawPersistence: false));
+
+        results.Add(new
+        {
+            experiment.ExperimentId,
+            TensorKind = experiment.TensorKind.ToString(),
+            Layout = experiment.Layout.ToString(),
+            ShapeKind = experiment.ShapeKind.ToString(),
+            Shape = experiment.InputShape,
+            SessionOption = experiment.SessionOptions.OptionKind.ToString(),
+            Status = MapRecognizerStatus(guardResult).ToString(),
+            guardResult.ExitCode,
+            ExitCodeHex = guardResult.ExitCode is null ? null : $"0x{unchecked((uint)guardResult.ExitCode.Value):X8}",
+            CrashKind = guardResult.ProbeResult.CrashKind.ToString(),
+            guardResult.TimedOut,
+            guardResult.ParentSurvived,
+            guardResult.TempFilesCleaned,
+            guardResult.OrphanProcessLeft,
+            guardResult.RawPersisted,
+            guardResult.CallsSaas,
+            guardResult.NoAuthority,
+            guardResult.StdErrSummary,
+            guardResult.Reason
+        });
+    }
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(results));
+    return 0;
+}
+
 static int RunRecognizerRuntimeChild(Dictionary<string, string> options)
 {
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
-        ? root
+        ? Path.GetFullPath(root)
         : Directory.GetCurrentDirectory();
     var tensorKind = options.TryGetValue("tensor", out var tensorText) &&
                      Enum.TryParse<NodalOsRecognizerRuntimeTensorKind>(tensorText, ignoreCase: true, out var parsedTensor)
         ? parsedTensor
         : NodalOsRecognizerRuntimeTensorKind.Zero;
+    var layout = options.TryGetValue("layout", out var layoutText) &&
+                 Enum.TryParse<NodalOsRecognizerRuntimeProbeLayout>(layoutText, ignoreCase: true, out var parsedLayout)
+        ? parsedLayout
+        : NodalOsRecognizerRuntimeProbeLayout.Nchw;
+    var shapeKind = options.TryGetValue("shape-kind", out var shapeText) &&
+                    Enum.TryParse<NodalOsRecognizerRuntimeShapeKind>(shapeText, ignoreCase: true, out var parsedShape)
+        ? parsedShape
+        : NodalOsRecognizerRuntimeShapeKind.CurrentPipelineFixed;
+    var optionKind = options.TryGetValue("session-option", out var optionText) &&
+                     Enum.TryParse<NodalOsRecognizerRuntimeSessionOptionKind>(optionText, ignoreCase: true, out var parsedOption)
+        ? parsedOption
+        : NodalOsRecognizerRuntimeSessionOptionKind.Default;
 
-    var shape = new[] { 1, 3, 32, 320 };
+    if (layout != NodalOsRecognizerRuntimeProbeLayout.Nchw)
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"rec-runtime-{Guid.NewGuid():N}", "RecognizerTensorPreparation", "InvalidTensorShape", null, null,
+            false, false, true, "unsupported recognizer layout; metadata/pipeline expects NCHW"));
+        return 0;
+    }
+
+    var shape = shapeKind switch
+    {
+        NodalOsRecognizerRuntimeShapeKind.PaddleOcrCandidate640 => new[] { 1, 3, 32, 640 },
+        NodalOsRecognizerRuntimeShapeKind.Invalid => new[] { 1, 1, 0, 0 },
+        _ => new[] { 1, 3, 32, 320 }
+    };
+    if (shape.Any(d => d <= 0) || shape[1] != 3)
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"rec-runtime-{Guid.NewGuid():N}", "RecognizerTensorPreparation", "InvalidTensorShape", null, null,
+            false, false, true, "invalid recognizer shape blocked before runtime"));
+        return 0;
+    }
+
     var tensor = BuildRecognizerTensor(tensorKind, shape);
     var stats = NodalOsDetectorRecognizerCompatibilityDiagnosisBuilder.CalculateStats(tensor, shape, "NCHW", "RGB");
     if (stats.HasNaN || stats.HasInfinity || tensor.Length != shape.Aggregate(1, (a, b) => a * b))
@@ -626,7 +781,9 @@ static int RunRecognizerRuntimeChild(Dictionary<string, string> options)
     Console.Error.WriteLine($"stage=model-file model={modelPath} exists={File.Exists(modelPath)}");
     Console.Error.WriteLine($"stage=tensor tensor={tensorKind} shape=[{string.Join(",", shape)}] min={stats.Min:R} max={stats.Max:R} mean={stats.Mean:R}");
 
-    using var session = new InferenceSession(modelPath);
+    using var sessionOptions = CreateRecognizerSessionOptions(optionKind);
+    Console.Error.WriteLine($"stage=session-options option={optionKind}");
+    using var session = new InferenceSession(modelPath, sessionOptions);
     var inputName = session.InputMetadata.Keys.FirstOrDefault() ?? "x";
     var inputMetadata = string.Join(";", session.InputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
     var outputMetadata = string.Join(";", session.OutputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
@@ -852,6 +1009,43 @@ static SessionOptions CreateSessionOptions(NodalOsDetectorRuntimeSessionOptionKi
     return options;
 }
 
+static SessionOptions CreateRecognizerSessionOptions(NodalOsRecognizerRuntimeSessionOptionKind optionKind)
+{
+    var options = new SessionOptions();
+    switch (optionKind)
+    {
+        case NodalOsRecognizerRuntimeSessionOptionKind.GraphOptimizationDisabled:
+            options.GraphOptimizationLevel = GraphOptimizationLevel.ORT_DISABLE_ALL;
+            break;
+        case NodalOsRecognizerRuntimeSessionOptionKind.GraphOptimizationBasic:
+            options.GraphOptimizationLevel = GraphOptimizationLevel.ORT_ENABLE_BASIC;
+            break;
+        case NodalOsRecognizerRuntimeSessionOptionKind.SingleThreaded:
+            options.IntraOpNumThreads = 1;
+            options.InterOpNumThreads = 1;
+            break;
+        case NodalOsRecognizerRuntimeSessionOptionKind.MemoryPatternDisabled:
+            options.EnableMemoryPattern = false;
+            break;
+        case NodalOsRecognizerRuntimeSessionOptionKind.CpuArenaDisabled:
+            options.EnableCpuMemArena = false;
+            break;
+        case NodalOsRecognizerRuntimeSessionOptionKind.SequentialExecution:
+            options.ExecutionMode = ExecutionMode.ORT_SEQUENTIAL;
+            break;
+        case NodalOsRecognizerRuntimeSessionOptionKind.DeterministicMinimal:
+            options.GraphOptimizationLevel = GraphOptimizationLevel.ORT_DISABLE_ALL;
+            options.IntraOpNumThreads = 1;
+            options.InterOpNumThreads = 1;
+            options.EnableMemoryPattern = false;
+            options.EnableCpuMemArena = false;
+            options.ExecutionMode = ExecutionMode.ORT_SEQUENTIAL;
+            break;
+    }
+
+    return options;
+}
+
 static float[] BuildDetectorTensor(NodalOsDetectorRuntimeProbeTensorKind tensorKind, int[] shape)
 {
     var channels = shape[1];
@@ -1047,6 +1241,7 @@ static float[] BuildRecognizerTensor(NodalOsRecognizerRuntimeTensorKind tensorKi
                     NodalOsRecognizerRuntimeTensorKind.Zero => 0f,
                     NodalOsRecognizerRuntimeTensorKind.Ones => 1f,
                     NodalOsRecognizerRuntimeTensorKind.Gradient => (float)(x + y) / (width + height),
+                    NodalOsRecognizerRuntimeTensorKind.Checker => ((x / 8) + (y / 8)) % 2 == 0 ? -1f : 1f,
                     NodalOsRecognizerRuntimeTensorKind.SyntheticTextCrop => InSyntheticTextBar(x, y, width, height) ? -1f : 1f,
                     NodalOsRecognizerRuntimeTensorKind.HighContrastManualCrop => (x / 12) % 2 == 0 && y > height / 4 && y < height * 3 / 4 ? -1f : 1f,
                     NodalOsRecognizerRuntimeTensorKind.DetectorDerivedCrop => InRectangle(x, y, width, height) ? -1f : 1f,
