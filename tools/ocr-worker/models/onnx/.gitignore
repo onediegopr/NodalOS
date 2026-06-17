@@ -3,3 +3,4 @@
 *.pdmodel
 *.pdiparams
 *.pdparams
+dictionaries/*.txt

@@ -1,0 +1,56 @@
+{
+  "milestone": "M253+M254+M255",
+  "decision": "M253+M254+M255 PARCIAL",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "candidate": {
+    "pairId": "rapidocr-modelscope-ppocrv5-en-mobile-onnx",
+    "recognizerUrl": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx",
+    "recognizerSha256": "c3461add59bb4323ecba96a492ab75e06dda42467c9e3d0c18db5d1d21924be8",
+    "recognizerSizeBytes": 7872351,
+    "dictionaryUrl": "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile/ppocrv5_en_dict.txt",
+    "dictionarySha256": "e025a66d31f327ba0c232e03f407ae8d105e1e709e7ccb3f408aa778c24e70d6",
+    "dictionarySizeBytes": 1416,
+    "dictionaryTokenCount": 436,
+    "ctcBlankIndex": 0,
+    "expectedClassCount": 437,
+    "runtimeObservedClassCount": 438
+  },
+  "scripts": {
+    "downloadScript": "tools/ocr-worker/models/onnx/download-recognizer-pair.ps1",
+    "verifyScript": "tools/ocr-worker/models/onnx/verify-recognizer-pair.ps1",
+    "rollbackScript": "tools/ocr-worker/models/onnx/rollback-recognizer-pair.ps1",
+    "downloadExecuted": true,
+    "verifyExecuted": true
+  },
+  "runtimeSmoke": {
+    "outOfProcess": true,
+    "result": "RunSucceededWithClassCountMismatch",
+    "outputName": "fetch_name_0",
+    "outputShape": "[1,40,438]",
+    "tensors": {
+      "Zero": "RunSucceeded",
+      "Ones": "RunSucceeded",
+      "Gradient": "RunSucceeded",
+      "SyntheticTextCrop": "RunSucceeded",
+      "HighContrastManualCrop": "RunSucceeded"
+    }
+  },
+  "decode": {
+    "attempted": false,
+    "allowed": false,
+    "reason": "runtime output class count 438 is not explained by dictionary token count 436 plus CTC blank index 0"
+  },
+  "safety": {
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true
+  }
+}

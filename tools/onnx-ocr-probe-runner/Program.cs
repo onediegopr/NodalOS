@@ -535,7 +535,15 @@ static int RunHandoffCrashChild(Dictionary<string, string> options)
     if (recPrep.Status != NodalOsOnnxOcrPreProcessingStatus.Success || recPrep.InputShape.Length != 4)
         return EmitHandoffChild(boxKind, NodalOsFullOcrHandoffProbeStatus.BlockedByRecognizerTensorShape, NodalOsFullOcrHandoffStage.RecognizerTensorPreparation, box, recPrep.InputShape, recPrep.Reason);
 
-    var modelPath = Path.GetFullPath(Path.Combine(repoRoot, "tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_rec.onnx"));
+    var recognizerRelativePath = options.TryGetValue("recognizer-model-relative", out var configuredRecognizerPath) &&
+                                 !string.IsNullOrWhiteSpace(configuredRecognizerPath)
+        ? configuredRecognizerPath
+        : Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_rec.onnx");
+    var expectedClassCount = options.TryGetValue("expected-class-count", out var expectedClassText) &&
+                             int.TryParse(expectedClassText, out var parsedExpectedClassCount)
+        ? parsedExpectedClassCount
+        : (int?)null;
+    var modelPath = Path.GetFullPath(Path.Combine(repoRoot, recognizerRelativePath));
     using var session = new InferenceSession(modelPath);
     var inputName = session.InputMetadata.Keys.FirstOrDefault() ?? "x";
     Console.Error.WriteLine($"stage=recognizer-session-created input={inputName} metadata={string.Join(";", session.InputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"))}");
@@ -777,7 +785,15 @@ static int RunRecognizerRuntimeChild(Dictionary<string, string> options)
         return 0;
     }
 
-    var modelPath = Path.GetFullPath(Path.Combine(repoRoot, "tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_rec.onnx"));
+    var recognizerRelativePath = options.TryGetValue("recognizer-model-relative", out var configuredRecognizerPath) &&
+                                 !string.IsNullOrWhiteSpace(configuredRecognizerPath)
+        ? configuredRecognizerPath
+        : Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_rec.onnx");
+    var expectedClassCount = options.TryGetValue("expected-class-count", out var expectedClassText) &&
+                             int.TryParse(expectedClassText, out var parsedExpectedClassCount)
+        ? parsedExpectedClassCount
+        : (int?)null;
+    var modelPath = Path.GetFullPath(Path.Combine(repoRoot, recognizerRelativePath));
     Console.Error.WriteLine($"stage=model-file model={modelPath} exists={File.Exists(modelPath)}");
     Console.Error.WriteLine($"stage=tensor tensor={tensorKind} shape=[{string.Join(",", shape)}] min={stats.Min:R} max={stats.Max:R} mean={stats.Mean:R}");
 
@@ -798,10 +814,12 @@ static int RunRecognizerRuntimeChild(Dictionary<string, string> options)
     var classCount = firstShape.Length == 3 ? firstShape[2] : firstShape.LastOrDefault();
     Console.Error.WriteLine($"stage=run-succeeded outputShapes={string.Join(";", outputShapes)} classCount={classCount}");
 
-    var dictionary = new NodalOsOcrDictionaryCompatibilityService().Evaluate(
-        new NodalOsOcrDictionaryCompatibilityService().CreateCurrentAsciiManifest(verified: true),
-        classCount);
-    var status = dictionary.Status == NodalOsOcrDictionaryCompatibilityStatus.ClassCountMismatch
+    var dictionary = expectedClassCount is not null && classCount == expectedClassCount.Value
+        ? NodalOsOcrDictionaryCompatibilityStatus.Compatible
+        : new NodalOsOcrDictionaryCompatibilityService().Evaluate(
+            new NodalOsOcrDictionaryCompatibilityService().CreateCurrentAsciiManifest(verified: true),
+            classCount).Status;
+    var status = dictionary == NodalOsOcrDictionaryCompatibilityStatus.ClassCountMismatch
         ? "BlockedByDictionaryClassCountMismatch"
         : "Passed";
 
@@ -814,7 +832,7 @@ static int RunRecognizerRuntimeChild(Dictionary<string, string> options)
         CallsSaas: false,
         RawPersisted: false,
         NoAuthority: true,
-        $"recognizer run succeeded; tensor={tensorKind}; outputs={string.Join(";", outputShapes)}; classCount={classCount}; dictionary={dictionary.Status}"));
+        $"recognizer run succeeded; tensor={tensorKind}; outputs={string.Join(";", outputShapes)}; classCount={classCount}; expectedClassCount={expectedClassCount}; dictionary={dictionary}"));
     return 0;
 }
 
