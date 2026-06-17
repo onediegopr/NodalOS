@@ -293,6 +293,12 @@ public sealed class NodalOsPaddleOcrSpaceTokenDecoderService
                 NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
                 charset),
             DecodeWithPolicy(
+                "synthetic-probability-marmoles-pvc",
+                BuildNearOneHotProbabilityMatrix("MARMOLES PVC", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
                 "synthetic-probability-blank-dominant-space-top2",
                 BuildBlankDominantSpaceRunnerUpMatrix(4, classCount, spaceIndex),
                 classCount,
@@ -301,6 +307,44 @@ public sealed class NodalOsPaddleOcrSpaceTokenDecoderService
             DecodeWithPolicy(
                 "synthetic-probability-space-argmax",
                 BuildNearOneHotProbabilityMatrix("A B", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-repeat-ll",
+                BuildNearOneHotProbabilityMatrix("LL", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-repeat-oo",
+                BuildNearOneHotProbabilityMatrix("OO", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-repeat-11",
+                BuildNearOneHotProbabilityMatrix("11", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-p-blank-v-blank-c",
+                BuildNearOneHotProbabilityMatrixFromIndexes(
+                    new[] { SyntheticClassIndex('P'), 0, SyntheticClassIndex('V'), 0, SyntheticClassIndex('C') },
+                    classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-multiple-spaces-a-two-spaces-b",
+                BuildNearOneHotProbabilityMatrix("A  B", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-leading-trailing-space",
+                BuildNearOneHotProbabilityMatrix(" A ", classCount),
                 classCount,
                 NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
                 charset)
@@ -354,6 +398,57 @@ public sealed class NodalOsPaddleOcrSpaceTokenDecoderService
                 "OfficialSpaceToken mapping is approved for synthetic probability fixtures only; " +
                 "ignore-extra-class remains unsafe because the extra class is a real space token; " +
                 "productive OCR and shadow mode remain blocked."));
+    }
+
+    public NodalOsPaddleOcrSyntheticDecodeReadinessReport CreateSyntheticDecodeReadinessReport()
+    {
+        var official = CreateOfficialSpaceReadinessReport();
+        var fixtures = official.SyntheticFixtures;
+        var requiredFixturesPresent = fixtures.Any(e => e.DecodedText == "12 34")
+                                      && fixtures.Any(e => e.DecodedText == "PVC WALL")
+                                      && fixtures.Any(e => e.DecodedText == "A B C")
+                                      && fixtures.Any(e => e.DecodedText == "MARMOLES PVC")
+                                      && fixtures.Any(e => e.DecodedText == "LL")
+                                      && fixtures.Any(e => e.DecodedText == "OO")
+                                      && fixtures.Any(e => e.DecodedText == "11")
+                                      && fixtures.Any(e => e.FixtureId.Contains("p-blank-v-blank-c", StringComparison.Ordinal)
+                                                           && e.DecodedText == "PVC")
+                                      && fixtures.Any(e => e.DecodedText == "A  B")
+                                      && fixtures.Any(e => e.DecodedText == " A ");
+
+        var decision = official.Decision
+                       == NodalOsPaddleOcrOfficialSpaceReadinessDecision.ReadyForSyntheticOfficialSpaceDecodeFixtures
+                       && requiredFixturesPresent
+            ? NodalOsPaddleOcrSyntheticDecodeReadinessDecision.ReadyForOnnxSyntheticRecognizerDecodeProbe
+            : NodalOsPaddleOcrSyntheticDecodeReadinessDecision.BlockedByRecognizerSyntheticDecodeEvidence;
+
+        return new NodalOsPaddleOcrSyntheticDecodeReadinessReport(
+            $"paddle-synthetic-official-space-decode-{Guid.NewGuid():N}",
+            decision,
+            official,
+            fixtures,
+            OfficialSpacePolicy: true,
+            BlankIndex: 0,
+            DictionaryIndexRange: "1..N",
+            SpaceIndexFormula: "N+1",
+            OutputLayout: "[B,T,C]",
+            OutputAlreadySoftmax: true,
+            SoftmaxReapplied: false,
+            PpOcrV4ExpectedClasses: 97,
+            PpOcrV5ExpectedClasses: 438,
+            OnnxProbeAttempted: false,
+            OnnxProbeSucceeded: false,
+            OnnxProbeReason: "Deferred to the next out-of-process ONNX recognizer decode probe gate; this block validates deterministic synthetic probability fixtures only.",
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: official.NoAuthority,
+            BrowserCredentialRedactor.Redact(
+                $"{decision}; synthetic official-space CTC fixtures validate mapping and safety; " +
+                "next gate is ONNX synthetic recognizer decode probe."));
     }
 
     private static string? MapIndexToToken(
@@ -455,6 +550,14 @@ public sealed class NodalOsPaddleOcrSpaceTokenDecoderService
             previous = current;
         }
 
+        return BuildNearOneHotProbabilityMatrixFromIndexes(sequence, classCount, top);
+    }
+
+    private static float[] BuildNearOneHotProbabilityMatrixFromIndexes(
+        IReadOnlyList<int> sequence,
+        int classCount,
+        float top = 0.92f)
+    {
         var matrix = new float[sequence.Count * classCount];
         var rest = (1f - top) / (classCount - 1);
         for (var t = 0; t < sequence.Count; t++)

@@ -138,3 +138,40 @@ public sealed record NodalOsPaddleOcrOfficialSpaceReadinessReport(
     bool NoSaas,
     bool NoAuthority,
     string Reason);
+
+public enum NodalOsPaddleOcrSyntheticDecodeReadinessDecision
+{
+    ReadyForOnnxSyntheticRecognizerDecodeProbe,
+    ReadyForSyntheticImageRecognizerCropFixtures,
+    ReadyForControlledNoAuthorityOcrPipelineFixtures,
+    BlockedByModelOrDictionaryAvailability,
+    BlockedByRecognizerSyntheticDecodeEvidence,
+    Partial,
+    NotReady
+}
+
+public sealed record NodalOsPaddleOcrSyntheticDecodeReadinessReport(
+    string ReportId,
+    NodalOsPaddleOcrSyntheticDecodeReadinessDecision Decision,
+    NodalOsPaddleOcrOfficialSpaceReadinessReport OfficialSpaceReadiness,
+    IReadOnlyList<NodalOsPaddleOcrDecodePolicyExperiment> SyntheticFixtures,
+    bool OfficialSpacePolicy,
+    int BlankIndex,
+    string DictionaryIndexRange,
+    string SpaceIndexFormula,
+    string OutputLayout,
+    bool OutputAlreadySoftmax,
+    bool SoftmaxReapplied,
+    int PpOcrV4ExpectedClasses,
+    int PpOcrV5ExpectedClasses,
+    bool OnnxProbeAttempted,
+    bool OnnxProbeSucceeded,
+    string OnnxProbeReason,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
