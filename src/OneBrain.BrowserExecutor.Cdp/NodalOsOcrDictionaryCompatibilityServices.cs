@@ -15,6 +15,9 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
     public const string EnglishDictionarySha256 = "5662df9d2d03f0e8ca0d3b0649d6acbab904b6a14b3d3521463c71c37c668ce3";
     public const long EnglishDictionarySizeBytes = 190;
     public const int OfficialEnglishDictionaryTokenCount = 95;
+    public const int PaddleOcrV5EnglishDictionaryTokenCount = 436;
+    public const int PaddleOcrV5EnglishExpectedClassCountWithBlank = PaddleOcrV5EnglishDictionaryTokenCount + 1;
+    public const int PaddleOcrV5EnglishObservedRecognizerClassCount = 438;
 
     public NodalOsOcrDictionaryManifest CreateCurrentAsciiManifest(bool verified = false)
     {
@@ -728,6 +731,225 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             BrowserCredentialRedactor.Redact($"{decision}; approvedDecode={approvedDecode}; no positive OCR claimed"));
     }
 
+    public NodalOsPaddleOcrExtraClassSemantics AuditPaddleOcrExtraClassSemantics()
+    {
+        var candidates = new[]
+        {
+            ExtraClassCandidate(
+                "official-ctc-blank-only",
+                "dictionary + PaddleOCR CTC blank",
+                "dictionary tokens + 1 blank at index 0",
+                supportsV4: false,
+                supportsV5: false,
+                evidenceApproved: true,
+                evidenceSource: "PaddleOCR CTCLabelDecode.add_special_char prepends blank and get_ignored_tokens returns [0]",
+                risk: "low",
+                decodeAllowed: false,
+                "official CTC blank policy explains PP-OCRv4 96 classes and PP-OCRv5 437 classes, not observed 97/438"),
+            ExtraClassCandidate(
+                "hypothesis-ignored-extra-class",
+                "dictionary + blank + ignored extra class",
+                "dictionary tokens + 1 blank + 1 ignored/reserved class",
+                supportsV4: true,
+                supportsV5: true,
+                evidenceApproved: false,
+                evidenceSource: "hypothesis only; no PaddleOCR/RapidOCR CTC postprocessor source identified an ignored extra class beyond blank",
+                risk: "high",
+                decodeAllowed: false,
+                "matches both observed output counts arithmetically but would require silently ignoring a model class without evidence"),
+            ExtraClassCandidate(
+                "hypothesis-unknown-token",
+                "dictionary + blank + unknown",
+                "dictionary tokens + 1 blank + 1 unknown token",
+                supportsV4: true,
+                supportsV5: true,
+                evidenceApproved: false,
+                evidenceSource: "hypothesis only; PaddleOCR CTCLabelDecode does not add unknown for CTC models",
+                risk: "high",
+                decodeAllowed: false,
+                "unknown token semantics are present in other decoder families, not approved for this CTC recognizer pair"),
+            ExtraClassCandidate(
+                "hypothesis-padding-token",
+                "dictionary + blank + padding",
+                "dictionary tokens + 1 blank + 1 padding token",
+                supportsV4: true,
+                supportsV5: true,
+                evidenceApproved: false,
+                evidenceSource: "hypothesis only; padding appears in non-CTC decoder variants, not in CTCLabelDecode",
+                risk: "high",
+                decodeAllowed: false,
+                "padding token would explain the count but lacks evidence for PP-OCRv4/PP-OCRv5 CTC"),
+            ExtraClassCandidate(
+                "rejected-terminal-empty-line-token",
+                "terminal newline as token",
+                "dictionary raw line segments + blank",
+                supportsV4: false,
+                supportsV5: false,
+                evidenceApproved: false,
+                evidenceSource: "PaddleOCR dictionary parser reads physical lines and strips CR/LF; terminal newline is not a token",
+                risk: "medium",
+                decodeAllowed: false,
+                "raw dictionary analysis showed terminal empty segment is not significant under PaddleOCR parser"),
+            ExtraClassCandidate(
+                "model-export-or-pair-mismatch",
+                "model export artifact or dictionary/model mismatch",
+                "observed output class count is dictionary + blank + 1 with no approved token semantics",
+                supportsV4: true,
+                supportsV5: true,
+                evidenceApproved: true,
+                evidenceSource: "local ONNX runtime metadata and verified dictionary counts from M247-M255",
+                risk: "high",
+                decodeAllowed: false,
+                "safest evidenced finding is unresolved extra class semantics, not an approved decoder mapping")
+        };
+
+        return new NodalOsPaddleOcrExtraClassSemantics(
+            $"paddle-extra-class-semantics-{Guid.NewGuid():N}",
+            OfficialEnglishDictionaryTokenCount,
+            PpOcrV4BlankCount: 1,
+            PaddleOcrV4EnglishRecognizerClassCount,
+            PaddleOcrV5EnglishDictionaryTokenCount,
+            PpOcrV5BlankCount: 1,
+            PaddleOcrV5EnglishObservedRecognizerClassCount,
+            candidates,
+            ApprovedCandidate: null,
+            OfficialBlankOnlyPolicyInsufficient: true,
+            ExtraClassSemanticsResolved: false,
+            DecodeAllowed: false,
+            NoAuthority: true,
+            "PP-OCRv4 and PP-OCRv5 both expose dictionary+blank+1, but no official CTC source approves the extra class semantics");
+    }
+
+    public IReadOnlyList<NodalOsPaddleOcrDecodeClassPolicy> CreatePaddleOcrDecodeClassPolicies()
+    {
+        return
+        [
+            DecodeClassPolicy(
+                "ppocrv5-official-blank-only",
+                "PP-OCRv5 dictionary + CTC blank",
+                PaddleOcrV5EnglishDictionaryTokenCount,
+                blankIndex: 0,
+                PaddleOcrV5EnglishObservedRecognizerClassCount,
+                expectedClassCount: PaddleOcrV5EnglishExpectedClassCountWithBlank,
+                extraClassIndex: null,
+                evidenceApproved: true,
+                hypothesisOnly: false,
+                evidenceSource: "PaddleOCR CTCLabelDecode official blank policy",
+                allowsDecode: false,
+                "official policy is approved but class count mismatches observed PP-OCRv5 output"),
+            DecodeClassPolicy(
+                "ppocrv5-hypothesis-ignore-extra",
+                "PP-OCRv5 ignore extra class",
+                PaddleOcrV5EnglishDictionaryTokenCount,
+                blankIndex: 0,
+                PaddleOcrV5EnglishObservedRecognizerClassCount,
+                expectedClassCount: PaddleOcrV5EnglishObservedRecognizerClassCount,
+                extraClassIndex: PaddleOcrV5EnglishObservedRecognizerClassCount - 1,
+                evidenceApproved: false,
+                hypothesisOnly: true,
+                evidenceSource: "hypothesis only",
+                allowsDecode: false,
+                "ignoring the extra class would be unsafe without postprocessor evidence"),
+            DecodeClassPolicy(
+                "ppocrv5-hypothesis-unknown",
+                "PP-OCRv5 unknown extra token",
+                PaddleOcrV5EnglishDictionaryTokenCount,
+                blankIndex: 0,
+                PaddleOcrV5EnglishObservedRecognizerClassCount,
+                expectedClassCount: PaddleOcrV5EnglishObservedRecognizerClassCount,
+                extraClassIndex: PaddleOcrV5EnglishObservedRecognizerClassCount - 1,
+                evidenceApproved: false,
+                hypothesisOnly: true,
+                evidenceSource: "hypothesis only",
+                allowsDecode: false,
+                "unknown token has not been proven for PP-OCRv5 CTC"),
+            DecodeClassPolicy(
+                "ppocrv5-hypothesis-padding",
+                "PP-OCRv5 padding extra token",
+                PaddleOcrV5EnglishDictionaryTokenCount,
+                blankIndex: 0,
+                PaddleOcrV5EnglishObservedRecognizerClassCount,
+                expectedClassCount: PaddleOcrV5EnglishObservedRecognizerClassCount,
+                extraClassIndex: PaddleOcrV5EnglishObservedRecognizerClassCount - 1,
+                evidenceApproved: false,
+                hypothesisOnly: true,
+                evidenceSource: "hypothesis only",
+                allowsDecode: false,
+                "padding token has not been proven for PP-OCRv5 CTC")
+        ];
+    }
+
+    public NodalOsPaddleOcrDecodePolicyApproval EvaluatePaddleOcrDecodeClassPolicy(
+        NodalOsPaddleOcrDecodeClassPolicy policy)
+    {
+        if (policy.HypothesisOnly || !policy.EvidenceApproved)
+        {
+            return DecodePolicyApproval(
+                policy,
+                NodalOsPaddleOcrDecodePolicyExperimentStatus.HypothesisOnly,
+                decodeAllowed: false,
+                "policy is hypothesis-only or lacks evidence; decode blocked");
+        }
+
+        if (policy.ExpectedClassCount != policy.ModelClassCount)
+        {
+            return DecodePolicyApproval(
+                policy,
+                NodalOsPaddleOcrDecodePolicyExperimentStatus.Rejected,
+                decodeAllowed: false,
+                $"policy expects {policy.ExpectedClassCount} classes but model exposes {policy.ModelClassCount}");
+        }
+
+        if (!policy.AllowsDecode)
+        {
+            return DecodePolicyApproval(
+                policy,
+                NodalOsPaddleOcrDecodePolicyExperimentStatus.DecodeBlocked,
+                decodeAllowed: false,
+                "policy is evidenced but explicitly blocks decode");
+        }
+
+        return DecodePolicyApproval(
+            policy,
+            NodalOsPaddleOcrDecodePolicyExperimentStatus.Approved,
+            decodeAllowed: true,
+            "approved decode policy; text remains no-authority and requires human review");
+    }
+
+    public NodalOsPaddleOcrDecodePolicyDecisionReport DecidePaddleOcrDecodePolicy(
+        NodalOsPaddleOcrExtraClassSemantics semantics,
+        IReadOnlyList<NodalOsPaddleOcrDecodePolicyApproval> approvals)
+    {
+        var approved = approvals.Any(a =>
+            a.Status == NodalOsPaddleOcrDecodePolicyExperimentStatus.Approved &&
+            a.DecodeAllowed);
+        var hypothesisOnly = approvals.Any(a => a.Status == NodalOsPaddleOcrDecodePolicyExperimentStatus.HypothesisOnly);
+        var rejected = approvals.Any(a => a.Status == NodalOsPaddleOcrDecodePolicyExperimentStatus.Rejected);
+
+        var decision = approved
+            ? NodalOsPaddleOcrExtraClassDecision.ReadyForApprovedDecodePolicy
+            : semantics.ExtraClassSemanticsResolved
+                ? NodalOsPaddleOcrExtraClassDecision.ReadyForManualDecodePolicyApproval
+                : hypothesisOnly || rejected
+                    ? NodalOsPaddleOcrExtraClassDecision.BlockedByExtraClassSemantics
+                    : NodalOsPaddleOcrExtraClassDecision.BlockedByDecodePolicyRisk;
+
+        return new NodalOsPaddleOcrDecodePolicyDecisionReport(
+            $"paddle-extra-class-decision-{Guid.NewGuid():N}",
+            semantics,
+            approvals,
+            decision,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            DecodeSuccessClaimed: false,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: semantics.NoAuthority && approvals.All(a => a.NoAuthority),
+            BrowserCredentialRedactor.Redact($"{decision}; approvedDecode={approved}; decode success not claimed"));
+    }
+
     public NodalOsOcrDictionaryManifestEntry CreatePaddleOcrV4EnglishManifestEntryWithoutApprovedSource()
     {
         return new NodalOsOcrDictionaryManifestEntry(
@@ -775,6 +997,75 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             decodeAllowed,
             evidenceSource,
             riskLevel,
+            BrowserCredentialRedactor.Redact(reason));
+
+    private static NodalOsPaddleOcrExtraClassCandidate ExtraClassCandidate(
+        string candidateId,
+        string name,
+        string expectedClassCountFormula,
+        bool supportsV4,
+        bool supportsV5,
+        bool evidenceApproved,
+        string evidenceSource,
+        string risk,
+        bool decodeAllowed,
+        string reason) =>
+        new(
+            candidateId,
+            name,
+            expectedClassCountFormula,
+            supportsV4,
+            supportsV5,
+            evidenceApproved,
+            evidenceSource,
+            risk,
+            decodeAllowed,
+            BrowserCredentialRedactor.Redact(reason));
+
+    private static NodalOsPaddleOcrDecodeClassPolicy DecodeClassPolicy(
+        string policyId,
+        string name,
+        int dictionaryTokenCount,
+        int blankIndex,
+        int modelClassCount,
+        int expectedClassCount,
+        int? extraClassIndex,
+        bool evidenceApproved,
+        bool hypothesisOnly,
+        string evidenceSource,
+        bool allowsDecode,
+        string reason) =>
+        new(
+            policyId,
+            name,
+            dictionaryTokenCount,
+            blankIndex,
+            modelClassCount,
+            expectedClassCount,
+            extraClassIndex,
+            evidenceApproved,
+            hypothesisOnly,
+            evidenceSource,
+            allowsDecode,
+            BrowserCredentialRedactor.Redact(reason));
+
+    private static NodalOsPaddleOcrDecodePolicyApproval DecodePolicyApproval(
+        NodalOsPaddleOcrDecodeClassPolicy policy,
+        NodalOsPaddleOcrDecodePolicyExperimentStatus status,
+        bool decodeAllowed,
+        string reason) =>
+        new(
+            $"paddle-decode-policy-{Guid.NewGuid():N}",
+            policy,
+            status,
+            DecodeAttempted: false,
+            decodeAllowed,
+            DecodedText: null,
+            Confidence: null,
+            RequiresHumanReview: true,
+            NoRawPersistence: true,
+            NoSensitive: true,
+            NoAuthority: true,
             BrowserCredentialRedactor.Redact(reason));
 
     private static NodalOsCtcDecodePolicyExperimentResult DecodePolicyResult(

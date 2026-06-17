@@ -112,6 +112,29 @@ public enum NodalOsCtcDecodePolicyExperimentStatus
     NotRun
 }
 
+public enum NodalOsPaddleOcrDecodePolicyExperimentStatus
+{
+    Approved,
+    HypothesisOnly,
+    Rejected,
+    DecodeBlocked,
+    DecodeAttempted,
+    DecodeSucceeded,
+    DecodeEmpty,
+    LowConfidence
+}
+
+public enum NodalOsPaddleOcrExtraClassDecision
+{
+    ReadyForApprovedDecodePolicy,
+    ReadyForSyntheticTextDecodeFixtures,
+    ReadyForManualDecodePolicyApproval,
+    ReadyForRecognizerModelReplacement,
+    BlockedByExtraClassSemantics,
+    BlockedByDecodePolicyRisk,
+    NotReady
+}
+
 public enum NodalOsDictionaryParserPolicy
 {
     PreserveRawLineSegments,
@@ -413,6 +436,77 @@ public sealed record NodalOsRecognizerDictionaryPairCompatibilityMatrix(
     bool ProductiveOcrBlocked,
     bool ShadowModeBlocked,
     bool DecodeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsPaddleOcrExtraClassCandidate(
+    string CandidateId,
+    string Name,
+    string ExpectedClassCountFormula,
+    bool SupportsPpOcrV4Pattern,
+    bool SupportsPpOcrV5Pattern,
+    bool EvidenceApproved,
+    string EvidenceSource,
+    string Risk,
+    bool DecodeAllowed,
+    string Reason);
+
+public sealed record NodalOsPaddleOcrExtraClassSemantics(
+    string SemanticsId,
+    int PpOcrV4DictionaryTokenCount,
+    int PpOcrV4BlankCount,
+    int PpOcrV4ObservedClassCount,
+    int PpOcrV5DictionaryTokenCount,
+    int PpOcrV5BlankCount,
+    int PpOcrV5ObservedClassCount,
+    IReadOnlyList<NodalOsPaddleOcrExtraClassCandidate> Candidates,
+    NodalOsPaddleOcrExtraClassCandidate? ApprovedCandidate,
+    bool OfficialBlankOnlyPolicyInsufficient,
+    bool ExtraClassSemanticsResolved,
+    bool DecodeAllowed,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsPaddleOcrDecodeClassPolicy(
+    string PolicyId,
+    string Name,
+    int DictionaryTokenCount,
+    int BlankIndex,
+    int ModelClassCount,
+    int ExpectedClassCount,
+    int? ExtraClassIndex,
+    bool EvidenceApproved,
+    bool HypothesisOnly,
+    string EvidenceSource,
+    bool AllowsDecode,
+    string Reason);
+
+public sealed record NodalOsPaddleOcrDecodePolicyApproval(
+    string ApprovalId,
+    NodalOsPaddleOcrDecodeClassPolicy Policy,
+    NodalOsPaddleOcrDecodePolicyExperimentStatus Status,
+    bool DecodeAttempted,
+    bool DecodeAllowed,
+    string? DecodedText,
+    double? Confidence,
+    bool RequiresHumanReview,
+    bool NoRawPersistence,
+    bool NoSensitive,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsPaddleOcrDecodePolicyDecisionReport(
+    string ReportId,
+    NodalOsPaddleOcrExtraClassSemantics Semantics,
+    IReadOnlyList<NodalOsPaddleOcrDecodePolicyApproval> PolicyApprovals,
+    NodalOsPaddleOcrExtraClassDecision Decision,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool DecodeSuccessClaimed,
     bool NoRawPersistence,
     bool NoFullScreen,
     bool NoSensitive,

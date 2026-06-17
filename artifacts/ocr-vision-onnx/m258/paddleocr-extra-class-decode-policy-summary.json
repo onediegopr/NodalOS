@@ -1,0 +1,85 @@
+{
+  "milestone": "M256+M257+M258",
+  "decision": "M256+M257+M258 CERRADO / BLOCKED_BY_EXTRA_CLASS_SEMANTICS",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "patterns": {
+    "ppocrv4": {
+      "dictionaryTokens": 95,
+      "blankIndex": 0,
+      "expectedClasses": 96,
+      "observedClasses": 97,
+      "formula": "dictionary + blank + 1"
+    },
+    "ppocrv5": {
+      "dictionaryTokens": 436,
+      "blankIndex": 0,
+      "expectedClasses": 437,
+      "observedClasses": 438,
+      "formula": "dictionary + blank + 1"
+    }
+  },
+  "evidenceSources": [
+    "PaddleOCR rec_postprocess.py CTCLabelDecode blank at index 0",
+    "PaddleOCR dictionary parser strips CR/LF only",
+    "RapidOCR model list PP-OCRv5 recognizer support",
+    "RapidOCR maintainer discussion on ONNX character metadata",
+    "M253-M255 local PP-OCRv5 runtime smoke output [1,40,438]"
+  ],
+  "hypotheses": [
+    {
+      "id": "official-ctc-blank-only",
+      "supportsPpOcrV4": false,
+      "supportsPpOcrV5": false,
+      "evidenceApproved": true,
+      "decodeAllowed": false,
+      "reason": "official policy explains dictionary+blank only"
+    },
+    {
+      "id": "hypothesis-ignored-extra-class",
+      "supportsPpOcrV4": true,
+      "supportsPpOcrV5": true,
+      "evidenceApproved": false,
+      "decodeAllowed": false,
+      "reason": "would require silently ignoring a class without evidence"
+    },
+    {
+      "id": "hypothesis-unknown-token",
+      "supportsPpOcrV4": true,
+      "supportsPpOcrV5": true,
+      "evidenceApproved": false,
+      "decodeAllowed": false,
+      "reason": "unknown token not approved for PaddleOCR CTC"
+    },
+    {
+      "id": "hypothesis-padding-token",
+      "supportsPpOcrV4": true,
+      "supportsPpOcrV5": true,
+      "evidenceApproved": false,
+      "decodeAllowed": false,
+      "reason": "padding token not approved for PaddleOCR CTC"
+    }
+  ],
+  "decode": {
+    "attempted": false,
+    "allowed": false,
+    "successClaimed": false,
+    "decodedText": null,
+    "confidence": null,
+    "reason": "extra class semantics unresolved"
+  },
+  "safety": {
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "riskyOcrInProcess": false
+  },
+  "nextGate": "manual decode policy approval or recognizer model replacement"
+}
