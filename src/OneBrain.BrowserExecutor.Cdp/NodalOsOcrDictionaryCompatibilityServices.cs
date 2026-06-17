@@ -950,6 +950,171 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             BrowserCredentialRedactor.Redact($"{decision}; approvedDecode={approved}; decode success not claimed"));
     }
 
+    public NodalOsOcrRecognizerReplacementStrategyMatrix CreateRecognizerReplacementStrategyMatrix()
+    {
+        var strategies = new[]
+        {
+            Strategy(
+                "claude-extra-class-deep-audit",
+                "External deep semantics audit before any decode approval",
+                Candidate(
+                    "paddleocr-rapidocr-current-plus-candidate",
+                    "Current PP-OCRv4 and candidate PP-OCRv5 evidence package",
+                    "official PaddleOCR/RapidOCR sources plus local verified runtime evidence",
+                    localOffline: true,
+                    onnxRuntimeSupported: true,
+                    dictionaryExplicit: true,
+                    classCountClear: false,
+                    noSaas: true,
+                    noAuthorityCompatible: true,
+                    risk: "low implementation risk; decision risk delegated to explicit audit",
+                    maintenance: "minimal code churn; preserves existing guardrails"),
+                NodalOsOcrRecognizerReplacementStrategyStatus.Recommended,
+                rank: 1,
+                requiresManualApproval: false,
+                decodeAutoApproved: false,
+                "best next step because no official source currently approves the extra class semantics"),
+            Strategy(
+                "manual-extra-class-policy-approval",
+                "Continue PP-OCRv5 with manual decode policy approval",
+                Candidate(
+                    "ppocrv5-en-extra-class-policy",
+                    "PP-OCRv5 English candidate with manually approved extra-class handling",
+                    "verified ModelScope/RapidOCR pair, but extra class semantics unresolved",
+                    localOffline: true,
+                    onnxRuntimeSupported: true,
+                    dictionaryExplicit: true,
+                    classCountClear: false,
+                    noSaas: true,
+                    noAuthorityCompatible: true,
+                    risk: "high; would approve hypothesis-only policy unless external evidence is added",
+                    maintenance: "low code churn but high audit burden"),
+                NodalOsOcrRecognizerReplacementStrategyStatus.ViableNeedsApproval,
+                rank: 2,
+                requiresManualApproval: true,
+                decodeAutoApproved: false,
+                "manual approval cannot auto-enable decode or productive OCR"),
+            Strategy(
+                "recognizer-model-replacement-search",
+                "Search for another explicit recognizer+dictionary pair",
+                Candidate(
+                    "future-explicit-recognizer-dictionary-pair",
+                    "Alternative ONNX recognizer with class count fully explained by dictionary policy",
+                    "must be official, pinnable, local, and explicit",
+                    localOffline: true,
+                    onnxRuntimeSupported: true,
+                    dictionaryExplicit: true,
+                    classCountClear: true,
+                    noSaas: true,
+                    noAuthorityCompatible: true,
+                    risk: "medium; acquisition/runtime compatibility unknown",
+                    maintenance: "medium; new manifest/download/verify/runtime smoke required"),
+                NodalOsOcrRecognizerReplacementStrategyStatus.ViableNeedsResearch,
+                rank: 3,
+                requiresManualApproval: false,
+                decodeAutoApproved: false,
+                "preferred over inference-only extra-class policy if Claude audit cannot resolve semantics"),
+            Strategy(
+                "rapidocr-postprocessor-convention-adoption",
+                "Adopt RapidOCR postprocessor conventions directly",
+                Candidate(
+                    "rapidocr-postprocessor-port",
+                    "RapidOCR postprocessor convention port",
+                    "official RapidOCR implementation, but requires legal/architecture review before porting",
+                    localOffline: true,
+                    onnxRuntimeSupported: true,
+                    dictionaryExplicit: true,
+                    classCountClear: false,
+                    noSaas: true,
+                    noAuthorityCompatible: true,
+                    risk: "medium-high; may still not explain extra class without metadata behavior",
+                    maintenance: "medium-high; porting and license/provenance review required"),
+                NodalOsOcrRecognizerReplacementStrategyStatus.ViableNeedsApproval,
+                rank: 4,
+                requiresManualApproval: true,
+                decodeAutoApproved: false,
+                "cannot be used as silent approval of extra class semantics"),
+            Strategy(
+                "alternative-local-ocr-family-review",
+                "Review another local OCR ONNX family",
+                Candidate(
+                    "alternative-local-onnx-ocr-family",
+                    "Non-Paddle local OCR family",
+                    "source must be official/verifiable and offline-compatible",
+                    localOffline: true,
+                    onnxRuntimeSupported: true,
+                    dictionaryExplicit: false,
+                    classCountClear: false,
+                    noSaas: true,
+                    noAuthorityCompatible: true,
+                    risk: "medium-high; integration and quality unknown",
+                    maintenance: "high; new model family contracts and probes required"),
+                NodalOsOcrRecognizerReplacementStrategyStatus.ViableNeedsResearch,
+                rank: 5,
+                requiresManualApproval: false,
+                decodeAutoApproved: false,
+                "valid fallback if PaddleOCR/RapidOCR class semantics remain unresolved"),
+            Strategy(
+                "tesseract-local-fallback",
+                "Tesseract local fallback",
+                Candidate(
+                    "tesseract-local-fallback",
+                    "Tesseract OCR local fallback",
+                    "mature local OCR, non-ONNX and lower-priority for current architecture",
+                    localOffline: true,
+                    onnxRuntimeSupported: false,
+                    dictionaryExplicit: true,
+                    classCountClear: true,
+                    noSaas: true,
+                    noAuthorityCompatible: true,
+                    risk: "medium; architecture mismatch and quality variance",
+                    maintenance: "high; separate runtime/deployment path"),
+                NodalOsOcrRecognizerReplacementStrategyStatus.ViableNeedsResearch,
+                rank: 6,
+                requiresManualApproval: false,
+                decodeAutoApproved: false,
+                "local fallback only, not a replacement for current ONNX decision gate"),
+            Strategy(
+                "keep-ocr-blocked",
+                "Keep OCR blocked until clean pair exists",
+                Candidate(
+                    "blocked-state",
+                    "No recognizer decode",
+                    "current safest operational state",
+                    localOffline: true,
+                    onnxRuntimeSupported: true,
+                    dictionaryExplicit: false,
+                    classCountClear: false,
+                    noSaas: true,
+                    noAuthorityCompatible: true,
+                    risk: "low safety risk; no feature progress",
+                    maintenance: "low"),
+                NodalOsOcrRecognizerReplacementStrategyStatus.Blocked,
+                rank: 7,
+                requiresManualApproval: false,
+                decodeAutoApproved: false,
+                "safe default if no strategy is approved")
+        };
+
+        var recommended = strategies.OrderBy(strategy => strategy.Rank).First();
+
+        return new NodalOsOcrRecognizerReplacementStrategyMatrix(
+            $"ocr-recognizer-replacement-strategy-{Guid.NewGuid():N}",
+            strategies,
+            recommended,
+            NodalOsOcrRecognizerReplacementDecision.ReadyForClaudeExtraClassAudit,
+            ExtraClassUnresolved: true,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            DecodeBlocked: true,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: true,
+            "external semantics audit is required before manual policy approval or model-family replacement");
+    }
+
     public NodalOsOcrDictionaryManifestEntry CreatePaddleOcrV4EnglishManifestEntryWithoutApprovedSource()
     {
         return new NodalOsOcrDictionaryManifestEntry(
@@ -1065,6 +1230,53 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
             RequiresHumanReview: true,
             NoRawPersistence: true,
             NoSensitive: true,
+            NoAuthority: true,
+            BrowserCredentialRedactor.Redact(reason));
+
+    private static NodalOsOcrModelFamilyCandidate Candidate(
+        string candidateId,
+        string name,
+        string sourceQuality,
+        bool localOffline,
+        bool onnxRuntimeSupported,
+        bool dictionaryExplicit,
+        bool classCountClear,
+        bool noSaas,
+        bool noAuthorityCompatible,
+        string risk,
+        string maintenance) =>
+        new(
+            candidateId,
+            name,
+            sourceQuality,
+            localOffline,
+            onnxRuntimeSupported,
+            dictionaryExplicit,
+            classCountClear,
+            noSaas,
+            noAuthorityCompatible,
+            BrowserCredentialRedactor.Redact(risk),
+            BrowserCredentialRedactor.Redact(maintenance));
+
+    private static NodalOsOcrRecognizerReplacementStrategy Strategy(
+        string strategyId,
+        string name,
+        NodalOsOcrModelFamilyCandidate candidate,
+        NodalOsOcrRecognizerReplacementStrategyStatus status,
+        int rank,
+        bool requiresManualApproval,
+        bool decodeAutoApproved,
+        string reason) =>
+        new(
+            strategyId,
+            name,
+            candidate,
+            status,
+            rank,
+            requiresManualApproval,
+            decodeAutoApproved,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
             NoAuthority: true,
             BrowserCredentialRedactor.Redact(reason));
 

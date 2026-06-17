@@ -1,0 +1,79 @@
+{
+  "milestone": "M259+M260+M261",
+  "decision": "M259+M260+M261 CERRADO / READY_FOR_CLAUDE_EXTRA_CLASS_AUDIT",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "extraClassStatus": {
+    "resolved": false,
+    "pattern": "dictionary + blank + 1",
+    "ppocrv4": {
+      "dictionaryTokens": 95,
+      "expectedClasses": 96,
+      "observedClasses": 97
+    },
+    "ppocrv5": {
+      "dictionaryTokens": 436,
+      "expectedClasses": 437,
+      "observedClasses": 438
+    }
+  },
+  "recommendedNextRoute": "claude-extra-class-deep-audit",
+  "strategies": [
+    {
+      "rank": 1,
+      "id": "claude-extra-class-deep-audit",
+      "status": "Recommended",
+      "decodeAutoApproved": false
+    },
+    {
+      "rank": 2,
+      "id": "manual-extra-class-policy-approval",
+      "status": "ViableNeedsApproval",
+      "decodeAutoApproved": false
+    },
+    {
+      "rank": 3,
+      "id": "recognizer-model-replacement-search",
+      "status": "ViableNeedsResearch",
+      "decodeAutoApproved": false
+    },
+    {
+      "rank": 4,
+      "id": "rapidocr-postprocessor-convention-adoption",
+      "status": "ViableNeedsApproval",
+      "decodeAutoApproved": false
+    },
+    {
+      "rank": 5,
+      "id": "alternative-local-ocr-family-review",
+      "status": "ViableNeedsResearch",
+      "decodeAutoApproved": false
+    },
+    {
+      "rank": 6,
+      "id": "tesseract-local-fallback",
+      "status": "ViableNeedsResearch",
+      "decodeAutoApproved": false
+    },
+    {
+      "rank": 7,
+      "id": "keep-ocr-blocked",
+      "status": "Blocked",
+      "decodeAutoApproved": false
+    }
+  ],
+  "safety": {
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "decodeBlocked": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "riskyOcrInProcess": false
+  }
+}

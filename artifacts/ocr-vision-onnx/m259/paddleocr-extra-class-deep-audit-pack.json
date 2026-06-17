@@ -1,0 +1,50 @@
+{
+  "milestone": "M259",
+  "pack": "paddleocr-extra-class-semantics-deep-audit",
+  "decision": "audit-pack-prepared",
+  "ppocrv4": {
+    "recognizer": "ch_PP-OCRv4_rec.onnx",
+    "dictionaryTokens": 95,
+    "ctcBlankIndex": 0,
+    "expectedClasses": 96,
+    "observedClasses": 97,
+    "status": "dictionary_plus_blank_does_not_explain_output"
+  },
+  "ppocrv5": {
+    "recognizer": "en_PP-OCRv5_rec_mobile.onnx",
+    "dictionary": "ppocrv5_en_dict.txt",
+    "dictionaryTokens": 436,
+    "ctcBlankIndex": 0,
+    "expectedClasses": 437,
+    "observedClasses": 438,
+    "status": "dictionary_plus_blank_does_not_explain_output"
+  },
+  "hypothesesRejectedOrUnapproved": [
+    "ignored-extra-class",
+    "unknown",
+    "padding",
+    "reserved",
+    "space-token-parser-loss",
+    "terminal-empty-line",
+    "export-artifact",
+    "model-dictionary-mismatch"
+  ],
+  "questions": [
+    "What is the extra class?",
+    "Is it safe to ignore?",
+    "Is it unknown/padding/reserved?",
+    "Is it an export artifact?",
+    "Is this a known PaddleOCR/RapidOCR convention?",
+    "Should NODAL OS approve a policy or replace the model pair?"
+  ],
+  "safety": {
+    "decodeAttempted": false,
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true
+  }
+}

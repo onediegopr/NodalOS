@@ -135,6 +135,26 @@ public enum NodalOsPaddleOcrExtraClassDecision
     NotReady
 }
 
+public enum NodalOsOcrRecognizerReplacementDecision
+{
+    ReadyForClaudeExtraClassAudit,
+    ReadyForManualDecodePolicyApproval,
+    ReadyForRecognizerModelReplacementSearch,
+    ReadyForAlternativeLocalOcrFamilyReview,
+    BlockedByExtraClassSemantics,
+    NotReady
+}
+
+public enum NodalOsOcrRecognizerReplacementStrategyStatus
+{
+    Recommended,
+    ViableNeedsApproval,
+    ViableNeedsResearch,
+    RejectedHighRisk,
+    RejectedSaas,
+    Blocked
+}
+
 public enum NodalOsDictionaryParserPolicy
 {
     PreserveRawLineSegments,
@@ -507,6 +527,48 @@ public sealed record NodalOsPaddleOcrDecodePolicyDecisionReport(
     bool ProductiveOcrBlocked,
     bool ShadowModeBlocked,
     bool DecodeSuccessClaimed,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsOcrModelFamilyCandidate(
+    string CandidateId,
+    string Name,
+    string SourceQuality,
+    bool LocalOffline,
+    bool OnnxRuntimeSupported,
+    bool DictionaryExplicit,
+    bool ClassCountClear,
+    bool NoSaas,
+    bool NoAuthorityCompatible,
+    string Risk,
+    string Maintenance);
+
+public sealed record NodalOsOcrRecognizerReplacementStrategy(
+    string StrategyId,
+    string Name,
+    NodalOsOcrModelFamilyCandidate Candidate,
+    NodalOsOcrRecognizerReplacementStrategyStatus Status,
+    int Rank,
+    bool RequiresManualApproval,
+    bool DecodeAutoApproved,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsOcrRecognizerReplacementStrategyMatrix(
+    string MatrixId,
+    IReadOnlyList<NodalOsOcrRecognizerReplacementStrategy> Strategies,
+    NodalOsOcrRecognizerReplacementStrategy RecommendedStrategy,
+    NodalOsOcrRecognizerReplacementDecision Decision,
+    bool ExtraClassUnresolved,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool DecodeBlocked,
     bool NoRawPersistence,
     bool NoFullScreen,
     bool NoSensitive,
