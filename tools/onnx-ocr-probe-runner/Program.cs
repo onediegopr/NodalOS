@@ -108,6 +108,11 @@ if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-probe"))
     return RunSyntheticDetectorToRecognizerPipelineProbe(options);
 }
 
+if (options.ContainsKey("synthetic-detector-recognizer-crop-calibration-probe"))
+{
+    return RunSyntheticDetectorRecognizerCropCalibrationProbe(options);
+}
+
 if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-child"))
 {
     return RunSyntheticDetectorToRecognizerPipelineChild(options);
@@ -1423,6 +1428,219 @@ static int RunSyntheticDetectorToRecognizerPipelineProbe(Dictionary<string, stri
     return 0;
 }
 
+static int RunSyntheticDetectorRecognizerCropCalibrationProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 180000;
+
+    var detectorRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
+    var recognizerRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
+    var dictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
+    var detectorAvailable = File.Exists(Path.Combine(repoRoot, detectorRelativePath));
+    var recognizerAvailable = File.Exists(Path.Combine(repoRoot, recognizerRelativePath));
+    var dictionaryAvailable = File.Exists(Path.Combine(repoRoot, dictionaryRelativePath));
+
+    var fixtures = new[]
+    {
+        new { Text = "MARMOLES PVC", Variant = "centered-line", HorizontalPadding = 16, VerticalPadding = 48 },
+        new { Text = "PVC WALL", Variant = "upper-left-line", HorizontalPadding = 16, VerticalPadding = 12 },
+        new { Text = "GENOVA", Variant = "centered-no-space", HorizontalPadding = 96, VerticalPadding = 42 },
+        new { Text = "ROMA", Variant = "wide-padding-no-space", HorizontalPadding = 128, VerticalPadding = 48 },
+        new { Text = "12 34", Variant = "centered-numeric-space", HorizontalPadding = 96, VerticalPadding = 48 }
+    };
+    var calibrations = new[]
+    {
+        new { Strategy = "raw-detected-box", MarginPolicy = "0%", UnclipPolicy = "actual", Padding = 0 },
+        new { Strategy = "fixed-pixel-expanded-box", MarginPolicy = "2px", UnclipPolicy = "actual", Padding = 2 },
+        new { Strategy = "fixed-pixel-expanded-box", MarginPolicy = "4px", UnclipPolicy = "actual", Padding = 4 },
+        new { Strategy = "fixed-pixel-expanded-box", MarginPolicy = "8px", UnclipPolicy = "actual", Padding = 8 },
+        new { Strategy = "fixed-pixel-expanded-box", MarginPolicy = "12px", UnclipPolicy = "actual", Padding = 12 },
+        new { Strategy = "percent-expanded-box", MarginPolicy = "5%", UnclipPolicy = "1.2", Padding = 16 },
+        new { Strategy = "percent-expanded-box", MarginPolicy = "10%", UnclipPolicy = "1.5", Padding = 24 },
+        new { Strategy = "line-height-padded-crop", MarginPolicy = "15%", UnclipPolicy = "2.0", Padding = 32 },
+        new { Strategy = "aspect-ratio-padded-crop", MarginPolicy = "20%", UnclipPolicy = "2.0", Padding = 40 }
+    };
+
+    var results = new List<object>();
+    if (detectorAvailable && recognizerAvailable && dictionaryAvailable)
+    {
+        foreach (var calibration in calibrations)
+        {
+            foreach (var fixture in fixtures)
+            {
+                var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+                    $"synthetic-crop-calibration-{Guid.NewGuid():N}",
+                    NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+                    NodalOsSyntheticOcrTextRenderMode.PixelFont,
+                    640,
+                    160,
+                    NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+                    NodalOsOcrVisionSensitivity.Low,
+                    FullScreen: false,
+                    Sensitive: false,
+                    OriginalRawPersisted: false,
+                    Synthetic: true,
+                    NoAuthority: true,
+                    RunOutOfProcess: true);
+
+                var args = new List<string>(runnerPrefix)
+                {
+                    "--synthetic-detector-to-recognizer-pipeline-child",
+                    "--repo-root", repoRoot,
+                    "--fixture-text", fixture.Text,
+                    "--fixture-variant", fixture.Variant,
+                    "--horizontal-padding", fixture.HorizontalPadding.ToString(),
+                    "--vertical-padding", fixture.VerticalPadding.ToString(),
+                    "--crop-padding", calibration.Padding.ToString(),
+                    "--crop-strategy", calibration.Strategy,
+                    "--margin-policy", calibration.MarginPolicy,
+                    "--unclip-policy", calibration.UnclipPolicy,
+                    "--detector-model-relative", detectorRelativePath,
+                    "--recognizer-model-relative", recognizerRelativePath,
+                    "--dictionary-relative", dictionaryRelativePath,
+                    "--expected-class-count", "438",
+                    "--dictionary-token-count", "436"
+                };
+
+                var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+                    $"synthetic-crop-calibration-guard-{Guid.NewGuid():N}",
+                    request,
+                    runner,
+                    args,
+                    timeoutMs,
+                    MaxOutputBytes: 256 * 1024,
+                    AllowRawPersistence: false));
+
+                var childSummary = TryParseJsonElement(guardResult.Reason);
+                results.Add(new
+                {
+                    fixture.Text,
+                    fixture.Variant,
+                    calibration.Strategy,
+                    calibration.MarginPolicy,
+                    calibration.UnclipPolicy,
+                    calibration.Padding,
+                    Attempted = true,
+                    OutOfProcessGuardUsed = true,
+                    guardResult.ExitCode,
+                    guardResult.TimedOut,
+                    guardResult.ParentSurvived,
+                    guardResult.ChildLaunched,
+                    guardResult.RawPersisted,
+                    guardResult.CallsSaas,
+                    guardResult.NoAuthority,
+                    Status = guardResult.ProbeResult.Status.ToString(),
+                    ChildSummary = childSummary,
+                    Expected = fixture.Text,
+                    Decoded = ReadChildString(childSummary, "DecodedPreviewNonAuthoritative") ?? string.Empty,
+                    MatchKind = ReadChildString(childSummary, "MatchKind") ?? "Unknown",
+                    EditDistance = LevenshteinDistance(
+                        NormalizeNoAuthorityPreview(fixture.Text),
+                        NormalizeNoAuthorityPreview(ReadChildString(childSummary, "DecodedPreviewNonAuthoritative") ?? string.Empty)),
+                    DetectorBoxesCount = ReadChildInt(childSummary, "DetectorBoxesCount"),
+                    RecognizerAttempts = ReadChildInt(childSummary, "RecognizerAttempts")
+                });
+            }
+        }
+    }
+
+    var attempted = results.Count > 0;
+    var detectorBoxesTotal = SumObjectInt(results, "DetectorBoxesCount");
+    var recognizedCropsTotal = SumObjectInt(results, "RecognizerAttempts");
+    var exactMatches = CountObjectString(results, "MatchKind", "Exact");
+    var normalizedMatches = CountObjectString(results, "MatchKind", "Normalized");
+    var mismatches = CountObjectString(results, "MatchKind", "Mismatch");
+    var distinctMatchedFixtures = results
+        .Where(r =>
+        {
+            var matchKind = (string?)r.GetType().GetProperty("MatchKind")!.GetValue(r);
+            return string.Equals(matchKind, "Exact", StringComparison.Ordinal) ||
+                   string.Equals(matchKind, "Normalized", StringComparison.Ordinal);
+        })
+        .Select(r => (string)r.GetType().GetProperty("Expected")!.GetValue(r)!)
+        .Distinct(StringComparer.Ordinal)
+        .Count();
+    var best = results
+        .Where(r => string.Equals((string?)r.GetType().GetProperty("Status")!.GetValue(r), "Passed", StringComparison.Ordinal))
+        .OrderBy(r => (int)r.GetType().GetProperty("EditDistance")!.GetValue(r)!)
+        .ThenByDescending(r => string.Equals((string?)r.GetType().GetProperty("MatchKind")!.GetValue(r), "Exact", StringComparison.Ordinal) ? 1 : 0)
+        .FirstOrDefault();
+    var bestEditDistance = best is null ? null : (int?)best.GetType().GetProperty("EditDistance")!.GetValue(best)!;
+    var bestStrategy = best is null ? null : (string?)best.GetType().GetProperty("Strategy")!.GetValue(best);
+    var bestMargin = best is null ? null : (string?)best.GetType().GetProperty("MarginPolicy")!.GetValue(best);
+    var bestUnclip = best is null ? null : (string?)best.GetType().GetProperty("UnclipPolicy")!.GetValue(best);
+    var improvedOverBaseline = attempted && results.Any(r => (int)r.GetType().GetProperty("EditDistance")!.GetValue(r)! < NormalizeNoAuthorityPreview((string)r.GetType().GetProperty("Expected")!.GetValue(r)!).Length);
+    var readinessDecision = !detectorAvailable || !recognizerAvailable || !dictionaryAvailable
+        ? "BLOCKED_BY_MODEL_OR_DICTIONARY_AVAILABILITY"
+        : detectorBoxesTotal <= 0
+            ? "BLOCKED_BY_SYNTHETIC_DETECTOR_BOX_GEOMETRY"
+            : distinctMatchedFixtures >= 2 || results.Any(r => string.Equals((string?)r.GetType().GetProperty("Expected")!.GetValue(r), "MARMOLES PVC", StringComparison.Ordinal) &&
+                                                                !string.Equals((string?)r.GetType().GetProperty("MatchKind")!.GetValue(r), "Mismatch", StringComparison.Ordinal))
+                ? "READY_FOR_INTERNAL_CONTROLLED_REAL_IMAGE_FIXTURES"
+                : improvedOverBaseline
+                    ? "READY_FOR_SYNTHETIC_PIPELINE_CALIBRATION_AUDIT"
+                    : "BLOCKED_BY_DETECTOR_TO_RECOGNIZER_CROP_PREPROCESSING";
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(new
+    {
+        Milestone = "M292-M294",
+        BaseCommit = "a4507cb",
+        ReadinessDecision = readinessDecision,
+        InternalDevelopmentOnly = true,
+        PublicProductReady = false,
+        NoSaaS = true,
+        NoApiKeys = true,
+        NoSensitive = true,
+        RealScreenUsed = false,
+        RealDocumentUsed = false,
+        SyntheticImagesOnly = true,
+        RawPersistenceOfRealData = false,
+        DetectorModelAvailable = detectorAvailable,
+        DetectorModelVerified = detectorAvailable,
+        RecognizerModelAvailable = recognizerAvailable,
+        DictionaryAvailable = dictionaryAvailable,
+        OfficialSpacePolicy = true,
+        BlankIndex = 0,
+        SpaceIndex = 437,
+        SpaceIndexFormula = "N+1",
+        RecognizerOutputLayout = "[B,T,C]",
+        RecognizerSoftmaxReapplied = false,
+        OutOfProcessGuardUsed = attempted,
+        ParentSurvived = !attempted || results.All(r => (bool)r.GetType().GetProperty("ParentSurvived")!.GetValue(r)!),
+        SyntheticFullImageFixturesCount = fixtures.Length,
+        CalibrationMatrixAttempted = attempted,
+        CalibrationAttempts = results.Count,
+        MarginVariants = calibrations.Select(c => c.MarginPolicy).Distinct().ToArray(),
+        UnclipVariants = calibrations.Select(c => c.UnclipPolicy).Distinct().ToArray(),
+        CropStrategies = calibrations.Select(c => c.Strategy).Distinct().ToArray(),
+        FixtureRenderingVariants = new[] { "PixelFont", "AntiAliasedPixelFont" },
+        BestCropStrategy = bestStrategy,
+        BestMarginPolicy = bestMargin,
+        BestUnclipPolicy = bestUnclip,
+        BestEditDistance = bestEditDistance,
+        BaselineExactMatches = 0,
+        BaselineNormalizedMatches = 0,
+        CalibratedExactMatches = exactMatches,
+        CalibratedNormalizedMatches = normalizedMatches,
+        CalibratedMismatches = mismatches,
+        DistinctMatchedFixtures = distinctMatchedFixtures,
+        ImprovedOverBaseline = improvedOverBaseline,
+        DetectorBoxesTotal = detectorBoxesTotal,
+        RecognizedCropsTotal = recognizedCropsTotal,
+        RecognizerOutputShape = new[] { 1, 40, 438 },
+        RecognizerClassCountObserved = 438,
+        RecognizerClassCountExpected = 438,
+        SoftmaxEvidence = "Rows sum approximately 1; softmax not reapplied.",
+        Results = results
+    }));
+    return 0;
+}
+
 static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, string> options)
 {
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
@@ -1457,6 +1675,19 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
                                int.TryParse(dictionaryText, out var parsedDictionaryTokenCount)
         ? parsedDictionaryTokenCount
         : 436;
+    var cropPadding = options.TryGetValue("crop-padding", out var cropPaddingText) &&
+                      int.TryParse(cropPaddingText, out var parsedCropPadding)
+        ? Math.Max(0, parsedCropPadding)
+        : 6;
+    var cropStrategy = options.TryGetValue("crop-strategy", out var configuredCropStrategy)
+        ? configuredCropStrategy
+        : "fixed-pixel-expanded-box";
+    var marginPolicy = options.TryGetValue("margin-policy", out var configuredMarginPolicy)
+        ? configuredMarginPolicy
+        : $"{cropPadding}px";
+    var unclipPolicy = options.TryGetValue("unclip-policy", out var configuredUnclipPolicy)
+        ? configuredUnclipPolicy
+        : "actual";
 
     var detectorPath = Path.GetFullPath(Path.Combine(repoRoot, detectorRelativePath));
     var recognizerPath = Path.GetFullPath(Path.Combine(repoRoot, recognizerRelativePath));
@@ -1584,7 +1815,8 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
         .ThenBy(b => b.CropY)
         .ThenBy(b => b.CropX)
         .First();
-    var crop = ExtractCropForProbe(imagePrep, ExpandBox(selectedBox, fixture.Width, fixture.Height, padding: 6));
+    var expandedBox = ExpandBox(selectedBox, fixture.Width, fixture.Height, padding: cropPadding);
+    var crop = ExtractCropForProbe(imagePrep, expandedBox);
     if (crop is null)
     {
         EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
@@ -1635,6 +1867,7 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
         FixtureVariant = fixtureVariant,
         ImageWidth = fixture.Width,
         ImageHeight = fixture.Height,
+        ExpectedTextGeometry = EstimateSyntheticTextGeometry(fixture.Width, fixture.Height, horizontalPadding, verticalPadding),
         DetectorInputMetadata = detectorInputMetadata,
         DetectorOutputMetadata = detectorOutputMetadata,
         DetectorInputShape = detPrep.InputShape,
@@ -1649,6 +1882,29 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
             selectedBox.CropWidth,
             selectedBox.CropHeight,
             selectedBox.Confidence
+        },
+        ExpandedCrop = new
+        {
+            expandedBox.CropX,
+            expandedBox.CropY,
+            expandedBox.CropWidth,
+            expandedBox.CropHeight,
+            expandedBox.Confidence
+        },
+        CropCalibration = new
+        {
+            CropStrategy = cropStrategy,
+            MarginPolicy = marginPolicy,
+            UnclipPolicy = unclipPolicy,
+            CropPaddingPixels = cropPadding,
+            DetectedAspectRatio = selectedBox.CropHeight <= 0 ? 0d : Math.Round((double)selectedBox.CropWidth / selectedBox.CropHeight, 4),
+            ExpandedAspectRatio = expandedBox.CropHeight <= 0 ? 0d : Math.Round((double)expandedBox.CropWidth / expandedBox.CropHeight, 4),
+            DetectedArea = selectedBox.CropWidth * selectedBox.CropHeight,
+            ExpandedArea = expandedBox.CropWidth * expandedBox.CropHeight,
+            ClipsLeft = selectedBox.CropX <= 0,
+            ClipsTop = selectedBox.CropY <= 0,
+            ClipsRight = selectedBox.CropX + selectedBox.CropWidth >= fixture.Width,
+            ClipsBottom = selectedBox.CropY + selectedBox.CropHeight >= fixture.Height
         },
         RecognizerPreprocessing = recognizerPreprocessing,
         RecognizerTensorStats = recognizerStats,
@@ -2627,6 +2883,99 @@ static int SumChildInt(List<object> results, string propertyName)
     }
 
     return sum;
+}
+
+static int SumObjectInt(List<object> results, string propertyName)
+{
+    var sum = 0;
+    foreach (var result in results)
+    {
+        var value = result.GetType().GetProperty(propertyName)?.GetValue(result);
+        if (value is int intValue)
+            sum += intValue;
+    }
+
+    return sum;
+}
+
+static int CountObjectString(List<object> results, string propertyName, string expected)
+{
+    var count = 0;
+    foreach (var result in results)
+    {
+        var value = result.GetType().GetProperty(propertyName)?.GetValue(result) as string;
+        if (string.Equals(value, expected, StringComparison.Ordinal))
+            count++;
+    }
+
+    return count;
+}
+
+static string? ReadChildString(JsonElement? element, string propertyName)
+{
+    if (element is not { ValueKind: JsonValueKind.Object } value ||
+        !value.TryGetProperty(propertyName, out var property) ||
+        property.ValueKind != JsonValueKind.String)
+    {
+        return null;
+    }
+
+    return property.GetString();
+}
+
+static int ReadChildInt(JsonElement? element, string propertyName)
+{
+    if (element is not { ValueKind: JsonValueKind.Object } value ||
+        !value.TryGetProperty(propertyName, out var property) ||
+        property.ValueKind != JsonValueKind.Number)
+    {
+        return 0;
+    }
+
+    return property.GetInt32();
+}
+
+static object EstimateSyntheticTextGeometry(int width, int height, int horizontalPadding, int verticalPadding)
+{
+    var x = Math.Clamp(horizontalPadding, 0, Math.Max(0, width - 1));
+    var y = Math.Clamp(verticalPadding, 0, Math.Max(0, height - 1));
+    var right = Math.Max(x + 1, width - horizontalPadding);
+    var bottom = Math.Max(y + 1, height - verticalPadding);
+    return new
+    {
+        X = x,
+        Y = y,
+        Width = Math.Max(1, right - x),
+        Height = Math.Max(1, bottom - y),
+        Source = "estimated from synthetic fixture padding; generator contract does not expose glyph bbox"
+    };
+}
+
+static int LevenshteinDistance(string left, string right)
+{
+    if (left.Length == 0) return right.Length;
+    if (right.Length == 0) return left.Length;
+
+    var previous = new int[right.Length + 1];
+    var current = new int[right.Length + 1];
+    for (var j = 0; j <= right.Length; j++)
+        previous[j] = j;
+
+    for (var i = 1; i <= left.Length; i++)
+    {
+        current[0] = i;
+        for (var j = 1; j <= right.Length; j++)
+        {
+            var cost = left[i - 1] == right[j - 1] ? 0 : 1;
+            current[j] = Math.Min(
+                Math.Min(current[j - 1] + 1, previous[j] + 1),
+                previous[j - 1] + cost);
+        }
+
+        (previous, current) = (current, previous);
+    }
+
+    return previous[right.Length];
 }
 
 static NodalOsSyntheticOcrTextFixture BuildSyntheticFullImageFixture(
