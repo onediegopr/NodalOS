@@ -18,6 +18,7 @@ using OneBrain.BrowserExecutor.Contracts;
 //   --recognizer-runtime-probe --repo-root <dir>               Parent matrix: recognizer-only child probes through guard.
 //   --recognizer-runtime-experiment --repo-root <dir>          Parent matrix: recognizer-only tensor/layout/session-option probes through guard.
 //   --extra-class-argmax-probe --repo-root <dir>               Parent matrix: PP-OCRv5 extra-class argmax/probability probes through guard.
+//   --onnx-synthetic-recognizer-decode-probe --repo-root <dir> Parent: official-space synthetic recognizer decode probe.
 //   --probe --repo-root <dir>                                 Real ONNX inference on a synthetic fixture.
 //   --request <file>                                          Probe request JSON (written by the guard).
 //
@@ -80,12 +81,22 @@ if (options.ContainsKey("extra-class-argmax-child"))
     return RunExtraClassArgmaxChild(options);
 }
 
+if (options.ContainsKey("onnx-synthetic-recognizer-decode-probe"))
+{
+    return RunOnnxSyntheticRecognizerDecodeProbe(options);
+}
+
+if (options.ContainsKey("onnx-synthetic-recognizer-decode-child"))
+{
+    return RunOnnxSyntheticRecognizerDecodeChild(options);
+}
+
 if (options.ContainsKey("probe"))
 {
     return RunProbe(options);
 }
 
-Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --recognizer-runtime-experiment --repo-root <dir> | --extra-class-argmax-probe --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
+Console.Error.WriteLine("usage: --self-test <mode> | --guard-probe --repo-root <dir> [--fixture <kind>] [--width <w>] [--height <h>] | --detector-crash-probe --repo-root <dir> | --detector-crash-child --repo-root <dir> --tensor <kind> --session-option <kind> | --handoff-crash-probe --repo-root <dir> | --recognizer-runtime-probe --repo-root <dir> | --recognizer-runtime-experiment --repo-root <dir> | --extra-class-argmax-probe --repo-root <dir> | --onnx-synthetic-recognizer-decode-probe --repo-root <dir> | --probe --repo-root <dir> [--request <file>]");
 return 64;
 
 static Dictionary<string, string> ParseArgs(string[] argv)
@@ -623,6 +634,310 @@ static int RunRecognizerRuntimeProbe(Dictionary<string, string> options)
     }
 
     Console.Out.WriteLine(JsonSerializer.Serialize(results));
+    return 0;
+}
+
+static int RunOnnxSyntheticRecognizerDecodeProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 60000;
+
+    var candidates = new[]
+    {
+        new
+        {
+            ModelId = "ppocrv5-en-rec-candidate",
+            RelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx"),
+            DictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt"),
+            ExpectedClasses = 438,
+            DictionaryTokens = 436,
+            InputShape = new[] { 1, 3, 48, 320 }
+        },
+        new
+        {
+            ModelId = "ppocrv4-en-rec-current",
+            RelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_rec.onnx"),
+            DictionaryRelativePath = string.Empty,
+            ExpectedClasses = 97,
+            DictionaryTokens = 95,
+            InputShape = new[] { 1, 3, 32, 320 }
+        }
+    };
+
+    var results = new List<object>();
+    foreach (var candidate in candidates)
+    {
+        var modelPath = Path.Combine(repoRoot, candidate.RelativePath);
+        var dictionaryAvailable = string.IsNullOrWhiteSpace(candidate.DictionaryRelativePath) ||
+                                  File.Exists(Path.Combine(repoRoot, candidate.DictionaryRelativePath));
+        if (!File.Exists(modelPath) || !dictionaryAvailable)
+        {
+            results.Add(new
+            {
+                candidate.ModelId,
+                candidate.RelativePath,
+                ModelAvailable = File.Exists(modelPath),
+                DictionaryAvailable = dictionaryAvailable,
+                Attempted = false,
+                Status = "BlockedByModelOrDictionaryAvailability",
+                ParentSurvived = true,
+                OutOfProcessGuardUsed = false,
+                Reason = "model or dictionary unavailable; no ONNX child launched"
+            });
+            continue;
+        }
+
+        var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+            $"onnx-synthetic-recognizer-{candidate.ModelId}-{Guid.NewGuid():N}",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+            NodalOsSyntheticOcrTextRenderMode.PixelFont,
+            candidate.InputShape[3],
+            candidate.InputShape[2],
+            NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+            NodalOsOcrVisionSensitivity.Low,
+            FullScreen: false,
+            Sensitive: false,
+            OriginalRawPersisted: false,
+            Synthetic: true,
+            NoAuthority: true,
+            RunOutOfProcess: true);
+
+        var args = new List<string>(runnerPrefix)
+        {
+            "--onnx-synthetic-recognizer-decode-child",
+            "--repo-root", repoRoot,
+            "--model-id", candidate.ModelId,
+            "--recognizer-model-relative", candidate.RelativePath,
+            "--expected-class-count", candidate.ExpectedClasses.ToString(),
+            "--dictionary-token-count", candidate.DictionaryTokens.ToString(),
+            "--input-height", candidate.InputShape[2].ToString(),
+            "--input-width", candidate.InputShape[3].ToString()
+        };
+
+        var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+            $"onnx-synthetic-recognizer-guard-{Guid.NewGuid():N}",
+            request,
+            runner,
+            args,
+            timeoutMs,
+            MaxOutputBytes: 128 * 1024,
+            AllowRawPersistence: false));
+
+        results.Add(new
+        {
+            candidate.ModelId,
+            candidate.RelativePath,
+            candidate.ExpectedClasses,
+            candidate.DictionaryTokens,
+            Attempted = true,
+            OutOfProcessGuardUsed = true,
+            guardResult.ExitCode,
+            ExitCodeHex = guardResult.ExitCode is null ? null : $"0x{unchecked((uint)guardResult.ExitCode.Value):X8}",
+            guardResult.TimedOut,
+            guardResult.ParentSurvived,
+            guardResult.ChildLaunched,
+            guardResult.TempFilesCleaned,
+            guardResult.OrphanProcessLeft,
+            guardResult.RawPersisted,
+            guardResult.CallsSaas,
+            guardResult.NoAuthority,
+            Status = guardResult.ProbeResult.Status.ToString(),
+            CrashKind = guardResult.ProbeResult.CrashKind.ToString(),
+            guardResult.StdErrSummary,
+            ChildSummary = TryParseJsonElement(guardResult.Reason),
+            guardResult.Reason
+        });
+    }
+
+    var attempted = results.Any(r => (bool)r.GetType().GetProperty("Attempted")!.GetValue(r)!);
+    var succeeded = results.Any(r =>
+        (bool)r.GetType().GetProperty("Attempted")!.GetValue(r)! &&
+        string.Equals((string?)r.GetType().GetProperty("Status")!.GetValue(r), "Passed", StringComparison.Ordinal));
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(new
+    {
+        Milestone = "M280-M282",
+        ReadinessDecision = !attempted
+            ? "BLOCKED_BY_MODEL_OR_DICTIONARY_AVAILABILITY"
+            : succeeded
+                ? "READY_FOR_SYNTHETIC_IMAGE_RECOGNIZER_CROP_FIXTURES"
+                : "BLOCKED_BY_ONNX_SYNTHETIC_RECOGNIZER_RUNTIME",
+        ProductiveOcrBlocked = true,
+        ShadowModeBlocked = true,
+        NoAuthority = true,
+        NoSaaS = true,
+        NoRawPersistence = true,
+        NoFullScreen = true,
+        NoSensitive = true,
+        OfficialSpacePolicy = true,
+        BlankIndex = 0,
+        SpaceIndexFormula = "N+1",
+        OutputLayout = "[B,T,C]",
+        SoftmaxReapplied = false,
+        OutOfProcessGuardUsed = attempted,
+        ParentSurvived = results.All(r => (bool)r.GetType().GetProperty("ParentSurvived")?.GetValue(r)!),
+        OnnxProbeAttempted = attempted,
+        OnnxProbeSucceeded = succeeded,
+        PpOcrV4ExpectedClasses = 97,
+        PpOcrV5ExpectedClasses = 438,
+        ModelsCommitted = false,
+        DictionariesCommitted = false,
+        RawTensorPersisted = false,
+        RealImageUsed = false,
+        RealScreenUsed = false,
+        RealDocumentUsed = false,
+        Results = results
+    }));
+    return 0;
+}
+
+static int RunOnnxSyntheticRecognizerDecodeChild(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var modelId = options.TryGetValue("model-id", out var configuredModelId)
+        ? configuredModelId
+        : "unknown";
+    var recognizerRelativePath = options.TryGetValue("recognizer-model-relative", out var configuredRecognizerPath) &&
+                                 !string.IsNullOrWhiteSpace(configuredRecognizerPath)
+        ? configuredRecognizerPath
+        : Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_rec.onnx");
+    var expectedClassCount = options.TryGetValue("expected-class-count", out var expectedClassText) &&
+                             int.TryParse(expectedClassText, out var parsedExpectedClassCount)
+        ? parsedExpectedClassCount
+        : 0;
+    var dictionaryTokenCount = options.TryGetValue("dictionary-token-count", out var dictionaryText) &&
+                               int.TryParse(dictionaryText, out var parsedDictionaryTokenCount)
+        ? parsedDictionaryTokenCount
+        : Math.Max(0, expectedClassCount - 2);
+    var inputHeight = options.TryGetValue("input-height", out var heightText) &&
+                      int.TryParse(heightText, out var parsedHeight)
+        ? parsedHeight
+        : 32;
+    var inputWidth = options.TryGetValue("input-width", out var widthText) &&
+                     int.TryParse(widthText, out var parsedWidth)
+        ? parsedWidth
+        : 320;
+    var shape = new[] { 1, 3, inputHeight, inputWidth };
+    if (expectedClassCount <= 0 || shape.Any(d => d <= 0))
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"onnx-synthetic-recognizer-{Guid.NewGuid():N}",
+            "RecognizerTensorPreparation",
+            "InvalidTensorShape",
+            null,
+            null,
+            false,
+            false,
+            true,
+            "invalid expected class count or synthetic input shape"));
+        return 0;
+    }
+
+    var modelPath = Path.GetFullPath(Path.Combine(repoRoot, recognizerRelativePath));
+    if (!File.Exists(modelPath))
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"onnx-synthetic-recognizer-{Guid.NewGuid():N}",
+            "ModelAvailability",
+            "BlockedByModelRuntime",
+            null,
+            null,
+            false,
+            false,
+            true,
+            "recognizer model missing"));
+        return 0;
+    }
+
+    var tensor = BuildRecognizerTensor(NodalOsRecognizerRuntimeTensorKind.Gradient, shape);
+    var stats = NodalOsDetectorRecognizerCompatibilityDiagnosisBuilder.CalculateStats(tensor, shape, "NCHW", "RGB");
+    if (stats.HasNaN || stats.HasInfinity)
+    {
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"onnx-synthetic-recognizer-{Guid.NewGuid():N}",
+            "RecognizerTensorPreparation",
+            "InvalidTensorShape",
+            null,
+            null,
+            false,
+            false,
+            true,
+            "synthetic tensor stats invalid before runtime"));
+        return 0;
+    }
+
+    Console.Error.WriteLine($"stage=model-file model={modelPath} exists=true modelId={modelId}");
+    Console.Error.WriteLine($"stage=tensor kind=Gradient shape=[{string.Join(",", shape)}] min={stats.Min:R} max={stats.Max:R} mean={stats.Mean:R}");
+    using var session = new InferenceSession(modelPath);
+    var inputName = session.InputMetadata.Keys.FirstOrDefault() ?? "x";
+    var inputMetadata = string.Join(";", session.InputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    var outputMetadata = string.Join(";", session.OutputMetadata.Select(kvp => $"{kvp.Key}=[{string.Join(",", kvp.Value.Dimensions)}]"));
+    Console.Error.WriteLine($"stage=session-created runtime={typeof(InferenceSession).Assembly.GetName().Version} provider=CPUExecutionProvider inputs={inputMetadata} outputs={outputMetadata}");
+
+    using var outputs = session.Run([NamedOnnxValue.CreateFromTensor(inputName, new DenseTensor<float>(tensor, shape))]);
+    var output = outputs.First().AsTensor<float>();
+    var outputShape = output.Dimensions.ToArray();
+    var values = output.ToArray();
+    var classCount = outputShape.Length == 3 ? outputShape[2] : outputShape.LastOrDefault();
+    var softmax = AnalyzeSoftmaxRows(values, classCount);
+    var layoutValid = outputShape.Length == 3 && outputShape[0] == 1 && classCount == expectedClassCount;
+    var blankIndex = 0;
+    var spaceIndex = dictionaryTokenCount + 1;
+    var officialSpacePolicy = spaceIndex == expectedClassCount - 1;
+    var decodedPreview = BuildNoAuthorityDecodePreview(values, classCount, blankIndex, spaceIndex, maxTimesteps: 16);
+    var status = layoutValid && softmax.LooksLikeSoftmax && officialSpacePolicy
+        ? "Passed"
+        : "BlockedByModelRuntime";
+
+    var summary = JsonSerializer.Serialize(new
+    {
+        ModelId = modelId,
+        Stage = "RecognitionRun",
+        InputTensorKind = "Gradient",
+        InputShape = shape,
+        InputMetadata = inputMetadata,
+        OutputMetadata = outputMetadata,
+        OutputShape = outputShape,
+        OutputLayout = outputShape.Length == 3 ? "[B,T,C]" : "Unexpected",
+        OutputClassCount = classCount,
+        ExpectedClassCount = expectedClassCount,
+        DictionaryTokenCount = dictionaryTokenCount,
+        BlankIndex = blankIndex,
+        SpaceIndex = spaceIndex,
+        OfficialSpacePolicy = officialSpacePolicy,
+        SoftmaxEvidence = softmax,
+        SoftmaxReapplied = false,
+        DecodeConsumedOutput = true,
+        DecodePreviewNonAuthoritative = decodedPreview,
+        UsefulOcrClaimed = false,
+        ProductiveOcr = false,
+        ShadowMode = false,
+        NoAuthority = true,
+        NoRawPersistence = true,
+        NoSaaS = true,
+        RawTensorPersisted = false,
+        RealImageUsed = false,
+        RealScreenUsed = false,
+        RealDocumentUsed = false
+    });
+
+    EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+        $"onnx-synthetic-recognizer-{modelId}-{Guid.NewGuid():N}",
+        "RecognitionRun",
+        status,
+        BoxesDetected: null,
+        RecognitionAttempts: 1,
+        CallsSaas: false,
+        RawPersisted: false,
+        NoAuthority: true,
+        summary));
     return 0;
 }
 
@@ -1771,6 +2086,107 @@ static bool InSyntheticTextBar(int x, int y, int width, int height)
     return (x / Math.Max(1, letterWidth)) % 2 == 0 && x > width / 4 && x < width * 3 / 4;
 }
 
+static JsonElement? TryParseJsonElement(string value)
+{
+    if (string.IsNullOrWhiteSpace(value))
+        return null;
+
+    try
+    {
+        using var doc = JsonDocument.Parse(value);
+        return doc.RootElement.Clone();
+    }
+    catch (JsonException)
+    {
+        return null;
+    }
+}
+
+static SoftmaxRowsAnalysis AnalyzeSoftmaxRows(float[] values, int classCount)
+{
+    if (classCount <= 0 || values.Length < classCount)
+        return new SoftmaxRowsAnalysis(false, 0, 0d, 0d, 0d, 0d);
+
+    var rows = values.Length / classCount;
+    var minSum = double.PositiveInfinity;
+    var maxSum = double.NegativeInfinity;
+    var totalDeviation = 0d;
+    var validRows = 0;
+    for (var row = 0; row < rows; row++)
+    {
+        var offset = row * classCount;
+        var sum = 0d;
+        var rowValid = true;
+        for (var i = 0; i < classCount; i++)
+        {
+            var value = values[offset + i];
+            if (value < -0.000001f || value > 1.000001f || float.IsNaN(value) || float.IsInfinity(value))
+            {
+                rowValid = false;
+                break;
+            }
+
+            sum += value;
+        }
+
+        if (!rowValid)
+            continue;
+
+        validRows++;
+        minSum = Math.Min(minSum, sum);
+        maxSum = Math.Max(maxSum, sum);
+        totalDeviation += Math.Abs(1d - sum);
+    }
+
+    var averageDeviation = validRows == 0 ? double.PositiveInfinity : totalDeviation / validRows;
+    return new SoftmaxRowsAnalysis(
+        validRows == rows && averageDeviation < 0.02d,
+        rows,
+        validRows,
+        validRows == 0 ? 0d : minSum,
+        validRows == 0 ? 0d : maxSum,
+        averageDeviation);
+}
+
+static string BuildNoAuthorityDecodePreview(
+    float[] values,
+    int classCount,
+    int blankIndex,
+    int spaceIndex,
+    int maxTimesteps)
+{
+    if (classCount <= 0)
+        return string.Empty;
+
+    var timesteps = Math.Min(maxTimesteps, values.Length / classCount);
+    var previous = -1;
+    var builder = new System.Text.StringBuilder();
+    for (var t = 0; t < timesteps; t++)
+    {
+        var offset = t * classCount;
+        var argmax = 0;
+        var argmaxProbability = double.NegativeInfinity;
+        for (var i = 0; i < classCount; i++)
+        {
+            if (values[offset + i] > argmaxProbability)
+            {
+                argmaxProbability = values[offset + i];
+                argmax = i;
+            }
+        }
+
+        if (argmax == previous)
+            continue;
+
+        previous = argmax;
+        if (argmax == blankIndex)
+            continue;
+        builder.Append(argmax == spaceIndex ? " " : "#");
+    }
+
+    return builder.ToString();
+}
+
 static byte[] BuildFixtureImage(
     NodalOsOnnxNativeRuntimeCrashProbeRequest request,
     out int width,
@@ -1893,3 +2309,11 @@ internal sealed record ExtraClassOutputAnalysis(
     double ExtraClassAverageProbability,
     int BlankArgmaxCount,
     IReadOnlyList<int> DominantClassIndexes);
+
+internal sealed record SoftmaxRowsAnalysis(
+    bool LooksLikeSoftmax,
+    int Rows,
+    double ValidRows,
+    double MinRowSum,
+    double MaxRowSum,
+    double AverageRowSumDeviation);
