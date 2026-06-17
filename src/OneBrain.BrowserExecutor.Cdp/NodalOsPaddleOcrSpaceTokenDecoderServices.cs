@@ -257,6 +257,105 @@ public sealed class NodalOsPaddleOcrSpaceTokenDecoderService
                 "approved by official evidence; productive OCR and decode success remain blocked"));
     }
 
+    public IReadOnlyList<string> CreateSyntheticOfficialSpaceCharset()
+    {
+        var charset = new List<string> { "blank" };
+        charset.AddRange("0123456789".Select(c => c.ToString()));
+        charset.AddRange("ABCDEFGHIJKLMNOPQRSTUVWXYZ".Select(c => c.ToString()));
+        charset.Add(" ");
+        return charset;
+    }
+
+    public IReadOnlyList<NodalOsPaddleOcrDecodePolicyExperiment> CreateOfficialSpaceSyntheticFixtures()
+    {
+        var charset = CreateSyntheticOfficialSpaceCharset();
+        var classCount = charset.Count;
+        var spaceIndex = classCount - 1;
+
+        return new[]
+        {
+            DecodeWithPolicy(
+                "synthetic-probability-12-34",
+                BuildNearOneHotProbabilityMatrix("12 34", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-pvc-wall",
+                BuildNearOneHotProbabilityMatrix("PVC WALL", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-a-b-c",
+                BuildNearOneHotProbabilityMatrix("A B C", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-blank-dominant-space-top2",
+                BuildBlankDominantSpaceRunnerUpMatrix(4, classCount, spaceIndex),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset),
+            DecodeWithPolicy(
+                "synthetic-probability-space-argmax",
+                BuildNearOneHotProbabilityMatrix("A B", classCount),
+                classCount,
+                NodalOsPaddleOcrExtraClassDecodePolicyKind.OfficialSpaceToken,
+                charset)
+        };
+    }
+
+    public NodalOsPaddleOcrOfficialSpaceReadinessReport CreateOfficialSpaceReadinessReport()
+    {
+        var rootCause = AuditSpaceTokenRootCause();
+        var fixtures = CreateOfficialSpaceSyntheticFixtures();
+        var decisionReport = DecideSpaceTokenPolicy(rootCause, fixtures);
+        var fixtureCoverage = fixtures.Any(e => e.DecodedText == "12 34")
+                              && fixtures.Any(e => e.DecodedText == "PVC WALL")
+                              && fixtures.Any(e => e.DecodedText == "A B C")
+                              && fixtures.Any(e => e.FixtureId.Contains("blank-dominant", StringComparison.Ordinal)
+                                                   && e.TopK.All(k => k.ArgmaxIndex == 0)
+                                                   && e.TopK.All(k => k.SpaceIsTopTwo))
+                              && fixtures.Any(e => e.FixtureId.Contains("space-argmax", StringComparison.Ordinal)
+                                                   && e.SpaceTokenEmissions > 0);
+
+        var ready = decisionReport.ExtraClassSemanticsResolved
+                    && decisionReport.ApprovedPolicyIsSpaceToken
+                    && fixtureCoverage
+                    && decisionReport.ProductiveOcrBlocked
+                    && decisionReport.ShadowModeBlocked
+                    && decisionReport.NoAuthority;
+
+        return new NodalOsPaddleOcrOfficialSpaceReadinessReport(
+            $"paddle-official-space-readiness-{Guid.NewGuid():N}",
+            rootCause,
+            decisionReport,
+            fixtures,
+            ready
+                ? NodalOsPaddleOcrOfficialSpaceReadinessDecision.ReadyForSyntheticOfficialSpaceDecodeFixtures
+                : NodalOsPaddleOcrOfficialSpaceReadinessDecision.NotReady,
+            ClassSemanticsResolved: decisionReport.ExtraClassSemanticsResolved,
+            MappingPolicyApproved: decisionReport.ApprovedPolicyIsSpaceToken,
+            IgnoreExtraClassApproved: false,
+            OutputLayoutBatchTimeClass: rootCause.OutputAxisOrder.Contains("[B,T,C]", StringComparison.Ordinal),
+            OutputAlreadySoftmax: rootCause.OutputIsSoftmaxProbabilities,
+            SoftmaxReapplied: false,
+            DecodeSuccessClaimed: false,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: decisionReport.NoAuthority,
+            BrowserCredentialRedactor.Redact(
+                "OfficialSpaceToken mapping is approved for synthetic probability fixtures only; " +
+                "ignore-extra-class remains unsafe because the extra class is a real space token; " +
+                "productive OCR and shadow mode remain blocked."));
+    }
+
     private static string? MapIndexToToken(
         int index,
         int spaceIndex,
@@ -328,5 +427,60 @@ public sealed class NodalOsPaddleOcrSpaceTokenDecoderService
         }
 
         return result;
+    }
+
+    private static int SyntheticClassIndex(char character)
+    {
+        if (character == ' ')
+            return 37;
+        if (character >= '0' && character <= '9')
+            return (character - '0') + 1;
+        if (character >= 'A' && character <= 'Z')
+            return (character - 'A') + 11;
+
+        throw new ArgumentOutOfRangeException(nameof(character), $"Unsupported synthetic OCR token '{character}'.");
+    }
+
+    private static float[] BuildNearOneHotProbabilityMatrix(string text, int classCount, float top = 0.92f)
+    {
+        var sequence = new List<int>(text.Length);
+        var previous = -1;
+        foreach (var character in text)
+        {
+            var current = SyntheticClassIndex(character);
+            if (current == previous)
+                sequence.Add(0); // CTC requires an intervening blank to emit repeated characters.
+
+            sequence.Add(current);
+            previous = current;
+        }
+
+        var matrix = new float[sequence.Count * classCount];
+        var rest = (1f - top) / (classCount - 1);
+        for (var t = 0; t < sequence.Count; t++)
+        {
+            var argmax = sequence[t];
+            var offset = t * classCount;
+            for (var i = 0; i < classCount; i++)
+                matrix[offset + i] = i == argmax ? top : rest;
+        }
+
+        return matrix;
+    }
+
+    private static float[] BuildBlankDominantSpaceRunnerUpMatrix(int timesteps, int classCount, int spaceIndex)
+    {
+        var matrix = new float[timesteps * classCount];
+        for (var t = 0; t < timesteps; t++)
+        {
+            var offset = t * classCount;
+            matrix[offset] = 0.56f;
+            matrix[offset + spaceIndex] = 0.24f;
+            var rest = (1f - 0.56f - 0.24f) / (classCount - 2);
+            for (var i = 1; i < classCount - 1; i++)
+                matrix[offset + i] = rest;
+        }
+
+        return matrix;
     }
 }

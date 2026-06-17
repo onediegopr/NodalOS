@@ -28,11 +28,19 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
         return catalog.CreateDefaultManifest();
     }
 
-    private static (NodalOsPaddleOcrOnnxModelManifest Manifest, List<string> FilesToClean) CreateVerifiedManifest()
+    private static string CreateTempRepoRoot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"nodalos-m199-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(root, "tools", "ocr-worker", "models", "onnx"));
+        return root;
+    }
+
+    private static (NodalOsPaddleOcrOnnxModelManifest Manifest, string RepoRoot) CreateVerifiedManifest()
     {
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true };
-        var modelDir = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx");
+        var tempRepoRoot = CreateTempRepoRoot();
+        var modelDir = Path.Combine(tempRepoRoot, "tools", "ocr-worker", "models", "onnx");
         Directory.CreateDirectory(modelDir);
         var detPath = Path.Combine(modelDir, "ch_PP-OCRv4_det.onnx");
         var recPath = Path.Combine(modelDir, "ch_PP-OCRv4_rec.onnx");
@@ -47,7 +55,7 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
         var verified = catalog.UpdateModelStatus(manifest, "paddleocr-det-onnx", NodalOsPaddleOcrOnnxModelStatus.Downloaded, detSize, detHash);
         verified = catalog.UpdateModelStatus(verified, "paddleocr-rec-onnx", NodalOsPaddleOcrOnnxModelStatus.Downloaded, recSize, recHash);
 
-        return (verified, new List<string> { detPath, recPath });
+        return (verified, tempRepoRoot);
     }
 
     [TestMethod]
@@ -55,11 +63,26 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
     {
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
         var manifest = DefaultManifest() with { LicenseReviewed = true };
+        var tempRepoRoot = CreateTempRepoRoot();
 
-        var report = gate.Evaluate(manifest, RepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
+        try
+        {
+            var report = gate.Evaluate(
+                manifest,
+                tempRepoRoot,
+                licenseAccepted: true,
+                true,
+                true,
+                true,
+                NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
 
-        Assert.AreEqual(NodalOsOnnxOcrOfflineReadinessDecision.ModelMissing, report.Decision);
-        Assert.IsFalse(report.CanAttemptSyntheticRun);
+            Assert.AreEqual(NodalOsOnnxOcrOfflineReadinessDecision.ModelMissing, report.Decision);
+            Assert.IsFalse(report.CanAttemptSyntheticRun);
+        }
+        finally
+        {
+            Directory.Delete(tempRepoRoot, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -68,7 +91,8 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true };
-        var modelDir = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx");
+        var tempRepoRoot = CreateTempRepoRoot();
+        var modelDir = Path.Combine(tempRepoRoot, "tools", "ocr-worker", "models", "onnx");
         Directory.CreateDirectory(modelDir);
         var detPath = Path.Combine(modelDir, "ch_PP-OCRv4_det.onnx");
         var recPath = Path.Combine(modelDir, "ch_PP-OCRv4_rec.onnx");
@@ -83,14 +107,13 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
             var updated = catalog.UpdateModelStatus(manifest, "paddleocr-det-onnx", NodalOsPaddleOcrOnnxModelStatus.Downloaded, 100, "abc");
             updated = catalog.UpdateModelStatus(updated, "paddleocr-rec-onnx", NodalOsPaddleOcrOnnxModelStatus.Downloaded, recSize, recHash);
 
-            var report = gate.Evaluate(updated, RepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
+            var report = gate.Evaluate(updated, tempRepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
 
             Assert.AreEqual(NodalOsOnnxOcrOfflineReadinessDecision.ModelUnverified, report.Decision);
         }
         finally
         {
-            File.Delete(detPath);
-            File.Delete(recPath);
+            Directory.Delete(tempRepoRoot, recursive: true);
         }
     }
 
@@ -98,15 +121,15 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
     public void UnknownShape_Decision_IsUnsupportedModelShape()
     {
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
-        var (manifest, files) = CreateVerifiedManifest();
+        var (manifest, tempRepoRoot) = CreateVerifiedManifest();
         try
         {
-            var report = gate.Evaluate(manifest, RepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.UnknownShapes);
+            var report = gate.Evaluate(manifest, tempRepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.UnknownShapes);
             Assert.AreEqual(NodalOsOnnxOcrOfflineReadinessDecision.UnsupportedModelShape, report.Decision);
         }
         finally
         {
-            foreach (var f in files) File.Delete(f);
+            Directory.Delete(tempRepoRoot, recursive: true);
         }
     }
 
@@ -114,15 +137,15 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
     public void PreProcessorMissing_Decision_IsPreProcessingIncomplete()
     {
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
-        var (manifest, files) = CreateVerifiedManifest();
+        var (manifest, tempRepoRoot) = CreateVerifiedManifest();
         try
         {
-            var report = gate.Evaluate(manifest, RepoRoot, licenseAccepted: true, false, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
+            var report = gate.Evaluate(manifest, tempRepoRoot, licenseAccepted: true, false, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
             Assert.AreEqual(NodalOsOnnxOcrOfflineReadinessDecision.PreProcessingIncomplete, report.Decision);
         }
         finally
         {
-            foreach (var f in files) File.Delete(f);
+            Directory.Delete(tempRepoRoot, recursive: true);
         }
     }
 
@@ -130,15 +153,15 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
     public void PostProcessorMissing_Decision_IsPostProcessingIncomplete()
     {
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
-        var (manifest, files) = CreateVerifiedManifest();
+        var (manifest, tempRepoRoot) = CreateVerifiedManifest();
         try
         {
-            var report = gate.Evaluate(manifest, RepoRoot, licenseAccepted: true, true, false, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
+            var report = gate.Evaluate(manifest, tempRepoRoot, licenseAccepted: true, true, false, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
             Assert.AreEqual(NodalOsOnnxOcrOfflineReadinessDecision.PostProcessingIncomplete, report.Decision);
         }
         finally
         {
-            foreach (var f in files) File.Delete(f);
+            Directory.Delete(tempRepoRoot, recursive: true);
         }
     }
 
@@ -146,10 +169,10 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
     public void ValidSyntheticFixture_WithVerifiedModels_IsReady()
     {
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
-        var (manifest, files) = CreateVerifiedManifest();
+        var (manifest, tempRepoRoot) = CreateVerifiedManifest();
         try
         {
-            var report = gate.Evaluate(manifest, RepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
+            var report = gate.Evaluate(manifest, tempRepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
 
             Assert.AreEqual(NodalOsOnnxOcrOfflineReadinessDecision.ReadyForOnnxSyntheticRun, report.Decision);
             Assert.IsTrue(report.CanAttemptSyntheticRun);
@@ -159,7 +182,7 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
         }
         finally
         {
-            foreach (var f in files) File.Delete(f);
+            Directory.Delete(tempRepoRoot, recursive: true);
         }
     }
 
@@ -168,11 +191,26 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
     {
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
         var manifest = DefaultManifest() with { LicenseReviewed = true };
+        var tempRepoRoot = CreateTempRepoRoot();
 
-        var report = gate.Evaluate(manifest, RepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
+        try
+        {
+            var report = gate.Evaluate(
+                manifest,
+                tempRepoRoot,
+                licenseAccepted: true,
+                true,
+                true,
+                true,
+                NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
 
-        Assert.IsTrue(report.NoAuthority);
-        Assert.IsTrue(report.ProductionPublicOcrBlocked);
+            Assert.IsTrue(report.NoAuthority);
+            Assert.IsTrue(report.ProductionPublicOcrBlocked);
+        }
+        finally
+        {
+            Directory.Delete(tempRepoRoot, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -180,13 +218,28 @@ public sealed class NodalOsOnnxOcrOfflineReadinessM199Tests
     {
         var gate = new NodalOsOnnxOcrOfflineReadinessGate();
         var manifest = DefaultManifest() with { LicenseReviewed = true };
+        var tempRepoRoot = CreateTempRepoRoot();
 
-        var report = gate.Evaluate(manifest, RepoRoot, licenseAccepted: true, true, true, true, NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
+        try
+        {
+            var report = gate.Evaluate(
+                manifest,
+                tempRepoRoot,
+                licenseAccepted: true,
+                true,
+                true,
+                true,
+                NodalOsOnnxOcrSyntheticFixtureSet.PpOcrV4En);
 
-        Assert.IsTrue(report.NoSaas);
-        Assert.IsTrue(report.NoRawPersistence);
-        Assert.IsTrue(report.NoFullScreen);
-        Assert.IsTrue(report.NoSensitive);
+            Assert.IsTrue(report.NoSaas);
+            Assert.IsTrue(report.NoRawPersistence);
+            Assert.IsTrue(report.NoFullScreen);
+            Assert.IsTrue(report.NoSensitive);
+        }
+        finally
+        {
+            Directory.Delete(tempRepoRoot, recursive: true);
+        }
     }
 
     [TestMethod]

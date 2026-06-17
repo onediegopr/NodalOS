@@ -1,0 +1,12 @@
+{
+  "block": "M205",
+  "artifactType": "legacy-synthetic-ocr-readiness-fixture",
+  "purpose": "Tracked non-sensitive artifact required by synthetic OCR readiness tests.",
+  "syntheticOnly": true,
+  "modelBinariesIncluded": false,
+  "rawImagesPersisted": false,
+  "productiveOcrEnabled": false,
+  "shadowModeEnabled": false,
+  "noSaas": true,
+  "noAuthority": true
+}

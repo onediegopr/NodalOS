@@ -1,0 +1,12 @@
+{
+  "block": "M199",
+  "artifactType": "legacy-readiness-fixture",
+  "purpose": "Tracked non-sensitive artifact required by offline readiness tests.",
+  "decision": "ReadyForOnnxSyntheticRun gated by verified local models and no-authority policy.",
+  "modelBinariesIncluded": false,
+  "rawImagesPersisted": false,
+  "productiveOcrEnabled": false,
+  "shadowModeEnabled": false,
+  "noSaas": true,
+  "noAuthority": true
+}

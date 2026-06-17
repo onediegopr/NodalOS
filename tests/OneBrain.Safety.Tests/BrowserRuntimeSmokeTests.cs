@@ -107,12 +107,20 @@ public sealed class BrowserRuntimeSmokeTests
     [TestMethod]
     public async Task BrowserRuntimeSmokeCleanupLeavesNoManagedProcessPortOrProfile()
     {
-        var report = await RunSmokeAsync();
-        var cleanup = report.Gates.Single(result => result.GateName == "Gate 10 - Cleanup");
+        CleanupManagedCdpTempDirectories();
+        try
+        {
+            var report = await RunSmokeAsync();
+            var cleanup = report.Gates.Single(result => result.GateName == "Gate 10 - Cleanup");
 
-        Assert.AreEqual(BrowserRuntimeGateStatus.Passed, cleanup.Status);
-        Assert.IsTrue(report.FinalHealth.CleanupCompleted);
-        Assert.IsFalse(Directory.EnumerateDirectories(Path.GetTempPath(), "onebrain-cdp-*").Any());
+            Assert.AreEqual(BrowserRuntimeGateStatus.Passed, cleanup.Status);
+            Assert.IsTrue(report.FinalHealth.CleanupCompleted);
+            Assert.IsFalse(Directory.EnumerateDirectories(Path.GetTempPath(), "onebrain-cdp-*").Any());
+        }
+        finally
+        {
+            CleanupManagedCdpTempDirectories();
+        }
     }
 
     [TestMethod]
@@ -149,5 +157,24 @@ public sealed class BrowserRuntimeSmokeTests
 
         Assert.IsNotNull(dir, "repo root not found");
         return new Uri(Path.Combine(dir.FullName, "tests", "fixtures", "browser-executor", "basic-form.html"));
+    }
+
+    private static void CleanupManagedCdpTempDirectories()
+    {
+        foreach (var directory in Directory.EnumerateDirectories(Path.GetTempPath(), "onebrain-cdp-*"))
+        {
+            try
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+            catch (IOException)
+            {
+                // A live process can still hold a temp profile; the assertion exposes real cleanup failures.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Keep the test honest instead of hiding locked or permission-blocked temp profiles.
+            }
+        }
     }
 }

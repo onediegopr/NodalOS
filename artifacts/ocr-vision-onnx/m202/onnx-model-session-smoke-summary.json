@@ -1,0 +1,12 @@
+{
+  "block": "M202",
+  "artifactType": "legacy-session-smoke-fixture",
+  "purpose": "Tracked non-sensitive artifact required by model session smoke tests.",
+  "sessionSmoke": "documented-only",
+  "modelBinariesIncluded": false,
+  "rawImagesPersisted": false,
+  "productiveOcrEnabled": false,
+  "shadowModeEnabled": false,
+  "noSaas": true,
+  "noAuthority": true
+}

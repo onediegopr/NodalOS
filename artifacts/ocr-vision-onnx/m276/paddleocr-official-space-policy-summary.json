@@ -1,0 +1,45 @@
+{
+  "block": "M274-M276",
+  "title": "PaddleOCR official space token policy integration",
+  "baseCommitExpected": "1ea64a4",
+  "runtime": "Microsoft.ML.OnnxRuntime 1.22.1",
+  "policy": "OfficialSpaceToken",
+  "rootCause": "PaddleOCR use_space_char=true appends the space token after dictionary tokens; CTC blank is prepended at index 0.",
+  "layout": {
+    "axisOrder": "[B,T,C]",
+    "outputAlreadySoftmax": true,
+    "softmaxReapplied": false,
+    "blankIndex": 0,
+    "dictionaryRange": "1..N",
+    "spaceIndex": "N+1"
+  },
+  "ppocrv4": {
+    "dictionaryTokens": 95,
+    "blankTokens": 1,
+    "spaceTokens": 1,
+    "classCount": 97
+  },
+  "ppocrv5": {
+    "dictionaryTokens": 436,
+    "blankTokens": 1,
+    "spaceTokens": 1,
+    "classCount": 438
+  },
+  "syntheticProbabilityFixtures": [
+    "12 34",
+    "PVC WALL",
+    "A B C",
+    "blank-dominant with space top-2",
+    "space argmax timestep"
+  ],
+  "readiness": "READY_FOR_SYNTHETIC_OFFICIAL_SPACE_DECODE_FIXTURES",
+  "decodeSuccessClaimed": false,
+  "productiveOcrBlocked": true,
+  "shadowModeBlocked": true,
+  "noSaas": true,
+  "noRawPersistence": true,
+  "noFullScreen": true,
+  "noSensitive": true,
+  "noAuthority": true,
+  "modelsOrDictionariesCommitted": false
+}

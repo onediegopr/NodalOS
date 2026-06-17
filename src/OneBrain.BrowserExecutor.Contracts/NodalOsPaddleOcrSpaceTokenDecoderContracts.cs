@@ -106,3 +106,35 @@ public sealed record NodalOsPaddleOcrSpaceTokenDecisionReport(
     bool NoSaas,
     bool NoAuthority,
     string Reason);
+
+public enum NodalOsPaddleOcrOfficialSpaceReadinessDecision
+{
+    ReadyForSyntheticOfficialSpaceDecodeFixtures,
+    ReadyForControlledNoAuthorityOcrFixtures,
+    ReadyForPpOcrV6OptionalReview,
+    BlockedByLegacyArtifactTestDebt,
+    Partial,
+    NotReady
+}
+
+public sealed record NodalOsPaddleOcrOfficialSpaceReadinessReport(
+    string ReportId,
+    NodalOsPaddleOcrSpaceTokenRootCause RootCause,
+    NodalOsPaddleOcrSpaceTokenDecisionReport DecisionReport,
+    IReadOnlyList<NodalOsPaddleOcrDecodePolicyExperiment> SyntheticFixtures,
+    NodalOsPaddleOcrOfficialSpaceReadinessDecision Decision,
+    bool ClassSemanticsResolved,
+    bool MappingPolicyApproved,
+    bool IgnoreExtraClassApproved,
+    bool OutputLayoutBatchTimeClass,
+    bool OutputAlreadySoftmax,
+    bool SoftmaxReapplied,
+    bool DecodeSuccessClaimed,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
