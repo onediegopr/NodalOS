@@ -1,0 +1,87 @@
+{
+  "milestones": ["M215", "M216", "M217"],
+  "baseCommit": "d3556e0",
+  "worktree": "C:/Users/diego/OneDrive/PERSONAL/ONE Brain/Codigo-m12-audit",
+  "manifest": {
+    "path": "tools/ocr-worker/models/onnx/paddleocr-onnx-model-manifest.json",
+    "exists": true,
+    "matchesM200M202": true
+  },
+  "models": [
+    {
+      "modelId": "paddleocr-det-onnx",
+      "role": "TextDetection",
+      "expectedPath": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+      "exists": false,
+      "expectedSha256": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9",
+      "actualSha256": null,
+      "expectedSizeBytes": 4745517,
+      "actualSizeBytes": null,
+      "status": "Missing"
+    },
+    {
+      "modelId": "paddleocr-rec-onnx",
+      "role": "TextRecognition",
+      "expectedPath": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+      "exists": false,
+      "expectedSha256": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318",
+      "actualSha256": null,
+      "expectedSizeBytes": 7653044,
+      "actualSizeBytes": null,
+      "status": "Missing"
+    },
+    {
+      "modelId": "paddleocr-cls-onnx",
+      "role": "TextDirectionClassification",
+      "expectedPath": "tools/ocr-worker/models/onnx/ch_ppocr_mobile_v2.0_cls.onnx",
+      "exists": true,
+      "expectedSha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c",
+      "actualSha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c",
+      "expectedSizeBytes": 585532,
+      "actualSizeBytes": 585532,
+      "status": "PresentAndVerified"
+    }
+  ],
+  "pathResolution": {
+    "allPathsUnderRepository": true,
+    "pathMismatch": false,
+    "discoveryMismatch": false
+  },
+  "git": {
+    "onnxGitignored": true,
+    "onnxModelsCommitted": false,
+    "unexpectedCommittedModel": false
+  },
+  "scripts": {
+    "downloadModels": "tools/ocr-worker/models/onnx/download-models.ps1",
+    "verifyModels": "tools/ocr-worker/models/onnx/verify-models.ps1",
+    "rollbackModels": "tools/ocr-worker/models/onnx/rollback-models.ps1",
+    "present": true,
+    "requiresPowerShell": "7.2+",
+    "verifyAttempted": true,
+    "verifyAttemptResult": "pwsh not installed or not on PATH",
+    "downloadExecuted": false
+  },
+  "commands": {
+    "download": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/download-models.ps1 -Confirm",
+    "verify": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/verify-models.ps1"
+  },
+  "guardedRetry": {
+    "executed": false,
+    "allowed": false,
+    "reason": "detector and recognizer models are missing",
+    "riskyInProcessExecuted": false,
+    "riskyOutOfProcessExecuted": false
+  },
+  "privacySafety": {
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "productionPublicOcrBlocked": true,
+    "shadowModeBlocked": true
+  },
+  "readinessDecision": "READY_FOR_MODEL_DOWNLOAD",
+  "finalDecision": "M215+M216+M217 CERRADO / READY_FOR_MODEL_DOWNLOAD"
+}
