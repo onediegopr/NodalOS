@@ -1,0 +1,66 @@
+{
+  "milestones": ["M235", "M236", "M237"],
+  "baseHead": "706e080",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "remote": "https://github.com/onediegopr/NodalOS.git",
+  "worktree": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit",
+  "forbiddenPathUsed": false,
+  "runtime": {
+    "previous": "Microsoft.ML.OnnxRuntime 1.18.1",
+    "final": "Microsoft.ML.OnnxRuntime 1.22.1",
+    "provider": "CPUExecutionProvider",
+    "reason": "minimum tested candidate that avoided recognizer session.Run crash in M232-M234"
+  },
+  "models": {
+    "detection": "ch_PP-OCRv4_det.onnx",
+    "recognition": "ch_PP-OCRv4_rec.onnx",
+    "classification": "ch_ppocr_mobile_v2.0_cls.onnx",
+    "verification": "Passed",
+    "gitignored": true,
+    "trackedOnnx": false
+  },
+  "detectorSanity": {
+    "sessionCreated": true,
+    "runSucceeded": true,
+    "outputShape": "sigmoid_0.tmp_0=[1,1,640,640]",
+    "postprocessingSucceeded": true,
+    "boxes": 1
+  },
+  "recognizerProbes": {
+    "zero": "RunSucceeded",
+    "ones": "RunSucceeded",
+    "gradient": "RunSucceeded",
+    "checker": "RunSucceeded",
+    "syntheticCrop": "RunSucceeded",
+    "highContrastCrop": "RunSucceeded",
+    "detectorDerivedCrop": "RunSucceeded",
+    "outputShape": "softmax_2.tmp_0=[1,40,97]",
+    "candidateWidth640OutputShape": "softmax_2.tmp_0=[1,80,97]",
+    "exitCode": 0,
+    "exitCodeHex": "0x00000000",
+    "nativeCrash0xC0000094Resolved": true,
+    "ranOutOfProcess": true,
+    "ranInProcess": false
+  },
+  "dictionary": {
+    "recognizerOutputClasses": 97,
+    "asciiCharacters": 86,
+    "asciiPlusBlank": 87,
+    "status": "BlockedByDictionaryClassCountMismatch",
+    "decodeAllowed": false,
+    "downloaded": false
+  },
+  "safety": {
+    "productiveOcrEnabled": false,
+    "shadowModeEnabled": false,
+    "saaSOcr": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "ocrAsAuthority": false,
+    "cdpPipelineIntegrated": false,
+    "parentSurvived": true,
+    "tempCleanup": true
+  },
+  "decision": "READY_FOR_DICTIONARY_COMPLETION"
+}
