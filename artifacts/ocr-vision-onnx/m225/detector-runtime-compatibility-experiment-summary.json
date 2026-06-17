@@ -1,0 +1,77 @@
+{
+  "milestone": "M223-M225",
+  "decision": "M223+M224+M225 CERRADO / BLOCKED_BY_MODEL_RUNTIME",
+  "worktree": "C:\\Users\\diego\\OneDrive\\PERSONAL\\ONE Brain\\Codigo-m12-audit",
+  "baseCommit": "ef909dc",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "onnxRuntime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "packageVersion": "1.18.1",
+    "childAssemblyVersionObserved": "0.0.0.0",
+    "provider": "CPUExecutionProvider",
+    "osArchitecture": "X64"
+  },
+  "model": {
+    "role": "detection",
+    "file": "ch_PP-OCRv4_det.onnx",
+    "path": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+    "sha256": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9",
+    "sizeBytes": 4745517,
+    "status": "PresentAndVerified",
+    "opset": 17,
+    "inputMetadata": ["x=[-1,3,-1,-1]"],
+    "outputMetadata": ["sigmoid_0.tmp_0=[-1,1,-1,-1]"],
+    "observedOutputShape": [1, 1, 640, 640]
+  },
+  "matrix": {
+    "layout": "NCHW",
+    "shape": [1, 3, 640, 640],
+    "sessionOptions": ["Default", "GraphOptimizationDisabled", "GraphOptimizationBasic", "SingleThreaded", "MemoryPatternDisabled", "CpuArenaDisabled"],
+    "tensorResults": {
+      "Zero": "RunSucceeded in all 6 session options",
+      "Ones": "RunSucceeded in all 6 session options",
+      "Gradient": "RunSucceeded in all 6 session options",
+      "SyntheticText": "RunSucceeded in all 6 session options",
+      "CurrentPreprocessedSyntheticText": "RunSucceeded in all 6 session options",
+      "SafeRectangle": "RunSucceeded in all 6 session options",
+      "SafeCircle": "RunSucceeded in all 6 session options"
+    },
+    "nhwc": "UnsupportedLayout skipped before runtime",
+    "postprocessing": {
+      "tensor": "CurrentPreprocessedSyntheticText",
+      "sessionOption": "Default",
+      "status": "RunSucceeded",
+      "detectorPostProcessingStatus": "Success",
+      "boxes": 1
+    }
+  },
+  "crash": {
+    "detectorOnlyCrashObserved": false,
+    "fullGuardedOcrCrashStillObserved": true,
+    "fullGuardedOcrExitCode": -1073741676,
+    "fullGuardedOcrExitHex": "0xC0000094",
+    "fullGuardedOcrStageKnown": "after detector-only isolation; exact downstream stage not isolated in M223-M225"
+  },
+  "interpretation": {
+    "crashDependsOnTensorContentAtDetectorLevel": false,
+    "sessionOptionAvoidedCrash": false,
+    "postprocessingReached": true,
+    "postprocessingCrashed": false,
+    "technicalFinding": "detector runtime/model/session options do not reproduce the crash; full OCR remains blocked by downstream model runtime"
+  },
+  "gates": {
+    "parentSurvived": true,
+    "tempCleanup": true,
+    "orphanProcessLeft": false,
+    "rawPersistence": false,
+    "callsSaas": false,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "productiveOcrBlocked": true,
+    "shadowModeBlocked": true,
+    "riskyOcrInProcess": false,
+    "riskyDetectorProbesOutOfProcess": true
+  },
+  "nextRecommendation": "isolate recognition runtime/full-pipeline handoff before dictionary completion or shadow mode"
+}
