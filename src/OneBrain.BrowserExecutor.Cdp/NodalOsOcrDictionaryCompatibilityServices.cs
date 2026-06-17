@@ -526,6 +526,243 @@ public sealed class NodalOsOcrDictionaryCompatibilityService
                 : $"selected {selected.Candidate.CandidateId} for controlled acquisition planning; no model download or decode executed");
     }
 
+    public IReadOnlyList<NodalOsAlternativeRecognizerCandidate> CreateM265AlternativeRecognizerCandidates()
+    {
+        return
+        [
+            new NodalOsAlternativeRecognizerCandidate(
+                "rapidocr-modelscope-ppocrv5-en-mobile-onnx",
+                "RapidAI/RapidOCR + ModelScope",
+                "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx",
+                "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile/ppocrv5_en_dict.txt",
+                "https://raw.githubusercontent.com/RapidAI/RapidOCR/main/python/rapidocr/default_models.yaml",
+                "Apache-2.0 lineage",
+                "RapidOCR default model manifest and ModelScope v3.8.0 assets; acquired and probed in M253-M264",
+                Official: true,
+                OnnxAvailable: true,
+                DictionaryExplicit: true,
+                OutputClassCount: PaddleOcrV5EnglishObservedRecognizerClassCount,
+                DictionaryTokenCount: PaddleOcrV5EnglishDictionaryTokenCount,
+                BlankOrSpecialTokenPolicy: "PaddleOCR CTC blank index 0; extra class index 437 unresolved with non-trivial probability",
+                HashSizePinnable: true,
+                LocalOffline: true,
+                ExpectedRuntimeRisk: "low runtime risk after M253-M255 smoke; high decode-policy risk after M262-M264",
+                ImplementationImpact: "minimal migration from current RapidOCR/PaddleOCR path",
+                PrivacySecurityRisk: "local/offline, no SaaS, but decode unsafe until class semantics resolved",
+                ExtraClassUnresolved: true,
+                NoSaas: true,
+                NoAuthority: true),
+            new NodalOsAlternativeRecognizerCandidate(
+                "rapidocr-modelscope-ppocrv5-latin-mobile-onnx",
+                "RapidAI/RapidOCR + ModelScope",
+                "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile.onnx",
+                "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile/ppocrv5_latin_dict.txt",
+                "https://raw.githubusercontent.com/RapidAI/RapidOCR/main/python/rapidocr/default_models.yaml",
+                "Apache-2.0 lineage",
+                "official RapidOCR default_models.yaml lists ONNX and explicit PP-OCRv5 Latin dictionary references",
+                Official: true,
+                OnnxAvailable: true,
+                DictionaryExplicit: true,
+                OutputClassCount: null,
+                DictionaryTokenCount: 502,
+                BlankOrSpecialTokenPolicy: "PaddleOCR CTC blank index 0 assumed; runtime output class count not locally probed",
+                HashSizePinnable: true,
+                LocalOffline: true,
+                ExpectedRuntimeRisk: "unknown until controlled runtime probe; PP-OCRv5 family already showed extra-class risk",
+                ImplementationImpact: "moderate migration; language coverage broader than English",
+                PrivacySecurityRisk: "local/offline, no SaaS; requires runtime/class-count probe before acquisition",
+                ExtraClassUnresolved: false,
+                NoSaas: true,
+                NoAuthority: true),
+            new NodalOsAlternativeRecognizerCandidate(
+                "rapidocr-modelscope-ppocrv5-ch-mobile-onnx",
+                "RapidAI/RapidOCR + ModelScope",
+                "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile.onnx",
+                "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/paddle/PP-OCRv5/rec/ch_PP-OCRv5_rec_mobile/ppocrv5_dict.txt",
+                "https://raw.githubusercontent.com/RapidAI/RapidOCR/main/python/rapidocr/default_models.yaml",
+                "Apache-2.0 lineage",
+                "official RapidOCR default_models.yaml lists ONNX and explicit PP-OCRv5 Chinese/general dictionary references",
+                Official: true,
+                OnnxAvailable: true,
+                DictionaryExplicit: true,
+                OutputClassCount: null,
+                DictionaryTokenCount: null,
+                BlankOrSpecialTokenPolicy: "PaddleOCR CTC blank index 0; class count unknown until acquisition/runtime metadata",
+                HashSizePinnable: true,
+                LocalOffline: true,
+                ExpectedRuntimeRisk: "unknown until controlled runtime probe; larger dictionary/model surface",
+                ImplementationImpact: "higher migration and language-policy impact than English recognizer",
+                PrivacySecurityRisk: "local/offline, no SaaS; broader charset increases review burden",
+                ExtraClassUnresolved: false,
+                NoSaas: true,
+                NoAuthority: true),
+            new NodalOsAlternativeRecognizerCandidate(
+                "rapidocr-modelscope-ppocrv4-en-mobile-current",
+                "RapidAI/RapidOCR + ModelScope",
+                "https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.8.0/onnx/PP-OCRv4/rec/en_PP-OCRv4_rec_mobile.onnx",
+                RapidOcrModelScopeEnglishDictionaryUrl,
+                "https://raw.githubusercontent.com/RapidAI/RapidOCR/main/python/rapidocr/default_models.yaml",
+                "Apache-2.0 lineage",
+                "current family already reconciled in M247-M249",
+                Official: true,
+                OnnxAvailable: true,
+                DictionaryExplicit: true,
+                OutputClassCount: PaddleOcrV4EnglishRecognizerClassCount,
+                DictionaryTokenCount: OfficialEnglishDictionaryTokenCount,
+                BlankOrSpecialTokenPolicy: "PaddleOCR CTC blank index 0 explains 96 classes, not observed 97",
+                HashSizePinnable: true,
+                LocalOffline: true,
+                ExpectedRuntimeRisk: "runtime OK after ONNX Runtime 1.22.1; decode blocked by unresolved extra class",
+                ImplementationImpact: "no migration, but already rejected for clean decode",
+                PrivacySecurityRisk: "local/offline, no SaaS; class semantics unsafe",
+                ExtraClassUnresolved: true,
+                NoSaas: true,
+                NoAuthority: true),
+            new NodalOsAlternativeRecognizerCandidate(
+                "paddleocr-ppocrv6-official-inference-family",
+                "PaddlePaddle/PaddleOCR",
+                "https://paddlepaddle.github.io/PaddleOCR/main/en/version3.x/module_usage/text_recognition.html",
+                null,
+                "https://paddlepaddle.github.io/PaddleOCR/main/en/version3.x/module_usage/text_recognition.html",
+                "Apache-2.0",
+                "official PaddleOCR PP-OCRv6 docs list local text recognition models and ONNXRuntime benchmark support, but this block did not identify a pinned ONNX+dictionary pair",
+                Official: true,
+                OnnxAvailable: false,
+                DictionaryExplicit: false,
+                OutputClassCount: null,
+                DictionaryTokenCount: null,
+                BlankOrSpecialTokenPolicy: "not selected; needs separate alternative local OCR family review",
+                HashSizePinnable: false,
+                LocalOffline: true,
+                ExpectedRuntimeRisk: "unknown until a concrete ONNX/dictionary package is selected",
+                ImplementationImpact: "high; likely new family/model manifest and converter/runtime work",
+                PrivacySecurityRisk: "local/offline candidate family; source pairing incomplete for this block",
+                ExtraClassUnresolved: false,
+                NoSaas: true,
+                NoAuthority: true),
+            new NodalOsAlternativeRecognizerCandidate(
+                "tesseract-local-fallback",
+                "Tesseract OCR local",
+                "https://github.com/tesseract-ocr/tesseract",
+                null,
+                null,
+                "Apache-2.0",
+                "local OCR fallback candidate, not ONNX recognizer+dictionary pair",
+                Official: true,
+                OnnxAvailable: false,
+                DictionaryExplicit: true,
+                OutputClassCount: null,
+                DictionaryTokenCount: null,
+                BlankOrSpecialTokenPolicy: "not CTC/ONNX; separate fallback review required",
+                HashSizePinnable: false,
+                LocalOffline: true,
+                ExpectedRuntimeRisk: "different runtime and operational profile",
+                ImplementationImpact: "high; changes recognizer abstraction and deployment dependencies",
+                PrivacySecurityRisk: "local/offline but separate security/performance review required",
+                ExtraClassUnresolved: false,
+                NoSaas: true,
+                NoAuthority: true)
+        ];
+    }
+
+    public NodalOsAlternativeRecognizerCandidateAudit AuditAlternativeRecognizerCandidate(
+        NodalOsAlternativeRecognizerCandidate candidate)
+    {
+        var exactClassMatch = candidate.OutputClassCount is not null &&
+                              candidate.DictionaryTokenCount is not null &&
+                              candidate.OutputClassCount == candidate.DictionaryTokenCount + 1 &&
+                              candidate.BlankOrSpecialTokenPolicy.Contains("blank index 0", StringComparison.OrdinalIgnoreCase);
+
+        var decision = candidate switch
+        {
+            { Official: false } => NodalOsAlternativeRecognizerCandidateDecision.RejectedUnofficial,
+            { OnnxAvailable: false } when candidate.CandidateId == "tesseract-local-fallback" => NodalOsAlternativeRecognizerCandidateDecision.CandidateNeedsManualReview,
+            { OnnxAvailable: false } => NodalOsAlternativeRecognizerCandidateDecision.RejectedNoOnnx,
+            { DictionaryExplicit: false } => NodalOsAlternativeRecognizerCandidateDecision.RejectedNoExplicitDictionary,
+            { ExtraClassUnresolved: true } => NodalOsAlternativeRecognizerCandidateDecision.RejectedExtraClassUnresolved,
+            { HashSizePinnable: false } => NodalOsAlternativeRecognizerCandidateDecision.RejectedUnpinnable,
+            _ when exactClassMatch => NodalOsAlternativeRecognizerCandidateDecision.CandidateAcceptedForAcquisition,
+            _ when candidate.OutputClassCount is null => NodalOsAlternativeRecognizerCandidateDecision.CandidateNeedsRuntimeProbe,
+            _ => NodalOsAlternativeRecognizerCandidateDecision.CandidateNeedsManualReview
+        };
+
+        var reason = decision switch
+        {
+            NodalOsAlternativeRecognizerCandidateDecision.CandidateAcceptedForAcquisition => "official explicit pair has exact dictionary+blank class formula and pinnable sources",
+            NodalOsAlternativeRecognizerCandidateDecision.CandidateNeedsRuntimeProbe => "official explicit pair exists but output class count has not been locally measured",
+            NodalOsAlternativeRecognizerCandidateDecision.CandidateNeedsManualReview => "candidate is local/offline but requires separate manual/fallback review before acquisition",
+            NodalOsAlternativeRecognizerCandidateDecision.RejectedExtraClassUnresolved => "candidate has observed unresolved extra class; PP-OCRv5 ignored-extra-class cannot be auto-selected",
+            NodalOsAlternativeRecognizerCandidateDecision.RejectedNoExplicitDictionary => "candidate lacks explicit model/dictionary/config pairing",
+            NodalOsAlternativeRecognizerCandidateDecision.RejectedNoOnnx => "candidate does not provide a pinned ONNX recognizer pair in this block",
+            NodalOsAlternativeRecognizerCandidateDecision.RejectedUnpinnable => "candidate cannot be acquired without pinned hash/size evidence",
+            NodalOsAlternativeRecognizerCandidateDecision.RejectedUnofficial => "candidate source is not official/verifiable",
+            _ => "candidate risk is too high for clean acquisition"
+        };
+
+        return new NodalOsAlternativeRecognizerCandidateAudit(
+            $"alternative-recognizer-candidate-audit-{Guid.NewGuid():N}",
+            candidate,
+            decision,
+            DecodeAttempted: false,
+            DownloadExecuted: false,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            NoAuthority: candidate.NoAuthority,
+            BrowserCredentialRedactor.Redact(reason));
+    }
+
+    public NodalOsCleanRecognizerCompatibilityMatrix CreateM266CleanRecognizerCompatibilityMatrix()
+    {
+        var audits = CreateM265AlternativeRecognizerCandidates()
+            .Select(AuditAlternativeRecognizerCandidate)
+            .ToArray();
+        var selected = audits.FirstOrDefault(audit =>
+            audit.Decision == NodalOsAlternativeRecognizerCandidateDecision.CandidateAcceptedForAcquisition);
+
+        var ppOcrV5AutoSelected = selected?.Candidate.CandidateId == "rapidocr-modelscope-ppocrv5-en-mobile-onnx";
+        var hasRuntimeProbeCandidates = audits.Any(audit =>
+            audit.Decision == NodalOsAlternativeRecognizerCandidateDecision.CandidateNeedsRuntimeProbe);
+        var hasTesseractFallback = audits.Any(audit =>
+            audit.Candidate.CandidateId == "tesseract-local-fallback" &&
+            audit.Decision == NodalOsAlternativeRecognizerCandidateDecision.CandidateNeedsManualReview);
+
+        var decision = selected is not null && !ppOcrV5AutoSelected
+            ? NodalOsAlternativeRecognizerFamilyDecision.ReadyForCleanRecognizerPairAcquisition
+            : hasRuntimeProbeCandidates
+                ? NodalOsAlternativeRecognizerFamilyDecision.ReadyForAlternativeLocalOcrFamilyReview
+                : hasTesseractFallback
+                    ? NodalOsAlternativeRecognizerFamilyDecision.ReadyForTesseractLocalFallbackReview
+                    : NodalOsAlternativeRecognizerFamilyDecision.BlockedByNoCleanRecognizerPair;
+
+        var reason = decision switch
+        {
+            NodalOsAlternativeRecognizerFamilyDecision.ReadyForCleanRecognizerPairAcquisition
+                => $"selected {selected!.Candidate.CandidateId}; exact class/dictionary formula is clean and sources are pinnable",
+            NodalOsAlternativeRecognizerFamilyDecision.ReadyForAlternativeLocalOcrFamilyReview
+                => "no current clean pair is acquisition-ready; official PP-OCRv5 alternatives need runtime/class-count probes and PP-OCRv6/other local families need separate review",
+            NodalOsAlternativeRecognizerFamilyDecision.ReadyForTesseractLocalFallbackReview
+                => "no clean ONNX recognizer pair was found; local Tesseract fallback requires separate review",
+            _ => "no official, explicit, pinnable recognizer+dictionary pair with clean class-count formula was found"
+        };
+
+        return new NodalOsCleanRecognizerCompatibilityMatrix(
+            $"clean-recognizer-compatibility-matrix-{Guid.NewGuid():N}",
+            audits,
+            selected,
+            decision,
+            ppOcrV5AutoSelected,
+            ProductiveOcrBlocked: true,
+            ShadowModeBlocked: true,
+            DecodeBlocked: true,
+            DownloadExecuted: false,
+            NoRawPersistence: true,
+            NoFullScreen: true,
+            NoSensitive: true,
+            NoSaas: true,
+            NoAuthority: audits.All(audit => audit.NoAuthority),
+            BrowserCredentialRedactor.Redact(reason));
+    }
+
     public NodalOsRecognizerClassSemantics AuditRecognizerClassSemantics()
     {
         var mappings = new[]

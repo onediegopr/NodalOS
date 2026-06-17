@@ -195,6 +195,28 @@ public enum NodalOsRecognizerDictionaryPairReplacementDecision
     NotReady
 }
 
+public enum NodalOsAlternativeRecognizerCandidateDecision
+{
+    CandidateAcceptedForAcquisition,
+    CandidateNeedsRuntimeProbe,
+    CandidateNeedsManualReview,
+    RejectedExtraClassUnresolved,
+    RejectedNoExplicitDictionary,
+    RejectedNoOnnx,
+    RejectedUnpinnable,
+    RejectedUnofficial,
+    RejectedTooHighRisk
+}
+
+public enum NodalOsAlternativeRecognizerFamilyDecision
+{
+    ReadyForCleanRecognizerPairAcquisition,
+    ReadyForAlternativeLocalOcrFamilyReview,
+    ReadyForTesseractLocalFallbackReview,
+    BlockedByNoCleanRecognizerPair,
+    NotReady
+}
+
 public enum NodalOsExtraClassArgmaxProbeStatus
 {
     ExtraClassNeverArgmax,
@@ -599,6 +621,57 @@ public sealed record NodalOsOcrRecognizerReplacementStrategyMatrix(
     bool ProductiveOcrBlocked,
     bool ShadowModeBlocked,
     bool DecodeBlocked,
+    bool NoRawPersistence,
+    bool NoFullScreen,
+    bool NoSensitive,
+    bool NoSaas,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsAlternativeRecognizerCandidate(
+    string CandidateId,
+    string Provider,
+    string ModelUrlOrRef,
+    string? DictionaryUrlOrRef,
+    string? ConfigUrlOrRef,
+    string License,
+    string Provenance,
+    bool Official,
+    bool OnnxAvailable,
+    bool DictionaryExplicit,
+    int? OutputClassCount,
+    int? DictionaryTokenCount,
+    string BlankOrSpecialTokenPolicy,
+    bool HashSizePinnable,
+    bool LocalOffline,
+    string ExpectedRuntimeRisk,
+    string ImplementationImpact,
+    string PrivacySecurityRisk,
+    bool ExtraClassUnresolved,
+    bool NoSaas,
+    bool NoAuthority);
+
+public sealed record NodalOsAlternativeRecognizerCandidateAudit(
+    string AuditId,
+    NodalOsAlternativeRecognizerCandidate Candidate,
+    NodalOsAlternativeRecognizerCandidateDecision Decision,
+    bool DecodeAttempted,
+    bool DownloadExecuted,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool NoAuthority,
+    string Reason);
+
+public sealed record NodalOsCleanRecognizerCompatibilityMatrix(
+    string MatrixId,
+    IReadOnlyList<NodalOsAlternativeRecognizerCandidateAudit> CandidateAudits,
+    NodalOsAlternativeRecognizerCandidateAudit? SelectedCandidate,
+    NodalOsAlternativeRecognizerFamilyDecision Decision,
+    bool PpOcrV5IgnoredExtraClassAutoSelected,
+    bool ProductiveOcrBlocked,
+    bool ShadowModeBlocked,
+    bool DecodeBlocked,
+    bool DownloadExecuted,
     bool NoRawPersistence,
     bool NoFullScreen,
     bool NoSensitive,

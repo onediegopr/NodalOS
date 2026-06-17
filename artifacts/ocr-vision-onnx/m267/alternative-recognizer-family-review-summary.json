@@ -1,0 +1,82 @@
+{
+  "block": "M265+M266+M267",
+  "decision": "M265+M266+M267 CERRADO / READY_FOR_ALTERNATIVE_LOCAL_OCR_FAMILY_REVIEW",
+  "runtime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.22.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "currentStatus": {
+    "ppocrv4": {
+      "runtimeOk": true,
+      "dictionaryTokens": 95,
+      "observedClasses": 97,
+      "status": "RejectedExtraClassUnresolved"
+    },
+    "ppocrv5English": {
+      "runtimeOk": true,
+      "dictionaryTokens": 436,
+      "blankIndex": 0,
+      "explainedClasses": 437,
+      "observedClasses": 438,
+      "extraClassIndex": 437,
+      "extraClassArgmaxCount": 0,
+      "extraClassMaxProbability": 0.28353992104530334,
+      "extraClassMaxAverageProbability": 0.11832536425208673,
+      "status": "RejectedExtraClassUnresolved"
+    }
+  },
+  "candidates": [
+    {
+      "id": "rapidocr-modelscope-ppocrv5-en-mobile-onnx",
+      "provider": "RapidAI/RapidOCR + ModelScope",
+      "decision": "RejectedExtraClassUnresolved",
+      "reason": "Observed unresolved extra class with non-trivial probability."
+    },
+    {
+      "id": "rapidocr-modelscope-ppocrv5-latin-mobile-onnx",
+      "provider": "RapidAI/RapidOCR + ModelScope",
+      "decision": "CandidateNeedsRuntimeProbe",
+      "reason": "Official explicit pair exists, but local output class count is not measured."
+    },
+    {
+      "id": "rapidocr-modelscope-ppocrv5-ch-mobile-onnx",
+      "provider": "RapidAI/RapidOCR + ModelScope",
+      "decision": "CandidateNeedsRuntimeProbe",
+      "reason": "Official explicit pair exists, but class count and dictionary compatibility need controlled probe."
+    },
+    {
+      "id": "rapidocr-modelscope-ppocrv4-en-mobile-current",
+      "provider": "RapidAI/RapidOCR + ModelScope",
+      "decision": "RejectedExtraClassUnresolved",
+      "reason": "95 dictionary tokens plus blank explain 96 classes, not observed 97."
+    },
+    {
+      "id": "paddleocr-ppocrv6-official-inference-family",
+      "provider": "PaddlePaddle/PaddleOCR",
+      "decision": "RejectedNoOnnx",
+      "reason": "No pinned ONNX+dictionary pair selected in this block."
+    },
+    {
+      "id": "tesseract-local-fallback",
+      "provider": "Tesseract OCR local",
+      "decision": "CandidateNeedsManualReview",
+      "reason": "Local fallback, not an ONNX recognizer+dictionary pair."
+    }
+  ],
+  "execution": {
+    "modelDictionaryDownloadExecuted": false,
+    "decodeAttempted": false,
+    "productiveOcrEnabled": false,
+    "shadowModeEnabled": false
+  },
+  "safety": {
+    "productiveOcrBlocked": true,
+    "saasOcrExecuted": false,
+    "rawPersistence": false,
+    "fullScreenOcr": false,
+    "sensitiveOcr": false,
+    "noAuthority": true
+  },
+  "nextRoute": "Alternative local OCR family review or controlled runtime/class-count probes for explicit official candidates."
+}
