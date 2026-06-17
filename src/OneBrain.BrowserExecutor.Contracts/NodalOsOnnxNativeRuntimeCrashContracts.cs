@@ -54,7 +54,18 @@ public enum NodalOsOnnxNativeRuntimeCrashFixtureKind
     PixelFontText,
     ThickHorizontalBars,
     NumericText,
-    AlphanumericText
+    AlphanumericText,
+    LargeCenteredText,
+    SmallCenteredText,
+    WidePaddingText,
+    SoftBorderText,
+    WhiteBackgroundText,
+    LightGrayBackgroundText,
+    PureBlackText,
+    DarkGrayText,
+    RectangularText,
+    SystemFontText,
+    LettersText
 }
 
 // How a fixture is allowed to be executed against the native runtime.

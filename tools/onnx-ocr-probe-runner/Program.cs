@@ -195,17 +195,43 @@ static byte[] BuildFixtureImage(
         NodalOsOnnxNativeRuntimeCrashFixtureKind.AntiAliasedPixelFontText or
         NodalOsOnnxNativeRuntimeCrashFixtureKind.PixelFontText or
         NodalOsOnnxNativeRuntimeCrashFixtureKind.NumericText or
-        NodalOsOnnxNativeRuntimeCrashFixtureKind.AlphanumericText)
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.AlphanumericText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.SmallCenteredText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.WidePaddingText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.SoftBorderText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.WhiteBackgroundText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.LightGrayBackgroundText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.PureBlackText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.DarkGrayText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.RectangularText or
+        NodalOsOnnxNativeRuntimeCrashFixtureKind.LettersText)
     {
         var text = request.FixtureKind switch
         {
             NodalOsOnnxNativeRuntimeCrashFixtureKind.NumericText => "12345",
-            NodalOsOnnxNativeRuntimeCrashFixtureKind.AlphanumericText => "ABC123",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.AlphanumericText => "A1",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.LettersText => "AB",
+            NodalOsOnnxNativeRuntimeCrashFixtureKind.SmallCenteredText => "A",
             _ => "TEST"
         };
         var generator = new NodalOsSyntheticOcrTextFixtureGenerator();
-        var catalog = generator.GenerateCatalog(texts: new[] { text });
-        var fixture = catalog.Fixtures[0];
+        var options = new NodalOsSyntheticOcrTextFixtureOptions(
+            request.Width,
+            request.Height,
+            request.FixtureKind is NodalOsOnnxNativeRuntimeCrashFixtureKind.LightGrayBackgroundText or
+                NodalOsOnnxNativeRuntimeCrashFixtureKind.DarkGrayText
+                ? NodalOsSyntheticOcrTextColorScheme.GrayOnWhite
+                : NodalOsSyntheticOcrTextColorScheme.BlackOnWhite,
+            request.FixtureKind == NodalOsOnnxNativeRuntimeCrashFixtureKind.RectangularText
+                ? NodalOsSyntheticOcrTextRenderMode.PixelFont
+                : request.RenderMode,
+            HorizontalPadding: request.FixtureKind == NodalOsOnnxNativeRuntimeCrashFixtureKind.WidePaddingText ? 64 : 16,
+            VerticalPadding: Math.Max(4, request.Height / 4),
+            CharacterSpacing: 8,
+            AllowRawPersistence: false,
+            AllowFullScreen: false);
+        var fixture = generator.Generate(text, options);
         width = fixture.Width;
         height = fixture.Height;
         expectedText = fixture.ExpectedText;

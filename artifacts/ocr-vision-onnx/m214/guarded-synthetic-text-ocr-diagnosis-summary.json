@@ -1,0 +1,84 @@
+{
+  "milestones": ["M212", "M213", "M214"],
+  "baseCommit": "f86125e",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "worktree": "C:/Users/diego/OneDrive/PERSONAL/ONE Brain/Codigo-m12-audit",
+  "guard": {
+    "exists": true,
+    "runner": "tools/onnx-ocr-probe-runner",
+    "riskySyntheticTextInProcessAllowed": false,
+    "parentSurvivesContainedCrash": true,
+    "timeoutContained": true,
+    "tempCleanupRequired": true
+  },
+  "matrix": {
+    "fixtureVariantCount": 13,
+    "dimensions": ["256x96", "320x128", "480x160", "640x160", "640x320", "640x640"],
+    "preprocessingVariants": [
+      "CurrentMeanStd",
+      "KeepAspectWhitePadding",
+      "KeepAspectBlackPadding",
+      "ThresholdBinarization",
+      "RgbOrder",
+      "BgrOrder",
+      "ChannelLayoutValidation"
+    ],
+    "resultStatuses": [
+      "PositiveDetection",
+      "PositiveRecognition",
+      "NoTextDetected",
+      "LowConfidence",
+      "RecognitionEmpty",
+      "DictionaryMismatch",
+      "NativeRuntimeCrashContained",
+      "TimedOut",
+      "InvalidTensorShape",
+      "BlockedByPreProcessing",
+      "BlockedByPostProcessing",
+      "BlockedByModelRuntime",
+      "BlockedByDictionary",
+      "BlockedByModelCompatibility",
+      "BlockedBeforeRuntime"
+    ]
+  },
+  "onnxRuntime": {
+    "package": "Microsoft.ML.OnnxRuntime",
+    "version": "1.18.1",
+    "provider": "CPUExecutionProvider"
+  },
+  "models": {
+    "detector": {
+      "path": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+      "presentInCheckout": false,
+      "opset": 17
+    },
+    "recognizer": {
+      "path": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+      "presentInCheckout": false,
+      "expectedOutputShape": [40, 1, 97],
+      "dictionaryCompatibility": "UnverifiedLocalAsciiOnly"
+    },
+    "classifier": {
+      "path": "tools/ocr-worker/models/onnx/ch_ppocr_mobile_v2.0_cls.onnx",
+      "presentInCheckout": true
+    }
+  },
+  "diagnosis": {
+    "detection": "Diagnosed contractually; real detector run blocked because detector model file is missing.",
+    "recognition": "Unreachable without detector boxes or safe manual crop; dictionary compatibility remains unverified.",
+    "dictionary": "Blocked until verified PaddleOCR-compatible dictionary manifest exists.",
+    "modelCompatibility": "Required detector/recognizer files absent; no positive OCR can be claimed.",
+    "runtimeCrash": "No new risky positive run crash evidence because required models are absent; M210 containment remains in force."
+  },
+  "privacySafety": {
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "productionPublicOcrBlocked": true,
+    "shadowModeBlocked": true
+  },
+  "readinessDecision": "READY_FOR_MODEL_COMPATIBILITY_FIX",
+  "finalDecision": "M212+M213+M214 CERRADO / READY_FOR_MODEL_COMPATIBILITY_FIX"
+}
