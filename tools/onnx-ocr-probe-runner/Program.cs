@@ -1284,7 +1284,7 @@ static int RunSyntheticDetectorToRecognizerPipelineProbe(Dictionary<string, stri
 
     var fixtures = new[]
     {
-        new { Text = "MARMOLES PVC", Variant = "centered-line", HorizontalPadding = 48, VerticalPadding = 48 },
+        new { Text = "MARMOLES PVC", Variant = "centered-line", HorizontalPadding = 16, VerticalPadding = 48 },
         new { Text = "PVC WALL", Variant = "upper-left-line", HorizontalPadding = 16, VerticalPadding = 12 },
         new { Text = "GENOVA", Variant = "centered-no-space", HorizontalPadding = 96, VerticalPadding = 42 },
         new { Text = "ROMA", Variant = "wide-padding-no-space", HorizontalPadding = 128, VerticalPadding = 48 },
@@ -1477,6 +1477,36 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
     }
 
     var fixture = BuildSyntheticFullImageFixture(fixtureText, fixtureVariant, horizontalPadding, verticalPadding);
+    if (fixture.Status != NodalOsSyntheticOcrTextFixtureStatus.Ready || !fixture.SafeForOcr)
+    {
+        var blockedFixtureSummary = JsonSerializer.Serialize(new
+        {
+            FixtureText = fixtureText,
+            FixtureVariant = fixtureVariant,
+            FixtureStatus = fixture.Status.ToString(),
+            FixtureReason = fixture.Reason,
+            DetectorBoxesCount = 0,
+            RecognizerAttempts = 0,
+            MatchKind = "FixtureBlocked",
+            NoAuthority = true,
+            SyntheticImagesOnly = true,
+            RealScreenUsed = false,
+            RealDocumentUsed = false,
+            RawPersistenceOfRealData = false
+        });
+        EmitReport(new NodalOsOnnxOutOfProcessRunnerReport(
+            $"synthetic-detector-recognizer-{Guid.NewGuid():N}",
+            "FixtureGeneration",
+            "InvalidTensorShape",
+            0,
+            0,
+            false,
+            false,
+            true,
+            blockedFixtureSummary));
+        return 0;
+    }
+
     var imagePrep = new NodalOsOnnxOcrImagePreProcessor().Prepare(
         fixture.ImageBytes,
         fixture.Width,
