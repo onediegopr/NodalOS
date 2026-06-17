@@ -25,6 +25,19 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
         ? Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", ".."))
         : AppDomain.CurrentDomain.BaseDirectory;
 
+    private static string CreateTempRepoRoot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"onebrain-onnx-model-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(root, "tools", "ocr-worker", "models", "onnx"));
+        return root;
+    }
+
+    private static void DeleteTempRepoRoot(string root)
+    {
+        if (root.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase) && Directory.Exists(root))
+            Directory.Delete(root, recursive: true);
+    }
+
     [TestMethod]
     public void ManifestFile_Exists_And_Loads()
     {
@@ -66,12 +79,20 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
         var service = new NodalOsPaddleOcrOnnxModelReadinessService();
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true };
+        var tempRoot = CreateTempRepoRoot();
 
-        var readiness = service.Evaluate(manifest, RepoRoot, licenseAccepted: true);
+        try
+        {
+            var readiness = service.Evaluate(manifest, tempRoot, licenseAccepted: true);
 
-        Assert.AreEqual(NodalOsPaddleOcrOnnxModelStatus.Missing, readiness.Status);
-        Assert.IsFalse(readiness.CanRunOcr);
-        Assert.IsTrue(readiness.NoAuthority);
+            Assert.AreEqual(NodalOsPaddleOcrOnnxModelStatus.Missing, readiness.Status);
+            Assert.IsFalse(readiness.CanRunOcr);
+            Assert.IsTrue(readiness.NoAuthority);
+        }
+        finally
+        {
+            DeleteTempRepoRoot(tempRoot);
+        }
     }
 
     [TestMethod]
@@ -79,21 +100,21 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
     {
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true };
-        var modelDir = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx");
-        Directory.CreateDirectory(modelDir);
+        var tempRoot = CreateTempRepoRoot();
+        var modelDir = Path.Combine(tempRoot, "tools", "ocr-worker", "models", "onnx");
         var path = Path.Combine(modelDir, "ch_PP-OCRv4_det.onnx");
         File.WriteAllText(path, "fake-model-no-checksum");
         try
         {
             var verifier = new NodalOsPaddleOcrOnnxModelVerifierService();
-            var result = verifier.Verify(manifest.Models[0], RepoRoot, licenseAccepted: true);
+            var result = verifier.Verify(manifest.Models[0], tempRoot, licenseAccepted: true);
 
             Assert.AreEqual(NodalOsPaddleOcrOnnxModelStatus.Invalid, result.Status);
             Assert.IsFalse(result.ChecksumMatches);
         }
         finally
         {
-            File.Delete(path);
+            DeleteTempRepoRoot(tempRoot);
         }
     }
 
@@ -102,8 +123,8 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
     {
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true };
-        var modelDir = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx");
-        Directory.CreateDirectory(modelDir);
+        var tempRoot = CreateTempRepoRoot();
+        var modelDir = Path.Combine(tempRoot, "tools", "ocr-worker", "models", "onnx");
         var path = Path.Combine(modelDir, "ch_PP-OCRv4_det.onnx");
         File.WriteAllText(path, "fake-model-wrong-checksum");
         try
@@ -116,14 +137,14 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
                 checksum: "0000000000000000000000000000000000000000000000000000000000000000");
 
             var verifier = new NodalOsPaddleOcrOnnxModelVerifierService();
-            var result = verifier.Verify(manifestWithChecksum.Models[0], RepoRoot, licenseAccepted: true);
+            var result = verifier.Verify(manifestWithChecksum.Models[0], tempRoot, licenseAccepted: true);
 
             Assert.AreEqual(NodalOsPaddleOcrOnnxModelStatus.Invalid, result.Status);
             Assert.IsFalse(result.ChecksumMatches);
         }
         finally
         {
-            File.Delete(path);
+            DeleteTempRepoRoot(tempRoot);
         }
     }
 
@@ -132,8 +153,8 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
     {
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true, TotalMaxSizeBytes = 1 };
-        var modelDir = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx");
-        Directory.CreateDirectory(modelDir);
+        var tempRoot = CreateTempRepoRoot();
+        var modelDir = Path.Combine(tempRoot, "tools", "ocr-worker", "models", "onnx");
         var detPath = Path.Combine(modelDir, "ch_PP-OCRv4_det.onnx");
         var recPath = Path.Combine(modelDir, "ch_PP-OCRv4_rec.onnx");
         File.WriteAllText(detPath, "det");
@@ -149,15 +170,14 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
             verified = catalog.UpdateModelStatus(verified, "paddleocr-rec-onnx", NodalOsPaddleOcrOnnxModelStatus.Downloaded, recSize, recHash);
 
             var service = new NodalOsPaddleOcrOnnxModelReadinessService();
-            var readiness = service.Evaluate(verified, RepoRoot, licenseAccepted: true);
+            var readiness = service.Evaluate(verified, tempRoot, licenseAccepted: true);
 
             Assert.AreEqual(NodalOsPaddleOcrOnnxModelStatus.BlockedBySize, readiness.Status);
             Assert.IsFalse(readiness.CanRunOcr);
         }
         finally
         {
-            File.Delete(detPath);
-            File.Delete(recPath);
+            DeleteTempRepoRoot(tempRoot);
         }
     }
 
@@ -179,8 +199,8 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
     {
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true };
-        var modelDir = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx");
-        Directory.CreateDirectory(modelDir);
+        var tempRoot = CreateTempRepoRoot();
+        var modelDir = Path.Combine(tempRoot, "tools", "ocr-worker", "models", "onnx");
         var path = Path.Combine(modelDir, "ch_PP-OCRv4_det.onnx");
         File.WriteAllText(path, "verified-model-content");
         try
@@ -195,7 +215,7 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
                 checksum);
 
             var verifier = new NodalOsPaddleOcrOnnxModelVerifierService();
-            var result = verifier.Verify(manifestWithChecksum.Models[0], RepoRoot, licenseAccepted: true);
+            var result = verifier.Verify(manifestWithChecksum.Models[0], tempRoot, licenseAccepted: true);
 
             Assert.AreEqual(NodalOsPaddleOcrOnnxModelStatus.Verified, result.Status);
             Assert.IsTrue(result.FileExists);
@@ -204,7 +224,7 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
         }
         finally
         {
-            File.Delete(path);
+            DeleteTempRepoRoot(tempRoot);
         }
     }
 
@@ -214,10 +234,18 @@ public sealed class NodalOsPaddleOcrOnnxModelVerificationM197Tests
         var service = new NodalOsPaddleOcrOnnxModelReadinessService();
         var catalog = new NodalOsPaddleOcrOnnxModelCatalogService();
         var manifest = catalog.CreateDefaultManifest() with { LicenseReviewed = true };
+        var tempRoot = CreateTempRepoRoot();
 
-        var readiness = service.Evaluate(manifest, RepoRoot, licenseAccepted: true);
+        try
+        {
+            var readiness = service.Evaluate(manifest, tempRoot, licenseAccepted: true);
 
-        Assert.IsFalse(readiness.CanRunOcr);
+            Assert.IsFalse(readiness.CanRunOcr);
+        }
+        finally
+        {
+            DeleteTempRepoRoot(tempRoot);
+        }
     }
 
     [TestMethod]

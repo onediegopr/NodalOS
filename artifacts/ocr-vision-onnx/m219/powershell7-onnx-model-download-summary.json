@@ -1,0 +1,73 @@
+{
+  "milestone": "M219",
+  "baseCommitExpected": "bef340c",
+  "baseCommitActual": "bef340c",
+  "worktree": "C:/Users/diego/OneDrive/PERSONAL/ONE Brain/Codigo-m12-audit",
+  "forbiddenWorktreeUsed": false,
+  "winget": {
+    "available": true,
+    "path": "C:/Users/diego/AppData/Local/Microsoft/WindowsApps/winget.exe"
+  },
+  "powershell": {
+    "pwshBefore": false,
+    "windowsPowerShellVersion": "5.1.26100.8655",
+    "installMethod": "winget install --id Microsoft.PowerShell --source winget",
+    "pwshAfter": true,
+    "pwshPath": "C:/Users/diego/AppData/Local/Microsoft/WindowsApps/pwsh.exe",
+    "pwshVersion": "7.6.2"
+  },
+  "scripts": {
+    "download": {
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/download-models.ps1 -Confirm",
+      "executed": true,
+      "success": true
+    },
+    "verify": {
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File tools/ocr-worker/models/onnx/verify-models.ps1",
+      "executed": true,
+      "success": true
+    }
+  },
+  "models": {
+    "detection": {
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_det.onnx",
+      "status": "PresentAndVerified",
+      "sizeBytes": 4745517,
+      "sha256": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9"
+    },
+    "recognition": {
+      "file": "tools/ocr-worker/models/onnx/ch_PP-OCRv4_rec.onnx",
+      "status": "PresentAndVerified",
+      "sizeBytes": 7653044,
+      "sha256": "e8770c967605983d1570cdf5352041dfb68fa0c21664f49f47b155abd3e0e318"
+    },
+    "classification": {
+      "file": "tools/ocr-worker/models/onnx/ch_ppocr_mobile_v2.0_cls.onnx",
+      "status": "PresentAndVerified",
+      "sizeBytes": 585532,
+      "sha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c"
+    }
+  },
+  "git": {
+    "onnxGitignored": true,
+    "onnxModelsCommitted": false
+  },
+  "tests": {
+    "modelFilter": "23 passed, 0 failed",
+    "guardedFilter": "22 passed, 1 skipped",
+    "restore": "passed",
+    "build": "passed",
+    "fullSuite": "failed/aborted on unrelated browser runtime cleanup/devtools issues"
+  },
+  "safety": {
+    "noProductiveOcr": true,
+    "noSaas": true,
+    "noRawPersistence": true,
+    "noFullScreen": true,
+    "noSensitive": true,
+    "noAuthority": true,
+    "noShadowMode": true,
+    "noRiskyOcrInProcess": true
+  },
+  "decision": "M219 CERRADO / MODELS_PRESENT_AND_VERIFIED"
+}

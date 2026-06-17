@@ -34,16 +34,16 @@ public sealed class NodalOsOnnxModelAvailabilityM215M217Tests
         : AppDomain.CurrentDomain.BaseDirectory;
 
     [TestMethod]
-    public void Inventory_ReportsMissingDetectionRecognitionHonestly()
+    public void Inventory_ReportsDetectionRecognitionAvailabilityHonestly()
     {
         var inventory = new NodalOsOnnxModelInventoryService().BuildInventory(RepoRoot);
         var det = inventory.Entries.Single(e => e.Role == NodalOsPaddleOcrOnnxModelKind.TextDetection);
         var rec = inventory.Entries.Single(e => e.Role == NodalOsPaddleOcrOnnxModelKind.TextRecognition);
 
-        Assert.AreEqual(NodalOsOnnxModelAvailabilityStatus.Missing, det.AvailabilityStatus);
-        Assert.AreEqual(NodalOsOnnxModelAvailabilityStatus.Missing, rec.AvailabilityStatus);
-        Assert.IsFalse(det.Exists);
-        Assert.IsFalse(rec.Exists);
+        Assert.IsTrue(det.AvailabilityStatus is NodalOsOnnxModelAvailabilityStatus.Missing or NodalOsOnnxModelAvailabilityStatus.PresentAndVerified);
+        Assert.IsTrue(rec.AvailabilityStatus is NodalOsOnnxModelAvailabilityStatus.Missing or NodalOsOnnxModelAvailabilityStatus.PresentAndVerified);
+        Assert.AreEqual(det.Exists, det.AvailabilityStatus == NodalOsOnnxModelAvailabilityStatus.PresentAndVerified);
+        Assert.AreEqual(rec.Exists, rec.AvailabilityStatus == NodalOsOnnxModelAvailabilityStatus.PresentAndVerified);
         Assert.IsTrue(inventory.NoSaas);
         Assert.IsTrue(inventory.NoAuthority);
     }
