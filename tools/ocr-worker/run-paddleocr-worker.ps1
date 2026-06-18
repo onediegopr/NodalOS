@@ -1,4 +1,6 @@
 #Requires -Version 5.1
+# DEPRECATED: historical diagnostic-only Python worker entrypoint.
+# Active OCR path uses ONNX .NET and this script must not be used as the runtime production path.
 <#
 .SYNOPSIS
     Runs the PaddleOCR local worker in controlled mode.

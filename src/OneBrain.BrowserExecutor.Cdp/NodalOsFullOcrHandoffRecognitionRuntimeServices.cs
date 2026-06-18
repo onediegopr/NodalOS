@@ -250,6 +250,7 @@ public sealed class NodalOsRecognizerRuntimeCompatibilityDecisionService
     }
 }
 
+[Obsolete("Historical ONNX runtime version experiment. Active OCR path is pinned to ONNX Runtime 1.22.1.")]
 public sealed class NodalOsOnnxRuntimeVersionExperimentPlanner
 {
     public NodalOsOnnxRuntimeVersionExperimentPlan CreateDefaultPlan(string packageReferenceProject) =>
@@ -263,6 +264,7 @@ public sealed class NodalOsOnnxRuntimeVersionExperimentPlanner
             NoAuthority: true);
 }
 
+[Obsolete("Historical ONNX runtime version experiment. Active OCR path is pinned to ONNX Runtime 1.22.1.")]
 public sealed class NodalOsOnnxRuntimeVersionDecisionService
 {
     public NodalOsOnnxRuntimeVersionDecisionReport Decide(

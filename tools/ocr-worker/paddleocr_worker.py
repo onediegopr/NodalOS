@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED: historical diagnostic-only Python worker.
+# Active OCR path uses ONNX .NET and this file is retained only for historical auditability.
 """
 NODAL OS — PaddleOCR local worker entrypoint.
 Production-grade, crop-only, redacted-only, local-only.

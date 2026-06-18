@@ -6,6 +6,7 @@ namespace OneBrain.BrowserExecutor.Cdp;
 // M193 — PaddleOCR synthetic redacted crop real OCR run.
 // Orchestrates a controlled crop, redaction, and (if runtime available) local OCR invocation.
 // If runtime is unavailable, returns a clean BLOCKED_BY_ENVIRONMENT result.
+[Obsolete("Historical diagnostic-only synthetic Python worker run. Active OCR path uses ONNX .NET.")]
 public sealed class NodalOsPaddleOcrSyntheticRunService
 {
     private readonly NodalOsPixelImageRedactor _redactor = new();
@@ -111,6 +112,7 @@ public sealed class NodalOsPaddleOcrSyntheticRunService
     }
 }
 
+[Obsolete("Historical diagnostic-only synthetic Python worker run. Active OCR path uses ONNX .NET.")]
 public enum NodalOsPaddleOcrSyntheticRunDecision
 {
     RealOcrExecuted,
@@ -119,6 +121,7 @@ public enum NodalOsPaddleOcrSyntheticRunDecision
     BlockedByRedaction
 }
 
+[Obsolete("Historical diagnostic-only synthetic Python worker run. Active OCR path uses ONNX .NET.")]
 public sealed record NodalOsPaddleOcrSyntheticRunResult(
     string RunId,
     NodalOsPaddleOcrSyntheticRunDecision Decision,

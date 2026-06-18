@@ -3,6 +3,7 @@ namespace OneBrain.BrowserExecutor.Contracts;
 // M192 — Production-grade PaddleOCR local worker adapter contracts.
 // Disabled-by-default; crop-only; redacted-only; no authority.
 
+[Obsolete("Historical diagnostic-only Python worker surface. Active OCR path uses ONNX .NET.")]
 public enum NodalOsPaddleOcrWorkerExecutionMode
 {
     Disabled,
@@ -13,6 +14,7 @@ public enum NodalOsPaddleOcrWorkerExecutionMode
     Error
 }
 
+[Obsolete("Historical diagnostic-only Python worker surface. Active OCR path uses ONNX .NET.")]
 public sealed record NodalOsPaddleOcrWorkerInvocationPolicy(
     NodalOsPaddleOcrWorkerExecutionMode AllowedMode,
     bool RequiresPixelRedactionV2,
@@ -33,6 +35,7 @@ public sealed record NodalOsPaddleOcrWorkerInvocationPolicy(
     bool NoAuthority,
     bool RequiresAuditRecord);
 
+[Obsolete("Historical diagnostic-only Python worker surface. Active OCR path uses ONNX .NET.")]
 public sealed record NodalOsPaddleOcrWorkerRequest(
     string RequestId,
     string ContractVersion,
@@ -48,6 +51,7 @@ public sealed record NodalOsPaddleOcrWorkerRequest(
     bool ProductionMode,
     DateTimeOffset CreatedAtUtc);
 
+[Obsolete("Historical diagnostic-only Python worker surface. Active OCR path uses ONNX .NET.")]
 public sealed record NodalOsPaddleOcrWorkerResponse(
     string ResponseId,
     NodalOsPaddleOcrWorkerExecutionMode Mode,
@@ -64,11 +68,13 @@ public sealed record NodalOsPaddleOcrWorkerResponse(
     TimeSpan Duration,
     NodalOsPaddleOcrWorkerAuditRecord AuditRecord);
 
+[Obsolete("Historical diagnostic-only Python worker surface. Active OCR path uses ONNX .NET.")]
 public sealed record NodalOsPaddleOcrWorkerLine(
     string Text,
     double Confidence,
     IReadOnlyList<double>? BoundingBox);
 
+[Obsolete("Historical diagnostic-only Python worker surface. Active OCR path uses ONNX .NET.")]
 public sealed record NodalOsPaddleOcrWorkerHealth(
     string HealthId,
     bool RuntimeAvailable,
@@ -77,6 +83,7 @@ public sealed record NodalOsPaddleOcrWorkerHealth(
     bool NoAuthority,
     DateTimeOffset CheckedAtUtc);
 
+[Obsolete("Historical diagnostic-only Python worker surface. Active OCR path uses ONNX .NET.")]
 public sealed record NodalOsPaddleOcrWorkerAuditRecord(
     string AuditId,
     string RequestId,

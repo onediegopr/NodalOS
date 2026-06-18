@@ -85,8 +85,8 @@ public sealed class NodalOsLocalOcrWorkerM182M184Tests
     public void SyntheticRunGeneratesAuditRecordAndArtifacts()
     {
         var record = activation.RunSynthetic(skeletonService.CreateSyntheticOnlySkeleton());
-        var json = SourcePath("artifacts", "ocr-vision-worker", "m183", "synthetic-worker-run-summary.json");
-        var markdown = SourcePath("docs", "reports", "ocr-vision-synthetic-worker-run-m183.md");
+        var json = TempPath("synthetic-worker-run-summary.json");
+        var markdown = TempPath("ocr-vision-synthetic-worker-run-m183.md");
         activation.WriteRunRecord(record, json, markdown);
 
         Assert.AreEqual(4, record.TotalFixtures);
@@ -219,5 +219,12 @@ public sealed class NodalOsLocalOcrWorkerM182M184Tests
 
         Assert.Fail("Could not locate repository root.");
         return "";
+    }
+
+    private static string TempPath(string fileName)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "nodal-os-ocr-tests", "m183");
+        Directory.CreateDirectory(directory);
+        return Path.Combine(directory, fileName);
     }
 }

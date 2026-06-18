@@ -152,8 +152,8 @@ public sealed class NodalOsOcrVisionAdminEvaluationM175M177Tests
         var registry = registryService.EnableModelOnly(registryService.CreateDefaultRegistry(), new("local-paddleocr-stub"));
         registry = registryService.EnableModelOnly(registry, new("local-tesseract-stub"));
         var report = harness.Run(registry);
-        var json = SourcePath("artifacts", "ocr-vision-evaluation", "m177", "ocr-vision-evaluation-summary.json");
-        var markdown = SourcePath("docs", "reports", "ocr-vision-evaluation-m177.md");
+        var json = TempPath("ocr-vision-evaluation-summary.json");
+        var markdown = TempPath("ocr-vision-evaluation-m177.md");
         harness.WriteReport(report, json, markdown);
 
         Assert.IsTrue(File.Exists(json));
@@ -185,5 +185,12 @@ public sealed class NodalOsOcrVisionAdminEvaluationM175M177Tests
 
         Assert.Fail("Could not locate repository root.");
         return "";
+    }
+
+    private static string TempPath(string fileName)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "nodal-os-ocr-tests", "m177");
+        Directory.CreateDirectory(directory);
+        return Path.Combine(directory, fileName);
     }
 }

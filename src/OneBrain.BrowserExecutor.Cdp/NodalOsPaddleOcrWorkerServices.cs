@@ -9,6 +9,7 @@ namespace OneBrain.BrowserExecutor.Cdp;
 // M192 — Production-grade PaddleOCR local worker adapter.
 // Integrates real PaddleOCR runtime with existing OCR contracts.
 // Disabled-by-default; production public OCR remains blocked.
+[Obsolete("Historical diagnostic-only Python worker adapter. Active OCR path uses ONNX .NET.")]
 public sealed class NodalOsPaddleOcrLocalWorkerAdapter
 {
     public const string WorkerContractVersion = "nodal-paddleocr-worker.v1";
@@ -227,6 +228,7 @@ public sealed class NodalOsPaddleOcrLocalWorkerAdapter
             : AppDomain.CurrentDomain.BaseDirectory;
 }
 
+[Obsolete("Historical diagnostic-only Python worker adapter. Active OCR path uses ONNX .NET.")]
 public sealed class NodalOsPaddleOcrResultNormalizer
 {
     public NodalOsLocalOcrResult Normalize(NodalOsPaddleOcrWorkerResponse response) =>
