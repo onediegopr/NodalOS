@@ -6,6 +6,10 @@ namespace OneBrain.BrowserExecutor.Contracts;
 
 public enum BrowserAuditLedgerEventKind
 {
+    OcrEvidenceAuxiliaryRecorded,
+    OcrEvidenceDiagnosticRejectedRecorded,
+    OcrEvidenceDiagnosticUncertainRecorded,
+    OcrEvidencePolicyViolationRejected,
     VaultStorageRequested,
     VaultRetrievalRequested,
     VaultUseRequested,

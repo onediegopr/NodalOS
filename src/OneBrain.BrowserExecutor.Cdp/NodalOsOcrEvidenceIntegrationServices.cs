@@ -4,6 +4,8 @@ namespace OneBrain.BrowserExecutor.Cdp;
 
 public sealed class NodalOsOcrEvidenceAdapter
 {
+    private const double AcceptedDiffThreshold = 0.01d;
+
     public NodalOsOcrEvidencePolicyEvaluation EvaluateAndMap(
         NodalOsOcrEvidenceEnvelope envelope,
         string? artifactRef = null)
@@ -49,6 +51,26 @@ public sealed class NodalOsOcrEvidenceAdapter
                 Entry: null);
         }
 
+        if (acceptance == NodalOsOcrObservationAcceptanceState.AcceptedEvidence &&
+            !IsFingerprintAccepted(envelope))
+        {
+            return new NodalOsOcrEvidencePolicyEvaluation(
+                NodalOsOcrEvidenceLedgerStatus.RejectedPolicyViolation,
+                CanRegister: false,
+                CanBeAcceptedEvidence: false,
+                CanAttachAsAuxiliaryEvidence: false,
+                CanAttachAsDiagnosticEvidence: false,
+                CanAuthorizeAction: false,
+                CanApproveClick: false,
+                CanApproveSubmit: false,
+                CanApproveSend: false,
+                CanApproveDelete: false,
+                CanApprovePay: false,
+                CanApproveSign: false,
+                BrowserCredentialRedactor.Redact("accepted OCR evidence requires matching fingerprint and diff score within threshold"),
+                Entry: null);
+        }
+
         var entry = BuildEntry(envelope, artifactRef);
         return acceptance switch
         {
@@ -88,6 +110,14 @@ public sealed class NodalOsOcrEvidenceAdapter
         NodalOsOcrEvidenceEnvelope envelope,
         string? artifactRef)
     {
+        var expectedFingerprint = envelope.Result.RegionVerification?.ExpectedFingerprint;
+        var observedFingerprint = envelope.CaptureFingerprint;
+        var fingerprintHashMatch = expectedFingerprint is not null &&
+                                   observedFingerprint is not null &&
+                                   string.Equals(expectedFingerprint.Sha256, observedFingerprint.Sha256, StringComparison.Ordinal);
+        var diffScore = envelope.Result.RegionVerification?.DiffScore ?? envelope.DiffScore;
+        var confidenceBand = ResolveConfidenceBand(envelope, fingerprintHashMatch, diffScore);
+
         return new NodalOsOcrEvidenceLedgerEntry(
             envelope.ObservationId,
             $"ocr-evidence:{envelope.ObservationId}",
@@ -127,7 +157,17 @@ public sealed class NodalOsOcrEvidenceAdapter
             artifactRef,
             envelope.Result.RegionVerification,
             envelope.Result.ConfidenceGate,
-            envelope.CaptureFingerprint);
+            envelope.CaptureFingerprint)
+        {
+            FingerprintHashMatch = fingerprintHashMatch,
+            DiffScore = diffScore,
+            DarkPixelRatio = observedFingerprint?.DarkPixelRatio,
+            MeanRgb = observedFingerprint is null
+                ? null
+                : (observedFingerprint.AverageRed, observedFingerprint.AverageGreen, observedFingerprint.AverageBlue),
+            SampleSignature = observedFingerprint?.SampleSignature,
+            ConfidenceBand = confidenceBand
+        };
     }
 
     private static NodalOsOcrEvidencePolicyEvaluation BuildAccepted(NodalOsOcrEvidenceLedgerEntry entry) =>
@@ -166,6 +206,47 @@ public sealed class NodalOsOcrEvidenceAdapter
             CanApproveSign: false,
             reason,
             entry);
+
+    private static bool IsFingerprintAccepted(NodalOsOcrEvidenceEnvelope envelope)
+    {
+        var expectedFingerprint = envelope.Result.RegionVerification?.ExpectedFingerprint;
+        var observedFingerprint = envelope.CaptureFingerprint;
+        if (expectedFingerprint is null || observedFingerprint is null)
+            return false;
+
+        if (!string.Equals(expectedFingerprint.Sha256, observedFingerprint.Sha256, StringComparison.Ordinal))
+            return false;
+
+        var diffScore = envelope.Result.RegionVerification?.DiffScore ?? envelope.DiffScore;
+        return diffScore is null || diffScore <= AcceptedDiffThreshold;
+    }
+
+    private static NodalOsOcrEvidenceConfidenceBand ResolveConfidenceBand(
+        NodalOsOcrEvidenceEnvelope envelope,
+        bool fingerprintHashMatch,
+        double? diffScore)
+    {
+        if (envelope.AcceptanceState != NodalOsOcrObservationAcceptanceState.AcceptedEvidence ||
+            !envelope.RegionVerified ||
+            !envelope.ConfidenceGatePassed ||
+            !fingerprintHashMatch ||
+            (diffScore is not null && diffScore > AcceptedDiffThreshold))
+        {
+            return envelope.AcceptanceState switch
+            {
+                NodalOsOcrObservationAcceptanceState.AcceptedEvidence => NodalOsOcrEvidenceConfidenceBand.Rejected,
+                NodalOsOcrObservationAcceptanceState.UncertainRequiresExpansion => NodalOsOcrEvidenceConfidenceBand.Low,
+                _ => NodalOsOcrEvidenceConfidenceBand.Rejected
+            };
+        }
+
+        var confidence = envelope.Result.Confidence ?? 0d;
+        if (confidence >= 0.95d)
+            return NodalOsOcrEvidenceConfidenceBand.High;
+        if (confidence >= 0.75d)
+            return NodalOsOcrEvidenceConfidenceBand.Medium;
+        return NodalOsOcrEvidenceConfidenceBand.Low;
+    }
 }
 
 public sealed class NodalOsOcrEvidenceRuntimePolicyGate
@@ -176,4 +257,124 @@ public sealed class NodalOsOcrEvidenceRuntimePolicyGate
         NodalOsOcrEvidenceEnvelope envelope,
         string? artifactRef = null) =>
         adapter.EvaluateAndMap(envelope, artifactRef);
+}
+
+public sealed class NodalOsOcrEvidenceAuditConsumer
+{
+    private readonly NodalOsOcrEvidenceRuntimePolicyGate gate = new();
+
+    public NodalOsOcrEvidencePolicyEvaluation Consume(
+        BrowserPersistentAuditLedger auditLedger,
+        NodalOsOcrEvidenceEnvelope envelope,
+        string? artifactRef = null)
+    {
+        var evaluation = gate.Evaluate(envelope, artifactRef);
+        if (evaluation.LedgerStatus == NodalOsOcrEvidenceLedgerStatus.RejectedPolicyViolation)
+        {
+            var rejectionEvent = BrowserPersistentAuditLedger.Create(
+                BrowserAuditLedgerEventKind.OcrEvidencePolicyViolationRejected,
+                runId: BuildSafeAuditId("ocr-run", envelope.ObservationId),
+                actionId: BuildSafeAuditId("ocr-evidence", envelope.ObservationId),
+                correlationId: BuildSafeAuditId("ocr-corr", envelope.ObservationId),
+                profileId: "ocrprofile",
+                sessionId: "ocrsession",
+                consentId: null,
+                secretId: null,
+                providerKind: null,
+                decision: evaluation.LedgerStatus.ToString(),
+                reason: evaluation.Reason,
+                metadata: BuildPolicyViolationMetadata(envelope));
+            auditLedger.Append(rejectionEvent);
+            return evaluation;
+        }
+
+        if (!evaluation.CanRegister || evaluation.Entry is null)
+            return evaluation;
+
+        var auditEvent = BrowserPersistentAuditLedger.Create(
+            ResolveKind(evaluation.LedgerStatus),
+            runId: BuildSafeAuditId("ocr-run", evaluation.Entry.ObservationId),
+            actionId: BuildSafeAuditId("ocr-evidence", evaluation.Entry.EvidenceId),
+            correlationId: BuildSafeAuditId("ocr-corr", evaluation.Entry.ObservationId),
+            profileId: "ocrprofile",
+            sessionId: "ocrsession",
+            consentId: null,
+            secretId: null,
+            providerKind: null,
+            decision: evaluation.LedgerStatus.ToString(),
+            reason: evaluation.Reason,
+            metadata: BuildMetadata(evaluation.Entry));
+
+        auditLedger.Append(auditEvent);
+        return evaluation;
+    }
+
+    private static BrowserAuditLedgerEventKind ResolveKind(NodalOsOcrEvidenceLedgerStatus status) => status switch
+    {
+        NodalOsOcrEvidenceLedgerStatus.AcceptedAuxiliary => BrowserAuditLedgerEventKind.OcrEvidenceAuxiliaryRecorded,
+        NodalOsOcrEvidenceLedgerStatus.RecordedDiagnosticRejected => BrowserAuditLedgerEventKind.OcrEvidenceDiagnosticRejectedRecorded,
+        NodalOsOcrEvidenceLedgerStatus.RecordedDiagnosticUncertain => BrowserAuditLedgerEventKind.OcrEvidenceDiagnosticUncertainRecorded,
+        _ => BrowserAuditLedgerEventKind.OcrEvidencePolicyViolationRejected
+    };
+
+    private static IReadOnlyDictionary<string, string> BuildMetadata(NodalOsOcrEvidenceLedgerEntry entry)
+    {
+        return new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["source"] = entry.Source.ToString(),
+            ["sourceCategory"] = entry.SourceCategory.ToString(),
+            ["captureMode"] = entry.CaptureMode,
+            ["evidenceUse"] = entry.EvidenceUse.ToString(),
+            ["acceptanceState"] = entry.AcceptanceState.ToString(),
+            ["recognizedText"] = entry.RecognizedText,
+            ["normalizedText"] = entry.NormalizedText,
+            ["expectedText"] = entry.ExpectedText ?? string.Empty,
+            ["exactMatch"] = entry.ExactMatch.ToString(),
+            ["normalizedMatch"] = entry.NormalizedMatch.ToString(),
+            ["editDistance"] = entry.EditDistance?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            ["confidence"] = entry.Confidence?.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            ["regionVerified"] = entry.RegionVerified.ToString(),
+            ["confidenceGatePassed"] = entry.ConfidenceGatePassed.ToString(),
+            ["fingerprintHashMatch"] = entry.FingerprintHashMatch.ToString(),
+            ["diffScore"] = entry.DiffScore?.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            ["darkPixelRatio"] = entry.DarkPixelRatio?.ToString("F4", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            ["meanRgb"] = entry.MeanRgb is null
+                ? string.Empty
+                : $"{entry.MeanRgb.Value.Red:F1},{entry.MeanRgb.Value.Green:F1},{entry.MeanRgb.Value.Blue:F1}",
+            ["sampleSignature"] = entry.SampleSignature ?? string.Empty,
+            ["confidenceBand"] = entry.ConfidenceBand.ToString(),
+            ["noAuthority"] = entry.NoAuthority.ToString(),
+            ["evidenceOnly"] = entry.EvidenceOnly.ToString(),
+            ["actionAllowed"] = entry.ActionAllowed.ToString(),
+            ["officialSpacePolicy"] = entry.OfficialSpacePolicy.ToString(),
+            ["softmaxReapplied"] = entry.SoftmaxReapplied.ToString(),
+            ["artifactRef"] = entry.ArtifactRef ?? string.Empty,
+            ["regionBounds"] = $"{entry.RegionBounds.X},{entry.RegionBounds.Y},{entry.RegionBounds.Width},{entry.RegionBounds.Height}",
+            ["warnings"] = string.Join(" | ", entry.Warnings)
+        };
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildPolicyViolationMetadata(NodalOsOcrEvidenceEnvelope envelope)
+    {
+        return new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["source"] = NodalOsOcrEvidenceSource.Ocr.ToString(),
+            ["sourceCategory"] = envelope.SourceCategory.ToString(),
+            ["captureMode"] = envelope.CaptureMode,
+            ["acceptanceState"] = envelope.AcceptanceState.ToString(),
+            ["actionAllowed"] = envelope.Result.ActionAllowed.ToString(),
+            ["noAuthority"] = envelope.Result.NoAuthority.ToString(),
+            ["evidenceOnly"] = envelope.Result.EvidenceOnly.ToString(),
+            ["officialSpacePolicy"] = envelope.Result.OfficialSpacePolicy.ToString(),
+            ["softmaxReapplied"] = envelope.Result.SoftmaxReapplied.ToString(),
+            ["regionBounds"] = $"{envelope.RegionBounds.X},{envelope.RegionBounds.Y},{envelope.RegionBounds.Width},{envelope.RegionBounds.Height}"
+        };
+    }
+
+    private static string BuildSafeAuditId(string prefix, string source)
+    {
+        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(source));
+        var hash = Convert.ToHexString(bytes).ToLowerInvariant()[..16];
+        return $"{prefix}-{hash}";
+    }
 }

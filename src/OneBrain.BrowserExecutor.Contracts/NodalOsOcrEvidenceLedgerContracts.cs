@@ -29,6 +29,15 @@ public enum NodalOsOcrEvidenceKind
     OcrObservationEvidence
 }
 
+public enum NodalOsOcrEvidenceConfidenceBand
+{
+    Unknown,
+    Rejected,
+    Low,
+    Medium,
+    High
+}
+
 public sealed record NodalOsOcrEvidenceLedgerEntry(
     string ObservationId,
     string EvidenceId,
@@ -66,7 +75,20 @@ public sealed record NodalOsOcrEvidenceLedgerEntry(
     string? ArtifactRef,
     NodalOsOcrRegionVerificationResult? RegionVerification,
     NodalOsOcrObservationConfidenceGateResult? ConfidenceGate,
-    NodalOsRegionCaptureFingerprint? CaptureFingerprint);
+    NodalOsRegionCaptureFingerprint? CaptureFingerprint)
+{
+    public bool FingerprintHashMatch { get; init; }
+
+    public double? DiffScore { get; init; }
+
+    public double? DarkPixelRatio { get; init; }
+
+    public (double Red, double Green, double Blue)? MeanRgb { get; init; }
+
+    public string? SampleSignature { get; init; }
+
+    public NodalOsOcrEvidenceConfidenceBand ConfidenceBand { get; init; } = NodalOsOcrEvidenceConfidenceBand.Unknown;
+}
 
 public sealed record NodalOsOcrEvidencePolicyEvaluation(
     NodalOsOcrEvidenceLedgerStatus LedgerStatus,
