@@ -141,7 +141,7 @@ public sealed class NodalOsRealQaWindowRegionM310M312Tests
     }
 
     [TestMethod]
-    public void ProbeRunner_ReportsBlockedBeforeRealQaWindowCapture()
+    public void ProbeRunner_ReportsRealQaWindowCaptureHonestly()
     {
         var runner = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", "Debug", "net11.0", "OneBrain.Tools.OnnxOcrProbeRunner.dll");
         if (!File.Exists(runner))
@@ -169,10 +169,12 @@ public sealed class NodalOsRealQaWindowRegionM310M312Tests
 
         using var doc = JsonDocument.Parse(stdout);
         var root = doc.RootElement;
-        Assert.AreEqual("BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE", root.GetProperty("ReadinessDecision").GetString());
-        Assert.AreEqual("blocked-before-real-capture", root.GetProperty("CaptureMode").GetString());
-        Assert.IsFalse(root.GetProperty("RealQaWindowRegionUsed").GetBoolean());
+        Assert.IsTrue(root.GetProperty("RealQaWindowRegionAttempted").GetBoolean());
         Assert.IsFalse(root.GetProperty("SimulatedWindowRegionUsed").GetBoolean());
+        Assert.IsFalse(root.GetProperty("FullScreenUsed").GetBoolean());
+        Assert.IsFalse(root.GetProperty("RealDocumentUsed").GetBoolean());
+        Assert.IsTrue(root.GetProperty("OfficialSpacePolicy").GetBoolean());
+        Assert.IsFalse(root.GetProperty("RecognizerSoftmaxReapplied").GetBoolean());
         Assert.IsTrue(root.GetProperty("ParentSurvived").GetBoolean());
     }
 

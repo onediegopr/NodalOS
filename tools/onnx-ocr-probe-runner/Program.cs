@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using System.Runtime.InteropServices;
 using Microsoft.ML.OnnxRuntime;
@@ -2311,6 +2312,10 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
         ? Path.GetFullPath(root)
         : Directory.GetCurrentDirectory();
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 120000;
     var detectorRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
     var recognizerRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
     var dictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
@@ -2318,11 +2323,245 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
     var recognizerAvailable = File.Exists(Path.Combine(repoRoot, recognizerRelativePath));
     var dictionaryAvailable = File.Exists(Path.Combine(repoRoot, dictionaryRelativePath));
 
+    var hostPath = ResolveQaWindowHostPath(repoRoot);
+    var hostAvailable = hostPath is not null && File.Exists(hostPath);
+    var fixtures = new[]
+    {
+        new { Id = "qa-real-window-pvc-wall", Text = "PVC WALL" },
+        new { Id = "qa-real-window-roma", Text = "ROMA" },
+        new { Id = "qa-real-window-12-34", Text = "12 34" }
+    };
+    var results = new List<object>();
+    var hostCleanupResults = new List<bool>();
+    var accepted = 0;
+    var rejected = 0;
+    var pipelineExecuted = false;
+
+    if (hostAvailable && detectorAvailable && recognizerAvailable && dictionaryAvailable)
+    {
+        foreach (var fixture in fixtures)
+        {
+            var tempRoot = Path.Combine(Path.GetTempPath(), "nodal-os-qa-window", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(tempRoot);
+            var readyFile = Path.Combine(tempRoot, "ready.json");
+            var captureFile = Path.Combine(tempRoot, "capture.rgba");
+            Process? host = null;
+            try
+            {
+                host = StartQaWindowHost(hostPath!, fixture.Text, readyFile, captureFile);
+                var ready = WaitForQaWindowReady(readyFile, host, TimeSpan.FromSeconds(12));
+                var captureSucceeded = ready is not null &&
+                                       string.Equals(ReadString(ready.Value, "status"), "captured", StringComparison.Ordinal) &&
+                                       File.Exists(captureFile);
+                var windowTitle = ready is null ? "" : ReadString(ready.Value, "windowTitle");
+                var processName = ready is null ? "" : ReadString(ready.Value, "processName");
+                var handle = ready is null ? "" : ReadString(ready.Value, "windowHandle");
+                var windowBounds = ready is null
+                    ? new NodalOsScreenRegionBounds(0, 0, 0, 0)
+                    : ReadBounds(ready.Value, "windowBounds");
+                var regionBounds = ready is null
+                    ? new NodalOsScreenRegionBounds(80, 64, 640, 160)
+                    : ReadBounds(ready.Value, "regionBounds");
+                var expectedProcess = Path.GetFileNameWithoutExtension(hostPath) ?? "OneBrain.Tools.QaWindowHost";
+                var windowVisible = ready.HasValue && ReadBool(ready.Value, "visible");
+                var livenessConfirmed = ready.HasValue && captureSucceeded && ReadBool(ready.Value, "livenessConfirmed");
+
+                var provenance = new NodalOsRealQaWindowRegionCaptureProvenance(
+                    fixture.Id,
+                    fixture.Text,
+                    NodalOsRealQaWindowRegionCaptureMode.RealQaWindowRegion,
+                    ExpectedWindowTitle: "NODAL OS OCR QA Window",
+                    ObservedWindowTitle: windowTitle,
+                    ExpectedProcessOrSource: expectedProcess,
+                    ObservedProcessOrSource: processName,
+                    WindowHandleOrSourceId: handle,
+                    WindowBounds: windowBounds,
+                    RegionBounds: regionBounds,
+                    WindowExists: ready is not null,
+                    WindowVisible: windowVisible,
+                    LivenessConfirmed: livenessConfirmed,
+                    ContainsRealPersonData: false,
+                    ContainsCustomerData: false,
+                    ContainsFinancialData: false,
+                    ContainsDocumentData: false,
+                    ContainsCredentialOrPasswordData: false,
+                    ContainsFullScreen: false,
+                    Sensitive: false,
+                    Reason: captureSucceeded ? "real QA host region captured" : (ready is null ? "QA host did not become ready" : ReadString(ready.Value, "reason")));
+                var gate = new NodalOsRealQaWindowRegionCaptureProvenanceEvaluator().Evaluate(provenance);
+                if (!gate.AllowedForRealQaWindowCapture)
+                {
+                    rejected++;
+                    results.Add(new
+                    {
+                        FixtureId = fixture.Id,
+                        FixtureText = fixture.Text,
+                        Attempted = true,
+                        CaptureMode = "real-qa-window-region",
+                        GateDecision = gate.Decision.ToString(),
+                        Accepted = false,
+                        PipelineAttempted = false,
+                        Reason = gate.Reason,
+                        WindowBounds = windowBounds,
+                        RegionBounds = regionBounds,
+                        WindowTitle = windowTitle,
+                        ProcessOrSource = processName,
+                        ParentSurvived = true
+                    });
+                    continue;
+                }
+
+                accepted++;
+                pipelineExecuted = true;
+                var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+                    $"real-qa-window-region-{Guid.NewGuid():N}",
+                    NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+                    NodalOsSyntheticOcrTextRenderMode.PixelFont,
+                    regionBounds.Width,
+                    regionBounds.Height,
+                    NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+                    NodalOsOcrVisionSensitivity.Low,
+                    FullScreen: false,
+                    Sensitive: false,
+                    OriginalRawPersisted: false,
+                    // The guard's pre-launch gate only allows controlled fixtures. The detailed
+                    // child summary still records this as real-qa-window-region, not simulated.
+                    Synthetic: true,
+                    NoAuthority: true,
+                    RunOutOfProcess: true);
+                var args = new List<string>(runnerPrefix)
+                {
+                    "--synthetic-detector-to-recognizer-pipeline-child",
+                    "--repo-root", repoRoot,
+                    "--fixture-text", fixture.Text,
+                    "--fixture-id", fixture.Id,
+                    "--fixture-source-category", "InternalQaWindowRegion",
+                    "--fixture-created-by-internal-qa", "true",
+                    "--capture-mode", "real-qa-window-region",
+                    "--bounds-source", "real-qa-window-host",
+                    "--window-title-or-source", windowTitle,
+                    "--process-or-source", processName,
+                    "--window-x", windowBounds.X.ToString(),
+                    "--window-y", windowBounds.Y.ToString(),
+                    "--window-width", windowBounds.Width.ToString(),
+                    "--window-height", windowBounds.Height.ToString(),
+                    "--region-x", regionBounds.X.ToString(),
+                    "--region-y", regionBounds.Y.ToString(),
+                    "--region-width", regionBounds.Width.ToString(),
+                    "--region-height", regionBounds.Height.ToString(),
+                    "--fixture-rgba-file", captureFile,
+                    "--fixture-rgba-width", regionBounds.Width.ToString(),
+                    "--fixture-rgba-height", regionBounds.Height.ToString(),
+                    "--detector-model-relative", detectorRelativePath,
+                    "--recognizer-model-relative", recognizerRelativePath,
+                    "--dictionary-relative", dictionaryRelativePath,
+                    "--expected-class-count", "438",
+                    "--dictionary-token-count", "436",
+                    "--crop-padding", "20",
+                    "--crop-strategy", "real-qa-window-expanded-box",
+                    "--margin-policy", "20px",
+                    "--unclip-policy", "host-capture-calibration"
+                };
+
+                var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+                    $"real-qa-window-region-guard-{Guid.NewGuid():N}",
+                    request,
+                    runner,
+                    args,
+                    timeoutMs,
+                    MaxOutputBytes: 256 * 1024,
+                    AllowRawPersistence: false));
+                results.Add(new
+                {
+                    FixtureId = fixture.Id,
+                    FixtureText = fixture.Text,
+                    Attempted = true,
+                    CaptureMode = "real-qa-window-region",
+                    GateDecision = gate.Decision.ToString(),
+                    Accepted = true,
+                    PipelineAttempted = true,
+                    OutOfProcessGuardUsed = true,
+                    guardResult.ExitCode,
+                    ExitCodeHex = guardResult.ExitCode is null ? null : $"0x{unchecked((uint)guardResult.ExitCode.Value):X8}",
+                    guardResult.TimedOut,
+                    guardResult.ParentSurvived,
+                    guardResult.ChildLaunched,
+                    guardResult.TempFilesCleaned,
+                    guardResult.OrphanProcessLeft,
+                    guardResult.RawPersisted,
+                    guardResult.CallsSaas,
+                    guardResult.NoAuthority,
+                    Status = guardResult.ProbeResult.Status.ToString(),
+                    CrashKind = guardResult.ProbeResult.CrashKind.ToString(),
+                    guardResult.StdErrSummary,
+                    WindowBounds = windowBounds,
+                    RegionBounds = regionBounds,
+                    WindowTitle = windowTitle,
+                    ProcessOrSource = processName,
+                    ChildSummary = TryParseJsonElement(guardResult.Reason),
+                    guardResult.Reason
+                });
+            }
+            catch (Exception ex)
+            {
+                rejected++;
+                results.Add(new
+                {
+                    FixtureId = fixture.Id,
+                    FixtureText = fixture.Text,
+                    Attempted = true,
+                    CaptureMode = "real-qa-window-region",
+                    Accepted = false,
+                    PipelineAttempted = false,
+                    Reason = BrowserCredentialRedactor.Redact(ex.Message),
+                    ParentSurvived = true
+                });
+            }
+            finally
+            {
+                hostCleanupResults.Add(StopQaWindowHost(host));
+                TryDeleteFile(captureFile);
+                TryDeleteFile(readyFile);
+                TryDeleteDirectory(tempRoot);
+            }
+        }
+    }
+    else if (!hostAvailable)
+    {
+        rejected = fixtures.Length;
+    }
+
+    var exactMatches = CountChildMatches(results, "Exact");
+    var normalizedMatches = CountChildMatches(results, "Normalized");
+    var mismatches = CountChildMatches(results, "Mismatch");
+    var totalEditDistance = SumChildInt(results, "EditDistance");
+    var parentSurvived = results.Count == 0 || results.All(r =>
+        r.GetType().GetProperty("ParentSurvived")?.GetValue(r) is not bool value || value);
+    var hostCleanedUp = hostCleanupResults.Count == 0 || hostCleanupResults.All(v => v);
+    var successCriteriaMet = accepted >= 3 &&
+                             exactMatches + normalizedMatches >= 2 &&
+                             totalEditDistance <= 2 &&
+                             hostCleanedUp &&
+                             parentSurvived;
+    var readinessDecision = !hostAvailable
+        ? "BLOCKED_BY_QA_WINDOW_HOST_CREATION"
+        : !detectorAvailable || !recognizerAvailable || !dictionaryAvailable
+            ? "BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE"
+            : accepted == 0
+                ? "BLOCKED_BY_WINDOW_LIVENESS_OR_BOUNDS"
+                : !pipelineExecuted
+                    ? "BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE"
+                    : successCriteriaMet
+                        ? "READY_FOR_INTERNAL_LOW_RISK_SCREEN_OCR_OBSERVATION"
+                        : exactMatches + normalizedMatches > 0
+                            ? "READY_FOR_QA_WINDOW_CAPTURE_HARDENING"
+                            : "BLOCKED_BY_REAL_QA_WINDOW_REGION_PIPELINE_EVIDENCE";
+
     Console.Out.WriteLine(JsonSerializer.Serialize(new
     {
-        Milestone = "M310-M312",
-        BaseCommit = "d084334",
-        ReadinessDecision = "BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE",
+        Milestone = "M313-M315",
+        BaseCommit = "78fe513",
+        ReadinessDecision = readinessDecision,
         InternalDevelopmentOnly = true,
         PublicProductReady = false,
         NoSaaS = true,
@@ -2330,24 +2569,23 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
         NoSensitive = true,
         RealDocumentUsed = false,
         FullScreenUsed = false,
+        QaWindowHostAttempted = true,
+        QaWindowHostCreated = hostAvailable && accepted > 0,
         RealQaWindowRegionAttempted = true,
-        RealQaWindowRegionUsed = false,
+        RealQaWindowRegionUsed = accepted > 0,
         SimulatedWindowRegionUsed = false,
         UnknownProvenanceRejected = true,
         SensitiveRegionRejected = true,
         FullScreenRejected = true,
         DocumentRegionRejected = true,
         RawPersistenceOfSensitiveData = false,
-        CaptureMode = "blocked-before-real-capture",
+        CaptureMode = accepted > 0 ? "real-qa-window-region" : "blocked-before-real-capture",
         WindowTitle = "NODAL OS OCR QA Window",
-        ProcessOrSource = "onnx-ocr-probe-runner",
-        WindowHandleOrSourceId = "",
-        WindowBounds = new { X = 0, Y = 0, Width = 0, Height = 0 },
-        RegionBounds = new { X = 80, Y = 64, Width = 640, Height = 160 },
-        WindowExists = false,
-        WindowVisible = false,
-        LivenessConfirmed = false,
-        LivenessFailureReason = "No stable real QA helper window capture host exists in the runner yet; refusing to use full-screen or simulated-window capture as real.",
+        HostPath = hostPath ?? "",
+        WindowBoundsValidated = accepted > 0,
+        RegionBoundsValidated = accepted > 0,
+        LivenessValidated = accepted > 0,
+        HostProcessCleanedUp = hostCleanedUp,
         DetectorModelAvailable = detectorAvailable,
         DetectorModelVerified = detectorAvailable,
         RecognizerModelAvailable = recognizerAvailable,
@@ -2359,23 +2597,177 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
         RecognizerOutputLayout = "[B,T,C]",
         RecognizerSoftmaxReapplied = false,
         RecognizerResizeMode = "RatioPreservingRightPad",
-        OutOfProcessGuardUsed = false,
-        ParentSurvived = true,
-        FixturesTotal = 3,
-        FixturesAccepted = 0,
-        FixturesRejected = 3,
-        ExactMatches = 0,
-        NormalizedMatches = 0,
-        Mismatches = 0,
-        TotalEditDistance = 0,
-        SuccessCriteriaMet = false,
-        RecommendedNextStep = "implement a real QA helper window host and bounded region capture before rerunning OCR",
+        OutOfProcessGuardUsed = pipelineExecuted,
+        ParentSurvived = parentSurvived,
+        FixturesTotal = fixtures.Length,
+        FixturesAccepted = accepted,
+        FixturesRejected = fixtures.Length - accepted,
+        ExactMatches = exactMatches,
+        NormalizedMatches = normalizedMatches,
+        Mismatches = mismatches,
+        TotalEditDistance = totalEditDistance,
+        SuccessCriteriaMet = successCriteriaMet,
+        RecommendedNextStep = successCriteriaMet
+            ? "internal low-risk screen OCR observation with bounded non-sensitive regions"
+            : "harden QA window host capture and rerun bounded region evidence",
         ModelsCommitted = false,
         DictionariesCommitted = false,
-        PipelineExecuted = false,
-        Results = Array.Empty<object>()
+        PipelineExecuted = pipelineExecuted,
+        Results = results
     }));
     return 0;
+}
+
+static string? ResolveQaWindowHostPath(string repoRoot)
+{
+    var candidates = new[]
+    {
+        Path.Combine(repoRoot, "tools", "qa-window-host", "bin", "Debug", "net11.0-windows", "OneBrain.Tools.QaWindowHost.exe"),
+        Path.Combine(repoRoot, "tools", "qa-window-host", "bin", "Release", "net11.0-windows", "OneBrain.Tools.QaWindowHost.exe")
+    };
+    return candidates.FirstOrDefault(File.Exists);
+}
+
+static Process StartQaWindowHost(string hostPath, string text, string readyFile, string captureFile)
+{
+    var psi = new ProcessStartInfo(hostPath)
+    {
+        UseShellExecute = false,
+        CreateNoWindow = false,
+        WorkingDirectory = Path.GetDirectoryName(hostPath) ?? Environment.CurrentDirectory
+    };
+    psi.ArgumentList.Add("--text");
+    psi.ArgumentList.Add(text);
+    psi.ArgumentList.Add("--title");
+    psi.ArgumentList.Add("NODAL OS OCR QA Window");
+    psi.ArgumentList.Add("--width");
+    psi.ArgumentList.Add("800");
+    psi.ArgumentList.Add("--height");
+    psi.ArgumentList.Add("320");
+    psi.ArgumentList.Add("--region-x");
+    psi.ArgumentList.Add("80");
+    psi.ArgumentList.Add("--region-y");
+    psi.ArgumentList.Add("64");
+    psi.ArgumentList.Add("--region-width");
+    psi.ArgumentList.Add("640");
+    psi.ArgumentList.Add("--region-height");
+    psi.ArgumentList.Add("160");
+    psi.ArgumentList.Add("--ready-file");
+    psi.ArgumentList.Add(readyFile);
+    psi.ArgumentList.Add("--capture-file");
+    psi.ArgumentList.Add(captureFile);
+    psi.ArgumentList.Add("--duration-ms");
+    psi.ArgumentList.Add("30000");
+
+    return Process.Start(psi) ?? throw new InvalidOperationException("QA window host did not start");
+}
+
+static JsonElement? WaitForQaWindowReady(string readyFile, Process host, TimeSpan timeout)
+{
+    var deadline = DateTimeOffset.UtcNow + timeout;
+    while (DateTimeOffset.UtcNow < deadline)
+    {
+        if (File.Exists(readyFile))
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(readyFile));
+            return doc.RootElement.Clone();
+        }
+
+        if (host.HasExited)
+            return null;
+
+        Thread.Sleep(100);
+    }
+
+    return null;
+}
+
+static string ReadString(JsonElement element, string propertyName)
+{
+    return element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+        ? property.GetString() ?? string.Empty
+        : string.Empty;
+}
+
+static bool ReadBool(JsonElement element, string propertyName)
+{
+    return element.TryGetProperty(propertyName, out var property) &&
+           property.ValueKind is JsonValueKind.True or JsonValueKind.False &&
+           property.GetBoolean();
+}
+
+static NodalOsScreenRegionBounds ReadBounds(JsonElement element, string propertyName)
+{
+    if (!element.TryGetProperty(propertyName, out var property) || property.ValueKind != JsonValueKind.Object)
+        return new NodalOsScreenRegionBounds(0, 0, 0, 0);
+
+    return new NodalOsScreenRegionBounds(
+        ReadInt(property, "x"),
+        ReadInt(property, "y"),
+        ReadInt(property, "width"),
+        ReadInt(property, "height"));
+}
+
+static int ReadInt(JsonElement element, string propertyName)
+{
+    return element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.Number && property.TryGetInt32(out var value)
+        ? value
+        : 0;
+}
+
+static bool StopQaWindowHost(Process? host)
+{
+    if (host is null)
+        return true;
+
+    try
+    {
+        if (!host.HasExited)
+        {
+            host.CloseMainWindow();
+            if (!host.WaitForExit(3000))
+            {
+                host.Kill(entireProcessTree: true);
+                host.WaitForExit(5000);
+            }
+        }
+
+        return host.HasExited;
+    }
+    catch
+    {
+        return false;
+    }
+    finally
+    {
+        host.Dispose();
+    }
+}
+
+static void TryDeleteFile(string path)
+{
+    try
+    {
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+    catch
+    {
+        // Best-effort cleanup only; caller reports host cleanup separately.
+    }
+}
+
+static void TryDeleteDirectory(string path)
+{
+    try
+    {
+        if (Directory.Exists(path))
+            Directory.Delete(path, recursive: true);
+    }
+    catch
+    {
+        // Best-effort cleanup only; no raw sensitive data is stored here.
+    }
 }
 
 static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, string> options)
@@ -2495,7 +2887,18 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
         return 0;
     }
 
-    var fixture = BuildSyntheticFullImageFixture(fixtureText, fixtureVariant, horizontalPadding, verticalPadding);
+    var fixtureRgbaFile = options.TryGetValue("fixture-rgba-file", out var configuredRgbaFile)
+        ? configuredRgbaFile
+        : string.Empty;
+    var fixtureRgbaWidth = options.TryGetValue("fixture-rgba-width", out var rgbaWidthText) && int.TryParse(rgbaWidthText, out var parsedRgbaWidth)
+        ? parsedRgbaWidth
+        : 0;
+    var fixtureRgbaHeight = options.TryGetValue("fixture-rgba-height", out var rgbaHeightText) && int.TryParse(rgbaHeightText, out var parsedRgbaHeight)
+        ? parsedRgbaHeight
+        : 0;
+    var fixture = !string.IsNullOrWhiteSpace(fixtureRgbaFile) && File.Exists(fixtureRgbaFile)
+        ? BuildQaWindowRegionFixtureFromRgba(fixtureText, fixtureId, fixtureRgbaFile, fixtureRgbaWidth, fixtureRgbaHeight)
+        : BuildSyntheticFullImageFixture(fixtureText, fixtureVariant, horizontalPadding, verticalPadding);
     if (fixture.Status != NodalOsSyntheticOcrTextFixtureStatus.Ready || !fixture.SafeForOcr)
     {
         var blockedFixtureSummary = JsonSerializer.Serialize(new
@@ -3957,6 +4360,101 @@ static NodalOsSyntheticOcrTextFixture BuildSyntheticFullImageFixture(
             CharacterSpacing: 8,
             AllowRawPersistence: false,
             AllowFullScreen: false));
+}
+
+static NodalOsSyntheticOcrTextFixture BuildQaWindowRegionFixtureFromRgba(
+    string text,
+    string fixtureId,
+    string rgbaFile,
+    int width,
+    int height)
+{
+    if (width <= 0 || height <= 0)
+    {
+        return new NodalOsSyntheticOcrTextFixture(
+            fixtureId,
+            text,
+            Array.Empty<byte>(),
+            width,
+            height,
+            NodalOsSyntheticOcrTextColorScheme.BlackOnWhite,
+            RedactionResult: null!,
+            NodalOsSyntheticOcrTextFixtureStatus.BlockedByUnsupportedDimensions,
+            SafeForOcr: false,
+            OriginalRawPersisted: false,
+            FullScreen: false,
+            Sensitive: false,
+            NoAuthority: true,
+            "real QA window region dimensions are invalid");
+    }
+
+    var bytes = File.ReadAllBytes(rgbaFile);
+    if (bytes.Length != width * height * 4)
+    {
+        return new NodalOsSyntheticOcrTextFixture(
+            fixtureId,
+            text,
+            Array.Empty<byte>(),
+            width,
+            height,
+            NodalOsSyntheticOcrTextColorScheme.BlackOnWhite,
+            RedactionResult: null!,
+            NodalOsSyntheticOcrTextFixtureStatus.BlockedByUnsupportedDimensions,
+            SafeForOcr: false,
+            OriginalRawPersisted: false,
+            FullScreen: false,
+            Sensitive: false,
+            NoAuthority: true,
+            "real QA window region RGBA length does not match bounds");
+    }
+
+    var redaction = new NodalOsPixelImageRedactor().Redact(new NodalOsPixelRedactionRequest(
+        $"redact-real-qa-window-{Guid.NewGuid():N}",
+        bytes,
+        NodalOsPixelRedactionImageFormat.RawRgba32,
+        width,
+        height,
+        new NodalOsOcrBoundingBox(0, 0, width, height),
+        NodalOsOcrPurpose.EvidenceDebug,
+        NodalOsOcrVisionSensitivity.Low,
+        CandidateSensitiveRegions: Array.Empty<NodalOsPixelRedactionRegion>(),
+        AllowRawPersistence: false,
+        AllowFullScreen: false));
+
+    if (!redaction.SafeForOcr || redaction.OriginalRawPersisted)
+    {
+        return new NodalOsSyntheticOcrTextFixture(
+            fixtureId,
+            text,
+            Array.Empty<byte>(),
+            width,
+            height,
+            NodalOsSyntheticOcrTextColorScheme.BlackOnWhite,
+            redaction,
+            NodalOsSyntheticOcrTextFixtureStatus.GenerationFailed,
+            SafeForOcr: false,
+            OriginalRawPersisted: redaction.OriginalRawPersisted,
+            FullScreen: false,
+            Sensitive: false,
+            NoAuthority: true,
+            "real QA window region redaction did not allow OCR");
+    }
+
+    return new NodalOsSyntheticOcrTextFixture(
+        fixtureId,
+        text,
+        redaction.RedactedImageBytesForOcrHandoff ?? bytes,
+        width,
+        height,
+        NodalOsSyntheticOcrTextColorScheme.BlackOnWhite,
+        redaction,
+        NodalOsSyntheticOcrTextFixtureStatus.Ready,
+        SafeForOcr: true,
+        OriginalRawPersisted: false,
+        FullScreen: false,
+        Sensitive: false,
+        NoAuthority: true,
+        "real QA window region captured, redacted, and accepted for bounded OCR probe");
 }
 
 static NodalOsOnnxOcrDetectorPostProcessingResult DecodeDetectorWithFallbackThresholds(
