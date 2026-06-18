@@ -128,6 +128,11 @@ if (options.ContainsKey("internal-controlled-screen-region-probe"))
     return RunInternalControlledScreenRegionProbe(options);
 }
 
+if (options.ContainsKey("qa-window-region-probe"))
+{
+    return RunInternalControlledScreenRegionProbe(options);
+}
+
 if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-child"))
 {
     return RunSyntheticDetectorToRecognizerPipelineChild(options);
@@ -2073,6 +2078,7 @@ static int RunInternalControlledRealImageProbe(Dictionary<string, string> option
 
 static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> options)
 {
+    var qaWindowGate = options.ContainsKey("qa-window-region-probe");
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
         ? Path.GetFullPath(root)
         : Directory.GetCurrentDirectory();
@@ -2084,7 +2090,9 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
     var detectorRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
     var recognizerRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
     var dictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
-    var manifestPath = Path.Combine(repoRoot, "tests", "fixtures", "ocr", "internal-controlled-screen-regions", "internal-controlled-screen-region-fixtures.json");
+    var manifestPath = qaWindowGate
+        ? Path.Combine(repoRoot, "tests", "fixtures", "ocr", "qa-window-regions", "qa-window-region-fixtures.json")
+        : Path.Combine(repoRoot, "tests", "fixtures", "ocr", "internal-controlled-screen-regions", "internal-controlled-screen-region-fixtures.json");
     var detectorAvailable = File.Exists(Path.Combine(repoRoot, detectorRelativePath));
     var recognizerAvailable = File.Exists(Path.Combine(repoRoot, recognizerRelativePath));
     var dictionaryAvailable = File.Exists(Path.Combine(repoRoot, dictionaryRelativePath));
@@ -2093,8 +2101,14 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
     var acceptedFixtures = fixtures.Where(f => f.AllowedForOcrPipeline &&
                                                f.SourceCategory is "InternalControlledScreenRegion" or "InternalQaWindowRegion" &&
                                                f.CreatedByInternalQa &&
+                                               f.WindowWidth > 0 &&
+                                               f.WindowHeight > 0 &&
                                                f.RegionWidth > 0 &&
                                                f.RegionHeight > 0 &&
+                                               f.RegionX >= 0 &&
+                                               f.RegionY >= 0 &&
+                                               f.RegionX + f.RegionWidth <= f.WindowWidth &&
+                                               f.RegionY + f.RegionHeight <= f.WindowHeight &&
                                                !f.ContainsRealPersonData &&
                                                !f.ContainsCustomerData &&
                                                !f.ContainsFinancialData &&
@@ -2130,12 +2144,18 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
                 "--synthetic-detector-to-recognizer-pipeline-child",
                 "--repo-root", repoRoot,
                 "--fixture-id", fixture.Id,
-                "--fixture-file-name", $"{fixture.Id}.simulated-region-rgba",
+                "--fixture-file-name", $"{fixture.Id}.{captureMode}-rgba",
                 "--fixture-source-category", fixture.SourceCategory,
                 "--fixture-created-by-internal-qa", fixture.CreatedByInternalQa.ToString(),
                 "--fixture-text", fixture.ExpectedText,
                 "--fixture-variant", "internal-controlled-screen-region",
                 "--capture-mode", captureMode,
+                "--window-title-or-source", fixture.WindowTitleOrSource,
+                "--process-or-source", fixture.ProcessOrSource,
+                "--window-x", fixture.WindowX.ToString(),
+                "--window-y", fixture.WindowY.ToString(),
+                "--window-width", fixture.WindowWidth.ToString(),
+                "--window-height", fixture.WindowHeight.ToString(),
                 "--region-x", fixture.RegionX.ToString(),
                 "--region-y", fixture.RegionY.ToString(),
                 "--region-width", fixture.RegionWidth.ToString(),
@@ -2174,6 +2194,9 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
                 Expected = fixture.ExpectedText,
                 ProvenanceCategory = fixture.SourceCategory,
                 CaptureMode = captureMode,
+                WindowTitleOrSource = fixture.WindowTitleOrSource,
+                ProcessOrSource = fixture.ProcessOrSource,
+                WindowBounds = new { fixture.WindowX, fixture.WindowY, fixture.WindowWidth, fixture.WindowHeight },
                 RegionBounds = new { fixture.RegionX, fixture.RegionY, fixture.RegionWidth, fixture.RegionHeight },
                 BoundsSource = fixture.BoundsSource,
                 Attempted = true,
@@ -2212,14 +2235,16 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
                 ? "BLOCKED_BY_SCREEN_REGION_PIPELINE_EVIDENCE"
                 : successCriteriaMet && string.Equals(captureMode, "simulated-region", StringComparison.Ordinal)
                     ? "READY_FOR_SCREEN_REGION_FIXTURE_SET_EXPANSION"
-                    : successCriteriaMet
-                        ? "READY_FOR_INTERNAL_LOW_RISK_SCREEN_OCR_OBSERVATION"
-                        : "BLOCKED_BY_SCREEN_REGION_PIPELINE_EVIDENCE";
+                    : successCriteriaMet && string.Equals(captureMode, "simulated-window-region", StringComparison.Ordinal)
+                        ? "READY_FOR_QA_WINDOW_REGION_FIXTURE_SET_EXPANSION"
+                        : successCriteriaMet
+                            ? "READY_FOR_INTERNAL_LOW_RISK_SCREEN_OCR_OBSERVATION"
+                            : "BLOCKED_BY_SCREEN_REGION_PIPELINE_EVIDENCE";
 
     Console.Out.WriteLine(JsonSerializer.Serialize(new
     {
-        Milestone = "M304-M306",
-        BaseCommit = "002cd30",
+        Milestone = qaWindowGate ? "M307-M309" : "M304-M306",
+        BaseCommit = qaWindowGate ? "854f206" : "002cd30",
         ReadinessDecision = readinessDecision,
         InternalDevelopmentOnly = true,
         PublicProductReady = false,
@@ -2228,7 +2253,10 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
         NoSensitive = true,
         RealDocumentUsed = false,
         FullScreenUsed = false,
-        InternalControlledScreenRegionsUsed = true,
+        InternalControlledScreenRegionsUsed = !qaWindowGate,
+        QaWindowRegionUsed = qaWindowGate && string.Equals(captureMode, "qa-window-region", StringComparison.Ordinal),
+        SimulatedRegionUsed = !qaWindowGate && string.Equals(captureMode, "simulated-region", StringComparison.Ordinal),
+        SimulatedWindowRegionUsed = qaWindowGate && string.Equals(captureMode, "simulated-window-region", StringComparison.Ordinal),
         UnknownProvenanceRejected = true,
         SensitiveRegionRejected = true,
         FullScreenRejected = true,
@@ -2258,6 +2286,8 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
         SuccessCriteriaMet = successCriteriaMet,
         RecommendedNextStep = readinessDecision == "READY_FOR_SCREEN_REGION_FIXTURE_SET_EXPANSION"
             ? "replace simulated-region with qa-window-region or real-window-region capture"
+            : readinessDecision == "READY_FOR_QA_WINDOW_REGION_FIXTURE_SET_EXPANSION"
+                ? "replace simulated-window-region with real QA window region capture"
             : "internal-low-risk-screen-ocr-observation",
         RecognizerTensorShape = new[] { 1, 3, 48, 320 },
         RecognizerOutputShape = new[] { 1, 40, 438 },
@@ -2303,6 +2333,24 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
     var boundsSource = options.TryGetValue("bounds-source", out var configuredBoundsSource)
         ? configuredBoundsSource
         : "GeneratedQaFixture";
+    var windowTitleOrSource = options.TryGetValue("window-title-or-source", out var configuredWindowTitleOrSource)
+        ? configuredWindowTitleOrSource
+        : string.Empty;
+    var processOrSource = options.TryGetValue("process-or-source", out var configuredProcessOrSource)
+        ? configuredProcessOrSource
+        : string.Empty;
+    var windowX = options.TryGetValue("window-x", out var windowXText) && int.TryParse(windowXText, out var parsedWindowX)
+        ? parsedWindowX
+        : 0;
+    var windowY = options.TryGetValue("window-y", out var windowYText) && int.TryParse(windowYText, out var parsedWindowY)
+        ? parsedWindowY
+        : 0;
+    var windowWidth = options.TryGetValue("window-width", out var windowWidthText) && int.TryParse(windowWidthText, out var parsedWindowWidth)
+        ? parsedWindowWidth
+        : 0;
+    var windowHeight = options.TryGetValue("window-height", out var windowHeightText) && int.TryParse(windowHeightText, out var parsedWindowHeight)
+        ? parsedWindowHeight
+        : 0;
     var regionX = options.TryGetValue("region-x", out var regionXText) && int.TryParse(regionXText, out var parsedRegionX)
         ? parsedRegionX
         : 0;
@@ -2540,6 +2588,15 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
         InternalControlledRealImage = internalControlledRealImage,
         InternalControlledScreenRegion = internalControlledScreenRegion,
         CaptureMode = captureMode,
+        WindowTitleOrSource = windowTitleOrSource,
+        ProcessOrSource = processOrSource,
+        WindowBounds = new
+        {
+            X = windowX,
+            Y = windowY,
+            Width = windowWidth <= 0 ? fixture.Width : windowWidth,
+            Height = windowHeight <= 0 ? fixture.Height : windowHeight
+        },
         BoundsSource = boundsSource,
         RegionBounds = new
         {
@@ -3678,16 +3735,41 @@ static (string CaptureMode, InternalControlledScreenRegionFixture[] Fixtures) Lo
         var bounds = element.TryGetProperty("regionBounds", out var regionBounds)
             ? regionBounds
             : default;
+        var windowBounds = element.TryGetProperty("windowBounds", out var fixtureWindowBounds)
+            ? fixtureWindowBounds
+            : doc.RootElement.TryGetProperty("windowBounds", out var rootWindowBounds)
+                ? rootWindowBounds
+                : default;
+        var regionX = ReadRequiredInt(bounds, "x");
+        var regionY = ReadRequiredInt(bounds, "y");
+        var regionWidth = ReadRequiredInt(bounds, "width");
+        var regionHeight = ReadRequiredInt(bounds, "height");
+        var windowX = ReadRequiredInt(windowBounds, "x");
+        var windowY = ReadRequiredInt(windowBounds, "y");
+        var windowWidth = ReadRequiredInt(windowBounds, "width");
+        var windowHeight = ReadRequiredInt(windowBounds, "height");
+        if ((windowWidth <= 0 || windowHeight <= 0) && regionWidth > 0 && regionHeight > 0)
+        {
+            windowX = 0;
+            windowY = 0;
+            windowWidth = regionX + regionWidth + Math.Max(regionX, 0);
+            windowHeight = regionY + regionHeight + Math.Max(regionY, 0);
+        }
+
         fixtures.Add(new InternalControlledScreenRegionFixture(
             ReadRequiredString(element, "id"),
             ReadRequiredString(element, "sourceCategory"),
             ReadRequiredBool(element, "createdByInternalQa"),
             ReadRequiredString(element, "windowTitleOrSource"),
             ReadRequiredString(element, "processOrSource"),
-            ReadRequiredInt(bounds, "x"),
-            ReadRequiredInt(bounds, "y"),
-            ReadRequiredInt(bounds, "width"),
-            ReadRequiredInt(bounds, "height"),
+            windowX,
+            windowY,
+            windowWidth,
+            windowHeight,
+            regionX,
+            regionY,
+            regionWidth,
+            regionHeight,
             ReadRequiredString(element, "boundsSource"),
             ReadRequiredBool(element, "containsRealPersonData"),
             ReadRequiredBool(element, "containsCustomerData"),
@@ -4547,6 +4629,10 @@ internal sealed record InternalControlledScreenRegionFixture(
     bool CreatedByInternalQa,
     string WindowTitleOrSource,
     string ProcessOrSource,
+    int WindowX,
+    int WindowY,
+    int WindowWidth,
+    int WindowHeight,
     int RegionX,
     int RegionY,
     int RegionWidth,

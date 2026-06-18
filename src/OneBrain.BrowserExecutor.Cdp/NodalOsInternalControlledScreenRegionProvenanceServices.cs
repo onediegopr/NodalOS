@@ -24,9 +24,26 @@ public sealed class NodalOsInternalControlledScreenRegionProvenanceEvaluator
 
         if (provenance.RegionBounds.Width <= 0 ||
             provenance.RegionBounds.Height <= 0 ||
+            provenance.WindowBounds.Width <= 0 ||
+            provenance.WindowBounds.Height <= 0 ||
             provenance.SourceCategory == NodalOsInternalControlledScreenRegionSourceCategory.RejectedUnboundedRegion)
         {
             return Reject(provenance, NodalOsInternalControlledScreenRegionFixtureDecision.RejectedUnboundedRegion, "screen-region bounds are empty or invalid");
+        }
+
+        if (provenance.RegionBounds.X < 0 ||
+            provenance.RegionBounds.Y < 0 ||
+            provenance.RegionBounds.X + provenance.RegionBounds.Width > provenance.WindowBounds.Width ||
+            provenance.RegionBounds.Y + provenance.RegionBounds.Height > provenance.WindowBounds.Height)
+        {
+            return Reject(provenance, NodalOsInternalControlledScreenRegionFixtureDecision.RejectedRegionOutsideWindow, "screen-region bounds are outside the QA window");
+        }
+
+        if (provenance.RegionBounds.Width == provenance.WindowBounds.Width &&
+            provenance.RegionBounds.Height == provenance.WindowBounds.Height &&
+            provenance.BoundsSource != NodalOsInternalControlledScreenRegionBoundsSource.GeneratedQaFixture)
+        {
+            return Reject(provenance, NodalOsInternalControlledScreenRegionFixtureDecision.RejectedRegionTooLarge, "region covers the full window without generated QA fixture evidence");
         }
 
         if (provenance.Sensitive ||
@@ -75,6 +92,7 @@ public sealed class NodalOsInternalControlledScreenRegionProvenanceEvaluator
             NoFinancialData: true,
             NoPersonData: true,
             BoundedRegion: true,
+            RegionInsideWindow: true,
             "screen-region provenance accepted for internal controlled OCR pipeline");
     }
 
@@ -94,5 +112,11 @@ public sealed class NodalOsInternalControlledScreenRegionProvenanceEvaluator
             NoFinancialData: !provenance.ContainsFinancialData,
             NoPersonData: !provenance.ContainsRealPersonData,
             BoundedRegion: provenance.RegionBounds.Width > 0 && provenance.RegionBounds.Height > 0,
+            RegionInsideWindow: provenance.RegionBounds.X >= 0 &&
+                provenance.RegionBounds.Y >= 0 &&
+                provenance.WindowBounds.Width > 0 &&
+                provenance.WindowBounds.Height > 0 &&
+                provenance.RegionBounds.X + provenance.RegionBounds.Width <= provenance.WindowBounds.Width &&
+                provenance.RegionBounds.Y + provenance.RegionBounds.Height <= provenance.WindowBounds.Height,
             BrowserCredentialRedactor.Redact(reason));
 }

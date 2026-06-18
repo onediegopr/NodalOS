@@ -19,7 +19,9 @@ public enum NodalOsInternalControlledScreenRegionBoundsSource
     Explicit,
     WindowRelative,
     ControlRelative,
-    GeneratedQaFixture
+    GeneratedQaFixture,
+    ClientRelative,
+    ScreenRelative
 }
 
 public enum NodalOsInternalControlledScreenRegionFixtureDecision
@@ -34,7 +36,9 @@ public enum NodalOsInternalControlledScreenRegionFixtureDecision
     RejectedCustomerData,
     RejectedFinancialData,
     RejectedPersonData,
-    RejectedMissingExpectedText
+    RejectedMissingExpectedText,
+    RejectedRegionOutsideWindow,
+    RejectedRegionTooLarge
 }
 
 public sealed record NodalOsScreenRegionBounds(int X, int Y, int Width, int Height);
@@ -45,6 +49,7 @@ public sealed record NodalOsInternalControlledScreenRegionFixtureProvenance(
     bool CreatedByInternalQa,
     string WindowTitleOrSource,
     string ProcessOrSource,
+    NodalOsScreenRegionBounds WindowBounds,
     NodalOsScreenRegionBounds RegionBounds,
     NodalOsInternalControlledScreenRegionBoundsSource BoundsSource,
     bool ContainsRealPersonData,
@@ -69,4 +74,5 @@ public sealed record NodalOsInternalControlledScreenRegionFixtureProvenanceResul
     bool NoFinancialData,
     bool NoPersonData,
     bool BoundedRegion,
+    bool RegionInsideWindow,
     string Reason);
