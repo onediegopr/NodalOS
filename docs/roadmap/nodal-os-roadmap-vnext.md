@@ -16,6 +16,39 @@
 - External Chrome/CDP/DOM proof: completed only for `https://lab.nodalos.com.ar`.
 - External CDP general-ready: false.
 
+## Post-Selective Absorption Re-Sync M358
+
+- OCR line: closed for the current roadmap phase.
+- Selective absorption immediate scope: 100%.
+- Agent Operations / Platform Layer: 68%.
+- Browser Runtime / Chrome layer: 88%.
+- OCR/perception: 97%.
+- NODAL OS global: 85%.
+- BotBoard absorption: decision and Mission/Task/Blocker/Verification/Evidence domain ready.
+- Axiom absorption: Failure Taxonomy, Troubleshooting, Run Report V1 and Recipe Manifest / Automation JSON V1 ready.
+- Robomotion absorption: roadmap note only.
+- Recipe execution implemented: false.
+- Workboard UI implemented: false.
+- Orchestration API implemented: false.
+- Scheduled runs implemented: false.
+- Package registry implemented: false.
+- Cloud runtime implemented: false.
+- Captcha solving implemented: false.
+- Bot bypassing implemented: false.
+
+Recommended next path: Hybrid priority roadmap.
+
+Recommended next milestone: `M359-M361 Browser Runtime Flake Hardening`.
+
+Hybrid priority sequence:
+
+1. Browser runtime flake hardening.
+2. Verification Before Done Gate.
+3. Blocker + Progress Reporting Contract.
+4. Core legacy reference graph.
+5. Step Library V1.
+6. Desktop identity/liveness.
+
 ## M51 Scope
 
 M51 is closed only for:
