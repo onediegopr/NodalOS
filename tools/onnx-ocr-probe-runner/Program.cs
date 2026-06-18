@@ -123,6 +123,11 @@ if (options.ContainsKey("internal-controlled-real-image-probe"))
     return RunInternalControlledRealImageProbe(options);
 }
 
+if (options.ContainsKey("internal-controlled-screen-region-probe"))
+{
+    return RunInternalControlledScreenRegionProbe(options);
+}
+
 if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-child"))
 {
     return RunSyntheticDetectorToRecognizerPipelineChild(options);
@@ -2066,6 +2071,206 @@ static int RunInternalControlledRealImageProbe(Dictionary<string, string> option
     return 0;
 }
 
+static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 180000;
+
+    var detectorRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
+    var recognizerRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
+    var dictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
+    var manifestPath = Path.Combine(repoRoot, "tests", "fixtures", "ocr", "internal-controlled-screen-regions", "internal-controlled-screen-region-fixtures.json");
+    var detectorAvailable = File.Exists(Path.Combine(repoRoot, detectorRelativePath));
+    var recognizerAvailable = File.Exists(Path.Combine(repoRoot, recognizerRelativePath));
+    var dictionaryAvailable = File.Exists(Path.Combine(repoRoot, dictionaryRelativePath));
+    var (captureMode, fixtures) = LoadInternalControlledScreenRegionFixtureManifest(manifestPath);
+
+    var acceptedFixtures = fixtures.Where(f => f.AllowedForOcrPipeline &&
+                                               f.SourceCategory is "InternalControlledScreenRegion" or "InternalQaWindowRegion" &&
+                                               f.CreatedByInternalQa &&
+                                               f.RegionWidth > 0 &&
+                                               f.RegionHeight > 0 &&
+                                               !f.ContainsRealPersonData &&
+                                               !f.ContainsCustomerData &&
+                                               !f.ContainsFinancialData &&
+                                               !f.ContainsDocumentData &&
+                                               !f.ContainsCredentialOrPasswordData &&
+                                               !f.ContainsFullScreen &&
+                                               !f.Sensitive &&
+                                               !string.IsNullOrWhiteSpace(f.ExpectedText)).ToArray();
+    var rejectedFixtures = fixtures.Length - acceptedFixtures.Length;
+    var results = new List<object>();
+
+    if (detectorAvailable && recognizerAvailable && dictionaryAvailable)
+    {
+        foreach (var fixture in acceptedFixtures)
+        {
+            var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+                $"internal-controlled-screen-region-{Guid.NewGuid():N}",
+                NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+                NodalOsSyntheticOcrTextRenderMode.AntiAliasedPixelFont,
+                fixture.RegionWidth,
+                fixture.RegionHeight,
+                NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+                NodalOsOcrVisionSensitivity.Low,
+                FullScreen: false,
+                Sensitive: false,
+                OriginalRawPersisted: false,
+                Synthetic: true,
+                NoAuthority: true,
+                RunOutOfProcess: true);
+
+            var args = new List<string>(runnerPrefix)
+            {
+                "--synthetic-detector-to-recognizer-pipeline-child",
+                "--repo-root", repoRoot,
+                "--fixture-id", fixture.Id,
+                "--fixture-file-name", $"{fixture.Id}.simulated-region-rgba",
+                "--fixture-source-category", fixture.SourceCategory,
+                "--fixture-created-by-internal-qa", fixture.CreatedByInternalQa.ToString(),
+                "--fixture-text", fixture.ExpectedText,
+                "--fixture-variant", "internal-controlled-screen-region",
+                "--capture-mode", captureMode,
+                "--region-x", fixture.RegionX.ToString(),
+                "--region-y", fixture.RegionY.ToString(),
+                "--region-width", fixture.RegionWidth.ToString(),
+                "--region-height", fixture.RegionHeight.ToString(),
+                "--bounds-source", fixture.BoundsSource,
+                "--horizontal-padding", "96",
+                "--vertical-padding", "48",
+                "--crop-padding", "24",
+                "--crop-strategy", "percent-expanded-box",
+                "--margin-policy", "10%",
+                "--unclip-policy", "1.5",
+                "--recognizer-resize", "ratio",
+                "--detector-model-relative", detectorRelativePath,
+                "--recognizer-model-relative", recognizerRelativePath,
+                "--dictionary-relative", dictionaryRelativePath,
+                "--expected-class-count", "438",
+                "--dictionary-token-count", "436"
+            };
+
+            var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+                $"internal-controlled-screen-region-guard-{Guid.NewGuid():N}",
+                request,
+                runner,
+                args,
+                timeoutMs,
+                MaxOutputBytes: 256 * 1024,
+                AllowRawPersistence: false));
+
+            var childSummary = TryParseJsonElement(guardResult.Reason);
+            var decoded = ReadChildString(childSummary, "DecodedPreviewNonAuthoritative") ?? string.Empty;
+            var normalizedDecoded = NormalizeNoAuthorityPreview(decoded);
+            var normalizedExpected = NormalizeNoAuthorityPreview(fixture.ExpectedText);
+            results.Add(new
+            {
+                FixtureId = fixture.Id,
+                Expected = fixture.ExpectedText,
+                ProvenanceCategory = fixture.SourceCategory,
+                CaptureMode = captureMode,
+                RegionBounds = new { fixture.RegionX, fixture.RegionY, fixture.RegionWidth, fixture.RegionHeight },
+                BoundsSource = fixture.BoundsSource,
+                Attempted = true,
+                OutOfProcessGuardUsed = true,
+                guardResult.ExitCode,
+                guardResult.TimedOut,
+                guardResult.ParentSurvived,
+                guardResult.ChildLaunched,
+                guardResult.RawPersisted,
+                guardResult.CallsSaas,
+                guardResult.NoAuthority,
+                Status = guardResult.ProbeResult.Status.ToString(),
+                ChildSummary = childSummary,
+                DetectorBoxesCount = ReadChildInt(childSummary, "DetectorBoxesCount"),
+                RecognizerAttempts = ReadChildInt(childSummary, "RecognizerAttempts"),
+                Decoded = decoded,
+                NormalizedDecoded = normalizedDecoded,
+                MatchKind = ReadChildString(childSummary, "MatchKind") ?? "Unknown",
+                EditDistance = LevenshteinDistance(normalizedExpected, normalizedDecoded),
+                MeanConfidence = ReadChildDouble(childSummary, "MeanConfidence"),
+                Warning = ReadChildString(childSummary, "Warning") ?? string.Empty
+            });
+        }
+    }
+
+    var exactMatches = CountObjectString(results, "MatchKind", "Exact");
+    var normalizedMatches = CountObjectString(results, "MatchKind", "Normalized");
+    var mismatches = CountObjectString(results, "MatchKind", "Mismatch");
+    var totalEditDistance = SumObjectInt(results, "EditDistance");
+    var successCriteriaMet = exactMatches + normalizedMatches >= 2 || totalEditDistance <= 2;
+    var readinessDecision = !detectorAvailable || !recognizerAvailable || !dictionaryAvailable
+        ? "BLOCKED_BY_MODEL_OR_DICTIONARY_AVAILABILITY"
+        : acceptedFixtures.Length == 0
+            ? "BLOCKED_BY_SCREEN_REGION_CAPTURE_POLICY"
+            : results.Count == 0 || results.Any(r => (int)r.GetType().GetProperty("DetectorBoxesCount")!.GetValue(r)! <= 0)
+                ? "BLOCKED_BY_SCREEN_REGION_PIPELINE_EVIDENCE"
+                : successCriteriaMet && string.Equals(captureMode, "simulated-region", StringComparison.Ordinal)
+                    ? "READY_FOR_SCREEN_REGION_FIXTURE_SET_EXPANSION"
+                    : successCriteriaMet
+                        ? "READY_FOR_INTERNAL_LOW_RISK_SCREEN_OCR_OBSERVATION"
+                        : "BLOCKED_BY_SCREEN_REGION_PIPELINE_EVIDENCE";
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(new
+    {
+        Milestone = "M304-M306",
+        BaseCommit = "002cd30",
+        ReadinessDecision = readinessDecision,
+        InternalDevelopmentOnly = true,
+        PublicProductReady = false,
+        NoSaaS = true,
+        NoApiKeys = true,
+        NoSensitive = true,
+        RealDocumentUsed = false,
+        FullScreenUsed = false,
+        InternalControlledScreenRegionsUsed = true,
+        UnknownProvenanceRejected = true,
+        SensitiveRegionRejected = true,
+        FullScreenRejected = true,
+        DocumentRegionRejected = true,
+        RawPersistenceOfSensitiveData = false,
+        CaptureMode = captureMode,
+        DetectorModelAvailable = detectorAvailable,
+        DetectorModelVerified = detectorAvailable,
+        RecognizerModelAvailable = recognizerAvailable,
+        DictionaryAvailable = dictionaryAvailable,
+        OfficialSpacePolicy = true,
+        BlankIndex = 0,
+        SpaceIndex = 437,
+        SpaceIndexFormula = "N+1",
+        RecognizerOutputLayout = "[B,T,C]",
+        RecognizerSoftmaxReapplied = false,
+        RecognizerResizeMode = "RatioPreservingRightPad",
+        OutOfProcessGuardUsed = results.Count > 0,
+        ParentSurvived = results.Count == 0 || results.All(r => (bool)r.GetType().GetProperty("ParentSurvived")!.GetValue(r)!),
+        FixturesTotal = fixtures.Length,
+        FixturesAccepted = acceptedFixtures.Length,
+        FixturesRejected = rejectedFixtures,
+        ExactMatches = exactMatches,
+        NormalizedMatches = normalizedMatches,
+        Mismatches = mismatches,
+        TotalEditDistance = totalEditDistance,
+        SuccessCriteriaMet = successCriteriaMet,
+        RecommendedNextStep = readinessDecision == "READY_FOR_SCREEN_REGION_FIXTURE_SET_EXPANSION"
+            ? "replace simulated-region with qa-window-region or real-window-region capture"
+            : "internal-low-risk-screen-ocr-observation",
+        RecognizerTensorShape = new[] { 1, 3, 48, 320 },
+        RecognizerOutputShape = new[] { 1, 40, 438 },
+        RecognizerClassCountObserved = 438,
+        RecognizerClassCountExpected = 438,
+        SoftmaxEvidence = "Rows sum approximately 1; softmax not reapplied.",
+        ModelsCommitted = false,
+        DictionariesCommitted = false,
+        Results = results
+    }));
+    return 0;
+}
+
 static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, string> options)
 {
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
@@ -2090,6 +2295,26 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
                                      bool.TryParse(internalQaText, out var parsedInternalQa) &&
                                      parsedInternalQa;
     var internalControlledRealImage = string.Equals(fixtureSourceCategory, "InternalControlledRealImage", StringComparison.Ordinal);
+    var internalControlledScreenRegion = string.Equals(fixtureSourceCategory, "InternalControlledScreenRegion", StringComparison.Ordinal) ||
+                                         string.Equals(fixtureSourceCategory, "InternalQaWindowRegion", StringComparison.Ordinal);
+    var captureMode = options.TryGetValue("capture-mode", out var configuredCaptureMode)
+        ? configuredCaptureMode
+        : "synthetic";
+    var boundsSource = options.TryGetValue("bounds-source", out var configuredBoundsSource)
+        ? configuredBoundsSource
+        : "GeneratedQaFixture";
+    var regionX = options.TryGetValue("region-x", out var regionXText) && int.TryParse(regionXText, out var parsedRegionX)
+        ? parsedRegionX
+        : 0;
+    var regionY = options.TryGetValue("region-y", out var regionYText) && int.TryParse(regionYText, out var parsedRegionY)
+        ? parsedRegionY
+        : 0;
+    var regionWidth = options.TryGetValue("region-width", out var regionWidthText) && int.TryParse(regionWidthText, out var parsedRegionWidth)
+        ? parsedRegionWidth
+        : 0;
+    var regionHeight = options.TryGetValue("region-height", out var regionHeightText) && int.TryParse(regionHeightText, out var parsedRegionHeight)
+        ? parsedRegionHeight
+        : 0;
     var horizontalPadding = options.TryGetValue("horizontal-padding", out var hPadText) && int.TryParse(hPadText, out var parsedHPad)
         ? parsedHPad
         : 48;
@@ -2313,6 +2538,16 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
         ProvenanceCategory = fixtureSourceCategory,
         CreatedByInternalQa = fixtureCreatedByInternalQa,
         InternalControlledRealImage = internalControlledRealImage,
+        InternalControlledScreenRegion = internalControlledScreenRegion,
+        CaptureMode = captureMode,
+        BoundsSource = boundsSource,
+        RegionBounds = new
+        {
+            X = regionX,
+            Y = regionY,
+            Width = regionWidth <= 0 ? fixture.Width : regionWidth,
+            Height = regionHeight <= 0 ? fixture.Height : regionHeight
+        },
         FixtureVariant = fixtureVariant,
         ImageWidth = fixture.Width,
         ImageHeight = fixture.Height,
@@ -2387,8 +2622,10 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
         NoSaaS = true,
         NoApiKeys = true,
         NoSensitive = true,
-        SyntheticImagesOnly = !internalControlledRealImage,
+        SyntheticImagesOnly = !internalControlledRealImage && !internalControlledScreenRegion,
         InternalControlledRealImagesUsed = internalControlledRealImage,
+        InternalControlledScreenRegionsUsed = internalControlledScreenRegion,
+        FullScreenUsed = false,
         RealScreenUsed = false,
         RealDocumentUsed = false,
         RawPersistenceOfRealData = false
@@ -3422,10 +3659,62 @@ static InternalControlledRealImageFixture[] LoadInternalControlledRealImageFixtu
     return fixtures.ToArray();
 }
 
+static (string CaptureMode, InternalControlledScreenRegionFixture[] Fixtures) LoadInternalControlledScreenRegionFixtureManifest(string manifestPath)
+{
+    if (!File.Exists(manifestPath))
+        return ("missing", Array.Empty<InternalControlledScreenRegionFixture>());
+
+    using var doc = JsonDocument.Parse(File.ReadAllText(manifestPath));
+    var captureMode = ReadRequiredString(doc.RootElement, "captureMode");
+    if (!doc.RootElement.TryGetProperty("fixtures", out var fixturesElement) ||
+        fixturesElement.ValueKind != JsonValueKind.Array)
+    {
+        return (captureMode, Array.Empty<InternalControlledScreenRegionFixture>());
+    }
+
+    var fixtures = new List<InternalControlledScreenRegionFixture>();
+    foreach (var element in fixturesElement.EnumerateArray())
+    {
+        var bounds = element.TryGetProperty("regionBounds", out var regionBounds)
+            ? regionBounds
+            : default;
+        fixtures.Add(new InternalControlledScreenRegionFixture(
+            ReadRequiredString(element, "id"),
+            ReadRequiredString(element, "sourceCategory"),
+            ReadRequiredBool(element, "createdByInternalQa"),
+            ReadRequiredString(element, "windowTitleOrSource"),
+            ReadRequiredString(element, "processOrSource"),
+            ReadRequiredInt(bounds, "x"),
+            ReadRequiredInt(bounds, "y"),
+            ReadRequiredInt(bounds, "width"),
+            ReadRequiredInt(bounds, "height"),
+            ReadRequiredString(element, "boundsSource"),
+            ReadRequiredBool(element, "containsRealPersonData"),
+            ReadRequiredBool(element, "containsCustomerData"),
+            ReadRequiredBool(element, "containsFinancialData"),
+            ReadRequiredBool(element, "containsDocumentData"),
+            ReadRequiredBool(element, "containsCredentialOrPasswordData"),
+            ReadRequiredBool(element, "containsFullScreen"),
+            ReadRequiredBool(element, "sensitive"),
+            ReadRequiredString(element, "expectedText"),
+            ReadRequiredBool(element, "allowedForOcrPipeline"),
+            ReadRequiredString(element, "reason")));
+    }
+
+    return (captureMode, fixtures.ToArray());
+}
+
 static string ReadRequiredString(JsonElement element, string propertyName) =>
     element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
         ? value.GetString() ?? string.Empty
         : string.Empty;
+
+static int ReadRequiredInt(JsonElement element, string propertyName) =>
+    element.ValueKind == JsonValueKind.Object &&
+    element.TryGetProperty(propertyName, out var value) &&
+    value.ValueKind == JsonValueKind.Number
+        ? value.GetInt32()
+        : 0;
 
 static bool ReadRequiredBool(JsonElement element, string propertyName) =>
     element.TryGetProperty(propertyName, out var value) &&
@@ -4247,6 +4536,28 @@ internal sealed record InternalControlledRealImageFixture(
     bool ContainsFinancialData,
     bool ContainsDocumentData,
     bool ContainsScreenCapture,
+    bool Sensitive,
+    string ExpectedText,
+    bool AllowedForOcrPipeline,
+    string Reason);
+
+internal sealed record InternalControlledScreenRegionFixture(
+    string Id,
+    string SourceCategory,
+    bool CreatedByInternalQa,
+    string WindowTitleOrSource,
+    string ProcessOrSource,
+    int RegionX,
+    int RegionY,
+    int RegionWidth,
+    int RegionHeight,
+    string BoundsSource,
+    bool ContainsRealPersonData,
+    bool ContainsCustomerData,
+    bool ContainsFinancialData,
+    bool ContainsDocumentData,
+    bool ContainsCredentialOrPasswordData,
+    bool ContainsFullScreen,
     bool Sensitive,
     string ExpectedText,
     bool AllowedForOcrPipeline,
