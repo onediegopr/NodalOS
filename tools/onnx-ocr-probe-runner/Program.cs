@@ -1504,7 +1504,11 @@ static int RunSyntheticDetectorRecognizerCropCalibrationProbe(Dictionary<string,
                     "--recognizer-model-relative", recognizerRelativePath,
                     "--dictionary-relative", dictionaryRelativePath,
                     "--expected-class-count", "438",
-                    "--dictionary-token-count", "436"
+                    "--dictionary-token-count", "436",
+                    // M295-M297: this M292-M294 brute-force matrix calibrated the legacy stretch geometry;
+                    // pin it to stretch so its historical evidence is reproducible. The canonical forward
+                    // pipeline probe uses the new aspect-preserving default.
+                    "--recognizer-resize", "stretch"
                 };
 
                 var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
@@ -1834,7 +1838,13 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
 
     var dictionaryTokens = File.ReadAllLines(dictionaryPath);
     var recognizerShape = new[] { 1, 3, 48, 320 };
-    var recognizerTensor = BuildRecognizerTensorFromImageCrop(crop, recognizerShape, out var recognizerPreprocessing);
+    // M295-M297: default to PaddleOCR-aligned aspect-preserving resize; allow --recognizer-resize stretch for A/B.
+    var recognizerResizeMode =
+        options.TryGetValue("recognizer-resize", out var resizeModeText) &&
+        string.Equals(resizeModeText, "stretch", StringComparison.OrdinalIgnoreCase)
+            ? NodalOsPaddleOcrRecognizerResizeMode.StretchToFixedWidth
+            : NodalOsPaddleOcrRecognizerResizeMode.RatioPreservingRightPad;
+    var recognizerTensor = BuildRecognizerTensorFromImageCrop(crop, recognizerShape, recognizerResizeMode, out var recognizerPreprocessing);
     var recognizerStats = NodalOsDetectorRecognizerCompatibilityDiagnosisBuilder.CalculateStats(recognizerTensor, recognizerShape, "NCHW", "RGB");
     using var recognizerSession = new InferenceSession(recognizerPath);
     var recognizerInputName = recognizerSession.InputMetadata.Keys.FirstOrDefault() ?? "x";
@@ -3058,34 +3068,28 @@ static NodalOsOnnxOcrTextBox ExpandBox(NodalOsOnnxOcrTextBox box, int width, int
 static float[] BuildRecognizerTensorFromImageCrop(
     NodalOsOnnxOcrImagePreProcessingResult crop,
     int[] shape,
+    NodalOsPaddleOcrRecognizerResizeMode resizeMode,
     out string preprocessingSummary)
 {
-    var channels = shape[1];
+    // M295-M297: delegate to the PaddleOCR-aligned preprocessor. The legacy stretch (StretchToFixedWidth)
+    // distorted aspect ratio; RatioPreservingRightPad mirrors PaddleOCR resize_norm_img (aspect-preserving
+    // bilinear resize + right pad with 0.0) and is the default.
     var targetHeight = shape[2];
     var targetWidth = shape[3];
-    var tensor = new float[shape.Aggregate(1, (a, b) => a * b)];
-    var scaleX = (float)crop.Width / targetWidth;
-    var scaleY = (float)crop.Height / targetHeight;
-
-    for (var c = 0; c < channels; c++)
-    {
-        for (var y = 0; y < targetHeight; y++)
-        {
-            for (var x = 0; x < targetWidth; x++)
-            {
-                var srcX = Math.Clamp((int)(x * scaleX), 0, crop.Width - 1);
-                var srcY = Math.Clamp((int)(y * scaleY), 0, crop.Height - 1);
-                var srcIdx = (srcY * crop.Width + srcX) * 4;
-                var value = srcIdx + c < crop.NormalizedData.Length ? crop.NormalizedData[srcIdx + c] : 1f;
-                var dstIdx = c * targetHeight * targetWidth + y * targetWidth + x;
-                tensor[dstIdx] = (value - 0.5f) / 0.5f;
-            }
-        }
-    }
+    var prepared = new NodalOsPaddleOcrRecognizerCropPreprocessor().Prepare(
+        crop.NormalizedData,
+        crop.Width,
+        crop.Height,
+        targetHeight,
+        targetWidth,
+        resizeMode);
 
     preprocessingSummary =
-        $"detector crop resized to [1,3,{targetHeight},{targetWidth}]; normalization=(pixel/255-0.5)/0.5; sourceCrop={crop.Width}x{crop.Height}; persisted=false";
-    return tensor;
+        $"detector crop {crop.Width}x{crop.Height} -> [1,3,{targetHeight},{targetWidth}]; mode={resizeMode}; " +
+        $"resizedWidth={prepared.ResizedWidth}; paddedColumns={prepared.PaddedColumns}; " +
+        $"aspectPreserved={prepared.AspectRatioPreserved}; widthCapped={prepared.WidthCapped}; " +
+        "normalization=(pixel/255-0.5)/0.5; persisted=false";
+    return prepared.Tensor;
 }
 
 static float[] BuildSyntheticImageRecognizerCropTensor(string text, int[] shape, out string preprocessingSummary)

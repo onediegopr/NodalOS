@@ -1,0 +1,82 @@
+{
+  "milestone": "M295-M297",
+  "baseCommit": "cf89444",
+  "finalCommit": null,
+  "readinessDecision": "READY_FOR_PADDLEOCR_PREPROCESSING_ALIGNMENT_FIX",
+  "internalDevelopmentOnly": true,
+  "publicProductReady": false,
+  "noSaaS": true,
+  "noApiKeys": true,
+  "noSensitive": true,
+  "realScreenUsed": false,
+  "realDocumentUsed": false,
+  "syntheticImagesOnly": true,
+  "rawPersistenceOfRealData": false,
+  "detectorModelAvailable": true,
+  "detectorModelVerified": true,
+  "recognizerModelAvailable": true,
+  "dictionaryAvailable": true,
+  "officialSpacePolicy": true,
+  "blankIndex": 0,
+  "spaceIndex": 437,
+  "spaceIndexFormula": "N+1",
+  "recognizerOutputLayout": "[B,T,C]",
+  "recognizerSoftmaxReapplied": false,
+  "baselineExactMatches": 0,
+  "baselineNormalizedMatches": 1,
+  "bestKnownConfiguration": {
+    "cropStrategy": "percent-expanded-box",
+    "margin": "10%",
+    "unclip": "1.5",
+    "padding": 24
+  },
+  "renderingFidelityAuditAttempted": true,
+  "systemFontRendererAttempted": false,
+  "pixelFontResults": {
+    "note": "Block PixelFont/AntiAliasedPixelFont glyphs; same glyphs reached exact match in M283-M285 when rendered at correct aspect into 48x320, so font fidelity is not the dominant residual cause.",
+    "directCropExactMatch": true
+  },
+  "antiAliasedPixelFontResults": {
+    "note": "Used for centered fixtures in BuildSyntheticFullImageFixture; not the dominant residual cause vs geometry."
+  },
+  "systemFontResults": null,
+  "directCropResults": {
+    "source": "M283-M285",
+    "example": "MARMOLES PVC -> MARMOLES PVC (exact)",
+    "explanation": "crop rendered directly at correct aspect ratio into the 48x320 recognizer canvas"
+  },
+  "detectorCropResults": {
+    "source": "M289-M291 raw + M292-M294 calibrated (stretch resize)",
+    "calibratedBestEditDistance": "1-2",
+    "perFixture": {
+      "12 34": "1234 (normalized, edit distance 0)",
+      "GENOVA": "GENOYA (edit distance 1)",
+      "MARMOLES PVC": "IArmOLES PVC (edit distance 1)",
+      "PVC WALL": "PYC WALL (edit distance 1)",
+      "ROMA": "EMA (edit distance 2)"
+    },
+    "explanation": "axis-aligned crop stretched to fixed 48x320 with per-axis nearest neighbour; aspect ratio destroyed"
+  },
+  "auditFindings": [
+    "ROOT CAUSE: BuildRecognizerTensorFromImageCrop stretched crops to fixed [48,320] (scaleX=w/320, scaleY=h/48, nearest neighbour), distorting aspect ratio.",
+    "Isolation evidence: identical block glyphs decoded EXACTLY in M283-M285 at correct aspect, so the variable is geometry/resize, not synthetic font fidelity.",
+    "Error signatures (V->Y, M->IA, RO->E, char/space loss) are consistent with non-uniform horizontal stretch and nearest-neighbour aliasing.",
+    "PaddleOCR resize_norm_img preserves aspect: height 48, width=min(320, ceil(48*aspect)), bilinear, (x-0.5)/0.5, right-pad with 0.0.",
+    "Two inconsistent recognizer preprocessors existed: M198 (height 32, ImageNet mean/std) vs M283 pipeline (height 48, stretch). Neither matched PaddleOCR fully.",
+    "Resampling was nearest-neighbour instead of bilinear (cv2.resize default).",
+    "Crop bridge is axis-aligned; PaddleOCR/RapidOCR use get_rotate_crop_image (4-point perspective) - low impact for horizontal synthetic text but a real divergence."
+  ],
+  "implementedFixes": [
+    "Added NodalOsPaddleOcrRecognizerCropPreprocessor (PaddleOCR resize_norm_img: aspect-preserving bilinear resize + right-pad 0.0 + (x-0.5)/0.5).",
+    "Added NodalOsPaddleOcrRecognizerResizeMode + NodalOsPaddleOcrRecognizerCropTensor contracts.",
+    "Wired BuildRecognizerTensorFromImageCrop to delegate to the aligned preprocessor; default RatioPreservingRightPad; --recognizer-resize stretch retained for A/B.",
+    "Added 7 deterministic ONNX-free unit tests proving geometry, padding, normalization and stretch-vs-ratio divergence."
+  ],
+  "recommendedNextStep": "Run --synthetic-detector-to-recognizer-pipeline-probe A/B (--recognizer-resize ratio vs stretch) out-of-process and capture per-fixture decode/edit-distance; if aspect-preserving reaches exact/normalized on >=3 fixtures, advance to READY_FOR_INTERNAL_CONTROLLED_REAL_IMAGE_FIXTURES.",
+  "testsPassed": 152,
+  "testsFailed": 0,
+  "ocrFilterSkipped": 1,
+  "newM295M297Tests": 7,
+  "fullSuiteClean": false,
+  "fullSuiteNote": "OCR filters 152 passed / 1 skipped / 0 failed. Full suite failures are pre-existing flaky browser-runtime smoke tests (e.g. BrowserLauncherUsesProfileSessionManagerForDefaultDisposableProfile - temp profile directory cleanup race); 2 of 3 passed on isolated rerun. Unrelated to OCR."
+}
