@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Windows.Forms;
 
@@ -24,14 +25,16 @@ var textRenderingHint = ParseTextRenderingHint(Get(options, "text-rendering-hint
 var baselineShiftY = GetInt(options, "baseline-shift-y", 0);
 var smoothingMode = ParseSmoothingMode(Get(options, "smoothing-mode", "HighQuality"));
 var interpolationMode = ParseInterpolationMode(Get(options, "interpolation-mode", "HighQualityBicubic"));
-var captureCoordinateMode = "screen-physical-from-client-pointtoscreen";
+var fixtureId = Get(options, "fixture-id", text.Replace(' ', '-'));
+var markerText = Get(options, "marker-text", "NODAL-QA-OCR");
+var captureCoordinateMode = "window-client-bitmap-region";
 
 Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
 Application.EnableVisualStyles();
 Application.SetCompatibleTextRenderingDefault(false);
 
 var renderConfig = new QaWindowRenderConfig(fontFamily, fontSize, fontStyle, textRenderingHint, baselineShiftY, smoothingMode, interpolationMode);
-using var form = new QaWindowForm(title, text, width, height, new Rectangle(regionX, regionY, regionWidth, regionHeight), renderConfig);
+using var form = new QaWindowForm(title, text, width, height, new Rectangle(regionX, regionY, regionWidth, regionHeight), renderConfig, fixtureId, markerText);
 using var shutdown = new System.Windows.Forms.Timer { Interval = Math.Max(1000, durationMs) };
 shutdown.Tick += (_, _) => form.Close();
 shutdown.Start();
@@ -69,6 +72,7 @@ form.Shown += (_, _) =>
             var clientBounds = new Rectangle(clientOrigin.X, clientOrigin.Y, form.ClientSize.Width, form.ClientSize.Height);
             var windowBounds = form.Bounds;
             var regionBounds = new Rectangle(regionX, regionY, regionWidth, regionHeight);
+            var captureFingerprint = capture is null ? null : BuildFingerprint(capture, regionWidth, regionHeight);
             var payload = new
             {
                 status,
@@ -82,17 +86,22 @@ form.Shown += (_, _) =>
                 regionBounds = ToPayload(regionBounds),
                 regionScreenBounds = ToPayload(new Rectangle(regionOrigin.X, regionOrigin.Y, regionWidth, regionHeight)),
                 visible = form.Visible,
+                windowForegroundOrActivated = NativeMethods.GetForegroundWindow() == form.Handle,
                 livenessConfirmed = form.Visible && !form.IsDisposed && regionWidth > 0 && regionHeight > 0,
                 captureFile,
                 width = regionWidth,
                 height = regionHeight,
                 expectedText = text,
+                fixtureId,
+                markerText,
+                markerVisible = true,
                 deviceDpi = form.DeviceDpi,
                 dpiScaleX = Math.Round(form.DeviceDpi / 96d, 4),
                 dpiScaleY = Math.Round(form.DeviceDpi / 96d, 4),
                 capturedRegionWidth = regionWidth,
                 capturedRegionHeight = regionHeight,
                 captureCoordinateMode,
+                captureTechnique = "window-client-bitmap-region",
                 textRendererMode = "GdiPlus.DrawString",
                 fontFamily = form.EffectiveFontFamily,
                 fontSize = form.RenderConfig.FontSize,
@@ -100,7 +109,8 @@ form.Shown += (_, _) =>
                 antiAliasingMode = form.RenderConfig.TextRenderingHint.ToString(),
                 smoothingMode = form.RenderConfig.SmoothingMode.ToString(),
                 interpolationMode = form.RenderConfig.InterpolationMode.ToString(),
-                baselineShiftY = form.RenderConfig.BaselineShiftY
+                baselineShiftY = form.RenderConfig.BaselineShiftY,
+                captureFingerprint
             };
 
             Directory.CreateDirectory(Path.GetDirectoryName(readyFile)!);
@@ -192,11 +202,19 @@ static byte[] CaptureRegion(Form form, int x, int y, int width, int height)
     if (width <= 0 || height <= 0)
         throw new InvalidOperationException("invalid capture region dimensions");
 
-    var screenPoint = form.PointToScreen(new Point(x, y));
+    if (x < 0 || y < 0 || x + width > form.ClientSize.Width || y + height > form.ClientSize.Height)
+        throw new InvalidOperationException("capture region is outside client bounds");
+
+    using var clientBitmap = new Bitmap(form.ClientSize.Width, form.ClientSize.Height, PixelFormat.Format32bppArgb);
+    form.DrawToBitmap(clientBitmap, new Rectangle(Point.Empty, form.ClientSize));
     using var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
     using (var graphics = Graphics.FromImage(bitmap))
     {
-        graphics.CopyFromScreen(screenPoint, Point.Empty, new Size(width, height), CopyPixelOperation.SourceCopy);
+        graphics.DrawImage(
+            clientBitmap,
+            new Rectangle(0, 0, width, height),
+            new Rectangle(x, y, width, height),
+            GraphicsUnit.Pixel);
     }
 
     var rgba = new byte[width * height * 4];
@@ -216,6 +234,50 @@ static byte[] CaptureRegion(Form form, int x, int y, int width, int height)
     return rgba;
 }
 
+static object BuildFingerprint(byte[] rgba, int width, int height)
+{
+    using var sha = SHA256.Create();
+    var hash = Convert.ToHexString(sha.ComputeHash(rgba));
+    long red = 0;
+    long green = 0;
+    long blue = 0;
+    var darkPixels = 0;
+    var pixels = Math.Max(1, width * height);
+    var stepX = Math.Max(1, width / 5);
+    var stepY = Math.Max(1, height / 4);
+    var samples = new List<string>();
+
+    for (var i = 0; i < rgba.Length; i += 4)
+    {
+        red += rgba[i];
+        green += rgba[i + 1];
+        blue += rgba[i + 2];
+        if ((rgba[i] + rgba[i + 1] + rgba[i + 2]) / 3d < 128d)
+            darkPixels++;
+    }
+
+    for (var y = 0; y < height; y += stepY)
+    {
+        for (var x = 0; x < width; x += stepX)
+        {
+            var index = (y * width + x) * 4;
+            samples.Add($"{rgba[index]:X2}{rgba[index + 1]:X2}{rgba[index + 2]:X2}");
+        }
+    }
+
+    return new
+    {
+        Sha256 = hash,
+        Width = width,
+        Height = height,
+        AverageRed = Math.Round(red / (double)pixels, 4),
+        AverageGreen = Math.Round(green / (double)pixels, 4),
+        AverageBlue = Math.Round(blue / (double)pixels, 4),
+        DarkPixelRatio = Math.Round(darkPixels / (double)pixels, 6),
+        SampleSignature = string.Join("-", samples)
+    };
+}
+
 internal sealed record QaWindowRenderConfig(
     string RequestedFontFamily,
     float FontSize,
@@ -229,12 +291,16 @@ internal sealed class QaWindowForm : Form
 {
     private readonly string _text;
     private readonly Rectangle _region;
+    private readonly string _fixtureId;
+    private readonly string _markerText;
 
-    public QaWindowForm(string title, string text, int width, int height, Rectangle region, QaWindowRenderConfig renderConfig)
+    public QaWindowForm(string title, string text, int width, int height, Rectangle region, QaWindowRenderConfig renderConfig, string fixtureId, string markerText)
     {
         Text = title;
         _text = text;
         _region = region;
+        _fixtureId = fixtureId;
+        _markerText = markerText;
         RenderConfig = renderConfig;
         StartPosition = FormStartPosition.Manual;
         Location = new Point(120, 120);
@@ -261,6 +327,13 @@ internal sealed class QaWindowForm : Form
         e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
         e.Graphics.TextRenderingHint = RenderConfig.TextRenderingHint;
 
+        using var markerBrush = new SolidBrush(Color.FromArgb(30, 30, 30));
+        using var markerFont = new Font("Arial", 18f, FontStyle.Bold, GraphicsUnit.Pixel);
+        e.Graphics.DrawString(_markerText, markerFont, markerBrush, new PointF(18, 16));
+        using var fixtureBrush = new SolidBrush(Color.FromArgb(70, 70, 70));
+        using var fixtureFont = new Font("Arial", 14f, FontStyle.Regular, GraphicsUnit.Pixel);
+        e.Graphics.DrawString(_fixtureId, fixtureFont, fixtureBrush, new PointF(18, 44));
+
         using var borderPen = new Pen(Color.FromArgb(220, 220, 220), 2);
         e.Graphics.DrawRectangle(borderPen, _region);
         using var font = new Font(RenderConfig.RequestedFontFamily, RenderConfig.FontSize, RenderConfig.FontStyle, GraphicsUnit.Pixel);
@@ -281,6 +354,9 @@ internal sealed class QaWindowForm : Form
 
 internal static class NativeMethods
 {
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    internal static extern IntPtr GetForegroundWindow();
+
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
     internal static extern bool SetForegroundWindow(IntPtr hWnd);

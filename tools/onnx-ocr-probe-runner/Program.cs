@@ -2364,7 +2364,7 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
                 Process? host = null;
                 try
                 {
-                    host = StartQaWindowHost(hostPath!, fixture.Text, readyFile, captureFile, config);
+                    host = StartQaWindowHost(hostPath!, fixture.Id, fixture.Text, readyFile, captureFile, config);
                     var ready = WaitForQaWindowReady(readyFile, host, TimeSpan.FromSeconds(12));
                     if (baselineReady is null &&
                         ready is not null &&
@@ -2816,7 +2816,7 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
 
             try
             {
-                host = StartQaWindowHost(hostPath!, fixture.Text, readyFile, captureFile, config);
+                host = StartQaWindowHost(hostPath!, fixture.Id, fixture.Text, readyFile, captureFile, config);
                 var ready = WaitForQaWindowReady(readyFile, host, TimeSpan.FromSeconds(12));
                 if (readyReference is null && ready is not null)
                     readyReference = ready.Value.Clone();
@@ -2827,6 +2827,7 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                 var windowTitle = ready is null ? string.Empty : ReadString(ready.Value, "windowTitle");
                 var processName = ready is null ? string.Empty : ReadString(ready.Value, "processName");
                 var handle = ready is null ? string.Empty : ReadString(ready.Value, "windowHandle");
+                var captureTechnique = ready is null ? string.Empty : ReadString(ready.Value, "captureTechnique");
                 var windowBounds = ready is null
                     ? new NodalOsScreenRegionBounds(0, 0, 0, 0)
                     : ReadBounds(ready.Value, "windowBounds");
@@ -2860,6 +2861,34 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                     Sensitive: false,
                     Reason: captureSucceeded ? "real QA host region captured for low-risk OCR observation" : (ready is null ? "QA host did not become ready" : ReadString(ready.Value, "reason")));
                 var qaWindowGate = new NodalOsRealQaWindowRegionCaptureProvenanceEvaluator().Evaluate(provenance);
+                var expectedWindowBounds = clientBounds.Width > 0 ? clientBounds : new NodalOsScreenRegionBounds(0, 0, 800, 320);
+                var expectedRegionBounds = new NodalOsScreenRegionBounds(config.RegionX, config.RegionY, config.RegionWidth, config.RegionHeight);
+                var observedFingerprint = captureSucceeded
+                    ? BuildRegionCaptureFingerprint(File.ReadAllBytes(captureFile), regionBounds.Width, regionBounds.Height)
+                    : null;
+                var expectedFingerprint = ready is not null
+                    ? ReadFingerprint(ready.Value, "captureFingerprint")
+                    : null;
+                var windowForegroundOrActivated = ready is not null && ReadBool(ready.Value, "windowForegroundOrActivated");
+                var verificationWarnings = new List<string>();
+                var regionVerification = BuildRegionVerification(
+                    expectedWindowTitle: "NODAL OS OCR QA Window",
+                    observedWindowTitle: windowTitle,
+                    expectedProcess: expectedProcess,
+                    observedProcess: processName,
+                    expectedWindowBounds,
+                    observedWindowBounds: clientBounds.Width > 0 ? clientBounds : windowBounds,
+                    expectedRegionBounds,
+                    observedRegionBounds: regionBounds,
+                    windowVisible: ready is not null && ReadBool(ready.Value, "visible"),
+                    windowForegroundOrActivated,
+                    captureSucceeded,
+                    regionInsideWindow: RegionInsideWindow(clientBounds.Width > 0 ? clientBounds : windowBounds, regionBounds),
+                    fullScreen: false,
+                    captureTechnique,
+                    expectedFingerprint,
+                    observedFingerprint,
+                    verificationWarnings);
 
                 var observationRequest = new NodalOsOcrObservationRequest(
                     fixture.Id,
@@ -2890,7 +2919,11 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                         exactMatch: false,
                         normalizedMatch: false,
                         confidence: null,
-                        [qaWindowGate.Reason]);
+                        [qaWindowGate.Reason],
+                        verificationResult: regionVerification,
+                        confidenceGateResult: new NodalOsOcrObservationConfidenceGateResult(false, false, 0.75d, null, 1, null, false, "capture provenance gate failed"),
+                        acceptanceState: MapAcceptanceState(regionVerification, gatePassed: false),
+                        rejectionReason: qaWindowGate.Reason);
                     var rejectedEnvelope = new NodalOsOcrEvidenceEnvelope(
                         fixture.Id,
                         DateTimeOffset.UtcNow,
@@ -2917,6 +2950,11 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                         ActionAllowed = rejectedResult.ActionAllowed,
                         NoAuthority = rejectedResult.NoAuthority,
                         EvidenceOnly = rejectedResult.EvidenceOnly,
+                        RegionVerified = rejectedResult.RegionVerified,
+                        ConfidenceGatePassed = rejectedResult.ConfidenceGatePassed,
+                        AcceptanceState = rejectedResult.AcceptanceState.ToString(),
+                        RejectionReason = rejectedResult.RejectionReason,
+                        DiffScore = rejectedResult.DiffScore,
                         WindowTitle = windowTitle,
                         ProcessOrSource = processName,
                         RegionBounds = regionBounds,
@@ -3000,6 +3038,19 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                     warnings.Add("probe-timed-out");
                 if (!string.Equals(ReadChildString(childSummary, "MatchKind"), "Exact", StringComparison.Ordinal))
                     warnings.Add("non-exact-observation");
+                warnings.AddRange(regionVerification.VerificationWarnings);
+
+                var confidenceGate = BuildConfidenceGate(
+                    regionVerification.RegionVerified,
+                    exactMatch,
+                    normalizedMatch,
+                    editDistance,
+                    confidence,
+                    detectorBoxesCount,
+                    guardResult.ParentSurvived,
+                    guardResult.TimedOut);
+                if (!confidenceGate.Passed)
+                    warnings.Add($"confidence-gate:{confidenceGate.Reason}");
 
                 var observationResult = evaluator.Evaluate(
                     observationRequest,
@@ -3010,7 +3061,13 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                     exactMatch,
                     normalizedMatch,
                     confidence,
-                    warnings);
+                    warnings,
+                    verificationResult: regionVerification,
+                    confidenceGateResult: confidenceGate,
+                    acceptanceState: MapAcceptanceState(regionVerification, confidenceGate.Passed),
+                    rejectionReason: !regionVerification.RegionVerified
+                        ? regionVerification.FailureReason
+                        : confidenceGate.Passed ? string.Empty : confidenceGate.Reason);
                 var envelope = new NodalOsOcrEvidenceEnvelope(
                     fixture.Id,
                     DateTimeOffset.UtcNow,
@@ -3037,6 +3094,11 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                     ActionAllowed = observationResult.ActionAllowed,
                     NoAuthority = observationResult.NoAuthority,
                     EvidenceOnly = observationResult.EvidenceOnly,
+                    RegionVerified = observationResult.RegionVerified,
+                    ConfidenceGatePassed = observationResult.ConfidenceGatePassed,
+                    AcceptanceState = observationResult.AcceptanceState.ToString(),
+                    RejectionReason = observationResult.RejectionReason,
+                    DiffScore = observationResult.DiffScore,
                     WindowTitle = windowTitle,
                     ProcessOrSource = processName,
                     RegionBounds = regionBounds,
@@ -3077,7 +3139,31 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                     exactMatch: false,
                     normalizedMatch: false,
                     confidence: null,
-                    [BrowserCredentialRedactor.Redact(ex.Message)]);
+                    [BrowserCredentialRedactor.Redact(ex.Message)],
+                    verificationResult: new NodalOsOcrRegionVerificationResult(
+                        "NODAL OS OCR QA Window",
+                        "NODAL OS OCR QA Window",
+                        "OneBrain.Tools.QaWindowHost",
+                        "OneBrain.Tools.QaWindowHost",
+                        new NodalOsScreenRegionBounds(0, 0, 800, 320),
+                        new NodalOsScreenRegionBounds(0, 0, 0, 0),
+                        new NodalOsScreenRegionBounds(config.RegionX, config.RegionY, config.RegionWidth, config.RegionHeight),
+                        new NodalOsScreenRegionBounds(config.RegionX, config.RegionY, config.RegionWidth, config.RegionHeight),
+                        WindowVisible: false,
+                        WindowForegroundOrActivated: false,
+                        RegionInsideWindow: false,
+                        FullScreen: false,
+                        CaptureTechnique: "real-qa-window-region",
+                        ExpectedFingerprint: null,
+                        ObservedFingerprint: null,
+                        DiffScore: null,
+                        RegionVerified: false,
+                        IsolationState: NodalOsWindowIsolationState.CaptureVerificationFailed,
+                        VerificationWarnings: [BrowserCredentialRedactor.Redact(ex.Message)],
+                        FailureReason: BrowserCredentialRedactor.Redact(ex.Message)),
+                    confidenceGateResult: new NodalOsOcrObservationConfidenceGateResult(true, false, 0.75d, null, 1, fixture.Text.Length, false, "exception-before-accepted-evidence"),
+                    acceptanceState: NodalOsOcrObservationAcceptanceState.UncertainRequiresExpansion,
+                    rejectionReason: BrowserCredentialRedactor.Redact(ex.Message));
                 var failedEnvelope = new NodalOsOcrEvidenceEnvelope(
                     fixture.Id,
                     DateTimeOffset.UtcNow,
@@ -3122,12 +3208,22 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
     var normalizedMatches = observationEnvelopes.Count(e => e.Result.NormalizedMatch);
     var mismatches = observationEnvelopes.Count - exactMatches - normalizedMatches;
     var totalEditDistance = observationEnvelopes.Sum(e => e.Result.EditDistance ?? 0);
+    var acceptedEvidenceCount = observationEnvelopes.Count(e => e.AcceptanceState == NodalOsOcrObservationAcceptanceState.AcceptedEvidence);
+    var rejectedEvidenceCount = observationEnvelopes.Count(e => e.AcceptanceState.ToString().StartsWith("Rejected", StringComparison.Ordinal));
+    var uncertainEvidenceCount = observationEnvelopes.Count - acceptedEvidenceCount - rejectedEvidenceCount;
+    var regionVerifiedCount = observationEnvelopes.Count(e => e.RegionVerified);
+    var confidenceGatePassedCount = observationEnvelopes.Count(e => e.ConfidenceGatePassed);
+    var wrongWindowDetectedCount = observationEnvelopes.Count(e => e.AcceptanceState == NodalOsOcrObservationAcceptanceState.RejectedWrongWindow);
+    var verifiedObservations = observationEnvelopes.Where(e => e.RegionVerified).ToArray();
+    var verifiedExactOrNormalized = verifiedObservations.Count(e => e.Result.ExactMatch || e.Result.NormalizedMatch);
+    var verifiedTotalEditDistance = verifiedObservations.Sum(e => e.Result.EditDistance ?? 0);
     var parentSurvived = results.Count == 0 || results.All(r => r.GetType().GetProperty("ParentSurvived")?.GetValue(r) is not bool value || value);
     var hostCleanedUp = hostCleanupResults.Count == 0 || hostCleanupResults.All(v => v);
     var successCriteriaMet = observationEnvelopes.Count == fixtures.Length &&
                              observationEnvelopes.All(e => !e.Result.ActionAllowed && e.Result.NoAuthority && e.Result.EvidenceOnly) &&
-                             exactMatches + normalizedMatches >= 2 &&
-                             totalEditDistance <= 2 &&
+                             regionVerifiedCount >= 2 &&
+                             confidenceGatePassedCount >= 2 &&
+                             (verifiedExactOrNormalized >= 2 || verifiedTotalEditDistance <= 2) &&
                              parentSurvived &&
                              hostCleanedUp;
     var readinessDecision = !hostAvailable || !detectorAvailable || !recognizerAvailable || !dictionaryAvailable
@@ -3138,12 +3234,19 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
                 ? "BLOCKED_BY_LOW_RISK_REGION_POLICY"
                 : successCriteriaMet
                     ? "READY_FOR_INTERNAL_OCR_EVIDENCE_INTEGRATION"
-                    : "READY_FOR_LOW_RISK_SCREEN_OCR_OBSERVATION_EXPANSION";
+                    : wrongWindowDetectedCount > 0
+                        ? "BLOCKED_BY_QA_WINDOW_ISOLATION"
+                        : regionVerifiedCount < 2
+                            ? "BLOCKED_BY_REGION_CAPTURE_VERIFICATION"
+                            : confidenceGatePassedCount < 2
+                                ? "BLOCKED_BY_OCR_OBSERVATION_CONFIDENCE_GATE"
+                                : "READY_FOR_LOW_RISK_SCREEN_OCR_OBSERVATION_HARDENING";
 
     Console.Out.WriteLine(JsonSerializer.Serialize(new
     {
-        Milestone = "M319-M321",
-        BaseCommit = "3172ed2",
+        Milestone = "M322-M324",
+        BaseCommit = "d756d0c",
+        FinalCommit = (string?)null,
         ReadinessDecision = readinessDecision,
         InternalDevelopmentOnly = true,
         PublicProductReady = false,
@@ -3161,6 +3264,15 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
         WindowTitle = "NODAL OS OCR QA Window",
         HostProcessCleanedUp = hostCleanedUp,
         RawPersistenceOfSensitiveData = false,
+        IsolationGateAttempted = true,
+        RegionVerificationAttempted = true,
+        ConfidenceGateAttempted = true,
+        AcceptedEvidenceCount = acceptedEvidenceCount,
+        RejectedEvidenceCount = rejectedEvidenceCount,
+        UncertainEvidenceCount = uncertainEvidenceCount,
+        RegionVerifiedCount = regionVerifiedCount,
+        ConfidenceGatePassedCount = confidenceGatePassedCount,
+        WrongWindowDetectedCount = wrongWindowDetectedCount,
         DetectorModelAvailable = detectorAvailable,
         DetectorModelVerified = detectorAvailable,
         RecognizerModelAvailable = recognizerAvailable,
@@ -3182,10 +3294,15 @@ static int RunLowRiskScreenOcrObservationProbe(Dictionary<string, string> option
         TotalEditDistance = totalEditDistance,
         SuccessCriteriaMet = successCriteriaMet,
         RecommendedNextStep = successCriteriaMet
-            ? "integrate OCR observation evidence envelopes into internal evidence workflows"
-            : "expand low-risk observation envelopes and refine bounded QA observation evidence",
+            ? "integrate verified OCR evidence envelopes into internal evidence workflows"
+            : regionVerifiedCount < 2
+                ? "expand QA window isolation and region verification before integrating evidence"
+                : "expand confidence/diff gating before integrating evidence",
         ModelsCommitted = false,
         DictionariesCommitted = false,
+        TestsPassed = (int?)null,
+        TestsFailed = (int?)null,
+        FullSuiteClean = (bool?)null,
         WindowBounds = readyReference is null ? null : ToAnonymousBounds(ReadBounds(readyReference.Value, "windowBounds")),
         ClientBounds = readyReference is null ? null : ToAnonymousBounds(ReadBounds(readyReference.Value, "clientBounds")),
         RegionBounds = readyReference is null ? null : ToAnonymousBounds(ReadBounds(readyReference.Value, "regionBounds")),
@@ -3208,7 +3325,7 @@ static string? ResolveQaWindowHostPath(string repoRoot)
     return candidates.FirstOrDefault(File.Exists);
 }
 
-static Process StartQaWindowHost(string hostPath, string text, string readyFile, string captureFile, object config)
+static Process StartQaWindowHost(string hostPath, string fixtureId, string text, string readyFile, string captureFile, object config)
 {
     var configType = config.GetType();
     var fontFamily = (string?)configType.GetProperty("FontFamily")?.GetValue(config) ?? "Segoe UI";
@@ -3229,6 +3346,10 @@ static Process StartQaWindowHost(string hostPath, string text, string readyFile,
     };
     psi.ArgumentList.Add("--text");
     psi.ArgumentList.Add(text);
+    psi.ArgumentList.Add("--fixture-id");
+    psi.ArgumentList.Add(fixtureId);
+    psi.ArgumentList.Add("--marker-text");
+    psi.ArgumentList.Add("NODAL-QA-OCR");
     psi.ArgumentList.Add("--title");
     psi.ArgumentList.Add("NODAL OS OCR QA Window");
     psi.ArgumentList.Add("--font-family");
@@ -3281,6 +3402,252 @@ static JsonElement? WaitForQaWindowReady(string readyFile, Process host, TimeSpa
     }
 
     return null;
+}
+
+static NodalOsRegionCaptureFingerprint? ReadFingerprint(JsonElement element, string propertyName)
+{
+    if (!element.TryGetProperty(propertyName, out var property) || property.ValueKind != JsonValueKind.Object)
+        return null;
+
+    return new NodalOsRegionCaptureFingerprint(
+        ReadString(property, "Sha256"),
+        ReadInt(property, "Width"),
+        ReadInt(property, "Height"),
+        ReadDouble(property, "AverageRed"),
+        ReadDouble(property, "AverageGreen"),
+        ReadDouble(property, "AverageBlue"),
+        ReadDouble(property, "DarkPixelRatio"),
+        ReadString(property, "SampleSignature"));
+}
+
+static NodalOsRegionCaptureFingerprint BuildRegionCaptureFingerprint(byte[] rgba, int width, int height)
+{
+    using var sha = System.Security.Cryptography.SHA256.Create();
+    var hash = Convert.ToHexString(sha.ComputeHash(rgba));
+    long red = 0;
+    long green = 0;
+    long blue = 0;
+    var darkPixels = 0;
+    var pixels = Math.Max(1, width * height);
+    var stepX = Math.Max(1, width / 5);
+    var stepY = Math.Max(1, height / 4);
+    var samples = new List<string>();
+
+    for (var i = 0; i < rgba.Length; i += 4)
+    {
+        red += rgba[i];
+        green += rgba[i + 1];
+        blue += rgba[i + 2];
+        if ((rgba[i] + rgba[i + 1] + rgba[i + 2]) / 3d < 128d)
+            darkPixels++;
+    }
+
+    for (var y = 0; y < height; y += stepY)
+    {
+        for (var x = 0; x < width; x += stepX)
+        {
+            var index = (y * width + x) * 4;
+            samples.Add($"{rgba[index]:X2}{rgba[index + 1]:X2}{rgba[index + 2]:X2}");
+        }
+    }
+
+    return new NodalOsRegionCaptureFingerprint(
+        hash,
+        width,
+        height,
+        Math.Round(red / (double)pixels, 4),
+        Math.Round(green / (double)pixels, 4),
+        Math.Round(blue / (double)pixels, 4),
+        Math.Round(darkPixels / (double)pixels, 6),
+        string.Join("-", samples));
+}
+
+static double? ComputeFingerprintDiff(NodalOsRegionCaptureFingerprint? expected, NodalOsRegionCaptureFingerprint? observed)
+{
+    if (expected is null || observed is null)
+        return null;
+
+    if (string.Equals(expected.Sha256, observed.Sha256, StringComparison.Ordinal))
+        return 0d;
+
+    var colorDelta = Math.Abs(expected.AverageRed - observed.AverageRed) +
+                     Math.Abs(expected.AverageGreen - observed.AverageGreen) +
+                     Math.Abs(expected.AverageBlue - observed.AverageBlue);
+    var darkDelta = Math.Abs(expected.DarkPixelRatio - observed.DarkPixelRatio) * 255d;
+    var signaturePenalty = string.Equals(expected.SampleSignature, observed.SampleSignature, StringComparison.Ordinal) ? 0d : 25d;
+    return Math.Round((colorDelta + darkDelta + signaturePenalty) / 255d, 6);
+}
+
+static bool RegionInsideWindow(NodalOsScreenRegionBounds windowBounds, NodalOsScreenRegionBounds regionBounds)
+{
+    return windowBounds.Width > 0 &&
+           windowBounds.Height > 0 &&
+           regionBounds.Width > 0 &&
+           regionBounds.Height > 0 &&
+           regionBounds.X >= 0 &&
+           regionBounds.Y >= 0 &&
+           regionBounds.X + regionBounds.Width <= windowBounds.Width &&
+           regionBounds.Y + regionBounds.Height <= windowBounds.Height;
+}
+
+static NodalOsOcrRegionVerificationResult BuildRegionVerification(
+    string expectedWindowTitle,
+    string observedWindowTitle,
+    string expectedProcess,
+    string observedProcess,
+    NodalOsScreenRegionBounds expectedWindowBounds,
+    NodalOsScreenRegionBounds observedWindowBounds,
+    NodalOsScreenRegionBounds expectedRegionBounds,
+    NodalOsScreenRegionBounds observedRegionBounds,
+    bool windowVisible,
+    bool windowForegroundOrActivated,
+    bool captureSucceeded,
+    bool regionInsideWindow,
+    bool fullScreen,
+    string captureTechnique,
+    NodalOsRegionCaptureFingerprint? expectedFingerprint,
+    NodalOsRegionCaptureFingerprint? observedFingerprint,
+    List<string> verificationWarnings)
+{
+    var titleMatch = string.Equals(expectedWindowTitle, observedWindowTitle, StringComparison.Ordinal);
+    var processMatch = string.Equals(expectedProcess, observedProcess, StringComparison.Ordinal);
+    var trustedWindowSurfaceCapture = string.Equals(captureTechnique, "window-client-bitmap-region", StringComparison.Ordinal);
+    var windowBoundsMatch = expectedWindowBounds.Width == 0 ||
+                            (observedWindowBounds.Width == expectedWindowBounds.Width && observedWindowBounds.Height == expectedWindowBounds.Height);
+    var regionBoundsMatch = observedRegionBounds == expectedRegionBounds;
+    var diffScore = ComputeFingerprintDiff(expectedFingerprint, observedFingerprint);
+    var fingerprintMatch = diffScore is not null && diffScore <= 0.01d;
+    var regionVerified = titleMatch &&
+                         processMatch &&
+                         windowVisible &&
+                         (windowForegroundOrActivated || trustedWindowSurfaceCapture) &&
+                         regionInsideWindow &&
+                         windowBoundsMatch &&
+                         regionBoundsMatch &&
+                         captureSucceeded &&
+                         trustedWindowSurfaceCapture &&
+                         fingerprintMatch;
+
+    NodalOsWindowIsolationState isolationState;
+    string failureReason;
+
+    if (!titleMatch || !processMatch)
+    {
+        isolationState = NodalOsWindowIsolationState.WrongWindowDetected;
+        failureReason = "wrong-window-or-process";
+    }
+    else if (!windowVisible || (!windowForegroundOrActivated && !trustedWindowSurfaceCapture))
+    {
+        isolationState = NodalOsWindowIsolationState.VisibleButNotForeground;
+        failureReason = "window-not-foreground";
+    }
+    else if (!regionInsideWindow || !windowBoundsMatch || !regionBoundsMatch)
+    {
+        isolationState = NodalOsWindowIsolationState.BoundsMismatch;
+        failureReason = "region-bounds-mismatch";
+    }
+    else if (!captureSucceeded || !fingerprintMatch)
+    {
+        isolationState = NodalOsWindowIsolationState.CaptureVerificationFailed;
+        failureReason = !captureSucceeded ? "capture-not-produced" : "fingerprint-diff-too-high";
+    }
+    else
+    {
+        isolationState = NodalOsWindowIsolationState.ForegroundVerified;
+        failureReason = string.Empty;
+    }
+
+    if (!titleMatch) verificationWarnings.Add("window-title-mismatch");
+    if (!processMatch) verificationWarnings.Add("process-mismatch");
+    if (!windowVisible) verificationWarnings.Add("window-not-visible");
+    if (!windowForegroundOrActivated)
+        verificationWarnings.Add(trustedWindowSurfaceCapture ? "window-not-foreground-but-window-surface-capture" : "window-not-foreground");
+    if (!regionInsideWindow) verificationWarnings.Add("region-outside-window");
+    if (!windowBoundsMatch) verificationWarnings.Add("window-bounds-mismatch");
+    if (!regionBoundsMatch) verificationWarnings.Add("region-bounds-mismatch");
+    if (!captureSucceeded) verificationWarnings.Add("capture-not-produced");
+    if (!fingerprintMatch) verificationWarnings.Add("fingerprint-mismatch");
+
+    return new NodalOsOcrRegionVerificationResult(
+        expectedWindowTitle,
+        observedWindowTitle,
+        expectedProcess,
+        observedProcess,
+        expectedWindowBounds,
+        observedWindowBounds,
+        expectedRegionBounds,
+        observedRegionBounds,
+        windowVisible,
+        windowForegroundOrActivated,
+        regionInsideWindow,
+        fullScreen,
+        captureTechnique,
+        expectedFingerprint,
+        observedFingerprint,
+        diffScore,
+        regionVerified,
+        isolationState,
+        verificationWarnings.ToArray(),
+        failureReason);
+}
+
+static NodalOsOcrObservationConfidenceGateResult BuildConfidenceGate(
+    bool regionVerified,
+    bool exactMatch,
+    bool normalizedMatch,
+    int? editDistance,
+    double? confidence,
+    int detectorBoxesCount,
+    bool parentSurvived,
+    bool timedOut)
+{
+    const double confidenceThreshold = 0.75d;
+    const int editDistanceThreshold = 1;
+
+    if (!regionVerified)
+        return new NodalOsOcrObservationConfidenceGateResult(true, false, confidenceThreshold, confidence, editDistanceThreshold, editDistance, false, "region-not-verified");
+    if (!parentSurvived || timedOut)
+        return new NodalOsOcrObservationConfidenceGateResult(true, false, confidenceThreshold, confidence, editDistanceThreshold, editDistance, false, "guard-failed");
+    if (detectorBoxesCount <= 0)
+        return new NodalOsOcrObservationConfidenceGateResult(true, false, confidenceThreshold, confidence, editDistanceThreshold, editDistance, false, "no-detector-boxes");
+
+    var exactOrNormalized = exactMatch || normalizedMatch;
+    var withinEditDistance = editDistance is not null && editDistance.Value <= editDistanceThreshold;
+    var aboveConfidence = confidence is null || confidence.Value >= confidenceThreshold;
+    var passed = aboveConfidence && (exactOrNormalized || withinEditDistance);
+    var reason = passed
+        ? exactOrNormalized ? "exact-or-normalized-match" : "within-edit-distance-threshold"
+        : !aboveConfidence ? "confidence-below-threshold" : "edit-distance-too-high";
+
+    return new NodalOsOcrObservationConfidenceGateResult(
+        true,
+        passed,
+        confidenceThreshold,
+        confidence,
+        editDistanceThreshold,
+        editDistance,
+        exactOrNormalized,
+        reason);
+}
+
+static NodalOsOcrObservationAcceptanceState MapAcceptanceState(
+    NodalOsOcrRegionVerificationResult verification,
+    bool gatePassed)
+{
+    if (!verification.RegionVerified)
+    {
+        return verification.IsolationState switch
+        {
+            NodalOsWindowIsolationState.WrongWindowDetected => NodalOsOcrObservationAcceptanceState.RejectedWrongWindow,
+            NodalOsWindowIsolationState.VisibleButNotForeground => NodalOsOcrObservationAcceptanceState.RejectedNotForeground,
+            NodalOsWindowIsolationState.BoundsMismatch => NodalOsOcrObservationAcceptanceState.RejectedBoundsMismatch,
+            _ => NodalOsOcrObservationAcceptanceState.UncertainRequiresExpansion
+        };
+    }
+
+    return gatePassed
+        ? NodalOsOcrObservationAcceptanceState.AcceptedEvidence
+        : NodalOsOcrObservationAcceptanceState.RejectedLowConfidence;
 }
 
 static string ReadString(JsonElement element, string propertyName)

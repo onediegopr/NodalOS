@@ -47,7 +47,7 @@ public sealed record NodalOsOcrObservationRequest(
     bool FullScreen,
     string Reason);
 
-public sealed record NodalOsOcrObservationResult(
+public sealed partial record NodalOsOcrObservationResult(
     string ObservationId,
     NodalOsOcrObservationDecision PolicyDecision,
     bool Accepted,
@@ -67,9 +67,28 @@ public sealed record NodalOsOcrObservationResult(
     string ModelFamily,
     string DictionaryPolicy,
     bool OfficialSpacePolicy,
-    bool SoftmaxReapplied);
+    bool SoftmaxReapplied)
+{
+    public bool RegionVerified { get; init; }
 
-public sealed record NodalOsOcrEvidenceEnvelope(
+    public NodalOsWindowIsolationState IsolationState { get; init; } = NodalOsWindowIsolationState.NotEvaluated;
+
+    public bool ConfidenceGatePassed { get; init; }
+
+    public NodalOsOcrObservationAcceptanceState AcceptanceState { get; init; } = NodalOsOcrObservationAcceptanceState.UncertainRequiresExpansion;
+
+    public string RejectionReason { get; init; } = string.Empty;
+
+    public double? DiffScore { get; init; }
+
+    public NodalOsRegionCaptureFingerprint? CaptureFingerprint { get; init; }
+
+    public NodalOsOcrRegionVerificationResult? RegionVerification { get; init; }
+
+    public NodalOsOcrObservationConfidenceGateResult? ConfidenceGate { get; init; }
+}
+
+public sealed partial record NodalOsOcrEvidenceEnvelope(
     string ObservationId,
     DateTimeOffset Timestamp,
     string CaptureMode,
@@ -78,4 +97,19 @@ public sealed record NodalOsOcrEvidenceEnvelope(
     string ProcessOrSource,
     NodalOsScreenRegionBounds RegionBounds,
     int DetectorBoxesCount,
-    NodalOsOcrObservationResult Result);
+    NodalOsOcrObservationResult Result)
+{
+    public bool RegionVerified => Result.RegionVerified;
+
+    public NodalOsWindowIsolationState IsolationState => Result.IsolationState;
+
+    public bool ConfidenceGatePassed => Result.ConfidenceGatePassed;
+
+    public NodalOsOcrObservationAcceptanceState AcceptanceState => Result.AcceptanceState;
+
+    public string RejectionReason => Result.RejectionReason;
+
+    public double? DiffScore => Result.DiffScore;
+
+    public NodalOsRegionCaptureFingerprint? CaptureFingerprint => Result.CaptureFingerprint;
+}
