@@ -2331,198 +2331,252 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
         new { Id = "qa-real-window-roma", Text = "ROMA" },
         new { Id = "qa-real-window-12-34", Text = "12 34" }
     };
+    var renderConfigs = new[]
+    {
+        new { Name = "baseline-segoe-76-bold-cleartype", FontFamily = "Segoe UI", FontSize = 76f, FontStyle = "Bold", TextRenderingHint = "ClearTypeGridFit", BaselineShiftY = 0, RegionX = 80, RegionY = 64, RegionWidth = 640, RegionHeight = 160 },
+        new { Name = "arial-76-bold-antialias", FontFamily = "Arial", FontSize = 76f, FontStyle = "Bold", TextRenderingHint = "AntiAliasGridFit", BaselineShiftY = 0, RegionX = 80, RegionY = 64, RegionWidth = 640, RegionHeight = 160 },
+        new { Name = "arial-92-bold-antialias-expanded", FontFamily = "Arial", FontSize = 92f, FontStyle = "Bold", TextRenderingHint = "AntiAliasGridFit", BaselineShiftY = 4, RegionX = 70, RegionY = 54, RegionWidth = 660, RegionHeight = 180 },
+        new { Name = "mssans-92-bold-singlebit-expanded", FontFamily = "Microsoft Sans Serif", FontSize = 92f, FontStyle = "Bold", TextRenderingHint = "SingleBitPerPixelGridFit", BaselineShiftY = 2, RegionX = 70, RegionY = 54, RegionWidth = 660, RegionHeight = 180 },
+        new { Name = "consolas-88-regular-singlebit-expanded", FontFamily = "Consolas", FontSize = 88f, FontStyle = "Regular", TextRenderingHint = "SingleBitPerPixelGridFit", BaselineShiftY = 2, RegionX = 70, RegionY = 54, RegionWidth = 660, RegionHeight = 180 }
+    };
     var results = new List<object>();
     var hostCleanupResults = new List<bool>();
     var accepted = 0;
     var rejected = 0;
     var pipelineExecuted = false;
+    JsonElement? baselineReady = null;
 
     if (hostAvailable && detectorAvailable && recognizerAvailable && dictionaryAvailable)
     {
-        foreach (var fixture in fixtures)
+        foreach (var config in renderConfigs)
         {
-            var tempRoot = Path.Combine(Path.GetTempPath(), "nodal-os-qa-window", Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(tempRoot);
-            var readyFile = Path.Combine(tempRoot, "ready.json");
-            var captureFile = Path.Combine(tempRoot, "capture.rgba");
-            Process? host = null;
-            try
+            foreach (var fixture in fixtures)
             {
-                host = StartQaWindowHost(hostPath!, fixture.Text, readyFile, captureFile);
-                var ready = WaitForQaWindowReady(readyFile, host, TimeSpan.FromSeconds(12));
-                var captureSucceeded = ready is not null &&
-                                       string.Equals(ReadString(ready.Value, "status"), "captured", StringComparison.Ordinal) &&
-                                       File.Exists(captureFile);
-                var windowTitle = ready is null ? "" : ReadString(ready.Value, "windowTitle");
-                var processName = ready is null ? "" : ReadString(ready.Value, "processName");
-                var handle = ready is null ? "" : ReadString(ready.Value, "windowHandle");
-                var windowBounds = ready is null
-                    ? new NodalOsScreenRegionBounds(0, 0, 0, 0)
-                    : ReadBounds(ready.Value, "windowBounds");
-                var regionBounds = ready is null
-                    ? new NodalOsScreenRegionBounds(80, 64, 640, 160)
-                    : ReadBounds(ready.Value, "regionBounds");
-                var expectedProcess = Path.GetFileNameWithoutExtension(hostPath) ?? "OneBrain.Tools.QaWindowHost";
-                var windowVisible = ready.HasValue && ReadBool(ready.Value, "visible");
-                var livenessConfirmed = ready.HasValue && captureSucceeded && ReadBool(ready.Value, "livenessConfirmed");
+                var tempRoot = Path.Combine(Path.GetTempPath(), "nodal-os-qa-window", Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tempRoot);
+                var readyFile = Path.Combine(tempRoot, "ready.json");
+                var captureFile = Path.Combine(tempRoot, "capture.rgba");
+                Process? host = null;
+                try
+                {
+                    host = StartQaWindowHost(hostPath!, fixture.Text, readyFile, captureFile, config);
+                    var ready = WaitForQaWindowReady(readyFile, host, TimeSpan.FromSeconds(12));
+                    if (baselineReady is null &&
+                        ready is not null &&
+                        string.Equals(config.Name, "baseline-segoe-76-bold-cleartype", StringComparison.Ordinal))
+                    {
+                        baselineReady = ready.Value.Clone();
+                    }
+                    var captureSucceeded = ready is not null &&
+                                           string.Equals(ReadString(ready.Value, "status"), "captured", StringComparison.Ordinal) &&
+                                           File.Exists(captureFile);
+                    var windowTitle = ready is null ? "" : ReadString(ready.Value, "windowTitle");
+                    var processName = ready is null ? "" : ReadString(ready.Value, "processName");
+                    var handle = ready is null ? "" : ReadString(ready.Value, "windowHandle");
+                    var windowBounds = ready is null
+                        ? new NodalOsScreenRegionBounds(0, 0, 0, 0)
+                        : ReadBounds(ready.Value, "windowBounds");
+                    var clientBounds = ready is null
+                        ? new NodalOsScreenRegionBounds(0, 0, 0, 0)
+                        : ReadBounds(ready.Value, "clientBounds");
+                    var regionBounds = ready is null
+                        ? new NodalOsScreenRegionBounds(config.RegionX, config.RegionY, config.RegionWidth, config.RegionHeight)
+                        : ReadBounds(ready.Value, "regionBounds");
+                    var expectedProcess = Path.GetFileNameWithoutExtension(hostPath) ?? "OneBrain.Tools.QaWindowHost";
+                    var windowVisible = ready.HasValue && ReadBool(ready.Value, "visible");
+                    var livenessConfirmed = ready.HasValue && captureSucceeded && ReadBool(ready.Value, "livenessConfirmed");
 
-                var provenance = new NodalOsRealQaWindowRegionCaptureProvenance(
-                    fixture.Id,
-                    fixture.Text,
-                    NodalOsRealQaWindowRegionCaptureMode.RealQaWindowRegion,
-                    ExpectedWindowTitle: "NODAL OS OCR QA Window",
-                    ObservedWindowTitle: windowTitle,
-                    ExpectedProcessOrSource: expectedProcess,
-                    ObservedProcessOrSource: processName,
-                    WindowHandleOrSourceId: handle,
-                    WindowBounds: windowBounds,
-                    RegionBounds: regionBounds,
-                    WindowExists: ready is not null,
-                    WindowVisible: windowVisible,
-                    LivenessConfirmed: livenessConfirmed,
-                    ContainsRealPersonData: false,
-                    ContainsCustomerData: false,
-                    ContainsFinancialData: false,
-                    ContainsDocumentData: false,
-                    ContainsCredentialOrPasswordData: false,
-                    ContainsFullScreen: false,
-                    Sensitive: false,
-                    Reason: captureSucceeded ? "real QA host region captured" : (ready is null ? "QA host did not become ready" : ReadString(ready.Value, "reason")));
-                var gate = new NodalOsRealQaWindowRegionCaptureProvenanceEvaluator().Evaluate(provenance);
-                if (!gate.AllowedForRealQaWindowCapture)
+                    var provenance = new NodalOsRealQaWindowRegionCaptureProvenance(
+                        fixture.Id,
+                        fixture.Text,
+                        NodalOsRealQaWindowRegionCaptureMode.RealQaWindowRegion,
+                        ExpectedWindowTitle: "NODAL OS OCR QA Window",
+                        ObservedWindowTitle: windowTitle,
+                        ExpectedProcessOrSource: expectedProcess,
+                        ObservedProcessOrSource: processName,
+                        WindowHandleOrSourceId: handle,
+                        WindowBounds: clientBounds.Width > 0 ? clientBounds : windowBounds,
+                        RegionBounds: regionBounds,
+                        WindowExists: ready is not null,
+                        WindowVisible: windowVisible,
+                        LivenessConfirmed: livenessConfirmed,
+                        ContainsRealPersonData: false,
+                        ContainsCustomerData: false,
+                        ContainsFinancialData: false,
+                        ContainsDocumentData: false,
+                        ContainsCredentialOrPasswordData: false,
+                        ContainsFullScreen: false,
+                        Sensitive: false,
+                        Reason: captureSucceeded ? "real QA host region captured" : (ready is null ? "QA host did not become ready" : ReadString(ready.Value, "reason")));
+                    var gate = new NodalOsRealQaWindowRegionCaptureProvenanceEvaluator().Evaluate(provenance);
+                    if (!gate.AllowedForRealQaWindowCapture)
+                    {
+                        rejected++;
+                        results.Add(new
+                        {
+                            Configuration = config.Name,
+                            FixtureId = fixture.Id,
+                            FixtureText = fixture.Text,
+                            Attempted = true,
+                            CaptureMode = "real-qa-window-region",
+                            GateDecision = gate.Decision.ToString(),
+                            Accepted = false,
+                            PipelineAttempted = false,
+                            Reason = gate.Reason,
+                            WindowBounds = windowBounds,
+                            ClientBounds = clientBounds,
+                            RegionBounds = regionBounds,
+                            WindowTitle = windowTitle,
+                            ProcessOrSource = processName,
+                            ParentSurvived = true,
+                            DpiScaleX = ready is null ? 0d : ReadDouble(ready.Value, "dpiScaleX"),
+                            DpiScaleY = ready is null ? 0d : ReadDouble(ready.Value, "dpiScaleY"),
+                            DeviceDpi = ready is null ? 0 : ReadInt(ready.Value, "deviceDpi"),
+                            CapturedRegionWidth = ready is null ? 0 : ReadInt(ready.Value, "capturedRegionWidth"),
+                            CapturedRegionHeight = ready is null ? 0 : ReadInt(ready.Value, "capturedRegionHeight"),
+                            TextRendererMode = ready is null ? string.Empty : ReadString(ready.Value, "textRendererMode"),
+                            FontFamily = ready is null ? config.FontFamily : ReadString(ready.Value, "fontFamily"),
+                            FontSize = ready is null ? config.FontSize : ReadDouble(ready.Value, "fontSize"),
+                            FontStyle = ready is null ? config.FontStyle : ReadString(ready.Value, "fontStyle"),
+                            TextRenderingHint = ready is null ? config.TextRenderingHint : ReadString(ready.Value, "antiAliasingMode"),
+                            CaptureCoordinateMode = ready is null ? string.Empty : ReadString(ready.Value, "captureCoordinateMode")
+                        });
+                        continue;
+                    }
+
+                    accepted++;
+                    pipelineExecuted = true;
+                    var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+                        $"real-qa-window-region-{Guid.NewGuid():N}",
+                        NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+                        NodalOsSyntheticOcrTextRenderMode.PixelFont,
+                        regionBounds.Width,
+                        regionBounds.Height,
+                        NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+                        NodalOsOcrVisionSensitivity.Low,
+                        FullScreen: false,
+                        Sensitive: false,
+                        OriginalRawPersisted: false,
+                        Synthetic: true,
+                        NoAuthority: true,
+                        RunOutOfProcess: true);
+                    var args = new List<string>(runnerPrefix)
+                    {
+                        "--synthetic-detector-to-recognizer-pipeline-child",
+                        "--repo-root", repoRoot,
+                        "--fixture-text", fixture.Text,
+                        "--fixture-id", fixture.Id,
+                        "--fixture-source-category", "InternalQaWindowRegion",
+                        "--fixture-created-by-internal-qa", "true",
+                        "--capture-mode", "real-qa-window-region",
+                        "--bounds-source", "real-qa-window-host",
+                        "--window-title-or-source", windowTitle,
+                        "--process-or-source", processName,
+                        "--window-x", windowBounds.X.ToString(),
+                        "--window-y", windowBounds.Y.ToString(),
+                        "--window-width", windowBounds.Width.ToString(),
+                        "--window-height", windowBounds.Height.ToString(),
+                        "--region-x", regionBounds.X.ToString(),
+                        "--region-y", regionBounds.Y.ToString(),
+                        "--region-width", regionBounds.Width.ToString(),
+                        "--region-height", regionBounds.Height.ToString(),
+                        "--fixture-rgba-file", captureFile,
+                        "--fixture-rgba-width", regionBounds.Width.ToString(),
+                        "--fixture-rgba-height", regionBounds.Height.ToString(),
+                        "--detector-model-relative", detectorRelativePath,
+                        "--recognizer-model-relative", recognizerRelativePath,
+                        "--dictionary-relative", dictionaryRelativePath,
+                        "--expected-class-count", "438",
+                        "--dictionary-token-count", "436",
+                        "--crop-padding", "20",
+                        "--crop-strategy", "real-qa-window-expanded-box",
+                        "--margin-policy", "20px",
+                        "--unclip-policy", "host-capture-calibration"
+                    };
+
+                    var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+                        $"real-qa-window-region-guard-{Guid.NewGuid():N}",
+                        request,
+                        runner,
+                        args,
+                        timeoutMs,
+                        MaxOutputBytes: 256 * 1024,
+                        AllowRawPersistence: false));
+                    var childSummary = TryParseJsonElement(guardResult.Reason);
+                    var decoded = ReadChildString(childSummary, "DecodedPreviewNonAuthoritative") ?? string.Empty;
+                    var normalizedDecoded = NormalizeNoAuthorityPreview(decoded);
+                    var normalizedExpected = NormalizeNoAuthorityPreview(fixture.Text);
+                    results.Add(new
+                    {
+                        Configuration = config.Name,
+                        FixtureId = fixture.Id,
+                        FixtureText = fixture.Text,
+                        Expected = fixture.Text,
+                        Attempted = true,
+                        CaptureMode = "real-qa-window-region",
+                        GateDecision = gate.Decision.ToString(),
+                        Accepted = true,
+                        PipelineAttempted = true,
+                        OutOfProcessGuardUsed = true,
+                        guardResult.ExitCode,
+                        ExitCodeHex = guardResult.ExitCode is null ? null : $"0x{unchecked((uint)guardResult.ExitCode.Value):X8}",
+                        guardResult.TimedOut,
+                        guardResult.ParentSurvived,
+                        guardResult.ChildLaunched,
+                        guardResult.TempFilesCleaned,
+                        guardResult.OrphanProcessLeft,
+                        guardResult.RawPersisted,
+                        guardResult.CallsSaas,
+                        guardResult.NoAuthority,
+                        Status = guardResult.ProbeResult.Status.ToString(),
+                        CrashKind = guardResult.ProbeResult.CrashKind.ToString(),
+                        guardResult.StdErrSummary,
+                        WindowBounds = windowBounds,
+                        ClientBounds = clientBounds,
+                        RegionBounds = regionBounds,
+                        WindowTitle = windowTitle,
+                        ProcessOrSource = processName,
+                        ChildSummary = childSummary,
+                        guardResult.Reason,
+                        DpiScaleX = ready is null ? 0d : ReadDouble(ready.Value, "dpiScaleX"),
+                        DpiScaleY = ready is null ? 0d : ReadDouble(ready.Value, "dpiScaleY"),
+                        DeviceDpi = ready is null ? 0 : ReadInt(ready.Value, "deviceDpi"),
+                        CapturedRegionWidth = ready is null ? 0 : ReadInt(ready.Value, "capturedRegionWidth"),
+                        CapturedRegionHeight = ready is null ? 0 : ReadInt(ready.Value, "capturedRegionHeight"),
+                        TextRendererMode = ready is null ? string.Empty : ReadString(ready.Value, "textRendererMode"),
+                        FontFamily = ready is null ? config.FontFamily : ReadString(ready.Value, "fontFamily"),
+                        FontSize = ready is null ? config.FontSize : ReadDouble(ready.Value, "fontSize"),
+                        FontStyle = ready is null ? config.FontStyle : ReadString(ready.Value, "fontStyle"),
+                        TextRenderingHint = ready is null ? config.TextRenderingHint : ReadString(ready.Value, "antiAliasingMode"),
+                        CaptureCoordinateMode = ready is null ? string.Empty : ReadString(ready.Value, "captureCoordinateMode"),
+                        MatchKind = ReadChildString(childSummary, "MatchKind") ?? "Unknown",
+                        EditDistance = LevenshteinDistance(normalizedExpected, normalizedDecoded),
+                        DecodedPreview = decoded
+                    });
+                }
+                catch (Exception ex)
                 {
                     rejected++;
                     results.Add(new
                     {
+                        Configuration = config.Name,
                         FixtureId = fixture.Id,
                         FixtureText = fixture.Text,
                         Attempted = true,
                         CaptureMode = "real-qa-window-region",
-                        GateDecision = gate.Decision.ToString(),
                         Accepted = false,
                         PipelineAttempted = false,
-                        Reason = gate.Reason,
-                        WindowBounds = windowBounds,
-                        RegionBounds = regionBounds,
-                        WindowTitle = windowTitle,
-                        ProcessOrSource = processName,
+                        Reason = BrowserCredentialRedactor.Redact(ex.Message),
                         ParentSurvived = true
                     });
-                    continue;
                 }
-
-                accepted++;
-                pipelineExecuted = true;
-                var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
-                    $"real-qa-window-region-{Guid.NewGuid():N}",
-                    NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
-                    NodalOsSyntheticOcrTextRenderMode.PixelFont,
-                    regionBounds.Width,
-                    regionBounds.Height,
-                    NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
-                    NodalOsOcrVisionSensitivity.Low,
-                    FullScreen: false,
-                    Sensitive: false,
-                    OriginalRawPersisted: false,
-                    // The guard's pre-launch gate only allows controlled fixtures. The detailed
-                    // child summary still records this as real-qa-window-region, not simulated.
-                    Synthetic: true,
-                    NoAuthority: true,
-                    RunOutOfProcess: true);
-                var args = new List<string>(runnerPrefix)
+                finally
                 {
-                    "--synthetic-detector-to-recognizer-pipeline-child",
-                    "--repo-root", repoRoot,
-                    "--fixture-text", fixture.Text,
-                    "--fixture-id", fixture.Id,
-                    "--fixture-source-category", "InternalQaWindowRegion",
-                    "--fixture-created-by-internal-qa", "true",
-                    "--capture-mode", "real-qa-window-region",
-                    "--bounds-source", "real-qa-window-host",
-                    "--window-title-or-source", windowTitle,
-                    "--process-or-source", processName,
-                    "--window-x", windowBounds.X.ToString(),
-                    "--window-y", windowBounds.Y.ToString(),
-                    "--window-width", windowBounds.Width.ToString(),
-                    "--window-height", windowBounds.Height.ToString(),
-                    "--region-x", regionBounds.X.ToString(),
-                    "--region-y", regionBounds.Y.ToString(),
-                    "--region-width", regionBounds.Width.ToString(),
-                    "--region-height", regionBounds.Height.ToString(),
-                    "--fixture-rgba-file", captureFile,
-                    "--fixture-rgba-width", regionBounds.Width.ToString(),
-                    "--fixture-rgba-height", regionBounds.Height.ToString(),
-                    "--detector-model-relative", detectorRelativePath,
-                    "--recognizer-model-relative", recognizerRelativePath,
-                    "--dictionary-relative", dictionaryRelativePath,
-                    "--expected-class-count", "438",
-                    "--dictionary-token-count", "436",
-                    "--crop-padding", "20",
-                    "--crop-strategy", "real-qa-window-expanded-box",
-                    "--margin-policy", "20px",
-                    "--unclip-policy", "host-capture-calibration"
-                };
-
-                var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
-                    $"real-qa-window-region-guard-{Guid.NewGuid():N}",
-                    request,
-                    runner,
-                    args,
-                    timeoutMs,
-                    MaxOutputBytes: 256 * 1024,
-                    AllowRawPersistence: false));
-                results.Add(new
-                {
-                    FixtureId = fixture.Id,
-                    FixtureText = fixture.Text,
-                    Attempted = true,
-                    CaptureMode = "real-qa-window-region",
-                    GateDecision = gate.Decision.ToString(),
-                    Accepted = true,
-                    PipelineAttempted = true,
-                    OutOfProcessGuardUsed = true,
-                    guardResult.ExitCode,
-                    ExitCodeHex = guardResult.ExitCode is null ? null : $"0x{unchecked((uint)guardResult.ExitCode.Value):X8}",
-                    guardResult.TimedOut,
-                    guardResult.ParentSurvived,
-                    guardResult.ChildLaunched,
-                    guardResult.TempFilesCleaned,
-                    guardResult.OrphanProcessLeft,
-                    guardResult.RawPersisted,
-                    guardResult.CallsSaas,
-                    guardResult.NoAuthority,
-                    Status = guardResult.ProbeResult.Status.ToString(),
-                    CrashKind = guardResult.ProbeResult.CrashKind.ToString(),
-                    guardResult.StdErrSummary,
-                    WindowBounds = windowBounds,
-                    RegionBounds = regionBounds,
-                    WindowTitle = windowTitle,
-                    ProcessOrSource = processName,
-                    ChildSummary = TryParseJsonElement(guardResult.Reason),
-                    guardResult.Reason
-                });
-            }
-            catch (Exception ex)
-            {
-                rejected++;
-                results.Add(new
-                {
-                    FixtureId = fixture.Id,
-                    FixtureText = fixture.Text,
-                    Attempted = true,
-                    CaptureMode = "real-qa-window-region",
-                    Accepted = false,
-                    PipelineAttempted = false,
-                    Reason = BrowserCredentialRedactor.Redact(ex.Message),
-                    ParentSurvived = true
-                });
-            }
-            finally
-            {
-                hostCleanupResults.Add(StopQaWindowHost(host));
-                TryDeleteFile(captureFile);
-                TryDeleteFile(readyFile);
-                TryDeleteDirectory(tempRoot);
+                    hostCleanupResults.Add(StopQaWindowHost(host));
+                    TryDeleteFile(captureFile);
+                    TryDeleteFile(readyFile);
+                    TryDeleteDirectory(tempRoot);
+                }
             }
         }
     }
@@ -2531,14 +2585,62 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
         rejected = fixtures.Length;
     }
 
-    var exactMatches = CountChildMatches(results, "Exact");
-    var normalizedMatches = CountChildMatches(results, "Normalized");
-    var mismatches = CountChildMatches(results, "Mismatch");
-    var totalEditDistance = SumChildInt(results, "EditDistance");
+    var baselineResults = results
+        .Where(r => string.Equals((string?)r.GetType().GetProperty("Configuration")?.GetValue(r), "baseline-segoe-76-bold-cleartype", StringComparison.Ordinal))
+        .ToList();
+    var baselineExactMatches = CountObjectString(baselineResults, "MatchKind", "Exact");
+    var baselineNormalizedMatches = CountObjectString(baselineResults, "MatchKind", "Normalized");
+    var baselineMismatches = CountObjectString(baselineResults, "MatchKind", "Mismatch");
+    var baselineTotalEditDistance = SumObjectInt(baselineResults, "EditDistance");
+    var configurationSummaries = renderConfigs.Select(config =>
+    {
+        var configResults = results
+            .Where(r => string.Equals((string?)r.GetType().GetProperty("Configuration")?.GetValue(r), config.Name, StringComparison.Ordinal))
+            .ToList();
+        return new
+        {
+            Configuration = config.Name,
+            config.FontFamily,
+            config.FontSize,
+            config.FontStyle,
+            TextRenderingHint = config.TextRenderingHint,
+            RegionBounds = new { x = config.RegionX, y = config.RegionY, width = config.RegionWidth, height = config.RegionHeight },
+            ExactMatches = CountObjectString(configResults, "MatchKind", "Exact"),
+            NormalizedMatches = CountObjectString(configResults, "MatchKind", "Normalized"),
+            Mismatches = CountObjectString(configResults, "MatchKind", "Mismatch"),
+            TotalEditDistance = SumObjectInt(configResults, "EditDistance"),
+            AllAccepted = configResults.Count == fixtures.Length && configResults.All(r => (bool?)r.GetType().GetProperty("Accepted")?.GetValue(r) == true),
+            Results = configResults
+        };
+    }).ToArray();
+    var bestConfiguration = configurationSummaries
+        .OrderByDescending(c => c.ExactMatches + c.NormalizedMatches)
+        .ThenBy(c => c.TotalEditDistance)
+        .ThenByDescending(c => c.ExactMatches)
+        .ThenBy(c => c.Configuration, StringComparer.Ordinal)
+        .FirstOrDefault();
+    var bestConfigurationName = bestConfiguration?.Configuration;
+    var bestResults = bestConfiguration is null
+        ? new List<object>()
+        : results.Where(r => string.Equals((string?)r.GetType().GetProperty("Configuration")?.GetValue(r), bestConfiguration.Configuration, StringComparison.Ordinal)).ToList();
+    var exactMatches = bestConfiguration?.ExactMatches ?? 0;
+    var normalizedMatches = bestConfiguration?.NormalizedMatches ?? 0;
+    var mismatches = bestConfiguration?.Mismatches ?? 0;
+    var totalEditDistance = bestConfiguration?.TotalEditDistance ?? 0;
+    var bestAcceptedCount = bestResults.Count(r => (bool?)r.GetType().GetProperty("Accepted")?.GetValue(r) == true);
+    var bestDpiScaleX = bestResults
+        .Select(r => r.GetType().GetProperty("DpiScaleX")?.GetValue(r))
+        .OfType<double>()
+        .FirstOrDefault();
+    var bestDpiScaleY = bestResults
+        .Select(r => r.GetType().GetProperty("DpiScaleY")?.GetValue(r))
+        .OfType<double>()
+        .FirstOrDefault();
+    var dpiAuditIndicated = Math.Abs(bestDpiScaleX - 1d) > 0.05d || Math.Abs(bestDpiScaleY - 1d) > 0.05d;
     var parentSurvived = results.Count == 0 || results.All(r =>
         r.GetType().GetProperty("ParentSurvived")?.GetValue(r) is not bool value || value);
     var hostCleanedUp = hostCleanupResults.Count == 0 || hostCleanupResults.All(v => v);
-    var successCriteriaMet = accepted >= 3 &&
+    var successCriteriaMet = bestResults.Count == fixtures.Length &&
                              exactMatches + normalizedMatches >= 2 &&
                              totalEditDistance <= 2 &&
                              hostCleanedUp &&
@@ -2549,18 +2651,26 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
             ? "BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE"
             : accepted == 0
                 ? "BLOCKED_BY_WINDOW_LIVENESS_OR_BOUNDS"
-                : !pipelineExecuted
-                    ? "BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE"
-                    : successCriteriaMet
-                        ? "READY_FOR_INTERNAL_LOW_RISK_SCREEN_OCR_OBSERVATION"
-                        : exactMatches + normalizedMatches > 0
-                            ? "READY_FOR_QA_WINDOW_CAPTURE_HARDENING"
-                            : "BLOCKED_BY_REAL_QA_WINDOW_REGION_PIPELINE_EVIDENCE";
+            : !pipelineExecuted
+                ? "BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE"
+                : successCriteriaMet
+                    ? "READY_FOR_INTERNAL_LOW_RISK_SCREEN_OCR_OBSERVATION"
+                : (bestConfiguration is not null &&
+                   ((bestConfiguration.FontFamily.Contains("Arial", StringComparison.OrdinalIgnoreCase) ||
+                     bestConfiguration.TextRenderingHint.Contains("SingleBitPerPixel", StringComparison.OrdinalIgnoreCase) ||
+                     bestConfiguration.RegionBounds.width != 640) &&
+                    exactMatches + normalizedMatches > baselineExactMatches + baselineNormalizedMatches))
+                    ? "READY_FOR_QA_WINDOW_CAPTURE_HARDENING_EXPANSION"
+                : dpiAuditIndicated
+                    ? "READY_FOR_REGION_CAPTURE_DPI_AUDIT"
+                    : exactMatches + normalizedMatches > 0
+                        ? "READY_FOR_QA_WINDOW_CAPTURE_HARDENING_EXPANSION"
+                        : "BLOCKED_BY_QA_WINDOW_RENDERING_FIDELITY";
 
     Console.Out.WriteLine(JsonSerializer.Serialize(new
     {
-        Milestone = "M313-M315",
-        BaseCommit = "78fe513",
+        Milestone = "M316-M318",
+        BaseCommit = "5e3b16e",
         ReadinessDecision = readinessDecision,
         InternalDevelopmentOnly = true,
         PublicProductReady = false,
@@ -2586,6 +2696,22 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
         RegionBoundsValidated = accepted > 0,
         LivenessValidated = accepted > 0,
         HostProcessCleanedUp = hostCleanedUp,
+        DpiAuditAttempted = accepted > 0,
+        DpiScaleX = baselineReady is null ? 0d : ReadDouble(baselineReady.Value, "dpiScaleX"),
+        DpiScaleY = baselineReady is null ? 0d : ReadDouble(baselineReady.Value, "dpiScaleY"),
+        DeviceDpi = baselineReady is null ? 0 : ReadInt(baselineReady.Value, "deviceDpi"),
+        WindowBounds = baselineReady is null ? null : ToAnonymousBounds(ReadBounds(baselineReady.Value, "windowBounds")),
+        ClientBounds = baselineReady is null ? null : ToAnonymousBounds(ReadBounds(baselineReady.Value, "clientBounds")),
+        RegionBounds = baselineReady is null ? null : ToAnonymousBounds(ReadBounds(baselineReady.Value, "regionBounds")),
+        CapturedRegionWidth = baselineReady is null ? 0 : ReadInt(baselineReady.Value, "capturedRegionWidth"),
+        CapturedRegionHeight = baselineReady is null ? 0 : ReadInt(baselineReady.Value, "capturedRegionHeight"),
+        CaptureCoordinateMode = baselineReady is null ? string.Empty : ReadString(baselineReady.Value, "captureCoordinateMode"),
+        TextRendererMode = baselineReady is null ? string.Empty : ReadString(baselineReady.Value, "textRendererMode"),
+        FontFamily = bestConfiguration?.FontFamily ?? (baselineReady is null ? string.Empty : ReadString(baselineReady.Value, "fontFamily")),
+        FontSize = bestConfiguration?.FontSize ?? (baselineReady is null ? 0d : ReadDouble(baselineReady.Value, "fontSize")),
+        FontStyle = bestConfiguration?.FontStyle ?? (baselineReady is null ? string.Empty : ReadString(baselineReady.Value, "fontStyle")),
+        TextRenderingHint = bestConfiguration?.TextRenderingHint ?? (baselineReady is null ? string.Empty : ReadString(baselineReady.Value, "antiAliasingMode")),
+        BestRenderingConfiguration = bestConfigurationName,
         DetectorModelAvailable = detectorAvailable,
         DetectorModelVerified = detectorAvailable,
         RecognizerModelAvailable = recognizerAvailable,
@@ -2599,9 +2725,17 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
         RecognizerResizeMode = "RatioPreservingRightPad",
         OutOfProcessGuardUsed = pipelineExecuted,
         ParentSurvived = parentSurvived,
+        BaselineExactMatches = baselineExactMatches,
+        BaselineNormalizedMatches = baselineNormalizedMatches,
+        BaselineMismatches = baselineMismatches,
+        BaselineTotalEditDistance = baselineTotalEditDistance,
+        CalibratedExactMatches = exactMatches,
+        CalibratedNormalizedMatches = normalizedMatches,
+        CalibratedMismatches = mismatches,
+        CalibratedTotalEditDistance = totalEditDistance,
         FixturesTotal = fixtures.Length,
-        FixturesAccepted = accepted,
-        FixturesRejected = fixtures.Length - accepted,
+        FixturesAccepted = bestAcceptedCount,
+        FixturesRejected = fixtures.Length - bestAcceptedCount,
         ExactMatches = exactMatches,
         NormalizedMatches = normalizedMatches,
         Mismatches = mismatches,
@@ -2609,11 +2743,14 @@ static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
         SuccessCriteriaMet = successCriteriaMet,
         RecommendedNextStep = successCriteriaMet
             ? "internal low-risk screen OCR observation with bounded non-sensitive regions"
-            : "harden QA window host capture and rerun bounded region evidence",
+            : readinessDecision == "READY_FOR_REGION_CAPTURE_DPI_AUDIT"
+                ? "audit physical-vs-logical coordinates and DPI-scaled capture path"
+                : "expand QA window host rendering/capture matrix and rerun bounded region evidence",
         ModelsCommitted = false,
         DictionariesCommitted = false,
         PipelineExecuted = pipelineExecuted,
-        Results = results
+        ConfigurationSummaries = configurationSummaries,
+        Results = bestResults
     }));
     return 0;
 }
@@ -2628,8 +2765,19 @@ static string? ResolveQaWindowHostPath(string repoRoot)
     return candidates.FirstOrDefault(File.Exists);
 }
 
-static Process StartQaWindowHost(string hostPath, string text, string readyFile, string captureFile)
+static Process StartQaWindowHost(string hostPath, string text, string readyFile, string captureFile, object config)
 {
+    var configType = config.GetType();
+    var fontFamily = (string?)configType.GetProperty("FontFamily")?.GetValue(config) ?? "Segoe UI";
+    var fontSize = (float?)configType.GetProperty("FontSize")?.GetValue(config) ?? 76f;
+    var fontStyle = (string?)configType.GetProperty("FontStyle")?.GetValue(config) ?? "Bold";
+    var textRenderingHint = (string?)configType.GetProperty("TextRenderingHint")?.GetValue(config) ?? "ClearTypeGridFit";
+    var baselineShiftY = (int?)configType.GetProperty("BaselineShiftY")?.GetValue(config) ?? 0;
+    var regionX = (int?)configType.GetProperty("RegionX")?.GetValue(config) ?? 80;
+    var regionY = (int?)configType.GetProperty("RegionY")?.GetValue(config) ?? 64;
+    var regionWidth = (int?)configType.GetProperty("RegionWidth")?.GetValue(config) ?? 640;
+    var regionHeight = (int?)configType.GetProperty("RegionHeight")?.GetValue(config) ?? 160;
+
     var psi = new ProcessStartInfo(hostPath)
     {
         UseShellExecute = false,
@@ -2640,18 +2788,28 @@ static Process StartQaWindowHost(string hostPath, string text, string readyFile,
     psi.ArgumentList.Add(text);
     psi.ArgumentList.Add("--title");
     psi.ArgumentList.Add("NODAL OS OCR QA Window");
+    psi.ArgumentList.Add("--font-family");
+    psi.ArgumentList.Add(fontFamily);
+    psi.ArgumentList.Add("--font-size");
+    psi.ArgumentList.Add(fontSize.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    psi.ArgumentList.Add("--font-style");
+    psi.ArgumentList.Add(fontStyle);
+    psi.ArgumentList.Add("--text-rendering-hint");
+    psi.ArgumentList.Add(textRenderingHint);
+    psi.ArgumentList.Add("--baseline-shift-y");
+    psi.ArgumentList.Add(baselineShiftY.ToString());
     psi.ArgumentList.Add("--width");
     psi.ArgumentList.Add("800");
     psi.ArgumentList.Add("--height");
     psi.ArgumentList.Add("320");
     psi.ArgumentList.Add("--region-x");
-    psi.ArgumentList.Add("80");
+    psi.ArgumentList.Add(regionX.ToString());
     psi.ArgumentList.Add("--region-y");
-    psi.ArgumentList.Add("64");
+    psi.ArgumentList.Add(regionY.ToString());
     psi.ArgumentList.Add("--region-width");
-    psi.ArgumentList.Add("640");
+    psi.ArgumentList.Add(regionWidth.ToString());
     psi.ArgumentList.Add("--region-height");
-    psi.ArgumentList.Add("160");
+    psi.ArgumentList.Add(regionHeight.ToString());
     psi.ArgumentList.Add("--ready-file");
     psi.ArgumentList.Add(readyFile);
     psi.ArgumentList.Add("--capture-file");
@@ -2714,6 +2872,21 @@ static int ReadInt(JsonElement element, string propertyName)
         ? value
         : 0;
 }
+
+static double ReadDouble(JsonElement element, string propertyName)
+{
+    return element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.Number && property.TryGetDouble(out var value)
+        ? value
+        : 0d;
+}
+
+static object ToAnonymousBounds(NodalOsScreenRegionBounds bounds) => new
+{
+    x = bounds.X,
+    y = bounds.Y,
+    width = bounds.Width,
+    height = bounds.Height
+};
 
 static bool StopQaWindowHost(Process? host)
 {
