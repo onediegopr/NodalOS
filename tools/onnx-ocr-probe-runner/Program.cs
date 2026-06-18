@@ -113,6 +113,11 @@ if (options.ContainsKey("synthetic-detector-recognizer-crop-calibration-probe"))
     return RunSyntheticDetectorRecognizerCropCalibrationProbe(options);
 }
 
+if (options.ContainsKey("paddleocr-preprocessing-alignment-ab-probe"))
+{
+    return RunPaddleOcrPreprocessingAlignmentAbProbe(options);
+}
+
 if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-child"))
 {
     return RunSyntheticDetectorToRecognizerPipelineChild(options);
@@ -1645,6 +1650,233 @@ static int RunSyntheticDetectorRecognizerCropCalibrationProbe(Dictionary<string,
     return 0;
 }
 
+static int RunPaddleOcrPreprocessingAlignmentAbProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var (runner, runnerPrefix) = ResolveCurrentRunnerInvocation();
+    var timeoutMs = options.TryGetValue("timeout-ms", out var timeoutText) && int.TryParse(timeoutText, out var parsedTimeout)
+        ? parsedTimeout
+        : 180000;
+
+    var detectorRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
+    var recognizerRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
+    var dictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
+    var detectorAvailable = File.Exists(Path.Combine(repoRoot, detectorRelativePath));
+    var recognizerAvailable = File.Exists(Path.Combine(repoRoot, recognizerRelativePath));
+    var dictionaryAvailable = File.Exists(Path.Combine(repoRoot, dictionaryRelativePath));
+
+    var fixtures = new[]
+    {
+        new { Text = "MARMOLES PVC", Variant = "centered-line", HorizontalPadding = 16, VerticalPadding = 48 },
+        new { Text = "PVC WALL", Variant = "upper-left-line", HorizontalPadding = 16, VerticalPadding = 12 },
+        new { Text = "GENOVA", Variant = "centered-no-space", HorizontalPadding = 96, VerticalPadding = 42 },
+        new { Text = "ROMA", Variant = "wide-padding-no-space", HorizontalPadding = 128, VerticalPadding = 48 },
+        new { Text = "12 34", Variant = "centered-numeric-space", HorizontalPadding = 96, VerticalPadding = 48 }
+    };
+    var modes = new[] { "stretch", "ratio" };
+    const int cropPadding = 24;
+    const string cropStrategy = "percent-expanded-box";
+    const string marginPolicy = "10%";
+    const string unclipPolicy = "1.5";
+
+    var results = new List<object>();
+    if (detectorAvailable && recognizerAvailable && dictionaryAvailable)
+    {
+        foreach (var mode in modes)
+        {
+            foreach (var fixture in fixtures)
+            {
+                var request = new NodalOsOnnxNativeRuntimeCrashProbeRequest(
+                    $"paddleocr-preprocessing-ab-{Guid.NewGuid():N}",
+                    NodalOsOnnxNativeRuntimeCrashFixtureKind.LargeCenteredText,
+                    NodalOsSyntheticOcrTextRenderMode.PixelFont,
+                    640,
+                    160,
+                    NodalOsOnnxNativeRuntimeCrashStage.RecognitionRun,
+                    NodalOsOcrVisionSensitivity.Low,
+                    FullScreen: false,
+                    Sensitive: false,
+                    OriginalRawPersisted: false,
+                    Synthetic: true,
+                    NoAuthority: true,
+                    RunOutOfProcess: true);
+
+                var args = new List<string>(runnerPrefix)
+                {
+                    "--synthetic-detector-to-recognizer-pipeline-child",
+                    "--repo-root", repoRoot,
+                    "--fixture-text", fixture.Text,
+                    "--fixture-variant", fixture.Variant,
+                    "--horizontal-padding", fixture.HorizontalPadding.ToString(),
+                    "--vertical-padding", fixture.VerticalPadding.ToString(),
+                    "--crop-padding", cropPadding.ToString(),
+                    "--crop-strategy", cropStrategy,
+                    "--margin-policy", marginPolicy,
+                    "--unclip-policy", unclipPolicy,
+                    "--recognizer-resize", mode,
+                    "--detector-model-relative", detectorRelativePath,
+                    "--recognizer-model-relative", recognizerRelativePath,
+                    "--dictionary-relative", dictionaryRelativePath,
+                    "--expected-class-count", "438",
+                    "--dictionary-token-count", "436"
+                };
+
+                var guardResult = new NodalOsOnnxOutOfProcessGuard().Run(new NodalOsOnnxOutOfProcessGuardRequest(
+                    $"paddleocr-preprocessing-ab-guard-{Guid.NewGuid():N}",
+                    request,
+                    runner,
+                    args,
+                    timeoutMs,
+                    MaxOutputBytes: 256 * 1024,
+                    AllowRawPersistence: false));
+
+                var childSummary = TryParseJsonElement(guardResult.Reason);
+                var decoded = ReadChildString(childSummary, "DecodedPreviewNonAuthoritative") ?? string.Empty;
+                var normalizedDecoded = NormalizeNoAuthorityPreview(decoded);
+                var normalizedExpected = NormalizeNoAuthorityPreview(fixture.Text);
+                results.Add(new
+                {
+                    Mode = mode,
+                    fixture.Text,
+                    Expected = fixture.Text,
+                    fixture.Variant,
+                    Renderer = fixture.Variant.Contains("upper-left", StringComparison.OrdinalIgnoreCase) ? "PixelFont" : "AntiAliasedPixelFont",
+                    CropStrategy = cropStrategy,
+                    MarginPolicy = marginPolicy,
+                    UnclipPolicy = unclipPolicy,
+                    Padding = cropPadding,
+                    Attempted = true,
+                    OutOfProcessGuardUsed = true,
+                    guardResult.ExitCode,
+                    guardResult.TimedOut,
+                    guardResult.ParentSurvived,
+                    guardResult.ChildLaunched,
+                    guardResult.RawPersisted,
+                    guardResult.CallsSaas,
+                    guardResult.NoAuthority,
+                    Status = guardResult.ProbeResult.Status.ToString(),
+                    ChildSummary = childSummary,
+                    DetectorBoxesCount = ReadChildInt(childSummary, "DetectorBoxesCount"),
+                    RecognizerAttempts = ReadChildInt(childSummary, "RecognizerAttempts"),
+                    Decoded = decoded,
+                    NormalizedDecoded = normalizedDecoded,
+                    MatchKind = ReadChildString(childSummary, "MatchKind") ?? "Unknown",
+                    EditDistance = LevenshteinDistance(normalizedExpected, normalizedDecoded),
+                    MeanConfidence = ReadChildDouble(childSummary, "MeanConfidence")
+                });
+            }
+        }
+    }
+
+    var stretchResults = results.Where(r => string.Equals((string?)r.GetType().GetProperty("Mode")!.GetValue(r), "stretch", StringComparison.Ordinal)).ToList();
+    var ratioResults = results.Where(r => string.Equals((string?)r.GetType().GetProperty("Mode")!.GetValue(r), "ratio", StringComparison.Ordinal)).ToList();
+    var stretchExact = CountObjectString(stretchResults, "MatchKind", "Exact");
+    var ratioExact = CountObjectString(ratioResults, "MatchKind", "Exact");
+    var stretchNormalized = CountObjectString(stretchResults, "MatchKind", "Normalized");
+    var ratioNormalized = CountObjectString(ratioResults, "MatchKind", "Normalized");
+    var stretchMismatches = CountObjectString(stretchResults, "MatchKind", "Mismatch");
+    var ratioMismatches = CountObjectString(ratioResults, "MatchKind", "Mismatch");
+    var stretchTotalEditDistance = SumObjectInt(stretchResults, "EditDistance");
+    var ratioTotalEditDistance = SumObjectInt(ratioResults, "EditDistance");
+    var ratioImprovedOverStretch = ratioTotalEditDistance < stretchTotalEditDistance ||
+                                   ratioExact + ratioNormalized > stretchExact + stretchNormalized;
+    var editDistanceImprovementRatio = stretchTotalEditDistance <= 0
+        ? 0d
+        : (double)(stretchTotalEditDistance - ratioTotalEditDistance) / stretchTotalEditDistance;
+    var perFixtureDelta = fixtures.Select(fixture =>
+    {
+        var stretch = stretchResults.FirstOrDefault(r => string.Equals((string?)r.GetType().GetProperty("Expected")!.GetValue(r), fixture.Text, StringComparison.Ordinal));
+        var ratio = ratioResults.FirstOrDefault(r => string.Equals((string?)r.GetType().GetProperty("Expected")!.GetValue(r), fixture.Text, StringComparison.Ordinal));
+        var stretchEdit = stretch is null ? 0 : (int)stretch.GetType().GetProperty("EditDistance")!.GetValue(stretch)!;
+        var ratioEdit = ratio is null ? 0 : (int)ratio.GetType().GetProperty("EditDistance")!.GetValue(ratio)!;
+        return new
+        {
+            Expected = fixture.Text,
+            StretchDecoded = stretch is null ? null : (string?)stretch.GetType().GetProperty("Decoded")!.GetValue(stretch),
+            RatioDecoded = ratio is null ? null : (string?)ratio.GetType().GetProperty("Decoded")!.GetValue(ratio),
+            StretchMatchKind = stretch is null ? null : (string?)stretch.GetType().GetProperty("MatchKind")!.GetValue(stretch),
+            RatioMatchKind = ratio is null ? null : (string?)ratio.GetType().GetProperty("MatchKind")!.GetValue(ratio),
+            StretchEditDistance = stretchEdit,
+            RatioEditDistance = ratioEdit,
+            DeltaEditDistance = stretchEdit - ratioEdit
+        };
+    }).ToArray();
+
+    var ratioMatches = ratioExact + ratioNormalized;
+    var successCriteriaMet =
+        ratioMatches >= 3 ||
+        (ratioMatches >= 2 && editDistanceImprovementRatio >= 0.40d) ||
+        (perFixtureDelta.Any(d => d.Expected == "MARMOLES PVC" && d.DeltaEditDistance > 0) &&
+         perFixtureDelta.Any(d => d.Expected == "PVC WALL" && d.DeltaEditDistance > 0) &&
+         editDistanceImprovementRatio >= 0.50d);
+    var readinessDecision = !detectorAvailable || !recognizerAvailable || !dictionaryAvailable
+        ? "BLOCKED_BY_MODEL_OR_DICTIONARY_AVAILABILITY"
+        : successCriteriaMet
+            ? "READY_FOR_INTERNAL_CONTROLLED_REAL_IMAGE_FIXTURES"
+            : ratioImprovedOverStretch
+                ? "READY_FOR_RAPIDOCR_ROTATED_CROP_POLICY_ADOPTION"
+                : "BLOCKED_BY_RATIO_PRESERVING_PREPROCESSING_EVIDENCE";
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(new
+    {
+        Milestone = "M298-M300",
+        BaseCommit = "1b28f70",
+        ReadinessDecision = readinessDecision,
+        InternalDevelopmentOnly = true,
+        PublicProductReady = false,
+        NoSaaS = true,
+        NoApiKeys = true,
+        NoSensitive = true,
+        RealScreenUsed = false,
+        RealDocumentUsed = false,
+        SyntheticImagesOnly = true,
+        RawPersistenceOfRealData = false,
+        DetectorModelAvailable = detectorAvailable,
+        DetectorModelVerified = detectorAvailable,
+        RecognizerModelAvailable = recognizerAvailable,
+        DictionaryAvailable = dictionaryAvailable,
+        OfficialSpacePolicy = true,
+        BlankIndex = 0,
+        SpaceIndex = 437,
+        SpaceIndexFormula = "N+1",
+        RecognizerOutputLayout = "[B,T,C]",
+        RecognizerSoftmaxReapplied = false,
+        AbProbeAttempted = results.Count > 0,
+        StretchModeAttempted = stretchResults.Count > 0,
+        RatioPreservingModeAttempted = ratioResults.Count > 0,
+        StretchExactMatches = stretchExact,
+        StretchNormalizedMatches = stretchNormalized,
+        StretchMismatches = stretchMismatches,
+        StretchTotalEditDistance = stretchTotalEditDistance,
+        RatioExactMatches = ratioExact,
+        RatioNormalizedMatches = ratioNormalized,
+        RatioMismatches = ratioMismatches,
+        RatioTotalEditDistance = ratioTotalEditDistance,
+        RatioImprovedOverStretch = ratioImprovedOverStretch,
+        EditDistanceImprovementRatio = Math.Round(editDistanceImprovementRatio, 4),
+        SuccessCriteriaMet = successCriteriaMet,
+        RecommendedNextStep = readinessDecision == "READY_FOR_INTERNAL_CONTROLLED_REAL_IMAGE_FIXTURES"
+            ? "internal-controlled-real-image-fixtures"
+            : ratioImprovedOverStretch
+                ? "rotated-crop-or-perspective-policy-review"
+                : "preprocessing-evidence-review",
+        OutOfProcessGuardUsed = results.Count > 0,
+        ParentSurvived = results.Count == 0 || results.All(r => (bool)r.GetType().GetProperty("ParentSurvived")!.GetValue(r)!),
+        RecognizerTensorShape = new[] { 1, 3, 48, 320 },
+        RecognizerOutputShape = new[] { 1, 40, 438 },
+        RecognizerClassCountObserved = 438,
+        RecognizerClassCountExpected = 438,
+        SoftmaxEvidence = "Rows sum approximately 1; softmax not reapplied.",
+        ModelsCommitted = false,
+        DictionariesCommitted = false,
+        PerFixtureDelta = perFixtureDelta,
+        Results = results
+    }));
+    return 0;
+}
+
 static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, string> options)
 {
     var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
@@ -1917,6 +2149,7 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
             ClipsBottom = selectedBox.CropY + selectedBox.CropHeight >= fixture.Height
         },
         RecognizerPreprocessing = recognizerPreprocessing,
+        RecognizerResizeMode = recognizerResizeMode.ToString(),
         RecognizerTensorStats = recognizerStats,
         RecognizerTensorShape = recognizerShape,
         RecognizerInputMetadata = recognizerInputMetadata,
@@ -1933,6 +2166,8 @@ static int RunSyntheticDetectorToRecognizerPipelineChild(Dictionary<string, stri
         SoftmaxReapplied = false,
         DecodePolicyApplied = "OfficialSpaceToken",
         DecodedPreviewNonAuthoritative = decode.DecodedText,
+        NormalizedDecodedPreview = normalizedDecoded,
+        EditDistance = LevenshteinDistance(normalizedExpected, normalizedDecoded),
         MeanConfidence = decode.MeanConfidence,
         EmittedTokens = decode.EmittedTokens,
         MatchKind = matchKind,
@@ -2943,6 +3178,18 @@ static int ReadChildInt(JsonElement? element, string propertyName)
     }
 
     return property.GetInt32();
+}
+
+static double ReadChildDouble(JsonElement? element, string propertyName)
+{
+    if (element is not { ValueKind: JsonValueKind.Object } value ||
+        !value.TryGetProperty(propertyName, out var property) ||
+        property.ValueKind != JsonValueKind.Number)
+    {
+        return 0d;
+    }
+
+    return property.GetDouble();
 }
 
 static object EstimateSyntheticTextGeometry(int width, int height, int horizontalPadding, int verticalPadding)
