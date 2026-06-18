@@ -133,6 +133,11 @@ if (options.ContainsKey("qa-window-region-probe"))
     return RunInternalControlledScreenRegionProbe(options);
 }
 
+if (options.ContainsKey("real-qa-window-region-probe"))
+{
+    return RunRealQaWindowRegionProbe(options);
+}
+
 if (options.ContainsKey("synthetic-detector-to-recognizer-pipeline-child"))
 {
     return RunSyntheticDetectorToRecognizerPipelineChild(options);
@@ -2297,6 +2302,78 @@ static int RunInternalControlledScreenRegionProbe(Dictionary<string, string> opt
         ModelsCommitted = false,
         DictionariesCommitted = false,
         Results = results
+    }));
+    return 0;
+}
+
+static int RunRealQaWindowRegionProbe(Dictionary<string, string> options)
+{
+    var repoRoot = options.TryGetValue("repo-root", out var root) && Directory.Exists(root)
+        ? Path.GetFullPath(root)
+        : Directory.GetCurrentDirectory();
+    var detectorRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "ch_PP-OCRv4_det.onnx");
+    var recognizerRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
+    var dictionaryRelativePath = Path.Combine("tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
+    var detectorAvailable = File.Exists(Path.Combine(repoRoot, detectorRelativePath));
+    var recognizerAvailable = File.Exists(Path.Combine(repoRoot, recognizerRelativePath));
+    var dictionaryAvailable = File.Exists(Path.Combine(repoRoot, dictionaryRelativePath));
+
+    Console.Out.WriteLine(JsonSerializer.Serialize(new
+    {
+        Milestone = "M310-M312",
+        BaseCommit = "d084334",
+        ReadinessDecision = "BLOCKED_BY_REAL_QA_WINDOW_CAPTURE_TECHNIQUE",
+        InternalDevelopmentOnly = true,
+        PublicProductReady = false,
+        NoSaaS = true,
+        NoApiKeys = true,
+        NoSensitive = true,
+        RealDocumentUsed = false,
+        FullScreenUsed = false,
+        RealQaWindowRegionAttempted = true,
+        RealQaWindowRegionUsed = false,
+        SimulatedWindowRegionUsed = false,
+        UnknownProvenanceRejected = true,
+        SensitiveRegionRejected = true,
+        FullScreenRejected = true,
+        DocumentRegionRejected = true,
+        RawPersistenceOfSensitiveData = false,
+        CaptureMode = "blocked-before-real-capture",
+        WindowTitle = "NODAL OS OCR QA Window",
+        ProcessOrSource = "onnx-ocr-probe-runner",
+        WindowHandleOrSourceId = "",
+        WindowBounds = new { X = 0, Y = 0, Width = 0, Height = 0 },
+        RegionBounds = new { X = 80, Y = 64, Width = 640, Height = 160 },
+        WindowExists = false,
+        WindowVisible = false,
+        LivenessConfirmed = false,
+        LivenessFailureReason = "No stable real QA helper window capture host exists in the runner yet; refusing to use full-screen or simulated-window capture as real.",
+        DetectorModelAvailable = detectorAvailable,
+        DetectorModelVerified = detectorAvailable,
+        RecognizerModelAvailable = recognizerAvailable,
+        DictionaryAvailable = dictionaryAvailable,
+        OfficialSpacePolicy = true,
+        BlankIndex = 0,
+        SpaceIndex = 437,
+        SpaceIndexFormula = "N+1",
+        RecognizerOutputLayout = "[B,T,C]",
+        RecognizerSoftmaxReapplied = false,
+        RecognizerResizeMode = "RatioPreservingRightPad",
+        OutOfProcessGuardUsed = false,
+        ParentSurvived = true,
+        FixturesTotal = 3,
+        FixturesAccepted = 0,
+        FixturesRejected = 3,
+        ExactMatches = 0,
+        NormalizedMatches = 0,
+        Mismatches = 0,
+        TotalEditDistance = 0,
+        SuccessCriteriaMet = false,
+        RecommendedNextStep = "implement a real QA helper window host and bounded region capture before rerunning OCR",
+        ModelsCommitted = false,
+        DictionariesCommitted = false,
+        PipelineExecuted = false,
+        Results = Array.Empty<object>()
     }));
     return 0;
 }
