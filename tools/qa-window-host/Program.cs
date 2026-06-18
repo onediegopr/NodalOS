@@ -40,7 +40,7 @@ form.Shown += (_, _) =>
 {
     _ = Task.Run(async () =>
     {
-        await Task.Delay(500).ConfigureAwait(false);
+        await Task.Delay(750).ConfigureAwait(false);
         form.BeginInvoke(() =>
         {
             var status = "captured";
@@ -49,6 +49,11 @@ form.Shown += (_, _) =>
 
             try
             {
+                EnsureForegroundCaptureWindow(form);
+                form.Invalidate();
+                form.Update();
+                Application.DoEvents();
+                Thread.Sleep(150);
                 capture = CaptureRegion(form, regionX, regionY, regionWidth, regionHeight);
                 Directory.CreateDirectory(Path.GetDirectoryName(captureFile)!);
                 File.WriteAllBytes(captureFile, capture);
@@ -167,6 +172,21 @@ static InterpolationMode ParseInterpolationMode(string value)
 
 static object ToPayload(Rectangle bounds) => new { x = bounds.X, y = bounds.Y, width = bounds.Width, height = bounds.Height };
 
+static void EnsureForegroundCaptureWindow(Form form)
+{
+    const int swRestore = 9;
+    const uint swpShowWindow = 0x0040;
+    var hwndTopmost = new IntPtr(-1);
+
+    NativeMethods.ShowWindow(form.Handle, swRestore);
+    NativeMethods.SetWindowPos(form.Handle, hwndTopmost, form.Left, form.Top, form.Width, form.Height, swpShowWindow);
+    form.TopMost = true;
+    form.BringToFront();
+    form.Activate();
+    form.Focus();
+    NativeMethods.SetForegroundWindow(form.Handle);
+}
+
 static byte[] CaptureRegion(Form form, int x, int y, int width, int height)
 {
     if (width <= 0 || height <= 0)
@@ -257,4 +277,19 @@ internal sealed class QaWindowForm : Form
         var drawRegion = new Rectangle(_region.X, _region.Y + RenderConfig.BaselineShiftY, _region.Width, _region.Height);
         e.Graphics.DrawString(_text, font, brush, drawRegion, format);
     }
+}
+
+internal static class NativeMethods
+{
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    internal static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+    internal static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 }
