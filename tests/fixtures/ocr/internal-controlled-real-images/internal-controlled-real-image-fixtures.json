@@ -1,0 +1,51 @@
+{
+  "fixtureSetId": "m301-m303-internal-controlled-real-images",
+  "storagePolicy": "tracked metadata only; raw RGBA images are generated in memory for the probe and are not persisted",
+  "fixtures": [
+    {
+      "id": "qa-real-pvc-wall",
+      "filename": "qa-real-pvc-wall.generated-rgba",
+      "sourceCategory": "InternalControlledRealImage",
+      "createdByInternalQa": true,
+      "containsRealPersonData": false,
+      "containsCustomerData": false,
+      "containsFinancialData": false,
+      "containsDocumentData": false,
+      "containsScreenCapture": false,
+      "sensitive": false,
+      "expectedText": "PVC WALL",
+      "allowedForOcrPipeline": true,
+      "reason": "Internal QA controlled image rendered from non-sensitive dummy text; not a screen or document."
+    },
+    {
+      "id": "qa-real-roma",
+      "filename": "qa-real-roma.generated-rgba",
+      "sourceCategory": "InternalControlledRealImage",
+      "createdByInternalQa": true,
+      "containsRealPersonData": false,
+      "containsCustomerData": false,
+      "containsFinancialData": false,
+      "containsDocumentData": false,
+      "containsScreenCapture": false,
+      "sensitive": false,
+      "expectedText": "ROMA",
+      "allowedForOcrPipeline": true,
+      "reason": "Internal QA controlled image rendered from non-sensitive dummy text; not a screen or document."
+    },
+    {
+      "id": "qa-real-12-34",
+      "filename": "qa-real-12-34.generated-rgba",
+      "sourceCategory": "InternalControlledRealImage",
+      "createdByInternalQa": true,
+      "containsRealPersonData": false,
+      "containsCustomerData": false,
+      "containsFinancialData": false,
+      "containsDocumentData": false,
+      "containsScreenCapture": false,
+      "sensitive": false,
+      "expectedText": "12 34",
+      "allowedForOcrPipeline": true,
+      "reason": "Internal QA controlled image rendered from non-sensitive dummy text; not a screen or document."
+    }
+  ]
+}
