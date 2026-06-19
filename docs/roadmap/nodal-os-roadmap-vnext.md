@@ -451,7 +451,42 @@ Recommended next milestones:
 Recommended next milestones:
 
 - `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
-- `M460 Core Roadmap Re-Sync and Pause Closure`.
+- `M460-M462 Automation Layer Integration No-Divergence Cleanup`.
+- `M463 Core Roadmap Re-Sync and Pause Closure`.
+
+## Automation Layer Integration No-Divergence Cleanup M462
+
+- M460-M462 closed Claude M458-M459 MEDIUM-2 with cross-layer no-divergence tests.
+- M460-M462 closed Claude M458-M459 MEDIUM-3 with dependency-direction tests.
+- AutomationEvent, SelectorSafety, HumanHandoff, RecipeRisk, RiskProfile, and DSL Decision contracts preserve no-runtime flags across layers.
+- Runtime execution allowed remains false.
+- Runtime execution deferred remains true.
+- Evidence redaction remains required.
+- Global policy evaluation remains required.
+- Selector, handoff, and recipe risk outputs cannot authorize action.
+- Evidence refs still validate through EvidenceBridge.
+- Common redaction remains preserved for sensitive text.
+- AgentOperations.Contracts remains browser/CDP-free.
+- AgentOperations.Core remains browser/CDP-free.
+- AgentOperations.Adapters.Browser still does not reference BrowserExecutor.Cdp.
+- BrowserExecutor.Cdp remains the temporary browser runtime host.
+- Claude MEDIUM-1 classifier keyword hardening is documented as runtime-gated backlog.
+- MEDIUM-1 blocks any future recorder/replay, browser automation, DSL parser runtime, recipe/step execution, or approval gate that would use the classifier as runtime authority.
+- MEDIUM-1 does not block pause closure, contracts, docs, or no-runtime design.
+- DSL parser implemented: false.
+- Recorder implemented: false.
+- Replay implemented: false.
+- Queue implemented: false.
+- Scheduler implemented: false.
+- Browser automation implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+- Automation Layer can close pause after M463 if roadmap re-sync confirms no new runtime scope.
+- Do not implement runtime until a new dedicated Claude audit approves that scope.
+
+Recommended next milestone:
+
+- `M463 Core Roadmap Re-Sync and Pause Closure`.
 
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
