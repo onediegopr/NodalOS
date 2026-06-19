@@ -82,6 +82,20 @@ Recommended next milestone: `M377-M379 Completion Gate Canonicalization`.
 
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
+## Package / Skill Manifest V1 M394
+
+- M392-M394 created Package / Skill Manifest V1 as internal governed catalog metadata.
+- New contracts use the `NodalOs*` prefix.
+- Package and skill manifests are internal-only in V1.
+- Catalog policy is separated from runtime permission.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Global policy evaluation required: true.
+- Registry, worker runtime, marketplace, package installation, UI, orchestration, recipe execution, and step execution remain unimplemented.
+- Common redaction is used for secret-like manifest validation.
+
+Recommended next milestone: `M395-M397 Internal Skill Registry V1 Design or Agent Operations Extraction Prep`.
+
 ## M51 Scope
 
 M51 is closed only for:
