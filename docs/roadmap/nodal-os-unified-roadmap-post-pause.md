@@ -64,11 +64,13 @@ Estimated milestones:
 
 - M468-M470: Core Runtime Registry + EventBus + Redaction Foundation.
 - M471-M473: Approval Center Data Model + Timeline Projection + Evidence Registry Integration.
-- M474-M476: Controlled File Operation v2.
-- M477-M479: Workspace v1.
-- M480-M482: Approval Center UX v1 decision/contracts.
+- M474-M476: Approval Center UX Contract Preview + Export/Handoff Data Pack + Runtime Observability Report.
+- AUDIT-A: Claude Full Project Architecture & Safety Audit before UI real / Mission Control Shell.
+- M477-M479: Controlled File Operation v2.
+- M480-M482: Workspace v1.
+- M483-M485: Approval Center UX v1 decision/contracts.
 
-Current percentage after M471-M473: 71%.
+Current percentage after M474-M476: 74%.
 
 Target percentage after subphase: 80%.
 
@@ -86,6 +88,15 @@ M471-M473 status:
 - Evidence Registry integration is ready as metadata/ref-only linking across registry, event, approval and timeline surfaces.
 - Approval, timeline and evidence visibility do not grant runtime authority.
 - UI, scheduler, worker runtime, browser automation, cloud and execution remain deferred.
+
+M474-M476 status:
+
+- Approval Center UX Contract Preview is ready as a redacted future-UI data contract.
+- Export/Handoff Data Pack is ready as JSON/Markdown contract-first output with registry, approval, timeline, evidence, guardrails and redaction summaries.
+- Runtime Observability Report is ready as a future LOG/copy-report foundation with correlation ids, summaries, blocked actions, warnings/failures and handoff requirements.
+- Evidence remains ref-only and raw screenshot, DOM, network, header, cookie, body and secret payloads remain forbidden.
+- No real UI, frontend, cloud, LLM calls, scheduler, worker, browser automation, recorder/replay, queue, DSL parser runtime or execution was introduced.
+- AUDIT-A is the next required architecture and safety review before UI real / Mission Control Shell.
 
 ## Subphase 2 - Mission Control UX
 
@@ -363,6 +374,6 @@ Target percentage after subphase: 65%.
 
 ## Recommended Next Milestone
 
-`M474-M476 Approval Center UX Contract Preview + Export/Handoff Data Pack + Runtime Observability Report`.
+`AUDIT-A - Claude Full Project Architecture & Safety Audit before UI real / Mission Control Shell`.
 
 Do not proceed to UI implementation, cloud implementation, browser automation runtime, recorder/replay, queue, scheduler, DSL parser, or execution before the core mandatory track is planned.

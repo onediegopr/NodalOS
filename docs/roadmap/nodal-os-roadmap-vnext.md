@@ -609,6 +609,29 @@ Recommended next milestone:
 
 - `M474-M476 Approval Center UX Contract Preview + Export/Handoff Data Pack + Runtime Observability Report`.
 
+## M474-M476 Approval Center UX Contract Preview + Export/Handoff Data Pack + Runtime Observability Report
+
+- M474-M476 prepares the visible/exportable core layer without implementing real UI.
+- Approval Center UX Contract Preview created as redacted contracts/services for future UI cards, titles, summaries, full explanations, severity/risk, status, requested action, affected resources, policy reason, user options, rollback/no-rollback information, expected evidence, attention flags, registry refs, event refs, timeline refs and evidence refs.
+- Export/Handoff Data Pack created as JSON/Markdown-safe contract for registry entries, approval previews/decisions, timeline entries, evidence refs, warnings, failures, handoff requirements, guardrails, redaction summary and next steps.
+- Runtime Observability Report created as a safe technical report contract for future LOG/copy-report flows with registry/event/timeline/approval/evidence summaries, blocked actions, failures/warnings, handoff requirements, correlation ids and next recommended action.
+- Evidence remains ref-only. Screenshot inline data, raw DOM, raw network, raw headers, raw cookies, raw body and raw secrets remain forbidden.
+- Approval previews, handoff packs and observability reports cannot execute, cannot authorize execution, and cannot mutate registry state.
+- No UI, frontend, cloud, LLM provider call, scheduler, worker runtime, browser automation, recorder, replay, queue, DSL parser runtime, shell/subprocess, API, persistence DB, PDF/DOCX production export, or execution was introduced.
+- Report: `docs/reports/approval-ux-handoff-observability-m474-m476.md`.
+- Artifact: `artifacts/agent-operations/m476/approval-ux-handoff-observability-summary.json`.
+
+Recommended next milestone:
+
+- `AUDIT-A - Claude Full Project Architecture & Safety Audit before UI real / Mission Control Shell`.
+
+## AUDIT-A Claude Full Project Architecture & Safety Audit
+
+- Timing: after M474-M476 and before UI real / Mission Control Shell.
+- Objective: independent full-project architecture and safety review.
+- Scope: architecture, naming, guardrails, dependency direction, duplication, evidence/timeline, approval, redaction, export/handoff, observability, runtime deferral, roadmap coherence and readiness for future UI/LLM/cloud.
+- Runtime remains blocked during the audit. UI real, cloud, LLM provider calls, browser automation, scheduler/worker, recorder/replay, queue, DSL parser runtime and execution remain deferred.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
