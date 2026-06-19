@@ -68,10 +68,12 @@ Estimated milestones:
 - AUDIT-A: Claude Full Project Architecture & Safety Audit before UI real / Mission Control Shell.
 - M477-M479: AUDIT-A Pre-UI Boundary & Naming Hardening.
 - M480-M482: Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views.
-- M483-M485: Controlled File Operation v2.
-- M486-M488: Workspace v1.
+- M483-M485: Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock.
+- M486-M488: Mission Control Empty States + Contextual Onboarding + Guardrail Explainers.
+- M489-M491: Controlled File Operation v2.
+- M492-M494: Workspace v1.
 
-Current percentage after M480-M482: 79%.
+Current percentage after M483-M485: 81%.
 
 Target percentage after subphase: 80%.
 
@@ -119,6 +121,15 @@ M480-M482 status:
 - UI boundary guards continue to block direct `OneBrain.BrowserExecutor.Cdp` references from new AgentOperations/Mission Control surfaces.
 - Recommended next: M483-M485 Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock.
 
+M483-M485 status:
+
+- Mission Control no-op UI intent contracts are ready.
+- Approval decision drafting is available as non-authoritative UI/local state only.
+- UI state persistence is mock-only and in-memory.
+- All interactions keep `CanAuthorizeExecution=false` and `RuntimeExecutionAllowed=false`.
+- No positive execution gate, runtime, browser automation, cloud, LLM provider call, scheduler/worker, recorder/replay, queue, DSL parser runtime, shell/subprocess, productive filesystem persistence or productive DB was introduced.
+- Recommended next: M486-M488 Mission Control Empty States + Contextual Onboarding + Guardrail Explainers.
+
 ## Subphase 2 - Mission Control UX
 
 Objective:
@@ -164,12 +175,13 @@ Guardrails:
 Estimated milestones:
 
 - M480-M482: Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views. Completed.
-- M483-M485: Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock.
-- M486-M488: Mission Control UX Decision Record and Visual QA.
-- M489-M491: Timeline/Evidence interaction contracts.
-- M492-M494: Approval cards and handoff UX refinement.
+- M483-M485: Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock. Completed.
+- M486-M488: Mission Control Empty States + Contextual Onboarding + Guardrail Explainers.
+- M489-M491: Mission Control UX Decision Record and Visual QA.
+- M492-M494: Timeline/Evidence interaction contracts.
+- M495-M497: Approval cards and handoff UX refinement.
 
-Current percentage: 38%.
+Current percentage: 47%.
 
 Target percentage after subphase: 60%.
 
@@ -396,7 +408,7 @@ Target percentage after subphase: 65%.
 
 ## Recommended Next Milestone
 
-`M483-M485 Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock`.
+`M486-M488 Mission Control Empty States + Contextual Onboarding + Guardrail Explainers`.
 
 Do not proceed to UI implementation, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before the core mandatory track is planned.
 

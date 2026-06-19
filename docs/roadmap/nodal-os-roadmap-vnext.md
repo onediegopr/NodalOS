@@ -666,6 +666,21 @@ Recommended next milestone:
 
 - `M483-M485 Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock`.
 
+## M483-M485 Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock
+
+- M483-M485 adds controlled Mission Control interactions as no-op UI intent contracts.
+- UI intents cover selecting timeline entries, approval cards and evidence refs; expanding/collapsing timeline entries; switching navigation; opening observability/log preview; requesting explanation; requesting changes; deferring approval; copy technical log intent; acknowledging warnings; and opening guardrails summary.
+- Every UI intent and UI event is no-op, non-authoritative and keeps `RuntimeExecutionAllowed=false`.
+- Approval decision drafts can represent approve, reject, request changes, request explanation, defer and human handoff compatible decisions, but drafts do not update real approvals, mutate registry state or authorize execution.
+- UI state persistence is mock-only and in-memory: active section, selected mission/timeline/approval/evidence refs, expanded timeline entries, filters, panel state and log preview state.
+- No productive DB, cloud persistence, runtime execution, BrowserExecutor.Cdp reference, browser automation, scheduler/worker, recorder/replay, queue, DSL parser runtime, shell/subprocess or LLM provider call was introduced.
+- Report: `docs/reports/mission-control-interaction-noop-m483-m485.md`.
+- Artifact: `artifacts/agent-operations/m485/mission-control-interaction-noop-summary.json`.
+
+Recommended next milestone:
+
+- `M486-M488 Mission Control Empty States + Contextual Onboarding + Guardrail Explainers`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
