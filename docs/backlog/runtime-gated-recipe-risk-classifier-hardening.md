@@ -34,7 +34,7 @@ This can be dangerous if a future runtime or approval gate treats the classifier
 
 ## Decision
 
-Do not implement hardening in M460-M462 because NODRIX has no runtime execution path here.
+Do not implement hardening in M460-M462 because NODAL OS has no runtime execution path here.
 
 This backlog item is a runtime-gated blocker before the classifier can be used for real approval gates, execution decisions, or runtime authority.
 

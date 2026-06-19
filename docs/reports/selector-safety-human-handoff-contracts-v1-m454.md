@@ -1,8 +1,8 @@
-# NODAL OS / NODRIX - M454 Selector Safety Policy + Human Handoff Contract V1
+# NODAL OS - M454 Selector Safety Policy + Human Handoff Contract V1
 
 ## Summary
 
-M452-M454 creates contract-only selector safety and human handoff schemas for future NODRIX automation. The milestone formalizes safe selector hierarchy, selector risk decisions, and human handoff semantics without implementing runtime automation.
+M452-M454 creates contract-only selector safety and human handoff schemas for future NODAL OS automation. The milestone formalizes safe selector hierarchy, selector risk decisions, and human handoff semantics without implementing runtime automation.
 
 ## Created
 

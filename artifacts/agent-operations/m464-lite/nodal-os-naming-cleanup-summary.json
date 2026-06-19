@@ -1,0 +1,19 @@
+{
+  "milestone": "M464-LITE",
+  "baseCommit": "d8949264dc67263f0a66206078244898ffc29be3",
+  "finalCommit": null,
+  "readinessDecision": "NODAL_OS_NAMING_CLEANUP_READY",
+  "operationalProjectName": "NODAL OS",
+  "nodrixOperationalReferencesRemoved": true,
+  "nexaOperationalReferencesRemoved": true,
+  "externalInputMentionsHandledAsHistoricalOnly": true,
+  "noRuntimeBehaviorChange": true,
+  "noArchitectureChange": true,
+  "noFeatureImplementation": true,
+  "roadmapUsesNodalOs": true,
+  "artifactsUseNodalOs": true,
+  "reportsUseNodalOs": true,
+  "testsPassed": 3645,
+  "testsFailed": 0,
+  "fullSuiteClean": true
+}

@@ -1,4 +1,4 @@
-# NODAL OS / NODRIX Automation Layer Integration No-Divergence M462
+# NODAL OS Automation Layer Integration No-Divergence M462
 
 ## Summary
 

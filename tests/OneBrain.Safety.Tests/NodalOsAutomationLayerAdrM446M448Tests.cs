@@ -133,12 +133,12 @@ public sealed class NodalOsAutomationLayerAdrM446M448Tests
         AssertContains(ReadAdr(), "Visual/OCR is only fallback or evidence.");
 
     [TestMethod]
-    public void AdrUsesNodrixOrNodalOsName_NotNexa()
+    public void AdrUsesNodalOsName_NotNexa()
     {
         var adr = ReadAdr();
 
         Assert.IsTrue(
-            adr.Contains("NODRIX", StringComparison.Ordinal) ||
+            adr.Contains("NODAL OS", StringComparison.Ordinal) ||
             adr.Contains("NODAL OS", StringComparison.Ordinal));
         Assert.IsFalse(adr.Contains("NEXA", StringComparison.OrdinalIgnoreCase));
     }
@@ -183,7 +183,7 @@ public sealed class NodalOsAutomationLayerAdrM446M448Tests
         Path.Combine(RepoRoot(), "docs", "reports", "automation-layer-rpa-references-discovery-m446.md");
 
     private static string AdrPath() =>
-        Path.Combine(RepoRoot(), "docs", "architecture", "nodrix-automation-layer-decision-record.md");
+        Path.Combine(RepoRoot(), "docs", "architecture", "nodal-os-automation-layer-decision-record.md");
 
     private static string ArtifactPath() =>
         Path.Combine(RepoRoot(), "artifacts", "agent-operations", "m448", "automation-layer-rpa-references-adr-summary.json");

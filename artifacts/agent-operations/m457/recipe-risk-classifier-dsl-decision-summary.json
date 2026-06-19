@@ -1,6 +1,6 @@
 {
   "milestone": "M455-M457",
-  "product": "NODAL OS / NODRIX",
+  "product": "NODAL OS",
   "baseCommit": "29d95c39d2c2c9cc66680634ec189e97c43a0a23",
   "finalCommit": null,
   "readinessDecision": "RECIPE_RISK_CLASSIFIER_AND_DSL_ADR_READY",

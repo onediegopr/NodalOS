@@ -1,4 +1,4 @@
-# NODAL OS / NODRIX - M452 Selector Safety / Human Handoff Discovery
+# NODAL OS - M452 Selector Safety / Human Handoff Discovery
 
 ## Scope
 
@@ -65,4 +65,4 @@ No UI, recorder, replay, browser automation, workflow designer, DSL parser, queu
 
 ## Decision
 
-Proceed with Selector Safety Policy + Human Handoff Contract V1 as NODRIX contract-only safety scaffolding subordinate to Mission Control, approval, evidence, timeline, and policy gates.
+Proceed with Selector Safety Policy + Human Handoff Contract V1 as NODAL OS contract-only safety scaffolding subordinate to Mission Control, approval, evidence, timeline, and policy gates.

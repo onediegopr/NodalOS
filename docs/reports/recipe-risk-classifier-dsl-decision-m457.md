@@ -1,4 +1,4 @@
-# NODAL OS / NODRIX - M457 Recipe Risk Classifier + DSL Decision
+# NODAL OS - M457 Recipe Risk Classifier + DSL Decision
 
 ## Summary
 

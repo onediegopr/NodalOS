@@ -1,10 +1,10 @@
-# NODAL OS / NODRIX Pause Closure and Core Roadmap Re-Sync M463
+# NODAL OS Pause Closure and Core Roadmap Re-Sync M463
 
 ## Executive Summary
 
 M463 formally closes the Agent Operations, Orchestration, Scheduled Read-Only, and Automation Layer pause.
 
-The pause produced a contract-first and evidence-first foundation without runtime execution. NODRIX can return to the core roadmap and can intake new product, visual, business, and architecture topics through planning before implementation.
+The pause produced a contract-first and evidence-first foundation without runtime execution. NODAL OS can return to the core roadmap and can intake new product, visual, business, and architecture topics through planning before implementation.
 
 Decision: `PAUSE_CLOSED_READY_FOR_CORE_ROADMAP_RETURN`.
 
@@ -37,7 +37,7 @@ The pause covered:
 ## Current State
 
 - Agent Operations / Automation Layer: 97%.
-- NODAL OS / NODRIX global: 95%.
+- NODAL OS global: 95%.
 - Browser Runtime / Chrome: 90%.
 - OCR/perception: 97%.
 - Full suite at M460-M462: 3619 passed, 37 skipped, 0 failed.
@@ -136,7 +136,7 @@ Post-pause Track B, Product/UX intake:
 - Consolidate Visual/UX Mission Control direction.
 - Consolidate Business/GTM document.
 - Consolidate Master Roadmap/Architecture document.
-- Create NODRIX unified source of truth.
+- Create NODAL OS unified source of truth.
 
 Post-pause Track C, LLM/Assignment:
 
@@ -163,6 +163,6 @@ Automation future remains deferred:
 
 ## Closure Decision
 
-M463 closes the pause and returns NODAL OS / NODRIX to roadmap planning.
+M463 closes the pause and returns NODAL OS to roadmap planning.
 
 Final decision: `M463 CERRADO / PAUSE_CLOSED_READY_FOR_CORE_ROADMAP_RETURN`.

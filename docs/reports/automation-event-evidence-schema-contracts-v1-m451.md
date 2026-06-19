@@ -1,8 +1,8 @@
-# NODAL OS / NODRIX - M451 Automation Event/Evidence Schema Contracts V1
+# NODAL OS - M451 Automation Event/Evidence Schema Contracts V1
 
 ## Summary
 
-M449-M451 creates contract-only automation event and evidence schemas for future NODRIX automation. The schemas are designed for Mission Control and Timeline compatibility, evidence-first auditability, and common redaction before any automation runtime exists.
+M449-M451 creates contract-only automation event and evidence schemas for future NODAL OS automation. The schemas are designed for Mission Control and Timeline compatibility, evidence-first auditability, and common redaction before any automation runtime exists.
 
 ## Created
 

@@ -1,16 +1,16 @@
-# NODRIX Automation Layer Decision Record
+# NODAL OS Automation Layer Decision Record
 
 ## Context
 
-NODAL OS / NODRIX has a mature Agent Operations foundation: contracts, core services, browser adapter skeleton, orchestration command contracts, a no-execution in-process facade, and scheduled read-only contracts. The next architecture question is how to absorb useful RPA patterns without becoming classic RPA.
+NODAL OS has a mature Agent Operations foundation: contracts, core services, browser adapter skeleton, orchestration command contracts, a no-execution in-process facade, and scheduled read-only contracts. The next architecture question is how to absorb useful RPA patterns without becoming classic RPA.
 
 ## Problem
 
-Automation can become unsafe when it is recorder-first, designer-first, unattended-first, or execution-first. NODRIX needs governed automation that strengthens Mission Control, approval, evidence, timeline, human handoff, and auditable recipes without importing old RPA product identity.
+Automation can become unsafe when it is recorder-first, designer-first, unattended-first, or execution-first. NODAL OS needs governed automation that strengthens Mission Control, approval, evidence, timeline, human handoff, and auditable recipes without importing old RPA product identity.
 
 ## Decision
 
-NODRIX Automation Layer is future governed automation, not classic RPA. UI.Vision, TagUI, and OpenRPA/OpenIAP are references only. This milestone creates no runtime implementation.
+NODAL OS Automation Layer is future governed automation, not classic RPA. UI.Vision, TagUI, and OpenRPA/OpenIAP are references only. This milestone creates no runtime implementation.
 
 ## Non-goals
 
@@ -46,7 +46,7 @@ No code, assets, tests, runtime components, or licensed implementation details a
 
 ## Product Identity Decision
 
-NODRIX is AI Mission Control local-first. It is not a classic RPA suite, macro recorder, heavy workflow designer, or unattended robot platform.
+NODAL OS is AI Mission Control local-first. It is not a classic RPA suite, macro recorder, heavy workflow designer, or unattended robot platform.
 
 ## Mission Control-first Rule
 
@@ -72,8 +72,8 @@ Automation Layer is local-first by default. Cloud orchestration and broad unatte
 
 Planned future components:
 
-- NODRIX Recorder.
-- NODRIX Recipe DSL.
+- NODAL OS Recorder.
+- NODAL OS Recipe DSL.
 - Automation Event Contract.
 - Automation Evidence Schema.
 - Selector Safety Policy.

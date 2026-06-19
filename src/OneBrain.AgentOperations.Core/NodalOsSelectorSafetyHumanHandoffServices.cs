@@ -469,7 +469,7 @@ public static class NodalOsSelectorSafetyHumanHandoffFixtures
         };
 
     public static NodalOsHumanHandoffContract LoginRequiredHandoff() =>
-        Handoff(NodalOsAutomationHandoffReason.LoginRequired, "Login is required before NODRIX can continue safely.");
+        Handoff(NodalOsAutomationHandoffReason.LoginRequired, "Login is required before NODAL OS can continue safely.");
 
     public static NodalOsHumanHandoffContract CaptchaRequiredHandoff() =>
         Handoff(NodalOsAutomationHandoffReason.CaptchaRequired, "Captcha challenge requires human decision before continuing.");
@@ -496,7 +496,7 @@ public static class NodalOsSelectorSafetyHumanHandoffFixtures
             Sensitivity = NodalOsEvidenceSensitivity.NonSensitive,
             RedactionState = NodalOsEvidenceRedactionState.NotRequired,
             LedgerRef = "ledger:selector-handoff-contract",
-            Provenance = "NODRIX:SelectorSafety:ContractOnly",
+            Provenance = "NODAL OS:SelectorSafety:ContractOnly",
             CreatedAt = DateTimeOffset.UtcNow
         };
 

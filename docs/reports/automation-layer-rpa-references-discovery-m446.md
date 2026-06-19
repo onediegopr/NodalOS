@@ -1,4 +1,4 @@
-# NODAL OS / NODRIX - Automation Layer RPA References Discovery M446
+# NODAL OS - Automation Layer RPA References Discovery M446
 
 ## Source Material
 
@@ -7,7 +7,7 @@ This discovery uses the internal direction provided for M446-M448 and the existi
 Internal sources considered:
 
 - Documento Maestro Roadmap/Arquitectura/Workflow, represented by current NODAL OS roadmap and architecture docs.
-- Documento Maestro Negocio/GTM, represented by the NODRIX product direction in this milestone.
+- Documento Maestro Negocio/GTM, represented by the NODAL OS product direction in this milestone.
 - Direccion Visual/UX, represented as Mission Control-first UX guidance.
 - Plan Agregados RPA Open Source UI.Vision/TagUI/OpenRPA, represented by the summarized product decision: references only, no copied code, no dependencies, no classic RPA identity.
 
@@ -17,7 +17,7 @@ Internal sources considered:
 - TagUI.
 - OpenRPA/OpenIAP.
 
-These references are not dependencies, are not imported, and are not a code base for NODRIX.
+These references are not dependencies, are not imported, and are not a code base for NODAL OS.
 
 ## UI.Vision Patterns
 
@@ -77,11 +77,11 @@ Rejected:
 
 ## Legal And License Risks
 
-NODRIX must not copy source code, data files, tests, assets, command implementations, or licensed runtime components from UI.Vision, TagUI, OpenRPA, or OpenIAP. Patterns can be described at architectural level only. No AGPL or commercial dependency is included in this milestone.
+NODAL OS must not copy source code, data files, tests, assets, command implementations, or licensed runtime components from UI.Vision, TagUI, OpenRPA, or OpenIAP. Patterns can be described at architectural level only. No AGPL or commercial dependency is included in this milestone.
 
 ## Product Risks
 
-The main risk is turning NODRIX into classic RPA: macro-first, designer-first, unattended-first, and execution-first. This conflicts with the intended Mission Control model. The accepted scope keeps automation subordinate to policy, approval, evidence, and timeline.
+The main risk is turning NODAL OS into classic RPA: macro-first, designer-first, unattended-first, and execution-first. This conflicts with the intended Mission Control model. The accepted scope keeps automation subordinate to policy, approval, evidence, and timeline.
 
 ## Scheduler / Unattended / Recorder Risks
 

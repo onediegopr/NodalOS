@@ -329,14 +329,14 @@ public sealed class NodalOsRecipeRiskClassifierDslDecisionM455M457Tests
     }
 
     [TestMethod]
-    public void UsesNodrixOrNodalOsName_NotNexa()
+    public void UsesNodalOsName_NotNexa()
     {
         foreach (var path in new[] { AuditPath(), AdrPath(), ReportPath(), ArtifactPath() })
         {
             var text = File.ReadAllText(path);
 
             Assert.IsTrue(
-                text.Contains("NODRIX", StringComparison.Ordinal) ||
+                text.Contains("NODAL OS", StringComparison.Ordinal) ||
                 text.Contains("NODAL OS", StringComparison.Ordinal),
                 path);
             Assert.IsFalse(text.Contains("NEXA", StringComparison.OrdinalIgnoreCase), path);
@@ -356,7 +356,7 @@ public sealed class NodalOsRecipeRiskClassifierDslDecisionM455M457Tests
             Sensitivity = NodalOsEvidenceSensitivity.Sensitive,
             RedactionState = NodalOsEvidenceRedactionState.RedactionRequired,
             LedgerRef = "ledger:recipe-risk-contract",
-            Provenance = "NODRIX:RecipeRiskClassifier:ContractOnly",
+            Provenance = "NODAL OS:RecipeRiskClassifier:ContractOnly",
             CreatedAt = DateTimeOffset.UtcNow
         };
 

@@ -1,8 +1,8 @@
-# NODAL OS / NODRIX - M449 Automation Event/Evidence Schema Contracts V1 Audit
+# NODAL OS - M449 Automation Event/Evidence Schema Contracts V1 Audit
 
 ## Scope
 
-M449 reviewed the existing Agent Operations contracts and services that future NODRIX automation must use before any recorder, replay, queue, scheduler, browser automation, or UI implementation exists.
+M449 reviewed the existing Agent Operations contracts and services that future NODAL OS automation must use before any recorder, replay, queue, scheduler, browser automation, or UI implementation exists.
 
 This milestone remains contract-only.
 
@@ -70,4 +70,4 @@ No recorder, replay, queue, scheduler, trigger, browser automation, browser acti
 
 ## Decision
 
-Proceed with Automation Event and Evidence Schema Contracts V1 as a contract-only layer subordinate to NODRIX Mission Control, policy, approval, evidence, and timeline boundaries.
+Proceed with Automation Event and Evidence Schema Contracts V1 as a contract-only layer subordinate to NODAL OS Mission Control, policy, approval, evidence, and timeline boundaries.

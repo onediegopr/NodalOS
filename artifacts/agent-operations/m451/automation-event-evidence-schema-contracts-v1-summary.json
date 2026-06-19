@@ -1,6 +1,6 @@
 {
   "milestone": "M449-M451",
-  "product": "NODAL OS / NODRIX",
+  "product": "NODAL OS",
   "baseCommit": "196001c",
   "finalCommit": null,
   "readinessDecision": "AUTOMATION_EVENT_EVIDENCE_CONTRACTS_V1_READY",

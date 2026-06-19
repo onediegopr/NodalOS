@@ -1,4 +1,4 @@
-# NODAL OS / NODRIX - M455 Recipe Risk / DSL Discovery
+# NODAL OS - M455 Recipe Risk / DSL Discovery
 
 ## Scope
 

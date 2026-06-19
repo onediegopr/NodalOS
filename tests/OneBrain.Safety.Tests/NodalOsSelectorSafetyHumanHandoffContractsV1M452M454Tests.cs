@@ -352,14 +352,14 @@ public sealed class NodalOsSelectorSafetyHumanHandoffContractsV1M452M454Tests
     }
 
     [TestMethod]
-    public void UsesNodrixOrNodalOsName_NotNexa()
+    public void UsesNodalOsName_NotNexa()
     {
         foreach (var path in new[] { AuditPath(), ReportPath(), ArtifactPath() })
         {
             var text = File.ReadAllText(path);
 
             Assert.IsTrue(
-                text.Contains("NODRIX", StringComparison.Ordinal) ||
+                text.Contains("NODAL OS", StringComparison.Ordinal) ||
                 text.Contains("NODAL OS", StringComparison.Ordinal),
                 path);
             Assert.IsFalse(text.Contains("NEXA", StringComparison.OrdinalIgnoreCase), path);
@@ -384,7 +384,7 @@ public sealed class NodalOsSelectorSafetyHumanHandoffContractsV1M452M454Tests
             Sensitivity = NodalOsEvidenceSensitivity.Sensitive,
             RedactionState = NodalOsEvidenceRedactionState.RedactionRequired,
             LedgerRef = "ledger:selector-handoff-contract",
-            Provenance = "NODRIX:SelectorSafety:ContractOnly",
+            Provenance = "NODAL OS:SelectorSafety:ContractOnly",
             CreatedAt = DateTimeOffset.UtcNow
         };
 

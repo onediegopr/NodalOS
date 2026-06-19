@@ -1,6 +1,6 @@
 {
   "milestone": "M452-M454",
-  "product": "NODAL OS / NODRIX",
+  "product": "NODAL OS",
   "baseCommit": "d0189477123d710f9ba1135b5365fe78eee2cbcf",
   "finalCommit": null,
   "readinessDecision": "SELECTOR_SAFETY_AND_HUMAN_HANDOFF_CONTRACTS_V1_READY",

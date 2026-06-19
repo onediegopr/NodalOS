@@ -1,4 +1,4 @@
-# NODAL OS / NODRIX Automation Layer Integration No-Divergence Audit M460
+# NODAL OS Automation Layer Integration No-Divergence Audit M460
 
 ## Scope
 

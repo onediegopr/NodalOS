@@ -326,10 +326,10 @@ Recommended next milestones:
 
 ## Automation Layer ADR + RPA References Decision M448
 
-- M446-M448 created the NODRIX Automation Layer ADR.
+- M446-M448 created the NODAL OS Automation Layer ADR.
 - UI.Vision, TagUI, and OpenRPA/OpenIAP are references only.
 - No copied code, no AGPL/commercial RPA code, and no external RPA dependency introduced.
-- NODRIX remains Mission Control-first, approval-first, evidence-first, timeline-first, and local-first.
+- NODAL OS remains Mission Control-first, approval-first, evidence-first, timeline-first, and local-first.
 - Automation Layer is future governed automation, not classic RPA.
 - Recorder future-only: true.
 - Recipe DSL future-only: true.
@@ -357,7 +357,7 @@ Recommended next milestones:
 
 ## Automation Event and Evidence Schema Contracts V1 M451
 
-- M449-M451 created NODRIX Automation Event and Evidence Schema Contracts V1.
+- M449-M451 created NODAL OS Automation Event and Evidence Schema Contracts V1.
 - Added automation event kinds, automation evidence kinds, handoff reasons, event/evidence/handoff records, validator, JSON serializer, fixtures, tests, report, and artifact.
 - Automation events are contract-only and cannot grant runtime permission.
 - Runtime execution allowed: false.
@@ -499,7 +499,7 @@ Recommended next milestone:
 - Recipe Risk Classifier hardening remains runtime-gated.
 - The runtime-gated classifier backlog blocks future classifier-backed approval gates, recorder/replay, browser automation, DSL parser runtime, recipe execution, and step execution.
 - New documents and topics can be incorporated after this closure, but only through planning intake first.
-- New topics pending intake: Mission Control Visual/UX direction, Business/GTM master document, Workflow Architecture roadmap, and consolidated NODRIX source of truth.
+- New topics pending intake: Mission Control Visual/UX direction, Business/GTM master document, Workflow Architecture roadmap, and consolidated NODAL OS source of truth.
 - Do not proceed to real browser automation yet.
 - Browser automation runtime remains deferred until classifier hardening and a new dedicated Claude runtime audit.
 - Recorder implemented: false.
@@ -524,7 +524,7 @@ Post-pause Track B - Product/UX intake:
 - Consolidate Mission Control Visual/UX direction.
 - Consolidate Business/GTM document.
 - Consolidate Master Roadmap/Architecture document.
-- Create NODRIX unified source of truth.
+- Create NODAL OS unified source of truth.
 
 Post-pause Track C - LLM/Assignment:
 

@@ -1,8 +1,8 @@
-# NODAL OS / NODRIX - Recipe DSL Decision Record
+# NODAL OS - Recipe DSL Decision Record
 
 ## Context
 
-NODRIX Automation Layer will eventually need a human-readable recipe representation. TagUI-style text workflows are useful as inspiration because they are readable and editable, but NODRIX must not become a classic RPA runtime or copy external RPA products.
+NODAL OS Automation Layer will eventually need a human-readable recipe representation. TagUI-style text workflows are useful as inspiration because they are readable and editable, but NODAL OS must not become a classic RPA runtime or copy external RPA products.
 
 ## Problem
 
@@ -10,7 +10,7 @@ A textual DSL can be confused with an executable script. Direct import or execut
 
 ## Decision
 
-NODRIX Recipe DSL is representation, not runtime. It is future-only and cannot execute directly.
+NODAL OS Recipe DSL is representation, not runtime. It is future-only and cannot execute directly.
 
 ## Non-goals
 

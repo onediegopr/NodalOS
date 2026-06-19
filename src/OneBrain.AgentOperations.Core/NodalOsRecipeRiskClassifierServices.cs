@@ -537,7 +537,7 @@ public static class NodalOsRecipeRiskClassifierFixtures
             Sensitivity = NodalOsEvidenceSensitivity.NonSensitive,
             RedactionState = NodalOsEvidenceRedactionState.NotRequired,
             LedgerRef = "ledger:recipe-risk-contract",
-            Provenance = "NODRIX:RecipeRiskClassifier:ContractOnly",
+            Provenance = "NODAL OS:RecipeRiskClassifier:ContractOnly",
             CreatedAt = DateTimeOffset.UtcNow
         };
 

@@ -448,7 +448,7 @@ public static class NodalOsAutomationEventEvidenceFixtures
             Sensitivity = NodalOsEvidenceSensitivity.NonSensitive,
             RedactionState = NodalOsEvidenceRedactionState.NotRequired,
             LedgerRef = "ledger:automation-contract",
-            Provenance = "NODRIX:AutomationLayer:ContractOnly",
+            Provenance = "NODAL OS:AutomationLayer:ContractOnly",
             CreatedAt = DateTimeOffset.UtcNow
         };
 }
