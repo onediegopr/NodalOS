@@ -20,6 +20,7 @@ public sealed class NodalOsVerificationBeforeDoneGate
 
         AddRequired(errors, task.TaskId, "TaskId is required.");
         AddRequired(errors, task.MissionId, "Task MissionId is required.");
+        AddRequired(errors, task.Title, "Task title is required.");
         AddRequired(errors, task.HumanOwner, "Task human owner is required.");
 
         if (task.Status != NexaAgentTaskStatus.Completed)
@@ -268,4 +269,64 @@ public sealed class NodalOsVerificationBeforeDoneGate
         if (string.IsNullOrWhiteSpace(value))
             errors.Add(message);
     }
+}
+
+public static class NodalOsCompletionGateCompatibilityAdapter
+{
+    public static NexaTaskValidationResult ToTaskValidationResult(
+        NodalOsVerificationBeforeDoneResult result,
+        bool useWorkboardCompatibilityMessages = true) =>
+        new()
+        {
+            CanComplete = result.CanMarkDone,
+            Errors = useWorkboardCompatibilityMessages
+                ? ToWorkboardTaskCompletionErrors(result.Errors)
+                : result.Errors,
+            Warnings = result.Warnings
+        };
+
+    public static IReadOnlyList<string> ToWorkboardTaskCompletionErrors(IReadOnlyList<string> gateErrors)
+    {
+        var errors = new List<string>();
+
+        foreach (var error in gateErrors)
+        {
+            if (ContainsAny(error, " blocker "))
+            {
+                AddDistinct(errors, "Blocking or critical blocker prevents task completion.");
+                continue;
+            }
+
+            if (ContainsAny(error, " is pending.", " failed."))
+            {
+                AddDistinct(errors, "Pending or failed required verification prevents task completion.");
+                continue;
+            }
+
+            if (ContainsAny(error, "skipped without a reason"))
+            {
+                AddDistinct(errors, "Skipped required verification must include a reason.");
+                continue;
+            }
+
+            if (ContainsAny(error, "Done requires evidence refs or an explicit completion reason."))
+            {
+                AddDistinct(errors, "Completed task requires evidence or explicit completion reason.");
+                continue;
+            }
+
+            AddDistinct(errors, error);
+        }
+
+        return errors;
+    }
+
+    private static void AddDistinct(List<string> values, string value)
+    {
+        if (!values.Contains(value, StringComparer.Ordinal))
+            values.Add(value);
+    }
+
+    private static bool ContainsAny(string value, params string[] markers) =>
+        markers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));
 }

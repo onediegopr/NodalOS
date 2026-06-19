@@ -248,13 +248,10 @@ public sealed class NodalOsVerificationBeforeDoneGateM362M364Tests
     [TestMethod]
     public void CompletedRun_WithPendingApproval_CannotMarkDone()
     {
-        var report = new NodalOsRunReportBuilder()
-            .Start("run-pending-approval", "Approval pending")
-            .AddStep(NodalOsRunReportFixtures.Step())
-            .AddApproval(NodalOsRunReportFixtures.Approval(status: "Requested"))
-            .AddEvidence(NodalOsRunReportFixtures.Evidence("evidence-approval"))
-            .Complete(NexaRunStatus.Completed, "done")
-            .Build();
+        var report = CompletedRunReport(
+            "run-pending-approval",
+            "Approval pending",
+            approvals: [NodalOsRunReportFixtures.Approval(status: "Requested")]);
 
         var result = gate.EvaluateRunReport(report);
 
@@ -265,12 +262,10 @@ public sealed class NodalOsVerificationBeforeDoneGateM362M364Tests
     [TestMethod]
     public void CompletedRun_WithBlockingFailure_CannotMarkDone()
     {
-        var report = new NodalOsRunReportBuilder()
-            .Start("run-blocking-failure", "Blocking failure")
-            .AddStep(NodalOsRunReportFixtures.Step())
-            .AddFailure(NodalOsRunReportFixtures.Failure(severity: NexaFailureSeverity.Blocking))
-            .Complete(NexaRunStatus.Completed, "done")
-            .Build();
+        var report = CompletedRunReport(
+            "run-blocking-failure",
+            "Blocking failure",
+            failures: [NodalOsRunReportFixtures.Failure(severity: NexaFailureSeverity.Blocking)]);
 
         var result = gate.EvaluateRunReport(report);
 
@@ -297,12 +292,12 @@ public sealed class NodalOsVerificationBeforeDoneGateM362M364Tests
     [TestMethod]
     public void CompletedWithWarnings_WithCriticalFailure_CannotMarkDone()
     {
-        var report = new NodalOsRunReportBuilder()
-            .Start("run-critical-warning", "Critical warning")
-            .AddStep(NodalOsRunReportFixtures.Step())
-            .AddFailure(NodalOsRunReportFixtures.Failure(severity: NexaFailureSeverity.Critical))
-            .Complete(NexaRunStatus.CompletedWithWarnings, "cannot close")
-            .Build();
+        var report = CompletedRunReport(
+            "run-critical-warning",
+            "Critical warning",
+            status: NexaRunStatus.CompletedWithWarnings,
+            finalSummary: "cannot close",
+            failures: [NodalOsRunReportFixtures.Failure(severity: NexaFailureSeverity.Critical)]);
 
         var result = gate.EvaluateRunReport(report);
 
@@ -430,12 +425,34 @@ public sealed class NodalOsVerificationBeforeDoneGateM362M364Tests
     }
 
     private static NexaRunReport SuccessfulRunWithStep(NexaRunStepStatus status) =>
-        new NodalOsRunReportBuilder()
-            .Start($"run-step-{status}", $"Step {status}")
-            .AddStep(NodalOsRunReportFixtures.Step(status: status))
-            .AddEvidence(NodalOsRunReportFixtures.Evidence($"evidence-{status}"))
-            .Complete(NexaRunStatus.Completed, "done")
-            .Build();
+        CompletedRunReport(
+            $"run-step-{status}",
+            $"Step {status}",
+            steps: [NodalOsRunReportFixtures.Step(status: status)],
+            evidenceRefs: [NodalOsRunReportFixtures.Evidence($"evidence-{status}")]);
+
+    private static NexaRunReport CompletedRunReport(
+        string runId,
+        string goal,
+        NexaRunStatus status = NexaRunStatus.Completed,
+        string finalSummary = "done",
+        IReadOnlyList<NexaRunStepReport>? steps = null,
+        IReadOnlyList<NexaFailureReport>? failures = null,
+        IReadOnlyList<NexaApprovalReport>? approvals = null,
+        IReadOnlyList<NexaEvidenceRef>? evidenceRefs = null) =>
+        new()
+        {
+            RunId = runId,
+            Goal = goal,
+            Status = status,
+            StartedAt = NodalOsRunReportFixtures.FixedTimestamp,
+            CompletedAt = NodalOsRunReportFixtures.FixedTimestamp.AddMinutes(1),
+            Steps = steps ?? [NodalOsRunReportFixtures.Step()],
+            Failures = failures ?? [],
+            Approvals = approvals ?? [],
+            EvidenceRefs = evidenceRefs ?? [NodalOsRunReportFixtures.Evidence($"evidence-{runId}")],
+            FinalSummary = finalSummary
+        };
 
     private static string SourcePath(params string[] parts) => Path.Combine(new[] { RepoRoot }.Concat(parts).ToArray());
 }

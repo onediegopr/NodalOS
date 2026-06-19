@@ -4,6 +4,13 @@ namespace OneBrain.BrowserExecutor.Cdp;
 
 public sealed class NodalOsAgentWorkboardValidator
 {
+    private readonly NodalOsVerificationBeforeDoneGate completionGate;
+
+    public NodalOsAgentWorkboardValidator(NodalOsVerificationBeforeDoneGate? completionGate = null)
+    {
+        this.completionGate = completionGate ?? new NodalOsVerificationBeforeDoneGate();
+    }
+
     public NexaTaskValidationResult ValidateMission(NexaMission mission)
     {
         var errors = new List<string>();
@@ -61,31 +68,8 @@ public sealed class NodalOsAgentWorkboardValidator
 
     public NexaTaskValidationResult ValidateTaskCanComplete(NexaAgentTask task)
     {
-        var errors = new List<string>();
-        var warnings = new List<string>();
-
-        AddRequired(errors, task.TaskId, "TaskId is required.");
-        AddRequired(errors, task.MissionId, "Task MissionId is required.");
-        AddRequired(errors, task.Title, "Task title is required.");
-        AddRequired(errors, task.HumanOwner, "Task human owner is required.");
-
-        if (HasBlockingBlockers(task))
-            errors.Add("Blocking or critical blocker prevents task completion.");
-
-        if (HasPendingOrFailedRequiredVerification(task))
-            errors.Add("Pending or failed required verification prevents task completion.");
-
-        var skippedWithoutReason = task.VerificationChecks.Any(c =>
-            c.Required &&
-            c.Status == NexaVerificationStatus.SkippedWithReason &&
-            string.IsNullOrWhiteSpace(c.Detail));
-        if (skippedWithoutReason)
-            errors.Add("Skipped required verification must include a reason.");
-
-        if (!HasEvidenceOrCompletionReason(task))
-            errors.Add("Completed task requires evidence or explicit completion reason.");
-
-        return CreateCompletionValidationResult(errors, warnings);
+        var gateResult = completionGate.EvaluateTask(task);
+        return NodalOsCompletionGateCompatibilityAdapter.ToTaskValidationResult(gateResult);
     }
 
     public NexaTaskValidationResult CreateCompletionValidationResult(

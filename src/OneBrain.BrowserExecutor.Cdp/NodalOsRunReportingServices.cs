@@ -67,6 +67,7 @@ public sealed class NodalOsTroubleshootingRecommendationMapper
 public sealed class NodalOsRunReportBuilder
 {
     private readonly NodalOsTroubleshootingRecommendationMapper troubleshooting = new();
+    private readonly NodalOsVerificationBeforeDoneGate completionGate = new();
     private readonly List<NexaRunStepReport> steps = [];
     private readonly List<NexaPolicyDecisionReport> policyDecisions = [];
     private readonly List<NexaApprovalReport> approvals = [];
@@ -221,10 +222,14 @@ public sealed class NodalOsRunReportBuilder
             report.PolicyDecisions.Count == 0)
             errors.Add("Blocked run requires a FailureReport or policy decision.");
 
-        if (report.Status is NexaRunStatus.CompletedWithWarnings &&
-            report.Failures.All(f => f.Severity != NexaFailureSeverity.Warning) &&
-            report.Steps.All(s => string.IsNullOrWhiteSpace(s.Notes)))
-            warnings.Add("CompletedWithWarnings should include warning failure or notes.");
+        if (report.Status is NexaRunStatus.Completed or NexaRunStatus.CompletedWithWarnings)
+        {
+            var completionResult = completionGate.EvaluateRunReport(report);
+            if (!completionResult.CanMarkDone)
+                errors.AddRange(completionResult.Errors.Select(error => $"Run completion gate: {error}"));
+
+            warnings.AddRange(completionResult.Warnings.Select(warning => $"Run completion gate: {warning}"));
+        }
 
         if (!NodalOsRunReportSanitizer.IsSafe(report))
             errors.Add("RunReport contains sensitive fields.");
