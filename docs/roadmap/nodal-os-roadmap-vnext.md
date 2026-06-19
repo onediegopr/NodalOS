@@ -128,7 +128,25 @@ Recommended next milestone: `M413-M415 Agent Operations Browser Adapter Boundary
 - Execution implemented: false.
 
 Recommended next milestone: `M416-M418 Orchestration API Decision Record or M416-M418 Agent Operations Extraction Phase 3 Adapter Project`.
-- Orchestration API implemented: false.
+
+## Orchestration API Decision Record M418
+
+- M416-M418 created the Orchestration API Architecture Decision Record.
+- The ADR defines future conceptual commands, a future state model, policy gates, approval gates, evidence gates, verification-before-done rules, and relationships with Agent Operations, Browser Adapter, Worker Boundary, Registry, Recipe, Step, Skill, RunReport, and ProgressReport.
+- Future conceptual commands are design-only and not implemented as endpoints or runtime behavior.
+- Orchestration API implementation deferred: true.
+- API implemented: false.
+- HTTP/gRPC implemented: false.
+- Scheduler implemented: false.
+- Worker runtime implemented: false.
+- Recipe execution implemented: false.
+- Skill execution implemented: false.
+- Step execution implemented: false.
+- UI implemented: false.
+- Registry Visible, Worker Healthy, Recipe Approved, and Skill Approved do not grant runtime permission.
+- Policy, approval, evidence, and verification-before-done gates remain authoritative.
+
+Recommended next milestone: `M419-M421 Orchestration Command Contracts V1 or M419-M421 Agent Operations Adapter Project Skeleton`.
 
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
