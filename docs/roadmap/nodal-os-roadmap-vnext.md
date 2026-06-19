@@ -110,6 +110,24 @@ Recommended next milestone: `M410-M412 Agent Operations Extraction Phase 2 Core 
 - Execution implemented: false.
 
 Recommended next milestone: `M413-M415 Agent Operations Browser Adapter Boundary or M413-M415 Orchestration API Decision Record`.
+
+## Agent Operations Browser Adapter Boundary M415
+
+- M413-M415 documented and protected the browser adapter boundary after Agent Operations contracts/core extraction.
+- `OneBrain.AgentOperations.Contracts` remains Browser/CDP-free at project-reference level.
+- `OneBrain.AgentOperations.Core` remains Browser/CDP-free at project-reference level.
+- `OneBrain.BrowserExecutor.Cdp` remains the temporary browser adapter host and may consume Agent Operations Core.
+- `ChromeCdpBrowserExecutor.cs` stayed in `OneBrain.BrowserExecutor.Cdp`.
+- `BrowserRuntimeSmoke.cs` stayed in `OneBrain.BrowserExecutor.Cdp`.
+- `BrowserPersistentAuditLedger.cs` is classified as browser-specific audit infrastructure and was not moved.
+- Adapter project created: false.
+- Adapter project deferred: true.
+- Runtime behavior changed: false.
+- UI implemented: false.
+- Orchestration API implemented: false.
+- Execution implemented: false.
+
+Recommended next milestone: `M416-M418 Orchestration API Decision Record or M416-M418 Agent Operations Extraction Phase 3 Adapter Project`.
 - Orchestration API implemented: false.
 
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
