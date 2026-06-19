@@ -65,6 +65,23 @@ Hybrid priority sequence:
 
 Recommended next milestone: `M377-M379 Completion Gate Canonicalization`.
 
+## Agent Operations Namespace / Naming ADR M391
+
+- M389-M391 created the Agent Operations namespace/naming ADR.
+- Current product name remains NODAL OS.
+- `Nexa*` Agent Operations symbols are compatibility debt, not the forward naming pattern.
+- `OneBrain.*` remains a historical implementation namespace.
+- New Agent Operations types should use `NodalOs*`.
+- Current Agent Operations placement in `OneBrain.BrowserExecutor.Contracts` and `OneBrain.BrowserExecutor.Cdp` is tolerated temporarily for compatibility.
+- Long-term extraction target: `OneBrain.AgentOperations.Contracts`, `OneBrain.AgentOperations.Core`, and `OneBrain.AgentOperations.Adapters.Browser` or equivalent product-aligned namespaces.
+- Namespace move implemented: false.
+- Broad rename implemented: false.
+- Runtime behavior changed: false.
+- UI implemented: false.
+- Orchestration API implemented: false.
+
+Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
+
 ## M51 Scope
 
 M51 is closed only for:

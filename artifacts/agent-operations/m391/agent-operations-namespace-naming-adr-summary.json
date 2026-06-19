@@ -1,0 +1,22 @@
+{
+  "milestone": "M389-M391",
+  "baseCommit": "65858f4",
+  "finalCommit": null,
+  "readinessDecision": "M389+M390+M391 CERRADO / AGENT_OPERATIONS_NAMESPACE_ADR_READY_WITH_MIGRATION_DEFERRED",
+  "namespaceNamingAdrCreated": true,
+  "nexaCompatibilityDocumented": true,
+  "oneBrainHistoricalNamespaceDocumented": true,
+  "nodalOsForwardNamingRuleDefined": true,
+  "agentOperationsBrowserExecutorLocationDocumented": true,
+  "futureExtractionBoundaryDefined": true,
+  "noNamespaceMoveImplemented": true,
+  "noBroadRenameImplemented": true,
+  "noRuntimeBehaviorChange": true,
+  "noUiImplemented": true,
+  "noRecipeExecutionImplemented": true,
+  "noOrchestrationApiImplemented": true,
+  "nextRecommendedMilestone": "M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep",
+  "testsPassed": 3101,
+  "testsFailed": 0,
+  "fullSuiteClean": true
+}
