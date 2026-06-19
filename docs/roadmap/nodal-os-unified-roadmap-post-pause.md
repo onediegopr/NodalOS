@@ -62,15 +62,22 @@ Guardrails:
 
 Estimated milestones:
 
-- M468-M470: Execution Registry + EventBus planning/contracts.
-- M471-M473: Redaction Foundation final.
+- M468-M470: Core Runtime Registry + EventBus + Redaction Foundation.
+- M471-M473: Approval Center Data Model + Timeline Projection + Evidence Registry Integration.
 - M474-M476: Controlled File Operation v2.
 - M477-M479: Workspace v1.
 - M480-M482: Approval Center UX v1 decision/contracts.
 
-Current percentage: 55%.
+Current percentage after M468-M470: 66%.
 
 Target percentage after subphase: 80%.
+
+M468-M470 status:
+
+- Execution Registry foundation is ready as contract-only lifecycle bookkeeping.
+- Core EventBus foundation is ready as in-memory canonical event capture without side effects.
+- Redaction Foundation is strengthened through common redaction and safe serializers.
+- Runtime execution remains deferred and unauthorized.
 
 ## Subphase 2 - Mission Control UX
 
@@ -348,6 +355,6 @@ Target percentage after subphase: 65%.
 
 ## Recommended Next Milestone
 
-`M468-M470 Core Runtime Registry EventBus Redaction Planning or Execution Registry + EventBus`.
+`M471-M473 Approval Center Data Model + Timeline Projection + Evidence Registry Integration`.
 
 Do not proceed to UI implementation, cloud implementation, browser automation runtime, recorder/replay, queue, scheduler, DSL parser, or execution before the core mandatory track is planned.

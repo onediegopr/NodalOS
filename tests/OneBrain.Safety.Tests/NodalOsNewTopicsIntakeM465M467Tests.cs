@@ -63,7 +63,7 @@ public sealed class NodalOsNewTopicsIntakeM465M467Tests
 
         AssertContains(roadmap, "Subphase 1 - Core Mandatory Immediate");
         AssertContains(roadmap, "Execution Registry + EventBus");
-        AssertContains(roadmap, "M468-M470 Core Runtime Registry EventBus Redaction Planning or Execution Registry + EventBus");
+        AssertContains(roadmap, "M468-M470: Core Runtime Registry + EventBus + Redaction Foundation");
     }
 
     [TestMethod]

@@ -567,6 +567,24 @@ Recommended next milestone:
 
 - `M468-M470 Core Runtime Registry EventBus Redaction Planning or Execution Registry + EventBus`.
 
+## M468-M470 Core Runtime Registry + EventBus + Redaction Foundation
+
+- M468-M470 creates the first post-pause core foundation implementation block.
+- Execution Registry foundation created for contract-only request registration, state transitions, evidence refs, timestamps, actor/source metadata, and redacted failure reasons.
+- Core EventBus foundation created for canonical in-memory events, registry linkage, evidence refs, timeline-compatible projections, and safe serialization.
+- Redaction Foundation strengthened through the existing common redaction service for bearer tokens, authorization headers, cookies, passwords, secrets, api keys, access/refresh/id tokens, private keys, connection strings, emails, and private body markers.
+- Registry and EventBus visibility do not grant execution permission.
+- Runtime execution allowed remains false.
+- Runtime execution deferred remains true.
+- Global policy evaluation and evidence redaction remain required.
+- No UI, cloud, LLM provider call, scheduler, worker runtime, browser automation, recorder, replay, queue, DSL parser runtime, shell/subprocess, API, or execution was introduced.
+- Report: `docs/reports/core-runtime-registry-eventbus-redaction-m468-m470.md`.
+- Artifact: `artifacts/agent-operations/m470/core-runtime-registry-eventbus-redaction-summary.json`.
+
+Recommended next milestone:
+
+- `M471-M473 Approval Center Data Model + Timeline Projection + Evidence Registry Integration`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394

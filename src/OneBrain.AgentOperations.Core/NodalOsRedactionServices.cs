@@ -18,8 +18,20 @@ public sealed class NodalOsSensitiveContentClassifier
         RegexOptions.Compiled);
 
     private static readonly Regex SensitiveAssignmentRegex = new(
-        @"(?i)(^|[?&;\s])(access_token|refresh_token|id_token|api_key|apikey|password|passwd|secret|token)\s*[:=]\s*[^&;\s]+",
+        @"(?i)(^|[?&;\s])(access_token|refresh_token|id_token|api_key|apikey|password|passwd|pass|secret|token)\s*[:=]\s*[^&;\s]+",
         RegexOptions.Compiled);
+
+    private static readonly Regex PrivateKeyRegex = new(
+        @"(?is)-----BEGIN\s+(RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY-----.*?-----END\s+(RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY-----|\bprivate\s+key\b",
+        RegexOptions.Compiled);
+
+    private static readonly Regex ConnectionStringRegex = new(
+        @"(?i)\b(server|data source|host)\s*=\s*[^;]+;.*\b(database|initial catalog|user id|uid|password|pwd)\s*=",
+        RegexOptions.Compiled);
+
+    private static readonly Regex EmailRegex = new(
+        @"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex AuthorizationWordRegex = new(
         @"\bauthorization\b",
@@ -90,6 +102,14 @@ public sealed class NodalOsSensitiveContentClassifier
             case "apikey":
                 matches.Add(Match(NodalOsSensitiveContentKind.ApiKey, "API key marker detected."));
                 break;
+            case "private key":
+            case "private_key":
+                matches.Add(Match(NodalOsSensitiveContentKind.PrivateKey, "Private key marker detected."));
+                break;
+            case "connection string":
+            case "connection_string":
+                matches.Add(Match(NodalOsSensitiveContentKind.ConnectionString, "Connection string marker detected."));
+                break;
             case "private body":
             case "private_body":
             case "body_private":
@@ -108,6 +128,15 @@ public sealed class NodalOsSensitiveContentClassifier
 
         if (SensitiveAssignmentRegex.IsMatch(value))
             matches.Add(Match(NodalOsSensitiveContentKind.GenericToken, "Sensitive key/value assignment detected."));
+
+        if (PrivateKeyRegex.IsMatch(value))
+            matches.Add(Match(NodalOsSensitiveContentKind.PrivateKey, "Private key pattern detected."));
+
+        if (ConnectionStringRegex.IsMatch(value))
+            matches.Add(Match(NodalOsSensitiveContentKind.ConnectionString, "Connection string pattern detected."));
+
+        if (EmailRegex.IsMatch(value))
+            matches.Add(Match(NodalOsSensitiveContentKind.EmailAddress, "Email address pattern detected."));
 
         if (SetCookieHeaderRegex.IsMatch(value))
             matches.Add(Match(NodalOsSensitiveContentKind.SetCookie, "Set-Cookie header pattern detected."));
@@ -151,6 +180,10 @@ public sealed class NodalOsSensitiveContentClassifier
             "password" or "passwd" or "pass" => NodalOsSensitiveContentKind.Password,
             "secret" => NodalOsSensitiveContentKind.Secret,
             "api_key" => NodalOsSensitiveContentKind.ApiKey,
+            "email" => NodalOsSensitiveContentKind.EmailAddress,
+            "e-mail" => NodalOsSensitiveContentKind.EmailAddress,
+            "private_key" => NodalOsSensitiveContentKind.PrivateKey,
+            "connection_string" => NodalOsSensitiveContentKind.ConnectionString,
             "access_token" => NodalOsSensitiveContentKind.AccessToken,
             "refresh_token" => NodalOsSensitiveContentKind.RefreshToken,
             "id_token" => NodalOsSensitiveContentKind.IdToken,
@@ -160,6 +193,10 @@ public sealed class NodalOsSensitiveContentClassifier
             {
                 "setcookie" => NodalOsSensitiveContentKind.SetCookie,
                 "apikey" => NodalOsSensitiveContentKind.ApiKey,
+                "email" => NodalOsSensitiveContentKind.EmailAddress,
+                "emailaddress" => NodalOsSensitiveContentKind.EmailAddress,
+                "privatekey" => NodalOsSensitiveContentKind.PrivateKey,
+                "connectionstring" => NodalOsSensitiveContentKind.ConnectionString,
                 "accesstoken" => NodalOsSensitiveContentKind.AccessToken,
                 "refreshtoken" => NodalOsSensitiveContentKind.RefreshToken,
                 "idtoken" => NodalOsSensitiveContentKind.IdToken,
@@ -290,8 +327,21 @@ public sealed class NodalOsRedactionService
             placeholder);
         redacted = Regex.Replace(
             redacted,
-            @"(?i)(access_token|refresh_token|id_token|api_key|apikey|password|passwd|secret|token)\s*[:=]\s*[^&;\s]+",
+            @"(?i)(access_token|refresh_token|id_token|api_key|apikey|password|passwd|pass|secret|token)\s*[:=]\s*[^&;\s]+",
             "$1=" + placeholder);
+        redacted = Regex.Replace(
+            redacted,
+            @"(?is)-----BEGIN\s+(RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY-----.*?-----END\s+(RSA\s+|EC\s+|OPENSSH\s+)?PRIVATE\s+KEY-----|\bprivate\s+key\b",
+            placeholder);
+        redacted = Regex.Replace(
+            redacted,
+            @"(?i)\b(server|data source|host)\s*=\s*[^;]+;.*\b(database|initial catalog|user id|uid|password|pwd)\s*=\s*[^;]+",
+            placeholder);
+        redacted = Regex.Replace(
+            redacted,
+            @"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b",
+            placeholder,
+            RegexOptions.IgnoreCase);
         redacted = Regex.Replace(
             redacted,
             @"(?i)(set-cookie|cookie|authorization)\s*:\s*[^\r\n;]+",
