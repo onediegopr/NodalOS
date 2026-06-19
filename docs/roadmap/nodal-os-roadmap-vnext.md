@@ -172,6 +172,28 @@ Recommended next milestone: `M419-M421 Orchestration Command Contracts V1 or M41
 
 Recommended next milestone: `M422-M424 Orchestration In-Process Facade Decision or M422-M424 Agent Operations Adapter Project Skeleton`.
 
+## Orchestration In-Process Facade Decision Record M424
+
+- M422-M424 created the Orchestration In-Process Facade Boundary Discovery report and Decision Record.
+- Facade implementation deferred: true.
+- Facade implemented: false.
+- Command dispatcher implemented: false.
+- Runtime/state-machine/execution engine implemented: false.
+- API/HTTP/gRPC implemented: false.
+- Scheduler implemented: false.
+- Worker runtime implemented: false.
+- Recipe/skill/step execution implemented: false.
+- UI implemented: false.
+- No-execution invariant defined and required structural at the facade boundary: true.
+- Policy, approval, and evidence gate locations defined: true.
+- `NodalOsVerificationBeforeDoneGate` preserved as canonical completion gate: true.
+- Accepted does not mean executed; Completed means contract handling only.
+- RunningFuture and PausedFuture remain future-only.
+- Registry Visible, Worker Healthy, Skill Approved, and Recipe Approved do not grant runtime permission.
+- Decision: `ORCHESTRATION_FACADE_ADR_READY_WITH_EXECUTION_DEFERRED`.
+
+Recommended next milestone: `M425-M427 Orchestration In-Process Facade V1 No Execution or M428-M430 Agent Operations Adapter Project Skeleton`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
