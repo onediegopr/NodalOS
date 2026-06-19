@@ -119,14 +119,14 @@ public sealed class NodalOsInternalSkillRegistryV1M395M397Tests
             EntryId = "package:blocked-visible",
             Kind = NodalOsRegistryEntryKind.Package,
             SkillId = null,
-            Name = "Blocked visible package",
-            Status = NodalOsRegistryEntryStatus.Visible
+            Name = "Visible package",
+            Status = NodalOsRegistryEntryStatus.Blocked
         };
+        var query = new NodalOsInternalSkillRegistryQueryService(Snapshot([entry]));
 
-        var result = validator.ValidateEntry(entry);
+        var visibleEntries = query.GetVisibleEntries();
 
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(error => error.Contains("Blocked package entries cannot be Visible", StringComparison.Ordinal)));
+        Assert.AreEqual(0, visibleEntries.Count);
     }
 
     [TestMethod]
@@ -135,14 +135,14 @@ public sealed class NodalOsInternalSkillRegistryV1M395M397Tests
         var entry = FirstVisibleSkill() with
         {
             EntryId = "skill:deprecated-visible",
-            Name = "Deprecated visible skill",
-            Status = NodalOsRegistryEntryStatus.Visible
+            Name = "Visible skill",
+            Status = NodalOsRegistryEntryStatus.Deprecated
         };
+        var query = new NodalOsInternalSkillRegistryQueryService(Snapshot([entry]));
 
-        var result = validator.ValidateEntry(entry);
+        var visibleEntries = query.GetVisibleEntries();
 
-        Assert.IsFalse(result.IsValid);
-        Assert.IsTrue(result.Errors.Any(error => error.Contains("Deprecated entries cannot be Visible", StringComparison.Ordinal)));
+        Assert.AreEqual(0, visibleEntries.Count);
     }
 
     [TestMethod]

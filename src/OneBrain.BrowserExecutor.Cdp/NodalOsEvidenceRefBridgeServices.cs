@@ -175,6 +175,23 @@ public sealed class NodalOsEvidenceRefBridge
             errors.Add("Evidence requires redaction before bridge acceptance.");
         }
 
+        if (bridgeRef.RedactionState == NodalOsEvidenceRedactionState.RejectedSensitive)
+            errors.Add("Rejected sensitive evidence cannot cross the evidence bridge boundary.");
+
+        if (bridgeRef.Sensitivity == NodalOsEvidenceSensitivity.Sensitive &&
+            bridgeRef.RedactionState != NodalOsEvidenceRedactionState.Redacted &&
+            effectiveOptions.RejectSensitiveWithoutRedaction)
+        {
+            errors.Add("Sensitive evidence must be redacted before bridge acceptance.");
+        }
+
+        if (ContainsSensitiveBridgeContent(bridgeRef) &&
+            bridgeRef.RedactionState != NodalOsEvidenceRedactionState.Redacted &&
+            effectiveOptions.RejectSensitiveWithoutRedaction)
+        {
+            errors.Add("Evidence bridge ref contains sensitive content requiring redaction.");
+        }
+
         if (!effectiveOptions.AllowLedgerRefOptional && string.IsNullOrWhiteSpace(bridgeRef.LedgerRef))
             errors.Add("LedgerRef is required by bridge options.");
 
@@ -216,6 +233,14 @@ public sealed class NodalOsEvidenceRefBridge
 
     private string RedactIfNeeded(string value) =>
         redaction.RedactValue(value).Value;
+
+    private bool ContainsSensitiveBridgeContent(NodalOsEvidenceBridgeRef bridgeRef) =>
+        redaction.ContainsSensitiveContent(bridgeRef.EvidenceId) ||
+        redaction.ContainsSensitiveContent(bridgeRef.Kind) ||
+        redaction.ContainsSensitiveContent(bridgeRef.Ref) ||
+        redaction.ContainsSensitiveContent(bridgeRef.Hash) ||
+        redaction.ContainsSensitiveContent(bridgeRef.LedgerRef) ||
+        redaction.ContainsSensitiveContent(bridgeRef.Provenance);
 
     private static bool IsRedacted(string? value) =>
         !string.IsNullOrWhiteSpace(value) &&

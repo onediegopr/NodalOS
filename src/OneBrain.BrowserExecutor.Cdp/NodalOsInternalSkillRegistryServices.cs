@@ -7,6 +7,7 @@ namespace OneBrain.BrowserExecutor.Cdp;
 public sealed class NodalOsInternalSkillRegistryBuilder
 {
     private readonly List<NodalOsSkillRegistryEntry> entries = [];
+    private readonly List<string> warnings = [];
 
     public static IReadOnlyList<NodalOsSkillRegistryEntry> FromPackageManifest(NodalOsPackageManifest package)
     {
@@ -21,6 +22,17 @@ public sealed class NodalOsInternalSkillRegistryBuilder
 
     public NodalOsInternalSkillRegistryBuilder AddPackage(NodalOsPackageManifest package)
     {
+        if (package.RuntimeExecutionAllowed ||
+            !package.RuntimeExecutionDeferred ||
+            !package.RequiresGlobalPolicyEvaluation ||
+            package.Skills.Any(skill =>
+                skill.RuntimeExecutionAllowed ||
+                !skill.RuntimeExecutionDeferred ||
+                !skill.RequiresGlobalPolicyEvaluation))
+        {
+            warnings.Add($"Package {package.PackageId} declared unsafe runtime flags; registry entries were normalized to execution-deferred metadata.");
+        }
+
         entries.AddRange(FromPackageManifest(package));
         return this;
     }
@@ -37,6 +49,24 @@ public sealed class NodalOsInternalSkillRegistryBuilder
             CreatedAt = createdAt
         };
 
+    public NodalOsInternalSkillRegistryBuildResult BuildValidatedSnapshot(
+        string registryId,
+        string version,
+        DateTimeOffset createdAt)
+    {
+        var snapshot = BuildSnapshot(registryId, version, createdAt);
+        var validation = new NodalOsInternalSkillRegistryValidator().ValidateSnapshot(snapshot);
+
+        return new()
+        {
+            Snapshot = snapshot,
+            Validation = validation with
+            {
+                Warnings = validation.Warnings.Concat(warnings).Distinct(StringComparer.Ordinal).ToArray()
+            }
+        };
+    }
+
     private static NodalOsSkillRegistryEntry PackageEntry(NodalOsPackageManifest package) =>
         new()
         {
@@ -49,9 +79,9 @@ public sealed class NodalOsInternalSkillRegistryBuilder
             Status = MapStatus(package.Status),
             Provenance = package.Provenance,
             InternalOnly = package.InternalOnly,
-            RuntimeExecutionAllowed = package.RuntimeExecutionAllowed,
-            RuntimeExecutionDeferred = package.RuntimeExecutionDeferred,
-            RequiresGlobalPolicyEvaluation = package.RequiresGlobalPolicyEvaluation,
+            RuntimeExecutionAllowed = false,
+            RuntimeExecutionDeferred = true,
+            RequiresGlobalPolicyEvaluation = true,
             Tags = package.Tags,
             EvidenceRequirements = package.EvidenceRequirements,
             CreatedAt = package.CreatedAt,
@@ -73,9 +103,9 @@ public sealed class NodalOsInternalSkillRegistryBuilder
             Status = MapStatus(skill.Status),
             Provenance = package.Provenance,
             InternalOnly = package.InternalOnly && skill.InternalOnly,
-            RuntimeExecutionAllowed = package.RuntimeExecutionAllowed || skill.RuntimeExecutionAllowed,
-            RuntimeExecutionDeferred = package.RuntimeExecutionDeferred && skill.RuntimeExecutionDeferred,
-            RequiresGlobalPolicyEvaluation = package.RequiresGlobalPolicyEvaluation && skill.RequiresGlobalPolicyEvaluation,
+            RuntimeExecutionAllowed = false,
+            RuntimeExecutionDeferred = true,
+            RequiresGlobalPolicyEvaluation = true,
             Capabilities = skill.Capabilities,
             RiskLevel = skill.RiskLevel,
             Tags = package.Tags,
@@ -133,7 +163,6 @@ public sealed class NodalOsInternalSkillRegistryValidator
 
         ValidateNoRuntimePermission(entry, errors);
         ValidateKind(entry, errors);
-        ValidateStatus(entry, errors);
 
         if (entry.Kind == NodalOsRegistryEntryKind.Skill &&
             entry.RiskLevel is NodalOsSkillRiskLevel.High or NodalOsSkillRiskLevel.Critical &&
@@ -227,18 +256,6 @@ public sealed class NodalOsInternalSkillRegistryValidator
 
         if (entry.Kind == NodalOsRegistryEntryKind.Package && !string.IsNullOrWhiteSpace(entry.SkillId))
             errors.Add("Package registry entries must not include SkillId.");
-    }
-
-    private static void ValidateStatus(NodalOsSkillRegistryEntry entry, List<string> errors)
-    {
-        if (entry.Status == NodalOsRegistryEntryStatus.Visible &&
-            entry.Kind == NodalOsRegistryEntryKind.Package &&
-            entry.Name.Contains("blocked", StringComparison.OrdinalIgnoreCase))
-            errors.Add("Blocked package entries cannot be Visible.");
-
-        if (entry.Status == NodalOsRegistryEntryStatus.Visible &&
-            entry.Name.Contains("deprecated", StringComparison.OrdinalIgnoreCase))
-            errors.Add("Deprecated entries cannot be Visible as active catalog entries.");
     }
 
     private bool ContainsSensitiveContent(IEnumerable<string?> values) =>

@@ -121,6 +121,21 @@ Recommended next milestone: `M398-M400 Worker Boundary Contract V1 or Agent Oper
 
 Recommended next milestone: `M401-M403 Agent Operations Extraction Prep or M401-M403 Orchestration API Decision Record`.
 
+## Package / Registry / Worker Integration No-Divergence M403
+
+- M401-M403 closed the contract-only integration edge between Package / Skill Manifest V1, Internal Skill Registry V1, and Worker Boundary Contract V1.
+- Worker response envelopes now validate EvidenceBridge refs and scan evidence metadata for sensitive content.
+- Registry snapshots can be built through `BuildValidatedSnapshot`; registry entries normalize runtime flags to execution-deferred metadata.
+- Registry status is enum-driven and no longer depends on display-name heuristics.
+- Skill-to-worker capability mapping is explicit through `NodalOsWorkerSkillCapabilityMapper`.
+- Runtime execution allowed remains false across package, registry, and worker layers.
+- Runtime execution deferred remains true across package, registry, and worker layers.
+- Global policy evaluation remains required across package, registry, and worker layers.
+- Visible, Healthy, CanPassCatalogPolicy, and CanPassBoundaryPolicy do not grant runtime permission.
+- Worker runtime, skill execution, recipe execution, step execution, UI, orchestration, persistence, marketplace, and package installation remain unimplemented.
+
+Recommended next milestone: `M404-M406 Agent Operations Extraction Prep or M404-M406 Orchestration API Decision Record`.
+
 ## M51 Scope
 
 M51 is closed only for:

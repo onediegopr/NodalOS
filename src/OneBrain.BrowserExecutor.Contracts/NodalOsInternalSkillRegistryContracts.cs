@@ -53,6 +53,12 @@ public sealed record NodalOsInternalSkillRegistryValidationResult
     public IReadOnlyList<string> Warnings { get; init; } = [];
 }
 
+public sealed record NodalOsInternalSkillRegistryBuildResult
+{
+    public required NodalOsInternalSkillRegistrySnapshot Snapshot { get; init; }
+    public required NodalOsInternalSkillRegistryValidationResult Validation { get; init; }
+}
+
 public sealed record NodalOsSkillRegistryQuery
 {
     public string? PackageId { get; init; }

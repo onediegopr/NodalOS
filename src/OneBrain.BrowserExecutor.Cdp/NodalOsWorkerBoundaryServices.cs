@@ -7,14 +7,25 @@ namespace OneBrain.BrowserExecutor.Cdp;
 public sealed class NodalOsWorkerBoundaryValidator
 {
     private readonly NodalOsRedactionService redaction;
+    private readonly NodalOsEvidenceRefBridge evidenceBridge;
 
     public NodalOsWorkerBoundaryValidator()
         : this(new NodalOsRedactionService())
     {
     }
 
-    public NodalOsWorkerBoundaryValidator(NodalOsRedactionService redaction) =>
+    public NodalOsWorkerBoundaryValidator(NodalOsRedactionService redaction)
+        : this(redaction, new NodalOsEvidenceRefBridge(redaction))
+    {
+    }
+
+    public NodalOsWorkerBoundaryValidator(
+        NodalOsRedactionService redaction,
+        NodalOsEvidenceRefBridge evidenceBridge)
+    {
         this.redaction = redaction;
+        this.evidenceBridge = evidenceBridge;
+    }
 
     public NodalOsWorkerBoundaryValidationResult ValidateManifest(NodalOsWorkerBoundaryManifest manifest)
     {
@@ -109,11 +120,33 @@ public sealed class NodalOsWorkerBoundaryValidator
         if (!response.RuntimeExecutionDeferred)
             errors.Add("Worker response envelopes must defer runtime execution in V1.");
 
+        ValidateResponseEvidenceRefs(response, errors, warnings);
+
         if (ContainsSensitiveContent(ResponseValues(response)))
             errors.Add("Worker response envelope contains sensitive or secret-like content.");
 
         warnings.Add("Worker response envelope cannot authorize actions.");
         return Result(errors, warnings, canPassBoundaryPolicy: errors.Count == 0);
+    }
+
+    private void ValidateResponseEvidenceRefs(
+        NodalOsWorkerResponseEnvelope response,
+        List<string> errors,
+        List<string> warnings)
+    {
+        foreach (var evidenceRef in response.EvidenceRefs)
+        {
+            var result = evidenceBridge.ValidateBridgeRef(evidenceRef);
+
+            errors.AddRange(result.Errors.Select(error => $"Worker response evidence ref {SafeEvidenceId(evidenceRef)}: {error}"));
+            warnings.AddRange(result.Warnings.Select(warning => $"Worker response evidence ref {SafeEvidenceId(evidenceRef)}: {warning}"));
+
+            if (evidenceRef.Authority != NodalOsEvidenceBridgeAuthority.NoAuthority &&
+                evidenceRef.Authority != NodalOsEvidenceBridgeAuthority.DiagnosticOnly)
+            {
+                errors.Add($"Worker response evidence ref {SafeEvidenceId(evidenceRef)} cannot carry verification or action authority.");
+            }
+        }
     }
 
     private static void ValidateRuntimeFlags(
@@ -204,6 +237,16 @@ public sealed class NodalOsWorkerBoundaryValidator
         yield return response.RequestId;
         yield return response.WorkerId;
         yield return response.Summary;
+
+        foreach (var evidenceRef in response.EvidenceRefs)
+        {
+            yield return evidenceRef.EvidenceId;
+            yield return evidenceRef.Kind;
+            yield return evidenceRef.Ref;
+            yield return evidenceRef.Hash;
+            yield return evidenceRef.LedgerRef;
+            yield return evidenceRef.Provenance;
+        }
     }
 
     private static NodalOsWorkerBoundaryValidationResult Result(
@@ -226,6 +269,32 @@ public sealed class NodalOsWorkerBoundaryValidator
         if (string.IsNullOrWhiteSpace(value))
             errors.Add(message);
     }
+
+    private static string SafeEvidenceId(NodalOsEvidenceBridgeRef evidenceRef) =>
+        string.IsNullOrWhiteSpace(evidenceRef.EvidenceId) ? "<missing>" : evidenceRef.EvidenceId;
+}
+
+public static class NodalOsWorkerSkillCapabilityMapper
+{
+    public static NodalOsWorkerCapabilityKind Map(NodalOsSkillCapabilityKind capability) =>
+        capability switch
+        {
+            NodalOsSkillCapabilityKind.ReadOnly => NodalOsWorkerCapabilityKind.ReadOnly,
+            NodalOsSkillCapabilityKind.Navigation => NodalOsWorkerCapabilityKind.Navigation,
+            NodalOsSkillCapabilityKind.Extraction => NodalOsWorkerCapabilityKind.Extraction,
+            NodalOsSkillCapabilityKind.Interaction => NodalOsWorkerCapabilityKind.Interaction,
+            NodalOsSkillCapabilityKind.DataEntry => NodalOsWorkerCapabilityKind.DataEntry,
+            NodalOsSkillCapabilityKind.FileTransfer => NodalOsWorkerCapabilityKind.FileTransfer,
+            NodalOsSkillCapabilityKind.HumanInput => NodalOsWorkerCapabilityKind.HumanInput,
+            NodalOsSkillCapabilityKind.ControlFlow => NodalOsWorkerCapabilityKind.ControlFlow,
+            NodalOsSkillCapabilityKind.EvidenceProcessing => NodalOsWorkerCapabilityKind.EvidenceProcessing,
+            NodalOsSkillCapabilityKind.Reporting => NodalOsWorkerCapabilityKind.Reporting,
+            NodalOsSkillCapabilityKind.Unknown => NodalOsWorkerCapabilityKind.Unknown,
+            _ => NodalOsWorkerCapabilityKind.Unknown
+        };
+
+    public static IReadOnlyList<NodalOsWorkerCapabilityKind> MapMany(IEnumerable<NodalOsSkillCapabilityKind> capabilities) =>
+        capabilities.Select(Map).Distinct().ToArray();
 }
 
 public static class NodalOsWorkerBoundaryJsonSerializer
