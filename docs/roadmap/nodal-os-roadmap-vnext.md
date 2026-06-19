@@ -632,6 +632,23 @@ Recommended next milestone:
 - Scope: architecture, naming, guardrails, dependency direction, duplication, evidence/timeline, approval, redaction, export/handoff, observability, runtime deferral, roadmap coherence and readiness for future UI/LLM/cloud.
 - Runtime remains blocked during the audit. UI real, cloud, LLM provider calls, browser automation, scheduler/worker, recorder/replay, queue, DSL parser runtime and execution remain deferred.
 
+## M477-M479 AUDIT-A Pre-UI Boundary & Naming Hardening
+
+- M477-M479 closes the minimum fixes from `AUDIT_A_CONDITIONAL_PASS_FIXES_REQUIRED_BEFORE_UI`.
+- Dependency-direction fitness tests now guard AgentOperations and future UI projects from direct `OneBrain.BrowserExecutor.Cdp` references.
+- BrowserExecutor.Cdp remains a temporary runtime host but stays disconnected from new AgentOperations core/product-facing foundations.
+- Evidence model consolidation ADR decides `NodalOsEvidenceBridgeRef` as the canonical future NODAL OS evidence ref model and marks `NexaEvidenceRef` legacy/compatibility only.
+- Execution authorization gate ADR requires a future positive gate before any real runtime execution and forbids UI/AgentOperations direct runtime calls.
+- Legacy `Nexa*` subsystem quarantine plan blocks cloud/licensing/BYOK until sensitive legacy billing/email/credentials/admin/config surfaces are deleted, archived, isolated or migrated with tests.
+- Naming serialization guards protect Approval UX preview, Handoff Data Pack, Runtime Observability Report, Timeline and Evidence serialized outputs from operational `Nexa`, `NEXA`, `NODRIX` or `HOTEP`.
+- No UI, cloud, LLM provider call, browser automation, scheduler, worker runtime, recorder, replay, queue, DSL parser runtime, shell/subprocess, persistence DB, broad rename, legacy deletion or execution was introduced.
+- Report: `docs/reports/audit-a-pre-ui-boundary-naming-m477-m479.md`.
+- Artifact: `artifacts/agent-operations/m479/audit-a-pre-ui-boundary-naming-summary.json`.
+
+Recommended next milestone:
+
+- `M480-M482 Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394

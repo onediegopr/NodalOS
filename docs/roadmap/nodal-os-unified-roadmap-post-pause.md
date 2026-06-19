@@ -66,11 +66,12 @@ Estimated milestones:
 - M471-M473: Approval Center Data Model + Timeline Projection + Evidence Registry Integration.
 - M474-M476: Approval Center UX Contract Preview + Export/Handoff Data Pack + Runtime Observability Report.
 - AUDIT-A: Claude Full Project Architecture & Safety Audit before UI real / Mission Control Shell.
-- M477-M479: Controlled File Operation v2.
-- M480-M482: Workspace v1.
-- M483-M485: Approval Center UX v1 decision/contracts.
+- M477-M479: AUDIT-A Pre-UI Boundary & Naming Hardening.
+- M480-M482: Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views.
+- M483-M485: Controlled File Operation v2.
+- M486-M488: Workspace v1.
 
-Current percentage after M474-M476: 74%.
+Current percentage after M477-M479: 75%.
 
 Target percentage after subphase: 80%.
 
@@ -97,6 +98,16 @@ M474-M476 status:
 - Evidence remains ref-only and raw screenshot, DOM, network, header, cookie, body and secret payloads remain forbidden.
 - No real UI, frontend, cloud, LLM calls, scheduler, worker, browser automation, recorder/replay, queue, DSL parser runtime or execution was introduced.
 - AUDIT-A is the next required architecture and safety review before UI real / Mission Control Shell.
+
+M477-M479 status:
+
+- AUDIT-A pre-UI boundary hardening is ready.
+- AgentOperations and future UI project fitness tests guard against direct `OneBrain.BrowserExecutor.Cdp` references.
+- Evidence model consolidation ADR names `NodalOsEvidenceBridgeRef` as canonical and marks `NexaEvidenceRef` legacy/compatibility only.
+- Execution authorization gate ADR requires a future positive gate before runtime and forbids UI/AgentOperations direct runtime calls.
+- Legacy `Nexa*` quarantine plan blocks cloud/licensing/BYOK until sensitive legacy subsystems are deleted, archived, isolated or migrated with tests.
+- Naming serialization guards cover Approval UX preview, Handoff Data Pack, Runtime Observability Report, Timeline and Evidence outputs.
+- No UI real, cloud, LLM provider calls, scheduler, worker, browser automation, recorder/replay, queue, DSL parser runtime or execution was introduced.
 
 ## Subphase 2 - Mission Control UX
 
@@ -374,6 +385,6 @@ Target percentage after subphase: 65%.
 
 ## Recommended Next Milestone
 
-`AUDIT-A - Claude Full Project Architecture & Safety Audit before UI real / Mission Control Shell`.
+`M480-M482 Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views`.
 
 Do not proceed to UI implementation, cloud implementation, browser automation runtime, recorder/replay, queue, scheduler, DSL parser, or execution before the core mandatory track is planned.
