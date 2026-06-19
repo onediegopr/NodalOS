@@ -386,6 +386,37 @@ Recommended next milestones:
 - `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
 - `M460 Core Roadmap Re-Sync and Pause Closure`.
 
+## Selector Safety Policy + Human Handoff Contract V1 M454
+
+- M452-M454 created Selector Safety Policy + Human Handoff Contract V1.
+- Added selector strategy kinds, selector risk kinds, selector safety decisions, selector policy, selector candidate, selector evaluation, human handoff contract, validator, serializer, fixtures, tests, report, and artifact.
+- Selector policy is contract-only and observation-only.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Selector/handoff can authorize action: false.
+- Semantic/DOM/CDP strategies are preferred before Visual/OCR.
+- Visual/OCR remains fallback/evidence-only and cannot be first strategy.
+- Raw secrets, cookies, headers, tokens, passwords, and private bodies are rejected.
+- Mutable intent is rejected.
+- Unstable selectors are rejected or require human review.
+- Human handoff requires a specific blocker, explicit user options, and rejects generic `blocked`.
+- Evidence refs validate through the EvidenceRef bridge.
+- Common redaction is used for selector paths, labels, blocker text, technical logs, reasons, and warnings.
+- Timeline and Mission Control compatibility are explicit through Mission/Task/Recipe/Step correlation fields.
+- Recorder implemented: false.
+- Replay implemented: false.
+- Queue implemented: false.
+- Scheduler implemented: false.
+- Browser automation implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+
+Recommended next milestones:
+
+- `M455-M457 Recipe Risk Classifier + DSL Decision Record`.
+- `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
+- `M460 Core Roadmap Re-Sync and Pause Closure`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
