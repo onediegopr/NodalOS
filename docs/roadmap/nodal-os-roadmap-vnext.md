@@ -217,6 +217,26 @@ Recommended next milestone: `M425-M427 Orchestration In-Process Facade V1 No Exe
 
 Recommended next milestone: `M428-M430 Agent Operations Adapter Project Skeleton or M428-M430 Scheduled Read-Only Runs Decision Record`.
 
+## Agent Operations Browser Adapter Project Skeleton M430
+
+- M428-M430 created `OneBrain.AgentOperations.Adapters.Browser` as a skeleton project for future browser-specific Agent Operations adapters.
+- The adapter project references `OneBrain.AgentOperations.Contracts` and `OneBrain.AgentOperations.Core`.
+- The adapter project does not reference `OneBrain.BrowserExecutor.Cdp`.
+- `OneBrain.AgentOperations.Contracts` remains Browser/CDP-free.
+- `OneBrain.AgentOperations.Core` remains Browser/CDP-free.
+- `NodalOsBrowserAgentOperationsAdapterBoundary` was added as a marker-only boundary type.
+- Adapter project skeleton only: true.
+- Runtime behavior implemented: false.
+- Browser runtime moved: false.
+- `ChromeCdpBrowserExecutor.cs` stayed in `OneBrain.BrowserExecutor.Cdp`.
+- `BrowserRuntimeSmoke.cs` stayed in `OneBrain.BrowserExecutor.Cdp`.
+- `BrowserPersistentAuditLedger.cs` stayed in `OneBrain.BrowserExecutor.Cdp`.
+- UI implemented: false.
+- Orchestration API implemented: false.
+- Execution implemented: false.
+
+Recommended next milestone: `M431-M433 Scheduled Read-Only Runs Decision Record or M431-M433 Browser Adapter Extraction Phase 1`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
