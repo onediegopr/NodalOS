@@ -417,6 +417,42 @@ Recommended next milestones:
 - `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
 - `M460 Core Roadmap Re-Sync and Pause Closure`.
 
+## Recipe Risk Classifier + DSL Decision Record M457
+
+- M455-M457 created Recipe Risk Classifier V1 and the Recipe DSL Decision Record.
+- Added recipe step risk categories, risk levels, approval requirements, DSL decision enum, step risk input, step classification, recipe risk profile, DSL decision record, validation result, classifier, serializer, fixtures, tests, reports, artifact, and ADR.
+- Recipe risk classifier is contract-only and cannot authorize action.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Global policy evaluation required: true.
+- Evidence redaction required: true.
+- Read-only/extraction can classify Low but still cannot execute.
+- Form-fill is at least Medium and requires approval before execution.
+- Submit and external publish/send are High and require approval.
+- Purchase/payment and delete/destructive are Critical and require approval.
+- Credential/login/captcha/two-factor require human handoff.
+- File system mutation requires approval and evidence.
+- Browser automation remains future-only and runtime deferred.
+- DSL is representation, not runtime.
+- DSL parser deferred: true.
+- DSL runtime deferred: true.
+- Direct execution forbidden: true.
+- Import validation required: true.
+- JSON canonical model required: true.
+- No TagUI dependency introduced.
+- Recorder implemented: false.
+- Replay implemented: false.
+- Queue implemented: false.
+- Scheduler implemented: false.
+- Browser automation implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+
+Recommended next milestones:
+
+- `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
+- `M460 Core Roadmap Re-Sync and Pause Closure`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
