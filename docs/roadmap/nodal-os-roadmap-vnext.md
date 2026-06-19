@@ -681,6 +681,21 @@ Recommended next milestone:
 
 - `M486-M488 Mission Control Empty States + Contextual Onboarding + Guardrail Explainers`.
 
+## M486-M488 Mission Control Empty States + Contextual Onboarding + Guardrail Explainers
+
+- M486-M488 adds Mission Control guidance contracts and services for safe empty states, contextual onboarding and guardrail explainers.
+- Empty states cover no mission selected, no active mission, no timeline events, no approvals pending, no evidence, no observability report, no workspace, no UI interaction history, no approval draft, no selected evidence ref, no guardrail warnings, runtime unavailable, LLM not configured, cloud disabled and browser automation deferred.
+- Contextual onboarding explains missions, timeline, approvals, approval no-authority, evidence ref-only, Observability/LOG, runtime blocked, LLM/BYOK future, cloud disabled and what must exist before real execution.
+- Guardrail explainers cover read-only mode, no runtime, no browser automation, no cloud sync, no LLM provider calls, no filesystem mutation, no shell/subprocess, approval no-authority, evidence ref-only, redaction, missing positive gate, recipe-risk hardening, browser runtime disconnection, legacy sensitive subsystem quarantine, human handoff and disabled button rationale.
+- Guidance remains read-only/no-op: `CanExecuteAction=false`, `CanUnlockExecution=false`, `CanAuthorizeExecution=false`, `RuntimeExecutionAllowed=false`.
+- No runtime execution, positive execution gate, BrowserExecutor.Cdp reference, browser automation, scheduler/worker, recorder/replay, queue, DSL parser runtime, cloud, LLM provider call, productive persistence, telemetry/analytics, shell/subprocess or filesystem mutation was introduced.
+- Report: `docs/reports/mission-control-guidance-m486-m488.md`.
+- Artifact: `artifacts/agent-operations/m488/mission-control-guidance-summary.json`.
+
+Recommended next milestone:
+
+- `M489-M491 Mission Control Visual Polish + Responsive Desktop Layout + Static UX Acceptance Pack`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394

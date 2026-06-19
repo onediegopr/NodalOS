@@ -70,10 +70,11 @@ Estimated milestones:
 - M480-M482: Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views.
 - M483-M485: Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock.
 - M486-M488: Mission Control Empty States + Contextual Onboarding + Guardrail Explainers.
-- M489-M491: Controlled File Operation v2.
-- M492-M494: Workspace v1.
+- M489-M491: Mission Control Visual Polish + Responsive Desktop Layout + Static UX Acceptance Pack.
+- M492-M494: Controlled File Operation v2.
+- M495-M497: Workspace v1.
 
-Current percentage after M483-M485: 81%.
+Current percentage after M486-M488: 82%.
 
 Target percentage after subphase: 80%.
 
@@ -130,6 +131,15 @@ M483-M485 status:
 - No positive execution gate, runtime, browser automation, cloud, LLM provider call, scheduler/worker, recorder/replay, queue, DSL parser runtime, shell/subprocess, productive filesystem persistence or productive DB was introduced.
 - Recommended next: M486-M488 Mission Control Empty States + Contextual Onboarding + Guardrail Explainers.
 
+M486-M488 status:
+
+- Mission Control empty states are ready for no mission selected, no timeline, no approvals, no evidence, no observability report, no workspace, no interaction history, no approval draft, runtime unavailable, LLM not configured, cloud disabled and browser automation deferred.
+- Contextual onboarding explains Mission Control, Timeline, Approvals, Evidence, Observability/LOG, Guardrails, runtime blocked, LLM/BYOK future, cloud disabled and what must exist before real execution.
+- Guardrail explainers cover read-only/no-runtime/no-browser/no-cloud/no-LLM/no-filesystem/no-shell, approval no-authority, evidence ref-only, redaction, positive gate missing, recipe-risk hardening, browser runtime disconnection, legacy sensitive subsystem quarantine, human handoff and disabled button rationale.
+- Guidance is read-only/no-op and cannot unlock execution, change policy, mutate registry or create exceptions.
+- No runtime, positive gate, cloud, LLM provider call, telemetry/analytics, productive persistence, browser automation, scheduler/worker, recorder/replay, queue, DSL parser runtime, shell/subprocess or filesystem mutation was introduced.
+- Recommended next: M489-M491 Mission Control Visual Polish + Responsive Desktop Layout + Static UX Acceptance Pack.
+
 ## Subphase 2 - Mission Control UX
 
 Objective:
@@ -176,12 +186,13 @@ Estimated milestones:
 
 - M480-M482: Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views. Completed.
 - M483-M485: Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock. Completed.
-- M486-M488: Mission Control Empty States + Contextual Onboarding + Guardrail Explainers.
-- M489-M491: Mission Control UX Decision Record and Visual QA.
-- M492-M494: Timeline/Evidence interaction contracts.
-- M495-M497: Approval cards and handoff UX refinement.
+- M486-M488: Mission Control Empty States + Contextual Onboarding + Guardrail Explainers. Completed.
+- M489-M491: Mission Control Visual Polish + Responsive Desktop Layout + Static UX Acceptance Pack.
+- M492-M494: Mission Control UX Decision Record and Visual QA.
+- M495-M497: Timeline/Evidence interaction contracts.
+- M498-M500: Approval cards and handoff UX refinement.
 
-Current percentage: 47%.
+Current percentage: 54%.
 
 Target percentage after subphase: 60%.
 
@@ -408,8 +419,8 @@ Target percentage after subphase: 65%.
 
 ## Recommended Next Milestone
 
-`M486-M488 Mission Control Empty States + Contextual Onboarding + Guardrail Explainers`.
+`M489-M491 Mission Control Visual Polish + Responsive Desktop Layout + Static UX Acceptance Pack`.
 
 Do not proceed to UI implementation, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before the core mandatory track is planned.
 
-After M480-M482, Mission Control UI remains read-only/no-op until the positive execution authorization gate exists.
+After M486-M488, Mission Control UI remains read-only/no-op until the positive execution authorization gate exists.
