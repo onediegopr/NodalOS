@@ -136,6 +136,19 @@ Recommended next milestone: `M401-M403 Agent Operations Extraction Prep or M401-
 
 Recommended next milestone: `M404-M406 Agent Operations Extraction Prep or M404-M406 Orchestration API Decision Record`.
 
+## Agent Operations Extraction Prep M406
+
+- M404-M406 documented the extraction dependency graph for Agent Operations currently hosted under `OneBrain.BrowserExecutor.*`.
+- Recommended target layout: `OneBrain.AgentOperations.Contracts`, `OneBrain.AgentOperations.Core`, and `OneBrain.AgentOperations.Adapters.Browser`.
+- Option `NodalOs.AgentOperations.*` remains a future larger naming migration, not Phase 1.
+- Contracts extraction candidates include workboard, run report, failure taxonomy, recipe manifest, verification-before-done, progress reporting, step library, redaction, EvidenceRef bridge, Package/Skill manifest, Internal Skill Registry, and Worker Boundary contracts.
+- Core service extraction candidates include validators, builders, serializers, redaction service, EvidenceRef bridge, registry services, and worker boundary services.
+- Browser-specific runtime classes stay in BrowserExecutor or a future browser adapter boundary.
+- Compatibility shims are required; `Nexa*` symbols remain compatibility debt and are not renamed now.
+- No namespace move, broad rename, runtime behavior change, UI, orchestration, worker runtime, or execution was implemented.
+
+Recommended next milestone: `M407-M409 Agent Operations Extraction Phase 1 Contracts or M407-M409 Orchestration API Decision Record`.
+
 ## M51 Scope
 
 M51 is closed only for:
