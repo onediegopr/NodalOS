@@ -68,7 +68,7 @@ Estimated milestones:
 - M477-M479: Workspace v1.
 - M480-M482: Approval Center UX v1 decision/contracts.
 
-Current percentage after M468-M470: 66%.
+Current percentage after M471-M473: 71%.
 
 Target percentage after subphase: 80%.
 
@@ -78,6 +78,14 @@ M468-M470 status:
 - Core EventBus foundation is ready as in-memory canonical event capture without side effects.
 - Redaction Foundation is strengthened through common redaction and safe serializers.
 - Runtime execution remains deferred and unauthorized.
+
+M471-M473 status:
+
+- Approval Center data model is ready as contracts/services for approval cards and decisions.
+- Timeline projection is ready as a derivable view from canonical core events.
+- Evidence Registry integration is ready as metadata/ref-only linking across registry, event, approval and timeline surfaces.
+- Approval, timeline and evidence visibility do not grant runtime authority.
+- UI, scheduler, worker runtime, browser automation, cloud and execution remain deferred.
 
 ## Subphase 2 - Mission Control UX
 
@@ -355,6 +363,6 @@ Target percentage after subphase: 65%.
 
 ## Recommended Next Milestone
 
-`M471-M473 Approval Center Data Model + Timeline Projection + Evidence Registry Integration`.
+`M474-M476 Approval Center UX Contract Preview + Export/Handoff Data Pack + Runtime Observability Report`.
 
 Do not proceed to UI implementation, cloud implementation, browser automation runtime, recorder/replay, queue, scheduler, DSL parser, or execution before the core mandatory track is planned.

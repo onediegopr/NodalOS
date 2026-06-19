@@ -585,6 +585,30 @@ Recommended next milestone:
 
 - `M471-M473 Approval Center Data Model + Timeline Projection + Evidence Registry Integration`.
 
+## M471-M473 Approval Center Data Model + Timeline Projection + Evidence Registry Integration
+
+- M471-M473 connects the core runtime registry/eventbus/redaction foundation to product-facing approval, timeline and evidence surfaces.
+- Approval Center data model created for approval cards, approval decisions, status, severity, requested action, policy reason, affected resources, user options and evidence refs.
+- Timeline projection created from canonical core events with ordering, registry refs, approval refs, severity/status, human attention flag and safe evidence refs.
+- Evidence Registry integration created as metadata/ref-only attachment across registry entries, core events, approval cards and timeline entries.
+- Approval card visibility does not execute.
+- Approval decision visibility does not authorize execution by itself.
+- Timeline projection does not mutate registry or evidence.
+- Evidence integration rejects raw payload persistence and raw secret/cookie/header/body material.
+- Screenshot evidence remains reference-only.
+- Network evidence remains metadata-redacted-only.
+- DOM evidence remains redacted/reference-only.
+- Runtime execution allowed remains false.
+- Runtime execution deferred remains true.
+- Global policy evaluation and evidence redaction remain required.
+- No UI, frontend, cloud, LLM provider call, scheduler, worker runtime, browser automation, recorder, replay, queue, DSL parser runtime, shell/subprocess, API, persistence DB, or execution was introduced.
+- Report: `docs/reports/approval-timeline-evidence-integration-m471-m473.md`.
+- Artifact: `artifacts/agent-operations/m473/approval-timeline-evidence-integration-summary.json`.
+
+Recommended next milestone:
+
+- `M474-M476 Approval Center UX Contract Preview + Export/Handoff Data Pack + Runtime Observability Report`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
