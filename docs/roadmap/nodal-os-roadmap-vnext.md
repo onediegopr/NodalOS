@@ -537,6 +537,36 @@ Recommended next milestone:
 
 - `New topics intake / unified roadmap update before implementation`.
 
+## M465-M467 New Topics Intake + Unified Roadmap Update
+
+- M465-M467 performs post-pause intake for new planning inputs without implementation.
+- Operational project name remains NODAL OS.
+- External names from source documents are input-only and are not operational names.
+- HOTEP is treated as external visual/UX input only.
+- The RPA source-plan product name from external input is treated as historical wording only.
+- New topics intake report: `docs/reports/new-topics-intake-m465.md`.
+- Unified post-pause roadmap: `docs/roadmap/nodal-os-unified-roadmap-post-pause.md`.
+- Core return recommended: true.
+- No runtime implemented.
+- No UI implemented.
+- No cloud implemented.
+- No automation runtime implemented.
+- Browser automation runtime remains deferred.
+- Recipe Risk Classifier hardening remains runtime-gated before any automation runtime.
+
+Unified roadmap subphases:
+
+- Subphase 1: Core mandatory immediate.
+- Subphase 2: Mission Control UX.
+- Subphase 3: LLM / Assignment.
+- Subphase 4: Productization.
+- Subphase 5: Cloud optional / commercial.
+- Subphase 6: Automation future.
+
+Recommended next milestone:
+
+- `M468-M470 Core Runtime Registry EventBus Redaction Planning or Execution Registry + EventBus`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394

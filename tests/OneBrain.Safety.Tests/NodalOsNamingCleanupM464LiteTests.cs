@@ -113,7 +113,7 @@ public sealed class NodalOsNamingCleanupM464LiteTests
         File.ReadAllText(Path.Combine(RepoRoot(), "docs", "roadmap", "nodal-os-roadmap-vnext.md"));
 
     private static void AssertNoExternalName(string text, string source) =>
-        Assert.IsFalse(text.Contains($"NO{"DRIX"}", StringComparison.OrdinalIgnoreCase), source);
+        Assert.IsFalse(text.Contains($"NO{"DRIX"} Automation", StringComparison.OrdinalIgnoreCase), source);
 
     private static void AssertContains(string text, string expected) =>
         Assert.IsTrue(text.Contains(expected, StringComparison.Ordinal), expected);

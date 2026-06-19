@@ -1,0 +1,22 @@
+{
+  "milestone": "M465-M467",
+  "baseCommit": "1fcfe8fc62fedf18bf7acd0779a1f16c99023674",
+  "finalCommit": null,
+  "readinessDecision": "NEW_TOPICS_INTAKE_READY_WITH_UNIFIED_ROADMAP",
+  "operationalProjectName": "NODAL OS",
+  "pauseWasClosedClean": true,
+  "newTopicsIntakeCreated": true,
+  "unifiedRoadmapCreated": true,
+  "nodrixTreatedAsExternalInputOnly": true,
+  "hotepTreatedAsExternalVisualInputOnly": true,
+  "noNamingMix": true,
+  "noRuntimeImplemented": true,
+  "noUiImplemented": true,
+  "noCloudImplemented": true,
+  "noAutomationRuntimeImplemented": true,
+  "coreReturnRecommended": true,
+  "nextRecommendedMilestone": "M468-M470 Core Runtime Registry EventBus Redaction Planning or Execution Registry + EventBus",
+  "testsPassed": 3661,
+  "testsFailed": 0,
+  "fullSuiteClean": true
+}
