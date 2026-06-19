@@ -237,6 +237,25 @@ Recommended next milestone: `M428-M430 Agent Operations Adapter Project Skeleton
 
 Recommended next milestone: `M431-M433 Scheduled Read-Only Runs Decision Record or M431-M433 Browser Adapter Extraction Phase 1`.
 
+## Scheduled Read-Only Runs Decision Record M433
+
+- M431-M433 created the Scheduled Read-Only Runs Boundary Discovery report and Architecture Decision Record.
+- Scheduled read-only run implementation deferred: true.
+- Scheduler implemented: false.
+- Timer implemented: false.
+- Background worker implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+- Read-only definition created: future allowed scope is validate manifest, query registry, prepare dry-run, read/extract observation, collect evidence, produce RunReport/ProgressReport, request human decision, attach evidence, and evaluate verification.
+- Forbidden scheduled read-only actions: click, type, submit, upload, download, login, captcha, 2FA, payment, send, delete, sign, publish, external mutation, file system mutation, and network mutation beyond a future approved read/navigation boundary.
+- Policy gate required: true.
+- Evidence/redaction gate required: true.
+- Human approval remains required whenever future policy marks target, data, frequency, identity context, evidence sensitivity, or report destination as sensitive.
+- Scheduled read-only cannot grant runtime permission and cannot use Registry Visible, Worker Healthy, Skill Approved, or Recipe Approved as permission.
+- Future outputs are limited to RunReport, ProgressReport, evidence refs, failure kinds, warnings, and verification summaries.
+
+Recommended next milestone: `M434-M436 Scheduled Read-Only Run Contracts V1 or M434-M436 Browser Adapter Extraction Phase 1`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
