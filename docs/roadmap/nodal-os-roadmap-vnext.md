@@ -1021,3 +1021,49 @@ Updated percentages:
 Recommended next milestone:
 
 - `M495-M497 Workspace Storage Mock + Mission Binding + Workspace Switcher Contract`.
+
+## M495-M497 Workspace Storage Mock + Mission Binding + Workspace Switcher Contract
+
+Decision:
+
+- `M495+M496+M497 CERRADO / WORKSPACE_STORAGE_MISSION_SWITCHER_MOCK_READY`
+
+What changed:
+
+- Added in-memory, fixture-safe Workspace Storage Mock.
+- Added Workspace to Mission Binding as read-only/no-runtime contract state.
+- Added Workspace Switcher Contract with local-first/privacy badges, path jail status, mock counts, no-op switch intents, and preview-only switch results.
+- Preserved workspace path jail refs, mission refs, timeline refs, evidence refs, UI state refs, and import wizard refs.
+
+Guardrails:
+
+- No real filesystem scan.
+- No directory listing.
+- No file read/write/delete.
+- No filesystem mutation.
+- No real file picker.
+- No productive persistence.
+- No database.
+- No cloud.
+- No LLM provider calls.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.4%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 82%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 85%.
+- Productization foundation: 58%.
+- Mission Control UX: 64%.
+- Workspace Local: 43%.
+
+Recommended next milestone:
+
+- `M498-M500 Workspace Metadata Index Mock + Safe Project Summary Contract + Workspace Health Report`.

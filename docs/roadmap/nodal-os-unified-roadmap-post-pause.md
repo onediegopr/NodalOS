@@ -477,3 +477,33 @@ Current percentages after M492-M494:
 Recommended next:
 
 - `M495-M497 Workspace Storage Mock + Mission Binding + Workspace Switcher Contract`.
+
+## M495-M497 Status - Workspace Storage, Mission Binding, And Switcher Mock
+
+M495-M497 closes the workspace storage mock, mission binding, and workspace switcher contract.
+
+Completed:
+
+- Workspace Storage Mock as in-memory and fixture-safe only.
+- Mission Binding as read-only/no-runtime workspace to mission contract state.
+- Workspace Switcher Contract with local-first/privacy badge, path jail status, mock counts, no-op intents, and preview/mock switch result.
+- Redacted serialization and validators for storage summary, mission binding, switcher items, switch intents, switch previews, and switcher contract.
+- Continuity guardrails for no runtime, no cloud, no LLM, no filesystem scan, no directory listing, no file read/write/delete, and no productive persistence.
+
+Current percentages after M495-M497:
+
+- NODAL OS global: 97.4%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 82%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 85%.
+- Productization foundation: 58%.
+- Mission Control UX: 64%.
+- Workspace Local: 43%.
+
+Recommended next:
+
+- `M498-M500 Workspace Metadata Index Mock + Safe Project Summary Contract + Workspace Health Report`.
+
+Do not proceed to productive workspace persistence, filesystem scan, directory listing, file read/write/delete, UI implementation with authority, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before the workspace metadata index remains mock-safe and the positive execution authorization gate is planned and audited.
