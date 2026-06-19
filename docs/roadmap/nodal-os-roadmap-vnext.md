@@ -937,3 +937,45 @@ Next phase recommendation:
 - Keep Chromium fork not planned.
 
 External CDP general-ready remains false. Production, SaaS public, public API real, billing/email real, credentials, sensitive sites, submit/pay/sign/delete, and productive recorder/replay remain blocked.
+
+## M489-M491 Mission Control Visual Polish + Responsive Desktop Layout + Static UX Acceptance Pack
+
+Decision:
+
+- `M489+M490+M491 CERRADO / MISSION_CONTROL_STATIC_UX_ACCEPTANCE_READY`
+
+What changed:
+
+- Added static Mission Control visual polish as contract-first preview output.
+- Added responsive desktop layout contract for compact, standard, wide, and ultrawide/control-room modes.
+- Added static UX acceptance pack for visual, content, naming, accessibility, and guardrail review.
+- Kept approvals visible as disabled/no-authority.
+- Kept evidence visible as ref-only.
+- Kept observability/log preview redacted and read-only.
+
+Guardrails:
+
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No productive frontend app.
+- No cloud.
+- No LLM provider calls.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- No telemetry or analytics.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.2%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 75%.
+- Evidence/Timeline foundation: 82%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 83%.
+- Productization foundation: 54%.
+- Mission Control UX: 61%.
+
+Recommended next milestone:
+
+- `M492-M494 Workspace Local Model + Path Jail Binding + Project Import Wizard Contract`.

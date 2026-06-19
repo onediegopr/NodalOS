@@ -417,10 +417,35 @@ Current percentage: 35%.
 
 Target percentage after subphase: 65%.
 
+## M489-M491 Status - Static UX Acceptance
+
+M489-M491 closes the static Mission Control visual polish and UX acceptance pack.
+
+Completed:
+
+- Static visual preview polish for Mission Control.
+- Responsive desktop layout contract for compact, standard, wide, and ultrawide/control-room modes.
+- Static UX acceptance checklist for visual direction, content, guardrails, naming, and accessibility basics.
+- Read-only/no-runtime/no-cloud/no-LLM indicators remain visible.
+- Approval display remains disabled/no-authority.
+- Evidence remains ref-only.
+- Observability/log preview remains redacted and read-only.
+
+Current percentages after M489-M491:
+
+- NODAL OS global: 97.2%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 75%.
+- Evidence/Timeline foundation: 82%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 83%.
+- Productization foundation: 54%.
+- Mission Control UX: 61%.
+
 ## Recommended Next Milestone
 
-`M489-M491 Mission Control Visual Polish + Responsive Desktop Layout + Static UX Acceptance Pack`.
+`M492-M494 Workspace Local Model + Path Jail Binding + Project Import Wizard Contract`.
 
-Do not proceed to UI implementation, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before the core mandatory track is planned.
+Do not proceed to UI implementation, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before the workspace/path-jail model and positive execution authorization gate are planned and audited.
 
-After M486-M488, Mission Control UI remains read-only/no-op until the positive execution authorization gate exists.
+After M489-M491, Mission Control UI remains read-only/no-op until the positive execution authorization gate exists.
