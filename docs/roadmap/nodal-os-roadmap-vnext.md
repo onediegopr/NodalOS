@@ -488,6 +488,55 @@ Recommended next milestone:
 
 - `M463 Core Roadmap Re-Sync and Pause Closure`.
 
+## Pause Closure and Core Roadmap Re-Sync M463
+
+- M463 formally closes the Agent Operations / Orchestration / Scheduled Read-Only / Automation Layer pause.
+- Pause closed: true.
+- Ready for core roadmap return: true.
+- Ready for new topics intake: true.
+- Automation Layer design closed for this pause: true.
+- Runtime implementation deferred: true.
+- Recipe Risk Classifier hardening remains runtime-gated.
+- The runtime-gated classifier backlog blocks future classifier-backed approval gates, recorder/replay, browser automation, DSL parser runtime, recipe execution, and step execution.
+- New documents and topics can be incorporated after this closure, but only through planning intake first.
+- New topics pending intake: Mission Control Visual/UX direction, Business/GTM master document, Workflow Architecture roadmap, and consolidated NODRIX source of truth.
+- Do not proceed to real browser automation yet.
+- Browser automation runtime remains deferred until classifier hardening and a new dedicated Claude runtime audit.
+- Recorder implemented: false.
+- Replay implemented: false.
+- Queue implemented: false.
+- Scheduler implemented: false.
+- Browser automation implemented: false.
+- DSL parser implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+
+Post-pause Track A - Core mandatory:
+
+- Execution Registry + EventBus.
+- Redaction Foundation final.
+- Approval Center UX v1.
+- Controlled File Operation v2.
+- Workspace v1.
+
+Post-pause Track B - Product/UX intake:
+
+- Consolidate Mission Control Visual/UX direction.
+- Consolidate Business/GTM document.
+- Consolidate Master Roadmap/Architecture document.
+- Create NODRIX unified source of truth.
+
+Post-pause Track C - LLM/Assignment:
+
+- BYOK Provider Config.
+- Assignment Engine v1.
+- Prompt Governance.
+- Budget/cost guardrails.
+
+Recommended next milestone:
+
+- `New topics intake / unified roadmap update before implementation`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
