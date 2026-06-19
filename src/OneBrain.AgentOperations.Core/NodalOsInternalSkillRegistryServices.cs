@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using OneBrain.BrowserExecutor.Contracts;
+using OneBrain.AgentOperations.Contracts;
 
-namespace OneBrain.BrowserExecutor.Cdp;
+namespace OneBrain.AgentOperations.Core;
 
 public sealed class NodalOsInternalSkillRegistryBuilder
 {

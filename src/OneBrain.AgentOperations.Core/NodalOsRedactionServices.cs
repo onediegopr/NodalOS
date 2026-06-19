@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using OneBrain.BrowserExecutor.Contracts;
+using OneBrain.AgentOperations.Contracts;
 
-namespace OneBrain.BrowserExecutor.Cdp;
+namespace OneBrain.AgentOperations.Core;
 
 public sealed class NodalOsSensitiveContentClassifier
 {

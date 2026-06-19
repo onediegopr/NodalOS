@@ -1,4 +1,4 @@
-namespace OneBrain.BrowserExecutor.Contracts;
+namespace OneBrain.AgentOperations.Contracts;
 
 public enum NodalOsEvidenceBridgeSourceKind
 {

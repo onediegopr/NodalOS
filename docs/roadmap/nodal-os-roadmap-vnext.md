@@ -301,6 +301,29 @@ Recommended next milestones:
 - `M446-M448 Browser Adapter Extraction Phase 1`.
 - `M449-M450 Claude Re-Audit + Core Roadmap Re-Sync`.
 
+## AgentOperations Namespace Migration M445
+
+- M443-M445 migrated physical AgentOperations.Contracts source files to `OneBrain.AgentOperations.Contracts`.
+- M443-M445 migrated physical AgentOperations.Core source files to `OneBrain.AgentOperations.Core`.
+- AgentOperations.Adapters.Browser remains canonical under `OneBrain.AgentOperations.Adapters.Browser`.
+- Compatibility shims were reviewed; duplicate type shims were not created because they would produce divergent enum/record CLR types.
+- Internal tests now import canonical AgentOperations namespaces through explicit global usings.
+- AgentOperations.Contracts browser-free: true.
+- AgentOperations.Core browser-free: true.
+- AgentOperations.Adapters.Browser references BrowserExecutor.Cdp: false.
+- BrowserExecutor.Cdp remains temporary browser host: true.
+- Broad Nexa rename implemented: false.
+- Broad OneBrain rename implemented: false.
+- Scheduler implemented: false.
+- API implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+
+Recommended next milestones:
+
+- `M446-M448 Browser Adapter Extraction Phase 1`.
+- `M449-M450 Claude Re-Audit + Core Roadmap Re-Sync`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
