@@ -649,6 +649,23 @@ Recommended next milestone:
 
 - `M480-M482 Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views`.
 
+## M480-M482 Mission Control Shell V1 Read-Only + Approval Display + Timeline/Evidence Views
+
+- M480-M482 creates the first NODAL OS Mission Control visual shell as a read-only, contract-first preview.
+- The shell exposes mission title, overall status, progress, read-only state, no-runtime state, no-browser-automation state, no-cloud-sync state and no-LLM-provider-calls state.
+- Approval Display renders approval previews, risk/severity, requested action, affected resources, policy gate reason, rollback/evidence context, registry/event/timeline/evidence refs and disabled user options.
+- Timeline view renders ordered timeline entries with status/severity, registry refs, approval refs, evidence refs and human attention flags.
+- Evidence view remains ref-only and does not expose raw screenshot, DOM, network, header, cookie, body or secret payloads.
+- Observability/LOG preview renders runtime summary, event bus summary, timeline summary, approval summary, evidence summary, redaction summary, blocked actions and next recommended action without clipboard/runtime wiring.
+- UI boundary remains guarded: no direct `OneBrain.BrowserExecutor.Cdp` reference, no runtime primitives, no scheduler/worker, no browser automation, no cloud and no LLM calls.
+- This is not real runtime UI. It is a static/read-only display contract and HTML preview renderer over safe fixtures/contracts.
+- Report: `docs/reports/mission-control-shell-readonly-m480-m482.md`.
+- Artifact: `artifacts/agent-operations/m482/mission-control-shell-readonly-summary.json`.
+
+Recommended next milestone:
+
+- `M483-M485 Mission Control Interaction No-Op Events + Approval Decision Drafting + UI State Persistence Mock`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
