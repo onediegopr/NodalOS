@@ -63,19 +63,23 @@ public sealed class NodalOsRecipeManifestValidator
         ValidateSecretMarkers(manifest, errors);
 
         var requiresApproval = RequiresApproval(manifest);
-        var isExecutableStatus = manifest.Status is NodalOsRecipeStatus.Supervised or NodalOsRecipeStatus.Approved;
-        var canExecute = errors.Count == 0 && isExecutableStatus;
+        var canPassManifestPolicy = errors.Count == 0 &&
+            manifest.Status is NodalOsRecipeStatus.Supervised or NodalOsRecipeStatus.Approved;
 
         if (manifest.Status == NodalOsRecipeStatus.Supervised && !requiresApproval)
         {
             errors.Add("Supervised manifests require approval.");
-            canExecute = false;
+            canPassManifestPolicy = false;
         }
 
         return new NodalOsRecipeManifestValidationResult
         {
             IsValid = errors.Count == 0,
-            CanExecute = canExecute,
+            CanPassManifestPolicy = canPassManifestPolicy,
+            CanExecute = canPassManifestPolicy,
+            RuntimeExecutionAllowed = false,
+            RuntimeExecutionDeferred = true,
+            RequiresGlobalPolicyEvaluation = true,
             RequiresApproval = requiresApproval,
             Errors = errors,
             Warnings = warnings
@@ -96,7 +100,11 @@ public sealed class NodalOsRecipeManifestValidator
         return new NodalOsRecipeManifestValidationResult
         {
             IsValid = errors.Count == 0,
+            CanPassManifestPolicy = false,
             CanExecute = false,
+            RuntimeExecutionAllowed = false,
+            RuntimeExecutionDeferred = true,
+            RequiresGlobalPolicyEvaluation = true,
             RequiresApproval = StepRequiresApproval(step, manifest.Policy),
             Errors = errors,
             Warnings = warnings
@@ -133,7 +141,10 @@ public sealed class NodalOsRecipeManifestValidator
                 errors.Add("Deprecated manifests cannot execute in Recipe Manifest V1.");
                 break;
             case NodalOsRecipeStatus.Supervised:
+                warnings.Add("Supervised manifest may pass manifest policy only; runtime execution remains deferred and requires global policy evaluation.");
+                break;
             case NodalOsRecipeStatus.Approved:
+                warnings.Add("Approved manifest status is a governance state only; it does not grant runtime execution or bypass global policy.");
                 break;
         }
     }

@@ -83,3 +83,7 @@ This milestone intentionally does not implement:
 Decision: `M353+M354+M355 CERRADO / RECIPE_MANIFEST_V1_READY_WITH_EXECUTION_DEFERRED`.
 
 Next recommended milestone: `M356-M358 Blocker + Progress Reporting Contract`.
+
+## Runtime Permission Wording Update
+
+M386-M388 clarifies that `CanExecute` is a compatibility alias for manifest-policy pass, not runtime permission. `NodalOsRecipeStatus.Approved` is a governance state only; global policy and human approval remain authoritative, and runtime execution remains deferred.

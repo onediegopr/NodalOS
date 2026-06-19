@@ -174,7 +174,10 @@ public sealed class NodalOsStepLibrary
             IsReadOnlyCapable = readOnly,
             RequiresApprovalByDefault = approval,
             IsSensitiveByDefault = sensitive,
+            IsCatalogAvailableInV1 = allowed,
             IsAllowedInV1 = allowed,
+            RuntimeExecutionDeferred = true,
+            RequiresGlobalPolicyEvaluation = true,
             BlockedReason = blockedReason,
             PossibleFailureKinds = failures,
             EvidenceRequirements = evidenceRequirements
@@ -244,7 +247,11 @@ public sealed class NodalOsStepLibraryValidator
         return new NodalOsStepValidationResult
         {
             IsValid = errors.Count == 0,
+            CanPassStepPolicy = errors.Count == 0,
             IsAllowed = errors.Count == 0,
+            RuntimeExecutionAllowed = false,
+            RuntimeExecutionDeferred = true,
+            RequiresGlobalPolicyEvaluation = true,
             RequiresApproval = requiresApproval,
             Errors = errors.Distinct(StringComparer.Ordinal).ToArray(),
             Warnings = warnings.Distinct(StringComparer.Ordinal).ToArray(),

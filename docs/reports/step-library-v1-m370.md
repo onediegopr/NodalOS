@@ -72,3 +72,7 @@ Submit, pay, delete, publish, send, sign, login automation, captcha automation, 
 ## Next Step
 
 Recommended next milestone: `M371-M373 Core Legacy Reference Graph or Claude Agent Operations Audit`.
+
+## Runtime Permission Wording Update
+
+M386-M388 clarifies that `IsAllowedInV1` is a compatibility alias for catalog availability, not runtime permission. Step definitions and validation results now state that runtime execution is deferred and global policy evaluation is required.
