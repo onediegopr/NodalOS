@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using OneBrain.BrowserExecutor.Contracts;
 
 namespace OneBrain.BrowserExecutor.Cdp;
@@ -73,6 +74,216 @@ public sealed record BrowserRuntimeSmokeReport(
     public TimeSpan Duration => FinishedAtUtc - StartedAtUtc;
 }
 
+public sealed record BrowserRuntimeSmokeCleanupDiagnostics(
+    DateTimeOffset CleanupStartedAtUtc,
+    DateTimeOffset CleanupCompletedAtUtc,
+    int? BrowserProcessId,
+    int? DebugPort,
+    string RedactedProfilePath,
+    bool CleanupCompleted,
+    bool LeftoverProcessDetected,
+    bool CdpPortOpen,
+    bool ProfileDirectoryExists,
+    string ProcessCleanupOutcome,
+    string ProfileDeleteOutcome,
+    string CdpPortCleanupOutcome,
+    string WebSocketCloseOutcome,
+    IReadOnlyList<string> CleanupWarnings)
+{
+    public string ToDiagnosticMessage() =>
+        $"processOutcome={ProcessCleanupOutcome}; profileOutcome={ProfileDeleteOutcome}; " +
+        $"cdpPortOutcome={CdpPortCleanupOutcome}; websocketOutcome={WebSocketCloseOutcome}; " +
+        $"leftoverProcessDetected={LeftoverProcessDetected}; profileDirectoryExists={ProfileDirectoryExists}; " +
+        $"cdpPortOpen={CdpPortOpen}; profile={RedactedProfilePath}; warnings={string.Join("|", CleanupWarnings)}";
+}
+
+public static class BrowserRuntimeSmokeCleanupProbe
+{
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(200);
+
+    public static async Task<BrowserRuntimeSmokeCleanupDiagnostics> ProbeAsync(
+        int? browserProcessId,
+        int? debugPort,
+        string? profileDirectory,
+        string webSocketCloseOutcome,
+        IReadOnlyList<string>? cleanupWarnings = null,
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default)
+    {
+        var started = DateTimeOffset.UtcNow;
+        var deadline = started + (timeout ?? DefaultTimeout);
+        var warnings = new List<string>((cleanupWarnings ?? []).Select(Sanitize));
+        var profileDeleteOutcome = string.IsNullOrWhiteSpace(profileDirectory)
+            ? "not-created"
+            : "pending";
+
+        while (DateTimeOffset.UtcNow <= deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (IsOwnedTemporaryProfile(profileDirectory) && Directory.Exists(profileDirectory!))
+                profileDeleteOutcome = TryDeleteProfile(profileDirectory!, warnings);
+            else if (!string.IsNullOrWhiteSpace(profileDirectory))
+                profileDeleteOutcome = Directory.Exists(profileDirectory) ? "not-owned-skipped" : "deleted";
+
+            var processAlive = browserProcessId is not null && IsProcessAlive(browserProcessId.Value);
+            var portOpen = debugPort is not null && IsTcpPortOpen(debugPort.Value);
+            var profileExists = !string.IsNullOrWhiteSpace(profileDirectory) && Directory.Exists(profileDirectory);
+
+            if (!processAlive && !portOpen && !profileExists)
+            {
+                return Create(
+                    started,
+                    browserProcessId,
+                    debugPort,
+                    profileDirectory,
+                    cleanupCompleted: true,
+                    processAlive,
+                    portOpen,
+                    profileExists,
+                    ProcessOutcome(browserProcessId, processAlive),
+                    string.IsNullOrWhiteSpace(profileDirectory) ? "not-created" : "deleted",
+                    PortOutcome(debugPort, portOpen),
+                    webSocketCloseOutcome,
+                    warnings);
+            }
+
+            await Task.Delay(PollInterval, cancellationToken).ConfigureAwait(false);
+        }
+
+        var leftoverProcess = browserProcessId is not null && IsProcessAlive(browserProcessId.Value);
+        var cdpPortOpen = debugPort is not null && IsTcpPortOpen(debugPort.Value);
+        var profileDirectoryExists = !string.IsNullOrWhiteSpace(profileDirectory) && Directory.Exists(profileDirectory);
+
+        return Create(
+            started,
+            browserProcessId,
+            debugPort,
+            profileDirectory,
+            cleanupCompleted: false,
+            leftoverProcess,
+            cdpPortOpen,
+            profileDirectoryExists,
+            ProcessOutcome(browserProcessId, leftoverProcess),
+            profileDirectoryExists ? profileDeleteOutcome : string.IsNullOrWhiteSpace(profileDirectory) ? "not-created" : "deleted",
+            PortOutcome(debugPort, cdpPortOpen),
+            webSocketCloseOutcome,
+            warnings);
+    }
+
+    private static BrowserRuntimeSmokeCleanupDiagnostics Create(
+        DateTimeOffset started,
+        int? browserProcessId,
+        int? debugPort,
+        string? profileDirectory,
+        bool cleanupCompleted,
+        bool processAlive,
+        bool portOpen,
+        bool profileExists,
+        string processOutcome,
+        string profileDeleteOutcome,
+        string portOutcome,
+        string webSocketCloseOutcome,
+        IReadOnlyList<string> warnings) =>
+        new(
+            started,
+            DateTimeOffset.UtcNow,
+            browserProcessId,
+            debugPort,
+            RedactProfilePath(profileDirectory),
+            cleanupCompleted,
+            processAlive,
+            portOpen,
+            profileExists,
+            processOutcome,
+            profileDeleteOutcome,
+            portOutcome,
+            webSocketCloseOutcome,
+            warnings);
+
+    private static string ProcessOutcome(int? processId, bool processAlive) =>
+        processId is null
+            ? "not-started"
+            : processAlive
+                ? "owned-process-still-alive"
+                : "owned-process-exited";
+
+    private static string PortOutcome(int? port, bool portOpen) =>
+        port is null
+            ? "not-bound"
+            : portOpen
+                ? "cdp-port-still-open"
+                : "cdp-port-closed";
+
+    private static string TryDeleteProfile(string profileDirectory, List<string> warnings)
+    {
+        try
+        {
+            Directory.Delete(profileDirectory, recursive: true);
+            return "deleted";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            warnings.Add($"{ex.GetType().Name}:{Sanitize(ex.Message)}");
+            return "delete-retry-pending";
+        }
+    }
+
+    private static bool IsOwnedTemporaryProfile(string? profileDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(profileDirectory))
+            return false;
+
+        var leaf = Path.GetFileName(profileDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        if (!leaf.StartsWith("onebrain-cdp-", StringComparison.Ordinal))
+            return false;
+
+        var full = Path.GetFullPath(profileDirectory);
+        var temp = Path.GetFullPath(Path.GetTempPath());
+        return full.StartsWith(temp, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProcessAlive(int pid)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(pid);
+            return !process.HasExited;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsTcpPortOpen(int port)
+    {
+        try
+        {
+            using var client = new TcpClient();
+            var task = client.ConnectAsync("127.0.0.1", port);
+            return task.Wait(TimeSpan.FromMilliseconds(150)) && client.Connected;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string RedactProfilePath(string? profileDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(profileDirectory))
+            return "";
+
+        var leaf = Path.GetFileName(profileDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        return string.IsNullOrWhiteSpace(leaf) ? "" : leaf;
+    }
+
+    private static string Sanitize(string value) =>
+        SecretRedactor.Redact(value).Replace(Environment.NewLine, " ", StringComparison.Ordinal);
+}
+
 public sealed class BrowserRuntimeSmokeRunner
 {
     public async Task<BrowserRuntimeSmokeReport> RunAsync(BrowserRuntimeSmokeOptions options, CancellationToken cancellationToken = default)
@@ -107,6 +318,8 @@ public sealed class BrowserRuntimeSmokeRunner
         var port = (int?)null;
         var profileDir = "";
         var targetContext = (BrowserTargetContext?)null;
+        var cleanupWarnings = new List<string>();
+        var webSocketCloseOutcome = "not-opened";
 
         try
         {
@@ -268,9 +481,37 @@ public sealed class BrowserRuntimeSmokeRunner
         finally
         {
             if (page is not null)
-                await page.DisposeAsync().ConfigureAwait(false);
+            {
+                try
+                {
+                    await page.DisposeAsync().ConfigureAwait(false);
+                    webSocketCloseOutcome = "closed-or-already-closed";
+                }
+                catch (Exception ex) when (ex is WebSocketException or OperationCanceledException or IOException or ObjectDisposedException)
+                {
+                    webSocketCloseOutcome = $"cleanup-exception:{ex.GetType().Name}";
+                    cleanupWarnings.Add($"page-dispose:{ex.GetType().Name}:{SecretRedactor.Redact(ex.Message)}");
+                }
+            }
+
             if (session is not null)
-                await session.DisposeAsync().ConfigureAwait(false);
+            {
+                try
+                {
+                    await session.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or ObjectDisposedException)
+                {
+                    cleanupWarnings.Add($"session-dispose:{ex.GetType().Name}:{SecretRedactor.Redact(ex.Message)}");
+                }
+            }
+
+            var cleanupDiagnostics = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+                processId,
+                port,
+                profileDir,
+                webSocketCloseOutcome,
+                cleanupWarnings).ConfigureAwait(false);
 
             var cleanupHealth = new BrowserRuntimeHealthSnapshot(
                 "ChromeCdp",
@@ -285,11 +526,14 @@ public sealed class BrowserRuntimeSmokeRunner
                 targetContext?.Title,
                 BrowserHeartbeatStatus.Disconnected,
                 UsesRealProfile: false,
-                CleanupCompleted: CleanupLooksComplete(processId, port, profileDir));
+                CleanupCompleted: cleanupDiagnostics.CleanupCompleted);
 
             var cleanupStatus = cleanupHealth.CleanupCompleted ? BrowserRuntimeGateStatus.Passed : BrowserRuntimeGateStatus.Failed;
             var cleanupError = cleanupHealth.CleanupCompleted ? BrowserRuntimeErrorCode.None : BrowserRuntimeErrorCode.CleanupFailed;
-            gates.Add(Result("Gate 10 - Cleanup", cleanupStatus, cleanupError, cleanupHealth.CleanupCompleted ? "No managed process, CDP port or temp profile remains." : "Managed process, CDP port or temp profile may remain.", cleanupHealth, DateTimeOffset.UtcNow));
+            var cleanupMessage = cleanupHealth.CleanupCompleted
+                ? $"No managed process, CDP port or temp profile remains. {cleanupDiagnostics.ToDiagnosticMessage()}"
+                : $"Managed process, CDP port or temp profile may remain. {cleanupDiagnostics.ToDiagnosticMessage()}";
+            gates.Add(Result("Gate 10 - Cleanup", cleanupStatus, cleanupError, cleanupMessage, cleanupHealth, cleanupDiagnostics.CleanupStartedAtUtc));
         }
 
         var finished = DateTimeOffset.UtcNow;
@@ -378,44 +622,6 @@ public sealed class BrowserRuntimeSmokeRunner
             TimeoutMs: 8000,
             RequiresApproval: false,
             CreatedAtUtc: DateTimeOffset.UtcNow);
-
-    private static bool CleanupLooksComplete(int? processId, int? port, string profileDir)
-    {
-        if (processId is not null && IsProcessAlive(processId.Value))
-            return false;
-        if (port is not null && IsTcpPortOpen(port.Value))
-            return false;
-        if (!string.IsNullOrWhiteSpace(profileDir) && Directory.Exists(profileDir))
-            return false;
-        return true;
-    }
-
-    private static bool IsProcessAlive(int pid)
-    {
-        try
-        {
-            using var process = Process.GetProcessById(pid);
-            return !process.HasExited;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private static bool IsTcpPortOpen(int port)
-    {
-        try
-        {
-            using var client = new TcpClient();
-            var task = client.ConnectAsync("127.0.0.1", port);
-            return task.Wait(TimeSpan.FromMilliseconds(250)) && client.Connected;
-        }
-        catch
-        {
-            return false;
-        }
-    }
 
     private static string RedactPath(string? path)
     {

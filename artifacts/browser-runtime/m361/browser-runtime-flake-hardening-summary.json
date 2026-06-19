@@ -1,0 +1,27 @@
+{
+  "milestone": "M359-M361",
+  "baseCommit": "3021d85",
+  "finalCommit": null,
+  "readinessDecision": "BROWSER_RUNTIME_FLAKE_HARDENED",
+  "affectedTests": [
+    "BrowserRuntimeSmokeRunnerExecutesAllGatesOnFixture",
+    "BrowserRuntimeSmokeReportContainsStructuredDiagnostics"
+  ],
+  "rootCauseDocumented": true,
+  "cleanupHardened": true,
+  "cleanupIdempotent": true,
+  "ownedProcessOnlyCleanup": true,
+  "profileCleanupBoundedRetry": true,
+  "webSocketDisposalHardened": true,
+  "structuredDiagnosticsImproved": true,
+  "uniqueProfilePerRun": true,
+  "noUserBrowserKill": true,
+  "noRuntimeBehaviorChange": true,
+  "noUiImplemented": true,
+  "noRecipeExecutionImplemented": true,
+  "noOrchestrationApiImplemented": true,
+  "testsPassed": 2911,
+  "testsFailed": 0,
+  "fullSuiteClean": true,
+  "knownEnvironmentLimits": []
+}

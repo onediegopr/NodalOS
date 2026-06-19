@@ -124,6 +124,150 @@ public sealed class BrowserRuntimeSmokeTests
     }
 
     [TestMethod]
+    public async Task BrowserRuntimeSmokeCleanup_IsIdempotent()
+    {
+        var profile = Path.Combine(Path.GetTempPath(), $"onebrain-cdp-idempotent-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(profile);
+
+        var first = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            browserProcessId: null,
+            debugPort: null,
+            profile,
+            webSocketCloseOutcome: "not-opened",
+            timeout: TimeSpan.FromMilliseconds(500));
+        var second = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            browserProcessId: null,
+            debugPort: null,
+            profile,
+            webSocketCloseOutcome: "not-opened",
+            timeout: TimeSpan.FromMilliseconds(500));
+
+        Assert.IsTrue(first.CleanupCompleted);
+        Assert.IsTrue(second.CleanupCompleted);
+        Assert.AreEqual("deleted", second.ProfileDeleteOutcome);
+    }
+
+    [TestMethod]
+    public async Task BrowserRuntimeSmokeCleanup_ReportsProfileDeleteOutcome()
+    {
+        var profile = Path.Combine(Path.GetTempPath(), $"onebrain-cdp-profile-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(profile);
+
+        var diagnostics = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            browserProcessId: null,
+            debugPort: null,
+            profile,
+            webSocketCloseOutcome: "not-opened",
+            timeout: TimeSpan.FromMilliseconds(500));
+
+        Assert.IsTrue(diagnostics.CleanupCompleted);
+        Assert.AreEqual("deleted", diagnostics.ProfileDeleteOutcome);
+        Assert.IsFalse(diagnostics.ProfileDirectoryExists);
+        Assert.IsFalse(Directory.Exists(profile));
+    }
+
+    [TestMethod]
+    public async Task BrowserRuntimeSmokeCleanup_ReportsProcessOutcome()
+    {
+        var diagnostics = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            browserProcessId: null,
+            debugPort: null,
+            profileDirectory: null,
+            webSocketCloseOutcome: "not-opened",
+            timeout: TimeSpan.FromMilliseconds(100));
+
+        Assert.IsTrue(diagnostics.CleanupCompleted);
+        Assert.AreEqual("not-started", diagnostics.ProcessCleanupOutcome);
+        Assert.IsFalse(diagnostics.LeftoverProcessDetected);
+    }
+
+    [TestMethod]
+    public async Task BrowserRuntimeSmokeCleanup_DoesNotKillUnownedBrowserProcesses()
+    {
+        var currentProcessId = Environment.ProcessId;
+
+        var diagnostics = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            browserProcessId: currentProcessId,
+            debugPort: null,
+            profileDirectory: null,
+            webSocketCloseOutcome: "not-opened",
+            timeout: TimeSpan.FromMilliseconds(50));
+
+        using var currentProcess = System.Diagnostics.Process.GetProcessById(currentProcessId);
+        Assert.IsFalse(currentProcess.HasExited);
+        Assert.IsFalse(diagnostics.CleanupCompleted);
+        Assert.IsTrue(diagnostics.LeftoverProcessDetected);
+    }
+
+    [TestMethod]
+    public async Task BrowserRuntimeSmokeUsesUniqueProfilePathPerRun()
+    {
+        var first = await RunSmokeAsync();
+        var second = await RunSmokeAsync();
+        var firstProfile = CleanupGate(first).Diagnostic.Message.Split("profile=", StringSplitOptions.None)[1].Split(';')[0];
+        var secondProfile = CleanupGate(second).Diagnostic.Message.Split("profile=", StringSplitOptions.None)[1].Split(';')[0];
+
+        Assert.AreNotEqual(firstProfile, secondProfile);
+    }
+
+    [TestMethod]
+    public async Task BrowserRuntimeSmokeCleanupHandlesAlreadyExitedProcess()
+    {
+        using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "cmd.exe",
+            Arguments = "/c exit 0",
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
+        Assert.IsNotNull(process);
+        await process.WaitForExitAsync();
+
+        var diagnostics = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            process.Id,
+            debugPort: null,
+            profileDirectory: null,
+            webSocketCloseOutcome: "not-opened",
+            timeout: TimeSpan.FromMilliseconds(100));
+
+        Assert.IsTrue(diagnostics.CleanupCompleted);
+        Assert.AreEqual("owned-process-exited", diagnostics.ProcessCleanupOutcome);
+    }
+
+    [TestMethod]
+    public async Task BrowserRuntimeSmokeCleanupHandlesMissingProfileDirectory()
+    {
+        var profile = Path.Combine(Path.GetTempPath(), $"onebrain-cdp-missing-{Guid.NewGuid():N}");
+
+        var diagnostics = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            browserProcessId: null,
+            debugPort: null,
+            profile,
+            webSocketCloseOutcome: "not-opened",
+            timeout: TimeSpan.FromMilliseconds(100));
+
+        Assert.IsTrue(diagnostics.CleanupCompleted);
+        Assert.AreEqual("deleted", diagnostics.ProfileDeleteOutcome);
+        Assert.IsFalse(diagnostics.ProfileDirectoryExists);
+    }
+
+    [TestMethod]
+    public async Task BrowserRuntimeSmokeDiagnosticsDoNotContainSecrets()
+    {
+        var diagnostics = await BrowserRuntimeSmokeCleanupProbe.ProbeAsync(
+            browserProcessId: null,
+            debugPort: null,
+            profileDirectory: null,
+            webSocketCloseOutcome: "not-opened",
+            cleanupWarnings: ["authorization: bearer abc"],
+            timeout: TimeSpan.FromMilliseconds(100));
+
+        var message = diagnostics.ToDiagnosticMessage();
+        Assert.IsFalse(message.Contains("bearer abc", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(message.Contains("authorization:", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public async Task BrowserRuntimeSmokeReportDoesNotContainSecretsOrSensitiveProfilePaths()
     {
         var report = await RunSmokeAsync();
@@ -139,6 +283,9 @@ public sealed class BrowserRuntimeSmokeTests
         Assert.IsFalse(text.Contains("User Data", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(text.Contains("AppData", StringComparison.OrdinalIgnoreCase));
     }
+
+    private static BrowserRuntimeGateResult CleanupGate(BrowserRuntimeSmokeReport report) =>
+        report.Gates.Single(result => result.GateName == "Gate 10 - Cleanup");
 
     private static async Task<BrowserRuntimeSmokeReport> RunSmokeAsync()
     {

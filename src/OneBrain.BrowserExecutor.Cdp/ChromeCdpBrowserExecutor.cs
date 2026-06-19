@@ -852,8 +852,21 @@ public sealed class ChromeCdpPageSession : IAsyncDisposable
             return;
 
         _disposed = true;
-        if (_socket.State == WebSocketState.Open)
-            await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "dispose", CancellationToken.None).ConfigureAwait(false);
-        _socket.Dispose();
+        try
+        {
+            if (_socket.State == WebSocketState.Open || _socket.State == WebSocketState.CloseReceived)
+            {
+                using var closeTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "dispose", closeTimeout.Token).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is WebSocketException or OperationCanceledException or ObjectDisposedException)
+        {
+            // Cleanup must not prevent owned browser/session cleanup.
+        }
+        finally
+        {
+            _socket.Dispose();
+        }
     }
 }
