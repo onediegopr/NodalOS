@@ -444,8 +444,36 @@ Current percentages after M489-M491:
 
 ## Recommended Next Milestone
 
-`M492-M494 Workspace Local Model + Path Jail Binding + Project Import Wizard Contract`.
+`M495-M497 Workspace Storage Mock + Mission Binding + Workspace Switcher Contract`.
 
 Do not proceed to UI implementation, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before the workspace/path-jail model and positive execution authorization gate are planned and audited.
 
 After M489-M491, Mission Control UI remains read-only/no-op until the positive execution authorization gate exists.
+
+## M492-M494 Status - Workspace Local Contract
+
+M492-M494 closes the local workspace model, path jail binding, and import wizard contract.
+
+Completed:
+
+- Workspace local model as read-only contract.
+- Path jail binding as contract-only boundary.
+- Textual/mock-safe path validation for traversal, absolute paths, drive mismatch, UNC paths, mixed separators, empty paths, and sensitive path values.
+- Project import wizard as mock-only/read-only flow.
+- No real filesystem scan, no filesystem mutation, no file picker, no import, and no productive persistence.
+
+Current percentages after M492-M494:
+
+- NODAL OS global: 97.3%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 82%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 84%.
+- Productization foundation: 56%.
+- Mission Control UX: 62%.
+- Workspace Local: 28%.
+
+Recommended next:
+
+- `M495-M497 Workspace Storage Mock + Mission Binding + Workspace Switcher Contract`.

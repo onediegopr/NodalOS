@@ -979,3 +979,45 @@ Updated percentages:
 Recommended next milestone:
 
 - `M492-M494 Workspace Local Model + Path Jail Binding + Project Import Wizard Contract`.
+
+## M492-M494 Workspace Local Model + Path Jail Binding + Project Import Wizard Contract
+
+Decision:
+
+- `M492+M493+M494 CERRADO / WORKSPACE_LOCAL_MODEL_PATH_JAIL_IMPORT_CONTRACT_READY`
+
+What changed:
+
+- Added contract-first local workspace model.
+- Added path jail binding model with textual/mock-safe relative path validation.
+- Added project import wizard contract with read-only/mock-only eight-step flow.
+- Preserved evidence refs, timeline refs, UI state refs, guardrail summaries, and next safe steps.
+
+Guardrails:
+
+- No real filesystem scan.
+- No filesystem mutation.
+- No real file picker.
+- No productive persistence.
+- No runtime execution.
+- No positive execution gate implementation.
+- No cloud.
+- No LLM provider calls.
+- No browser automation.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.3%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 82%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 84%.
+- Productization foundation: 56%.
+- Mission Control UX: 62%.
+- Workspace Local: 28%.
+
+Recommended next milestone:
+
+- `M495-M497 Workspace Storage Mock + Mission Binding + Workspace Switcher Contract`.
