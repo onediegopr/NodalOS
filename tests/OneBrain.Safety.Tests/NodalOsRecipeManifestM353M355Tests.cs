@@ -266,7 +266,7 @@ public sealed class NodalOsRecipeManifestM353M355Tests
         var contracts = File.ReadAllText(SourcePath(
             "src", "OneBrain.AgentOperations.Contracts", "NodalOsRecipeManifestContracts.cs"));
         var services = File.ReadAllText(SourcePath(
-            "src", "OneBrain.BrowserExecutor.Cdp", "NodalOsRecipeManifestServices.cs"));
+            "src", "OneBrain.AgentOperations.Core", "NodalOsRecipeManifestServices.cs"));
         var combined = contracts + services;
 
         Assert.IsFalse(combined.Contains("RecipeRunner", StringComparison.Ordinal));

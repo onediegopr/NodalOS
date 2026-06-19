@@ -94,6 +94,22 @@ Recommended next milestone: `M377-M379 Completion Gate Canonicalization`.
 - Execution implemented: false.
 
 Recommended next milestone: `M410-M412 Agent Operations Extraction Phase 2 Core Services`.
+
+## Agent Operations Core Services Extraction M412
+
+- M410-M412 created `OneBrain.AgentOperations.Core`.
+- Phase 2 extracted pure Agent Operations services out of the BrowserExecutor CDP project boundary.
+- Moved services: workboard validator/fixtures, run reporting, recipe manifest, verification-before-done, progress reporting, step library, package/skill manifest, internal skill registry, worker boundary, evidence bridge, and redaction.
+- Compatibility strategy: preserve existing `OneBrain.BrowserExecutor.Cdp` namespace in moved services while the assembly/project boundary changes.
+- Compatibility shims required: true, via namespace preservation and direct project references.
+- Contracts moved in this phase: false.
+- Browser adapters moved: false.
+- Runtime behavior changed: false.
+- UI implemented: false.
+- Orchestration API implemented: false.
+- Execution implemented: false.
+
+Recommended next milestone: `M413-M415 Agent Operations Browser Adapter Boundary or M413-M415 Orchestration API Decision Record`.
 - Orchestration API implemented: false.
 
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
