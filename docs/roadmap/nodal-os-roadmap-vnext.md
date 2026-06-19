@@ -96,6 +96,18 @@ Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 
 
 Recommended next milestone: `M395-M397 Internal Skill Registry V1 Design or Agent Operations Extraction Prep`.
 
+## Internal Skill Registry V1 M397
+
+- M395-M397 created Internal Skill Registry V1 as an in-memory/catalog snapshot design over Package / Skill Manifest V1.
+- Registry entries preserve package/skill provenance, evidence requirements, capability metadata, risk metadata, internal-only status, and global-policy requirement.
+- Registry lookup is catalog metadata only and cannot grant execution permission.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Registry persistence DB, worker runtime, marketplace, package installation, UI, orchestration, skill execution, recipe execution, and step execution remain unimplemented.
+- Current placement remains temporary under `OneBrain.BrowserExecutor.*` until Agent Operations extraction.
+
+Recommended next milestone: `M398-M400 Worker Boundary Contract V1 or Agent Operations Extraction Prep`.
+
 ## M51 Scope
 
 M51 is closed only for:
