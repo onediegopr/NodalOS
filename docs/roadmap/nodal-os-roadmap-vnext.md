@@ -194,6 +194,29 @@ Recommended next milestone: `M422-M424 Orchestration In-Process Facade Decision 
 
 Recommended next milestone: `M425-M427 Orchestration In-Process Facade V1 No Execution or M428-M430 Agent Operations Adapter Project Skeleton`.
 
+## Orchestration In-Process Facade V1 No Execution M427
+
+- M425-M427 created the Orchestration In-Process Facade V1 audit, facade service, tests, report, and artifact.
+- `NodalOsOrchestrationInProcessFacade` added as in-process coordination service in `OneBrain.AgentOperations.Core`.
+- Facade implements `Dispatch(NodalOsOrchestrationCommandEnvelope)` → `NodalOsOrchestrationCommandResult`.
+- Validation via `NodalOsOrchestrationCommandValidator`.
+- Evidence validation via `NodalOsEvidenceRefBridge.ValidateBridgeRef`.
+- Common redaction via `NodalOsRedactionService`.
+- No-execution invariant enforced structurally at facade boundary: `Executed=false` always.
+- Policy gate, approval gate, evidence gate, and verification-before-done gate locations respected.
+- 20 command kinds supported for contract handling.
+- High/Critical risk without approval rejected.
+- Invalid evidence refs rejected.
+- Sensitive content detected and rejected.
+- Pause/Resume/Cancel are contract-only.
+- `RunningFuture` and `PausedFuture` not returned as active states.
+- API/HTTP/gRPC/scheduler/worker/runtime/execution/UI not implemented.
+- No `BrowserExecutor.Cdp` dependency.
+- New types use `NodalOs*` prefix.
+- Decision: `ORCHESTRATION_IN_PROCESS_FACADE_V1_READY_NO_EXECUTION`.
+
+Recommended next milestone: `M428-M430 Agent Operations Adapter Project Skeleton or M428-M430 Scheduled Read-Only Runs Decision Record`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
