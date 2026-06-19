@@ -148,6 +148,30 @@ Recommended next milestone: `M416-M418 Orchestration API Decision Record or M416
 
 Recommended next milestone: `M419-M421 Orchestration Command Contracts V1 or M419-M421 Agent Operations Adapter Project Skeleton`.
 
+## Orchestration Command Contracts V1 M421
+
+- M419-M421 created internal Orchestration Command Contracts V1.
+- Added command kinds, command envelope, command result, command state model, risk model, validator, JSON serializer, and fixtures.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Global policy evaluation required: true.
+- Human approval is required for High and Critical risk command contracts.
+- Evidence refs are validated through the EvidenceRef bridge.
+- Common redaction is used for command/result sensitive-content validation and serialization.
+- Accepted does not mean executed.
+- Completed means contract handling only.
+- Pause, Resume, and Cancel are contract-only in V1.
+- API implemented: false.
+- HTTP/gRPC implemented: false.
+- Scheduler implemented: false.
+- Worker runtime implemented: false.
+- Recipe execution implemented: false.
+- Skill execution implemented: false.
+- Step execution implemented: false.
+- UI implemented: false.
+
+Recommended next milestone: `M422-M424 Orchestration In-Process Facade Decision or M422-M424 Agent Operations Adapter Project Skeleton`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
