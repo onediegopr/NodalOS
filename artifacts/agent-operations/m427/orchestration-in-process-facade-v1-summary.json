@@ -1,7 +1,7 @@
 {
   "milestone": "M425-M427",
   "baseCommit": "69f0a8a",
-  "finalCommit": "71cdf41",
+  "finalCommit": "9557629",
   "readinessDecision": "ORCHESTRATION_IN_PROCESS_FACADE_V1_READY_NO_EXECUTION",
   "facadeImplemented": true,
   "inProcessOnly": true,

@@ -204,7 +204,7 @@ Recommended next milestone: `M425-M427 Orchestration In-Process Facade V1 No Exe
 - Common redaction via `NodalOsRedactionService`.
 - No-execution invariant enforced structurally at facade boundary: `Executed=false` always.
 - Policy gate, approval gate, evidence gate, and verification-before-done gate locations respected.
-- 20 command kinds supported for contract handling.
+- 17 command kinds supported for contract handling.
 - High/Critical risk without approval rejected.
 - Invalid evidence refs rejected.
 - Sensitive content detected and rejected.

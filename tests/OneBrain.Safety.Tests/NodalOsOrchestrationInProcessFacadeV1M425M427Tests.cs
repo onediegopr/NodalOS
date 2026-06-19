@@ -358,6 +358,45 @@ public sealed class NodalOsOrchestrationInProcessFacadeV1M425M427Tests
     }
 
     [TestMethod]
+    public void ArtifactFinalCommitMatchesAuditedCommit()
+    {
+        StringAssert.Contains(ReadArtifact(), "\"finalCommit\": \"9557629\"");
+    }
+
+    [TestMethod]
+    public void FacadeDocsUseCurrentCommandKindCount()
+    {
+        var audit = File.ReadAllText(Path.Combine(
+            FindRepoRoot(),
+            "docs",
+            "reports",
+            "orchestration-in-process-facade-v1-audit-m425.md"));
+        var report = File.ReadAllText(Path.Combine(
+            FindRepoRoot(),
+            "docs",
+            "reports",
+            "orchestration-in-process-facade-v1-m427.md"));
+
+        StringAssert.Contains(audit, "All 17 `NodalOsOrchestrationCommandKind` values");
+        StringAssert.Contains(report, "All 17 `NodalOsOrchestrationCommandKind` values");
+        Assert.IsFalse(audit.Contains("All 20", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(report.Contains("All 20", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void FacadeDocsReflectSensitiveSummaryRejection()
+    {
+        var audit = File.ReadAllText(Path.Combine(
+            FindRepoRoot(),
+            "docs",
+            "reports",
+            "orchestration-in-process-facade-v1-audit-m425.md"));
+
+        StringAssert.Contains(audit, "Sensitive summary detected by the command validator returns `Accepted=false`");
+        Assert.IsFalse(audit.Contains("valid result with warning", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public void NewTypesUseNodalOsPrefix()
     {
         var facadeFile = File.ReadAllText(Path.Combine(FindRepoRoot(), "src", "OneBrain.AgentOperations.Core", "NodalOsOrchestrationInProcessFacade.cs"));

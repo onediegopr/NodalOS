@@ -77,7 +77,7 @@ All contracts live in `src/OneBrain.AgentOperations.Contracts/`:
 
 ## 4. Commands Supported in V1
 
-All 20 `NodalOsOrchestrationCommandKind` values are supported for contract handling:
+All 17 `NodalOsOrchestrationCommandKind` values are supported for contract handling:
 
 | Command Kind | V1 Contract Handling |
 |---|---|
@@ -142,7 +142,7 @@ All 20 `NodalOsOrchestrationCommandKind` values are supported for contract handl
 8. Valid commands return `Accepted=true`, state per command kind.
 9. High/Critical risk without approval returns `Blocked` with policy error.
 10. Evidence validation failure returns `Blocked`.
-11. Sensitive summary detected returns valid result with warning.
+11. Sensitive summary detected by the command validator returns `Accepted=false`, `Executed=false`, and `State=Blocked`; no raw sensitive value is exposed.
 12. Pause/Resume/Cancel return `Completed` with contract-only warning.
 13. No `RunningFuture`/`PausedFuture` anywhere in V1 facade results.
 

@@ -52,7 +52,7 @@ Base commit: 69f0a8a
 
 ## Command Handling
 
-All 20 `NodalOsOrchestrationCommandKind` values are dispatched:
+All 17 `NodalOsOrchestrationCommandKind` values are dispatched:
 
 | Kind | State | Notes |
 |---|---|---|
