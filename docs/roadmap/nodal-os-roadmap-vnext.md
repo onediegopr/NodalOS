@@ -108,6 +108,19 @@ Recommended next milestone: `M395-M397 Internal Skill Registry V1 Design or Agen
 
 Recommended next milestone: `M398-M400 Worker Boundary Contract V1 or Agent Operations Extraction Prep`.
 
+## Worker Boundary Contract V1 M400
+
+- M398-M400 created Worker Boundary Contract V1 as a governance-only contract for future workers.
+- Worker identity, status, health, capability declaration, request envelope, and response envelope are defined.
+- Worker health is diagnostic only and does not grant execution permission.
+- Worker responses can carry EvidenceBridge refs and FailureKind values for reporting only.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Can authorize actions: false.
+- Worker runtime, skill execution, recipe execution, step execution, UI, orchestration, persistence, marketplace, and package installation remain unimplemented.
+
+Recommended next milestone: `M401-M403 Agent Operations Extraction Prep or M401-M403 Orchestration API Decision Record`.
+
 ## M51 Scope
 
 M51 is closed only for:
