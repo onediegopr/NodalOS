@@ -279,6 +279,28 @@ Recommended next milestone: `M434-M436 Scheduled Read-Only Run Contracts V1 or M
 
 Recommended next milestone: `M437-M439 Claude Pre-Runtime Agent Operations Audit or M437-M439 Browser Adapter Extraction Phase 1`.
 
+## Scheduled Read-Only Integration No-Divergence M442
+
+- M440-M442 closed Claude MEDIUM-1 and MEDIUM-3 pre-runtime cleanup.
+- Scheduled read-only forbidden-action screening now covers schedule `AllowedTargets`, schedule `Summary`, and preview `PlannedReadOnlyOperations`.
+- `InvalidMutableActionSchedule` is covered by tests and rejected by `ValidateSchedule`.
+- Cross-layer scheduled read-only to orchestration facade no-divergence tests added.
+- RunReport/ProgressReport no-authority/report-only coverage added.
+- Dependency-direction tests added for AgentOperations.Contracts, AgentOperations.Core, and AgentOperations.Adapters.Browser.
+- Namespace migration implemented: false.
+- Scheduler implemented: false.
+- Timer implemented: false.
+- Background worker implemented: false.
+- API implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+
+Recommended next milestones:
+
+- `M443-M445 AgentOperations Namespace Migration Scoped With Obsolete Shims`.
+- `M446-M448 Browser Adapter Extraction Phase 1`.
+- `M449-M450 Claude Re-Audit + Core Roadmap Re-Sync`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394

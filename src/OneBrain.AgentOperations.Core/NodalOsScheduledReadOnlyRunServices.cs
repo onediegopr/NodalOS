@@ -91,6 +91,8 @@ public sealed class NodalOsScheduledReadOnlyRunValidator
         if (schedule.FrequencyKind != NodalOsScheduledReadOnlyFrequencyKind.ManualOnly)
             warnings.Add("Future frequency kinds are contract metadata only and do not implement scheduler behavior.");
 
+        ValidateScheduleForbiddenActions(schedule, errors);
+
         if (ContainsSensitiveContent(ScheduleValues(schedule)))
             errors.Add("Scheduled read-only schedule contains sensitive or secret-like content.");
 
@@ -236,6 +238,20 @@ public sealed class NodalOsScheduledReadOnlyRunValidator
 
     private bool ContainsSensitiveContent(IEnumerable<string?> values) =>
         values.Any(value => !string.IsNullOrWhiteSpace(value) && redaction.ContainsSensitiveContent(value));
+
+    private static void ValidateScheduleForbiddenActions(
+        NodalOsScheduledReadOnlySchedule schedule,
+        List<string> errors)
+    {
+        foreach (var target in schedule.AllowedTargets)
+        {
+            if (ContainsForbiddenAction(target))
+                errors.Add("Scheduled read-only schedule allowed target contains a forbidden action marker.");
+        }
+
+        if (ContainsForbiddenAction(schedule.Summary))
+            errors.Add("Scheduled read-only schedule summary contains a forbidden action marker.");
+    }
 
     private static bool ContainsForbiddenAction(string? value)
     {
