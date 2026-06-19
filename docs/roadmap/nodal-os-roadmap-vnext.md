@@ -256,6 +256,29 @@ Recommended next milestone: `M431-M433 Scheduled Read-Only Runs Decision Record 
 
 Recommended next milestone: `M434-M436 Scheduled Read-Only Run Contracts V1 or M434-M436 Browser Adapter Extraction Phase 1`.
 
+## Scheduled Read-Only Run Contracts V1 M436
+
+- M434-M436 created Scheduled Read-Only Run Contracts V1.
+- Added schedule model, run request model, dry-run preview model, lifecycle/status enum, frequency enum, validation result, validator, JSON serializer, and fixtures.
+- Schedule contract is not a scheduler.
+- Scheduler implemented: false.
+- Timer implemented: false.
+- Background worker implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+- Read-only required: true.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Global policy evaluation required: true.
+- Evidence redaction required: true.
+- Manual trigger required for V1 run requests: true.
+- Dry-run preview only: true.
+- Forbidden planned preview actions are rejected: click, type, submit, upload, download, login, captcha, 2FA, payment/pay, send, delete, sign, publish, mutate, write, and file system mutation.
+- Evidence refs validate through the EvidenceRef bridge.
+- Common redaction is used for schedules, allowed targets, evidence requirements, summaries, warnings, and evidence refs.
+
+Recommended next milestone: `M437-M439 Claude Pre-Runtime Agent Operations Audit or M437-M439 Browser Adapter Extraction Phase 1`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
