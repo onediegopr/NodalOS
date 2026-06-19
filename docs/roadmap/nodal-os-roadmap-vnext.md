@@ -355,6 +355,37 @@ Recommended next milestones:
 - `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
 - `M460 Core Roadmap Re-Sync and Pause Closure`.
 
+## Automation Event and Evidence Schema Contracts V1 M451
+
+- M449-M451 created NODRIX Automation Event and Evidence Schema Contracts V1.
+- Added automation event kinds, automation evidence kinds, handoff reasons, event/evidence/handoff records, validator, JSON serializer, fixtures, tests, report, and artifact.
+- Automation events are contract-only and cannot grant runtime permission.
+- Runtime execution allowed: false.
+- Runtime execution deferred: true.
+- Global policy evaluation required: true.
+- Evidence redaction required: true.
+- Evidence refs validate through the EvidenceRef bridge.
+- Common redaction is used for summaries, selector paths, DOM snippets, step logs, network metadata, and human notes.
+- Raw secrets, cookies, headers, and private bodies are rejected.
+- Screenshot evidence is future reference-only, not inline binary content.
+- Network metadata is redacted-only and cannot include Authorization, Cookie, Set-Cookie, or body content.
+- Human handoff requires a clear reason and explicit user options.
+- Timeline and Mission Control compatibility are explicit through Mission/Task/Recipe/Step correlation fields.
+- Recorder implemented: false.
+- Replay implemented: false.
+- Queue implemented: false.
+- Scheduler implemented: false.
+- Browser automation implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+
+Recommended next milestones:
+
+- `M452-M454 Selector Safety Policy + Human Handoff Contract V1`.
+- `M455-M457 Recipe Risk Classifier + DSL Decision Record`.
+- `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
+- `M460 Core Roadmap Re-Sync and Pause Closure`.
+
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
 ## Package / Skill Manifest V1 M394
