@@ -49,6 +49,22 @@ Hybrid priority sequence:
 5. Step Library V1.
 6. Desktop identity/liveness.
 
+## Core Legacy Reference Graph M376
+
+- M374-M376 created the core legacy reference graph.
+- Active paths documented: core FSM/safe execution, browser/CDP runtime, evidence/audit ledgers, OCR ONNX .NET path, Agent Operations contracts/services, recipe/step/run reporting.
+- Legacy paths documented: retained Python OCR worker, historical OCR scripts, old `Nexa*` technical naming, diagnostic OCR runtime experiments.
+- Diagnostic-only paths documented: ONNX crash probes, guarded OCR probe runner, negative fixture recipes, historical artifacts.
+- Cleanup backlog created: completion gate canonicalization, common redaction/sanitizer service, EvidenceRef-to-ledger bridge, Agent Operations extraction boundary, recipe/step runtime-permission wording.
+- Runtime behavior changed: false.
+- UI implemented: false.
+- Recipe execution implemented: false.
+- Orchestration API implemented: false.
+- Namespace move implemented: false.
+- Legacy deleted: false.
+
+Recommended next milestone: `M377-M379 Completion Gate Canonicalization`.
+
 ## M51 Scope
 
 M51 is closed only for:
