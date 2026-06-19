@@ -358,24 +358,11 @@ public sealed class NodalOsAgentProgressReportBuilder
 
 public static class NodalOsAgentProgressReportSanitizer
 {
-    private static readonly string[] SensitiveMarkers =
-    [
-        "cookie",
-        "authorization",
-        "bearer",
-        "password",
-        "secret",
-        "api_key",
-        "access_token",
-        "refresh_token",
-        "id_token",
-        "set-cookie",
-        "private body"
-    ];
+    private static readonly NodalOsRedactionService Redaction = new();
 
     public static bool ContainsSensitiveTokenLikeContent(string? value) =>
         !string.IsNullOrWhiteSpace(value) &&
-        SensitiveMarkers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));
+        Redaction.ContainsSensitiveContent(value);
 
     public static NodalOsAgentProgressReport Sanitize(NodalOsAgentProgressReport report) =>
         report with
@@ -467,11 +454,7 @@ public static class NodalOsAgentProgressReportSanitizer
         if (string.IsNullOrEmpty(value))
             return value;
 
-        var sanitized = value;
-        foreach (var marker in SensitiveMarkers)
-            sanitized = sanitized.Replace(marker, "[REDACTED]", StringComparison.OrdinalIgnoreCase);
-
-        return sanitized;
+        return Redaction.RedactValue(value).Value;
     }
 }
 

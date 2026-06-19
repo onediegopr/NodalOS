@@ -263,32 +263,14 @@ public sealed class NodalOsRunReportBuilder
 
 public static class NodalOsRunReportSanitizer
 {
-    private static readonly string[] SensitiveMarkers =
-    [
-        "cookie",
-        "authorization",
-        "bearer ",
-        "password",
-        "secret",
-        "api_key",
-        "access_token",
-        "refresh_token",
-        "id_token",
-        "set-cookie"
-    ];
+    private static readonly NodalOsRedactionService Redaction = new();
 
     public static string Sanitize(string? value)
     {
         if (string.IsNullOrEmpty(value))
             return value ?? string.Empty;
 
-        var sanitized = value;
-        foreach (var marker in SensitiveMarkers)
-        {
-            sanitized = ReplaceInsensitive(sanitized, marker, "[REDACTED]");
-        }
-
-        return sanitized;
+        return Redaction.RedactValue(value).Value;
     }
 
     public static bool IsSafe(NexaRunReport report)
@@ -308,10 +290,7 @@ public static class NodalOsRunReportSanitizer
     }
 
     public static bool IsSafeValue(string value) =>
-        !SensitiveMarkers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));
-
-    private static string ReplaceInsensitive(string source, string oldValue, string newValue) =>
-        source.Replace(oldValue, newValue, StringComparison.OrdinalIgnoreCase);
+        !Redaction.ContainsSensitiveContent(value);
 }
 
 public static class NodalOsRunReportFixtures

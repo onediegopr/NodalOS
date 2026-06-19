@@ -32,19 +32,7 @@ public sealed class NodalOsRecipeManifestValidator
         NodalOsRecipeActionKind.Stop
     ];
 
-    private static readonly string[] SecretMarkers =
-    [
-        "cookie",
-        "authorization",
-        "bearer",
-        "password",
-        "secret",
-        "api_key",
-        "access_token",
-        "refresh_token",
-        "id_token",
-        "set-cookie"
-    ];
+    private static readonly NodalOsRedactionService Redaction = new();
 
     public NodalOsRecipeManifestValidationResult Validate(NodalOsRecipeManifest manifest)
     {
@@ -232,7 +220,7 @@ public sealed class NodalOsRecipeManifestValidator
     }
 
     private static bool ContainsSecretMarker(string value) =>
-        SecretMarkers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));
+        Redaction.ContainsSensitiveContent(value);
 
     private static bool UrlMatchesAllowedDomain(string urlTemplate, IReadOnlyList<string> allowedDomains)
     {

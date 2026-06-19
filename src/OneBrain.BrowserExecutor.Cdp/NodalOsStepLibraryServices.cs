@@ -283,34 +283,17 @@ public sealed class NodalOsStepLibraryValidator
 
 public static class NodalOsStepLibrarySanitizer
 {
-    private static readonly string[] SecretMarkers =
-    [
-        "cookie",
-        "authorization",
-        "bearer",
-        "password",
-        "secret",
-        "api_key",
-        "access_token",
-        "refresh_token",
-        "id_token",
-        "set-cookie",
-        "private body"
-    ];
+    private static readonly NodalOsRedactionService Redaction = new();
 
     public static bool ContainsSecretLikeContent(string? value) =>
         !string.IsNullOrWhiteSpace(value) &&
-        SecretMarkers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));
+        Redaction.ContainsSensitiveContent(value);
 
     public static string SanitizeLabelOrDescription(string? value)
     {
         if (string.IsNullOrEmpty(value))
             return string.Empty;
 
-        var sanitized = value;
-        foreach (var marker in SecretMarkers)
-            sanitized = sanitized.Replace(marker, "[REDACTED]", StringComparison.OrdinalIgnoreCase);
-
-        return sanitized;
+        return Redaction.RedactValue(value).Value;
     }
 }
