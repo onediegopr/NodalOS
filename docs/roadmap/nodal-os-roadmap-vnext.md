@@ -298,8 +298,8 @@ Recommended next milestone: `M437-M439 Claude Pre-Runtime Agent Operations Audit
 Recommended next milestones:
 
 - `M443-M445 AgentOperations Namespace Migration Scoped With Obsolete Shims`.
-- `M446-M448 Browser Adapter Extraction Phase 1`.
-- `M449-M450 Claude Re-Audit + Core Roadmap Re-Sync`.
+- `M446-M448 Automation Layer ADR + RPA References Decision`.
+- `M449-M451 Automation Event and Evidence Schema Contracts V1`.
 
 ## AgentOperations Namespace Migration M445
 
@@ -321,8 +321,39 @@ Recommended next milestones:
 
 Recommended next milestones:
 
-- `M446-M448 Browser Adapter Extraction Phase 1`.
-- `M449-M450 Claude Re-Audit + Core Roadmap Re-Sync`.
+- `M446-M448 Automation Layer ADR + RPA References Decision`.
+- `M449-M451 Automation Event and Evidence Schema Contracts V1`.
+
+## Automation Layer ADR + RPA References Decision M448
+
+- M446-M448 created the NODRIX Automation Layer ADR.
+- UI.Vision, TagUI, and OpenRPA/OpenIAP are references only.
+- No copied code, no AGPL/commercial RPA code, and no external RPA dependency introduced.
+- NODRIX remains Mission Control-first, approval-first, evidence-first, timeline-first, and local-first.
+- Automation Layer is future governed automation, not classic RPA.
+- Recorder future-only: true.
+- Recipe DSL future-only: true.
+- Work Queue future-only: true.
+- Trigger Policy future-only: true.
+- Automation Evidence Schema future-only: true.
+- Human Handoff Contract planned: true.
+- Selector Safety Policy planned: true.
+- Recipe Risk Classifier planned: true.
+- Recorder implemented: false.
+- Replay implemented: false.
+- Queue implemented: false.
+- Scheduler implemented: false.
+- Browser automation implemented: false.
+- UI implemented: false.
+- Execution implemented: false.
+
+Recommended next milestones:
+
+- `M449-M451 Automation Event and Evidence Schema Contracts V1`.
+- `M452-M454 Selector Safety Policy + Human Handoff Contract V1`.
+- `M455-M457 Recipe Risk Classifier + DSL Decision Record`.
+- `M458-M459 Claude Automation Layer Pre-Implementation Audit`.
+- `M460 Core Roadmap Re-Sync and Pause Closure`.
 
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.
 
