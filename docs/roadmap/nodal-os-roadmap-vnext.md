@@ -78,6 +78,22 @@ Recommended next milestone: `M377-M379 Completion Gate Canonicalization`.
 - Broad rename implemented: false.
 - Runtime behavior changed: false.
 - UI implemented: false.
+
+## Agent Operations Contracts Extraction M409
+
+- M407-M409 created `OneBrain.AgentOperations.Contracts`.
+- Phase 1 extracted Agent Operations contracts out of the BrowserExecutor contracts project boundary.
+- Moved contracts: workboard, failure taxonomy, run report, recipe manifest, verification-before-done, progress reporting, step library, redaction, evidence bridge, package/skill manifest, internal skill registry, and worker boundary.
+- Compatibility strategy: preserve existing `OneBrain.BrowserExecutor.Contracts` namespace in moved types while the assembly/project boundary changes.
+- Compatibility shims required: true, via namespace preservation and direct project references.
+- Services moved: false.
+- Browser adapters moved: false.
+- Runtime behavior changed: false.
+- UI implemented: false.
+- Orchestration API implemented: false.
+- Execution implemented: false.
+
+Recommended next milestone: `M410-M412 Agent Operations Extraction Phase 2 Core Services`.
 - Orchestration API implemented: false.
 
 Recommended next milestone: `M392-M394 Package / Skill Manifest V1 or M392-M394 Agent Operations Extraction Prep`.

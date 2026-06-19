@@ -264,7 +264,7 @@ public sealed class NodalOsRecipeManifestM353M355Tests
     public void NoExecutionRuntimeIntroduced()
     {
         var contracts = File.ReadAllText(SourcePath(
-            "src", "OneBrain.BrowserExecutor.Contracts", "NodalOsRecipeManifestContracts.cs"));
+            "src", "OneBrain.AgentOperations.Contracts", "NodalOsRecipeManifestContracts.cs"));
         var services = File.ReadAllText(SourcePath(
             "src", "OneBrain.BrowserExecutor.Cdp", "NodalOsRecipeManifestServices.cs"));
         var combined = contracts + services;

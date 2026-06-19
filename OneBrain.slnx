@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/OneBrain.Actions/OneBrain.Actions.csproj" />
+    <Project Path="src/OneBrain.AgentOperations.Contracts/OneBrain.AgentOperations.Contracts.csproj" />
     <Project Path="src/OneBrain.BrowserExecutor.Cdp/OneBrain.BrowserExecutor.Cdp.csproj" />
     <Project Path="src/OneBrain.BrowserExecutor.Contracts/OneBrain.BrowserExecutor.Contracts.csproj" />
     <Project Path="src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj" />
