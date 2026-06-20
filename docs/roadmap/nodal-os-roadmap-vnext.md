@@ -1740,3 +1740,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M540+M541+M542 - Secret Detection Policy Preview + Exclusion Policy Pack + Scan Dry Run Contract`.
+
+## M540-M542 Secret Detection Policy Preview + Exclusion Policy Pack + Scan Dry Run Contract
+
+Closed: 2026-06-20
+
+Decision: `M540+M541+M542 CERRADO / PROJECT_UNDERSTANDING_DRY_RUN_POLICY_READY`
+
+Scope:
+
+- M540: Secret Detection Policy Preview with policy categories, strategy refs, redaction requirement, user review requirement, and readiness blocked for real sensitive-data detection, real scan, and LLM context build.
+- M541: Exclusion Policy Pack with default exclusion groups and preview-only rules. The pack does not apply rules to a real filesystem and cannot create an index or build LLM context.
+- M542: Scan Dry Run Contract referencing Path Jail Preconditions, Consent Scope Preview, Secret Detection Policy Preview, Exclusion Policy Pack, and the M539 Real Scan Audit Gate. The gate remains blocked.
+
+Updated percentages:
+
+- NODAL OS global: 98.9%
+- Agent Operations / Automation Layer: 98.1%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 89%
+- Approval foundation: 83%
+- Redaction/Safety foundation: 95%
+- Productization foundation: 74%
+- Mission Control UX: 74%
+- Workspace Local: 72%
+- Project Understanding foundation: 66%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M543+M544+M545 - Project Understanding Dry Run UI Preview + Scan Consent Review Cards + Dry Run Evidence Plan`.

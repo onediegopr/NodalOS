@@ -1,0 +1,21 @@
+{
+  "milestone": "M540+M541+M542",
+  "artifact": "exclusion-policy-pack",
+  "projectOperationalName": "NODAL OS",
+  "isPreviewOnly": true,
+  "usesRealFilesystem": false,
+  "directoryListingPerformed": false,
+  "fileReadPerformed": false,
+  "defaultExclusionGroupsModeled": true,
+  "readyForRealExclusionEnforcement": false,
+  "readyForRealScan": false,
+  "readyForIndexing": false,
+  "readyForVectorization": false,
+  "canReadDirectory": false,
+  "canReadFile": false,
+  "canApplyToRealFilesystem": false,
+  "canCreateIndex": false,
+  "canBuildLlmContext": false,
+  "redacted": true,
+  "deterministic": true
+}
