@@ -1,0 +1,27 @@
+{
+  "milestone": "M570+M571+M572",
+  "checkpointId": "audit-checkpoint-review-m570",
+  "workspaceRef": "workspace-ref-m570",
+  "missionRef": "mission-ref-m570",
+  "governanceBaselineRef": "real-access-blocker-closeout-m569",
+  "realAccessBlockerCloseoutRef": "real-access-blocker-closeout-m569",
+  "reviewStatus": "CheckpointComplete",
+  "isCheckpointOnly": true,
+  "canAuthorizeImplementation": false,
+  "canEnableRealAccess": false,
+  "canAccessFilesystem": false,
+  "canBuildLlmContext": false,
+  "canUseCloud": false,
+  "canTriggerRuntime": false,
+  "coveredScopeCount": 16,
+  "decision": {
+    "governanceBaselineReady": true,
+    "readyForDirectRealImplementation": false,
+    "readyForProductiveConsentImplementation": false,
+    "readyForRealPathJailImplementation": false,
+    "readyForRealFilesystemAccess": false,
+    "readyForRealScan": false,
+    "readyForLlmContext": false,
+    "recommendedNextPhase": "Productive consent design review, still design-only."
+  }
+}

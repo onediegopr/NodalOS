@@ -1223,3 +1223,28 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance.
 
 Recommended next phase is an audit checkpoint before any operational implementation.
+## M570+M571+M572 - Access Implementation Checkpoint
+
+Decision target: `ACCESS_IMPLEMENTATION_CHECKPOINT_READY`.
+
+This block adds:
+
+- Audit Checkpoint Review.
+- Productive Consent Design Draft.
+- Disabled Access Roadmap.
+
+Still blocked:
+
+- Productive consent persistence.
+- Productive consent enforcement.
+- Operational access.
+- Path jail implementation.
+- Policy enforcement.
+- No-mutation runtime proof.
+- Cancellation proof.
+- Evidence and timeline emission.
+- Kill switch and rollback.
+- Adversarial tests.
+- LLM, cloud, provider activity, and runtime governance.
+
+Recommended next phase remains Productive Consent Design Review, still design-only.

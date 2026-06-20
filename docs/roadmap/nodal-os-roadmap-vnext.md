@@ -2051,3 +2051,35 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 88%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+## M570+M571+M572 - Access Implementation Checkpoint
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Audit checkpoint review covering M534-M569.
+- Productive consent design draft with no persistence or enforcement.
+- Disabled access roadmap with all phases disabled by default.
+- Static redacted artifacts under `artifacts/agent-operations/m572`.
+
+Boundaries:
+
+- Checkpoint cannot authorize implementation.
+- Consent design cannot persist or enforce consent.
+- Roadmap cannot enable operational access.
+- Operational access, content access, content fingerprinting, indexing, LLM context, cloud, provider activity, and runtime remain blocked.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.85%
+- Agent Operations / Automation Layer: 99.1%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 93%
+- Approval foundation: 88%
+- Redaction/Safety foundation: 97%
+- Productization foundation: 84%
+- Mission Control UX: 79%
+- Workspace Local: 81%
+- Project Understanding foundation: 90%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

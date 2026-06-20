@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS M570-M572 Access Implementation Checkpoint</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b12;
+      --panel: #111827;
+      --line: #28354a;
+      --text: #edf5ff;
+      --muted: #9eb1c8;
+      --ok: #7bd88f;
+      --warn: #ffd166;
+      --block: #ff6b6b;
+    }
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #14213d, var(--bg) 44%);
+      color: var(--text);
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 42px 20px;
+    }
+    header, section {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #0b1220;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .block { color: var(--block); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="label">M570-M572 Checkpoint</div>
+      <h1>Access Implementation Checkpoint</h1>
+      <p>Governance baseline is ready. Operational implementation remains blocked.</p>
+    </header>
+    <section class="grid">
+      <div class="card"><div class="label">Audit checkpoint</div><strong class="ok">Complete</strong></div>
+      <div class="card"><div class="label">Consent design</div><strong class="warn">Design only</strong></div>
+      <div class="card"><div class="label">Roadmap</div><strong class="warn">Disabled by default</strong></div>
+      <div class="card"><div class="label">Operational access</div><strong class="block">Blocked</strong></div>
+    </section>
+    <section>
+      <h2>Recommended Next Milestone</h2>
+      <p>Productive consent design review, still design-only.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "milestone": "M570+M571+M572",
+  "designId": "productive-consent-design-draft-m571",
+  "workspaceRef": "workspace-ref-m571",
+  "missionRef": "mission-ref-m571",
+  "basedOnLedgerMockRef": "consent-scope-ledger-mock-m565",
+  "isDesignOnly": true,
+  "usesProductivePersistence": false,
+  "persistsConsent": false,
+  "enforcesConsent": false,
+  "canAuthorizeCapability": false,
+  "canAuthorizeFilesystemAccess": false,
+  "canBuildLlmContext": false,
+  "canUseCloud": false,
+  "dataSafetyRules": [
+    "NoSensitiveMaterialInConsentRecords",
+    "NoContentPayloadInConsentRecords",
+    "NoBroadPathLeakageInReports",
+    "PathRefsRemainRedacted",
+    "ConsentCannotImplyLlmOrCloudPermission",
+    "ContentAccessConsentCannotImplyRepresentationOrLlmContext",
+    "ConsentMustBeRevocable",
+    "MissingStaleRevokedConsentFailsClosed"
+  ],
+  "decision": {
+    "readyForDesignReview": true,
+    "readyForProductiveImplementation": false,
+    "readyForConsentPersistence": false,
+    "readyForConsentEnforcement": false,
+    "readyForFilesystemAccess": false,
+    "readyForLlmContext": false
+  }
+}
