@@ -1864,3 +1864,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M552+M553+M554 - Synthetic Dry Run UI Results + Fixture Coverage Report + Real Scan Readiness ADR`.
+
+## M552-M554 Synthetic Dry Run UI Results + Fixture Coverage Report + Real Scan Readiness ADR
+
+Closed: 2026-06-20
+
+Decision: `M552+M553+M554 CERRADO / REAL_SCAN_READINESS_ADR_READY`
+
+Scope:
+
+- M552: Synthetic Dry Run UI Results preview with static read-only/no-op result sections.
+- M553: Fixture Coverage Report with 16/16 synthetic fixture categories covered.
+- M554: Real Scan Readiness ADR declaring synthetic baseline ready and operational scan behavior not ready.
+
+Updated percentages:
+
+- NODAL OS global: 99.3%
+- Agent Operations / Automation Layer: 98.5%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 91%
+- Approval foundation: 84%
+- Redaction/Safety foundation: 95%
+- Productization foundation: 78%
+- Mission Control UX: 76%
+- Workspace Local: 74%
+- Project Understanding foundation: 78%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M555+M556+M557 - Disabled Path Jail Prototype Gate + Synthetic Canonicalization Cases + No-Mutation Proof Contract`.

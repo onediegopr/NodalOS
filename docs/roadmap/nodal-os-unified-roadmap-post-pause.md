@@ -958,6 +958,37 @@ Recommended next:
 
 Do not proceed to path jail runtime, real scan, real content inspection, folder enumeration, content fingerprinting, source-control operations, indexing, vectorization, LLM context build, prompt creation, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.
 
+## M552-M554 Status - Real Scan Readiness ADR
+
+M552-M554 closes the synthetic dry-run phase. It adds static synthetic UI results, fixture coverage reporting, and a readiness ADR.
+
+Completed:
+
+- Synthetic Dry Run UI Results with static read-only/no-op result sections.
+- Fixture Coverage Report with all 16 synthetic fixture categories represented.
+- Real Scan Readiness ADR with decision status `REAL_SCAN_NOT_READY_SYNTHETIC_BASELINE_READY`.
+
+Current percentages after M552-M554:
+
+- NODAL OS global: 99.3%.
+- Agent Operations / Automation Layer: 98.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 91%.
+- Approval foundation: 84%.
+- Redaction/Safety foundation: 95%.
+- Productization foundation: 78%.
+- Mission Control UX: 76%.
+- Workspace Local: 74%.
+- Project Understanding foundation: 78%.
+- LLM/Assignment: 74%.
+- Cloud optional: 10%.
+
+Recommended next:
+
+- `M555+M556+M557 - Disabled Path Jail Prototype Gate + Synthetic Canonicalization Cases + No-Mutation Proof Contract`.
+
+Do not proceed to operational workspace access, operational scan behavior, folder enumeration, content access, content fingerprinting, source-control operations, indexing, representation build, LLM context build, prompt construction, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.
+
 ## M543-M545 Status - Project Understanding Dry Run Review
 
 M543-M545 adds the visual and contractual review layer for the future Project Understanding dry-run path. It remains static, read-only, no-op, ref-only, redacted, deterministic, and non-operational.

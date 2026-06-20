@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS M552-M554 Real Scan Readiness</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101411;
+      --panel: #172019;
+      --ink: #edf5ec;
+      --muted: #aebcae;
+      --line: #334035;
+      --accent: #a8d46f;
+      --warn: #f0b867;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #22351c, var(--bg) 42%);
+      color: var(--ink);
+      font: 15px/1.5 "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: color-mix(in srgb, var(--panel) 92%, black);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .28);
+    }
+    h1, h2 { margin: 0 0 12px; }
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .blocked { color: var(--warn); }
+    ul { padding-left: 18px; }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="badge">M552-M554 synthetic closeout</span>
+    <h1>NODAL OS Real Scan Readiness</h1>
+    <p>Decision: <strong>REAL_SCAN_NOT_READY_SYNTHETIC_BASELINE_READY</strong></p>
+    <section class="grid">
+      <article class="card">
+        <h2>Synthetic Results</h2>
+        <p>16 fixture categories covered. Results remain synthetic and read-only.</p>
+        <ul>
+          <li>Included previews: 6</li>
+          <li>Excluded previews: 3</li>
+          <li>Blocked previews: 2</li>
+          <li>Needs review: 1</li>
+          <li>Redacted previews: 2</li>
+          <li>Audit required: 4</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h2>Coverage</h2>
+        <p>Coverage closeout is ready for synthetic fixtures only.</p>
+        <p class="blocked">Operational scan behavior remains blocked.</p>
+      </article>
+      <article class="card">
+        <h2>Readiness ADR</h2>
+        <p>Synthetic baseline is ready as governance baseline.</p>
+        <p class="blocked">Operational workspace access, indexing, LLM context, provider, cloud, and runtime remain blocked.</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
+
