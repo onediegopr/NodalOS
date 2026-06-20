@@ -1248,3 +1248,29 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance.
 
 Recommended next phase remains Productive Consent Design Review, still design-only.
+## M573+M574+M575 - Productive Consent Design Review
+
+Decision target: `PRODUCTIVE_CONSENT_DESIGN_REVIEW_READY`.
+
+This block adds:
+
+- Productive Consent Design Review.
+- Disabled Consent Storage Contract.
+- Consent Audit Acceptance.
+
+Still blocked:
+
+- Productive consent persistence.
+- Productive consent enforcement.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- Policy enforcement.
+- No-mutation runtime proof.
+- Cancellation proof.
+- Evidence and timeline emission.
+- Kill switch and rollback.
+- Adversarial tests.
+- LLM, cloud, provider activity, and runtime governance.
+
+Recommended next phase is a disabled productive consent storage UI preview or a storage implementation ADR, still without direct implementation.

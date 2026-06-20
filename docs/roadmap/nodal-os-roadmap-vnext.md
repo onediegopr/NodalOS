@@ -2083,3 +2083,35 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 90%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+## M573+M574+M575 - Productive Consent Design Review
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Productive consent design review as review-only and no-op.
+- Disabled consent storage contract with no productive persistence.
+- Consent audit acceptance as governance baseline only.
+- Static redacted artifacts under `artifacts/agent-operations/m575`.
+
+Boundaries:
+
+- The review cannot approve implementation.
+- The storage contract cannot persist or enforce consent.
+- Acceptance cannot enable productive consent.
+- Operational access, content access, content fingerprinting, indexing, LLM context, cloud, provider activity, and runtime remain blocked.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.9%
+- Agent Operations / Automation Layer: 99.2%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 93%
+- Approval foundation: 89%
+- Redaction/Safety foundation: 97%
+- Productization foundation: 85%
+- Mission Control UX: 80%
+- Workspace Local: 82%
+- Project Understanding foundation: 91%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

@@ -1,0 +1,49 @@
+{
+  "milestone": "M573+M574+M575",
+  "storageContractId": "disabled-consent-storage-contract-m574",
+  "designReviewRef": "productive-consent-design-review-m573",
+  "workspaceRef": "workspace-ref-m574",
+  "missionRef": "mission-ref-m574",
+  "disabledByDefault": true,
+  "isContractOnly": true,
+  "usesProductivePersistence": false,
+  "persistsConsent": false,
+  "readsProductiveConsent": false,
+  "writesProductiveConsent": false,
+  "deletesProductiveConsent": false,
+  "migratesConsent": false,
+  "syncsConsentToCloud": false,
+  "canAuthorizeCapability": false,
+  "canAuthorizeFilesystemAccess": false,
+  "canAuthorizeLlmContext": false,
+  "recordDraftDefaults": {
+    "createdAt": "2026-06-20T00:00:00Z",
+    "isDraftOnly": true,
+    "isAuthoritative": false,
+    "containsRawSecret": false,
+    "containsRawFileContent": false,
+    "containsUnredactedPath": false,
+    "canAuthorizeRealUse": false
+  },
+  "safetyRules": [
+    "NoSensitiveMaterial",
+    "NoContentPayload",
+    "NoUnredactedBroadPaths",
+    "NoCloudSync",
+    "NoProviderSync",
+    "NoRuntimeAccess",
+    "NoAutomaticMigration",
+    "NoImplicitConsentInheritance",
+    "NoCrossCapabilityInheritance",
+    "ContentAccessDoesNotImplyRepresentationOrLlmContext",
+    "RevokedStaleMissingConsentFailsClosed"
+  ],
+  "readiness": {
+    "readyForStorageDesignReview": true,
+    "readyForProductivePersistence": false,
+    "readyForConsentEnforcement": false,
+    "readyForCapabilityAuthorization": false,
+    "readyForFilesystemAccess": false,
+    "readyForLlmContext": false
+  }
+}

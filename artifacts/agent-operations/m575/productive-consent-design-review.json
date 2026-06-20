@@ -1,0 +1,28 @@
+{
+  "milestone": "M573+M574+M575",
+  "reviewId": "productive-consent-design-review-m573",
+  "designDraftRef": "productive-consent-design-draft-m571",
+  "auditCheckpointRef": "audit-checkpoint-review-m570",
+  "disabledAccessRoadmapRef": "disabled-access-roadmap-m572",
+  "workspaceRef": "workspace-ref-m573",
+  "missionRef": "mission-ref-m573",
+  "isReviewOnly": true,
+  "isNoOp": true,
+  "canApproveImplementation": false,
+  "canAuthorizeProductiveConsent": false,
+  "canPersistConsent": false,
+  "canEnforceConsent": false,
+  "canAuthorizeCapability": false,
+  "canAuthorizeFilesystemAccess": false,
+  "canAuthorizeLlmContext": false,
+  "canUseCloud": false,
+  "decision": {
+    "readyForDesignReviewCloseout": true,
+    "readyForProductiveConsentImplementation": false,
+    "readyForConsentPersistence": false,
+    "readyForConsentEnforcement": false,
+    "readyForCapabilityAuthorization": false,
+    "readyForFilesystemAccess": false,
+    "readyForLlmContext": false
+  }
+}

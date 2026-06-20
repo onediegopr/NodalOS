@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS M573-M575 Productive Consent Design Review</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0e12;
+      --panel: #131a21;
+      --line: #2b3745;
+      --text: #eef6ff;
+      --muted: #a6b6c6;
+      --ok: #83d483;
+      --warn: #ffd166;
+      --block: #ff6b6b;
+    }
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #0c1724, var(--bg) 56%, #1d1408);
+      color: var(--text);
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 42px 20px;
+    }
+    header, section {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--panel) 90%, transparent);
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #0e151d;
+      padding: 16px;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .block { color: var(--block); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="label">M573-M575 Review</div>
+      <h1>Productive Consent Design Review</h1>
+      <p>Design is accepted as governance baseline only. Productive consent remains blocked.</p>
+    </header>
+    <section class="grid">
+      <div class="card"><div class="label">Review</div><strong class="ok">Closed</strong></div>
+      <div class="card"><div class="label">Storage</div><strong class="warn">Disabled contract</strong></div>
+      <div class="card"><div class="label">Acceptance</div><strong class="ok">Governance baseline</strong></div>
+      <div class="card"><div class="label">Operational use</div><strong class="block">Blocked</strong></div>
+    </section>
+    <section>
+      <h2>Next Milestone</h2>
+      <p>Productive consent storage implementation ADR.</p>
+    </section>
+  </main>
+</body>
+</html>
