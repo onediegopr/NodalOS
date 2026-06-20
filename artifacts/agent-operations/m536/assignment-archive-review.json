@@ -1,0 +1,71 @@
+{
+  "artifactId": "assignment-archive-review-m535",
+  "project": "NODAL OS",
+  "milestone": "M535",
+  "createdAt": "2026-06-20T00:00:00Z",
+  "archiveReviewId": "assignment-archive-review-m535",
+  "closedMilestones": [
+    {
+      "milestoneId": "M519-M521",
+      "label": "Assignment Engine v1 Contracts / TaskGraph Draft / Planner Readiness Gate",
+      "decision": "ASSIGNMENT_ENGINE_CONTRACTS_READY",
+      "whatIsComplete": "Tasks draft with CanExecute=false; FutureRuntimeExecution disabled.",
+      "whatRemainsMock": "TaskGraph is draft-only; no execution authority; planner runtime not implemented.",
+      "cannotBePromotedToRuntime": "TaskGraph must not be promoted to executable without a separate audit and positive execution gate."
+    },
+    {
+      "milestoneId": "M522-M524",
+      "label": "Mission Plan Draft Preview / TaskGraph Review Cards / Assignment Evidence Linking",
+      "decision": "MISSION_PLAN_PREVIEW_READY",
+      "whatIsComplete": "Preview HTML static/redacted; evidence/timeline/context refs; claims unverified.",
+      "whatRemainsMock": "Preview is static only; evidence is ref-only; claims remain unverified/needs-review.",
+      "cannotBePromotedToRuntime": "Preview HTML cannot be used as source of truth; evidence refs are not evidence content."
+    },
+    {
+      "milestoneId": "M525-M527",
+      "label": "Assignment UI Preview Static / TaskGraph Interaction No-Op / Planner UX Acceptance",
+      "decision": "PLANNER_UX_ACCEPTANCE_READY",
+      "whatIsComplete": "UI interactions are no-op; visual-only; no operative wiring.",
+      "whatRemainsMock": "All UI interactions are no-op; no operative state changes; no execution wiring.",
+      "cannotBePromotedToRuntime": "No-op interactions must not be wired to real operations without explicit gating."
+    },
+    {
+      "milestoneId": "M528-M530",
+      "label": "Assignment Review Persistence Mock / Planner Handoff Contract / Assignment Safety Audit Pack",
+      "decision": "ASSIGNMENT_REVIEW_HANDOFF_SAFETY_READY",
+      "whatIsComplete": "Persistence is mock-only; handoff is draft; safety audit pack completed.",
+      "whatRemainsMock": "Mock persistence is not productive persistence; handoff is not execution authority.",
+      "cannotBePromotedToRuntime": "Mock persistence must never replace productive persistence without explicit migration audit."
+    },
+    {
+      "milestoneId": "M531-M533",
+      "label": "Assignment Review History Mock / Handoff Compare Preview / Planner Governance Closeout",
+      "decision": "ASSIGNMENT_PLANNER_GOVERNANCE_CLOSEOUT_READY",
+      "whatIsComplete": "History mock stored; handoff compare ref-only; governance closeout declared.",
+      "whatRemainsMock": "History mock is not persistence; compare does not verify content; governance closeout is not runtime permission.",
+      "cannotBePromotedToRuntime": "Governance closeout must not be interpreted as execution authorization."
+    }
+  ],
+  "archiveStatus": {
+    "canArchiveAsGovernanceBaseline": true,
+    "canUseAsRuntimeBaseline": false,
+    "canUseAsPlannerImplementation": false,
+    "canUseAsLlmPromptSource": false,
+    "canUseAsFilesystemAuthority": false
+  },
+  "archiveWarnings": [
+    "History mock is not productive persistence and cannot restore authoritative state.",
+    "Handoff compare preview does not verify evidence content; comparison is ref-only.",
+    "Planner governance closeout is not runtime permission; execution remains blocked.",
+    "Approval of governance closeout still does not unlock runtime.",
+    "TaskGraph remains non-executable; no real planner implementation exists.",
+    "All mock surfaces must not be reused as execution authority or LLM prompt source.",
+    "Evidence refs from M519-M533 are identifiers only; content is not verified or persisted."
+  ],
+  "draftOnly": true,
+  "canAuthorizeExecution": false,
+  "canCallPlanner": false,
+  "canCallLlm": false,
+  "canAccessFilesystem": false,
+  "canCallCloud": false
+}

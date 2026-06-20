@@ -865,4 +865,33 @@ Recommended next:
 
 - `M534-M536 Governed Project Understanding Preconditions + Assignment Archive Review + Next Phase ADR`.
 
+## M534-M536 Status — Project Understanding Preconditions + Assignment Archive Review + Next Phase ADR
+
+Decision: `M534+M535+M536 CERRADO / PROJECT_UNDERSTANDING_PRECONDITIONS_READY`
+Date: 2026-06-20
+
+M534-M536 defines all preconditions required before any real Project Understanding capability. No real scan, LLM context build, embeddings, indexing, or cloud sync is implemented. Assignment/Planner M519-M533 is archived as a governance baseline only.
+
+Current percentages after M534-M536:
+
+- NODAL OS global: 98.7%
+- Agent Operations / Automation Layer: 97.9%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 88%
+- Approval foundation: 82%
+- Redaction/Safety foundation: 94%
+- Productization foundation: 72%
+- Mission Control UX: 73%
+- Workspace Local: 69%
+- Project Understanding foundation: 60%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next:
+
+- `M537+ Path Jail Implementation` (blocks real scan).
+- `M537+ Consent UI and Scope Preview` (blocks real scan).
+- `M537+ BYOK and Provider Policy` (blocks LLM context build).
+- `M537+ Real Scan Implementation Audit` (required before enabling any real scan).
+
 Do not proceed to productive persistence, planner runtime, executable TaskGraph, prompt creation, model/provider activity, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, async dispatch runtime, DSL parser, dependency dispatch, evidence content verification, clipboard integration, or execution before the next governed phase is defined, documented, and audited.

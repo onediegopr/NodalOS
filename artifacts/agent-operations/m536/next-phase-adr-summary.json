@@ -1,0 +1,52 @@
+{
+  "artifactId": "next-phase-adr-summary-m536",
+  "project": "NODAL OS",
+  "milestone": "M536",
+  "adrId": "adr-governed-project-understanding-preconditions-m536",
+  "title": "ADR — Governed Project Understanding Preconditions Before Real Scan / LLM Context",
+  "createdAt": "2026-06-20T00:00:00Z",
+  "decisions": [
+    "NoDirectMoveToRealProjectUnderstanding",
+    "RealScanBlockedUntilFutureMilestone",
+    "FilesystemScanBlockedUntilGatesDefined",
+    "LlmContextBuildBlockedUntilFutureMilestone",
+    "EmbeddingsBlockedUntilFutureMilestone",
+    "IndexingBlockedUntilFutureMilestone",
+    "CloudSyncBlockedUntilFutureMilestone",
+    "AssignmentOutputsAreRefsAndGovernanceContextOnly",
+    "MockHistoryIsNotSourceOfTruth",
+    "ByokAndProviderPolicyRequiredBeforeLlm",
+    "PathJailAndConsentRequiredBeforeFilesystem",
+    "PositiveExecutionGateRequiredBeforeRuntime",
+    "SeparateAuditRequiredBeforeRuntime"
+  ],
+  "allowedCapabilities": {
+    "realProjectUnderstandingAllowed": false,
+    "realScanAllowed": false,
+    "filesystemReadAllowed": false,
+    "filesystemHashAllowed": false,
+    "gitCommandsAllowed": false,
+    "embeddingsAllowed": false,
+    "indexingAllowed": false,
+    "llmContextBuildAllowed": false,
+    "promptGenerationAllowed": false,
+    "llmProviderCallAllowed": false,
+    "cloudSyncAllowed": false
+  },
+  "explicitNonGoals": [
+    "This ADR does not implement real filesystem scan.",
+    "This ADR does not implement real directory listing.",
+    "This ADR does not implement file read or file hashing.",
+    "This ADR does not implement git commands.",
+    "This ADR does not implement embeddings.",
+    "This ADR does not implement index creation.",
+    "This ADR does not implement LLM context building.",
+    "This ADR does not implement prompt generation.",
+    "This ADR does not implement provider calls.",
+    "This ADR does not implement BYOK.",
+    "This ADR does not implement cloud sync.",
+    "This ADR does not implement runtime execution.",
+    "This ADR does not implement a real planner.",
+    "This ADR does not promote Assignment/Planner mock outputs to operational authority."
+  ]
+}

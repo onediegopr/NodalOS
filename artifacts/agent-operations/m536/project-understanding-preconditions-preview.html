@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Project Understanding Preconditions — NODAL OS</title>
+<style>
+body { font-family: monospace; background: #111; color: #eee; padding: 2em; max-width: 900px; margin: 0 auto; }
+h1, h2 { color: #7cf; }
+h3 { color: #adf; }
+.blocked { color: #f77; font-weight: bold; }
+.ok { color: #7f7; }
+.ref { color: #aaa; font-size: .85em; }
+ul { line-height: 1.8; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+td, th { border: 1px solid #444; padding: .4em .8em; }
+th { background: #222; }
+</style>
+</head>
+<body>
+<h1>NODAL OS — Project Understanding Preconditions</h1>
+<p class="ref">Preconditions ID: project-understanding-preconditions-m534 | Created: 2026-06-20 | Milestone: M534-M536</p>
+
+<h2>Readiness</h2>
+<table>
+<tr><th>Capability</th><th>Ready?</th></tr>
+<tr><td>Real Project Understanding</td><td class="blocked">false — blocked</td></tr>
+<tr><td>Filesystem Scan</td><td class="blocked">false — blocked</td></tr>
+<tr><td>LLM Context Build</td><td class="blocked">false — blocked</td></tr>
+<tr><td>Embeddings</td><td class="blocked">false — blocked</td></tr>
+<tr><td>Indexing</td><td class="blocked">false — blocked</td></tr>
+<tr><td>Cloud Sync</td><td class="blocked">false — blocked</td></tr>
+</table>
+
+<h2>Required Preconditions</h2>
+<ul>
+<li><strong>Consent:</strong> Explicit user consent with scope, purpose, and cancellation confirmation required before any real scan.</li>
+<li><strong>Path Jail Validation:</strong> Path jail must be defined and validated; all scan targets must be within the jail boundary.</li>
+<li><strong>Scan Scope Preview:</strong> A preview of the scan scope (file count estimate, size estimate, excluded patterns) must be shown to the user before any real scan begins.</li>
+<li><strong>Redaction Policy:</strong> All text fields derived from filesystem content must pass redaction before inclusion in any evidence, timeline, or export artifact.</li>
+<li><strong>Secret Detection Policy:</strong> Secret/credential detection must run before any path, filename, or content is included in context or refs.</li>
+<li><strong>Exclusion Policy:</strong> Exclusion patterns for secrets, binaries, node_modules, .git, vendor, credentials, and symlinks must be defined and applied.</li>
+<li><strong>Symlink Policy:</strong> Symlink following must be disabled by default; any exception requires explicit policy definition.</li>
+<li><strong>Case Sensitivity Policy:</strong> Case sensitivity policy must be defined for the target filesystem before scope enumeration.</li>
+<li><strong>Max File Limits:</strong> Maximum file count and file size limits must be defined and enforced before any scan begins.</li>
+<li><strong>Cancellation Semantics:</strong> User-cancellable scan with defined cancellation point, partial result discard, and state cleanup required.</li>
+<li><strong>Evidence Plan:</strong> Evidence plan defining what refs will be generated, their format, and their retention policy must be approved before scan.</li>
+<li><strong>Timeline Events:</strong> Timeline event definitions for scan-start, scan-progress, scan-cancelled, and scan-complete must be registered before scan.</li>
+<li><strong>No Mutation Guarantee:</strong> Scan must be structurally read-only; no filesystem mutation, no git commits, no file writes permitted.</li>
+<li><strong>No Cloud Default:</strong> No cloud upload by default; cloud sync requires separate explicit policy and consent.</li>
+<li><strong>No LLM Before Context Approval:</strong> No LLM context building, prompt generation, or provider call until context approval policy is defined and approved.</li>
+<li><strong>Audit Before Real Scan:</strong> A dedicated audit of the scan implementation must be completed before any real scan is executed.</li>
+</ul>
+
+<h2>Guardrails</h2>
+<ul>
+<li><code>guardrail-no-real-scan-until-preconditions-met</code></li>
+<li><code>guardrail-no-llm-until-byok-policy</code></li>
+<li><code>guardrail-no-filesystem-mutation</code></li>
+<li><code>guardrail-no-cloud-by-default</code></li>
+</ul>
+
+<h2>Status</h2>
+<p>Status: <strong>FullyDefined</strong> — preconditions are defined; real capabilities remain blocked.</p>
+<p class="ref">Project: NODAL OS — static read-only preview — no external resources — no scripts — self-contained</p>
+</body>
+</html>

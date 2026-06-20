@@ -1,0 +1,36 @@
+{
+  "artifactId": "project-understanding-preconditions-summary-m534-m536",
+  "project": "NODAL OS",
+  "milestones": "M534-M536",
+  "decision": "PROJECT_UNDERSTANDING_PRECONDITIONS_READY",
+  "createdAt": "2026-06-20T00:00:00Z",
+  "preconditions": {
+    "preconditionsId": "project-understanding-preconditions-m534",
+    "status": "FullyDefined",
+    "requiredConsent": "Explicit user consent with scope, purpose, and cancellation confirmation required before any real scan.",
+    "requiredPathJailValidation": "Path jail must be defined and validated; all scan targets must be within the jail boundary.",
+    "requiredScanScopePreview": "A preview of the scan scope (file count estimate, size estimate, excluded patterns) must be shown to the user before any real scan begins.",
+    "requiredRedactionPolicy": "All text fields derived from filesystem content must pass redaction before inclusion in any evidence, timeline, or export artifact.",
+    "requiredSecretDetectionPolicy": "Secret/credential detection must run before any path, filename, or content is included in context or refs.",
+    "requiredExclusionPolicy": "Exclusion patterns for secrets, binaries, node_modules, .git, vendor, credentials, and symlinks must be defined and applied.",
+    "requiredNoMutationGuarantee": "Scan must be structurally read-only; no filesystem mutation, no git commits, no file writes permitted.",
+    "requiredNoCloudDefault": "No cloud upload by default; cloud sync requires separate explicit policy and consent.",
+    "requiredNoLlmBeforeContextApproval": "No LLM context building, prompt generation, or provider call until context approval policy is defined and approved.",
+    "requiredAuditBeforeRealScan": "A dedicated audit of the scan implementation must be completed before any real scan is executed."
+  },
+  "readiness": {
+    "readinessId": "project-understanding-readiness-m534",
+    "readyForRealProjectUnderstanding": false,
+    "readyForFilesystemScan": false,
+    "readyForLlmContextBuild": false,
+    "readyForEmbeddings": false,
+    "readyForIndexing": false,
+    "readyForCloudSync": false
+  },
+  "guardrails": [
+    "guardrail-no-real-scan-until-preconditions-met",
+    "guardrail-no-llm-until-byok-policy",
+    "guardrail-no-filesystem-mutation",
+    "guardrail-no-cloud-by-default"
+  ]
+}

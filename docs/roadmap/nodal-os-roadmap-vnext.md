@@ -1675,3 +1675,37 @@ Updated percentages:
 Recommended next milestone:
 
 - `M534-M536 Governed Project Understanding Preconditions + Assignment Archive Review + Next Phase ADR`.
+
+## M534-M536 Governed Project Understanding Preconditions + Assignment Archive Review + Next Phase ADR
+
+Closed: 2026-06-20
+
+Decision: `M534+M535+M536 CERRADO / PROJECT_UNDERSTANDING_PRECONDITIONS_READY`
+
+Scope:
+
+- M534: Project Understanding Preconditions contracts/services/readiness result. All real capabilities blocked (filesystem, LLM, embeddings, indexing, cloud).
+- M535: Assignment Archive Review covering M519-M533. CanArchiveAsGovernanceBaseline=true. All operational archive flags false.
+- M536: Formal ADR — no direct move to real Project Understanding; all real scan/LLM/runtime capabilities blocked until future governed milestones.
+
+Updated percentages:
+
+- NODAL OS global: 98.7%
+- Agent Operations / Automation Layer: 97.9%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 88%
+- Approval foundation: 82%
+- Redaction/Safety foundation: 94%
+- Productization foundation: 72%
+- Mission Control UX: 73%
+- Workspace Local: 69%
+- Project Understanding foundation: 60%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M537+ Path Jail Implementation` (blocks real scan).
+- `M537+ Consent UI and Scope Preview` (blocks real scan).
+- `M537+ BYOK and Provider Policy` (blocks LLM context build).
+- `M537+ Real Scan Implementation Audit` (required before enabling any real scan).
