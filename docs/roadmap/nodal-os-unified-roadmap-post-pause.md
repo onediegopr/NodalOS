@@ -776,3 +776,33 @@ Recommended next:
 - `M525-M527 Assignment UI Preview + TaskGraph Interaction No-Op + Planner UX Acceptance Pack`.
 
 Do not proceed to assignment UI actions that mutate state, real planner, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, dependency dispatch, evidence verification, or execution before the Assignment UI Preview, TaskGraph Interaction No-Op, and Planner UX Acceptance Pack are modeled, documented, and audited.
+
+## M525-M527 Status - Assignment UI No-Op Acceptance
+
+M525-M527 closes the static Assignment UI preview, TaskGraph interaction no-op layer, and Planner UX acceptance pack without enabling planner runtime, prompt creation, model calls, executable work items, runtime, filesystem access, cloud, or productive persistence.
+
+Completed:
+
+- Assignment UI Preview with mission and assignment refs, planner readiness, draft disclosure, runtime/LLM/filesystem blocked disclosure, TaskGraph panel, review panel, explanation panel, and static HTML artifact.
+- TaskGraph Interaction No-Op with visual intents for select, expand, collapse, filter, sort, explanation, needs-review mark, draft note, revise-draft request, compare, refs display, guardrails display, and technical report preview without side effects.
+- Planner UX Acceptance Pack with acceptance criteria and UX states covering empty assignment, draft available, blocked readiness, runtime disabled, LLM disabled, filesystem disabled, evidence refs missing, context needs review, dependency blocked, and all work items draft-only.
+
+Current percentages after M525-M527:
+
+- NODAL OS global: 98.4%.
+- Agent Operations / Automation Layer: 97.6%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 87%.
+- Approval foundation: 82%.
+- Redaction/Safety foundation: 92%.
+- Productization foundation: 69%.
+- Mission Control UX: 72%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 70%.
+
+Recommended next:
+
+- `M528-M530 Assignment Review Persistence Mock + Planner Handoff Contract + Assignment Safety Audit Pack`.
+
+Do not proceed to productive persistence, real planner, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, dependency dispatch, evidence verification, clipboard integration, or execution before assignment review persistence mock, planner handoff contract, and assignment safety audit pack are modeled, documented, and audited.

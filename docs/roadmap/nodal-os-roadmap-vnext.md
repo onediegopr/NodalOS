@@ -1526,3 +1526,53 @@ Updated percentages:
 Recommended next milestone:
 
 - `M525-M527 Assignment UI Preview + TaskGraph Interaction No-Op + Planner UX Acceptance Pack`.
+
+## M525-M527 Assignment UI Preview + TaskGraph Interaction No-Op + Planner UX Acceptance Pack
+
+Decision:
+
+- `M525+M526+M527 CERRADO / ASSIGNMENT_UI_NOOP_ACCEPTANCE_READY`
+
+What changed:
+
+- Added Assignment UI Preview contracts and static rendering for Mission Control style review of draft assignment and TaskGraph state.
+- Added TaskGraph Interaction No-Op contracts for select, expand, collapse, filter, sort, explanation, needs-review marking, draft note, revise-draft intent, compare, refs display, guardrails display, and technical report preview intent.
+- Added Planner UX Acceptance Pack with acceptance criteria and UX states for draft, blocked readiness, missing refs, context review, dependency block, and all-work-items-draft-only.
+
+Guardrails:
+
+- No real planner.
+- No executable TaskGraph.
+- No prompt creation.
+- No LLM provider calls.
+- No provider SDK.
+- No provider calls.
+- No network or HTTP.
+- No BYOK implementation.
+- No routing real.
+- No real evidence verification.
+- No cloud.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- No clipboard real.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 98.4%.
+- Agent Operations / Automation Layer: 97.6%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 87%.
+- Approval foundation: 82%.
+- Redaction/Safety foundation: 92%.
+- Productization foundation: 69%.
+- Mission Control UX: 72%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 70%.
+
+Recommended next milestone:
+
+- `M528-M530 Assignment Review Persistence Mock + Planner Handoff Contract + Assignment Safety Audit Pack`.
