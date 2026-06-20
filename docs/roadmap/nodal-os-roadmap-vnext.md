@@ -1371,3 +1371,53 @@ Updated percentages:
 Recommended next milestone:
 
 - `M516-M518 Prompt Governance Contract + Budget Guardrails Draft + Model Capability Matrix`.
+
+## M516-M518 Prompt Governance Contract + Budget Guardrails Draft + Model Capability Matrix
+
+Decision:
+
+- `M516+M517+M518 CERRADO / PROMPT_GOVERNANCE_BUDGET_MODEL_MATRIX_READY`
+
+What changed:
+
+- Added Prompt Governance Contract for future prompt policy without final prompt text generation.
+- Added Budget Guardrails Draft for future cost/call/token/retry/concurrency policy without live counting or pricing lookup.
+- Added static Model Capability Matrix for future provider/model capability classification without provider calls, model lookup, pricing lookup, or routing.
+- Preserved no prompt creation, no LLM calls, no provider calls, no network, no BYOK real, no routing, no cloud, and no runtime.
+
+Guardrails:
+
+- No final prompt text generation.
+- No LLM provider calls.
+- No provider SDK.
+- No provider calls.
+- No network or HTTP.
+- No BYOK implementation.
+- No token counting real.
+- No pricing lookup.
+- No model availability lookup.
+- No routing real.
+- No cloud.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 98.1%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 91%.
+- Productization foundation: 66%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 55%.
+- LLM/Assignment: 50%.
+
+Recommended next milestone:
+
+- `M519-M521 Assignment Engine v1 Contracts + TaskGraph Draft + Planner Readiness Gate`.

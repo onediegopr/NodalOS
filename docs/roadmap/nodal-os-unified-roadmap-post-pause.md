@@ -686,3 +686,33 @@ Recommended next:
 - `M516-M518 Prompt Governance Contract + Budget Guardrails Draft + Model Capability Matrix`.
 
 Do not proceed to real BYOK, secure store implementation, OS keychain, local encrypted vault, provider SDK, provider calls, network or HTTP, prompt creation, LLM routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before prompt governance, budget guardrails, and model capability policy are modeled, documented, and audited.
+
+## M516-M518 Status - Prompt Governance Budget And Model Matrix
+
+M516-M518 closes prompt governance, budget guardrails, and model capability policy for future LLM/Assignment surfaces without enabling provider execution.
+
+Completed:
+
+- Prompt Governance Contract with future prompt purposes, allowed/denied context refs, Safe Context Boundary requirement, redaction, consent, provenance, confidence/freshness, BYOK policy, budget guardrails, human review, evidence refs, timeline refs, and guardrail refs.
+- Budget Guardrails Draft with future scopes, budget statuses, max spend/tokens/calls/retries/concurrency placeholders, model tier restrictions, confirmation threshold, cost visibility, stop/cancel, and evidence/timeline requirements.
+- Model Capability Matrix with provider-kind profiles, future capability flags, allowed/denied use cases, risk notes, cost/latency/context/reliability placeholders, privacy mode compatibility, BYOK/local/managed flags, and disabled-by-default tool/browser/embeddings capabilities.
+
+Current percentages after M516-M518:
+
+- NODAL OS global: 98.1%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 91%.
+- Productization foundation: 66%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 55%.
+- LLM/Assignment: 50%.
+
+Recommended next:
+
+- `M519-M521 Assignment Engine v1 Contracts + TaskGraph Draft + Planner Readiness Gate`.
+
+Do not proceed to real prompts, LLM provider calls, provider SDK, BYOK runtime, token counting, pricing lookup, model availability lookup, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before Assignment Engine contracts, TaskGraph draft, and planner readiness gate are modeled, documented, and audited.
