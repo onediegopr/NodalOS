@@ -2212,3 +2212,36 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+## M585+M586+M587 - Visual Foundation Phase 1
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Visual foundation tokens for Research OS direction.
+- Static Research OS shell preview.
+- Static visual QA pack and phase summary.
+- Static redacted artifacts under `artifacts/agent-operations/m587`.
+
+Boundaries:
+
+- No broad productive redesign.
+- No runtime changes.
+- No operational access.
+- No LLM context, cloud, provider activity, or productive consent changes.
+- Phase 1 visual foundation only.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.97%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 94%
+- Approval foundation: 91%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 90%
+- Mission Control UX: 90%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

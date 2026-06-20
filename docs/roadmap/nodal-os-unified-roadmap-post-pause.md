@@ -1348,3 +1348,24 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance changes.
 
 Recommended next phase is Phase 1 Visual Foundation implementation with tokens, shell structure, and static visual QA only.
+## M585+M586+M587 - Visual Foundation Phase 1
+
+Decision target: `VISUAL_FOUNDATION_PHASE_1_READY`.
+
+This block adds:
+
+- Visual Foundation Tokens.
+- Research OS Shell Preview.
+- Static Visual QA Pack.
+
+Still blocked:
+
+- Broad productive redesign.
+- Runtime changes.
+- Productive consent changes.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- LLM, cloud, provider activity, and runtime governance changes.
+
+Recommended next phase is Mission Control implementation with visual QA and no runtime coupling.

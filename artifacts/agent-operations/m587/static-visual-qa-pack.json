@@ -1,0 +1,39 @@
+{
+  "milestone": "M585+M586+M587",
+  "qaPackId": "static-visual-qa-pack-m587",
+  "visualChecklist": [
+    "not generic SaaS dashboard",
+    "mission centered",
+    "warm editorial background",
+    "serif headings",
+    "clean sans UI",
+    "one primary focus plus max three secondary panels",
+    "blocked states explain why missing evidence action disabled",
+    "consent looks like governance console",
+    "evidence looks like research archive",
+    "advisor is note card not chatbot",
+    "runtime communicates local-first safety",
+    "no pure white background",
+    "no heavy gradient",
+    "no raw console as main UI"
+  ],
+  "migrationQa": [
+    "phase 1 only",
+    "no broad UI rewrite",
+    "no runtime changes",
+    "no operational access",
+    "no LLM activity",
+    "no cloud activity",
+    "no productive consent",
+    "next phase is Mission Control implementation"
+  ],
+  "acceptanceCriteria": [
+    "tokens exist",
+    "shell preview exists",
+    "visual QA artifact exists",
+    "static preview uses local inline CSS only",
+    "mandatory components represented",
+    "roadmap updated"
+  ],
+  "passed": true
+}

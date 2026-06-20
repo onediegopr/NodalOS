@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Research OS Shell Preview</title>
+  <style>
+    :root {
+      --nos-color-bg: #F5F3EE;
+      --nos-color-bg-muted: #F2F0EA;
+      --nos-color-bg-soft: #EFECE6;
+      --nos-color-text: #171717;
+      --nos-color-text-muted: #5C5C5C;
+      --nos-color-border: #DDD8D0;
+      --nos-color-accent: #5B6CFF;
+      --nos-color-accent-alt: #7265FF;
+      --nos-color-success: #3D8F5A;
+      --nos-color-warning: #D97706;
+      --nos-color-risk: #E67E22;
+      --nos-color-danger: #C2410C;
+      --nos-font-heading: Georgia, "Times New Roman", serif;
+      --nos-font-ui: Inter, Geist, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+      --nos-sidebar-width: 232px;
+      --nos-right-rail-width: 328px;
+      --nos-panel-spacing: 24px;
+      --nos-radius-lg: 24px;
+      --nos-radius-md: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 4%, rgba(91, 108, 255, 0.11), transparent 28%),
+        linear-gradient(180deg, var(--nos-color-bg) 0%, var(--nos-color-bg-muted) 100%);
+      color: var(--nos-color-text);
+      font-family: var(--nos-font-ui);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: var(--nos-sidebar-width) minmax(0, 1fr) var(--nos-right-rail-width);
+      gap: var(--nos-panel-spacing);
+      max-width: 1440px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .sidebar,
+    .mission-canvas,
+    .rail,
+    .card,
+    .feed {
+      border: 1px solid var(--nos-color-border);
+      border-radius: var(--nos-radius-lg);
+      background: rgba(239, 236, 230, 0.82);
+    }
+
+    .sidebar { padding: 22px; }
+
+    .brand {
+      margin-bottom: 28px;
+      font-family: var(--nos-font-heading);
+      font-size: 30px;
+      letter-spacing: -0.04em;
+    }
+
+    .nav { display: grid; gap: 7px; }
+    .nav span {
+      border-radius: 999px;
+      padding: 10px 12px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+    .nav span.active {
+      color: var(--nos-color-text);
+      background: rgba(91, 108, 255, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(91, 108, 255, 0.18);
+    }
+
+    .mission-canvas {
+      display: grid;
+      gap: 18px;
+      padding: 34px;
+    }
+
+    .mission-header {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .eyebrow {
+      color: var(--nos-color-accent-alt);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      font-family: var(--nos-font-heading);
+      font-weight: 500;
+      letter-spacing: -0.03em;
+    }
+
+    h1 {
+      max-width: 720px;
+      margin: 10px 0 16px;
+      font-size: clamp(46px, 7vw, 88px);
+      line-height: 0.92;
+    }
+
+    h2 { margin: 0 0 12px; font-size: 26px; }
+    h3 { margin: 0 0 8px; font-size: 22px; }
+
+    p { color: var(--nos-color-text-muted); line-height: 1.5; }
+
+    .phase-pill {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(91, 108, 255, 0.12);
+      color: var(--nos-color-accent-alt);
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .progress {
+      height: 12px;
+      border-radius: 999px;
+      background: #E2DDD3;
+      overflow: hidden;
+    }
+    .progress div {
+      width: 72%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--nos-color-accent), var(--nos-color-accent-alt));
+    }
+
+    .secondary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: var(--nos-radius-md);
+      background: rgba(245, 243, 238, 0.72);
+    }
+    .card strong {
+      display: block;
+      font-family: var(--nos-font-heading);
+      font-size: 34px;
+      font-weight: 500;
+    }
+    .card span { color: var(--nos-color-text-muted); font-size: 13px; }
+
+    .mission-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .blocked {
+      border-color: rgba(194, 65, 12, 0.32);
+      background: rgba(194, 65, 12, 0.07);
+    }
+    .blocked dl, .fact-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+    }
+    .blocked div, .fact-list div {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+    b { color: var(--nos-color-text); }
+
+    .rail {
+      display: grid;
+      align-content: start;
+      gap: 16px;
+      padding: 24px;
+    }
+
+    .status {
+      display: inline-flex;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .status.blocked-state { background: rgba(194, 65, 12, 0.10); color: var(--nos-color-danger); }
+    .status.ready-state { background: rgba(61, 143, 90, 0.12); color: var(--nos-color-success); }
+    .status.review-state { background: rgba(217, 119, 6, 0.12); color: var(--nos-color-warning); }
+
+    .feed {
+      grid-column: 2 / 4;
+      padding: 22px;
+    }
+    .feed-row {
+      display: grid;
+      grid-template-columns: 64px 90px minmax(0, 1fr);
+      gap: 12px;
+      border-top: 1px solid var(--nos-color-border);
+      padding: 12px 0;
+      color: var(--nos-color-text-muted);
+      font-size: 14px;
+    }
+    .feed-row:first-of-type { border-top: 0; }
+
+    @media (max-width: 1120px) {
+      .shell { grid-template-columns: 1fr; }
+      .feed { grid-column: auto; }
+      .secondary, .mission-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <aside class="sidebar">
+      <div class="brand">NODAL OS</div>
+      <nav class="nav" aria-label="Research OS navigation">
+        <span class="active">Mission Control</span>
+        <span>Timeline</span>
+        <span>Missions</span>
+        <span>Workspace</span>
+        <span>Consent</span>
+        <span>Evidence</span>
+        <span>Decisions</span>
+        <span>Advisor</span>
+        <span>Models</span>
+        <span>Agents</span>
+        <span>Runtime</span>
+        <span>Settings</span>
+      </nav>
+    </aside>
+
+    <section class="mission-canvas">
+      <header class="mission-header">
+        <div>
+          <div class="eyebrow">Current Mission</div>
+          <h1>Build Local AI Workspace</h1>
+          <p>Research & Mission Operating System for governed context, permissions, evidence, models, agents, runtime, and supervised autonomy.</p>
+        </div>
+        <span class="phase-pill">Current Phase: Consent Governance</span>
+      </header>
+
+      <section>
+        <div class="progress-meta"><span>Progress</span><span>72% Complete</span></div>
+        <div class="progress"><div></div></div>
+      </section>
+
+      <section class="secondary" aria-label="Mission status summary">
+        <article class="card"><strong>3</strong><span>Pending Decisions</span></article>
+        <article class="card"><strong>2</strong><span>Advisor Warnings</span></article>
+        <article class="card"><strong>12</strong><span>Evidence Artifacts</span></article>
+      </section>
+
+      <section class="mission-grid">
+        <article class="card">
+          <h3>Timeline Summary</h3>
+          <div class="fact-list">
+            <div><b>Now</b><span>Visual Foundation Phase 1</span></div>
+            <div><b>Decision</b><span>VISUAL_FOUNDATION_PHASE_1_READY</span></div>
+            <div><b>Gate</b><span>Static QA required before Mission Control implementation.</span></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Consent / Capability</h3>
+          <span class="status blocked-state">Blocked</span>
+          <p>Productive consent, capability enablement, and operational access remain disabled.</p>
+        </article>
+
+        <article class="card">
+          <h3>Evidence</h3>
+          <span class="status ready-state">Traceable</span>
+          <p>Design system, screen map, migration plan, tokens, and static QA pack are linked to this mission.</p>
+        </article>
+
+        <article class="card">
+          <h3>Decision</h3>
+          <span class="status review-state">Review</span>
+          <p>Proceed only to Phase 2 Mission Control after visual QA acceptance.</p>
+        </article>
+
+        <article class="card">
+          <h3>Advisor Note</h3>
+          <p><b>Concern:</b> A broad redesign could hide governance state.</p>
+          <p><b>Recommendation:</b> Keep one primary mission focus and preserve blocked-state anatomy.</p>
+        </article>
+
+        <article class="card blocked">
+          <h3>Runtime Local-First Status</h3>
+          <dl>
+            <div><b>Why blocked</b><span>Runtime is outside Phase 1 visual foundation scope.</span></div>
+            <div><b>Missing</b><span>Separate implementation milestone and audit.</span></div>
+            <div><b>Evidence</b><span>Visual QA pack plus roadmap decision.</span></div>
+            <div><b>Action</b><span>Review visual foundation only.</span></div>
+            <div><b>Disabled</b><span>Runtime, cloud, LLM, provider activity, and operational access.</span></div>
+          </dl>
+        </article>
+      </section>
+    </section>
+
+    <aside class="rail">
+      <h2>Research OS Rail</h2>
+      <article class="card">
+        <h3>Readiness Gate</h3>
+        <p>Phase 1 validates tokens, shell composition, and static QA only.</p>
+      </article>
+      <article class="card">
+        <h3>Model Policy</h3>
+        <p>No cloud activity or provider activity is permitted by this visual preview.</p>
+      </article>
+      <article class="card">
+        <h3>Next Safe Step</h3>
+        <p>Mission Control implementation with visual QA and no runtime coupling.</p>
+      </article>
+    </aside>
+
+    <section class="feed" aria-label="Activity Feed">
+      <h2>Activity Feed</h2>
+      <div class="feed-row"><span>14:32</span><b>System</b><span>Visual tokens created for Phase 1.</span></div>
+      <div class="feed-row"><span>14:35</span><b>Advisor</b><span>Warning generated: do not turn Advisor into a chat bubble.</span></div>
+      <div class="feed-row"><span>14:38</span><b>Evidence</b><span>Static QA pack attached to the mission.</span></div>
+      <div class="feed-row"><span>14:41</span><b>Runtime</b><span>Capability remains intentionally disabled.</span></div>
+    </section>
+  </main>
+</body>
+</html>

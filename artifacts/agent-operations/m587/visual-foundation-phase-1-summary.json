@@ -1,0 +1,21 @@
+{
+  "milestone": "M585+M586+M587",
+  "summaryId": "visual-foundation-phase-1-summary-m587",
+  "decisionTarget": "VISUAL_FOUNDATION_PHASE_1_READY",
+  "phase": "Visual Foundation",
+  "tokensExist": true,
+  "shellPreviewExists": true,
+  "staticVisualQaPackExists": true,
+  "mandatoryComponentsRepresented": true,
+  "canImplementMassiveRedesign": false,
+  "canChangeRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseCloud": false,
+  "canBuildLlmContext": false,
+  "canEnableCapability": false,
+  "canPersistProductiveConsent": false,
+  "fullSuiteClean": true,
+  "testsPassed": 4295,
+  "testsSkipped": 37,
+  "testsFailed": 0
+}

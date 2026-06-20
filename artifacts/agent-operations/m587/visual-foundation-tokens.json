@@ -1,0 +1,54 @@
+{
+  "milestone": "M585+M586+M587",
+  "tokensId": "visual-foundation-tokens-m585",
+  "colors": {
+    "bg": "#F5F3EE",
+    "bgMuted": "#F2F0EA",
+    "bgSoft": "#EFECE6",
+    "text": "#171717",
+    "textMuted": "#5C5C5C",
+    "border": "#DDD8D0",
+    "accent": "#5B6CFF",
+    "accentAlt": "#7265FF",
+    "success": "#3D8F5A",
+    "warning": "#D97706",
+    "risk": "#E67E22",
+    "danger": "#C2410C"
+  },
+  "typography": {
+    "heading": "Georgia serif editorial fallback",
+    "ui": "Inter Geist SF Pro system sans fallback",
+    "remoteFonts": false,
+    "fontFilesAdded": false
+  },
+  "layout": {
+    "shellMaxWidth": "1440px",
+    "sidebarWidth": "232px",
+    "rightRailWidth": "328px",
+    "panelSpacing": "24px",
+    "cardPadding": "18px",
+    "radius": ["10px", "16px", "24px"],
+    "focusRing": "0 0 0 3px rgba(91, 108, 255, 0.24)",
+    "timelineGap": "14px",
+    "badgeHeight": "28px"
+  },
+  "componentPrimitives": [
+    "shell",
+    "sidebar",
+    "mission hero",
+    "timeline step",
+    "evidence card",
+    "decision card",
+    "advisor note",
+    "readiness gate",
+    "permission capability card",
+    "activity feed row",
+    "blocked state panel",
+    "runtime status card",
+    "model policy card"
+  ],
+  "canChangeRuntime": false,
+  "canAuthorizeCapability": false,
+  "canUseCloud": false,
+  "canBuildLlmContext": false
+}
