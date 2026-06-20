@@ -1067,3 +1067,52 @@ Updated percentages:
 Recommended next milestone:
 
 - `M498-M500 Workspace Metadata Index Mock + Safe Project Summary Contract + Workspace Health Report`.
+
+## M498-M500 Workspace Metadata Index Mock + Safe Project Summary Contract + Workspace Health Report
+
+Decision:
+
+- `M498+M499+M500 CERRADO / WORKSPACE_METADATA_HEALTH_MOCK_READY`
+
+What changed:
+
+- Added Workspace Metadata Index Mock.
+- Added Safe Project Summary Contract.
+- Added Workspace Health Report.
+- Preserved evidence refs, timeline refs, mission refs, workspace refs, redaction summaries, guardrails, blockers, warnings, and next safe steps.
+- Explicitly disclosed that the project summary is based on safe/mock metadata, not real scan output.
+
+Guardrails:
+
+- No real filesystem scan.
+- No directory listing.
+- No file read/write/delete.
+- No file hashing.
+- No git command.
+- No embeddings.
+- No real project understanding.
+- No filesystem mutation.
+- No productive persistence.
+- No runtime execution.
+- No positive execution gate implementation.
+- No cloud.
+- No LLM provider calls.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.5%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 82%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 85%.
+- Productization foundation: 60%.
+- Mission Control UX: 65%.
+- Workspace Local: 54%.
+
+Recommended next milestone:
+
+- `M501-M503 Workspace Readiness Gate + Project Understanding Intake Contract + Safe Context Boundary`.
