@@ -1,0 +1,47 @@
+{
+  "milestone": "M582+M583+M584",
+  "migrationPlanId": "visual-reengineering-migration-plan-m584",
+  "screenMap": [
+    "Mission Control",
+    "Timeline",
+    "Mission Detail",
+    "Consent",
+    "Evidence",
+    "Decisions",
+    "Advisor",
+    "Models",
+    "Agents",
+    "Runtime",
+    "Settings",
+    "Activity Feed",
+    "Readiness Gates",
+    "Error Blocked State",
+    "Empty States"
+  ],
+  "phases": [
+    "Visual Foundation",
+    "Mission Control",
+    "Core Internal Screens",
+    "Advisor And Activity Feed",
+    "Polish And Consistency"
+  ],
+  "acceptanceCriteria": [
+    "not generic SaaS dashboard",
+    "mission centered",
+    "three-second system understanding",
+    "clear permissions and blocked capabilities",
+    "serious traceable evidence",
+    "advisor is strategic not chatbot",
+    "runtime communicates local-first safety",
+    "phased migration before implementation"
+  ],
+  "recommendedNextMilestone": "Phase 1 visual foundation tokens and static preview validation",
+  "canImplementMassiveRedesign": false,
+  "canChangeRuntime": false,
+  "canUseCloud": false,
+  "canBuildLlmContext": false,
+  "fullSuiteClean": true,
+  "testsPassed": 4287,
+  "testsSkipped": 37,
+  "testsFailed": 0
+}

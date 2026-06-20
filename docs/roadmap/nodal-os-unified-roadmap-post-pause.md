@@ -1326,3 +1326,25 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance.
 
 Recommended next phase is a productive consent storage audit plan or disabled storage implementation design, not direct productive implementation.
+## M582+M583+M584 - Visual Reengineering Foundation
+
+Decision target: `VISUAL_REENGINEERING_FOUNDATION_READY`.
+
+This block adds:
+
+- Visual Reengineering Audit.
+- Research OS Design System.
+- Screen Map and Textual Wireframes.
+- Visual Migration Plan.
+
+Still blocked:
+
+- Massive productive redesign.
+- Runtime changes.
+- Productive consent changes.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- LLM, cloud, provider activity, and runtime governance changes.
+
+Recommended next phase is Phase 1 Visual Foundation implementation with tokens, shell structure, and static visual QA only.

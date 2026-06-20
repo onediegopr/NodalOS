@@ -1,0 +1,60 @@
+{
+  "milestone": "M582+M583+M584",
+  "designSystemId": "research-os-design-system-foundation-m583",
+  "direction": "Research OS plus Local Mission Control",
+  "principles": [
+    "Research OS",
+    "Local Mission Control",
+    "Editorial premium",
+    "Governance-first",
+    "Evidence-first",
+    "Calm precision",
+    "Trustworthy blocked states",
+    "Dense enough but never cluttered"
+  ],
+  "tokens": {
+    "backgrounds": ["#F5F3EE", "#F2F0EA", "#EFECE6"],
+    "text": {
+      "main": "#171717",
+      "muted": "#5C5C5C"
+    },
+    "border": "#DDD8D0",
+    "accent": ["#5B6CFF", "#7265FF"],
+    "success": "#3D8F5A",
+    "warning": ["#E67E22", "#D97706"],
+    "danger": "#C2410C"
+  },
+  "typography": {
+    "headings": "Serif editorial premium with Georgia fallback",
+    "ui": "Clean sans with Inter, Geist, SF Pro or system fallback"
+  },
+  "components": [
+    "shell layout",
+    "sidebar",
+    "top mission header",
+    "current mission hero",
+    "timeline step",
+    "mission phase card",
+    "decision card",
+    "evidence card",
+    "advisor note",
+    "readiness gate",
+    "blocked state panel",
+    "activity feed row",
+    "permission capability card",
+    "runtime status card",
+    "model policy card",
+    "agent card",
+    "settings section"
+  ],
+  "antiPatterns": [
+    "generic dashboard cards everywhere",
+    "pure white panels",
+    "heavy gradients",
+    "childish icons",
+    "ERP tables as main UI",
+    "chat bubbles for Advisor",
+    "raw technical console as main surface"
+  ],
+  "canAuthorizeRedesign": false
+}

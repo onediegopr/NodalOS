@@ -2179,3 +2179,36 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+## M582+M583+M584 - Visual Reengineering Foundation
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Visual audit of current sidepanel and static preview surfaces.
+- Research OS design system foundation.
+- Screen map, textual wireframes, and phased migration plan.
+- Static Research Mission Control concept preview under `artifacts/agent-operations/m584`.
+
+Boundaries:
+
+- No massive productive redesign.
+- No runtime changes.
+- No operational access.
+- No LLM context, cloud, provider activity, or productive consent changes.
+- This is audit/design/plan-first.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.97%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 94%
+- Approval foundation: 91%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 89%
+- Mission Control UX: 88%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

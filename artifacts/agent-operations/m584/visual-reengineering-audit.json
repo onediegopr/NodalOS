@@ -1,0 +1,34 @@
+{
+  "milestone": "M582+M583+M584",
+  "auditId": "visual-reengineering-audit-m582",
+  "decisionTarget": "VISUAL_REENGINEERING_FOUNDATION_READY",
+  "scope": "audit-design-plan-first",
+  "locatedSurfaces": [
+    "browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js",
+    "docs/ui/sidepanel-operator-cabinet-integration-map-m163-m165.md",
+    "artifacts/agent-operations static previews"
+  ],
+  "currentIssues": [
+    "Technical control-panel feel",
+    "Equal-weight cards weaken hierarchy",
+    "Mission is not visually dominant",
+    "Consent surfaces need governance-console treatment",
+    "Evidence needs research archive treatment",
+    "Advisor needs strategic-note treatment",
+    "Runtime needs stronger local-first safety framing"
+  ],
+  "productRisks": [
+    "Generic SaaS dashboard perception",
+    "Browser automation panel perception",
+    "Admin console perception",
+    "Blocked states may look accidental instead of governed"
+  ],
+  "newDirection": "Research Operating System and Local AI Mission Infrastructure",
+  "canAuthorizeRedesign": false,
+  "canChangeRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseCloud": false,
+  "canBuildLlmContext": false
+}
