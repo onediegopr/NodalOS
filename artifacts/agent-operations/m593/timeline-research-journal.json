@@ -1,0 +1,209 @@
+{
+  "milestone": "M591+M592+M593",
+  "journalId": "timeline-research-journal-m593",
+  "missionRef": "mission-build-local-ai-workspace",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "isVisualOnly": true,
+  "isStaticFixtureOnly": true,
+  "isNoOp": true,
+  "canBecomeProductiveSourceOfTruth": false,
+  "canVerifyEvidenceProductively": false,
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseLlm": false,
+  "canUseCloud": false,
+  "canPersistProductiveConsent": false,
+  "canEnableCapability": false,
+  "visualConcept": [
+    "mission log",
+    "technical journal",
+    "living roadmap",
+    "evidence line",
+    "governance record"
+  ],
+  "entryAnatomy": [
+    "phase or milestone",
+    "status",
+    "percentage",
+    "decision ref",
+    "evidence refs",
+    "blocker when present",
+    "readiness gate",
+    "test summary",
+    "commit ref",
+    "user-facing explanation"
+  ],
+  "visualStates": [
+    "completed",
+    "active",
+    "blocked",
+    "needs review",
+    "audit required",
+    "governance baseline",
+    "intentionally disabled"
+  ],
+  "entries": [
+    {
+      "entryId": "timeline-entry-consent-governance-closeout",
+      "phase": "Consent Governance Closeout",
+      "milestone": "M576-M578",
+      "status": "completed",
+      "percentage": 100,
+      "decisionRef": "CONSENT_GOVERNANCE_CLOSEOUT_READY",
+      "evidenceRefs": [
+        "consent-adversarial-test-matrix",
+        "productive-consent-storage-adr-summary",
+        "consent-governance-closeout"
+      ],
+      "blocker": null,
+      "readinessGate": "governance baseline",
+      "testSummary": "governance artifacts accepted as static baseline",
+      "commitRef": "613351b0",
+      "userFacingExplanation": "Consent governance is complete as a baseline, but it does not authorize productive behavior."
+    },
+    {
+      "entryId": "timeline-entry-consent-storage-boundary-ready",
+      "phase": "Consent Storage Boundary Ready",
+      "milestone": "M579-M581",
+      "status": "completed",
+      "percentage": 100,
+      "decisionRef": "CONSENT_STORAGE_BOUNDARY_READY",
+      "evidenceRefs": [
+        "consent-storage-boundary-test-pack",
+        "disabled-storage-ui-preview",
+        "storage-audit-readiness"
+      ],
+      "blocker": null,
+      "readinessGate": "audit planning ready",
+      "testSummary": "boundary pack accepted with static QA",
+      "commitRef": "41b941df",
+      "userFacingExplanation": "Storage boundaries are represented for review, not activated."
+    },
+    {
+      "entryId": "timeline-entry-visual-reengineering-foundation",
+      "phase": "Visual Reengineering Foundation",
+      "milestone": "M582-M584",
+      "status": "completed",
+      "percentage": 100,
+      "decisionRef": "VISUAL_REENGINEERING_FOUNDATION_READY",
+      "evidenceRefs": [
+        "visual-reengineering-audit",
+        "research-os-design-system-foundation",
+        "visual-reengineering-migration-plan"
+      ],
+      "blocker": null,
+      "readinessGate": "design foundation ready",
+      "testSummary": "visual foundation documents and artifacts accepted",
+      "commitRef": "c0e8dd1a",
+      "userFacingExplanation": "Research OS direction is defined before broad visual implementation."
+    },
+    {
+      "entryId": "timeline-entry-visual-foundation-phase-1",
+      "phase": "Visual Foundation Phase 1",
+      "milestone": "M585-M587",
+      "status": "completed",
+      "percentage": 100,
+      "decisionRef": "VISUAL_FOUNDATION_PHASE_1_READY",
+      "evidenceRefs": [
+        "visual-foundation-tokens",
+        "research-os-shell-preview",
+        "static-visual-qa-pack"
+      ],
+      "blocker": null,
+      "readinessGate": "static visual QA ready",
+      "testSummary": "4295 passed, 37 skipped",
+      "commitRef": "e912da91",
+      "userFacingExplanation": "Visual tokens and shell preview are available as static foundation."
+    },
+    {
+      "entryId": "timeline-entry-mission-control-research-os-layout",
+      "phase": "Mission Control Research OS Layout",
+      "milestone": "M588-M590",
+      "status": "completed",
+      "percentage": 100,
+      "decisionRef": "MISSION_CONTROL_RESEARCH_OS_LAYOUT_READY",
+      "evidenceRefs": [
+        "mission-control-research-os-layout",
+        "current-mission-hero",
+        "mission-status-panels"
+      ],
+      "blocker": null,
+      "readinessGate": "mission control visual preview ready",
+      "testSummary": "4303 passed, 37 skipped",
+      "commitRef": "95f2a685",
+      "userFacingExplanation": "Mission Control is represented as a Research OS layout, still static and non-authorizing."
+    },
+    {
+      "entryId": "timeline-entry-real-access-still-blocked",
+      "phase": "Real Access Still Blocked",
+      "milestone": "Cross-cutting",
+      "status": "blocked",
+      "percentage": 0,
+      "decisionRef": "REAL_SCAN_NOT_READY_SYNTHETIC_BASELINE_READY",
+      "evidenceRefs": [
+        "real-scan-readiness-adr-summary",
+        "operational-access-audit-adr-summary",
+        "real-access-blocker-closeout"
+      ],
+      "blocker": {
+        "why": "Operational access is intentionally disabled.",
+        "missing": "Productive consent, audited path jail, no-mutation proof, cancellation proof, and evidence/timeline emission.",
+        "evidenceRequired": "ADR, adversarial matrix, audit checklist, and full suite evidence.",
+        "userActionNeeded": "Approve a future explicit milestone after audit, not here.",
+        "intentionallyDisabled": "File Read, File Hash, indexing, LLM context, cloud, provider activity, and runtime."
+      },
+      "readinessGate": "audit required",
+      "testSummary": "blocked by governance baseline",
+      "commitRef": "d7fac2af",
+      "userFacingExplanation": "The visual layer must continue to show that operational access is not ready."
+    },
+    {
+      "entryId": "timeline-entry-productive-consent-still-blocked",
+      "phase": "Productive Consent Still Blocked",
+      "milestone": "Cross-cutting",
+      "status": "intentionally disabled",
+      "percentage": 0,
+      "decisionRef": "PRODUCTIVE_CONSENT_DESIGN_REVIEW_READY",
+      "evidenceRefs": [
+        "productive-consent-design-review",
+        "disabled-consent-storage-contract",
+        "consent-audit-acceptance"
+      ],
+      "blocker": {
+        "why": "Consent remains design and contract only.",
+        "missing": "Productive storage design audit, boundary tests, rollback plan, and security review.",
+        "evidenceRequired": "Storage ADR, boundary pack, adversarial consent matrix, and audit readiness.",
+        "userActionNeeded": "Review the future storage milestone separately.",
+        "intentionallyDisabled": "Consent persistence, consent enforcement, and capability authorization."
+      },
+      "readinessGate": "implementation audit required",
+      "testSummary": "static governance only",
+      "commitRef": "9c80e72d",
+      "userFacingExplanation": "Consent visuals cannot imply productive authorization."
+    },
+    {
+      "entryId": "timeline-entry-file-read-capability-still-disabled",
+      "phase": "File Read Capability Still Disabled",
+      "milestone": "Cross-cutting",
+      "status": "blocked",
+      "percentage": 0,
+      "decisionRef": "PER_CAPABILITY_ACCESS_GATES_READY",
+      "evidenceRefs": [
+        "per-capability-access-gates",
+        "synthetic-failure-modes",
+        "capability-gate-ui-review"
+      ],
+      "blocker": {
+        "why": "The capability is represented only as a disabled gate.",
+        "missing": "Per-capability audit, consent enforcement, dependency gate implementation, and path jail implementation.",
+        "evidenceRequired": "Capability audit checklist, fail-closed acceptance, and adversarial tests.",
+        "userActionNeeded": "Treat this as a blocked governance record.",
+        "intentionallyDisabled": "File Read, File Hash, indexing, representation build, LLM context, cloud, and runtime."
+      },
+      "readinessGate": "capability gate remains disabled",
+      "testSummary": "fail-closed baseline only",
+      "commitRef": "ee414635",
+      "userFacingExplanation": "The timeline must make disabled capability status visible without enabling it."
+    }
+  ]
+}

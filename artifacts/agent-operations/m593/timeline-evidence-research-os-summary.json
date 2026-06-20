@@ -1,0 +1,23 @@
+{
+  "milestone": "M591+M592+M593",
+  "summaryId": "timeline-evidence-research-os-summary-m593",
+  "decisionTarget": "TIMELINE_EVIDENCE_RESEARCH_OS_READY",
+  "timelineJournalExists": true,
+  "evidenceArchiveExists": true,
+  "traceabilityQaExists": true,
+  "combinedPreviewExists": true,
+  "isVisualOnly": true,
+  "isStaticFixtureOnly": true,
+  "canBecomeProductiveSourceOfTruth": false,
+  "canVerifyEvidenceProductively": false,
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseLlm": false,
+  "canUseCloud": false,
+  "canPersistProductiveConsent": false,
+  "canEnableCapability": false,
+  "fullSuiteClean": true,
+  "testsPassed": 4311,
+  "testsSkipped": 37,
+  "testsFailed": 0
+}

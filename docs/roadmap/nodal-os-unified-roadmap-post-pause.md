@@ -1391,3 +1391,27 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance changes.
 
 Recommended next phase is Timeline/Evidence Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.
+
+## M591+M592+M593 - Timeline / Evidence Research OS Visual Implementation
+
+Decision target: `TIMELINE_EVIDENCE_RESEARCH_OS_READY`.
+
+This block adds:
+
+- Timeline Research Journal.
+- Evidence Archive Visual System.
+- Static Traceability QA.
+- Combined static Timeline/Evidence preview.
+
+Still blocked:
+
+- Runtime changes.
+- Evidence verification.
+- Productive Timeline or Evidence source-of-truth behavior.
+- Productive consent changes.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- LLM, cloud, provider activity, and runtime governance changes.
+
+Recommended next phase is Decisions / Advisor Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.

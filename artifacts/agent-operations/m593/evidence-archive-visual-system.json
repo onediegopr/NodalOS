@@ -1,0 +1,140 @@
+{
+  "milestone": "M591+M592+M593",
+  "archiveId": "evidence-archive-visual-system-m593",
+  "missionRef": "mission-build-local-ai-workspace",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "isVisualOnly": true,
+  "isStaticFixtureOnly": true,
+  "isNoOp": true,
+  "isProductiveEvidenceStore": false,
+  "canVerifyEvidenceProductively": false,
+  "canBecomeProductiveSourceOfTruth": false,
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseLlm": false,
+  "canUseCloud": false,
+  "concept": [
+    "research archive",
+    "case file",
+    "compliance record",
+    "architecture decision binder",
+    "first-class artifact traceability"
+  ],
+  "sections": [
+    "Governance Baselines",
+    "ADRs",
+    "Test Matrices",
+    "Reports",
+    "Visual System Artifacts",
+    "Safety Gates",
+    "Blocker Closeouts"
+  ],
+  "statusBadges": [
+    "Approved",
+    "Draft",
+    "Needs Review",
+    "Audit Required",
+    "Blocked",
+    "Superseded"
+  ],
+  "cardAnatomy": [
+    "Artifact",
+    "Type",
+    "Status",
+    "Linked Mission",
+    "Commit",
+    "Tests",
+    "Risk",
+    "Traceability"
+  ],
+  "cards": [
+    {
+      "artifact": "Productive Consent Storage Implementation ADR",
+      "type": "ADR",
+      "status": "Audit Required",
+      "linkedMission": "M576-M578",
+      "commit": "613351b0",
+      "tests": "ADR reviewed as governance artifact",
+      "risk": "High",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Documents future storage requirements while leaving productive behavior blocked."
+    },
+    {
+      "artifact": "Consent Governance Closeout",
+      "type": "Matrix / Report / Closeout",
+      "status": "Approved",
+      "linkedMission": "M576-M578",
+      "commit": "613351b0",
+      "tests": "governance matrix represented",
+      "risk": "High",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Closes consent governance as baseline only."
+    },
+    {
+      "artifact": "Consent Storage Boundary Test Pack",
+      "type": "Test Matrix",
+      "status": "Approved",
+      "linkedMission": "M579-M581",
+      "commit": "41b941df",
+      "tests": "boundary categories represented",
+      "risk": "High",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Models future storage boundaries without productive storage."
+    },
+    {
+      "artifact": "Visual Reengineering Foundation",
+      "type": "Report / Design Foundation",
+      "status": "Approved",
+      "linkedMission": "M582-M584",
+      "commit": "c0e8dd1a",
+      "tests": "visual audit and design artifacts represented",
+      "risk": "Medium",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Defines Research OS direction before implementation."
+    },
+    {
+      "artifact": "Research OS Design System",
+      "type": "Visual System Artifact",
+      "status": "Approved",
+      "linkedMission": "M582-M584",
+      "commit": "c0e8dd1a",
+      "tests": "design system coverage represented",
+      "risk": "Medium",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Defines palette, typography, layout, component patterns, and anti-patterns."
+    },
+    {
+      "artifact": "Mission Control Research OS Layout",
+      "type": "Visual System Artifact",
+      "status": "Approved",
+      "linkedMission": "M588-M590",
+      "commit": "95f2a685",
+      "tests": "4303 passed, 37 skipped",
+      "risk": "Medium",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Represents Mission Control as static Research OS layout."
+    },
+    {
+      "artifact": "Real Scan Readiness ADR",
+      "type": "ADR",
+      "status": "Blocked",
+      "linkedMission": "M552-M554",
+      "commit": "80b883d1",
+      "tests": "synthetic baseline represented",
+      "risk": "High",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Declares operational scan behavior not ready."
+    },
+    {
+      "artifact": "Operational Access Audit ADR",
+      "type": "ADR",
+      "status": "Blocked",
+      "linkedMission": "M558-M560",
+      "commit": "61d0cbe6",
+      "tests": "audit readiness represented",
+      "risk": "High",
+      "traceability": "Mission -> Decision -> Evidence -> Commit -> Tests",
+      "summary": "Requires audit before future operational access."
+    }
+  ]
+}

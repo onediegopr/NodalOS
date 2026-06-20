@@ -1,0 +1,43 @@
+{
+  "qaPackId": "static-traceability-qa-pack-m593",
+  "milestone": "M591+M592+M593",
+  "isStaticQaOnly": true,
+  "traceabilityChecklist": [
+    "timeline is not a simple checklist",
+    "evidence is not generic attachment list",
+    "every timeline entry links to decision/evidence/commit/test refs",
+    "blocked entries explain why/missing/evidence/action/disabled",
+    "evidence cards show type/status/mission/commit/tests",
+    "governance baselines are visually distinct",
+    "audit-required states are clear",
+    "intentionally disabled states are clear",
+    "user can understand mission traceability in 3 seconds",
+    "no generic SaaS dashboard feel"
+  ],
+  "staticIntegrationQa": {
+    "confirmsNoRuntime": true,
+    "confirmsNoFilesystem": true,
+    "confirmsNoEvidenceVerificationReal": true,
+    "confirmsNoLlmProviderCloud": true,
+    "confirmsNoProductiveConsent": true,
+    "confirmsNoCapabilityEnablement": true,
+    "confirmsNoSourceOfTruthPromotion": true
+  },
+  "acceptanceCriteria": [
+    "Timeline Research Journal artifact exists",
+    "Evidence Archive Visual System artifact exists",
+    "Static preview exists",
+    "Traceability QA artifact exists",
+    "Static previews contain no external resources or analytics surfaces",
+    "Mandatory timeline and evidence examples represented",
+    "Roadmap updated"
+  ],
+  "readyForStaticTraceabilityReview": true,
+  "readyForProductiveTimeline": false,
+  "readyForProductiveEvidenceStore": false,
+  "readyForEvidenceVerification": false,
+  "readyForRuntime": false,
+  "readyForFilesystemAccess": false,
+  "readyForLlmContext": false,
+  "readyForCloud": false
+}

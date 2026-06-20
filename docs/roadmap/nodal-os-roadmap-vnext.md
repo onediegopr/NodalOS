@@ -2282,3 +2282,40 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+
+## M591+M592+M593 - Timeline / Evidence Research OS Visual Implementation
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Timeline Research Journal as mission log, technical journal, living roadmap, evidence line, and governance record.
+- Evidence Archive Visual System as research archive and governance binder.
+- Static Traceability QA pack.
+- Combined static preview under `artifacts/agent-operations/m593`.
+
+Boundaries:
+
+- Timeline and Evidence visuals only.
+- Static fixture data only.
+- No productive source-of-truth promotion.
+- No evidence verification.
+- No operational access.
+- No productive consent changes.
+- No capability enablement.
+- No LLM context, cloud, provider activity, or runtime behavior changes.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 91%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 92%
+- Mission Control UX: 93%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

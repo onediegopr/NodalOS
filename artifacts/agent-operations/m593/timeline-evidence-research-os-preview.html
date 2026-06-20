@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Timeline Evidence Research OS Preview</title>
+  <style>
+    :root {
+      --nos-color-bg: #F5F3EE;
+      --nos-color-bg-muted: #F2F0EA;
+      --nos-color-bg-soft: #EFECE6;
+      --nos-color-text: #171717;
+      --nos-color-text-muted: #5C5C5C;
+      --nos-color-border: #DDD8D0;
+      --nos-color-accent: #5B6CFF;
+      --nos-color-accent-alt: #7265FF;
+      --nos-color-success: #3D8F5A;
+      --nos-color-warning: #D97706;
+      --nos-color-risk: #E67E22;
+      --nos-color-danger: #C2410C;
+      --nos-font-heading: Georgia, "Times New Roman", serif;
+      --nos-font-ui: Inter, Geist, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--nos-color-text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(91, 108, 255, 0.12), transparent 26%),
+        radial-gradient(circle at 88% 10%, rgba(217, 119, 6, 0.10), transparent 24%),
+        linear-gradient(180deg, var(--nos-color-bg) 0%, var(--nos-color-bg-muted) 58%, var(--nos-color-bg-soft) 100%);
+      font-family: var(--nos-font-ui);
+    }
+
+    .page {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .hero {
+      border: 1px solid var(--nos-color-border);
+      border-radius: 36px;
+      padding: clamp(32px, 5vw, 58px);
+      background: rgba(245, 243, 238, 0.80);
+      box-shadow: 0 22px 70px rgba(23, 23, 23, 0.08);
+    }
+
+    .eyebrow {
+      color: var(--nos-color-accent-alt);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: var(--nos-font-heading);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 10px 0 14px;
+      font-size: clamp(54px, 8vw, 106px);
+      line-height: 0.9;
+    }
+
+    h2 { margin: 0 0 14px; font-size: 31px; }
+    h3 { margin: 0 0 8px; font-size: 22px; }
+
+    p {
+      margin: 0;
+      color: var(--nos-color-text-muted);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 22px;
+      margin-top: 22px;
+    }
+
+    .section,
+    .entry,
+    .evidence-card,
+    .qa {
+      border: 1px solid var(--nos-color-border);
+      border-radius: 26px;
+      background: rgba(239, 236, 230, 0.78);
+      box-shadow: 0 16px 46px rgba(23, 23, 23, 0.055);
+    }
+
+    .section,
+    .qa {
+      padding: 24px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .entry {
+      position: relative;
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
+      gap: 16px;
+      padding: 18px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: var(--nos-color-accent);
+      box-shadow: 0 0 0 6px rgba(91, 108, 255, 0.12);
+    }
+
+    .entry.blocked .dot { background: var(--nos-color-danger); box-shadow: 0 0 0 6px rgba(194, 65, 12, 0.12); }
+    .entry.audit .dot { background: var(--nos-color-warning); box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.14); }
+    .entry.baseline .dot { background: var(--nos-color-success); box-shadow: 0 0 0 6px rgba(61, 143, 90, 0.12); }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: rgba(91, 108, 255, 0.11);
+      color: var(--nos-color-accent-alt);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge.blocked { background: rgba(194, 65, 12, 0.11); color: var(--nos-color-danger); }
+    .badge.audit { background: rgba(217, 119, 6, 0.12); color: var(--nos-color-warning); }
+    .badge.baseline { background: rgba(61, 143, 90, 0.12); color: var(--nos-color-success); }
+
+    .facts {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .fact {
+      display: grid;
+      grid-template-columns: 116px minmax(0, 1fr);
+      gap: 12px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .fact b { color: var(--nos-color-text); }
+
+    .archive {
+      display: grid;
+      gap: 14px;
+    }
+
+    .evidence-card {
+      padding: 18px;
+      background: rgba(245, 243, 238, 0.76);
+    }
+
+    .trace {
+      margin-top: 12px;
+      color: var(--nos-color-text-muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .qa {
+      margin-top: 22px;
+    }
+
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .qa-item {
+      border: 1px solid var(--nos-color-border);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(245, 243, 238, 0.68);
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1080px) {
+      .grid,
+      .qa-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <span>NODAL OS / Timeline + Evidence Research OS</span>
+      <span>Static fixture preview / no operational authority</span>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Mission Traceability</div>
+      <h1>Timeline Research Journal + Evidence Archive</h1>
+      <p>Timeline is presented as a mission journal and governance record. Evidence is presented as a research archive, not an attachment list. This preview is static and cannot become a productive source of truth.</p>
+    </section>
+
+    <section class="grid">
+      <article class="section">
+        <div class="eyebrow">M591 Timeline Research Journal</div>
+        <h2>Mission Journal</h2>
+        <div class="timeline">
+          <article class="entry baseline">
+            <span class="dot"></span>
+            <div>
+              <h3>Consent Governance Closeout</h3>
+              <div class="badge-row"><span class="badge baseline">completed</span><span class="badge">100%</span><span class="badge">CONSENT_GOVERNANCE_CLOSEOUT_READY</span></div>
+              <p>Governance baseline completed; productive behavior remains blocked.</p>
+              <div class="facts">
+                <div class="fact"><b>Evidence</b><span>consent-adversarial-test-matrix, productive-consent-storage-adr-summary</span></div>
+                <div class="fact"><b>Commit</b><span>613351b0</span></div>
+                <div class="fact"><b>Tests</b><span>governance artifacts accepted as static baseline</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="entry baseline">
+            <span class="dot"></span>
+            <div>
+              <h3>Consent Storage Boundary Ready</h3>
+              <div class="badge-row"><span class="badge baseline">governance baseline</span><span class="badge">CONSENT_STORAGE_BOUNDARY_READY</span></div>
+              <p>Storage boundaries are ready for review, not activation.</p>
+              <div class="facts">
+                <div class="fact"><b>Evidence</b><span>consent-storage-boundary-test-pack, storage-audit-readiness</span></div>
+                <div class="fact"><b>Commit</b><span>41b941df</span></div>
+                <div class="fact"><b>Tests</b><span>boundary pack accepted with static QA</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="entry baseline">
+            <span class="dot"></span>
+            <div>
+              <h3>Visual Reengineering Foundation</h3>
+              <div class="badge-row"><span class="badge baseline">completed</span><span class="badge">VISUAL_REENGINEERING_FOUNDATION_READY</span></div>
+              <p>Research OS design direction defined before broad visual implementation.</p>
+              <div class="facts">
+                <div class="fact"><b>Evidence</b><span>visual-reengineering-audit, research-os-design-system-foundation</span></div>
+                <div class="fact"><b>Commit</b><span>c0e8dd1a</span></div>
+                <div class="fact"><b>Tests</b><span>visual audit and design artifacts represented</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="entry">
+            <span class="dot"></span>
+            <div>
+              <h3>Mission Control Research OS Layout</h3>
+              <div class="badge-row"><span class="badge">completed</span><span class="badge">MISSION_CONTROL_RESEARCH_OS_LAYOUT_READY</span></div>
+              <p>Mission Control preview represented as Research OS visual layer.</p>
+              <div class="facts">
+                <div class="fact"><b>Evidence</b><span>mission-control-research-os-layout, current-mission-hero, mission-status-panels</span></div>
+                <div class="fact"><b>Commit</b><span>95f2a685</span></div>
+                <div class="fact"><b>Tests</b><span>4303 passed, 37 skipped</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="entry blocked">
+            <span class="dot"></span>
+            <div>
+              <h3>Real Access Still Blocked</h3>
+              <div class="badge-row"><span class="badge blocked">blocked</span><span class="badge audit">audit required</span></div>
+              <p>Operational access is intentionally disabled and must remain visible.</p>
+              <div class="facts">
+                <div class="fact"><b>Why</b><span>Operational access is intentionally disabled.</span></div>
+                <div class="fact"><b>Missing</b><span>Productive consent, audited path jail, no-mutation proof, cancellation proof, evidence/timeline emission.</span></div>
+                <div class="fact"><b>Evidence</b><span>ADR, adversarial matrix, audit checklist, full suite evidence.</span></div>
+                <div class="fact"><b>Action</b><span>Approve a future explicit milestone after audit, not here.</span></div>
+                <div class="fact"><b>Disabled</b><span>File Read, File Hash, indexing, LLM context, cloud, provider activity, runtime.</span></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="entry blocked">
+            <span class="dot"></span>
+            <div>
+              <h3>Productive Consent Still Blocked</h3>
+              <div class="badge-row"><span class="badge blocked">intentionally disabled</span><span class="badge">PRODUCTIVE_CONSENT_DESIGN_REVIEW_READY</span></div>
+              <p>Consent visuals cannot imply productive authorization.</p>
+              <div class="facts">
+                <div class="fact"><b>Why</b><span>Consent remains design and contract only.</span></div>
+                <div class="fact"><b>Missing</b><span>Storage design audit, boundary tests, rollback plan, security review.</span></div>
+                <div class="fact"><b>Evidence</b><span>storage ADR, boundary pack, adversarial consent matrix, audit readiness.</span></div>
+                <div class="fact"><b>Action</b><span>Review the future storage milestone separately.</span></div>
+                <div class="fact"><b>Disabled</b><span>Consent persistence, consent enforcement, capability authorization.</span></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </article>
+
+      <article class="section">
+        <div class="eyebrow">M592 Evidence Archive Visual System</div>
+        <h2>Research Archive</h2>
+        <div class="archive">
+          <article class="evidence-card">
+            <h3>Productive Consent Storage Implementation ADR</h3>
+            <div class="badge-row"><span class="badge audit">Audit Required</span><span class="badge">ADR</span></div>
+            <div class="facts">
+              <div class="fact"><b>Mission</b><span>M576-M578</span></div>
+              <div class="fact"><b>Commit</b><span>613351b0</span></div>
+              <div class="fact"><b>Tests</b><span>ADR reviewed as governance artifact</span></div>
+              <div class="fact"><b>Risk</b><span>High</span></div>
+            </div>
+            <div class="trace">Mission -> Decision -> Evidence -> Commit -> Tests</div>
+          </article>
+
+          <article class="evidence-card">
+            <h3>Consent Governance Closeout</h3>
+            <div class="badge-row"><span class="badge baseline">Approved</span><span class="badge">Matrix / Report / Closeout</span></div>
+            <div class="facts">
+              <div class="fact"><b>Mission</b><span>M576-M578</span></div>
+              <div class="fact"><b>Commit</b><span>613351b0</span></div>
+              <div class="fact"><b>Tests</b><span>governance matrix represented</span></div>
+              <div class="fact"><b>Risk</b><span>High</span></div>
+            </div>
+            <div class="trace">Mission -> Decision -> Evidence -> Commit -> Tests</div>
+          </article>
+
+          <article class="evidence-card">
+            <h3>Visual Reengineering Foundation</h3>
+            <div class="badge-row"><span class="badge baseline">Approved</span><span class="badge">Report / Design Foundation</span></div>
+            <div class="facts">
+              <div class="fact"><b>Mission</b><span>M582-M584</span></div>
+              <div class="fact"><b>Commit</b><span>c0e8dd1a</span></div>
+              <div class="fact"><b>Tests</b><span>visual audit and design artifacts represented</span></div>
+              <div class="fact"><b>Risk</b><span>Medium</span></div>
+            </div>
+            <div class="trace">Mission -> Decision -> Evidence -> Commit -> Tests</div>
+          </article>
+
+          <article class="evidence-card">
+            <h3>Mission Control Research OS Layout</h3>
+            <div class="badge-row"><span class="badge baseline">Approved</span><span class="badge">Visual System Artifact</span></div>
+            <div class="facts">
+              <div class="fact"><b>Mission</b><span>M588-M590</span></div>
+              <div class="fact"><b>Commit</b><span>95f2a685</span></div>
+              <div class="fact"><b>Tests</b><span>4303 passed, 37 skipped</span></div>
+              <div class="fact"><b>Risk</b><span>Medium</span></div>
+            </div>
+            <div class="trace">Mission -> Decision -> Evidence -> Commit -> Tests</div>
+          </article>
+        </div>
+      </article>
+    </section>
+
+    <section class="qa">
+      <div class="eyebrow">M593 Static Traceability QA</div>
+      <h2>Traceability Guardrails</h2>
+      <div class="qa-grid">
+        <div class="qa-item">Timeline is a research journal, not a simple checklist.</div>
+        <div class="qa-item">Evidence is a research archive, not a generic attachment list.</div>
+        <div class="qa-item">Every visible item points to decision, evidence, commit, and tests.</div>
+        <div class="qa-item">Blocked states explain why, missing requirements, evidence, action, and disabled scope.</div>
+        <div class="qa-item">No runtime, operational access, productive consent, cloud, provider activity, or LLM context.</div>
+        <div class="qa-item">This preview cannot become a productive source of truth.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
