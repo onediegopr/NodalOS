@@ -1957,3 +1957,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M561+M562+M563 - Per-Capability Access Gate Contracts + Synthetic Failure Modes + Consent Enforcement Preview`.
+
+## M561-M563 Per-Capability Access Gate Contracts + Synthetic Failure Modes + Consent Enforcement Preview
+
+Closed: 2026-06-20
+
+Decision: `M561+M562+M563 CERRADO / PER_CAPABILITY_ACCESS_GATES_READY`
+
+Scope:
+
+- M561: Per-capability access gates, all disabled by default and contract-only.
+- M562: Synthetic failure modes with fail-closed behavior and no runtime escalation.
+- M563: Consent enforcement preview with no-op, non-authorizing review behavior.
+
+Updated percentages:
+
+- NODAL OS global: 99.6%
+- Agent Operations / Automation Layer: 98.8%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 92%
+- Approval foundation: 86%
+- Redaction/Safety foundation: 96%
+- Productization foundation: 81%
+- Mission Control UX: 77%
+- Workspace Local: 78%
+- Project Understanding foundation: 84%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M564+M565+M566 - Capability Gate UI Review + Consent Scope Ledger Mock + Fail-Closed Acceptance Pack`.

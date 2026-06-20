@@ -1,0 +1,38 @@
+{
+  "milestone": "M561+M562+M563",
+  "matrixId": "synthetic-failure-mode-matrix-m562",
+  "coveragePercent": 100.0,
+  "missingFailureCategories": [],
+  "readyForSyntheticFailureReview": true,
+  "readyForRealFailureHandling": false,
+  "readyForRealFilesystemAccess": false,
+  "readyForRealScan": false,
+  "failClosed": true,
+  "requiresUserFacingExplanation": true,
+  "emitsSyntheticEvidenceOnly": true,
+  "emitsSyntheticTimelineOnly": true,
+  "doesNotRetryAutomatically": true,
+  "doesNotEscalateToRuntime": true,
+  "categories": [
+    "MissingConsent",
+    "MissingAudit",
+    "PathOutsideJail",
+    "TraversalAttempt",
+    "SymlinkLikeUncertainty",
+    "CaseAmbiguity",
+    "NetworkShareStylePath",
+    "HiddenSensitiveSegment",
+    "SensitiveLikeMarker",
+    "ExcludedFolder",
+    "TooManyFiles",
+    "TooLargeScope",
+    "CancellationRequested",
+    "NoMutationProofMissing",
+    "RedactionPolicyMissing",
+    "CloudDisabled",
+    "LlmDisabled",
+    "ProviderPolicyMissing",
+    "RuntimeGateMissing"
+  ]
+}
+

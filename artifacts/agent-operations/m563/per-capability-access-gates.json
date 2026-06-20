@@ -1,0 +1,33 @@
+{
+  "milestone": "M561+M562+M563",
+  "decision": "PER_CAPABILITY_ACCESS_GATES_READY",
+  "disabledByDefault": true,
+  "requiresExplicitFutureEnablement": true,
+  "requiresUserConsent": true,
+  "failClosed": true,
+  "isContractOnly": true,
+  "gateEnabled": false,
+  "readyForRealUse": false,
+  "canAuthorizeCapability": false,
+  "canAccessFilesystem": false,
+  "canReadContent": false,
+  "canFingerprintContent": false,
+  "canBuildRepresentation": false,
+  "canSendToLlm": false,
+  "canSendToCloud": false,
+  "capabilities": [
+    "PathCanonicalization",
+    "DirectoryListing",
+    "FileRead",
+    "FileHash",
+    "SecretDetection",
+    "ExclusionEnforcement",
+    "Indexing",
+    "RepresentationBuild",
+    "LlmContextBuild",
+    "CloudSync",
+    "ProviderCall",
+    "RuntimeExecution"
+  ]
+}
+

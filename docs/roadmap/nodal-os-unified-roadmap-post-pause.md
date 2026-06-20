@@ -1020,6 +1020,37 @@ Recommended next:
 
 Do not proceed to operational path jail, OS path resolution, operational workspace access, operational scan behavior, folder enumeration, content access, content fingerprinting, source-control operations, indexing, representation build, LLM context build, prompt construction, provider activity, network, cloud, runtime, mutation, or productive persistence before the next governed phase is defined, documented, and audited.
 
+## M561-M563 Status - Per-Capability Access Gates
+
+M561-M563 separates future operational access into disabled per-capability gates, synthetic failure modes, and consent enforcement preview.
+
+Completed:
+
+- Per-capability access gates with disabled-by-default, contract-only, consent-required, audit-required, fail-closed behavior.
+- Synthetic failure mode matrix with all required categories represented.
+- Consent enforcement preview with no-op, non-authorizing review options.
+
+Current percentages after M561-M563:
+
+- NODAL OS global: 99.6%.
+- Agent Operations / Automation Layer: 98.8%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 92%.
+- Approval foundation: 86%.
+- Redaction/Safety foundation: 96%.
+- Productization foundation: 81%.
+- Mission Control UX: 77%.
+- Workspace Local: 78%.
+- Project Understanding foundation: 84%.
+- LLM/Assignment: 74%.
+- Cloud optional: 10%.
+
+Recommended next:
+
+- `M564+M565+M566 - Capability Gate UI Review + Consent Scope Ledger Mock + Fail-Closed Acceptance Pack`.
+
+Do not proceed to operational path jail, OS path resolution, operational workspace access, operational scan behavior, folder enumeration, content access, content fingerprinting, source-control operations, indexing, representation build, LLM context build, prompt construction, provider activity, network, cloud, runtime, mutation, or productive persistence before the next governed phase is defined, documented, and audited.
+
 ## M558-M560 Status - Operational Access Audit
 
 M558-M560 adds a static disabled Path Jail UI preview, operational access audit ADR, and synthetic policy regression pack.

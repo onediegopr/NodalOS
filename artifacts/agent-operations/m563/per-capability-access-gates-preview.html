@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS M561-M563 Per-Capability Gates</title>
+  <style>
+    :root { color-scheme: dark; --bg:#111612; --panel:#1b251d; --ink:#eef7ed; --line:#344536; --accent:#a4d982; --warn:#efbd71; }
+    body { margin:0; background:linear-gradient(135deg,#1e2d20,var(--bg)); color:var(--ink); font:15px/1.5 "Segoe UI",sans-serif; }
+    main { max-width:1120px; margin:0 auto; padding:42px 20px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+    .card { border:1px solid var(--line); border-radius:18px; background:var(--panel); padding:18px; }
+    .badge { color:var(--accent); border:1px solid var(--line); border-radius:999px; padding:4px 10px; display:inline-block; margin-bottom:14px; }
+    .blocked { color:var(--warn); }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="badge">M561-M563 preview only</span>
+    <h1>Per-Capability Access Gates</h1>
+    <p class="blocked">All capabilities remain disabled by default and cannot authorize operational behavior.</p>
+    <section class="grid">
+      <article class="card"><h2>Capability Gates</h2><p>Each gate is contract-only, consent-gated, audited, and fail-closed.</p></article>
+      <article class="card"><h2>Synthetic Failures</h2><p>Failure modes emit synthetic evidence/timeline refs only and do not escalate to runtime.</p></article>
+      <article class="card"><h2>Consent Preview</h2><p>Consent enforcement preview is no-op and cannot persist consent.</p></article>
+    </section>
+  </main>
+</body>
+</html>
+
