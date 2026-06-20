@@ -1895,3 +1895,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M555+M556+M557 - Disabled Path Jail Prototype Gate + Synthetic Canonicalization Cases + No-Mutation Proof Contract`.
+
+## M555-M557 Disabled Path Jail Prototype Gate + Synthetic Canonicalization Cases + No-Mutation Proof Contract
+
+Closed: 2026-06-20
+
+Decision: `M555+M556+M557 CERRADO / DISABLED_PATH_JAIL_PROTOTYPE_GATE_READY`
+
+Scope:
+
+- M555: Disabled Path Jail Prototype Gate with prototype disabled by default and all operational readiness blocked.
+- M556: Synthetic Canonicalization Cases with 16/16 declared case groups represented.
+- M557: No-Mutation Proof Contract with all mutation capability flags false.
+
+Updated percentages:
+
+- NODAL OS global: 99.4%
+- Agent Operations / Automation Layer: 98.6%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 91%
+- Approval foundation: 85%
+- Redaction/Safety foundation: 96%
+- Productization foundation: 79%
+- Mission Control UX: 76%
+- Workspace Local: 76%
+- Project Understanding foundation: 80%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M558+M559+M560 - Disabled Path Jail UI Preview + Operational Access Audit ADR + Synthetic Policy Regression Pack`.

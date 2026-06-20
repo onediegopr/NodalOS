@@ -1,0 +1,35 @@
+{
+  "milestone": "M555+M556+M557",
+  "matrixId": "synthetic-canonicalization-matrix-m556",
+  "coveragePercent": 100.0,
+  "missingCaseGroups": [],
+  "readyForSyntheticCanonicalizationReview": true,
+  "readyForRealCanonicalization": false,
+  "readyForRealPathJail": false,
+  "readyForFilesystemAccess": false,
+  "canResolveRealPath": false,
+  "canAccessFilesystem": false,
+  "canReadDirectory": false,
+  "canReadFile": false,
+  "canHashFile": false,
+  "canAuthorizeScan": false,
+  "caseGroups": [
+    "InsideRootSimplePath",
+    "OutsideRootTraversal",
+    "SiblingRootPrefixTrap",
+    "CaseVariant",
+    "MixedSeparators",
+    "DriveBoundary",
+    "NetworkShareStylePath",
+    "SymlinkLikeSegment",
+    "HiddenSegment",
+    "UnicodeNormalizationVariant",
+    "TrailingSeparator",
+    "EmptyInvalidPath",
+    "DeepPath",
+    "MaxLengthPath",
+    "ReservedNameStylePath",
+    "RelativePath"
+  ]
+}
+
