@@ -1,0 +1,18 @@
+{
+  "milestone": "M531+M532+M533",
+  "artifact": "handoff-compare-summary",
+  "projectOperationalName": "NODAL OS",
+  "draftOnly": true,
+  "refOnly": true,
+  "comparesRefsAndMetadataOnly": true,
+  "containsRawPayload": false,
+  "verifiesEvidenceContent": false,
+  "callsLlm": false,
+  "modelAssistedComparisonIntroduced": false,
+  "callsNetwork": false,
+  "mutatesFilesystem": false,
+  "productivePersistenceUsed": false,
+  "redacted": true,
+  "deterministic": true,
+  "unverifiedClaimsDisclosure": true
+}

@@ -836,3 +836,33 @@ Recommended next:
 - `M531-M533 Assignment Review History Mock + Handoff Compare Preview + Planner Governance Closeout`.
 
 Do not proceed to productive persistence, planner runtime, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, async dispatch runtime, DSL parser, dependency dispatch, evidence content verification, clipboard integration, or execution before assignment review history mock, handoff compare preview, and planner governance closeout are modeled, documented, and audited.
+
+## M531-M533 Status - Assignment Planner Governance Closeout
+
+M531-M533 closes the Assignment/Planner preview governance phase with mock history, handoff compare preview, and closeout pack without enabling planner runtime, prompts, model calls, runtime, filesystem access, cloud, evidence content verification, or productive persistence.
+
+Completed:
+
+- Assignment Review History Mock with fixture-safe in-memory entries, latest/previous refs, visible labels, diff candidates, deterministic serialization, and visual/mock-only restore.
+- Handoff Compare Preview with refs/metadata-only comparison of blockers, open questions, missing readiness gates, evidence refs, timeline refs, context refs, and guardrails.
+- Planner Governance Closeout with complete status for M519-M533 preview/mock layers and explicit not-ready decisions for runtime, planner runtime, LLM, filesystem, and future audit gates.
+
+Current percentages after M531-M533:
+
+- NODAL OS global: 98.6%.
+- Agent Operations / Automation Layer: 97.8%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 88%.
+- Approval foundation: 82%.
+- Redaction/Safety foundation: 93%.
+- Productization foundation: 71%.
+- Mission Control UX: 73%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 74%.
+
+Recommended next:
+
+- `M534-M536 Governed Project Understanding Preconditions + Assignment Archive Review + Next Phase ADR`.
+
+Do not proceed to productive persistence, planner runtime, executable TaskGraph, prompt creation, model/provider activity, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, async dispatch runtime, DSL parser, dependency dispatch, evidence content verification, clipboard integration, or execution before the next governed phase is defined, documented, and audited.

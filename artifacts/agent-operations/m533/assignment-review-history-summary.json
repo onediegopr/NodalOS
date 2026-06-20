@@ -1,0 +1,23 @@
+{
+  "milestone": "M531+M532+M533",
+  "artifact": "assignment-review-history-summary",
+  "projectOperationalName": "NODAL OS",
+  "historyMockReady": true,
+  "mockStoreOnly": true,
+  "draftOnly": true,
+  "isAuthoritative": false,
+  "canRestoreAsAuthoritative": false,
+  "canAuthorizeExecution": false,
+  "canTriggerPlanner": false,
+  "canTriggerRuntime": false,
+  "canTriggerLlm": false,
+  "canAccessFilesystem": false,
+  "productivePersistenceIntroduced": false,
+  "filesystemIntroduced": false,
+  "browserStorageIntroduced": false,
+  "cloudIntroduced": false,
+  "usageMetricsIntroduced": false,
+  "clipboardIntroduced": false,
+  "serializationDeterministic": true,
+  "redacted": true
+}

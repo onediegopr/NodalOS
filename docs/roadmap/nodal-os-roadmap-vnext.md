@@ -1626,3 +1626,52 @@ Updated percentages:
 Recommended next milestone:
 
 - `M531-M533 Assignment Review History Mock + Handoff Compare Preview + Planner Governance Closeout`.
+
+## M531-M533 Assignment Review History Mock + Handoff Compare Preview + Planner Governance Closeout
+
+Decision:
+
+- `M531+M532+M533 CERRADO / ASSIGNMENT_PLANNER_GOVERNANCE_CLOSEOUT_READY`
+
+What changed:
+
+- Added Assignment Review History Mock with in-memory fixture-safe history entries, visible labels, diff candidate refs, and visual/mock-only restore.
+- Added Handoff Compare Preview that compares refs and metadata only, reports changed blockers, questions, readiness gates, evidence refs, timeline refs, context refs, guardrails, and unverified claims.
+- Added Planner Governance Closeout covering Assignment contracts, TaskGraph draft, mission plan preview, review cards, UI preview, no-op interactions, mock persistence, handoff, safety audit, history mock, and compare preview.
+
+Guardrails:
+
+- No planner runtime.
+- No executable TaskGraph.
+- No prompt creation.
+- No model/provider activity.
+- No provider SDK.
+- No HTTP/network.
+- No BYOK implementation.
+- No evidence content verification.
+- No cloud.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No async dispatch runtime.
+- No clipboard integration.
+- No productive persistence.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 98.6%.
+- Agent Operations / Automation Layer: 97.8%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 88%.
+- Approval foundation: 82%.
+- Redaction/Safety foundation: 93%.
+- Productization foundation: 71%.
+- Mission Control UX: 73%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 74%.
+
+Recommended next milestone:
+
+- `M534-M536 Governed Project Understanding Preconditions + Assignment Archive Review + Next Phase ADR`.
