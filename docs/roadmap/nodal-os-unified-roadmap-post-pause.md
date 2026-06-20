@@ -716,3 +716,33 @@ Recommended next:
 - `M519-M521 Assignment Engine v1 Contracts + TaskGraph Draft + Planner Readiness Gate`.
 
 Do not proceed to real prompts, LLM provider calls, provider SDK, BYOK runtime, token counting, pricing lookup, model availability lookup, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before Assignment Engine contracts, TaskGraph draft, and planner readiness gate are modeled, documented, and audited.
+
+## M519-M521 Status - Assignment Engine TaskGraph Draft
+
+M519-M521 closes draft-only Assignment Engine contracts, TaskGraph Draft, and Planner Readiness Gate without enabling planning runtime or execution.
+
+Completed:
+
+- Assignment Engine v1 Contracts with assignment request refs for workspace, mission, user-provided context, Safe Context Boundary, Project Understanding readiness, prompt governance, budget policy, model capability, planner readiness, evidence, timeline, and guardrails.
+- TaskGraph Draft with analysis, documentation, planning, risk assessment, handoff, advisor suggestion, and future execution placeholder tasks, all with `CanExecute=false`.
+- Planner Readiness Gate with readiness states, planning modes, blockers, warnings, and FutureRuntimeExecution always blocked.
+
+Current percentages after M519-M521:
+
+- NODAL OS global: 98.2%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 86%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 91%.
+- Productization foundation: 67%.
+- Mission Control UX: 70%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 60%.
+
+Recommended next:
+
+- `M522-M524 Mission Plan Draft Preview + TaskGraph Review Cards + Assignment Evidence Linking`.
+
+Do not proceed to real planner, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, dependency dispatch, or execution before mission plan draft preview, TaskGraph review cards, and assignment evidence linking are modeled, documented, and audited.

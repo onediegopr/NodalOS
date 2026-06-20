@@ -1421,3 +1421,55 @@ Updated percentages:
 Recommended next milestone:
 
 - `M519-M521 Assignment Engine v1 Contracts + TaskGraph Draft + Planner Readiness Gate`.
+
+## M519-M521 Assignment Engine v1 Contracts + TaskGraph Draft + Planner Readiness Gate
+
+Decision:
+
+- `M519+M520+M521 CERRADO / ASSIGNMENT_ENGINE_TASKGRAPH_DRAFT_READY`
+
+What changed:
+
+- Added Assignment Engine v1 draft contracts for assignment requests and planning eligibility.
+- Added non-authoritative TaskGraph Draft with all tasks non-executable.
+- Added Planner Readiness Gate for manual draft, context review, and future LLM planning eligibility checks.
+- Preserved no planner runtime, no prompt creation, no model calls, no executable task graph, no dispatch, no cloud, and no runtime.
+
+Guardrails:
+
+- No real planner.
+- No executable TaskGraph.
+- No final prompt text generation.
+- No LLM provider calls.
+- No provider SDK.
+- No provider calls.
+- No network or HTTP.
+- No BYOK implementation.
+- No token counting real.
+- No pricing lookup.
+- No model availability lookup.
+- No routing real.
+- No cloud.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 98.2%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 86%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 91%.
+- Productization foundation: 67%.
+- Mission Control UX: 70%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 60%.
+
+Recommended next milestone:
+
+- `M522-M524 Mission Plan Draft Preview + TaskGraph Review Cards + Assignment Evidence Linking`.
