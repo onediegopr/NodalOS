@@ -1268,3 +1268,55 @@ Updated percentages:
 Recommended next milestone:
 
 - `M510-M512 Project Understanding Policy ADR + Real Scan Preconditions + Context-to-LLM Governance Draft`.
+
+## M510-M512 Project Understanding Policy ADR + Real Scan Preconditions + Context-to-LLM Governance Draft
+
+Decision:
+
+- `M510+M511+M512 CERRADO / PROJECT_UNDERSTANDING_POLICY_GOVERNANCE_READY`
+
+What changed:
+
+- Added Project Understanding Policy ADR.
+- Added Real Scan Preconditions as contract-first, policy-only model.
+- Added Context-to-LLM Governance Draft as future BYOK/LLM policy model.
+- Preserved no real Project Understanding, no scan, no LLM, no prompt, no BYOK, no cloud, and no runtime.
+
+Guardrails:
+
+- No real filesystem scan.
+- No directory listing.
+- No file read/write/delete.
+- No file hashing.
+- No git command.
+- No embeddings.
+- No real project understanding.
+- No prompt creation.
+- No BYOK implementation.
+- No LLM provider calls.
+- No filesystem mutation.
+- No productive persistence.
+- No runtime execution.
+- No positive execution gate implementation.
+- No cloud.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.9%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 89%.
+- Productization foundation: 64%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 55%.
+- LLM/Assignment: 30%.
+
+Recommended next milestone:
+
+- `M513-M515 BYOK Provider Settings Contract + Secret Storage Policy ADR + Provider Test Connection UX Contract`.

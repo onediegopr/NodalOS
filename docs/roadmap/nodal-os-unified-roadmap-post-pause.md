@@ -626,3 +626,33 @@ Recommended next:
 - `M510-M512 Project Understanding Policy ADR + Real Scan Preconditions + Context-to-LLM Governance Draft`.
 
 Do not proceed to real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, prompt creation, productive persistence, cloud implementation, LLM provider calls, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before Project Understanding policy, real scan preconditions, and context-to-LLM governance are documented and audited.
+
+## M510-M512 Status - Project Understanding Policy Governance
+
+M510-M512 closes the Project Understanding policy layer, real scan preconditions model, and future context-to-LLM governance draft.
+
+Completed:
+
+- Project Understanding Policy ADR defining scope, non-scope, stages, allowed/prohibited data, sensitivity/provenance/confidence/freshness, human review triggers, blockers, and relationships to Safe Context Boundary, Workspace Readiness Gate, Evidence/Timeline, Assignment Engine, Expert Advisor, and runtime execution gate.
+- Real Scan Preconditions contract covering validated workspace, path jail, consent placeholder, explicit scope, excluded patterns, max file count, max file size, binary policy, secrets policy, redaction policy, no cloud, no LLM, no embeddings until separate policy, symlink policy, case sensitivity policy, audit/evidence, preview-before-scan, cancel/stop, and no mutation guarantee.
+- Context-to-LLM Governance Draft covering display/export/future LLM separation, redaction, consent, future BYOK, prompt governance, budget guardrails, evidence refs, provenance/confidence/freshness, human review, and block states.
+
+Current percentages after M510-M512:
+
+- NODAL OS global: 97.9%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 89%.
+- Productization foundation: 64%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 55%.
+- LLM/Assignment: 30%.
+
+Recommended next:
+
+- `M513-M515 BYOK Provider Settings Contract + Secret Storage Policy ADR + Provider Test Connection UX Contract`.
+
+Do not proceed to BYOK implementation, provider calls, prompt creation, real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, productive persistence, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before BYOK/provider settings and secret storage policy are modeled, documented, and audited.
