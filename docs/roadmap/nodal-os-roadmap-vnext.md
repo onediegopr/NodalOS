@@ -1833,3 +1833,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M549+M550+M551 - Synthetic Dry Run Simulator Contract + Fixture Result Review + Scan Boundary Audit`.
+
+## M549-M551 Synthetic Dry Run Simulator Contract + Fixture Result Review + Scan Boundary Audit
+
+Closed: 2026-06-20
+
+Decision: `M549+M550+M551 CERRADO / SYNTHETIC_DRY_RUN_SIMULATOR_READY`
+
+Scope:
+
+- M549: Synthetic Dry Run Simulator Contract that evaluates declared fixture metadata only and keeps all operational flags false.
+- M550: Fixture Result Review with no-op, non-authorizing review options and local-only result review.
+- M551: Scan Boundary Audit with synthetic-layer pass decision and all real readiness blocked.
+
+Updated percentages:
+
+- NODAL OS global: 99.2%
+- Agent Operations / Automation Layer: 98.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 91%
+- Approval foundation: 84%
+- Redaction/Safety foundation: 95%
+- Productization foundation: 77%
+- Mission Control UX: 75%
+- Workspace Local: 74%
+- Project Understanding foundation: 75%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M552+M553+M554 - Synthetic Dry Run UI Results + Fixture Coverage Report + Real Scan Readiness ADR`.

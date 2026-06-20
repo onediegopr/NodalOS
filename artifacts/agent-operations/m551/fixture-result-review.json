@@ -1,0 +1,16 @@
+{
+  "milestone": "M549+M550+M551",
+  "reviewId": "fixture-result-review-m550",
+  "isReviewOnly": true,
+  "isNoOp": true,
+  "canAuthorizeRealScan": false,
+  "canAuthorizeFilesystemAccess": false,
+  "canAuthorizeIndexing": false,
+  "canAuthorizeLlmContext": false,
+  "reviewedResultsNeverSentToLlm": true,
+  "reviewedResultsNeverSentToCloud": true,
+  "readyForSyntheticFixtureReview": true,
+  "readyForRealScan": false,
+  "readyForFilesystemAccess": false,
+  "readyForLlmContext": false
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS M549-M551 Synthetic Dry Run Simulator</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101411; --panel:#1a231d; --ink:#f3ecd8; --muted:#aeb8ab; --line:#334333; --accent:#d2df74; }
+    body { margin:0; font-family: Georgia, "Times New Roman", serif; background: radial-gradient(circle at top left, #283725, var(--bg)); color:var(--ink); }
+    main { max-width:1120px; margin:0 auto; padding:40px 22px; }
+    .hero { border:1px solid var(--line); background:linear-gradient(135deg, #22301f, #121812); padding:28px; border-radius:24px; }
+    .eyebrow { color:var(--accent); letter-spacing:.12em; text-transform:uppercase; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:20px; }
+    .panel { border:1px solid var(--line); background:rgba(26,35,29,.88); border-radius:20px; padding:18px; }
+    h1,h2 { margin:.2rem 0 .7rem; }
+    p,li { color:var(--muted); line-height:1.5; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <p class="eyebrow">NODAL OS / M549-M551</p>
+      <h1>Synthetic Dry Run Simulator</h1>
+      <p>Simulation uses declared synthetic fixtures only and cannot authorize operational scan behavior.</p>
+    </section>
+    <section class="grid">
+      <article class="panel"><h2>Simulator</h2><p>Evaluates fixture metadata only. No real filesystem is used.</p></article>
+      <article class="panel"><h2>Fixture Review</h2><p>Review is no-op and non-authorizing.</p></article>
+      <article class="panel"><h2>Boundary Audit</h2><p>Synthetic layer passes while real readiness remains blocked.</p></article>
+      <article class="panel"><h2>Next Gates</h2><p>Operational implementation still requires explicit future audit gates.</p></article>
+    </section>
+  </main>
+</body>
+</html>
