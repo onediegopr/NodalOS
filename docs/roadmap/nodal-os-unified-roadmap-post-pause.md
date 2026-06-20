@@ -1300,3 +1300,29 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance.
 
 Recommended next phase is a storage boundary test pack or disabled storage preview, not direct productive implementation.
+## M579+M580+M581 - Consent Storage Boundary
+
+Decision target: `CONSENT_STORAGE_BOUNDARY_READY`.
+
+This block adds:
+
+- Consent Storage Boundary Test Pack.
+- Disabled Storage UI Preview.
+- Storage Audit Readiness.
+
+Still blocked:
+
+- Productive consent persistence.
+- Productive storage access.
+- Productive consent enforcement.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- Policy enforcement.
+- No-mutation runtime proof.
+- Cancellation proof.
+- Evidence and timeline emission.
+- Kill switch and rollback implementation.
+- LLM, cloud, provider activity, and runtime governance.
+
+Recommended next phase is a productive consent storage audit plan or disabled storage implementation design, not direct productive implementation.

@@ -2147,3 +2147,35 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 92%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+## M579+M580+M581 - Consent Storage Boundary
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Consent storage boundary test pack as synthetic-only.
+- Disabled storage UI preview as static/read-only/no-op.
+- Storage audit readiness as planning-only.
+- Static redacted artifacts under `artifacts/agent-operations/m581`.
+
+Boundaries:
+
+- The boundary pack cannot use productive persistence.
+- The preview cannot enable storage.
+- The readiness pack cannot authorize implementation.
+- Operational access, content access, content fingerprinting, indexing, LLM context, cloud, provider activity, and runtime remain blocked.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.97%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 94%
+- Approval foundation: 91%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 87%
+- Mission Control UX: 82%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

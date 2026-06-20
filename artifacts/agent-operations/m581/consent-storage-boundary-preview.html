@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Consent Storage Boundary M579-M581</title>
+  <style>
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; background: #eef3ed; color: #14251b; }
+    main { max-width: 980px; margin: 0 auto; padding: 42px 24px; }
+    .panel { border: 1px solid #254332; background: #fbfff7; padding: 22px; margin: 18px 0; box-shadow: 8px 8px 0 #bfd4c2; }
+    .status { display: inline-block; padding: 6px 10px; border: 1px solid #7a3d20; color: #7a3d20; font-weight: 700; }
+    ul { line-height: 1.65; }
+    code { background: #e1eadc; padding: 2px 5px; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="status">Boundary and audit readiness only</p>
+    <h1>M579-M581 Consent Storage Boundary</h1>
+    <section class="panel">
+      <h2>Boundary Test Pack</h2>
+      <p>Synthetic storage boundary cases cover disabled default, local-only default, scoped records, redaction rules, fail-closed states, replay blocking, copied consent blocking, migration gate blocking, and rollback requirements.</p>
+      <ul>
+        <li>Never authorizes real use.</li>
+        <li>Never persists productively.</li>
+        <li>Never sends to LLM or cloud.</li>
+      </ul>
+    </section>
+    <section class="panel">
+      <h2>Disabled Storage Preview</h2>
+      <p>The preview is static, read-only, no-op, and disabled-by-default.</p>
+      <p>No consent is persisted. No storage is read or written. No capability is authorized.</p>
+    </section>
+    <section class="panel">
+      <h2>Audit Readiness</h2>
+      <ul>
+        <li><code>ReadyForAuditPlanning=true</code></li>
+        <li><code>ReadyForProductiveStorageImplementation=false</code></li>
+        <li><code>ReadyForProductivePersistence=false</code></li>
+        <li><code>ReadyForConsentEnforcement=false</code></li>
+        <li><code>ReadyForFilesystemAccess=false</code></li>
+        <li><code>ReadyForLlmContext=false</code></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

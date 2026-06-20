@@ -1,0 +1,33 @@
+{
+  "milestone": "M579+M580+M581",
+  "previewId": "disabled-storage-ui-preview-m580",
+  "storageContractRef": "disabled-consent-storage-contract-m574",
+  "boundaryTestPackRef": "consent-storage-boundary-test-pack-m579",
+  "productiveConsentStorageAdrRef": "productive-consent-storage-implementation-adr-m577",
+  "workspaceRef": "workspace-ref-m580",
+  "missionRef": "mission-ref-m580",
+  "isStaticPreview": true,
+  "isReadOnly": true,
+  "isNoOp": true,
+  "disabledByDefault": true,
+  "usesProductivePersistence": false,
+  "readsProductiveStorage": false,
+  "writesProductiveStorage": false,
+  "deletesProductiveStorage": false,
+  "canEnableStorage": false,
+  "canPersistConsent": false,
+  "canAuthorizeCapability": false,
+  "canAuthorizeFilesystemAccess": false,
+  "canAuthorizeLlmContext": false,
+  "canUseCloud": false,
+  "reviewOptionsNoOp": true,
+  "reviewOptionsNonAuthorizing": true,
+  "disclosures": [
+    "No consent is persisted",
+    "No storage is read",
+    "No storage is written",
+    "No consent is enforced",
+    "No capability is authorized",
+    "No filesystem LLM cloud or runtime access is granted"
+  ]
+}
