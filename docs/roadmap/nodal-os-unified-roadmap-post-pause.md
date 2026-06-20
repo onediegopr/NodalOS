@@ -895,3 +895,34 @@ Recommended next:
 - `M537+ Real Scan Implementation Audit` (required before enabling any real scan).
 
 Do not proceed to productive persistence, planner runtime, executable TaskGraph, prompt creation, model/provider activity, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, async dispatch runtime, DSL parser, dependency dispatch, evidence content verification, clipboard integration, or execution before the next governed phase is defined, documented, and audited.
+
+## M537-M539 Status - Project Understanding Scan Gate
+
+M537-M539 adds the pre-scan safety layer for Project Understanding without enabling path jail runtime, real scan, folder enumeration, content handling, content fingerprinting, indexing, vectorization, LLM context build, cloud, or runtime.
+
+Completed:
+
+- Path Jail Implementation Preconditions with symbolic root refs, required canonicalization/containment/symlink/case/drive/share/hidden/exclusion/limit policies, no-mutation guarantee, cancellation, evidence plan, timeline plan, and audit requirement.
+- Consent UI and Scope Preview Contract with draft-only/no-op consent options and estimated-only scope preview that does not use real filesystem access.
+- Real Scan Audit Gate with audit dimensions and blocking decision for future scan, folder enumeration, content handling, content fingerprinting, indexing, vectorization, LLM context, cloud sync, and runtime.
+
+Current percentages after M537-M539:
+
+- NODAL OS global: 98.8%.
+- Agent Operations / Automation Layer: 98.0%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 89%.
+- Approval foundation: 83%.
+- Redaction/Safety foundation: 94%.
+- Productization foundation: 73%.
+- Mission Control UX: 74%.
+- Workspace Local: 71%.
+- Project Understanding foundation: 63%.
+- LLM/Assignment: 74%.
+- Cloud optional: 10%.
+
+Recommended next:
+
+- `M540+M541+M542 - Secret Detection Policy Preview + Exclusion Policy Pack + Scan Dry Run Contract`.
+
+Do not proceed to path jail runtime, real scan, folder enumeration, content handling, content fingerprinting, source-control operations, indexing, vectorization, LLM context build, prompt creation, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.

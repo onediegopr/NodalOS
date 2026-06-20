@@ -1709,3 +1709,34 @@ Recommended next milestone:
 - `M537+ Consent UI and Scope Preview` (blocks real scan).
 - `M537+ BYOK and Provider Policy` (blocks LLM context build).
 - `M537+ Real Scan Implementation Audit` (required before enabling any real scan).
+
+## M537-M539 Path Jail Preconditions + Consent Scope Preview + Real Scan Audit Gate
+
+Closed: 2026-06-20
+
+Decision: `M537+M538+M539 CERRADO / PROJECT_UNDERSTANDING_SCAN_GATE_READY`
+
+Scope:
+
+- M537: Path Jail Implementation Preconditions with symbolic root refs, required policies, no-mutation guarantee, cancellation, evidence/timeline plan, and audit requirement.
+- M538: Consent UI and Scope Preview Contract with draft-only/no-op consent options and estimated-only scope preview.
+- M539: Real Scan Audit Gate that blocks future scan, folder enumeration, content handling, content fingerprinting, indexing, vectorization, LLM context build, cloud sync, and runtime until a future governed milestone.
+
+Updated percentages:
+
+- NODAL OS global: 98.8%
+- Agent Operations / Automation Layer: 98.0%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 89%
+- Approval foundation: 83%
+- Redaction/Safety foundation: 94%
+- Productization foundation: 73%
+- Mission Control UX: 74%
+- Workspace Local: 71%
+- Project Understanding foundation: 63%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M540+M541+M542 - Secret Detection Policy Preview + Exclusion Policy Pack + Scan Dry Run Contract`.

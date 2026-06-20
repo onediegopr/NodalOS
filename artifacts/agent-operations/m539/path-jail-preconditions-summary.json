@@ -1,0 +1,21 @@
+{
+  "milestone": "M537+M538+M539",
+  "artifact": "path-jail-preconditions-summary",
+  "projectOperationalName": "NODAL OS",
+  "pathJailPreconditions": true,
+  "readyForRealPathJail": false,
+  "readyForFilesystemScan": false,
+  "readyForFileRead": false,
+  "readyForFileHashing": false,
+  "readyForDirectoryListing": false,
+  "canResolveRealPath": false,
+  "canReadDirectory": false,
+  "canReadFile": false,
+  "canHashFile": false,
+  "canFollowSymlink": false,
+  "canMutateFilesystem": false,
+  "canCreateIndex": false,
+  "canBuildLlmContext": false,
+  "deterministic": true,
+  "redacted": true
+}
