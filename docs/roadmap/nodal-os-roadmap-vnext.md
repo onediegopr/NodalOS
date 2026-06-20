@@ -1802,3 +1802,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M546+M547+M548 - Project Understanding Implementation ADR + Path Jail Prototype Contract + Scan Fixture Matrix`.
+
+## M546-M548 Project Understanding Implementation ADR + Path Jail Prototype Contract + Scan Fixture Matrix
+
+Closed: 2026-06-20
+
+Decision: `M546+M547+M548 CERRADO / PROJECT_UNDERSTANDING_IMPLEMENTATION_BOUNDARY_READY`
+
+Scope:
+
+- M546: Formal implementation boundary ADR. Future Project Understanding implementation requires path jail prototype, fixture matrix, synthetic-only tests, dry-run simulator contract, audit checkpoint, explicit consent, no-mutation, cancellation, evidence/timeline, and redaction/sensitive-data/exclusion policies.
+- M547: Path Jail Prototype Contract with synthetic root only, symbolic candidates, preview-only policy decisions, and readiness blocked for real operational use.
+- M548: Scan Fixture Matrix with synthetic fixtures covering empty/source/dependency/generated/hidden/environment/sensitive-name/media/symlink-like/outside-jail/case/deep/limit/cancellation/no-mutation cases.
+
+Updated percentages:
+
+- NODAL OS global: 99.1%
+- Agent Operations / Automation Layer: 98.3%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 90%
+- Approval foundation: 84%
+- Redaction/Safety foundation: 95%
+- Productization foundation: 76%
+- Mission Control UX: 75%
+- Workspace Local: 73%
+- Project Understanding foundation: 72%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M549+M550+M551 - Synthetic Dry Run Simulator Contract + Fixture Result Review + Scan Boundary Audit`.

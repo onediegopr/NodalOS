@@ -1,0 +1,19 @@
+{
+  "milestone": "M546+M547+M548",
+  "prototypeId": "path-jail-prototype-contract-m547",
+  "workspaceRef": "workspace-ref-m547",
+  "rootPathRef": "synthetic-root-ref-m547",
+  "syntheticRootOnly": true,
+  "usesRealFilesystem": false,
+  "performsRealCanonicalization": false,
+  "performsDirectoryListing": false,
+  "performsFileRead": false,
+  "performsFileHash": false,
+  "canMutateFilesystem": false,
+  "canAuthorizeScan": false,
+  "isPrototypeOnly": true,
+  "readyForRealPathJail": false,
+  "readyForRealCanonicalization": false,
+  "readyForRealScan": false,
+  "candidateDecisionPreviewOnly": true
+}

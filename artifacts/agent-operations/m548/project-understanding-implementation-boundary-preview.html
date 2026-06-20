@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS M546-M548 Implementation Boundary</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101314; --panel:#192120; --ink:#f3edda; --muted:#aeb8b2; --line:#33413f; --accent:#d4c26a; }
+    body { margin:0; font-family: Georgia, "Times New Roman", serif; background: radial-gradient(circle at top left, #2b3328, var(--bg)); color:var(--ink); }
+    main { max-width:1120px; margin:0 auto; padding:40px 22px; }
+    .hero { border:1px solid var(--line); background:linear-gradient(135deg, #262f25, #121716); padding:28px; border-radius:24px; }
+    .eyebrow { color:var(--accent); letter-spacing:.12em; text-transform:uppercase; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:20px; }
+    .panel { border:1px solid var(--line); background:rgba(25,33,32,.88); border-radius:20px; padding:18px; }
+    h1,h2 { margin:.2rem 0 .7rem; }
+    p,li { color:var(--muted); line-height:1.5; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <p class="eyebrow">NODAL OS / M546-M548</p>
+      <h1>Project Understanding Implementation Boundary</h1>
+      <p>ADR-first, prototype-contract-only, synthetic fixture matrix only.</p>
+    </section>
+    <section class="grid">
+      <article class="panel"><h2>ADR</h2><p>Future implementation is gated by prototype contract, fixture matrix, audit checkpoint, consent, no-mutation, cancellation, and evidence/timeline plans.</p></article>
+      <article class="panel"><h2>Path Jail Prototype</h2><p>Synthetic root only. No operational filesystem access or authorization.</p></article>
+      <article class="panel"><h2>Fixture Matrix</h2><p>Synthetic fixtures cover empty, source, dependency, generated, hidden, sensitive-name, media, symlink-like, outside-jail, limits, cancellation, and no-mutation cases.</p></article>
+      <article class="panel"><h2>Boundary</h2><p>No indexing, vectorization, LLM context, provider activity, cloud, runtime, or execution.</p></article>
+    </section>
+  </main>
+</body>
+</html>

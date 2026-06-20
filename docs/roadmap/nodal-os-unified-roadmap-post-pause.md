@@ -988,3 +988,34 @@ Recommended next:
 - `M546+M547+M548 - Project Understanding Implementation ADR + Path Jail Prototype Contract + Scan Fixture Matrix`.
 
 Do not proceed to path jail runtime, real scan, real content inspection, folder enumeration, content fingerprinting, source-control operations, indexing, vectorization, LLM context build, prompt creation, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.
+
+## M546-M548 Status - Project Understanding Implementation Boundary
+
+M546-M548 prepares the future implementation boundary for Project Understanding without enabling operational scan behavior. The block remains ADR-first, prototype-contract-only, fixture-matrix-only, synthetic-only, redacted, deterministic, and non-operational.
+
+Completed:
+
+- Project Understanding Implementation Boundary ADR defining prerequisites, accepted alternatives, rejected alternatives, non-goals, and required next milestones before any operational implementation.
+- Path Jail Prototype Contract with synthetic root only, symbolic path candidates, preview-only policy decisions, and readiness blocked for real use.
+- Scan Fixture Matrix with synthetic fixture categories, expected outcomes, local-only policy, and readiness limited to synthetic dry-run tests.
+
+Current percentages after M546-M548:
+
+- NODAL OS global: 99.1%.
+- Agent Operations / Automation Layer: 98.3%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 90%.
+- Approval foundation: 84%.
+- Redaction/Safety foundation: 95%.
+- Productization foundation: 76%.
+- Mission Control UX: 75%.
+- Workspace Local: 73%.
+- Project Understanding foundation: 72%.
+- LLM/Assignment: 74%.
+- Cloud optional: 10%.
+
+Recommended next:
+
+- `M549+M550+M551 - Synthetic Dry Run Simulator Contract + Fixture Result Review + Scan Boundary Audit`.
+
+Do not proceed to path jail runtime, real scan, real content inspection, folder enumeration, content fingerprinting, source-control operations, indexing, vectorization, LLM context build, prompt creation, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.
