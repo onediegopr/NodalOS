@@ -1217,3 +1217,54 @@ Updated percentages:
 Recommended next milestone:
 
 - `M507-M509 Context Intake UI Preview + Context Validation Summary + Project Understanding Readiness Report`.
+
+## M507-M509 Context Intake UI Preview + Context Validation Summary + Project Understanding Readiness Report
+
+Decision:
+
+- `M507+M508+M509 CERRADO / CONTEXT_INTAKE_PREVIEW_READINESS_READY`
+
+What changed:
+
+- Added Context Intake UI Preview as static/read-only Mission Control renderer and contract.
+- Added Context Validation Summary for non-authoritative context safety aggregation.
+- Added Project Understanding Readiness Report for future governance and preconditions.
+- Preserved user-provided/unverified context semantics.
+- Preserved no real Project Understanding, no filesystem access, no provider calls and no prompt creation.
+
+Guardrails:
+
+- No real filesystem scan.
+- No directory listing.
+- No file read/write/delete.
+- No file hashing.
+- No git command.
+- No embeddings.
+- No real project understanding.
+- No prompt creation.
+- No filesystem mutation.
+- No productive persistence.
+- No runtime execution.
+- No positive execution gate implementation.
+- No cloud.
+- No LLM provider calls.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.8%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 88%.
+- Productization foundation: 63%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 40%.
+
+Recommended next milestone:
+
+- `M510-M512 Project Understanding Policy ADR + Real Scan Preconditions + Context-to-LLM Governance Draft`.

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Context Intake Preview</title>
+  <style>
+    body{margin:0;background:#0D1117;color:#F5F7FA;font-family:Segoe UI,sans-serif}
+    .shell{display:grid;grid-template-columns:260px 1fr 360px;gap:16px;padding:20px}
+    .panel{background:#161B22;border:1px solid #30363D;border-radius:18px;padding:18px}
+    .card{background:#1C2128;border:1px solid #30363D;border-radius:14px;padding:14px;margin:10px 0}
+    .badge{display:inline-block;border:1px solid #4F7CFF;border-radius:999px;padding:4px 10px;margin:2px;color:#AAB4C0}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <aside class="panel">
+      <h1>NODAL OS</h1>
+      <p>Mission Control context intake</p>
+      <span class="badge">Read-only preview</span>
+      <span class="badge">No runtime</span>
+      <span class="badge">No LLM</span>
+      <span class="badge">No prompt</span>
+    </aside>
+    <section class="panel">
+      <h2>Context Intake UI Preview</h2>
+      <p>No files were read. Context is user-provided or mock-safe.</p>
+      <p>No LLM provider was called.</p>
+      <p>No provider prompt was created.</p>
+      <p>Real project understanding has not started.</p>
+      <article class="card">
+        <h3>Review UserSummary</h3>
+        <p>User-provided safe context preview.</p>
+        <p>provenance: user-provided / confidence: UserProvided / sensitivity: UserProvidedSafe</p>
+        <p>status: SafeForDisplay; options are disabled/no-op.</p>
+      </article>
+    </section>
+    <aside class="panel">
+      <h2>Validation Summary</h2>
+      <p>Mission Control has one user-provided context item, zero blocked items, and zero items needing review.</p>
+      <h2>Readiness</h2>
+      <p>ReadyForUserProvidedContextReview</p>
+      <p>Safe user-provided context can be reviewed, but no real project understanding is running.</p>
+    </aside>
+  </main>
+</body>
+</html>

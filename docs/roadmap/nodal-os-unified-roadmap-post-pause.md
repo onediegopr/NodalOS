@@ -596,3 +596,33 @@ Recommended next:
 - `M507-M509 Context Intake UI Preview + Context Validation Summary + Project Understanding Readiness Report`.
 
 Do not proceed to real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, prompt creation, productive persistence, cloud implementation, LLM provider calls, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before context intake UI remains read-only/no-op and the positive execution authorization gate is planned and audited.
+
+## M507-M509 Status - Context Intake Preview And Readiness
+
+M507-M509 closes the static Mission Control context intake preview, context validation summary, and Project Understanding readiness report.
+
+Completed:
+
+- Context Intake UI Preview with context captures, review cards, evidence link summary, safe/blocked/requires-review counts, missing information, questions, labels, usage chips, disabled future actions, disclosures, next safe steps, and guardrail explainers.
+- Context Validation Summary with safe/blocked/requires-review aggregation, blocked reasons, missing info count, questions count, evidence-linked count, unverified claims count, raw payload blocked count, credential-like blocked count, summaries, warnings, blockers, recommendations, and readiness delta.
+- Project Understanding Readiness Report for future governance states including ready-for-review, mock-summary-only, Safe Context Boundary review, missing workspace/context, sensitive/credential blockers, future LLM/filesystem policy blockers, positive execution gate blocker, and unknown review.
+- Static HTML preview artifact for review without introducing a productive frontend.
+
+Current percentages after M507-M509:
+
+- NODAL OS global: 97.8%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 88%.
+- Productization foundation: 63%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 40%.
+
+Recommended next:
+
+- `M510-M512 Project Understanding Policy ADR + Real Scan Preconditions + Context-to-LLM Governance Draft`.
+
+Do not proceed to real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, prompt creation, productive persistence, cloud implementation, LLM provider calls, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before Project Understanding policy, real scan preconditions, and context-to-LLM governance are documented and audited.
