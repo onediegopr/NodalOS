@@ -1,0 +1,58 @@
+{
+  "milestone": "M567+M568+M569",
+  "previewId": "consent-ledger-ui-preview-m567",
+  "ledgerRef": "consent-scope-ledger-mock-m565",
+  "capabilityGateUiReviewRef": "capability-gate-ui-review-m564",
+  "failClosedAcceptancePackRef": "fail-closed-acceptance-pack-m566",
+  "workspaceRef": "workspace-ref-m567",
+  "missionRef": "mission-ref-m567",
+  "isStaticPreview": true,
+  "isReadOnly": true,
+  "isNoOp": true,
+  "usesProductivePersistence": false,
+  "usesRealFilesystem": false,
+  "canPersistConsent": false,
+  "canAuthorizeCapability": false,
+  "canAuthorizeFilesystemAccess": false,
+  "canAuthorizeLlmContext": false,
+  "canSendToCloud": false,
+  "entryCardDefaults": {
+    "isMockOnly": true,
+    "isAuthoritative": false,
+    "canAuthorizeRealUse": false,
+    "reviewStatus": "DraftReview"
+  },
+  "reviewOptions": [
+    {
+      "option": "AcknowledgeMockEntry",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "RequestNarrowerScope",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "MarkStale",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "MarkRevokedDraft",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "MarkNeedsAudit",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "ExportLedgerPreview",
+      "isNoOp": true,
+      "authorizesCapability": false
+    }
+  ],
+  "userFacingSummary": "Ledger preview is static and cannot authorize operational capability use."
+}

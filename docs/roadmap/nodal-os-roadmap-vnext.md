@@ -2019,3 +2019,35 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 86%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+## M567+M568+M569 - Real Access Blocker Closeout
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Static consent ledger UI preview over the mock ledger.
+- Capability audit checklist with required pre-enable categories.
+- Real access blocker closeout as governance baseline only.
+- Static redacted artifacts under `artifacts/agent-operations/m569`.
+
+Boundaries:
+
+- Ledger remains mock-only.
+- Checklist remains contract-only.
+- Closeout does not recommend direct operational implementation.
+- Operational access, content access, content fingerprinting, indexing, LLM context, cloud, provider activity, and runtime remain blocked.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.8%
+- Agent Operations / Automation Layer: 99.0%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 93%
+- Approval foundation: 88%
+- Redaction/Safety foundation: 96%
+- Productization foundation: 83%
+- Mission Control UX: 79%
+- Workspace Local: 80%
+- Project Understanding foundation: 88%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

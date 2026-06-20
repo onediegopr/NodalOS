@@ -1198,3 +1198,28 @@ Remaining blockers:
 - Adversarial tests.
 
 Operational access, content access, representation build, LLM context, cloud, provider activity, and runtime remain blocked.
+## M567+M568+M569 - Real Access Blocker Closeout
+
+Decision target: `REAL_ACCESS_BLOCKER_CLOSEOUT_READY`.
+
+This block closes the gate/ledger/fail-closed stage as a governance baseline:
+
+- Consent Ledger UI Preview.
+- Capability Audit Checklist.
+- Real Access Blocker Closeout.
+
+Still blocked:
+
+- Productive consent ledger.
+- Productive consent enforcement.
+- Path jail implementation.
+- Operational gate implementation.
+- Policy enforcement.
+- No-mutation runtime proof.
+- Cancellation runtime proof.
+- Evidence and timeline emission.
+- Kill switch and rollback.
+- Adversarial tests.
+- LLM, cloud, provider activity, and runtime governance.
+
+Recommended next phase is an audit checkpoint before any operational implementation.
