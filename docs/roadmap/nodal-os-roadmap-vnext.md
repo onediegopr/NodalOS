@@ -1320,3 +1320,54 @@ Updated percentages:
 Recommended next milestone:
 
 - `M513-M515 BYOK Provider Settings Contract + Secret Storage Policy ADR + Provider Test Connection UX Contract`.
+
+## M513-M515 BYOK Provider Settings Contract + Secret Storage Policy ADR + Provider Test Connection UX Contract
+
+Decision:
+
+- `M513+M514+M515 CERRADO / BYOK_PROVIDER_SETTINGS_SECRET_POLICY_READY`
+
+What changed:
+
+- Added BYOK Provider Settings Contract as reference-only future configuration.
+- Added Secret Storage Policy ADR defining no raw secrets in serializable product surfaces and future secure-store/vault requirements.
+- Added Provider Test Connection UX Contract as disabled/mock-only future preflight preview.
+- Preserved no real BYOK, no secure store, no provider calls, no network, no prompts, no cloud, and no runtime.
+
+Guardrails:
+
+- No real BYOK implementation.
+- No secure store implementation.
+- No OS keychain implementation.
+- No local encrypted vault implementation.
+- No provider SDK.
+- No provider calls.
+- No network or HTTP.
+- No prompt creation.
+- No LLM routing.
+- No raw credential persistence.
+- No environment variable reading.
+- No cloud.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 98.0%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 90%.
+- Productization foundation: 65%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 55%.
+- LLM/Assignment: 40%.
+
+Recommended next milestone:
+
+- `M516-M518 Prompt Governance Contract + Budget Guardrails Draft + Model Capability Matrix`.

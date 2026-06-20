@@ -656,3 +656,33 @@ Recommended next:
 - `M513-M515 BYOK Provider Settings Contract + Secret Storage Policy ADR + Provider Test Connection UX Contract`.
 
 Do not proceed to BYOK implementation, provider calls, prompt creation, real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, productive persistence, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before BYOK/provider settings and secret storage policy are modeled, documented, and audited.
+
+## M513-M515 Status - BYOK Provider Settings And Secret Storage Policy
+
+M513-M515 closes the reference-only BYOK provider settings model, Secret Storage Policy ADR, and disabled/mock-only provider test connection UX contract.
+
+Completed:
+
+- BYOK Provider Settings Contract with future provider kinds, future scopes, key status, capability declarations, disabled capability explanations, budget policy refs, prompt governance refs, consent refs, redaction policy refs, Safe Context Boundary refs, evidence refs, timeline refs, and guardrail refs.
+- Secret Storage Policy ADR defining no raw secrets in JSON/logs/artifacts/reports/screenshots/observability/handoff/timeline/evidence/prompt context/provider settings, and requiring future secure store or vault before real BYOK.
+- Provider Test Connection UX Contract with disabled/mock-only states, credential ref status, future preflight checks, consent requirement, network-disabled status, expected safe result, redacted error policy, evidence refs, timeline refs, observability refs, and guardrail refs.
+
+Current percentages after M513-M515:
+
+- NODAL OS global: 98.0%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 85%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 90%.
+- Productization foundation: 65%.
+- Mission Control UX: 69%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 55%.
+- LLM/Assignment: 40%.
+
+Recommended next:
+
+- `M516-M518 Prompt Governance Contract + Budget Guardrails Draft + Model Capability Matrix`.
+
+Do not proceed to real BYOK, secure store implementation, OS keychain, local encrypted vault, provider SDK, provider calls, network or HTTP, prompt creation, LLM routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before prompt governance, budget guardrails, and model capability policy are modeled, documented, and audited.
