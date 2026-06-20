@@ -567,3 +567,32 @@ Recommended next:
 - `M504-M506 User-Provided Context Capture + Context Review Cards + Context Evidence Linking`.
 
 Do not proceed to real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, productive persistence, cloud implementation, LLM provider calls, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before user-provided context capture remains evidence-linked and the positive execution authorization gate is planned and audited.
+
+## M504-M506 Status - User-Provided Context Review And Evidence Linking
+
+M504-M506 closes safe user-provided context capture, context review cards, and ref-only context evidence linking.
+
+Completed:
+
+- User-Provided Context Capture with provenance, confidence, freshness, sensitivity, Safe Context Boundary decision, allowed/disallowed usage, missing information, static questions, evidence refs, timeline refs, and validation.
+- Context Review Cards with safe/blocked/requires-review statuses, labels, usage chips, missing information, questions, warnings, guardrail refs, no-op options, and non-authority flags.
+- Context Evidence Linking with ref-only links, claim-unverified semantics, unsafe-evidence blocking, and no raw payload/DOM/network/screenshot inline.
+
+Current percentages after M504-M506:
+
+- NODAL OS global: 97.7%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 84%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 87%.
+- Productization foundation: 62%.
+- Mission Control UX: 67%.
+- Workspace Local: 67%.
+- Project Understanding foundation: 30%.
+
+Recommended next:
+
+- `M507-M509 Context Intake UI Preview + Context Validation Summary + Project Understanding Readiness Report`.
+
+Do not proceed to real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, prompt creation, productive persistence, cloud implementation, LLM provider calls, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before context intake UI remains read-only/no-op and the positive execution authorization gate is planned and audited.

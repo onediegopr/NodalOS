@@ -1166,3 +1166,54 @@ Updated percentages:
 Recommended next milestone:
 
 - `M504-M506 User-Provided Context Capture + Context Review Cards + Context Evidence Linking`.
+
+## M504-M506 User-Provided Context Capture + Context Review Cards + Context Evidence Linking
+
+Decision:
+
+- `M504+M505+M506 CERRADO / USER_PROVIDED_CONTEXT_REVIEW_LINKING_READY`
+
+What changed:
+
+- Added User-Provided Context Capture.
+- Added Context Review Cards for Mission Control-safe review.
+- Added Context Evidence Linking as ref-only.
+- Preserved user-provided/not-verified semantics.
+- Preserved Safe Context Boundary blocking for sensitive, secret, raw payload, and unknown context.
+
+Guardrails:
+
+- No real filesystem scan.
+- No directory listing.
+- No file read/write/delete.
+- No file hashing.
+- No git command.
+- No embeddings.
+- No real project understanding.
+- No prompt creation.
+- No filesystem mutation.
+- No productive persistence.
+- No runtime execution.
+- No positive execution gate implementation.
+- No cloud.
+- No LLM provider calls.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.7%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 84%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 87%.
+- Productization foundation: 62%.
+- Mission Control UX: 67%.
+- Workspace Local: 67%.
+- Project Understanding foundation: 30%.
+
+Recommended next milestone:
+
+- `M507-M509 Context Intake UI Preview + Context Validation Summary + Project Understanding Readiness Report`.
