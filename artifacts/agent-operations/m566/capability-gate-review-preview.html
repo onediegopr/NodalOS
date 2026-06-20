@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS M564-M566 Capability Gate Review</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #08100d;
+      --panel: #101c17;
+      --line: #294239;
+      --text: #e7f4ee;
+      --muted: #8fb7a7;
+      --accent: #a8e063;
+      --warn: #ffd166;
+      --block: #ff6b6b;
+    }
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 10%, #1d3329, var(--bg) 42%);
+      color: var(--text);
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    header, section {
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 88%, transparent);
+      border-radius: 22px;
+      padding: 24px;
+      margin-bottom: 18px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .28);
+    }
+    h1, h2 {
+      margin: 0 0 12px;
+      letter-spacing: .02em;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: #0b1713;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+    .ok { color: var(--accent); }
+    .warn { color: var(--warn); }
+    .block { color: var(--block); }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="label">M564-M566 Static Preview</div>
+      <h1>Capability Gate Review</h1>
+      <p>This preview is read-only, no-op, and cannot enable operational capabilities.</p>
+    </header>
+    <section>
+      <h2>Gate State</h2>
+      <div class="grid">
+        <div class="card"><div class="label">Default</div><strong class="block">Disabled</strong></div>
+        <div class="card"><div class="label">Review</div><strong class="ok">Static only</strong></div>
+        <div class="card"><div class="label">Ledger</div><strong class="warn">Mock only</strong></div>
+        <div class="card"><div class="label">Acceptance</div><strong class="ok">Fail closed</strong></div>
+      </div>
+    </section>
+    <section>
+      <h2>Blocked Capabilities</h2>
+      <p>Operational access, content access, content fingerprinting, representation build, LLM context, cloud, provider activity, and runtime remain blocked.</p>
+    </section>
+    <section>
+      <h2>Next Requirements</h2>
+      <p>Productive consent implementation, per-capability audit, dependency gates, path jail audit, no-mutation proof, cancellation proof, evidence/timeline emission, disable strategy, and adversarial tests are still required.</p>
+    </section>
+  </main>
+</body>
+</html>

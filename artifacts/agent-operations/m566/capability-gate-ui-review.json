@@ -1,0 +1,57 @@
+{
+  "milestone": "M564+M565+M566",
+  "reviewId": "capability-gate-ui-review-m564",
+  "workspaceRef": "workspace-ref-m564",
+  "missionRef": "mission-ref-m564",
+  "failureModeMatrixRef": "synthetic-failure-mode-matrix-m562",
+  "consentEnforcementPreviewRef": "consent-enforcement-preview-m563",
+  "operationalAccessAuditAdrRef": "operational-access-audit-adr-m559",
+  "isStaticPreview": true,
+  "isReadOnly": true,
+  "isNoOp": true,
+  "usesRealFilesystem": false,
+  "canEnableGate": false,
+  "canAuthorizeCapability": false,
+  "canPersistConsent": false,
+  "canAccessFilesystem": false,
+  "canReadContent": false,
+  "canFingerprintContent": false,
+  "canBuildRepresentation": false,
+  "canSendToLlm": false,
+  "canSendToCloud": false,
+  "reviewCardDefaults": {
+    "gateEnabled": false,
+    "disabledByDefault": true,
+    "requiredConsent": true,
+    "requiredAudit": true,
+    "failClosed": true
+  },
+  "reviewOptions": [
+    {
+      "option": "AcknowledgeDisabledGate",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "RequestExplanation",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "MarkNeedsAudit",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "RequestNarrowerScope",
+      "isNoOp": true,
+      "authorizesCapability": false
+    },
+    {
+      "option": "ExportReviewSummary",
+      "isNoOp": true,
+      "authorizesCapability": false
+    }
+  ],
+  "userFacingSummary": "Capability review is static and cannot enable operational access."
+}

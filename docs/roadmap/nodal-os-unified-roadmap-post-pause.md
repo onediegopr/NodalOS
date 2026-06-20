@@ -1174,3 +1174,27 @@ Recommended next:
 - `M552+M553+M554 - Synthetic Dry Run UI Results + Fixture Coverage Report + Real Scan Readiness ADR`.
 
 Do not proceed to path jail runtime, real scan, real content inspection, folder enumeration, content fingerprinting, source-control operations, indexing, vectorization, LLM context build, prompt creation, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.
+## M564+M565+M566 - Capability Gate Review Acceptance
+
+Decision target: `CAPABILITY_GATE_REVIEW_ACCEPTANCE_READY`.
+
+This block adds review and acceptance layers around the per-capability gates without enabling operational behavior:
+
+- Capability Gate UI Review.
+- Consent Scope Ledger Mock.
+- Fail-Closed Acceptance Pack.
+
+Remaining blockers:
+
+- Productive consent implementation.
+- Per-capability audit.
+- Dependency gate implementation.
+- Path jail implementation audit.
+- No-mutation runtime proof.
+- Cancellation proof.
+- Policy enforcement.
+- Evidence and timeline emission.
+- Disable strategy.
+- Adversarial tests.
+
+Operational access, content access, representation build, LLM context, cloud, provider activity, and runtime remain blocked.

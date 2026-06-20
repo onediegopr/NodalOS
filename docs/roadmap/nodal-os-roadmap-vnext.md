@@ -1988,3 +1988,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M564+M565+M566 - Capability Gate UI Review + Consent Scope Ledger Mock + Fail-Closed Acceptance Pack`.
+## M564+M565+M566 - Capability Gate Review Acceptance
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Static capability gate UI review with no enablement authority.
+- Mock consent scope ledger with no productive persistence.
+- Fail-closed acceptance pack for per-capability gate behavior.
+- Static redacted artifacts under `artifacts/agent-operations/m566`.
+
+Boundaries:
+
+- Capability gates remain disabled by default.
+- Consent entries remain mock-only and non-authoritative.
+- Operational access, content access, content fingerprinting, indexing, LLM context, cloud, provider activity, and runtime remain blocked.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.7%
+- Agent Operations / Automation Layer: 98.9%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 92%
+- Approval foundation: 87%
+- Redaction/Safety foundation: 96%
+- Productization foundation: 82%
+- Mission Control UX: 78%
+- Workspace Local: 79%
+- Project Understanding foundation: 86%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

@@ -1,0 +1,42 @@
+{
+  "milestone": "M564+M565+M566",
+  "acceptancePackId": "fail-closed-acceptance-pack-m566",
+  "capabilityGateUiReviewRef": "capability-gate-ui-review-m564",
+  "consentScopeLedgerMockRef": "consent-scope-ledger-mock-m565",
+  "failureModeMatrixRef": "synthetic-failure-mode-matrix-m562",
+  "syntheticPolicyRegressionRef": "synthetic-policy-regression-pack-m560",
+  "operationalAccessAuditAdrRef": "operational-access-audit-adr-m559",
+  "acceptanceStatus": "ContractOnlyPass",
+  "criteria": [
+    "all gates disabled by default",
+    "no UI option can enable gates",
+    "no review action authorizes capability",
+    "consent ledger is mock-only",
+    "missing consent fails closed",
+    "missing audit fails closed",
+    "missing dependency fails closed",
+    "missing redaction policy fails closed",
+    "missing sensitive-data policy fails closed",
+    "missing exclusion policy fails closed",
+    "operational access remains blocked",
+    "LLM context remains blocked",
+    "cloud provider and runtime remain blocked"
+  ],
+  "decision": {
+    "failClosedLayerReady": true,
+    "readyForRealCapabilityEnablement": false,
+    "readyForFilesystemAccess": false,
+    "readyForRealScan": false,
+    "readyForRealPathJail": false,
+    "readyForIndexing": false,
+    "readyForRepresentationBuild": false,
+    "readyForLlmContext": false,
+    "readyForCloud": false,
+    "readyForRuntime": false
+  },
+  "fullSuiteClean": true,
+  "testsPassed": 4212,
+  "testsSkipped": 37,
+  "testsFailed": 0,
+  "nextRecommendedMilestone": "M567+M568+M569 - Consent Ledger UI Preview + Capability Audit Checklist + Real Access Blocker Closeout"
+}

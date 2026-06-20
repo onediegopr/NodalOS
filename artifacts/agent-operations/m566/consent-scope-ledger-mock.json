@@ -1,0 +1,39 @@
+{
+  "milestone": "M564+M565+M566",
+  "ledgerId": "consent-scope-ledger-mock-m565",
+  "workspaceRef": "workspace-ref-m565",
+  "missionRef": "mission-ref-m565",
+  "isMockOnly": true,
+  "usesProductivePersistence": false,
+  "usesRealFilesystem": false,
+  "canPersistConsentProductively": false,
+  "canAuthorizeCapability": false,
+  "canAuthorizeFilesystemAccess": false,
+  "canAuthorizeLlmContext": false,
+  "canSendToCloud": false,
+  "entryDefaults": {
+    "consentStatus": "Draft",
+    "scopeStatus": "Draft",
+    "freshnessStatus": "Draft",
+    "revocationStatus": "Draft",
+    "createdAt": "2026-06-20T00:00:00Z",
+    "isMockOnly": true,
+    "isAuthoritative": false,
+    "canAuthorizeRealUse": false
+  },
+  "operationDefaults": {
+    "isMockOnly": true,
+    "usesProductivePersistence": false,
+    "authorizesCapability": false,
+    "authorizesFilesystemAccess": false,
+    "authorizesLlmContext": false
+  },
+  "result": {
+    "readyForMockReview": true,
+    "readyForProductiveConsentLedger": false,
+    "readyForRealCapabilityAuthorization": false,
+    "readyForFilesystemAccess": false,
+    "readyForLlmContext": false
+  },
+  "userFacingSummary": "Consent scope ledger is mock-only and cannot authorize operational access."
+}
