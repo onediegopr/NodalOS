@@ -1576,3 +1576,53 @@ Updated percentages:
 Recommended next milestone:
 
 - `M528-M530 Assignment Review Persistence Mock + Planner Handoff Contract + Assignment Safety Audit Pack`.
+
+## M528-M530 Assignment Review Persistence Mock + Planner Handoff Contract + Assignment Safety Audit Pack
+
+Decision:
+
+- `M528+M529+M530 CERRADO / ASSIGNMENT_REVIEW_HANDOFF_SAFETY_READY`
+
+What changed:
+
+- Added Assignment Review Persistence Mock with in-memory fixture-safe snapshots, deterministic serialization, and rehydration that preserves draft-only/no-authority/no-execution boundaries.
+- Added Planner Handoff Contract with mission, assignment, TaskGraph draft, review session, blockers, open questions, missing readiness gates, evidence refs, timeline refs, context refs, guardrails, and user-facing sections.
+- Added Assignment Safety Audit Pack with pass/fail audit dimensions for draft-only integrity, no-op integrity, no planner runtime, no prompt/model/provider, no runtime, no filesystem, no network, no productive persistence, redaction safety, deterministic serialization, and human-readable explanations.
+
+Guardrails:
+
+- No planner runtime.
+- No executable TaskGraph.
+- No prompt creation.
+- No LLM provider calls.
+- No provider SDK.
+- No provider calls.
+- No network or HTTP.
+- No BYOK implementation.
+- No real evidence verification.
+- No cloud.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No async dispatch runtime.
+- No clipboard real.
+- No productive persistence.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 98.5%.
+- Agent Operations / Automation Layer: 97.7%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 88%.
+- Approval foundation: 82%.
+- Redaction/Safety foundation: 93%.
+- Productization foundation: 70%.
+- Mission Control UX: 72%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 72%.
+
+Recommended next milestone:
+
+- `M531-M533 Assignment Review History Mock + Handoff Compare Preview + Planner Governance Closeout`.

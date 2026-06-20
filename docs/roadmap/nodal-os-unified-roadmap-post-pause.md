@@ -806,3 +806,33 @@ Recommended next:
 - `M528-M530 Assignment Review Persistence Mock + Planner Handoff Contract + Assignment Safety Audit Pack`.
 
 Do not proceed to productive persistence, real planner, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, dependency dispatch, evidence verification, clipboard integration, or execution before assignment review persistence mock, planner handoff contract, and assignment safety audit pack are modeled, documented, and audited.
+
+## M528-M530 Status - Assignment Review Handoff Safety
+
+M528-M530 closes assignment review persistence mock, planner handoff, and assignment safety audit pack without enabling productive persistence, planner runtime, prompts, model calls, runtime, filesystem access, cloud, or execution.
+
+Completed:
+
+- Assignment Review Persistence Mock with fixture-safe in-memory snapshots, selected/expanded/filter/sort/note state, visible refs, deterministic serialization, and rehydration that remains draft-only and non-authoritative.
+- Planner Handoff Contract with mission, assignment, TaskGraph draft, review session, blockers, open questions, missing readiness gates, evidence refs, timeline refs, context refs, guardrails, and user-facing handoff sections.
+- Assignment Safety Audit Pack with pass/fail audit dimensions for draft-only integrity, no-op integrity, no planner runtime, no prompt/model/provider, no runtime, no async dispatch runtime, no filesystem, no network, no productive persistence, redaction safety, deterministic serialization, and human-readable explanations.
+
+Current percentages after M528-M530:
+
+- NODAL OS global: 98.5%.
+- Agent Operations / Automation Layer: 97.7%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 88%.
+- Approval foundation: 82%.
+- Redaction/Safety foundation: 93%.
+- Productization foundation: 70%.
+- Mission Control UX: 72%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 72%.
+
+Recommended next:
+
+- `M531-M533 Assignment Review History Mock + Handoff Compare Preview + Planner Governance Closeout`.
+
+Do not proceed to productive persistence, planner runtime, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, async dispatch runtime, DSL parser, dependency dispatch, evidence content verification, clipboard integration, or execution before assignment review history mock, handoff compare preview, and planner governance closeout are modeled, documented, and audited.
