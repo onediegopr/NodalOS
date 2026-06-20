@@ -957,3 +957,34 @@ Recommended next:
 - `M543+M544+M545 - Project Understanding Dry Run UI Preview + Scan Consent Review Cards + Dry Run Evidence Plan`.
 
 Do not proceed to path jail runtime, real scan, real content inspection, folder enumeration, content fingerprinting, source-control operations, indexing, vectorization, LLM context build, prompt creation, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.
+
+## M543-M545 Status - Project Understanding Dry Run Review
+
+M543-M545 adds the visual and contractual review layer for the future Project Understanding dry-run path. It remains static, read-only, no-op, ref-only, redacted, deterministic, and non-operational.
+
+Completed:
+
+- Project Understanding Dry Run UI Preview with dry-run summary, scope summary, consent status, policy summaries, blocked capabilities, missing requirements, evidence plan preview, timeline preview, disclosures, and guardrails.
+- Scan Consent Review Cards with draft, needs-review, missing prerequisite, audit-gate-blocked, acknowledged draft-only, and rejected draft-only states. All options remain no-op and non-authorizing.
+- Dry Run Evidence Plan with planned evidence items, planned timeline events, planned audit refs, planned redaction refs, and readiness blocked for real evidence emission and real verification.
+
+Current percentages after M543-M545:
+
+- NODAL OS global: 99.0%.
+- Agent Operations / Automation Layer: 98.2%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 90%.
+- Approval foundation: 84%.
+- Redaction/Safety foundation: 95%.
+- Productization foundation: 75%.
+- Mission Control UX: 75%.
+- Workspace Local: 72%.
+- Project Understanding foundation: 69%.
+- LLM/Assignment: 74%.
+- Cloud optional: 10%.
+
+Recommended next:
+
+- `M546+M547+M548 - Project Understanding Implementation ADR + Path Jail Prototype Contract + Scan Fixture Matrix`.
+
+Do not proceed to path jail runtime, real scan, real content inspection, folder enumeration, content fingerprinting, source-control operations, indexing, vectorization, LLM context build, prompt creation, provider activity, network, cloud, runtime, or productive persistence before the next governed phase is defined, documented, and audited.

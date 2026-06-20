@@ -1,0 +1,19 @@
+{
+  "milestone": "M543+M544+M545",
+  "decision": "PROJECT_UNDERSTANDING_DRY_RUN_REVIEW_READY",
+  "evidencePlanId": "dry-run-evidence-plan-m545",
+  "dryRunContractRef": "scan-dry-run-contract-m542",
+  "isPlanOnly": true,
+  "emitsRealEvidence": false,
+  "verifiesRealContent": false,
+  "usesRealFilesystem": false,
+  "buildsLlmContext": false,
+  "plannedEvidenceItemsCanContainRawContent": false,
+  "plannedEvidenceItemsCanContainRawSecret": false,
+  "plannedEvidenceItemsCanVerifyFilesystemContent": false,
+  "plannedTimelineEventsPreviewOnly": true,
+  "plannedTimelineEventsEmitted": false,
+  "readyForRealDryRunEvidence": false,
+  "readyForRealScan": false,
+  "readyForRealEvidenceVerification": false
+}

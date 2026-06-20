@@ -1771,3 +1771,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M543+M544+M545 - Project Understanding Dry Run UI Preview + Scan Consent Review Cards + Dry Run Evidence Plan`.
+
+## M543-M545 Project Understanding Dry Run UI Preview + Scan Consent Review Cards + Dry Run Evidence Plan
+
+Closed: 2026-06-20
+
+Decision: `M543+M544+M545 CERRADO / PROJECT_UNDERSTANDING_DRY_RUN_REVIEW_READY`
+
+Scope:
+
+- M543: Static dry-run UI preview with refs to dry-run contract, path jail preconditions, consent scope preview, sensitive-data policy preview, exclusion policy pack, and real scan audit gate.
+- M544: Scan consent review cards with draft-only states, no-op options, non-authorizing results, and future-gate requirement.
+- M545: Dry Run Evidence Plan with planned evidence refs, planned timeline previews, planned audit refs, redaction refs, and readiness blocked for real evidence emission and verification.
+
+Updated percentages:
+
+- NODAL OS global: 99.0%
+- Agent Operations / Automation Layer: 98.2%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 90%
+- Approval foundation: 84%
+- Redaction/Safety foundation: 95%
+- Productization foundation: 75%
+- Mission Control UX: 75%
+- Workspace Local: 72%
+- Project Understanding foundation: 69%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M546+M547+M548 - Project Understanding Implementation ADR + Path Jail Prototype Contract + Scan Fixture Matrix`.

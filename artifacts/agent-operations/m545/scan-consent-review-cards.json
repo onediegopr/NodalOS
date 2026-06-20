@@ -1,0 +1,30 @@
+{
+  "milestone": "M543+M544+M545",
+  "decision": "PROJECT_UNDERSTANDING_DRY_RUN_REVIEW_READY",
+  "cardsPreviewOnly": true,
+  "isNoOp": true,
+  "canAuthorizeRealScan": false,
+  "canAuthorizeFileRead": false,
+  "canAuthorizeIndexing": false,
+  "canAuthorizeVectorization": false,
+  "canAuthorizeLlmContext": false,
+  "reviewStatuses": [
+    "Draft",
+    "NeedsReview",
+    "BlockedByMissingPathJail",
+    "BlockedByMissingSecretDetection",
+    "BlockedByMissingExclusionPolicy",
+    "BlockedByRealScanAuditGate",
+    "AcknowledgedDraftOnly",
+    "RejectedDraftOnly"
+  ],
+  "reviewOptionsNoOp": [
+    "AcknowledgeDraftOnly",
+    "RejectDraftOnly",
+    "RequestNarrowerScope",
+    "RequestMoreExplanation",
+    "MarkNeedsReview",
+    "ExportReviewSummary"
+  ],
+  "requiresFutureExplicitGate": true
+}
