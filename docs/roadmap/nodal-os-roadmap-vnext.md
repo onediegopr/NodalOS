@@ -1473,3 +1473,56 @@ Updated percentages:
 Recommended next milestone:
 
 - `M522-M524 Mission Plan Draft Preview + TaskGraph Review Cards + Assignment Evidence Linking`.
+
+## M522-M524 Mission Plan Draft Preview + TaskGraph Review Cards + Assignment Evidence Linking
+
+Decision:
+
+- `M522+M523+M524 CERRADO / MISSION_PLAN_DRAFT_REVIEW_READY`
+
+What changed:
+
+- Added Mission Plan Draft Preview for non-authoritative assignment outputs with explicit draft-only, no-task-executable, no-model, no-prompt, no-runtime, and human-review disclosures.
+- Added TaskGraph Review Cards for draft work items with no-op user options, non-authoritative state, disabled future runtime/model/filesystem capabilities, dependencies, blockers, evidence refs, timeline refs, and guardrails.
+- Added Assignment Evidence Linking as ref-only links between assignment request, TaskGraph, work items, context refs, evidence refs, and timeline refs without raw evidence payloads or real verification.
+
+Guardrails:
+
+- No real planner.
+- No executable TaskGraph.
+- No final prompt text generation.
+- No prompt creation.
+- No LLM provider calls.
+- No provider SDK.
+- No provider calls.
+- No network or HTTP.
+- No BYOK implementation.
+- No token counting real.
+- No pricing lookup.
+- No model availability lookup.
+- No routing real.
+- No real evidence verification.
+- No cloud.
+- No runtime execution.
+- No positive execution gate implementation.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 98.3%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 87%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 92%.
+- Productization foundation: 68%.
+- Mission Control UX: 71%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 68%.
+
+Recommended next milestone:
+
+- `M525-M527 Assignment UI Preview + TaskGraph Interaction No-Op + Planner UX Acceptance Pack`.

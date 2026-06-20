@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS mission plan draft preview</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10130f;
+      --panel: #1b2119;
+      --line: #33402f;
+      --text: #edf5e8;
+      --muted: #aebaa7;
+      --accent: #d9b65b;
+      --blocked: #d66b5f;
+      --safe: #75bd84;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(217, 182, 91, .22), transparent 34rem),
+        linear-gradient(135deg, #10130f 0%, #182014 52%, #0c100b 100%);
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 48px 20px;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 12px 0;
+      font-size: clamp(36px, 5vw, 68px);
+      line-height: .94;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--panel) 86%, transparent);
+      padding: 20px;
+      min-height: 150px;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .blocked {
+      color: var(--blocked);
+    }
+
+    .safe {
+      color: var(--safe);
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main data-nodal-os="mission-plan-draft-preview">
+    <p class="eyebrow">NODAL OS / M522-M524 / static draft preview</p>
+    <h1>Mission Plan Draft Preview</h1>
+    <p>This artifact shows the planned review surface only. It is static, redacted, draft-only, and non-authoritative.</p>
+
+    <section class="grid" aria-label="Draft disclosures">
+      <article class="card">
+        <strong>Disclosures</strong>
+        <ul>
+          <li>Mission plan is draft-only.</li>
+          <li>No task is executable.</li>
+          <li>No model was called.</li>
+          <li>No prompt was generated.</li>
+          <li>No runtime action was created.</li>
+          <li>Human review is required before future use.</li>
+        </ul>
+      </article>
+      <article class="card">
+        <strong>Review Cards</strong>
+        <ul>
+          <li>Work items remain non-authoritative.</li>
+          <li>User options are no-op/mock-safe.</li>
+          <li>Future runtime/model/filesystem requirements remain blocked.</li>
+        </ul>
+      </article>
+      <article class="card">
+        <strong>Evidence Links</strong>
+        <ul>
+          <li>Links are ref-only.</li>
+          <li>No raw evidence payload is displayed.</li>
+          <li>Claims remain <span class="blocked">unverified</span> and require review.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

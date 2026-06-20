@@ -746,3 +746,33 @@ Recommended next:
 - `M522-M524 Mission Plan Draft Preview + TaskGraph Review Cards + Assignment Evidence Linking`.
 
 Do not proceed to real planner, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, dependency dispatch, or execution before mission plan draft preview, TaskGraph review cards, and assignment evidence linking are modeled, documented, and audited.
+
+## M522-M524 Status - Mission Plan Draft Review
+
+M522-M524 closes the visible and reviewable mission plan draft layer without enabling planner runtime, prompt creation, model calls, executable tasks, scheduling, queueing, workers, cloud, or filesystem scan.
+
+Completed:
+
+- Mission Plan Draft Preview with assignment request refs, TaskGraph refs, workspace and mission refs, work item summary, dependency summary, risk summary, blocked item summary, next safe steps, evidence refs, timeline refs, guardrails, and required disclosures.
+- TaskGraph Review Cards with non-authoritative states, dependencies, blockers, disabled capabilities, future LLM/runtime/filesystem requirements blocked, no-op user options, evidence refs, timeline refs, context refs, and guardrails.
+- Assignment Evidence Linking with ref-only links for plan drafts, work items, user context, risk evidence, dependency evidence, clarification, contradiction, future verification, and timeline events.
+
+Current percentages after M522-M524:
+
+- NODAL OS global: 98.3%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 87%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 92%.
+- Productization foundation: 68%.
+- Mission Control UX: 71%.
+- Workspace Local: 68%.
+- Project Understanding foundation: 56%.
+- LLM/Assignment: 68%.
+
+Recommended next:
+
+- `M525-M527 Assignment UI Preview + TaskGraph Interaction No-Op + Planner UX Acceptance Pack`.
+
+Do not proceed to assignment UI actions that mutate state, real planner, executable TaskGraph, prompt creation, LLM provider calls, provider SDK, routing, cloud implementation, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, dependency dispatch, evidence verification, or execution before the Assignment UI Preview, TaskGraph Interaction No-Op, and Planner UX Acceptance Pack are modeled, documented, and audited.
