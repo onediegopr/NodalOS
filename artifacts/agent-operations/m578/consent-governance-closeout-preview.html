@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Consent Governance Closeout M576-M578</title>
+  <style>
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; background: #f7f1e8; color: #1d241f; }
+    main { max-width: 980px; margin: 0 auto; padding: 42px 24px; }
+    .panel { border: 1px solid #2f4938; background: #fffaf0; padding: 22px; margin: 18px 0; box-shadow: 8px 8px 0 #d3c4a4; }
+    .status { display: inline-block; padding: 6px 10px; border: 1px solid #7f3d2d; color: #7f3d2d; font-weight: 700; }
+    ul { line-height: 1.65; }
+    code { background: #efe2c8; padding: 2px 5px; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="status">Governance baseline only</p>
+    <h1>M576-M578 Consent Governance Closeout</h1>
+    <section class="panel">
+      <h2>Adversarial Matrix</h2>
+      <p>Synthetic consent cases cover missing, stale, revoked, mismatched, broad, copied, replayed, conflicting, bypass, and freshness-expired scenarios.</p>
+      <ul>
+        <li>Requires fail-closed behavior.</li>
+        <li>Never authorizes real use.</li>
+        <li>Never persists productively.</li>
+        <li>Never sends to LLM or cloud.</li>
+      </ul>
+    </section>
+    <section class="panel">
+      <h2>Storage ADR</h2>
+      <p>Decision: <code>PRODUCTIVE_CONSENT_STORAGE_NOT_IMPLEMENTED_ADR_READY</code>.</p>
+      <p>Future storage must remain disabled-by-default, local-first, scope-bound, capability-bound, workspace-bound, mission-bound, redaction-first, audit-gated, and rollback-ready.</p>
+    </section>
+    <section class="panel">
+      <h2>Closeout Decision</h2>
+      <ul>
+        <li><code>ConsentGovernanceBaselineReady=true</code></li>
+        <li><code>ReadyForProductiveConsentImplementation=false</code></li>
+        <li><code>ReadyForProductiveConsentStorage=false</code></li>
+        <li><code>ReadyForProductiveConsentEnforcement=false</code></li>
+        <li><code>ReadyForFilesystemAccess=false</code></li>
+        <li><code>ReadyForLlmContext=false</code></li>
+        <li><code>ReadyForCloud=false</code></li>
+        <li><code>ReadyForRuntime=false</code></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

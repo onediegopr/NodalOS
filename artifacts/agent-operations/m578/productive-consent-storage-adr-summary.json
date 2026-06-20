@@ -1,0 +1,32 @@
+{
+  "milestone": "M576+M577+M578",
+  "adrId": "productive-consent-storage-implementation-adr-m577",
+  "adrPathRef": "docs/architecture/productive-consent-storage-implementation-adr.md",
+  "decisionStatus": "PRODUCTIVE_CONSENT_STORAGE_NOT_IMPLEMENTED_ADR_READY",
+  "productiveConsentStorageImplemented": false,
+  "futureImplementationDisabledByDefault": true,
+  "futureImplementationLocalFirst": true,
+  "requiresScopeBoundRecords": true,
+  "requiresCapabilityBoundRecords": true,
+  "requiresWorkspaceBoundRecords": true,
+  "requiresMissionBoundRecords": true,
+  "storageMayContainSensitiveMaterial": false,
+  "storageMayContainContentPayloads": false,
+  "storageMayContainUnredactedBroadPaths": false,
+  "storageCanImplyFilesystemAccess": false,
+  "storageCanImplyLlmCloudProviderRuntimePermission": false,
+  "consentCanImplyAnotherCapability": false,
+  "revokedStaleMissingConsentFailsClosed": true,
+  "storageAndEnforcementSeparateMilestones": true,
+  "storageAndCapabilityEnablementSeparateMilestones": true,
+  "requiredBeforeImplementation": [
+    "Storage boundary ADR",
+    "Migration rollback disable strategy",
+    "Adversarial test matrix",
+    "Redaction review",
+    "Evidence timeline emission",
+    "Audit before enablement",
+    "Full suite and guard checks",
+    "No operational access as part of storage implementation"
+  ]
+}

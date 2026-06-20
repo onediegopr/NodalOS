@@ -2115,3 +2115,35 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 91%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+## M576+M577+M578 - Consent Governance Closeout
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Consent adversarial test matrix as synthetic-only.
+- Productive consent storage implementation ADR.
+- Consent governance closeout as baseline only.
+- Static redacted artifacts under `artifacts/agent-operations/m578`.
+
+Boundaries:
+
+- The matrix cannot persist or enforce consent.
+- The ADR does not implement storage.
+- The closeout cannot authorize productive consent.
+- Operational access, content access, content fingerprinting, indexing, LLM context, cloud, provider activity, and runtime remain blocked.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.95%
+- Agent Operations / Automation Layer: 99.3%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 94%
+- Approval foundation: 90%
+- Redaction/Safety foundation: 97%
+- Productization foundation: 86%
+- Mission Control UX: 81%
+- Workspace Local: 83%
+- Project Understanding foundation: 92%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

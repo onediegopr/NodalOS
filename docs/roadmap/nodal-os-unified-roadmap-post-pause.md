@@ -1274,3 +1274,29 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance.
 
 Recommended next phase is a disabled productive consent storage UI preview or a storage implementation ADR, still without direct implementation.
+## M576+M577+M578 - Consent Governance Closeout
+
+Decision target: `CONSENT_GOVERNANCE_CLOSEOUT_READY`.
+
+This block adds:
+
+- Consent Adversarial Test Matrix.
+- Productive Consent Storage Implementation ADR.
+- Consent Governance Closeout.
+
+Still blocked:
+
+- Productive consent persistence.
+- Productive consent enforcement.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- Policy enforcement.
+- No-mutation runtime proof.
+- Cancellation proof.
+- Evidence and timeline emission.
+- Kill switch and rollback.
+- Adversarial implementation tests.
+- LLM, cloud, provider activity, and runtime governance.
+
+Recommended next phase is a storage boundary test pack or disabled storage preview, not direct productive implementation.
