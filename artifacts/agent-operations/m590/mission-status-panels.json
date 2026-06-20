@@ -1,0 +1,50 @@
+{
+  "panelsId": "mission-status-panels-m590",
+  "visiblePrimaryPanelCount": 3,
+  "isStaticFixtureOnly": true,
+  "isNoOp": true,
+  "canAuthorizeCapability": false,
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseLlm": false,
+  "canUseCloud": false,
+  "consentCapabilityStatusPanel": {
+    "title": "Consent / Capability Status",
+    "visualRole": "Governance Console",
+    "capability": "File Read",
+    "status": "Blocked",
+    "scope": "Workspace-only draft",
+    "evidence": "ADR + Test Matrix + Closeout",
+    "risk": "High",
+    "userAction": "Approval Required in future milestone",
+    "disclosures": [
+      "no productive consent accidental",
+      "no capability enablement without approval",
+      "no File Read, File Hash, or listing behavior without gates",
+      "no cloud or provider activity without explicit policy"
+    ]
+  },
+  "evidenceSummaryPanel": {
+    "title": "Evidence Summary",
+    "visualRole": "Research Archive",
+    "artifact": "Consent Governance Closeout",
+    "type": "ADR / Matrix / Report / Test Result",
+    "status": "Approved as governance baseline",
+    "linkedMission": "M576-M578 / M579-M581 / M582-M587",
+    "commitRef": "e912da91",
+    "tests": "4295 passed, 37 skipped"
+  },
+  "advisorNotePanel": {
+    "title": "Advisor Note",
+    "visualRole": "Advisor note, not chatbot",
+    "concern": "Path jail is still design-only.",
+    "potentialImpact": "Users may assume operational access is already safe.",
+    "recommendation": "Keep capability disabled until canonicalization and enforcement are implemented."
+  },
+  "activityFeed": [
+    "14:32 - System - Full suite passed - 4295 passed, 37 skipped",
+    "14:35 - Advisor - Warning generated - Productive consent still blocked",
+    "14:38 - Runtime - Capability blocked - File Read remains disabled",
+    "14:41 - Evidence - Artifact linked - Visual Foundation Phase 1"
+  ]
+}

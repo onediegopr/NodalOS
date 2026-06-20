@@ -1,0 +1,56 @@
+{
+  "heroId": "current-mission-hero-m590",
+  "missionTitle": "Build Local AI Workspace",
+  "progressLabel": "72% Complete",
+  "currentPhase": "Consent Governance",
+  "missionStatus": "Governance baseline ready / real access blocked",
+  "pendingDecisions": 3,
+  "advisorWarnings": 2,
+  "evidenceArtifacts": 12,
+  "currentCommit": "e912da91",
+  "isDominantFocus": true,
+  "usesSerifHeading": true,
+  "usesCalmEditorialSpacing": true,
+  "usesSubduedTechnicalAccent": true,
+  "actionAreaIsNoOpOnly": true,
+  "heroActions": [
+    {
+      "label": "Review current phase",
+      "isNoOp": true,
+      "canAuthorizeRealAction": false
+    },
+    {
+      "label": "View evidence",
+      "isNoOp": true,
+      "canAuthorizeRealAction": false
+    },
+    {
+      "label": "Review blocked capabilities",
+      "isNoOp": true,
+      "canAuthorizeRealAction": false
+    },
+    {
+      "label": "Open advisor notes",
+      "isNoOp": true,
+      "canAuthorizeRealAction": false
+    },
+    {
+      "label": "Export preview summary",
+      "isNoOp": true,
+      "canAuthorizeRealAction": false
+    }
+  ],
+  "blockedExplanation": {
+    "whyThisIsBlocked": "Real access is intentionally disabled.",
+    "whatIsMissing": "Productive consent, audited path jail, no-mutation runtime proof, cancellation proof, evidence/timeline emission.",
+    "whatEvidenceIsRequired": "ADR, adversarial tests, audit checklist, and full suite evidence.",
+    "whatUserActionIsNeeded": "Review and approve a future explicit milestone, not this preview.",
+    "whatRemainsIntentionallyDisabled": "File Read, File Hash, indexing, LLM context, cloud, provider activity, and runtime."
+  },
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseLlm": false,
+  "canUseCloud": false,
+  "canPersistProductiveConsent": false,
+  "canEnableCapability": false
+}

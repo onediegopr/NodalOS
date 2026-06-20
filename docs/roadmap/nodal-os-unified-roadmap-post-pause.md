@@ -1369,3 +1369,25 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance changes.
 
 Recommended next phase is Mission Control implementation with visual QA and no runtime coupling.
+
+## M588+M589+M590 - Mission Control Research OS Layout
+
+Decision target: `MISSION_CONTROL_RESEARCH_OS_LAYOUT_READY`.
+
+This block adds:
+
+- Mission Control Research OS Layout.
+- Current Mission Hero.
+- Mission Status Panels.
+- Static advanced Mission Control preview.
+
+Still blocked:
+
+- Runtime changes.
+- Productive consent changes.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- LLM, cloud, provider activity, and runtime governance changes.
+
+Recommended next phase is Timeline/Evidence Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.

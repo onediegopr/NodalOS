@@ -1,0 +1,58 @@
+{
+  "milestone": "M588+M589+M590",
+  "layoutId": "mission-control-research-os-layout-m590",
+  "foundationRef": "VISUAL_FOUNDATION_PHASE_1_READY",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "missionRef": "mission-build-local-ai-workspace",
+  "isVisualImplementationOnly": true,
+  "isStaticFixtureOnly": true,
+  "isNoOp": true,
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseLlm": false,
+  "canUseCloud": false,
+  "canPersistProductiveConsent": false,
+  "canEnableCapability": false,
+  "visualDirection": "Research Operating System plus Local AI Mission Infrastructure",
+  "layoutRules": [
+    "warm editorial background",
+    "minimal sidebar",
+    "mission-first central canvas",
+    "top current mission context",
+    "maximum three primary secondary panels",
+    "human-readable mission activity feed",
+    "blocked runtime status remains explicit"
+  ],
+  "sidebarSections": [
+    "Mission Control",
+    "Timeline",
+    "Missions",
+    "Workspace",
+    "Consent",
+    "Evidence",
+    "Decisions",
+    "Advisor",
+    "Models",
+    "Agents",
+    "Runtime",
+    "Settings"
+  ],
+  "threeSecondHierarchy": [
+    "active mission",
+    "current phase",
+    "progress",
+    "pending decisions",
+    "advisor warnings",
+    "evidence artifacts",
+    "blocked capabilities"
+  ],
+  "avoidPatterns": [
+    "generic dashboard grid",
+    "dense tables as the main surface",
+    "chat bubble advisor",
+    "raw console as central canvas",
+    "pure white surface",
+    "heavy gradient",
+    "dark default control center"
+  ]
+}

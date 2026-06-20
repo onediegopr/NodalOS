@@ -2245,3 +2245,40 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+
+## M588+M589+M590 - Mission Control Research OS Layout
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Mission Control Research OS layout artifact and static preview.
+- Current Mission Hero centered on Build Local AI Workspace.
+- Mission status panels for Consent / Capability, Evidence Summary, and Advisor Note.
+- Activity Feed as compact mission journal.
+- Static redacted artifacts under `artifacts/agent-operations/m590`.
+
+Boundaries:
+
+- Visual Mission Control only.
+- Preview actions remain no-op and non-authorizing.
+- No broad productive redesign.
+- No operational access.
+- No productive consent changes.
+- No capability enablement.
+- No LLM context, cloud, provider activity, or runtime behavior changes.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 94%
+- Approval foundation: 91%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 91%
+- Mission Control UX: 92%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
