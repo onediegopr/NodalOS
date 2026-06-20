@@ -1926,3 +1926,34 @@ Updated percentages:
 Recommended next milestone:
 
 - `M558+M559+M560 - Disabled Path Jail UI Preview + Operational Access Audit ADR + Synthetic Policy Regression Pack`.
+
+## M558-M560 Disabled Path Jail UI Preview + Operational Access Audit ADR + Synthetic Policy Regression Pack
+
+Closed: 2026-06-20
+
+Decision: `M558+M559+M560 CERRADO / OPERATIONAL_ACCESS_AUDIT_READY`
+
+Scope:
+
+- M558: Disabled Path Jail UI Preview with static read-only/no-op review options.
+- M559: Operational Access Audit ADR declaring operational filesystem access not ready.
+- M560: Synthetic Policy Regression Pack with all declared synthetic categories represented.
+
+Updated percentages:
+
+- NODAL OS global: 99.5%
+- Agent Operations / Automation Layer: 98.7%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 91%
+- Approval foundation: 85%
+- Redaction/Safety foundation: 96%
+- Productization foundation: 80%
+- Mission Control UX: 77%
+- Workspace Local: 77%
+- Project Understanding foundation: 82%
+- LLM/Assignment: 74%
+- Cloud optional: 10%
+
+Recommended next milestone:
+
+- `M561+M562+M563 - Per-Capability Access Gate Contracts + Synthetic Failure Modes + Consent Enforcement Preview`.

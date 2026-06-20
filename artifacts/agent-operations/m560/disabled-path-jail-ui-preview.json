@@ -1,0 +1,32 @@
+{
+  "milestone": "M558+M559+M560",
+  "previewId": "disabled-path-jail-ui-preview-m558",
+  "gateRef": "disabled-path-jail-prototype-gate-m555",
+  "canonicalizationMatrixRef": "synthetic-canonicalization-matrix-m556",
+  "noMutationProofRef": "no-mutation-proof-contract-m557",
+  "realScanReadinessAdrRef": "real-scan-readiness-adr-m554",
+  "workspaceRef": "workspace-ref-m555",
+  "missionRef": "mission-ref-m555",
+  "isStaticPreview": true,
+  "isReadOnly": true,
+  "isNoOp": true,
+  "disabledByDefault": true,
+  "usesRealFilesystem": false,
+  "performsRealCanonicalization": false,
+  "performsDirectoryListing": false,
+  "performsFileRead": false,
+  "performsFileHash": false,
+  "canEnablePrototype": false,
+  "canAuthorizeRealScan": false,
+  "canAuthorizeFilesystemAccess": false,
+  "disclosures": [
+    "No operational filesystem was accessed.",
+    "No OS path resolution was performed.",
+    "No operational scan behavior was performed.",
+    "No content access, fingerprinting, or folder enumeration was performed.",
+    "No mutation is possible from this preview.",
+    "UI cannot enable the prototype.",
+    "Future enablement requires a separate milestone, consent, and audit."
+  ]
+}
+

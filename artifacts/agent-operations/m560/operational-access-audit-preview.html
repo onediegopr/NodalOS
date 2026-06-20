@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS M558-M560 Operational Access Audit</title>
+  <style>
+    :root { color-scheme: dark; --bg:#121612; --panel:#1a241c; --ink:#eef6ec; --line:#364537; --accent:#9fd080; --warn:#efbd71; }
+    body { margin:0; background:radial-gradient(circle at 20% 10%,#22321e,var(--bg) 45%); color:var(--ink); font:15px/1.5 "Segoe UI",sans-serif; }
+    main { max-width:1120px; margin:0 auto; padding:42px 20px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px; }
+    .badge { display:inline-block; color:var(--accent); border:1px solid var(--line); border-radius:999px; padding:4px 10px; margin-bottom:14px; }
+    .blocked { color:var(--warn); }
+  </style>
+</head>
+<body>
+  <main>
+    <span class="badge">M558-M560 audit only</span>
+    <h1>Operational Access Audit</h1>
+    <p class="blocked">Operational filesystem access is not ready and remains blocked.</p>
+    <section class="grid">
+      <article class="card">
+        <h2>Disabled Gate</h2>
+        <p>UI preview is static, read-only, no-op, and cannot enable the prototype.</p>
+      </article>
+      <article class="card">
+        <h2>Audit ADR</h2>
+        <p>Future access requires separate gates, consent, audit, rollback, and fail-closed behavior.</p>
+      </article>
+      <article class="card">
+        <h2>Regression Pack</h2>
+        <p>Synthetic policy regressions are ready, necessary, and not sufficient for operational access.</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
+

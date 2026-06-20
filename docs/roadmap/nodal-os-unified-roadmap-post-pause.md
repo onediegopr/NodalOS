@@ -1020,6 +1020,37 @@ Recommended next:
 
 Do not proceed to operational path jail, OS path resolution, operational workspace access, operational scan behavior, folder enumeration, content access, content fingerprinting, source-control operations, indexing, representation build, LLM context build, prompt construction, provider activity, network, cloud, runtime, mutation, or productive persistence before the next governed phase is defined, documented, and audited.
 
+## M558-M560 Status - Operational Access Audit
+
+M558-M560 adds a static disabled Path Jail UI preview, operational access audit ADR, and synthetic policy regression pack.
+
+Completed:
+
+- Disabled Path Jail UI Preview with no-op, non-authorizing review options.
+- Operational Access Audit ADR with decision status `OPERATIONAL_FILESYSTEM_ACCESS_NOT_READY_AUDIT_REQUIRED`.
+- Synthetic Policy Regression Pack with all required synthetic categories represented.
+
+Current percentages after M558-M560:
+
+- NODAL OS global: 99.5%.
+- Agent Operations / Automation Layer: 98.7%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 91%.
+- Approval foundation: 85%.
+- Redaction/Safety foundation: 96%.
+- Productization foundation: 80%.
+- Mission Control UX: 77%.
+- Workspace Local: 77%.
+- Project Understanding foundation: 82%.
+- LLM/Assignment: 74%.
+- Cloud optional: 10%.
+
+Recommended next:
+
+- `M561+M562+M563 - Per-Capability Access Gate Contracts + Synthetic Failure Modes + Consent Enforcement Preview`.
+
+Do not proceed to operational path jail, OS path resolution, operational workspace access, operational scan behavior, folder enumeration, content access, content fingerprinting, source-control operations, indexing, representation build, LLM context build, prompt construction, provider activity, network, cloud, runtime, mutation, or productive persistence before the next governed phase is defined, documented, and audited.
+
 ## M543-M545 Status - Project Understanding Dry Run Review
 
 M543-M545 adds the visual and contractual review layer for the future Project Understanding dry-run path. It remains static, read-only, no-op, ref-only, redacted, deterministic, and non-operational.
