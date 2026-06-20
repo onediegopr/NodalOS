@@ -536,3 +536,34 @@ Recommended next:
 - `M501-M503 Workspace Readiness Gate + Project Understanding Intake Contract + Safe Context Boundary`.
 
 Do not proceed to real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, productive persistence, cloud implementation, LLM provider calls, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before the safe context boundary and positive execution authorization gate are planned and audited.
+
+## M501-M503 Status - Workspace Readiness And Safe Context Boundary
+
+M501-M503 closes the pre-understanding boundary for workspace readiness and user-provided context intake.
+
+Completed:
+
+- Workspace Readiness Gate with read-only status classification, blockers, warnings, allowed next safe capabilities, disabled capabilities, summaries, evidence refs, timeline refs, and guardrail refs.
+- Project Understanding Intake Contract for user-provided/mock-safe context, including disclosures that no files were read, no real structure was verified, and no real project understanding was generated.
+- Safe Context Boundary for display, export, future LLM prompt, future Advisor, future Assignment Engine, and future Evidence report usage targets.
+- Sensitivity classification for PublicSafe, UserProvidedSafe, WorkspaceMetadataSafe, EvidenceRefOnly, RedactedOnly, SensitiveBlocked, SecretBlocked, RawPayloadBlocked, and UnknownRequiresReview.
+- Future LLM context remains blocked behind future BYOK/LLM policy and consent.
+
+Current percentages after M501-M503:
+
+- NODAL OS global: 97.6%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 83%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 86%.
+- Productization foundation: 61%.
+- Mission Control UX: 66%.
+- Workspace Local: 64%.
+- Project Understanding foundation: 18%.
+
+Recommended next:
+
+- `M504-M506 User-Provided Context Capture + Context Review Cards + Context Evidence Linking`.
+
+Do not proceed to real project understanding, filesystem scan, directory listing, file read/write/delete, file hashing, git commands, embeddings, productive persistence, cloud implementation, LLM provider calls, browser automation runtime with execution authority, recorder/replay, queue, scheduler, DSL parser, or execution before user-provided context capture remains evidence-linked and the positive execution authorization gate is planned and audited.

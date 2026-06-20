@@ -1116,3 +1116,53 @@ Updated percentages:
 Recommended next milestone:
 
 - `M501-M503 Workspace Readiness Gate + Project Understanding Intake Contract + Safe Context Boundary`.
+
+## M501-M503 Workspace Readiness Gate + Project Understanding Intake Contract + Safe Context Boundary
+
+Decision:
+
+- `M501+M502+M503 CERRADO / WORKSPACE_READINESS_CONTEXT_BOUNDARY_READY`
+
+What changed:
+
+- Added Workspace Readiness Gate.
+- Added Project Understanding Intake Contract for user-provided/mock-safe context only.
+- Added Safe Context Boundary for display/export/future-use classification.
+- Preserved no-runtime, no-filesystem-scan, no-LLM, no-cloud, no-authorization semantics.
+- Added explicit future LLM/BYOK policy requirement for any future provider context use.
+
+Guardrails:
+
+- No real filesystem scan.
+- No directory listing.
+- No file read/write/delete.
+- No file hashing.
+- No git command.
+- No embeddings.
+- No real project understanding.
+- No filesystem mutation.
+- No productive persistence.
+- No runtime execution.
+- No positive execution gate implementation.
+- No cloud.
+- No LLM provider calls.
+- No browser automation.
+- No scheduler, worker, queue, recorder, replay, or DSL parser runtime.
+- NODAL OS remains the operational name.
+
+Updated percentages:
+
+- NODAL OS global: 97.6%.
+- Agent Operations / Automation Layer: 97.5%.
+- Core Runtime: 76%.
+- Evidence/Timeline foundation: 83%.
+- Approval foundation: 81%.
+- Redaction/Safety foundation: 86%.
+- Productization foundation: 61%.
+- Mission Control UX: 66%.
+- Workspace Local: 64%.
+- Project Understanding foundation: 18%.
+
+Recommended next milestone:
+
+- `M504-M506 User-Provided Context Capture + Context Review Cards + Context Evidence Linking`.
