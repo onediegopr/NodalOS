@@ -2701,3 +2701,41 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M621 - Sidepanel Manual Screenshot Visual QA
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Static Chrome screenshot QA for the sidepanel Operate surface.
+- Screenshot QA report, risk register, and readiness summary.
+- Tests proving M621 is audit-only and product sidepanel files remain byte-identical.
+- Go / No-Go decision for M622 CSS-only cleanup.
+
+Boundaries:
+
+- Audit-only.
+- No CSS modification.
+- No HTML modification.
+- No JS modification.
+- No manifest modification.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No provider/cloud coupling, productive consent, capability enablement, or product source-of-truth promotion.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.1%
+- Mission Control UX: 99.1%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%

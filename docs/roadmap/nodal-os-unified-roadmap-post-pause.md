@@ -1688,3 +1688,29 @@ Still blocked:
 - LLM context, provider/cloud coupling, model execution, and productive consent.
 
 Recommended next phase is manual screenshot QA or Claude audit before any HTML, JS, manifest, or structure work.
+
+## M621 - Sidepanel Manual Screenshot Visual QA
+
+Decision target: `SIDEPANEL_SCREENSHOT_QA_READY`.
+
+This block adds:
+
+- Static Chrome screenshot QA for the sidepanel Operate surface.
+- Screenshot QA report, risk register, and readiness summary.
+- Tests proving M621 is audit-only and sidepanel HTML, CSS, JS, and manifest hashes remain unchanged.
+- Go for M622 CSS-only dead-style cleanup, with continued NO-GO for HTML, JS, and manifest.
+
+Still blocked:
+
+- CSS fixes inside M621.
+- Dead-style cleanup inside M621.
+- HTML restructure.
+- JavaScript behavior changes.
+- Manifest changes.
+- Product source-of-truth promotion.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- LLM context, provider/cloud coupling, model execution, and productive consent.
+
+Recommended next phase is M622 CSS-only dead-style cleanup with small reversible patches, or stop for interactive extension QA if layout, HTML, JS, or manifest work is requested.

@@ -1,0 +1,71 @@
+{
+  "milestone": "M621",
+  "decision": "SIDEPANEL_SCREENSHOT_QA_READY",
+  "isAuditOnly": true,
+  "screenshotCaptureAvailable": true,
+  "manualQaRequiredByUser": true,
+  "screenshotMode": "Chrome headless static render of local sidepanel HTML",
+  "screenshotLimitations": [
+    "Static render only; installed extension sidepanel session was not controlled interactively.",
+    "Operate tab was captured at 420px and 520px widths.",
+    "Focus-visible, hidden consent, hidden handoff, and live runtime states were evaluated from CSS and HTML structure, not through interactive Chrome state."
+  ],
+  "screenshots": [
+    {
+      "file": "screenshots/sidepanel-operate-static.png",
+      "viewport": "420x1200",
+      "surface": "Operate tab static render",
+      "finding": "Warm Research OS surface is visible; narrow viewport clips the STOP button at the right edge."
+    },
+    {
+      "file": "screenshots/sidepanel-operate-static-wide.png",
+      "viewport": "520x1200",
+      "surface": "Operate tab static render",
+      "finding": "STOP button is fully visible; mission controls and timeline remain legible."
+    }
+  ],
+  "htmlModifiedInThisBlock": false,
+  "cssModifiedInThisBlock": false,
+  "jsModifiedInThisBlock": false,
+  "manifestModifiedInThisBlock": false,
+  "runtimeCouplingIntroduced": false,
+  "providerCloudCouplingIntroduced": false,
+  "filesystemCouplingIntroduced": false,
+  "productiveConsentIntroduced": false,
+  "capabilityEnablementIntroduced": false,
+  "sourceOfTruthPromotionIntroduced": false,
+  "tabActiveContrastRisk": "borderline",
+  "tabActiveContrastEstimate": "4.3:1 for #171717 on #5B6CFF",
+  "researchOsFeel": "pass",
+  "blockedStateClarity": "partial",
+  "logsPreSourceOfTruthPerception": "pass",
+  "focusRings": "pass from CSS audit; interactive screenshot still required",
+  "goForDeadStyleCleanupCssOnly": true,
+  "goForHtmlChanges": false,
+  "goForJsChanges": false,
+  "goForManifestChanges": false,
+  "visualQuestions": {
+    "researchOsLocalMissionControlFeel": "pass",
+    "warmEditorialBackgroundInChrome": "pass",
+    "tabActiveContrast": "borderline",
+    "activeTabNotExecutionButton": "pass",
+    "primaryButtonNoLongerSafeExecutionGreen": "pass",
+    "dangerStopClearNotOverAlarmist": "partial",
+    "statusRunningAttentionNotProductiveActive": "pass from CSS audit",
+    "blockedStatesVisualRisk": "partial",
+    "consentHandoffGovernanceSurfaces": "partial from CSS audit",
+    "runtimeProviderBlockedOrInactivePerception": "partial",
+    "logsAuxiliaryNotSourceOfTruth": "pass",
+    "focusRingsVisible": "pass from CSS audit",
+    "mutedTextLegible": "pass",
+    "genericSaasDashboardSignals": "none detected in static render",
+    "strongResearchOsRegression": "none detected",
+    "immediateFixRequiredBeforeM622": "no",
+    "readyForDeadStyleCleanupCssOnly": "yes"
+  },
+  "decisionNotes": [
+    "M621 does not modify product sidepanel files.",
+    "M622 may proceed as CSS-only dead-style cleanup if it keeps no behavior, no HTML, no JS, and no manifest changes.",
+    "HTML, JS, and manifest remain NO-GO until separate approval after interactive screenshot QA."
+  ]
+}

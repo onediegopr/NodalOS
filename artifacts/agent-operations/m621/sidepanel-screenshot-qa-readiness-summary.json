@@ -1,0 +1,30 @@
+{
+  "milestone": "M621",
+  "decision": "SIDEPANEL_SCREENSHOT_QA_READY",
+  "readyForM622DeadStyleCleanup": true,
+  "readyForHtml": false,
+  "readyForJs": false,
+  "readyForManifest": false,
+  "requiresClaudeBeforeHtmlJsManifest": true,
+  "manualScreenshotQaCompleted": false,
+  "staticChromeScreenshotQaCompleted": true,
+  "screenshotLimitations": [
+    "Captured local static sidepanel render, not a fully interactive installed extension session.",
+    "Operate tab visible; other tabs and hidden live states require user or browser-session validation."
+  ],
+  "recommendedNextMilestone": "M622 CSS-only dead-style cleanup with no HTML, no JS, no manifest, or stop for interactive extension QA if layout work is requested",
+  "goNoGo": {
+    "m622DeadStyleCleanupCssOnly": "GO with small patches",
+    "htmlChanges": "NO-GO",
+    "jsChanges": "NO-GO",
+    "manifestChanges": "NO-GO",
+    "runtimeCoupling": "NO-GO",
+    "capabilityEnablement": "NO-GO"
+  },
+  "productSidepanelHashesExpectedUnchanged": {
+    "sidepanelHtmlSha256": "1191BEECE5C4045A4C61BF5E2EB7F2846319FFD9C848148196134B92C8E38204",
+    "sidepanelCssSha256": "D224C1238912A39EA9A1C3545E5FEB29EC36324BE48688775F89F4AA6A3C3064",
+    "sidepanelJsSha256": "204D325980AE88619546B47F7D196FB66041C233B2DB040EBBD497AF337823D2",
+    "manifestSha256": "48894688F6159FACA52C6CC1E3F438BFCB6B835EBCBAE7952BB12AFD9F339A80"
+  }
+}
