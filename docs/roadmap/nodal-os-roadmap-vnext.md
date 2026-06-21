@@ -1703,6 +1703,42 @@ Updated percentages:
 - LLM/Assignment: 74%
 - Cloud optional: 10%
 
+## M619 - Sidepanel Visual QA / Accessibility / Contrast / Dead-Style Audit
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Audit-only visual QA report for sidepanel token patches M615-M618.
+- CSS risk register with contrast, focus, semantics, and dead-style candidates.
+- Guardrail tests for M615-M618 token/remap preservation and unchanged HTML/JS/manifest hashes.
+- Recommendation for M620 or Claude audit before additional CSS migration.
+
+Boundaries:
+
+- Audit-only checkpoint.
+- No CSS micro-fix in this block.
+- No HTML modification.
+- No JS modification.
+- No manifest modification.
+- No runtime behavior.
+- No provider/cloud coupling, filesystem feature, productive consent, capability enablement, or product state persistence.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 98.9%
+- Mission Control UX: 98.9%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
+
 Recommended next milestone:
 
 - `M537+ Path Jail Implementation` (blocks real scan).

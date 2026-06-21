@@ -1,0 +1,129 @@
+{
+  "patchId": "M619",
+  "decision": "SIDEPANEL_VISUAL_QA_READY",
+  "isAuditOnly": true,
+  "cssModifiedInThisBlock": false,
+  "htmlModifiedInThisBlock": false,
+  "jsModifiedInThisBlock": false,
+  "manifestModifiedInThisBlock": false,
+  "runtimeCouplingIntroduced": false,
+  "providerCloudCouplingIntroduced": false,
+  "filesystemCouplingIntroduced": false,
+  "productiveConsentIntroduced": false,
+  "capabilityEnablementIntroduced": false,
+  "sourceOfTruthPromotionIntroduced": false,
+  "visualRegressionDetected": false,
+  "visualDebtDetected": true,
+  "auditedFiles": [
+    "browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js"
+  ],
+  "productFileHashesObserved": {
+    "sidepanel.html": "1191BEECE5C4045A4C61BF5E2EB7F2846319FFD9C848148196134B92C8E38204",
+    "sidepanel.css": "DDAA2B04E11C5D1E75B57BC366635B02B117661008AD08A471FFB9DE0779D475",
+    "sidepanel.js": "204D325980AE88619546B47F7D196FB66041C233B2DB040EBBD497AF337823D2",
+    "manifest.json": "48894688F6159FACA52C6CC1E3F438BFCB6B835EBCBAE7952BB12AFD9F339A80"
+  },
+  "contrastSamples": [
+    {
+      "pair": "Base text on warm background",
+      "foreground": "#171717",
+      "background": "#F5F3EE",
+      "estimatedRatio": 16.17,
+      "status": "pass"
+    },
+    {
+      "pair": "Muted text on warm background",
+      "foreground": "#5C5C5C",
+      "background": "#F5F3EE",
+      "estimatedRatio": 6.03,
+      "status": "pass"
+    },
+    {
+      "pair": "White active tab text on accent",
+      "foreground": "#FFFFFF",
+      "background": "#5B6CFF",
+      "estimatedRatio": 4.17,
+      "status": "risk"
+    },
+    {
+      "pair": "Primary action accent text on warm background",
+      "foreground": "#5B6CFF",
+      "background": "#F5F3EE",
+      "estimatedRatio": 3.76,
+      "status": "risk"
+    },
+    {
+      "pair": "Warning text on warm background",
+      "foreground": "#D97706",
+      "background": "#F5F3EE",
+      "estimatedRatio": 2.87,
+      "status": "risk"
+    },
+    {
+      "pair": "Timeline muted text on dark card",
+      "foreground": "#8EA59A",
+      "background": "#101614",
+      "estimatedRatio": 6.97,
+      "status": "pass"
+    }
+  ],
+  "contrastRisks": [
+    {
+      "selector": ".tab.active",
+      "risk": "White on #5B6CFF is estimated at 4.17:1, close to the normal-text threshold.",
+      "recommendedAction": "Review in Patch 5 before changing accent or tab typography."
+    },
+    {
+      "selector": "button.primary",
+      "risk": "Accent text on warm background is estimated at 3.76:1, acceptable only if treated as bold control text.",
+      "recommendedAction": "Patch 5 should test rendered button text size and consider stronger text or filled state."
+    },
+    {
+      "selector": ".recording-state",
+      "risk": "Warning text on warm warning surface is estimated at 2.87:1.",
+      "recommendedAction": "Patch 5 should darken warning text or increase container emphasis."
+    }
+  ],
+  "focusRisks": [
+    {
+      "selector": "button:focus-visible, input:focus-visible, textarea:focus-visible",
+      "risk": "outline is removed but replaced by --nos-focus-ring; alpha 0.22 may be subtle on warm surfaces.",
+      "recommendedAction": "Patch 5 should run manual keyboard review and consider stronger ring opacity."
+    }
+  ],
+  "semanticFindings": [
+    "Primary actions no longer use green authority styling.",
+    "Danger actions use the Research OS danger token and are less alarmist than prior pure red styling.",
+    "Recording state no longer reads as active blue runtime state.",
+    "Disabled state still communicates unavailable controls through opacity and cursor.",
+    "Blocked timeline card still exposes danger-token emphasis."
+  ],
+  "deadStyleCandidates": [
+    {
+      "selectorOrToken": "--green, --red, --blue, --black",
+      "reason": "Legacy root tokens remain after M615-M618 and should be usage-mapped before removal."
+    },
+    {
+      "selectorOrToken": "--nos-color-bg-soft, --nos-color-surface-raised, --nos-color-accent-alt, --nos-color-risk, --nos-space-panel, --nos-space-section, --nos-font-heading, --nos-font-ui",
+      "reason": "Research OS tokens are declared but not yet applied across sidepanel surfaces."
+    },
+    {
+      "selectorOrToken": ".timeline-card and nested timeline selectors",
+      "reason": "Dark legacy island remains and should be reviewed before Patch 5 cleanup."
+    },
+    {
+      "selectorOrToken": ".human-banner, .handoff-surface, .consent-surface",
+      "reason": "Several governance surfaces still use hardcoded legacy colors."
+    }
+  ],
+  "cssSafety": {
+    "remoteImportsPresent": false,
+    "remoteLinksPresent": false,
+    "analyticsBeaconIntroduced": false,
+    "scriptCouplingIntroduced": false,
+    "behaviorChanged": false
+  },
+  "recommendedNextPatch": "M620 or Claude audit"
+}

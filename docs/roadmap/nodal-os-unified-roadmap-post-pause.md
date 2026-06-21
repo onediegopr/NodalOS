@@ -1517,7 +1517,7 @@ Still blocked:
 - Evidence verification.
 - Operational access.
 - Path jail implementation.
-- LLM context, cloud, Provider Calls, model execution, and productive consent.
+- LLM context, provider/cloud coupling, model execution, and productive consent.
 
 Recommended next phase is Product UI Entry Point Audit, not direct broad UI rewrite.
 
@@ -1634,3 +1634,30 @@ Still blocked:
 - LLM context, cloud, Provider Calls, model execution, and productive consent.
 
 Recommended next phase is Sidepanel Token Patch 2 (base token remapping), pending separate approval.
+
+## M619 - Sidepanel Visual QA / Accessibility / Contrast / Dead-Style Audit
+
+Decision target: `SIDEPANEL_VISUAL_QA_READY`.
+
+This block adds:
+
+- Sidepanel visual QA report.
+- Sidepanel CSS risk register.
+- Tests that preserve M615-M618 token/remap contracts.
+- Tests that confirm HTML, JS, and manifest hashes remain unchanged.
+
+Still blocked:
+
+- Patch 5 visual cleanup.
+- Sidepanel HTML restructure.
+- Sidepanel JS behavior changes.
+- Manifest changes.
+- Product UI migration.
+- Broad UI rewrite.
+- Product source-of-truth promotion.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- LLM context, cloud, Provider Calls, model execution, and productive consent.
+
+Recommended next phase is M620 or Claude audit, limited to reviewed CSS visual QA and dead-style cleanup planning.
