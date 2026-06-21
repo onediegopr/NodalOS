@@ -1,0 +1,25 @@
+{
+  "milestone": "M624",
+  "decision": "INSTALLED_EXTENSION_INTERACTIVE_QA_READY",
+  "readyForHtmlMinimumPatch": false,
+  "readyForManifestNamingCleanup": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "requiresClaudeBeforeJs": true,
+  "requiresClaudeBeforeManifest": true,
+  "manualUserQaRequired": true,
+  "interactiveExtensionQaAvailable": false,
+  "recommendedNextMilestone": "Installed Extension Manual QA Rerun before HTML or manifest work",
+  "remainingRisks": [
+    "installed extension sidepanel not controlled from Codex",
+    "live keyboard focus unconfirmed",
+    "live console status unconfirmed",
+    "live narrow-width STOP state unconfirmed",
+    "live Research OS feel unconfirmed"
+  ],
+  "goNoGo": {
+    "htmlMinimumPatch": "no-go",
+    "manifestNamingCleanup": "no-go",
+    "jsChanges": "no-go"
+  }
+}

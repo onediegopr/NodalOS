@@ -1,0 +1,42 @@
+{
+  "milestone": "M624",
+  "decision": "INSTALLED_EXTENSION_INTERACTIVE_QA_READY",
+  "isAuditOnly": true,
+  "interactiveExtensionQaAvailable": false,
+  "manualUserQaRequired": true,
+  "reason": "Chrome automation connector could not initialize local browser assets in this environment; installed extension control was not available from Codex.",
+  "htmlModifiedInThisBlock": false,
+  "cssModifiedInThisBlock": false,
+  "jsModifiedInThisBlock": false,
+  "manifestModifiedInThisBlock": false,
+  "runtimeCouplingIntroduced": false,
+  "providerCloudCouplingIntroduced": false,
+  "filesystemCouplingIntroduced": false,
+  "productiveConsentIntroduced": false,
+  "capabilityEnablementIntroduced": false,
+  "sourceOfTruthPromotionIntroduced": false,
+  "tabActiveContrast": "unknown",
+  "stopButtonResponsive": "unknown",
+  "focusRingKeyboard": "unknown",
+  "runtimeLooksBlocked": "unknown",
+  "researchOsFeel": "unknown",
+  "goForHtmlMinimumPatch": false,
+  "goForManifestNamingCleanup": false,
+  "goForJsChanges": false,
+  "scenariosPrepared": [
+    "installed extension opens sidepanel",
+    "tabs: Operar, Aprender, Recetas, Runtime",
+    "active tab contrast",
+    "STOP responsive state at narrow width",
+    "keyboard focus ring",
+    "status badges and blocked states",
+    "consent and handoff governance surfaces",
+    "runtime and model surfaces",
+    "log pane and preformatted text",
+    "normal, narrow, and wide sidepanel widths"
+  ],
+  "staticEvidenceRefs": [
+    "M623 contrast responsive microfix summary",
+    "M623 static 420px screenshot"
+  ]
+}

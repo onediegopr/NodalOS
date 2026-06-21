@@ -1742,6 +1742,40 @@ Updated progress estimate after closeout:
 - LLM/Assignment: 75%
 - Cloud optional: 10%
 
+## M624 - Installed Extension Interactive QA / Live Sidepanel State Audit
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Audit-only installed extension QA artifact set.
+- Explicit environment limitation: Chrome connector was not available for live sidepanel control.
+- Manual QA checklist for Operar, Aprender, Recetas, Runtime, focus, STOP responsive state, governance surfaces, runtime/model blocked perception, logs, and responsive widths.
+- Readiness summary that keeps HTML, manifest, and JS changes blocked.
+
+Decision target: `INSTALLED_EXTENSION_INTERACTIVE_QA_READY`.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+- Installed extension live pass/fail remains unknown until manual QA or connector repair.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.4%
+- Mission Control UX: 99.4%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
+
 ## M619 - Sidepanel Visual QA / Accessibility / Contrast / Dead-Style Audit
 
 Status: implemented in branch, pending validation at block close.

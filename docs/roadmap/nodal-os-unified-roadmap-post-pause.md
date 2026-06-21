@@ -1783,3 +1783,36 @@ Still blocked:
 - LLM context, provider/cloud coupling, model execution, and productive consent.
 
 Recommended next phase is interactive extension QA before any HTML, JS, or manifest work.
+
+## M624 - Installed Extension Interactive QA / Live Sidepanel State Audit
+
+Decision target: `INSTALLED_EXTENSION_INTERACTIVE_QA_READY`.
+
+This block adds:
+
+- Installed extension interactive QA report.
+- Installed extension interactive risk register.
+- Installed extension readiness summary.
+- Manual QA checklist for live sidepanel validation.
+
+Result:
+
+- Interactive extension control from Codex was not available in this environment.
+- `interactiveExtensionQaAvailable=false`.
+- `manualUserQaRequired=true`.
+- Live answers for active tab contrast, STOP responsive state, keyboard focus, Research OS feel, runtime/model blocked perception, and console status remain unknown.
+
+Go/No-Go:
+
+- HTML minimum patch: NO-GO.
+- Manifest/naming cleanup: NO-GO.
+- JS changes: NO-GO.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+
+Next recommended milestone:
+
+Installed Extension Manual QA Rerun or connector repair before HTML/manifest work.
