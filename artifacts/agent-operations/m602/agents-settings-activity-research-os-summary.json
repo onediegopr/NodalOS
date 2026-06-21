@@ -1,0 +1,22 @@
+{
+  "summaryId": "NOS-M600-M602-AGENTS-SETTINGS-ACTIVITY-SUMMARY",
+  "decisionTarget": "AGENTS_SETTINGS_ACTIVITY_RESEARCH_OS_READY",
+  "agentsResearchOsReady": true,
+  "settingsGovernanceReady": true,
+  "missionActivityFeedReady": true,
+  "staticIntegrationQaReady": true,
+  "canBecomeProductiveSourceOfTruth": false,
+  "canEnableAgents": false,
+  "canPersistSettings": false,
+  "canStartRuntime": false,
+  "canAccessFilesystem": false,
+  "canVerifyEvidence": false,
+  "canCallProvider": false,
+  "canUseCloud": false,
+  "canEnableCapability": false,
+  "testsPassed": 4333,
+  "testsSkipped": 37,
+  "testsFailed": 0,
+  "fullSuiteClean": true,
+  "recommendedNextMilestone": "Research OS visual consolidation and acceptance pack, still static and no-op"
+}

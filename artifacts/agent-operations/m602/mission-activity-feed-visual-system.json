@@ -1,0 +1,104 @@
+{
+  "visualSystemId": "NOS-M602-MISSION-ACTIVITY-FEED",
+  "decisionTarget": "AGENTS_SETTINGS_ACTIVITY_RESEARCH_OS_READY",
+  "surface": "Mission Activity Feed Visual System",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "missionRef": "M600-M602",
+  "isVisualOnly": true,
+  "isStaticPreview": true,
+  "isNoOp": true,
+  "usesFixtureDataOnly": true,
+  "isRawLog": false,
+  "canPersistFeed": false,
+  "canVerifyEvidence": false,
+  "canMutateTimeline": false,
+  "canAccessRuntime": false,
+  "concept": [
+    "what occurred",
+    "who did it",
+    "what evidence was generated",
+    "what decision changed",
+    "what test ran",
+    "what commit closed",
+    "what remains blocked"
+  ],
+  "rowAnatomy": [
+    "Time",
+    "Actor",
+    "Event",
+    "Summary",
+    "Linked Evidence",
+    "Linked Commit",
+    "Status"
+  ],
+  "feedRows": [
+    {
+      "Time": "14:32",
+      "Actor": "System",
+      "Event": "Full suite passed",
+      "Summary": "4326 passed, 37 skipped",
+      "Linked Evidence": "M597-M599 report",
+      "Linked Commit": "d9b2de45",
+      "Status": "Completed"
+    },
+    {
+      "Time": "14:35",
+      "Actor": "Advisor",
+      "Event": "Warning generated",
+      "Summary": "Productive consent still blocked",
+      "Linked Evidence": "Consent Governance Closeout",
+      "Linked Commit": "d9b2de45",
+      "Status": "Warning"
+    },
+    {
+      "Time": "14:38",
+      "Actor": "Evidence",
+      "Event": "Artifact linked",
+      "Summary": "Consent Runtime Models Research OS",
+      "Linked Evidence": "M597-M599 artifacts",
+      "Linked Commit": "d9b2de45",
+      "Status": "Completed"
+    },
+    {
+      "Time": "14:41",
+      "Actor": "Runtime",
+      "Event": "Capability blocked",
+      "Summary": "Provider Calls Disabled",
+      "Linked Evidence": "Runtime Local-First Safety",
+      "Linked Commit": "d9b2de45",
+      "Status": "Blocked"
+    },
+    {
+      "Time": "14:44",
+      "Actor": "Decision",
+      "Event": "Governance baseline accepted",
+      "Summary": "visual static/no-op only",
+      "Linked Evidence": "Decision Advisor Research OS",
+      "Linked Commit": "08b6f47c",
+      "Status": "Completed"
+    },
+    {
+      "Time": "14:49",
+      "Actor": "Tests",
+      "Event": "Guardrails confirmed",
+      "Summary": "no runtime/filesystem/LLM/cloud",
+      "Linked Evidence": "M597-M599 validation",
+      "Linked Commit": "d9b2de45",
+      "Status": "Completed"
+    }
+  ],
+  "blockedStateAnatomy": {
+    "why": "Activity Feed is informational and cannot grant authority.",
+    "missing": "Productive feed persistence, evidence verification, runtime governance, and explicit approval milestones.",
+    "evidenceRequired": "ADR, audit checklist, adversarial tests, and full suite before future productive feed behavior.",
+    "userActionNeeded": "Review future governed milestone; no action here changes runtime or settings.",
+    "intentionallyDisabled": [
+      "Agents execution",
+      "Settings persistence",
+      "Runtime authority",
+      "Provider Calls",
+      "Filesystem access",
+      "Source-of-truth promotion"
+    ]
+  }
+}

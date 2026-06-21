@@ -1,0 +1,143 @@
+{
+  "visualSystemId": "NOS-M601-SETTINGS-GOVERNANCE",
+  "decisionTarget": "AGENTS_SETTINGS_ACTIVITY_RESEARCH_OS_READY",
+  "surface": "Settings Governance Visual System",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "missionRef": "M600-M602",
+  "isVisualOnly": true,
+  "isStaticPreview": true,
+  "isNoOp": true,
+  "usesFixtureDataOnly": true,
+  "canPersistSettings": false,
+  "canStoreProviderKey": false,
+  "canEnableCapability": false,
+  "canChangeRuntimeBehavior": false,
+  "canAccessFilesystem": false,
+  "canUseCloud": false,
+  "concept": [
+    "governance configuration",
+    "policy surface",
+    "local-first control room",
+    "defaults review without accidental enablement"
+  ],
+  "sections": [
+    "Local-first defaults",
+    "Workspace policy",
+    "Consent policy",
+    "Model policy",
+    "Runtime policy",
+    "Evidence policy",
+    "Redaction policy",
+    "Cloud policy",
+    "Update/download policy",
+    "Accessibility / appearance"
+  ],
+  "cardAnatomy": [
+    "Setting",
+    "Status",
+    "Policy",
+    "Scope",
+    "Evidence",
+    "Risk",
+    "User Action"
+  ],
+  "settingsCards": [
+    {
+      "Setting": "Local-only mode",
+      "Status": "Enabled",
+      "Policy": "Local-first default remains active",
+      "Scope": "Global",
+      "Evidence": "Visual Foundation + Runtime Safety",
+      "Risk": "Low",
+      "User Action": "Review only"
+    },
+    {
+      "Setting": "Network",
+      "Status": "Disabled",
+      "Policy": "No network activity from this preview",
+      "Scope": "Global",
+      "Evidence": "Runtime Local-First Safety",
+      "Risk": "High",
+      "User Action": "Future explicit enablement required"
+    },
+    {
+      "Setting": "Provider Calls",
+      "Status": "Disabled",
+      "Policy": "No Provider Call without explicit approval",
+      "Scope": "Global / workspace / mission",
+      "Evidence": "Models Policy Visual System",
+      "Risk": "High",
+      "User Action": "Future explicit enablement required"
+    },
+    {
+      "Setting": "Productive consent",
+      "Status": "Disabled",
+      "Policy": "No productive consent storage or enforcement",
+      "Scope": "Workspace / mission",
+      "Evidence": "Consent Governance Closeout",
+      "Risk": "High",
+      "User Action": "Future audit required"
+    },
+    {
+      "Setting": "Filesystem access",
+      "Status": "Blocked",
+      "Policy": "Operational access remains blocked",
+      "Scope": "Workspace",
+      "Evidence": "Real Access Blocker Closeout",
+      "Risk": "High",
+      "User Action": "Future explicit milestone required"
+    },
+    {
+      "Setting": "Evidence/timeline required",
+      "Status": "Required",
+      "Policy": "Every future enablement needs evidence and timeline refs",
+      "Scope": "Mission",
+      "Evidence": "Traceability QA",
+      "Risk": "Medium",
+      "User Action": "Review"
+    },
+    {
+      "Setting": "Redaction",
+      "Status": "Required",
+      "Policy": "No unredacted sensitive material in reports or previews",
+      "Scope": "Global",
+      "Evidence": "Redaction/Safety foundation",
+      "Risk": "High",
+      "User Action": "Review"
+    },
+    {
+      "Setting": "Cloud sync",
+      "Status": "Disabled",
+      "Policy": "No cloud sync by default",
+      "Scope": "Global",
+      "Evidence": "Cloud policy baseline",
+      "Risk": "High",
+      "User Action": "Future governance required"
+    },
+    {
+      "Setting": "Runtime execution",
+      "Status": "Blocked",
+      "Policy": "No execution authority from settings",
+      "Scope": "Global / mission",
+      "Evidence": "Runtime Local-First Safety",
+      "Risk": "High",
+      "User Action": "Future audit required"
+    },
+    {
+      "Setting": "Appearance",
+      "Status": "Research OS warm editorial",
+      "Policy": "Visual-only surface with warm background and serif headings",
+      "Scope": "UI preview",
+      "Evidence": "Visual Foundation Phase 1",
+      "Risk": "Low",
+      "User Action": "Review"
+    }
+  ],
+  "requiredDisclosures": [
+    "settings shown here are preview-only",
+    "no productive settings are persisted",
+    "no provider key is stored",
+    "no capability is enabled",
+    "no runtime behavior changes"
+  ]
+}

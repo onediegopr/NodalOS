@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Agents Settings Activity Research OS Preview</title>
+  <style>
+    :root {
+      --nos-color-bg: #F5F3EE;
+      --nos-color-bg-muted: #F2F0EA;
+      --nos-color-bg-soft: #EFECE6;
+      --nos-color-text: #171717;
+      --nos-color-text-muted: #5C5C5C;
+      --nos-color-border: #DDD8D0;
+      --nos-color-accent: #5B6CFF;
+      --nos-color-accent-alt: #7265FF;
+      --nos-color-success: #3D8F5A;
+      --nos-color-warning: #D97706;
+      --nos-color-risk: #E67E22;
+      --nos-color-danger: #C2410C;
+      --nos-font-heading: Georgia, "Times New Roman", serif;
+      --nos-font-ui: Inter, Geist, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--nos-color-text);
+      background:
+        radial-gradient(circle at 16% 8%, rgba(91, 108, 255, 0.12), transparent 28%),
+        radial-gradient(circle at 84% 16%, rgba(61, 143, 90, 0.10), transparent 25%),
+        linear-gradient(180deg, var(--nos-color-bg) 0%, var(--nos-color-bg-muted) 56%, var(--nos-color-bg-soft) 100%);
+      font-family: var(--nos-font-ui);
+    }
+
+    .page {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .hero,
+    .panel,
+    .card,
+    .feed-row,
+    .qa-card {
+      border: 1px solid var(--nos-color-border);
+      background: rgba(245, 243, 238, 0.82);
+      box-shadow: 0 22px 70px rgba(23, 23, 23, 0.075);
+    }
+
+    .hero {
+      border-radius: 36px;
+      padding: clamp(34px, 5vw, 62px);
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      color: var(--nos-color-accent-alt);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: var(--nos-font-heading);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+    }
+
+    h1 {
+      max-width: 980px;
+      margin: 10px 0 14px;
+      font-size: clamp(52px, 8vw, 104px);
+      line-height: 0.9;
+    }
+
+    h2 { margin: 0 0 14px; font-size: 31px; }
+    h3 { margin: 0 0 8px; font-size: 22px; }
+
+    p {
+      margin: 0;
+      color: var(--nos-color-text-muted);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .panel {
+      border-radius: 28px;
+      padding: 24px;
+      background: rgba(239, 236, 230, 0.76);
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card,
+    .qa-card {
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(245, 243, 238, 0.84);
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .meta div {
+      border-top: 1px solid var(--nos-color-border);
+      padding-top: 10px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .meta strong {
+      display: block;
+      color: var(--nos-color-text);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .badge {
+      border: 1px solid var(--nos-color-border);
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--nos-color-text-muted);
+      background: rgba(242, 240, 234, 0.86);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .danger { color: var(--nos-color-danger); }
+    .warning { color: var(--nos-color-warning); }
+    .accent { color: var(--nos-color-accent); }
+
+    .feed-row {
+      display: grid;
+      grid-template-columns: 62px 96px 1fr;
+      gap: 14px;
+      align-items: start;
+      border-radius: 20px;
+      padding: 14px;
+      background: rgba(245, 243, 238, 0.84);
+    }
+
+    .feed-row small {
+      color: var(--nos-color-text-muted);
+      font-weight: 700;
+    }
+
+    .blocked {
+      margin-top: 14px;
+      border-left: 3px solid var(--nos-color-danger);
+      padding: 12px 14px;
+      background: rgba(194, 65, 12, 0.06);
+      border-radius: 14px;
+    }
+
+    .blocked ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+      color: var(--nos-color-text-muted);
+      line-height: 1.55;
+    }
+
+    @media (max-width: 980px) {
+      .grid,
+      .feed-row {
+        grid-template-columns: 1fr;
+      }
+
+      .page { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <span>NODAL OS / Research & Mission Operating System</span>
+      <span>M600+M601+M602 / static no-op preview</span>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Agents / Settings / Activity Feed</div>
+      <h1>Supervision, not autonomy.</h1>
+      <p>
+        A Research OS view for supervised mission roles, governance configuration, and human-readable mission activity.
+        This preview cannot enable agents, persist settings, start runtime, access filesystem, verify evidence, or activate provider activity.
+      </p>
+      <div class="badge-row">
+        <span class="badge danger">No execution authority</span>
+        <span class="badge danger">No productive settings</span>
+        <span class="badge danger">Provider Calls Disabled</span>
+        <span class="badge warning">Activity Feed is not source-of-truth</span>
+        <span class="badge accent">Static fixture-only</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <div class="eyebrow">M600</div>
+        <h2>Agents Research OS</h2>
+        <div class="stack">
+          <article class="card">
+            <h3>Research Planner</h3>
+            <p>Drafts plans and decomposes mission context. Status: Design-only. Authority: No execution authority.</p>
+            <div class="meta">
+              <div><strong>Inputs</strong>Mission refs / Evidence refs / Context refs</div>
+              <div><strong>Outputs</strong>Draft suggestions only</div>
+              <div><strong>Policy</strong>No runtime, no filesystem, no Provider Call</div>
+              <div><strong>Risk</strong>Medium</div>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Consent Auditor / Runtime Sentinel / Model Policy Reviewer</h3>
+            <p>Supervised profiles only. They cannot run tasks, approve capability, mutate state, access filesystem, or use Provider Call.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow">M601</div>
+        <h2>Settings Governance</h2>
+        <div class="stack">
+          <article class="card">
+            <h3>Local-only mode enabled</h3>
+            <p>Settings are governance configuration, not generic forms. This surface reviews defaults without enabling anything.</p>
+            <div class="meta">
+              <div><strong>Network</strong>Disabled</div>
+              <div><strong>Provider Calls</strong>Disabled</div>
+              <div><strong>Productive consent</strong>Disabled</div>
+              <div><strong>Filesystem access</strong>Blocked</div>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Preview-only disclosures</h3>
+            <p>No productive settings are persisted. No provider key is stored. No capability is enabled. No runtime behavior changes.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top: 22px;">
+      <div class="eyebrow">M602</div>
+      <h2>Mission Activity Feed</h2>
+      <div class="stack">
+        <article class="feed-row">
+          <small>14:32</small>
+          <strong>System</strong>
+          <p>Full suite passed — 4326 passed, 37 skipped — linked to M597-M599 report.</p>
+        </article>
+        <article class="feed-row">
+          <small>14:35</small>
+          <strong>Advisor</strong>
+          <p>Warning generated — Productive consent still blocked — linked to Consent Governance Closeout.</p>
+        </article>
+        <article class="feed-row">
+          <small>14:41</small>
+          <strong>Runtime</strong>
+          <p>Capability blocked — Provider Calls Disabled — linked to Runtime Local-First Safety.</p>
+        </article>
+        <article class="feed-row">
+          <small>14:49</small>
+          <strong>Tests</strong>
+          <p>Guardrails confirmed — no runtime/filesystem/LLM/cloud — linked to validation evidence.</p>
+        </article>
+      </div>
+      <div class="blocked">
+        <strong>Blocked-state anatomy</strong>
+        <ul>
+          <li>Why: activity is informational and cannot grant authority.</li>
+          <li>Missing: productive feed persistence, evidence verification, runtime governance, and explicit approval milestones.</li>
+          <li>Evidence: ADR, audit checklist, adversarial tests, and full suite.</li>
+          <li>Action: review a future governed milestone.</li>
+          <li>Disabled: agents execution, settings persistence, runtime authority, Provider Calls, filesystem access, source-of-truth promotion.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top: 22px;">
+      <article class="qa-card">Agents are not autonomous bots.</article>
+      <article class="qa-card">Settings are governance config, not generic forms.</article>
+      <article class="qa-card">Activity Feed is mission-readable, not raw logs.</article>
+      <article class="qa-card">No runtime, filesystem, evidence verification, LLM, cloud, productive consent, or source-of-truth promotion.</article>
+    </section>
+  </main>
+</body>
+</html>

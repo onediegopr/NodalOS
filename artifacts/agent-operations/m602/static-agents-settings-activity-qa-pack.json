@@ -1,0 +1,45 @@
+{
+  "qaPackId": "NOS-M602-STATIC-AGENTS-SETTINGS-ACTIVITY-QA",
+  "decisionTarget": "AGENTS_SETTINGS_ACTIVITY_RESEARCH_OS_READY",
+  "isStaticQaOnly": true,
+  "usesFixtureDataOnly": true,
+  "agentsQaChecklist": [
+    "Agents are not autonomous bots",
+    "Agents are supervised mission roles",
+    "Agent cards state no execution authority",
+    "Agent cards state no Provider Call, no filesystem, and no capability approval",
+    "No card implies active agent execution"
+  ],
+  "settingsQaChecklist": [
+    "Settings are governance config, not generic forms",
+    "Settings disclose preview-only behavior",
+    "Settings disclose no productive settings are persisted",
+    "Settings disclose no provider key is stored",
+    "Settings do not enable capabilities or runtime behavior"
+  ],
+  "activityQaChecklist": [
+    "Activity Feed is mission-readable, not raw logs",
+    "Feed rows show time, actor, event, summary, evidence, commit, and status",
+    "Blocked feed states explain why, missing, evidence, action, and disabled surfaces",
+    "Feed does not become productive source-of-truth"
+  ],
+  "staticIntegrationQa": {
+    "confirmsNoRuntime": true,
+    "confirmsNoFilesystem": true,
+    "confirmsNoEvidenceVerificationReal": true,
+    "confirmsNoLlmProviderCloud": true,
+    "confirmsNoProductiveConsent": true,
+    "confirmsNoCapabilityEnablement": true,
+    "confirmsNoSourceOfTruthPromotion": true,
+    "confirmsNoProductiveSettingsPersistence": true,
+    "confirmsStaticNoOpFixtureOnly": true
+  },
+  "acceptanceCriteria": [
+    "Agents Research OS artifact exists",
+    "Settings Governance Visual System artifact exists",
+    "Mission Activity Feed Visual System artifact exists",
+    "Combined static preview exists",
+    "Static previews contain no outside scripts, remote dependencies, network activity, or instrumentation",
+    "Roadmap updated"
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "visualSystemId": "NOS-M600-AGENTS-RESEARCH-OS",
+  "decisionTarget": "AGENTS_SETTINGS_ACTIVITY_RESEARCH_OS_READY",
+  "surface": "Agents Research OS Visual System",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "missionRef": "M600-M602",
+  "isVisualOnly": true,
+  "isStaticPreview": true,
+  "isNoOp": true,
+  "usesFixtureDataOnly": true,
+  "canEnableAgents": false,
+  "canExecuteTasks": false,
+  "canAccessFilesystem": false,
+  "canCallProvider": false,
+  "canApproveCapability": false,
+  "canMutateState": false,
+  "canUseRuntime": false,
+  "concept": [
+    "capability team",
+    "supervised operators",
+    "mission roles",
+    "non-autonomous profiles",
+    "policy-bound advisory surfaces",
+    "nothing executes without gates"
+  ],
+  "cardAnatomy": [
+    "Agent",
+    "Role",
+    "Status",
+    "Authority",
+    "Inputs",
+    "Outputs",
+    "Policy",
+    "Evidence",
+    "Risk"
+  ],
+  "agentCards": [
+    {
+      "Agent": "Research Planner",
+      "Role": "Drafts plans and decomposes mission context.",
+      "Status": "Design-only",
+      "Authority": "No execution authority",
+      "Inputs": "Mission refs / Evidence refs / Context refs",
+      "Outputs": "Draft suggestions only",
+      "Policy": "No runtime, no filesystem, no Provider Call",
+      "Evidence": "Linked to Assignment/Planner governance",
+      "Risk": "Medium"
+    },
+    {
+      "Agent": "Evidence Curator",
+      "Role": "Organizes evidence references for review.",
+      "Status": "Preview-only",
+      "Authority": "No execution authority",
+      "Inputs": "Evidence refs / Decision refs",
+      "Outputs": "Archive suggestions only",
+      "Policy": "No evidence verification and no mutation",
+      "Evidence": "Linked to Evidence Archive Visual System",
+      "Risk": "Medium"
+    },
+    {
+      "Agent": "Consent Auditor",
+      "Role": "Reviews consent gaps and capability boundaries.",
+      "Status": "Blocked",
+      "Authority": "No approval authority",
+      "Inputs": "Consent refs / Capability refs",
+      "Outputs": "Audit notes only",
+      "Policy": "No productive consent and no capability approval",
+      "Evidence": "Linked to Consent Governance Console",
+      "Risk": "High"
+    },
+    {
+      "Agent": "Runtime Sentinel",
+      "Role": "Surfaces runtime safety posture.",
+      "Status": "Preview-only",
+      "Authority": "No runtime authority",
+      "Inputs": "Runtime policy refs",
+      "Outputs": "Safety notes only",
+      "Policy": "No runtime and no task execution",
+      "Evidence": "Linked to Runtime Local-First Safety",
+      "Risk": "High"
+    },
+    {
+      "Agent": "Model Policy Reviewer",
+      "Role": "Reviews model policy gaps and exposure warnings.",
+      "Status": "Needs policy",
+      "Authority": "No provider authority",
+      "Inputs": "Model policy refs / Budget refs",
+      "Outputs": "Policy notes only",
+      "Policy": "No Provider Call and no workspace context sent",
+      "Evidence": "Linked to Models Policy Visual System",
+      "Risk": "High"
+    },
+    {
+      "Agent": "Advisor Analyst",
+      "Role": "Converts advisor concerns into review notes.",
+      "Status": "Governance baseline",
+      "Authority": "No decision authority",
+      "Inputs": "Advisor refs / Decision refs",
+      "Outputs": "Recommendation summaries only",
+      "Policy": "No LLM-backed advisor and no state mutation",
+      "Evidence": "Linked to Advisor Notes Visual System",
+      "Risk": "Medium"
+    },
+    {
+      "Agent": "Mission Reporter",
+      "Role": "Summarizes mission activity and closeout status.",
+      "Status": "Future capability",
+      "Authority": "No source-of-truth authority",
+      "Inputs": "Mission refs / Activity refs",
+      "Outputs": "Report drafts only",
+      "Policy": "No productive persistence and no runtime",
+      "Evidence": "Linked to Mission Activity Feed Visual System",
+      "Risk": "Medium"
+    }
+  ],
+  "requiredDisclosures": [
+    "agents are not autonomous executors",
+    "no agent can run tasks",
+    "no agent can use Provider Call",
+    "no agent can access filesystem",
+    "no agent can approve capability",
+    "no agent can mutate state",
+    "no runtime authority"
+  ],
+  "visualStates": [
+    "Preview-only",
+    "Design-only",
+    "Blocked",
+    "Needs policy",
+    "Needs approval",
+    "Governance baseline",
+    "Future capability"
+  ]
+}

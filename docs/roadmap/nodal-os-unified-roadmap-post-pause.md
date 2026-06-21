@@ -1467,3 +1467,29 @@ Still blocked:
 - LLM context, cloud, provider activity, model execution, and source-of-truth behavior.
 
 Recommended next phase is Agents / Settings / Activity Feed Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.
+
+## M600+M601+M602 - Agents / Settings / Activity Feed Research OS Visual Implementation
+
+Decision target: `AGENTS_SETTINGS_ACTIVITY_RESEARCH_OS_READY`.
+
+This block adds:
+
+- Agents Research OS Visual System.
+- Settings Governance Visual System.
+- Mission Activity Feed Visual System.
+- Static Agents / Settings / Activity Feed QA.
+- Combined static Agents/Settings/Activity preview.
+
+Still blocked:
+
+- Real agents.
+- Autonomous agent execution.
+- Productive settings persistence.
+- Capability authorization.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- Path jail implementation.
+- LLM context, cloud, Provider Calls, model execution, and source-of-truth behavior.
+
+Recommended next phase is Research OS visual consolidation and acceptance pack, still static and no-op unless a separate governed milestone authorizes productive UI work.

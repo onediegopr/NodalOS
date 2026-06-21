@@ -2399,3 +2399,42 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M600+M601+M602 - Agents / Settings / Activity Feed Research OS Visual Implementation
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Agents Research OS Visual System as supervised mission roles, not autonomous bots.
+- Settings Governance Visual System as policy configuration, not generic forms.
+- Mission Activity Feed Visual System as mission-readable activity, not raw logs.
+- Static Agents / Settings / Activity Feed QA pack.
+- Combined static preview under `artifacts/agent-operations/m602`.
+
+Boundaries:
+
+- Agents, Settings, and Activity Feed visuals only.
+- Static fixture data only.
+- No real agents.
+- No productive settings persistence.
+- No capability enablement.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No Provider Calls, cloud, LLM context, model execution, or source-of-truth promotion.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 95%
+- Mission Control UX: 96%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
