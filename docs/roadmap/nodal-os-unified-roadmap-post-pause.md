@@ -1604,3 +1604,33 @@ Still blocked:
 - LLM context, cloud, Provider Calls, model execution, and productive consent.
 
 Recommended next phase is Sidepanel Token Patch 1 Approval, limited to future CSS variables only.
+
+
+## M615 - Sidepanel Token Patch 1 - CSS Variable Addition
+
+Decision target: `SIDEPANEL_TOKEN_PATCH_1_READY`.
+
+This block adds:
+
+- 17 Research OS CSS variables to `:root` block of `sidepanel.css`.
+- Source-boundary tests verifying CSS-only, no-HTML, no-JS, no-manifest changes.
+- Governance approval artifact confirming additive-only, no-runtime-coupling operation.
+- Patch 1 summary artifact.
+
+Still blocked:
+
+- Token remapping into existing selectors.
+- Sidepanel product UI migration.
+- HTML, JS, or manifest modification.
+- Product UI migration.
+- Broad UI rewrite.
+- Product source-of-truth promotion.
+- Productive settings persistence.
+- Capability authorization.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- Path jail implementation.
+- LLM context, cloud, Provider Calls, model execution, and productive consent.
+
+Recommended next phase is Sidepanel Token Patch 2 (base token remapping), pending separate approval.
