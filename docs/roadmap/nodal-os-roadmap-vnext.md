@@ -2179,6 +2179,7 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+
 ## M582+M583+M584 - Visual Reengineering Foundation
 
 Status: implemented in branch, pending validation at block close.
@@ -2358,4 +2359,43 @@ Updated progress estimate after closeout:
 - Workspace Local: 84%
 - Project Understanding foundation: 93%
 - LLM/Assignment: 74%
+- Cloud optional: 10%
+
+## M597+M598+M599 - Consent / Runtime / Models Research OS Visual Implementation
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Consent Governance Console as capability governance and scope review surface.
+- Runtime Local-First Safety Visual System with local-only, disabled network, blocked content access, disabled indexing, disabled Embeddings, disabled provider activity, and blocked execution.
+- Models Policy Visual System as governance and policy surface, not a provider selector.
+- Static Consent / Runtime / Models QA pack.
+- Combined static preview under `artifacts/agent-operations/m599`.
+
+Boundaries:
+
+- Consent, Runtime, and Models visuals only.
+- Static fixture data only.
+- No real consent authorization.
+- No productive consent persistence.
+- No capability enablement.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No provider activity, cloud, LLM context, model execution, or source-of-truth promotion.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 94%
+- Mission Control UX: 95%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
 - Cloud optional: 10%

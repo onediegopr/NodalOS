@@ -1,0 +1,100 @@
+{
+  "visualSystemId": "NOS-M598-RUNTIME-LOCAL-FIRST-SAFETY",
+  "decisionTarget": "CONSENT_RUNTIME_MODELS_RESEARCH_OS_READY",
+  "surface": "Runtime Local-First Safety",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "missionRef": "M597-M599",
+  "isVisualOnly": true,
+  "isStaticPreview": true,
+  "isNoOp": true,
+  "usesFixtureDataOnly": true,
+  "canStartRuntime": false,
+  "canExecuteTask": false,
+  "canAccessFilesystem": false,
+  "canUseNetwork": false,
+  "canCallProvider": false,
+  "canVerifyEvidence": false,
+  "canPersistState": false,
+  "runtimeStatus": {
+    "Runtime Status": "Local-only",
+    "Network": "Disabled",
+    "File Access": "Blocked",
+    "Indexing": "Disabled",
+    "Embeddings": "Disabled",
+    "OCR": "Synthetic-only / Not productive",
+    "Provider Calls": "Disabled",
+    "Execution": "Blocked",
+    "Runtime Authority": "None in this preview"
+  },
+  "safetyPanels": [
+    {
+      "panel": "Local boundary",
+      "state": "Local-only active",
+      "explanation": "The visual surface presents local-first posture without starting any runtime."
+    },
+    {
+      "panel": "Network policy",
+      "state": "Network disabled",
+      "explanation": "No network activity is available from this preview."
+    },
+    {
+      "panel": "Filesystem policy",
+      "state": "File Read blocked and File Hash blocked",
+      "explanation": "Operational content access remains intentionally disabled."
+    },
+    {
+      "panel": "Provider policy",
+      "state": "Provider Calls Disabled",
+      "explanation": "Model provider activity requires separate governance."
+    },
+    {
+      "panel": "Execution policy",
+      "state": "Runtime execution blocked",
+      "explanation": "No executable task surface is introduced."
+    },
+    {
+      "panel": "Evidence emission policy",
+      "state": "Future-only",
+      "explanation": "Evidence emission requirements are displayed as policy, not executed."
+    },
+    {
+      "panel": "Kill switch / disable strategy",
+      "state": "Future-only",
+      "explanation": "Disable strategy remains a future implementation prerequisite."
+    }
+  ],
+  "requiredRuntimeStates": [
+    "Local-only active",
+    "Network disabled",
+    "File Read blocked",
+    "File Hash blocked",
+    "Indexing disabled",
+    "Embeddings disabled",
+    "LLM context blocked",
+    "Provider Calls Disabled",
+    "Runtime execution blocked",
+    "OCR synthetic-only / not productive"
+  ],
+  "blockedStateAnatomy": {
+    "why": "Runtime authority is intentionally absent from this visual block.",
+    "missing": "Productive consent, audited gates, no-mutation proof, cancellation proof, evidence emission, and explicit runtime governance.",
+    "evidenceRequired": "ADR, adversarial tests, audit checklist, and full suite before any future enablement.",
+    "userActionNeeded": "Review a future explicit milestone; no approval here enables runtime.",
+    "intentionallyDisabled": [
+      "File Read",
+      "File Hash",
+      "Indexing",
+      "Embeddings",
+      "LLM context",
+      "Provider Calls",
+      "Execution"
+    ]
+  },
+  "avoidanceRules": [
+    "no raw console log style",
+    "no terminal-only primary UI",
+    "no implication that runtime is active",
+    "no implication that content access is safe",
+    "no implication that model/provider activity is configured"
+  ]
+}

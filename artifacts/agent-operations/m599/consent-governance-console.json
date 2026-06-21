@@ -1,0 +1,173 @@
+{
+  "visualSystemId": "NOS-M597-CONSENT-GOVERNANCE-CONSOLE",
+  "decisionTarget": "CONSENT_RUNTIME_MODELS_RESEARCH_OS_READY",
+  "surface": "Consent Governance Console",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "missionRef": "M597-M599",
+  "isVisualOnly": true,
+  "isStaticPreview": true,
+  "isNoOp": true,
+  "usesFixtureDataOnly": true,
+  "canAuthorizeConsent": false,
+  "canPersistConsent": false,
+  "canEnableCapability": false,
+  "canAccessFilesystem": false,
+  "canVerifyEvidence": false,
+  "canBuildLlmContext": false,
+  "canUseCloud": false,
+  "concept": [
+    "Governance Console",
+    "capability control room",
+    "risk and scope review",
+    "audit-first consent ledger",
+    "human authority layer"
+  ],
+  "cardAnatomy": [
+    "Capability",
+    "Status",
+    "Scope",
+    "Evidence",
+    "Risk",
+    "User Action",
+    "Policy"
+  ],
+  "capabilityCards": [
+    {
+      "Capability": "Path Canonicalization",
+      "Status": "Blocked",
+      "Scope": "Workspace-only draft",
+      "Evidence": "Operational Access Audit ADR + Real Access Blocker Closeout",
+      "Risk": "High",
+      "User Action": "Approval Required in future milestone",
+      "Policy": "No productive consent accidental",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Directory Listing",
+      "Status": "Blocked",
+      "Scope": "Workspace-only draft",
+      "Evidence": "Capability Audit Checklist + Storage Boundary Test Pack",
+      "Risk": "High",
+      "User Action": "Separate gate and audit required",
+      "Policy": "No listing without explicit governed gate",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "File Read",
+      "Status": "Blocked",
+      "Scope": "Workspace-only draft",
+      "Evidence": "ADR + Test Matrix + Closeout",
+      "Risk": "High",
+      "User Action": "Approval Required in future milestone",
+      "Policy": "No productive consent accidental",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "File Hash",
+      "Status": "Blocked",
+      "Scope": "Workspace-only draft",
+      "Evidence": "Capability Audit Checklist + Real Access Blocker Closeout",
+      "Risk": "High",
+      "User Action": "Separate fingerprint gate required",
+      "Policy": "No content fingerprinting from consent preview",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Secret Detection",
+      "Status": "Blocked",
+      "Scope": "Synthetic-only",
+      "Evidence": "Policy Preview + Adversarial Matrix",
+      "Risk": "High",
+      "User Action": "Future enforcement audit required",
+      "Policy": "No real content inspection from this surface",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Exclusion Enforcement",
+      "Status": "Blocked",
+      "Scope": "Policy draft",
+      "Evidence": "Exclusion Policy Pack + Audit ADR",
+      "Risk": "Medium",
+      "User Action": "Future implementation audit required",
+      "Policy": "No real exclusions applied here",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Indexing",
+      "Status": "Blocked",
+      "Scope": "Not enabled",
+      "Evidence": "Governance Closeout",
+      "Risk": "High",
+      "User Action": "Separate governance required",
+      "Policy": "File Read consent does not imply indexing",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Embeddings",
+      "Status": "Blocked",
+      "Scope": "Not enabled",
+      "Evidence": "Governance Closeout",
+      "Risk": "High",
+      "User Action": "Separate governance required",
+      "Policy": "File Read consent does not imply Embeddings",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "LLM Context Build",
+      "Status": "Blocked",
+      "Scope": "Not enabled",
+      "Evidence": "Access Implementation Checkpoint + Closeout",
+      "Risk": "High",
+      "User Action": "Separate prompt and context governance required",
+      "Policy": "File Read consent does not imply LLM context",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Cloud Sync",
+      "Status": "Blocked",
+      "Scope": "Not enabled",
+      "Evidence": "Consent Governance Closeout",
+      "Risk": "High",
+      "User Action": "Explicit cloud policy required",
+      "Policy": "No cloud/provider activity without explicit approval",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Provider Call",
+      "Status": "Blocked",
+      "Scope": "Not enabled",
+      "Evidence": "Models Policy Visual System",
+      "Risk": "High",
+      "User Action": "Provider governance and audit required",
+      "Policy": "No provider activity from visual preview",
+      "canEnableRealUse": false
+    },
+    {
+      "Capability": "Runtime Execution",
+      "Status": "Blocked",
+      "Scope": "Not enabled",
+      "Evidence": "Runtime Safety Visual System",
+      "Risk": "High",
+      "User Action": "Runtime audit and proof required",
+      "Policy": "No execution authority in this preview",
+      "canEnableRealUse": false
+    }
+  ],
+  "blockedDisclosures": [
+    "no productive consent accidental",
+    "no capability enablement without approval",
+    "no File Read, File Hash, or Directory Listing real use without gates",
+    "no cloud/provider activity without explicit policy",
+    "consent for one capability does not imply another",
+    "File Read consent does not imply indexing, Embeddings or LLM context"
+  ],
+  "ledgerSummary": {
+    "mockLedgerOnly": true,
+    "usesProductivePersistence": false,
+    "staleRevokedMissingConsentFailsClosed": true,
+    "containsUnredactedSecrets": false,
+    "containsFullContent": false,
+    "containsUnredactedBroadPaths": false,
+    "canAuthorizeRealUse": false
+  }
+}

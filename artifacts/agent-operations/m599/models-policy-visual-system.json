@@ -1,0 +1,83 @@
+{
+  "visualSystemId": "NOS-M599-MODELS-POLICY-VISUAL-SYSTEM",
+  "decisionTarget": "CONSENT_RUNTIME_MODELS_RESEARCH_OS_READY",
+  "surface": "Models Policy Visual System",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "missionRef": "M597-M599",
+  "isVisualOnly": true,
+  "isStaticPreview": true,
+  "isNoOp": true,
+  "usesFixtureDataOnly": true,
+  "canCallProvider": false,
+  "canUseCloud": false,
+  "canStoreSecrets": false,
+  "canBuildPrompt": false,
+  "canBuildWorkspaceContext": false,
+  "canCountTokens": false,
+  "canLookupPricing": false,
+  "modelPolicyCards": [
+    {
+      "Primary Model": "OpenAI GPT-5.5",
+      "Fallback": "GPT-5.5 Mini / cheaper model",
+      "Status": "Configured as planned but not active",
+      "Policy": "No cloud activity without explicit approval",
+      "Data Exposure": "No workspace context sent",
+      "Budget": "Not active / future policy required",
+      "Provider Calls": "Disabled"
+    },
+    {
+      "Primary Model": "Fallback model definition",
+      "Fallback": "Lower-cost future option",
+      "Status": "Defined but not active",
+      "Policy": "Fallback does not mean automatic activity",
+      "Data Exposure": "No workspace context sent",
+      "Budget": "Future policy required",
+      "Provider Calls": "Disabled"
+    },
+    {
+      "Primary Model": "Local model future",
+      "Fallback": "None",
+      "Status": "Not configured",
+      "Policy": "Local-first design option only",
+      "Data Exposure": "No workspace context sent",
+      "Budget": "Not active",
+      "Provider Calls": "Disabled"
+    },
+    {
+      "Primary Model": "BYOK",
+      "Fallback": "Not applicable",
+      "Status": "Not implemented",
+      "Policy": "BYOK setting does not mean secrets stored yet",
+      "Data Exposure": "No secrets or workspace context stored",
+      "Budget": "Future policy required",
+      "Provider Calls": "Disabled"
+    },
+    {
+      "Primary Model": "Managed AI",
+      "Fallback": "None",
+      "Status": "Not enabled",
+      "Policy": "Managed AI requires separate governance",
+      "Data Exposure": "No workspace context sent",
+      "Budget": "Not active",
+      "Provider Calls": "Disabled"
+    }
+  ],
+  "requiredExamples": [
+    "Primary model configured as planned but not active",
+    "Fallback model defined but not active",
+    "Provider Calls Disabled",
+    "BYOK not implemented",
+    "Managed AI not enabled",
+    "Local model future",
+    "No cloud activity without approval",
+    "No workspace context sent"
+  ],
+  "governanceWarnings": [
+    "model configured does not mean provider activity allowed",
+    "BYOK setting does not mean secrets stored yet",
+    "fallback does not mean automatic activity",
+    "budget policy required before real LLM",
+    "prompt governance required before real LLM",
+    "evidence/timeline required for any future provider activity"
+  ]
+}

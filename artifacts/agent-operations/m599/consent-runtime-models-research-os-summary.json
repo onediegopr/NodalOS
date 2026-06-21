@@ -1,0 +1,22 @@
+{
+  "summaryId": "NOS-M597-M599-CONSENT-RUNTIME-MODELS-SUMMARY",
+  "decisionTarget": "CONSENT_RUNTIME_MODELS_RESEARCH_OS_READY",
+  "consentGovernanceConsoleReady": true,
+  "runtimeLocalFirstSafetyReady": true,
+  "modelsPolicyVisualSystemReady": true,
+  "staticGovernanceQaReady": true,
+  "canBecomeProductiveSourceOfTruth": false,
+  "canAuthorizeConsent": false,
+  "canEnableCapability": false,
+  "canStartRuntime": false,
+  "canAccessFilesystem": false,
+  "canVerifyEvidence": false,
+  "canCallProvider": false,
+  "canUseCloud": false,
+  "canBuildLlmContext": false,
+  "testsPassed": 4326,
+  "testsSkipped": 37,
+  "testsFailed": 0,
+  "fullSuiteClean": true,
+  "recommendedNextMilestone": "Agents / Settings / Activity Feed Research OS visual implementation, still static and no-op"
+}

@@ -1,0 +1,46 @@
+{
+  "qaPackId": "NOS-M599-STATIC-CONSENT-RUNTIME-MODELS-QA",
+  "decisionTarget": "CONSENT_RUNTIME_MODELS_RESEARCH_OS_READY",
+  "isStaticQaOnly": true,
+  "usesFixtureDataOnly": true,
+  "consentQaChecklist": [
+    "Consent looks like Governance Console, not settings",
+    "Consent cards show capability, status, scope, evidence, risk, action, and policy",
+    "Consent states no productive consent accidental",
+    "Consent states one capability does not imply another",
+    "Consent states File Read consent does not imply indexing, Embeddings, or LLM context",
+    "No card implies real capability"
+  ],
+  "runtimeQaChecklist": [
+    "Runtime communicates local-first safety",
+    "Runtime does not look like a raw console",
+    "Runtime blocked states explain why, missing, evidence, action, and disabled surfaces",
+    "Runtime does not imply content access is safe",
+    "Runtime execution remains blocked"
+  ],
+  "modelsQaChecklist": [
+    "Models communicate policy, not just selection",
+    "Models state Provider Calls Disabled",
+    "Models state No workspace context sent",
+    "Models state BYOK not implemented or not active",
+    "Models do not imply active provider or cloud activity"
+  ],
+  "staticIntegrationQa": {
+    "confirmsNoRuntime": true,
+    "confirmsNoFilesystem": true,
+    "confirmsNoEvidenceVerificationReal": true,
+    "confirmsNoLlmProviderCloud": true,
+    "confirmsNoProductiveConsent": true,
+    "confirmsNoCapabilityEnablement": true,
+    "confirmsNoSourceOfTruthPromotion": true,
+    "confirmsStaticNoOpFixtureOnly": true
+  },
+  "acceptanceCriteria": [
+    "Consent Governance Console artifact exists",
+    "Runtime Local-First Safety artifact exists",
+    "Models Policy Visual System artifact exists",
+    "Combined static preview exists",
+    "Static previews contain no outside scripts, remote dependencies, network activity, or instrumentation",
+    "Roadmap updated"
+  ]
+}

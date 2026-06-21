@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Consent Runtime Models Research OS Preview</title>
+  <style>
+    :root {
+      --nos-color-bg: #F5F3EE;
+      --nos-color-bg-muted: #F2F0EA;
+      --nos-color-bg-soft: #EFECE6;
+      --nos-color-text: #171717;
+      --nos-color-text-muted: #5C5C5C;
+      --nos-color-border: #DDD8D0;
+      --nos-color-accent: #5B6CFF;
+      --nos-color-accent-alt: #7265FF;
+      --nos-color-success: #3D8F5A;
+      --nos-color-warning: #D97706;
+      --nos-color-risk: #E67E22;
+      --nos-color-danger: #C2410C;
+      --nos-font-heading: Georgia, "Times New Roman", serif;
+      --nos-font-ui: Inter, Geist, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--nos-color-text);
+      background:
+        radial-gradient(circle at 14% 9%, rgba(91, 108, 255, 0.13), transparent 26%),
+        radial-gradient(circle at 84% 18%, rgba(217, 119, 6, 0.10), transparent 28%),
+        linear-gradient(180deg, var(--nos-color-bg) 0%, var(--nos-color-bg-muted) 58%, var(--nos-color-bg-soft) 100%);
+      font-family: var(--nos-font-ui);
+    }
+
+    .page {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .hero,
+    .panel,
+    .card,
+    .qa-card {
+      border: 1px solid var(--nos-color-border);
+      background: rgba(245, 243, 238, 0.82);
+      box-shadow: 0 22px 70px rgba(23, 23, 23, 0.075);
+    }
+
+    .hero {
+      border-radius: 36px;
+      padding: clamp(34px, 5vw, 62px);
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      color: var(--nos-color-accent-alt);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: var(--nos-font-heading);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+    }
+
+    h1 {
+      max-width: 980px;
+      margin: 10px 0 14px;
+      font-size: clamp(52px, 8vw, 104px);
+      line-height: 0.9;
+    }
+
+    h2 { margin: 0 0 14px; font-size: 31px; }
+    h3 { margin: 0 0 8px; font-size: 22px; }
+
+    p {
+      margin: 0;
+      color: var(--nos-color-text-muted);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 22px;
+    }
+
+    .panel {
+      border-radius: 28px;
+      padding: 24px;
+      background: rgba(239, 236, 230, 0.76);
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card,
+    .qa-card {
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(245, 243, 238, 0.84);
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .meta div {
+      border-top: 1px solid var(--nos-color-border);
+      padding-top: 10px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .meta strong {
+      display: block;
+      color: var(--nos-color-text);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .badge {
+      border: 1px solid var(--nos-color-border);
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--nos-color-text-muted);
+      background: rgba(242, 240, 234, 0.86);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .danger { color: var(--nos-color-danger); }
+    .warning { color: var(--nos-color-warning); }
+    .accent { color: var(--nos-color-accent); }
+
+    .blocked {
+      margin-top: 14px;
+      border-left: 3px solid var(--nos-color-danger);
+      padding: 12px 14px;
+      background: rgba(194, 65, 12, 0.06);
+      border-radius: 14px;
+    }
+
+    .blocked ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+      color: var(--nos-color-text-muted);
+      line-height: 1.55;
+    }
+
+    .runtime-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .runtime-cell {
+      border: 1px solid var(--nos-color-border);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(242, 240, 234, 0.76);
+      font-size: 13px;
+    }
+
+    .runtime-cell strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .qa-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    @media (max-width: 980px) {
+      .grid,
+      .qa-grid,
+      .runtime-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <span>NODAL OS / Research & Mission Operating System</span>
+      <span>M597+M598+M599 / static no-op preview</span>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Consent / Runtime / Models</div>
+      <h1>Governance before authority.</h1>
+      <p>
+        A Research OS view for capability consent, local-first runtime posture, and model policy.
+        This preview is fixture-only and cannot persist consent, enable capabilities, start runtime,
+        send workspace context, or activate provider activity.
+      </p>
+      <div class="badge-row">
+        <span class="badge danger">File Read blocked</span>
+        <span class="badge danger">Runtime execution blocked</span>
+        <span class="badge danger">Provider Calls Disabled</span>
+        <span class="badge warning">No productive consent</span>
+        <span class="badge accent">Governance Console</span>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <div class="eyebrow">M597</div>
+        <h2>Consent Governance Console</h2>
+        <div class="stack">
+          <article class="card">
+            <h3>File Read</h3>
+            <p><strong>Status:</strong> <span class="danger">Blocked</span> / <strong>Scope:</strong> Workspace-only draft</p>
+            <div class="meta">
+              <div><strong>Evidence</strong> ADR + Test Matrix + Closeout</div>
+              <div><strong>Risk</strong> High</div>
+              <div><strong>User Action</strong> Approval Required in future milestone</div>
+              <div><strong>Policy</strong> No productive consent accidental</div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Directory Listing / File Hash / LLM Context Build</h3>
+            <p>
+              Each capability stays capability-bound and gate-bound. Consent for one capability
+              does not imply another, and File Read consent does not imply indexing, Embeddings,
+              or LLM context.
+            </p>
+          </article>
+
+          <article class="card">
+            <h3>Consent ledger visual summary</h3>
+            <p>
+              Mock ledger only. No productive persistence. Stale, revoked, or missing consent fails closed.
+              No unredacted secrets, no full content, and no broad path exposure.
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow">M598</div>
+        <h2>Runtime Local-First Safety</h2>
+        <div class="runtime-grid">
+          <div class="runtime-cell"><strong>Runtime Status</strong>Local-only</div>
+          <div class="runtime-cell"><strong>Network</strong>Disabled</div>
+          <div class="runtime-cell"><strong>File Access</strong>Blocked</div>
+          <div class="runtime-cell"><strong>Indexing</strong>Disabled</div>
+          <div class="runtime-cell"><strong>Embeddings</strong>Disabled</div>
+          <div class="runtime-cell"><strong>Provider Calls</strong>Disabled</div>
+          <div class="runtime-cell"><strong>OCR</strong>Synthetic-only / Not productive</div>
+          <div class="runtime-cell"><strong>Execution</strong>Blocked</div>
+          <div class="runtime-cell"><strong>Authority</strong>None in this preview</div>
+        </div>
+        <div class="blocked">
+          <strong>Blocked-state anatomy</strong>
+          <ul>
+            <li>Why: runtime authority is intentionally absent.</li>
+            <li>Missing: consent, audited gates, no-mutation proof, cancellation proof, and evidence emission.</li>
+            <li>Evidence: ADR, adversarial tests, audit checklist, and full suite.</li>
+            <li>Action: review a future explicit milestone.</li>
+            <li>Disabled: File Read, File Hash, indexing, Embeddings, LLM context, provider activity, execution.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top: 22px;">
+      <div class="panel">
+        <div class="eyebrow">M599</div>
+        <h2>Models Policy</h2>
+        <div class="stack">
+          <article class="card">
+            <h3>Primary Model</h3>
+            <p>OpenAI GPT-5.5 planned, not active. Fallback: GPT-5.5 Mini / cheaper model. Status: configured as planned but not active.</p>
+            <div class="meta">
+              <div><strong>Policy</strong>No cloud activity without explicit approval</div>
+              <div><strong>Data Exposure</strong>No workspace context sent</div>
+              <div><strong>Budget</strong>Not active / future policy required</div>
+              <div><strong>Provider Calls</strong>Disabled</div>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Governance warnings</h3>
+            <p>
+              Model configured does not mean provider activity allowed. BYOK is not implemented.
+              Fallback does not mean automatic activity. Budget and prompt governance are required before real LLM use.
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="eyebrow">Static Governance QA</div>
+        <h2>What this preview refuses</h2>
+        <div class="stack">
+          <article class="qa-card">Consent is Governance Console, not settings.</article>
+          <article class="qa-card">Runtime communicates local-first safety, not active execution.</article>
+          <article class="qa-card">Models communicate policy, not simple provider selection.</article>
+          <article class="qa-card">No source-of-truth promotion, no runtime, no filesystem, no evidence verification, no cloud, no productive consent.</article>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

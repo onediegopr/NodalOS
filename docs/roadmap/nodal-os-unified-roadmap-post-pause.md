@@ -1442,3 +1442,28 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance changes.
 
 Recommended next phase is Consent / Runtime / Models Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.
+
+## M597+M598+M599 - Consent / Runtime / Models Research OS Visual Implementation
+
+Decision target: `CONSENT_RUNTIME_MODELS_RESEARCH_OS_READY`.
+
+This block adds:
+
+- Consent Governance Console Visual System.
+- Runtime Local-First Safety Visual System.
+- Models Policy Visual System.
+- Static Consent / Runtime / Models QA.
+- Combined static Consent/Runtime/Models preview.
+
+Still blocked:
+
+- Real consent authorization.
+- Productive consent persistence.
+- Capability authorization.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- Path jail implementation.
+- LLM context, cloud, provider activity, model execution, and source-of-truth behavior.
+
+Recommended next phase is Agents / Settings / Activity Feed Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.
