@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS - Sidepanel Diff Patch Plan</title>
+  <style>
+    :root {
+      --bg: #F5F3EE;
+      --surface: #EFECE6;
+      --muted: #5C5C5C;
+      --text: #171717;
+      --border: #DDD8D0;
+      --accent: #5B6CFF;
+      --danger: #C2410C;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { max-width: 1100px; margin: 0 auto; padding: 42px 22px 58px; }
+    h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; letter-spacing: -0.035em; margin: 0; }
+    h1 { font-size: clamp(40px, 7vw, 72px); line-height: 0.95; }
+    h2 { font-size: 24px; }
+    p, li { color: var(--muted); line-height: 1.55; }
+    .panel { border: 1px solid var(--border); border-radius: 26px; background: rgba(239,236,230,0.78); padding: 22px; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+    .hero { margin-bottom: 18px; }
+    .badge { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .blocked { color: var(--danger); }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel hero">
+      <div class="badge">M613 future patch plan</div>
+      <h1>Eight Small Patches, Zero Product Change Here</h1>
+      <p>The first future patch is variables-only. Later patches remain gated by rollback, no-coupling tests, visual QA, and manual review.</p>
+      <p class="blocked">Direct broad rewrite remains blocked.</p>
+    </section>
+    <section class="grid">
+      <article class="panel"><h2>Patch 1</h2><p>Add CSS variables only.</p></article>
+      <article class="panel"><h2>Patch 2</h2><p>Base background, text, border.</p></article>
+      <article class="panel"><h2>Patch 3</h2><p>Navigation visual structure.</p></article>
+      <article class="panel"><h2>Patch 4</h2><p>Mission hero structure.</p></article>
+      <article class="panel"><h2>Patch 5</h2><p>Status and blocked states.</p></article>
+      <article class="panel"><h2>Patch 6</h2><p>Activity feed readability.</p></article>
+      <article class="panel"><h2>Patch 7</h2><p>Accessibility and focus.</p></article>
+      <article class="panel"><h2>Patch 8</h2><p>Quarantine dead visual styles only if proven safe.</p></article>
+    </section>
+  </main>
+</body>
+</html>

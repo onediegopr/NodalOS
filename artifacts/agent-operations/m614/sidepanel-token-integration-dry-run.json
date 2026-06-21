@@ -1,0 +1,290 @@
+{
+  "dryRunId": "M612-SIDEPANEL-TOKEN-INTEGRATION-DRY-RUN",
+  "missionRef": "M612-M614",
+  "isDryRunOnly": true,
+  "sidepanelProductFilesModified": false,
+  "productFilesNotModified": [
+    "browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js",
+    "browser-extension/onebrain-chrome-lab/manifest.json"
+  ],
+  "tokenMapping": [
+    {
+      "researchOsToken": "--nos-color-bg",
+      "sidepanelCandidate": "body and --bg",
+      "purpose": "background",
+      "proposedValue": "#F5F3EE"
+    },
+    {
+      "researchOsToken": "--nos-color-bg-muted",
+      "sidepanelCandidate": ".app-header, .tabs, muted surfaces",
+      "purpose": "muted background",
+      "proposedValue": "#F2F0EA"
+    },
+    {
+      "researchOsToken": "--nos-color-bg-soft",
+      "sidepanelCandidate": ".surface, input, textarea",
+      "purpose": "surface",
+      "proposedValue": "#EFECE6"
+    },
+    {
+      "researchOsToken": "--nos-color-text",
+      "sidepanelCandidate": "--ink, body, headings",
+      "purpose": "text",
+      "proposedValue": "#171717"
+    },
+    {
+      "researchOsToken": "--nos-color-text-muted",
+      "sidepanelCandidate": "--muted, labels, metadata",
+      "purpose": "muted text",
+      "proposedValue": "#5C5C5C"
+    },
+    {
+      "researchOsToken": "--nos-color-border",
+      "sidepanelCandidate": "--line, card and control borders",
+      "purpose": "borders",
+      "proposedValue": "#DDD8D0"
+    },
+    {
+      "researchOsToken": "--nos-color-accent",
+      "sidepanelCandidate": "--blue, active nav, focus, mission highlights",
+      "purpose": "accent",
+      "proposedValue": "#5B6CFF"
+    },
+    {
+      "researchOsToken": "--nos-color-success",
+      "sidepanelCandidate": "--green, ready/done states",
+      "purpose": "success",
+      "proposedValue": "#3D8F5A"
+    },
+    {
+      "researchOsToken": "--nos-color-warning",
+      "sidepanelCandidate": "--amber, human intervention, evidence-required",
+      "purpose": "warning",
+      "proposedValue": "#D97706"
+    },
+    {
+      "researchOsToken": "--nos-color-danger",
+      "sidepanelCandidate": "--red, stop, danger, blocked",
+      "purpose": "danger",
+      "proposedValue": "#C2410C"
+    },
+    {
+      "researchOsToken": "--nos-focus-ring",
+      "sidepanelCandidate": "button, input, textarea focus-visible",
+      "purpose": "focus ring",
+      "proposedValue": "0 0 0 3px rgba(91, 108, 255, 0.20)"
+    },
+    {
+      "researchOsToken": "--nos-radius-panel",
+      "sidepanelCandidate": ".surface and timeline cards",
+      "purpose": "radius",
+      "proposedValue": "18px"
+    },
+    {
+      "researchOsToken": "--nos-space-panel",
+      "sidepanelCandidate": "main, .grid, .app-header, .tabs",
+      "purpose": "spacing",
+      "proposedValue": "16px"
+    },
+    {
+      "researchOsToken": "--nos-card-padding",
+      "sidepanelCandidate": ".surface and nested cards",
+      "purpose": "card padding",
+      "proposedValue": "16px"
+    },
+    {
+      "researchOsToken": "--nos-sidebar-width",
+      "sidepanelCandidate": "future sidebar only",
+      "purpose": "sidebar width",
+      "proposedValue": "72px compact sidepanel rail"
+    },
+    {
+      "researchOsToken": "--nos-heading-font",
+      "sidepanelCandidate": "h1, h2, mission hero headings",
+      "purpose": "heading typography",
+      "proposedValue": "Georgia, Times New Roman, serif"
+    },
+    {
+      "researchOsToken": "--nos-ui-font",
+      "sidepanelCandidate": "body, controls, metadata",
+      "purpose": "UI typography",
+      "proposedValue": "Inter, Geist, Segoe UI, sans-serif"
+    }
+  ],
+  "currentStyleMapping": {
+    "existingVariables": [
+      "--bg",
+      "--panel",
+      "--ink",
+      "--muted",
+      "--line",
+      "--green",
+      "--red",
+      "--amber",
+      "--blue",
+      "--black"
+    ],
+    "colorsHardcoded": [
+      "#fff",
+      "#fffefa",
+      "#f7f8f4",
+      "#16231e",
+      "#101614",
+      "rgba status colors in timeline badges"
+    ],
+    "backgrounds": [
+      "body grid texture and gradient",
+      "sticky header near-white",
+      "tabs near-white",
+      "surface near-white",
+      "timeline dark cards"
+    ],
+    "buttonStyles": [
+      "base white button",
+      "primary green operational button",
+      "danger red button",
+      "stop button solid red"
+    ],
+    "cardStyles": [
+      ".surface",
+      ".timeline-card",
+      ".timeline-blocker-card",
+      ".timeline-grounding-card",
+      ".candidate",
+      ".recipe-item",
+      ".log-item"
+    ],
+    "logActivityStyles": [
+      ".log-pane",
+      ".log-item",
+      "details diagnostic blocks"
+    ],
+    "sidebarNavStyles": [
+      ".tabs",
+      ".tab",
+      ".tab.active",
+      "no sidebar exists yet"
+    ],
+    "statusBadgeStyles": [
+      ".timeline-badge.status-done",
+      ".timeline-badge.status-running",
+      ".timeline-badge.status-blocked",
+      ".timeline-badge.status-warning"
+    ],
+    "riskDangerStates": [
+      ".stop-button",
+      "button.danger",
+      ".timeline-blocker-card",
+      ".consent-surface",
+      ".handoff-surface"
+    ],
+    "darkLightAssumptions": [
+      "base sidepanel is light",
+      "timeline cards are dark technical islands",
+      "Research OS should preserve light editorial default"
+    ],
+    "selectorsHighRisk": [
+      "#connectBtn",
+      "#startRunBtn",
+      "#consentApproveBtn",
+      "#runRecipeBtn",
+      "#saveTokenConnectBtn",
+      "#clearRuntimeStateBtn",
+      ".runtime-command",
+      ".consent-surface",
+      ".handoff-surface"
+    ]
+  },
+  "dryRunTokenIntegration": [
+    {
+      "targetSelector": ":root",
+      "currentStyleSummary": "existing variables define muted green-gray sidepanel palette",
+      "proposedResearchOsToken": "add --nos-* variables without remapping existing variables yet",
+      "expectedVisualEffect": "no visual change in first future patch",
+      "riskLevel": "Low",
+      "requiresManualQa": true,
+      "safeToChangeLater": true,
+      "rollbackNote": "remove added variables only"
+    },
+    {
+      "targetSelector": "body",
+      "currentStyleSummary": "grid texture and green-gray background",
+      "proposedResearchOsToken": "--nos-color-bg with subtle editorial background",
+      "expectedVisualEffect": "warmer editorial canvas",
+      "riskLevel": "Medium",
+      "requiresManualQa": true,
+      "safeToChangeLater": true,
+      "rollbackNote": "restore body background block"
+    },
+    {
+      "targetSelector": ".app-header, .tabs",
+      "currentStyleSummary": "sticky near-white chrome",
+      "proposedResearchOsToken": "--nos-color-bg-muted and --nos-color-border",
+      "expectedVisualEffect": "Research OS shell feels calmer and less admin-like",
+      "riskLevel": "Medium",
+      "requiresManualQa": true,
+      "safeToChangeLater": true,
+      "rollbackNote": "restore sticky header and tabs declarations"
+    },
+    {
+      "targetSelector": ".surface",
+      "currentStyleSummary": "generic near-white card with small radius",
+      "proposedResearchOsToken": "--nos-color-bg-soft, --nos-color-border, --nos-radius-panel, --nos-card-padding",
+      "expectedVisualEffect": "editorial panels with stronger hierarchy",
+      "riskLevel": "Medium",
+      "requiresManualQa": true,
+      "safeToChangeLater": true,
+      "rollbackNote": "restore .surface block"
+    },
+    {
+      "targetSelector": ".timeline-card",
+      "currentStyleSummary": "dark technical card island",
+      "proposedResearchOsToken": "Research OS evidence journal surface tokens",
+      "expectedVisualEffect": "timeline stops reading as raw console",
+      "riskLevel": "High",
+      "requiresManualQa": true,
+      "safeToChangeLater": false,
+      "rollbackNote": "defer until timeline visual patch"
+    },
+    {
+      "targetSelector": "button.primary",
+      "currentStyleSummary": "green operational action treatment",
+      "proposedResearchOsToken": "accent for preview/no-op, success only for confirmed safe states",
+      "expectedVisualEffect": "less accidental execution authority",
+      "riskLevel": "High",
+      "requiresManualQa": true,
+      "safeToChangeLater": false,
+      "rollbackNote": "defer until action semantics are reviewed"
+    },
+    {
+      "targetSelector": ".consent-surface",
+      "currentStyleSummary": "authorization surface hidden until needed",
+      "proposedResearchOsToken": "governance console treatment with blocked-state anatomy",
+      "expectedVisualEffect": "consent reads as governed, not casual approval",
+      "riskLevel": "High",
+      "requiresManualQa": true,
+      "safeToChangeLater": false,
+      "rollbackNote": "requires separate consent visual patch"
+    },
+    {
+      "targetSelector": ".log-pane, details",
+      "currentStyleSummary": "diagnostic details can dominate runtime tab",
+      "proposedResearchOsToken": "mission activity feed treatment",
+      "expectedVisualEffect": "human-readable feed hierarchy",
+      "riskLevel": "High",
+      "requiresManualQa": true,
+      "safeToChangeLater": false,
+      "rollbackNote": "requires separate activity feed patch"
+    }
+  ],
+  "decision": {
+    "ReadyForFutureSmallTokenPatch": true,
+    "ReadyForSidepanelProductUiMigration": false,
+    "ReadyForRuntimeCoupling": false,
+    "ReadyForFilesystemFeature": false,
+    "ReadyForLlmProviderCloud": false,
+    "ReadyForProductiveConsent": false
+  }
+}

@@ -1575,3 +1575,32 @@ Still blocked:
 - LLM context, cloud, Provider Calls, model execution, and productive consent.
 
 Recommended next phase is Sidepanel Visual Token Integration Dry Run Plan, not direct product UI migration.
+
+## M612+M613+M614 - Sidepanel Visual Token Integration Dry Run / Diff Plan / No-Runtime Coupling Tests
+
+Decision target: `SIDEPANEL_TOKEN_DRY_RUN_READY`.
+
+This block adds:
+
+- Sidepanel Visual Token Integration Dry Run.
+- Sidepanel Diff / Patch Plan.
+- No-Runtime Coupling Test Plan.
+- Sidepanel token dry-run readiness summary.
+- Static dry-run and patch plan previews.
+
+Still blocked:
+
+- Sidepanel product UI migration.
+- Token integration into product sidepanel files.
+- Product UI migration.
+- Broad UI rewrite.
+- Product source-of-truth promotion.
+- Productive settings persistence.
+- Capability authorization.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- Path jail implementation.
+- LLM context, cloud, Provider Calls, model execution, and productive consent.
+
+Recommended next phase is Sidepanel Token Patch 1 Approval, limited to future CSS variables only.

@@ -2550,3 +2550,42 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M612+M613+M614 - Sidepanel Visual Token Integration Dry Run / Diff Plan / No-Runtime Coupling Tests
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Sidepanel Visual Token Integration Dry Run mapping Research OS tokens to current sidepanel CSS candidates.
+- Sidepanel Diff / Patch Plan split into eight future patch units.
+- No-Runtime Coupling Test Plan and Go / No-Go criteria.
+- Static token dry-run and patch plan previews under `artifacts/agent-operations/m614`.
+
+Boundaries:
+
+- Dry-run, diff-plan, and test-plan only.
+- No sidepanel product UI migration.
+- No token integration into product sidepanel files.
+- No product UI migration.
+- No broad UI rewrite.
+- No product source-of-truth promotion.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No Provider Calls, cloud, productive consent, capability enablement, or product state persistence.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 98%
+- Mission Control UX: 98%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%

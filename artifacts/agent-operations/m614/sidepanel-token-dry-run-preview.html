@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS - Sidepanel Token Dry Run</title>
+  <style>
+    :root {
+      --bg: #F5F3EE;
+      --soft: #EFECE6;
+      --muted-bg: #F2F0EA;
+      --text: #171717;
+      --muted: #5C5C5C;
+      --border: #DDD8D0;
+      --accent: #5B6CFF;
+      --danger: #C2410C;
+      --success: #3D8F5A;
+      --warning: #D97706;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 12% 8%, rgba(91,108,255,0.12), transparent 28%), var(--bg);
+      color: var(--text);
+      font-family: Inter, Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { max-width: 1140px; margin: 0 auto; padding: 42px 22px 60px; }
+    h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; letter-spacing: -0.035em; margin: 0; }
+    h1 { font-size: clamp(42px, 7vw, 76px); line-height: 0.94; }
+    h2 { font-size: 27px; }
+    p, li { color: var(--muted); line-height: 1.55; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 16px; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr); gap: 18px; margin-bottom: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .panel { border: 1px solid var(--border); border-radius: 28px; background: rgba(239,236,230,0.78); padding: 24px; }
+    .badge { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 5px 10px; color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+    .ready { color: var(--success); }
+    .blocked { color: var(--danger); }
+    ul { margin: 14px 0 0; padding-left: 18px; }
+    .anatomy { border-left: 3px solid var(--accent); padding-left: 14px; margin-top: 16px; }
+    @media (max-width: 860px) { .hero, .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <article class="panel">
+        <div class="eyebrow">M612-M614 dry-run only</div>
+        <h1>Sidepanel Visual Token Dry Run</h1>
+        <p>This preview simulates Research OS token integration without modifying product sidepanel files. It exists to validate sequence, risk, and no-coupling checks before any future product patch.</p>
+        <div class="anatomy">
+          <strong>Blocked-state anatomy</strong>
+          <p>Why: product sidepanel files are high-risk. Missing: future patch approval and manual QA. Evidence required: dry-run artifact, patch plan, no-coupling plan, and full suite. User action: approve Patch 1 only in a future milestone. Disabled: sidepanel migration, runtime, filesystem, Provider Calls, cloud, productive consent, capabilities, and source-of-truth promotion.</p>
+        </div>
+      </article>
+      <aside class="panel">
+        <span class="badge ready">Ready for planning</span>
+        <h2>Product files</h2>
+        <p class="blocked">Unchanged in this block.</p>
+        <p>Only artifacts, reports, previews, tests, and roadmaps are produced.</p>
+      </aside>
+    </section>
+    <section class="grid">
+      <article class="panel">
+        <span class="badge">Token map</span>
+        <h2>Research OS tokens</h2>
+        <ul>
+          <li>Warm editorial background.</li>
+          <li>Serif headings with clean UI text.</li>
+          <li>Subdued premium accent.</li>
+          <li>Explicit warning and danger states.</li>
+        </ul>
+      </article>
+      <article class="panel">
+        <span class="badge">Current sidepanel</span>
+        <h2>Style risks</h2>
+        <ul>
+          <li>Near-white cards can feel generic.</li>
+          <li>Timeline uses dark technical islands.</li>
+          <li>Primary buttons can imply authority.</li>
+          <li>Runtime diagnostics can dominate.</li>
+        </ul>
+      </article>
+      <article class="panel">
+        <span class="badge blocked">No-Go</span>
+        <h2>Stop conditions</h2>
+        <ul>
+          <li>Manifest permission changes.</li>
+          <li>Behavior-heavy JS changes.</li>
+          <li>Runtime or capability flow changes.</li>
+          <li>Remote resource introduction.</li>
+        </ul>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

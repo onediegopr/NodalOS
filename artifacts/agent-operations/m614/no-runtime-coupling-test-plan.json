@@ -1,0 +1,64 @@
+{
+  "testPlanId": "M614-NO-RUNTIME-COUPLING-TEST-PLAN",
+  "missionRef": "M612-M614",
+  "isTestPlanOnly": true,
+  "noRuntimeCouplingChecks": [
+    "new runtime message paths",
+    "new Provider/cloud paths",
+    "new network paths",
+    "filesystem APIs",
+    "direct browser executor references",
+    "capability enablement",
+    "productive consent persistence",
+    "approval mutation",
+    "source-of-truth promotion",
+    "event routing changes",
+    "scheduled dispatch additions",
+    "async backlog additions",
+    "background operator additions",
+    "usage analytics additions",
+    "system pasteboard writes",
+    "executable task graph surfaces",
+    "execution request surfaces"
+  ],
+  "visualRegressionChecks": [
+    "missing Research OS tokens",
+    "missing blocked-state anatomy",
+    "generic SaaS dashboard return",
+    "dark technical control center return",
+    "advisor as chatbot",
+    "activity feed as raw logs",
+    "models as provider selector implying calls",
+    "runtime appearing active",
+    "agents appearing autonomous",
+    "settings appearing productive"
+  ],
+  "goCriteria": [
+    "working tree clean",
+    "rollback plan exists",
+    "patch unit is small",
+    "no-runtime-coupling tests exist",
+    "visual QA baseline exists",
+    "full suite green",
+    "manual preview reviewed",
+    "no source-of-truth ambiguity",
+    "no broad rewrite"
+  ],
+  "noGoCriteria": [
+    "patch touches behavior-heavy JS",
+    "patch modifies manifest permissions",
+    "patch changes runtime control flow",
+    "patch changes capability control flow",
+    "patch removes blocked-state explanation",
+    "patch introduces remote resources",
+    "patch creates Provider/cloud/network path"
+  ],
+  "decision": {
+    "NoRuntimeCouplingPlanReady": true,
+    "ReadyForRuntimeConnection": false,
+    "ReadyForRealCapabilityConnection": false,
+    "ReadyForProviderCloudConnection": false,
+    "ReadyForFilesystemFeature": false,
+    "ReadyForProductiveConsent": false
+  }
+}
