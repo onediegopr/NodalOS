@@ -85,8 +85,8 @@ textarea {
   min-width: 92px;
   height: 42px;
   border: 0;
-  border-radius: 8px;
-  background: var(--red);
+  border-radius: var(--nos-radius-control, 12px);
+  background: var(--nos-color-danger, #C2410C);
   color: #fff;
   font-weight: 800;
   cursor: pointer;
@@ -227,30 +227,38 @@ textarea {
 }
 
 button {
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--nos-color-border, #DDD8D0);
+  border-radius: var(--nos-radius-control, 12px);
   padding: 9px 12px;
-  background: #fff;
-  color: var(--ink);
+  background: var(--nos-color-bg, #F5F3EE);
+  color: var(--nos-color-text, #171717);
   font-weight: 800;
   cursor: pointer;
 }
 
 button.primary {
-  border-color: rgba(8, 127, 91, 0.28);
-  background: rgba(8, 127, 91, 0.12);
-  color: var(--green);
+  border-color: color-mix(in srgb, var(--nos-color-accent, #5B6CFF) 28%, transparent);
+  background: color-mix(in srgb, var(--nos-color-accent, #5B6CFF) 12%, transparent);
+  color: var(--nos-color-accent, #5B6CFF);
 }
 
 button.danger {
-  border-color: rgba(189, 31, 45, 0.25);
-  background: rgba(189, 31, 45, 0.12);
-  color: var(--red);
+  border-color: color-mix(in srgb, var(--nos-color-danger, #C2410C) 28%, transparent);
+  background: color-mix(in srgb, var(--nos-color-danger, #C2410C) 12%, transparent);
+  color: var(--nos-color-danger, #C2410C);
 }
 
 button:disabled {
   opacity: 0.42;
   cursor: default;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--nos-focus-ring, 0 0 0 3px rgba(91, 108, 255, 0.22));
+  border-radius: var(--nos-radius-control, 12px);
 }
 
 .grid {
@@ -628,8 +636,8 @@ pre {
   margin-top: 10px;
   border-radius: 8px;
   padding: 10px;
-  background: rgba(31, 95, 191, 0.1);
-  color: var(--blue);
+  background: color-mix(in srgb, var(--nos-color-warning, #D97706) 12%, transparent);
+  color: var(--nos-color-warning, #D97706);
   font-weight: 800;
 }
 
