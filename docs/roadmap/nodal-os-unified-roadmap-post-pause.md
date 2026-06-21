@@ -1714,3 +1714,42 @@ Still blocked:
 - LLM context, provider/cloud coupling, model execution, and productive consent.
 
 Recommended next phase is M622 CSS-only dead-style cleanup with small reversible patches, or stop for interactive extension QA if layout, HTML, JS, or manifest work is requested.
+
+## M622 - Sidepanel Dead-Style Cleanup CSS-Only
+
+Decision target: `SIDEPANEL_DEAD_STYLE_CLEANUP_READY`.
+
+This block adds:
+
+- CSS-only removal of orphan legacy root variables.
+- Zero-reference verification before cleanup.
+- Dead-style cleanup summary and cleanup register.
+- Tests that preserve Research OS tokens, M615-M620 remaps, and sidepanel HTML, JS, and manifest hashes.
+
+Removed after zero-reference verification:
+
+- `--bg`
+- `--panel`
+- `--ink`
+- `--muted`
+- `--line`
+- `--green`
+- `--red`
+- `--amber`
+- `--blue`
+- `--black`
+
+Still blocked:
+
+- Contrast fix for `.tab.active`.
+- STOP narrow viewport layout fix.
+- HTML restructure.
+- JavaScript behavior changes.
+- Manifest changes.
+- Product source-of-truth promotion.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- LLM context, provider/cloud coupling, model execution, and productive consent.
+
+Recommended next phase is a separately approved CSS-only contrast/responsive QA patch or interactive extension QA before any HTML, JS, or manifest work.

@@ -1,0 +1,91 @@
+{
+  "milestone": "M622",
+  "verificationMethod": "PowerShell Select-String checks for exact var(...) references and root declarations in sidepanel.css before and after cleanup.",
+  "removedVariables": [
+    {
+      "removedVariable": "--bg",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--panel",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--ink",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--muted",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--line",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--green",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--red",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--amber",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--blue",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    },
+    {
+      "removedVariable": "--black",
+      "referenceCount": 0,
+      "level": "low",
+      "expectedVisualImpact": "none",
+      "rollbackNote": "Restore the removed root declaration from the previous commit if a future audit finds an implicit dependency."
+    }
+  ],
+  "retainedVariables": [],
+  "remainingKnownVisualRisks": [
+    {
+      "surface": ".tab.active",
+      "level": "medium",
+      "status": "deferred",
+      "note": "Contrast remains a separate visual fix candidate and was intentionally not changed in M622."
+    },
+    {
+      "surface": ".stop-button narrow viewport",
+      "level": "medium",
+      "status": "deferred",
+      "note": "Responsive clipping remains a separate layout QA item and was intentionally not changed in M622."
+    }
+  ]
+}

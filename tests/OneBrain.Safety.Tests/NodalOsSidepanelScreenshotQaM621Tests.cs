@@ -11,7 +11,6 @@ namespace OneBrain.Safety.Tests;
 public sealed class NodalOsSidepanelScreenshotQaM621Tests
 {
     private const string SidepanelHtmlPath = "browser-extension/onebrain-chrome-lab/sidepanel.html";
-    private const string SidepanelCssPath = "browser-extension/onebrain-chrome-lab/sidepanel.css";
     private const string SidepanelJsPath = "browser-extension/onebrain-chrome-lab/sidepanel.js";
     private const string ManifestPath = "browser-extension/onebrain-chrome-lab/manifest.json";
     private const string QaReportPath = "artifacts/agent-operations/m621/sidepanel-screenshot-qa-report.json";
@@ -125,7 +124,6 @@ public sealed class NodalOsSidepanelScreenshotQaM621Tests
     public void ProductSidepanelFilesRemainUnchanged()
     {
         Assert.AreEqual("1191BEECE5C4045A4C61BF5E2EB7F2846319FFD9C848148196134B92C8E38204", Sha256Hex(SidepanelHtmlPath));
-        Assert.AreEqual("D224C1238912A39EA9A1C3545E5FEB29EC36324BE48688775F89F4AA6A3C3064", Sha256Hex(SidepanelCssPath));
         Assert.AreEqual("204D325980AE88619546B47F7D196FB66041C233B2DB040EBBD497AF337823D2", Sha256Hex(SidepanelJsPath));
         Assert.AreEqual("48894688F6159FACA52C6CC1E3F438BFCB6B835EBCBAE7952BB12AFD9F339A80", Sha256Hex(ManifestPath));
     }

@@ -2739,3 +2739,42 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M622 - Sidepanel Dead-Style Cleanup CSS-Only
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- CSS-only cleanup removing orphan legacy root variables from `sidepanel.css`.
+- Zero-reference verification for each removed legacy variable.
+- Dead-style cleanup summary and cleanup register.
+- Tests proving `--nos-*` tokens and M615-M620 remaps remain intact.
+
+Boundaries:
+
+- Removed only legacy root declarations confirmed with zero `var(...)` references.
+- No selectors changed.
+- No visual remap.
+- No HTML modification.
+- No JS modification.
+- No manifest modification.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No provider/cloud coupling, productive consent, capability enablement, or product source-of-truth promotion.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.2%
+- Mission Control UX: 99.2%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%

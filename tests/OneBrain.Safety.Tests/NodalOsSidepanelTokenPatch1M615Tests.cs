@@ -130,19 +130,19 @@ public sealed class NodalOsSidepanelTokenPatch1M615Tests
     }
 
     [TestMethod]
-    public void SidepanelCss_ExistingVariablesUntouched()
+    public void SidepanelCss_LegacyVariablesRemovedAfterM622()
     {
         var css = CssContent();
-        AssertContains(css, "--bg:");
-        AssertContains(css, "--panel:");
-        AssertContains(css, "--ink:");
-        AssertContains(css, "--muted:");
-        AssertContains(css, "--line:");
-        AssertContains(css, "--green:");
-        AssertContains(css, "--red:");
-        AssertContains(css, "--amber:");
-        AssertContains(css, "--blue:");
-        AssertContains(css, "--black:");
+        AssertDoesNotContain(css, "--bg:");
+        AssertDoesNotContain(css, "--panel:");
+        AssertDoesNotContain(css, "--ink:");
+        AssertDoesNotContain(css, "--muted:");
+        AssertDoesNotContain(css, "--line:");
+        AssertDoesNotContain(css, "--green:");
+        AssertDoesNotContain(css, "--red:");
+        AssertDoesNotContain(css, "--amber:");
+        AssertDoesNotContain(css, "--blue:");
+        AssertDoesNotContain(css, "--black:");
     }
 
     [TestMethod]
