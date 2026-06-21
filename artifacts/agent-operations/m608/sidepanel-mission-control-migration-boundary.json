@@ -1,0 +1,94 @@
+{
+  "boundaryId": "M607-SIDEPANEL-MISSION-CONTROL-MIGRATION-BOUNDARY",
+  "missionRef": "M606-M608",
+  "isBoundaryOnly": true,
+  "candidateEntrypoints": [
+    "browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js",
+    "browser-extension/onebrain-chrome-lab/manifest.json",
+    "artifacts/agent-operations/m590/mission-control-research-os-preview.html",
+    "artifacts/agent-operations/m605/research-os-consolidated-preview.html"
+  ],
+  "targetSurfaces": [
+    "Mission Control",
+    "Sidebar",
+    "Current Mission Hero",
+    "Timeline Summary",
+    "Evidence Summary",
+    "Decision Preview",
+    "Advisor Note",
+    "Consent/Capability Preview",
+    "Runtime Status",
+    "Activity Feed"
+  ],
+  "allowedChanges": [
+    "visual tokens",
+    "static layout",
+    "copy and microcopy",
+    "CSS class structure",
+    "static preview fixture data",
+    "blocked-state anatomy",
+    "visual hierarchy",
+    "accessibility and contrast improvements",
+    "no-op actions only"
+  ],
+  "forbiddenChanges": [
+    "Runtime calls",
+    "Filesystem calls",
+    "Provider Calls",
+    "Network calls",
+    "Cloud calls",
+    "Capability enablement",
+    "Productive consent",
+    "Source-of-truth promotion",
+    "Approval mutation",
+    "Event routing",
+    "Background execution orchestration",
+    "Direct browser executor references",
+    "Broad rewrite without rollback"
+  ],
+  "requiredTests": [
+    "static preview smoke check",
+    "visual regression comparison",
+    "no-runtime-coupling test",
+    "no-source-of-truth-promotion test",
+    "blocked-state anatomy test",
+    "accessibility and contrast check",
+    "full suite"
+  ],
+  "requiredRollbackStrategy": [
+    "single-scope sidepanel change set",
+    "revertible visual token patch",
+    "no schema or product state migration",
+    "restore previous sidepanel shell if QA fails",
+    "document changed entrypoints before merge"
+  ],
+  "requiredVisualQA": [
+    "Mission Control hero remains dominant",
+    "sidebar remains minimal",
+    "Research OS warm editorial direction remains visible",
+    "one dominant focus plus three secondary blocks",
+    "blocked-state anatomy remains visible"
+  ],
+  "requiredSecurityQA": [
+    "no runtime coupling",
+    "no filesystem coupling",
+    "no provider/cloud coupling",
+    "no productive consent coupling",
+    "no capability enablement",
+    "no source-of-truth promotion"
+  ],
+  "sourceOfTruthStatus": "Preview and migration planning only; cannot become product source of truth in this block.",
+  "runtimeCouplingStatus": "Blocked",
+  "capabilityCouplingStatus": "Blocked",
+  "boundaryDecision": {
+    "ReadyForProductUiMigrationPlanning": true,
+    "ReadyForDirectProductUiRewrite": false,
+    "ReadyForRuntimeCoupling": false,
+    "ReadyForFilesystemCoupling": false,
+    "ReadyForLlmProviderCoupling": false,
+    "ReadyForProductiveConsentCoupling": false,
+    "RecommendedNextMilestone": "Sidepanel Research OS Migration Plan"
+  }
+}

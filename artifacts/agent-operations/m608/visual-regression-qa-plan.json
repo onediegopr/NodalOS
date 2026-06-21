@@ -1,0 +1,64 @@
+{
+  "planId": "M608-VISUAL-REGRESSION-QA-PLAN",
+  "missionRef": "M606-M608",
+  "isQaPlanOnly": true,
+  "visualBaselineRefs": [
+    "M582-M584 Visual Reengineering Foundation",
+    "M585-M587 Visual Foundation Phase 1",
+    "M588-M590 Mission Control Research OS Layout",
+    "M591-M593 Timeline Evidence Research OS",
+    "M594-M596 Decision Advisor Research OS",
+    "M597-M599 Consent Runtime Models Research OS",
+    "M600-M602 Agents Settings Activity Research OS",
+    "M603-M605 Research OS Visual Consolidation"
+  ],
+  "qaPlan": [
+    "HTML/static preview validation",
+    "no remote dependencies",
+    "no runtime coupling",
+    "no filesystem coupling",
+    "no provider/cloud coupling",
+    "no productive consent coupling",
+    "source-of-truth boundary",
+    "blocked-state anatomy verification",
+    "Research OS style verification",
+    "accessibility/contrast checklist",
+    "responsive layout checklist",
+    "keyboard navigation checklist if applicable",
+    "rollback strategy"
+  ],
+  "requiredVisualQaScenarios": [
+    "Mission Control hero remains dominant",
+    "Sidebar remains minimal",
+    "Timeline does not become checklist",
+    "Evidence does not become attachments",
+    "Decisions do not become generic approvals",
+    "Advisor does not become chatbot",
+    "Consent does not become settings",
+    "Runtime does not imply active execution",
+    "Models do not imply Provider Calls",
+    "Agents do not imply autonomous execution",
+    "Settings do not imply productive persistence",
+    "Activity Feed does not become raw logs",
+    "Blocked states always explain why/missing/evidence/action/disabled"
+  ],
+  "regressionFailureCases": [
+    "generic SaaS dashboard returns",
+    "dark technical control center returns as default",
+    "mission hidden behind widgets",
+    "runtime appears active",
+    "file access appears available",
+    "provider appears configured/active",
+    "evidence appears verified/productive",
+    "consent appears persisted",
+    "preview actions look executable",
+    "source-of-truth ambiguity"
+  ],
+  "decision": {
+    "VisualRegressionPlanReady": true,
+    "ReadyForSafeStaticUiMigration": true,
+    "ReadyForBroadRewrite": false,
+    "ReadyForRuntimeConnection": false,
+    "ReadyForRealCapabilityConnection": false
+  }
+}

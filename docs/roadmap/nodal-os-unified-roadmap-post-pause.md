@@ -1520,3 +1520,30 @@ Still blocked:
 - LLM context, cloud, Provider Calls, model execution, and productive consent.
 
 Recommended next phase is Product UI Entry Point Audit, not direct broad UI rewrite.
+
+## M606+M607+M608 - Product UI Entry Point Audit / Sidepanel Migration Boundary / Visual Regression QA Plan
+
+Decision target: `PRODUCT_UI_MIGRATION_AUDIT_READY`.
+
+This block adds:
+
+- Product UI Entry Point Audit.
+- Sidepanel / Mission Control Migration Boundary.
+- Visual Regression QA Plan.
+- Product UI migration audit summary.
+- Static boundary preview.
+
+Still blocked:
+
+- Product UI migration.
+- Broad UI rewrite.
+- Product source-of-truth promotion.
+- Productive settings persistence.
+- Capability authorization.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- Path jail implementation.
+- LLM context, cloud, Provider Calls, model execution, and productive consent.
+
+Recommended next phase is Sidepanel Research OS Migration Plan or Visual Regression QA Pack, not direct broad UI rewrite.

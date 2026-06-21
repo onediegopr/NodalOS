@@ -2475,3 +2475,40 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M606+M607+M608 - Product UI Entry Point Audit / Sidepanel Migration Boundary / Visual Regression QA Plan
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Product UI Entry Point Audit identifying the Chrome extension sidepanel as the primary high-risk product UI candidate.
+- Sidepanel / Mission Control Migration Boundary with allowed visual-only changes and forbidden runtime/source-of-truth couplings.
+- Visual Regression QA Plan for future safe static UI migration.
+- Boundary preview under `artifacts/agent-operations/m608`.
+
+Boundaries:
+
+- Audit, boundary, and QA plan only.
+- No product UI migration.
+- No broad UI rewrite.
+- No product source-of-truth promotion.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No Provider Calls, cloud, productive consent, capability enablement, or product state persistence.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 97%
+- Mission Control UX: 97%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%

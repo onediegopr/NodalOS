@@ -1,0 +1,193 @@
+{
+  "auditId": "M606-PRODUCT-UI-ENTRY-POINT-AUDIT",
+  "workspaceRef": "Codigo-m12-audit",
+  "missionRef": "M606-M608",
+  "isAuditOnly": true,
+  "canModifyProductUi": false,
+  "canConnectRuntime": false,
+  "canConnectFilesystem": false,
+  "canConnectLlmProvider": false,
+  "canPersistProductiveState": false,
+  "canEnableCapabilities": false,
+  "repoUiInventory": {
+    "rootPackageJsonFound": false,
+    "rootLockfileFound": false,
+    "cargoOrTauriConfigFound": false,
+    "extensionManifestFound": true,
+    "sidepanelHtmlFound": true,
+    "sidepanelCssFound": true,
+    "sidepanelJsFound": true,
+    "staticResearchOsPreviewsFound": true,
+    "rendererHtmlFound": false,
+    "missionControlProductHtmlFound": false,
+    "timelineEvidenceProductHtmlFound": false,
+    "settingsProductUiFound": false,
+    "designDocsFound": true,
+    "uiTestFixturesFound": true
+  },
+  "entryPointClassifications": [
+    "Productive UI entrypoint",
+    "Static preview only",
+    "Legacy/Quarantine",
+    "Test fixture",
+    "Artifact preview",
+    "Documentation only",
+    "Unknown"
+  ],
+  "migrationRiskLevels": [
+    "Low",
+    "Medium",
+    "High",
+    "Blocked"
+  ],
+  "ownershipRecommendedHandling": [
+    "update later",
+    "do not touch",
+    "static preview only",
+    "requires audit",
+    "requires visual regression",
+    "requires security review",
+    "requires no-runtime-coupling test"
+  ],
+  "entryPointCandidates": [
+    {
+      "path": "browser-extension/onebrain-chrome-lab/manifest.json",
+      "classification": "Productive UI entrypoint",
+      "riskLevel": "High",
+      "recommendedHandling": [
+        "do not touch",
+        "requires audit",
+        "requires security review"
+      ],
+      "reason": "Extension manifest governs product surface availability and must not be changed by visual migration without separate extension review."
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/sidepanel.html",
+      "classification": "Productive UI entrypoint",
+      "riskLevel": "High",
+      "recommendedHandling": [
+        "update later",
+        "requires visual regression",
+        "requires no-runtime-coupling test",
+        "requires security review"
+      ],
+      "reason": "Primary sidepanel shell candidate for future Mission Control migration."
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/sidepanel.css",
+      "classification": "Productive UI entrypoint",
+      "riskLevel": "High",
+      "recommendedHandling": [
+        "update later",
+        "requires visual regression"
+      ],
+      "reason": "Likely styling entrypoint for sidepanel visual token integration."
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/sidepanel.js",
+      "classification": "Productive UI entrypoint",
+      "riskLevel": "High",
+      "recommendedHandling": [
+        "do not touch",
+        "requires no-runtime-coupling test",
+        "requires security review"
+      ],
+      "reason": "Behavioral sidepanel file is runtime-adjacent and must not be changed by a visual-only milestone."
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/content_script.js",
+      "classification": "Legacy/Quarantine",
+      "riskLevel": "Blocked",
+      "recommendedHandling": [
+        "do not touch",
+        "requires security review"
+      ],
+      "reason": "Extension page integration path is outside visual migration scope."
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/recipe_core.js",
+      "classification": "Legacy/Quarantine",
+      "riskLevel": "Blocked",
+      "recommendedHandling": [
+        "do not touch",
+        "requires security review"
+      ],
+      "reason": "Automation-adjacent logic is outside visual migration scope."
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/tests/fixture_tests.js",
+      "classification": "Test fixture",
+      "riskLevel": "Low",
+      "recommendedHandling": [
+        "do not touch"
+      ],
+      "reason": "Fixture coverage is not a product migration target in this block."
+    },
+    {
+      "path": "artifacts/agent-operations/m590/mission-control-research-os-preview.html",
+      "classification": "Artifact preview",
+      "riskLevel": "Low",
+      "recommendedHandling": [
+        "static preview only"
+      ],
+      "reason": "Research OS Mission Control baseline preview, not product source of truth."
+    },
+    {
+      "path": "artifacts/agent-operations/m605/research-os-consolidated-preview.html",
+      "classification": "Artifact preview",
+      "riskLevel": "Low",
+      "recommendedHandling": [
+        "static preview only"
+      ],
+      "reason": "Consolidated Research OS baseline preview for future QA comparison."
+    },
+    {
+      "path": "docs/design/nodal-os-research-mission-design-system.md",
+      "classification": "Documentation only",
+      "riskLevel": "Low",
+      "recommendedHandling": [
+        "static preview only"
+      ],
+      "reason": "Design baseline reference only."
+    },
+    {
+      "path": "apps/nexa-test-owned-target",
+      "classification": "Test fixture",
+      "riskLevel": "Low",
+      "recommendedHandling": [
+        "do not touch"
+      ],
+      "reason": "Owned target fixture is not a product UI migration target."
+    },
+    {
+      "path": "samples/product-evidence-html/demo-product-evidence-report.html",
+      "classification": "Static preview only",
+      "riskLevel": "Medium",
+      "recommendedHandling": [
+        "do not touch",
+        "requires audit"
+      ],
+      "reason": "Human-readable sample exists, but it is not the sidepanel target."
+    },
+    {
+      "path": "unknown-product-renderer",
+      "classification": "Unknown",
+      "riskLevel": "Blocked",
+      "recommendedHandling": [
+        "requires audit"
+      ],
+      "reason": "No separate renderer entrypoint was confirmed in this block."
+    }
+  ],
+  "auditDecision": {
+    "ProductUiEntrypointsIdentified": true,
+    "SidepanelEntrypointsIdentified": true,
+    "StaticPreviewsIdentified": true,
+    "ReadyForProductUiMigrationPlanning": true,
+    "ReadyForDirectProductUiRewrite": false,
+    "ReadyForRuntimeCoupling": false,
+    "ReadyForFilesystemCoupling": false,
+    "ReadyForLlmProviderCoupling": false,
+    "ReadyForProductiveConsentCoupling": false
+  }
+}
