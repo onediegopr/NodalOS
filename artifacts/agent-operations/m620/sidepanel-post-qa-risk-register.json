@@ -1,0 +1,78 @@
+{
+  "patchId": "M620",
+  "decision": "SIDEPANEL_VISUAL_QA_FIXES_READY",
+  "requiresManualVisualQa": true,
+  "requiresClaudeBeforeHtmlJsManifest": true,
+  "resolvedRisks": [
+    {
+      "selector": "button:focus-visible, input:focus-visible, textarea:focus-visible",
+      "resolution": "Focus ring alpha increased and transparent outline retained for accessibility fallback.",
+      "status": "resolved for CSS patch"
+    },
+    {
+      "selector": ".tab.active",
+      "resolution": "Text moved to --nos-color-text over accent background to avoid white-on-accent threshold risk.",
+      "status": "resolved for CSS patch"
+    },
+    {
+      "selector": "button.primary",
+      "resolution": "Accent text darkened by mixing with --nos-color-text without using green authority styling.",
+      "status": "resolved for CSS patch"
+    },
+    {
+      "selector": ".timeline-badge.status-running",
+      "resolution": "Hardcoded blue replaced by --nos-color-risk treatment.",
+      "status": "resolved for CSS patch"
+    },
+    {
+      "selector": ".recording-state",
+      "resolution": "Warning surface gained border and darker warning/text mix.",
+      "status": "resolved for CSS patch"
+    },
+    {
+      "selector": ".handoff-surface, .consent-surface",
+      "resolution": "Hardcoded legacy colors replaced with Research OS warning/accent token mixes.",
+      "status": "resolved for CSS patch"
+    }
+  ],
+  "remainingRisks": [
+    {
+      "selector": ".timeline-card and nested timeline selectors",
+      "risk": "Timeline is visually warmer, but still needs rendered review for dense mission histories.",
+      "requiresManualVisualQa": true
+    },
+    {
+      "selector": ".log-pane, pre",
+      "risk": "Logs are calmer but still represent technical output, not a full Mission Activity Feed.",
+      "requiresManualVisualQa": true
+    },
+    {
+      "selector": "legacy root variables",
+      "risk": "--green, --red, --amber, --blue and --black remain for compatibility until usage cleanup is approved.",
+      "requiresManualVisualQa": false
+    }
+  ],
+  "deferredRisks": [
+    {
+      "area": "HTML semantics",
+      "reason": "M620 is CSS-only; semantic markup changes require Claude or separate approval."
+    },
+    {
+      "area": "JS behavior labels",
+      "reason": "M620 cannot change action labels, runtime state copy or event handling."
+    },
+    {
+      "area": "Manifest permissions",
+      "reason": "Manifest remains out of scope."
+    }
+  ],
+  "manualQaChecklist": [
+    "Keyboard tab through controls and confirm focus ring is visible on warm surfaces.",
+    "Compare active tab contrast in Chrome sidepanel rendering.",
+    "Review timeline cards with completed, running, warning and blocked states.",
+    "Confirm recording state does not look like active runtime authority.",
+    "Confirm consent and handoff panels still communicate governance and human authority.",
+    "Confirm logs remain secondary and do not appear as source of truth."
+  ],
+  "requiresClaudeBeforeHtmlJsManifest": true
+}

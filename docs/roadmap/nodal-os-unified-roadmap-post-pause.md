@@ -1661,3 +1661,30 @@ Still blocked:
 - LLM context, cloud, Provider Calls, model execution, and productive consent.
 
 Recommended next phase is M620 or Claude audit, limited to reviewed CSS visual QA and dead-style cleanup planning.
+
+## M620 - Sidepanel Patch 5 - Visual QA Fixes / Contrast / Dead-Style Cleanup
+
+Decision target: `SIDEPANEL_VISUAL_QA_FIXES_READY`.
+
+This block adds:
+
+- CSS-only corrective visual QA fixes.
+- Stronger focus ring.
+- Contrast refinements.
+- Warm Research OS timeline treatment.
+- Risk state `status-running` treatment.
+- Governance surface token remaps.
+- Post-QA risk register.
+
+Still blocked:
+
+- HTML restructure.
+- JavaScript behavior changes.
+- Manifest changes.
+- Product source-of-truth promotion.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- LLM context, provider/cloud coupling, model execution, and productive consent.
+
+Recommended next phase is manual screenshot QA or Claude audit before any HTML, JS, manifest, or structure work.

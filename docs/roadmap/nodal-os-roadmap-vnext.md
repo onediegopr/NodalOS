@@ -1703,6 +1703,45 @@ Updated percentages:
 - LLM/Assignment: 74%
 - Cloud optional: 10%
 
+## M620 - Sidepanel Patch 5 - Visual QA Fixes / Contrast / Dead-Style Cleanup
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- CSS-only corrective patch based on M619 visual QA.
+- Stronger Research OS focus ring.
+- Contrast refinements for active tab, primary action, recording state, and governance surfaces.
+- `status-running` remap away from operational blue into Research OS risk treatment.
+- Timeline dark-island softening toward warm Research OS research archive styling.
+- Log and `pre` visual treatment as secondary research-note surfaces.
+- M620 summary and post-QA risk register.
+- Guardrail tests confirming no HTML, JS, or manifest mutation.
+
+Boundaries:
+
+- CSS-only patch.
+- No HTML modification.
+- No JS modification.
+- No manifest modification.
+- No behavior or structural layout changes.
+- No Provider/cloud coupling, filesystem feature, productive consent, capability enablement, or product state persistence.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.0%
+- Mission Control UX: 99.0%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
+
 ## M619 - Sidepanel Visual QA / Accessibility / Contrast / Dead-Style Audit
 
 Status: implemented in branch, pending validation at block close.
