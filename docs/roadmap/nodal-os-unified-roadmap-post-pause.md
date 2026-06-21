@@ -1753,3 +1753,33 @@ Still blocked:
 - LLM context, provider/cloud coupling, model execution, and productive consent.
 
 Recommended next phase is a separately approved CSS-only contrast/responsive QA patch or interactive extension QA before any HTML, JS, or manifest work.
+
+## M623 - Sidepanel Contrast / Responsive Microfix CSS-Only
+
+Decision target: `SIDEPANEL_CONTRAST_RESPONSIVE_MICROFIX_READY`.
+
+This block adds:
+
+- CSS-only active tab contrast microfix.
+- CSS-only STOP button narrow viewport microfix.
+- Contrast/responsive summary and follow-up register.
+- Tests preserving Research OS tokens, M622 cleanup, and unchanged sidepanel HTML, JS, and manifest hashes.
+
+Resolved:
+
+- `.tab.active` estimated contrast improves from approximately 4.3:1 to approximately 5.97:1.
+- STOP button receives reduced width and padding plus a narrow viewport rule.
+
+Still blocked:
+
+- Interactive installed-extension QA remains required.
+- HTML restructure.
+- JavaScript behavior changes.
+- Manifest changes.
+- Product source-of-truth promotion.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- LLM context, provider/cloud coupling, model execution, and productive consent.
+
+Recommended next phase is interactive extension QA before any HTML, JS, or manifest work.

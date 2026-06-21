@@ -116,8 +116,8 @@ public sealed class NodalOsSidepanelVisualQaM619Tests
     {
         var css = ReadRepoText(SidepanelCssPath);
         AssertContains(css, ".tab.active");
-        AssertContains(css, "border-color: var(--nos-color-accent");
-        AssertContains(css, "background: var(--nos-color-accent");
+        AssertContains(css, "border-color: color-mix(in srgb, var(--nos-color-accent");
+        AssertContains(css, "background: color-mix(in srgb, var(--nos-color-accent");
         AssertContains(css, ".timeline-badge.status-done");
         AssertContains(css, "var(--nos-color-success");
         AssertContains(css, ".timeline-badge.status-blocked");

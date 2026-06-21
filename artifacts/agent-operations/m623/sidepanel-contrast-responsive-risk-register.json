@@ -1,0 +1,39 @@
+{
+  "milestone": "M623",
+  "resolvedRisks": [
+    {
+      "selector": ".tab.active",
+      "level": "medium",
+      "issue": "Active tab contrast was borderline.",
+      "resolution": "Active tab now uses white text on a darker token-mixed accent surface.",
+      "manualQaRequired": true,
+      "screenshotQaStatus": "static follow-up recommended"
+    },
+    {
+      "selector": ".stop-button",
+      "level": "medium",
+      "issue": "STOP button clipped in a 420px static screenshot.",
+      "resolution": "Button width and padding were reduced, a small right margin was added, and the narrow viewport header spacing was tightened.",
+      "manualQaRequired": true,
+      "screenshotQaStatus": "static 420px follow-up captured; interactive extension QA still required"
+    }
+  ],
+  "remainingRisks": [
+    {
+      "selector": "installed extension sidepanel",
+      "level": "medium",
+      "issue": "Interactive extension QA remains pending.",
+      "nextMilestone": "interactive extension QA before any HTML JS manifest work",
+      "manualQaRequired": true
+    }
+  ],
+  "deferredRisks": [
+    {
+      "selector": "HTML JS manifest",
+      "level": "high",
+      "issue": "Structural and behavior surfaces remain blocked.",
+      "nextMilestone": "separate approval with Claude review"
+    }
+  ],
+  "nextMilestone": "interactive extension QA or another CSS-only visual checkpoint"
+}

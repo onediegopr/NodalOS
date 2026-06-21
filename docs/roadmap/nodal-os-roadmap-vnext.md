@@ -2778,3 +2778,42 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M623 - Sidepanel Contrast / Responsive Microfix CSS-Only
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- CSS-only `.tab.active` contrast microfix.
+- CSS-only STOP button narrow viewport microfix.
+- Contrast/responsive summary and follow-up register.
+- Tests proving HTML, JS, and manifest remain unchanged.
+
+Boundaries:
+
+- CSS-only.
+- Touched only `.tab.active`, `.stop-button`, and a narrow viewport stop-button media query.
+- No text, IDs, event handlers, or permissions changed.
+- No HTML modification.
+- No JS modification.
+- No manifest modification.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No provider/cloud coupling, productive consent, capability enablement, or product source-of-truth promotion.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.3%
+- Mission Control UX: 99.3%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
