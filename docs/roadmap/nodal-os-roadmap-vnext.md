@@ -2438,3 +2438,40 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M603+M604+M605 - Research OS Visual Consolidation / Acceptance / Migration Readiness
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Research OS Visual Consolidation across Mission Control, Timeline, Evidence, Decisions, Advisor, Consent, Runtime, Models, Agents, Settings, Activity Feed, Blocked States, Readiness Gates, and Empty States.
+- Cross-Surface Acceptance Pack for mission clarity, governance clarity, evidence traceability, decision authority, advisor pattern, consent pattern, runtime safety, model policy, supervised agents, settings governance, activity feed readability, and blocked-state explanation.
+- Product UI Migration Readiness with phased migration plan and no direct broad UI rewrite recommendation.
+- Static previews under `artifacts/agent-operations/m605`.
+
+Boundaries:
+
+- Consolidation, acceptance, and migration readiness only.
+- Static fixture data only.
+- No product UI migration.
+- No product source-of-truth promotion.
+- No runtime behavior.
+- No evidence verification.
+- No operational access.
+- No Provider Calls, cloud, productive consent, capability enablement, or product state persistence.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 96%
+- Mission Control UX: 97%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%

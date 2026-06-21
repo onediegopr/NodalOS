@@ -1493,3 +1493,30 @@ Still blocked:
 - LLM context, cloud, Provider Calls, model execution, and source-of-truth behavior.
 
 Recommended next phase is Research OS visual consolidation and acceptance pack, still static and no-op unless a separate governed milestone authorizes productive UI work.
+
+## M603+M604+M605 - Research OS Visual Consolidation / Acceptance / Migration Readiness
+
+Decision target: `RESEARCH_OS_VISUAL_CONSOLIDATION_READY`.
+
+This block adds:
+
+- Research OS Visual Consolidation.
+- Cross-Surface Acceptance Pack.
+- Product UI Migration Readiness.
+- Consolidated Research OS preview.
+- Product UI migration readiness preview.
+
+Still blocked:
+
+- Product UI migration.
+- Broad UI rewrite.
+- Product source-of-truth promotion.
+- Productive settings persistence.
+- Capability authorization.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- Path jail implementation.
+- LLM context, cloud, Provider Calls, model execution, and productive consent.
+
+Recommended next phase is Product UI Entry Point Audit, not direct broad UI rewrite.

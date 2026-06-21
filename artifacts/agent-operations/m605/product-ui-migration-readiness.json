@@ -1,0 +1,78 @@
+{
+  "readinessId": "NOS-M605-PRODUCT-UI-MIGRATION-READINESS",
+  "decisionTarget": "RESEARCH_OS_VISUAL_CONSOLIDATION_READY",
+  "visualBaselineRef": "artifacts/agent-operations/m605/research-os-visual-consolidation.json",
+  "acceptancePackRef": "artifacts/agent-operations/m605/cross-surface-acceptance-pack.json",
+  "migrationPlanRef": "docs/design/nodal-os-visual-migration-plan.md",
+  "isReadinessOnly": true,
+  "canModifyProductUi": false,
+  "canConnectRuntime": false,
+  "canConnectFilesystem": false,
+  "canConnectLlmProvider": false,
+  "canPersistProductiveState": false,
+  "canEnableCapabilities": false,
+  "migrationPhases": [
+    {
+      "phase": "Phase A",
+      "name": "Token integration into product UI",
+      "restriction": "No runtime"
+    },
+    {
+      "phase": "Phase B",
+      "name": "Shell/Sidebar product UI migration",
+      "restriction": "No runtime"
+    },
+    {
+      "phase": "Phase C",
+      "name": "Mission Control product UI migration",
+      "restriction": "Fixture-only"
+    },
+    {
+      "phase": "Phase D",
+      "name": "Timeline/Evidence product UI migration",
+      "restriction": "Fixture-only, no source-of-truth promotion"
+    },
+    {
+      "phase": "Phase E",
+      "name": "Decisions/Advisor product UI migration",
+      "restriction": "No approval mutation, no LLM advisor"
+    },
+    {
+      "phase": "Phase F",
+      "name": "Consent/Runtime/Models product UI migration",
+      "restriction": "No capability/provider/runtime activation"
+    },
+    {
+      "phase": "Phase G",
+      "name": "Agents/Settings/Activity Feed product UI migration",
+      "restriction": "No agents/settings productively active"
+    },
+    {
+      "phase": "Phase H",
+      "name": "Visual integration QA + accessibility + regression pack",
+      "restriction": "No product authority change"
+    }
+  ],
+  "requiredBeforeProductUiMigration": [
+    "identify actual frontend entrypoints",
+    "identify static sidepanel files",
+    "identify visual token injection strategy",
+    "define rollback strategy",
+    "define screenshot/HTML QA",
+    "define accessibility checks",
+    "define no-runtime-coupling tests",
+    "define no-source-of-truth-promotion tests",
+    "maintain full suite green"
+  ],
+  "migrationBlockers": [
+    "frontend structure unclear",
+    "no screenshot QA",
+    "no visual regression test",
+    "no product shell ownership",
+    "risk of connecting previews to runtime",
+    "risk of implying capabilities active",
+    "risk of losing blocked-state anatomy"
+  ],
+  "recommendedNextMilestone": "Product UI Entry Point Audit",
+  "doesNotRecommendDirectBroadUiRewrite": true
+}

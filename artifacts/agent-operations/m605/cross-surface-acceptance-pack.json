@@ -1,0 +1,61 @@
+{
+  "acceptancePackId": "NOS-M604-CROSS-SURFACE-ACCEPTANCE",
+  "decisionTarget": "RESEARCH_OS_VISUAL_CONSOLIDATION_READY",
+  "isAcceptanceOnly": true,
+  "usesFixtureDataOnly": true,
+  "acceptanceDimensions": [
+    "Mission-centered clarity",
+    "Governance clarity",
+    "Evidence traceability",
+    "Decision authority",
+    "Advisor non-chatbot pattern",
+    "Consent non-settings pattern",
+    "Runtime local-first safety",
+    "Models policy-first pattern",
+    "Agents non-autonomous pattern",
+    "Settings governance config",
+    "Activity feed human-readable",
+    "Blocked-state explanation",
+    "No source-of-truth promotion",
+    "No runtime coupling",
+    "No filesystem coupling",
+    "No LLM/provider/cloud coupling",
+    "No productive consent"
+  ],
+  "acceptanceCriteria": [
+    "user understands active mission in 3 seconds",
+    "user understands current phase",
+    "user understands what is blocked",
+    "user understands why blocked",
+    "user understands evidence required",
+    "user understands what action is needed",
+    "user understands what remains intentionally disabled",
+    "user understands that previews do not authorize real use",
+    "user understands no File Read/Hash/Listing real exists",
+    "user understands no cloud/Provider Call exists",
+    "user understands advisor is advisory only",
+    "user understands agents are supervised roles, not executors"
+  ],
+  "crossSurfaceFailCases": [
+    "mission hidden behind widgets",
+    "permissions look like casual settings",
+    "runtime looks active when blocked",
+    "model selector implies Provider Call",
+    "advisor looks like chatbot",
+    "agents look autonomous",
+    "evidence looks like attachments",
+    "timeline looks like task checklist",
+    "activity feed looks like console logs",
+    "blocked states say only blocked without explanation"
+  ],
+  "acceptanceDecision": {
+    "ResearchOsVisualBaselineReady": true,
+    "ReadyForProductUiMigrationPlanning": true,
+    "ReadyForProductiveRuntime": false,
+    "ReadyForFilesystemAccess": false,
+    "ReadyForProductiveConsent": false,
+    "ReadyForLlmProviderCalls": false,
+    "ReadyForCloud": false,
+    "ReadyForSourceOfTruthPromotion": false
+  }
+}
