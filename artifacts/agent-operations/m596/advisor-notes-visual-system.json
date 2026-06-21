@@ -1,0 +1,140 @@
+{
+  "milestone": "M594+M595+M596",
+  "advisorSystemId": "advisor-notes-visual-system-m596",
+  "missionRef": "mission-build-local-ai-workspace",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "isVisualOnly": true,
+  "isStaticFixtureOnly": true,
+  "isNoOp": true,
+  "isChatbot": false,
+  "usesChatBubbles": false,
+  "canCallLlm": false,
+  "canCallProvider": false,
+  "canMutateState": false,
+  "canAuthorizeExecution": false,
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canUseCloud": false,
+  "visualRole": [
+    "technical advisor",
+    "architecture critic",
+    "risk auditor",
+    "technical cofounder",
+    "recommendation system",
+    "contradiction and debt reader"
+  ],
+  "noteAnatomy": [
+    "Advisor Note",
+    "Concern",
+    "Potential Impact",
+    "Recommendation",
+    "Evidence",
+    "Severity",
+    "Category",
+    "Status"
+  ],
+  "categories": [
+    "Risk",
+    "Contradiction",
+    "Recommendation",
+    "Critical Question",
+    "Architecture Warning",
+    "Product Warning",
+    "Governance Gap",
+    "Technical Debt",
+    "Evidence Gap"
+  ],
+  "actionsPolicy": {
+    "acknowledge": "preview only",
+    "defer": "preview only",
+    "convertToDecision": "preview only",
+    "requestEvidence": "preview only",
+    "markResolvedInFutureMilestone": "preview only",
+    "canMutateState": false,
+    "canCallLlm": false,
+    "canCallProvider": false,
+    "canAuthorizeExecution": false
+  },
+  "notes": [
+    {
+      "title": "Path jail is still design-only.",
+      "concern": "Path jail is still design-only.",
+      "potentialImpact": "Users may assume File Read access is already safe.",
+      "recommendation": "Keep capability disabled until canonicalization and enforcement are implemented.",
+      "evidence": "Operational Access Audit ADR + Real Access Blocker Closeout.",
+      "severity": "High",
+      "category": "Architecture Warning",
+      "status": "Active"
+    },
+    {
+      "title": "Productive consent remains blocked.",
+      "concern": "Consent visuals could be mistaken for productive authorization.",
+      "potentialImpact": "A user may assume a draft consent record permits capability use.",
+      "recommendation": "Keep consent storage and enforcement separate from visual review.",
+      "evidence": "Productive Consent Design Review + Consent Governance Closeout.",
+      "severity": "High",
+      "category": "Governance Gap",
+      "status": "Active"
+    },
+    {
+      "title": "Evidence previews are not source-of-truth.",
+      "concern": "Static evidence cards can look authoritative.",
+      "potentialImpact": "Teams may confuse fixture refs with productive verification.",
+      "recommendation": "Label previews as static and require a future evidence authority design.",
+      "evidence": "Timeline Evidence Research OS + Static Traceability QA.",
+      "severity": "High",
+      "category": "Evidence Gap",
+      "status": "Active"
+    },
+    {
+      "title": "Visual layer must not imply runtime authority.",
+      "concern": "Decision and Advisor actions can look executable.",
+      "potentialImpact": "Users may read visual actions as real approval or execution.",
+      "recommendation": "Keep every option marked preview-only until a governed milestone exists.",
+      "evidence": "Mission Control Research OS Layout + Static Decision Advisor QA.",
+      "severity": "High",
+      "category": "Safety",
+      "status": "Active"
+    },
+    {
+      "title": "Cloud/provider activity remains disabled.",
+      "concern": "Model and advisor language could imply remote activity.",
+      "potentialImpact": "The product may appear less local-first than intended.",
+      "recommendation": "Keep no-cloud and no-provider disclosures visible.",
+      "evidence": "Access Implementation Checkpoint + Consent Governance Closeout.",
+      "severity": "Medium",
+      "category": "Product Warning",
+      "status": "Acknowledged"
+    },
+    {
+      "title": "Mission Control should not become a generic dashboard.",
+      "concern": "Too many equal cards can flatten mission hierarchy.",
+      "potentialImpact": "The user may miss the active mission and blocked capabilities.",
+      "recommendation": "Preserve one dominant mission focus and three secondary panels.",
+      "evidence": "Visual Reengineering Foundation + Mission Control Research OS Layout.",
+      "severity": "Medium",
+      "category": "Product Warning",
+      "status": "Active"
+    },
+    {
+      "title": "Timeline must not become a simple checklist.",
+      "concern": "A checklist loses governance and traceability context.",
+      "potentialImpact": "Evidence, decisions, commits, and tests become visually disconnected.",
+      "recommendation": "Keep the timeline styled as a research journal and evidence line.",
+      "evidence": "Timeline Research Journal + Static Traceability QA.",
+      "severity": "Medium",
+      "category": "Recommendation",
+      "status": "Active"
+    },
+    {
+      "title": "Advisor must not become a chatbot.",
+      "concern": "Chat bubbles would make the Advisor feel conversational instead of architectural.",
+      "potentialImpact": "Recommendations may be perceived as informal assistant messages.",
+      "recommendation": "Use editorial notes with severity, evidence refs, and concise recommendations.",
+      "evidence": "Advisor Notes Visual System.",
+      "severity": "Medium",
+      "category": "Architecture Warning",
+      "status": "Active"
+    }
+  ]
+}

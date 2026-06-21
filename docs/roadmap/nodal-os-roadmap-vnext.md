@@ -2319,3 +2319,43 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 74%
 - Cloud optional: 10%
+
+## M594+M595+M596 - Decisions / Advisor Research OS Visual Implementation
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Decision Room Research OS as executive governance and risk review surface.
+- Advisor Notes Visual System as editorial technical advisory surface, not chat.
+- Static Decision / Advisor QA pack.
+- Combined static preview under `artifacts/agent-operations/m596`.
+
+Boundaries:
+
+- Decisions and Advisor visuals only.
+- Static fixture data only.
+- No real decision authorization.
+- No approval mutation.
+- No Advisor runtime.
+- No productive source-of-truth promotion.
+- No evidence verification.
+- No operational access.
+- No productive consent changes.
+- No capability enablement.
+- No LLM context, cloud, provider activity, or runtime behavior changes.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 94%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 93%
+- Mission Control UX: 94%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 74%
+- Cloud optional: 10%

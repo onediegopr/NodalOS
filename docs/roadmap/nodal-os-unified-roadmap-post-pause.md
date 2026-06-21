@@ -1415,3 +1415,30 @@ Still blocked:
 - LLM, cloud, provider activity, and runtime governance changes.
 
 Recommended next phase is Decisions / Advisor Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.
+
+## M594+M595+M596 - Decisions / Advisor Research OS Visual Implementation
+
+Decision target: `DECISION_ADVISOR_RESEARCH_OS_READY`.
+
+This block adds:
+
+- Decision Room Research OS.
+- Advisor Notes Visual System.
+- Static Decision / Advisor QA.
+- Combined static Decisions/Advisor preview.
+
+Still blocked:
+
+- Real decision authorization.
+- Approval mutation.
+- Advisor runtime.
+- Runtime changes.
+- Evidence verification.
+- Productive source-of-truth behavior.
+- Productive consent changes.
+- Capability authorization.
+- Operational access.
+- Path jail implementation.
+- LLM, cloud, provider activity, and runtime governance changes.
+
+Recommended next phase is Consent / Runtime / Models Research OS visual implementation, still static and no-op unless a separate governed milestone authorizes productive UI work.

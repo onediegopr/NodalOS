@@ -1,0 +1,196 @@
+{
+  "milestone": "M594+M595+M596",
+  "decisionRoomId": "decision-room-research-os-m596",
+  "missionRef": "mission-build-local-ai-workspace",
+  "workspaceRef": "workspace-local-ai-fixture",
+  "isVisualOnly": true,
+  "isStaticFixtureOnly": true,
+  "isNoOp": true,
+  "canAuthorizeDecision": false,
+  "canMutateApproval": false,
+  "canBecomeProductiveSourceOfTruth": false,
+  "canConnectRuntime": false,
+  "canAccessFilesystem": false,
+  "canVerifyEvidenceProductively": false,
+  "canUseLlm": false,
+  "canUseCloud": false,
+  "canPersistProductiveConsent": false,
+  "canEnableCapability": false,
+  "concept": [
+    "executive decision room",
+    "governance record",
+    "risk evaluation board",
+    "evidence-backed decision system",
+    "human authority surface"
+  ],
+  "cardAnatomy": [
+    "Decision",
+    "Recommendation",
+    "Risk",
+    "Status",
+    "Evidence",
+    "Linked Mission",
+    "Commit / Artifact Ref",
+    "User Options"
+  ],
+  "decisionStates": [
+    "Recommended defer",
+    "Blocked",
+    "Needs evidence",
+    "Needs audit",
+    "Accepted as governance baseline",
+    "Intentionally disabled"
+  ],
+  "optionsPolicy": {
+    "optionsAreNoOp": true,
+    "optionsArePreviewOnly": true,
+    "canApproveProductively": false,
+    "canDeferProductively": false,
+    "canRejectProductively": false,
+    "canRequestEvidenceProductively": false
+  },
+  "decisions": [
+    {
+      "decision": "Enable productive consent storage?",
+      "recommendation": "Do not enable yet.",
+      "risk": "High",
+      "status": "Recommended defer",
+      "evidence": "ADR + Test Matrix + Closeout",
+      "linkedMission": "M573-M578",
+      "commitArtifactRef": "9c80e72 / 613351b",
+      "userOptions": [
+        "Approve - preview only",
+        "Defer - preview only",
+        "Reject - preview only",
+        "Request more evidence - preview only"
+      ],
+      "blockedExplanation": {
+        "why": "Storage remains governance design only.",
+        "missing": "Productive storage ADR review, boundary tests, rollback plan, and security audit.",
+        "evidenceRequired": "Storage ADR, consent adversarial matrix, boundary pack, and audit readiness.",
+        "userActionNeeded": "Review a future explicit storage milestone.",
+        "intentionallyDisabled": "Consent persistence, consent enforcement, capability authorization, and operational access."
+      }
+    },
+    {
+      "decision": "Enable real filesystem access?",
+      "recommendation": "Reject for this phase.",
+      "risk": "High",
+      "status": "Blocked",
+      "evidence": "Operational Access Audit ADR + Real Access Blocker Closeout",
+      "linkedMission": "M558-M569",
+      "commitArtifactRef": "61d0cbe / d7fac2a",
+      "userOptions": [
+        "Approve - preview only",
+        "Defer - preview only",
+        "Reject - preview only",
+        "Request more evidence - preview only"
+      ],
+      "blockedExplanation": {
+        "why": "Operational access is intentionally disabled.",
+        "missing": "Productive consent, audited path jail, no-mutation proof, cancellation proof, and evidence/timeline emission.",
+        "evidenceRequired": "ADR, adversarial tests, audit checklist, and full suite evidence.",
+        "userActionNeeded": "Approve a future explicit milestone after audit, not here.",
+        "intentionallyDisabled": "File Read, File Hash, indexing, LLM context, cloud, provider activity, and runtime."
+      }
+    },
+    {
+      "decision": "Allow File Read capability?",
+      "recommendation": "Do not enable.",
+      "risk": "High",
+      "status": "Intentionally disabled",
+      "evidence": "Per-Capability Gates + Fail-Closed Acceptance Pack",
+      "linkedMission": "M561-M566",
+      "commitArtifactRef": "ee414635 / 0793a0f",
+      "userOptions": [
+        "Approve - preview only",
+        "Defer - preview only",
+        "Reject - preview only",
+        "Request more evidence - preview only"
+      ],
+      "blockedExplanation": {
+        "why": "The capability is represented only as a disabled gate.",
+        "missing": "Per-capability audit, consent enforcement, dependency gates, and path jail implementation.",
+        "evidenceRequired": "Capability audit checklist, fail-closed acceptance, and adversarial tests.",
+        "userActionNeeded": "Keep the disabled gate visible and defer enablement.",
+        "intentionallyDisabled": "File Read, File Hash, indexing, representation build, LLM context, cloud, and runtime."
+      }
+    },
+    {
+      "decision": "Build LLM context from workspace?",
+      "recommendation": "Reject for this phase.",
+      "risk": "High",
+      "status": "Blocked",
+      "evidence": "Real Scan Readiness ADR + Access Implementation Checkpoint",
+      "linkedMission": "M552-M572",
+      "commitArtifactRef": "80b883d / 56c02b4",
+      "userOptions": [
+        "Approve - preview only",
+        "Defer - preview only",
+        "Reject - preview only",
+        "Request more evidence - preview only"
+      ],
+      "blockedExplanation": {
+        "why": "Workspace representation and LLM context are not governed for productive use.",
+        "missing": "Redaction enforcement, secret detection, exclusion enforcement, consent, and provider policy.",
+        "evidenceRequired": "Separate governance, audit checklist, adversarial tests, and policy acceptance.",
+        "userActionNeeded": "Defer until a dedicated governed milestone exists.",
+        "intentionallyDisabled": "Representation build, LLM context, provider activity, cloud, and runtime."
+      }
+    },
+    {
+      "decision": "Promote synthetic baseline to real scan?",
+      "recommendation": "Do not promote.",
+      "risk": "High",
+      "status": "Needs audit",
+      "evidence": "Real Scan Readiness ADR + Synthetic Policy Regression Pack",
+      "linkedMission": "M552-M560",
+      "commitArtifactRef": "80b883d / 61d0cbe",
+      "userOptions": [
+        "Approve - preview only",
+        "Defer - preview only",
+        "Reject - preview only",
+        "Request more evidence - preview only"
+      ],
+      "blockedExplanation": {
+        "why": "Synthetic readiness does not authorize operational behavior.",
+        "missing": "Audited path jail, consent enforcement, no-mutation proof, cancellation proof, and redaction enforcement.",
+        "evidenceRequired": "Operational audit, regression pack, full suite, and adversarial scenarios.",
+        "userActionNeeded": "Keep this as a governance baseline only.",
+        "intentionallyDisabled": "Operational scan, content access, fingerprinting, indexing, and LLM context."
+      }
+    },
+    {
+      "decision": "Accept Visual Reengineering Foundation?",
+      "recommendation": "Accept as governance baseline.",
+      "risk": "Medium",
+      "status": "Accepted as governance baseline",
+      "evidence": "Visual Audit + Design System + Migration Plan",
+      "linkedMission": "M582-M584",
+      "commitArtifactRef": "c0e8dd1",
+      "userOptions": [
+        "Approve - preview only",
+        "Defer - preview only",
+        "Reject - preview only",
+        "Request more evidence - preview only"
+      ],
+      "blockedExplanation": null
+    },
+    {
+      "decision": "Keep Advisor warning active?",
+      "recommendation": "Keep active.",
+      "risk": "Medium",
+      "status": "Needs Review",
+      "evidence": "Timeline Evidence Research OS + Mission Control Research OS Layout",
+      "linkedMission": "M588-M593",
+      "commitArtifactRef": "95f2a68 / c05e6c7",
+      "userOptions": [
+        "Approve - preview only",
+        "Defer - preview only",
+        "Reject - preview only",
+        "Request more evidence - preview only"
+      ],
+      "blockedExplanation": null
+    }
+  ]
+}

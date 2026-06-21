@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NODAL OS Decision Advisor Research OS Preview</title>
+  <style>
+    :root {
+      --nos-color-bg: #F5F3EE;
+      --nos-color-bg-muted: #F2F0EA;
+      --nos-color-bg-soft: #EFECE6;
+      --nos-color-text: #171717;
+      --nos-color-text-muted: #5C5C5C;
+      --nos-color-border: #DDD8D0;
+      --nos-color-accent: #5B6CFF;
+      --nos-color-accent-alt: #7265FF;
+      --nos-color-success: #3D8F5A;
+      --nos-color-warning: #D97706;
+      --nos-color-risk: #E67E22;
+      --nos-color-danger: #C2410C;
+      --nos-font-heading: Georgia, "Times New Roman", serif;
+      --nos-font-ui: Inter, Geist, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--nos-color-text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(91, 108, 255, 0.13), transparent 27%),
+        radial-gradient(circle at 88% 10%, rgba(194, 65, 12, 0.08), transparent 25%),
+        linear-gradient(180deg, var(--nos-color-bg) 0%, var(--nos-color-bg-muted) 58%, var(--nos-color-bg-soft) 100%);
+      font-family: var(--nos-font-ui);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 26px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .hero,
+    .section,
+    .decision-card,
+    .advisor-note,
+    .qa-card {
+      border: 1px solid var(--nos-color-border);
+      background: rgba(245, 243, 238, 0.80);
+      box-shadow: 0 22px 70px rgba(23, 23, 23, 0.075);
+    }
+
+    .hero {
+      border-radius: 36px;
+      padding: clamp(34px, 5vw, 62px);
+    }
+
+    .eyebrow {
+      color: var(--nos-color-accent-alt);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: var(--nos-font-heading);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+    }
+
+    h1 {
+      max-width: 940px;
+      margin: 10px 0 14px;
+      font-size: clamp(54px, 8vw, 106px);
+      line-height: 0.9;
+    }
+
+    h2 { margin: 0 0 14px; font-size: 31px; }
+    h3 { margin: 0 0 8px; font-size: 22px; }
+
+    p {
+      margin: 0;
+      color: var(--nos-color-text-muted);
+      line-height: 1.55;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+      gap: 22px;
+      margin-top: 22px;
+    }
+
+    .section {
+      border-radius: 28px;
+      padding: 24px;
+      background: rgba(239, 236, 230, 0.76);
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .decision-card,
+    .advisor-note,
+    .qa-card {
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(245, 243, 238, 0.78);
+    }
+
+    .decision-card.high,
+    .advisor-note.high {
+      border-color: rgba(194, 65, 12, 0.34);
+      background: rgba(194, 65, 12, 0.065);
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 6px 9px;
+      background: rgba(91, 108, 255, 0.11);
+      color: var(--nos-color-accent-alt);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge.blocked { background: rgba(194, 65, 12, 0.11); color: var(--nos-color-danger); }
+    .badge.audit { background: rgba(217, 119, 6, 0.12); color: var(--nos-color-warning); }
+    .badge.baseline { background: rgba(61, 143, 90, 0.12); color: var(--nos-color-success); }
+
+    .facts {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .fact {
+      display: grid;
+      grid-template-columns: 122px minmax(0, 1fr);
+      gap: 12px;
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    .fact b { color: var(--nos-color-text); }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .option {
+      border: 1px solid var(--nos-color-border);
+      border-radius: 999px;
+      padding: 8px 10px;
+      background: rgba(245, 243, 238, 0.74);
+      color: var(--nos-color-text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .option::after {
+      content: " / preview only";
+      color: var(--nos-color-text-muted);
+      font-weight: 500;
+    }
+
+    .qa {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .qa-card {
+      color: var(--nos-color-text-muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1080px) {
+      .grid,
+      .qa {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <span>NODAL OS / Decision Room + Advisor Notes</span>
+      <span>Static fixture preview / no decision authority</span>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Decision / Advisor Research OS</div>
+      <h1>Executive Decisions, Strategic Advisor Notes</h1>
+      <p>Decision Room is an evidence-backed governance surface where human authority stays explicit. Advisor Notes are editorial risk notes, not chat bubbles and not an assistant runtime.</p>
+    </section>
+
+    <section class="grid">
+      <article class="section">
+        <div class="eyebrow">M594 Decision Room Research OS</div>
+        <h2>Decision Room</h2>
+        <div class="stack">
+          <article class="decision-card high">
+            <h3>Enable productive consent storage?</h3>
+            <div class="badge-row"><span class="badge blocked">Recommended defer</span><span class="badge blocked">High risk</span></div>
+            <div class="facts">
+              <div class="fact"><b>Recommendation</b><span>Do not enable yet.</span></div>
+              <div class="fact"><b>Status</b><span>Recommended defer</span></div>
+              <div class="fact"><b>Evidence</b><span>ADR + Test Matrix + Closeout</span></div>
+              <div class="fact"><b>Mission</b><span>M573-M578</span></div>
+              <div class="fact"><b>Commit</b><span>9c80e72 / 613351b</span></div>
+              <div class="fact"><b>Why</b><span>Storage remains governance design only.</span></div>
+              <div class="fact"><b>Missing</b><span>Storage ADR review, boundary tests, rollback plan, security audit.</span></div>
+              <div class="fact"><b>Disabled</b><span>Consent persistence, consent enforcement, capability authorization.</span></div>
+            </div>
+            <div class="options"><span class="option">Approve</span><span class="option">Defer</span><span class="option">Reject</span><span class="option">Request more evidence</span></div>
+          </article>
+
+          <article class="decision-card high">
+            <h3>Enable real filesystem access?</h3>
+            <div class="badge-row"><span class="badge blocked">Blocked</span><span class="badge audit">Needs audit</span></div>
+            <div class="facts">
+              <div class="fact"><b>Recommendation</b><span>Reject for this phase.</span></div>
+              <div class="fact"><b>Evidence</b><span>Operational Access Audit ADR + Real Access Blocker Closeout</span></div>
+              <div class="fact"><b>Mission</b><span>M558-M569</span></div>
+              <div class="fact"><b>Why</b><span>Operational access is intentionally disabled.</span></div>
+              <div class="fact"><b>Action</b><span>Approve a future explicit milestone after audit, not here.</span></div>
+              <div class="fact"><b>Disabled</b><span>File Read, File Hash, indexing, LLM context, cloud, provider activity, runtime.</span></div>
+            </div>
+            <div class="options"><span class="option">Approve</span><span class="option">Defer</span><span class="option">Reject</span><span class="option">Request more evidence</span></div>
+          </article>
+
+          <article class="decision-card">
+            <h3>Accept Visual Reengineering Foundation?</h3>
+            <div class="badge-row"><span class="badge baseline">Accepted as governance baseline</span><span class="badge">Medium risk</span></div>
+            <div class="facts">
+              <div class="fact"><b>Recommendation</b><span>Accept as governance baseline.</span></div>
+              <div class="fact"><b>Evidence</b><span>Visual Audit + Design System + Migration Plan</span></div>
+              <div class="fact"><b>Mission</b><span>M582-M584</span></div>
+              <div class="fact"><b>Commit</b><span>c0e8dd1</span></div>
+            </div>
+            <div class="options"><span class="option">Approve</span><span class="option">Defer</span><span class="option">Reject</span><span class="option">Request more evidence</span></div>
+          </article>
+        </div>
+      </article>
+
+      <article class="section">
+        <div class="eyebrow">M595 Advisor Notes Visual System</div>
+        <h2>Advisor Notes</h2>
+        <div class="stack">
+          <article class="advisor-note high">
+            <h3>Path jail is still design-only.</h3>
+            <div class="badge-row"><span class="badge blocked">High</span><span class="badge">Architecture Warning</span><span class="badge">Active</span></div>
+            <div class="facts">
+              <div class="fact"><b>Concern</b><span>Path jail is still design-only.</span></div>
+              <div class="fact"><b>Impact</b><span>Users may assume File Read access is already safe.</span></div>
+              <div class="fact"><b>Recommend</b><span>Keep capability disabled until canonicalization and enforcement are implemented.</span></div>
+              <div class="fact"><b>Evidence</b><span>Operational Access Audit ADR + Real Access Blocker Closeout.</span></div>
+            </div>
+            <div class="options"><span class="option">acknowledge</span><span class="option">defer</span><span class="option">convert to decision</span><span class="option">request evidence</span></div>
+          </article>
+
+          <article class="advisor-note high">
+            <h3>Visual layer must not imply runtime authority.</h3>
+            <div class="badge-row"><span class="badge blocked">High</span><span class="badge">Safety</span><span class="badge">Active</span></div>
+            <div class="facts">
+              <div class="fact"><b>Concern</b><span>Decision and Advisor actions can look executable.</span></div>
+              <div class="fact"><b>Impact</b><span>Users may read visual actions as real approval or execution.</span></div>
+              <div class="fact"><b>Recommend</b><span>Keep every option marked preview-only until a governed milestone exists.</span></div>
+              <div class="fact"><b>Evidence</b><span>Mission Control Research OS Layout + Static Decision Advisor QA.</span></div>
+            </div>
+            <div class="options"><span class="option">acknowledge</span><span class="option">defer</span><span class="option">convert to decision</span><span class="option">request evidence</span></div>
+          </article>
+
+          <article class="advisor-note">
+            <h3>Advisor must not become a chatbot.</h3>
+            <div class="badge-row"><span class="badge">Medium</span><span class="badge">Architecture Warning</span><span class="badge">Active</span></div>
+            <div class="facts">
+              <div class="fact"><b>Concern</b><span>Chat bubbles would make Advisor feel conversational instead of architectural.</span></div>
+              <div class="fact"><b>Impact</b><span>Recommendations may be perceived as informal assistant messages.</span></div>
+              <div class="fact"><b>Recommend</b><span>Use editorial notes with severity, evidence refs, and concise recommendations.</span></div>
+              <div class="fact"><b>Evidence</b><span>Advisor Notes Visual System.</span></div>
+            </div>
+            <div class="options"><span class="option">acknowledge</span><span class="option">defer</span><span class="option">convert to decision</span><span class="option">request evidence</span></div>
+          </article>
+        </div>
+      </article>
+    </section>
+
+    <section class="qa">
+      <article class="qa-card">Decisions are evidence-backed governance records, not generic approval modals.</article>
+      <article class="qa-card">Advisor Notes are editorial risk notes, not chatbot bubbles.</article>
+      <article class="qa-card">All options are no-op preview actions and cannot authorize runtime, capability, filesystem, LLM, or cloud.</article>
+    </section>
+  </main>
+</body>
+</html>

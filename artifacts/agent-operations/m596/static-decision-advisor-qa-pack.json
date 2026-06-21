@@ -1,0 +1,52 @@
+{
+  "qaPackId": "static-decision-advisor-qa-pack-m596",
+  "milestone": "M594+M595+M596",
+  "isStaticQaOnly": true,
+  "decisionQaChecklist": [
+    "decisions are not generic approval modals",
+    "decisions show recommendation/risk/evidence/options",
+    "decisions explain blocked/high-risk states",
+    "decisions link to mission/evidence/commit/test refs",
+    "user options are no-op in this block",
+    "decisions do not authorize runtime/capability/filesystem/LLM/cloud",
+    "decision room feels executive/governance-oriented"
+  ],
+  "advisorQaChecklist": [
+    "advisor is not chatbot",
+    "no chat bubbles",
+    "advisor notes include concern/impact/recommendation/evidence/severity/category/status",
+    "advisor notes include architecture/safety/product/governance examples",
+    "advisor actions are no-op",
+    "advisor does not call LLM/provider",
+    "advisor does not mutate state",
+    "advisor does not imply execution authority"
+  ],
+  "staticIntegrationQa": {
+    "confirmsNoRuntime": true,
+    "confirmsNoFilesystem": true,
+    "confirmsNoEvidenceVerificationReal": true,
+    "confirmsNoLlmProviderCloud": true,
+    "confirmsNoProductiveConsent": true,
+    "confirmsNoCapabilityEnablement": true,
+    "confirmsNoSourceOfTruthPromotion": true,
+    "confirmsStaticFixtureOnly": true
+  },
+  "acceptanceCriteria": [
+    "Decision Room artifact exists",
+    "Advisor Notes artifact exists",
+    "Static Decision/Advisor QA artifact exists",
+    "Static preview exists",
+    "Mandatory decision and advisor examples represented",
+    "Static previews contain no external resources or analytics surfaces",
+    "Roadmap updated"
+  ],
+  "readyForStaticDecisionAdvisorReview": true,
+  "readyForProductiveDecisions": false,
+  "readyForProductiveAdvisor": false,
+  "readyForApprovalMutation": false,
+  "readyForRuntime": false,
+  "readyForFilesystemAccess": false,
+  "readyForEvidenceVerification": false,
+  "readyForLlmContext": false,
+  "readyForCloud": false
+}
