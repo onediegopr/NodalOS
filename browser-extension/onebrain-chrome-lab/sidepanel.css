@@ -40,10 +40,10 @@
 body {
   min-width: 390px;
   margin: 0;
-  color: var(--ink);
+  color: var(--nos-color-text, #171717);
   background:
     linear-gradient(90deg, rgba(16, 20, 19, 0.04) 1px, transparent 1px),
-    linear-gradient(180deg, #f7f8f4 0%, var(--bg) 100%);
+    linear-gradient(180deg, var(--nos-color-bg-muted, #F2F0EA) 0%, var(--nos-color-bg, #F5F3EE) 100%);
   background-size: 22px 22px, auto;
   font-family: "Aptos", "Segoe UI", sans-serif;
 }
@@ -63,8 +63,8 @@ textarea {
   justify-content: space-between;
   gap: 12px;
   padding: 12px;
-  background: rgba(249, 250, 247, 0.96);
-  border-bottom: 1px solid var(--line);
+  background: var(--nos-color-bg-muted, #F2F0EA);
+  border-bottom: 1px solid var(--nos-color-border, #DDD8D0);
   backdrop-filter: blur(14px);
 }
 
@@ -77,7 +77,7 @@ textarea {
 
 .brand-block p {
   margin: 5px 0 0;
-  color: var(--muted);
+  color: var(--nos-color-text-muted, #5C5C5C);
   font-size: 12px;
 }
 
@@ -100,8 +100,8 @@ textarea {
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
   padding: 8px 12px;
-  background: rgba(249, 250, 247, 0.96);
-  border-bottom: 1px solid var(--line);
+  background: var(--nos-color-bg-muted, #F2F0EA);
+  border-bottom: 1px solid var(--nos-color-border, #DDD8D0);
   backdrop-filter: blur(14px);
 }
 
@@ -166,10 +166,10 @@ main {
 }
 
 .surface {
-  border: 1px solid var(--line);
+  border: 1px solid var(--nos-color-border, #DDD8D0);
   border-radius: 8px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--nos-color-surface, #F8F6F1);
   box-shadow: 0 10px 22px rgba(23, 29, 27, 0.06);
 }
 
@@ -186,7 +186,7 @@ label {
   display: grid;
   gap: 6px;
   margin: 0 0 10px;
-  color: var(--muted);
+  color: var(--nos-color-text-muted, #5C5C5C);
   font-size: 12px;
   font-weight: 700;
 }
@@ -194,11 +194,11 @@ label {
 textarea,
 input {
   width: 100%;
-  border: 1px solid var(--line);
+  border: 1px solid var(--nos-color-border, #DDD8D0);
   border-radius: 8px;
   padding: 10px;
-  background: #fffefa;
-  color: var(--ink);
+  background: var(--nos-color-surface, #F8F6F1);
+  color: var(--nos-color-text, #171717);
 }
 
 textarea {
@@ -270,7 +270,7 @@ dl {
 }
 
 dt {
-  color: var(--muted);
+  color: var(--nos-color-text-muted, #5C5C5C);
   font-size: 12px;
 }
 
@@ -585,10 +585,10 @@ pre {
 .candidate,
 .recipe-item,
 .log-item {
-  border: 1px solid var(--line);
+  border: 1px solid var(--nos-color-border, #DDD8D0);
   border-radius: 8px;
   padding: 8px;
-  background: #fbfcf8;
+  background: var(--nos-color-bg, #F5F3EE);
 }
 
 .candidate + .candidate,
@@ -608,7 +608,7 @@ pre {
 .candidate-reason,
 .recipe-meta,
 .muted {
-  color: var(--muted);
+  color: var(--nos-color-text-muted, #5C5C5C);
   font-size: 11px;
 }
 
@@ -666,10 +666,10 @@ pre {
 }
 
 details {
-  border: 1px solid var(--line);
+  border: 1px solid var(--nos-color-border, #DDD8D0);
   border-radius: 8px;
   padding: 8px;
-  background: #fffefa;
+  background: var(--nos-color-surface, #F8F6F1);
 }
 
 details + details {
