@@ -1547,3 +1547,31 @@ Still blocked:
 - LLM context, cloud, Provider Calls, model execution, and productive consent.
 
 Recommended next phase is Sidepanel Research OS Migration Plan or Visual Regression QA Pack, not direct broad UI rewrite.
+
+## M609+M610+M611 - Sidepanel Research OS Migration Plan / Rollback Strategy / Visual Regression Fixtures
+
+Decision target: `SIDEPANEL_RESEARCH_OS_MIGRATION_PLAN_READY`.
+
+This block adds:
+
+- Sidepanel Research OS Migration Plan.
+- Rollback / Safety Strategy.
+- Sidepanel Visual Regression Fixtures.
+- Sidepanel Visual QA Baseline.
+- Static sidepanel migration preview.
+
+Still blocked:
+
+- Sidepanel product UI migration.
+- Product UI migration.
+- Broad UI rewrite.
+- Product source-of-truth promotion.
+- Productive settings persistence.
+- Capability authorization.
+- Runtime behavior.
+- Evidence verification.
+- Operational access.
+- Path jail implementation.
+- LLM context, cloud, Provider Calls, model execution, and productive consent.
+
+Recommended next phase is Sidepanel Visual Token Integration Dry Run Plan, not direct product UI migration.

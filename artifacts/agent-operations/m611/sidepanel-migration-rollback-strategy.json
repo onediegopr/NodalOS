@@ -1,0 +1,79 @@
+{
+  "strategyId": "M610-SIDEPANEL-MIGRATION-ROLLBACK-SAFETY",
+  "missionRef": "M609-M611",
+  "isRollbackPlanOnly": true,
+  "futureFilesToTouch": [
+    "browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js",
+    "browser-extension/onebrain-chrome-lab/manifest.json"
+  ],
+  "backupExpectations": [
+    "clean working tree before migration",
+    "capture pre-migration static preview",
+    "capture post-migration static preview",
+    "keep sidepanel behavior unchanged during visual token phase"
+  ],
+  "commitGranularity": [
+    "token integration commit",
+    "HTML structure commit",
+    "CSS visual hierarchy commit",
+    "behavior-adjacent commit only if separately authorized",
+    "QA fixture update commit"
+  ],
+  "revertPlan": [
+    "stop migration on safety fail condition",
+    "revert the scoped migration commit",
+    "restore previous sidepanel visual baseline",
+    "rerun filter tests",
+    "rerun full suite",
+    "document failure reason before retry"
+  ],
+  "behaviorPreservationRequirements": [
+    "global stop remains visible",
+    "human intervention remains visible",
+    "consent safety surfaces remain visible",
+    "runtime state must not appear active unless existing state says so",
+    "copy must not imply new authority"
+  ],
+  "safetyGuardChecks": [
+    "no-runtime-coupling checks",
+    "no Provider Calls checks",
+    "no cloud checks",
+    "no filesystem checks",
+    "no productive consent checks",
+    "no source-of-truth promotion checks",
+    "no capability enablement checks"
+  ],
+  "migrationSafetyGates": [
+    "working tree clean",
+    "branch confirmed",
+    "full suite green",
+    "sidepanel files audited",
+    "visual baseline captured",
+    "rollback plan present",
+    "no-runtime-coupling tests present",
+    "static/no-op markers present",
+    "source-of-truth boundaries present"
+  ],
+  "safetyFailConditions": [
+    "sidepanel JS calls runtime unexpectedly",
+    "Provider/cloud/network calls introduced",
+    "filesystem APIs introduced",
+    "capability enablement implied",
+    "productive consent persisted",
+    "approval mutation introduced",
+    "previews become source-of-truth",
+    "blocked-state anatomy removed",
+    "Advisor becomes chatbot",
+    "Activity Feed becomes raw log console",
+    "Models appears to enable Provider Calls",
+    "Runtime appears active when blocked"
+  ],
+  "decision": {
+    "RollbackStrategyReady": true,
+    "ReadyForProductUiMigrationExecution": false,
+    "ReadyForRuntimeCoupling": false,
+    "ReadyForCapabilityEnablement": false
+  }
+}

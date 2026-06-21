@@ -1,0 +1,151 @@
+{
+  "planId": "M609-SIDEPANEL-RESEARCH-OS-MIGRATION-PLAN",
+  "missionRef": "M609-M611",
+  "isPlanOnly": true,
+  "canModifySidepanelProductUi": false,
+  "canConnectRuntime": false,
+  "canEnableCapabilities": false,
+  "canPromoteSourceOfTruth": false,
+  "sidepanelStructureAudit": {
+    "sidepanelHtml": {
+      "path": "browser-extension/onebrain-chrome-lab/sidepanel.html",
+      "structure": [
+        "app header with global stop",
+        "top mode tabs for Operar, Aprender, Recetas, Runtime",
+        "human intervention banner",
+        "operate panel with instruction input, handoff, consent, status, target resolution, verification, timeline",
+        "learn panel with recipe draft controls",
+        "recipes panel with recipe editor and runner controls",
+        "runtime panel with connection status, local engine diagnostics, model status, extension status, run status, and logs"
+      ],
+      "riskNotes": [
+        "operate controls can look executable",
+        "consent buttons can look authorizing",
+        "runtime panel can look active",
+        "logs can dominate the visual hierarchy"
+      ]
+    },
+    "sidepanelCss": {
+      "path": "browser-extension/onebrain-chrome-lab/sidepanel.css",
+      "structure": [
+        "root palette",
+        "body background",
+        "sticky header",
+        "tab navigation",
+        "surface cards",
+        "grid layout",
+        "timeline components",
+        "handoff and consent surfaces",
+        "recipe and log components"
+      ],
+      "ownership": "visual styling candidate; must be migrated with scoped tokens first"
+    },
+    "sidepanelJs": {
+      "path": "browser-extension/onebrain-chrome-lab/sidepanel.js",
+      "responsibilities": [
+        "local UI state",
+        "tab rendering",
+        "button handlers",
+        "message dispatch through post path",
+        "runtime connection UI",
+        "learning and recipe UI",
+        "handoff and consent UI",
+        "diagnostic rendering"
+      ],
+      "riskNotes": [
+        "behavior-adjacent file",
+        "do not modify during visual-only token phase",
+        "future changes require no-runtime-coupling tests"
+      ]
+    },
+    "manifest": {
+      "path": "browser-extension/onebrain-chrome-lab/manifest.json",
+      "relevantReferences": [
+        "Manifest V3",
+        "side panel default path references sidepanel.html",
+        "broad host permissions",
+        "extension storage permission",
+        "local transport allowed by policy"
+      ],
+      "riskNotes": [
+        "extension manifest must not be changed by visual migration without separate review"
+      ]
+    }
+  },
+  "migrationPhases": [
+    {
+      "phase": "Phase 1",
+      "name": "Tokens + shell + background + typography",
+      "scope": "visual-only token injection plan"
+    },
+    {
+      "phase": "Phase 2",
+      "name": "Sidebar + Mission Control hero",
+      "scope": "mission-first shell without behavior changes"
+    },
+    {
+      "phase": "Phase 3",
+      "name": "Timeline/Evidence previews",
+      "scope": "mission journal and research archive patterns"
+    },
+    {
+      "phase": "Phase 4",
+      "name": "Decisions/Advisor previews",
+      "scope": "executive decisions and advisory note cards"
+    },
+    {
+      "phase": "Phase 5",
+      "name": "Consent/Runtime/Models previews",
+      "scope": "governance console, safety surface, policy surface"
+    },
+    {
+      "phase": "Phase 6",
+      "name": "Agents/Settings/Activity Feed previews",
+      "scope": "supervised roles, governance configuration, mission feed"
+    },
+    {
+      "phase": "Phase 7",
+      "name": "Blocked states + empty states + accessibility polish",
+      "scope": "blocked-state anatomy, responsive fit, contrast, focus"
+    }
+  ],
+  "allowedChanges": [
+    "CSS tokens",
+    "layout shell",
+    "semantic HTML structure",
+    "static fixture sections",
+    "no-op buttons with explicit labels",
+    "blocked-state anatomy",
+    "local-only visual indicators",
+    "accessibility attributes",
+    "visual hierarchy",
+    "copy and microcopy",
+    "scoped class naming cleanup"
+  ],
+  "forbiddenChanges": [
+    "Runtime calls",
+    "Filesystem calls",
+    "Provider Calls",
+    "Network calls",
+    "Cloud calls",
+    "Capability enablement",
+    "Productive consent",
+    "Source-of-truth promotion",
+    "Approval mutation",
+    "Event routing changes",
+    "Async dispatch orchestration",
+    "Direct browser executor references",
+    "Broad JS behavior rewrite",
+    "Removing existing safety guards",
+    "Hiding blocked-state explanations"
+  ],
+  "decision": {
+    "ReadyForSidepanelMigrationPlanning": true,
+    "ReadyForSidepanelProductUiModification": false,
+    "ReadyForBroadRewrite": false,
+    "ReadyForRuntimeCoupling": false,
+    "ReadyForFilesystemCoupling": false,
+    "ReadyForLlmProviderCoupling": false,
+    "ReadyForProductiveConsentCoupling": false
+  }
+}

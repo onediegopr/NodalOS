@@ -1,0 +1,31 @@
+{
+  "baselineId": "M611-SIDEPANEL-VISUAL-QA-BASELINE",
+  "missionRef": "M609-M611",
+  "isBaselineOnly": true,
+  "visualQaBaseline": [
+    "Research OS warm editorial style",
+    "mission-first hierarchy",
+    "no generic SaaS dashboard",
+    "no dark technical control center as default",
+    "no raw console main UI",
+    "no chatbot advisor",
+    "no generic settings forms",
+    "no autonomous agents",
+    "no provider selector implying calls",
+    "no runtime active implication",
+    "no file access availability implication"
+  ],
+  "acceptanceNotes": [
+    "Mission Control remains dominant.",
+    "Sidepanel shell can be compact but must not become cramped.",
+    "Runtime and model panels must read as blocked safety surfaces.",
+    "Consent remains governance, not casual settings.",
+    "Activity Feed remains mission-readable."
+  ],
+  "decision": {
+    "VisualQaBaselineReady": true,
+    "ReadyForSidepanelProductUiModification": false,
+    "ReadyForRuntimeCoupling": false,
+    "ReadyForCapabilityEnablement": false
+  }
+}

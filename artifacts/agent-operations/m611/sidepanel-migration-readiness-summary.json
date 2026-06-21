@@ -1,0 +1,31 @@
+{
+  "summaryId": "M611-SIDEPANEL-MIGRATION-READINESS-SUMMARY",
+  "missionRef": "M609-M611",
+  "decisionTarget": "SIDEPANEL_RESEARCH_OS_MIGRATION_PLAN_READY",
+  "isPlanOnly": true,
+  "canModifySidepanelProductUi": false,
+  "canConnectRuntime": false,
+  "canConnectFilesystem": false,
+  "canConnectLlmProvider": false,
+  "canEnableCapabilities": false,
+  "canPersistProductiveConsent": false,
+  "canPromoteSourceOfTruth": false,
+  "sidepanelProductFilesModified": false,
+  "migrationPlanReady": true,
+  "rollbackStrategyReady": true,
+  "visualRegressionFixturesReady": true,
+  "visualQaBaselineReady": true,
+  "recommendedNextMilestone": "Sidepanel Visual Token Integration Dry Run Plan",
+  "closeout": {
+    "M609SidepanelResearchOsMigrationPlan": "ready",
+    "M610RollbackSafetyStrategy": "ready",
+    "M611VisualRegressionFixturesQaBaseline": "ready",
+    "SidepanelMigrationImplemented": false,
+    "ProductUiMigrationImplemented": false,
+    "RuntimeConnected": false,
+    "FilesystemFeatureIntroduced": false,
+    "EvidenceVerificationIntroduced": false,
+    "LlmProviderCloudIntroduced": false,
+    "ProductiveConsentIntroduced": false
+  }
+}
