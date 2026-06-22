@@ -1,0 +1,66 @@
+{
+  "milestone": "M625",
+  "runbookId": "manual-extension-qa-runbook-m625",
+  "purpose": "Enable manual installed-extension QA before any HTML, manifest, or JS milestone.",
+  "platform": "Windows",
+  "extensionPath": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit\\browser-extension\\onebrain-chrome-lab",
+  "steps": [
+    {
+      "step": 1,
+      "title": "Open Chrome extension management",
+      "instruction": "Open Chrome and navigate to chrome://extensions."
+    },
+    {
+      "step": 2,
+      "title": "Enable Developer mode",
+      "instruction": "Turn on Developer mode in the top-right of the extensions page."
+    },
+    {
+      "step": 3,
+      "title": "Load unpacked",
+      "instruction": "Click Load unpacked and select C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit\\browser-extension\\onebrain-chrome-lab."
+    },
+    {
+      "step": 4,
+      "title": "Open the sidepanel",
+      "instruction": "Pin or open the extension action, then open the Chrome side panel for the NODAL OS lab extension."
+    },
+    {
+      "step": 5,
+      "title": "Open DevTools for the sidepanel",
+      "instruction": "Inspect the sidepanel page if Chrome exposes the extension view, then check the console for critical errors."
+    },
+    {
+      "step": 6,
+      "title": "Validate tabs",
+      "instruction": "Open Operar, Aprender, Recetas, and Runtime. Capture one screenshot per tab."
+    },
+    {
+      "step": 7,
+      "title": "Validate narrow width",
+      "instruction": "Resize the sidepanel or browser window to approximately 420px wide and confirm STOP remains visible."
+    },
+    {
+      "step": 8,
+      "title": "Validate keyboard focus",
+      "instruction": "Use Tab and Shift+Tab to move through controls. Confirm the focus ring is visible and not hidden."
+    },
+    {
+      "step": 9,
+      "title": "Validate governance surfaces",
+      "instruction": "Confirm consent, handoff, human banner, runtime, model, and blocked-state surfaces read as governed and non-active."
+    },
+    {
+      "step": 10,
+      "title": "Validate logs",
+      "instruction": "Confirm log pane and preformatted blocks read as auxiliary diagnostics, not product evidence or source of truth."
+    }
+  ],
+  "doNotDo": [
+    "Do not edit extension files during QA.",
+    "Do not approve productive consent.",
+    "Do not start real runs.",
+    "Do not change permissions.",
+    "Do not connect model or cloud services."
+  ]
+}

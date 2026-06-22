@@ -1816,3 +1816,35 @@ Boundaries:
 Next recommended milestone:
 
 Installed Extension Manual QA Rerun or connector repair before HTML/manifest work.
+
+## M625 - Installed Extension QA Enablement / Manual Runbook
+
+Decision target: `INSTALLED_EXTENSION_QA_ENABLEMENT_READY`.
+
+This block adds:
+
+- QA enablement report for the M624 Chrome connector limitation.
+- Manual runbook for loading the unpacked extension from `browser-extension/onebrain-chrome-lab`.
+- Screenshot checklist for installed-extension evidence capture.
+- Readiness summary that keeps HTML, manifest, and JS blocked until user evidence exists.
+
+Result:
+
+- Manual QA is ready to run.
+- Product files remain unchanged.
+- Installed-extension live state is still not claimed as passing.
+
+Go/No-Go:
+
+- HTML minimum patch: NO-GO until manual installed-extension evidence is captured.
+- Manifest/naming cleanup: NO-GO until manual installed-extension evidence is captured.
+- JS changes: NO-GO.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+
+Next recommended milestone:
+
+Installed Extension Manual QA Evidence Capture.

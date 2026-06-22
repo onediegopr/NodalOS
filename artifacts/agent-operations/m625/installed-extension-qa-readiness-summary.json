@@ -1,0 +1,49 @@
+{
+  "milestone": "M625",
+  "decision": "INSTALLED_EXTENSION_QA_ENABLEMENT_READY",
+  "readyForManualUserQa": true,
+  "readyForHtmlMinimumPatch": false,
+  "readyForManifestNamingCleanup": false,
+  "readyForJsChanges": false,
+  "requiredUserEvidence": [
+    "confirmation that unpacked extension loads",
+    "confirmation that sidepanel opens",
+    "confirmation that DevTools console has no critical errors",
+    "screenshots listed in manual-screenshot-checklist.json",
+    "answers to GO/NO-GO acceptance questions"
+  ],
+  "requiredScreenshots": [
+    "normal Operar",
+    "narrow 420px Operar",
+    "Aprender tab",
+    "Recetas tab",
+    "Runtime tab",
+    "consent surface",
+    "handoff surface",
+    "status badges",
+    "keyboard focus ring",
+    "DevTools console"
+  ],
+  "goCriteriaForHtmlMinimumPatch": [
+    "extension installed and sidepanel opens",
+    "no critical console errors",
+    "active tab contrast passes visually",
+    "STOP does not clip",
+    "runtime and model surfaces do not appear active",
+    "governance surfaces read correctly",
+    "logs read as auxiliary",
+    "user confirms screenshots"
+  ],
+  "noGoCriteria": [
+    "extension does not load",
+    "sidepanel does not open",
+    "critical console errors",
+    "STOP clips",
+    "active tab is illegible",
+    "runtime or model appears active",
+    "consent appears productive",
+    "layout is broken",
+    "manual QA was not executed"
+  ],
+  "recommendedNextMilestone": "Installed Extension Manual QA Evidence Capture"
+}

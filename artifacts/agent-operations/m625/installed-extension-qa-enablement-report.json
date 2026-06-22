@@ -1,0 +1,37 @@
+{
+  "milestone": "M625",
+  "decision": "INSTALLED_EXTENSION_QA_ENABLEMENT_READY",
+  "isAuditOnly": true,
+  "productFilesModified": false,
+  "htmlModifiedInThisBlock": false,
+  "cssModifiedInThisBlock": false,
+  "jsModifiedInThisBlock": false,
+  "manifestModifiedInThisBlock": false,
+  "chromeConnectorIssueDocumented": true,
+  "manualUserQaRequired": true,
+  "runtimeCouplingIntroduced": false,
+  "providerCloudCouplingIntroduced": false,
+  "filesystemCouplingIntroduced": false,
+  "productiveConsentIntroduced": false,
+  "capabilityEnablementIntroduced": false,
+  "sourceOfTruthPromotionIntroduced": false,
+  "goForHtmlMinimumPatch": false,
+  "goForJsChanges": false,
+  "goForManifestChanges": false,
+  "m624Limitation": "Chrome automation connector failed before installed sidepanel control because local browser assets could not initialize.",
+  "currentExtensionEntrypoint": "browser-extension/onebrain-chrome-lab/manifest.json side_panel.default_path=sidepanel.html",
+  "existingInstallInstructionsFound": true,
+  "headlessSidepanelQaStatus": "not accepted as installed extension QA because extension sidepanel behavior must be validated in Chrome with the unpacked extension loaded",
+  "codexCanDoNow": [
+    "document manual QA steps",
+    "prepare screenshot checklist",
+    "preserve product integrity fingerprints",
+    "keep HTML CSS JS manifest blocked"
+  ],
+  "codexCannotDoInThisEnvironment": [
+    "control installed extension sidepanel",
+    "confirm live keyboard focus",
+    "confirm live extension console",
+    "confirm live narrow sidepanel rendering"
+  ]
+}

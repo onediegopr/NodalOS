@@ -1,0 +1,63 @@
+{
+  "milestone": "M625",
+  "checklistId": "manual-screenshot-checklist-m625",
+  "requiredScreenshots": [
+    {
+      "id": "M625-S1",
+      "name": "normal Operar",
+      "mustShow": ["active Operar tab", "primary surface", "no broken layout"]
+    },
+    {
+      "id": "M625-S2",
+      "name": "narrow 420px Operar",
+      "mustShow": ["STOP button fully visible", "active tab readable", "no horizontal clipping"]
+    },
+    {
+      "id": "M625-S3",
+      "name": "Aprender tab",
+      "mustShow": ["active Aprender tab", "consistent Research OS visual tone"]
+    },
+    {
+      "id": "M625-S4",
+      "name": "Recetas tab",
+      "mustShow": ["active Recetas tab", "no productive execution implication"]
+    },
+    {
+      "id": "M625-S5",
+      "name": "Runtime tab",
+      "mustShow": ["runtime appears blocked", "model or provider appears non-active"]
+    },
+    {
+      "id": "M625-S6",
+      "name": "consent surface",
+      "mustShow": ["governance surface", "no productive consent implication"]
+    },
+    {
+      "id": "M625-S7",
+      "name": "handoff surface",
+      "mustShow": ["handoff appears human-governed", "not authoritative"]
+    },
+    {
+      "id": "M625-S8",
+      "name": "status badges",
+      "mustShow": ["status-running", "status-blocked", "warning or danger badge"]
+    },
+    {
+      "id": "M625-S9",
+      "name": "keyboard focus ring",
+      "mustShow": ["visible focus ring", "focused control identifiable"]
+    },
+    {
+      "id": "M625-S10",
+      "name": "DevTools console",
+      "mustShow": ["no critical console errors", "sidepanel view identified"]
+    }
+  ],
+  "acceptanceQuestions": [
+    "Does the sidepanel feel like Research OS / Local Mission Control?",
+    "Does the active tab remain navigational rather than executable?",
+    "Does STOP remain visible at narrow width?",
+    "Does Runtime remain visually blocked?",
+    "Do logs remain auxiliary?"
+  ]
+}

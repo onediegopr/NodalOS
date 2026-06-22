@@ -1776,6 +1776,40 @@ Updated progress estimate after closeout:
 - LLM/Assignment: 75%
 - Cloud optional: 10%
 
+## M625 - Installed Extension QA Enablement / Manual Runbook
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- QA enablement report documenting the M624 Chrome connector limitation.
+- Manual Windows runbook for loading the unpacked extension from `browser-extension/onebrain-chrome-lab`.
+- Screenshot checklist for Operar, Aprender, Recetas, Runtime, STOP narrow width, focus ring, governance surfaces, status badges, and console review.
+- Readiness summary with user evidence required before product UI file changes.
+
+Decision target: `INSTALLED_EXTENSION_QA_ENABLEMENT_READY`.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+- HTML, manifest, and JS remain NO-GO until installed-extension evidence is captured.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.45%
+- Mission Control UX: 99.45%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
+
 ## M619 - Sidepanel Visual QA / Accessibility / Contrast / Dead-Style Audit
 
 Status: implemented in branch, pending validation at block close.
