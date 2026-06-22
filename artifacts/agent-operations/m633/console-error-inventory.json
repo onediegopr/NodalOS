@@ -1,0 +1,22 @@
+{
+  "milestone": "M633",
+  "inventoryStatus": "pending-manual-capture",
+  "consoleLogsProvided": false,
+  "criticalErrors": [],
+  "warnings": [],
+  "cspViolations": [],
+  "infoMessages": [],
+  "unknownMessages": [],
+  "inventoryNote": "Console error inventory requires manual DevTools capture. No logs were provided in this pass. Expected sources to check: (1) sidepanel page console, (2) service worker background page console via chrome://extensions > Inspect views. Known potential log sources: port connection messages, loadConfig roundtrip, keepalive alarm tick, WebSocket connect attempt at 127.0.0.1:8787 (will fail if bridge not running - this is expected and not a critical error).",
+  "knownBenignErrors": [
+    "WebSocket connection to ws://127.0.0.1:8787/ws/extension failed - expected when bridge is not running",
+    "GET http://127.0.0.1:8787/health net::ERR_CONNECTION_REFUSED - expected when bridge is not running"
+  ],
+  "criticalErrorPatterns": [
+    "Refused to load script - indicates CSP violation",
+    "Uncaught ReferenceError - indicates JS init failure",
+    "Uncaught TypeError - may indicate DOM element missing",
+    "chrome.runtime.lastError - unexpected port disconnect"
+  ],
+  "createdAt": "2026-06-22T00:00:00Z"
+}

@@ -1,0 +1,48 @@
+{
+  "milestone": "M633",
+  "m632Verdict": "AUDIT_CONDITIONAL_GO",
+  "m633EvidencePackCompleted": false,
+  "screenshotsProvided": false,
+  "consoleLogsProvided": false,
+  "readyForReleasePublic": false,
+  "readyForHtmlMicrocopyPatch": false,
+  "readyForSwVisibleStringsCleanup": false,
+  "readyForCspTightening": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForProductiveConsent": false,
+  "readyForCapabilityEnablement": false,
+  "conditionalUnlocks": {
+    "htmlMicrocopyPatch": "Unlocks when m633EvidencePackCompleted=true",
+    "swVisibleStringsCleanup": "Unlocks when m633EvidencePackCompleted=true",
+    "cspTightening": "Unlocks when m633EvidencePackCompleted=true",
+    "releasePublicCandidate": "Unlocks when m633EvidencePackCompleted=true AND cspTightened=true"
+  },
+  "permanentBlocks": {
+    "readyForJsChanges": "Requires dedicated JS audit milestone with QA evidence pre+post",
+    "readyForRuntimeChanges": "Requires CDP coexistence audit milestone",
+    "readyForProviderCloud": "Not in scope for local-first lab mode",
+    "readyForFilesystem": "Not in scope for companion mode",
+    "readyForProductiveConsent": "Requires dedicated consent milestone with full audit"
+  },
+  "m632AuditFindings": {
+    "noCriticalRisks": true,
+    "mediumRisks": [
+      "QA objective evidence absent",
+      "Legacy NEXA strings in SW log messages (not compat keys)",
+      "CSP connect-src allows any host (not loopback-only)"
+    ],
+    "lowRisks": [
+      "Two h2 headings in English (Target Resolution, Verification)",
+      "OpenAI hardcoded as initial provider placeholder",
+      "NEXA in some EN error messages visible in log tab"
+    ],
+    "productFilesProtected": true,
+    "safetyArchitectureVerified": true
+  },
+  "recommendedNextMilestone": "M633B: User provides manual screenshot/console QA evidence",
+  "alternativeNextMilestone": "M634 HTML Microcopy Patch (only after evidence pack is complete)",
+  "createdAt": "2026-06-22T00:00:00Z"
+}

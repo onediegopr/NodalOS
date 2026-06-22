@@ -1,0 +1,45 @@
+{
+  "milestone": "M633",
+  "screenshotIndexStatus": "pending-manual-capture",
+  "screenshotsProvided": false,
+  "screenshots": [
+    {
+      "id": "operate-tab",
+      "expectedPath": "artifacts/agent-operations/m633/screenshots/operate-tab.png",
+      "status": "missing",
+      "description": "Sidepanel Operar tab at idle state. Should show NODAL OS header, 4-tab navigation, instruction textarea, and Estado/Target Resolution/Verification/Timeline surfaces.",
+      "captureInstructions": "Open sidepanel, click Operar tab, wait for idle state, screenshot the full panel."
+    },
+    {
+      "id": "runtime-tab",
+      "expectedPath": "artifacts/agent-operations/m633/screenshots/runtime-tab.png",
+      "status": "missing",
+      "description": "Sidepanel Runtime tab disconnected state. Should show host/port fields, connect button, token setup card or advanced section, Motor local status.",
+      "captureInstructions": "Click Runtime tab, do not press Conectar, screenshot the full panel."
+    },
+    {
+      "id": "handoff-surface",
+      "expectedPath": "artifacts/agent-operations/m633/screenshots/handoff-surface.png",
+      "status": "missing",
+      "description": "Handoff surface in Operar tab. Only visible when a run triggers human intervention. If not triggerable in this QA pass, this screenshot may be skipped.",
+      "captureInstructions": "Start a run, trigger a handoff condition, screenshot the handoff surface. Or mark as not-applicable if bridge not running.",
+      "optional": true
+    },
+    {
+      "id": "console-initial-load",
+      "expectedPath": "artifacts/agent-operations/m633/screenshots/console-initial-load.png",
+      "status": "missing",
+      "description": "DevTools Console tab immediately after sidepanel loads. Must show 0 red errors. Expected: loadConfig messages, possibly WebSocket connection refused (benign).",
+      "captureInstructions": "Right-click sidepanel > Inspect, click Console tab, clear console, reload extension, screenshot immediately after load."
+    },
+    {
+      "id": "console-connect-disconnect",
+      "expectedPath": "artifacts/agent-operations/m633/screenshots/console-connect-disconnect.png",
+      "status": "missing",
+      "description": "DevTools Console after pressing Conectar then disconnecting (bridge not running expected). Should show connection attempt and graceful fallback, no uncaught errors.",
+      "captureInstructions": "Press Conectar, wait 2s, press Conectar again to disconnect, screenshot console.",
+      "optional": true
+    }
+  ],
+  "createdAt": "2026-06-22T00:00:00Z"
+}
