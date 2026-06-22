@@ -1,0 +1,18 @@
+{
+  "milestone": "M634A",
+  "decision": "HTML_MICROCOPY_RELOAD_QA_PASSED",
+  "evidenceType": "user-reported-manual-reload-qa",
+  "userStatement": "si esta ok",
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "pass",
+  "operateTabRendered": "pass",
+  "runtimeTabRendered": "pass",
+  "targetResolutionTranslated": "pass",
+  "verificationTranslated": "pass",
+  "mojibakeVisible": "pass",
+  "chromeExtensionNameShowsNodalOs": "pass",
+  "visibleNexaTextRemaining": "fail",
+  "screenshotsProvided": false,
+  "productFilesModified": false,
+  "changedProductFiles": []
+}

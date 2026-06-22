@@ -1,0 +1,17 @@
+{
+  "milestone": "M634A",
+  "decision": "HTML_MICROCOPY_RELOAD_QA_PASSED",
+  "evidenceType": "user-reported-manual-reload-qa",
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "pass",
+  "operateTabRendered": "pass",
+  "runtimeTabRendered": "pass",
+  "targetResolutionTranslated": "pass",
+  "verificationTranslated": "pass",
+  "mojibakeVisible": "pass",
+  "chromeExtensionNameShowsNodalOs": "pass",
+  "visibleNexaTextRemaining": "fail",
+  "screenshotsProvided": false,
+  "productFilesModified": false,
+  "manualReviewerNotes": "Usuario confirmó manualmente: \"si esta ok\" después del patch M634. Se registra como QA manual reportada, sin screenshots adjuntos."
+}

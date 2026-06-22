@@ -1,0 +1,8 @@
+{
+  "readyForSwVisibleStringsCleanup": true,
+  "readyForCspTighteningCandidate": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForReleasePublic": false,
+  "recommendedNextMilestone": "M635 SW Visible Strings Cleanup"
+}
