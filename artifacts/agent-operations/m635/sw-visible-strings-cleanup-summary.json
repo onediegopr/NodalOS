@@ -1,0 +1,19 @@
+{
+  "milestone": "M635",
+  "decision": "SW_VISIBLE_STRINGS_CLEANUP_READY",
+  "changedProductFile": "browser-extension/onebrain-chrome-lab/service_worker.js",
+  "stringLiteralOnly": true,
+  "visibleMessagesOnly": true,
+  "storageKeysChanged": false,
+  "protocolChanged": false,
+  "messageTypesChanged": false,
+  "portNamesChanged": false,
+  "alarmNamesChanged": false,
+  "webSocketChanged": false,
+  "runtimeLogicChanged": false,
+  "permissionsChanged": false,
+  "manifestChanged": false,
+  "sidepanelJsChanged": false,
+  "sidepanelHtmlChanged": false,
+  "sidepanelCssChanged": false
+}

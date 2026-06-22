@@ -1,0 +1,60 @@
+{
+  "milestone": "M635",
+  "changedProductFile": "browser-extension/onebrain-chrome-lab/service_worker.js",
+  "changes": [
+    {
+      "before": "Abrí o prepará una pestaña web objetivo para que NEXA pueda operar. No voy a usar ChatGPT como target implícito.",
+      "after": "Abrí o prepará una pestaña web objetivo para que NODAL OS pueda operar. No voy a usar ChatGPT como target implícito."
+    },
+    {
+      "before": "NEXA llego a una pantalla de acceso o validacion humana.",
+      "after": "NODAL OS llegó a una pantalla de acceso o validación humana."
+    },
+    {
+      "before": "NEXA se detuvo antes de una accion sensible y necesita que la resuelvas manualmente.",
+      "after": "NODAL OS se detuvo antes de una acción sensible y necesita que la resuelvas manualmente."
+    },
+    {
+      "before": "Open a normal web tab so NEXA can operate.",
+      "after": "Open a normal web tab so NODAL OS can operate."
+    },
+    {
+      "before": "Aprendizaje pausado. Podes navegar o buscar sin que NEXA lo grabe.",
+      "after": "Aprendizaje pausado. Podés navegar o buscar sin que NODAL OS lo grabe."
+    },
+    {
+      "before": "Aprendizaje reanudado. NEXA vuelve a capturar tus acciones.",
+      "after": "Aprendizaje reanudado. NODAL OS vuelve a capturar tus acciones."
+    },
+    {
+      "before": "NEXA sigue viendo la misma pantalla de acceso. Completala manualmente y luego volve a continuar.",
+      "after": "NODAL OS sigue viendo la misma pantalla de acceso. Completala manualmente y luego volvé a continuar."
+    },
+    {
+      "before": "NEXA llego a un punto donde la pagina requiere una accion humana.",
+      "after": "NODAL OS llegó a un punto donde la página requiere una acción humana."
+    },
+    {
+      "before": "NEXA espera intervencion humana",
+      "after": "NODAL OS espera intervención humana"
+    },
+    {
+      "before": "NEXA reobservo la pagina despues de tu intervencion.",
+      "after": "NODAL OS reobservó la página después de tu intervención."
+    },
+    {
+      "before": "NEXA reobservo la pagina y detecto que sigue habiendo una etapa humana pendiente.",
+      "after": "NODAL OS reobservó la página y detectó que sigue habiendo una etapa humana pendiente."
+    },
+    {
+      "before": "NEXA sigue esperando que completes la parte humana antes de continuar.",
+      "after": "NODAL OS sigue esperando que completes la parte humana antes de continuar."
+    },
+    {
+      "before": "NEXA reobservo la pagina y sigue esperando",
+      "after": "NODAL OS reobservó la página y sigue esperando"
+    }
+  ],
+  "compatIdentifiersChanged": false,
+  "runtimeLogicChanged": false
+}

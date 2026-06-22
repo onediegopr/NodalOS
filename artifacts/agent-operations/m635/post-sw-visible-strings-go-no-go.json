@@ -1,0 +1,8 @@
+{
+  "readyForCspTighteningCandidate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "requiresManualReloadQaAfterSwStrings": true,
+  "recommendedNextMilestone": "M635A Manual Reload QA After SW Visible Strings Cleanup"
+}

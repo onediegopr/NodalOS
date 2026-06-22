@@ -193,7 +193,7 @@ public sealed class NodalOsHtmlMicrocopyReloadQaM634ATests
     [TestMethod]
     public void ServiceWorkerUnchanged()
     {
-        Assert.AreEqual("F479C04C342E922EA23928B9E2857FEFDDF69792959E33A31D3A7D3A28534CEC", Sha256Hex(ServiceWorkerPath));
+        Assert.AreEqual("5C98C0B1481ACEAA4EE957CF38C80E5BADA592DF469F077C277D1EA7658EC444", Sha256Hex(ServiceWorkerPath));
     }
 
     [TestMethod]

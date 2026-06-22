@@ -5,14 +5,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace OneBrain.Safety.Tests;
 
 [TestClass]
-[TestCategory("HtmlMicrocopyPatch")]
-[TestCategory("M634")]
-public sealed class NodalOsHtmlMicrocopyPatchM634Tests
+[TestCategory("SwVisibleStringsCleanup")]
+[TestCategory("M635")]
+public sealed class NodalOsSwVisibleStringsCleanupM635Tests
 {
-    private const string SummaryPath = "artifacts/agent-operations/m634/html-microcopy-patch-summary.json";
-    private const string BeforeAfterPath = "artifacts/agent-operations/m634/html-microcopy-before-after.json";
-    private const string GoNoGoPath = "artifacts/agent-operations/m634/post-html-microcopy-go-no-go.json";
-    private const string ReportPath = "docs/reports/html-microcopy-patch-m634.md";
+    private const string SummaryPath = "artifacts/agent-operations/m635/sw-visible-strings-cleanup-summary.json";
+    private const string BeforeAfterPath = "artifacts/agent-operations/m635/sw-visible-strings-before-after.json";
+    private const string ProtectedCompatPath = "artifacts/agent-operations/m635/protected-compat-keys-confirmation.json";
+    private const string GoNoGoPath = "artifacts/agent-operations/m635/post-sw-visible-strings-go-no-go.json";
+    private const string ReportPath = "docs/reports/sw-visible-strings-cleanup-m635.md";
     private const string ManifestPath = "browser-extension/onebrain-chrome-lab/manifest.json";
     private const string SidepanelHtmlPath = "browser-extension/onebrain-chrome-lab/sidepanel.html";
     private const string SidepanelCssPath = "browser-extension/onebrain-chrome-lab/sidepanel.css";
@@ -63,6 +64,12 @@ public sealed class NodalOsHtmlMicrocopyPatchM634Tests
     }
 
     [TestMethod]
+    public void ProtectedCompatKeysArtifactExists()
+    {
+        Assert.IsTrue(File.Exists(FullPath(ProtectedCompatPath)), ProtectedCompatPath);
+    }
+
+    [TestMethod]
     public void GoNoGoArtifactExists()
     {
         Assert.IsTrue(File.Exists(FullPath(GoNoGoPath)), GoNoGoPath);
@@ -75,113 +82,154 @@ public sealed class NodalOsHtmlMicrocopyPatchM634Tests
     }
 
     [TestMethod]
-    public void SummaryDeclaresHtmlOnly()
+    public void SummaryDeclaresStringLiteralOnly()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsTrue(doc.RootElement.GetProperty("htmlOnly").GetBoolean());
+        Assert.IsTrue(doc.RootElement.GetProperty("stringLiteralOnly").GetBoolean());
     }
 
     [TestMethod]
-    public void SummaryDeclaresTextOnly()
+    public void SummaryDeclaresVisibleMessagesOnly()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsTrue(doc.RootElement.GetProperty("textOnly").GetBoolean());
+        Assert.IsTrue(doc.RootElement.GetProperty("visibleMessagesOnly").GetBoolean());
     }
 
     [TestMethod]
-    public void SummaryDeclaresDomStructureUnchanged()
+    public void SummaryDeclaresStorageKeysUnchanged()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("domStructureChanged").GetBoolean());
+        Assert.IsFalse(doc.RootElement.GetProperty("storageKeysChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void SummaryDeclaresIdsUnchanged()
+    public void SummaryDeclaresProtocolUnchanged()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("idsChanged").GetBoolean());
+        Assert.IsFalse(doc.RootElement.GetProperty("protocolChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void SummaryDeclaresClassesUnchanged()
+    public void SummaryDeclaresMessageTypesUnchanged()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("classesChanged").GetBoolean());
+        Assert.IsFalse(doc.RootElement.GetProperty("messageTypesChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void SummaryDeclaresJsUnchanged()
+    public void SummaryDeclaresPortNamesUnchanged()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("jsChanged").GetBoolean());
+        Assert.IsFalse(doc.RootElement.GetProperty("portNamesChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void SummaryDeclaresCssUnchanged()
+    public void SummaryDeclaresAlarmNamesUnchanged()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("cssChanged").GetBoolean());
+        Assert.IsFalse(doc.RootElement.GetProperty("alarmNamesChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void SummaryDeclaresManifestUnchanged()
+    public void SummaryDeclaresWebSocketUnchanged()
     {
         using var doc = ReadJson(SummaryPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("manifestChanged").GetBoolean());
+        Assert.IsFalse(doc.RootElement.GetProperty("webSocketChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlContainsSpanishTargetResolution()
+    public void SummaryDeclaresRuntimeLogicUnchanged()
     {
-        AssertContains(ReadRepoText(SidepanelHtmlPath), "Resolución del objetivo");
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("runtimeLogicChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlContainsSpanishVerification()
+    public void ProtectedCompatArtifactConfirmsNexaRecipesPreserved()
     {
-        AssertContains(ReadRepoText(SidepanelHtmlPath), "Verificación");
+        using var doc = ReadJson(ProtectedCompatPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("nexaRecipesPreserved").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlDoesNotContainTargetResolution()
+    public void ProtectedCompatArtifactConfirmsNexaLearningDraftPreserved()
     {
-        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "Target Resolution");
+        using var doc = ReadJson(ProtectedCompatPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("nexaLearningDraftPreserved").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlDoesNotContainVerificationHeading()
+    public void ProtectedCompatArtifactConfirmsNexaRuntimeStatePreserved()
     {
-        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "Verification");
+        using var doc = ReadJson(ProtectedCompatPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("nexaRuntimeStatePreserved").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlDoesNotContainGuardara()
+    public void ProtectedCompatArtifactConfirmsNexaKeepalivePreserved()
     {
-        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "guardara");
+        using var doc = ReadJson(ProtectedCompatPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("nexaKeepalivePreserved").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlDoesNotContainVolvera()
+    public void ProtectedCompatArtifactConfirmsNexaContentPingPreserved()
     {
-        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "volvera");
+        using var doc = ReadJson(ProtectedCompatPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("nexaContentPingPreserved").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlDoesNotContainInvalido()
+    public void ProtectedCompatArtifactConfirmsOnebrainSidepanelPortPreserved()
     {
-        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "invalido");
+        using var doc = ReadJson(ProtectedCompatPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("onebrainSidepanelPortPreserved").GetBoolean());
     }
 
     [TestMethod]
-    public void SidepanelHtmlDoesNotContainReemplazalo()
+    public void ProtectedCompatArtifactConfirmsProtocolVersionPreserved()
     {
-        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "reemplazalo");
+        using var doc = ReadJson(ProtectedCompatPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("protocolVersionPreserved").GetBoolean());
     }
 
     [TestMethod]
-    public void ManifestJsonUnchanged()
+    public void ServiceWorkerNoLongerContainsNexaCanOperate()
     {
-        Assert.AreEqual("298BEE3E6AAE130369CDDCF63476E7B8356842205788FECF1666E96D58AB95D8", Sha256Hex(ManifestPath));
+        AssertDoesNotContain(ReadRepoText(ServiceWorkerPath), "NEXA can operate");
+    }
+
+    [TestMethod]
+    public void ServiceWorkerNoLongerContainsVisibleSpanishNexaPhrases()
+    {
+        var serviceWorker = ReadRepoText(ServiceWorkerPath);
+        AssertDoesNotContain(serviceWorker, "NEXA llego");
+        AssertDoesNotContain(serviceWorker, "NEXA se detuvo");
+        AssertDoesNotContain(serviceWorker, "NEXA lo grabe");
+        AssertDoesNotContain(serviceWorker, "NEXA vuelve");
+        AssertDoesNotContain(serviceWorker, "NEXA sigue viendo");
+        AssertDoesNotContain(serviceWorker, "NEXA espera");
+        AssertDoesNotContain(serviceWorker, "NEXA reobservo");
+        AssertDoesNotContain(serviceWorker, "NEXA sigue esperando");
+    }
+
+    [TestMethod]
+    public void ServiceWorkerStillContainsProtectedCompatKeys()
+    {
+        var serviceWorker = ReadRepoText(ServiceWorkerPath);
+        AssertContains(serviceWorker, "nexaRecipes");
+        AssertContains(serviceWorker, "nexaLearningDraft");
+        AssertContains(serviceWorker, "nexaRuntimeState");
+        AssertContains(serviceWorker, "nexa.keepalive");
+        AssertContains(serviceWorker, "nexa.content.ping");
+        AssertContains(serviceWorker, "PROTOCOL_VERSION = 'chrome-lab-v1'");
+        AssertContains(ReadRepoText(SidepanelJsPath), "onebrain-sidepanel");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlUnchanged()
+    {
+        Assert.AreEqual("4A9642242F742B641B60430EB16647DD4A989EBCCCB072D0296B8CDCDE6E88C2", Sha256Hex(SidepanelHtmlPath));
     }
 
     [TestMethod]
@@ -197,9 +245,9 @@ public sealed class NodalOsHtmlMicrocopyPatchM634Tests
     }
 
     [TestMethod]
-    public void ServiceWorkerUnchanged()
+    public void ManifestJsonUnchanged()
     {
-        Assert.AreEqual("5C98C0B1481ACEAA4EE957CF38C80E5BADA592DF469F077C277D1EA7658EC444", Sha256Hex(ServiceWorkerPath));
+        Assert.AreEqual("298BEE3E6AAE130369CDDCF63476E7B8356842205788FECF1666E96D58AB95D8", Sha256Hex(ManifestPath));
     }
 
     [TestMethod]
@@ -212,6 +260,12 @@ public sealed class NodalOsHtmlMicrocopyPatchM634Tests
     public void RecipeCoreUnchanged()
     {
         Assert.AreEqual("DEA70FD162CE2F94ED29D35CD2C919AD2D62DA1810D46F49DD0CEBF63399C5F8", Sha256Hex(RecipeCorePath));
+    }
+
+    [TestMethod]
+    public void ServiceWorkerHasM635Baseline()
+    {
+        Assert.AreEqual("5C98C0B1481ACEAA4EE957CF38C80E5BADA592DF469F077C277D1EA7658EC444", Sha256Hex(ServiceWorkerPath));
     }
 
     [TestMethod]
@@ -231,14 +285,13 @@ public sealed class NodalOsHtmlMicrocopyPatchM634Tests
     public void ProtocolStorageKeysPortAndAlarmUnchanged()
     {
         var serviceWorker = ReadRepoText(ServiceWorkerPath);
-        var sidepanelJs = ReadRepoText(SidepanelJsPath);
         AssertContains(serviceWorker, "PROTOCOL_VERSION = 'chrome-lab-v1'");
         AssertContains(serviceWorker, "nexaRecipes");
         AssertContains(serviceWorker, "nexaLearningDraft");
         AssertContains(serviceWorker, "nexaRuntimeState");
         AssertContains(serviceWorker, "nexa.keepalive");
         AssertContains(serviceWorker, "nexa.content.ping");
-        AssertContains(sidepanelJs, "onebrain-sidepanel");
+        AssertContains(ReadRepoText(SidepanelJsPath), "onebrain-sidepanel");
     }
 
     [TestMethod]

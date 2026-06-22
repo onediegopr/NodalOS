@@ -702,7 +702,7 @@ async function startRun(instruction) {
         body: {
           ok: false,
           error: 'no_target_tab_selected',
-          message: 'Abrí o prepará una pestaña web objetivo para que NEXA pueda operar. No voy a usar ChatGPT como target implícito.'
+          message: 'Abrí o prepará una pestaña web objetivo para que NODAL OS pueda operar. No voy a usar ChatGPT como target implícito.'
         }
       });
       publishRuntimeSnapshot();
@@ -954,13 +954,13 @@ async function routeToolRequest(message) {
     }
 
     if (response && response.success && response.result && hasStrongCredentialSignal(response.result)) {
-      publishHumanIntervention(createHumanHandoffPayload('credentialRequired', 'NEXA llego a una pantalla de acceso o validacion humana.', response.result));
+      publishHumanIntervention(createHumanHandoffPayload('credentialRequired', 'NODAL OS llegó a una pantalla de acceso o validación humana.', response.result));
     }
     sendToolResult(message, Boolean(response && response.success), response ? response.result : null, response ? response.error : 'No response', response ? response.errorCode : '');
   } catch (error) {
     const errorText = String(error && error.message ? error.message : error);
     if (/Sensitive submit blocked|credential|captcha|2fa|password/i.test(errorText)) {
-      publishHumanIntervention(createHumanHandoffPayload('credentialRequired', 'NEXA se detuvo antes de una accion sensible y necesita que la resuelvas manualmente.', lastObservedPage));
+      publishHumanIntervention(createHumanHandoffPayload('credentialRequired', 'NODAL OS se detuvo antes de una acción sensible y necesita que la resuelvas manualmente.', lastObservedPage));
       setRunState('paused', 'Intervencion humana requerida', { source: 'service_worker', cause: 'tool.sensitive' });
     }
     sendToolResult(message, false, null, errorText, error && error.errorCode ? error.errorCode : '');
@@ -1444,7 +1444,7 @@ async function ensureContentScript(tabId) {
     return {
       ok: false,
       error: 'restricted_tab',
-      message: 'Open a normal web tab so NEXA can operate.',
+      message: 'Open a normal web tab so NODAL OS can operate.',
       tabId,
       url: tab.url || ''
     };
@@ -1839,7 +1839,7 @@ async function pauseLearning() {
   };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
   await sendLearningModeToTab(false, learningSession.startTabId || null);
-  publish({ type: 'learningNotice', message: 'Aprendizaje pausado. Podes navegar o buscar sin que NEXA lo grabe.' });
+  publish({ type: 'learningNotice', message: 'Aprendizaje pausado. Podés navegar o buscar sin que NODAL OS lo grabe.' });
   publishLearningState();
 }
 
@@ -1856,7 +1856,7 @@ async function resumeLearning() {
   };
   await chrome.storage.local.set({ [LEARNING_DRAFT_KEY]: learningSession });
   await sendLearningModeToTab(true, learningSession.startTabId || null);
-  publish({ type: 'learningNotice', message: 'Aprendizaje reanudado. NEXA vuelve a capturar tus acciones.' });
+  publish({ type: 'learningNotice', message: 'Aprendizaje reanudado. NODAL OS vuelve a capturar tus acciones.' });
   publishLearningState();
 }
 
@@ -1871,7 +1871,7 @@ async function clearLearningDraft() {
 async function prepareCurrentTab() {
   const tab = await resolveActiveWebTab({ includeChatGpt: true });
   if (!tab || !tab.id) {
-    publish({ type: 'prepareTabResult', ok: false, error: 'invalid_tab', message: 'Open a normal web tab so NEXA can operate.' });
+    publish({ type: 'prepareTabResult', ok: false, error: 'invalid_tab', message: 'Open a normal web tab so NODAL OS can operate.' });
     publishRuntimeSnapshot();
     return;
   }
@@ -2362,7 +2362,7 @@ async function handleHandoffContinue() {
       whatDid: 'Reobserve la pagina antes de repetir cualquier accion.',
       whatSee: describeObservation(observation),
       whatNeed: 'Si todavia falta completar algo, hacelo manualmente. Si ya terminaste, verifica que la pagina haya cambiado o indicame el proximo paso.',
-      bannerMessage: 'NEXA sigue viendo la misma pantalla de acceso. Completala manualmente y luego volve a continuar.',
+      bannerMessage: 'NODAL OS sigue viendo la misma pantalla de acceso. Completala manualmente y luego volvé a continuar.',
       timeline: 'Reobserve la pagina y sigo esperando intervencion humana',
       reason: 'credentialRequired'
     });
@@ -2524,12 +2524,12 @@ function createHumanHandoffPayload(reason, message, observation) {
   const whatSee = observation ? describeObservation(observation) : 'Estoy viendo una pagina que requiere validacion humana.';
   const payload = {
     status: 'Estoy esperando que completes algo',
-    whatHappened: message || 'NEXA llego a un punto donde la pagina requiere una accion humana.',
+    whatHappened: message || 'NODAL OS llegó a un punto donde la página requiere una acción humana.',
     whatDid: 'Observe la pagina y me detuve antes de tocar credenciales, captcha, 2FA o una accion sensible.',
     whatSee,
     whatNeed: 'Completa manualmente lo que corresponda y luego presiona "Ya lo resolvi, continuar".',
     bannerMessage: 'Completa manualmente el acceso o validacion y luego presiona "Ya lo resolvi, continuar".',
-    timeline: 'NEXA espera intervencion humana',
+    timeline: 'NODAL OS espera intervención humana',
     reason: reason || 'humanIntervention',
     fingerprint: observation ? buildObservationFingerprint(observation) : lastHandoffFingerprint
   };
@@ -2544,13 +2544,13 @@ function createResumeHandoff(observation, reason) {
   return {
     status: 'Estoy esperando que completes algo',
     whatHappened: reason === 'handoffContinue'
-      ? 'NEXA reobservo la pagina despues de tu intervencion.'
-      : 'NEXA reobservo la pagina y detecto que sigue habiendo una etapa humana pendiente.',
+      ? 'NODAL OS reobservó la página después de tu intervención.'
+      : 'NODAL OS reobservó la página y detectó que sigue habiendo una etapa humana pendiente.',
     whatDid: 'Observe la pagina actual antes de repetir cualquier accion.',
     whatSee: describeObservation(observation),
     whatNeed: 'Si todavia falta completar algo, hacelo manualmente. Cuando la pagina cambie, presiona "Ya lo resolvi, continuar".',
-    bannerMessage: 'NEXA sigue esperando que completes la parte humana antes de continuar.',
-    timeline: 'NEXA reobservo la pagina y sigue esperando',
+    bannerMessage: 'NODAL OS sigue esperando que completes la parte humana antes de continuar.',
+    timeline: 'NODAL OS reobservó la página y sigue esperando',
     reason: 'credentialRequired',
     fingerprint: buildObservationFingerprint(observation)
   };
