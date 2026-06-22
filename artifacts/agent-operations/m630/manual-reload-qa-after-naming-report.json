@@ -1,0 +1,29 @@
+{
+  "milestone": "M630",
+  "sourceMilestone": "M629",
+  "evidenceType": "user-reported-manual-qa",
+  "userStatement": "probé la extensión y está perfecta",
+  "interpretation": "Positive manual reload QA after visible naming cleanup.",
+  "evidenceLimitations": [
+    "No screenshots were provided.",
+    "No console log transcript was provided.",
+    "The result is recorded as user-reported manual QA only."
+  ],
+  "screenshotsProvided": false,
+  "consoleLogsProvided": false,
+  "manualReloadQaCompleted": true,
+  "checks": {
+    "extensionLoaded": "pass",
+    "extensionReloaded": "pass",
+    "sidepanelOpened": "pass",
+    "chromeExtensionNameShowsNodalOs": "pass",
+    "chromeExtensionNameShowsNexa": "fail",
+    "visibleNexaTextRemaining": "fail",
+    "consoleCriticalErrors": "unknown"
+  },
+  "productFilesModified": false,
+  "readyForHtmlMinimumPatchCandidate": true,
+  "readyForAdditionalManifestChanges": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false
+}

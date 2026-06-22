@@ -1,0 +1,21 @@
+{
+  "milestone": "M630",
+  "decision": "USER_REPORTED_EXTENSION_RELOAD_QA_PASSED",
+  "evidenceType": "user-reported-manual-qa",
+  "userStatement": "probé la extensión y está perfecta",
+  "manualReloadQaCompleted": true,
+  "extensionLoaded": "pass",
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "pass",
+  "chromeExtensionNameShowsNodalOs": "pass",
+  "chromeExtensionNameShowsNexa": "fail",
+  "visibleNexaTextRemaining": "fail",
+  "consoleCriticalErrors": "unknown",
+  "screenshotsProvided": false,
+  "consoleLogsProvided": false,
+  "productFilesModified": false,
+  "readyForHtmlMinimumPatchCandidate": true,
+  "readyForAdditionalManifestChanges": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false
+}
