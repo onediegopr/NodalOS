@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "NEXA",
+  "name": "NODAL OS",
+  "short_name": "NODAL OS",
   "version": "0.1.0",
-  "description": "Local-first Chrome lab client for NEXA.",
+  "description": "Local-first Chrome lab client for NODAL OS.",
   "permissions": [
     "activeTab",
     "scripting",
@@ -34,7 +35,7 @@
     "default_path": "sidepanel.html"
   },
   "action": {
-    "default_title": "NEXA"
+    "default_title": "NODAL OS"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://*:* ws://*:*;"

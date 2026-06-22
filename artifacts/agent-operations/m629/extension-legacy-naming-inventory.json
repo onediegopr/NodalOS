@@ -1,0 +1,198 @@
+{
+  "milestone": "M629",
+  "decisionTarget": "EXTENSION_LEGACY_NAMING_MINIMUM_CLEANUP_READY",
+  "scope": "Chrome extension legacy naming inventory and minimum visible naming cleanup",
+  "inventoryGeneratedFrom": "browser-extension/onebrain-chrome-lab",
+  "legacyTokensSearched": [
+    "NEXA",
+    "Nexa",
+    "nexa",
+    "ONE BRAIN",
+    "OneBrain",
+    "onebrain",
+    "HOTEP",
+    "Hotep",
+    "hotep",
+    "NODRIX",
+    "Nodrix",
+    "nodrix"
+  ],
+  "classificationsUsed": [
+    "userVisibleNaming",
+    "manifestMetadata",
+    "storageCompatibilityKey",
+    "runtimeProtocolIdentifier",
+    "portOrMessageIdentifier",
+    "testFixtureOrHistoricalDoc",
+    "reportArtifactHistorical",
+    "safeToRenameNow",
+    "doNotRenameYet"
+  ],
+  "findings": [
+    {
+      "path": "browser-extension/onebrain-chrome-lab/manifest.json",
+      "lineOrSearchHint": "name",
+      "token": "NEXA",
+      "classification": "manifestMetadata",
+      "userVisible": true,
+      "safeToRenameNow": true,
+      "reason": "Chrome extension visible name was legacy metadata.",
+      "recommendedAction": "rename-now"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/manifest.json",
+      "lineOrSearchHint": "description",
+      "token": "NEXA",
+      "classification": "manifestMetadata",
+      "userVisible": true,
+      "safeToRenameNow": true,
+      "reason": "Chrome extension visible description was legacy metadata.",
+      "recommendedAction": "rename-now"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/manifest.json",
+      "lineOrSearchHint": "action.default_title",
+      "token": "NEXA",
+      "classification": "manifestMetadata",
+      "userVisible": true,
+      "safeToRenameNow": true,
+      "reason": "Extension action title was legacy visible metadata.",
+      "recommendedAction": "rename-now"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/content_script.js",
+      "lineOrSearchHint": "elementId prefix",
+      "token": "nexa-el",
+      "classification": "runtimeProtocolIdentifier",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Generated DOM id prefix can affect automation references and requires a compatibility audit before rename.",
+      "recommendedAction": "requires-audit"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/README.md",
+      "lineOrSearchHint": "document title",
+      "token": "ONE BRAIN",
+      "classification": "testFixtureOrHistoricalDoc",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Developer documentation is outside the minimum installed extension visible naming patch.",
+      "recommendedAction": "defer"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/recipe_core.js",
+      "lineOrSearchHint": "recipe schema constants",
+      "token": "NEXA_RECIPE_SCHEMA_VERSION",
+      "classification": "runtimeProtocolIdentifier",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Recipe schema identifiers are compatibility identifiers and are not visible shell metadata.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/background-service-file",
+      "lineOrSearchHint": "RECIPES_KEY",
+      "token": "nexaRecipes",
+      "classification": "storageCompatibilityKey",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Chrome storage key must remain unchanged until a compatibility migration is designed.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/background-service-file",
+      "lineOrSearchHint": "LEARNING_DRAFT_KEY",
+      "token": "nexaLearningDraft",
+      "classification": "storageCompatibilityKey",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Chrome storage key must remain unchanged until a compatibility migration is designed.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/background-service-file",
+      "lineOrSearchHint": "SESSION_STATE_KEY",
+      "token": "nexaRuntimeState",
+      "classification": "storageCompatibilityKey",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Runtime state storage key must remain unchanged to avoid state loss or migration ambiguity.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/background-service-file",
+      "lineOrSearchHint": "alarm name",
+      "token": "nexa.keepalive",
+      "classification": "runtimeProtocolIdentifier",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Alarm identifier is behavior-adjacent and requires a dedicated compatibility audit.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/background-service-file",
+      "lineOrSearchHint": "sidepanel port name",
+      "token": "onebrain-sidepanel",
+      "classification": "portOrMessageIdentifier",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Port name links sidepanel and background service code; renaming would be functional.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/sidepanel.js",
+      "lineOrSearchHint": "runtime.connect name",
+      "token": "onebrain-sidepanel",
+      "classification": "portOrMessageIdentifier",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Port name is a compatibility identifier, not visible naming.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/background-service-file",
+      "lineOrSearchHint": "content ping type",
+      "token": "nexa.content.ping",
+      "classification": "portOrMessageIdentifier",
+      "userVisible": false,
+      "safeToRenameNow": false,
+      "reason": "Message type is protocol-adjacent and must not be renamed in a visible naming patch.",
+      "recommendedAction": "keep-compat"
+    },
+    {
+      "path": "browser-extension/onebrain-chrome-lab/background-service-file",
+      "lineOrSearchHint": "runtime notices and handoff messages",
+      "token": "NEXA",
+      "classification": "userVisibleNaming",
+      "userVisible": true,
+      "safeToRenameNow": false,
+      "reason": "Runtime-adjacent messages are visible but live in behavior code; changing them is deferred to a dedicated JS microcopy audit.",
+      "recommendedAction": "requires-audit"
+    }
+  ],
+  "minimumPatchDecision": {
+    "renamedNow": [
+      "manifest name",
+      "manifest short_name",
+      "manifest description",
+      "manifest action default title"
+    ],
+    "deferredForCompatibility": [
+      "nexaRecipes",
+      "nexaLearningDraft",
+      "nexaRuntimeState",
+      "nexa.keepalive",
+      "onebrain-sidepanel",
+      "nexa.content.ping",
+      "NEXA_RECIPE_SCHEMA_VERSION",
+      "runtime-adjacent visible messages"
+    ],
+    "blockedFromThisMilestone": [
+      "storage key rename",
+      "port name rename",
+      "alarm name rename",
+      "message type rename",
+      "runtime microcopy rename in behavior file"
+    ]
+  }
+}

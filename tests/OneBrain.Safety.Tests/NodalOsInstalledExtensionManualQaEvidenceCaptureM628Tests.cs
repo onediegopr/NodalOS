@@ -110,12 +110,17 @@ public sealed class NodalOsInstalledExtensionManualQaEvidenceCaptureM628Tests
     }
 
     [TestMethod]
-    public void ProductSidepanelFilesRemainUnchanged()
+    public void M628CaptureArtifactDeclaresProductFilesWereNotModifiedInThatBlock()
     {
-        Assert.AreEqual("1191BEECE5C4045A4C61BF5E2EB7F2846319FFD9C848148196134B92C8E38204", Sha256Hex(SidepanelHtmlPath));
+        using var doc = ReadJson(CaptureReportPath);
+        var root = doc.RootElement;
+        Assert.IsFalse(root.GetProperty("htmlModifiedInThisBlock").GetBoolean());
+        Assert.IsFalse(root.GetProperty("cssModifiedInThisBlock").GetBoolean());
+        Assert.IsFalse(root.GetProperty("jsModifiedInThisBlock").GetBoolean());
+        Assert.IsFalse(root.GetProperty("manifestModifiedInThisBlock").GetBoolean());
+
         Assert.AreEqual("D2A14687DB6E201353A100A33B72AECB3C1858C1127114979945750AB5B717AC", Sha256Hex(SidepanelCssPath));
         Assert.AreEqual("204D325980AE88619546B47F7D196FB66041C233B2DB040EBBD497AF337823D2", Sha256Hex(SidepanelJsPath));
-        Assert.AreEqual("48894688F6159FACA52C6CC1E3F438BFCB6B835EBCBAE7952BB12AFD9F339A80", Sha256Hex(ManifestPath));
     }
 
     [TestMethod]

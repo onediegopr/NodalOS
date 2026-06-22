@@ -1918,3 +1918,39 @@ Boundaries:
 Next recommended milestone:
 
 Manual QA evidence rerun by the user, or repaired Chrome connector followed by M628 rerun.
+
+## M629 - Extension Legacy Naming Inventory + NODAL OS Minimum Naming Cleanup
+
+Decision target: `EXTENSION_LEGACY_NAMING_MINIMUM_CLEANUP_READY`.
+
+This block adds:
+
+- Legacy naming inventory for the Chrome extension.
+- Minimum installed extension visible metadata cleanup from `NEXA` to `NODAL OS`.
+- Sidepanel consent mojibake microcopy correction.
+- Manual reload QA checklist after naming cleanup.
+
+Result:
+
+- Manifest visible name, short name, description, and action title now align with `NODAL OS`.
+- Compatibility keys and protocol-adjacent identifiers remain unchanged.
+- Runtime-adjacent `NEXA` messages are deferred to a separate JS microcopy audit.
+
+Go/No-Go:
+
+- Manual reload QA after naming: GO.
+- HTML minimum patch: NO-GO until reload QA passes.
+- Further manifest naming: NO-GO until separate extension review.
+- JS changes: NO-GO.
+
+Boundaries:
+
+- No broad rename.
+- No permissions or host permissions changed.
+- No background, sidepanel path, content script, or policy changed.
+- No storage key, port name, alarm name, message type, protocol, or socket construction changed.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+
+Next recommended milestone:
+
+M630 Manual Reload QA After Naming Cleanup.

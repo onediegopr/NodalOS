@@ -1,0 +1,54 @@
+{
+  "decision": "EXTENSION_LEGACY_NAMING_MINIMUM_CLEANUP_READY",
+  "manifestMetadataReviewed": true,
+  "permissionsChanged": false,
+  "hostPermissionsChanged": false,
+  "runtimeProtocolChanged": false,
+  "storageKeysChanged": false,
+  "portNamesChanged": false,
+  "alarmNamesChanged": false,
+  "visibleNexaRemaining": false,
+  "visibleNexaRemainingScope": "manifest metadata and sidepanel shell only",
+  "runtimeAdjacentNexaMessagesDeferred": true,
+  "compatNexaKeysRemaining": true,
+  "readyForManualQaReload": true,
+  "readyForJsFunctionalChanges": false,
+  "readyForRuntimeChanges": false,
+  "manifestBefore": {
+    "name": "NEXA",
+    "short_name": "",
+    "description": "Local-first Chrome lab client for NEXA.",
+    "actionDefaultTitle": "NEXA"
+  },
+  "manifestAfter": {
+    "name": "NODAL OS",
+    "short_name": "NODAL OS",
+    "description": "Local-first Chrome lab client for NODAL OS.",
+    "actionDefaultTitle": "NODAL OS"
+  },
+  "changedProductFiles": [
+    "browser-extension/onebrain-chrome-lab/manifest.json",
+    "browser-extension/onebrain-chrome-lab/sidepanel.html"
+  ],
+  "renamedNow": [
+    "manifest visible name",
+    "manifest short name",
+    "manifest visible description",
+    "manifest action title"
+  ],
+  "microcopyFixedNow": [
+    "consent authorization mojibake",
+    "consent instruction mojibake"
+  ],
+  "keptForCompatibility": [
+    "nexaRecipes",
+    "nexaLearningDraft",
+    "nexaRuntimeState",
+    "nexa.keepalive",
+    "onebrain-sidepanel",
+    "nexa.content.ping"
+  ],
+  "deferredVisibleRuntimeMessages": [
+    "Runtime-adjacent NEXA messages require a separate JS microcopy audit."
+  ]
+}

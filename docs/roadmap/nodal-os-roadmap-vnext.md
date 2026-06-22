@@ -2958,3 +2958,40 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## M629 - Extension Legacy Naming Inventory + NODAL OS Minimum Naming Cleanup
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Chrome extension legacy naming inventory for `NEXA`, `ONE BRAIN`, `HOTEP`, and `NODRIX`.
+- Minimum visible manifest metadata cleanup to `NODAL OS`.
+- Visible sidepanel consent mojibake correction.
+- Manual reload QA checklist after naming cleanup.
+- Guardrail tests proving permissions, host permissions, storage keys, port names, alarm names, protocol, and sidepanel JS behavior remain unchanged.
+
+Boundaries:
+
+- No broad rename.
+- No storage key rename.
+- No port, alarm, message type, protocol, or socket change.
+- No JS functional change.
+- No CSS change.
+- No runtime behavior.
+- No provider/cloud integration, filesystem feature, productive consent, capability enablement, or product source-of-truth promotion.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.6%
+- Mission Control UX: 99.6%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%

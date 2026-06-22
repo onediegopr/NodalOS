@@ -1,0 +1,36 @@
+{
+  "milestone": "M629",
+  "purpose": "Manual reload QA after minimum visible naming cleanup",
+  "steps": [
+    "Open chrome://extensions.",
+    "Click Reload on the installed extension.",
+    "Confirm the visible extension name is NODAL OS.",
+    "Open the sidepanel.",
+    "Confirm the main heading is NODAL OS.",
+    "Confirm no NEXA text appears in the main installed extension shell.",
+    "Review the sidepanel console for critical red errors.",
+    "Capture the main sidepanel screenshot.",
+    "Capture the console screenshot if critical errors appear."
+  ],
+  "expectedResult": {
+    "chromeExtensionName": "NODAL OS",
+    "sidepanelHeading": "NODAL OS",
+    "visibleNexaInShell": false,
+    "criticalConsoleErrors": false
+  },
+  "resultTemplate": {
+    "extensionReloaded": "pass|fail|unknown",
+    "chromeExtensionNameShowsNodalOs": "pass|fail|unknown",
+    "sidepanelHeadingShowsNodalOs": "pass|fail|unknown",
+    "visibleNexaTextRemaining": "pass|fail|unknown",
+    "consoleCriticalErrors": "pass|fail|unknown",
+    "mainScreenshot": "",
+    "consoleScreenshot": "",
+    "notes": ""
+  },
+  "goNoGoAfterReload": {
+    "htmlMinimumPatch": "NO-GO until reload evidence confirms shell naming and no critical console errors.",
+    "manifestNaming": "GO only for this completed minimum metadata cleanup; further manifest work requires a separate extension review.",
+    "jsChanges": "NO-GO"
+  }
+}
