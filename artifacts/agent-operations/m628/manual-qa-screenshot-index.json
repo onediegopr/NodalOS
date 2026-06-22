@@ -1,0 +1,98 @@
+{
+  "milestone": "M628",
+  "decision": "MANUAL_QA_EVIDENCE_CAPTURE_REQUIRES_USER_ACTION",
+  "screenshotsCaptured": false,
+  "requiredScenarios": [
+    {
+      "id": "M628-S01",
+      "scenario": "Operar normal",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/operate-normal.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S02",
+      "scenario": "Operar 420px / narrow viewport",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/operate-420px.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S03",
+      "scenario": "Aprender",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/learn.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S04",
+      "scenario": "Recetas",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/recipes.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S05",
+      "scenario": "Runtime",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/runtime.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S06",
+      "scenario": "Tab active",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/tab-active.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S07",
+      "scenario": "STOP button",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/stop-button.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S08",
+      "scenario": "Focus ring con teclado",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/focus-keyboard.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S09",
+      "scenario": "Consent surface",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/consent-surface.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S10",
+      "scenario": "Handoff surface",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/handoff-surface.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S11",
+      "scenario": "Runtime/provider visible",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/runtime-provider-visible.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S12",
+      "scenario": "Logs/pre",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/logs-pre.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    },
+    {
+      "id": "M628-S13",
+      "scenario": "DevTools console sin errores críticos",
+      "targetPath": "artifacts/agent-operations/m628/screenshots/devtools-console.png",
+      "status": "missing",
+      "reason": "Chrome installed-extension QA unavailable from Codex."
+    }
+  ]
+}

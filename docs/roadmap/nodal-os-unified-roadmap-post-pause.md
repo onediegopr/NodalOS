@@ -1882,3 +1882,39 @@ Boundaries:
 Next recommended milestone:
 
 M628 Manual QA Evidence Capture. If evidence passes, a separate later milestone may evaluate HTML minimum patch scope without JS.
+
+## M628 - Installed Extension Manual QA Evidence Capture
+
+Decision target if blocked: `MANUAL_QA_EVIDENCE_CAPTURE_REQUIRES_USER_ACTION`.
+
+This block adds:
+
+- Manual QA evidence capture report.
+- Filled manual QA result with incomplete evidence.
+- Screenshot index for the 13 required scenarios.
+- Blocker report.
+- HTML/manifest/JS go/no-go summary after evidence attempt.
+
+Result:
+
+- Chrome installed-extension QA was not available from Codex.
+- Chrome was not opened.
+- The extension was not loaded.
+- The sidepanel was not opened.
+- DevTools console was not reviewed.
+- Screenshots were not captured.
+
+Go/No-Go:
+
+- HTML minimum patch: NO-GO.
+- Manifest/naming cleanup: NO-GO.
+- JS changes: NO-GO.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+
+Next recommended milestone:
+
+Manual QA evidence rerun by the user, or repaired Chrome connector followed by M628 rerun.

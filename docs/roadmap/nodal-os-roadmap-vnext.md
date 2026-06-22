@@ -1846,6 +1846,43 @@ Updated progress estimate after closeout:
 - LLM/Assignment: 75%
 - Cloud optional: 10%
 
+## M628 - Installed Extension Manual QA Evidence Capture
+
+Status: blocked in branch, pending validation at block close.
+
+Adds:
+
+- Evidence capture report for the attempted installed-extension QA.
+- Filled manual QA result with `manualQaCompleted=false`.
+- Screenshot index documenting all 13 required scenarios as missing.
+- Blocker report identifying Chrome connector setup as the failed step.
+- HTML/manifest/JS go/no-go summary after incomplete evidence.
+
+Decision target if blocked: `MANUAL_QA_EVIDENCE_CAPTURE_REQUIRES_USER_ACTION`.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+- HTML minimum patch remains NO-GO.
+- Manifest/naming cleanup remains NO-GO.
+- JS remains NO-GO.
+
+Updated progress estimate after blocked closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.5%
+- Mission Control UX: 99.5%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
+
 ## M619 - Sidepanel Visual QA / Accessibility / Contrast / Dead-Style Audit
 
 Status: implemented in branch, pending validation at block close.

@@ -1,0 +1,29 @@
+{
+  "milestone": "M628",
+  "decision": "MANUAL_QA_EVIDENCE_CAPTURE_REQUIRES_USER_ACTION",
+  "blocked": true,
+  "failedStep": "Chrome connector setup",
+  "whatFailed": "Codex could not initialize the Chrome automation connector assets, so installed extension control was unavailable.",
+  "missingEvidence": [
+    "Chrome opened",
+    "extension management page opened",
+    "Developer Mode confirmation",
+    "Load unpacked confirmation",
+    "extension loaded from required local path",
+    "sidepanel opened",
+    "DevTools console reviewed",
+    "13 required screenshots"
+  ],
+  "userActionRequired": [
+    "Run M625 manual runbook locally.",
+    "Fill artifacts/agent-operations/m626/manual-qa-result-template.json fields.",
+    "Attach or copy the required screenshot set.",
+    "Report any console critical errors before HTML or manifest work."
+  ],
+  "blockedGateImpact": {
+    "htmlMinimumPatch": "no-go",
+    "manifestNamingCleanup": "no-go",
+    "jsChanges": "no-go",
+    "runtimeChanges": "no-go"
+  }
+}

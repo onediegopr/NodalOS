@@ -1,0 +1,18 @@
+{
+  "milestone": "M628",
+  "decision": "MANUAL_QA_EVIDENCE_CAPTURE_REQUIRES_USER_ACTION",
+  "manualQaCompleted": false,
+  "evidenceComplete": false,
+  "readyForHtmlMinimumPatch": false,
+  "readyForManifestNamingCleanup": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForProductiveConsent": false,
+  "readyForCapabilityEnablement": false,
+  "htmlDecision": "NO-GO: manual installed-extension evidence incomplete",
+  "manifestDecision": "NO-GO: separate extension review and manual evidence required",
+  "jsDecision": "NO-GO: requires separate audit before any JavaScript change",
+  "nextRequiredMilestone": "M628 manual QA evidence capture rerun by user or repaired Chrome connector"
+}
