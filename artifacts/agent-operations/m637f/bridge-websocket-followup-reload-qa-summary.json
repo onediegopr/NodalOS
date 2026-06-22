@@ -1,0 +1,29 @@
+{
+  "milestone": "M637F",
+  "summary": "Manual reload QA after M637E follow-up fix did not pass. The sidepanel/runtime UI still reports reconnecting and repeated Bridge WebSocket error entries, and DevTools Console shows repeated ERR_CONNECTION_REFUSED for ws://127.0.0.1:8787/ws/extension at service_worker.js:481.",
+  "decision": "BRIDGE_WEBSOCKET_FOLLOWUP_RELOAD_QA_FAILED",
+  "evidenceReceived": [
+    "User statement: sigue igual esta mierda",
+    "Local runtime logs show reconnecting: Bridge connection closed",
+    "Local runtime logs show error: Bridge WebSocket error",
+    "DevTools Console screenshot shows ERR_CONNECTION_REFUSED for ws://127.0.0.1:8787/ws/extension",
+    "DevTools source location visible: service_worker.js:481"
+  ],
+  "passedChecks": {
+    "sidepanelOpened": true,
+    "runtimeTabRendered": true,
+    "devtoolsConsoleProvided": true
+  },
+  "failedChecks": {
+    "webSocketStillReconnecting": true,
+    "bridgeWebSocketErrorStillVisible": true,
+    "errConnectionRefusedStillObserved": true
+  },
+  "unknownChecks": {
+    "bridgeRunningDuringTest": true,
+    "healthOk": true,
+    "clientsObserved": true,
+    "heartbeatOk": true
+  },
+  "productFilesModified": false
+}

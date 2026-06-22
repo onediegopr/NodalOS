@@ -1,0 +1,22 @@
+{
+  "milestone": "M637F",
+  "decision": "BRIDGE_WEBSOCKET_FOLLOWUP_RELOAD_QA_FAILED",
+  "evidenceType": "user-provided-manual-reload-qa-with-devtools-screenshot",
+  "bridgeRunningDuringTest": "unknown",
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "pass",
+  "runtimeTabRendered": "pass",
+  "healthOk": "unknown",
+  "clientsObserved": "unknown",
+  "heartbeatOk": "unknown",
+  "webSocketReconnecting": "pass",
+  "bridgeWebSocketErrorVisible": "pass",
+  "invalidTokenObserved": "fail",
+  "policyViolation1008Observed": "fail",
+  "errConnectionRefusedObserved": "pass",
+  "cspViolations": "fail",
+  "screenshotsProvided": true,
+  "devtoolsConsoleProvided": true,
+  "productFilesModified": false,
+  "manualReviewerNotes": "Usuario reporto que sigue igual despues del fix M637E. Evidencia visible: logs locales repetidos 'reconnecting: Bridge connection closed' y 'error: Bridge WebSocket error'. Captura DevTools Console muestra WebSocket connection to 'ws://127.0.0.1:8787/ws/extension' failed: net::ERR_CONNECTION_REFUSED en service_worker.js:481, con contador visible de 1001 errores y 1 warning. No se observo invalid_token, close 1008 ni CSP violation en la captura aportada."
+}
