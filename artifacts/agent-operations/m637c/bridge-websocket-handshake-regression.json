@@ -1,0 +1,47 @@
+{
+  "milestone": "M637C",
+  "regressionScope": "WebSocket handshake token propagation",
+  "scenariosCovered": [
+    {
+      "id": "handshake-empty-token-pairing",
+      "description": "First connect with no saved token: validateConnectionConfig pairs via /pairing/local-token, effectiveToken is returned and sent in extension.hello",
+      "expected": "Bridge accepts hello, sends engine.hello, connection stays connected",
+      "previousBehavior": "config.token was '' in closure; hello sent with empty token; bridge rejected with invalid_token PolicyViolation close"
+    },
+    {
+      "id": "handshake-saved-token",
+      "description": "Subsequent connects with token saved in chrome.storage.local",
+      "expected": "validateConnectionConfig returns existing token; extension.hello sent with correct token; accepted",
+      "previousBehavior": "No regression in this path; fix is a no-op when token already non-empty"
+    },
+    {
+      "id": "handshake-invalid-token-block",
+      "description": "Token mismatch that cannot be repaired by pairing",
+      "expected": "blockReconnect('tokenError') fires; reconnect loop stops; UI shows tokenError",
+      "previousBehavior": "Unchanged - repairLocalTokenAfterAuthError still provides secondary recovery"
+    },
+    {
+      "id": "handshake-protocol-version",
+      "description": "Protocol version still chrome-lab-v1",
+      "expected": "PROTOCOL_VERSION constant unchanged; bridge validates and accepts",
+      "previousBehavior": "Unchanged"
+    },
+    {
+      "id": "heartbeat-ping-pong",
+      "description": "After successful hello, heartbeat pings are sent every 15 seconds, bridge responds with engine.pong",
+      "expected": "missedPongs reset on each pong; connection stays alive",
+      "previousBehavior": "Unchanged; bridge ping/pong handler was already correct"
+    }
+  ],
+  "noRegressionConfirmed": [
+    "PROTOCOL_VERSION = 'chrome-lab-v1'",
+    "nexaRecipes storage key",
+    "nexaLearningDraft storage key",
+    "nexaRuntimeState session key",
+    "nexa.keepalive alarm",
+    "onebrain-sidepanel port",
+    "scheduleReconnect backoff logic",
+    "reconnectBlocked guard",
+    "repairLocalTokenAfterAuthError fallback"
+  ]
+}

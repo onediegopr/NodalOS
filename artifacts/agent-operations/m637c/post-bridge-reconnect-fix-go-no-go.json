@@ -1,0 +1,24 @@
+{
+  "milestone": "M637C",
+  "readyForManualReloadQaAfterFix": true,
+  "readyForReleaseEvidenceGate": false,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "recommendedNextMilestone": "M637D Manual Reload QA After Bridge WebSocket Fix",
+  "manualQaSteps": [
+    "Load bridge: dotnet run --project src/OneBrain.ChromeLab.Bridge",
+    "Remove any saved extension token (chrome.storage.local clear or fresh profile)",
+    "Load unpacked extension from browser-extension/onebrain-chrome-lab/",
+    "Open side panel",
+    "Observe: connection should reach 'connected' on first attempt without tokenError",
+    "Verify: bridge /debug shows connectedCount=1 and extension hello accepted",
+    "Verify: side panel shows 'connected' state (not 'reconnecting')",
+    "Verify: heartbeat pings are exchanged (check /last-events for extension.ping / engine.pong)",
+    "Wait 60 seconds and confirm connection stays stable"
+  ],
+  "risksPending": [
+    "Manual QA required to confirm the fix resolves the observed symptom",
+    "Service worker keep-alive timing not covered by unit tests"
+  ]
+}

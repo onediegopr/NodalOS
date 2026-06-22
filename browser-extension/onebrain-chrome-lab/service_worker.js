@@ -474,7 +474,7 @@ async function connectWebSocket(config, options = {}) {
   connectionStoppedByUser = false;
   stopRequestedExplicitly = false;
   setConnectionState('connecting', 'Connecting to bridge', { source: 'service_worker', cause: options.reason || 'connect.requested' });
-  await validateConnectionConfig(config);
+  const effectiveToken = await validateConnectionConfig(config);
   const url = `ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension`;
 
   connectingPromise = new Promise((resolve, reject) => {
@@ -495,7 +495,7 @@ async function connectWebSocket(config, options = {}) {
         browser: 'Chrome',
         runtimeKind: EXTENSION_RUNTIME_MODE,
         capabilities: EXTENSION_CAPABILITIES,
-        token: config.token || '',
+        token: effectiveToken || '',
         resumeRunId: currentRunId || null
       });
       flushOutgoingQueue();
@@ -602,13 +602,13 @@ async function validateConnectionConfig(config) {
   try {
     const response = await fetch(`http://${host}:${port}/config/public`, { cache: 'no-store' });
     if (!response.ok) {
-      return;
+      return token;
     }
     const publicConfig = await response.json();
     if (publicConfig && publicConfig.requiresToken && !token) {
       const paired = await tryLocalPairing(config);
       if (paired) {
-        return;
+        return paired;
       }
       blockReconnect('tokenError', 'Bridge requires a connection token. Enter the token and press Reconnect.');
       throw new Error(lastConnectionError);
@@ -618,6 +618,7 @@ async function validateConnectionConfig(config) {
       throw error;
     }
   }
+  return token;
 }
 
 function blockReconnect(state, message) {
