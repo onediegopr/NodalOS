@@ -1,0 +1,10 @@
+{
+  "readyForHtmlMicrocopyPatch": false,
+  "readyForSwVisibleStringsCleanup": false,
+  "readyForCspTighteningCandidate": false,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "recommendedNextMilestone": ""
+}
+

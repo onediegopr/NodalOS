@@ -1,0 +1,19 @@
+{
+  "milestone": "M633D",
+  "decision": "BRIDGE_RUNNING_RETEST_EVIDENCE_READY",
+  "evidenceType": "user-provided-bridge-running-retest",
+  "bridgeExpectedPort": 8787,
+  "bridgeRunningDuringTest": "pass",
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "unknown",
+  "runtimeTabObserved": "unknown",
+  "devtoolsConsoleCaptured": false,
+  "errConnectionRefusedPresent": "pass",
+  "consoleCriticalErrors": "unknown",
+  "cspViolations": "unknown",
+  "sidepanelRenderImpacted": false,
+  "runtimeConnectionImpacted": "pass",
+  "screenshotsProvided": false,
+  "manualReviewerNotes": "Bridge verified via TCP probe to 127.0.0.1:8787 and bridge /runtime /debug endpoints. /debug reported connectedCount=1 and extension.hello. DevTools screenshots were not attached."
+}
+

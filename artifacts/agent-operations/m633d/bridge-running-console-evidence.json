@@ -1,0 +1,64 @@
+{
+  "milestone": "M633D",
+  "evidenceType": "bridge-running-runtime-probe",
+  "bridgeExpectedPort": 8787,
+  "tcpProbe": {
+    "host": "127.0.0.1",
+    "port": 8787,
+    "tcpTestSucceeded": true
+  },
+  "runtime": {
+    "status": 200,
+    "ok": true,
+    "uptimeSeconds": 233.7311957,
+    "hasApiKey": false,
+    "provider": "OpenAI",
+    "model": "gpt-4.1-mini",
+    "host": "127.0.0.1",
+    "port": 8787,
+    "lastError": null
+  },
+  "clients": {
+    "status": 200,
+    "connectedCount": 1,
+    "clients": [
+      {
+        "clientId": "29f31463a0274bbe82e6c616f8e84cc7",
+        "connected": true,
+        "lastSeenMs": 13550.5062,
+        "protocolVersion": "chrome-lab-v1",
+        "extensionVersion": "0.1.0",
+        "browser": "Chrome",
+        "transport": "websocket",
+        "currentRunId": null,
+        "pendingRequestId": null,
+        "lastError": null
+      }
+    ]
+  },
+  "events": {
+    "status": 200,
+    "items": [
+      {
+        "timestamp": "2026-06-22T13:50:28.2293419+00:00",
+        "eventType": "ws.accepted",
+        "runId": null,
+        "requestId": null,
+        "clientId": "29f31463a0274bbe82e6c616f8e84cc7",
+        "summary": "WebSocket accepted"
+      },
+      {
+        "timestamp": "2026-06-22T13:50:28.2364561+00:00",
+        "eventType": "extension.hello",
+        "runId": null,
+        "requestId": null,
+        "clientId": "29f31463a0274bbe82e6c616f8e84cc7",
+        "summary": "Extension hello from Chrome 0.1.0; client 10773f23-29b"
+      }
+    ]
+  },
+  "consoleCaptured": false,
+  "screenshotsProvided": false,
+  "notes": "Captured from the live bridge endpoints. No DevTools console screenshot was attached."
+}
+
