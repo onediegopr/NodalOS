@@ -1,0 +1,11 @@
+{
+  "readyForHtmlMicrocopyPatch": false,
+  "readyForSwVisibleStringsCleanup": false,
+  "readyForCspTighteningCandidate": false,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "recommendedNextMilestone": "M633D Bridge Running Retest"
+}

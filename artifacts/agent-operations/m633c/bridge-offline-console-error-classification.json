@@ -1,0 +1,18 @@
+{
+  "milestone": "M633C",
+  "decision": "BRIDGE_OFFLINE_CONSOLE_ERRORS_CLASSIFIED",
+  "evidenceType": "user-provided-devtools-console-screenshot",
+  "consoleCaptured": true,
+  "consoleCriticalErrors": "fail",
+  "primaryError": "WebSocket connection to 'ws://127.0.0.1:8787/ws/extension' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+  "sourceLocation": "service_worker.js:481",
+  "estimatedErrorCount": 928,
+  "estimatedWarningCount": 2,
+  "cspViolationObserved": false,
+  "classifiedAs": "bridge-offline-or-refused",
+  "sidepanelRenderImpacted": false,
+  "runtimeConnectionImpacted": true,
+  "releaseReady": false,
+  "requiresBridgeRunningRetest": true,
+  "requiresRuntimeAuditBeforeRuntimeChanges": true
+}

@@ -1,0 +1,15 @@
+{
+  "milestone": "M633C",
+  "evidenceType": "user-provided-devtools-console-screenshot",
+  "consoleCaptured": true,
+  "consoleTranscriptProvided": false,
+  "screenshotProvided": true,
+  "consoleCriticalErrors": "fail",
+  "consoleErrorCountEstimate": 928,
+  "consoleWarningCountEstimate": 2,
+  "primaryErrorSummary": "Bridge websocket connection refused during service worker console capture.",
+  "sourceLocation": "service_worker.js:481",
+  "cspViolationObserved": false,
+  "visualStateSummary": "Sidepanel loaded; NODAL OS visible; NEXA not visible as the primary naming in the main UI.",
+  "bridgeStateSummary": "Local bridge appears offline or refusing websocket connections at 127.0.0.1:8787."
+}
