@@ -1,0 +1,16 @@
+{
+  "milestone": "M635A",
+  "decision": "SW_VISIBLE_STRINGS_RELOAD_QA_PASSED",
+  "evidenceType": "user-reported-manual-reload-qa",
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "pass",
+  "operateTabRendered": "pass",
+  "runtimeTabRendered": "pass",
+  "chromeExtensionNameShowsNodalOs": "pass",
+  "visibleNexaTextRemaining": "fail",
+  "visibleNexaLogsRemaining": "fail",
+  "consoleCriticalErrors": "unknown",
+  "screenshotsProvided": false,
+  "productFilesModified": false,
+  "manualReviewerNotes": "Usuario confirmó manualmente: \"esta todo ok\" después del cleanup M635. Se registra como QA manual reportada, sin screenshots ni DevTools Console adjuntos."
+}

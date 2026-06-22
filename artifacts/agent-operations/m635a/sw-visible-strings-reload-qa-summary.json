@@ -1,0 +1,18 @@
+{
+  "milestone": "M635A",
+  "evidenceType": "user-reported-manual-reload-qa",
+  "userStatement": "esta todo ok",
+  "manualReloadQaCompleted": true,
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "pass",
+  "operateTabRendered": "pass",
+  "runtimeTabRendered": "pass",
+  "chromeExtensionNameShowsNodalOs": "pass",
+  "visibleNexaTextRemaining": "fail",
+  "visibleNexaLogsRemaining": "fail",
+  "consoleCriticalErrors": "unknown",
+  "screenshotsProvided": false,
+  "consoleLogsProvided": false,
+  "productFilesModified": false,
+  "serviceWorkerChangedDuringM635A": false
+}

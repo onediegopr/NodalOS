@@ -1,0 +1,7 @@
+{
+  "readyForCspTighteningCandidate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "recommendedNextMilestone": "M636 CSP Tightening Candidate or M636 Release Evidence Gate"
+}
