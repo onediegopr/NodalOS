@@ -1810,6 +1810,42 @@ Updated progress estimate after closeout:
 - LLM/Assignment: 75%
 - Cloud optional: 10%
 
+## M626+M627 - Manual QA Evidence Contract + HTML/Manifest Readiness Gate
+
+Status: implemented in branch, pending validation at block close.
+
+Adds:
+
+- Manual QA evidence intake contract for installed-extension screenshots and result fields.
+- Manual QA result template for user-provided evidence.
+- HTML/manifest readiness decision gate with all product changes still blocked by default.
+- Readiness summary preserving JS, runtime, provider/cloud, filesystem, productive consent, and capability NO-GO status.
+
+Decision target: `INSTALLED_EXTENSION_QA_EVIDENCE_GATE_READY`.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+- Manual QA evidence is required before any future HTML minimum patch candidate.
+- Manifest/naming cleanup requires separate extension review and explicit approval.
+- JS remains NO-GO.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.4%
+- Core Runtime: 76%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.5%
+- Mission Control UX: 99.5%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%
+
 ## M619 - Sidepanel Visual QA / Accessibility / Contrast / Dead-Style Audit
 
 Status: implemented in branch, pending validation at block close.

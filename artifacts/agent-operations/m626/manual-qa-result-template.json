@@ -1,0 +1,35 @@
+{
+  "manualQaCompleted": false,
+  "chromeVersion": "",
+  "extensionLoaded": "unknown",
+  "sidepanelOpened": "unknown",
+  "consoleCriticalErrors": "unknown",
+  "screenshots": {
+    "operateNormal": "",
+    "operateNarrow420": "",
+    "learn": "",
+    "recipes": "",
+    "runtime": "",
+    "tabActive": "",
+    "stopButton": "",
+    "focusRingKeyboard": "",
+    "consentSurface": "",
+    "handoffSurface": "",
+    "runtimeProviderVisible": "",
+    "logsPre": "",
+    "devtoolsConsole": ""
+  },
+  "checks": {
+    "tabActiveContrast": "unknown",
+    "stopResponsive": "unknown",
+    "focusKeyboard": "unknown",
+    "runtimeLooksBlocked": "unknown",
+    "providerLooksInactive": "unknown",
+    "consentLooksGovernance": "unknown",
+    "logsLookAuxiliary": "unknown"
+  },
+  "readyForHtmlMinimumPatch": false,
+  "readyForManifestNamingCleanup": false,
+  "readyForJsChanges": false,
+  "manualReviewerNotes": ""
+}

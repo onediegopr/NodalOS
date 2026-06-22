@@ -1,0 +1,14 @@
+{
+  "decision": "INSTALLED_EXTENSION_QA_EVIDENCE_GATE_READY",
+  "m626Closed": true,
+  "m627Closed": true,
+  "readyForManualUserQa": true,
+  "readyForHtmlMinimumPatch": false,
+  "readyForManifestNamingCleanup": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "requiresManualQaEvidence": true,
+  "requiresClaudeBeforeJs": true,
+  "requiresExtensionReviewBeforeManifest": true,
+  "recommendedNextMilestone": "M628 Manual QA Evidence Capture or M628 HTML Minimum Patch only after evidence"
+}

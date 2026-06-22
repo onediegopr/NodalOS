@@ -1,0 +1,47 @@
+{
+  "milestone": "M627",
+  "decision": "INSTALLED_EXTENSION_QA_EVIDENCE_GATE_READY",
+  "isAuditOnly": true,
+  "readyForHtmlMinimumPatch": false,
+  "readyForManifestNamingCleanup": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProductiveConsent": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "requiresManualQaEvidence": true,
+  "requiresClaudeBeforeJs": true,
+  "requiresExtensionReviewBeforeManifest": true,
+  "futureHtmlMinimumPatchGoCriteria": [
+    "manualQaCompleted = true",
+    "extensionLoaded = pass",
+    "sidepanelOpened = pass",
+    "consoleCriticalErrors = pass",
+    "tabActiveContrast = pass",
+    "stopResponsive = pass",
+    "focusKeyboard = pass or acceptable",
+    "runtimeLooksBlocked = pass",
+    "providerLooksInactive = pass",
+    "consentLooksGovernance = pass",
+    "logsLookAuxiliary = pass"
+  ],
+  "futureHtmlMinimumPatchAllowedScope": [
+    "correct mojibake in visible copy",
+    "review provider display text only if separately approved",
+    "adjust non-functional microcopy",
+    "no JS",
+    "no manifest",
+    "no permissions",
+    "no runtime wiring"
+  ],
+  "futureManifestNamingGoCriteria": [
+    "separate milestone exists",
+    "dedicated extension review exists",
+    "legacy naming inventory exists",
+    "no permission changes",
+    "no runtime, model, or capability changes",
+    "explicit user approval exists",
+    "rollback plan exists"
+  ],
+  "jsDecision": "NO-GO"
+}

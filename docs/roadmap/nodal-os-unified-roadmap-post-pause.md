@@ -1848,3 +1848,37 @@ Boundaries:
 Next recommended milestone:
 
 Installed Extension Manual QA Evidence Capture.
+
+## M626+M627 - Manual QA Evidence Contract + HTML/Manifest Readiness Gate
+
+Decision target: `INSTALLED_EXTENSION_QA_EVIDENCE_GATE_READY`.
+
+This block adds:
+
+- Manual installed-extension evidence contract.
+- Manual screenshot checklist and result template.
+- HTML/manifest readiness decision gate.
+- Readiness summary for future evidence intake.
+
+Result:
+
+- Manual QA evidence format is defined.
+- HTML minimum patch remains blocked until evidence is submitted and reviewed.
+- Manifest/naming cleanup remains blocked until a separate extension review milestone.
+- JS remains NO-GO.
+
+Go/No-Go:
+
+- Manual QA evidence capture: GO.
+- HTML minimum patch: NO-GO in this block.
+- Manifest/naming cleanup: NO-GO in this block.
+- JS changes: NO-GO.
+
+Boundaries:
+
+- No CSS, HTML, JS, or manifest changes.
+- No runtime, provider/cloud integration, filesystem feature, productive consent, capability enablement, or source-of-truth promotion.
+
+Next recommended milestone:
+
+M628 Manual QA Evidence Capture. If evidence passes, a separate later milestone may evaluate HTML minimum patch scope without JS.

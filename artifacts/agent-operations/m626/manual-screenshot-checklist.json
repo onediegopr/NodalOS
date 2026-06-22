@@ -1,0 +1,34 @@
+{
+  "milestone": "M626",
+  "decision": "INSTALLED_EXTENSION_QA_EVIDENCE_GATE_READY",
+  "isAuditOnly": true,
+  "requiredScreenshots": [
+    "Operar normal",
+    "Operar 420px / narrow viewport",
+    "Aprender",
+    "Recetas",
+    "Runtime",
+    "Tab active",
+    "STOP button",
+    "Focus ring con teclado",
+    "Consent surface",
+    "Handoff surface",
+    "Runtime/provider visible",
+    "Logs/pre",
+    "DevTools console sin errores críticos"
+  ],
+  "captureRules": [
+    "Use installed Chrome extension only.",
+    "Do not edit product files during capture.",
+    "Do not approve productive consent.",
+    "Do not run productive actions.",
+    "Name screenshots exactly as declared in manual-qa-evidence-contract.json."
+  ],
+  "acceptancePolicy": {
+    "manualQaCompletedFalseMeansNoGo": true,
+    "missingScreenshotMeansUnknown": true,
+    "unknownBlocksHtml": true,
+    "unknownBlocksManifest": true,
+    "jsRemainsNoGo": true
+  }
+}
