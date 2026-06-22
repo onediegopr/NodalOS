@@ -1,0 +1,19 @@
+{
+  "milestone": "M637",
+  "decision": "CSP_LOOPBACK_PATCH_READY",
+  "changedProductFile": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "manifestOnly": true,
+  "cspOnly": true,
+  "connectSrcRestrictedToLoopback": true,
+  "allowsWildcardRemoteHosts": false,
+  "allowsProviderCloud": false,
+  "permissionsChanged": false,
+  "hostPermissionsChanged": false,
+  "backgroundChanged": false,
+  "sidePanelChanged": false,
+  "actionChanged": false,
+  "contentScriptsChanged": false,
+  "jsChanged": false,
+  "runtimeChanged": false,
+  "storageKeysChanged": false
+}

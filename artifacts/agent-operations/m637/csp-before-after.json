@@ -1,0 +1,12 @@
+{
+  "milestone": "M637",
+  "changedProductFile": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "fieldChanged": "content_security_policy.extension_pages",
+  "before": "script-src 'self'; object-src 'self'; connect-src 'self' http://*:* ws://*:*;",
+  "after": "script-src 'self'; object-src 'self'; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*;",
+  "connectSrcBefore": "'self' http://*:* ws://*:*",
+  "connectSrcAfter": "'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*",
+  "wildcardRemoteHostsRemoved": true,
+  "providerCloudAdded": false,
+  "ipv6LoopbackAdded": false
+}

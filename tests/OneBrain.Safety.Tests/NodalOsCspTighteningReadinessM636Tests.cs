@@ -165,7 +165,7 @@ public sealed class NodalOsCspTighteningReadinessM636Tests
     [TestMethod]
     public void ManifestJsonUnchanged()
     {
-        Assert.AreEqual("298BEE3E6AAE130369CDDCF63476E7B8356842205788FECF1666E96D58AB95D8", Sha256Hex(ManifestPath));
+        Assert.AreEqual("76859A171D0FBC585E96253D0F269AEF4A54DCFD5F704DE9DB92D26EB1AEDDFD", Sha256Hex(ManifestPath));
     }
 
     [TestMethod]
@@ -249,10 +249,9 @@ public sealed class NodalOsCspTighteningReadinessM636Tests
     }
 
     [TestMethod]
-    public void CurrentManifestStillHasBroadCspBecauseM636IsReadinessOnly()
+    public void M636InventoryCapturedBroadCspBeforeM637Patch()
     {
-        using var doc = ReadJson(ManifestPath);
-        var csp = doc.RootElement.GetProperty("content_security_policy").GetProperty("extension_pages").GetString();
-        AssertContains(csp!, "connect-src 'self' http://*:* ws://*:*;");
+        using var doc = ReadJson(InventoryPath);
+        Assert.AreEqual("'self' http://*:* ws://*:*", doc.RootElement.GetProperty("currentConnectSrc").GetString());
     }
 }

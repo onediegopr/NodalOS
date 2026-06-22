@@ -1,0 +1,9 @@
+{
+  "readyForManualReloadQaAfterCspPatch": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "recommendedNextMilestone": "M637A Manual Reload QA After CSP Loopback Patch"
+}
