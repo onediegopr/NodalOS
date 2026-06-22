@@ -1,0 +1,11 @@
+{
+  "candidateConnectSrc": "'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*",
+  "candidateExtensionPagesCsp": "script-src 'self'; object-src 'self'; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*;",
+  "allowsLoopbackOnly": true,
+  "allowsWildcardRemoteHosts": false,
+  "allowsProviderCloud": false,
+  "requiresManualReloadQaAfterPatch": true,
+  "patchAppliedInM636": false,
+  "candidatePatchMilestone": "M637 CSP Loopback Patch",
+  "knownCaveat": "Code accepts ::1 as loopback for local pairing, but the initial candidate is limited to 127.0.0.1 and localhost pending explicit IPv6 loopback QA or a dedicated CSP syntax decision."
+}

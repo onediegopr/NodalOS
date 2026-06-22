@@ -1,0 +1,30 @@
+{
+  "milestone": "M636",
+  "currentConnectSrc": "'self' http://*:* ws://*:*",
+  "defaultBridgeHost": "127.0.0.1",
+  "defaultBridgePort": "8787",
+  "requiredHttpLoopback": true,
+  "requiredWsLoopback": true,
+  "requiresWildcardHttp": false,
+  "requiresWildcardWs": false,
+  "externalDomainsRequired": false,
+  "providerCloudRequired": false,
+  "recommendedConnectSrc": "'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*",
+  "observedHttpEndpoints": [
+    "http://127.0.0.1:8787/config/public",
+    "http://127.0.0.1:8787/health",
+    "http://127.0.0.1:8787/runtime",
+    "http://127.0.0.1:8787/clients",
+    "http://127.0.0.1:8787/last-events",
+    "http://127.0.0.1:8787/debug",
+    "http://127.0.0.1:8787/api/runs",
+    "http://127.0.0.1:8787/pairing/local-token"
+  ],
+  "observedWsEndpoints": [
+    "ws://127.0.0.1:8787/ws/extension"
+  ],
+  "localhostVariantSupportedByUiConfig": true,
+  "ipv6LoopbackAcceptedByCode": true,
+  "ipv6LoopbackIncludedInInitialCandidate": false,
+  "notes": "The extension constructs bridge URLs from host/port config. Defaults are 127.0.0.1:8787; sidepanel also defaults to 127.0.0.1:8787. Code accepts localhost and ::1 for local pairing, but M636 keeps patch as a future milestone to avoid changing manifest CSP without post-patch reload QA."
+}

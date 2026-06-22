@@ -1,0 +1,17 @@
+{
+  "milestone": "M636",
+  "decision": "CSP_TIGHTENING_READINESS_READY",
+  "evidenceType": "repo-audit-and-prior-bridge-running-qa",
+  "manifestPatchApplied": false,
+  "currentConnectSrcTooBroad": true,
+  "loopbackOnlyCandidatePrepared": true,
+  "defaultBridgeHostVerified": "127.0.0.1",
+  "defaultBridgePortVerified": "8787",
+  "m633dBridgeRunningEvidenceAvailable": true,
+  "manualReloadQaAfterPatchRequired": true,
+  "safeToPreparePatchMilestone": true,
+  "safeToReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "recommendedNextMilestone": "M637 CSP Loopback Patch"
+}
