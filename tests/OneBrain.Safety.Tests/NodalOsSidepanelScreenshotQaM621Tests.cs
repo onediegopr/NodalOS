@@ -123,7 +123,7 @@ public sealed class NodalOsSidepanelScreenshotQaM621Tests
     [TestMethod]
     public void ProductSidepanelFilesRemainUnchanged()
     {
-        Assert.AreEqual("014A6C5DCCA2787E61E01D8B2DCED4A20F32D9F41BB076B7C2A5E37EE746F71E", Sha256Hex(SidepanelHtmlPath));
+        Assert.AreEqual("4A9642242F742B641B60430EB16647DD4A989EBCCCB072D0296B8CDCDE6E88C2", Sha256Hex(SidepanelHtmlPath));
         Assert.AreEqual("204D325980AE88619546B47F7D196FB66041C233B2DB040EBBD497AF337823D2", Sha256Hex(SidepanelJsPath));
         Assert.AreEqual("298BEE3E6AAE130369CDDCF63476E7B8356842205788FECF1666E96D58AB95D8", Sha256Hex(ManifestPath));
     }

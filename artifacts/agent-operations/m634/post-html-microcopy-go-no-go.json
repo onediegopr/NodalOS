@@ -1,0 +1,9 @@
+{
+  "readyForSwVisibleStringsCleanup": true,
+  "readyForCspTighteningCandidate": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForReleasePublic": false,
+  "requiresPostPatchManualReloadQa": true,
+  "recommendedNextMilestone": "M635 SW Visible Strings Cleanup or M634A Manual Reload QA After Microcopy"
+}

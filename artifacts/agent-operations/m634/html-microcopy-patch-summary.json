@@ -1,0 +1,17 @@
+{
+  "milestone": "M634",
+  "decision": "HTML_MICROCOPY_PATCH_READY",
+  "changedProductFile": "browser-extension/onebrain-chrome-lab/sidepanel.html",
+  "htmlOnly": true,
+  "textOnly": true,
+  "domStructureChanged": false,
+  "idsChanged": false,
+  "classesChanged": false,
+  "jsChanged": false,
+  "cssChanged": false,
+  "manifestChanged": false,
+  "runtimeChanged": false,
+  "webSocketChanged": false,
+  "storageKeysChanged": false,
+  "permissionsChanged": false
+}

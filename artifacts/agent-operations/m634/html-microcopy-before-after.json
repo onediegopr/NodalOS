@@ -1,0 +1,35 @@
+{
+  "milestone": "M634",
+  "changedProductFile": "browser-extension/onebrain-chrome-lab/sidepanel.html",
+  "changes": [
+    {
+      "before": "Target Resolution",
+      "after": "Resolución del objetivo"
+    },
+    {
+      "before": "Verification",
+      "after": "Verificación"
+    },
+    {
+      "before": "guardara",
+      "after": "guardará"
+    },
+    {
+      "before": "volvera",
+      "after": "volverá"
+    },
+    {
+      "before": "invalido",
+      "after": "inválido"
+    },
+    {
+      "before": "reemplazalo",
+      "after": "reemplázalo"
+    }
+  ],
+  "htmlOnly": true,
+  "textOnly": true,
+  "domStructureChanged": false,
+  "idsChanged": false,
+  "classesChanged": false
+}

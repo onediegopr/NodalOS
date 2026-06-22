@@ -210,7 +210,7 @@ public sealed class NodalOsScreenshotConsoleQaEvidencePackM633Tests
     [TestMethod]
     public void SidepanelHtmlUnchanged()
     {
-        Assert.AreEqual("014A6C5DCCA2787E61E01D8B2DCED4A20F32D9F41BB076B7C2A5E37EE746F71E", Sha256Hex(SidepanelHtmlPath));
+        Assert.AreEqual("4A9642242F742B641B60430EB16647DD4A989EBCCCB072D0296B8CDCDE6E88C2", Sha256Hex(SidepanelHtmlPath));
     }
 
     [TestMethod]

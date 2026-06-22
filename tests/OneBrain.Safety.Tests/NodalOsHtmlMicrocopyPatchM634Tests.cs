@@ -5,14 +5,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace OneBrain.Safety.Tests;
 
 [TestClass]
-[TestCategory("BridgeRunningRetest")]
-[TestCategory("M633D")]
-public sealed class NodalOsBridgeRunningRetestM633DTests
+[TestCategory("HtmlMicrocopyPatch")]
+[TestCategory("M634")]
+public sealed class NodalOsHtmlMicrocopyPatchM634Tests
 {
-    private const string ResultPath = "artifacts/agent-operations/m633d/bridge-running-retest-result.json";
-    private const string ConsoleEvidencePath = "artifacts/agent-operations/m633d/bridge-running-console-evidence.json";
-    private const string GoNoGoPath = "artifacts/agent-operations/m633d/post-bridge-running-go-no-go.json";
-    private const string ReportPath = "docs/reports/bridge-running-retest-m633d.md";
+    private const string SummaryPath = "artifacts/agent-operations/m634/html-microcopy-patch-summary.json";
+    private const string BeforeAfterPath = "artifacts/agent-operations/m634/html-microcopy-before-after.json";
+    private const string GoNoGoPath = "artifacts/agent-operations/m634/post-html-microcopy-go-no-go.json";
+    private const string ReportPath = "docs/reports/html-microcopy-patch-m634.md";
     private const string ManifestPath = "browser-extension/onebrain-chrome-lab/manifest.json";
     private const string SidepanelHtmlPath = "browser-extension/onebrain-chrome-lab/sidepanel.html";
     private const string SidepanelCssPath = "browser-extension/onebrain-chrome-lab/sidepanel.css";
@@ -47,16 +47,19 @@ public sealed class NodalOsBridgeRunningRetestM633DTests
     private static void AssertContains(string haystack, string needle) =>
         Assert.IsTrue(haystack.Contains(needle, StringComparison.Ordinal), $"Expected to find '{needle}'.");
 
+    private static void AssertDoesNotContain(string haystack, string needle) =>
+        Assert.IsFalse(haystack.Contains(needle, StringComparison.Ordinal), $"Found unexpected '{needle}'.");
+
     [TestMethod]
-    public void ResultArtifactExists()
+    public void SummaryArtifactExists()
     {
-        Assert.IsTrue(File.Exists(FullPath(ResultPath)), ResultPath);
+        Assert.IsTrue(File.Exists(FullPath(SummaryPath)), SummaryPath);
     }
 
     [TestMethod]
-    public void ConsoleEvidenceArtifactExists()
+    public void BeforeAfterArtifactExists()
     {
-        Assert.IsTrue(File.Exists(FullPath(ConsoleEvidencePath)), ConsoleEvidencePath);
+        Assert.IsTrue(File.Exists(FullPath(BeforeAfterPath)), BeforeAfterPath);
     }
 
     [TestMethod]
@@ -66,70 +69,119 @@ public sealed class NodalOsBridgeRunningRetestM633DTests
     }
 
     [TestMethod]
-    public void ReportExists()
+    public void ReportMarkdownExists()
     {
         Assert.IsTrue(File.Exists(FullPath(ReportPath)), ReportPath);
     }
 
     [TestMethod]
-    public void ResultIncludesBridgeRunningDuringTest()
+    public void SummaryDeclaresHtmlOnly()
     {
-        using var doc = ReadJson(ResultPath);
-        Assert.AreEqual("pass", doc.RootElement.GetProperty("bridgeRunningDuringTest").GetString());
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("htmlOnly").GetBoolean());
     }
 
     [TestMethod]
-    public void ResultIncludesErrConnectionRefusedPresent()
+    public void SummaryDeclaresTextOnly()
     {
-        using var doc = ReadJson(ResultPath);
-        Assert.AreEqual("pass", doc.RootElement.GetProperty("errConnectionRefusedPresent").GetString());
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("textOnly").GetBoolean());
     }
 
     [TestMethod]
-    public void ResultIncludesConsoleCriticalErrors()
+    public void SummaryDeclaresDomStructureUnchanged()
     {
-        using var doc = ReadJson(ResultPath);
-        doc.RootElement.GetProperty("consoleCriticalErrors");
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("domStructureChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void ResultIncludesCspViolations()
+    public void SummaryDeclaresIdsUnchanged()
     {
-        using var doc = ReadJson(ResultPath);
-        doc.RootElement.GetProperty("cspViolations");
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("idsChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void ResultIncludesSidepanelRenderImpactedFalse()
+    public void SummaryDeclaresClassesUnchanged()
     {
-        using var doc = ReadJson(ResultPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("sidepanelRenderImpacted").GetBoolean());
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("classesChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void GoNoGoKeepsReadyForJsChangesFalse()
+    public void SummaryDeclaresJsUnchanged()
     {
-        using var doc = ReadJson(GoNoGoPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("readyForJsChanges").GetBoolean());
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("jsChanged").GetBoolean());
     }
 
     [TestMethod]
-    public void GoNoGoKeepsReadyForRuntimeChangesFalse()
+    public void SummaryDeclaresCssUnchanged()
     {
-        using var doc = ReadJson(GoNoGoPath);
-        Assert.IsFalse(doc.RootElement.GetProperty("readyForRuntimeChanges").GetBoolean());
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("cssChanged").GetBoolean());
+    }
+
+    [TestMethod]
+    public void SummaryDeclaresManifestUnchanged()
+    {
+        using var doc = ReadJson(SummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("manifestChanged").GetBoolean());
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlContainsSpanishTargetResolution()
+    {
+        AssertContains(ReadRepoText(SidepanelHtmlPath), "Resolución del objetivo");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlContainsSpanishVerification()
+    {
+        AssertContains(ReadRepoText(SidepanelHtmlPath), "Verificación");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlDoesNotContainTargetResolution()
+    {
+        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "Target Resolution");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlDoesNotContainVerificationHeading()
+    {
+        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "Verification");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlDoesNotContainGuardara()
+    {
+        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "guardara");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlDoesNotContainVolvera()
+    {
+        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "volvera");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlDoesNotContainInvalido()
+    {
+        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "invalido");
+    }
+
+    [TestMethod]
+    public void SidepanelHtmlDoesNotContainReemplazalo()
+    {
+        AssertDoesNotContain(ReadRepoText(SidepanelHtmlPath), "reemplazalo");
     }
 
     [TestMethod]
     public void ManifestJsonUnchanged()
     {
         Assert.AreEqual("298BEE3E6AAE130369CDDCF63476E7B8356842205788FECF1666E96D58AB95D8", Sha256Hex(ManifestPath));
-    }
-
-    [TestMethod]
-    public void SidepanelHtmlUnchanged()
-    {
-        Assert.AreEqual("4A9642242F742B641B60430EB16647DD4A989EBCCCB072D0296B8CDCDE6E88C2", Sha256Hex(SidepanelHtmlPath));
     }
 
     [TestMethod]
@@ -176,7 +228,7 @@ public sealed class NodalOsBridgeRunningRetestM633DTests
     }
 
     [TestMethod]
-    public void ProtocolStorageAndPortMarkersUnchanged()
+    public void ProtocolStorageKeysPortAndAlarmUnchanged()
     {
         var serviceWorker = ReadRepoText(ServiceWorkerPath);
         var sidepanelJs = ReadRepoText(SidepanelJsPath);
@@ -187,5 +239,19 @@ public sealed class NodalOsBridgeRunningRetestM633DTests
         AssertContains(serviceWorker, "nexa.keepalive");
         AssertContains(serviceWorker, "nexa.content.ping");
         AssertContains(sidepanelJs, "onebrain-sidepanel");
+    }
+
+    [TestMethod]
+    public void GoNoGoKeepsReadyForJsChangesFalse()
+    {
+        using var doc = ReadJson(GoNoGoPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("readyForJsChanges").GetBoolean());
+    }
+
+    [TestMethod]
+    public void GoNoGoKeepsReadyForRuntimeChangesFalse()
+    {
+        using var doc = ReadJson(GoNoGoPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("readyForRuntimeChanges").GetBoolean());
     }
 }
