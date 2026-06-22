@@ -1,0 +1,9 @@
+{
+  "readyForCspAdjustment": false,
+  "readyForCspRollback": false,
+  "readyForReleaseEvidenceGate": false,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "recommendedNextMilestone": "M637C Manual DevTools CSP/WebSocket Evidence Capture"
+}

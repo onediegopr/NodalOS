@@ -1,0 +1,37 @@
+{
+  "milestone": "M637B",
+  "manifestCsp": "script-src 'self'; object-src 'self'; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*;",
+  "connectSrcIncludesHttp127001": true,
+  "connectSrcIncludesWs127001": true,
+  "connectSrcIncludesHttpLocalhost": true,
+  "connectSrcIncludesWsLocalhost": true,
+  "connectSrcIncludesWildcardHttp": false,
+  "connectSrcIncludesWildcardWs": false,
+  "connectSrcIncludesIpv6Loopback": false,
+  "serviceWorkerDefaultHost": "127.0.0.1",
+  "serviceWorkerDefaultPort": "8787",
+  "webSocketUrlTemplate": "ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension",
+  "httpBaseUrlTemplate": "http://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}",
+  "usesChromeStorageLocalForHostPortToken": true,
+  "loopbackHostsAcceptedByCode": [
+    "127.0.0.1",
+    "localhost",
+    "::1"
+  ],
+  "sidepanelDefaultHost": "127.0.0.1",
+  "sidepanelDefaultPort": "8787",
+  "sidepanelHostPortEditable": true,
+  "sidepanelTokenEditable": true,
+  "tokenCanBlockReconnect": true,
+  "invalidTokenExpectedState": "tokenError",
+  "observedM637AState": {
+    "host": "127.0.0.1",
+    "port": "8787",
+    "health": "ok",
+    "token": "guardado",
+    "webSocket": "reconnecting",
+    "clients": "1",
+    "heartbeat": "OK",
+    "diagnostic": "Conectando"
+  }
+}

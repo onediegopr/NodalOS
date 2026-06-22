@@ -1,0 +1,107 @@
+{
+  "milestone": "M637B",
+  "hypotheses": [
+    {
+      "hypothesis": "CSP blocked WebSocket",
+      "status": "possible",
+      "supportingEvidence": [
+        "Issue appeared after CSP loopback patch.",
+        "No DevTools Console evidence was provided to exclude a CSP violation."
+      ],
+      "counterEvidence": [
+        "Runtime host is 127.0.0.1 and port is 8787.",
+        "Manifest CSP includes ws://127.0.0.1:*.",
+        "HTTP loopback Health is ok under the patched CSP."
+      ],
+      "nextEvidenceNeeded": "DevTools Console service worker capture during reconnect."
+    },
+    {
+      "hypothesis": "Host mismatch: localhost vs 127.0.0.1",
+      "status": "unlikely",
+      "supportingEvidence": [
+        "CSP permits both 127.0.0.1 and localhost."
+      ],
+      "counterEvidence": [
+        "Runtime tab shows host 127.0.0.1.",
+        "The WebSocket URL construction uses the same host value."
+      ],
+      "nextEvidenceNeeded": "Confirm saved chrome.storage.local host remains 127.0.0.1."
+    },
+    {
+      "hypothesis": "IPv6 ::1 mismatch",
+      "status": "unlikely",
+      "supportingEvidence": [
+        "M636 noted ::1 is recognized by code but not included in CSP."
+      ],
+      "counterEvidence": [
+        "Runtime tab shows 127.0.0.1, not ::1."
+      ],
+      "nextEvidenceNeeded": "Confirm no saved host value uses ::1."
+    },
+    {
+      "hypothesis": "Bridge accepts HTTP but rejects WS",
+      "status": "likely",
+      "supportingEvidence": [
+        "Health is ok.",
+        "Clients is 1.",
+        "Heartbeat is OK.",
+        "Runtime/WebSocket stays reconnecting.",
+        "Logs show Bridge WebSocket error and Bridge connection closed."
+      ],
+      "counterEvidence": [
+        "No bridge server logs were provided."
+      ],
+      "nextEvidenceNeeded": "Check bridge logs and direct WebSocket endpoint behavior for /ws/extension."
+    },
+    {
+      "hypothesis": "Token/auth mismatch",
+      "status": "possible",
+      "supportingEvidence": [
+        "Runtime shows token guardado.",
+        "Bridge can reject a WebSocket after HTTP endpoints remain reachable."
+      ],
+      "counterEvidence": [
+        "UI did not report tokenError.",
+        "Service worker has explicit protocol.error handling for invalid_token, but M637A only reported generic WebSocket error."
+      ],
+      "nextEvidenceNeeded": "DevTools Console and bridge logs during reconnect; verify ExtensionToken matches current bridge config."
+    },
+    {
+      "hypothesis": "Stale extension state/session reconnect",
+      "status": "possible",
+      "supportingEvidence": [
+        "Runtime shows Clients 1 and Heartbeat OK while extension WebSocket is reconnecting.",
+        "Sidepanel derives heartbeat from debug clients even when extension.webSocketConnected is false."
+      ],
+      "counterEvidence": [
+        "No clear-local-state retest evidence was provided after the failure."
+      ],
+      "nextEvidenceNeeded": "Use Limpiar estado local, reload extension, reconnect, and capture Runtime/Console."
+    },
+    {
+      "hypothesis": "UI state stale despite bridge connected",
+      "status": "possible",
+      "supportingEvidence": [
+        "Clients 1 and Heartbeat OK can coexist with WebSocket reconnecting in the rendered Runtime tab.",
+        "Sidepanel renders WebSocket from extension.webSocketConnected or connection.state."
+      ],
+      "counterEvidence": [
+        "Local logs repeatedly show active Bridge WebSocket error events."
+      ],
+      "nextEvidenceNeeded": "Refresh debug plus service worker console capture after reload."
+    },
+    {
+      "hypothesis": "CSP patch unrelated",
+      "status": "possible",
+      "supportingEvidence": [
+        "CSP now allows the exact ws://127.0.0.1:* pattern required by current config.",
+        "HTTP endpoints continue to work.",
+        "The service worker uses ws://127.0.0.1:8787/ws/extension under the observed config."
+      ],
+      "counterEvidence": [
+        "The failure was observed immediately after CSP patch QA."
+      ],
+      "nextEvidenceNeeded": "DevTools Console to confirm absence of CSP violations."
+    }
+  ]
+}

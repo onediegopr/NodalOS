@@ -1,0 +1,18 @@
+{
+  "milestone": "M637B",
+  "decision": "BRIDGE_WEBSOCKET_RECONNECT_DIAGNOSTIC_READY",
+  "evidenceType": "post-csp-reload-qa-diagnostic",
+  "m637aObservedHealthOk": true,
+  "m637aObservedClientsOne": true,
+  "m637aObservedHeartbeatOk": true,
+  "m637aObservedWebSocketReconnecting": true,
+  "m637aObservedBridgeWebSocketError": true,
+  "sidepanelRenderImpacted": false,
+  "runtimeConnectionImpacted": true,
+  "cspPatchSuspected": true,
+  "requiresManualDevToolsConsole": true,
+  "requiresHostConfigCheck": true,
+  "requiresBridgeWsEndpointCheck": true,
+  "productFilesModified": false,
+  "diagnosticConclusion": "CSP remains temporally suspect because the reconnect appeared after M637, but the active host/port shown by M637A is 127.0.0.1:8787 and the M637 CSP allows ws://127.0.0.1:*. DevTools Console is required to distinguish CSP blocking from bridge WebSocket close/error, token/auth rejection, stale session state, or endpoint mismatch."
+}
