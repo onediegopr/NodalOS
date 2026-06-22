@@ -228,7 +228,7 @@ public sealed class NodalOsScreenshotConsoleQaEvidencePackM633Tests
     [TestMethod]
     public void ServiceWorkerUnchanged()
     {
-        Assert.AreEqual("546AAF381024B5F784F28A94A57F05948AECA92F6BFF174F577D22B4120A655F", Sha256Hex(BackgroundServicePath()));
+        Assert.AreEqual("E42D5247C0A9CCAC250EB51300E6F6C1B701CADBA3DBD4B86A62126CC7A1933D", Sha256Hex(BackgroundServicePath()));
     }
 
     [TestMethod]

@@ -24,6 +24,7 @@ const EXTENSION_CAPABILITIES = Object.freeze({
 let socket = null;
 let connected = false;
 let connectingPromise = null;
+let connectInFlight = false;
 let reconnectTimer = null;
 let heartbeatTimer = null;
 let reconnectAttempt = 0;
@@ -469,19 +470,41 @@ async function connectWebSocket(config, options = {}) {
     return connectingPromise;
   }
 
+  // Guard the async window before connectingPromise is assigned. On reload the
+  // extension runs initializeRuntimeLifecycle() more than once (onInstalled plus
+  // the top-level call), and scheduled reconnects can also re-enter here. Without
+  // this flag those concurrent calls race through the validateConnectionConfig
+  // await and each create a WebSocket, orphaning one socket whose error/close
+  // keeps re-scheduling reconnects and produces the reconnect loop.
+  if (connectInFlight) {
+    return connectingPromise || Promise.resolve();
+  }
+  connectInFlight = true;
+
   clearReconnectTimer();
   closeSocketOnly('reconnect');
   connectionStoppedByUser = false;
   stopRequestedExplicitly = false;
   setConnectionState('connecting', 'Connecting to bridge', { source: 'service_worker', cause: options.reason || 'connect.requested' });
-  const effectiveToken = await validateConnectionConfig(config);
+  let effectiveToken;
+  try {
+    effectiveToken = await validateConnectionConfig(config);
+  } catch (error) {
+    connectInFlight = false;
+    throw error;
+  }
   const url = `ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension`;
 
   connectingPromise = new Promise((resolve, reject) => {
-    socket = new WebSocket(url);
-    socket.addEventListener('open', () => {
+    const activeSocket = new WebSocket(url);
+    socket = activeSocket;
+    activeSocket.addEventListener('open', () => {
+      if (socket !== activeSocket) {
+        return;
+      }
       connected = true;
       connectingPromise = null;
+      connectInFlight = false;
       reconnectAttempt = 0;
       missedPongs = 0;
       lastConnectedAt = new Date().toISOString();
@@ -503,10 +526,19 @@ async function connectWebSocket(config, options = {}) {
       persistRuntimeState();
       resolve();
     });
-    socket.addEventListener('message', (event) => handleEngineMessage(event.data));
-    socket.addEventListener('close', (event) => {
+    activeSocket.addEventListener('message', (event) => {
+      if (socket !== activeSocket) {
+        return;
+      }
+      handleEngineMessage(event.data);
+    });
+    activeSocket.addEventListener('close', (event) => {
+      if (socket !== activeSocket) {
+        return;
+      }
       connected = false;
       connectingPromise = null;
+      connectInFlight = false;
       stopHeartbeat();
       lastWsCloseCode = Number(event.code || 0);
       lastWsCloseReason = String(event.reason || '');
@@ -533,9 +565,13 @@ async function connectWebSocket(config, options = {}) {
       }
       resolve();
     });
-    socket.addEventListener('error', () => {
+    activeSocket.addEventListener('error', () => {
+      if (socket !== activeSocket) {
+        return;
+      }
       connected = false;
       connectingPromise = null;
+      connectInFlight = false;
       stopHeartbeat();
       if (reconnectBlocked) {
         setConnectionState(connectionState === 'tokenError' ? 'tokenError' : 'error', reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked', {
@@ -566,6 +602,7 @@ function disconnect(reason) {
   socket = null;
   connected = false;
   connectingPromise = null;
+  connectInFlight = false;
   stopHeartbeat();
   setConnectionState('disconnected', reason || 'Disconnected by user', { source: 'side_panel', cause: reason || 'disconnect.click' });
   persistRuntimeState();
@@ -626,6 +663,7 @@ function blockReconnect(state, message) {
   reconnectBlockedReason = message || 'Reconnect blocked';
   connected = false;
   connectingPromise = null;
+  connectInFlight = false;
   connectionState = state || 'error';
   lastConnectionError = reconnectBlockedReason;
   lastProtocolError = reconnectBlockedReason;

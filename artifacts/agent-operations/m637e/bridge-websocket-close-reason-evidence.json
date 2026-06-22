@@ -1,0 +1,33 @@
+{
+  "milestone": "M637E",
+  "evidenceType": "code-analysis-of-bridge-and-service-worker",
+  "m637dReportedLogs": [
+    "03:40:23 connecting: Connecting to bridge",
+    "03:40:18 reconnecting: Bridge connection closed",
+    "03:40:18 error: Bridge WebSocket error",
+    "03:40:14 connecting: Connecting to bridge"
+  ],
+  "logInterpretation": "Chronological order: connecting (14s) -> WebSocket 'error' event (18s) -> 'close' event (18s) -> reconnect after backoff (23s, 5s = max BACKOFF_STEPS so the loop was already advanced). Both the error and close handlers ran for a single socket. The state never became 'tokenError' or 'protocolError'.",
+  "bridgeCloseBehavior": {
+    "source": "src/OneBrain.ChromeLab.Bridge/Program.cs HandleExtensionMessage",
+    "closesWith1008PolicyViolationWhen": [
+      "extension.hello token != ConnectionToken (sends protocol.error invalid_token, then CloseAsync PolicyViolation)",
+      "extension.hello protocolVersion != chrome-lab-v1 (sends protocol.error protocol_version_mismatch, then CloseAsync PolicyViolation)"
+    ],
+    "otherwiseNeverProactivelyCloses": true,
+    "everyBridgeInitiatedCloseIsPrecededByProtocolErrorMessage": true
+  },
+  "serviceWorkerProtocolErrorMapping": {
+    "source": "service_worker.js handleEngineMessage",
+    "invalid_token": "connectionState = 'tokenError', blockReconnect, stops reconnect loop",
+    "protocol_version_mismatch": "connectionState = 'protocolError', blockReconnect, stops reconnect loop"
+  },
+  "conclusion": "Because M637D showed neither 'tokenError' nor 'protocolError' and no protocol.error was surfaced, the socket close did NOT originate from the bridge auth/protocol path. A bridge-initiated close would have produced 'tokenError'/'protocolError' and stopped reconnecting. The observed generic 'error'/'reconnecting' close (inferred 1006) is consistent with either (a) transport-level failure (bridge process not reachable at the moment of connect) or (b) client-side socket churn from competing sockets. The competing-socket race is the demonstrable, fixable client-side cause and is addressed in M637E.",
+  "closeCodeObservedOrInferred": "1006 abnormal (inferred; DevTools console not provided)",
+  "closeReasonObservedOrInferred": "no bridge protocol.error => not invalid_token / not protocol mismatch",
+  "remainingManualEvidenceNeededForFullCertainty": [
+    "DevTools Network panel: the actual WebSocket close code (1006 vs 1008) and whether the handshake reached HTTP 101",
+    "Confirmation the bridge process was listening on 127.0.0.1:8787 during the test",
+    "DevTools Console: any CSP violation or ERR_CONNECTION_REFUSED lines"
+  ]
+}

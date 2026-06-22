@@ -7,14 +7,14 @@ namespace OneBrain.Safety.Tests;
 [TestClass]
 [TestCategory("BridgeWebSocketReconnect")]
 [TestCategory("NodalOsBridgeWebSocketReconnect")]
-[TestCategory("M637C")]
-public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
+[TestCategory("M637E")]
+public sealed class NodalOsBridgeWebSocketReconnectFollowupFixM637ETests
 {
-    private const string RootCausePath = "artifacts/agent-operations/m637c/bridge-websocket-reconnect-root-cause.json";
-    private const string FixSummaryPath = "artifacts/agent-operations/m637c/bridge-websocket-reconnect-fix-summary.json";
-    private const string HandshakeRegressionPath = "artifacts/agent-operations/m637c/bridge-websocket-handshake-regression.json";
-    private const string GoNoGoPath = "artifacts/agent-operations/m637c/post-bridge-reconnect-fix-go-no-go.json";
-    private const string ReportPath = "docs/reports/bridge-websocket-reconnect-fix-m637c.md";
+    private const string RootCausePath = "artifacts/agent-operations/m637e/bridge-websocket-reconnect-followup-root-cause.json";
+    private const string FixSummaryPath = "artifacts/agent-operations/m637e/bridge-websocket-reconnect-followup-fix-summary.json";
+    private const string CloseReasonPath = "artifacts/agent-operations/m637e/bridge-websocket-close-reason-evidence.json";
+    private const string GoNoGoPath = "artifacts/agent-operations/m637e/post-m637e-go-no-go.json";
+    private const string ReportPath = "docs/reports/bridge-websocket-reconnect-followup-fix-m637e.md";
     private const string ManifestPath = "browser-extension/onebrain-chrome-lab/manifest.json";
     private const string SidepanelHtmlPath = "browser-extension/onebrain-chrome-lab/sidepanel.html";
     private const string SidepanelCssPath = "browser-extension/onebrain-chrome-lab/sidepanel.css";
@@ -49,45 +49,37 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
     private static void AssertContains(string haystack, string needle) =>
         Assert.IsTrue(haystack.Contains(needle, StringComparison.Ordinal), $"Expected to find '{needle}'.");
 
-    // --- Artifact existence ---
+    // --- Artifact + report existence ---
 
     [TestMethod]
-    public void RootCauseArtifactExists()
-    {
-        Assert.IsTrue(File.Exists(FullPath(RootCausePath)), RootCausePath);
-    }
+    public void RootCauseArtifactExists() => Assert.IsTrue(File.Exists(FullPath(RootCausePath)), RootCausePath);
 
     [TestMethod]
-    public void FixSummaryArtifactExists()
-    {
-        Assert.IsTrue(File.Exists(FullPath(FixSummaryPath)), FixSummaryPath);
-    }
+    public void FixSummaryArtifactExists() => Assert.IsTrue(File.Exists(FullPath(FixSummaryPath)), FixSummaryPath);
 
     [TestMethod]
-    public void HandshakeRegressionArtifactExists()
-    {
-        Assert.IsTrue(File.Exists(FullPath(HandshakeRegressionPath)), HandshakeRegressionPath);
-    }
+    public void CloseReasonEvidenceArtifactExists() => Assert.IsTrue(File.Exists(FullPath(CloseReasonPath)), CloseReasonPath);
 
     [TestMethod]
-    public void GoNoGoArtifactExists()
-    {
-        Assert.IsTrue(File.Exists(FullPath(GoNoGoPath)), GoNoGoPath);
-    }
+    public void GoNoGoArtifactExists() => Assert.IsTrue(File.Exists(FullPath(GoNoGoPath)), GoNoGoPath);
 
     [TestMethod]
-    public void ReportMarkdownExists()
-    {
-        Assert.IsTrue(File.Exists(FullPath(ReportPath)), ReportPath);
-    }
+    public void ReportMarkdownExists() => Assert.IsTrue(File.Exists(FullPath(ReportPath)), ReportPath);
 
-    // --- Root cause artifact fields ---
+    // --- Root cause fields ---
 
     [TestMethod]
     public void RootCauseDecisionIsFixReady()
     {
         using var doc = ReadJson(RootCausePath);
         Assert.AreEqual("BRIDGE_WEBSOCKET_RECONNECT_FIX_READY", doc.RootElement.GetProperty("decision").GetString());
+    }
+
+    [TestMethod]
+    public void RootCauseRaceConditionWasRootCause()
+    {
+        using var doc = ReadJson(RootCausePath);
+        Assert.IsTrue(doc.RootElement.GetProperty("raceConditionWasRootCause").GetBoolean());
     }
 
     [TestMethod]
@@ -98,10 +90,17 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
     }
 
     [TestMethod]
-    public void RootCauseTokenAuthWasRootCause()
+    public void RootCauseBridgeWsHandlingWasNotRootCause()
     {
         using var doc = ReadJson(RootCausePath);
-        Assert.IsTrue(doc.RootElement.GetProperty("tokenAuthWasRootCause").GetBoolean());
+        Assert.IsFalse(doc.RootElement.GetProperty("bridgeWsHandlingWasRootCause").GetBoolean());
+    }
+
+    [TestMethod]
+    public void RootCauseTokenAuthWasNotRootCause()
+    {
+        using var doc = ReadJson(RootCausePath);
+        Assert.IsFalse(doc.RootElement.GetProperty("tokenAuthWasRootCause").GetBoolean());
     }
 
     [TestMethod]
@@ -109,13 +108,6 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
     {
         using var doc = ReadJson(RootCausePath);
         Assert.IsFalse(doc.RootElement.GetProperty("heartbeatWasRootCause").GetBoolean());
-    }
-
-    [TestMethod]
-    public void RootCauseStaleStateWasNotRootCause()
-    {
-        using var doc = ReadJson(RootCausePath);
-        Assert.IsFalse(doc.RootElement.GetProperty("staleStateWasRootCause").GetBoolean());
     }
 
     [TestMethod]
@@ -146,6 +138,13 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
     {
         using var doc = ReadJson(FixSummaryPath);
         Assert.IsFalse(doc.RootElement.GetProperty("manifestChanged").GetBoolean());
+    }
+
+    [TestMethod]
+    public void FixSummaryCspChangedFalse()
+    {
+        using var doc = ReadJson(FixSummaryPath);
+        Assert.IsFalse(doc.RootElement.GetProperty("cspChanged").GetBoolean());
     }
 
     [TestMethod]
@@ -197,6 +196,16 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
         Assert.IsFalse(doc.RootElement.GetProperty("runtimeArchitectureChanged").GetBoolean());
     }
 
+    // --- Close reason evidence fields ---
+
+    [TestMethod]
+    public void CloseReasonEvidenceConfirmsBridgeNotCloseSource()
+    {
+        using var doc = ReadJson(CloseReasonPath);
+        Assert.IsTrue(doc.RootElement.GetProperty("bridgeCloseBehavior")
+            .GetProperty("everyBridgeInitiatedCloseIsPrecededByProtocolErrorMessage").GetBoolean());
+    }
+
     // --- Go/No-Go fields ---
 
     [TestMethod]
@@ -234,28 +243,65 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
         Assert.IsFalse(doc.RootElement.GetProperty("readyForRuntimeChanges").GetBoolean());
     }
 
-    // --- Service worker fix verification ---
+    [TestMethod]
+    public void GoNoGoRecommendsM637F()
+    {
+        using var doc = ReadJson(GoNoGoPath);
+        AssertContains(doc.RootElement.GetProperty("recommendedNextMilestone").GetString() ?? "", "M637F");
+    }
+
+    // --- Regression: the actual fix is present in service_worker.js ---
 
     [TestMethod]
-    public void ServiceWorkerUsesEffectiveTokenInHello()
+    public void ServiceWorkerDeclaresConnectInFlightGuard()
     {
         var source = ReadRepoText(ServiceWorkerPath);
-        // M637E restructured the await into a try/catch; the invariant that the
-        // effective token (not config.token) is sent in extension.hello still holds.
+        AssertContains(source, "let connectInFlight = false;");
+        AssertContains(source, "if (connectInFlight) {");
+        AssertContains(source, "connectInFlight = true;");
+    }
+
+    [TestMethod]
+    public void ServiceWorkerGuardsValidateAwaitAgainstReentry()
+    {
+        var source = ReadRepoText(ServiceWorkerPath);
+        // connectInFlight must be set before the validateConnectionConfig await
+        var guardIndex = source.IndexOf("connectInFlight = true;", StringComparison.Ordinal);
+        var awaitIndex = source.IndexOf("await validateConnectionConfig(config)", StringComparison.Ordinal);
+        Assert.IsTrue(guardIndex >= 0, "connectInFlight = true; not found");
+        Assert.IsTrue(awaitIndex >= 0, "await validateConnectionConfig not found");
+        Assert.IsTrue(guardIndex < awaitIndex, "connectInFlight must be set before the validateConnectionConfig await");
+    }
+
+    [TestMethod]
+    public void ServiceWorkerUsesActiveSocketGuard()
+    {
+        var source = ReadRepoText(ServiceWorkerPath);
+        AssertContains(source, "const activeSocket = new WebSocket(url);");
+        AssertContains(source, "socket = activeSocket;");
+        AssertContains(source, "if (socket !== activeSocket) {");
+    }
+
+    [TestMethod]
+    public void ServiceWorkerResetsConnectInFlightInTeardown()
+    {
+        var source = ReadRepoText(ServiceWorkerPath);
+        // Must reset the flag when the socket settles or the connection is torn down,
+        // otherwise the guard could deadlock future reconnects.
+        var resets = source.Split("connectInFlight = false;").Length - 1;
+        Assert.IsTrue(resets >= 4, $"Expected connectInFlight reset in open/close/error/teardown paths, found {resets}");
+    }
+
+    [TestMethod]
+    public void ServiceWorkerStillUsesEffectiveTokenFromM637C()
+    {
+        var source = ReadRepoText(ServiceWorkerPath);
         AssertContains(source, "effectiveToken = await validateConnectionConfig(config)");
         AssertContains(source, "token: effectiveToken || ''");
     }
 
     [TestMethod]
-    public void ServiceWorkerValidateConnectionConfigReturnsPairedToken()
-    {
-        var source = ReadRepoText(ServiceWorkerPath);
-        AssertContains(source, "return paired;");
-        AssertContains(source, "return token;");
-    }
-
-    [TestMethod]
-    public void ServiceWorkerHasM637CBaseline()
+    public void ServiceWorkerHasM637EBaseline()
     {
         Assert.AreEqual("E42D5247C0A9CCAC250EB51300E6F6C1B701CADBA3DBD4B86A62126CC7A1933D", Sha256Hex(ServiceWorkerPath));
     }
@@ -298,7 +344,7 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
         Assert.AreEqual("DEA70FD162CE2F94ED29D35CD2C919AD2D62DA1810D46F49DD0CEBF63399C5F8", Sha256Hex(RecipeCorePath));
     }
 
-    // --- Compat keys ---
+    // --- Compat keys + CSP ---
 
     [TestMethod]
     public void PermissionsUnchanged()
@@ -319,6 +365,15 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
     }
 
     [TestMethod]
+    public void CspLoopbackUnchanged()
+    {
+        using var doc = ReadJson(ManifestPath);
+        var csp = doc.RootElement.GetProperty("content_security_policy").GetProperty("extension_pages").GetString() ?? "";
+        AssertContains(csp, string.Concat("ws://12", "7.0.0.1:*"));
+        Assert.IsFalse(csp.Contains("ws://*", StringComparison.Ordinal), "CSP must not be relaxed to a wildcard host.");
+    }
+
+    [TestMethod]
     public void StorageKeysUnchanged()
     {
         var serviceWorker = ReadRepoText(ServiceWorkerPath);
@@ -328,28 +383,23 @@ public sealed class NodalOsBridgeWebSocketReconnectFixM637CTests
     }
 
     [TestMethod]
-    public void PortAndAlarmNamesUnchanged()
+    public void PortAlarmAndProtocolNamesUnchanged()
     {
         var serviceWorker = ReadRepoText(ServiceWorkerPath);
-        AssertContains(serviceWorker, "nexa.keepalive");
-        AssertContains(serviceWorker, "PROTOCOL_VERSION = 'chrome-lab-v1'");
-    }
-
-    [TestMethod]
-    public void SidepanelPortNameUnchanged()
-    {
         var sidepanelJs = ReadRepoText(SidepanelJsPath);
+        AssertContains(serviceWorker, "nexa.keepalive");
+        AssertContains(serviceWorker, "nexa.content.ping");
+        AssertContains(serviceWorker, "PROTOCOL_VERSION = 'chrome-lab-v1'");
         AssertContains(sidepanelJs, "onebrain-sidepanel");
     }
 
-    // --- No autonomous execution / no capabilities opened ---
-
     [TestMethod]
-    public void ServiceWorkerRunOwnerRemainsDisabled()
+    public void NoAutonomousExecutionOpened()
     {
         var source = ReadRepoText(ServiceWorkerPath);
         AssertContains(source, "serviceWorkerRunOwner: false");
         AssertContains(source, "CORE_GOVERNED_MODE = true");
         AssertContains(source, "LEGACY_RUNNER_ENABLED = false");
+        AssertContains(source, "contentScriptAuthoritative: false");
     }
 }

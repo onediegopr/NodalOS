@@ -1,0 +1,29 @@
+{
+  "milestone": "M637E",
+  "readyForManualReloadQaAfterFix": true,
+  "readyForReleaseEvidenceGate": false,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "recommendedNextMilestone": "M637F Manual Reload QA After Bridge WebSocket Follow-up Fix",
+  "manualQaSteps": [
+    "Start the bridge: dotnet run --project src/OneBrain.ChromeLab.Bridge and confirm console shows 'listening on http://127.0.0.1:8787'",
+    "Confirm http://127.0.0.1:8787/runtime returns 200 ok=true BEFORE loading the extension",
+    "Load/reload the unpacked extension from browser-extension/onebrain-chrome-lab/",
+    "Open the side panel and the Runtime tab",
+    "Open DevTools (service worker) Console AND Network panel; keep them open during the test",
+    "Observe: connection should reach 'connected' and stay there (no connecting/error/reconnecting cycle)",
+    "If it still cycles: capture the WebSocket close code from DevTools Network (1006 vs 1008) and any Console errors, and confirm whether the bridge process was actually running",
+    "Verify /debug shows connectedCount=1 and the extension.hello event"
+  ],
+  "ifStillFailingCaptureForM637F": [
+    "WebSocket close code (1006 transport vs 1008 policy)",
+    "Whether HTTP 101 Switching Protocols was reached",
+    "ERR_CONNECTION_REFUSED presence (=> bridge not running)",
+    "Any CSP violation lines"
+  ],
+  "risksPending": [
+    "Final confirmation requires manual reload QA WITH the bridge confirmed running and DevTools console/network captured",
+    "If the bridge was simply not running during M637D, the race fix improves robustness but the user must start the bridge"
+  ]
+}

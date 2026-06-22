@@ -1,0 +1,34 @@
+{
+  "milestone": "M637E",
+  "changedFiles": [
+    "browser-extension/onebrain-chrome-lab/service_worker.js"
+  ],
+  "serviceWorkerChanged": true,
+  "bridgeChanged": false,
+  "sidepanelJsChanged": false,
+  "manifestChanged": false,
+  "permissionsChanged": false,
+  "hostPermissionsChanged": false,
+  "cspChanged": false,
+  "storageKeysChanged": false,
+  "protocolVersionChanged": false,
+  "portNamesChanged": false,
+  "alarmNamesChanged": false,
+  "runtimeArchitectureChanged": false,
+  "changeDescription": "Added a connectInFlight guard plus an active-socket guard to connectWebSocket(). connectInFlight is set synchronously before the validateConnectionConfig await and reset when the socket opens/closes/errors (and on disconnect/blockReconnect), so concurrent re-entries during the await window no longer create competing sockets. Each socket's open/message/close/error listener now checks 'if (socket !== activeSocket) return', neutralizing any orphaned socket so only the current socket drives connection state and reconnect scheduling.",
+  "linesChangedApprox": 30,
+  "serviceWorkerBaselineHashBefore": "546AAF381024B5F784F28A94A57F05948AECA92F6BFF174F577D22B4120A655F",
+  "serviceWorkerBaselineHashAfter": "E42D5247C0A9CCAC250EB51300E6F6C1B701CADBA3DBD4B86A62126CC7A1933D",
+  "compatKeysPreserved": [
+    "PROTOCOL_VERSION = 'chrome-lab-v1'",
+    "nexaRecipes",
+    "nexaLearningDraft",
+    "nexaRuntimeState",
+    "nexa.keepalive",
+    "nexa.content.ping",
+    "onebrain-sidepanel",
+    "serviceWorkerRunOwner: false",
+    "LEGACY_RUNNER_ENABLED = false",
+    "contentScriptAuthoritative: false"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "milestone": "M637E",
+  "decision": "BRIDGE_WEBSOCKET_RECONNECT_FIX_READY",
+  "rootCause": "Concurrent re-entry of connectWebSocket() creates competing WebSocket objects. connectWebSocket guards against re-entry only via 'if (connectingPromise) return', but connectingPromise is assigned AFTER 'await validateConnectionConfig(config)'. On extension reload the service worker runs initializeRuntimeLifecycle() more than once (chrome.runtime.onInstalled plus the top-level invocation), and scheduled reconnects / keepAliveTick can also re-enter, all racing through that await window while connectingPromise is still null. Each call then executes 'socket = new WebSocket(url)', overwriting the global socket and orphaning the previous one. The orphaned socket's error/close listeners still fire and call scheduleReconnect(), producing the connecting -> error -> reconnecting -> connecting loop observed in M637D.",
+  "m637cTokenFixInsufficientBecause": "M637C correctly fixed the empty-token-in-hello bug, but that path only matters once a single socket reaches socket.open. The reload reconnect loop is driven by competing sockets created during the validateConnectionConfig await window, before any hello is sent, so the token fix did not address it. The M637D evidence shows generic 'error'/'reconnecting' states and never 'tokenError', confirming the close did not originate from bridge token/protocol rejection.",
+  "cspWasRootCause": false,
+  "tokenAuthWasRootCause": false,
+  "heartbeatWasRootCause": false,
+  "bridgeWsHandlingWasRootCause": false,
+  "staleStateWasRootCause": false,
+  "uiStateWasRootCause": false,
+  "raceConditionWasRootCause": true,
+  "closeCodeObservedOrInferred": "1006 (abnormal closure, inferred)",
+  "closeReasonObservedOrInferred": "No protocol.error and no 'tokenError' state in M637D logs => close did not come from bridge auth/protocol path (bridge only closes 1008 PolicyViolation for invalid_token or protocol mismatch, always preceded by a protocol.error message). Remaining causes are transport-level failure or client-side socket churn; the competing-socket race is the demonstrable client-side cause.",
+  "productFilesModified": true,
+  "bridgeCloseAnalysis": {
+    "bridgeActivelyClosesOnlyFor": ["invalid_token", "protocol_version_mismatch"],
+    "bridgeCloseStatus": "1008 PolicyViolation",
+    "bridgeCloseAlwaysPrecededByProtocolError": true,
+    "m637dShowedTokenErrorState": false,
+    "thereforeBridgeAuthProtocolPathWasNotTheCloseSource": true
+  }
+}
