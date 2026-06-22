@@ -1,0 +1,9 @@
+{
+  "readyForReleaseEvidenceGate": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForReleasePublic": false,
+  "recommendedNextMilestone": "M637B Bridge WebSocket Reconnect Diagnostic After CSP Patch"
+}

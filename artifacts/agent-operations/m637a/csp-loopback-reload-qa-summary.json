@@ -1,0 +1,20 @@
+{
+  "milestone": "M637A",
+  "decision": "CSP_LOOPBACK_RELOAD_QA_FAILED",
+  "evidenceType": "user-reported-manual-reload-qa",
+  "userEvidenceSummary": "Runtime tab rendered after CSP loopback patch. Bridge host 127.0.0.1 and port 8787 are shown. Health is ok, token is saved, clients is 1 and heartbeat is OK. Runtime state and WebSocket remain reconnecting with Bridge WebSocket error logs.",
+  "bridgeHostShown": "127.0.0.1",
+  "bridgePortShown": "8787",
+  "healthShown": "ok",
+  "webSocketShown": "reconnecting",
+  "runtimeStateShown": "reconnecting",
+  "clientsShown": "1",
+  "heartbeatShown": "OK",
+  "diagnosticShown": "Conectando",
+  "recommendedActionShown": "Esperando reconexion. Si persiste, verifica token y bridge.",
+  "technicalLogsIncludeBridgeConnectionClosed": true,
+  "technicalLogsIncludeBridgeWebSocketError": true,
+  "screenshotsProvided": false,
+  "devtoolsConsoleProvided": false,
+  "productFilesModified": false
+}

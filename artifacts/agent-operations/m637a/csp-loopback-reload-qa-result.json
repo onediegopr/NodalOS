@@ -1,0 +1,20 @@
+{
+  "milestone": "M637A",
+  "decision": "CSP_LOOPBACK_RELOAD_QA_FAILED",
+  "evidenceType": "user-reported-manual-reload-qa",
+  "bridgeRunningDuringTest": "pass",
+  "tcpProbe1270018787": "unknown",
+  "extensionReloaded": "pass",
+  "sidepanelOpened": "pass",
+  "operateTabRendered": "pass",
+  "runtimeTabRendered": "pass",
+  "chromeExtensionNameShowsNodalOs": "pass",
+  "visibleNexaTextRemaining": "fail",
+  "runtimeConnectionObserved": "fail",
+  "cspViolations": "unknown",
+  "errConnectionRefusedPresent": "unknown",
+  "screenshotsProvided": false,
+  "devtoolsConsoleProvided": false,
+  "productFilesModified": false,
+  "manualReviewerNotes": "Usuario aportó texto de Runtime: Health ok, token guardado, clientes 1 y heartbeat OK, pero Estado/WebSocket quedan en reconnecting con logs repetidos: Bridge connection closed y Bridge WebSocket error. No se aportó Test-NetConnection literal ni DevTools Console; no se observó evidencia textual de CSP violation ni ERR_CONNECTION_REFUSED."
+}
