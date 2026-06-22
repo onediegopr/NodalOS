@@ -1,0 +1,74 @@
+{
+  "features": {
+    "assistant": {
+      "provider": "openai",
+      "model": "gpt-5.5-high",
+      "api_key": "ENV:OPENAI_API_KEY"
+    }
+  },
+  "languages": {
+    "javascript": {
+      "lsp": "typescript-language-server",
+      "formatter": "prettier",
+      "linter": "eslint"
+    },
+    "typescript": {
+      "lsp": "typescript-language-server",
+      "formatter": "prettier",
+      "linter": "eslint"
+    },
+    "html": {
+      "lsp": "vscode-html-language-server",
+      "formatter": "prettier"
+    },
+    "css": {
+      "lsp": "vscode-css-language-server",
+      "formatter": "prettier"
+    },
+    "rust": {
+      "lsp": "rust-analyzer",
+      "formatter": "rustfmt",
+      "linter": "clippy"
+    }
+  },
+  "format_on_save": true,
+  "editor": {
+    "tab_size": 2,
+    "trim_trailing_whitespace": true,
+    "insert_final_newline": true
+  },
+  "assistant": {
+    "inline_suggestions": true,
+    "chat_panel": "right",
+    "auto_suggest": true
+  },
+  "snippets": {
+    "javascript": {
+      "api_route": {
+        "prefix": "route",
+        "body": [
+          "export default async function handler(req, res) {",
+          "  try {",
+          "    // TODO: logic",
+          "    res.status(200).json({ ok: true });",
+          "  } catch (err) {",
+          "    res.status(500).json({ error: err.message });",
+          "  }",
+          "}"
+        ]
+      }
+    },
+    "rust": {
+      "module": {
+        "prefix": "mod",
+        "body": [
+          "pub mod  {",
+          "    pub fn run() {",
+          "        println!(\"Running module \");",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  }
+}
