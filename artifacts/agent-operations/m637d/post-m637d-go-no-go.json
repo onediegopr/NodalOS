@@ -1,0 +1,9 @@
+{
+  "readyForReleaseEvidenceGate": false,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "recommendedNextMilestone": "M637E Bridge WebSocket Fix Follow-up Diagnostic"
+}

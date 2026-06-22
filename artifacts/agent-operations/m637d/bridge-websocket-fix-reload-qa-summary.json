@@ -1,0 +1,18 @@
+{
+  "milestone": "M637D",
+  "decision": "BRIDGE_WEBSOCKET_FIX_RELOAD_QA_FAILED",
+  "evidenceType": "user-reported-manual-reload-qa",
+  "userStatement": "sigie el mismo error",
+  "reportedVisibleLogs": [
+    "03:40:23 connecting: Connecting to bridge",
+    "03:40:18 reconnecting: Bridge connection closed",
+    "03:40:18 error: Bridge WebSocket error",
+    "03:40:14 connecting: Connecting to bridge"
+  ],
+  "webSocketStillReconnecting": true,
+  "bridgeWebSocketErrorStillVisible": true,
+  "manualReloadQaPassed": false,
+  "screenshotsProvided": false,
+  "devtoolsConsoleProvided": false,
+  "productFilesModified": false
+}
