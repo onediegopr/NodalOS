@@ -1,0 +1,34 @@
+{
+  "milestone": "M631",
+  "lastClosedCommit": "745e5d8bd031b1c0d985b3331ad51ede47620ae1",
+  "line": "M615-M630 installed extension visual/naming QA",
+  "productFilesOfInterest": [
+    "browser-extension/onebrain-chrome-lab/manifest.json",
+    "browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js",
+    "browser-extension/onebrain-chrome-lab/service_wor\u006ber.js",
+    "browser-extension/onebrain-chrome-lab/content_script.js",
+    "browser-extension/onebrain-chrome-lab/recipe_core.js"
+  ],
+  "decisions": [
+    "CSS-only migration completed.",
+    "Manual user reload QA reported passed.",
+    "Naming NODAL OS visible verified by user.",
+    "No screenshots/logs were provided.",
+    "HTML minimum patch candidate only.",
+    "JS NO-GO.",
+    "Runtime NO-GO.",
+    "Manifest additional changes NO-GO unless milestone separated."
+  ],
+  "questionsForClaude": [
+    "Is it safe to close the installed extension visual QA line based on user-reported evidence?",
+    "Should an HTML minimum patch be allowed next?",
+    "Are there remaining visible legacy naming risks?",
+    "Should JS remain blocked?",
+    "Are manifest/naming changes sufficiently contained?",
+    "Are additional screenshots/logs required before product release?",
+    "Is there any risk in keeping compatibility keys with nexa/onebrain names?",
+    "What should be the next safest milestone?"
+  ]
+}

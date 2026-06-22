@@ -1,0 +1,14 @@
+{
+  "installedExtensionVisualLineCanClose": true,
+  "readyForHtmlMinimumPatchCandidate": true,
+  "readyForHtmlMinimumPatchNow": false,
+  "readyForAdditionalManifestChanges": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForProductiveConsent": false,
+  "requiresClaudeAuditBeforeJs": true,
+  "requiresDedicatedManifestMilestone": true,
+  "recommendedNextMilestone": "M632 Claude Audit: Installed Extension Visual/Naming QA Closeout"
+}

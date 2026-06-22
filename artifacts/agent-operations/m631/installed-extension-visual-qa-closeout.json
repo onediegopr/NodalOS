@@ -1,0 +1,18 @@
+{
+  "milestone": "M631",
+  "decision": "INSTALLED_EXTENSION_VISUAL_QA_CLOSEOUT_READY",
+  "coveredMilestones": ["M615", "M615A", "M616", "M617", "M618", "M619", "M620", "M621", "M622", "M623", "M624", "M625", "M626", "M627", "M628", "M629", "M630"],
+  "cssResearchOsMigrationClosed": true,
+  "installedExtensionLoadedByUser": true,
+  "userReportedReloadQaPassed": true,
+  "visibleNamingVerifiedByUser": true,
+  "screenshotsProvided": false,
+  "consoleLogsProvided": false,
+  "htmlMinimumPatchCandidate": true,
+  "readyForHtmlChangesNow": false,
+  "readyForAdditionalManifestChanges": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "requiresClaudeAuditBeforeJs": true,
+  "requiresDedicatedMilestoneForManifest": true
+}
