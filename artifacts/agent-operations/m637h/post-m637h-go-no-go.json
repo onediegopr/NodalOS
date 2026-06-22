@@ -1,0 +1,10 @@
+{
+  "readyForReleaseEvidenceGate": true,
+  "readyForFullClaudeAudit": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "recommendedNextMilestone": "M638 Installed Extension Release Evidence Gate + Full Claude Audit Prep"
+}

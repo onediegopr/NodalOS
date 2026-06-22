@@ -1,0 +1,32 @@
+{
+  "milestone": "M637H",
+  "decision": "BRIDGE_LIVENESS_RELOAD_QA_PASSED",
+  "summary": "Manual reload QA after bridge liveness verification passed by user report. The liveness precondition is recorded as pass for TCP, health, runtime, debug, config public, and WebSocket upgrade probes. The extension reload, sidepanel, Runtime tab, Health, clients, and heartbeat were reported ok, and the prior reconnect loop was reported resolved.",
+  "evidenceReceived": [
+    "User confirmation: si esta ok",
+    "Bridge liveness recorded as pass based on user confirmation after the required checklist",
+    "No screenshot artifact was provided",
+    "No DevTools Console text or screenshot was provided for this successful retest"
+  ],
+  "livenessChecks": {
+    "tcp1270018787": "pass",
+    "healthEndpoint": "pass",
+    "runtimeEndpoint": "pass",
+    "debugEndpoint": "pass",
+    "configPublicEndpoint": "pass",
+    "wsUpgradeEndpoint": "pass"
+  },
+  "manualReloadQa": {
+    "extensionReloaded": "pass",
+    "sidepanelOpened": "pass",
+    "runtimeTabRendered": "pass",
+    "healthOk": "pass",
+    "clientsObserved": "pass",
+    "heartbeatOk": "pass",
+    "webSocketReconnecting": "fail",
+    "bridgeWebSocketErrorVisible": "fail",
+    "errConnectionRefusedObserved": "fail",
+    "cspViolations": "unknown"
+  },
+  "productFilesModified": false
+}
