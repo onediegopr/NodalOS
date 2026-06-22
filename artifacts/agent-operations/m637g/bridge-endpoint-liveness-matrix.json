@@ -1,0 +1,18 @@
+{
+  "milestone": "M637G",
+  "capturedFrom": "local dotnet run of src/OneBrain.ChromeLab.Bridge on 2026-06-22",
+  "tcp1270018787": "pass",
+  "httpRuntime": "pass",
+  "httpDebug": "pass",
+  "httpHealth": "pass",
+  "httpConfigPublic": "pass",
+  "wsExtensionEndpoint": "pass",
+  "wsExtensionUpgradeStatus": "101 Switching Protocols",
+  "wsExtensionWithoutUpgradeStatus": "400",
+  "observedListeningAddress": "127.0.0.1:8787",
+  "observedPid": "6620",
+  "observedProcessName": "OneBrain.ChromeLab.Bridge",
+  "portConflict": "fail",
+  "bindingMismatch": "fail",
+  "note": "portConflict=fail and bindingMismatch=fail mean NO conflict and NO mismatch were detected (the only listener on 8787 was the bridge, bound to the expected loopback address)."
+}

@@ -1,0 +1,33 @@
+{
+  "milestone": "M637G",
+  "decision": "BRIDGE_PROCESS_PORT_LIVENESS_FIX_READY",
+  "rootCause": "Operational, not code. ERR_CONNECTION_REFUSED in M637F means no process was listening on 127.0.0.1:8787 at the moment of the QA test, so the WebSocket upgrade never reached the bridge. When the bridge process is actually started, it binds 127.0.0.1:8787 and serves /health, /runtime, /debug and the /ws/extension upgrade correctly. The reconnect loop in M637F was caused by the bridge not running, not by the extension or the bridge protocol.",
+  "errConnectionRefusedExplainedBy": "No TCP listener on 127.0.0.1:8787 during the test (bridge process not started or already exited). ERR_CONNECTION_REFUSED with no invalid_token, no close 1008 and no CSP violation is the textbook signature of a missing listener, not a protocol/auth/CSP failure.",
+  "bridgeProcessDetected": true,
+  "port8787Listening": true,
+  "runtimeEndpointOk": true,
+  "debugEndpointOk": true,
+  "wsEndpointMapped": true,
+  "wsEndpointAcceptsUpgrade": true,
+  "portConflictDetected": false,
+  "bindingMismatchDetected": false,
+  "extensionConfigMismatchDetected": false,
+  "productFilesModified": false,
+  "liveProofMethod": "Started the bridge locally (dotnet run --project src/OneBrain.ChromeLab.Bridge), then probed every endpoint and the WebSocket upgrade with real requests, captured the listening PID/address, then stopped the test process and confirmed the port was freed.",
+  "liveProof": {
+    "bridgeStdoutListeningLine": "onebrain-chrome-lab-bridge listening on http://127.0.0.1:8787",
+    "observedListeningAddress": "127.0.0.1:8787",
+    "observedPid": "6620",
+    "observedProcessName": "OneBrain.ChromeLab.Bridge",
+    "healthHttp": 200,
+    "runtimeHttp": 200,
+    "debugHttp": 200,
+    "configPublicHttp": 200,
+    "wsExtensionUpgradeStatus": "101 Switching Protocols",
+    "wsExtensionWithoutUpgradeStatus": 400,
+    "debugConnectedCountWhileLive": 1,
+    "debugEventsObserved": ["ws.accepted", "extension.hello", "ws.accepted", "ws.closed"]
+  },
+  "operationalConclusion": "The bridge must be started explicitly by the operator; the extension cannot auto-start it. M637G delivers a read-only liveness diagnostic script and a startup runbook so this blocker is self-diagnosable and not repeated.",
+  "requiresUserActionToStartBridge": true
+}

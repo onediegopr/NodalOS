@@ -1,0 +1,14 @@
+{
+  "milestone": "M637G",
+  "readyForManualReloadQaAfterBridgeLivenessFix": true,
+  "readyForReleaseEvidenceGate": false,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "recommendedNextMilestone": "M637H Manual Reload QA After Bridge Liveness Fix",
+  "preconditionForM637H": "Operator starts the bridge (dotnet run --project src/OneBrain.ChromeLab.Bridge) and confirms tools/scripts/bridge-liveness-check.ps1 reports all PASS BEFORE reloading the extension.",
+  "risksPending": [
+    "Bridge startup is a manual operator step; if the bridge is not started, ERR_CONNECTION_REFUSED will recur (expected, not a regression)",
+    "If, with the bridge confirmed live via the liveness script, the extension still loops, that would be a genuine client bug to investigate separately"
+  ]
+}

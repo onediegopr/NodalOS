@@ -1,0 +1,26 @@
+{
+  "milestone": "M637G",
+  "changedFiles": [
+    "tools/scripts/bridge-liveness-check.ps1",
+    "docs/runbooks/chrome-lab-bridge-startup-and-liveness.md",
+    "docs/reports/bridge-process-port-liveness-m637g.md",
+    "artifacts/agent-operations/m637g/bridge-process-port-liveness-diagnostic.json",
+    "artifacts/agent-operations/m637g/bridge-endpoint-liveness-matrix.json",
+    "artifacts/agent-operations/m637g/bridge-startup-fix-summary.json",
+    "artifacts/agent-operations/m637g/post-m637g-go-no-go.json",
+    "tests/OneBrain.Safety.Tests/NodalOsBridgeProcessPortLivenessM637GTests.cs"
+  ],
+  "bridgeCodeChanged": false,
+  "diagnosticScriptAdded": true,
+  "runbookAdded": true,
+  "extensionChanged": false,
+  "manifestChanged": false,
+  "cspChanged": false,
+  "permissionsChanged": false,
+  "hostPermissionsChanged": false,
+  "runtimeArchitectureChanged": false,
+  "serviceWorkerChanged": false,
+  "fixType": "A (operational runbook + read-only liveness diagnostic script). No code root cause; the bridge works when started. The deliverable makes the 'bridge not running' blocker self-diagnosable.",
+  "diagnosticScriptIsReadOnly": true,
+  "diagnosticScriptKillsProcesses": false
+}
