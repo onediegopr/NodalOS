@@ -1,0 +1,15 @@
+{
+  "milestone": "M708",
+  "decision": "PRIVACY_SUPPORT_DOCS_URL_GAPS_TRACKED",
+  "privacySupportUrlsReady": false,
+  "privacySupportUrlGapsTracked": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

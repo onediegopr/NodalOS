@@ -1,0 +1,17 @@
+{
+  "milestone": "M709",
+  "decision": "EXTERNAL_AUDIT_PREP_READY",
+  "externalAuditPackReady": true,
+  "claudeAuditPromptPackReady": true,
+  "publicPackageFreezePrepReady": true,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

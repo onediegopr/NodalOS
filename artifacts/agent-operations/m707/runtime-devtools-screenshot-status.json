@@ -1,0 +1,11 @@
+{
+  "milestone": "M707",
+  "runtimeTabStatus": "pending",
+  "serviceWorkerDevtoolsStatus": "pending",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "cannotDeclarePassWithoutCapture": true
+}

@@ -1,0 +1,9 @@
+{
+  "milestone": "M709",
+  "decision": "EXTERNAL_AUDIT_PREP_READY",
+  "externalAuditPackReady": true,
+  "scope": "pre-submission review only",
+  "lineSummary": "M651-M709 moved from internal candidate evidence through public manifest variant, staging, token/reconnect hardening, asset gap tracking, and external audit prep without public release.",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

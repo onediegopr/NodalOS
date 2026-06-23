@@ -1,0 +1,10 @@
+{
+  "milestone": "M707",
+  "redactionStatus": "pass",
+  "secretsIncluded": false,
+  "completeTokenVisible": false,
+  "apiKeysVisible": false,
+  "authorizationSecretsVisible": false,
+  "sessionDataVisible": false,
+  "rawLongLogsIncluded": false
+}

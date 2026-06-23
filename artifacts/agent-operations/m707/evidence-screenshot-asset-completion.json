@@ -1,0 +1,23 @@
+{
+  "milestone": "M707",
+  "decision": "EVIDENCE_SCREENSHOT_ASSET_COMPLETION_TRACKED",
+  "chromeExtensionLoadedScreenshot": "pending",
+  "sidepanelConnectedScreenshot": "pending",
+  "runtimeTabScreenshotEvidence": "pending",
+  "serviceWorkerDevtoolsScreenshotEvidence": "pending",
+  "permissionWarningScreenshotEvidence": "unknown",
+  "evidenceRedaction": "pass",
+  "secretsIncluded": false,
+  "assetCaptureReadiness": "partial",
+  "assetCapturePackReady": true,
+  "assetCapturePending": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

@@ -1,0 +1,8 @@
+{
+  "milestone": "M707",
+  "status": "unknown",
+  "captureIfShown": true,
+  "notShownIsAcceptableIfDocumented": true,
+  "expectedHostPermissionScope": ["http://127.0.0.1/*", "http://localhost/*"],
+  "broadWebsitePermissionExpected": false
+}

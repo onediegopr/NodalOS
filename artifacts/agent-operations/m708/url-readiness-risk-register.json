@@ -1,0 +1,24 @@
+{
+  "milestone": "M708",
+  "risks": [
+    {
+      "id": "M708-R1",
+      "risk": "Missing privacy URL blocks Chrome Web Store submission.",
+      "severity": "high",
+      "status": "open"
+    },
+    {
+      "id": "M708-R2",
+      "risk": "Missing support URL blocks Chrome Web Store submission.",
+      "severity": "high",
+      "status": "open"
+    },
+    {
+      "id": "M708-R3",
+      "risk": "Missing docs URL reduces reviewer/user context.",
+      "severity": "medium",
+      "status": "open"
+    }
+  ],
+  "chromeWebStoreReady": false
+}

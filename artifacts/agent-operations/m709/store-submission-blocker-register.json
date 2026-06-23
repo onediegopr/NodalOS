@@ -1,0 +1,27 @@
+{
+  "milestone": "M709",
+  "blockers": [
+    {
+      "id": "M709-B1",
+      "blocker": "screenshots/assets incomplete",
+      "status": "open"
+    },
+    {
+      "id": "M709-B2",
+      "blocker": "privacy URL pending",
+      "status": "open"
+    },
+    {
+      "id": "M709-B3",
+      "blocker": "support URL pending",
+      "status": "open"
+    },
+    {
+      "id": "M709-B4",
+      "blocker": "public package freeze not approved",
+      "status": "open"
+    }
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

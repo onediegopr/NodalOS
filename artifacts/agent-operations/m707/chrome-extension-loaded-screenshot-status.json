@@ -1,0 +1,8 @@
+{
+  "milestone": "M707",
+  "status": "pending",
+  "expectedVisibleName": "NODAL OS Public Candidate",
+  "expectedStagingPath": "artifacts/manual-qa/public-variant-staging",
+  "mustNotShowPersonalData": true,
+  "manualEvidenceRequired": true
+}

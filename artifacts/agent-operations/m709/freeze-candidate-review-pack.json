@@ -1,0 +1,14 @@
+{
+  "milestone": "M709",
+  "freezeCandidateReviewPackReady": true,
+  "manifestPublicVariantSummary": "Public staging uses a public manifest materialized as manifest.json with localhost and 127.0.0.1 host permissions only.",
+  "hostPermissionsNarrowingSummary": "Public variant removed broad http and https wildcards.",
+  "stagingFolderSummary": "artifacts/manual-qa/public-variant-staging is the controlled public candidate staging folder.",
+  "bridgeTokenReconnectFixSummary": "Token required, token present, bridge unreachable, invalid token, and reconnect hardening paths were previously documented without exposing token values.",
+  "bridgeLivenessSummary": "Local bridge liveness was previously verified; Chrome live evidence remains partial.",
+  "evidenceStatus": "partial",
+  "assetStatus": "pending",
+  "privacySupportUrlStatus": "pending",
+  "storeListingDisclosureStatus": "draft-ready",
+  "packageFreezeReadiness": "prep-ready-not-frozen"
+}

@@ -1,0 +1,24 @@
+{
+  "milestone": "M709",
+  "claudeAuditPromptPackReady": true,
+  "auditorPrompt": "Audit the NODAL OS Chrome public candidate pre-submission state. Review public staging manifest narrowing, package exclusions, store listing and permission disclosure, evidence gaps, privacy/support URL gaps, package freeze readiness, and confirm Public Release and Chrome Web Store remain NO-GO until assets, URLs, and freeze approval are complete.",
+  "mustReview": [
+    "manifest/public variant summary",
+    "host permissions narrowing",
+    "public staging folder",
+    "package exclusion audit",
+    "bridge token and reconnect fix evidence",
+    "human Chrome evidence status",
+    "screenshot asset gaps",
+    "privacy/support URL gaps",
+    "store listing and disclosure drafts",
+    "public release no-go proof",
+    "Chrome Web Store no-go proof"
+  ],
+  "mustNotApprove": [
+    "public release",
+    "Chrome Web Store upload",
+    "final signed package",
+    "runtime/provider/filesystem/browser/capability enablement"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "milestone": "M708",
+  "gaps": [
+    {
+      "id": "M708-URL-1",
+      "field": "privacyUrl",
+      "status": "pending",
+      "blocksStoreSubmission": true
+    },
+    {
+      "id": "M708-URL-2",
+      "field": "supportUrl",
+      "status": "pending",
+      "blocksStoreSubmission": true
+    },
+    {
+      "id": "M708-URL-3",
+      "field": "docsUrl",
+      "status": "pending",
+      "blocksStoreSubmission": false
+    }
+  ],
+  "privacySupportUrlGapsTracked": true
+}

@@ -1,0 +1,16 @@
+{
+  "milestone": "M707",
+  "decision": "EVIDENCE_SCREENSHOT_ASSET_COMPLETION_TRACKED",
+  "assetCapturePackReady": true,
+  "assetCapturePending": true,
+  "screenshotsReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

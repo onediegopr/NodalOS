@@ -1,0 +1,18 @@
+{
+  "milestone": "M709",
+  "publicPackageFreezePrepReady": true,
+  "publicPackageFreezeReady": false,
+  "readyItems": [
+    "public staging manifest audit",
+    "package exclusion audit",
+    "store listing final draft",
+    "permission disclosure final draft",
+    "external audit pack",
+    "Claude audit prompt pack"
+  ],
+  "blockers": [
+    "screenshots/assets pending",
+    "privacy/support URLs pending",
+    "human Chrome evidence remains partial"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "milestone": "M707",
+  "requiredScreenshots": [
+    {
+      "name": "chrome extension loaded",
+      "status": "pending",
+      "purpose": "Prove the public candidate is loaded from the staging folder."
+    },
+    {
+      "name": "sidepanel connected",
+      "status": "pending",
+      "purpose": "Prove local bridge/token state without exposing secrets."
+    },
+    {
+      "name": "runtime tab",
+      "status": "pending",
+      "purpose": "Prove runtime tab behavior or visible limitations."
+    },
+    {
+      "name": "service worker devtools",
+      "status": "pending",
+      "purpose": "Prove console cleanliness and no reconnect storm."
+    },
+    {
+      "name": "permission warnings",
+      "status": "unknown",
+      "purpose": "Capture warning text if Chrome displays it."
+    }
+  ],
+  "assetCapturePending": true
+}

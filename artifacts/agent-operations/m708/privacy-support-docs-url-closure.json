@@ -1,0 +1,13 @@
+{
+  "milestone": "M708",
+  "decision": "PRIVACY_SUPPORT_DOCS_URL_GAPS_TRACKED",
+  "privacyUrlStatus": "pending",
+  "supportUrlStatus": "pending",
+  "docsUrlStatus": "pending",
+  "placeholdersAllowedForAuditPrepOnly": true,
+  "placeholdersSubmissionReady": false,
+  "urlReadiness": "pending",
+  "privacySupportUrlsReady": false,
+  "chromeWebStoreReady": false,
+  "publicReleaseReady": false
+}

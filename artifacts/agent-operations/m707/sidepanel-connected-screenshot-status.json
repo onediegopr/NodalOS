@@ -1,0 +1,11 @@
+{
+  "milestone": "M707",
+  "status": "pending",
+  "requiredFields": [
+    "token present state",
+    "WebSocket connected or exact status",
+    "no complete token value visible",
+    "no local secrets visible"
+  ],
+  "manualEvidenceRequired": true
+}
