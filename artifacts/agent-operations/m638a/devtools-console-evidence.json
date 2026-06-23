@@ -1,0 +1,14 @@
+{
+  "devtoolsConsoleProvided": false,
+  "serviceWorkerConsoleInspected": false,
+  "afterExtensionReloadWithBridgeLive": false,
+  "cspViolationsObserved": "unknown",
+  "errConnectionRefusedObserved": "unknown",
+  "invalidTokenObserved": "unknown",
+  "policyViolation1008Observed": "unknown",
+  "bridgeWebSocketErrorRepeatedObserved": "unknown",
+  "criticalErrorsObserved": "unknown",
+  "warningsObserved": [],
+  "rawConsoleExcerptAllowed": false,
+  "blockedReason": "Bridge liveness failed before clean DevTools Console evidence could be captured."
+}

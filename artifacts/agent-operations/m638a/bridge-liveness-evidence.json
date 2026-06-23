@@ -1,0 +1,22 @@
+{
+  "scriptRun": true,
+  "scriptPath": "tools/scripts/bridge-liveness-check.ps1",
+  "tcp1270018787": "fail",
+  "listenerProcess": "fail",
+  "healthEndpoint": "fail",
+  "runtimeEndpoint": "fail",
+  "debugEndpoint": "fail",
+  "configPublicEndpoint": "fail",
+  "wsUpgradeEndpoint": "fail",
+  "result": "bridge-not-fully-live",
+  "rawOutputSummary": [
+    "tcp 127.0.0.1:8787: NO listener",
+    "listener process: no process listening on 8787",
+    "http /health: HTTP 0",
+    "http /runtime: HTTP 0",
+    "http /config/public: HTTP 0",
+    "http /debug: HTTP 0",
+    "ws /ws/extension upgrade: upgrade NOT accepted"
+  ],
+  "recommendedOperatorAction": "Start the bridge with dotnet run --project src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj, then retry M638A."
+}

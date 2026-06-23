@@ -1,0 +1,21 @@
+{
+  "milestone": "M638A",
+  "decision": "CLEAN_DEVTOOLS_EVIDENCE_NOT_PROVIDED",
+  "basedOnMilestone": "M638",
+  "basedOnCommit": "32fb7c1042b17b3b2061b814db3f1467496645d9",
+  "evidenceCaptureOnly": true,
+  "productFilesModified": false,
+  "bridgeLivenessEvidence": "fail",
+  "runtimeTabEvidenceProvided": false,
+  "devtoolsConsoleEvidenceProvided": false,
+  "cspViolationCheck": "unknown",
+  "errConnectionRefusedCheck": "unknown",
+  "invalidTokenCheck": "unknown",
+  "policyViolation1008Check": "unknown",
+  "bridgeWebSocketErrorCheck": "unknown",
+  "webSocketReconnectingCheck": "unknown",
+  "criticalConsoleErrorsCheck": "unknown",
+  "warningsObserved": [],
+  "releasePublicReady": false,
+  "manualReviewerNotes": "Liveness script was executed for M638A and failed because no process was listening on 127.0.0.1:8787. Runtime tab and service worker DevTools Console were not inspected after a live bridge reload, so all console checks remain unknown."
+}
