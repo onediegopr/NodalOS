@@ -1,0 +1,20 @@
+{
+  "milestone": "M720",
+  "decision": "URL_FINALIZATION_RETRY_CONDITIONAL_P0_PENDING",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "privacySupportUrlBlockersClosed": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

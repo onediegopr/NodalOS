@@ -1,0 +1,10 @@
+{
+  "milestone": "M720",
+  "supportUrlStatus": "pending",
+  "supportUrlReady": false,
+  "providedUrl": null,
+  "placeholder": false,
+  "requiredForChromeWebStoreFinal": true,
+  "blocksStoreFinal": true,
+  "blocksPackageFreezeFinal": true
+}

@@ -1,0 +1,6 @@
+{
+  "milestone": "M721",
+  "chromeWebStoreReady": false,
+  "decision": "CHROME_WEB_STORE_NO_GO",
+  "reason": "Chrome Web Store remains blocked by missing privacy/support URLs, pending screenshots/assets, incomplete evidence, and no final package freeze."
+}

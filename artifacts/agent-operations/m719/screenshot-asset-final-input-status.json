@@ -1,0 +1,12 @@
+{
+  "milestone": "M719",
+  "screenshotsStatus": "pending",
+  "screenshotsReady": false,
+  "extensionLoadedScreenshot": "not_provided",
+  "sidepanelConnectedScreenshot": "not_provided",
+  "runtimeTabScreenshot": "not_provided",
+  "serviceWorkerDevtoolsScreenshot": "not_provided",
+  "permissionWarningScreenshot": "unknown",
+  "assetCapturePending": true,
+  "blockingForPackageFreezeFinal": true
+}

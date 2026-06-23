@@ -1,0 +1,16 @@
+{
+  "milestone": "M720",
+  "artifact": "privacy-support-docs-url-finalization-retry",
+  "privacyUrlStatus": "pending",
+  "supportUrlStatus": "pending",
+  "docsUrlStatus": "pending",
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "placeholdersTreatedAsReady": false,
+  "repoSearchFoundFinalPrivacyUrl": false,
+  "repoSearchFoundFinalSupportUrl": false,
+  "repoSearchFoundFinalDocsUrl": false,
+  "storeFinalBlocked": true,
+  "decision": "URL_FINALIZATION_RETRY_P0_PENDING"
+}

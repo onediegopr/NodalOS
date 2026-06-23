@@ -1,0 +1,7 @@
+{
+  "milestone": "M721",
+  "decision": "PUBLIC_PACKAGE_FREEZE_NO_GO_P0_PENDING",
+  "publicPackageFreezeReady": false,
+  "p0BlockersClosed": false,
+  "reason": "Human evidence, screenshots/assets, privacy URL, support URL, and final package freeze approval remain incomplete."
+}

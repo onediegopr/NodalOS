@@ -1,0 +1,10 @@
+{
+  "milestone": "M720",
+  "docsUrlStatus": "pending",
+  "docsUrlReady": false,
+  "providedUrl": null,
+  "placeholder": false,
+  "requiredForChromeWebStoreFinal": false,
+  "recommendedForStoreReview": true,
+  "blockerPriority": "P2"
+}

@@ -1,0 +1,11 @@
+{
+  "milestone": "M719",
+  "evidenceRedaction": "pass",
+  "evidenceRedacted": true,
+  "secretsIncluded": false,
+  "apiKeysIncluded": false,
+  "tokensIncluded": false,
+  "cookiesIncluded": false,
+  "rawLongLogsIncluded": false,
+  "note": "No new human evidence was provided, so no new sensitive material was stored."
+}

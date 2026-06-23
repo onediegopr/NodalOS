@@ -1,0 +1,32 @@
+{
+  "milestone": "M721",
+  "p0BlockersClosed": false,
+  "p0Blockers": [
+    {
+      "id": "privacy-url",
+      "status": "open",
+      "ready": false
+    },
+    {
+      "id": "support-url",
+      "status": "open",
+      "ready": false
+    },
+    {
+      "id": "screenshots-assets",
+      "status": "open",
+      "ready": false
+    },
+    {
+      "id": "full-manual-evidence",
+      "status": "open",
+      "ready": false
+    },
+    {
+      "id": "package-freeze-final",
+      "status": "open",
+      "ready": false
+    }
+  ],
+  "publicPackageFreezeReady": false
+}

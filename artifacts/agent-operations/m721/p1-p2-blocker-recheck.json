@@ -1,0 +1,35 @@
+{
+  "milestone": "M721",
+  "p1Blockers": [
+    {
+      "id": "permission-warning-capture",
+      "status": "unknown"
+    },
+    {
+      "id": "runtime-devtools-evidence",
+      "status": "incomplete"
+    },
+    {
+      "id": "final-store-listing-application",
+      "status": "pending"
+    },
+    {
+      "id": "final-naming-applied-to-store-package",
+      "status": "pending"
+    }
+  ],
+  "p2Blockers": [
+    {
+      "id": "docs-url",
+      "status": "pending"
+    },
+    {
+      "id": "promo-assets",
+      "status": "pending"
+    },
+    {
+      "id": "checksum-final",
+      "status": "not_calculated"
+    }
+  ]
+}

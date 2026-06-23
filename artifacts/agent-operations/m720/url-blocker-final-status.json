@@ -1,0 +1,9 @@
+{
+  "milestone": "M720",
+  "privacyUrlMissingBlocksStoreFinal": true,
+  "supportUrlMissingBlocksStoreFinal": true,
+  "docsUrlPendingIsP2": true,
+  "privacySupportUrlBlockersClosed": false,
+  "packageFreezeFinalRemainsNoGo": true,
+  "chromeWebStoreReady": false
+}

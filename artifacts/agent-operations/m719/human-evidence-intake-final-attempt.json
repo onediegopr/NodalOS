@@ -1,0 +1,14 @@
+{
+  "milestone": "M719",
+  "artifact": "human-evidence-intake-final-attempt",
+  "activeProject": "NODAL OS",
+  "humanInputProvidedThisBlock": false,
+  "humanEvidenceStatus": "partial",
+  "basis": "No new human Chrome QA fields, screenshots, Runtime tab evidence, Service Worker DevTools evidence, permission warning text, or redacted screenshots were provided in this block.",
+  "priorEvidenceAcceptedAsPositiveButPartial": true,
+  "evidenceStillPartial": true,
+  "blockingForPackageFreezeFinal": true,
+  "secretsIncluded": false,
+  "evidenceRedaction": "pass",
+  "decision": "HUMAN_EVIDENCE_FINAL_ATTEMPT_PARTIAL_P0_PENDING"
+}

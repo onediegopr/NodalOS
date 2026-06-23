@@ -1,0 +1,6 @@
+{
+  "milestone": "M721",
+  "publicReleaseReady": false,
+  "decision": "PUBLIC_RELEASE_NO_GO",
+  "reason": "Package freeze final readiness is conditional/no-go and P0 blockers remain open."
+}

@@ -1,0 +1,25 @@
+{
+  "milestone": "M720",
+  "risks": [
+    {
+      "id": "URL-P0-PRIVACY",
+      "severity": "P0",
+      "status": "open",
+      "description": "Final privacy URL is not provided."
+    },
+    {
+      "id": "URL-P0-SUPPORT",
+      "severity": "P0",
+      "status": "open",
+      "description": "Final support URL is not provided."
+    },
+    {
+      "id": "URL-P2-DOCS",
+      "severity": "P2",
+      "status": "open",
+      "description": "Docs URL is pending and recommended for review, but not treated as a final Store blocker unless required by listing."
+    }
+  ],
+  "chromeWebStoreReady": false,
+  "publicReleaseReady": false
+}

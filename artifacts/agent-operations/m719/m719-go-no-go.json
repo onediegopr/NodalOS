@@ -1,0 +1,22 @@
+{
+  "milestone": "M719",
+  "decision": "HUMAN_EVIDENCE_FINAL_ATTEMPT_CONDITIONAL_PARTIAL",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "humanEvidenceReady": false,
+  "screenshotsReady": false,
+  "runtimeDevtoolsEvidenceReady": false,
+  "permissionWarningsCaptured": false,
+  "evidenceRedacted": true,
+  "secretsIncluded": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

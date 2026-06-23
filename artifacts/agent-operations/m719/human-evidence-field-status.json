@@ -1,0 +1,19 @@
+{
+  "milestone": "M719",
+  "publicVariantLoaded": "unknown",
+  "visibleExtensionName": "unknown",
+  "loadedStagingPath": "unknown",
+  "manifestSelectionVerifiedHuman": "unknown",
+  "tokenPresentUi": "unknown",
+  "websocketConnectedLive": "unknown",
+  "bridgeLiveness": "unknown",
+  "runtimeTabEvidence": "unknown",
+  "serviceWorkerDevtoolsEvidence": "unknown",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "finalManualQaDecision": "not_provided",
+  "humanEvidenceReady": false
+}

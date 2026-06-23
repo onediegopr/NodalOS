@@ -1,0 +1,12 @@
+{
+  "milestone": "M719",
+  "runtimeTab": "unknown",
+  "serviceWorkerDevtools": "unknown",
+  "cspConsole": "unknown",
+  "invalidToken": "unknown",
+  "close1008": "unknown",
+  "reconnectStorm": "unknown",
+  "criticalConsoleErrors": "unknown",
+  "runtimeDevtoolsEvidenceReady": false,
+  "blockingForPackageFreezeFinal": true
+}
