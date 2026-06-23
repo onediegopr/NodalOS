@@ -1,0 +1,11 @@
+{
+  "milestone": "M738",
+  "decision": "FREEZE_CANDIDATE_LOCK_GO_NON_PUBLICABLE",
+  "freezeCandidateLock": "GO",
+  "publicablePackage": false,
+  "signedPublicZip": false,
+  "storeSubmission": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

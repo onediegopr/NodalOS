@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "scope": "conditional freeze candidate lock",
+  "stagingPath": "artifacts/manual-qa/public-variant-staging",
+  "publicCandidateOnly": true,
+  "releasePubliclyCallable": false,
+  "chromeWebStoreSubmissionAllowed": false
+}

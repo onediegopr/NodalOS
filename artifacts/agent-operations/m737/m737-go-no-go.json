@@ -1,0 +1,8 @@
+{
+  "milestone": "M737",
+  "decision": "OWNER_FINAL_FREEZE_ACCEPTANCE_RECEIVED",
+  "ownerFinalFreezeAcceptanceReceived": true,
+  "freezeFinalCanProceedToLock": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

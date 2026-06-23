@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "freezeCandidateLock": "GO",
+  "freezeLockType": "conditional_owner_attested_non_auditable",
+  "ownerFinalFreezeAcceptanceReceived": true,
+  "publicablePackage": false,
+  "signedPublicZip": false,
+  "storeSubmission": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

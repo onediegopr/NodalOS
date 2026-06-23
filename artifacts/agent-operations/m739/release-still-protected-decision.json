@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "freezeCandidateLock": "GO",
+  "publicPackageFreezeFinal": "OWNER-ACCEPTED CONDITIONAL LOCK",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "publicReleaseRequiresSeparateOwnerAcceptance": true,
+  "chromeWebStoreRequiresSeparateOwnerAcceptance": true,
+  "runtimeProviderFilesystemBrowserCapability": "DISABLED",
+  "noBlindRelease": true,
+  "noStoreSubmission": true
+}

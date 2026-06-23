@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "publicablePackage": false,
+  "signedPublicZip": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "storeSubmission": false,
+  "noBlindRelease": true
+}

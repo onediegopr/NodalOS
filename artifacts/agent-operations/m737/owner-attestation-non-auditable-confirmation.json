@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "ownerAttestationBasis": true,
+  "ownerFinalFreezeAcceptanceReceived": true,
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "auditProofEvidenceAvailable": false,
+  "ownerAttestationConvertedToAuditProof": false
+}

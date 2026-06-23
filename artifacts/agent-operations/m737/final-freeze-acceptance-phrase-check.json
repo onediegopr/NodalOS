@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "requiredPhrase": "ACEPTO FREEZE FINAL CON OWNER ATTESTATION NO AUDITABLE",
+  "phrasePresentInM737M739Input": true,
+  "ownerFinalFreezeAcceptanceReceived": true,
+  "missingPhraseDecision": "OWNER_FINAL_FREEZE_ACCEPTANCE_REQUIRED",
+  "acceptedPhraseDecision": "OWNER_FINAL_FREEZE_ACCEPTANCE_RECEIVED_FREEZE_CANDIDATE_LOCK_READY",
+  "freezeFinalCanProceedToLock": true
+}

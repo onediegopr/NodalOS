@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "contentsSource": "public variant staging folder",
+  "expectedFiles": [
+    "manifest.json",
+    "sidepanel.html",
+    "sidepanel.css",
+    "sidepanel.js",
+    "service_worker.js",
+    "content_script.js",
+    "recipe_core.js",
+    "README.md"
+  ],
+  "signedPublicZipCreated": false
+}

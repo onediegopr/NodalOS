@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "excluded": [
+    "secrets",
+    "API keys",
+    "provider credentials",
+    "tokens",
+    "cookies",
+    "logs",
+    "temp files",
+    "user data",
+    "browser profiles",
+    "signing credentials",
+    "private keys",
+    "out-of-scope external project files",
+    "NODRIX files except historical/audit/guardrail references"
+  ],
+  "exclusionsEnforced": true
+}

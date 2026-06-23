@@ -1,0 +1,9 @@
+{
+  "milestone": "M739",
+  "decision": "RELEASE_STILL_PROTECTED",
+  "freezeCandidateLock": "GO",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "noBlindRelease": true,
+  "noStoreSubmission": true
+}

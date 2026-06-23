@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "ownerFinalFreezeAcceptanceReceived": true,
+  "acceptedPhrase": "ACEPTO FREEZE FINAL CON OWNER ATTESTATION NO AUDITABLE",
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "screenshotsProvided": false,
+  "logsProvided": false,
+  "runtimeDevtoolsEvidenceProvided": false,
+  "permissionWarningsEvidenceProvided": false,
+  "evidenceInvented": false,
+  "freezeFinalCanProceedToLock": true,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}
