@@ -1,0 +1,20 @@
+{
+  "milestone": "M662",
+  "decision": "HOST_PERMISSIONS_NARROWING_PROOF_READY",
+  "internalHostPermissionsBefore": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "publicHostPermissionsAfter": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "removedFromPublicVariant": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "publicHostPermissionsNarrowed": true,
+  "internalWildcardPermissionsPreservedForInternalCandidate": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

@@ -1,0 +1,23 @@
+{
+  "milestone": "M663",
+  "decision": "PUBLIC_VARIANT_RUNTIME_QA_PLAN_READY",
+  "manualQaRequiredBeforePublicRelease": true,
+  "qaChecks": [
+    "extension_reload",
+    "runtime_tab",
+    "service_worker_devtools",
+    "csp_violations",
+    "allowed_origins",
+    "disallowed_origins",
+    "bridge_liveness",
+    "no_invalid_token",
+    "no_reconnect_storm",
+    "no_critical_console_errors"
+  ],
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "publicReleaseReady": false
+}

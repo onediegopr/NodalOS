@@ -1,0 +1,32 @@
+{
+  "milestone": "M661-M663",
+  "decision": "PUBLIC_MANIFEST_VARIANT_PATCH_READY",
+  "internalCandidateReady": true,
+  "publicBuildCandidateReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "internalManifestPreserved": true,
+  "publicManifestVariantCreatedOrUpdated": true,
+  "publicHostPermissionsNarrowed": true,
+  "publicContentScriptMatchesNarrowed": true,
+  "internalWildcardPermissionsPreservedForInternalCandidate": true,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manualQaRequiredBeforePublicRelease": true,
+  "recommendedNextMilestone": "M664-M666 Public Build Package Candidate + Manual Extension QA + Store Disclosure Prep",
+  "percentages": {
+    "internalCandidateReadiness": 95,
+    "publicBuildCandidateReadiness": 86,
+    "publicManifestPatchReadiness": 90,
+    "publicReleaseReadiness": 76,
+    "hostPermissionsReleaseReadiness": 91,
+    "packagingSigningStoreReadiness": 73,
+    "runtimeProductizationReadiness": 30,
+    "providerCloudReadiness": 22
+  }
+}

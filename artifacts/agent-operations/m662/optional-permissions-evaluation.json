@@ -1,0 +1,18 @@
+{
+  "milestone": "M662",
+  "decision": "OPTIONAL_PERMISSIONS_EVALUATION_READY",
+  "optionalHostPermissionsImplementedNow": false,
+  "activeTabAlreadyPresent": true,
+  "activeTabEvaluation": "available_for_future_user_initiated_site_interaction_design",
+  "recommendedFutureModel": "start_public_variant_with_localhost_host_permissions_and_no_automatic_content_scripts_then_evaluate_user_granted_origins",
+  "whyNotImplementOptionalHostPermissionsNow": [
+    "requires UX and consent copy not implemented in this milestone",
+    "requires manual QA for grant and revoke behavior",
+    "requires store disclosure review"
+  ],
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "publicReleaseReady": false
+}

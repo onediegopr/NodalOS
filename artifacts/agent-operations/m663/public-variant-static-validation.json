@@ -1,0 +1,13 @@
+{
+  "milestone": "M663",
+  "decision": "PUBLIC_VARIANT_STATIC_VALIDATION_READY",
+  "publicManifestVariantPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "manifestJsonValid": true,
+  "publicManifestVariantCreatedOrUpdated": true,
+  "publicHostPermissionsNarrowed": true,
+  "publicContentScriptMatchesNarrowed": true,
+  "wildcardHostPermissionsPresent": false,
+  "wildcardContentScriptMatchesPresent": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

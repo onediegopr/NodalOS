@@ -1,0 +1,51 @@
+{
+  "milestone": "M661",
+  "decision": "MANIFEST_VARIANT_DIFF_SUMMARY_READY",
+  "internalManifestPath": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "publicManifestVariantPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "differences": [
+    {
+      "field": "name",
+      "internal": "NODAL OS",
+      "public": "NODAL OS Public Candidate"
+    },
+    {
+      "field": "description",
+      "internal": "Local-first Chrome lab client for NODAL OS.",
+      "public": "Local-first Chrome lab client for NODAL OS public candidate validation."
+    },
+    {
+      "field": "host_permissions",
+      "internal": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "public": [
+        "http://127.0.0.1/*",
+        "http://localhost/*"
+      ]
+    },
+    {
+      "field": "content_scripts",
+      "internal": "automatic_content_script_on_http_https_wildcards",
+      "public": "omitted_to_avoid_broad_origin_injection"
+    },
+    {
+      "field": "action.default_title",
+      "internal": "NODAL OS",
+      "public": "NODAL OS Public Candidate"
+    }
+  ],
+  "identicalFields": [
+    "manifest_version",
+    "version",
+    "permissions",
+    "background.service_worker",
+    "side_panel.default_path",
+    "content_security_policy.extension_pages"
+  ],
+  "publicHostPermissionsNarrowed": true,
+  "publicContentScriptMatchesNarrowed": true,
+  "cspModified": false,
+  "bridgeModified": false
+}

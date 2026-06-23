@@ -1,0 +1,20 @@
+{
+  "milestone": "M661",
+  "decision": "PUBLIC_MANIFEST_VARIANT_PATCH_READY",
+  "internalManifestPreserved": true,
+  "publicManifestVariantCreatedOrUpdated": true,
+  "publicHostPermissionsNarrowed": true,
+  "publicContentScriptMatchesNarrowed": true,
+  "internalCandidateReady": true,
+  "publicBuildCandidateReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "manualQaRequiredBeforePublicRelease": true
+}

@@ -1,0 +1,19 @@
+{
+  "milestone": "M662",
+  "decision": "CONTENT_SCRIPT_MATCH_NARROWING_PROOF_READY",
+  "internalContentScriptsMatchesBefore": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "publicContentScriptsStrategy": "omit_automatic_content_scripts_for_public_variant",
+  "publicContentScriptsMatchesAfter": [],
+  "publicContentScriptMatchesNarrowed": true,
+  "rationale": "No automatic content script injection on broad external origins is the safest public default.",
+  "futureAlternatives": [
+    "optional_host_permissions_with_user_granted_origins",
+    "activeTab_triggered_interaction",
+    "explicit_public_allowlist"
+  ],
+  "manualQaRequiredBeforePublicRelease": true,
+  "publicReleaseReady": false
+}

@@ -1,0 +1,15 @@
+{
+  "milestone": "M663",
+  "decision": "PUBLIC_RELEASE_NO_GO_PROOF_READY",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reasons": [
+    "manual_qa_required_before_public_release",
+    "store_disclosure_not_final",
+    "public_package_not_created",
+    "chrome_web_store_upload_not_performed",
+    "provider_runtime_filesystem_browser_unlocks_remain_disabled"
+  ],
+  "internalCandidateReady": true,
+  "publicBuildCandidateReady": true
+}

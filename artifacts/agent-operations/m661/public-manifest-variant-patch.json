@@ -1,0 +1,23 @@
+{
+  "milestone": "M661",
+  "decision": "PUBLIC_MANIFEST_VARIANT_PATCH_READY",
+  "mode": "controlled-implementation",
+  "internalManifestPath": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "publicManifestVariantPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "internalManifestPreserved": true,
+  "publicManifestVariantCreatedOrUpdated": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "packageFinalPublicCreated": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "sidepanelModified": false,
+  "serviceWorkerModified": false,
+  "contentScriptModified": false,
+  "recipeCoreModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

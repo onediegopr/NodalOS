@@ -1,0 +1,51 @@
+{
+  "milestone": "M662",
+  "decision": "PUBLIC_BUILD_FEATURE_IMPACT_AFTER_NARROWING_READY",
+  "featureImpacts": [
+    {
+      "feature": "sidepanel",
+      "impact": "expected_to_remain_available",
+      "qaRequired": true
+    },
+    {
+      "feature": "runtime_tab",
+      "impact": "expected_to_remain_available_with_bridge_live",
+      "qaRequired": true
+    },
+    {
+      "feature": "service_worker",
+      "impact": "expected_to_remain_available",
+      "qaRequired": true
+    },
+    {
+      "feature": "automatic_content_script_on_external_sites",
+      "impact": "disabled_in_public_variant_by_design",
+      "qaRequired": true
+    },
+    {
+      "feature": "provider_cloud",
+      "impact": "disabled",
+      "qaRequired": false
+    },
+    {
+      "feature": "filesystem_workspace",
+      "impact": "disabled",
+      "qaRequired": false
+    },
+    {
+      "feature": "browser_automation",
+      "impact": "disabled",
+      "qaRequired": false
+    }
+  ],
+  "knownLimitations": [
+    "public_variant_does_not_auto_inject_content_script_on_external_origins",
+    "site_specific_features_require_future_user_granted_origin_design"
+  ],
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "publicReleaseReady": false
+}

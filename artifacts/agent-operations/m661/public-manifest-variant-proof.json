@@ -1,0 +1,17 @@
+{
+  "milestone": "M661",
+  "decision": "PUBLIC_MANIFEST_VARIANT_PROOF_READY",
+  "publicManifestVariantPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "publicManifestVariantCreatedOrUpdated": true,
+  "publicHostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "publicContentScriptsStrategy": "no_automatic_content_scripts_in_public_variant",
+  "publicContentScriptsMatches": [],
+  "publicHostPermissionsNarrowed": true,
+  "publicContentScriptMatchesNarrowed": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "manualQaRequiredBeforePublicRelease": true
+}

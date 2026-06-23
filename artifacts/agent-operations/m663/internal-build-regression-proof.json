@@ -1,0 +1,15 @@
+{
+  "milestone": "M663",
+  "decision": "INTERNAL_BUILD_REGRESSION_PROOF_READY",
+  "internalCandidateReady": true,
+  "internalManifestPreserved": true,
+  "internalManifestPath": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "internalBehaviorExpectedUnchanged": true,
+  "internalWildcardPermissionsPreservedForInternalCandidate": true,
+  "bridgeModified": false,
+  "cspModified": false,
+  "sidepanelModified": false,
+  "serviceWorkerModified": false,
+  "contentScriptModified": false,
+  "recipeCoreModified": false
+}

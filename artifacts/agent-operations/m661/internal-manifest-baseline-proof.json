@@ -1,0 +1,18 @@
+{
+  "milestone": "M661",
+  "decision": "INTERNAL_MANIFEST_BASELINE_PROOF_READY",
+  "internalManifestPath": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "internalManifestPreserved": true,
+  "internalCandidateReady": true,
+  "internalHostPermissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "internalContentScriptsMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "internalWildcardPermissionsPreservedForInternalCandidate": true,
+  "allowedScope": "controlled_internal_candidate_only",
+  "publicReleaseReady": false
+}

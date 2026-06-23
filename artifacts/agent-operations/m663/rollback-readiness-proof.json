@@ -1,0 +1,17 @@
+{
+  "milestone": "M663",
+  "decision": "ROLLBACK_READINESS_PROOF_READY",
+  "rollbackReady": true,
+  "rollbackTarget": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "rollbackAction": "exclude_or_revert_manifest_public_variant_and_continue_internal_candidate_baseline",
+  "rollbackTriggers": [
+    "public_variant_static_validation_failure",
+    "extension_reload_regression",
+    "runtime_tab_regression",
+    "service_worker_devtools_regression",
+    "unexpected_permission_prompt",
+    "content_script_origin_regression"
+  ],
+  "publicReleaseReady": false,
+  "internalCandidateReady": true
+}
