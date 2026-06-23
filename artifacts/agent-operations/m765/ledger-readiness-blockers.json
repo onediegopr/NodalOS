@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "ledgerReadinessBlockers": "READY",
+  "blockers": [
+    "missing evidence envelope binding",
+    "missing redaction proof binding",
+    "missing no-execution proof flags",
+    "secrets/tokens/credentials included",
+    "actual execution performed",
+    "live call performed",
+    "filesystem write performed",
+    "browser automation performed",
+    "capability unlocked",
+    "public release requested",
+    "Store submission requested",
+    "product files modified",
+    "Bridge/CSP modified"
+  ]
+}

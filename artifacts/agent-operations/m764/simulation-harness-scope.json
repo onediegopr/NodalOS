@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "scopeStatus": "READY",
+  "simulationScope": [
+    "metadata-only dry-run simulation",
+    "fake provider response",
+    "fake local model response",
+    "fake filesystem read metadata",
+    "fake extension bridge event",
+    "fake WebSocket bridge event",
+    "fake evidence ledger append event",
+    "fake timeline/report event",
+    "fake policy gate decision",
+    "fake manual approval decision",
+    "fake redaction proof"
+  ],
+  "realExecutionAllowed": false
+}

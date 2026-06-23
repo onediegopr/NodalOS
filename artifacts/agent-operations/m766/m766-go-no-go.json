@@ -1,0 +1,9 @@
+{
+  "milestone": "M766",
+  "decision": "SIMULATION_HARNESS_NEXT_DECISION_READY",
+  "dryRunSimulationHarnessPlan": "READY",
+  "evidenceLedgerReadiness": "READY",
+  "productiveUnlockAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

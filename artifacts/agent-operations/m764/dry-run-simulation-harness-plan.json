@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M764",
+  "decision": "DRY_RUN_SIMULATION_HARNESS_PLAN_READY",
+  "dryRunSimulationHarnessPlan": "READY",
+  "simulationMode": "PLANNING_ONLY / CONTRACT_READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "productiveExecutionAllowed": false
+}

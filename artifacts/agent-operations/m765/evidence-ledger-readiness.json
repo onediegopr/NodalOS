@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M765",
+  "decision": "EVIDENCE_LEDGER_READINESS_READY",
+  "evidenceLedgerReadiness": "READY",
+  "ledgerEventSchemaReadiness": "READY",
+  "simulationEvidenceEnvelopeBinding": "READY",
+  "noExecutionProofFlags": "READY",
+  "redactionProofBinding": "READY",
+  "productiveExecutionAllowed": false
+}

@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "recommendedNextMilestone": "M767-M769 Simulation Harness Test Fixtures + No-Execution Proof Suite",
+  "scope": "fixtures/tests/contracts only",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

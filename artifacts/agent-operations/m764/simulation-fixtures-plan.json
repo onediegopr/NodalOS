@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "fixturesPlanStatus": "READY",
+  "allowedFixtures": [
+    "static fake provider response fixture",
+    "static fake local model response fixture",
+    "synthetic filesystem metadata fixture",
+    "synthetic bridge event fixture",
+    "synthetic WebSocket event fixture",
+    "synthetic policy decision fixture",
+    "synthetic approval decision fixture",
+    "synthetic redaction proof fixture",
+    "synthetic ledger append fixture"
+  ],
+  "realExternalInputsAllowed": false,
+  "realExecutionAllowed": false
+}

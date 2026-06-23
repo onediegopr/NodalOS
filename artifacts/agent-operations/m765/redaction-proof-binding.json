@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "redactionProofBinding": "READY",
+  "redactionProofRequired": true,
+  "redactionProofFields": [
+    "redactionProofRef",
+    "redactionApplied",
+    "forbiddenFieldsAbsent",
+    "metadataOnlyEvidence",
+    "noRawLogs",
+    "noRawUserData"
+  ],
+  "missingRedactionProofBlocksReadiness": true
+}

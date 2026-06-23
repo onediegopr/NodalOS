@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "simulationEvidenceEnvelopeBinding": "READY",
+  "requiredBindings": [
+    "eventId -> evidenceEnvelopeRef",
+    "dryRunId -> evidenceEnvelopeRef",
+    "capabilityName -> evidenceEnvelopeRef",
+    "redactionProofRef -> evidenceEnvelopeRef",
+    "noExecutionProofFlags -> evidenceEnvelopeRef"
+  ],
+  "missingEvidenceEnvelopeBindingBlocksReadiness": true
+}

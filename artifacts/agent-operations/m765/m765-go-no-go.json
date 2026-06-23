@@ -1,0 +1,9 @@
+{
+  "milestone": "M765",
+  "decision": "EVIDENCE_LEDGER_READINESS_READY",
+  "evidenceLedgerReadiness": "READY",
+  "ledgerEventSchemaReadiness": "READY",
+  "productiveExecutionAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "disallowedActionsStatus": "READY",
+  "disallowedActions": [
+    "live provider/cloud call",
+    "real credential use",
+    "filesystem write",
+    "real browser automation",
+    "real WebSocket external call",
+    "capability unlock",
+    "public release",
+    "Chrome Web Store submission",
+    "signed public ZIP",
+    "product file modification",
+    "Bridge/CSP modification"
+  ]
+}

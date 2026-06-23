@@ -1,0 +1,9 @@
+{
+  "milestone": "M764",
+  "decision": "DRY_RUN_SIMULATION_HARNESS_PLAN_READY",
+  "dryRunSimulationHarnessPlan": "READY",
+  "simulationMode": "PLANNING_ONLY / CONTRACT_READY",
+  "productiveExecutionAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

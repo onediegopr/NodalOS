@@ -1,0 +1,40 @@
+{
+  "project": "NODAL OS",
+  "ledgerEventSchemaReadiness": "READY",
+  "requiredFields": [
+    "eventId",
+    "dryRunId",
+    "capabilityName",
+    "eventType",
+    "policyGateDecision",
+    "approvalDecision",
+    "riskLevel",
+    "evidenceEnvelopeRef",
+    "redactionProofRef",
+    "createdAt",
+    "secretsIncluded",
+    "credentialsIncluded",
+    "tokensIncluded",
+    "rawUserDataIncluded",
+    "actualExecutionPerformed",
+    "liveCallPerformed",
+    "filesystemWritePerformed",
+    "browserAutomationPerformed",
+    "capabilityUnlocked",
+    "publicReleasePerformed",
+    "storeSubmissionPerformed"
+  ],
+  "booleanInvariants": {
+    "secretsIncluded": false,
+    "credentialsIncluded": false,
+    "tokensIncluded": false,
+    "rawUserDataIncluded": false,
+    "actualExecutionPerformed": false,
+    "liveCallPerformed": false,
+    "filesystemWritePerformed": false,
+    "browserAutomationPerformed": false,
+    "capabilityUnlocked": false,
+    "publicReleasePerformed": false,
+    "storeSubmissionPerformed": false
+  }
+}
