@@ -1,0 +1,9 @@
+{
+  "milestone": "M695",
+  "classification": "UNKNOWN",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "rawConsoleExcerptStored": false
+}

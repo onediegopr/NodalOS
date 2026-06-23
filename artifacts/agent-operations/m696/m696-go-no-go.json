@@ -1,0 +1,16 @@
+{
+  "milestone": "M696",
+  "decision": "FINAL_PACKAGE_FREEZE_AUDIT_READY_CONDITIONAL_EVIDENCE",
+  "publicStagingReady": true,
+  "publicPackageFreezeReady": false,
+  "preSubmissionAuditReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

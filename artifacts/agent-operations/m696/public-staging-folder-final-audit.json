@@ -1,0 +1,9 @@
+{
+  "milestone": "M696",
+  "stagingPath": "artifacts/manual-qa/public-variant-staging",
+  "stagingFolderExists": true,
+  "stagingFolderReady": true,
+  "releasePackage": false,
+  "signedPackage": false,
+  "storeUploadArtifact": false
+}

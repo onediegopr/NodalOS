@@ -1,0 +1,10 @@
+{
+  "milestone": "M695",
+  "classification": "UNKNOWN",
+  "permissionWarningsCaptured": "unknown",
+  "permissionWarningsTextStored": false,
+  "expectedHostPermissionScope": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ]
+}

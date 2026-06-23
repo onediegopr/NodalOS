@@ -1,0 +1,18 @@
+{
+  "milestone": "M696",
+  "decision": "FINAL_PACKAGE_FREEZE_AUDIT_READY_CONDITIONAL_EVIDENCE",
+  "publicStagingFolderExists": true,
+  "publicStagingManifestExists": true,
+  "publicStagingManifestValidJson": true,
+  "publicStagingUsesPublicManifest": true,
+  "publicStagingHasNoWildcards": true,
+  "publicStagingHasNoAutomaticExternalContentScripts": true,
+  "packageContentsExcludeSecrets": true,
+  "knownLimitationsDocumented": true,
+  "storeDisclosureGapsOpen": true,
+  "humanEvidenceComplete": false,
+  "publicPackageFreezeReady": false,
+  "preSubmissionAuditReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

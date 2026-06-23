@@ -1,0 +1,8 @@
+{
+  "milestone": "M695",
+  "classification": "UNKNOWN",
+  "websocketConnectedLive": "unknown",
+  "reconnectStormFound": "unknown",
+  "close1008Found": "unknown",
+  "evidenceGap": "No explicit WebSocket connected field was provided."
+}

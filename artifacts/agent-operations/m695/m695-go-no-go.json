@@ -1,0 +1,17 @@
+{
+  "milestone": "M695",
+  "decision": "HUMAN_CHROME_QA_CONDITIONAL_READY_EVIDENCE_PARTIAL",
+  "humanChromeEvidenceReceived": true,
+  "humanChromeEvidenceSufficient": false,
+  "userReportedWorking": true,
+  "evidenceCompleteness": "partial",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

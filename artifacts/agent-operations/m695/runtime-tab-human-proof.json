@@ -1,0 +1,7 @@
+{
+  "milestone": "M695",
+  "classification": "UNKNOWN",
+  "runtimeTabEvidence": "unknown",
+  "runtimeTabNotes": "No explicit Runtime tab PASS/FAIL field was provided.",
+  "fullPassNotClaimed": true
+}

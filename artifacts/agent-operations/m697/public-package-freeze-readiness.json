@@ -1,0 +1,18 @@
+{
+  "milestone": "M697",
+  "publicPackageFreezeReady": false,
+  "freezeReadiness": "conditional-blocked-by-partial-human-evidence",
+  "stagingReady": true,
+  "manualChromePositiveReport": true,
+  "manualChromeEvidenceComplete": false,
+  "blockingEvidenceGaps": [
+    "visible extension name",
+    "loaded staging path",
+    "manifest selection verified human",
+    "token present UI",
+    "WebSocket connected live",
+    "Runtime tab PASS",
+    "Service Worker DevTools PASS",
+    "CSP and console cleanliness fields"
+  ]
+}

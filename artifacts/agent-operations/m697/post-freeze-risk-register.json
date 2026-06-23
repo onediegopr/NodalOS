@@ -1,0 +1,23 @@
+{
+  "milestone": "M697",
+  "risks": [
+    {
+      "id": "PARTIAL-HUMAN-CHROME-EVIDENCE",
+      "severity": "high-for-public-release",
+      "status": "open",
+      "description": "User reported local Chrome success, but required evidence fields remain incomplete."
+    },
+    {
+      "id": "STORE-DISCLOSURE-GAPS",
+      "severity": "high-for-store",
+      "status": "open",
+      "description": "Privacy URL, support URL, screenshots/assets, final listing text, final naming, and final permission disclosure remain pending."
+    },
+    {
+      "id": "PACKAGE-FREEZE-NOT-READY",
+      "severity": "medium",
+      "status": "open",
+      "description": "Public package freeze remains blocked until full human evidence is captured."
+    }
+  ]
+}

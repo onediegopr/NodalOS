@@ -1,0 +1,10 @@
+{
+  "milestone": "M696",
+  "knownLimitationsDocumented": true,
+  "limitations": [
+    "Public candidate does not auto-access websites.",
+    "Public candidate has no automatic external content scripts.",
+    "Site-specific features require a future user-granted access flow.",
+    "Public release still requires complete manual Chrome evidence and store readiness."
+  ]
+}

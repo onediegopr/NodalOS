@@ -1,0 +1,11 @@
+{
+  "milestone": "M695",
+  "classification": "PASS",
+  "evidenceRedacted": true,
+  "secretsIncluded": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "rawConsoleExcerptStored": false,
+  "longRawLogsStored": false,
+  "privateUserDataStored": false
+}

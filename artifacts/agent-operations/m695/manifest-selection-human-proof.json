@@ -1,0 +1,9 @@
+{
+  "milestone": "M695",
+  "classification": "PARTIAL",
+  "manifestSelectionVerifiedHuman": "unknown",
+  "expectedPublicStagingManifest": "artifacts/manual-qa/public-variant-staging/manifest.json",
+  "expectedSourceManifest": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "internalManifestReplacement": false,
+  "evidenceGap": "Human report did not explicitly confirm the staged manifest path."
+}

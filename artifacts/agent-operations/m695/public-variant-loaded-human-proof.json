@@ -1,0 +1,9 @@
+{
+  "milestone": "M695",
+  "classification": "PARTIAL",
+  "publicVariantLoaded": "user-reported-positive",
+  "visibleExtensionName": "unknown",
+  "loadedStagingPath": "unknown",
+  "evidenceGap": "The user reported correct local Chrome behavior, but did not provide the explicit loaded path or visible name fields.",
+  "fullPassNotClaimed": true
+}

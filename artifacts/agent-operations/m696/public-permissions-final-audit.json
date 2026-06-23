@@ -1,0 +1,12 @@
+{
+  "milestone": "M696",
+  "hostPermissionsLimitedToLocal": true,
+  "hostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "wildcardHostPermissions": false,
+  "automaticExternalContentScripts": false,
+  "permissionsRequireStoreDisclosure": true,
+  "publicReleaseReady": false
+}

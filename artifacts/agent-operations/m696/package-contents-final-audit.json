@@ -1,0 +1,20 @@
+{
+  "milestone": "M696",
+  "packageContentsAudited": true,
+  "files": [
+    "manifest.json",
+    "sidepanel.html",
+    "sidepanel.css",
+    "sidepanel.js",
+    "service_worker.js",
+    "content_script.js",
+    "recipe_core.js",
+    "README.md"
+  ],
+  "secretsIncluded": false,
+  "localConfigIncluded": false,
+  "temporaryLogsIncluded": false,
+  "userDataIncluded": false,
+  "apiKeysIncluded": false,
+  "tokenIncluded": false
+}

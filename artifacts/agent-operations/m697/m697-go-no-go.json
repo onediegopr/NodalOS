@@ -1,0 +1,16 @@
+{
+  "milestone": "M697",
+  "decision": "HUMAN_CHROME_QA_CONDITIONAL_READY_EVIDENCE_PARTIAL",
+  "publicPackageFreezeReady": false,
+  "preSubmissionAuditReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "recommendedNextMilestone": "M698-M700 Evidence Completion + Store Asset Gap Closure + Pre-Submission Audit"
+}

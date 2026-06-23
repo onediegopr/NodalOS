@@ -1,0 +1,8 @@
+{
+  "milestone": "M695",
+  "classification": "UNKNOWN",
+  "tokenPresentUi": "unknown",
+  "tokenValueCopiedToArtifact": false,
+  "tokenLoggedInFull": false,
+  "evidenceGap": "No explicit token-present UI field was provided."
+}
