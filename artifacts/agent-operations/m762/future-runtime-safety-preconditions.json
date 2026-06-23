@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "safetyPreconditionsStatus": "READY",
+  "preconditions": [
+    "dry-run evidence envelope exists",
+    "redaction proof exists",
+    "forbidden fields proof exists",
+    "no secrets proof exists",
+    "no live call proof exists",
+    "no filesystem write proof exists",
+    "no browser action proof exists",
+    "full suite PASS",
+    "capability-specific tests PASS"
+  ],
+  "productiveEnableAllowed": false
+}

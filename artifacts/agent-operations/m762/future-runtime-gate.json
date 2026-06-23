@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M762",
+  "decision": "FUTURE_RUNTIME_GATE_READY",
+  "futureRuntimeGate": "READY",
+  "productiveEnableAllowed": false,
+  "productiveEnabledRemainsProhibited": true,
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED"
+}

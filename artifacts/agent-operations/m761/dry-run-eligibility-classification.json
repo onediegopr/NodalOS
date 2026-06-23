@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M761",
+  "decision": "DRY_RUN_ELIGIBILITY_CLASSIFICATION_READY",
+  "dryRunEligibilityClassification": "READY",
+  "allowedStatuses": [
+    "DRY_RUN_ELIGIBLE_FUTURE",
+    "DRY_RUN_READY_FUTURE",
+    "DISABLED",
+    "BLOCKED",
+    "PLANNING_ONLY",
+    "OUT_OF_SCOPE"
+  ],
+  "prohibitedStatus": "PRODUCTIVE_ENABLED",
+  "productiveEnabledUsed": false,
+  "runtimeProductiveExecution": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

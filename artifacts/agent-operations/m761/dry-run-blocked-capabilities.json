@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "blockedStatus": "READY",
+  "blockedCapabilities": [
+    "provider/cloud calls",
+    "filesystem write",
+    "browser automation",
+    "capability unlock",
+    "public release",
+    "Chrome Web Store"
+  ],
+  "productiveExecutionAllowed": false
+}

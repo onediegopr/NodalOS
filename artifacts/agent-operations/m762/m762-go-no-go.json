@@ -1,0 +1,8 @@
+{
+  "milestone": "M762",
+  "decision": "FUTURE_RUNTIME_GATE_READY",
+  "futureRuntimeGate": "READY",
+  "productiveEnableAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

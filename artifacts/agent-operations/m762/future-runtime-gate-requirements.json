@@ -1,0 +1,24 @@
+{
+  "project": "NODAL OS",
+  "requirementsStatus": "READY",
+  "requirements": [
+    "owner explicit approval",
+    "policy gate contract",
+    "manual approval contract",
+    "dry-run evidence envelope",
+    "redaction proof",
+    "forbidden fields proof",
+    "no secrets proof",
+    "no live call proof",
+    "no filesystem write proof",
+    "no browser action proof",
+    "rollback/compensation boundary if mutable",
+    "human handoff policy if browser-related",
+    "provider secrets boundary if provider/cloud-related",
+    "capability-specific test suite",
+    "full suite PASS",
+    "no product files modified unless explicitly authorized",
+    "no Bridge/CSP modified unless explicitly authorized"
+  ],
+  "productiveEnableAllowed": false
+}

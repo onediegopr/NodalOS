@@ -1,0 +1,125 @@
+{
+  "project": "NODAL OS",
+  "classifications": [
+    {
+      "capabilityName": "provider/cloud calls",
+      "currentStatus": "DISABLED",
+      "eligibility": "BLOCKED",
+      "reason": "live calls and credentials remain prohibited",
+      "requiredBeforeEligibility": ["provider dry-run mock contract", "secrets boundary", "no live call proof", "owner approval gate"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "local provider/model",
+      "currentStatus": "PLANNING_ONLY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "local-only planning can advance through synthetic metadata-only contracts",
+      "requiredBeforeEligibility": ["local model dry-run boundary", "redaction proof", "no real model invocation proof"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "filesystem read",
+      "currentStatus": "PLANNING_ONLY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "metadata-only path policy simulation is eligible when no file contents are read",
+      "requiredBeforeEligibility": ["path jail contract", "metadata-only proof", "owner approval gate for sensitive scopes"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "filesystem write",
+      "currentStatus": "DISABLED",
+      "eligibility": "BLOCKED",
+      "reason": "real filesystem writes remain prohibited",
+      "requiredBeforeEligibility": ["jail contract", "rollback/compensation proof", "dry-run no-write evidence", "owner approval gate"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "browser automation",
+      "currentStatus": "DISABLED",
+      "eligibility": "BLOCKED",
+      "reason": "real browser automation remains prohibited",
+      "requiredBeforeEligibility": ["human handoff policy", "no credential/CAPTCHA/2FA bypass proof", "dry-run simulated action contract"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "extension bridge",
+      "currentStatus": "INTERNAL_CANDIDATE_READY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "localhost-only contract can produce metadata-only evidence without code changes",
+      "requiredBeforeEligibility": ["redacted liveness envelope", "no Bridge/CSP change proof"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "WebSocket bridge",
+      "currentStatus": "INTERNAL_CANDIDATE_READY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "redacted connection-state contract can remain metadata-only",
+      "requiredBeforeEligibility": ["token redaction proof", "localhost-only proof", "no external websocket proof"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "evidence ledger",
+      "currentStatus": "PLANNING_ONLY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "metadata-only evidence events are eligible when no raw logs or secrets are stored",
+      "requiredBeforeEligibility": ["event schema", "redaction proof", "forbidden fields proof"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "timeline/reporting",
+      "currentStatus": "PLANNING_ONLY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "reporting over synthetic metadata is eligible",
+      "requiredBeforeEligibility": ["synthetic event source", "report redaction proof"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "policy gate",
+      "currentStatus": "PLANNING_ONLY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "policy decisions can be simulated without runtime execution",
+      "requiredBeforeEligibility": ["decision contract", "deny path", "audit event schema"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "manual approval gate",
+      "currentStatus": "PLANNING_ONLY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "approval prompt preview and deny-path simulation are eligible",
+      "requiredBeforeEligibility": ["approval UI contract", "denial path", "audit event schema"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "redaction layer",
+      "currentStatus": "PLANNING_ONLY",
+      "eligibility": "DRY_RUN_ELIGIBLE_FUTURE",
+      "reason": "synthetic redaction checks are eligible",
+      "requiredBeforeEligibility": ["sensitive field inventory", "leak scan", "forbidden fields proof"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "capability unlock",
+      "currentStatus": "DISABLED",
+      "eligibility": "BLOCKED",
+      "reason": "runtime authority change remains prohibited",
+      "requiredBeforeEligibility": ["capability-specific approval gate", "future owner approval", "promotion criteria"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "public release",
+      "currentStatus": "NO-GO",
+      "eligibility": "BLOCKED",
+      "reason": "public release remains out of runtime dry-run eligibility",
+      "requiredBeforeEligibility": ["separate public release owner acceptance"],
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "Chrome Web Store",
+      "currentStatus": "NO-GO",
+      "eligibility": "BLOCKED",
+      "reason": "Store submission remains blocked",
+      "requiredBeforeEligibility": ["separate Chrome Web Store owner acceptance", "Store assets boundary completion"],
+      "productiveExecutionAllowed": false
+    }
+  ]
+}

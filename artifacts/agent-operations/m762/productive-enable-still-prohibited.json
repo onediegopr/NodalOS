@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "productiveEnableStillProhibited": true,
+  "productiveEnableAllowed": false,
+  "productiveEnabledStateReturned": false,
+  "liveCallEnabledStateReturned": false,
+  "filesystemUnlockedStateReturned": false,
+  "browserAutomationEnabledStateReturned": false,
+  "capabilityUnlockedStateReturned": false
+}

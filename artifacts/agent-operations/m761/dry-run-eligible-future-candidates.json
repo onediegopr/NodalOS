@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "candidateStatus": "READY",
+  "candidates": [
+    "local provider/model",
+    "filesystem read",
+    "extension bridge",
+    "WebSocket bridge",
+    "evidence ledger",
+    "timeline/reporting",
+    "policy gate",
+    "manual approval gate",
+    "redaction layer"
+  ],
+  "productiveExecutionAllowed": false
+}

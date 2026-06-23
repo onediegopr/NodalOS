@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "ownerApprovalRequirementsStatus": "READY",
+  "ownerExplicitApprovalRequired": true,
+  "approvalRequiredForDryRunReadyFuture": true,
+  "approvalRequiredForProductiveRuntimeUnlockFuture": true,
+  "separateFutureGateRequiredForProductiveEnable": true
+}

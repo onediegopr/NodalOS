@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "gapStatus": "READY",
+  "gaps": [
+    {
+      "capabilityName": "provider/cloud calls",
+      "missingBeforeEligibility": ["provider dry-run mock contract", "secrets boundary", "no live call proof", "owner approval gate"]
+    },
+    {
+      "capabilityName": "filesystem write",
+      "missingBeforeEligibility": ["jail contract", "rollback/compensation proof", "dry-run no-write evidence", "owner approval gate"]
+    },
+    {
+      "capabilityName": "browser automation",
+      "missingBeforeEligibility": ["human handoff policy", "no credential/CAPTCHA/2FA bypass proof", "dry-run simulated action contract"]
+    },
+    {
+      "capabilityName": "capability unlock",
+      "missingBeforeEligibility": ["capability-specific approval gate", "future owner approval", "promotion criteria"]
+    }
+  ]
+}

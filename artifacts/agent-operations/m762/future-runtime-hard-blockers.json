@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "hardBlockersStatus": "READY",
+  "hardBlockers": [
+    "missing owner explicit approval",
+    "missing evidence envelope",
+    "missing redaction proof",
+    "secrets included",
+    "tokens included",
+    "raw user data included",
+    "live call requested",
+    "filesystem write requested",
+    "browser action requested",
+    "credential/CAPTCHA/2FA bypass path exists",
+    "public release requested",
+    "Store submission requested",
+    "signed ZIP requested",
+    "product files modified without authorization",
+    "Bridge/CSP modified without authorization"
+  ]
+}

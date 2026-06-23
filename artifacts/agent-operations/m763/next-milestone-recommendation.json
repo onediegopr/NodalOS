@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "recommendedNextMilestone": "M764-M766 Dry-Run Simulation Harness Plan + Evidence Ledger Readiness",
+  "scope": "simulation/harness/contracts/tests only",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

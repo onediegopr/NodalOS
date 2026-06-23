@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "disabledStatus": "READY",
+  "disabledCapabilities": [
+    "provider/cloud calls",
+    "filesystem write",
+    "browser automation",
+    "capability unlock"
+  ],
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED"
+}
