@@ -1,0 +1,14 @@
+{
+  "milestone": "M706",
+  "decision": "FINAL_PRE_SUBMISSION_GATE_READY_CONDITIONAL_ASSETS_PENDING",
+  "evidenceReady": "partial",
+  "assetsReady": "partial",
+  "privacySupportUrlsReady": "missing",
+  "permissionDisclosureReady": true,
+  "listingDraftReady": true,
+  "packageFreezePrepReady": "conditional",
+  "externalPreSubmissionAuditPackReady": true,
+  "publicPackageFreeze": "NO-GO",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

@@ -1,0 +1,19 @@
+{
+  "milestone": "M705",
+  "excluded": [
+    "config/chrome-lab.local.json",
+    "tokens",
+    "api keys",
+    "logs",
+    "temporary profiles",
+    "user data",
+    "screenshots with secrets",
+    "raw long logs"
+  ],
+  "excludesTokens": true,
+  "excludesConfig": true,
+  "excludesLogs": true,
+  "excludesTemp": true,
+  "excludesUserData": true,
+  "secretsIncluded": false
+}

@@ -1,0 +1,12 @@
+{
+  "milestone": "M705",
+  "checksumAlgorithm": "SHA-256",
+  "calculateAtFinalFreeze": true,
+  "calculatedInThisMilestone": false,
+  "targets": [
+    "public package candidate directory manifest",
+    "future unsigned local QA package if created",
+    "final submitted artifact only after explicit release gate"
+  ],
+  "noFinalSignedZipCreated": true
+}

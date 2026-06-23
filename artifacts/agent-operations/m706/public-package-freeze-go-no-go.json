@@ -1,0 +1,11 @@
+{
+  "milestone": "M706",
+  "publicPackageFreezeDecision": "NO-GO",
+  "publicPackageFreezePrepReady": true,
+  "blockingReasons": [
+    "screenshots and Runtime/DevTools captures remain pending",
+    "privacy/support URLs remain pending",
+    "human evidence remains partial"
+  ],
+  "canProceedToExternalAudit": true
+}

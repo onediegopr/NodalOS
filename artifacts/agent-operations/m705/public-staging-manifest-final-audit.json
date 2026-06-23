@@ -1,0 +1,11 @@
+{
+  "milestone": "M705",
+  "manifestPath": "artifacts/manual-qa/public-variant-staging/manifest.json",
+  "validJson": true,
+  "materializesPublicManifest": true,
+  "name": "NODAL OS Public Candidate",
+  "allowedHostPermissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "containsHttpWildcard": false,
+  "containsHttpsWildcard": false,
+  "containsAutomaticExternalContentScripts": false
+}

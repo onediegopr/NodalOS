@@ -1,0 +1,24 @@
+{
+  "milestone": "M705",
+  "risks": [
+    {
+      "id": "M705-R1",
+      "risk": "Human screenshots and Runtime/DevTools evidence remain pending.",
+      "severity": "medium",
+      "status": "open"
+    },
+    {
+      "id": "M705-R2",
+      "risk": "Privacy/support URLs remain pending before Chrome Web Store submission.",
+      "severity": "medium",
+      "status": "open"
+    },
+    {
+      "id": "M705-R3",
+      "risk": "Freeze prep could be confused with final release artifact if not gated.",
+      "severity": "low",
+      "status": "mitigated_by_no_release_no_zip_policy"
+    }
+  ],
+  "publicPackageFreezeReady": false
+}

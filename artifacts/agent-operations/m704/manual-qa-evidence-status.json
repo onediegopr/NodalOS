@@ -1,0 +1,11 @@
+{
+  "milestone": "M704",
+  "status": "partial",
+  "userReportedWorking": true,
+  "runtimeTabEvidence": "not_provided",
+  "serviceWorkerDevtoolsEvidence": "not_provided",
+  "tokenUiEvidence": "not_provided",
+  "websocketEvidence": "not_provided",
+  "cspConsoleEvidence": "not_provided",
+  "freezeBlockedByEvidenceGap": true
+}

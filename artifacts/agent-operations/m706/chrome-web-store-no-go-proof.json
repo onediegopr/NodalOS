@@ -1,0 +1,6 @@
+{
+  "milestone": "M706",
+  "chromeWebStoreReady": false,
+  "reason": "Store submission still requires completed assets, URLs, final freeze, and explicit release gate.",
+  "uploadedToStore": false
+}

@@ -1,0 +1,15 @@
+{
+  "milestone": "M706",
+  "externalPreSubmissionAuditPackReady": true,
+  "includedAreas": [
+    "public staging manifest audit",
+    "package exclusion audit",
+    "store listing final draft",
+    "permission disclosure final",
+    "screenshot gap checklist",
+    "privacy/support final gaps",
+    "public release no-go proof",
+    "Chrome Web Store no-go proof"
+  ],
+  "requiresHumanAssetCompletionBeforeFreeze": true
+}

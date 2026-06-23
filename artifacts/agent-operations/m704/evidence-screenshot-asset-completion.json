@@ -1,0 +1,22 @@
+{
+  "milestone": "M704",
+  "decision": "EVIDENCE_SCREENSHOT_ASSET_COMPLETION_READY_WITH_PENDING_ASSETS",
+  "humanChromeEvidence": "partial",
+  "extensionLoadedScreenshot": "pending",
+  "sidepanelScreenshot": "pending",
+  "runtimeTabEvidence": "pending",
+  "serviceWorkerDevtoolsEvidence": "pending",
+  "permissionWarningEvidence": "unknown",
+  "assetCapturePending": true,
+  "evidenceRedaction": "pass",
+  "secretsIncluded": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

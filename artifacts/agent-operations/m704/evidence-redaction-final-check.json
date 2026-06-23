@@ -1,0 +1,11 @@
+{
+  "milestone": "M704",
+  "evidenceRedaction": "pass",
+  "secretsIncluded": false,
+  "fullTokenStored": false,
+  "apiKeysStored": false,
+  "cookiesStored": false,
+  "authorizationTokensStored": false,
+  "rawLongLogsStored": false,
+  "userDataStored": false
+}

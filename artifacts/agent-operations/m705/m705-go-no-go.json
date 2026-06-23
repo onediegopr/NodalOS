@@ -1,0 +1,16 @@
+{
+  "milestone": "M705",
+  "decision": "PUBLIC_PACKAGE_CANDIDATE_FREEZE_PREP_READY_CONDITIONAL",
+  "publicStagingReady": true,
+  "publicPackageFreezePrepReady": true,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

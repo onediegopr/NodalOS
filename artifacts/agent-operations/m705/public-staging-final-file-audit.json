@@ -1,0 +1,16 @@
+{
+  "milestone": "M705",
+  "stagingPath": "artifacts/manual-qa/public-variant-staging",
+  "expectedFiles": [
+    "manifest.json",
+    "sidepanel.html",
+    "sidepanel.css",
+    "sidepanel.js",
+    "service_worker.js",
+    "content_script.js",
+    "recipe_core.js",
+    "README.md"
+  ],
+  "unexpectedSensitiveFilesFound": false,
+  "finalFileAuditReady": true
+}

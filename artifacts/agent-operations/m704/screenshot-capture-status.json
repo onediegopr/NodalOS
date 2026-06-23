@@ -1,0 +1,11 @@
+{
+  "milestone": "M704",
+  "extensionLoadedScreenshot": "pending",
+  "sidepanelScreenshot": "pending",
+  "permissionWarningScreenshot": "unknown",
+  "runtimeTabScreenshot": "pending",
+  "serviceWorkerDevtoolsScreenshot": "pending",
+  "assetCapturePending": true,
+  "doNotSimulateScreenshots": true,
+  "redactionRequired": true
+}

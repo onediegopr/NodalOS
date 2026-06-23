@@ -1,0 +1,11 @@
+{
+  "milestone": "M704",
+  "runtimeTabEvidence": "pending",
+  "serviceWorkerDevtoolsEvidence": "pending",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "cannotMarkPassWithoutHumanCapture": true
+}

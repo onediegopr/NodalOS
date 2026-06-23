@@ -1,0 +1,7 @@
+{
+  "milestone": "M704",
+  "permissionWarningEvidence": "unknown",
+  "chromeMayNotShowWarningsForReloadedUnpackedExtension": true,
+  "requiredIfShown": true,
+  "acceptableStates": ["available", "pending", "not_shown", "unknown"]
+}
