@@ -1,0 +1,37 @@
+{
+  "milestone": "M727",
+  "finalMustProvideBeforeFreeze": {
+    "urls": [
+      "Real privacy URL",
+      "Real support URL",
+      "Docs URL if available"
+    ],
+    "screenshots": [
+      "Chrome extension loaded",
+      "Sidepanel connected with token redacted",
+      "Runtime tab",
+      "Service Worker DevTools",
+      "Permission warning if shown, or explicit not_shown"
+    ],
+    "humanEvidence": [
+      "Public variant loaded",
+      "Visible extension name",
+      "Loaded staging path",
+      "Manifest selection verified human",
+      "Token present UI",
+      "WebSocket connected live",
+      "Bridge liveness",
+      "Runtime tab evidence",
+      "Service Worker DevTools evidence",
+      "CSP violations found",
+      "invalid_token found",
+      "close 1008 found",
+      "reconnect storm found",
+      "critical console errors found",
+      "Permission warnings captured and text if shown",
+      "Evidence redacted",
+      "Secrets/API keys/tokens/cookies included"
+    ]
+  },
+  "redactionRequirement": "Do not provide or store full tokens, API keys, cookies, bearer tokens, or raw long logs."
+}

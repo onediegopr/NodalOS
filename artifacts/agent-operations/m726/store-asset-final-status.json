@@ -1,0 +1,16 @@
+{
+  "milestone": "M726",
+  "storeAssetFinalStatus": "pending",
+  "screenshotsReady": false,
+  "requiredScreenshotsReady": false,
+  "assetsPartial": false,
+  "assetCapturePending": true,
+  "publicPackageFreezeReady": false,
+  "requiredBeforeFreeze": [
+    "Chrome extension loaded screenshot",
+    "Sidepanel connected screenshot with token redacted",
+    "Runtime tab evidence",
+    "Service Worker DevTools evidence",
+    "Permission warning evidence or explicit not_shown result"
+  ]
+}

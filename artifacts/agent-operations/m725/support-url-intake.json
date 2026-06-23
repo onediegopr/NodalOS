@@ -1,0 +1,10 @@
+{
+  "milestone": "M725",
+  "supportUrlStatus": "pending",
+  "supportUrlReady": false,
+  "providedUrl": null,
+  "placeholder": false,
+  "validForStore": false,
+  "blocksP0Closure": true,
+  "reason": "No real support URL was provided."
+}

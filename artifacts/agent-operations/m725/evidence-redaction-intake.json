@@ -1,0 +1,12 @@
+{
+  "milestone": "M725",
+  "evidenceRedaction": "pass",
+  "evidenceRedacted": true,
+  "secretsIncluded": false,
+  "tokenLoggedInFull": false,
+  "apiKeysIncluded": false,
+  "cookiesIncluded": false,
+  "bearerTokensIncluded": false,
+  "rawLongLogsIncluded": false,
+  "notes": "No sensitive evidence payload was supplied or stored."
+}

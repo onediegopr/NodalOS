@@ -1,0 +1,18 @@
+{
+  "milestone": "M726",
+  "decision": "P0_BLOCKERS_STILL_PENDING_FREEZE_NO_GO",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "screenshotsReady": false,
+  "storeAssetFinalStatus": "pending",
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

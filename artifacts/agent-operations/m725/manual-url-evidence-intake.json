@@ -1,0 +1,18 @@
+{
+  "milestone": "M725",
+  "title": "Manual URL and evidence intake",
+  "activeProject": "NODAL OS",
+  "newHumanInputProvided": false,
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "humanChromeEvidence": "partial",
+  "humanEvidenceReady": false,
+  "evidenceRedaction": "pass",
+  "secretsIncluded": false,
+  "decision": "P0_BLOCKERS_STILL_PENDING_FREEZE_NO_GO",
+  "notes": [
+    "No real privacy URL, support URL, docs URL, or structured human Chrome evidence was provided in this block.",
+    "Prior user-reported working status remains partial and cannot close final freeze evidence."
+  ]
+}

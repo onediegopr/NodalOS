@@ -1,0 +1,10 @@
+{
+  "milestone": "M725",
+  "privacyUrlStatus": "pending",
+  "privacyUrlReady": false,
+  "providedUrl": null,
+  "placeholder": false,
+  "validForStore": false,
+  "blocksP0Closure": true,
+  "reason": "No real privacy URL was provided."
+}

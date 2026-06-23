@@ -1,0 +1,14 @@
+{
+  "milestone": "M726",
+  "title": "Screenshot and asset intake",
+  "activeProject": "NODAL OS",
+  "screenshotsAvailable": false,
+  "screenshotsReady": false,
+  "storeAssetFinalStatus": "pending",
+  "assetCapturePending": true,
+  "decision": "P0_BLOCKERS_STILL_PENDING_FREEZE_NO_GO",
+  "notes": [
+    "No screenshot paths were provided in this block.",
+    "Final freeze remains blocked while extension loaded, sidepanel, Runtime tab, Service Worker DevTools, and permission warning evidence are missing."
+  ]
+}

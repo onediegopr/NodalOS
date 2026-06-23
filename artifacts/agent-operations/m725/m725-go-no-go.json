@@ -1,0 +1,22 @@
+{
+  "milestone": "M725",
+  "decision": "P0_BLOCKERS_STILL_PENDING_FREEZE_NO_GO",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "humanEvidenceReady": false,
+  "evidenceRedacted": true,
+  "secretsIncluded": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

@@ -1,0 +1,6 @@
+{
+  "milestone": "M727",
+  "publicReleaseReady": false,
+  "goNoGo": "NO-GO",
+  "reason": "Public release remains blocked by open P0 blockers and missing final freeze."
+}

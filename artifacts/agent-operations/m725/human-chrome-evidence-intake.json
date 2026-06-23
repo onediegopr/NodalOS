@@ -1,0 +1,22 @@
+{
+  "milestone": "M725",
+  "humanChromeEvidence": "partial",
+  "humanEvidenceReady": false,
+  "publicVariantLoaded": "unknown",
+  "visibleExtensionName": "unknown",
+  "loadedStagingPath": "unknown",
+  "manifestSelectionVerifiedHuman": "unknown",
+  "tokenPresentUi": "unknown",
+  "websocketConnectedLive": "unknown",
+  "bridgeLiveness": "unknown",
+  "runtimeTabEvidence": "unknown",
+  "serviceWorkerDevtoolsEvidence": "unknown",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "permissionWarningsCaptured": "unknown",
+  "permissionWarningsText": null,
+  "reason": "No new structured human Chrome evidence was supplied."
+}

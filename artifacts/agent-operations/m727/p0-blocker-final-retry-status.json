@@ -1,0 +1,31 @@
+{
+  "milestone": "M727",
+  "p0BlockersClosed": false,
+  "blockers": [
+    {
+      "name": "privacy URL",
+      "ready": false,
+      "status": "pending"
+    },
+    {
+      "name": "support URL",
+      "ready": false,
+      "status": "pending"
+    },
+    {
+      "name": "screenshots/assets",
+      "ready": false,
+      "status": "pending"
+    },
+    {
+      "name": "full manual evidence",
+      "ready": false,
+      "status": "partial"
+    },
+    {
+      "name": "package freeze final",
+      "ready": false,
+      "status": "no-go"
+    }
+  ]
+}

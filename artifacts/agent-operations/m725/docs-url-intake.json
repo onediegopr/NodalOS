@@ -1,0 +1,10 @@
+{
+  "milestone": "M725",
+  "docsUrlStatus": "pending",
+  "docsUrlReady": false,
+  "providedUrl": null,
+  "placeholder": false,
+  "priority": "P2",
+  "requiredForStoreFinal": false,
+  "reason": "No docs URL was provided."
+}

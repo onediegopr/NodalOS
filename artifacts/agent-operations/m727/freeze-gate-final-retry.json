@@ -1,0 +1,16 @@
+{
+  "milestone": "M727",
+  "title": "Freeze gate final retry",
+  "activeProject": "NODAL OS",
+  "decision": "P0_BLOCKERS_STILL_PENDING_FREEZE_NO_GO",
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "screenshotsReady": false,
+  "humanEvidenceReady": false,
+  "p0BlockersClosed": false,
+  "packageFreezeFinalReady": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reason": "No new manual P0 input was provided; final freeze cannot advance."
+}

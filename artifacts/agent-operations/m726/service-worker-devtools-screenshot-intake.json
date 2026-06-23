@@ -1,0 +1,9 @@
+{
+  "milestone": "M726",
+  "screenshotType": "service_worker_devtools",
+  "status": "not_provided",
+  "available": false,
+  "path": null,
+  "serviceWorkerDevtoolsEvidence": "unknown",
+  "blocksP0Closure": true
+}
