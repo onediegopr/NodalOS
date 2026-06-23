@@ -1,0 +1,57 @@
+{
+  "milestone": "M641",
+  "decision": "PUBLIC_RELEASE_BLOCKERS_CONSOLIDATED",
+  "publicRelease": "no-go",
+  "productFilesModified": false,
+  "blockers": [
+    {
+      "id": "HOST_PERMISSIONS_BROAD_REVIEW",
+      "severity": "medium",
+      "status": "open",
+      "description": "host_permissions are broad and require release justification before public publication."
+    },
+    {
+      "id": "PROVIDER_RUNTIME_RELEASE_GATE",
+      "severity": "critical",
+      "status": "open",
+      "description": "Provider/runtime paths must remain gated until provider consent, redaction, evidence and release review are complete."
+    },
+    {
+      "id": "IPV6_LOOPBACK_CAVEAT",
+      "severity": "low-medium",
+      "status": "documented",
+      "description": "Current evidence target is 127.0.0.1; IPv6 ::1 remains a documented caveat."
+    },
+    {
+      "id": "CORS_LAN_CAVEAT",
+      "severity": "medium",
+      "status": "open",
+      "description": "LAN candidate behavior requires explicit public release posture before publication."
+    },
+    {
+      "id": "PROVIDER_PROMPT_NAMING_DEBT",
+      "severity": "medium",
+      "status": "open",
+      "description": "Legacy provider prompt naming debt requires review before provider release."
+    },
+    {
+      "id": "MICROCOPY_MIXED_SURFACE",
+      "severity": "low-medium",
+      "status": "open",
+      "description": "Minor mixed microcopy requires final visible copy review before public release."
+    },
+    {
+      "id": "RELEASE_EVIDENCE_REQUIREMENTS",
+      "severity": "critical",
+      "status": "partially-met",
+      "description": "Clean Runtime and DevTools evidence exist; final release candidate packaging/store/rollback evidence remains required."
+    },
+    {
+      "id": "PACKAGING_SIGNING_STORE_PUBLICATION",
+      "severity": "critical",
+      "status": "open",
+      "description": "Local installed QA is not equivalent to packaged signed public release readiness."
+    }
+  ],
+  "recommendedNextMilestone": "M642 Future Runtime Enablement Plan"
+}

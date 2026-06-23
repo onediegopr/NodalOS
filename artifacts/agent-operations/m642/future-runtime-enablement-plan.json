@@ -1,0 +1,46 @@
+{
+  "milestone": "M642",
+  "decision": "FUTURE_RUNTIME_ENABLEMENT_PLAN_READY",
+  "mode": "planning-only",
+  "runtimeEnabled": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "connectorActionsEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "requiredGates": [
+    "runtime scope definition",
+    "capability inventory disabled by default",
+    "approval gate",
+    "evidence ledger",
+    "redaction policy",
+    "provider BYOK consent gate",
+    "filesystem boundary and path jail",
+    "rollback kill switch",
+    "no shell free execution policy",
+    "browser automation gate",
+    "connector action gate",
+    "release candidate audit"
+  ],
+  "blockedNow": [
+    "productive runtime execution",
+    "shell subprocess",
+    "filesystem writes",
+    "browser automation",
+    "connector actions",
+    "provider calls",
+    "cloud execution",
+    "capability unlock",
+    "public release"
+  ],
+  "stages": [
+    "R0 planning only",
+    "R1 preview contracts",
+    "R2 local dry run",
+    "R3 gated local runtime",
+    "R4 provider workspace integration"
+  ],
+  "recommendedNextMilestone": "Future Runtime Preview Contracts after release blocker closure"
+}

@@ -1,0 +1,29 @@
+{
+  "milestone": "M640-M642",
+  "decision": "PRODUCTIZATION_RELEASE_RUNTIME_READINESS_PLAN_READY",
+  "productizationReadinessReviewReady": true,
+  "publicReleaseBlockersConsolidated": true,
+  "futureRuntimeEnablementPlanReady": true,
+  "readyForReleaseEvidenceGate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForBrowserAutomation": false,
+  "runtimeEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "publicReleaseEnabled": false,
+  "productFilesModified": false,
+  "recommendedNextMilestone": "M643 Release Candidate Evidence Pack / Public Release Closure Gate",
+  "percentages": {
+    "installedExtensionEvidenceGateReadiness": 96,
+    "publicReleaseReadiness": 45,
+    "runtimeProductizationReadiness": 25,
+    "providerCloudReadiness": 18,
+    "filesystemWorkspaceReadiness": 22,
+    "browserAutomationReleaseReadiness": 18,
+    "productizationPlanningReadiness": 70
+  }
+}
