@@ -1,0 +1,17 @@
+{
+  "milestone": "M647",
+  "decision": "OPENAI_AGENT_CLIENT_RISK_REGISTER_READY",
+  "mode": "risk-register-only",
+  "openAiAgentClientPresent": true,
+  "providerCanCallExternalApiIfEnabledInFuture": true,
+  "providerReleaseGateRequired": true,
+  "providerRuntimeReady": false,
+  "risks": [
+    "external provider call path exists in source tree",
+    "API key/BYOK must remain disabled until future gate",
+    "provider prompt naming debt remains open",
+    "privacy disclosure must state provider/cloud disabled status"
+  ],
+  "requiredFutureGate": "Provider Runtime Release Gate / BYOK Consent Review",
+  "publicReleaseReady": false
+}

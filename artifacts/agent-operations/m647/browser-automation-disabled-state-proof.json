@@ -1,0 +1,11 @@
+{
+  "milestone": "M647",
+  "decision": "BROWSER_AUTOMATION_DISABLED_STATE_PROOF_READY",
+  "mode": "proof-only",
+  "browserAutomationEnabled": false,
+  "connectorActionsEnabled": false,
+  "externalSideEffectsEnabled": false,
+  "manualEvidenceIsNotAutomation": true,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,20 @@
+{
+  "milestone": "M647",
+  "decision": "PROVIDER_RUNTIME_DISABLED_STATE_PROOF_READY",
+  "providerDisabledStateProofReady": true,
+  "runtimeDisabledStateProofReady": true,
+  "filesystemDisabledStateProofReady": true,
+  "browserAutomationDisabledStateProofReady": true,
+  "capabilityUnlockDisabledProofReady": true,
+  "openAiAgentClientRiskRegisterReady": true,
+  "providerPromptNamingDebtDocumented": true,
+  "providerCloudEnabled": false,
+  "runtimeProductiveEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "byokEnabled": false,
+  "promptExecutionEnabled": false,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

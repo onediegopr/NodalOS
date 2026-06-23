@@ -1,0 +1,23 @@
+{
+  "milestone": "M645",
+  "decision": "HOST_PERMISSIONS_RISK_ASSESSMENT_READY",
+  "mode": "evidence-only",
+  "riskLevel": "medium-high-for-public-release",
+  "risks": [
+    "Chrome Web Store review scrutiny",
+    "user trust friction",
+    "privacy disclosure burden",
+    "support burden",
+    "misinterpretation as always-on page access"
+  ],
+  "mitigationsRequired": [
+    "formal permission justification",
+    "privacy disclosure",
+    "support URL",
+    "public release closure audit",
+    "future narrowing decision"
+  ],
+  "blockerStatus": "justified_for_internal_candidate_open_for_public_release",
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

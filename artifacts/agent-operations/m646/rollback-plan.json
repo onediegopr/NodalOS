@@ -1,0 +1,16 @@
+{
+  "milestone": "M646",
+  "decision": "ROLLBACK_PLAN_DRAFT_READY",
+  "mode": "draft-only",
+  "rollbackPlanReadyForPublicRelease": false,
+  "rollbackSteps": [
+    "identify prior known-good commit",
+    "unload installed extension",
+    "stop local bridge process",
+    "publish release notes correction if needed",
+    "delist or unpublish store package if applicable",
+    "document incident evidence"
+  ],
+  "requiresFinalOwner": true,
+  "publicReleaseReady": false
+}

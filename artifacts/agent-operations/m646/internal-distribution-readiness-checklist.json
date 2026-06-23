@@ -1,0 +1,14 @@
+{
+  "milestone": "M646",
+  "decision": "INTERNAL_DISTRIBUTION_READINESS_CHECKLIST_READY",
+  "mode": "evidence-prep-only",
+  "internalDistributionAllowedForEvidenceCandidate": true,
+  "publicReleaseReady": false,
+  "conditions": [
+    "public release remains disabled",
+    "provider/cloud remains disabled",
+    "runtime productive execution remains disabled",
+    "host permissions are documented",
+    "local bridge dependency is disclosed"
+  ]
+}

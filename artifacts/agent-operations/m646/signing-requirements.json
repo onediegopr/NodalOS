@@ -1,0 +1,17 @@
+{
+  "milestone": "M646",
+  "decision": "SIGNING_REQUIREMENTS_READY",
+  "mode": "evidence-prep-only",
+  "signingPerformed": false,
+  "credentialsRequired": true,
+  "credentialsStoredInRepo": false,
+  "credentialsAllowedInArtifacts": false,
+  "requirements": [
+    "select Chrome Web Store or internal signing path",
+    "keep credentials outside repo and artifacts",
+    "record signing owner",
+    "record rollback path",
+    "perform signing only in a dedicated release milestone"
+  ],
+  "publicReleaseReady": false
+}

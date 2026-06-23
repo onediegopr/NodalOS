@@ -1,0 +1,13 @@
+{
+  "milestone": "M647",
+  "decision": "CAPABILITY_UNLOCK_DISABLED_PROOF_READY",
+  "mode": "proof-only",
+  "capabilityUnlockEnabled": false,
+  "providerCloudEnabled": false,
+  "runtimeProductiveEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "releaseEvidenceGateDoesNotUnlockCapabilities": true,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

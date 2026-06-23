@@ -1,0 +1,34 @@
+{
+  "milestone": "M645",
+  "decision": "HOST_PERMISSIONS_FUTURE_NARROWING_PLAN_READY",
+  "mode": "planning-only",
+  "futureNarrowingPlanExists": true,
+  "options": [
+    {
+      "id": "retain_with_strong_justification",
+      "description": "Keep broad permissions only if public release approval accepts the risk and disclosure burden.",
+      "requiresProductChange": false
+    },
+    {
+      "id": "reduce_permissions_before_public_release",
+      "description": "Patch manifest in a dedicated milestone and rerun full installed extension QA.",
+      "requiresProductChange": true
+    },
+    {
+      "id": "separate_internal_and_public_builds",
+      "description": "Keep internal evidence build broad and define a narrower public SKU/build.",
+      "requiresProductChange": true
+    }
+  ],
+  "recommendedOption": "separate_internal_and_public_builds_or_reduce_permissions_before_public_release",
+  "closureCriteria": [
+    "release scope decision approved",
+    "privacy disclosure approved",
+    "support URL ready",
+    "dedicated QA complete if manifest changes",
+    "final public release closure audit complete"
+  ],
+  "manifestModified": false,
+  "permissionsModified": false,
+  "publicReleaseReady": false
+}

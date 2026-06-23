@@ -1,0 +1,28 @@
+{
+  "milestone": "M645",
+  "decision": "HOST_PERMISSIONS_CURRENT_STATE_DOCUMENTED",
+  "mode": "evidence-only",
+  "manifestModified": false,
+  "permissionsModified": false,
+  "productFilesModified": false,
+  "hostPermissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "contentScriptMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "currentState": "broad host permissions remain unchanged",
+  "releaseScopeAllowed": [
+    "internal evidence release",
+    "local-first candidate review"
+  ],
+  "releaseScopeNotAllowed": [
+    "automatic public release",
+    "provider/cloud release",
+    "runtime productive release",
+    "filesystem release"
+  ],
+  "publicReleaseReady": false
+}

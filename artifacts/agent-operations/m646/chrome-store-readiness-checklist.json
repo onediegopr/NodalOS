@@ -1,0 +1,24 @@
+{
+  "milestone": "M646",
+  "decision": "CHROME_STORE_READINESS_CHECKLIST_READY",
+  "mode": "evidence-prep-only",
+  "chromeStoreUploadPerformed": false,
+  "storeReviewComplete": false,
+  "requiredBeforePublicRelease": [
+    "store listing copy",
+    "permission justification",
+    "privacy disclosure",
+    "support URL",
+    "screenshots",
+    "release notes",
+    "store policy review",
+    "rollback plan"
+  ],
+  "openBlockers": [
+    "host permissions public release justification",
+    "privacy disclosure final approval",
+    "support URL readiness",
+    "packaging/signing execution"
+  ],
+  "publicReleaseReady": false
+}

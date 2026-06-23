@@ -1,0 +1,30 @@
+{
+  "milestone": "M645-M647",
+  "decision": "PUBLIC_RELEASE_BLOCKERS_EVIDENCE_PREP_READY",
+  "hostPermissionsJustificationReady": true,
+  "packagingStoreEvidencePrepReady": true,
+  "providerRuntimeDisabledStateProofReady": true,
+  "productFilesModified": false,
+  "manifestModified": false,
+  "permissionsModified": false,
+  "hostPermissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "releaseEvidenceGateReady": true,
+  "publicReleaseReady": false,
+  "recommendedNextMilestone": "M648 Public Release Closure Audit / Final Go-No-Go Review",
+  "percentages": {
+    "releaseCandidateEvidencePackReadiness": 100,
+    "installedExtensionEvidenceGateReadiness": 98,
+    "publicReleaseReadiness": 62,
+    "hostPermissionsReleaseReadiness": 70,
+    "packagingSigningStoreReadiness": 60,
+    "runtimeProductizationReadiness": 30,
+    "providerCloudReadiness": 22
+  }
+}

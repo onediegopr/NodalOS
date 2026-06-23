@@ -1,0 +1,9 @@
+{
+  "milestone": "M646",
+  "decision": "RELEASE_NOTES_DRAFT_READY",
+  "mode": "draft-only",
+  "releaseNotesDraftReady": true,
+  "releaseNotesFinal": false,
+  "draft": "NODAL OS installed extension evidence candidate validates local bridge connectivity, runtime tab visibility, and clean service worker DevTools evidence. Public release remains blocked pending final host permissions, packaging/signing/store, provider/runtime disabled-state, privacy/support, and closure audit.",
+  "publicReleaseReady": false
+}

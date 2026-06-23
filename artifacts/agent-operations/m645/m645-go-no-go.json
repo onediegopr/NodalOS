@@ -1,0 +1,16 @@
+{
+  "milestone": "M645",
+  "decision": "HOST_PERMISSIONS_JUSTIFICATION_PACKAGE_READY",
+  "hostPermissionsCurrentStateDocumented": true,
+  "hostPermissionsRiskAssessmentReady": true,
+  "hostPermissionsReleaseJustificationReady": true,
+  "futureNarrowingPlanReady": true,
+  "blockerStatus": "justified_for_internal_candidate_open_for_public_release",
+  "manifestModified": false,
+  "permissionsModified": false,
+  "hostPermissionsModified": false,
+  "productFilesModified": false,
+  "releaseEvidenceGateReady": true,
+  "publicReleaseReady": false,
+  "recommendedNextMilestone": "M648 Public Release Closure Audit / Final Go-No-Go Review"
+}

@@ -1,0 +1,14 @@
+{
+  "milestone": "M647",
+  "decision": "FILESYSTEM_DISABLED_STATE_PROOF_READY",
+  "mode": "proof-only",
+  "filesystemEnabled": false,
+  "filePickerEnabled": false,
+  "workspaceScanEnabled": false,
+  "filesystemReadEnabled": false,
+  "filesystemWriteEnabled": false,
+  "shellSubprocessEnabled": false,
+  "storageRealEnabled": false,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,11 @@
+{
+  "milestone": "M647",
+  "decision": "PROVIDER_PROMPT_NAMING_DEBT_DOCUMENTED",
+  "mode": "debt-register-only",
+  "providerPromptNamingDebt": "open",
+  "legacyPromptName": "ONE BRAIN Chrome Lab Agent",
+  "risk": "Legacy provider prompt naming must not leak into user-visible provider prompts or public release messaging.",
+  "notFixedInThisMilestone": true,
+  "requiresFutureProviderGate": true,
+  "publicReleaseReady": false
+}

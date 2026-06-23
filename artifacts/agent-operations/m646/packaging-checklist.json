@@ -1,0 +1,18 @@
+{
+  "milestone": "M646",
+  "decision": "PACKAGING_CHECKLIST_READY",
+  "mode": "evidence-prep-only",
+  "packageFinalCreated": false,
+  "published": false,
+  "checklist": [
+    "select release candidate commit",
+    "confirm manifest version candidate",
+    "inventory package contents",
+    "exclude development-only artifacts",
+    "confirm no secrets or API keys",
+    "confirm product boundary hashes",
+    "attach release evidence pack"
+  ],
+  "versionCandidateStatus": "not-finalized",
+  "publicReleaseReady": false
+}

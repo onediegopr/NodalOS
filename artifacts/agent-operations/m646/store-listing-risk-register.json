@@ -1,0 +1,32 @@
+{
+  "milestone": "M646",
+  "decision": "STORE_LISTING_RISK_REGISTER_READY",
+  "mode": "evidence-prep-only",
+  "risks": [
+    {
+      "id": "STORE-RISK-HOST-PERMISSIONS",
+      "severity": "high",
+      "status": "open",
+      "description": "Broad host permissions require strong public release justification."
+    },
+    {
+      "id": "STORE-RISK-LOCAL-BRIDGE-DEPENDENCY",
+      "severity": "medium",
+      "status": "open",
+      "description": "Store listing must explain local bridge dependency clearly."
+    },
+    {
+      "id": "STORE-RISK-PROVIDER-RUNTIME-MESSAGING",
+      "severity": "medium-high",
+      "status": "open",
+      "description": "Provider/cloud and runtime productive execution must be described as disabled."
+    },
+    {
+      "id": "STORE-RISK-SUPPORT-URL",
+      "severity": "medium",
+      "status": "open",
+      "description": "Support URL must be ready before public release."
+    }
+  ],
+  "publicReleaseReady": false
+}

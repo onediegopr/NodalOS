@@ -1,0 +1,17 @@
+{
+  "milestone": "M646",
+  "decision": "PRIVACY_SUPPORT_DISCLOSURE_DRAFT_READY",
+  "mode": "draft-only",
+  "privacyDisclosureDraftReady": true,
+  "supportUrlRequired": true,
+  "supportUrlReady": false,
+  "draftDisclosurePoints": [
+    "extension declares broad HTTP/HTTPS host permissions",
+    "provider/cloud is disabled for release",
+    "runtime productive execution is disabled",
+    "local bridge is required for the installed extension evidence path",
+    "no filesystem execution is enabled",
+    "no API key or BYOK release path is enabled"
+  ],
+  "publicReleaseReady": false
+}

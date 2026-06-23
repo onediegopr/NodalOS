@@ -1,0 +1,13 @@
+{
+  "milestone": "M647",
+  "decision": "RUNTIME_DISABLED_STATE_PROOF_READY",
+  "mode": "proof-only",
+  "runtimeProductiveEnabled": false,
+  "runtimeExecutionEnabled": false,
+  "runtimeUnlockEnabled": false,
+  "approvalExecutionEnabled": false,
+  "capabilityExecutionEnabled": false,
+  "evidenceGateDoesNotUnlockRuntime": true,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,18 @@
+{
+  "milestone": "M646",
+  "decision": "PACKAGING_SIGNING_STORE_EVIDENCE_PREP_READY",
+  "packagingChecklistReady": true,
+  "signingRequirementsReady": true,
+  "chromeStoreReadinessChecklistReady": true,
+  "internalDistributionReadinessChecklistReady": true,
+  "privacySupportDisclosureDraftReady": true,
+  "rollbackPlanReady": true,
+  "releaseNotesDraftReady": true,
+  "storeListingRiskRegisterReady": true,
+  "packageFinalCreated": false,
+  "signingPerformed": false,
+  "chromeStoreUploadPerformed": false,
+  "published": false,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

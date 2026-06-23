@@ -1,0 +1,15 @@
+{
+  "milestone": "M647",
+  "decision": "PROVIDER_DISABLED_STATE_PROOF_READY",
+  "mode": "proof-only",
+  "providerCloudEnabled": false,
+  "byokEnabled": false,
+  "apiKeyInputEnabled": false,
+  "providerCallEnabled": false,
+  "promptExecutionEnabled": false,
+  "modelRoutingEnabled": false,
+  "openAiAgentClientPresent": true,
+  "releaseRisk": "provider path exists but remains disabled for release",
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,30 @@
+{
+  "milestone": "M645",
+  "decision": "HOST_PERMISSIONS_RELEASE_JUSTIFICATION_READY",
+  "mode": "documentation-only",
+  "hostPermissionsJustificationReady": true,
+  "blockerStatus": "justified_for_internal_candidate",
+  "publicReleaseBlockerStatus": "open_for_public_release",
+  "whyBroad": "Installed extension evidence and future controlled browser-context workflows may require HTTP/HTTPS page access across arbitrary sites.",
+  "whyNotChangedNow": "Changing host_permissions would modify manifest and requires a dedicated implementation milestone plus full installed extension QA.",
+  "functionalityDependencies": [
+    "installed extension manual QA across pages",
+    "future page-context observation",
+    "future local-first evidence capture",
+    "future controlled browser workflow planning"
+  ],
+  "allowedReleaseScope": [
+    "internal evidence release",
+    "local-first candidate review"
+  ],
+  "notAllowedReleaseScope": [
+    "public release without final closure",
+    "provider/cloud release",
+    "runtime productive release",
+    "filesystem release"
+  ],
+  "manifestModified": false,
+  "permissionsModified": false,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}
