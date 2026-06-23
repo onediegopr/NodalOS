@@ -1,0 +1,53 @@
+{
+  "milestone": "M664",
+  "decision": "PUBLIC_PERMISSION_JUSTIFICATION_READY",
+  "permissionJustificationPrepared": true,
+  "permissions": [
+    {
+      "permission": "activeTab",
+      "publicCandidateJustification": "Future user-initiated page interaction evaluation; no automatic content scripts are present in the public variant.",
+      "finalStoreDisclosureRequired": true
+    },
+    {
+      "permission": "scripting",
+      "publicCandidateJustification": "Reserved for future user-granted interaction design; must remain non-productive until a dedicated QA and consent flow exists.",
+      "finalStoreDisclosureRequired": true
+    },
+    {
+      "permission": "storage",
+      "publicCandidateJustification": "Extension-local settings/state support.",
+      "finalStoreDisclosureRequired": true
+    },
+    {
+      "permission": "tabs",
+      "publicCandidateJustification": "Tab context and extension UX coordination; requires final review before public release.",
+      "finalStoreDisclosureRequired": true
+    },
+    {
+      "permission": "sidePanel",
+      "publicCandidateJustification": "Required for the Chrome side panel UI.",
+      "finalStoreDisclosureRequired": true
+    },
+    {
+      "permission": "alarms",
+      "publicCandidateJustification": "Extension timing/heartbeat coordination; requires manual QA proof.",
+      "finalStoreDisclosureRequired": true
+    }
+  ],
+  "hostPermissions": [
+    {
+      "pattern": "http://127.0.0.1/*",
+      "publicCandidateJustification": "Local bridge candidate connectivity only.",
+      "finalStoreDisclosureRequired": true
+    },
+    {
+      "pattern": "http://localhost/*",
+      "publicCandidateJustification": "Local bridge candidate connectivity only.",
+      "finalStoreDisclosureRequired": true
+    }
+  ],
+  "optionalHostPermissionsImplementedNow": false,
+  "activeTabImplementedAsNewFlowNow": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

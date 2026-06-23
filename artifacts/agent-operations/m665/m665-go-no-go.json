@@ -1,0 +1,17 @@
+{
+  "milestone": "M665",
+  "decision": "PUBLIC_PACKAGE_CANDIDATE_PREP_READY",
+  "manifestSelectionVerified": true,
+  "publicManifestUsedForPublicPackageCandidate": true,
+  "publicPackageCandidatePrepared": true,
+  "internalManifestPreserved": true,
+  "finalSignedPackageCreated": false,
+  "chromeWebStoreUploadPerformed": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

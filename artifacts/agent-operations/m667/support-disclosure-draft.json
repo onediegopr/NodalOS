@@ -1,0 +1,14 @@
+{
+  "milestone": "M667",
+  "decision": "SUPPORT_DISCLOSURE_DRAFT_READY",
+  "draft": {
+    "supportScope": "public candidate support for installation, local bridge liveness, Runtime tab QA, and rollback guidance",
+    "supportUrl": "<support-url-placeholder>",
+    "privacyUrl": "<privacy-url-placeholder>",
+    "rollbackAvailable": true,
+    "knownLimitationsLinkRequired": true
+  },
+  "supportUrlFinalReady": false,
+  "privacyUrlFinalReady": false,
+  "publicReleaseReady": false
+}

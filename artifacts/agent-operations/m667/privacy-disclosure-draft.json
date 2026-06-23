@@ -1,0 +1,20 @@
+{
+  "milestone": "M667",
+  "decision": "PRIVACY_DISCLOSURE_DRAFT_READY",
+  "draft": {
+    "localFirst": true,
+    "broadWebsiteAccessByDefault": false,
+    "automaticContentScriptsByDefault": false,
+    "providerCloudEnabled": false,
+    "runtimeProductiveEnabled": false,
+    "filesystemEnabled": false,
+    "browserAutomationEnabled": false,
+    "capabilityUnlockEnabled": false,
+    "secretCollectionAllowed": false,
+    "rawApiKeysAllowedInEvidence": false,
+    "longRawLogsAllowedInEvidence": false
+  },
+  "privacyUrlFinalReady": false,
+  "finalReviewRequired": true,
+  "publicReleaseReady": false
+}

@@ -1,0 +1,17 @@
+{
+  "milestone": "M666",
+  "decision": "MANUAL_EXTENSION_QA_CONTRACT_READY",
+  "manualQaContractPrepared": true,
+  "manualQaExecutedNow": false,
+  "manualQaRequiredBeforePublicRelease": true,
+  "qaTarget": "public_variant_loaded_from_candidate_staging_directory",
+  "redactionRules": [
+    "no_secrets",
+    "no_raw_api_keys",
+    "no_long_raw_logs_unless_redacted",
+    "no_user_data",
+    "no_unredacted_sensitive_paths"
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

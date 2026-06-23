@@ -1,0 +1,19 @@
+{
+  "milestone": "M666",
+  "decision": "PUBLIC_VARIANT_LOAD_CHECKLIST_READY",
+  "checks": [
+    "open_chrome_extensions",
+    "load_candidate_staging_directory",
+    "confirm_effective_manifest_comes_from_manifest_public_json",
+    "confirm_visible_name_contains_public_candidate_or_expected_qa_label",
+    "confirm_internal_manifest_wildcard_permissions_are_not_present",
+    "confirm_no_public_release_or_store_upload"
+  ],
+  "evidenceRequired": [
+    "screenshot_or_manual_report_of_loaded_extension",
+    "permission_warning_summary",
+    "manifest_selection_confirmation"
+  ],
+  "manualQaRequiredBeforePublicRelease": true,
+  "publicReleaseReady": false
+}

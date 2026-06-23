@@ -1,0 +1,18 @@
+{
+  "milestone": "M665",
+  "decision": "MANIFEST_SELECTION_VERIFICATION_READY",
+  "manifestSelectionVerified": true,
+  "publicManifestUsedForPublicPackageCandidate": true,
+  "internalManifestPreserved": true,
+  "publicPackageCandidateManifestSource": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "internalBaselineManifest": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "verificationRules": [
+    "staged_package_manifest_must_equal_public_manifest_content",
+    "staged_package_manifest_must_not_contain_http_wildcard_host_permission",
+    "staged_package_manifest_must_not_contain_https_wildcard_host_permission",
+    "staged_package_manifest_must_not_contain_content_script_wildcard_matches",
+    "internal_manifest_must_not_be_overwritten"
+  ],
+  "publicHostPermissionsNarrowed": true,
+  "publicReleaseReady": false
+}

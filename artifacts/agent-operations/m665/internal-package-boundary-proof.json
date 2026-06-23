@@ -1,0 +1,12 @@
+{
+  "milestone": "M665",
+  "decision": "INTERNAL_PACKAGE_BOUNDARY_PROOF_READY",
+  "internalManifestPreserved": true,
+  "internalManifestPath": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "publicManifestPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "internalCandidateReady": true,
+  "publicPackageCandidatePrepared": true,
+  "internalManifestReplacedByPublicManifest": false,
+  "publicPackageUsesPublicManifestOnlyInStaging": true,
+  "publicReleaseReady": false
+}

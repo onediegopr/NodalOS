@@ -1,0 +1,24 @@
+{
+  "milestone": "M665",
+  "decision": "PACKAGE_SELECTOR_RUNBOOK_READY",
+  "runbookType": "candidate-local-only",
+  "steps": [
+    "confirm_clean_worktree",
+    "confirm_manifest_json_and_manifest_public_json_parse",
+    "create_temporary_public_candidate_staging_directory_outside_release_final_path",
+    "copy_reviewed_extension_files_to_staging_directory",
+    "copy_manifest_public_json_to_staging_directory_as_manifest_json",
+    "validate_staged_manifest_does_not_contain_wildcard_host_permissions",
+    "validate_staged_manifest_does_not_contain_wildcard_content_script_matches",
+    "validate_no_secrets_logs_temp_files_user_data",
+    "record_checksums_plan",
+    "do_not_sign_or_publish"
+  ],
+  "rollback": [
+    "delete_candidate_staging_directory",
+    "keep_internal_manifest_json_unchanged",
+    "invalidate_candidate_evidence_until_rebuilt"
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

@@ -1,0 +1,30 @@
+{
+  "milestone": "M665",
+  "decision": "PUBLIC_PACKAGE_CONTENTS_MANIFEST_READY",
+  "expectedFiles": [
+    "manifest.json_staged_from_manifest.public.json",
+    "sidepanel.html",
+    "sidepanel.css",
+    "sidepanel.js",
+    "service_worker.js",
+    "content_script.js_if_packaged_but_not_auto_registered",
+    "recipe_core.js",
+    "icons_or_assets_if_present"
+  ],
+  "excludedFiles": [
+    "manifest.json_internal_baseline_as_source_manifest",
+    "manifest.public.json_as_extra_unless_candidate_policy_allows",
+    "artifacts",
+    "docs",
+    "tests",
+    "logs",
+    "temp_files",
+    "user_data",
+    "secrets",
+    "api_keys"
+  ],
+  "checksumsPlanRequired": true,
+  "secretsExclusionRequired": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

@@ -1,0 +1,17 @@
+{
+  "milestone": "M666",
+  "decision": "SERVICE_WORKER_DEVTOOLS_QA_CHECKLIST_READY",
+  "checks": [
+    "service_worker_devtools_opened_after_extension_reload",
+    "csp_violations_none_expected",
+    "err_connection_refused_none_if_bridge_alive",
+    "invalid_token_none",
+    "close_1008_policy_violation_none",
+    "bridge_websocket_error_repeated_none",
+    "critical_console_errors_none",
+    "warnings_recorded_if_present"
+  ],
+  "rawConsoleExcerptAllowed": false,
+  "manualQaRequiredBeforePublicRelease": true,
+  "publicReleaseReady": false
+}

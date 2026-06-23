@@ -1,0 +1,21 @@
+{
+  "milestone": "M665",
+  "decision": "PUBLIC_PACKAGE_CANDIDATE_PREP_READY",
+  "mode": "package-candidate-prep-only",
+  "publicPackageCandidatePrepared": true,
+  "finalSignedPackageCreated": false,
+  "chromeWebStoreUploadPerformed": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "manifestSelectionVerified": true,
+  "publicManifestUsedForPublicPackageCandidate": true,
+  "internalManifestPreserved": true,
+  "packageCandidateDirectoryCreatedNow": false,
+  "zipFinalCreatedNow": false,
+  "recommendedPackagingMethod": "stage_public_candidate_directory_then_copy_manifest_public_json_as_staged_manifest_json",
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

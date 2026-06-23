@@ -1,0 +1,13 @@
+{
+  "milestone": "M667",
+  "decision": "STORE_DISCLOSURE_PREP_READY",
+  "storeDisclosurePrepared": true,
+  "storeDisclosureFinalReady": false,
+  "permissionDisclosureDraftReady": true,
+  "privacyDisclosureDraftReady": true,
+  "supportDisclosureDraftReady": true,
+  "listingGapRegisterReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "chromeWebStoreUploadPerformed": false
+}

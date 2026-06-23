@@ -1,0 +1,17 @@
+{
+  "milestone": "M666",
+  "decision": "RUNTIME_TAB_QA_CHECKLIST_READY",
+  "checks": [
+    "bridge_liveness_pass_before_reload",
+    "runtime_tab_opens",
+    "health_ok",
+    "clients_observed_if_bridge_live",
+    "heartbeat_ok",
+    "websocket_reconnecting_not_visible",
+    "bridge_websocket_error_not_visible"
+  ],
+  "expectedResult": "pass_when_bridge_live",
+  "manualQaRequiredBeforePublicRelease": true,
+  "runtimeProductiveEnabled": false,
+  "publicReleaseReady": false
+}

@@ -1,0 +1,27 @@
+{
+  "milestone": "M666",
+  "decision": "MANUAL_QA_EVIDENCE_TEMPLATE_READY",
+  "template": {
+    "qaRunId": "<manual-qa-run-id>",
+    "qaDate": "<yyyy-mm-dd>",
+    "publicVariantLoaded": "pass|fail|unknown",
+    "manifestSelectionVerified": "pass|fail|unknown",
+    "runtimeTabOpened": "pass|fail|unknown",
+    "serviceWorkerDevtoolsInspected": "pass|fail|unknown",
+    "cspViolationsObserved": "yes|no|unknown",
+    "errConnectionRefusedObserved": "yes|no|unknown",
+    "invalidTokenObserved": "yes|no|unknown",
+    "policyViolation1008Observed": "yes|no|unknown",
+    "bridgeWebSocketErrorRepeatedObserved": "yes|no|unknown",
+    "webSocketReconnectStormObserved": "yes|no|unknown",
+    "criticalConsoleErrorsObserved": "yes|no|unknown",
+    "allowedLocalOriginsVerified": "pass|fail|unknown",
+    "disallowedExternalOriginsVerified": "pass|fail|unknown",
+    "knownLimitationsVisibleOrDocumented": "pass|fail|unknown",
+    "screenshotsProvided": false,
+    "rawSecretsIncluded": false,
+    "rawConsoleExcerptAllowed": false
+  },
+  "manualQaRequiredBeforePublicRelease": true,
+  "publicReleaseReady": false
+}

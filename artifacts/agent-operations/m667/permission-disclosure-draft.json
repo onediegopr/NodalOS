@@ -1,0 +1,45 @@
+{
+  "milestone": "M667",
+  "decision": "PERMISSION_DISCLOSURE_DRAFT_READY",
+  "draft": {
+    "summary": "NODAL OS public candidate is local-first and uses local host permissions to communicate with a local bridge on localhost or 127.0.0.1.",
+    "hostPermissions": [
+      {
+        "pattern": "http://127.0.0.1/*",
+        "reason": "Local bridge connectivity for public candidate QA."
+      },
+      {
+        "pattern": "http://localhost/*",
+        "reason": "Local bridge connectivity for public candidate QA."
+      }
+    ],
+    "permissions": [
+      {
+        "permission": "sidePanel",
+        "reason": "Displays the extension side panel."
+      },
+      {
+        "permission": "storage",
+        "reason": "Stores local extension settings/state."
+      },
+      {
+        "permission": "alarms",
+        "reason": "Supports local extension timing/heartbeat behavior."
+      },
+      {
+        "permission": "tabs",
+        "reason": "Supports tab context for extension UX; final release requires validation."
+      },
+      {
+        "permission": "scripting",
+        "reason": "Reserved for future user-initiated site interaction; no automatic content scripts are present in public variant."
+      },
+      {
+        "permission": "activeTab",
+        "reason": "Reserved for future user-initiated active tab interaction."
+      }
+    ]
+  },
+  "finalReviewRequired": true,
+  "publicReleaseReady": false
+}

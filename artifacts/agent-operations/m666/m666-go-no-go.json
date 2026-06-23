@@ -1,0 +1,19 @@
+{
+  "milestone": "M666",
+  "decision": "PUBLIC_VARIANT_MANUAL_EXTENSION_QA_CONTRACT_READY",
+  "manualQaContractPrepared": true,
+  "publicVariantLoadChecklistReady": true,
+  "runtimeTabQaChecklistReady": true,
+  "serviceWorkerDevtoolsQaChecklistReady": true,
+  "allowedDisallowedOriginQaChecklistReady": true,
+  "manualQaEvidenceTemplateReady": true,
+  "manualQaExecutedNow": false,
+  "manualQaRequiredBeforePublicRelease": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

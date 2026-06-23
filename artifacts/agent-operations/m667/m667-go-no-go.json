@@ -1,0 +1,16 @@
+{
+  "milestone": "M667",
+  "decision": "STORE_DISCLOSURE_PREP_READY",
+  "storeDisclosurePrepared": true,
+  "permissionDisclosureDraftReady": true,
+  "privacyDisclosureDraftReady": true,
+  "supportDisclosureDraftReady": true,
+  "publicListingReadinessGapRegisterReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

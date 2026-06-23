@@ -1,0 +1,38 @@
+{
+  "milestone": "M667",
+  "decision": "PUBLIC_LISTING_READINESS_GAP_REGISTER_READY",
+  "gaps": [
+    {
+      "id": "LISTING-FINAL-NAME",
+      "severity": "medium",
+      "status": "open",
+      "description": "Final Store name must not use QA-only Public Candidate label unless explicitly approved."
+    },
+    {
+      "id": "LISTING-SCREENSHOTS-ASSETS",
+      "severity": "medium",
+      "status": "open",
+      "description": "Screenshots/assets are required before Chrome Web Store readiness."
+    },
+    {
+      "id": "LISTING-SUPPORT-PRIVACY-URLS",
+      "severity": "medium",
+      "status": "open",
+      "description": "Support and privacy URLs are placeholders."
+    },
+    {
+      "id": "LISTING-MANUAL-QA-EVIDENCE",
+      "severity": "critical-for-public-release",
+      "status": "open",
+      "description": "Manual QA for public variant must be captured before public release."
+    },
+    {
+      "id": "LISTING-PERMISSION-WARNING-EVIDENCE",
+      "severity": "medium",
+      "status": "open",
+      "description": "Permission warning screenshots or summaries are required."
+    }
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

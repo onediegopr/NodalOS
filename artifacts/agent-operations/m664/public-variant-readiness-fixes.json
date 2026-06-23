@@ -1,0 +1,22 @@
+{
+  "milestone": "M664",
+  "decision": "PUBLIC_VARIANT_READINESS_FIXES_READY",
+  "auditDecisionAccepted": "AUDIT_CONDITIONAL_GO",
+  "mode": "controlled-readiness-prep",
+  "uiMicrocopyModified": false,
+  "microcopyPreparedAsContract": true,
+  "knownLimitationsPrepared": true,
+  "permissionJustificationPrepared": true,
+  "metadataNamingReviewPrepared": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "manifestModified": false,
+  "publicManifestModified": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

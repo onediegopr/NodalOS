@@ -1,0 +1,24 @@
+{
+  "milestone": "M664",
+  "decision": "PUBLIC_VARIANT_KNOWN_LIMITATIONS_READY",
+  "publicContentScriptsKnownLimitationDocumented": true,
+  "limitations": [
+    {
+      "id": "PUBLIC-NO-AUTO-WEBSITE-ACCESS",
+      "severity": "expected",
+      "description": "Public build does not auto-access websites because automatic content scripts are omitted."
+    },
+    {
+      "id": "PUBLIC-SITE-SPECIFIC-FEATURES-DEFERRED",
+      "severity": "expected",
+      "description": "Site-specific page features require a future user-granted origin or optional permissions flow."
+    },
+    {
+      "id": "PUBLIC-LOCAL-FIRST-ONLY",
+      "severity": "expected",
+      "description": "Local bridge and extension-page features remain the supported public candidate scope."
+    }
+  ],
+  "manualQaRequiredBeforePublicRelease": true,
+  "publicReleaseReady": false
+}

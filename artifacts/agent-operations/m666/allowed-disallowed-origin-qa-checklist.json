@@ -1,0 +1,17 @@
+{
+  "milestone": "M666",
+  "decision": "ALLOWED_DISALLOWED_ORIGIN_QA_CHECKLIST_READY",
+  "allowedOriginChecks": [
+    "http://127.0.0.1/* host permission available",
+    "http://localhost/* host permission available",
+    "local_bridge_behavior_verified_if_bridge_live"
+  ],
+  "disallowedOriginChecks": [
+    "external_http_wildcard_not_available",
+    "external_https_wildcard_not_available",
+    "no_automatic_content_script_injection_on_external_sites",
+    "site_specific_features_documented_as_unavailable"
+  ],
+  "manualQaRequiredBeforePublicRelease": true,
+  "publicReleaseReady": false
+}

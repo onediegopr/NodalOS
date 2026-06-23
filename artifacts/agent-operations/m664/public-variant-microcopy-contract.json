@@ -1,0 +1,20 @@
+{
+  "milestone": "M664",
+  "decision": "PUBLIC_VARIANT_MICROCOPY_CONTRACT_READY",
+  "microcopyOrKnownLimitationsPrepared": true,
+  "uiModifiedNow": false,
+  "requiredFutureMicrocopy": [
+    "Public build does not auto-access websites.",
+    "Site-specific features require future user-granted access.",
+    "Local bridge features remain local-first.",
+    "Unavailable page features are expected in this public candidate."
+  ],
+  "recommendedPlacement": [
+    "public package README or release notes",
+    "store listing description before public release",
+    "sidepanel build-channel notice only if future UI milestone approves it"
+  ],
+  "behaviorChangeRequired": false,
+  "runtimeProductiveEnabled": false,
+  "publicReleaseReady": false
+}

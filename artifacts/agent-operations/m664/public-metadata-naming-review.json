@@ -1,0 +1,12 @@
+{
+  "milestone": "M664",
+  "decision": "PUBLIC_METADATA_NAMING_REVIEW_READY",
+  "currentPublicCandidateName": "NODAL OS Public Candidate",
+  "currentNameValidForQa": true,
+  "currentNameApprovedForStoreFinal": false,
+  "recommendedStoreFinalName": "NODAL OS",
+  "recommendedPublicCandidateLabel": "Public Candidate",
+  "requiresFinalListingReview": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}
