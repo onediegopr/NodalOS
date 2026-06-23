@@ -8,6 +8,7 @@ const SESSION_STATE_KEY = 'nexaRuntimeState';
 const OUTGOING_QUEUE_LIMIT = 40;
 const HEARTBEAT_MS = 15000;
 const BACKOFF_STEPS = [250, 500, 1000, 2000, 5000];
+const MAX_RECONNECT_ATTEMPTS = 5;
 const EXTENSION_RUNTIME_MODE = 'core-governed-companion';
 const CORE_GOVERNED_MODE = true;
 const LEGACY_RUNNER_ENABLED = false;
@@ -142,8 +143,12 @@ async function initializeRuntimeLifecycle() {
   await hydrateLearningSession();
   chrome.alarms.create('nexa.keepalive', { periodInMinutes: 0.4 });
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
-  if (config.host && config.port) {
+  if (config.host && config.port && hasSavedToken(config)) {
     connectWebSocket(config).catch(() => {});
+  } else if (config.host && config.port) {
+    blockReconnect('tokenRequired', 'token_required');
+    publishSavedConfig();
+    publishRuntimeSnapshot();
   }
 }
 
@@ -231,7 +236,9 @@ async function hydrateLearningSession() {
 
 async function keepAliveTick() {
   const config = await chrome.storage.local.get(DEFAULT_CONFIG);
-  if (!socket || socket.readyState !== WebSocket.OPEN) {
+  if (!hasSavedToken(config)) {
+    blockReconnect('tokenRequired', 'token_required');
+  } else if (!socket || socket.readyState !== WebSocket.OPEN) {
     scheduleReconnect('keepalive');
   } else {
     sendPing();
@@ -247,11 +254,17 @@ async function handlePanelMessage(message) {
       try {
         await connect(message.config);
       } catch (error) {
-        setConnectionState('error', String(error && error.message ? error.message : error), { source: 'service_worker', cause: 'connect.exception' });
+        const messageText = String(error && error.message ? error.message : error);
+        setConnectionState(messageText === 'token_required' ? 'tokenRequired' : 'error', messageText, { source: 'service_worker', cause: 'connect.exception' });
       }
       break;
     case 'saveTokenAndConnect':
-      await saveTokenAndConnect(message.config || {});
+      try {
+        await saveTokenAndConnect(message.config || {});
+      } catch (error) {
+        const messageText = String(error && error.message ? error.message : error);
+        setConnectionState(messageText === 'token_required' ? 'tokenRequired' : 'error', messageText, { source: 'service_worker', cause: 'saveToken.connect.exception' });
+      }
       break;
     case 'clearSavedToken':
       await clearSavedToken();
@@ -375,10 +388,15 @@ async function publishSavedConfig() {
 }
 
 async function saveConfig(config) {
+  const input = config || {};
+  const existing = await chrome.storage.local.get(DEFAULT_CONFIG);
+  const token = Object.prototype.hasOwnProperty.call(input, 'token')
+    ? String(input.token || '').trim()
+    : String(existing.token || '').trim();
   await chrome.storage.local.set({
-    host: config.host || DEFAULT_CONFIG.host,
-    port: config.port || DEFAULT_CONFIG.port,
-    token: config.token || DEFAULT_CONFIG.token
+    host: input.host || existing.host || DEFAULT_CONFIG.host,
+    port: input.port || existing.port || DEFAULT_CONFIG.port,
+    token
   });
 }
 
@@ -448,7 +466,14 @@ function connect(config) {
 }
 
 async function connectWebSocket(config, options = {}) {
-  config = config || await chrome.storage.local.get(DEFAULT_CONFIG);
+  const storedConfig = await chrome.storage.local.get(DEFAULT_CONFIG);
+  config = {
+    ...storedConfig,
+    ...(config || {}),
+    token: Object.prototype.hasOwnProperty.call(config || {}, 'token')
+      ? String(config.token || '').trim()
+      : String(storedConfig.token || '').trim()
+  };
   if (!clientId) {
     await hydrateRuntimeState();
   }
@@ -485,7 +510,6 @@ async function connectWebSocket(config, options = {}) {
   closeSocketOnly('reconnect');
   connectionStoppedByUser = false;
   stopRequestedExplicitly = false;
-  setConnectionState('connecting', 'Connecting to bridge', { source: 'service_worker', cause: options.reason || 'connect.requested' });
   let effectiveToken;
   try {
     effectiveToken = await validateConnectionConfig(config);
@@ -493,6 +517,7 @@ async function connectWebSocket(config, options = {}) {
     connectInFlight = false;
     throw error;
   }
+  setConnectionState('connecting', 'Connecting to bridge', { source: 'service_worker', cause: options.reason || 'connect.requested' });
   const url = `ws://${config.host || DEFAULT_CONFIG.host}:${config.port || DEFAULT_CONFIG.port}/ws/extension`;
 
   connectingPromise = new Promise((resolve, reject) => {
@@ -544,6 +569,16 @@ async function connectWebSocket(config, options = {}) {
       lastWsCloseReason = String(event.reason || '');
       lastWsCloseWasClean = Boolean(event.wasClean);
       lastWsCloseAt = new Date().toISOString();
+      if (event.code === 1008 || /invalid token/i.test(lastWsCloseReason)) {
+        blockReconnect('tokenError', 'invalid_token');
+        setConnectionState('tokenError', 'invalid_token', {
+          source: 'service_worker',
+          cause: 'socket.close.invalid_token'
+        });
+        persistRuntimeState();
+        resolve();
+        return;
+      }
       if (reconnectBlocked) {
         const blockedState = connectionState === 'tokenError' || connectionState === 'protocolError' ? connectionState : 'error';
         setConnectionState(blockedState, reconnectBlockedReason || lastConnectionError || 'Bridge connection blocked', {
@@ -583,10 +618,11 @@ async function connectWebSocket(config, options = {}) {
         return;
       }
       lastConnectionError = 'Bridge WebSocket error';
-      setConnectionState('error', 'Bridge WebSocket error', { source: 'service_worker', cause: 'socket.error' });
+      lastConnectionError = 'bridge_unreachable';
+      setConnectionState('error', 'bridge_unreachable', { source: 'service_worker', cause: 'socket.error' });
       persistRuntimeState();
       scheduleReconnect('socketError');
-      reject(new Error('Bridge WebSocket error'));
+      reject(new Error('bridge_unreachable'));
     });
   });
 
@@ -623,6 +659,14 @@ function scheduleReconnect(reason) {
     return;
   }
   reconnectAttempt += 1;
+  if (reconnectAttempt > MAX_RECONNECT_ATTEMPTS) {
+    blockReconnect('error', 'bridge_unreachable');
+    setConnectionState('error', 'bridge_unreachable', {
+      source: 'service_worker',
+      cause: 'reconnect.circuit_breaker'
+    });
+    return;
+  }
   const baseDelay = BACKOFF_STEPS[Math.min(reconnectAttempt - 1, BACKOFF_STEPS.length - 1)];
   const jitter = Math.floor(Math.random() * 120);
   reconnectTimer = setTimeout(async () => {
@@ -636,6 +680,10 @@ async function validateConnectionConfig(config) {
   const host = config.host || DEFAULT_CONFIG.host;
   const port = config.port || DEFAULT_CONFIG.port;
   const token = String(config.token || '').trim();
+  if (!token) {
+    blockReconnect('tokenRequired', 'token_required');
+    throw new Error('token_required');
+  }
   try {
     const response = await fetch(`http://${host}:${port}/config/public`, { cache: 'no-store' });
     if (!response.ok) {
@@ -643,11 +691,7 @@ async function validateConnectionConfig(config) {
     }
     const publicConfig = await response.json();
     if (publicConfig && publicConfig.requiresToken && !token) {
-      const paired = await tryLocalPairing(config);
-      if (paired) {
-        return paired;
-      }
-      blockReconnect('tokenError', 'Bridge requires a connection token. Enter the token and press Reconnect.');
+      blockReconnect('tokenRequired', 'token_required');
       throw new Error(lastConnectionError);
     }
   } catch (error) {
@@ -656,6 +700,10 @@ async function validateConnectionConfig(config) {
     }
   }
   return token;
+}
+
+function hasSavedToken(config) {
+  return Boolean(String(config && config.token || '').trim());
 }
 
 function blockReconnect(state, message) {
@@ -2683,6 +2731,8 @@ async function publishRuntimeSnapshot() {
         queuedMessages: outgoingQueue.length,
         host: config.host || DEFAULT_CONFIG.host,
         port: config.port || DEFAULT_CONFIG.port,
+        hasToken: hasSavedToken(config),
+        tokenStatus: connectionState === 'tokenError' ? 'invalid' : hasSavedToken(config) ? 'present' : 'missing',
         health: lastHealth,
         debug: runtimeDebug
       },

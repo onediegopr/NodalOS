@@ -1,0 +1,20 @@
+{
+  "milestone": "M680",
+  "artifact": "public-variant-permission-diagnosis",
+  "manifest": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "validJson": true,
+  "permissions": {
+    "storage": true,
+    "sidePanel": true,
+    "alarms": true,
+    "tabs": true,
+    "scripting": true,
+    "activeTab": true
+  },
+  "hostPermissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "manifestPublicHasWildcards": false,
+  "contentScriptsWildcardInPublicManifest": false,
+  "connectSrcAllowsLocalHttp": true,
+  "connectSrcAllowsLocalWebSocket": true,
+  "cspModified": false
+}

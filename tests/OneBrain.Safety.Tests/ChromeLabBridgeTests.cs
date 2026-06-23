@@ -480,7 +480,7 @@ public sealed class ChromeLabBridgeTests
         Assert.IsTrue(serviceWorker.Contains("engine.pong", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("scheduleReconnect", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("reconnectBlocked", StringComparison.Ordinal));
-        Assert.IsTrue(serviceWorker.Contains("Bridge requires a connection token", StringComparison.Ordinal));
+        Assert.IsTrue(serviceWorker.Contains("token_required", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("protocol_version_mismatch", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("tryLocalPairing", StringComparison.Ordinal));
         Assert.IsTrue(serviceWorker.Contains("/pairing/local-token", StringComparison.Ordinal));

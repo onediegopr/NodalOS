@@ -1,0 +1,16 @@
+{
+  "milestone": "M681",
+  "artifact": "bridge-token-bugfix",
+  "status": "APPLIED",
+  "modifiedFiles": [
+    "browser-extension/onebrain-chrome-lab/service_worker.js",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js"
+  ],
+  "tokenPersistenceFixed": true,
+  "tokenStatusAccurate": true,
+  "websocketConnectRaceFixed": true,
+  "reconnectLoopHardened": true,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false
+}

@@ -1,0 +1,17 @@
+{
+  "milestone": "M682",
+  "decision": "QA_CONDITIONAL_READY",
+  "manualQaUnblocked": true,
+  "validTokenConnectedQa": "CONDITIONAL_ENVIRONMENT_MISSING",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeSecretsLeaked": false,
+  "tokenLoggedInFull": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

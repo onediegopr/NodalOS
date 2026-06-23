@@ -1,0 +1,11 @@
+{
+  "milestone": "M682",
+  "artifact": "token-save-read-qa",
+  "status": "PASS_STATIC",
+  "tokenStatusWhenMissing": "missing",
+  "tokenStatusWhenSaved": "present",
+  "storageContainsTokenAfterSave": true,
+  "serviceWorkerCanReadToken": true,
+  "uiShowsTokenValueInRuntimeStatus": false,
+  "tokenLoggedInFull": false
+}

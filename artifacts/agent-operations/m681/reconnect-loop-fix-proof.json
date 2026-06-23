@@ -1,0 +1,12 @@
+{
+  "milestone": "M681",
+  "artifact": "reconnect-loop-fix-proof",
+  "singleFlightConnectGuardPresent": true,
+  "orphanSocketCleanupBeforeReconnect": true,
+  "reconnectBackoffMs": [250, 500, 1000, 2000, 5000],
+  "maxReconnectAttempts": 5,
+  "circuitBreakerDiagnostic": "bridge_unreachable",
+  "missingTokenSchedulesReconnect": false,
+  "invalidTokenSchedulesReconnect": false,
+  "aggressiveLoopPrevented": true
+}

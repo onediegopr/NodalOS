@@ -1,0 +1,14 @@
+{
+  "milestone": "M681",
+  "artifact": "token-storage-fix-proof",
+  "canonicalStorage": "chrome.storage.local",
+  "storageKey": "token",
+  "saveTrimsToken": true,
+  "connectReadsStoredTokenFirst": true,
+  "runtimeSnapshotHasTokenBoolean": true,
+  "runtimeSnapshotContainsTokenValue": false,
+  "clearRuntimeStateKeepsToken": true,
+  "clearSavedTokenClearsToken": true,
+  "bridgeSecretsLeaked": false,
+  "tokenLoggedInFull": false
+}

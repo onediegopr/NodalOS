@@ -1,0 +1,10 @@
+{
+  "milestone": "M682",
+  "artifact": "reconnect-loop-regression-qa",
+  "status": "PASS_STATIC",
+  "missingTokenNoLoop": true,
+  "invalidTokenNoLoop": true,
+  "bridgeUnreachableBackoff": true,
+  "maxReconnectAttempts": 5,
+  "multipleSimultaneousSocketsPrevented": true
+}

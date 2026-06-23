@@ -1,0 +1,10 @@
+{
+  "milestone": "M682",
+  "artifact": "bridge-unreachable-qa",
+  "status": "PASS_STATIC",
+  "precondition": "token present and bridge not reachable",
+  "diagnostic": "bridge_unreachable",
+  "healthExpected": "fail",
+  "doesNotReportTokenMissingWhenTokenPresent": true,
+  "reconnectStormPrevented": true
+}

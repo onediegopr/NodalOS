@@ -1,0 +1,14 @@
+{
+  "milestone": "M680",
+  "artifact": "token-persistence-flow-map",
+  "capture": "sidepanel token password input",
+  "message": "saveTokenAndConnect",
+  "canonicalStorage": "chrome.storage.local",
+  "keys": ["host", "port", "token"],
+  "serviceWorkerReadBeforeConnect": true,
+  "runtimeSnapshotPublishesValue": false,
+  "runtimeSnapshotPublishesHasToken": true,
+  "clearRuntimeStateClearsToken": false,
+  "clearSavedTokenClearsToken": true,
+  "uiRepresentableAsTokenPresent": true
+}

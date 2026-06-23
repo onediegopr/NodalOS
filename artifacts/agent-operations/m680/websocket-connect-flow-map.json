@@ -1,0 +1,24 @@
+{
+  "milestone": "M680",
+  "artifact": "websocket-connect-flow-map",
+  "withoutToken": {
+    "diagnostic": "token_required",
+    "opensWebSocket": false,
+    "aggressiveLoop": false
+  },
+  "withTokenBridgeUnreachable": {
+    "diagnostic": "bridge_unreachable",
+    "opensWebSocket": true,
+    "reconnectBackoff": [250, 500, 1000, 2000, 5000],
+    "circuitBreakerAttempts": 5
+  },
+  "invalidToken": {
+    "diagnostic": "invalid_token",
+    "reconnectBlocked": true,
+    "recommendedAction": "replace stored connection token with the local bridge token"
+  },
+  "validToken": {
+    "expectedDiagnostic": "connected",
+    "requiresLiveBridgeEvidence": true
+  }
+}

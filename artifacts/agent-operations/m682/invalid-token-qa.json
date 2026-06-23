@@ -1,0 +1,9 @@
+{
+  "milestone": "M682",
+  "artifact": "invalid-token-qa",
+  "status": "PASS_STATIC",
+  "diagnostic": "invalid_token",
+  "reconnectBlocked": true,
+  "recommendedAction": "replace token",
+  "noInfiniteReconnect": true
+}

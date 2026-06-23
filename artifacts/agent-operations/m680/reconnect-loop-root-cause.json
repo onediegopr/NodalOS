@@ -1,0 +1,10 @@
+{
+  "milestone": "M680",
+  "artifact": "reconnect-loop-root-cause",
+  "rootCauseIdentified": true,
+  "rootCause": "Startup/keepalive/reconnect paths could call connectWebSocket with no saved token; validateConnectionConfig returned empty token when public config fetch failed, creating WebSocket attempts that could repeat.",
+  "secondaryCause": "Runtime UI inferred token status from sidepanel-local token string instead of a service-worker storage-backed boolean.",
+  "requiresBridgeSourceChange": false,
+  "requiresCspChange": false,
+  "requiresManifestChange": false
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M681",
+  "artifact": "public-variant-connection-fix-proof",
+  "publicManifestChanged": false,
+  "storagePermissionPresent": true,
+  "localHostPermissionsPresent": true,
+  "wildcardHostPermissionsPresent": false,
+  "wildcardContentScriptsPresent": false,
+  "contentScriptsReintroduced": false,
+  "publicVariantConnectionReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

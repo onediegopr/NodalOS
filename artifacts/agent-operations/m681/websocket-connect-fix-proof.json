@@ -1,0 +1,11 @@
+{
+  "milestone": "M681",
+  "artifact": "websocket-connect-fix-proof",
+  "missingTokenGateBeforeWebSocket": true,
+  "connectStateAfterTokenValidation": true,
+  "storedConfigMergedBeforeConnect": true,
+  "invalidTokenDetectedFromPolicyClose": true,
+  "bridgeUnreachableDiagnostic": "bridge_unreachable",
+  "tokenRequiredDiagnostic": "token_required",
+  "invalidTokenDiagnostic": "invalid_token"
+}

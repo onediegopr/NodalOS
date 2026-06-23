@@ -1,0 +1,14 @@
+{
+  "milestone": "M682",
+  "artifact": "bridge-token-qa",
+  "qaMode": "STATIC_PLUS_CODE_VALIDATION",
+  "manualChromeEvidenceCaptured": false,
+  "caseAWithoutToken": "PASS_STATIC",
+  "caseBTokenSaved": "PASS_STATIC",
+  "caseCBridgeOff": "PASS_STATIC",
+  "caseDInvalidToken": "PASS_STATIC",
+  "caseEValidTokenConnected": "CONDITIONAL_ENVIRONMENT_MISSING",
+  "caseFPublicVariant": "PASS_STATIC",
+  "manualQaUnblocked": true,
+  "manualQaUnblockStatus": "CONDITIONAL_READY"
+}

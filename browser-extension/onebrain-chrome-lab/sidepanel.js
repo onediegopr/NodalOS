@@ -9,6 +9,7 @@ const state = {
     host: '127.0.0.1',
     port: '8787',
     token: '',
+    hasToken: false,
     tokenStatus: 'missing',
     runtime: null
   },
@@ -346,7 +347,8 @@ function handleMessage(message) {
       state.connection.host = message.config.host || '127.0.0.1';
       state.connection.port = message.config.port || '8787';
       state.connection.token = message.config.token || '';
-      state.connection.tokenStatus = state.connection.token ? 'saved' : 'missing';
+      state.connection.hasToken = Boolean(state.connection.token);
+      state.connection.tokenStatus = state.connection.hasToken ? 'saved' : 'missing';
       el.hostInput.value = state.connection.host;
       el.portInput.value = state.connection.port;
       el.tokenInput.value = state.connection.token;
@@ -528,9 +530,14 @@ function hydrateRuntime(runtime) {
   state.connection.host = connection.host || state.connection.host;
   state.connection.port = connection.port || state.connection.port;
   state.connection.health = connection.health && connection.health.ok ? 'ok' : state.connection.health;
+  if (typeof connection.hasToken === 'boolean') {
+    state.connection.hasToken = connection.hasToken;
+  }
   if (connection.state === 'tokenError') {
     state.connection.tokenStatus = 'invalid';
-  } else if (state.connection.token) {
+  } else if (connection.state === 'tokenRequired') {
+    state.connection.tokenStatus = 'missing';
+  } else if (state.connection.hasToken || state.connection.token) {
     state.connection.tokenStatus = 'saved';
   } else {
     state.connection.tokenStatus = 'missing';
@@ -1030,13 +1037,19 @@ function renderRuntime() {
 
 function runtimeDiagnostic(connection, clients) {
   if (!state.connection.runtime && state.connection.health === 'fail') {
-    return 'Bridge caido';
+    return 'bridge_unreachable';
+  }
+  if (connection.state === 'tokenRequired') {
+    return 'token_required';
   }
   if (connection.state === 'tokenError') {
-    return 'Token invalido';
+    return 'invalid_token';
   }
   if (connection.state === 'protocolError') {
     return 'Error de protocolo';
+  }
+  if (connection.lastError === 'bridge_unreachable') {
+    return 'bridge_unreachable';
   }
   if (connection.connected) {
     return 'Conectado';
@@ -1054,7 +1067,7 @@ function tokenStatusLabel(connection) {
   if (connection.state === 'tokenError' || state.connection.tokenStatus === 'invalid') {
     return 'invalido';
   }
-  if (state.connection.token) {
+  if (connection.tokenStatus === 'present' || connection.hasToken || state.connection.hasToken || state.connection.token) {
     return 'guardado';
   }
   if (connection.connected && !state.connection.token) {
@@ -1078,10 +1091,16 @@ function runtimeRecommendation(connection, clients) {
   if (!state.connection.runtime && state.connection.health === 'fail') {
     return 'Verifica que el bridge este iniciado.';
   }
+  if (connection.state === 'tokenRequired') {
+    return 'Pega el token de conexion generado por el bridge.';
+  }
   if (connection.state === 'tokenError' || state.connection.tokenStatus === 'invalid') {
     return 'El token guardado no coincide con el bridge. Usa Cambiar token y pega ExtensionToken desde config/chrome-lab.local.json.';
   }
-  if (!state.connection.token) {
+  if (connection.lastError === 'bridge_unreachable') {
+    return 'Verifica que el bridge este iniciado y vuelve a reconectar.';
+  }
+  if (!state.connection.hasToken && !state.connection.token) {
     return 'Pega el token de conexion generado por el bridge.';
   }
   if (clients && clients.connectedCount === 0 && !connection.connected) {

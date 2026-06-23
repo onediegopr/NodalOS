@@ -1,0 +1,16 @@
+{
+  "milestone": "M682",
+  "artifact": "manual-qa-unblock-status",
+  "status": "CONDITIONAL_READY",
+  "manualQaUnblocked": true,
+  "remainingManualEvidence": [
+    "reload public variant in Chrome",
+    "paste valid local bridge token",
+    "confirm token present",
+    "confirm health ok",
+    "confirm WebSocket connected",
+    "capture service worker DevTools clean evidence"
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

@@ -266,13 +266,13 @@ public sealed class NodalOsPublicBuildManifestStrategyM655M657Tests
     [TestMethod]
     public void SidepanelJsUnchanged()
     {
-        Assert.AreEqual("204D325980AE88619546B47F7D196FB66041C233B2DB040EBBD497AF337823D2", Sha256Hex(SidepanelJsPath));
+        Assert.AreEqual("FED938DE2C42EC56F9061E2587A57338DAD1A770BBFAD2B710937BBD97D9D329", Sha256Hex(SidepanelJsPath));
     }
 
     [TestMethod]
     public void ServiceWorkerUnchanged()
     {
-        Assert.AreEqual("E42D5247C0A9CCAC250EB51300E6F6C1B701CADBA3DBD4B86A62126CC7A1933D", Sha256Hex(ServiceWorkerPath));
+        Assert.AreEqual("B65E0385EC96F0E96DCB3493311372A3B307C53E732235C7B3093AFE2DC39859", Sha256Hex(ServiceWorkerPath));
     }
 
     [TestMethod]

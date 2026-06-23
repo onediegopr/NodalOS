@@ -1,0 +1,21 @@
+{
+  "milestone": "M681",
+  "decision": "BUGFIX_READY_STATIC",
+  "rootCauseIdentified": true,
+  "tokenPersistenceFixed": true,
+  "tokenStatusAccurate": true,
+  "websocketConnectRaceFixed": true,
+  "reconnectLoopHardened": true,
+  "publicVariantConnectionReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeSecretsLeaked": false,
+  "tokenLoggedInFull": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

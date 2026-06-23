@@ -1,0 +1,12 @@
+{
+  "milestone": "M682",
+  "artifact": "valid-token-connected-qa",
+  "status": "CONDITIONAL_ENVIRONMENT_MISSING",
+  "healthOkVerified": false,
+  "webSocketConnectedVerified": false,
+  "requiresManualBridgeRun": true,
+  "expectedHealth": "ok",
+  "expectedWebSocket": "connected",
+  "expectedDiagnostic": "connected",
+  "falsePassAvoided": true
+}
