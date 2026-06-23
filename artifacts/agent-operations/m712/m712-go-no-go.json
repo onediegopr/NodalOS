@@ -1,0 +1,18 @@
+{
+  "milestone": "M712",
+  "decision": "RELEASE_BLOCKERS_CLASSIFIED_CONDITIONAL_GO",
+  "externalAuditCompleted": true,
+  "criticalTechnicalBlockersFound": false,
+  "assetsStillPending": true,
+  "privacySupportUrlsStillPending": true,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

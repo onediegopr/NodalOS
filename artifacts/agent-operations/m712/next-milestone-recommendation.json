@@ -1,0 +1,14 @@
+{
+  "milestone": "M712",
+  "recommendedNextMilestone": "M713-M715 Evidence/Asset/URL Completion",
+  "rejectedAlternatives": [
+    {
+      "option": "M713-M715 Public Package Freeze Candidate Build",
+      "reason": "Freeze build should wait until P0 evidence, asset, and URL blockers close."
+    },
+    {
+      "option": "M713-M715 Remediation",
+      "reason": "No critical technical blocker was found."
+    }
+  ]
+}

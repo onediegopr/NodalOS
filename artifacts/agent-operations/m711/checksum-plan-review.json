@@ -1,0 +1,8 @@
+{
+  "milestone": "M711",
+  "checksumPlanSufficient": true,
+  "algorithm": "SHA-256",
+  "calculateAtFreezeFinal": true,
+  "calculatedNow": false,
+  "reasonNotCalculatedNow": "No final frozen package artifact is created in this audit milestone."
+}

@@ -1,0 +1,11 @@
+{
+  "milestone": "M710",
+  "humanEvidenceStatus": "partial",
+  "screenshotsStatus": "pending",
+  "runtimeDevtoolsStatus": "pending",
+  "permissionWarningCaptureStatus": "unknown",
+  "assetsStillPending": true,
+  "manualEvidenceStillPartial": true,
+  "blocksFinalFreeze": true,
+  "blocksStoreSubmission": true
+}

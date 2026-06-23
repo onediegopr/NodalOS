@@ -1,0 +1,10 @@
+{
+  "milestone": "M710",
+  "storeListingDraftAcceptable": true,
+  "claimsBroadWebsiteAccess": false,
+  "claimsProductionRuntimeEnabled": false,
+  "claimsProviderCloudEnabled": false,
+  "mentionsLocalFirst": true,
+  "mentionsLocalBridge": true,
+  "requiresFinalExternalCopyReview": true
+}

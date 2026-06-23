@@ -1,0 +1,12 @@
+{
+  "milestone": "M711",
+  "packageExclusionAuditSufficient": true,
+  "excludesLocalConfig": true,
+  "excludesTokenValues": true,
+  "excludesApiKeys": true,
+  "excludesLogs": true,
+  "excludesTempProfiles": true,
+  "excludesUserData": true,
+  "excludesSensitiveEvidence": true,
+  "secretsIncluded": false
+}

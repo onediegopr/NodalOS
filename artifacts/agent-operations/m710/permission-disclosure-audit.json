@@ -1,0 +1,12 @@
+{
+  "milestone": "M710",
+  "permissionDisclosureAcceptable": true,
+  "coversStorage": true,
+  "coversSidePanel": true,
+  "coversAlarms": true,
+  "coversTabs": true,
+  "coversScripting": true,
+  "coversLocalhost127001": true,
+  "wildcardDisclosureRequired": false,
+  "reviewNotes": "Disclosure explains local-first scope and absence of broad host wildcards."
+}

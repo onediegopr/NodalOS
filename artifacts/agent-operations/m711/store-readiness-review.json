@@ -1,0 +1,13 @@
+{
+  "milestone": "M711",
+  "storeReadiness": "no-go",
+  "reviewRejectionRisks": [
+    "missing screenshots/assets",
+    "missing privacy URL",
+    "missing support URL",
+    "final listing not externally approved",
+    "public candidate metadata must not become Store final naming accidentally"
+  ],
+  "chromeWebStoreReady": false,
+  "publicReleaseReady": false
+}

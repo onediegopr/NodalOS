@@ -1,0 +1,22 @@
+{
+  "milestone": "M711",
+  "decision": "FREEZE_CANDIDATE_REVIEW_CONDITIONAL",
+  "stagingFolderCanBeFreezeCandidate": true,
+  "packageExclusionAuditSufficient": true,
+  "checksumPlanSufficient": true,
+  "zipCandidateShouldStillBeAvoided": true,
+  "assetsPendingBlockFinalFreeze": true,
+  "privacySupportUrlsPendingBlockStoreFinal": true,
+  "partialEvidenceAllowsConditionalFreezePrep": true,
+  "packageFreezeCanAdvanceTo": "conditional_go",
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

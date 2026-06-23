@@ -1,0 +1,15 @@
+{
+  "milestone": "M711",
+  "decision": "FREEZE_CANDIDATE_REVIEW_CONDITIONAL",
+  "packageFreezePrepAcceptable": true,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

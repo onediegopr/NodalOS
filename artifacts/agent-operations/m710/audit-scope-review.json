@@ -1,0 +1,22 @@
+{
+  "milestone": "M710",
+  "scopeReviewed": [
+    "public manifest variant",
+    "public staging folder",
+    "host permissions narrowing",
+    "absence of external content scripts",
+    "permission disclosure",
+    "store listing draft",
+    "evidence and asset completeness",
+    "store blockers",
+    "security and redaction",
+    "release no-go status"
+  ],
+  "outOfScope": [
+    "public release publication",
+    "Chrome Web Store upload",
+    "final signed package creation",
+    "runtime/provider/filesystem/browser unlock"
+  ],
+  "externalAuditCompleted": true
+}

@@ -1,0 +1,9 @@
+{
+  "milestone": "M711",
+  "evidenceReadiness": "partial",
+  "manualEvidenceStillPartial": true,
+  "runtimeDevtoolsEvidenceIncomplete": true,
+  "permissionWarningCaptureUnknown": true,
+  "allowsConditionalFreezePrep": true,
+  "blocksFinalFreeze": true
+}

@@ -1,0 +1,9 @@
+{
+  "milestone": "M712",
+  "decision": "RELEASE_BLOCKERS_CLASSIFIED_CONDITIONAL_GO",
+  "criticalTechnicalBlockersFound": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "nextBlock": "M713-M715 Evidence/Asset/URL Completion"
+}

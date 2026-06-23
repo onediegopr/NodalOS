@@ -1,0 +1,15 @@
+{
+  "milestone": "M710",
+  "decision": "EXTERNAL_PRE_SUBMISSION_AUDIT_COMPLETED",
+  "externalAuditCompleted": true,
+  "criticalTechnicalBlockersFound": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

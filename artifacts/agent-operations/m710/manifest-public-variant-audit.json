@@ -1,0 +1,10 @@
+{
+  "milestone": "M710",
+  "manifestPublicVariantAcceptable": true,
+  "stagingFolderAcceptable": true,
+  "hostPermissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "containsHttpWildcard": false,
+  "containsHttpsWildcard": false,
+  "externalContentScriptsAbsent": true,
+  "criticalTechnicalBlockersFound": false
+}

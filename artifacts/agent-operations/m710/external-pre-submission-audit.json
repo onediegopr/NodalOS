@@ -1,0 +1,21 @@
+{
+  "milestone": "M710",
+  "decision": "EXTERNAL_PRE_SUBMISSION_AUDIT_COMPLETED",
+  "externalAuditCompleted": true,
+  "criticalTechnicalBlockersFound": false,
+  "manifestPublicVariantAcceptable": true,
+  "permissionDisclosureAcceptable": true,
+  "storeListingDraftAcceptable": true,
+  "evidenceComplete": false,
+  "assetsComplete": false,
+  "privacySupportUrlsComplete": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

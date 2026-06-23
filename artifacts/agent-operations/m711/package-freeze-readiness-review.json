@@ -1,0 +1,21 @@
+{
+  "milestone": "M711",
+  "packageFreezePrepAcceptable": true,
+  "publicPackageFreezeReady": false,
+  "readiness": "conditional",
+  "readyItems": [
+    "public staging folder",
+    "public manifest variant",
+    "package exclusion audit",
+    "permission disclosure",
+    "store listing draft",
+    "checksum plan"
+  ],
+  "missingItems": [
+    "human screenshots/assets",
+    "Runtime/DevTools clean evidence",
+    "privacy URL",
+    "support URL",
+    "final freeze approval"
+  ]
+}
