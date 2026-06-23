@@ -1,0 +1,36 @@
+{
+  "milestone": "M699",
+  "storeSubmissionRiskRegisterReady": true,
+  "risks": [
+    {
+      "id": "EVIDENCE-PARTIAL",
+      "severity": "high",
+      "status": "open",
+      "description": "Human Chrome evidence remains positive but partial."
+    },
+    {
+      "id": "SCREENSHOTS-ASSETS-PENDING",
+      "severity": "high",
+      "status": "open",
+      "description": "Required store screenshots and assets are not captured."
+    },
+    {
+      "id": "PRIVACY-SUPPORT-URLS-PENDING",
+      "severity": "high",
+      "status": "open",
+      "description": "Privacy, support, and docs URLs are not finalized."
+    },
+    {
+      "id": "PERMISSION-DISCLOSURE-NEEDS-FINAL-REVIEW",
+      "severity": "medium",
+      "status": "open",
+      "description": "Permission disclosure draft exists but needs final human review before submission."
+    },
+    {
+      "id": "QA-NAME-NOT-FINAL",
+      "severity": "medium",
+      "status": "open",
+      "description": "NODAL OS Public Candidate should not be used as final store listing name."
+    }
+  ]
+}

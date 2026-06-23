@@ -1,0 +1,11 @@
+{
+  "milestone": "M700",
+  "publicPackageFreezeReady": false,
+  "freezeReadiness": "blocked-by-partial-evidence-and-store-gaps",
+  "blockingItems": [
+    "Human Chrome evidence incomplete.",
+    "Screenshots/assets pending.",
+    "Privacy/support/docs URLs pending.",
+    "Final permission disclosure review pending."
+  ]
+}

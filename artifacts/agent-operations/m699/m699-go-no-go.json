@@ -1,0 +1,19 @@
+{
+  "milestone": "M699",
+  "decision": "STORE_ASSET_LISTING_DISCLOSURE_GAP_CLOSURE_READY",
+  "storeListingDraftReady": true,
+  "permissionDisclosureDraftReady": true,
+  "privacySupportUrlGapsRegistered": true,
+  "screenshotAssetGapsRegistered": true,
+  "storeSubmissionRiskRegisterReady": true,
+  "storeAssetGapsClosed": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

@@ -1,0 +1,9 @@
+{
+  "milestone": "M698",
+  "cspViolationsFound": "UNKNOWN",
+  "invalidTokenFound": "UNKNOWN",
+  "reconnectStormFound": "UNKNOWN",
+  "criticalConsoleErrorsFound": "UNKNOWN",
+  "rawConsoleExcerptStored": false,
+  "requiredForFreeze": true
+}

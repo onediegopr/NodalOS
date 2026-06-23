@@ -1,0 +1,18 @@
+{
+  "milestone": "M698",
+  "decision": "HUMAN_CHROME_EVIDENCE_COMPLETION_PARTIAL",
+  "humanChromeEvidenceReceived": true,
+  "humanChromeEvidenceSufficient": false,
+  "userReportedWorking": true,
+  "evidenceRedacted": true,
+  "secretsIncluded": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

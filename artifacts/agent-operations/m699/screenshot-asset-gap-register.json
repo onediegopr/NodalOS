@@ -1,0 +1,18 @@
+{
+  "milestone": "M699",
+  "screenshotAssetGapsRegistered": true,
+  "screenshotsReady": false,
+  "requiredScreenshots": [
+    "Sidepanel connected to local bridge.",
+    "Token-present state with sensitive value redacted.",
+    "Public limitations or microcopy explaining no broad website auto-access.",
+    "No broad website permissions if visible in Chrome permission UI.",
+    "Runtime tab if applicable."
+  ],
+  "assetsReady": false,
+  "requiredAssets": [
+    "Final store icon set.",
+    "Final listing screenshots.",
+    "Final support or docs destination."
+  ]
+}

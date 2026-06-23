@@ -1,0 +1,13 @@
+{
+  "milestone": "M700",
+  "decision": "PRE_SUBMISSION_AUDIT_READY_EVIDENCE_PARTIAL",
+  "evidenceComplete": false,
+  "storeAssetGapsClosed": false,
+  "permissionDisclosureReady": "partial",
+  "privacySupportUrlsReady": "false",
+  "screenshotsAssetsReady": "false",
+  "publicPackageFreezeReady": false,
+  "preSubmissionAuditReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

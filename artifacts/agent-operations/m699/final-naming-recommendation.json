@@ -1,0 +1,9 @@
+{
+  "milestone": "M699",
+  "finalNamingRecommendationReady": true,
+  "recommendedStoreFinalName": "NODAL OS",
+  "qaOnlyName": "NODAL OS Public Candidate",
+  "publicCandidateNameAllowedForQa": true,
+  "publicCandidateNameAllowedForStoreFinal": false,
+  "reason": "Public Candidate is useful for QA but can confuse store reviewers and users as a final listing name."
+}

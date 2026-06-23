@@ -1,0 +1,9 @@
+{
+  "milestone": "M698",
+  "tokenPresentUi": "NOT_PROVIDED",
+  "websocketConnectedLive": "NOT_PROVIDED",
+  "tokenValueStored": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "requiredForFreeze": true
+}

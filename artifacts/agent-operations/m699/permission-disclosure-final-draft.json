@@ -1,0 +1,32 @@
+{
+  "milestone": "M699",
+  "permissionDisclosureDraftReady": true,
+  "permissions": [
+    {
+      "permission": "storage",
+      "disclosure": "Used to store local extension state such as safe UI preferences and local connection state."
+    },
+    {
+      "permission": "sidePanel",
+      "disclosure": "Used to display the NODAL OS companion interface in Chrome side panel."
+    },
+    {
+      "permission": "alarms",
+      "disclosure": "Used for local extension scheduling and periodic health checks."
+    },
+    {
+      "permission": "tabs",
+      "disclosure": "Retained for extension UI coordination and future user-approved flows; no broad website auto-access is enabled by default."
+    },
+    {
+      "permission": "scripting",
+      "disclosure": "Retained for future user-approved flows; the public build does not auto-inject content scripts into external websites."
+    },
+    {
+      "permission": "host_permissions",
+      "disclosure": "Limited to http://127.0.0.1/* and http://localhost/* so the extension can communicate with the local NODAL OS bridge."
+    }
+  ],
+  "mentionsLocalhost127001": true,
+  "wildcardHostPermissions": false
+}

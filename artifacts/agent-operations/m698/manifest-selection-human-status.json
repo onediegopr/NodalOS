@@ -1,0 +1,8 @@
+{
+  "milestone": "M698",
+  "manifestSelectionVerifiedHuman": "NOT_PROVIDED",
+  "expectedStagingPath": "artifacts/manual-qa/public-variant-staging",
+  "expectedManifest": "artifacts/manual-qa/public-variant-staging/manifest.json",
+  "expectedSource": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "internalManifestReplacement": false
+}

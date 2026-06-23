@@ -1,0 +1,8 @@
+{
+  "milestone": "M698",
+  "runtimeTabEvidence": "UNKNOWN",
+  "serviceWorkerDevtoolsEvidence": "UNKNOWN",
+  "runtimeTabPassClaimed": false,
+  "serviceWorkerDevtoolsPassClaimed": false,
+  "requiredForFreeze": true
+}

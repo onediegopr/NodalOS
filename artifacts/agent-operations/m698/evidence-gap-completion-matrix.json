@@ -1,0 +1,56 @@
+{
+  "milestone": "M698",
+  "fields": [
+    {
+      "field": "publicVariantLoaded",
+      "status": "PARTIAL",
+      "source": "user-reported working",
+      "gap": "No explicit true/false field provided."
+    },
+    {
+      "field": "visibleExtensionName",
+      "status": "NOT_PROVIDED",
+      "requiredForFreeze": true
+    },
+    {
+      "field": "manifestSelectionVerifiedHuman",
+      "status": "NOT_PROVIDED",
+      "requiredForFreeze": true
+    },
+    {
+      "field": "tokenPresentUi",
+      "status": "NOT_PROVIDED",
+      "requiredForFreeze": true
+    },
+    {
+      "field": "websocketConnectedLive",
+      "status": "NOT_PROVIDED",
+      "requiredForFreeze": true
+    },
+    {
+      "field": "runtimeTabEvidence",
+      "status": "UNKNOWN",
+      "requiredForFreeze": true
+    },
+    {
+      "field": "serviceWorkerDevtoolsEvidence",
+      "status": "UNKNOWN",
+      "requiredForFreeze": true
+    },
+    {
+      "field": "cspConsoleEvidence",
+      "status": "UNKNOWN",
+      "requiredForFreeze": true
+    },
+    {
+      "field": "permissionWarnings",
+      "status": "UNKNOWN",
+      "requiredForStoreSubmission": true
+    },
+    {
+      "field": "evidenceRedacted",
+      "status": "PASS",
+      "requiredForFreeze": true
+    }
+  ]
+}

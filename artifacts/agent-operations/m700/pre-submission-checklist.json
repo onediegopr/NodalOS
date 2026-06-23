@@ -1,0 +1,42 @@
+{
+  "milestone": "M700",
+  "preSubmissionChecklistReady": true,
+  "items": [
+    {
+      "item": "Complete human Chrome QA fields.",
+      "status": "open"
+    },
+    {
+      "item": "Confirm public staging manifest selection.",
+      "status": "open"
+    },
+    {
+      "item": "Capture Runtime tab and Service Worker DevTools evidence.",
+      "status": "open"
+    },
+    {
+      "item": "Finalize privacy URL.",
+      "status": "open"
+    },
+    {
+      "item": "Finalize support URL.",
+      "status": "open"
+    },
+    {
+      "item": "Capture screenshots and assets.",
+      "status": "open"
+    },
+    {
+      "item": "Finalize permission disclosure.",
+      "status": "open"
+    },
+    {
+      "item": "Confirm final listing name NODAL OS.",
+      "status": "open"
+    },
+    {
+      "item": "Keep public release and store submission blocked until final approval.",
+      "status": "closed"
+    }
+  ]
+}
