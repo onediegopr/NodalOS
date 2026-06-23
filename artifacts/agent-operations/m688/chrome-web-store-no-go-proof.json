@@ -1,0 +1,7 @@
+{
+  "milestone": "M688",
+  "chromeWebStoreReady": false,
+  "reason": "Chrome Web Store submission remains blocked until live QA, package freeze, store assets, privacy/support URLs, and pre-submission audit are complete.",
+  "storeUploadAttempted": false,
+  "publicReleaseAttempted": false
+}

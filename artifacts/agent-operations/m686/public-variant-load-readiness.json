@@ -1,0 +1,20 @@
+{
+  "milestone": "M686",
+  "publicManifestPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "publicManifestValidJson": true,
+  "publicManifestName": "NODAL OS Public Candidate",
+  "publicHostPermissionsNarrowed": true,
+  "publicHostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "containsWildcardHttpHostPermission": false,
+  "containsWildcardHttpsHostPermission": false,
+  "containsContentScripts": false,
+  "containsContentScriptsWildcard": false,
+  "publicVariantLoadedLive": false,
+  "manifestSelectionVerifiedLive": false,
+  "liveLoadBlocker": "Chrome public variant load requires manual environment access.",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

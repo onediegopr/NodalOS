@@ -1,0 +1,11 @@
+{
+  "milestone": "M687",
+  "bridgeLivenessScript": "pass",
+  "websocketUpgradeEndpoint": "pass",
+  "websocketConnectedLive": false,
+  "websocketConnectedLiveEvidenceReady": false,
+  "observedState": "unknown",
+  "invalidTokenFound": "unknown",
+  "reconnectStormFound": "unknown",
+  "reason": "Endpoint accepts WebSocket upgrade, but extension public variant live connection was not inspectable."
+}

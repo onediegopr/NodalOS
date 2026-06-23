@@ -1,0 +1,10 @@
+{
+  "milestone": "M687",
+  "cspConsoleEvidenceReady": false,
+  "cspViolationsFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "reconnectStormFound": "unknown",
+  "rawConsoleExcerptStored": false,
+  "reason": "No live Chrome console inspection was available."
+}

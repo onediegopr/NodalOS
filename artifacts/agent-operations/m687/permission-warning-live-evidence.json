@@ -1,0 +1,12 @@
+{
+  "milestone": "M687",
+  "permissionWarnings": "unknown",
+  "permissionWarningsCaptured": false,
+  "expectedPublicPermissionsNarrowed": true,
+  "expectedHostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "wildcardPermissionWarningExpected": false,
+  "reason": "Chrome load UI was not available for live permission warning capture."
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M688",
+  "bridgePortLivenessComplete": true,
+  "publicVariantLoadComplete": false,
+  "manifestSelectionLiveComplete": false,
+  "tokenPresentLiveComplete": false,
+  "websocketConnectedLiveComplete": false,
+  "runtimeTabEvidenceComplete": false,
+  "serviceWorkerDevtoolsEvidenceComplete": false,
+  "permissionWarningsComplete": false,
+  "manualQaComplete": false,
+  "manualQaBlocker": "CHROME_PUBLIC_VARIANT_LIVE_QA_ENVIRONMENT_REQUIRED"
+}

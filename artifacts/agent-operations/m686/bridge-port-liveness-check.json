@@ -1,0 +1,20 @@
+{
+  "milestone": "M686",
+  "targetHost": "127.0.0.1",
+  "targetPort": 8787,
+  "initialTcpTestSucceeded": false,
+  "startupAttempted": true,
+  "postStartupTcp1270018787": "pass",
+  "listenerProcessObserved": "pass",
+  "listenerProcessName": "OneBrain.ChromeLab.Bridge",
+  "httpHealth": "pass",
+  "httpRuntime": "pass",
+  "httpConfigPublic": "pass",
+  "httpDebug": "pass",
+  "wsExtensionUpgrade": "pass",
+  "livenessScriptResult": "pass",
+  "livenessSummary": "bridge is LIVE on http://127.0.0.1:8787 and /ws/extension accepts WebSocket upgrades",
+  "temporaryBridgeProcessStoppedAfterCheck": true,
+  "connectedChromeEvidenceCaptured": false,
+  "reasonConnectedChromeEvidenceNotCaptured": "Chrome public variant load and Runtime/DevTools inspection require manual environment access."
+}

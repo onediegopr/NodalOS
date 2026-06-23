@@ -1,0 +1,11 @@
+{
+  "milestone": "M687",
+  "evidenceRedacted": true,
+  "tokenLoggedInFull": false,
+  "fullTokenValueStored": false,
+  "bridgeSecretsLeaked": false,
+  "rawConsoleExcerptStored": false,
+  "longRawLogsStored": false,
+  "privateUserDataStored": false,
+  "leakScanRequired": true
+}

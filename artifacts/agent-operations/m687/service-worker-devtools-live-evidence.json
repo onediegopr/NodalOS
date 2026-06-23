@@ -1,0 +1,12 @@
+{
+  "milestone": "M687",
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "serviceWorkerDevtoolsEvidence": "unknown",
+  "serviceWorkerConsoleInspected": false,
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "reason": "Service Worker DevTools inspection requires Chrome public variant manual environment access."
+}

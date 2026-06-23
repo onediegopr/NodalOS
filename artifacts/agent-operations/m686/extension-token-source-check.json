@@ -1,0 +1,12 @@
+{
+  "milestone": "M686",
+  "configPath": "config/chrome-lab.local.json",
+  "configExists": true,
+  "extensionTokenPresent": true,
+  "extensionTokenLengthObserved": 37,
+  "extensionTokenValueStored": false,
+  "extensionTokenValueLogged": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "safeEvidenceOnly": true
+}

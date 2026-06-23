@@ -1,0 +1,11 @@
+{
+  "milestone": "M687",
+  "publicVariantLoaded": "unknown",
+  "tokenSavedInChromeUi": "unknown",
+  "tokenPresentLive": false,
+  "tokenPresentLiveEvidenceReady": false,
+  "tokenValueExposed": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "reason": "Chrome public variant UI could not be inspected in this environment."
+}

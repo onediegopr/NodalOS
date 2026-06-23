@@ -1,0 +1,20 @@
+{
+  "milestone": "M686",
+  "decision": "LIVE_BRIDGE_ENVIRONMENT_SETUP_READY_CONDITIONAL_CHROME_QA",
+  "bridgeConfigExists": true,
+  "extensionTokenPresent": true,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "bridgePortLivenessAfterStartup": "pass",
+  "publicVariantStaticReadiness": "pass",
+  "chromeLiveQaAvailable": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

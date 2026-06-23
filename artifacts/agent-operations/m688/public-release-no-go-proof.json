@@ -1,0 +1,8 @@
+{
+  "milestone": "M688",
+  "publicReleaseReady": false,
+  "reason": "Public release requires clean live public variant Runtime and Service Worker DevTools evidence plus package freeze and store readiness.",
+  "releaseBlockedByLiveQa": true,
+  "releaseBlockedByPackageFreeze": true,
+  "releaseBlockedByStoreSubmissionReadiness": true
+}

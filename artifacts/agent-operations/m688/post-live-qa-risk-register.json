@@ -1,0 +1,23 @@
+{
+  "milestone": "M688",
+  "risks": [
+    {
+      "id": "LIVE-QA-CHROME-ENVIRONMENT",
+      "severity": "high-for-freeze",
+      "status": "open",
+      "description": "Public variant Chrome load, Runtime tab, and Service Worker DevTools evidence remain unavailable in this environment."
+    },
+    {
+      "id": "LIVE-QA-TOKEN-CONNECTED-EVIDENCE",
+      "severity": "high-for-freeze",
+      "status": "open",
+      "description": "Token-present and WebSocket-connected evidence must be captured without exposing the token value."
+    },
+    {
+      "id": "PACKAGE-FREEZE-BLOCKED-BY-LIVE-QA",
+      "severity": "medium",
+      "status": "open",
+      "description": "Package freeze remains blocked until clean live public variant evidence is available."
+    }
+  ]
+}

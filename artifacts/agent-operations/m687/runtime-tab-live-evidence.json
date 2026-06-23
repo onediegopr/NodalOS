@@ -1,0 +1,11 @@
+{
+  "milestone": "M687",
+  "runtimeTabEvidenceReady": false,
+  "runtimeTabEvidence": "unknown",
+  "healthOk": "unknown",
+  "tokenPresentVisibleAsBoolean": "unknown",
+  "websocketConnectedVisible": "unknown",
+  "bridgeUnreachableVisible": "unknown",
+  "criticalUiErrorsFound": "unknown",
+  "reason": "Runtime tab requires Chrome public variant manual load and inspection."
+}
