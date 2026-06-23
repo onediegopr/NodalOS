@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "permissionDisclosureBoundary": "tracked",
+  "permissionsCovered": [
+    "storage",
+    "sidePanel",
+    "alarms",
+    "tabs",
+    "scripting",
+    "localhost/127.0.0.1 host permissions"
+  ],
+  "finalStoreDisclosureApplied": false,
+  "invented": false
+}

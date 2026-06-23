@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "publicReleaseOwnerAcceptance": "REQUIRED",
+  "publicReleaseOwnerAcceptanceReceived": false,
+  "requiredPhrase": "ACEPTO PUBLIC RELEASE BAJO MI RESPONSABILIDAD",
+  "publicRelease": "NO-GO",
+  "actualPublicReleasePerformed": false
+}

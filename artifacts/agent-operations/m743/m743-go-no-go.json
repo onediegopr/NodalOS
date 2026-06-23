@@ -1,0 +1,9 @@
+{
+  "milestone": "M743",
+  "decision": "RELEASE_ACCEPTANCE_REQUIRED",
+  "freezeCandidateLock": "GO",
+  "publicReleaseOwnerAcceptance": "REQUIRED",
+  "chromeWebStoreOwnerAcceptance": "REQUIRED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

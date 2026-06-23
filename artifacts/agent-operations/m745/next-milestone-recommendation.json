@@ -1,0 +1,5 @@
+{
+  "project": "NODAL OS",
+  "recommendedNextMilestone": "M746-M748 Post-Freeze Stabilization + Release Deferred Roadmap",
+  "condition": "owner has not provided public release or Chrome Web Store acceptance phrases"
+}

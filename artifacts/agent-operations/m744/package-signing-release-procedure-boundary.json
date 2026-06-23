@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "packageSigningReleaseProcedureBoundary": "tracked",
+  "finalZipCreated": false,
+  "signedPublicZipCreated": false,
+  "signingProcedureExecuted": false,
+  "storeSubmissionChecklistTracked": true,
+  "automaticPublicationAllowed": false
+}

@@ -1,0 +1,8 @@
+{
+  "milestone": "M744",
+  "decision": "STORE_ASSETS_BOUNDARY_STABILIZED",
+  "storeAssetsBoundary": "STABILIZED",
+  "assetValuesInvented": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

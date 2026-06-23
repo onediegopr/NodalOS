@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "releaseDeferred": true,
+  "releaseDeferredReason": "public release and Chrome Web Store owner acceptance phrases are not present",
+  "nextAllowedMode": "post-freeze stabilization or explicit owner acceptance intake",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

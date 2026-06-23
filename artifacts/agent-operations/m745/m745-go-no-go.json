@@ -1,0 +1,8 @@
+{
+  "milestone": "M745",
+  "decision": "RELEASE_STORE_DEFERRED_NEXT_DECISION",
+  "freezeCandidateLock": "preserved",
+  "storeAssetsBoundary": "STABILIZED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}
