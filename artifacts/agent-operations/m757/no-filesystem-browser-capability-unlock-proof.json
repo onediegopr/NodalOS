@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "realFilesystemActionsPerformed": false,
+  "realBrowserAutomationPerformed": false,
+  "capabilityExecutionUnlocked": false
+}

@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M755",
+  "decision": "RUNTIME_DRY_RUN_CONTRACT_MATRIX_READY",
+  "matrixStatus": "READY",
+  "inventoryBasis": "M752-M754 runtime capability inventory",
+  "contractMode": "contracts/docs/tests only",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "evidenceInvented": false
+}

@@ -1,0 +1,63 @@
+{
+  "project": "NODAL OS",
+  "gates": [
+    {
+      "capabilityName": "provider/cloud calls",
+      "approvalRequired": true,
+      "approvalReason": "External provider or cloud boundary may expose cost, data, or credentials.",
+      "riskLevel": "HIGH",
+      "userFacingExplanationRequired": true,
+      "affectedResourcesRequired": true,
+      "expectedEvidenceRequired": true,
+      "rollbackOrCompensationRequired": true,
+      "denialPathRequired": true,
+      "auditEventRequired": true,
+      "secretsBoundaryRequired": true,
+      "liveCallAllowed": false,
+      "productiveUnlockAllowed": false
+    },
+    {
+      "capabilityName": "filesystem write",
+      "approvalRequired": true,
+      "approvalReason": "Filesystem write may mutate local state.",
+      "riskLevel": "HIGH",
+      "userFacingExplanationRequired": true,
+      "affectedResourcesRequired": true,
+      "expectedEvidenceRequired": true,
+      "rollbackOrCompensationRequired": true,
+      "denialPathRequired": true,
+      "auditEventRequired": true,
+      "jailRequired": true,
+      "productiveUnlockAllowed": false
+    },
+    {
+      "capabilityName": "browser automation",
+      "approvalRequired": true,
+      "approvalReason": "Browser automation may operate on user sessions or external websites.",
+      "riskLevel": "HIGH",
+      "userFacingExplanationRequired": true,
+      "affectedResourcesRequired": true,
+      "expectedEvidenceRequired": true,
+      "rollbackOrCompensationRequired": true,
+      "denialPathRequired": true,
+      "auditEventRequired": true,
+      "humanHandoffRequired": true,
+      "credentialCaptcha2faBypassAllowed": false,
+      "productiveUnlockAllowed": false
+    },
+    {
+      "capabilityName": "capability unlock",
+      "approvalRequired": true,
+      "approvalReason": "Capability unlock changes runtime authority.",
+      "riskLevel": "HIGH",
+      "userFacingExplanationRequired": true,
+      "affectedResourcesRequired": true,
+      "expectedEvidenceRequired": true,
+      "rollbackOrCompensationRequired": true,
+      "denialPathRequired": true,
+      "auditEventRequired": true,
+      "capabilitySpecificGateRequired": true,
+      "productiveUnlockAllowed": false
+    }
+  ]
+}

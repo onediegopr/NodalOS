@@ -1,0 +1,8 @@
+{
+  "milestone": "M756",
+  "decision": "CAPABILITY_APPROVAL_GATES_READY",
+  "capabilityApprovalGates": "READY",
+  "productiveUnlockAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

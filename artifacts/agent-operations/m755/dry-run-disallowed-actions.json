@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "disallowedActionsStatus": "READY",
+  "globalDisallowedActions": [
+    "productive runtime execution",
+    "provider/cloud live calls",
+    "credential use",
+    "filesystem real write/delete/move",
+    "browser automation against real user sessions",
+    "credential/CAPTCHA/2FA bypass",
+    "capability execution unlock",
+    "public release",
+    "Chrome Web Store submission",
+    "signed public ZIP creation",
+    "product file modification",
+    "bridge/CSP modification"
+  ]
+}

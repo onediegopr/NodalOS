@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "approvalDenialAndRollbackBoundary": "READY",
+  "denialPathRequired": true,
+  "rollbackOrCompensationRequiredForMutableActions": true,
+  "filesystemWriteRollbackRequired": true,
+  "providerCloudCompensationRequired": true,
+  "browserAutomationHumanHandoffRequired": true,
+  "productiveUnlockAllowed": false
+}

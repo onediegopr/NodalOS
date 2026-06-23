@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "evidenceContractsStatus": "READY",
+  "requiredEvidenceFields": [
+    "capabilityName",
+    "dryRunId",
+    "policyDecision",
+    "manualApprovalDecision",
+    "allowedActions",
+    "disallowedActions",
+    "redactionApplied",
+    "secretsIncluded",
+    "productiveExecutionAllowed",
+    "auditEventId"
+  ],
+  "secretsIncludedExpectedValue": false,
+  "productiveExecutionAllowedExpectedValue": false,
+  "rawLogsAllowed": false
+}

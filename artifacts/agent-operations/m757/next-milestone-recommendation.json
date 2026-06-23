@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "recommendedNextMilestone": "M758-M760 Dry-Run Evidence Envelope + Runtime Promotion Criteria",
+  "scope": "dry-run/contracts/tests only",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

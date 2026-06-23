@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "policyGateDecisionContract": "READY",
+  "decisions": ["ALLOW_DRY_RUN", "DENY", "REQUIRE_MANUAL_APPROVAL"],
+  "requiredFields": [
+    "capabilityName",
+    "policyInputs",
+    "decision",
+    "reasonCode",
+    "manualApprovalRequired",
+    "evidenceRequired",
+    "auditEventRequired"
+  ],
+  "productiveExecutionDecisionAllowed": false
+}

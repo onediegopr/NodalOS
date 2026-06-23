@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M756",
+  "decision": "CAPABILITY_APPROVAL_GATES_READY",
+  "approvalGatesStatus": "READY",
+  "approvalMode": "planning-only",
+  "productiveUnlockAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

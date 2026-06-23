@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "preconditionsStatus": "READY",
+  "globalPreconditions": [
+    "contract exists",
+    "policy gate exists",
+    "evidence envelope exists",
+    "redaction boundary exists",
+    "manual approval gate exists where risk requires it",
+    "productive execution remains disabled"
+  ],
+  "promotionPreconditions": [
+    "future dry-run evidence passes",
+    "owner approval recorded",
+    "no secrets or raw logs persisted",
+    "no product, bridge, or CSP changes without explicit remediation block"
+  ]
+}

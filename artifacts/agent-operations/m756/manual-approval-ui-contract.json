@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "manualApprovalUiContract": "READY",
+  "requiredFields": [
+    "capabilityName",
+    "riskLevel",
+    "userFacingExplanation",
+    "affectedResources",
+    "allowedActions",
+    "disallowedActions",
+    "expectedEvidence",
+    "redactionBoundary",
+    "approvalDecision",
+    "denialPath",
+    "auditEvent"
+  ],
+  "implicitApprovalAllowed": false,
+  "silentApprovalAllowed": false,
+  "productiveUnlockAllowed": false
+}
