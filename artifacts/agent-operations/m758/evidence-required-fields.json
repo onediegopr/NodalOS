@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "requiredFieldsStatus": "READY",
+  "requiredFields": [
+    "dryRunId",
+    "capabilityName",
+    "requestedAction",
+    "policyGateDecision",
+    "approvalDecision",
+    "riskLevel",
+    "allowedActions",
+    "disallowedActions",
+    "affectedResourcesRedacted",
+    "evidenceCreatedAt",
+    "auditEventRequired",
+    "productiveExecutionAllowed",
+    "actualExecutionPerformed"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "requiredEvidenceStatus": "READY",
+  "requiredEvidence": [
+    "dry-run evidence envelope",
+    "policy gate decision",
+    "manual approval decision when high-risk",
+    "redaction proof",
+    "forbidden fields proof",
+    "no productive execution proof",
+    "no live call proof",
+    "no filesystem write proof",
+    "no browser automation proof",
+    "no public release or Store submission proof",
+    "product/Bridge/CSP unchanged proof"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M760",
+  "dryRunEvidenceEnvelope": "READY",
+  "runtimePromotionCriteria": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "recommendedNextMilestone": "M761-M763 Dry-Run Eligibility Classification + Future Runtime Gate"
+}

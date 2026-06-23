@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "redactionRulesStatus": "READY",
+  "redactionRequired": true,
+  "rules": [
+    "store metadata only",
+    "redact affected resources",
+    "do not persist raw user data",
+    "do not persist raw logs",
+    "do not persist credentials",
+    "do not persist tokens",
+    "do not persist cookies",
+    "do not persist provider keys"
+  ]
+}

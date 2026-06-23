@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M758",
+  "decision": "DRY_RUN_EVIDENCE_ENVELOPE_READY",
+  "dryRunEvidenceEnvelope": "READY",
+  "evidenceMode": "metadata-only/redacted",
+  "secretsIncluded": false,
+  "credentialsIncluded": false,
+  "tokensIncluded": false,
+  "rawUserDataIncluded": false,
+  "productiveExecutionAllowed": false,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "storeSubmissionPerformed": false,
+  "publicReleasePerformed": false,
+  "auditEventRequired": true
+}

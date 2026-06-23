@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "recommendedNextMilestone": "M761-M763 Dry-Run Eligibility Classification + Future Runtime Gate",
+  "scope": "classification/contracts/tests only",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

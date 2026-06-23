@@ -1,0 +1,34 @@
+{
+  "project": "NODAL OS",
+  "criteriaStatus": "READY",
+  "criteriaByCapability": [
+    {
+      "capabilityName": "provider/cloud calls",
+      "currentStatus": "DISABLED",
+      "eligibleFutureStatus": "DRY_RUN_ELIGIBLE_FUTURE",
+      "requiredCriteria": ["policy gate defined", "manual approval gate defined", "evidence envelope defined", "redaction rules defined", "forbidden fields defined", "dry-run disallowed actions defined", "secrets boundary defined", "no live calls"],
+      "productiveEnabledAllowed": false
+    },
+    {
+      "capabilityName": "filesystem write",
+      "currentStatus": "DISABLED",
+      "eligibleFutureStatus": "DRY_RUN_ELIGIBLE_FUTURE",
+      "requiredCriteria": ["policy gate defined", "manual approval gate defined", "evidence envelope defined", "redaction rules defined", "rollback/compensation boundary defined", "no filesystem writes"],
+      "productiveEnabledAllowed": false
+    },
+    {
+      "capabilityName": "browser automation",
+      "currentStatus": "DISABLED",
+      "eligibleFutureStatus": "DRY_RUN_ELIGIBLE_FUTURE",
+      "requiredCriteria": ["policy gate defined", "manual approval gate defined", "evidence envelope defined", "human handoff policy defined", "credential/CAPTCHA/2FA bypass forbidden", "no browser actions"],
+      "productiveEnabledAllowed": false
+    },
+    {
+      "capabilityName": "capability unlock",
+      "currentStatus": "DISABLED",
+      "eligibleFutureStatus": "DRY_RUN_ELIGIBLE_FUTURE",
+      "requiredCriteria": ["capability-specific approval gate defined", "evidence envelope defined", "manual approval gate defined", "no productive execution"],
+      "productiveEnabledAllowed": false
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M759",
+  "decision": "RUNTIME_PROMOTION_CRITERIA_READY",
+  "runtimePromotionCriteria": "READY",
+  "allowedFutureTransitions": [
+    "PLANNING_ONLY -> DRY_RUN_ELIGIBLE_FUTURE",
+    "DISABLED -> DRY_RUN_ELIGIBLE_FUTURE",
+    "DRY_RUN_ELIGIBLE_FUTURE -> DRY_RUN_READY_FUTURE"
+  ],
+  "prohibitedTransitions": [
+    "DRY_RUN_READY_FUTURE -> PRODUCTIVE_ENABLED"
+  ],
+  "futureOwnerApprovedRuntimeUnlockGateRequired": true,
+  "productiveEnableAllowedInThisMilestone": false
+}

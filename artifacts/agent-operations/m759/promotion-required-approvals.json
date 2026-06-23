@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "requiredApprovalsStatus": "READY",
+  "futurePromotionRequiresOwnerApproval": true,
+  "highRiskManualApprovalRequired": true,
+  "providerCloudApprovalRequired": true,
+  "filesystemWriteApprovalRequired": true,
+  "browserAutomationApprovalRequired": true,
+  "capabilityUnlockApprovalRequired": true,
+  "productiveEnableRequiresSeparateFutureGate": true
+}

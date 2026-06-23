@@ -1,0 +1,43 @@
+{
+  "project": "NODAL OS",
+  "schemaStatus": "READY",
+  "schemaVersion": "m758.v1",
+  "requiredProperties": [
+    "dryRunId",
+    "capabilityName",
+    "requestedAction",
+    "policyGateDecision",
+    "approvalDecision",
+    "riskLevel",
+    "allowedActions",
+    "disallowedActions",
+    "affectedResourcesRedacted",
+    "secretsIncluded",
+    "credentialsIncluded",
+    "tokensIncluded",
+    "rawUserDataIncluded",
+    "evidenceCreatedAt",
+    "auditEventRequired",
+    "productiveExecutionAllowed",
+    "actualExecutionPerformed",
+    "liveCallPerformed",
+    "filesystemWritePerformed",
+    "browserAutomationPerformed",
+    "storeSubmissionPerformed",
+    "publicReleasePerformed"
+  ],
+  "booleanInvariants": {
+    "secretsIncluded": false,
+    "credentialsIncluded": false,
+    "tokensIncluded": false,
+    "rawUserDataIncluded": false,
+    "productiveExecutionAllowed": false,
+    "actualExecutionPerformed": false,
+    "liveCallPerformed": false,
+    "filesystemWritePerformed": false,
+    "browserAutomationPerformed": false,
+    "storeSubmissionPerformed": false,
+    "publicReleasePerformed": false,
+    "auditEventRequired": true
+  }
+}

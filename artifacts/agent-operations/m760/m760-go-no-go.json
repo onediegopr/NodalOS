@@ -1,0 +1,9 @@
+{
+  "milestone": "M760",
+  "decision": "DRY_RUN_PROMOTION_NEXT_DECISION_READY",
+  "dryRunEvidenceEnvelope": "READY",
+  "runtimePromotionCriteria": "READY",
+  "productiveUnlockAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

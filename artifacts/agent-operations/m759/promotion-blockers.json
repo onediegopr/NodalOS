@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "promotionBlockersStatus": "READY",
+  "blockers": [
+    "missing evidence envelope",
+    "missing policy gate",
+    "missing manual approval gate for high-risk capability",
+    "missing redaction rules",
+    "secrets boundary missing",
+    "rollback/compensation missing for mutable operation",
+    "human handoff missing for browser automation",
+    "credential/CAPTCHA/2FA bypass allowed",
+    "productive execution requested",
+    "live call requested",
+    "filesystem write requested",
+    "browser action requested",
+    "public release requested",
+    "Store submission requested",
+    "product files modified",
+    "Bridge/CSP modified"
+  ]
+}

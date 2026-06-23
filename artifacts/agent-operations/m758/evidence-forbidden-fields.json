@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "forbiddenFieldsStatus": "READY",
+  "forbiddenFields": [
+    "secrets",
+    "credentials",
+    "tokens",
+    "cookies",
+    "rawUserData",
+    "rawLogs",
+    "providerKeys",
+    "privateKeys",
+    "browserSessionData"
+  ],
+  "secretsIncluded": false,
+  "credentialsIncluded": false,
+  "tokensIncluded": false,
+  "rawUserDataIncluded": false
+}

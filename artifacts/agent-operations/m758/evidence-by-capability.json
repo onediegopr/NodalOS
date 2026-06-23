@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "evidenceByCapabilityStatus": "READY",
+  "capabilities": [
+    {
+      "capabilityName": "provider/cloud calls",
+      "requiredEvidence": ["policyGateDecision", "approvalDecision", "redacted request metadata", "no live call proof"],
+      "liveCallPerformed": false,
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "filesystem write",
+      "requiredEvidence": ["policyGateDecision", "approvalDecision", "redacted path intent", "rollback boundary", "no write proof"],
+      "filesystemWritePerformed": false,
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "browser automation",
+      "requiredEvidence": ["policyGateDecision", "approvalDecision", "human handoff state", "no browser action proof"],
+      "browserAutomationPerformed": false,
+      "productiveExecutionAllowed": false
+    },
+    {
+      "capabilityName": "capability unlock",
+      "requiredEvidence": ["policyGateDecision", "approvalDecision", "capability-specific gate", "no unlock proof"],
+      "actualExecutionPerformed": false,
+      "productiveExecutionAllowed": false
+    }
+  ]
+}
