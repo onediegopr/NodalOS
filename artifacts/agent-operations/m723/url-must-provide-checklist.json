@@ -1,0 +1,23 @@
+{
+  "milestone": "M723",
+  "mustProvideBeforeFreeze": [
+    {
+      "field": "Privacy URL",
+      "required": true,
+      "status": "pending",
+      "acceptanceCriteria": "A real reachable privacy policy URL for NODAL OS, not a placeholder."
+    },
+    {
+      "field": "Support URL",
+      "required": true,
+      "status": "pending",
+      "acceptanceCriteria": "A real reachable support/contact URL for NODAL OS, not a placeholder."
+    },
+    {
+      "field": "Docs URL",
+      "required": false,
+      "status": "pending",
+      "acceptanceCriteria": "Recommended public documentation URL, if available."
+    }
+  ]
+}

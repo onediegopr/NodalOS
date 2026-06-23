@@ -1,0 +1,13 @@
+{
+  "milestone": "M722",
+  "screenshotsReady": false,
+  "screenshotsAvailable": false,
+  "extensionLoadedScreenshot": "not_provided",
+  "sidepanelConnectedScreenshot": "not_provided",
+  "runtimeTabScreenshot": "not_provided",
+  "serviceWorkerDevtoolsScreenshot": "not_provided",
+  "permissionWarningScreenshot": "unknown",
+  "screenshotPaths": [],
+  "assetCapturePending": true,
+  "reason": "No screenshot paths or assets were provided in this block."
+}

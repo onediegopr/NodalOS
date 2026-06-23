@@ -1,0 +1,14 @@
+{
+  "milestone": "M723",
+  "urlBlockerClosed": false,
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "p0UrlBlockersClosed": false,
+  "publicPackageFreezeReady": false,
+  "chromeWebStoreReady": false,
+  "requiredForClosure": [
+    "Real privacy URL",
+    "Real support URL"
+  ]
+}

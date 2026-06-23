@@ -1,0 +1,12 @@
+{
+  "milestone": "M724",
+  "title": "Freeze final decision",
+  "activeProject": "NODAL OS",
+  "decision": "P0_BLOCKERS_STILL_PENDING_FREEZE_NO_GO",
+  "p0BlockersClosed": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reason": "P0 blockers remain open because no new URLs, screenshots, or complete manual evidence were provided.",
+  "nextMilestone": "M725-M727 P0 Blocker Manual Completion"
+}

@@ -1,0 +1,22 @@
+{
+  "milestone": "M722",
+  "humanEvidence": "partial",
+  "humanEvidenceReady": false,
+  "publicVariantLoaded": "unknown",
+  "visibleExtensionName": "unknown",
+  "loadedStagingPath": "unknown",
+  "manifestSelectionVerifiedHuman": "unknown",
+  "tokenPresentUi": "unknown",
+  "websocketConnectedLive": "unknown",
+  "bridgeLiveness": "unknown",
+  "runtimeTabEvidence": "unknown",
+  "serviceWorkerDevtoolsEvidence": "unknown",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "permissionWarningsCaptured": "unknown",
+  "finalManualQaDecision": "not_provided",
+  "reason": "No new structured human QA fields were supplied for M722-M724."
+}

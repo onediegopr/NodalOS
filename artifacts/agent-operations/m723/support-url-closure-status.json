@@ -1,0 +1,9 @@
+{
+  "milestone": "M723",
+  "supportUrlStatus": "pending",
+  "supportUrlReady": false,
+  "providedUrl": null,
+  "placeholderUsed": false,
+  "blocksStoreFinal": true,
+  "reason": "No real support URL was provided or discovered for this block."
+}

@@ -1,0 +1,10 @@
+{
+  "milestone": "M723",
+  "docsUrlStatus": "pending",
+  "docsUrlReady": false,
+  "providedUrl": null,
+  "placeholderUsed": false,
+  "storeFinalBlocker": false,
+  "priority": "P2",
+  "reason": "Docs URL is recommended but was not provided."
+}

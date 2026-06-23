@@ -1,0 +1,19 @@
+{
+  "milestone": "M723",
+  "title": "Privacy, support, and docs URL closure",
+  "activeProject": "NODAL OS",
+  "newUrlsProvided": false,
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "urlBlockerClosed": false,
+  "p0BlockersClosed": false,
+  "publicPackageFreezeReady": false,
+  "chromeWebStoreReady": false,
+  "decision": "P0_BLOCKERS_STILL_PENDING_FREEZE_NO_GO",
+  "notes": [
+    "Privacy URL remains pending and blocks Chrome Web Store submission.",
+    "Support URL remains pending and blocks Chrome Web Store submission.",
+    "Docs URL remains pending as a recommended P2 item."
+  ]
+}

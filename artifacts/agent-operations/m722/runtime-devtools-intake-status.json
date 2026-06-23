@@ -1,0 +1,13 @@
+{
+  "milestone": "M722",
+  "runtimeDevtoolsReady": false,
+  "runtimeTabEvidence": "unknown",
+  "serviceWorkerDevtoolsEvidence": "unknown",
+  "cspConsoleStatus": "unknown",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "notes": "Runtime tab and Service Worker DevTools evidence remain incomplete because no new capture was provided."
+}

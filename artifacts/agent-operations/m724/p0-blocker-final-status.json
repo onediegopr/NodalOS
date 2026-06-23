@@ -1,0 +1,31 @@
+{
+  "milestone": "M724",
+  "p0BlockersClosed": false,
+  "blockers": [
+    {
+      "name": "privacy URL",
+      "status": "pending",
+      "closed": false
+    },
+    {
+      "name": "support URL",
+      "status": "pending",
+      "closed": false
+    },
+    {
+      "name": "screenshots/assets",
+      "status": "pending",
+      "closed": false
+    },
+    {
+      "name": "full manual evidence",
+      "status": "partial",
+      "closed": false
+    },
+    {
+      "name": "package freeze final",
+      "status": "no-go",
+      "closed": false
+    }
+  ]
+}

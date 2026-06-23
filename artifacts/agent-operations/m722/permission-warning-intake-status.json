@@ -1,0 +1,9 @@
+{
+  "milestone": "M722",
+  "permissionWarningReady": false,
+  "permissionWarningEvidence": "unknown",
+  "permissionWarningsCaptured": "unknown",
+  "permissionWarningsText": null,
+  "permissionWarningScreenshot": "unknown",
+  "notes": "Chrome permission warning text or not-shown status was not provided."
+}

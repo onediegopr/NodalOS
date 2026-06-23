@@ -1,0 +1,9 @@
+{
+  "milestone": "M723",
+  "privacyUrlStatus": "pending",
+  "privacyUrlReady": false,
+  "providedUrl": null,
+  "placeholderUsed": false,
+  "blocksStoreFinal": true,
+  "reason": "No real privacy URL was provided or discovered for this block."
+}

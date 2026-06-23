@@ -1,0 +1,35 @@
+{
+  "milestone": "M724",
+  "p1Blockers": [
+    {
+      "name": "permission warning capture",
+      "status": "unknown"
+    },
+    {
+      "name": "Runtime/DevTools evidence",
+      "status": "incomplete"
+    },
+    {
+      "name": "final Store listing external application",
+      "status": "pending"
+    },
+    {
+      "name": "final naming applied to Store package",
+      "status": "pending"
+    }
+  ],
+  "p2Blockers": [
+    {
+      "name": "docs URL",
+      "status": "pending"
+    },
+    {
+      "name": "promo assets",
+      "status": "pending"
+    },
+    {
+      "name": "checksum final",
+      "status": "not_calculated"
+    }
+  ]
+}

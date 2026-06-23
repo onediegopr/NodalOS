@@ -1,0 +1,5 @@
+{
+  "milestone": "M724",
+  "recommendedNextMilestone": "M725-M727 P0 Blocker Manual Completion",
+  "reason": "Manual evidence, screenshot assets, privacy URL, and support URL must be supplied before final freeze readiness can pass."
+}
