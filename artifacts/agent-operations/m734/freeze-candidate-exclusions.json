@@ -1,0 +1,20 @@
+{
+  "milestone": "M734",
+  "excludedFromFreezeCandidate": [
+    "secrets",
+    "API keys",
+    "provider credentials",
+    "tokens",
+    "cookies",
+    "logs",
+    "temp files",
+    "user data",
+    "browser profiles",
+    "signing credentials",
+    "private keys",
+    "NODRIX/out-of-scope external project files"
+  ],
+  "secretMaterialAllowed": false,
+  "outOfScopeProjectsAllowed": false,
+  "releaseSigningAllowed": false
+}

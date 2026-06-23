@@ -1,0 +1,21 @@
+{
+  "milestone": "M736",
+  "decision": "CONDITIONAL_FREEZE_CANDIDATE_PREP_READY_OWNER_FINAL_ACCEPTANCE_PENDING",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "conditionalFreezeCandidatePrepReady": true,
+  "freezeFinal": "CONDITIONAL",
+  "publicPackageFreezeFinalReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "noBlindRelease": true,
+  "noEvidenceInvention": true,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

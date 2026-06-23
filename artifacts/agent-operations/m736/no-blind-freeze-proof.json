@@ -1,0 +1,8 @@
+{
+  "milestone": "M736",
+  "noBlindFreeze": true,
+  "freezeFinal": "CONDITIONAL",
+  "ownerFinalFreezeAcceptance": "pending",
+  "freezeFinalPerformed": false,
+  "reason": "Conditional prep may continue, but final freeze requires explicit owner final freeze acceptance."
+}

@@ -1,0 +1,20 @@
+{
+  "milestone": "M735",
+  "decision": "OWNER_FINAL_ACCEPTANCE_PENDING",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "ownerFinalFreezeAcceptance": "pending",
+  "ownerPublicReleaseAcceptance": "pending",
+  "ownerChromeWebStoreAcceptance": "pending",
+  "freezeFinal": "CONDITIONAL",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

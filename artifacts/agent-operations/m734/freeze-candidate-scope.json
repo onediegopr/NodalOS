@@ -1,0 +1,12 @@
+{
+  "milestone": "M734",
+  "project": "NODAL OS",
+  "scope": "conditional freeze candidate prep only",
+  "candidateType": "conditional_non_release",
+  "publicStagingPath": "artifacts/manual-qa/public-variant-staging",
+  "publicManifestMaterialized": true,
+  "releaseZipCreated": false,
+  "storeSubmissionPrepared": false,
+  "ownerAttestationBasis": true,
+  "evidenceAuditability": "OWNER_ATTESTED_NON_AUDITABLE"
+}

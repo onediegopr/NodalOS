@@ -1,0 +1,9 @@
+{
+  "milestone": "M734",
+  "ownerAttestationReceived": true,
+  "ownerReportedStatus": "impecable / no errors observed",
+  "ownerQuote": "no te voy a pasar nada, te dije que esta ok, continuemos",
+  "basis": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "riskAccepted": true,
+  "conditionalFreezePrepAllowed": true
+}

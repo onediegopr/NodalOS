@@ -1,0 +1,8 @@
+{
+  "milestone": "M735",
+  "freezeFinal": "CONDITIONAL",
+  "ownerFinalFreezeAcceptance": "pending",
+  "explicitOwnerFreezeAcceptanceRequired": true,
+  "blindFreezeAllowed": false,
+  "freezeFinalPerformed": false
+}

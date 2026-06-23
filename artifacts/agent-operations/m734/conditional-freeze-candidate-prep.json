@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M734",
+  "decision": "CONDITIONAL_FREEZE_CANDIDATE_PREP_READY",
+  "basis": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "ownerAttestationReceived": true,
+  "ownerReportedStatus": "impecable / no errors observed",
+  "screenshotsProvided": false,
+  "logsProvided": false,
+  "runtimeDevtoolsEvidenceProvided": false,
+  "permissionWarningsEvidenceProvided": false,
+  "evidenceInvented": false,
+  "conditionalOnly": true,
+  "releaseZipCreated": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "runtimeProviderFilesystemBrowserCapability": "DISABLED"
+}

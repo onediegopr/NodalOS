@@ -1,0 +1,5 @@
+{
+  "milestone": "M736",
+  "recommendedNextMilestone": "M737-M739 Owner Final Freeze Acceptance + Freeze Candidate Lock + Release Still Protected",
+  "reason": "Conditional freeze prep is ready, but final freeze/public release/Store require explicit owner acceptance gates."
+}

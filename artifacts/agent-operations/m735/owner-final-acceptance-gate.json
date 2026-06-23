@@ -1,0 +1,12 @@
+{
+  "milestone": "M735",
+  "title": "Owner final acceptance gate",
+  "ownerFinalFreezeAcceptance": "pending",
+  "ownerPublicReleaseAcceptance": "pending",
+  "ownerChromeWebStoreAcceptance": "pending",
+  "freezeFinal": "CONDITIONAL",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "screenshotsLogsRequestedAgain": false,
+  "explicitFinalAcceptanceRequired": true
+}

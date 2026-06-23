@@ -1,0 +1,9 @@
+{
+  "milestone": "M736",
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "status": "DISABLED"
+}

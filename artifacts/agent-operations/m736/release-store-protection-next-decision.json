@@ -1,0 +1,11 @@
+{
+  "milestone": "M736",
+  "conditionalFreezeCandidatePrep": "GO",
+  "publicPackageFreezeFinal": "CONDITIONAL / pending owner final freeze acceptance",
+  "publicRelease": "NO-GO / pending explicit owner public release acceptance",
+  "chromeWebStore": "NO-GO / pending explicit owner store acceptance",
+  "noBlindRelease": true,
+  "noEvidenceInvention": true,
+  "runtimeProviderFilesystemBrowserCapability": "DISABLED",
+  "decision": "CONDITIONAL_FREEZE_CANDIDATE_PREP_READY_OWNER_FINAL_ACCEPTANCE_PENDING"
+}

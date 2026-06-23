@@ -1,0 +1,11 @@
+{
+  "milestone": "M735",
+  "requiredFutureOwnerPhrases": {
+    "freezeFinal": "ACEPTO FREEZE FINAL CON OWNER ATTESTATION NO AUDITABLE",
+    "publicReleaseAndStore": "ACEPTO PUBLIC RELEASE / STORE SUBMISSION BAJO MI RESPONSABILIDAD"
+  },
+  "ownerFinalFreezeAcceptance": "pending",
+  "ownerPublicReleaseAcceptance": "pending",
+  "ownerChromeWebStoreAcceptance": "pending",
+  "visualEvidenceNotRequiredAgain": true
+}
