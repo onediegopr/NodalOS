@@ -1,0 +1,17 @@
+{
+  "milestone": "M638A-MANUAL-RETRY",
+  "devtoolsConsoleProvided": true,
+  "serviceWorkerConsoleInspected": true,
+  "afterExtensionReloadWithBridgeLive": true,
+  "cspViolationsObserved": "no",
+  "errConnectionRefusedObserved": "no",
+  "invalidTokenObserved": "no",
+  "policyViolation1008Observed": "no",
+  "bridgeWebSocketErrorRepeatedObserved": "no",
+  "webSocketReconnectingObserved": "no",
+  "criticalErrorsObserved": "no",
+  "warningsObserved": [],
+  "rawConsoleExcerptAllowed": false,
+  "manualEvidenceSource": "user-reported",
+  "manualReviewerNotes": "User reported service worker DevTools Console clean with no visible errors. No raw console excerpt or secrets were recorded."
+}

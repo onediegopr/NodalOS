@@ -1,0 +1,22 @@
+{
+  "milestone": "M638A-MANUAL-RETRY",
+  "decision": "CLEAN_RUNTIME_DEVTOOLS_EVIDENCE_READY",
+  "basedOnMilestone": "M638A-MANUAL",
+  "basedOnCommit": "8abf08caa40f690506f69fe3175fa5c05bcc97a8",
+  "manualEvidenceOnly": true,
+  "manualEvidenceSource": "user-reported",
+  "productFilesModified": false,
+  "bridgeLiveness": "pass",
+  "runtimeTabEvidenceProvided": true,
+  "serviceWorkerDevtoolsEvidenceProvided": true,
+  "cspViolationsObserved": "no",
+  "errConnectionRefusedObserved": "no",
+  "invalidTokenObserved": "no",
+  "policyViolation1008Observed": "no",
+  "bridgeWebSocketErrorRepeatedObserved": "no",
+  "webSocketReconnectingObserved": "no",
+  "criticalConsoleErrorsObserved": "no",
+  "warningsObserved": [],
+  "releasePublicReady": false,
+  "manualReviewerNotes": "User reported clean manual validation: visual validation OK, Runtime connects correctly, bridge connects correctly, no visible errors, service worker DevTools has no visible errors, and Runtime tab has no visible errors."
+}
