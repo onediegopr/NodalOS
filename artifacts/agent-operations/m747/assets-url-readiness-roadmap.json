@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "assetsUrlReadinessRoadmap": "READY",
+  "requiredBeforeActualSubmission": [
+    "Privacy URL",
+    "Support URL",
+    "Store listing",
+    "Short description",
+    "Long description",
+    "Icons/assets",
+    "Screenshots/promotional assets if required",
+    "Permission disclosure",
+    "Package/signing/release procedure"
+  ],
+  "valuesInvented": false,
+  "currentlySubmissionReady": false
+}

@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "recommendedNextMilestone": "M749-M751 Internal Candidate Stabilization + Runtime Roadmap Re-Entry Gate",
+  "alternateMilestones": [
+    "M749-M751 Store Assets Collection Plan + Privacy Support URL Readiness",
+    "M749-M751 Public Release Acceptance Intake + Package Preflight Dry Run"
+  ],
+  "publicationAllowedInNextMilestone": false
+}

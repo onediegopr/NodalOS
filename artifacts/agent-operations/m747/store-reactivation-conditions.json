@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "storeReactivationRequiresExplicitOwnerAcceptance": true,
+  "requiredPhrase": "ACEPTO CHROME WEB STORE SUBMISSION BAJO MI RESPONSABILIDAD",
+  "acceptanceReceived": false,
+  "reactivationMode": "future Store submission dry-run plan",
+  "automaticStoreUploadAllowed": false
+}

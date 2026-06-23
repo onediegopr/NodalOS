@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "releaseDeferredRoadmap": "READY",
+  "phaseA": "Stabilized freeze state",
+  "phaseB": "Required owner acceptances",
+  "phaseC": "Required Store assets before actual submission",
+  "phaseD": "Future dry-run/preflight only",
+  "phaseE": "Real publication only in a later explicit block",
+  "actualPublicationAllowedInThisRoadmap": false
+}

@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "publicReleaseDryRunRoadmap": "READY",
+  "dryRunOnly": true,
+  "actualPublicReleaseAllowed": false,
+  "signedFinalZipAllowedWithoutExplicitAuthorization": false,
+  "packagePreflightDryRunRequiredBeforeRelease": true
+}

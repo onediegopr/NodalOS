@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "chromeWebStoreDryRunRoadmap": "READY",
+  "dryRunOnly": true,
+  "actualChromeWebStoreUploadAllowed": false,
+  "storeSubmissionDryRunPlanRequiredBeforeUpload": true,
+  "signedFinalZipAllowedWithoutExplicitAuthorization": false
+}

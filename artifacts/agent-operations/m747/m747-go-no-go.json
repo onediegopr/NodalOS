@@ -1,0 +1,8 @@
+{
+  "milestone": "M747",
+  "decision": "RELEASE_DEFERRED_ROADMAP_READY",
+  "releaseDeferredRoadmap": "READY",
+  "ownerAcceptanceRequired": true,
+  "dryRunBeforePublicationRequired": true,
+  "actualPublicationAllowed": false
+}

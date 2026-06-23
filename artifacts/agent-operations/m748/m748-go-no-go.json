@@ -1,0 +1,8 @@
+{
+  "milestone": "M748",
+  "decision": "POST_FREEZE_NEXT_DECISION_READY",
+  "postFreezeStabilization": "GO",
+  "releaseDeferredRoadmap": "READY",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

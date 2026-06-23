@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

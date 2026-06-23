@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "releaseDeferred": true,
+  "releaseDeferredRoadmapRequired": true,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "ownerAcceptanceRequiredBeforeRelease": true
+}

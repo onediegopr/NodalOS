@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "publicReleaseReactivationRequiresExplicitOwnerAcceptance": true,
+  "requiredPhrase": "ACEPTO PUBLIC RELEASE BAJO MI RESPONSABILIDAD",
+  "acceptanceReceived": false,
+  "reactivationMode": "future intake plus package preflight dry-run",
+  "automaticPublicationAllowed": false
+}

@@ -1,0 +1,9 @@
+{
+  "milestone": "M746",
+  "decision": "POST_FREEZE_STABILIZATION_REGISTERED",
+  "freezeCandidateLock": "GO_PRESERVED",
+  "storeAssetsBoundary": "STABILIZED",
+  "releaseDeferred": true,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}
