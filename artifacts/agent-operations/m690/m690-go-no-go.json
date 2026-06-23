@@ -1,0 +1,22 @@
+{
+  "milestone": "M690",
+  "decision": "HUMAN_CHROME_LOAD_INPUT_REQUIRED",
+  "humanRunbookReady": true,
+  "publicVariantLoaded": false,
+  "tokenPresentUi": false,
+  "websocketConnectedLive": false,
+  "runtimeTabEvidenceReady": false,
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "manualQaEvidenceSufficient": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false
+}

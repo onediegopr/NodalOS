@@ -1,0 +1,17 @@
+{
+  "milestone": "M689",
+  "stagingManifestPath": "artifacts/manual-qa/public-variant-staging/manifest.json",
+  "sourceManifestPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "stagingManifestValidJson": true,
+  "publicStagingUsesPublicManifest": true,
+  "name": "NODAL OS Public Candidate",
+  "hostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "containsWildcardHttpHostPermission": false,
+  "containsWildcardHttpsHostPermission": false,
+  "containsContentScripts": false,
+  "containsContentScriptsWildcard": false,
+  "internalManifestPreserved": true
+}

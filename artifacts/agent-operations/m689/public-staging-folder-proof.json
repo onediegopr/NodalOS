@@ -1,0 +1,11 @@
+{
+  "milestone": "M689",
+  "stagingFolderReady": true,
+  "stagingPath": "artifacts/manual-qa/public-variant-staging",
+  "loadUnpackedPath": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit\\artifacts\\manual-qa\\public-variant-staging",
+  "createdByScript": "tools/manual-qa/prepare-public-variant-staging.ps1",
+  "safeForManualChromeLoad": true,
+  "releasePackage": false,
+  "signedPackage": false,
+  "chromeStoreUploadReady": false
+}

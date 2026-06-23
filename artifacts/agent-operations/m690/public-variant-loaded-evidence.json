@@ -1,0 +1,9 @@
+{
+  "milestone": "M690",
+  "publicVariantLoaded": false,
+  "publicVariantLoadedEvidence": "pending-human-input",
+  "expectedVisibleName": "NODAL OS Public Candidate",
+  "expectedLoadPath": "C:\\DESARROLLO\\NodalOS\\Codigo-m12-audit\\artifacts\\manual-qa\\public-variant-staging",
+  "manifestSelectionVerifiedHuman": "unknown",
+  "manualEvidenceRequired": true
+}

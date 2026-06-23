@@ -1,0 +1,10 @@
+{
+  "milestone": "M690",
+  "evidenceRedacted": true,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "rawConsoleExcerptStored": false,
+  "longRawLogsStored": false,
+  "privateUserDataStored": false,
+  "humanInstructionsBlockSecretMaterial": true
+}

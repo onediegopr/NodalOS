@@ -1,0 +1,23 @@
+{
+  "milestone": "M691",
+  "risks": [
+    {
+      "id": "HUMAN-CHROME-LOAD-EVIDENCE-PENDING",
+      "severity": "high-for-freeze",
+      "status": "open",
+      "description": "The staging folder is ready, but Chrome load evidence must be provided by a human operator."
+    },
+    {
+      "id": "CONNECTED-WEBSOCKET-EVIDENCE-PENDING",
+      "severity": "high-for-freeze",
+      "status": "open",
+      "description": "Token-present and WebSocket-connected evidence remain pending."
+    },
+    {
+      "id": "RUNTIME-DEVTOOLS-EVIDENCE-PENDING",
+      "severity": "medium",
+      "status": "open",
+      "description": "Runtime tab and Service Worker DevTools cleanliness evidence remain pending."
+    }
+  ]
+}

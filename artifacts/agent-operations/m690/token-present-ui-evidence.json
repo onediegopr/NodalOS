@@ -1,0 +1,9 @@
+{
+  "milestone": "M690",
+  "tokenPresentUi": false,
+  "tokenPresentUiEvidence": "pending-human-input",
+  "expectedSafeState": "token present by boolean or equivalent UI state",
+  "tokenValueShouldBeVisible": false,
+  "tokenLoggedInFull": false,
+  "manualEvidenceRequired": true
+}

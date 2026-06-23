@@ -1,0 +1,21 @@
+{
+  "milestone": "M689",
+  "decision": "PUBLIC_VARIANT_STAGING_REMEDIATION_READY",
+  "stagingFolderReady": true,
+  "stagingPath": "artifacts/manual-qa/public-variant-staging",
+  "prepareScriptCreated": true,
+  "prepareScriptPath": "tools/manual-qa/prepare-public-variant-staging.ps1",
+  "usesPublicManifestAsManifestJson": true,
+  "internalManifestUsed": false,
+  "publicManifestName": "NODAL OS Public Candidate",
+  "publicStagingHasNoWildcards": true,
+  "publicStagingHasNoAutomaticExternalContentScripts": true,
+  "secretsCopied": false,
+  "logsCopied": false,
+  "tempUserDataCopied": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

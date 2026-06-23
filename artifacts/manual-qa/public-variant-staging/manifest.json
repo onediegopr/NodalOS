@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "NODAL OS Public Candidate",
+  "short_name": "NODAL OS",
+  "version": "0.1.0",
+  "description": "Local-first Chrome lab client for NODAL OS public candidate validation.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs",
+    "sidePanel",
+    "alarms"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "NODAL OS Public Candidate"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*;"
+  }
+}

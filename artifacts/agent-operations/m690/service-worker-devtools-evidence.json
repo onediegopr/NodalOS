@@ -1,0 +1,12 @@
+{
+  "milestone": "M690",
+  "serviceWorkerDevtoolsEvidence": "UNKNOWN",
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "cspViolations": "unknown",
+  "invalidToken": "unknown",
+  "close1008": "unknown",
+  "reconnectStorm": "unknown",
+  "criticalConsoleErrors": "unknown",
+  "manualEvidenceRequired": true,
+  "rawConsoleExcerptStored": false
+}

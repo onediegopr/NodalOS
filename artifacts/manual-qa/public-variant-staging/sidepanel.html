@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NODAL OS</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-block">
+      <h1>NODAL OS</h1>
+      <p id="headerStatus">Disconnected · Run: idle</p>
+    </div>
+    <button id="globalStopBtn" class="stop-button">STOP</button>
+  </header>
+
+  <nav class="tabs" aria-label="NODAL OS modes">
+    <button class="tab active" data-tab="operate">Operar</button>
+    <button class="tab" data-tab="learn">Aprender</button>
+    <button class="tab" data-tab="recipes">Recetas</button>
+    <button class="tab" data-tab="runtime">Runtime</button>
+  </nav>
+
+  <section id="humanBanner" class="human-banner hidden">
+    <div>
+      <strong>Intervención humana requerida</strong>
+      <p id="humanMessage">Completá credenciales, captcha o 2FA y luego presioná Reanudar.</p>
+    </div>
+    <button id="resumeHumanBtn">Reanudar</button>
+  </section>
+
+  <main>
+    <section id="tab-operate" class="tab-panel active">
+      <section class="surface command-surface">
+        <label for="instructionInput">¿Qué querés que haga NODAL OS?</label>
+        <textarea id="instructionInput" rows="8" wrap="soft">Revisá el dashboard local de readiness, resumí evidencia redacted y listá blockers activos sin usar credenciales ni acciones sensibles.</textarea>
+        <div class="control-row">
+          <button id="startRunBtn" class="primary">Ejecutar</button>
+          <button id="pauseRunBtn">Pausar</button>
+          <button id="resumeRunBtn">Reanudar</button>
+        </div>
+      </section>
+
+      <section id="handoffSurface" class="surface handoff-surface hidden" data-legacy-action="Reobservar pagina">
+        <h2 id="handoffTitle">NODAL OS necesita intervención humana</h2>
+        <dl>
+          <dt>Estado</dt><dd id="handoffStatus">-</dd>
+          <dt>Razón</dt><dd id="handoffReason">-</dd>
+          <dt>URL segura</dt><dd id="handoffSafeUrl">-</dd>
+          <dt>Instrucción</dt><dd id="handoffInstruction">-</dd>
+          <dt>Acción esperada</dt><dd id="handoffExpectedAction">-</dd>
+          <dt>Opciones</dt><dd id="handoffOptions">-</dd>
+        </dl>
+        <div class="handoff-actions">
+          <button id="handoffContinueBtn" class="primary" data-legacy-label="Ya lo resolvi, continuar">Ya lo hice, continuar</button>
+          <button id="handoffCancelBtn" class="danger">Cancelar</button>
+          <button id="handoffCopyLogBtn">Copiar LOG</button>
+        </div>
+      </section>
+
+      <section id="consentSurface" class="surface consent-surface hidden">
+        <h2 id="consentTitle">NODAL OS necesita autorización</h2>
+        <dl>
+          <dt>Estado</dt><dd id="consentStatus">-</dd>
+          <dt>Tipo</dt><dd id="consentType">-</dd>
+          <dt>Alcance</dt><dd id="consentScope">-</dd>
+          <dt>Instrucción</dt><dd id="consentInstruction">-</dd>
+          <dt>Opciones</dt><dd id="consentOptions">-</dd>
+        </dl>
+        <div class="handoff-actions">
+          <button id="consentApproveBtn" class="primary">Autorizar</button>
+          <button id="consentDenyBtn" class="danger">Denegar</button>
+          <button id="consentCancelBtn">Cancelar</button>
+          <button id="consentCopyLogBtn">Copiar LOG</button>
+        </div>
+      </section>
+
+      <section class="grid two">
+        <article class="surface">
+          <h2>Estado</h2>
+          <dl>
+            <dt>Objetivo</dt><dd id="operatorGoal">-</dd>
+            <dt>Plan</dt><dd id="operatorPlan">-</dd>
+            <dt>Acción</dt><dd id="operatorAction">-</dd>
+            <dt>Tool</dt><dd id="currentTool">-</dd>
+            <dt>Página</dt><dd id="pageUrl">-</dd>
+            <dt>Resultado</dt><dd id="lastResult">-</dd>
+          </dl>
+        </article>
+
+        <article class="surface">
+          <h2>Resolución del objetivo</h2>
+          <dl>
+            <dt>Intent</dt><dd id="targetIntent">-</dd>
+            <dt>Target</dt><dd id="targetText">-</dd>
+            <dt>Elegido</dt><dd id="selectedElementId">-</dd>
+            <dt>Score</dt><dd id="selectedScore">-</dd>
+            <dt>Selector</dt><dd id="selectedSelector">-</dd>
+            <dt>Reason</dt><dd id="selectedReason">-</dd>
+          </dl>
+          <div id="resolveCandidates" class="candidate-list">No candidates yet.</div>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="surface">
+          <h2>Verificación</h2>
+          <dl>
+            <dt>Status</dt><dd id="verificationStatus">-</dd>
+            <dt>URL</dt><dd id="verificationUrlChanged">-</dd>
+            <dt>Title</dt><dd id="verificationTitleChanged">-</dd>
+            <dt>DOM</dt><dd id="verificationDomChanged">-</dd>
+            <dt>Expected</dt><dd id="verificationExpected">-</dd>
+            <dt>Reason</dt><dd id="verificationReason">-</dd>
+          </dl>
+        </article>
+
+        <article class="surface">
+          <h2>Timeline operativo</h2>
+          <ol id="operatorTimeline" class="timeline"></ol>
+        </article>
+      </section>
+    </section>
+
+    <section id="tab-learn" class="tab-panel">
+      <section class="surface">
+        <h2>Aprendizaje</h2>
+        <label>Nombre de receta <input id="learningName" value="Nueva receta"></label>
+        <label>Descripción <textarea id="learningDescription" rows="4" wrap="soft"></textarea></label>
+        <div class="control-row">
+          <button id="startLearningBtn" class="primary">Empezar aprendizaje</button>
+          <button id="pauseLearningBtn">Pausar aprendizaje</button>
+          <button id="resumeLearningBtn">Reanudar aprendizaje</button>
+          <button id="stopLearningBtn">Detener aprendizaje</button>
+          <button id="reviewRecipeBtn">Revisar receta</button>
+          <button id="saveRecipeBtn">Guardar receta</button>
+        </div>
+        <div id="learningStatus" class="recording-state">No grabando</div>
+      </section>
+
+      <section class="surface">
+        <h2>Timeline de aprendizaje</h2>
+        <ol id="learningTimeline" class="timeline"></ol>
+      </section>
+
+      <section class="surface">
+        <h2>Recipe Draft V0</h2>
+        <textarea id="recipeDraftJson" rows="12" spellcheck="false"></textarea>
+      </section>
+    </section>
+
+    <section id="tab-recipes" class="tab-panel">
+      <section class="surface">
+        <div class="section-head">
+          <h2>Recetas guardadas</h2>
+          <button id="importRecipeBtn">Importar JSON</button>
+        </div>
+        <input id="recipeImportInput" class="hidden" type="file" accept="application/json">
+        <div id="recipeList" class="recipe-list">No hay recetas guardadas.</div>
+      </section>
+
+      <section class="surface">
+        <h2>Vista de receta</h2>
+        <label>Nombre <input id="recipeNameInput"></label>
+        <label>Descripción <textarea id="recipeDescriptionInput" rows="3" wrap="soft"></textarea></label>
+        <label>Start URL <input id="recipeStartUrlInput"></label>
+        <div id="recipeParameterForm" class="parameter-form"></div>
+        <textarea id="recipeJsonEditor" rows="14" spellcheck="false"></textarea>
+        <div class="control-row">
+          <button id="runRecipeBtn" class="primary">Ejecutar receta</button>
+          <button id="pauseRecipeBtn">Pausar</button>
+          <button id="resumeRecipeBtn">Reanudar</button>
+          <button id="retryRecipeStepBtn">Reintentar paso</button>
+          <button id="skipRecipeStepBtn">Saltar paso</button>
+          <button id="abortRecipeBtn" class="danger">Abortar</button>
+          <button id="saveRecipeChangesBtn">Guardar cambios</button>
+          <button id="cancelRecipeEditBtn">Cancelar</button>
+          <button id="deleteRecipeBtn" class="danger">Borrar</button>
+          <button id="exportRecipeBtn">Exportar JSON</button>
+        </div>
+        <p class="muted">Recipe runner V1: ejecuta pasos determinísticos y falla con razón explícita.</p>
+      </section>
+
+      <section class="surface">
+        <h2>Recipe runner</h2>
+        <dl>
+          <dt>Run</dt><dd id="recipeRunId">-</dd>
+          <dt>Estado</dt><dd id="recipeRunStatus">idle</dd>
+          <dt>Paso</dt><dd id="recipeCurrentStep">-</dd>
+          <dt>Error</dt><dd id="recipeLastError">-</dd>
+        </dl>
+        <ol id="recipeStepTimeline" class="timeline"></ol>
+      </section>
+    </section>
+
+    <section id="tab-runtime" class="tab-panel">
+      <section class="surface runtime-command">
+        <label>Host <input id="hostInput" value="127.0.0.1" autocomplete="off"></label>
+        <label>Puerto <input id="portInput" value="8787" autocomplete="off"></label>
+        <button id="connectBtn" class="primary">Conectar / desconectar</button>
+        <button id="healthBtn">Health</button>
+        <button id="reconnectBtn">Reconectar extension</button>
+        <button id="refreshDebugBtn">Verificar conexion</button>
+        <button id="clearRuntimeStateBtn">Limpiar estado local</button>
+      </section>
+
+      <section id="tokenSetupCard" class="surface token-setup hidden">
+        <h2>Token de conexion requerido</h2>
+        <p>Pegalo una sola vez. NODAL OS lo guardará localmente y no volverá a pedirlo. Si aparece token inválido, reemplázalo por el `ExtensionToken` de `config/chrome-lab.local.json`.</p>
+        <div class="connection-strip">
+          <label>Token <input id="tokenInput" type="password" autocomplete="off" placeholder="extension-token"></label>
+          <button id="saveTokenConnectBtn" class="primary">Guardar y conectar</button>
+        </div>
+      </section>
+
+      <details class="surface">
+        <summary>Avanzado</summary>
+        <div class="connection-strip advanced-token-row">
+          <label>Cambiar token <input id="advancedTokenInput" type="password" autocomplete="off" placeholder="nuevo token"></label>
+          <button id="changeTokenBtn">Cambiar token</button>
+          <button id="clearTokenBtn" class="danger">Borrar token guardado</button>
+        </div>
+      </details>
+
+      <section class="grid two">
+        <article class="surface">
+          <h2>Motor local</h2>
+          <dl>
+            <dt>Estado</dt><dd id="runtimeConnection">-</dd>
+            <dt>Host</dt><dd id="runtimeHost">-</dd>
+            <dt>Puerto</dt><dd id="runtimePort">-</dd>
+            <dt>Health</dt><dd id="runtimeHealth">-</dd>
+            <dt>Token</dt><dd id="runtimeToken">-</dd>
+            <dt>WebSocket</dt><dd id="runtimeSocket">-</dd>
+            <dt>Clientes</dt><dd id="runtimeClients">-</dd>
+            <dt>Heartbeat</dt><dd id="runtimeHeartbeat">-</dd>
+            <dt>Diagnostico</dt><dd id="runtimeDiagnostic">-</dd>
+            <dt>Accion recomendada</dt><dd id="runtimeRecommendation">-</dd>
+          </dl>
+        </article>
+        <article class="surface">
+          <h2>IA</h2>
+          <dl>
+            <dt>Provider</dt><dd id="runtimeProvider">OpenAI</dd>
+            <dt>Modelo</dt><dd id="runtimeModel">-</dd>
+            <dt>API key</dt><dd id="runtimeApiKey">-</dd>
+            <dt>Error</dt><dd id="runtimeAiError">-</dd>
+          </dl>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="surface">
+          <h2>Extensión</h2>
+          <dl>
+            <dt>Client ID</dt><dd id="runtimeClientId">-</dd>
+            <dt>Last seen</dt><dd id="runtimeLastSeen">-</dd>
+            <dt>Protocol</dt><dd id="runtimeProtocol">-</dd>
+            <dt>Tab</dt><dd id="pageTab">-</dd>
+            <dt>URL</dt><dd id="runtimeUrl">-</dd>
+            <dt>Content</dt><dd id="runtimeContent">-</dd>
+          </dl>
+        </article>
+        <article class="surface">
+          <h2>Run actual</h2>
+          <dl>
+            <dt>Run</dt><dd id="runId">-</dd>
+            <dt>Request</dt><dd id="runtimeRequestId">-</dd>
+            <dt>Estado</dt><dd id="runtimeRunState">idle</dd>
+            <dt>Tool</dt><dd id="runtimeTool">-</dd>
+            <dt>Error</dt><dd id="runtimeLastError">-</dd>
+          </dl>
+        </article>
+      </section>
+
+      <section class="surface">
+        <h2>Logs técnicos</h2>
+        <details open><summary>Locales</summary><div id="localLogs" class="log-pane"></div></details>
+        <details><summary>engine → extension</summary><div id="engineLogs" class="log-pane"></div></details>
+        <details><summary>extension → engine</summary><div id="extensionLogs" class="log-pane"></div></details>
+        <details><summary>Último tool.request</summary><pre id="lastToolRequest">-</pre></details>
+        <details><summary>Último tool.result</summary><pre id="lastToolResult">-</pre></details>
+        <details><summary>Último run.status</summary><pre id="lastRunStatus">-</pre></details>
+      </section>
+    </section>
+  </main>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

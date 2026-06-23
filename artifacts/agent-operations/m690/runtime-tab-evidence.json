@@ -1,0 +1,13 @@
+{
+  "milestone": "M690",
+  "runtimeTabEvidence": "UNKNOWN",
+  "runtimeTabEvidenceReady": false,
+  "expectedChecks": [
+    "Token present.",
+    "WebSocket connected.",
+    "No reconnect loop.",
+    "No invalid token.",
+    "No close 1008."
+  ],
+  "manualEvidenceRequired": true
+}

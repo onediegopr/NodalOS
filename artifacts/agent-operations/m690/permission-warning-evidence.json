@@ -1,0 +1,11 @@
+{
+  "milestone": "M690",
+  "permissionWarnings": "unknown",
+  "permissionWarningsCaptured": false,
+  "expectedHostPermissionWarningScope": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "wildcardPermissionWarningExpected": false,
+  "manualEvidenceRequired": true
+}

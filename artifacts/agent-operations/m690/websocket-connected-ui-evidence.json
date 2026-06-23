@@ -1,0 +1,10 @@
+{
+  "milestone": "M690",
+  "websocketConnectedLive": false,
+  "websocketConnectedEvidence": "pending-human-input",
+  "expectedStateWithBridgeAndValidToken": "connected",
+  "invalidTokenExpected": false,
+  "close1008Expected": false,
+  "reconnectStormExpected": false,
+  "manualEvidenceRequired": true
+}

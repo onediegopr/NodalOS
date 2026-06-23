@@ -1,0 +1,20 @@
+{
+  "milestone": "M689",
+  "decision": "PUBLIC_VARIANT_STAGING_REMEDIATION_READY",
+  "publicStagingFolderReady": true,
+  "publicStagingUsesPublicManifest": true,
+  "publicStagingHasNoWildcards": true,
+  "publicStagingHasNoAutomaticExternalContentScripts": true,
+  "humanChromeLoadInputRequired": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false
+}

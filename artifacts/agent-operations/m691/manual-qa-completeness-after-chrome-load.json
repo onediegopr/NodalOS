@@ -1,0 +1,13 @@
+{
+  "milestone": "M691",
+  "publicStagingFolderReady": true,
+  "publicStagingUsesPublicManifest": true,
+  "publicStagingHasNoWildcards": true,
+  "humanChromeLoadEvidenceProvided": false,
+  "publicVariantLoaded": false,
+  "tokenPresentUi": false,
+  "websocketConnectedLive": false,
+  "runtimeTabEvidenceReady": false,
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "manualQaEvidenceSufficient": false
+}

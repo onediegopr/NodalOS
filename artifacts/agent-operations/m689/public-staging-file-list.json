@@ -1,0 +1,56 @@
+{
+  "milestone": "M689",
+  "stagingPath": "artifacts/manual-qa/public-variant-staging",
+  "files": [
+    {
+      "name": "content_script.js",
+      "length": 61789,
+      "included": true,
+      "activeByPublicManifest": false
+    },
+    {
+      "name": "manifest.json",
+      "length": 788,
+      "included": true,
+      "source": "manifest.public.json"
+    },
+    {
+      "name": "README.md",
+      "length": 1104,
+      "included": true
+    },
+    {
+      "name": "recipe_core.js",
+      "length": 9016,
+      "included": true
+    },
+    {
+      "name": "service_worker.js",
+      "length": 99848,
+      "included": true
+    },
+    {
+      "name": "sidepanel.css",
+      "length": 18430,
+      "included": true
+    },
+    {
+      "name": "sidepanel.html",
+      "length": 13189,
+      "included": true
+    },
+    {
+      "name": "sidepanel.js",
+      "length": 84711,
+      "included": true
+    }
+  ],
+  "excludedFiles": [
+    "browser-extension/onebrain-chrome-lab/manifest.json",
+    "browser-extension/onebrain-chrome-lab/manifest.public.json",
+    "config/chrome-lab.local.json",
+    "logs",
+    "temporary user data"
+  ],
+  "secretsCopied": false
+}

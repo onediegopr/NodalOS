@@ -1,0 +1,18 @@
+{
+  "milestone": "M691",
+  "decision": "HUMAN_CHROME_LOAD_INPUT_REQUIRED",
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reason": "Public staging is ready, but human Chrome load and connected evidence are not yet provided.",
+  "requiredEvidenceBeforeFreeze": [
+    "Public variant loaded from staging folder.",
+    "Manifest selection verified by visible name and staging path.",
+    "Token present in UI without exposing value.",
+    "WebSocket connected with live bridge and valid token.",
+    "Runtime tab PASS.",
+    "Service Worker DevTools PASS.",
+    "No CSP violations, invalid token, close 1008, reconnect storm, or critical console errors."
+  ],
+  "recommendedNextMilestone": "M692-M694 Human Chrome Evidence Intake"
+}

@@ -1,0 +1,11 @@
+{
+  "milestone": "M689",
+  "cleanupRequiredAfterManualQa": false,
+  "cleanupTarget": "artifacts/manual-qa/public-variant-staging",
+  "safeCleanupCommand": "Remove-Item -LiteralPath 'artifacts/manual-qa/public-variant-staging' -Recurse -Force",
+  "cleanupNotes": [
+    "The staging folder is a local QA candidate, not a signed release package.",
+    "Regenerate with tools/manual-qa/prepare-public-variant-staging.ps1 if deleted.",
+    "Do not copy config files or secret material into the staging folder."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M691",
+  "publicPackageFreezeReady": false,
+  "stagingReady": true,
+  "humanEvidenceReady": false,
+  "connectedEvidenceReady": false,
+  "storeSubmissionReady": false,
+  "freezeBlockedBy": [
+    "human Chrome load evidence pending",
+    "connected WebSocket evidence pending",
+    "Runtime and Service Worker DevTools evidence pending"
+  ]
+}

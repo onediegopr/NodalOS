@@ -1,0 +1,14 @@
+{
+  "milestone": "M690",
+  "decision": "HUMAN_INPUT_REQUIRED",
+  "humanRunbookReady": true,
+  "publicVariantLoaded": false,
+  "visibleExtensionName": "unknown",
+  "manifestSelectionVerifiedHuman": "unknown",
+  "loadedStagingPath": "artifacts/manual-qa/public-variant-staging",
+  "bridgeLivenessInstructionProvided": true,
+  "tokenHandlingInstructionProvided": true,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "evidenceRedacted": true
+}
