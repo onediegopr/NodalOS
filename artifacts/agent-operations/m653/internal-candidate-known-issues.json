@@ -1,0 +1,28 @@
+{
+  "milestone": "M653",
+  "decision": "INTERNAL_CANDIDATE_KNOWN_ISSUES_READY",
+  "mode": "known-issues-only",
+  "knownIssues": [
+    {
+      "id": "KNOWN-HOST-PERMISSIONS-BROAD",
+      "status": "documented",
+      "summary": "Broad host permissions are acceptable for internal candidate only."
+    },
+    {
+      "id": "KNOWN-BRIDGE-REQUIRED",
+      "status": "documented",
+      "summary": "Bridge must be live before Runtime/DevTools evidence capture."
+    },
+    {
+      "id": "KNOWN-PUBLIC-RELEASE-BLOCKED",
+      "status": "open",
+      "summary": "Public release remains blocked."
+    },
+    {
+      "id": "KNOWN-PROVIDER-DISABLED",
+      "status": "documented",
+      "summary": "Provider path exists but provider/cloud remains disabled."
+    }
+  ],
+  "publicReleaseReady": false
+}

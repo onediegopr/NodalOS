@@ -1,0 +1,22 @@
+{
+  "milestone": "M653",
+  "decision": "INTERNAL_CANDIDATE_SUPPORT_NOTES_READY",
+  "mode": "support-notes-only",
+  "supportAudience": "authorized internal release reviewers",
+  "requiredSupportEvidence": [
+    "commit hash",
+    "bridge liveness output",
+    "runtime tab summary",
+    "service worker DevTools summary",
+    "known issues reference",
+    "rollback notes",
+    "product boundary clean confirmation"
+  ],
+  "supportLimitations": [
+    "no public support channel",
+    "no Chrome Web Store support",
+    "no provider/cloud support",
+    "no runtime productive support"
+  ],
+  "publicReleaseReady": false
+}

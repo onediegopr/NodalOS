@@ -1,0 +1,31 @@
+{
+  "milestone": "M652",
+  "decision": "PACKAGE_CONTENTS_MANIFEST_READY",
+  "mode": "manifest-evidence-only",
+  "include": [
+    "browser-extension/onebrain-chrome-lab/manifest.json",
+    "browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "browser-extension/onebrain-chrome-lab/sidepanel.js",
+    "browser-extension/onebrain-chrome-lab/service_worker.js",
+    "browser-extension/onebrain-chrome-lab/content_script.js",
+    "browser-extension/onebrain-chrome-lab/recipe_core.js",
+    "browser-extension/onebrain-chrome-lab/icons if present",
+    "required static extension assets if present"
+  ],
+  "exclude": [
+    ".git",
+    "secrets",
+    "API keys",
+    "logs",
+    "temporary files",
+    "user data",
+    "provider credentials",
+    "public store screenshots not approved for internal candidate",
+    "NODRIX files",
+    "public release signing credentials"
+  ],
+  "evidenceArtifactsIncluded": false,
+  "packageRealZipCreated": false,
+  "productFilesModified": false
+}

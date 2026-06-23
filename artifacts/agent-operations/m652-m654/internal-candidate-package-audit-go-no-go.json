@@ -1,0 +1,32 @@
+{
+  "milestone": "M652-M654",
+  "decision": "INTERNAL_CANDIDATE_PACKAGE_AUDIT_READY",
+  "internalCandidateReady": true,
+  "internalCandidateScope": "local-first controlled internal evidence candidate",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "hostPermissionsStrategy": "split_internal_public_build",
+  "hostPermissionsModified": false,
+  "manifestModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "packageRealZipCreated": false,
+  "publicStoreUpload": false,
+  "signingPerformed": false,
+  "recommendedNextMilestone": "M655 Public Build Manifest Strategy / Host Permissions Narrowing Plan or M651A Host Permissions Narrowing Patch Plan",
+  "percentages": {
+    "internalCandidateReadiness": 94,
+    "publicReleaseReadiness": 72,
+    "packagingSigningStoreReadiness": 70,
+    "hostPermissionsReleaseReadiness": 80,
+    "runtimeProductizationReadiness": 30,
+    "providerCloudReadiness": 22
+  }
+}

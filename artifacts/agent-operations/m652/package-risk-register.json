@@ -1,0 +1,33 @@
+{
+  "milestone": "M652",
+  "decision": "PACKAGE_RISK_REGISTER_READY",
+  "mode": "risk-register-only",
+  "risks": [
+    {
+      "id": "PKG-HOST-PERMISSIONS-INTERNAL-ONLY",
+      "severity": "medium-high",
+      "status": "documented",
+      "summary": "Broad host permissions are valid only for controlled internal candidate use."
+    },
+    {
+      "id": "PKG-LOCAL-BRIDGE-DEPENDENCY",
+      "severity": "medium",
+      "status": "documented",
+      "summary": "Internal candidate requires bridge liveness before extension reload."
+    },
+    {
+      "id": "PKG-PROVIDER-PATH-PRESENT-DISABLED",
+      "severity": "medium",
+      "status": "documented",
+      "summary": "Provider path remains present but disabled."
+    },
+    {
+      "id": "PKG-NO-PUBLIC-STORE",
+      "severity": "critical-for-public-release",
+      "status": "open",
+      "summary": "No Chrome Web Store upload, signing, or public release is performed."
+    }
+  ],
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

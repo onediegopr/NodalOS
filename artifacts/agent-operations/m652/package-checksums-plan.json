@@ -1,0 +1,15 @@
+{
+  "milestone": "M652",
+  "decision": "PACKAGE_CHECKSUMS_PLAN_READY",
+  "mode": "checksums-plan-only",
+  "checksumAlgorithm": "SHA-256",
+  "packageChecksumCreated": false,
+  "fileChecksumsRequiredInFuturePackagingMilestone": true,
+  "requiredChecksumTargets": [
+    "all packaged extension files",
+    "final internal package artifact if created",
+    "package contents manifest"
+  ],
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

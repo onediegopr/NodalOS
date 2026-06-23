@@ -1,0 +1,20 @@
+{
+  "milestone": "M654",
+  "decision": "FINAL_INTERNAL_CANDIDATE_AUDIT_READY",
+  "internalCandidateReady": true,
+  "internalCandidateDecision": "GO",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "hostPermissionsStrategy": "split_internal_public_build",
+  "hostPermissionsModified": false,
+  "manifestModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false
+}

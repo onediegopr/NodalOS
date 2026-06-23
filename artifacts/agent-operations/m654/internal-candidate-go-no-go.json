@@ -1,0 +1,17 @@
+{
+  "milestone": "M654",
+  "decision": "INTERNAL_CANDIDATE_GO",
+  "internalCandidateReady": true,
+  "internalCandidateScope": "local-first controlled internal evidence candidate",
+  "allowedDistribution": [
+    "internal evidence review",
+    "controlled local-first internal candidate"
+  ],
+  "publicReleaseReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false
+}

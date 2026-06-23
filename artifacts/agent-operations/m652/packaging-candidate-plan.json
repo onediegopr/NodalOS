@@ -1,0 +1,19 @@
+{
+  "milestone": "M652",
+  "decision": "PACKAGING_CANDIDATE_ARTIFACT_PREP_READY",
+  "mode": "internal-candidate-packaging-prep-only",
+  "packageCandidateScope": "local-first controlled internal evidence candidate",
+  "packageRealZipCreated": false,
+  "publicStoreUpload": false,
+  "signingPerformed": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "productFilesModified": false,
+  "hostPermissionsCaveat": "broad host permissions are justified for internal candidate only",
+  "runtimeProviderDisabledCaveat": "runtime productive execution and provider/cloud remain disabled",
+  "recommendedPackagingMethod": "future deterministic internal package with SHA-256 checksums",
+  "publicReleaseReady": false
+}

@@ -1,0 +1,16 @@
+{
+  "milestone": "M653",
+  "decision": "INTERNAL_CANDIDATE_DISTRIBUTION_EVIDENCE_READY",
+  "internalDistributionChecklistReady": true,
+  "internalInstallationRunbookReady": true,
+  "knownIssuesReady": true,
+  "supportNotesReady": true,
+  "rollbackNotesReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "productFilesModified": false
+}

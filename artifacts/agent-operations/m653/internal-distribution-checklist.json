@@ -1,0 +1,26 @@
+{
+  "milestone": "M653",
+  "decision": "INTERNAL_DISTRIBUTION_CHECKLIST_READY",
+  "mode": "internal-distribution-evidence-only",
+  "allowedAudience": [
+    "project owner",
+    "authorized internal release reviewers",
+    "controlled local-first evidence testers"
+  ],
+  "notAllowedAudience": [
+    "public Chrome Web Store users",
+    "uncontrolled public beta",
+    "provider/cloud users"
+  ],
+  "requirements": [
+    "approved commit",
+    "bridge liveness PASS",
+    "extension reload",
+    "sidepanel opened",
+    "runtime tab verified",
+    "service worker DevTools summary reviewed",
+    "rollback notes available"
+  ],
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

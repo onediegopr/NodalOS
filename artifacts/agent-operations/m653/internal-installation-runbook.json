@@ -1,0 +1,27 @@
+{
+  "milestone": "M653",
+  "decision": "INTERNAL_INSTALLATION_RUNBOOK_READY",
+  "mode": "runbook-evidence-only",
+  "steps": [
+    "confirm branch and commit",
+    "start or verify local bridge",
+    "run tools/scripts/bridge-liveness-check.ps1",
+    "confirm TCP 127.0.0.1:8787 PASS",
+    "confirm /health /runtime /debug /config/public PASS",
+    "confirm /ws/extension upgrade PASS",
+    "reload installed extension",
+    "open sidepanel",
+    "open Runtime tab",
+    "confirm Health OK, clients observed, heartbeat OK, no reconnecting",
+    "inspect service worker DevTools summary",
+    "confirm public release remains blocked",
+    "confirm provider/cloud/filesystem remain disabled",
+    "record evidence without secrets or long raw logs"
+  ],
+  "bridgeLivenessRequired": true,
+  "publicReleaseReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false
+}

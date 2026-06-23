@@ -1,0 +1,15 @@
+{
+  "milestone": "M654",
+  "decision": "PUBLIC_RELEASE_NO_GO_CONFIRMED",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reasons": [
+    "host permissions are not closed for public release",
+    "Chrome Web Store candidate is not ready",
+    "package/signing/store final evidence is not complete",
+    "support/privacy public release assets are not final"
+  ],
+  "publicReleasePublished": false,
+  "publicStoreUpload": false,
+  "productFilesModified": false
+}

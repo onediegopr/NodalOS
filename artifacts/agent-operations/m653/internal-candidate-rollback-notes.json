@@ -1,0 +1,14 @@
+{
+  "milestone": "M653",
+  "decision": "INTERNAL_CANDIDATE_ROLLBACK_NOTES_READY",
+  "mode": "rollback-notes-only",
+  "rollbackSteps": [
+    "unload or disable installed extension",
+    "stop local bridge process",
+    "return to previous known-good commit",
+    "record rollback reason",
+    "do not publish store rollback because no public release exists"
+  ],
+  "storeRollbackRequired": false,
+  "publicReleaseReady": false
+}

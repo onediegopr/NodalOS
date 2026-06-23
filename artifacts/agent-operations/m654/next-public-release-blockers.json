@@ -1,0 +1,15 @@
+{
+  "milestone": "M654",
+  "decision": "NEXT_PUBLIC_RELEASE_BLOCKERS_READY",
+  "blockers": [
+    "public build manifest strategy",
+    "host permissions narrowing or final public justification",
+    "package artifact and checksums",
+    "signing evidence",
+    "Chrome Web Store listing",
+    "privacy/support assets",
+    "final public release audit"
+  ],
+  "recommendedNextMilestone": "M655 Public Build Manifest Strategy / Host Permissions Narrowing Plan",
+  "publicReleaseReady": false
+}

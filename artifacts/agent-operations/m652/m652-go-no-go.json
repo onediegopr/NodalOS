@@ -1,0 +1,13 @@
+{
+  "milestone": "M652",
+  "decision": "PACKAGING_CANDIDATE_ARTIFACT_PREP_READY",
+  "packagingCandidatePlanReady": true,
+  "packageContentsManifestReady": true,
+  "packageRiskRegisterReady": true,
+  "packageChecksumsPlanReady": true,
+  "packageRealZipCreated": false,
+  "publicStoreUpload": false,
+  "signingPerformed": false,
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}
