@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "requiredPhrase": "ACEPTO CHROME WEB STORE SUBMISSION BAJO MI RESPONSABILIDAD",
+  "phrasePresentAsOwnerAcceptance": false,
+  "phrasePresentOnlyAsFutureRequirement": true,
+  "chromeWebStoreOwnerAcceptanceReceived": false,
+  "decision": "CHROME_WEB_STORE_OWNER_ACCEPTANCE_REQUIRED"
+}

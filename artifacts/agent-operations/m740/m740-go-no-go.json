@@ -1,0 +1,8 @@
+{
+  "milestone": "M740",
+  "decision": "PUBLIC_RELEASE_OWNER_ACCEPTANCE_REQUIRED",
+  "publicReleaseOwnerAcceptanceReceived": false,
+  "publicReleaseReady": false,
+  "actualPublicReleasePerformed": false,
+  "signedPublicZipCreated": false
+}

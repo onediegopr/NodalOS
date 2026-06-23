@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "assetsBoundaryInvented": false,
+  "requiredBoundaryItems": [
+    "privacy URL",
+    "support URL",
+    "store listing",
+    "store description",
+    "icons/assets",
+    "screenshots/promotional assets if required by Store",
+    "permission disclosure",
+    "package/signing/release procedure"
+  ],
+  "storeReady": false,
+  "blocksSubmissionUntilSatisfied": true
+}

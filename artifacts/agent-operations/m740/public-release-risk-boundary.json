@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "riskBoundary": "public release requires separate explicit owner acceptance",
+  "freezeCandidateLock": "GO",
+  "publicReleaseReady": false,
+  "actualPublicReleasePerformed": false,
+  "signedPublicZipCreated": false,
+  "noBlindPublication": true
+}

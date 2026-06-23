@@ -1,0 +1,8 @@
+{
+  "milestone": "M741",
+  "decision": "CHROME_WEB_STORE_OWNER_ACCEPTANCE_REQUIRED",
+  "chromeWebStoreOwnerAcceptanceReceived": false,
+  "chromeWebStoreReady": false,
+  "actualChromeWebStoreSubmissionPerformed": false,
+  "signedPublicZipCreated": false
+}

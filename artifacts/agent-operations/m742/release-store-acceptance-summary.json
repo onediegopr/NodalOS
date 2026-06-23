@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "publicReleaseOwnerAcceptanceReceived": false,
+  "chromeWebStoreOwnerAcceptanceReceived": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "decision": "PUBLIC_RELEASE_OWNER_ACCEPTANCE_REQUIRED_STORE_OWNER_ACCEPTANCE_REQUIRED"
+}

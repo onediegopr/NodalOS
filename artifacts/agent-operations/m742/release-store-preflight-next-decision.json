@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "freezeCandidateLock": "GO",
+  "publicReleaseAcceptance": "required",
+  "chromeWebStoreAcceptance": "required",
+  "actualPublicRelease": false,
+  "actualStoreSubmission": false,
+  "signedPublicZip": false,
+  "runtimeProviderFilesystemBrowserCapability": "DISABLED",
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "noBlindPublication": true
+}

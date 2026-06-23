@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "chromeWebStoreOwnerAcceptanceReceived": false,
+  "decision": "CHROME_WEB_STORE_OWNER_ACCEPTANCE_REQUIRED",
+  "chromeWebStore": "NO-GO",
+  "chromeWebStoreCanProceedToNextPreflight": false,
+  "actualChromeWebStoreSubmissionPerformed": false,
+  "signedPublicZipCreated": false
+}

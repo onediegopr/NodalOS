@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "freezeCandidateLock": "GO",
+  "publicReleaseOwnerAcceptanceReceived": false,
+  "decision": "PUBLIC_RELEASE_OWNER_ACCEPTANCE_REQUIRED",
+  "publicRelease": "NO-GO",
+  "publicReleaseCanProceedToNextPreflight": false,
+  "actualPublicReleasePerformed": false,
+  "signedPublicZipCreated": false,
+  "chromeWebStoreSubmission": false
+}

@@ -1,0 +1,9 @@
+{
+  "milestone": "M742",
+  "decision": "PUBLIC_RELEASE_OWNER_ACCEPTANCE_REQUIRED_STORE_OWNER_ACCEPTANCE_REQUIRED",
+  "publicReleaseOwnerAcceptanceReceived": false,
+  "chromeWebStoreOwnerAcceptanceReceived": false,
+  "actualPublicReleasePerformed": false,
+  "actualChromeWebStoreSubmissionPerformed": false,
+  "signedPublicZipCreated": false
+}

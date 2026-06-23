@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "riskBoundary": "Chrome Web Store submission requires separate explicit owner acceptance",
+  "chromeWebStoreReady": false,
+  "actualChromeWebStoreSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "noStoreSubmission": true
+}
