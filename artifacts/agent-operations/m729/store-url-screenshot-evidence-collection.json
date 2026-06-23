@@ -1,0 +1,13 @@
+{
+  "milestone": "M729",
+  "title": "Store URL, screenshot, and evidence collection",
+  "activeProject": "NODAL OS",
+  "privacyUrlStatus": "pending",
+  "supportUrlStatus": "pending",
+  "docsUrlStatus": "optional",
+  "screenshotsReady": false,
+  "humanEvidenceReady": false,
+  "evidenceRedaction": "not_confirmed",
+  "secretsIncluded": false,
+  "decision": "MANUAL_P0_INPUT_REQUIRED_BLOCKED"
+}

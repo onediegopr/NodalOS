@@ -1,0 +1,15 @@
+{
+  "milestone": "M730",
+  "title": "Freeze unblock decision",
+  "activeProject": "NODAL OS",
+  "decision": "MANUAL_P0_INPUT_REQUIRED_BLOCKED",
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "screenshotsReady": false,
+  "humanEvidenceReady": false,
+  "p0BlockersClosed": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reason": "At least one P0 input is missing; in this block all required P0 inputs are missing."
+}

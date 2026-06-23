@@ -1,0 +1,39 @@
+{
+  "milestone": "M730",
+  "finalManualMustProvideChecklist": {
+    "urls": [
+      "Privacy URL",
+      "Support URL",
+      "Docs URL if available"
+    ],
+    "screenshots": [
+      "Chrome extension loaded screenshot path",
+      "Sidepanel connected screenshot path",
+      "Runtime tab screenshot path",
+      "Service Worker DevTools screenshot path",
+      "Permission warning screenshot path if shown",
+      "Promo/store assets path if any"
+    ],
+    "humanChromeEvidence": [
+      "Public variant loaded",
+      "Visible extension name",
+      "Loaded staging path",
+      "Manifest selection verified human",
+      "Token present UI",
+      "WebSocket connected live",
+      "Bridge liveness",
+      "Runtime tab evidence",
+      "Service Worker DevTools evidence",
+      "CSP violations found",
+      "invalid_token found",
+      "close 1008 found",
+      "reconnect storm found",
+      "critical console errors found",
+      "Permission warnings captured",
+      "Permission warnings text",
+      "Evidence redacted",
+      "Secrets/API keys/tokens/cookies included"
+    ]
+  },
+  "acceptanceRule": "All P0 items must be real, redacted where needed, and non-placeholder before freeze can become ready."
+}

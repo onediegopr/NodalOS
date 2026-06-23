@@ -1,0 +1,5 @@
+{
+  "milestone": "M730",
+  "recommendedNextMilestone": "STOP_UNTIL_MANUAL_INPUT_PROVIDED",
+  "reason": "The required P0 manual inputs were not provided. Generating more forward-progress documentation without input would not unblock freeze."
+}

@@ -1,0 +1,36 @@
+{
+  "milestone": "M729",
+  "screenshotsReady": false,
+  "screenshots": [
+    {
+      "name": "Chrome extension loaded",
+      "status": "missing",
+      "path": null
+    },
+    {
+      "name": "Sidepanel connected",
+      "status": "missing",
+      "path": null
+    },
+    {
+      "name": "Runtime tab",
+      "status": "missing",
+      "path": null
+    },
+    {
+      "name": "Service Worker DevTools",
+      "status": "missing",
+      "path": null
+    },
+    {
+      "name": "Permission warning if shown",
+      "status": "missing",
+      "path": null
+    },
+    {
+      "name": "Promo/store assets if any",
+      "status": "missing",
+      "path": null
+    }
+  ]
+}

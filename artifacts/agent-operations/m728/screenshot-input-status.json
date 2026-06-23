@@ -1,0 +1,14 @@
+{
+  "milestone": "M728",
+  "screenshotsProvided": false,
+  "screenshotsReady": false,
+  "requiredScreenshots": {
+    "chromeExtensionLoaded": "missing",
+    "sidepanelConnected": "missing",
+    "runtimeTab": "missing",
+    "serviceWorkerDevtools": "missing",
+    "permissionWarningIfShown": "missing",
+    "promoStoreAssetsIfAny": "missing"
+  },
+  "p0ScreenshotInputComplete": false
+}

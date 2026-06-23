@@ -1,0 +1,9 @@
+{
+  "milestone": "M729",
+  "value": null,
+  "status": "pending",
+  "ready": false,
+  "placeholder": false,
+  "validForStore": false,
+  "reason": "Privacy URL was not provided."
+}

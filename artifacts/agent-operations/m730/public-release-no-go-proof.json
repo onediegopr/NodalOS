@@ -1,0 +1,6 @@
+{
+  "milestone": "M730",
+  "publicReleaseReady": false,
+  "goNoGo": "NO-GO",
+  "reason": "Public release is prohibited while package freeze and Store readiness are not complete."
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M729",
+  "evidenceRedaction": "not_confirmed",
+  "evidenceRedacted": false,
+  "secretsIncluded": false,
+  "secretMaterialStored": false,
+  "tokenLoggedInFull": false,
+  "apiKeysStored": false,
+  "cookiesStored": false,
+  "bearerTokensStored": false,
+  "rawLongLogsStored": false,
+  "notes": "No evidence payload was provided. No secret material was stored, but redaction cannot be marked ready until real evidence is provided and confirmed redacted."
+}

@@ -1,0 +1,14 @@
+{
+  "milestone": "M728",
+  "title": "Manual P0 input gate",
+  "activeProject": "NODAL OS",
+  "manualInputReceived": false,
+  "privacyUrlProvided": false,
+  "supportUrlProvided": false,
+  "screenshotsProvided": false,
+  "humanChromeEvidenceProvided": "missing",
+  "p0InputComplete": false,
+  "localDecision": "INPUT_MISSING",
+  "decision": "MANUAL_P0_INPUT_REQUIRED_BLOCKED",
+  "reason": "No real P0 input was provided in the prompt or as attachments."
+}

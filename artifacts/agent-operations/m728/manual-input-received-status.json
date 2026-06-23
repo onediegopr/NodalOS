@@ -1,0 +1,13 @@
+{
+  "milestone": "M728",
+  "manualInputReceived": false,
+  "inputSourcesChecked": [
+    "user prompt",
+    "workspace artifacts"
+  ],
+  "realUrlsReceived": false,
+  "realScreenshotPathsReceived": false,
+  "structuredHumanEvidenceReceived": false,
+  "redactionConfirmationReceived": false,
+  "status": "missing"
+}

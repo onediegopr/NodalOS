@@ -1,0 +1,31 @@
+{
+  "milestone": "M730",
+  "p0BlockersClosed": false,
+  "items": [
+    {
+      "name": "Privacy URL",
+      "ready": false,
+      "status": "missing"
+    },
+    {
+      "name": "Support URL",
+      "ready": false,
+      "status": "missing"
+    },
+    {
+      "name": "Screenshots",
+      "ready": false,
+      "status": "missing"
+    },
+    {
+      "name": "Human Chrome evidence",
+      "ready": false,
+      "status": "missing"
+    },
+    {
+      "name": "Evidence redaction confirmation",
+      "ready": false,
+      "status": "missing"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "milestone": "M728",
+  "humanChromeEvidenceProvided": "missing",
+  "humanEvidenceReady": false,
+  "fields": {
+    "publicVariantLoaded": "missing",
+    "visibleExtensionName": "missing",
+    "loadedStagingPath": "missing",
+    "manifestSelectionVerifiedHuman": "missing",
+    "tokenPresentUi": "missing",
+    "websocketConnectedLive": "missing",
+    "bridgeLiveness": "missing",
+    "runtimeTabEvidence": "missing",
+    "serviceWorkerDevtoolsEvidence": "missing",
+    "cspViolationsFound": "missing",
+    "invalidTokenFound": "missing",
+    "close1008Found": "missing",
+    "reconnectStormFound": "missing",
+    "criticalConsoleErrorsFound": "missing",
+    "permissionWarningsCaptured": "missing",
+    "permissionWarningsText": "missing",
+    "evidenceRedacted": "missing",
+    "secretsIncluded": "missing"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "milestone": "M730",
+  "publicPackageFreezeReady": false,
+  "goNoGo": "NO-GO",
+  "reason": "Manual P0 input is missing."
+}

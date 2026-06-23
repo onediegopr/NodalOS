@@ -1,0 +1,36 @@
+{
+  "milestone": "M728",
+  "p0InputComplete": false,
+  "gaps": [
+    {
+      "name": "Privacy URL",
+      "priority": "P0",
+      "status": "missing",
+      "requiredForFreeze": true
+    },
+    {
+      "name": "Support URL",
+      "priority": "P0",
+      "status": "missing",
+      "requiredForFreeze": true
+    },
+    {
+      "name": "Screenshots/assets",
+      "priority": "P0",
+      "status": "missing",
+      "requiredForFreeze": true
+    },
+    {
+      "name": "Human Chrome evidence",
+      "priority": "P0",
+      "status": "missing",
+      "requiredForFreeze": true
+    },
+    {
+      "name": "Redaction confirmation",
+      "priority": "P0",
+      "status": "missing",
+      "requiredForFreeze": true
+    }
+  ]
+}

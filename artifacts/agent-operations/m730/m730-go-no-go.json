@@ -1,0 +1,22 @@
+{
+  "milestone": "M730",
+  "decision": "MANUAL_P0_INPUT_REQUIRED_BLOCKED",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "manualInputReceived": false,
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "screenshotsReady": false,
+  "humanEvidenceReady": false,
+  "p0BlockersClosed": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}
