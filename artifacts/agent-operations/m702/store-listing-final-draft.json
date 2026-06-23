@@ -1,0 +1,19 @@
+{
+  "milestone": "M702",
+  "storeListingFinalDraftReady": true,
+  "name": "NODAL OS",
+  "shortDescription": "Local-first Chrome companion for NODAL OS and its local bridge.",
+  "longDescription": [
+    "NODAL OS is a local-first Chrome companion that connects the browser side panel to a local NODAL OS bridge.",
+    "The public build does not auto-access websites and does not request broad website host permissions.",
+    "The public build communicates only with localhost or 127.0.0.1 for local bridge workflows.",
+    "The public build does not auto-inject content scripts into external websites.",
+    "Runtime productive capabilities, provider/cloud features, filesystem access, browser automation, and capability unlock remain disabled until future gates and approvals."
+  ],
+  "claimsBroadWebsiteAccess": false,
+  "mentionsLocalFirst": true,
+  "mentionsLocalBridge": true,
+  "claimsProductiveRuntimeEnabled": false,
+  "claimsProviderCloudEnabled": false,
+  "claimsBrowserAutomationEnabled": false
+}

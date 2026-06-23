@@ -1,0 +1,37 @@
+{
+  "milestone": "M701",
+  "manualScreenshotContractReady": true,
+  "screenshots": [
+    {
+      "id": "EXTENSION_LOADED",
+      "description": "chrome://extensions with NODAL OS Public Candidate visible.",
+      "required": true,
+      "redaction": "Hide unrelated extensions or personal browser data where practical."
+    },
+    {
+      "id": "SIDEPANEL_CONNECTED",
+      "description": "Sidepanel showing token-present and WebSocket connected or exact state.",
+      "required": true,
+      "redaction": "Do not show full token or secret values."
+    },
+    {
+      "id": "RUNTIME_TAB",
+      "description": "Runtime tab evidence with PASS/FAIL/UNKNOWN and visible errors if any.",
+      "required": true,
+      "redaction": "Avoid user data and raw long logs."
+    },
+    {
+      "id": "SERVICE_WORKER_DEVTOOLS",
+      "description": "Service Worker DevTools console cleanliness summary.",
+      "required": true,
+      "redaction": "Do not include secret material or long raw logs."
+    },
+    {
+      "id": "PERMISSION_WARNING",
+      "description": "Chrome permission warning if shown.",
+      "required": false,
+      "redaction": "No sensitive browser data."
+    }
+  ],
+  "assetCapturePending": true
+}

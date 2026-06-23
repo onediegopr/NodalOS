@@ -1,0 +1,20 @@
+{
+  "milestone": "M701",
+  "decision": "EVIDENCE_COMPLETION_PLAN_READY",
+  "userReportedWorking": true,
+  "humanEvidenceStillPartial": true,
+  "assetCapturePending": true,
+  "requiredEvidence": [
+    "Chrome extensions page with NODAL OS Public Candidate visible.",
+    "Sidepanel showing token-present state without exposing token value.",
+    "Sidepanel or runtime state showing WebSocket connected or exact state.",
+    "Runtime tab PASS/FAIL/UNKNOWN with visible errors if present.",
+    "Service Worker DevTools status for CSP violations, invalid token, close 1008, reconnect storm, and critical console errors.",
+    "Permission warning text if Chrome shows it.",
+    "Bridge liveness PASS/FAIL/UNKNOWN against localhost or 127.0.0.1 only."
+  ],
+  "fullPassNotClaimed": true,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

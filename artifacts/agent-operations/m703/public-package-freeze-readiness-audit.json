@@ -1,0 +1,17 @@
+{
+  "milestone": "M703",
+  "publicPackageFreezeReady": false,
+  "freezeReadiness": "conditional-no-go",
+  "readyItems": [
+    "public staging folder",
+    "manifest narrowing",
+    "store listing final draft",
+    "permission disclosure final draft",
+    "pre-submission checklist"
+  ],
+  "blockingItems": [
+    "human Chrome evidence still partial",
+    "asset capture pending",
+    "privacy/support/docs URLs pending"
+  ]
+}

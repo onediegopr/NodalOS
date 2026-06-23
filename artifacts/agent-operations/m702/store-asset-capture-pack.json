@@ -1,0 +1,15 @@
+{
+  "milestone": "M702",
+  "storeAssetCapturePackReady": true,
+  "assetCapturePending": true,
+  "requiredAssets": [
+    "Extension loaded screenshot",
+    "Sidepanel connected screenshot",
+    "Runtime tab evidence screenshot",
+    "Service Worker DevTools cleanliness screenshot or summary",
+    "Permission warning screenshot if shown",
+    "Final icon set",
+    "Final support/docs destination"
+  ],
+  "sensitiveAssetsRejected": true
+}

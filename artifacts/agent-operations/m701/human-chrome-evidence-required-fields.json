@@ -1,0 +1,24 @@
+{
+  "milestone": "M701",
+  "humanChromeEvidenceRequiredFieldsReady": true,
+  "fields": [
+    "Public variant loaded: true/false",
+    "Visible extension name",
+    "Loaded staging path",
+    "Manifest selection verified human: true/false/unknown",
+    "Token present UI: true/false/unknown",
+    "WebSocket connected live: true/false/unknown",
+    "Bridge liveness: PASS/FAIL/UNKNOWN",
+    "Runtime tab evidence: PASS/FAIL/UNKNOWN",
+    "Service Worker DevTools evidence: PASS/FAIL/UNKNOWN",
+    "CSP violations found: yes/no/unknown",
+    "invalid token found: yes/no/unknown",
+    "close 1008 found: yes/no/unknown",
+    "reconnect storm found: yes/no/unknown",
+    "critical console errors found: yes/no/unknown",
+    "Permission warnings captured: true/false/unknown",
+    "Screenshots available: yes/no",
+    "Evidence redacted: true/false",
+    "Secrets included: no/yes"
+  ]
+}

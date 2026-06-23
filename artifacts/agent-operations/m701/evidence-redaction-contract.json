@@ -1,0 +1,14 @@
+{
+  "milestone": "M701",
+  "evidenceRedactionContractReady": true,
+  "forbiddenInEvidence": [
+    "API keys",
+    "authorization tokens",
+    "browser session data",
+    "raw long logs",
+    "personal data",
+    "full ExtensionToken value"
+  ],
+  "ifSecretAppears": "Block package freeze and create remediation task.",
+  "evidenceRedactedRequired": true
+}

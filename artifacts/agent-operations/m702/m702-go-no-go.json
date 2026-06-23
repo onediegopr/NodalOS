@@ -1,0 +1,20 @@
+{
+  "milestone": "M702",
+  "decision": "STORE_ASSET_CAPTURE_PACK_LISTING_DISCLOSURE_READY",
+  "storeAssetCapturePackReady": true,
+  "storeListingFinalDraftReady": true,
+  "permissionDisclosureFinalReady": true,
+  "privacySupportUrlDecisionReady": true,
+  "screenshotAssetChecklistReady": true,
+  "storeAssetsReadinessRegisterReady": true,
+  "assetCapturePending": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

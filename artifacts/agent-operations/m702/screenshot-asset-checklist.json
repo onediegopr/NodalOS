@@ -1,0 +1,32 @@
+{
+  "milestone": "M702",
+  "screenshotAssetChecklistReady": true,
+  "items": [
+    {
+      "asset": "sidepanel connected/local bridge",
+      "status": "pending",
+      "required": true
+    },
+    {
+      "asset": "extension loaded in Chrome",
+      "status": "pending",
+      "required": true
+    },
+    {
+      "asset": "permissions or permission warning",
+      "status": "pending",
+      "required": true
+    },
+    {
+      "asset": "runtime tab",
+      "status": "pending",
+      "required": true
+    },
+    {
+      "asset": "service worker devtools",
+      "status": "pending",
+      "required": true
+    }
+  ],
+  "sensitiveDataRejected": true
+}

@@ -1,0 +1,33 @@
+{
+  "milestone": "M702",
+  "permissionDisclosureFinalReady": true,
+  "permissions": [
+    {
+      "permission": "storage",
+      "reason": "Stores local extension state and UI preferences."
+    },
+    {
+      "permission": "sidePanel",
+      "reason": "Displays the NODAL OS companion interface."
+    },
+    {
+      "permission": "alarms",
+      "reason": "Supports local scheduling and health checks."
+    },
+    {
+      "permission": "tabs",
+      "reason": "Supports extension UI coordination and future user-approved flows."
+    },
+    {
+      "permission": "scripting",
+      "reason": "Reserved for future user-approved flows; no automatic external injection is enabled in the public build."
+    },
+    {
+      "permission": "host_permissions",
+      "reason": "Limited to http://127.0.0.1/* and http://localhost/* for local bridge communication."
+    }
+  ],
+  "mentionsLocalhost127001": true,
+  "wildcardHostPermissions": false,
+  "explainsNoWildcards": true
+}

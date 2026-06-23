@@ -1,0 +1,32 @@
+{
+  "milestone": "M701",
+  "runtimeDevtoolsEvidenceContractReady": true,
+  "runtimeTab": {
+    "allowedValues": [
+      "PASS",
+      "FAIL",
+      "UNKNOWN"
+    ],
+    "requiredChecks": [
+      "token present UI",
+      "WebSocket connected or exact state",
+      "no reconnect storm",
+      "no invalid token",
+      "no close 1008"
+    ]
+  },
+  "serviceWorkerDevtools": {
+    "allowedValues": [
+      "PASS",
+      "FAIL",
+      "UNKNOWN"
+    ],
+    "requiredChecks": [
+      "CSP violations",
+      "invalid token",
+      "close 1008",
+      "reconnect storm",
+      "critical console errors"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M703",
+  "decision": "PRE_SUBMISSION_AUDIT_READY_ASSET_GAPS_TRACKED",
+  "evidence": "partial",
+  "assets": "partial",
+  "privacySupportUrls": "missing",
+  "listing": "ready",
+  "permissionDisclosure": "ready",
+  "publicPackageFreeze": "no-go",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "preSubmissionAuditReady": true
+}

@@ -1,0 +1,30 @@
+{
+  "milestone": "M703",
+  "preSubmissionChecklistFinalReady": true,
+  "checklist": [
+    {
+      "item": "Complete human Chrome evidence fields.",
+      "status": "open"
+    },
+    {
+      "item": "Capture manual screenshots with redaction.",
+      "status": "open"
+    },
+    {
+      "item": "Finalize privacy/support/docs URLs.",
+      "status": "open"
+    },
+    {
+      "item": "Review final store listing draft.",
+      "status": "ready-for-review"
+    },
+    {
+      "item": "Review permission disclosure final draft.",
+      "status": "ready-for-review"
+    },
+    {
+      "item": "Keep public release blocked.",
+      "status": "closed"
+    }
+  ]
+}

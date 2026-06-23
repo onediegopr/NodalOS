@@ -1,0 +1,30 @@
+{
+  "milestone": "M703",
+  "storeReadinessRiskRegisterReady": true,
+  "risks": [
+    {
+      "id": "HUMAN-EVIDENCE-PARTIAL",
+      "severity": "high",
+      "status": "open",
+      "description": "Human Chrome evidence remains incomplete."
+    },
+    {
+      "id": "ASSET-CAPTURE-PENDING",
+      "severity": "high",
+      "status": "open",
+      "description": "Required screenshots and store assets are not captured."
+    },
+    {
+      "id": "URLS-PENDING",
+      "severity": "high",
+      "status": "open",
+      "description": "Privacy, support, and docs URLs are pending."
+    },
+    {
+      "id": "STORE-SUBMISSION-NO-GO",
+      "severity": "critical-for-release",
+      "status": "open",
+      "description": "Chrome Web Store submission remains blocked."
+    }
+  ]
+}
