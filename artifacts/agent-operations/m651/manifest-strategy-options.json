@@ -1,0 +1,47 @@
+{
+  "milestone": "M651",
+  "decision": "MANIFEST_STRATEGY_OPTIONS_READY",
+  "mode": "strategy-only",
+  "options": [
+    {
+      "id": "keep_with_strong_justification",
+      "benefit": "Preserves current extension behavior and avoids implementation churn.",
+      "risk": "High public review, privacy, and user-trust burden.",
+      "implementationCost": "low",
+      "storeRisk": "high",
+      "functionalityImpact": "none in current installed extension line",
+      "recommendedForInternalCandidate": true,
+      "recommendedForPublicRelease": false,
+      "requiresManifestChange": false,
+      "requiresUserApproval": true
+    },
+    {
+      "id": "future_narrowing_patch",
+      "benefit": "Reduces Chrome Web Store and user-trust risk.",
+      "risk": "May reduce page coverage and requires full installed extension reload QA.",
+      "implementationCost": "medium",
+      "storeRisk": "medium",
+      "functionalityImpact": "possible reduction in page matching and content script reach",
+      "recommendedForInternalCandidate": false,
+      "recommendedForPublicRelease": true,
+      "requiresManifestChange": true,
+      "requiresUserApproval": true
+    },
+    {
+      "id": "split_internal_public_build",
+      "benefit": "Keeps internal evidence candidate intact while creating a safer public release path.",
+      "risk": "Requires disciplined release packaging and SKU/build separation.",
+      "implementationCost": "medium",
+      "storeRisk": "medium-low after public build strategy closes",
+      "functionalityImpact": "internal build retains current behavior; public build may use narrowed permissions",
+      "recommendedForInternalCandidate": true,
+      "recommendedForPublicRelease": true,
+      "requiresManifestChange": true,
+      "requiresUserApproval": true
+    }
+  ],
+  "recommendedStrategy": "split_internal_public_build",
+  "manifestModified": false,
+  "permissionsModified": false,
+  "publicReleaseReady": false
+}

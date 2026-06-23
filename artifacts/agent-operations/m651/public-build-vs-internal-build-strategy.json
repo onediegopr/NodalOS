@@ -1,0 +1,31 @@
+{
+  "milestone": "M651",
+  "decision": "PUBLIC_BUILD_VS_INTERNAL_BUILD_STRATEGY_READY",
+  "mode": "strategy-only",
+  "internalCandidateBuildScope": {
+    "scope": "local-first internal evidence candidate",
+    "hostPermissions": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "allowed": true,
+    "distribution": "internal evidence review only"
+  },
+  "publicCandidateBuildScope": {
+    "scope": "future public Chrome Web Store candidate",
+    "hostPermissions": "to be decided in future manifest milestone",
+    "allowed": false,
+    "distribution": "blocked until M651A/M652-M654 sequence closes"
+  },
+  "permissionDifference": "internal build may retain broad permissions; public build should either narrow permissions or carry final approved justification",
+  "evidenceDifference": [
+    "public build requires store-ready privacy/support disclosure",
+    "public build requires packaging/signing evidence",
+    "public build requires final permission justification or narrowing QA"
+  ],
+  "releaseRisk": "public release risk remains high until manifest strategy is executed",
+  "recommendedPolicy": "split_internal_public_build",
+  "manifestModified": false,
+  "permissionsModified": false,
+  "publicReleaseReady": false
+}

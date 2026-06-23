@@ -1,0 +1,35 @@
+{
+  "milestone": "M651",
+  "decision": "HOST_PERMISSIONS_IMPACT_ASSESSMENT_READY",
+  "mode": "assessment-only",
+  "currentHostPermissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "internalCandidateImpact": {
+    "status": "GO",
+    "summary": "Current broad host permissions are acceptable for internal/local-first evidence candidate with documented caveats."
+  },
+  "publicReleaseImpact": {
+    "status": "NO-GO",
+    "summary": "Public release remains blocked until host permissions are retained with final approval, narrowed, or separated by build/SKU strategy."
+  },
+  "chromeWebStoreImpact": {
+    "risk": "high-until-public-strategy-closes",
+    "requirements": [
+      "permission justification",
+      "privacy disclosure",
+      "support URL",
+      "store review evidence",
+      "package/signing evidence"
+    ]
+  },
+  "functionalityImpactIfNarrowed": [
+    "reduced page matching surface",
+    "possible reduced content script availability",
+    "requires reload QA and runtime/DevTools evidence refresh"
+  ],
+  "manifestModified": false,
+  "permissionsModified": false,
+  "productFilesModified": false
+}

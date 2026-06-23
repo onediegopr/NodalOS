@@ -1,0 +1,28 @@
+{
+  "milestone": "M651",
+  "decision": "HOST_PERMISSIONS_FINAL_DECISION_READY",
+  "mode": "decision-planning-only",
+  "currentHostPermissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "currentContentScriptMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "manifestModified": false,
+  "permissionsModified": false,
+  "hostPermissionsModified": false,
+  "productFilesModified": false,
+  "recommendedStrategy": "split_internal_public_build",
+  "internalCandidateAllowed": true,
+  "publicReleaseReady": false,
+  "publicReleaseBlockedByHostPermissions": true,
+  "requiresFutureManifestMilestone": true,
+  "recommendedNextMilestone": "M651A Host Permissions Narrowing Patch Plan",
+  "decisionRationale": [
+    "current broad permissions are acceptable for internal/local-first evidence candidate",
+    "public release still needs a safer permission posture or explicit final approval",
+    "splitting internal/public strategy avoids forcing a product change inside this decision milestone"
+  ]
+}
