@@ -1,0 +1,31 @@
+{
+  "milestone": "M644",
+  "decision": "PROVIDER_RUNTIME_PUBLIC_RELEASE_GATE_PLAN_READY",
+  "mode": "planning-only",
+  "productFilesModified": false,
+  "openAiAgentClientPresent": true,
+  "providerPromptNamingDebt": "open",
+  "providerCloudEnabled": false,
+  "runtimeProductiveEnabled": false,
+  "filesystemEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "publicReleaseReady": false,
+  "doesNotBlockEvidenceGateBecause": [
+    "installed extension Runtime and DevTools evidence is clean",
+    "provider/cloud remains disabled",
+    "runtime productive execution remains disabled"
+  ],
+  "blocksPublicReleaseUntil": [
+    "provider disabled-state proof is refreshed for final release candidate",
+    "runtime disabled-state proof is refreshed for final release candidate",
+    "provider prompt naming debt is reviewed",
+    "public release notes and privacy disclosure state provider/cloud disabled status",
+    "no API key or provider call path is enabled by default"
+  ],
+  "requiredFutureGates": [
+    "Provider Runtime Release Gate",
+    "BYOK Consent Review",
+    "Prompt Redaction Evidence Gate",
+    "Runtime Enablement Approval Gate"
+  ]
+}

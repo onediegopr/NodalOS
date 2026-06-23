@@ -1,0 +1,40 @@
+{
+  "milestone": "M644",
+  "decision": "PACKAGING_SIGNING_STORE_REVIEW_PLAN_READY",
+  "mode": "planning-only",
+  "productFilesModified": false,
+  "packagingReviewComplete": false,
+  "signingReviewComplete": false,
+  "storeReviewComplete": false,
+  "publicReleaseReady": false,
+  "requiredPackaging": [
+    "release candidate version identification",
+    "package reproducibility review",
+    "extension archive creation plan",
+    "artifact checksum plan"
+  ],
+  "signing": [
+    "Chrome Web Store signing path decision",
+    "internal distribution signing path decision",
+    "key custody and access policy"
+  ],
+  "distributionOptions": [
+    "Chrome Web Store",
+    "internal distribution",
+    "local developer install evidence only"
+  ],
+  "privacyDisclosure": "required before public release",
+  "supportUrl": "required before public release",
+  "rollbackPlan": "required before public release",
+  "releaseNotes": "required before public release",
+  "versionCandidate": "not-finalized",
+  "closureCriteria": [
+    "packaging evidence recorded",
+    "signing path approved",
+    "store listing reviewed",
+    "privacy disclosure prepared",
+    "support URL prepared",
+    "rollback plan documented",
+    "release notes drafted"
+  ]
+}

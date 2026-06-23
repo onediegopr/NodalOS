@@ -1,0 +1,44 @@
+{
+  "milestone": "M644",
+  "decision": "HOST_PERMISSIONS_REMEDIATION_PLAN_READY",
+  "mode": "planning-only",
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "productFilesModified": false,
+  "currentState": "host_permissions broad; final public release justification not closed",
+  "risk": [
+    "Chrome Web Store review surface",
+    "user trust concerns",
+    "privacy disclosure burden",
+    "support burden"
+  ],
+  "remediationOptions": [
+    {
+      "id": "retain_with_formal_justification",
+      "description": "Retain broad host permissions and produce formal release justification.",
+      "implementationImpact": "low",
+      "releaseReviewBurden": "high"
+    },
+    {
+      "id": "narrow_before_public_release",
+      "description": "Reduce host permissions in a dedicated manifest patch milestone.",
+      "implementationImpact": "medium",
+      "releaseReviewBurden": "medium"
+    },
+    {
+      "id": "local_only_limited_public_scope",
+      "description": "Define a limited local-only public release scope and defer broader permission posture.",
+      "implementationImpact": "low-medium",
+      "releaseReviewBurden": "medium"
+    }
+  ],
+  "recommendedOption": "local_only_limited_public_scope_with_possible_future_narrowing_patch",
+  "functionalImpact": "No functional change in M644. Any future host permission change requires manifest patch milestone and full installed extension QA.",
+  "closureCriteria": [
+    "host permission inventory complete",
+    "release scope decision recorded",
+    "privacy and support language prepared",
+    "dedicated QA complete if permissions change"
+  ],
+  "publicReleaseReady": false
+}

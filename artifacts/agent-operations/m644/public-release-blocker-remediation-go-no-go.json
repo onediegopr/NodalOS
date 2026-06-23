@@ -1,0 +1,42 @@
+{
+  "milestone": "M644",
+  "decision": "PUBLIC_RELEASE_BLOCKER_REMEDIATION_PLAN_READY",
+  "readyForReleaseEvidenceGate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForBrowserAutomation": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "runtimeEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "publicReleaseEnabled": false,
+  "productFilesModified": false,
+  "m644Closes": [
+    "remediation plan creation",
+    "blocker categorization",
+    "recommended remediation paths",
+    "next milestone definition"
+  ],
+  "m644LeavesOpen": [
+    "host permissions formal justification",
+    "packaging signing store review",
+    "provider runtime final disabled-state release proof",
+    "CORS LAN public release posture",
+    "microcopy final review",
+    "public release approval"
+  ],
+  "recommendedNextMilestone": "M645 Host Permissions Justification + Packaging Store Evidence Prep",
+  "percentages": {
+    "releaseCandidateEvidencePackReadiness": 100,
+    "installedExtensionEvidenceGateReadiness": 97,
+    "publicReleaseReadiness": 52,
+    "hostPermissionsReleaseReadiness": 35,
+    "packagingSigningStoreReadiness": 30,
+    "runtimeProductizationReadiness": 25,
+    "providerCloudReadiness": 18
+  }
+}
