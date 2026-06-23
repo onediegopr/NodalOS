@@ -1,0 +1,14 @@
+{
+  "devtoolsConsoleProvided": false,
+  "serviceWorkerConsoleInspected": false,
+  "afterExtensionReloadWithBridgeLive": false,
+  "cspViolationsObserved": "unknown",
+  "errConnectionRefusedObserved": "unknown",
+  "invalidTokenObserved": "unknown",
+  "policyViolation1008Observed": "unknown",
+  "bridgeWebSocketErrorRepeatedObserved": "unknown",
+  "criticalErrorsObserved": "unknown",
+  "warningsObserved": [],
+  "rawConsoleExcerptAllowed": false,
+  "manualReviewerNotes": "Service worker DevTools Console was not inspected. Browser automation could not open chrome://extensions due to browser security policy, and no manual console evidence was supplied."
+}

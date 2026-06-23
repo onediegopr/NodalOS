@@ -1,0 +1,15 @@
+{
+  "milestone": "M638A-RETRY",
+  "basedOnMilestone": "M638A",
+  "basedOnCommit": "040615e36b514403726278e93c7d44720c5df9d0",
+  "bridgeStartupAttempted": true,
+  "runbookUsed": true,
+  "bridgeStartupCommand": "dotnet run --project src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj",
+  "bridgeProcessObserved": "yes",
+  "bridgeProcessName": "OneBrain.ChromeLab.Bridge",
+  "tcpListener1270018787": "pass",
+  "bridgeLivenessAfterStartup": "pass",
+  "captureAllowed": true,
+  "reasonIfBlocked": "",
+  "manualReviewerNotes": "Bridge was started according to docs/runbooks/chrome-lab-bridge-startup-and-liveness.md. A listener was observed on 127.0.0.1:8787 and the read-only liveness script returned PASS."
+}

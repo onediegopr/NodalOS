@@ -1,0 +1,23 @@
+{
+  "milestone": "M638A-RETRY",
+  "scriptRun": true,
+  "scriptPath": "tools/scripts/bridge-liveness-check.ps1",
+  "tcp1270018787": "pass",
+  "listenerProcess": "pass",
+  "listenerProcessName": "OneBrain.ChromeLab.Bridge",
+  "healthEndpoint": "pass",
+  "runtimeEndpoint": "pass",
+  "debugEndpoint": "pass",
+  "configPublicEndpoint": "pass",
+  "wsUpgradeEndpoint": "pass",
+  "healthHttpStatus": 200,
+  "runtimeHttpStatus": 200,
+  "debugHttpStatus": 200,
+  "configPublicHttpStatus": 200,
+  "wsUpgradeStatus": "101 Switching Protocols",
+  "debugConnectedCountObserved": 1,
+  "extensionHelloObserved": true,
+  "bridgeRuntimeOk": true,
+  "bridgeLastError": null,
+  "manualReviewerNotes": "Liveness script reported RESULT: bridge is LIVE on http://127.0.0.1:8787 and /ws/extension accepts WebSocket upgrades. A later /debug read showed connectedCount=1 and an extension.hello event."
+}

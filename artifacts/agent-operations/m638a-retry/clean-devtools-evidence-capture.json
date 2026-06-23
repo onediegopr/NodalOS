@@ -1,0 +1,19 @@
+{
+  "milestone": "M638A-RETRY",
+  "decision": "CLEAN_DEVTOOLS_EVIDENCE_NOT_PROVIDED",
+  "evidenceCaptureOnly": true,
+  "productFilesModified": false,
+  "bridgeLivenessEvidence": "pass",
+  "runtimeTabEvidenceProvided": false,
+  "devtoolsConsoleEvidenceProvided": false,
+  "cspViolationCheck": "unknown",
+  "errConnectionRefusedCheck": "unknown",
+  "invalidTokenCheck": "unknown",
+  "policyViolation1008Check": "unknown",
+  "bridgeWebSocketErrorCheck": "unknown",
+  "webSocketReconnectingCheck": "unknown",
+  "criticalConsoleErrorsCheck": "unknown",
+  "warningsObserved": [],
+  "releasePublicReady": false,
+  "manualReviewerNotes": "Bridge liveness was recovered and verified. Automated Chrome access to chrome://extensions was blocked by browser security policy, and no manual Runtime tab or service worker DevTools Console evidence was provided in this turn. Console checks remain unknown and are not inferred."
+}

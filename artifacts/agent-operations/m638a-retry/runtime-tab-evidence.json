@@ -1,0 +1,13 @@
+{
+  "runtimeTabOpened": false,
+  "healthOk": "unknown",
+  "clientsObserved": "unknown",
+  "heartbeatOk": "unknown",
+  "webSocketReconnectingVisible": "unknown",
+  "bridgeWebSocketErrorVisible": "unknown",
+  "screenshotProvided": false,
+  "manualEvidenceSource": "unknown",
+  "bridgeDebugConnectedCountObserved": 1,
+  "bridgeDebugExtensionHelloObserved": true,
+  "manualReviewerNotes": "Runtime tab was not visually inspected and no screenshot was provided. Bridge /debug separately showed connectedCount=1 and extension.hello, but that is not treated as Runtime tab visual evidence."
+}

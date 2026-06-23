@@ -1,0 +1,11 @@
+{
+  "readyForReleaseEvidenceGate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "bridgeLivenessRecovered": true,
+  "cleanDevtoolsEvidenceCaptured": false,
+  "recommendedNextMilestone": "M638A-Retry Clean DevTools Evidence Capture"
+}
