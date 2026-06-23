@@ -1,0 +1,28 @@
+{
+  "milestone": "M658",
+  "decision": "PUBLIC_BUILD_CREATION_PLAN_READY",
+  "mode": "planning-only",
+  "publicBuildCreatedNow": false,
+  "recommendedCreationModel": "future_manifest_variant_patch_with_separate_public_candidate_channel",
+  "candidateOptions": [
+    "manifest_public_variant_generated_from_contract",
+    "manifest_internal_variant_preserved_from_current_baseline",
+    "build_script_selector_future",
+    "artifact_folder_separation_future",
+    "ci_build_matrix_future"
+  ],
+  "requiredBeforeCreation": [
+    "manifest_variant_contract",
+    "permissions_variant_contract",
+    "content_script_variant_contract",
+    "store_disclosure_readiness_plan",
+    "regression_qa_plan",
+    "rollback_plan"
+  ],
+  "publicReleaseReady": false,
+  "publicManifestPatchReady": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,33 @@
+{
+  "milestone": "M660",
+  "decision": "PUBLIC_BUILD_PATCH_READINESS_GATE_READY",
+  "mode": "readiness-gate-only",
+  "publicManifestPatchDecision": "CONDITIONAL_GO_FOR_M661_M663",
+  "nextMilestoneCanTouchManifest": true,
+  "currentMilestoneTouchesManifest": false,
+  "preconditionsCompleteForPlanning": true,
+  "preconditionsCompleteForPublicRelease": false,
+  "publicReleaseReady": false,
+  "internalCandidateReady": true,
+  "requiredFutureScopeLimits": [
+    "manifest_variant_patch_only",
+    "host_permissions_narrowing_only",
+    "content_scripts_matches_narrowing_only",
+    "regression_qa_required",
+    "rollback_required",
+    "no_runtime_provider_filesystem_browser_unlock"
+  ],
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "recommendedNextMilestone": "M661-M663 Public Manifest Variant Patch + Host Permissions Narrowing + Regression QA"
+}

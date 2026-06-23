@@ -1,0 +1,21 @@
+{
+  "milestone": "M659",
+  "decision": "PERMISSIONS_VARIANT_CONTRACT_READY",
+  "mode": "contract-only",
+  "permissionsChangedNow": false,
+  "hostPermissionsChangedNow": false,
+  "publicPermissionsStrategy": "narrow_default_permissions_with_optional_user_granted_site_access",
+  "activeTabRecommendedForEvaluation": true,
+  "optionalHostPermissionsRecommendedForEvaluation": true,
+  "localhostOnlyRecommendedForBridgeSurfaces": true,
+  "requiresUserApprovalForExpandedSiteAccess": true,
+  "requiresStoreDisclosure": true,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "manifestModified": false,
+  "permissionsModified": false,
+  "publicReleaseReady": false
+}

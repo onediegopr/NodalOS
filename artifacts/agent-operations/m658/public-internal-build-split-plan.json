@@ -1,0 +1,55 @@
+{
+  "milestone": "M658",
+  "decision": "PUBLIC_INTERNAL_BUILD_SPLIT_IMPLEMENTATION_PLAN_READY",
+  "mode": "planning-only",
+  "basedOnMilestone": "M655-M657",
+  "recommendedStrategy": "manifest_variant_contract_with_build_channel_boundary",
+  "internalBuildDefinition": {
+    "scope": "local-first controlled internal evidence candidate",
+    "hostPermissionsPosture": "current_wildcard_permissions_preserved_for_internal_candidate",
+    "publicDistributionAllowed": false,
+    "requiresBridgeLivenessEvidence": true,
+    "requiresRuntimeDevtoolsEvidence": true
+  },
+  "publicBuildDefinition": {
+    "scope": "future public candidate with narrowed or optional permissions",
+    "hostPermissionsPosture": "must_not_inherit_wildcard_without_separate_approval",
+    "publicDistributionAllowedNow": false,
+    "requiresFutureManifestPatch": true,
+    "requiresStoreDisclosure": true,
+    "requiresManualQa": true
+  },
+  "allowedDifferencesBetweenBuilds": [
+    "manifest_metadata_name_suffix",
+    "host_permissions_scope",
+    "content_scripts_matches_scope",
+    "optional_host_permissions_strategy",
+    "store_disclosure_text",
+    "release_channel_label"
+  ],
+  "prohibitedDifferencesBetweenBuilds": [
+    "runtime_productive_enablement",
+    "provider_cloud_enablement",
+    "filesystem_enablement",
+    "browser_automation_enablement",
+    "bridge_source_behavior_change",
+    "sidepanel_js_behavior_change_without_dedicated_milestone"
+  ],
+  "futurePatchSteps": [
+    "create_manifest_variant_contract",
+    "define_public_target_shape",
+    "define_internal_preservation_contract",
+    "run_manifest_patch_readiness_gate",
+    "implement_public_variant_in_m661_m663_only_after_explicit_approval",
+    "run_regression_qa_and_rollback_verification"
+  ],
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "productFilesModified": false,
+  "publicReleaseReady": false,
+  "internalCandidateReady": true
+}

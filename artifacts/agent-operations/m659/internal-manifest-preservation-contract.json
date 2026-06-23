@@ -1,0 +1,22 @@
+{
+  "milestone": "M659",
+  "decision": "INTERNAL_MANIFEST_PRESERVATION_CONTRACT_READY",
+  "mode": "contract-only",
+  "preserveInternalManifestNow": true,
+  "currentInternalHostPermissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "currentInternalContentScriptsMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "allowedScope": "controlled_internal_candidate_only",
+  "publicReleaseAllowedFromInternalManifest": false,
+  "requiresSeparatePublicVariant": true,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "productFilesModified": false
+}

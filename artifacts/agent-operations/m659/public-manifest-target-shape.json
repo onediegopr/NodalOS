@@ -1,0 +1,37 @@
+{
+  "milestone": "M659",
+  "decision": "PUBLIC_MANIFEST_TARGET_SHAPE_READY",
+  "mode": "contract-only",
+  "publicBuildCreatedNow": false,
+  "targetHostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "targetOptionalHostPermissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "targetContentScriptsMatches": [
+    "user_granted_origins_future",
+    "or_explicit_public_allowlist_future"
+  ],
+  "activeTabConsidered": true,
+  "optionalHostPermissionsConsidered": true,
+  "localhostOnlyConsidered": true,
+  "disabledFunctionsInPublicBuildUntilGranted": [
+    "automatic_cross_site_content_script_coverage",
+    "future_browser_automation_on_ungranted_origins",
+    "future_workspace_filesystem_integration",
+    "provider_cloud_execution"
+  ],
+  "requiredMicrocopy": [
+    "public_build_requires_user_granted_site_access_for_site_specific_features",
+    "runtime_provider_filesystem_features_remain_disabled",
+    "internal_candidate_has_broader_permissions_than_public_candidate"
+  ],
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "publicReleaseReady": false
+}

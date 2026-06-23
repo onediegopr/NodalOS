@@ -1,0 +1,35 @@
+{
+  "milestone": "M660",
+  "decision": "PATCH_PREREQUISITES_CHECKLIST_READY",
+  "mode": "planning-only",
+  "items": [
+    {
+      "id": "PATCH-PREQ-INTERNAL-BASELINE",
+      "status": "ready",
+      "description": "Internal candidate baseline is preserved and remains the rollback target."
+    },
+    {
+      "id": "PATCH-PREQ-PUBLIC-TARGET-SHAPE",
+      "status": "ready",
+      "description": "Public manifest target shape is defined as a contract, not yet applied."
+    },
+    {
+      "id": "PATCH-PREQ-CONTENT-SCRIPT-STRATEGY",
+      "status": "ready",
+      "description": "Content script narrowing or user-granted origin strategy is defined."
+    },
+    {
+      "id": "PATCH-PREQ-STORE-DISCLOSURE",
+      "status": "ready_for_draft",
+      "description": "Store disclosure plan is ready but final store text requires future review."
+    },
+    {
+      "id": "PATCH-PREQ-REGRESSION-QA",
+      "status": "ready_for_future_execution",
+      "description": "Regression QA plan is defined and must run after any patch."
+    }
+  ],
+  "manifestModified": false,
+  "publicReleaseReady": false,
+  "recommendedNextMilestone": "M661-M663 Public Manifest Variant Patch + Host Permissions Narrowing + Regression QA"
+}

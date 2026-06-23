@@ -1,0 +1,31 @@
+{
+  "milestone": "M658-M660",
+  "decision": "PUBLIC_INTERNAL_BUILD_SPLIT_PLAN_READY",
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "publicBuildStrategyReady": true,
+  "publicManifestPatchReady": true,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "recommendedNextMilestone": "M661-M663 Public Manifest Variant Patch + Host Permissions Narrowing + Regression QA",
+  "percentages": {
+    "internalCandidateReadiness": 95,
+    "publicBuildStrategyReadiness": 91,
+    "publicManifestPatchReadiness": 82,
+    "publicReleaseReadiness": 75,
+    "hostPermissionsReleaseReadiness": 88,
+    "packagingSigningStoreReadiness": 72,
+    "runtimeProductizationReadiness": 30,
+    "providerCloudReadiness": 22
+  }
+}

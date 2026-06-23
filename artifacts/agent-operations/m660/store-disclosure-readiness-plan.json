@@ -1,0 +1,27 @@
+{
+  "milestone": "M660",
+  "decision": "STORE_DISCLOSURE_READINESS_PLAN_READY",
+  "mode": "planning-only",
+  "storeDisclosureFinalReady": false,
+  "requiredDisclosureTopics": [
+    "local_first_bridge_dependency",
+    "host_permissions_or_optional_site_access",
+    "why_content_script_access_is_requested",
+    "provider_cloud_disabled_for_release",
+    "runtime_productive_disabled_for_release",
+    "filesystem_disabled_for_release",
+    "support_and_rollback_process"
+  ],
+  "requiredBeforePublicRelease": [
+    "final_permission_justification",
+    "privacy_disclosure_review",
+    "support_url_ready",
+    "screenshots_ready",
+    "store_listing_review",
+    "final_public_release_audit"
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "manifestModified": false,
+  "permissionsModified": false
+}

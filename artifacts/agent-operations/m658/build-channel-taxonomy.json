@@ -1,0 +1,32 @@
+{
+  "milestone": "M658",
+  "decision": "BUILD_CHANNEL_TAXONOMY_READY",
+  "mode": "planning-only",
+  "channels": [
+    {
+      "channel": "internal_candidate",
+      "audience": "controlled internal evidence users",
+      "distribution": "local-first internal distribution",
+      "hostPermissionsPolicy": "current broad permissions documented and justified for internal candidate",
+      "publicReleaseAllowed": false
+    },
+    {
+      "channel": "public_candidate",
+      "audience": "future public QA and store review",
+      "distribution": "not created yet",
+      "hostPermissionsPolicy": "narrowed or optional permissions required",
+      "publicReleaseAllowed": false
+    },
+    {
+      "channel": "public_release",
+      "audience": "public Chrome Web Store users",
+      "distribution": "blocked until final public release audit",
+      "hostPermissionsPolicy": "must satisfy final store disclosure and permission strategy",
+      "publicReleaseAllowed": false
+    }
+  ],
+  "recommendedChannelBoundary": "internal_candidate_and_public_candidate_must_remain_distinct",
+  "manifestModified": false,
+  "permissionsModified": false,
+  "productFilesModified": false
+}

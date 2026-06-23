@@ -1,0 +1,34 @@
+{
+  "milestone": "M658",
+  "decision": "INTERNAL_BUILD_PRESERVATION_PLAN_READY",
+  "mode": "planning-only",
+  "preserveCurrentInternalCandidate": true,
+  "preservedEvidence": [
+    "M638 installed extension release evidence gate",
+    "M638A manual retry clean runtime devtools evidence",
+    "M652-M654 internal candidate package audit"
+  ],
+  "preservedManifestPosture": {
+    "host_permissions": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "content_scripts_matches": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "allowedOnlyForInternalCandidate": true
+  },
+  "preservationRules": [
+    "do_not_mutate_current_manifest_in_planning_milestones",
+    "do_not_relabel_internal_candidate_as_public_release",
+    "do_not_enable_runtime_provider_filesystem_or_browser_automation",
+    "require_regression_qa_after_any_future_manifest_variant_patch"
+  ],
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "productFilesModified": false
+}

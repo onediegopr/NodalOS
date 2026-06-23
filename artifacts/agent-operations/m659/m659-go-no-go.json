@@ -1,0 +1,23 @@
+{
+  "milestone": "M659",
+  "decision": "MANIFEST_VARIANT_CONTRACT_READY",
+  "manifestVariantContractReady": true,
+  "publicManifestTargetShapeReady": true,
+  "internalManifestPreservationContractReady": true,
+  "contentScriptVariantContractReady": true,
+  "permissionsVariantContractReady": true,
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false
+}

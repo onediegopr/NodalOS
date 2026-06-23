@@ -1,0 +1,32 @@
+{
+  "milestone": "M659",
+  "decision": "MANIFEST_VARIANT_CONTRACT_READY",
+  "mode": "contract-only",
+  "internalManifestShape": "preserve_current_internal_candidate_manifest_baseline",
+  "publicManifestShape": "future_narrow_or_optional_permissions_public_variant",
+  "recommendedTarget": "split_internal_public_build_with_public_optional_permissions_and_narrow_default_matches",
+  "allowedVariantDifferences": [
+    "name_or_short_name_channel_suffix",
+    "host_permissions",
+    "optional_host_permissions",
+    "content_scripts_matches",
+    "externally_visible_release_notes",
+    "store_disclosure_text"
+  ],
+  "mustRemainIdentical": [
+    "runtime_disabled_posture",
+    "provider_cloud_disabled_posture",
+    "filesystem_disabled_posture",
+    "bridge_protocol_contract",
+    "sidepanel_feature_gate_behavior_unless_future_milestone_approves_change"
+  ],
+  "requiresManualQa": true,
+  "requiresStoreDisclosure": true,
+  "requiresRollbackPlan": true,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "productFilesModified": false,
+  "publicReleaseReady": false
+}

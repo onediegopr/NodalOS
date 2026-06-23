@@ -1,0 +1,22 @@
+{
+  "milestone": "M658",
+  "decision": "PUBLIC_INTERNAL_BUILD_SPLIT_IMPLEMENTATION_PLAN_READY",
+  "publicInternalBuildSplitPlanReady": true,
+  "buildChannelTaxonomyReady": true,
+  "internalBuildPreservationPlanReady": true,
+  "publicBuildCreationPlanReady": true,
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,27 @@
+{
+  "milestone": "M659",
+  "decision": "CONTENT_SCRIPT_VARIANT_CONTRACT_READY",
+  "mode": "contract-only",
+  "currentInternalMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "futurePublicMatchesStrategy": "narrow_default_matches_or_user_granted_origins",
+  "futurePublicMatchesOptions": [
+    "localhost_only_no_content_script_for_external_sites",
+    "explicit_public_allowlist",
+    "optional_host_permissions_with_user_granted_origins",
+    "activeTab_triggered_interaction_future"
+  ],
+  "qaRequired": [
+    "allowed_origin_content_script_loads",
+    "disallowed_origin_content_script_absent",
+    "sidepanel_runtime_tab_still_operates",
+    "service_worker_console_clean",
+    "no_runtime_provider_filesystem_unlock"
+  ],
+  "contentScriptsMatchesModified": false,
+  "manifestModified": false,
+  "jsModified": false,
+  "publicReleaseReady": false
+}

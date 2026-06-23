@@ -1,0 +1,25 @@
+{
+  "milestone": "M660",
+  "decision": "ROLLBACK_PLAN_FOR_MANIFEST_SPLIT_READY",
+  "mode": "planning-only",
+  "rollbackTarget": "current_internal_candidate_manifest_baseline",
+  "rollbackTriggers": [
+    "extension_reload_regression",
+    "runtime_tab_regression",
+    "service_worker_console_error",
+    "content_script_allowed_origin_regression",
+    "unexpected_permission_prompt",
+    "runtime_provider_filesystem_browser_unlock_detected"
+  ],
+  "rollbackSteps": [
+    "stop_public_variant_distribution",
+    "restore_internal_candidate_manifest_baseline",
+    "rerun_build_and_safety_tests",
+    "rerun_installed_extension_reload_qa",
+    "invalidate_public_patch_evidence_until_retested"
+  ],
+  "rollbackRequiresPublicReleaseStop": true,
+  "publicReleaseReady": false,
+  "manifestModified": false,
+  "productFilesModified": false
+}

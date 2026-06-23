@@ -1,0 +1,33 @@
+{
+  "milestone": "M660",
+  "decision": "PUBLIC_BUILD_REGRESSION_QA_PLAN_READY",
+  "mode": "planning-only",
+  "qaRequired": [
+    "dotnet_build",
+    "filtered_safety_tests",
+    "full_dotnet_test_suite",
+    "product_boundary_status",
+    "installed_extension_reload",
+    "runtime_tab_health",
+    "service_worker_devtools_console",
+    "allowed_origin_content_script_check",
+    "disallowed_origin_negative_check",
+    "rollback_verification"
+  ],
+  "manualEvidenceRequired": [
+    "runtime_tab_screenshot_or_report",
+    "service_worker_devtools_clean_console_report",
+    "content_script_allowed_origin_report",
+    "content_script_disallowed_origin_report"
+  ],
+  "mustRemainDisabled": [
+    "runtime_productive",
+    "provider_cloud",
+    "filesystem",
+    "browser_automation",
+    "capability_unlock"
+  ],
+  "manifestModified": false,
+  "productFilesModified": false,
+  "publicReleaseReady": false
+}
