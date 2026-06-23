@@ -1,0 +1,22 @@
+{
+  "milestone": "M719A",
+  "decision": "PRE_M719_CONTINUITY_GATE_READY",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "worktreeClean": true,
+  "browserConsentM21Resolved": true,
+  "chromeTempProfileIssueResolved": true,
+  "buildPassed": true,
+  "targetedCleanupTestPassed": true,
+  "fullSuitePassed": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "recommendedNextMilestone": "M719-M721 Asset/URL Completion Retry"
+}

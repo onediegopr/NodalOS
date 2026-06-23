@@ -1,0 +1,23 @@
+{
+  "milestone": "M719A",
+  "phase": "chrome_temp_profile_diagnosis",
+  "originalFailure": "BrowserRuntimeSmokeCleanupLeavesNoManagedProcessPortOrProfile detected onebrain-cdp-* temp profile locked by Chromium",
+  "testOwnedProfilesFound": true,
+  "testOwnedChromeFound": true,
+  "testOwnedChromeCriteria": [
+    "chrome.exe",
+    "--headless=new",
+    "--remote-debugging-port",
+    "--user-data-dir under %TEMP% with onebrain-cdp-*"
+  ],
+  "lingeringValidationProcessesFound": true,
+  "lingeringValidationProcesses": [
+    "dotnet test .\\OneBrain.slnx --no-build",
+    "dotnet test .\\tests\\OneBrain.Safety.Tests\\OneBrain.Safety.Tests.csproj --no-build --logger console;verbosity=detailed",
+    "vstest.console.dll for OneBrain.Safety.Tests",
+    "testhost.exe for OneBrain.Safety.Tests"
+  ],
+  "chromeGeneralUserProcessesClosed": false,
+  "userProfileDirectoriesTouched": false,
+  "diagnosis": "environmental_residue_from_test_validation_processes"
+}

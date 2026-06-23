@@ -1,0 +1,9 @@
+{
+  "file": "tests/OneBrain.Safety.Tests/BrowserConsentM21Tests.cs",
+  "wasModified": true,
+  "belongsToCurrentBlock": false,
+  "resolution": "reverted",
+  "reason": "The change was a staged out-of-scope test stabilization unrelated to M716-M718 naming continuity or M719A hygiene. User instruction preferred reverting accidental/out-of-scope changes unless strictly justified.",
+  "commandUsed": "git checkout -- tests/OneBrain.Safety.Tests/BrowserConsentM21Tests.cs",
+  "postResolutionDirty": false
+}

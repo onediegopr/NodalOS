@@ -1,0 +1,18 @@
+{
+  "milestone": "M719A",
+  "file": "tests/OneBrain.Safety.Tests/BrowserConsentM21Tests.cs",
+  "diffReviewed": true,
+  "diffSummary": {
+    "testName": "BrowserConsentExpiredGrantBlocksCapability",
+    "originalTtl": "TimeSpan.FromMilliseconds(1)",
+    "modifiedTtl": "TimeSpan.FromSeconds(1)",
+    "originalClock": "DateTimeOffset.UtcNow inline",
+    "modifiedClock": "decidedAt fixed timestamp",
+    "behavioralIntent": "stabilize expiry assertion timing"
+  },
+  "belongsToCurrentBlock": false,
+  "belongsToM716M718": false,
+  "requiredForM719A": false,
+  "classification": "out_of_scope_staged_change",
+  "decision": "revert_only_this_file"
+}
