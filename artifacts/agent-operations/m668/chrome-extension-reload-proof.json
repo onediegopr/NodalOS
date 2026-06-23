@@ -1,0 +1,9 @@
+{
+  "milestone": "M668",
+  "decision": "CHROME_EXTENSION_RELOAD_PROOF_NOT_EXECUTED_ENVIRONMENT_REQUIRED",
+  "chromeExtensionReloadExecuted": false,
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "reason": "chrome://extensions was blocked by the browser automation URL policy.",
+  "publicReleaseReady": false
+}

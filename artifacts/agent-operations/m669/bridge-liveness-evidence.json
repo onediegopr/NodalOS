@@ -1,0 +1,11 @@
+{
+  "milestone": "M669",
+  "decision": "BRIDGE_LIVENESS_EVIDENCE_NOT_EXECUTED_FOR_PUBLIC_VARIANT_ENVIRONMENT_REQUIRED",
+  "bridgeLivenessEvidenceReady": false,
+  "bridgeExpectedAlive": "unknown",
+  "errConnectionRefusedFound": "unknown",
+  "reason": "Public variant was not loaded, so bridge liveness could not be tied to public variant Runtime tab evidence.",
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "publicReleaseReady": false
+}

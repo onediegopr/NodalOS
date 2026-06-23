@@ -1,0 +1,16 @@
+{
+  "milestone": "M670",
+  "decision": "CHROME_WEB_STORE_NO_GO_CLOSURE_READY",
+  "chromeWebStoreReady": false,
+  "chromeWebStoreUploadPerformed": false,
+  "publicReleaseReady": false,
+  "storeDisclosurePrepExists": true,
+  "remainingStoreGaps": [
+    "manual_qa_evidence",
+    "runtime_devtools_evidence",
+    "permission_warning_capture",
+    "screenshots_assets",
+    "privacy_support_urls",
+    "final_package_audit_after_manual_qa"
+  ]
+}

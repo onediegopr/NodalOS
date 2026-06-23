@@ -1,0 +1,12 @@
+{
+  "milestone": "M668",
+  "decision": "PUBLIC_VARIANT_LOAD_PROOF_CONDITIONAL_READY_ENVIRONMENT_REQUIRED",
+  "publicVariantLoaded": false,
+  "manualQaEnvironmentAvailable": false,
+  "manualQaExecuted": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "visibleNameConfirmed": false,
+  "expectedVisibleName": "NODAL OS Public Candidate",
+  "knownLimitationsRecorded": true,
+  "publicReleaseReady": false
+}

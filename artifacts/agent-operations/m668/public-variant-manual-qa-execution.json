@@ -1,0 +1,23 @@
+{
+  "milestone": "M668",
+  "decision": "PUBLIC_VARIANT_MANUAL_QA_CONDITIONAL_READY_ENVIRONMENT_REQUIRED",
+  "manualQaEnvironmentAvailable": false,
+  "manualQaExecuted": false,
+  "manualQaPassed": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "exactReason": "Browser automation rejected navigation to chrome://extensions under its URL security policy, so the public variant could not be loaded or inspected in Chrome from this environment.",
+  "stagingPrepared": true,
+  "stagingPath": "%TEMP%/nodal-os-public-candidate-m668",
+  "temporaryStagingCleanedUpAfterAttempt": true,
+  "stagedManifestSource": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "stagedManifestValid": true,
+  "chromeExtensionsPageAccessible": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "nextSteps": [
+    "run manual QA in an environment that allows chrome://extensions",
+    "load the public candidate staging directory",
+    "capture Runtime tab and Service Worker DevTools evidence",
+    "record permission warnings and origin checks"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M670",
+  "decision": "PACKAGE_CONTENTS_FINAL_AUDIT_CONDITIONAL_READY_ENVIRONMENT_REQUIRED",
+  "packageContentsFinalAuditReady": true,
+  "finalSignedPackageCreated": false,
+  "publicPackageCandidateReady": true,
+  "expectedEffectiveManifest": "manifest.public.json staged as manifest.json",
+  "internalManifestIncludedAsEffectivePublicManifest": false,
+  "secretsLogsTempUserDataExcludedByContract": true,
+  "checksumsFinalReady": false,
+  "manualQaEnvironmentAvailable": false,
+  "publicReleaseReady": false
+}

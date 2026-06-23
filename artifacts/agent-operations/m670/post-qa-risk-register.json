@@ -1,0 +1,32 @@
+{
+  "milestone": "M670",
+  "decision": "POST_QA_RISK_REGISTER_READY",
+  "risks": [
+    {
+      "id": "POSTQA-MANUAL-ENVIRONMENT",
+      "severity": "critical-for-public-release",
+      "status": "open",
+      "description": "Manual QA environment is required because chrome://extensions cannot be automated in this environment."
+    },
+    {
+      "id": "POSTQA-RUNTIME-DEVTOOLS-EVIDENCE",
+      "severity": "critical-for-public-release",
+      "status": "open",
+      "description": "Runtime tab and Service Worker DevTools evidence must be captured with the public variant loaded."
+    },
+    {
+      "id": "POSTQA-PERMISSION-WARNINGS",
+      "severity": "medium",
+      "status": "open",
+      "description": "Permission warning evidence must be captured from the public variant package candidate."
+    },
+    {
+      "id": "POSTQA-PACKAGE-CHECKSUMS",
+      "severity": "medium",
+      "status": "open",
+      "description": "Final package checksums are not ready because no final package was created."
+    }
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

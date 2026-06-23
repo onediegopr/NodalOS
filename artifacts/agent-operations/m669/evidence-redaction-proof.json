@@ -1,0 +1,12 @@
+{
+  "milestone": "M669",
+  "decision": "EVIDENCE_REDACTION_PROOF_READY",
+  "evidenceRedacted": true,
+  "screenshotsCaptured": false,
+  "rawSecretsIncluded": false,
+  "rawApiKeysIncluded": false,
+  "longRawLogsIncluded": false,
+  "personalUserDataIncluded": false,
+  "rawConsoleExcerptAllowed": false,
+  "publicReleaseReady": false
+}

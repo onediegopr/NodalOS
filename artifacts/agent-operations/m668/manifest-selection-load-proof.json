@@ -1,0 +1,16 @@
+{
+  "milestone": "M668",
+  "decision": "MANIFEST_SELECTION_LOAD_PROOF_STATIC_READY",
+  "manifestSelectionVerified": true,
+  "publicManifestUsedForPublicPackageCandidate": true,
+  "publicManifestPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "internalManifestPath": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "stagedManifestSource": "manifest.public.json",
+  "stagedManifestEffectiveName": "manifest.json",
+  "stagedManifestValid": true,
+  "temporaryStagingCleanedUpAfterAttempt": true,
+  "internalManifestPreserved": true,
+  "publicHostPermissionsNarrowed": true,
+  "manualLoadVerifiedInChrome": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED"
+}

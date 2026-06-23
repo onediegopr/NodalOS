@@ -1,0 +1,14 @@
+{
+  "milestone": "M669",
+  "decision": "SERVICE_WORKER_DEVTOOLS_EVIDENCE_NOT_CAPTURED_ENVIRONMENT_REQUIRED",
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "serviceWorkerDevtoolsOpened": false,
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "policyViolation1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "publicReleaseReady": false
+}

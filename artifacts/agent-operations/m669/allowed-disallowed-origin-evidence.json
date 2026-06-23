@@ -1,0 +1,18 @@
+{
+  "milestone": "M669",
+  "decision": "ALLOWED_DISALLOWED_ORIGIN_EVIDENCE_NOT_CAPTURED_ENVIRONMENT_REQUIRED",
+  "allowedLocalOriginsEvidenceReady": false,
+  "disallowedExternalOriginsEvidenceReady": false,
+  "allowedOriginsExpected": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "disallowedExternalWildcardsExpected": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "automaticContentScriptsExpected": false,
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "publicReleaseReady": false
+}

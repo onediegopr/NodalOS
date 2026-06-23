@@ -1,0 +1,12 @@
+{
+  "milestone": "M669",
+  "decision": "RUNTIME_TAB_EVIDENCE_NOT_CAPTURED_ENVIRONMENT_REQUIRED",
+  "runtimeTabEvidenceReady": false,
+  "runtimeTabVisible": "unknown",
+  "runtimeTabLoadable": "unknown",
+  "criticalErrorsFound": "unknown",
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "runtimeProductiveEnabled": false,
+  "publicReleaseReady": false
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M669",
+  "decision": "CSP_CONSOLE_EVIDENCE_NOT_CAPTURED_ENVIRONMENT_REQUIRED",
+  "cspConsoleEvidenceReady": false,
+  "cspViolationsFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "reconnectStormFound": "unknown",
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "rawConsoleExcerptAllowed": false,
+  "publicReleaseReady": false
+}

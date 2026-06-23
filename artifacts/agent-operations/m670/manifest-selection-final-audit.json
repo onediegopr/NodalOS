@@ -1,0 +1,14 @@
+{
+  "milestone": "M670",
+  "decision": "MANIFEST_SELECTION_FINAL_AUDIT_READY",
+  "manifestSelectionVerified": true,
+  "publicManifestUsedForPublicPackageCandidate": true,
+  "publicManifestPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "internalManifestPath": "browser-extension/onebrain-chrome-lab/manifest.json",
+  "internalManifestPreserved": true,
+  "publicHostPermissionsNarrowed": true,
+  "publicContentScriptMatchesNarrowed": true,
+  "manualLoadVerifiedInChrome": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "publicReleaseReady": false
+}

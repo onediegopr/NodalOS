@@ -1,0 +1,16 @@
+{
+  "milestone": "M670",
+  "decision": "PUBLIC_RELEASE_NO_GO_CLOSURE_READY",
+  "publicReleaseReady": false,
+  "manualQaExecuted": false,
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "blockingReasons": [
+    "manual_qa_environment_required",
+    "runtime_tab_evidence_not_captured",
+    "service_worker_devtools_evidence_not_captured",
+    "permission_warnings_not_captured",
+    "final_package_not_signed",
+    "chrome_web_store_not_ready"
+  ]
+}
