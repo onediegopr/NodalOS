@@ -1,0 +1,7 @@
+{
+  "milestone": "M715",
+  "publicPackageFreezeDecision": "NO-GO",
+  "publicPackageFreezeReady": false,
+  "reason": "P0 blockers remain open: assets, full evidence, privacy URL, support URL, and final freeze.",
+  "zipFinalSignedCreated": false
+}

@@ -1,0 +1,15 @@
+{
+  "milestone": "M715",
+  "decision": "PACKAGE_FREEZE_FINAL_READINESS_CONDITIONAL_BLOCKERS_PENDING",
+  "p0BlockersClosed": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

@@ -1,0 +1,8 @@
+{
+  "milestone": "M715",
+  "checksumFinalReadiness": "planned",
+  "algorithm": "SHA-256",
+  "finalChecksumCalculated": false,
+  "reasonNotCalculated": "No final frozen package artifact is created in M713-M715.",
+  "readyForFutureFreeze": true
+}

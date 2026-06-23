@@ -1,0 +1,6 @@
+{
+  "milestone": "M715",
+  "chromeWebStoreReady": false,
+  "reason": "Chrome Web Store cannot proceed without privacy/support URLs, screenshots/assets, full evidence, and package freeze.",
+  "storeUploadPerformed": false
+}

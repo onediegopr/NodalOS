@@ -1,0 +1,16 @@
+{
+  "milestone": "M714",
+  "decision": "URL_BLOCKERS_REMAIN_PENDING",
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

@@ -1,0 +1,14 @@
+{
+  "milestone": "M714",
+  "decision": "URL_BLOCKERS_REMAIN_PENDING",
+  "privacyUrlStatus": "pending",
+  "supportUrlStatus": "pending",
+  "docsUrlStatus": "pending",
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "placeholdersUsedAsReady": false,
+  "publicFreezeFinalReady": false,
+  "chromeWebStoreReady": false,
+  "publicReleaseReady": false
+}

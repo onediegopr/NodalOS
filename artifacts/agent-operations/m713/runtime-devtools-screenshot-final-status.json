@@ -1,0 +1,10 @@
+{
+  "milestone": "M713",
+  "runtimeTabStatus": "pending",
+  "serviceWorkerDevtoolsStatus": "pending",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "cannotDeclarePassWithoutEvidence": true
+}

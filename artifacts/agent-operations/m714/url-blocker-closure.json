@@ -1,0 +1,9 @@
+{
+  "milestone": "M714",
+  "urlBlockersClosed": false,
+  "privacyUrlMissingBlocksStoreFinal": true,
+  "supportUrlMissingBlocksStoreFinal": true,
+  "docsUrlPendingIsP2": true,
+  "publicFreezeFinalRemainsNoGo": true,
+  "chromeWebStoreReady": false
+}

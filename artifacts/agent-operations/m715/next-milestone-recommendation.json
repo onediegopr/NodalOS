@@ -1,0 +1,5 @@
+{
+  "milestone": "M715",
+  "recommendedNextMilestone": "M716-M718 Asset/URL Completion Retry",
+  "rationale": "P0 blockers remain open; no technical remediation blocker was found."
+}

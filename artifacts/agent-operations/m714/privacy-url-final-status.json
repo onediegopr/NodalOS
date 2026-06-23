@@ -1,0 +1,9 @@
+{
+  "milestone": "M714",
+  "privacyUrlStatus": "pending",
+  "privacyUrlReady": false,
+  "url": null,
+  "blocksStoreFinal": true,
+  "blocksPackageFreezeFinal": true,
+  "doNotUsePlaceholderAsReady": true
+}

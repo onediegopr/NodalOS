@@ -1,0 +1,6 @@
+{
+  "milestone": "M715",
+  "publicReleaseReady": false,
+  "reason": "Public release cannot proceed while P0 package freeze blockers remain open.",
+  "releasePublished": false
+}

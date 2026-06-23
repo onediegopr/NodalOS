@@ -1,0 +1,22 @@
+{
+  "milestone": "M715",
+  "storeSubmissionBlockersClosed": false,
+  "openP0Blockers": [
+    "privacy URL missing",
+    "support URL missing",
+    "screenshots/assets missing",
+    "final public package freeze not done",
+    "full manual evidence still partial"
+  ],
+  "openP1Blockers": [
+    "permission warning capture unknown",
+    "Runtime/DevTools evidence incomplete",
+    "final external listing not applied",
+    "final naming not applied to Store package if needed"
+  ],
+  "openP2Blockers": [
+    "docs URL pending",
+    "promo assets pending",
+    "checksum final not calculated"
+  ]
+}

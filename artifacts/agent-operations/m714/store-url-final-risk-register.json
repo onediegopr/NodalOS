@@ -1,0 +1,24 @@
+{
+  "milestone": "M714",
+  "risks": [
+    {
+      "id": "M714-R1",
+      "risk": "Privacy URL remains missing.",
+      "severity": "P0",
+      "status": "open"
+    },
+    {
+      "id": "M714-R2",
+      "risk": "Support URL remains missing.",
+      "severity": "P0",
+      "status": "open"
+    },
+    {
+      "id": "M714-R3",
+      "risk": "Docs URL remains pending.",
+      "severity": "P2",
+      "status": "open"
+    }
+  ],
+  "storeUrlBlockersClosed": false
+}

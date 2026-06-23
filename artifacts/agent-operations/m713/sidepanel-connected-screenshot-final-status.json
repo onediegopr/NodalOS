@@ -1,0 +1,8 @@
+{
+  "milestone": "M713",
+  "status": "pending",
+  "requiredBeforeFinalFreeze": true,
+  "mustRedactToken": true,
+  "mustShowTokenPresentWithoutValue": true,
+  "mustShowWebSocketOrExactState": true
+}

@@ -1,0 +1,34 @@
+{
+  "milestone": "M715",
+  "items": [
+    {
+      "item": "human evidence complete",
+      "ready": false
+    },
+    {
+      "item": "screenshots/assets complete",
+      "ready": false
+    },
+    {
+      "item": "privacy URL ready",
+      "ready": false
+    },
+    {
+      "item": "support URL ready",
+      "ready": false
+    },
+    {
+      "item": "staging manifest audited",
+      "ready": true
+    },
+    {
+      "item": "package exclusions audited",
+      "ready": true
+    },
+    {
+      "item": "checksum plan ready",
+      "ready": true
+    }
+  ],
+  "finalFreezeReady": false
+}

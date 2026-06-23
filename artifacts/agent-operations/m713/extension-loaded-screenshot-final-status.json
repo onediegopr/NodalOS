@@ -1,0 +1,7 @@
+{
+  "milestone": "M713",
+  "status": "pending",
+  "requiredBeforeFinalFreeze": true,
+  "expectedVisibleName": "NODAL OS Public Candidate",
+  "expectedSource": "artifacts/manual-qa/public-variant-staging"
+}

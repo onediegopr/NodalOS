@@ -1,0 +1,13 @@
+{
+  "milestone": "M715",
+  "decision": "PACKAGE_FREEZE_FINAL_READINESS_CONDITIONAL_BLOCKERS_PENDING",
+  "p0BlockersClosed": false,
+  "evidenceAssetsReady": "partial",
+  "privacySupportUrlsReady": false,
+  "packageFreezeFinalReadiness": "conditional",
+  "checksumReadiness": "planned",
+  "publicPackageFreeze": "NO-GO",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "criticalTechnicalBlockersFound": false
+}

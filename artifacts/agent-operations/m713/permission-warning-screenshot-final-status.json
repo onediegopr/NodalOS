@@ -1,0 +1,7 @@
+{
+  "milestone": "M713",
+  "status": "unknown",
+  "captureIfShown": true,
+  "notShownAcceptedOnlyWithHumanConfirmation": true,
+  "blocksFinalFreezeUntilKnown": true
+}
