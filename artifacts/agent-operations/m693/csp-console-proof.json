@@ -1,0 +1,8 @@
+{
+  "milestone": "M693",
+  "artifact": "csp-console-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "cspViolationsFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "reason": "No extension page or service worker console was available."
+}

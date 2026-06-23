@@ -1,0 +1,8 @@
+{
+  "milestone": "M693",
+  "artifact": "runtime-tab-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "runtimeTabEvidence": "UNKNOWN",
+  "runtimeTabEvidenceReady": false,
+  "reason": "Extension sidepanel/runtime tab was not reachable."
+}

@@ -1,0 +1,9 @@
+{
+  "milestone": "M692",
+  "artifact": "public-extension-visible-proof",
+  "publicExtensionVisible": false,
+  "visibleExtensionName": "unknown",
+  "expectedExtensionName": "NODAL OS Public Candidate",
+  "nameVerified": false,
+  "reason": "Embedded browser could not access chrome://extensions."
+}

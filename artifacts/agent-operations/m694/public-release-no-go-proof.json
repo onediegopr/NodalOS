@@ -1,0 +1,13 @@
+{
+  "milestone": "M694",
+  "artifact": "public-release-no-go-proof",
+  "publicReleaseReady": false,
+  "releaseGate": "NO_GO",
+  "blockingReason": "Embedded Chrome QA did not produce live load, token, WebSocket, runtime, DevTools, CSP, or permission evidence.",
+  "requiresExternalManualChromeQa": true,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

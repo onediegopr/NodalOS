@@ -1,0 +1,28 @@
+{
+  "milestone": "M694",
+  "artifact": "post-embedded-chrome-risk-register",
+  "risks": [
+    {
+      "id": "M692-R1",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "title": "Embedded Chrome cannot access chrome extensions management UI",
+      "impact": "Load unpacked and extension inspection cannot be completed in this browser surface."
+    },
+    {
+      "id": "M693-R1",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "title": "Live token and WebSocket evidence unavailable",
+      "impact": "Token present UI, live WebSocket connection, runtime tab, and DevTools checks remain unverified."
+    },
+    {
+      "id": "M694-R1",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "title": "Public package freeze blocked",
+      "impact": "Public release and Chrome Web Store submission remain NO-GO until live Chrome QA evidence is captured."
+    }
+  ],
+  "mitigation": "Run the same public variant staging folder in a human-controlled Chrome profile where chrome://extensions and Load unpacked are available."
+}

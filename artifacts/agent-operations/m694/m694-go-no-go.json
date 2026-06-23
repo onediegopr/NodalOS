@@ -1,0 +1,21 @@
+{
+  "milestone": "M694",
+  "decision": "PUBLIC_PACKAGE_FREEZE_NO_GO",
+  "sourceDecision": "BROWSER_EMBEDDED_CHROME_BLOCKED",
+  "embeddedChromeEvidenceReady": false,
+  "manualQaEvidenceSufficient": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "evidenceRedacted": true,
+  "humanInputRequired": true
+}

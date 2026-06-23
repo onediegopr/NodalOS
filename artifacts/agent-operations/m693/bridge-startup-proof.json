@@ -1,0 +1,10 @@
+{
+  "milestone": "M693",
+  "artifact": "bridge-startup-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "bridgeStartup": "unavailable",
+  "bridgeLiveness": "UNKNOWN",
+  "extensionTokenPresent": "unknown",
+  "extensionTokenLengthOnly": null,
+  "reason": "M692 did not load the public variant in embedded Chrome."
+}

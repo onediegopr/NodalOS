@@ -1,0 +1,16 @@
+{
+  "milestone": "M694",
+  "artifact": "manual-qa-completeness-after-embedded-chrome",
+  "manualQaEvidenceSufficient": false,
+  "embeddedChromeEvidenceReady": false,
+  "publicVariantLoaded": false,
+  "tokenPresentUi": false,
+  "websocketConnectedLive": false,
+  "runtimeTabEvidenceReady": false,
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "cspConsoleEvidenceReady": false,
+  "permissionWarningEvidenceReady": false,
+  "reconnectLoopEvidenceReady": false,
+  "blockedBy": "BROWSER_USE_URL_POLICY",
+  "humanInputRequired": true
+}

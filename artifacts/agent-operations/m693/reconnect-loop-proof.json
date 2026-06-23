@@ -1,0 +1,8 @@
+{
+  "milestone": "M693",
+  "artifact": "reconnect-loop-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "reconnectLoopFound": "unknown",
+  "reconnectStormFound": "unknown",
+  "reason": "No live extension connection attempt occurred."
+}

@@ -1,0 +1,10 @@
+{
+  "milestone": "M692",
+  "artifact": "chrome-extensions-access-proof",
+  "attemptedUrl": "chrome://extensions",
+  "accessible": false,
+  "blocked": true,
+  "blockerType": "BROWSER_USE_URL_POLICY",
+  "blockerMessage": "Browser Use cannot visit the requested page because its URL is blocked by the Browser Use URL policy.",
+  "workaroundAttempted": false
+}

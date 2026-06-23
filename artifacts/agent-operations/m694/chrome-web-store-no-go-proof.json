@@ -1,0 +1,12 @@
+{
+  "milestone": "M694",
+  "artifact": "chrome-web-store-no-go-proof",
+  "chromeWebStoreReady": false,
+  "storeGate": "NO_GO",
+  "packageFreezeReady": false,
+  "blockingReason": "Public variant was not loaded through embedded Chrome and no live Chrome Web Store readiness evidence exists.",
+  "hostPermissionsWildcardFound": false,
+  "contentScriptsWildcardFound": false,
+  "bridgeSecretsLeaked": false,
+  "tokenLoggedInFull": false
+}

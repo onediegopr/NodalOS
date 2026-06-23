@@ -1,0 +1,10 @@
+{
+  "milestone": "M692",
+  "artifact": "public-staging-folder-loaded-proof",
+  "stagingPath": "C:/DESARROLLO/NodalOS/Codigo-m12-audit/artifacts/manual-qa/public-variant-staging",
+  "stagingFolderExists": true,
+  "stagingManifestValidJson": true,
+  "stagingPathSelectedInChrome": false,
+  "loadedInEmbeddedChrome": false,
+  "reason": "Load unpacked was not reachable because chrome://extensions was blocked."
+}

@@ -1,0 +1,10 @@
+{
+  "milestone": "M693",
+  "artifact": "websocket-connected-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "websocketStatus": "unknown",
+  "websocketConnectedLive": false,
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reason": "Public variant was not loaded."
+}

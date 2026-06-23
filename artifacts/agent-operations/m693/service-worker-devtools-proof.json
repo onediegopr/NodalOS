@@ -1,0 +1,8 @@
+{
+  "milestone": "M693",
+  "artifact": "service-worker-devtools-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "serviceWorkerDevtoolsEvidence": "UNKNOWN",
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "reason": "chrome://extensions and service worker inspection were blocked."
+}

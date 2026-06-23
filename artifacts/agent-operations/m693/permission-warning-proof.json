@@ -1,0 +1,8 @@
+{
+  "milestone": "M693",
+  "artifact": "permission-warning-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "permissionWarningsCaptured": "unknown",
+  "permissionWarningText": "unknown",
+  "reason": "Load unpacked flow was not available."
+}

@@ -1,0 +1,15 @@
+{
+  "milestone": "M694",
+  "artifact": "package-freeze-decision-after-embedded-chrome-qa",
+  "decision": "PUBLIC_PACKAGE_FREEZE_NO_GO",
+  "sourceDecision": "BROWSER_EMBEDDED_CHROME_BLOCKED",
+  "embeddedChromeEvidenceReady": false,
+  "manualQaEvidenceSufficient": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reason": "Embedded Chrome could not access chrome://extensions, so the public variant could not be loaded or inspected.",
+  "humanInputRequired": true,
+  "noPassInvented": true,
+  "evidenceRedacted": true
+}

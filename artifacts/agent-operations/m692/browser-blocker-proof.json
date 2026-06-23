@@ -1,0 +1,11 @@
+{
+  "milestone": "M692",
+  "artifact": "browser-blocker-proof",
+  "blocked": true,
+  "blockerType": "BROWSER_USE_URL_POLICY",
+  "blockedStep": "navigate_to_chrome_extensions",
+  "exactMessage": "Browser Use rejected this action due to browser security policy. Reason: Browser Use cannot visit the requested page because its URL is blocked by the Browser Use URL policy.",
+  "screenshotAvailable": false,
+  "workaroundAttempted": false,
+  "decisionImpact": "BROWSER_EMBEDDED_CHROME_BLOCKED"
+}

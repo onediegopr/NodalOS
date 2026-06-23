@@ -1,0 +1,9 @@
+{
+  "milestone": "M693",
+  "artifact": "token-present-ui-proof",
+  "status": "NOT_EXECUTED_DUE_BROWSER_BLOCKER",
+  "tokenPastedIntoUi": "unknown",
+  "tokenPresentUi": false,
+  "tokenLoggedInFull": false,
+  "reason": "Extension UI was not loaded in embedded Chrome."
+}

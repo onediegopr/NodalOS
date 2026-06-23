@@ -1,0 +1,8 @@
+{
+  "milestone": "M692",
+  "artifact": "developer-mode-load-unpacked-proof",
+  "developerModeAvailable": false,
+  "loadUnpackedAvailable": false,
+  "reason": "chrome://extensions was blocked before the Developer Mode UI could be inspected.",
+  "noPassInvented": true
+}

@@ -1,0 +1,21 @@
+{
+  "milestone": "M692",
+  "decision": "BROWSER_EMBEDDED_CHROME_BLOCKED",
+  "chromeExtensionsAccessible": false,
+  "developerModeAvailable": false,
+  "loadUnpackedAvailable": false,
+  "publicVariantLoaded": false,
+  "humanInputRequired": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "evidenceRedacted": true
+}

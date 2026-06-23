@@ -1,0 +1,9 @@
+{
+  "milestone": "M693",
+  "artifact": "evidence-redaction-proof",
+  "evidenceRedacted": true,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "rawConsoleLogsStored": false,
+  "rawTokenStored": false
+}
