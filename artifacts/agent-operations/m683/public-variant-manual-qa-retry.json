@@ -1,0 +1,17 @@
+{
+  "milestone": "M683",
+  "decision": "PUBLIC_VARIANT_MANUAL_QA_AFTER_TOKEN_FIX_CONDITIONAL_ENVIRONMENT",
+  "basedOnMilestone": "M680-M682",
+  "basedOnCommit": "3878e088037bb738ab4947ec6726243e829d31e2",
+  "publicVariantLoaded": "unknown",
+  "manualQaExecuted": false,
+  "manualQaPassed": false,
+  "manualQaEnvironmentAvailable": false,
+  "environmentCondition": "human Chrome extension surface required",
+  "bridgeTokenFixReady": true,
+  "tokenRequiredStateWorks": true,
+  "tokenPresentStateWorks": true,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "reconnectLoopHardened": true
+}

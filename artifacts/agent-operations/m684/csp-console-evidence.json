@@ -1,0 +1,8 @@
+{
+  "milestone": "M684",
+  "cspConsoleEvidenceReady": false,
+  "cspViolationsFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "consoleCleanlinessLiveConfirmed": false,
+  "reasonIfMissing": "Live console evidence was not provided."
+}

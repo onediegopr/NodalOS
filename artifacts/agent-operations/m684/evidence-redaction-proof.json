@@ -1,0 +1,9 @@
+{
+  "milestone": "M684",
+  "evidenceRedacted": true,
+  "fullTokenValueStored": false,
+  "fullTokenValueLogged": false,
+  "bridgeSecretsLeaked": false,
+  "rawSensitivePayloadStored": false,
+  "longRawLogsStored": false
+}

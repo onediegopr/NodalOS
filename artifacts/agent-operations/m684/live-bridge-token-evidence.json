@@ -1,0 +1,13 @@
+{
+  "milestone": "M684",
+  "decision": "PUBLIC_VARIANT_MANUAL_QA_AFTER_TOKEN_FIX_CONDITIONAL_ENVIRONMENT",
+  "bridgeAlive": "unknown",
+  "webSocketConnected": "unknown",
+  "tokenPresent": "conditional",
+  "validTokenConnectedLiveEvidence": false,
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false
+}

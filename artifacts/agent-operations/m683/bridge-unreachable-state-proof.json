@@ -1,0 +1,8 @@
+{
+  "milestone": "M683",
+  "bridgeUnreachableStateWorks": true,
+  "statusSource": "M680-M682 fix evidence and static post-fix contract",
+  "liveChromeConfirmed": false,
+  "expectedState": "bridge_unreachable",
+  "falseInvalidTokenWhenBridgeOff": false
+}

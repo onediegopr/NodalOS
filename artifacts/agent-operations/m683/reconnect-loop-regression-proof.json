@@ -1,0 +1,9 @@
+{
+  "milestone": "M683",
+  "reconnectLoopHardened": true,
+  "statusSource": "M680-M682 fix evidence and static post-fix contract",
+  "maxReconnectAttempts": 5,
+  "circuitBreakerActive": true,
+  "infiniteReconnectStormExpected": false,
+  "liveChromeConfirmed": false
+}

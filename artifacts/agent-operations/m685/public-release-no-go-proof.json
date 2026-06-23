@@ -1,0 +1,6 @@
+{
+  "milestone": "M685",
+  "publicReleaseReady": false,
+  "releasePublicationAllowed": false,
+  "reason": "Live public variant Runtime and DevTools QA evidence remains conditional."
+}

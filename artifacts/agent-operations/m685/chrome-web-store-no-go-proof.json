@@ -1,0 +1,6 @@
+{
+  "milestone": "M685",
+  "chromeWebStoreReady": false,
+  "storeSubmissionAllowed": false,
+  "reason": "Package freeze and live QA evidence are not complete."
+}

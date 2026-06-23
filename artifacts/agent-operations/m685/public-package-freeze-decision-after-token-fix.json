@@ -1,0 +1,12 @@
+{
+  "milestone": "M685",
+  "decision": "PUBLIC_VARIANT_MANUAL_QA_AFTER_TOKEN_FIX_CONDITIONAL_ENVIRONMENT",
+  "manualQaPassed": false,
+  "manualQaStatus": "conditional_environment",
+  "packageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "remediationRequired": false,
+  "environmentRetryRequired": true,
+  "recommendedNextMilestone": "M686-M688 Live Bridge Environment QA Retry"
+}

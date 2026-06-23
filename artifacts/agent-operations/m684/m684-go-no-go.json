@@ -1,0 +1,21 @@
+{
+  "milestone": "M684",
+  "decision": "PUBLIC_VARIANT_MANUAL_QA_AFTER_TOKEN_FIX_CONDITIONAL_ENVIRONMENT",
+  "validTokenConnectedLiveEvidence": false,
+  "runtimeTabEvidenceReady": false,
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "evidenceRedacted": true,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "manualQaPassed": false,
+  "packageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

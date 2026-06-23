@@ -1,0 +1,10 @@
+{
+  "milestone": "M684",
+  "runtimeTabEvidenceReady": false,
+  "runtimeTabStatus": "unknown",
+  "healthOk": "unknown",
+  "webSocketConnected": "unknown",
+  "tokenPresentVisible": "unknown",
+  "manualScreenshotProvided": false,
+  "reasonIfMissing": "Live human Chrome QA evidence was not provided."
+}

@@ -1,0 +1,23 @@
+{
+  "milestone": "M685",
+  "risks": [
+    {
+      "id": "M685-RISK-LIVE-QA-MISSING",
+      "severity": "critical-for-freeze",
+      "status": "open",
+      "description": "Live public variant Runtime and Service Worker DevTools evidence was not provided."
+    },
+    {
+      "id": "M685-RISK-PERMISSION-WARNINGS-UNKNOWN",
+      "severity": "medium",
+      "status": "open",
+      "description": "Chrome permission warning text remains unknown."
+    },
+    {
+      "id": "M685-RISK-CONNECTED-CASE-CONDITIONAL",
+      "severity": "high",
+      "status": "open",
+      "description": "Valid token plus live bridge connected case remains conditional."
+    }
+  ]
+}

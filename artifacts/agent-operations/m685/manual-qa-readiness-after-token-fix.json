@@ -1,0 +1,11 @@
+{
+  "milestone": "M685",
+  "bridgeTokenFixReady": true,
+  "manualQaUnblocked": true,
+  "manualQaPassed": false,
+  "manualQaBlocker": "LIVE_CHROME_BRIDGE_QA_EVIDENCE_REQUIRED",
+  "tokenRequiredStateWorks": true,
+  "tokenPresentStateWorks": true,
+  "reconnectLoopHardened": true,
+  "validTokenConnectedLiveEvidence": false
+}

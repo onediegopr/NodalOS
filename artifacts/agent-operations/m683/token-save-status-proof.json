@@ -1,0 +1,10 @@
+{
+  "milestone": "M683",
+  "tokenPresentStateWorks": true,
+  "statusSource": "M680-M682 fix evidence and static post-fix contract",
+  "liveChromeConfirmed": false,
+  "runtimePublishesHasTokenBoolean": true,
+  "fullTokenValueStored": false,
+  "fullTokenValueLogged": false,
+  "redacted": true
+}

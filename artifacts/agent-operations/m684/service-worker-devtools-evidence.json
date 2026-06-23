@@ -1,0 +1,12 @@
+{
+  "milestone": "M684",
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "serviceWorkerConsoleInspected": false,
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "close1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "warningsObserved": [],
+  "reasonIfMissing": "Live Service Worker DevTools evidence was not provided."
+}

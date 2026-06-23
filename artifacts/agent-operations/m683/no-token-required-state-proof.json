@@ -1,0 +1,9 @@
+{
+  "milestone": "M683",
+  "tokenRequiredStateWorks": true,
+  "statusSource": "M680-M682 fix evidence and static post-fix contract",
+  "liveChromeConfirmed": false,
+  "expectedState": "token_required",
+  "webSocketOpenedWithoutToken": false,
+  "aggressiveReconnectLoopObserved": false
+}

@@ -1,0 +1,21 @@
+{
+  "milestone": "M685",
+  "decision": "PUBLIC_VARIANT_MANUAL_QA_AFTER_TOKEN_FIX_CONDITIONAL_ENVIRONMENT",
+  "bridgeTokenFixReady": true,
+  "tokenRequiredStateWorks": true,
+  "tokenPresentStateWorks": true,
+  "reconnectLoopHardened": true,
+  "tokenLoggedInFull": false,
+  "bridgeSecretsLeaked": false,
+  "manualQaPassed": false,
+  "packageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}
