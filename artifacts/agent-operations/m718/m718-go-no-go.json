@@ -1,0 +1,22 @@
+{
+  "milestone": "M718",
+  "finalReadinessReevaluation": "CONDITIONAL_BLOCKERS_PENDING",
+  "publicPackageFreeze": "NO-GO",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "p0BlockersClosed": false,
+  "finalFrozenArtifactExists": false,
+  "finalChecksumCalculated": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false,
+  "productFilesModified": false
+}

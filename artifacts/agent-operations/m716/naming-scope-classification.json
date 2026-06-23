@@ -1,0 +1,17 @@
+{
+  "milestone": "M716",
+  "activeProject": "NODAL OS",
+  "frozenOutOfScopeProjects": ["NODRIX"],
+  "historicalCompatibilityNames": ["NEXA", "ONE BRAIN"],
+  "externalUploadedInputNames": ["HOTEP"],
+  "classificationRules": {
+    "allowed_historical_reference": "Permitted only when explicitly describing legacy or historical context.",
+    "uploaded_reference_out_of_scope": "Permitted only when classifying an uploaded/external source as not NODAL OS scope.",
+    "contamination_to_fix": "Any active release/package/store/roadmap reference that suggests another project is active.",
+    "false_positive": "Non-product token or unrelated text.",
+    "legacy_filename_allowed": "Existing historical filename retained for traceability.",
+    "test_fixture_allowed": "Forbidden-name guard tests and compatibility fixtures.",
+    "report_context_allowed": "Audit reports that explicitly classify non-NODAL names as inactive.",
+    "active_product_naming_error": "Any active-product field naming another product."
+  }
+}

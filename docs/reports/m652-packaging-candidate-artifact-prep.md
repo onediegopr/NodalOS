@@ -38,7 +38,7 @@ Do not include:
 - temporary files,
 - user data,
 - provider credentials,
-- NODRIX files.
+- out-of-scope external project files.
 
 ## Caveats
 

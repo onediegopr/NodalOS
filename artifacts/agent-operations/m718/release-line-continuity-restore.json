@@ -1,0 +1,23 @@
+{
+  "milestone": "M718",
+  "decision": "RELEASE_LINE_CONTINUITY_RESTORED",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "publicPackageFreezeReady": false,
+  "packageFreezeBlockedBy": [
+    "privacy URL missing",
+    "support URL missing",
+    "screenshots/assets missing",
+    "full manual evidence still partial"
+  ],
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

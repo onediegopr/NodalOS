@@ -1,0 +1,25 @@
+{
+  "milestone": "M717",
+  "allowedLegacyReferences": [
+    {
+      "name": "NODRIX",
+      "allowedOnlyAs": ["historical reference", "external uploaded input reference", "audit classification target"],
+      "activeProductAllowed": false
+    },
+    {
+      "name": "NEXA",
+      "allowedOnlyAs": ["historical reference", "compatibility symbol", "legacy filename", "guard test token"],
+      "activeProductAllowed": false
+    },
+    {
+      "name": "ONE BRAIN",
+      "allowedOnlyAs": ["historical repository or engine context"],
+      "activeProductAllowed": false
+    },
+    {
+      "name": "HOTEP",
+      "allowedOnlyAs": ["external uploaded input wording"],
+      "activeProductAllowed": false
+    }
+  ]
+}

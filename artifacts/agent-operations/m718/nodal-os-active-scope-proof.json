@@ -1,0 +1,9 @@
+{
+  "milestone": "M718",
+  "activeProject": "NODAL OS",
+  "storeListingActiveProduct": "NODAL OS",
+  "packageFreezeActiveProduct": "NODAL OS",
+  "externalAuditPackActiveProduct": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "nodrixUsedAsSourceOfTruth": false
+}

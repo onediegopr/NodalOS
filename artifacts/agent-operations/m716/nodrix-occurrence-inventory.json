@@ -1,0 +1,57 @@
+{
+  "milestone": "M716",
+  "inventoryScope": "git grep over repo plus focused active release-line review",
+  "occurrences": [
+    {
+      "token": "NODRIX",
+      "paths": [
+        "docs/reports/nodal-os-naming-cleanup-m464-lite.md",
+        "docs/reports/new-topics-intake-m465.md",
+        "docs/reports/audit-a-pre-ui-boundary-naming-m477-m479.md",
+        "docs/reports/mission-control-guidance-m486-m488.md",
+        "docs/roadmap/nodal-os-roadmap-vnext.md",
+        "artifacts/agent-operations/m464-lite/nodal-os-naming-cleanup-summary.json",
+        "artifacts/agent-operations/m467/new-topics-intake-unified-roadmap-summary.json",
+        "artifacts/agent-operations/m629/extension-legacy-naming-inventory.json",
+        "tests/OneBrain.Safety.Tests/* naming guard tests"
+      ],
+      "classification": "allowed_historical_reference_or_report_context_allowed",
+      "activeProductNamingError": false
+    },
+    {
+      "token": "NODRIX",
+      "paths": [
+        "artifacts/agent-operations/m652/package-contents-manifest.json",
+        "docs/reports/m652-packaging-candidate-artifact-prep.md"
+      ],
+      "classification": "contamination_to_fix",
+      "activeProductNamingError": true,
+      "fixedInM716M718": true,
+      "replacement": "out-of-scope external project files"
+    },
+    {
+      "token": "HOTEP",
+      "paths": [
+        "docs/reports/new-topics-intake-m465.md",
+        "docs/roadmap/nodal-os-roadmap-vnext.md",
+        "tests/OneBrain.Safety.Tests/* naming guard tests"
+      ],
+      "classification": "uploaded_reference_out_of_scope_or_guardrail_context_allowed",
+      "activeProductNamingError": false
+    },
+    {
+      "token": "NEXA",
+      "paths": [
+        "docs/adr/* legacy documents",
+        "docs/hitos/nexa-browser-* historical documents",
+        "browser-extension/onebrain-chrome-lab/recipe_core.js compatibility constants",
+        "artifacts/manual-qa/public-variant-staging/recipe_core.js compatibility constants",
+        "tests/OneBrain.Safety.Tests/ChromeLabBridgeTests.cs compatibility tests"
+      ],
+      "classification": "allowed_historical_reference_or_legacy_filename_allowed_or_compatibility_symbol_allowed",
+      "activeProductNamingError": false
+    }
+  ],
+  "focusedM698M715NodrixMatchesBeforeNewAuditFiles": 0,
+  "activeReleaseLineErrorsFixed": 2
+}

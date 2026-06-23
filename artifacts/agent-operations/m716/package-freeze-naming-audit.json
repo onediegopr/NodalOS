@@ -1,0 +1,11 @@
+{
+  "milestone": "M716",
+  "packageFreezeActiveProduct": "NODAL OS",
+  "packageFreezeMentionsNodrixAsActiveProduct": false,
+  "packageFreezeDocsClean": true,
+  "correctedFiles": [
+    "artifacts/agent-operations/m652/package-contents-manifest.json",
+    "docs/reports/m652-packaging-candidate-artifact-prep.md"
+  ],
+  "remainingPackageFreezeNamingErrors": 0
+}

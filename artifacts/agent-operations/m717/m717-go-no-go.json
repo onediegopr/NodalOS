@@ -1,0 +1,19 @@
+{
+  "milestone": "M717",
+  "privacySupportDocsUrlClosureRetry": "PARTIAL_PENDING",
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false,
+  "productFilesModified": false
+}

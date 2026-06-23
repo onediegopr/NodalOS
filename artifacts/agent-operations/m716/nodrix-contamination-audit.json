@@ -1,0 +1,13 @@
+{
+  "milestone": "M716",
+  "activeProject": "NODAL OS",
+  "nodrixScope": "NO_USE_FROZEN_OUT_OF_SCOPE",
+  "contaminationAuditCompleted": true,
+  "searchedTokens": ["NODRIX", "Nodrix", "nodrix", "HOTEP", "NEXA", "ONE BRAIN"],
+  "activeReleaseLineReviewed": "M652-M715, with focused review on M698-M715",
+  "activeProductNamingErrorsFound": true,
+  "activeProductNamingErrorsFixed": true,
+  "remainingActiveProductNamingErrors": 0,
+  "criticalContaminationRemaining": false,
+  "decision": "NODRIX_CONTAMINATION_AUDIT_CLEAN_AFTER_DOCUMENTATION_PATCH"
+}

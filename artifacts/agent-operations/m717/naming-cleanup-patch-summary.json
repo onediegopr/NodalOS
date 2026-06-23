@@ -1,0 +1,17 @@
+{
+  "milestone": "M717",
+  "filesCorrected": [
+    {
+      "path": "artifacts/agent-operations/m652/package-contents-manifest.json",
+      "before": "NODRIX files",
+      "after": "out-of-scope external project files"
+    },
+    {
+      "path": "docs/reports/m652-packaging-candidate-artifact-prep.md",
+      "before": "NODRIX files",
+      "after": "out-of-scope external project files"
+    }
+  ],
+  "filesCorrectedCount": 2,
+  "behaviorChanged": false
+}

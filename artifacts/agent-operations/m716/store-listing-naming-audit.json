@@ -1,0 +1,13 @@
+{
+  "milestone": "M716",
+  "storeListingActiveProduct": "NODAL OS",
+  "storeListingMentionsNodrixAsActiveProduct": false,
+  "storeListingMentionsNexaAsActiveProduct": false,
+  "storeListingMentionsOneBrainAsActiveProduct": false,
+  "storeListingClean": true,
+  "reviewedFiles": [
+    "artifacts/agent-operations/m699/store-listing-draft.json",
+    "artifacts/agent-operations/m702/store-listing-final-draft.json",
+    "docs/reports/m702-store-asset-capture-pack-listing-disclosure.md"
+  ]
+}

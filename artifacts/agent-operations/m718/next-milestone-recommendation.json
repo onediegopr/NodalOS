@@ -1,0 +1,5 @@
+{
+  "milestone": "M718",
+  "recommendedNextMilestone": "M719-M721 Asset/URL Completion Retry",
+  "rationale": "Naming continuity is restored; remaining blockers are asset, URL, and evidence completion."
+}

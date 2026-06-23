@@ -1,0 +1,11 @@
+{
+  "milestone": "M717",
+  "decision": "NODAL_OS_NAMING_CLEANUP_APPLIED",
+  "cleanupPerformed": true,
+  "cleanupType": "documentation_and_artifact_only",
+  "activeProductReplacementApplied": true,
+  "productCodeModified": false,
+  "manifestModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

@@ -1,0 +1,19 @@
+{
+  "milestone": "M716",
+  "assetScreenshotCompletionRetry": "PARTIAL_PENDING",
+  "assetCapturePending": true,
+  "requiredScreenshotsReady": false,
+  "fullManualEvidenceReady": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false,
+  "productFilesModified": false
+}

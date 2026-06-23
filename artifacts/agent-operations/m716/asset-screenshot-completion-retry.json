@@ -1,0 +1,61 @@
+{
+  "milestone": "M716",
+  "decision": "ASSET_SCREENSHOT_COMPLETION_RETRY_PARTIAL_PENDING",
+  "assetCaptureRetried": true,
+  "assetCapturePending": true,
+  "requiredScreenshotsReady": false,
+  "fullManualEvidenceReady": false,
+  "screenshots": [
+    {
+      "asset": "extension loaded screenshot",
+      "status": "PENDING",
+      "evidenceFilePath": null,
+      "captureMethod": "human Chrome operator capture required",
+      "operatorNotes": "No real screenshot was available in this execution environment.",
+      "redactionStatus": "NOT_APPLICABLE_UNTIL_CAPTURED",
+      "acceptableForPackageFreeze": false,
+      "acceptableForChromeWebStoreFinalSubmission": false
+    },
+    {
+      "asset": "sidepanel connected screenshot",
+      "status": "PENDING",
+      "evidenceFilePath": null,
+      "captureMethod": "human Chrome operator capture required",
+      "operatorNotes": "No real sidepanel screenshot was available in this execution environment.",
+      "redactionStatus": "NOT_APPLICABLE_UNTIL_CAPTURED",
+      "acceptableForPackageFreeze": false,
+      "acceptableForChromeWebStoreFinalSubmission": false
+    },
+    {
+      "asset": "runtime/DevTools screenshot",
+      "status": "PENDING",
+      "evidenceFilePath": null,
+      "captureMethod": "human Chrome runtime or service worker DevTools capture required",
+      "operatorNotes": "Runtime/DevTools state cannot be marked PASS without a real captured image or log reference.",
+      "redactionStatus": "NOT_APPLICABLE_UNTIL_CAPTURED",
+      "acceptableForPackageFreeze": false,
+      "acceptableForChromeWebStoreFinalSubmission": false
+    },
+    {
+      "asset": "permission warning screenshot",
+      "status": "UNKNOWN",
+      "evidenceFilePath": null,
+      "captureMethod": "human Chrome extension load warning capture required if warning appears",
+      "operatorNotes": "Permission warning presence is unknown in this execution environment.",
+      "redactionStatus": "NOT_APPLICABLE_UNTIL_CAPTURED",
+      "acceptableForPackageFreeze": false,
+      "acceptableForChromeWebStoreFinalSubmission": false
+    }
+  ],
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false,
+  "productFilesModified": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}
