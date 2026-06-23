@@ -1,0 +1,49 @@
+{
+  "milestone": "M643",
+  "decision": "PUBLIC_RELEASE_NO_GO_BLOCKERS_OPEN",
+  "publicReleaseReady": false,
+  "publicReleaseEnabled": false,
+  "releaseCandidateEvidencePackReady": true,
+  "allCriticalBlockersClosed": false,
+  "productFilesModified": false,
+  "closureGateResult": "NO-GO",
+  "blockerClosure": [
+    {
+      "id": "HOST_PERMISSIONS_FORMAL_JUSTIFICATION",
+      "status": "open",
+      "blocksPublicRelease": true
+    },
+    {
+      "id": "PROVIDER_RUNTIME_FINAL_GATE",
+      "status": "open",
+      "blocksPublicRelease": true
+    },
+    {
+      "id": "PACKAGING_SIGNING_STORE_REVIEW",
+      "status": "open",
+      "blocksPublicRelease": true
+    },
+    {
+      "id": "IPV6_LOOPBACK_CAVEAT",
+      "status": "documented",
+      "blocksPublicRelease": false
+    },
+    {
+      "id": "CORS_LAN_PUBLIC_RELEASE_POSTURE",
+      "status": "open",
+      "blocksPublicRelease": true
+    },
+    {
+      "id": "PROVIDER_PROMPT_NAMING_DEBT",
+      "status": "open",
+      "blocksPublicRelease": false,
+      "blocksProviderRelease": true
+    },
+    {
+      "id": "MICROCOPY_FINAL_REVIEW",
+      "status": "open",
+      "blocksPublicRelease": true
+    }
+  ],
+  "recommendedNextMilestone": "M644 Public Release Blocker Remediation Plan / Host Permissions + Packaging Store Review"
+}

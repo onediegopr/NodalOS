@@ -1,0 +1,22 @@
+{
+  "milestone": "M643",
+  "decision": "PACKAGING_SIGNING_STORE_REVIEW_INCOMPLETE",
+  "productFilesModified": false,
+  "packagingReviewComplete": false,
+  "signingReviewComplete": false,
+  "storeListingReviewComplete": false,
+  "privacyDisclosureReviewComplete": false,
+  "supportDisclosureReviewComplete": false,
+  "rollbackPlanComplete": false,
+  "publicReleaseReady": false,
+  "requiredBeforePublicRelease": [
+    "Package reproducibility review",
+    "Signing process review",
+    "Store listing review",
+    "Privacy disclosure review",
+    "Support disclosure review",
+    "Rollback plan",
+    "Final public release go/no-go"
+  ],
+  "recommendedNextMilestone": "M644 Public Release Blocker Remediation Plan / Host Permissions + Packaging Store Review"
+}

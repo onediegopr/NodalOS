@@ -1,0 +1,27 @@
+{
+  "milestone": "M643",
+  "decision": "RUNTIME_PROVIDER_DISABLED_STATE_PROOF_RECORDED",
+  "productFilesModified": false,
+  "runtimeProductiveEnabled": false,
+  "runtimeChangesAllowed": false,
+  "providerCloudEnabled": false,
+  "providerReleaseReady": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "publicReleaseReady": false,
+  "proofStatements": [
+    "Clean Runtime evidence does not authorize productive runtime execution.",
+    "Clean service worker DevTools evidence does not authorize provider/cloud execution.",
+    "Provider/runtime path requires a dedicated final release gate.",
+    "Filesystem remains blocked until a dedicated filesystem boundary gate.",
+    "Browser automation remains blocked until a dedicated consent/evidence gate."
+  ],
+  "requiredFutureGates": [
+    "Provider Runtime Release Gate",
+    "BYOK Consent Review",
+    "Runtime Enablement Approval Gate",
+    "Filesystem Boundary Gate",
+    "Browser Automation Consent Gate"
+  ]
+}

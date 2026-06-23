@@ -1,0 +1,27 @@
+{
+  "milestone": "M643",
+  "decision": "RELEASE_CANDIDATE_EVIDENCE_PACK_READY",
+  "readyForReleaseCandidateEvidencePack": true,
+  "readyForReleaseEvidenceGate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForBrowserAutomation": false,
+  "runtimeEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "publicReleaseEnabled": false,
+  "productFilesModified": false,
+  "recommendedNextMilestone": "M644 Public Release Blocker Remediation Plan / Host Permissions + Packaging Store Review",
+  "percentages": {
+    "releaseCandidateEvidencePackReadiness": 100,
+    "installedExtensionEvidenceGateReadiness": 97,
+    "publicReleaseReadiness": 48,
+    "runtimeProductizationReadiness": 25,
+    "providerCloudReadiness": 18,
+    "filesystemWorkspaceReadiness": 22,
+    "packagingSigningStoreReadiness": 20
+  }
+}

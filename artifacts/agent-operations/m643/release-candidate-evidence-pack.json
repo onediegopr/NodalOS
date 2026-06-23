@@ -1,0 +1,40 @@
+{
+  "milestone": "M643",
+  "decision": "RELEASE_CANDIDATE_EVIDENCE_PACK_READY",
+  "mode": "release-evidence-closure-gate-only",
+  "basedOnCommit": "9eb8c7562efacfc9c87a16773eb8beaa5166bb8e",
+  "evidencePackReady": true,
+  "productFilesModified": false,
+  "publicReleaseReady": false,
+  "releaseEvidenceGate": "go",
+  "inputs": {
+    "m638EvidenceGateReady": true,
+    "m638aRetryBridgeLivenessRecovered": true,
+    "m638aManualRetryCleanRuntimeDevtoolsEvidence": true,
+    "m640M642ReadinessPlanReady": true
+  },
+  "cleanEvidence": {
+    "runtimeTabEvidence": "pass",
+    "serviceWorkerDevtoolsEvidence": "pass",
+    "bridgeLiveness": "pass",
+    "cspViolationsObserved": "no",
+    "errConnectionRefusedObserved": "no",
+    "invalidTokenObserved": "no",
+    "policyViolation1008Observed": "no",
+    "bridgeWebSocketErrorRepeatedObserved": "no",
+    "webSocketReconnectingObserved": "no",
+    "criticalConsoleErrorsObserved": "no"
+  },
+  "blockersStillOpen": [
+    "HOST_PERMISSIONS_FORMAL_JUSTIFICATION",
+    "PROVIDER_RUNTIME_FINAL_GATE",
+    "PACKAGING_SIGNING_STORE_REVIEW",
+    "CORS_LAN_PUBLIC_RELEASE_POSTURE",
+    "PROVIDER_PROMPT_NAMING_DEBT",
+    "MICROCOPY_FINAL_REVIEW"
+  ],
+  "documentedCaveats": [
+    "IPV6_LOOPBACK_CAVEAT"
+  ],
+  "recommendedNextMilestone": "M644 Public Release Blocker Remediation Plan / Host Permissions + Packaging Store Review"
+}
