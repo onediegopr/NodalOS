@@ -1,0 +1,12 @@
+{
+  "milestone": "M672",
+  "template": "manual-load-result",
+  "publicVariantLoaded": "true|false|unknown",
+  "visibleExtensionName": "",
+  "extensionIdIfVisible": "",
+  "manifestSourceConfirmed": "manifest.public.json staged as manifest.json|unknown",
+  "loadErrorsObserved": "yes|no|unknown",
+  "loadErrorSummaryRedacted": "",
+  "screenshotProvided": false,
+  "manualEvidenceSource": "user-reported"
+}

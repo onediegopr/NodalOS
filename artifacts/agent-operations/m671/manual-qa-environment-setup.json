@@ -1,0 +1,14 @@
+{
+  "milestone": "M671",
+  "decision": "HUMAN_ASSISTED_MANUAL_QA_HANDOFF_READY",
+  "basedOnMilestone": "M668-M670",
+  "basedOnCommit": "1f7a7246f3b335217c7d6605dfbb75ceab6c6a49",
+  "manualQaEnvironmentAvailable": false,
+  "manualQaBlocker": "MANUAL_QA_ENVIRONMENT_REQUIRED",
+  "environmentBlockerReason": "Chrome automation policy blocks chrome://extensions, so extension load and DevTools inspection require a human-assisted Chrome session.",
+  "humanAssistedSetupRequired": true,
+  "bypassAttempted": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

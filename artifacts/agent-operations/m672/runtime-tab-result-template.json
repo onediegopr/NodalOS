@@ -1,0 +1,13 @@
+{
+  "milestone": "M672",
+  "template": "runtime-tab-result",
+  "runtimeTabOpened": "true|false|unknown",
+  "healthOk": "pass|fail|unknown",
+  "clientsObserved": "pass|fail|unknown",
+  "heartbeatOk": "pass|fail|unknown",
+  "webSocketReconnectingVisible": "yes|no|unknown",
+  "bridgeWebSocketErrorVisible": "yes|no|unknown",
+  "publicVariantLimitationsVisibleOrDocumented": "yes|no|unknown",
+  "screenshotProvided": false,
+  "notesRedacted": ""
+}

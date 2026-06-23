@@ -1,0 +1,18 @@
+{
+  "milestone": "M672",
+  "decision": "HUMAN_ASSISTED_MANUAL_QA_HANDOFF_READY",
+  "manualLoadResultTemplateReady": true,
+  "runtimeTabResultTemplateReady": true,
+  "serviceWorkerDevtoolsResultTemplateReady": true,
+  "permissionWarningResultTemplateReady": true,
+  "consoleCleanlinessResultTemplateReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

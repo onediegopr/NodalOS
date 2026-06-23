@@ -1,0 +1,14 @@
+{
+  "milestone": "M671",
+  "stagingPlanReady": true,
+  "stagingFolderCreatedByAgent": false,
+  "recommendedStagingFolder": "<local-temp>/nodal-os-public-candidate-m671",
+  "sourceExtensionFolder": "browser-extension/onebrain-chrome-lab",
+  "sourcePublicManifest": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "stagedManifestTarget": "manifest.json",
+  "internalManifestMustNotBeUsedForPublicCandidate": true,
+  "verifyNoHostPermissionWildcards": true,
+  "verifyNoContentScriptWildcards": true,
+  "excludeSecretsLogsTempUserData": true,
+  "releaseFinalPackage": false
+}

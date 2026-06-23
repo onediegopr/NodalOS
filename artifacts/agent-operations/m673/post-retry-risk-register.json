@@ -1,0 +1,23 @@
+{
+  "milestone": "M673",
+  "risks": [
+    {
+      "id": "M673-RISK-MANUAL-QA-NOT-YET-EXECUTED",
+      "severity": "high-for-public-release",
+      "status": "open",
+      "description": "Public variant manual QA still requires human Chrome UI execution."
+    },
+    {
+      "id": "M673-RISK-PERMISSION-WARNINGS-UNKNOWN",
+      "severity": "medium",
+      "status": "open",
+      "description": "Chrome permission warning text has not been captured from a real load."
+    },
+    {
+      "id": "M673-RISK-DEVTOOLS-EVIDENCE-UNKNOWN",
+      "severity": "high-for-public-release",
+      "status": "open",
+      "description": "Service Worker DevTools cleanliness is still unknown for the public variant."
+    }
+  ]
+}

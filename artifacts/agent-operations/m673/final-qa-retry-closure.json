@@ -1,0 +1,17 @@
+{
+  "milestone": "M673",
+  "decision": "HUMAN_ASSISTED_MANUAL_QA_HANDOFF_READY",
+  "qaEvidenceReady": false,
+  "humanAssistedHandoffReady": true,
+  "blockedRemediationRequired": false,
+  "missingEvidence": [
+    "public variant load proof",
+    "permission warning capture",
+    "Runtime tab evidence",
+    "Service Worker DevTools evidence",
+    "console cleanliness evidence",
+    "allowed/disallowed origin evidence"
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

@@ -1,0 +1,10 @@
+{
+  "milestone": "M671",
+  "chromePolicyBlockerConfirmed": true,
+  "blockedSurface": "chrome://extensions",
+  "blockedDuringMilestone": "M668-M670",
+  "blockerType": "browser automation security policy",
+  "impact": "Agent cannot complete extension load, reload, permission warning capture, Runtime tab inspection, or Service Worker DevTools inspection.",
+  "safeResolution": "Use human-assisted Chrome Developer Mode workflow.",
+  "unsafeBypassAllowed": false
+}

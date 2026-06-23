@@ -1,0 +1,16 @@
+{
+  "milestone": "M672",
+  "template": "console-cleanliness-result",
+  "cspViolations": "pass|fail|unknown",
+  "errConnectionRefused": "pass|fail|unknown",
+  "invalidToken": "pass|fail|unknown",
+  "policyViolation1008": "pass|fail|unknown",
+  "bridgeWebSocketErrorRepeated": "pass|fail|unknown",
+  "reconnectStorm": "pass|fail|unknown",
+  "criticalConsoleErrors": "pass|fail|unknown",
+  "warningsObserved": [],
+  "rawSecretsIncluded": false,
+  "rawApiKeysIncluded": false,
+  "longRawLogsIncluded": false,
+  "privateUserDataIncluded": false
+}

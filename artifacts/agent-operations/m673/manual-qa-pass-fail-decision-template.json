@@ -1,0 +1,18 @@
+{
+  "milestone": "M673",
+  "template": "manual-qa-pass-fail-decision",
+  "manualQaExecuted": "true|false",
+  "manualQaPassed": "true|false",
+  "decision": "PUBLIC_VARIANT_MANUAL_QA_RETRY_EVIDENCE_READY|HUMAN_ASSISTED_MANUAL_QA_HANDOFF_READY|PUBLIC_VARIANT_QA_RETRY_BLOCKED_REMEDIATION_REQUIRED",
+  "passCriteria": [
+    "public variant loaded",
+    "manifest selection visually verified",
+    "Runtime tab evidence ready",
+    "Service Worker DevTools evidence ready",
+    "permission warnings captured or explicitly not visible",
+    "no critical console errors",
+    "evidence redacted"
+  ],
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

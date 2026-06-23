@@ -1,0 +1,17 @@
+{
+  "milestone": "M671",
+  "decision": "HUMAN_ASSISTED_MANUAL_QA_HANDOFF_READY",
+  "manualQaEnvironmentAvailable": false,
+  "humanAssistedRunbookReady": true,
+  "publicVariantStagingPlanReady": true,
+  "chromePolicyBlockerAnalysisReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

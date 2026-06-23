@@ -1,0 +1,10 @@
+{
+  "milestone": "M672",
+  "template": "permission-warning-result",
+  "permissionWarningsVisible": "yes|no|unknown",
+  "permissionWarningTextRedacted": "",
+  "hostPermissionWildcardVisible": "yes|no|unknown",
+  "localhostPermissionVisible": "yes|no|unknown",
+  "screenshotProvided": false,
+  "notes": "Do not paste secrets, cookies, tokens, or user data."
+}

@@ -1,0 +1,12 @@
+{
+  "milestone": "M673",
+  "publicReleaseReady": false,
+  "reason": "Human manual QA evidence is not yet captured.",
+  "releaseBlockedUntil": [
+    "public variant load evidence",
+    "Runtime tab evidence",
+    "Service Worker DevTools evidence",
+    "permission warning evidence",
+    "final package audit retry"
+  ]
+}

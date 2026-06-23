@@ -1,0 +1,22 @@
+{
+  "milestone": "M673",
+  "humanEvidenceTemplateReady": true,
+  "whoMustObtainEvidence": "human operator with local Chrome UI access",
+  "howToProvideEvidence": "Paste redacted PASS/FAIL/UNKNOWN results from M672 templates into the next milestone report.",
+  "requiredFields": [
+    "publicVariantLoaded",
+    "visibleExtensionName",
+    "manifestSourceConfirmed",
+    "permissionWarningsVisible",
+    "runtimeTabOpened",
+    "serviceWorkerConsoleInspected",
+    "cspViolationsObserved",
+    "invalidTokenObserved",
+    "policyViolation1008Observed",
+    "reconnectStormObserved",
+    "criticalConsoleErrorsObserved"
+  ],
+  "unknownAllowedWhenNotVisible": true,
+  "secretsAllowed": false,
+  "rawLongLogsAllowed": false
+}

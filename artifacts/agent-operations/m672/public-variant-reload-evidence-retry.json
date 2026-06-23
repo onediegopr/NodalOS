@@ -1,0 +1,15 @@
+{
+  "milestone": "M672",
+  "decision": "HUMAN_ASSISTED_MANUAL_QA_HANDOFF_READY",
+  "manualQaExecuted": false,
+  "manualQaPassed": false,
+  "manualQaEnvironmentAvailable": false,
+  "templatesPrepared": true,
+  "publicVariantLoaded": "unknown",
+  "runtimeTabEvidenceReady": false,
+  "serviceWorkerDevtoolsEvidenceReady": false,
+  "permissionWarningsCaptured": false,
+  "consoleCleanlinessCaptured": false,
+  "bridgeLivenessCaptured": false,
+  "evidenceMustBeHumanProvided": true
+}

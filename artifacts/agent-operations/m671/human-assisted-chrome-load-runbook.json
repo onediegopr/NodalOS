@@ -1,0 +1,21 @@
+{
+  "milestone": "M671",
+  "humanAssistedRunbookReady": true,
+  "steps": [
+    "Prepare a local QA staging folder outside the release path.",
+    "Copy extension files from browser-extension/onebrain-chrome-lab into the staging folder.",
+    "Copy manifest.public.json into the staging folder as manifest.json.",
+    "Verify staged manifest.json is valid JSON.",
+    "Verify staged host_permissions do not include http://*/* or https://*/*.",
+    "Open Chrome manually.",
+    "Navigate manually to chrome://extensions.",
+    "Enable Developer Mode.",
+    "Click Load unpacked.",
+    "Select the staging folder.",
+    "Confirm visible name NODAL OS Public Candidate.",
+    "Record load errors if any, without secrets or long raw logs."
+  ],
+  "doNotPasteSecrets": true,
+  "doNotUseInternalManifestAsPublicPackage": true,
+  "doNotPublish": true
+}
