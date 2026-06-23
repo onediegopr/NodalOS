@@ -1,0 +1,23 @@
+{
+  "milestone": "M648",
+  "decision": "FINAL_PUBLIC_RELEASE_GO_NO_GO_REVIEW_READY",
+  "publicReleaseDecision": "PUBLIC_RELEASE_NO_GO_REMEDIATION_REQUIRED",
+  "publicReleaseReady": false,
+  "internalCandidateReady": true,
+  "reasons": [
+    "host permissions remain open for public release",
+    "packaging/signing/store final review is incomplete",
+    "privacy/support disclosure is draft or required",
+    "no final package or signing evidence exists",
+    "provider path remains present as disabled release caveat"
+  ],
+  "releaseEvidenceGateReady": true,
+  "cleanRuntimeDevtoolsEvidenceReady": true,
+  "providerRuntimeDisabledProofReady": true,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,19 @@
+{
+  "milestone": "M649",
+  "decision": "PUBLIC_CANDIDATE_READINESS_REVIEW_READY",
+  "publicChromeStoreCandidateReady": false,
+  "publicReleaseReady": false,
+  "blockingReasons": [
+    "host permissions remain open for public release",
+    "packaging/signing/store final evidence is incomplete",
+    "privacy disclosure/support URL not final",
+    "final release package/signing/checksums absent"
+  ],
+  "canBecomeConditionalGoAfter": [
+    "M651 Host Permissions Final Decision",
+    "M652 Packaging Candidate Artifact Prep",
+    "M653 Store Listing / Privacy / Support Evidence",
+    "M654 Final Public Release Audit"
+  ],
+  "productFilesModified": false
+}

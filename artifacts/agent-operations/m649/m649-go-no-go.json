@@ -1,0 +1,11 @@
+{
+  "milestone": "M649",
+  "decision": "RELEASE_SCOPE_DECISION_READY",
+  "releaseScopeDecision": "INTERNAL_CANDIDATE_GO_PUBLIC_RELEASE_NO_GO",
+  "internalCandidateReady": true,
+  "privateBetaCandidateReady": false,
+  "publicChromeStoreCandidateReady": false,
+  "publicReleaseReady": false,
+  "productFilesModified": false,
+  "recommendedNextMilestone": "M651 Host Permissions Final Decision / Manifest Strategy Gate"
+}

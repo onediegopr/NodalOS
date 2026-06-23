@@ -1,0 +1,18 @@
+{
+  "milestone": "M649",
+  "decision": "INTERNAL_CANDIDATE_READINESS_READY",
+  "internalCandidateReady": true,
+  "releaseScope": "internal evidence candidate",
+  "allowedDistribution": [
+    "internal evidence review",
+    "local-first controlled candidate"
+  ],
+  "requiredEvidenceReady": [
+    "installed extension evidence gate",
+    "clean runtime/devtools evidence",
+    "provider/runtime disabled-state proof",
+    "host permissions internal justification"
+  ],
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

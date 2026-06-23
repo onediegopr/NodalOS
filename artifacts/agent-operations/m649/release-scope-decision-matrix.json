@@ -1,0 +1,60 @@
+{
+  "milestone": "M649",
+  "decision": "RELEASE_SCOPE_DECISION_MATRIX_READY",
+  "mode": "decision-only",
+  "recommendedDecision": "INTERNAL_CANDIDATE_GO_PUBLIC_RELEASE_NO_GO",
+  "scopes": [
+    {
+      "scope": "Internal Evidence Candidate",
+      "audience": "core project/release reviewers",
+      "allowedDistribution": "internal/local-first evidence use",
+      "readiness": "GO",
+      "risk": "medium",
+      "blockers": []
+    },
+    {
+      "scope": "Local-first Internal Candidate",
+      "audience": "controlled internal users",
+      "allowedDistribution": "manual installed extension candidate",
+      "readiness": "GO",
+      "risk": "medium",
+      "blockers": []
+    },
+    {
+      "scope": "Private Beta Candidate",
+      "audience": "approved private testers",
+      "allowedDistribution": "controlled only after support/privacy approval",
+      "readiness": "CONDITIONAL_GO",
+      "risk": "medium-high",
+      "blockers": [
+        "audience approval",
+        "support path",
+        "privacy disclosure"
+      ]
+    },
+    {
+      "scope": "Public Chrome Web Store Candidate",
+      "audience": "public store reviewers/users",
+      "allowedDistribution": "none now",
+      "readiness": "NO_GO",
+      "risk": "high",
+      "blockers": [
+        "host permissions",
+        "packaging/signing/store final evidence",
+        "privacy/support final evidence"
+      ]
+    },
+    {
+      "scope": "Public Release",
+      "audience": "general public",
+      "allowedDistribution": "none now",
+      "readiness": "NO_GO",
+      "risk": "high",
+      "blockers": [
+        "public release closure audit not passed",
+        "public release blockers open"
+      ]
+    }
+  ],
+  "productFilesModified": false
+}

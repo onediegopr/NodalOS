@@ -1,0 +1,33 @@
+{
+  "milestone": "M650",
+  "decision": "FINAL_REMEDIATION_BACKLOG_READY",
+  "backlog": [
+    {
+      "id": "M651-HOST-PERMISSIONS-FINAL-DECISION",
+      "area": "host_permissions",
+      "requiredOutcome": "retain with justification, narrow permissions, or split internal/public build"
+    },
+    {
+      "id": "M652-PACKAGING-CANDIDATE-ARTIFACT",
+      "area": "packaging",
+      "requiredOutcome": "version candidate, package artifact, signing plan, checksums, release notes"
+    },
+    {
+      "id": "M653-STORE-PRIVACY-SUPPORT-EVIDENCE",
+      "area": "store",
+      "requiredOutcome": "listing, privacy disclosure, support URL, screenshots, icon/assets, description, permission justification"
+    },
+    {
+      "id": "PROVIDER-RUNTIME-FINAL-CAVEAT",
+      "area": "provider-runtime",
+      "requiredOutcome": "provider/runtime disabled proof, prompt naming debt decision, OpenAiAgentClient caveat"
+    },
+    {
+      "id": "ROLLBACK-RECOVERY-FINAL",
+      "area": "rollback",
+      "requiredOutcome": "rollback plan, known issues, support process"
+    }
+  ],
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,32 @@
+{
+  "milestone": "M648",
+  "decision": "RELEASE_CLOSURE_BLOCKERS_STATUS_READY",
+  "blockers": [
+    {
+      "id": "HOST-PERMISSIONS-PUBLIC-RELEASE",
+      "status": "open",
+      "severity": "critical-for-public-release",
+      "summary": "Broad host permissions are justified for internal candidate but still open for public release."
+    },
+    {
+      "id": "PACKAGING-SIGNING-STORE-FINAL",
+      "status": "open",
+      "severity": "critical-for-public-release",
+      "summary": "Packaging, signing, store listing, screenshots, support URL, and privacy disclosure are not final."
+    },
+    {
+      "id": "PROVIDER-RUNTIME-CAVEAT",
+      "status": "documented",
+      "severity": "medium-high",
+      "summary": "Provider/runtime disabled-state proof exists, but provider path remains present and must be caveated."
+    },
+    {
+      "id": "ROLLBACK-RELEASE-NOTES-FINAL",
+      "status": "open",
+      "severity": "medium",
+      "summary": "Rollback and release notes are drafted but not final release assets."
+    }
+  ],
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

@@ -1,0 +1,15 @@
+{
+  "milestone": "M650",
+  "decision": "RELEASE_SEQUENCE_PLAN_READY",
+  "sequence": [
+    "M651 Host Permissions Final Decision / Manifest Strategy Gate",
+    "M652 Packaging Candidate Artifact Prep",
+    "M653 Store Listing / Privacy / Support Evidence",
+    "M654 Final Public Release Audit"
+  ],
+  "publicReleaseCanStartNow": false,
+  "packageFinalCreated": false,
+  "signingPerformed": false,
+  "published": false,
+  "productFilesModified": false
+}

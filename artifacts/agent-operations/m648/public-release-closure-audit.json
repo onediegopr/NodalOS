@@ -1,0 +1,19 @@
+{
+  "milestone": "M648",
+  "decision": "PUBLIC_RELEASE_CLOSURE_AUDIT_READY",
+  "mode": "audit-only",
+  "installedExtensionEvidenceGateReady": true,
+  "cleanRuntimeDevtoolsEvidenceReady": true,
+  "releaseCandidateEvidencePackReady": true,
+  "hostPermissionsJustificationReady": true,
+  "hostPermissionsOpenForPublicRelease": true,
+  "packagingSigningStorePrepReady": true,
+  "packagingSigningStoreFinalReady": false,
+  "providerRuntimeDisabledProofReady": true,
+  "privacySupportDisclosureFinalReady": false,
+  "rollbackReleaseNotesFinalReady": false,
+  "providerPathPresentCaveat": true,
+  "publicReleaseReady": false,
+  "finalDecision": "INTERNAL_CANDIDATE_GO_PUBLIC_RELEASE_NO_GO",
+  "productFilesModified": false
+}

@@ -1,0 +1,15 @@
+{
+  "milestone": "M648",
+  "decision": "PUBLIC_RELEASE_CLOSURE_AUDIT_READY",
+  "releaseEvidenceGateReady": true,
+  "cleanRuntimeDevtoolsEvidenceReady": true,
+  "releaseCandidateEvidencePackReady": true,
+  "hostPermissionsJustificationReady": true,
+  "hostPermissionsOpenForPublicRelease": true,
+  "packagingSigningStorePrepReady": true,
+  "packagingSigningStoreFinalReady": false,
+  "providerRuntimeDisabledProofReady": true,
+  "publicReleaseReady": false,
+  "internalCandidateReady": true,
+  "productFilesModified": false
+}

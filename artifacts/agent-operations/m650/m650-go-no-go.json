@@ -1,0 +1,13 @@
+{
+  "milestone": "M650",
+  "decision": "FINAL_REMEDIATION_BACKLOG_RELEASE_SEQUENCE_READY",
+  "finalRemediationBacklogReady": true,
+  "releaseSequencePlanReady": true,
+  "nextMilestonesRecommendationReady": true,
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "packageFinalCreated": false,
+  "signingPerformed": false,
+  "published": false,
+  "productFilesModified": false
+}
