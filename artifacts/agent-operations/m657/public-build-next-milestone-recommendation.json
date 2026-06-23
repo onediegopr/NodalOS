@@ -1,0 +1,9 @@
+{
+  "milestone": "M657",
+  "decision": "PUBLIC_BUILD_NEXT_MILESTONE_RECOMMENDATION_READY",
+  "recommendedNextMilestone": "M658 Public/Internal Build Split Implementation Plan",
+  "alternateNextMilestone": "M658 Host Permissions Narrowing Patch Plan",
+  "reason": "A split strategy must be designed before changing manifest or host permissions.",
+  "publicReleaseReady": false,
+  "internalCandidateReady": true
+}

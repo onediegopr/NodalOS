@@ -1,0 +1,17 @@
+{
+  "milestone": "M655",
+  "decision": "PUBLIC_BUILD_MANIFEST_STRATEGY_READY",
+  "publicBuildManifestStrategyReady": true,
+  "hostPermissionsNarrowingPlanReady": true,
+  "contentScriptMatchStrategyReady": true,
+  "recommendedPublicBuildStrategy": "split_internal_public_build",
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "productFilesModified": false
+}

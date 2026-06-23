@@ -1,0 +1,21 @@
+{
+  "milestone": "M657",
+  "decision": "PUBLIC_BUILD_STRATEGY_FINAL_GO_NO_GO_READY",
+  "publicBuildStrategyConditionalGo": true,
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "recommendedPublicBuildStrategy": "split_internal_public_build",
+  "recommendedNextMilestone": "M658 Public/Internal Build Split Implementation Plan",
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false
+}

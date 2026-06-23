@@ -1,0 +1,25 @@
+{
+  "milestone": "M656",
+  "decision": "EXTENSION_BEHAVIOR_IMPACT_READY",
+  "mode": "impact-analysis-only",
+  "whatStaysSame": [
+    "packaged sidepanel UI",
+    "local bridge requirement",
+    "runtime tab visibility",
+    "provider/cloud disabled state"
+  ],
+  "whatMayBreak": [
+    "content script availability on arbitrary websites",
+    "recipes relying on broad page matches",
+    "future page-context workflows"
+  ],
+  "fallbacksRequired": [
+    "internal-only page reach",
+    "optional permissions flow",
+    "explicit user-granted origins",
+    "reduced public feature scope"
+  ],
+  "requiresManualQa": true,
+  "requiresStoreDisclosure": true,
+  "publicReleaseReady": false
+}

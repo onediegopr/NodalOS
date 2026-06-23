@@ -1,0 +1,12 @@
+{
+  "milestone": "M657",
+  "decision": "INTERNAL_VS_PUBLIC_BUILD_DECISION_READY",
+  "keepTwoLines": true,
+  "internalCandidateBranchOrBuild": "current internal evidence candidate line",
+  "publicCandidateBranchOrBuild": "future public candidate line requiring manifest strategy",
+  "internalCandidateReady": true,
+  "publicCandidateReady": false,
+  "publicReleaseReady": false,
+  "hostPermissionsStrategy": "split_internal_public_build",
+  "productFilesModified": false
+}

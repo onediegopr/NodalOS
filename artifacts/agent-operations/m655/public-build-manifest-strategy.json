@@ -1,0 +1,23 @@
+{
+  "milestone": "M655",
+  "decision": "PUBLIC_BUILD_MANIFEST_STRATEGY_READY",
+  "mode": "planning-only",
+  "currentHostPermissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "currentContentScriptMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "internalBuildStrategy": "retain_current_wildcard_permissions_for_controlled_internal_candidate",
+  "publicBuildStrategy": "separate_public_manifest_strategy_required",
+  "recommendedPublicBuildStrategy": "split_internal_public_build",
+  "publicReleaseReady": false,
+  "internalCandidateReady": true,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "productFilesModified": false
+}

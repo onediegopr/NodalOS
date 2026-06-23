@@ -1,0 +1,18 @@
+{
+  "milestone": "M656",
+  "decision": "RUNTIME_FEATURE_IMPACT_READY",
+  "mode": "impact-analysis-only",
+  "sidepanelImpact": "expected unchanged",
+  "runtimeTabImpact": "expected unchanged if local bridge remains available",
+  "serviceWorkerImpact": "requires reload and DevTools QA after any future manifest change",
+  "contentScriptImpact": "highest impact; narrowing can reduce page reach",
+  "recipesImpact": "recipes using arbitrary page reach need fallback or internal-only scope",
+  "bridgeLocalImpact": "expected unchanged",
+  "futureBrowserAutomationImpact": "disabled and not part of public build",
+  "futureWorkspaceFilesystemImpact": "disabled",
+  "providerDisabledStateImpact": "unchanged",
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false
+}

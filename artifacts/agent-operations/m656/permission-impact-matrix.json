@@ -1,0 +1,33 @@
+{
+  "milestone": "M656",
+  "decision": "PERMISSION_IMPACT_MATRIX_READY",
+  "mode": "impact-analysis-only",
+  "strategies": [
+    {
+      "strategy": "split_internal_public_build",
+      "breakageRisk": "medium",
+      "requiresFallback": true,
+      "requiresNewMilestone": true,
+      "requiresManualQa": true,
+      "requiresStoreDisclosure": true
+    },
+    {
+      "strategy": "optional_permissions_strategy",
+      "breakageRisk": "medium",
+      "requiresFallback": true,
+      "requiresNewMilestone": true,
+      "requiresManualQa": true,
+      "requiresStoreDisclosure": true
+    },
+    {
+      "strategy": "strong_store_justification",
+      "breakageRisk": "low",
+      "requiresFallback": false,
+      "requiresNewMilestone": true,
+      "requiresManualQa": true,
+      "requiresStoreDisclosure": true
+    }
+  ],
+  "publicReleaseReady": false,
+  "productFilesModified": false
+}

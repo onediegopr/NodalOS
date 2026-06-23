@@ -1,0 +1,47 @@
+{
+  "milestone": "M655",
+  "decision": "HOST_PERMISSIONS_NARROWING_PLAN_READY",
+  "mode": "planning-only",
+  "narrowingOptions": [
+    {
+      "id": "internal_only_wildcard",
+      "description": "Keep http/https wildcard permissions only in the internal build.",
+      "risk": "medium",
+      "functionalImpact": "none for internal candidate",
+      "recommended": true
+    },
+    {
+      "id": "localhost_loopback_public_build",
+      "description": "Limit public build host permissions to localhost/127.0.0.1 if content script page reach is not required.",
+      "risk": "medium",
+      "functionalImpact": "content script page reach likely reduced",
+      "recommended": "requires viability test"
+    },
+    {
+      "id": "optional_host_permissions",
+      "description": "Move broader origins to optional permissions granted by the user.",
+      "risk": "medium-low",
+      "functionalImpact": "requires UX and permission request flow",
+      "recommended": "future candidate"
+    },
+    {
+      "id": "separate_content_scripts_by_build",
+      "description": "Use different content_scripts.matches for internal and public builds.",
+      "risk": "medium",
+      "functionalImpact": "requires build discipline and QA per build",
+      "recommended": true
+    },
+    {
+      "id": "strong_store_justification",
+      "description": "Retain wildcard permissions with strong Chrome Web Store justification.",
+      "risk": "high",
+      "functionalImpact": "none",
+      "recommended": false
+    }
+  ],
+  "recommendedNextMilestone": "M658 Public/Internal Build Split Implementation Plan",
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "publicReleaseReady": false
+}

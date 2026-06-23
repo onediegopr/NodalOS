@@ -1,0 +1,21 @@
+{
+  "milestone": "M655",
+  "decision": "CONTENT_SCRIPT_MATCH_STRATEGY_READY",
+  "mode": "planning-only",
+  "currentMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "internalBuildMatches": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "publicBuildMatches": "to be narrowed or moved to optional/user-granted origins in future milestone",
+  "strategy": "separate_content_scripts_by_build_or_optional_permissions",
+  "requiresFutureManifestMilestone": true,
+  "requiresManualQa": true,
+  "requiresStoreDisclosure": true,
+  "manifestModified": false,
+  "contentScriptsMatchesModified": false,
+  "publicReleaseReady": false
+}

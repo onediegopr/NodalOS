@@ -1,0 +1,28 @@
+{
+  "milestone": "M655-M657",
+  "decision": "PUBLIC_BUILD_MANIFEST_STRATEGY_READY",
+  "internalCandidateReady": true,
+  "publicReleaseReady": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "recommendedPublicBuildStrategy": "split_internal_public_build",
+  "recommendedNextMilestone": "M658 Public/Internal Build Split Implementation Plan or M658 Host Permissions Narrowing Patch Plan",
+  "percentages": {
+    "internalCandidateReadiness": 94,
+    "publicBuildStrategyReadiness": 85,
+    "publicReleaseReadiness": 74,
+    "hostPermissionsReleaseReadiness": 86,
+    "packagingSigningStoreReadiness": 70,
+    "runtimeProductizationReadiness": 30,
+    "providerCloudReadiness": 22
+  }
+}

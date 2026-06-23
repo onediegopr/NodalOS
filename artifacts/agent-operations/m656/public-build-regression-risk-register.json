@@ -1,0 +1,32 @@
+{
+  "milestone": "M656",
+  "decision": "PUBLIC_BUILD_REGRESSION_RISK_REGISTER_READY",
+  "mode": "risk-register-only",
+  "risks": [
+    {
+      "id": "PUBLIC-BUILD-CONTENT-SCRIPT-REACH",
+      "severity": "high",
+      "status": "open",
+      "summary": "Narrowed public permissions can reduce content script reach."
+    },
+    {
+      "id": "PUBLIC-BUILD-RUNTIME-RELOAD-QA",
+      "severity": "medium",
+      "status": "open",
+      "summary": "Any manifest change requires installed extension reload, Runtime tab, and DevTools QA."
+    },
+    {
+      "id": "PUBLIC-BUILD-STORE-DISCLOSURE",
+      "severity": "medium-high",
+      "status": "open",
+      "summary": "Permission posture requires Chrome Web Store disclosure and user-facing explanation."
+    },
+    {
+      "id": "PUBLIC-BUILD-FEATURE-SCOPE",
+      "severity": "medium",
+      "status": "open",
+      "summary": "Public build may need reduced feature scope versus internal candidate."
+    }
+  ],
+  "publicReleaseReady": false
+}

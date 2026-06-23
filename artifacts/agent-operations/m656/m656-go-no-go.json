@@ -1,0 +1,16 @@
+{
+  "milestone": "M656",
+  "decision": "PUBLIC_BUILD_PERMISSION_IMPACT_MATRIX_READY",
+  "permissionImpactMatrixReady": true,
+  "runtimeFeatureImpactReady": true,
+  "extensionBehaviorImpactReady": true,
+  "publicBuildRegressionRiskRegisterReady": true,
+  "publicReleaseReady": false,
+  "manifestModified": false,
+  "hostPermissionsModified": false,
+  "contentScriptsMatchesModified": false,
+  "permissionsModified": false,
+  "jsModified": false,
+  "bridgeModified": false,
+  "productFilesModified": false
+}
