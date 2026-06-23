@@ -1,0 +1,25 @@
+{
+  "milestone": "M716",
+  "decision": "ASSET_SCREENSHOT_COMPLETION_RETRY_PARTIAL_PENDING",
+  "assetCapturePending": true,
+  "requiredScreenshotsReady": false,
+  "fullManualEvidenceReady": false,
+  "screenshots": [
+    { "asset": "extension loaded screenshot", "status": "PENDING", "evidenceFilePath": null, "captureMethod": "Human Chrome operator capture required", "operatorNotes": "Not captured in this environment.", "redactionStatus": "PENDING", "acceptableForPackageFreeze": false, "acceptableForChromeWebStoreFinalSubmission": false },
+    { "asset": "sidepanel connected screenshot", "status": "PENDING", "evidenceFilePath": null, "captureMethod": "Human Chrome operator capture required", "operatorNotes": "Not captured in this environment.", "redactionStatus": "PENDING", "acceptableForPackageFreeze": false, "acceptableForChromeWebStoreFinalSubmission": false },
+    { "asset": "runtime/DevTools screenshot", "status": "PENDING", "evidenceFilePath": null, "captureMethod": "Human Chrome operator capture required", "operatorNotes": "Not captured in this environment.", "redactionStatus": "PENDING", "acceptableForPackageFreeze": false, "acceptableForChromeWebStoreFinalSubmission": false },
+    { "asset": "permission warning screenshot", "status": "UNKNOWN", "evidenceFilePath": null, "captureMethod": "Human Chrome operator capture required", "operatorNotes": "Permission warning surface must be checked during human capture.", "redactionStatus": "PENDING", "acceptableForPackageFreeze": false, "acceptableForChromeWebStoreFinalSubmission": false }
+  ],
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false,
+  "productFilesModified": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

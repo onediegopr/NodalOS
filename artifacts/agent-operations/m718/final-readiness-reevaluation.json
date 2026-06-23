@@ -1,0 +1,23 @@
+{
+  "milestone": "M718",
+  "decision": "PACKAGE_FREEZE_FINAL_READINESS_CONDITIONAL_BLOCKERS_PENDING",
+  "publicPackageFreeze": "NO-GO",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "requiredScreenshotsReady": false,
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "redactionProof": "PASS_FROM_M713_M715",
+  "finalFrozenArtifactExists": false,
+  "finalChecksumCalculated": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false,
+  "productFilesModified": false
+}

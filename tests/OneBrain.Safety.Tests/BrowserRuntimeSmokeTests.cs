@@ -115,7 +115,7 @@ public sealed class BrowserRuntimeSmokeTests
 
             Assert.AreEqual(BrowserRuntimeGateStatus.Passed, cleanup.Status);
             Assert.IsTrue(report.FinalHealth.CleanupCompleted);
-            Assert.IsFalse(Directory.EnumerateDirectories(Path.GetTempPath(), "onebrain-cdp-*").Any());
+            Assert.IsTrue(await WaitForManagedCdpTempDirectoriesToClearAsync());
         }
         finally
         {
@@ -323,5 +323,19 @@ public sealed class BrowserRuntimeSmokeTests
                 // Keep the test honest instead of hiding locked or permission-blocked temp profiles.
             }
         }
+    }
+
+    private static async Task<bool> WaitForManagedCdpTempDirectoriesToClearAsync()
+    {
+        for (var attempt = 0; attempt < 10; attempt++)
+        {
+            CleanupManagedCdpTempDirectories();
+            if (!Directory.EnumerateDirectories(Path.GetTempPath(), "onebrain-cdp-*").Any())
+                return true;
+
+            await Task.Delay(250);
+        }
+
+        return false;
     }
 }

@@ -61,10 +61,11 @@ public sealed class BrowserConsentM21Tests
     public void BrowserConsentExpiredGrantBlocksCapability()
     {
         var service = new BrowserConsentService();
-        var request = Request(service, ttl: TimeSpan.FromMilliseconds(1));
-        var grant = service.Decide(request, BrowserConsentStatus.Granted, "core", "proof-consent", DateTimeOffset.UtcNow).Grant!;
+        var decidedAt = DateTimeOffset.UtcNow;
+        var request = Request(service, ttl: TimeSpan.FromSeconds(1));
+        var grant = service.Decide(request, BrowserConsentStatus.Granted, "core", "proof-consent", decidedAt).Grant!;
 
-        Assert.IsFalse(grant.AllowsCapability(BrowserConsentCapability.ProfileControlledActivation, BrowserConsentScope.Profile, DateTimeOffset.UtcNow.AddSeconds(1)));
+        Assert.IsFalse(grant.AllowsCapability(BrowserConsentCapability.ProfileControlledActivation, BrowserConsentScope.Profile, decidedAt.AddSeconds(2)));
     }
 
     [TestMethod]

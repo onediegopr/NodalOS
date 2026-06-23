@@ -1,0 +1,23 @@
+{
+  "milestone": "M717",
+  "decision": "PRIVACY_SUPPORT_DOCS_URL_CLOSURE_RETRY_PARTIAL_PENDING",
+  "privacyUrl": { "providedValue": null, "readinessStatus": "PENDING", "blockerStatus": "BLOCKING", "liveVerifiable": false, "satisfiesChromeWebStoreListingNeeds": false },
+  "supportUrl": { "providedValue": null, "readinessStatus": "PENDING", "blockerStatus": "BLOCKING", "liveVerifiable": false, "satisfiesChromeWebStoreListingNeeds": false },
+  "docsUrl": { "providedValue": null, "readinessStatus": "PENDING", "blockerStatus": "RECOMMENDED", "liveVerifiable": false, "satisfiesChromeWebStoreListingNeeds": false },
+  "privacyUrlReady": false,
+  "supportUrlReady": false,
+  "docsUrlReady": false,
+  "doNotInventUrls": true,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestModified": false,
+  "productFilesModified": false
+}

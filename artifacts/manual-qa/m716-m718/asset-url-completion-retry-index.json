@@ -1,0 +1,11 @@
+{
+  "milestone": "M716-M718",
+  "status": "PENDING_HUMAN_CAPTURE",
+  "assetCapturePending": true,
+  "urlCapturePending": true,
+  "redactionRequiredBeforeCommit": true,
+  "doNotInventEvidence": true,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}
