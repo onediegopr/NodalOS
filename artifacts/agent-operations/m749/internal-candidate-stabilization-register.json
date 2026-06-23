@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "decision": "INTERNAL_CANDIDATE_STABILIZATION_READY",
+  "freezeCandidateLock": "GO_PRESERVED",
+  "storeAssetsBoundary": "STABILIZED",
+  "releaseDeferred": true,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "signedPublicZipCreated": false,
+  "actualPublicReleasePerformed": false,
+  "actualChromeWebStoreSubmissionPerformed": false,
+  "runtimeProviderFilesystemBrowserCapability": "DISABLED",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

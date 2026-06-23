@@ -1,0 +1,7 @@
+{
+  "project": "NODAL OS",
+  "freezeCandidateLock": "GO_PRESERVED",
+  "freezeLockPreserved": true,
+  "publicPackageFreezeFinal": "OWNER-ACCEPTED CONDITIONAL LOCK",
+  "releaseBoundaryChanged": false
+}

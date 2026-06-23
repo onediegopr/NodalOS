@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "decision": "NEXT_INTERNAL_ROADMAP_READY",
+  "recommendedNextMilestone": "M752-M754 Runtime Capability Inventory + Policy/Evidence Re-Entry Plan",
+  "nextMilestonePlanningOnly": true,
+  "automaticRuntimeUnlockAllowed": false,
+  "automaticPublicationAllowed": false
+}

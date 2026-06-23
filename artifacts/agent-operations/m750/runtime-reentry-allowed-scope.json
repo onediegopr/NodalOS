@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "allowedScope": [
+    "docs",
+    "reports",
+    "artifacts",
+    "tests",
+    "roadmap planning",
+    "risk register",
+    "adapter boundary planning",
+    "runtime capability inventory",
+    "policy/evidence planning",
+    "manual gates",
+    "dry-run contracts"
+  ],
+  "executionAllowed": false
+}

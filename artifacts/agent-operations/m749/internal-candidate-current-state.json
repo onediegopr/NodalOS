@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "internalCandidateCurrentState": "STABILIZED_FOR_PLANNING_REENTRY",
+  "freezeCandidateLock": "GO_PRESERVED",
+  "storeAssetsBoundary": "STABILIZED",
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "evidenceInvented": false
+}

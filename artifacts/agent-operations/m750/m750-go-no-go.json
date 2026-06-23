@@ -1,0 +1,8 @@
+{
+  "milestone": "M750",
+  "decision": "RUNTIME_ROADMAP_REENTRY_PLANNING_ONLY_READY",
+  "planningOnly": true,
+  "runtimeProviderFilesystemBrowserCapability": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "runtimeRoadmapReentryStatus": "RUNTIME_ROADMAP_REENTRY_PLANNING_ONLY_READY",
+  "planningOnly": true,
+  "productiveRuntimeEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false
+}

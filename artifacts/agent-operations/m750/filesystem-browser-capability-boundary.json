@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "filesystemBrowserCapabilityBoundary": "BLOCKED_EXCEPT_PLANNING",
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "planningAllowed": true,
+  "realUnlockAllowed": false
+}

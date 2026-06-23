@@ -1,0 +1,8 @@
+{
+  "milestone": "M749",
+  "decision": "INTERNAL_CANDIDATE_STABILIZATION_READY",
+  "freezeCandidateLock": "GO_PRESERVED",
+  "releaseDeferred": true,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

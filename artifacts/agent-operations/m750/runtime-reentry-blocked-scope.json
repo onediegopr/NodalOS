@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "blockedScope": [
+    "runtime productive execution",
+    "provider/cloud live calls",
+    "filesystem real unlock",
+    "browser automation unlock",
+    "capability unlock",
+    "Store submission",
+    "public release",
+    "signed public ZIP",
+    "Bridge/CSP changes",
+    "product files changes"
+  ],
+  "blockedScopeEnforced": true
+}

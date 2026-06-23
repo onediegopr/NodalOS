@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "recommendedNextMilestone": "M752-M754 Runtime Capability Inventory + Policy/Evidence Re-Entry Plan",
+  "scope": "planning/tests/docs only",
+  "runtimeUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

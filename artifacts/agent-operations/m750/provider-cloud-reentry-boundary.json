@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "providerCloudReentryBoundary": "PLANNING_ONLY",
+  "providerCloudEnabled": false,
+  "liveProviderCallsAllowed": false,
+  "providerCredentialUseAllowed": false,
+  "roadmapPlanningAllowed": true
+}

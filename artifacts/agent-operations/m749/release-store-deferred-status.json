@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "releaseDeferred": true,
+  "storeDeferred": true,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "signedPublicZipCreated": false,
+  "actualPublicReleasePerformed": false,
+  "actualChromeWebStoreSubmissionPerformed": false
+}
