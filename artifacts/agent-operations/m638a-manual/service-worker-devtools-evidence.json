@@ -1,0 +1,16 @@
+{
+  "milestone": "M638A-MANUAL",
+  "devtoolsConsoleProvided": false,
+  "serviceWorkerConsoleInspected": false,
+  "afterExtensionReloadWithBridgeLive": false,
+  "cspViolationsObserved": "unknown",
+  "errConnectionRefusedObserved": "unknown",
+  "invalidTokenObserved": "unknown",
+  "policyViolation1008Observed": "unknown",
+  "bridgeWebSocketErrorRepeatedObserved": "unknown",
+  "webSocketReconnectingObserved": "unknown",
+  "criticalErrorsObserved": "unknown",
+  "warningsObserved": [],
+  "rawConsoleExcerptAllowed": false,
+  "manualReviewerNotes": "Service worker DevTools Console evidence was not supplied. No raw console excerpt was captured or stored."
+}

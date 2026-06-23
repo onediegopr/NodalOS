@@ -1,0 +1,21 @@
+{
+  "milestone": "M638A-MANUAL",
+  "decision": "MANUAL_RUNTIME_DEVTOOLS_EVIDENCE_NOT_PROVIDED",
+  "basedOnMilestone": "M638A-RETRY",
+  "basedOnCommit": "d156540bc28c0cf1f6b0722872c0093e0e2f6b9f",
+  "manualEvidenceOnly": true,
+  "productFilesModified": false,
+  "bridgeLivenessEvidence": "pass",
+  "runtimeTabEvidenceProvided": false,
+  "serviceWorkerDevtoolsEvidenceProvided": false,
+  "cspViolationCheck": "unknown",
+  "errConnectionRefusedCheck": "unknown",
+  "invalidTokenCheck": "unknown",
+  "policyViolation1008Check": "unknown",
+  "bridgeWebSocketErrorCheck": "unknown",
+  "webSocketReconnectingCheck": "unknown",
+  "criticalConsoleErrorsCheck": "unknown",
+  "warningsObserved": [],
+  "releasePublicReady": false,
+  "manualReviewerNotes": "Bridge liveness was confirmed PASS. No manual Runtime tab evidence or service worker DevTools Console evidence was provided in this turn, so Runtime and DevTools checks remain unknown."
+}

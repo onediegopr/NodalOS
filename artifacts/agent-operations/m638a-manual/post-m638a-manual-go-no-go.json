@@ -1,0 +1,13 @@
+{
+  "readyForReleaseEvidenceGate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "bridgeLivenessConfirmed": true,
+  "manualRuntimeEvidenceCaptured": false,
+  "manualServiceWorkerDevtoolsEvidenceCaptured": false,
+  "cleanManualEvidenceCaptured": false,
+  "recommendedNextMilestone": "M638A-MANUAL-RETRY"
+}
