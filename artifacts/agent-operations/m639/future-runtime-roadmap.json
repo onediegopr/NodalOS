@@ -1,0 +1,27 @@
+{
+  "milestone": "M639",
+  "runtimeRoadmapStatus": "planning-only",
+  "runtimeProductiveEnabled": false,
+  "runtimeChangesAllowedNow": false,
+  "capabilityUnlockAllowedNow": false,
+  "currentReadinessPercent": 20,
+  "requiredFutureGates": [
+    "Execution authorization gate",
+    "Approval model review",
+    "Evidence model integration",
+    "Runtime state machine review",
+    "No external side effects proof",
+    "Rollback and disable plan",
+    "Release candidate runtime gate"
+  ],
+  "blockedUntilFutureGate": [
+    "Productive runtime execution",
+    "Shell/subprocess",
+    "Filesystem mutation",
+    "Browser automation execution",
+    "Connector actions",
+    "Capability unlock"
+  ],
+  "recommendedNextMilestone": "M640-M642 Future Runtime Enablement Plan",
+  "notes": "Clean Runtime evidence does not unlock runtime execution. M639 is roadmap-only."
+}

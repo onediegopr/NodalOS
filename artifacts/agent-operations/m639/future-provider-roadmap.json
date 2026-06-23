@@ -1,0 +1,27 @@
+{
+  "milestone": "M639",
+  "providerRoadmapStatus": "planning-only",
+  "providerCloudEnabled": false,
+  "providerChangesAllowedNow": false,
+  "byokReleaseAllowedNow": false,
+  "currentReadinessPercent": 15,
+  "requiredFutureGates": [
+    "Provider Runtime Release Gate",
+    "BYOK consent review",
+    "Secret storage policy review",
+    "Redaction policy review",
+    "Prompt evidence logging policy",
+    "Provider disabled-state proof",
+    "Provider prompt naming cleanup"
+  ],
+  "blockedUntilFutureGate": [
+    "Provider calls",
+    "BYOK release",
+    "Secret storage changes",
+    "Prompt execution",
+    "Cloud routing",
+    "Provider runtime release"
+  ],
+  "recommendedNextMilestone": "Provider Runtime Release Gate / BYOK Consent Review",
+  "notes": "Provider/cloud remains NO-GO. M639 records roadmap only and does not alter provider code."
+}

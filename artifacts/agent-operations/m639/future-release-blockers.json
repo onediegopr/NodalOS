@@ -1,0 +1,37 @@
+[
+  {
+    "id": "PUBLIC-RELEASE-PRODUCTIZATION-READINESS",
+    "severity": "critical",
+    "status": "open",
+    "description": "Public release remains blocked until productization readiness review closes all release blockers.",
+    "requiredMilestone": "M640-M642"
+  },
+  {
+    "id": "PUBLIC-RELEASE-HOST-PERMISSIONS-JUSTIFICATION",
+    "severity": "medium",
+    "status": "open",
+    "description": "Host permissions require final release justification before public publication.",
+    "requiredMilestone": "M640-M642"
+  },
+  {
+    "id": "PUBLIC-RELEASE-PROVIDER-RUNTIME-GATE",
+    "severity": "critical",
+    "status": "open",
+    "description": "Provider and runtime paths must remain disabled unless a dedicated provider/runtime release gate approves them.",
+    "requiredMilestone": "Future Provider Runtime Release Gate"
+  },
+  {
+    "id": "PUBLIC-RELEASE-IPV6-LOOPBACK-CAVEAT",
+    "severity": "low-medium",
+    "status": "documented",
+    "description": "Current evidence target is 127.0.0.1; IPv6 ::1 remains a caveat and does not block current local evidence gate.",
+    "requiredMilestone": "Public Release Blockers Consolidation"
+  },
+  {
+    "id": "PUBLIC-RELEASE-PROVIDER-PROMPT-NAMING-DEBT",
+    "severity": "medium",
+    "status": "open",
+    "description": "Legacy provider prompt naming debt must be reviewed before provider release.",
+    "requiredMilestone": "Provider Runtime Release Gate / BYOK Consent Review"
+  }
+]
