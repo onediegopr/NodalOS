@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "policyEvidenceReentryPlan": "READY",
+  "planningOnly": true,
+  "productiveUnlockAllowed": false,
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

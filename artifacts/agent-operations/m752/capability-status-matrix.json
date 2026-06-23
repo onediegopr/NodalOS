@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "allowedStatuses": [
+    "DISABLED",
+    "PLANNING_ONLY",
+    "INTERNAL_CANDIDATE_READY",
+    "DRY_RUN_ELIGIBLE_FUTURE",
+    "BLOCKED",
+    "OUT_OF_SCOPE"
+  ],
+  "productEnabledStatusUsed": false,
+  "capabilities": [
+    { "name": "runtime orchestration", "status": "PLANNING_ONLY" },
+    { "name": "provider/cloud calls", "status": "DISABLED" },
+    { "name": "local model / local provider", "status": "PLANNING_ONLY" },
+    { "name": "filesystem read", "status": "PLANNING_ONLY" },
+    { "name": "filesystem write", "status": "DISABLED" },
+    { "name": "browser automation", "status": "DISABLED" },
+    { "name": "extension bridge", "status": "INTERNAL_CANDIDATE_READY" },
+    { "name": "Chrome sidepanel", "status": "INTERNAL_CANDIDATE_READY" },
+    { "name": "WebSocket bridge", "status": "INTERNAL_CANDIDATE_READY" },
+    { "name": "evidence ledger", "status": "PLANNING_ONLY" },
+    { "name": "timeline/reporting", "status": "PLANNING_ONLY" },
+    { "name": "policy gate", "status": "PLANNING_ONLY" },
+    { "name": "manual approval gate", "status": "PLANNING_ONLY" },
+    { "name": "redaction layer", "status": "PLANNING_ONLY" },
+    { "name": "capability unlock", "status": "DISABLED" },
+    { "name": "Store/public release", "status": "BLOCKED" }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "requirements": [
+    { "capabilityName": "provider/cloud live calls", "evidenceRequired": true, "evidenceType": "redacted request metadata, dry-run proof, policy approval artifact" },
+    { "capabilityName": "filesystem write", "evidenceRequired": true, "evidenceType": "dry-run diff, jail proof, rollback proof" },
+    { "capabilityName": "browser automation", "evidenceRequired": true, "evidenceType": "dry-run transcript, human handoff proof, redacted browser metadata" },
+    { "capabilityName": "capability unlock", "evidenceRequired": true, "evidenceType": "capability-specific approval and execution boundary proof" }
+  ]
+}

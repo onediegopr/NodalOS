@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "riskClassification": [
+    { "capabilityName": "provider/cloud calls", "riskLevel": "HIGH" },
+    { "capabilityName": "filesystem write", "riskLevel": "HIGH" },
+    { "capabilityName": "browser automation", "riskLevel": "HIGH" },
+    { "capabilityName": "capability unlock", "riskLevel": "HIGH" },
+    { "capabilityName": "filesystem read", "riskLevel": "MEDIUM" },
+    { "capabilityName": "extension bridge", "riskLevel": "MEDIUM" },
+    { "capabilityName": "Chrome sidepanel", "riskLevel": "LOW" },
+    { "capabilityName": "evidence ledger", "riskLevel": "LOW" }
+  ],
+  "highRiskProductiveUnlockAllowed": false
+}

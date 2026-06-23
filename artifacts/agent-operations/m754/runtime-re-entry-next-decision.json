@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "runtimeCapabilityInventory": "READY",
+  "policyEvidenceReentryPlan": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

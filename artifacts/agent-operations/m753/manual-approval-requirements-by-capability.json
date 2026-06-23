@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "requirements": [
+    { "capabilityName": "provider/cloud live calls", "manualApprovalRequired": true },
+    { "capabilityName": "filesystem write", "manualApprovalRequired": true },
+    { "capabilityName": "browser automation", "manualApprovalRequired": true },
+    { "capabilityName": "capability unlock", "manualApprovalRequired": true }
+  ]
+}

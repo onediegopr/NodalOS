@@ -1,0 +1,8 @@
+{
+  "milestone": "M752",
+  "decision": "RUNTIME_CAPABILITY_INVENTORY_READY",
+  "inventoryMode": "PLANNING_ONLY",
+  "runtimeProductiveExecution": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO"
+}

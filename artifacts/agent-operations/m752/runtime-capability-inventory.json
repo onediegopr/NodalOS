@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlock": "DISABLED",
+  "browserAutomationUnlock": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "inventoryMode": "PLANNING_ONLY",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

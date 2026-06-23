@@ -1,0 +1,61 @@
+{
+  "project": "NODAL OS",
+  "requirements": [
+    {
+      "capabilityName": "provider/cloud live calls",
+      "currentStatus": "DISABLED",
+      "riskLevel": "HIGH",
+      "policyGateRequired": true,
+      "manualApprovalRequired": true,
+      "evidenceRequired": true,
+      "redactionRequired": true,
+      "secretsBoundary": "required",
+      "dryRunEligible": true,
+      "productiveUnlockAllowed": false,
+      "blockers": ["provider credentials unavailable", "live calls blocked"],
+      "nextGateRequired": "provider credential policy + dry-run provider boundary"
+    },
+    {
+      "capabilityName": "filesystem write",
+      "currentStatus": "DISABLED",
+      "riskLevel": "HIGH",
+      "policyGateRequired": true,
+      "manualApprovalRequired": true,
+      "evidenceRequired": true,
+      "redactionRequired": true,
+      "secretsBoundary": "no secrets in paths or artifacts",
+      "dryRunEligible": true,
+      "productiveUnlockAllowed": false,
+      "blockers": ["filesystem jail missing", "rollback proof missing"],
+      "nextGateRequired": "filesystem jail + dry-run write contract + rollback proof"
+    },
+    {
+      "capabilityName": "browser automation",
+      "currentStatus": "DISABLED",
+      "riskLevel": "HIGH",
+      "policyGateRequired": true,
+      "manualApprovalRequired": true,
+      "evidenceRequired": true,
+      "redactionRequired": true,
+      "secretsBoundary": "no cookies, tokens, or private session data",
+      "dryRunEligible": true,
+      "productiveUnlockAllowed": false,
+      "blockers": ["human handoff policy missing", "automation dry-run contract missing"],
+      "nextGateRequired": "browser automation dry-run contract + human handoff policy"
+    },
+    {
+      "capabilityName": "capability unlock",
+      "currentStatus": "DISABLED",
+      "riskLevel": "HIGH",
+      "policyGateRequired": true,
+      "manualApprovalRequired": true,
+      "evidenceRequired": true,
+      "redactionRequired": true,
+      "secretsBoundary": "capability-specific",
+      "dryRunEligible": true,
+      "productiveUnlockAllowed": false,
+      "blockers": ["capability-specific approval gate missing"],
+      "nextGateRequired": "capability-specific approval gate"
+    }
+  ]
+}

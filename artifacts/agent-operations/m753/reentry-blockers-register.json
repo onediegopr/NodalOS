@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "blockers": [
+    "provider credential policy not defined",
+    "provider dry-run boundary not defined",
+    "filesystem jail not defined",
+    "filesystem rollback proof not defined",
+    "browser automation dry-run contract not defined",
+    "human handoff policy not defined",
+    "capability-specific approval gates not defined"
+  ],
+  "productiveUnlockAllowed": false
+}

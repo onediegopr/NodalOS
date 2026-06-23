@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "planningOnlyCapabilities": [
+    "runtime orchestration",
+    "local model / local provider",
+    "filesystem read",
+    "evidence ledger",
+    "timeline/reporting",
+    "policy gate",
+    "manual approval gate",
+    "redaction layer"
+  ],
+  "planningModeOnly": true,
+  "productiveUnlockAllowed": false
+}
