@@ -1,0 +1,7 @@
+{
+  "milestone": "M677",
+  "classification": "INSUFFICIENT",
+  "manifestSelectionVerifiedHuman": "insufficient",
+  "expectedManifestSelection": "manifest.public.json staged as manifest.json",
+  "humanProofReceived": false
+}

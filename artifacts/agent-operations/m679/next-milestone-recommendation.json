@@ -1,0 +1,17 @@
+{
+  "milestone": "M679",
+  "recommendedNextMilestone": "M680-M682 Manual QA Evidence Completion Retry",
+  "requiredUserInput": [
+    "Public variant loaded true/false",
+    "Visible extension name",
+    "Manifest selection verified human",
+    "Loaded folder/path used",
+    "Runtime tab PASS/FAIL/UNKNOWN",
+    "Service Worker DevTools PASS/FAIL/UNKNOWN",
+    "CSP/console checks",
+    "Bridge liveness",
+    "Origin behavior",
+    "Evidence redaction",
+    "Final manual QA decision"
+  ]
+}

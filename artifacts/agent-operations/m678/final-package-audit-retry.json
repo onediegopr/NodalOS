@@ -1,0 +1,9 @@
+{
+  "milestone": "M678",
+  "decision": "MANUAL_QA_EVIDENCE_STILL_INCOMPLETE",
+  "publicPackageCandidatePrepared": true,
+  "manualQaCompleteness": "incomplete",
+  "packageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}

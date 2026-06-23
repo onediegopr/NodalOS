@@ -1,0 +1,10 @@
+{
+  "milestone": "M679",
+  "decision": "MANUAL_QA_EVIDENCE_STILL_INCOMPLETE",
+  "packageFreezeReady": false,
+  "manualQaSufficient": false,
+  "remediationRequired": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reason": "The provided human QA evidence was incomplete and did not contain concrete validation results."
+}

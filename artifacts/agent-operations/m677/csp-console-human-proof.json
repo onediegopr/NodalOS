@@ -1,0 +1,10 @@
+{
+  "milestone": "M677",
+  "classification": "INSUFFICIENT",
+  "cspViolationsFound": "insufficient",
+  "invalidTokenFound": "insufficient",
+  "close1008Found": "insufficient",
+  "reconnectStormFound": "insufficient",
+  "criticalConsoleErrorsFound": "insufficient",
+  "consoleEvidenceReady": false
+}

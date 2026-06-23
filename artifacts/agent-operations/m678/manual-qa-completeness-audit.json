@@ -1,0 +1,18 @@
+{
+  "milestone": "M678",
+  "manualQaCompleteness": "incomplete",
+  "manualQaEvidenceSufficient": false,
+  "missingEvidence": [
+    "public variant loaded true/false",
+    "visible extension name",
+    "manifest selection verified human",
+    "loaded folder/path used",
+    "permission warnings",
+    "Runtime tab evidence",
+    "Service Worker DevTools evidence",
+    "CSP/console status",
+    "bridge liveness",
+    "origin behavior",
+    "final manual QA decision"
+  ]
+}

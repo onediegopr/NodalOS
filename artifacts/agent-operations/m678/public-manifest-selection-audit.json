@@ -1,0 +1,8 @@
+{
+  "milestone": "M678",
+  "publicManifestSelectionAuditReady": true,
+  "publicManifestPath": "browser-extension/onebrain-chrome-lab/manifest.public.json",
+  "publicPackageCandidateMustUsePublicManifest": true,
+  "manifestSelectionVerifiedStatic": true,
+  "manifestSelectionVerifiedHuman": false
+}

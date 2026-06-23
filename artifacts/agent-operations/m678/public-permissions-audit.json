@@ -1,0 +1,13 @@
+{
+  "milestone": "M678",
+  "publicPermissionsAuditReady": true,
+  "publicHostPermissionsNarrowed": true,
+  "hostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "containsHttpWildcard": false,
+  "containsHttpsWildcard": false,
+  "automaticExternalContentScripts": false,
+  "permissionJustificationExists": true
+}

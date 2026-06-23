@@ -1,0 +1,16 @@
+{
+  "milestone": "M679",
+  "decision": "MANUAL_QA_EVIDENCE_STILL_INCOMPLETE",
+  "publicPackageFreezeReady": false,
+  "manualQaSufficient": false,
+  "remediationRequired": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

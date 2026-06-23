@@ -1,0 +1,23 @@
+{
+  "milestone": "M678",
+  "risks": [
+    {
+      "id": "M678-RISK-BLANK-QA-TEMPLATE",
+      "severity": "critical-for-freeze",
+      "status": "open",
+      "description": "The supplied human evidence was a blank template, not actual QA evidence."
+    },
+    {
+      "id": "M678-RISK-RUNTIME-DEVTOOLS-UNKNOWN",
+      "severity": "high",
+      "status": "open",
+      "description": "Runtime tab and Service Worker DevTools status remain unknown."
+    },
+    {
+      "id": "M678-RISK-MANIFEST-HUMAN-PROOF-MISSING",
+      "severity": "high",
+      "status": "open",
+      "description": "Human confirmation that the public manifest was loaded is missing."
+    }
+  ]
+}

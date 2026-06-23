@@ -1,0 +1,10 @@
+{
+  "milestone": "M679",
+  "publicPackageFreezeReady": false,
+  "manualQaEvidenceSufficient": false,
+  "manualQaPassed": false,
+  "publicVariantLoaded": "insufficient",
+  "manifestSelectionVerifiedHuman": "insufficient",
+  "runtimeTabEvidenceReady": false,
+  "serviceWorkerDevtoolsEvidenceReady": false
+}

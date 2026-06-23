@@ -1,0 +1,9 @@
+{
+  "milestone": "M677",
+  "classification": "PASS",
+  "evidenceRedacted": true,
+  "secretsApiKeysTokensCookiesIncluded": false,
+  "rawEvidencePayloadStored": false,
+  "longRawLogsStored": false,
+  "redactionIssueFound": false
+}

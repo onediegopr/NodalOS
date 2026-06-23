@@ -1,0 +1,12 @@
+{
+  "milestone": "M677",
+  "decision": "MANUAL_QA_EVIDENCE_STILL_INCOMPLETE",
+  "manualQaEvidenceReceived": false,
+  "manualQaEvidenceSufficient": false,
+  "manualQaPassed": false,
+  "inputWasBlankTemplate": true,
+  "finalManualQaDecisionFromUser": "not_provided",
+  "classification": "INSUFFICIENT",
+  "evidenceRedacted": true,
+  "rawEvidencePayloadStored": false
+}
