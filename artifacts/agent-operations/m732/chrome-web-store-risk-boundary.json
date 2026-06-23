@@ -1,0 +1,8 @@
+{
+  "milestone": "M732",
+  "chromeWebStoreReady": false,
+  "noStoreSubmission": true,
+  "requiresExplicitFinalOwnerStoreAcceptance": true,
+  "ownerAttestationDoesNotEqualStoreSubmissionApproval": true,
+  "reason": "Owner attestation allows conditional freeze prep only, not Chrome Web Store submission."
+}

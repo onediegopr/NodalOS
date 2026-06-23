@@ -1,0 +1,10 @@
+{
+  "milestone": "M732",
+  "evidenceInvented": false,
+  "screenshotsInvented": false,
+  "runtimeDevtoolsPassInvented": false,
+  "permissionWarningEvidenceInvented": false,
+  "logsInvented": false,
+  "secretsStored": false,
+  "notes": "Missing evidence is explicitly recorded as owner-attested non-auditable, not converted into visual PASS."
+}

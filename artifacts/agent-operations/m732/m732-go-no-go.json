@@ -1,0 +1,20 @@
+{
+  "milestone": "M732",
+  "decision": "OWNER_ATTESTATION_ACCEPTED_CONDITIONAL_FREEZE_PREP_READY",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "acceptedByOwner": true,
+  "riskAccepted": "continue without screenshots/log artifacts",
+  "conditionalFreezePrepReady": true,
+  "publicPackageFreezeFinalReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

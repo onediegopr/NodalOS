@@ -1,0 +1,16 @@
+{
+  "milestone": "M731",
+  "title": "Owner attestation intake",
+  "activeProject": "NODAL OS",
+  "ownerAttestationReceived": true,
+  "ownerReportedStatus": "impecable / no errors observed",
+  "ownerQuote": "no te voy a pasar nada, te dije que esta ok, continuemos",
+  "screenshotsProvided": false,
+  "logsProvided": false,
+  "runtimeDevtoolsEvidenceProvided": false,
+  "permissionWarningsEvidenceProvided": false,
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "evidenceInvented": false,
+  "continueRequestedByOwner": true,
+  "decision": "OWNER_ATTESTATION_ACCEPTED_CONDITIONAL_FREEZE_PREP_READY"
+}

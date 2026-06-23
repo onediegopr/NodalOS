@@ -1,0 +1,8 @@
+{
+  "milestone": "M732",
+  "publicReleaseReady": false,
+  "noPublicRelease": true,
+  "requiresExplicitFinalOwnerReleaseAcceptance": true,
+  "ownerAttestationDoesNotEqualPublicReleaseApproval": true,
+  "reason": "Owner attestation allows conditional freeze prep only, not public release."
+}

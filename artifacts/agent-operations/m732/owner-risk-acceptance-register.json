@@ -1,0 +1,22 @@
+{
+  "milestone": "M732",
+  "title": "Owner risk acceptance register",
+  "activeProject": "NODAL OS",
+  "acceptedByOwner": true,
+  "riskAccepted": "continue without screenshots/log artifacts",
+  "unresolvedEvidenceGaps": [
+    "privacy URL pending unless already provided elsewhere",
+    "support URL pending unless already provided elsewhere",
+    "screenshots not provided",
+    "runtime/devtools screenshots not provided",
+    "permission warning evidence not provided"
+  ],
+  "consequence": [
+    "conditional freeze prep may continue",
+    "public release still requires explicit final owner acceptance",
+    "Chrome Web Store submission still requires explicit final owner acceptance"
+  ],
+  "noStoreSubmission": true,
+  "noPublicRelease": true,
+  "evidenceInvented": false
+}

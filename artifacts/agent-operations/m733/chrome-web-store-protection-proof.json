@@ -1,0 +1,8 @@
+{
+  "milestone": "M733",
+  "chromeWebStoreReady": false,
+  "chromeWebStoreProtected": true,
+  "explicitOwnerFinalStoreAcceptanceRequired": true,
+  "storeSubmissionPerformed": false,
+  "reason": "Owner attestation does not authorize Chrome Web Store submission."
+}

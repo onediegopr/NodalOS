@@ -1,0 +1,13 @@
+{
+  "milestone": "M733",
+  "publicPackageFreezeConditionalGoNoGo": "CONDITIONAL-GO-FOR-PREP",
+  "conditionalFreezePrepReady": true,
+  "publicPackageFreezeFinalReady": false,
+  "basis": "owner attestation and risk acceptance",
+  "notBasedOn": [
+    "screenshots",
+    "logs",
+    "Runtime/DevTools artifacts",
+    "permission warning artifacts"
+  ]
+}

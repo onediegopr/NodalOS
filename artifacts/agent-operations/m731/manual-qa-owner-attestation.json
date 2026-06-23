@@ -1,0 +1,14 @@
+{
+  "milestone": "M731",
+  "ownerAttestationReceived": true,
+  "manualQaOwnerAttested": true,
+  "ownerReportedStatus": "impecable / no errors observed",
+  "ownerDeclinesAdditionalEvidence": true,
+  "continueRequestedByOwner": true,
+  "attestationAuditability": "NON_AUDITABLE",
+  "notes": [
+    "Owner states manual QA is OK.",
+    "Owner states no screenshots, paths, logs, or additional evidence will be provided.",
+    "This artifact records attestation only and does not convert missing visual evidence into PASS."
+  ]
+}

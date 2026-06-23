@@ -1,0 +1,15 @@
+{
+  "milestone": "M731",
+  "ownerDecision": "continue_without_screenshots_or_logs",
+  "missingEvidenceAcceptedByOwner": true,
+  "missingEvidence": [
+    "screenshots",
+    "Runtime tab evidence artifact",
+    "Service Worker DevTools evidence artifact",
+    "permission warning evidence artifact",
+    "raw logs"
+  ],
+  "evidenceInvented": false,
+  "freezePrepImpact": "conditional freeze prep may continue by owner attestation",
+  "releaseImpact": "public release remains protected until explicit final owner release acceptance"
+}

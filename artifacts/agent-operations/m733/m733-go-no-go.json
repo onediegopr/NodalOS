@@ -1,0 +1,20 @@
+{
+  "milestone": "M733",
+  "decision": "OWNER_ATTESTATION_ACCEPTED_CONDITIONAL_FREEZE_PREP_READY",
+  "activeProject": "NODAL OS",
+  "nodrixOutOfScope": true,
+  "ownerAttestationReceived": true,
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "conditionalFreezePrepReady": true,
+  "publicPackageFreezeFinalReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

@@ -1,0 +1,13 @@
+{
+  "milestone": "M731",
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "auditability": "LIMITED",
+  "screenshotsProvided": false,
+  "logsProvided": false,
+  "runtimeDevtoolsEvidenceProvided": false,
+  "permissionWarningsEvidenceProvided": false,
+  "runtimeDevtoolsEvidenceStatus": "not_provided",
+  "permissionWarningEvidenceStatus": "not_provided",
+  "evidenceInvented": false,
+  "classificationReason": "Owner explicitly directed continuation without additional visual/log evidence."
+}

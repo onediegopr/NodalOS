@@ -1,0 +1,8 @@
+{
+  "milestone": "M732",
+  "conditionalFreezePrepMayContinue": true,
+  "publicPackageFreezeFinalReady": false,
+  "freezeRiskBoundary": "conditional freeze prep only",
+  "nonAuditableEvidenceAcceptedByOwner": true,
+  "remainingFinalGate": "explicit owner final acceptance before public release or Store submission"
+}
