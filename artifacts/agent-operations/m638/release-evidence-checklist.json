@@ -1,0 +1,56 @@
+{
+  "milestone": "M638",
+  "decision": "INSTALLED_EXTENSION_RELEASE_EVIDENCE_GATE_READY",
+  "checklist": [
+    {
+      "id": "LIVENESS-TCP-127001-8787",
+      "status": "pass",
+      "source": "M637H",
+      "description": "Bridge liveness script reported TCP 127.0.0.1:8787 PASS."
+    },
+    {
+      "id": "LIVENESS-HTTP-ENDPOINTS",
+      "status": "pass",
+      "source": "M637H",
+      "description": "/health, /runtime, /debug and /config/public were reported PASS."
+    },
+    {
+      "id": "LIVENESS-WS-UPGRADE",
+      "status": "pass",
+      "source": "M637H",
+      "description": "/ws/extension upgrade was reported PASS."
+    },
+    {
+      "id": "RUNTIME-TAB-VISUAL",
+      "status": "pass-reported-no-screenshot",
+      "source": "M637H",
+      "description": "Runtime tab was reported OK with health, clients and heartbeat pass, but no screenshot was provided."
+    },
+    {
+      "id": "DEVTOOLS-CLEAN-CONSOLE",
+      "status": "unknown",
+      "source": "not-provided",
+      "description": "Clean service worker DevTools Console after reload with bridge live was not provided."
+    },
+    {
+      "id": "CSP-VIOLATIONS",
+      "status": "unknown",
+      "source": "not-provided",
+      "description": "No clean DevTools evidence was provided to confirm absence of CSP violations."
+    },
+    {
+      "id": "ERR-CONNECTION-REFUSED",
+      "status": "unknown",
+      "source": "not-provided",
+      "description": "M637H reported no visible ERR_CONNECTION_REFUSED, but DevTools clean evidence was not provided."
+    },
+    {
+      "id": "INVALID-TOKEN-1008",
+      "status": "unknown",
+      "source": "not-provided",
+      "description": "No clean DevTools evidence was provided to confirm absence of invalid_token or close 1008."
+    }
+  ],
+  "publicReleaseEvidenceComplete": false,
+  "recommendedEvidenceCapture": "M638A Clean DevTools Evidence Capture"
+}

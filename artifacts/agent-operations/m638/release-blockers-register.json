@@ -1,0 +1,38 @@
+[
+  {
+    "id": "RELEASE-BLOCKER-DEVTOOLS-CLEAN-EVIDENCE",
+    "severity": "critical-for-public-release",
+    "status": "open",
+    "description": "Clean DevTools Console after reload with bridge live is required before public release."
+  },
+  {
+    "id": "RELEASE-BLOCKER-HOST-PERMISSIONS-REVIEW",
+    "severity": "medium",
+    "status": "open",
+    "description": "host_permissions are broad and require release justification before public publication."
+  },
+  {
+    "id": "RELEASE-BLOCKER-PROVIDER-RUNTIME-GATE",
+    "severity": "critical-for-provider-release",
+    "status": "open",
+    "description": "OpenAI/provider execution path must remain gated until provider consent/redaction/release review."
+  },
+  {
+    "id": "RELEASE-CAVEAT-IPV6-LOOPBACK",
+    "severity": "low-medium",
+    "status": "documented",
+    "description": "CSP does not include IPv6 ::1; default 127.0.0.1 remains supported."
+  },
+  {
+    "id": "RELEASE-CAVEAT-CORS-LAN",
+    "severity": "medium",
+    "status": "documented",
+    "description": "LAN/CORS behavior remains conditional and should not be treated as public-release-ready without a dedicated review."
+  },
+  {
+    "id": "RELEASE-CAVEAT-MIXED-MICROCOPY",
+    "severity": "low",
+    "status": "documented",
+    "description": "Minor mixed microcopy debt remains documented for post-gate cleanup."
+  }
+]

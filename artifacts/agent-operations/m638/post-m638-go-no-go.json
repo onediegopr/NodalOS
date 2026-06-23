@@ -1,0 +1,10 @@
+{
+  "readyForReleaseEvidenceGate": true,
+  "readyForReleasePublic": false,
+  "readyForJsChanges": false,
+  "readyForRuntimeChanges": false,
+  "readyForProviderCloud": false,
+  "readyForFilesystem": false,
+  "readyForFullProjectRoadmapConsolidation": true,
+  "recommendedNextMilestone": "M638A Clean DevTools Evidence Capture"
+}

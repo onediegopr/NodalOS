@@ -1,0 +1,12 @@
+{
+  "openAiAgentClientPresent": true,
+  "providerCanCallExternalApiIfKeyPresent": true,
+  "providerReleaseGateRequired": true,
+  "providerRuntimeReady": false,
+  "providerPromptNamingDebt": "ONE BRAIN Chrome Lab Agent",
+  "secretsInPromptsAllowed": false,
+  "providerCloudEnabledForRelease": false,
+  "providerConsentGateRequired": true,
+  "providerRedactionGateRequired": true,
+  "recommendedNextProviderMilestone": "Provider Runtime Release Gate / BYOK Consent Review"
+}

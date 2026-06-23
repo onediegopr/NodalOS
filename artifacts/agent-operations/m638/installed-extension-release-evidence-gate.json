@@ -1,0 +1,21 @@
+{
+  "milestone": "M638",
+  "decision": "INSTALLED_EXTENSION_RELEASE_EVIDENCE_GATE_READY",
+  "auditVerdict": "AUDIT_CONDITIONAL_GO",
+  "installedExtensionQaLineClosed": true,
+  "releaseEvidenceGateCanStart": true,
+  "releasePublicReady": false,
+  "bridgeLivenessVerified": "pass",
+  "runtimeScreenshotProvided": false,
+  "devtoolsConsoleProvided": false,
+  "cspViolationCheck": "unknown",
+  "errConnectionRefusedCheck": "unknown",
+  "invalidTokenCheck": "unknown",
+  "policyViolation1008Check": "unknown",
+  "bridgeWebSocketErrorCheck": "unknown",
+  "hostPermissionsReviewed": true,
+  "providerRuntimeRiskReviewed": true,
+  "productFilesModified": false,
+  "manualEvidenceSource": "M637H user-reported QA with liveness pass; no clean DevTools screenshot provided for M638",
+  "notes": "Release evidence gate can start. Public release remains blocked until clean Runtime screenshot and service worker DevTools Console evidence are captured after reload with bridge live."
+}
