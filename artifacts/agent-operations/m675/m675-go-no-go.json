@@ -1,0 +1,15 @@
+{
+  "milestone": "M675",
+  "decision": "HUMAN_MANUAL_QA_EVIDENCE_INTAKE_INCOMPLETE",
+  "publicPackageFreezeReady": false,
+  "manualQaComplete": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

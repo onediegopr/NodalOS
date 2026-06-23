@@ -1,0 +1,12 @@
+{
+  "milestone": "M674",
+  "evidenceRedacted": true,
+  "rawEvidencePayloadStored": false,
+  "rawSecretsIncluded": false,
+  "rawApiKeysIncluded": false,
+  "bearerTokensIncluded": false,
+  "cookiesIncluded": false,
+  "longRawLogsIncluded": false,
+  "privateUserDataIncluded": false,
+  "redactionIssueFound": false
+}

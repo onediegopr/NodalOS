@@ -1,0 +1,22 @@
+{
+  "milestone": "M674",
+  "decision": "HUMAN_MANUAL_QA_EVIDENCE_INTAKE_INCOMPLETE",
+  "manualQaEvidenceReceived": false,
+  "manualQaEvidenceSufficient": false,
+  "manualQaPassed": false,
+  "intakeComplete": false,
+  "inputSource": "no new human manual QA evidence provided in prompt",
+  "publicVariantLoaded": "unknown",
+  "manifestSelectionVerifiedHuman": "unknown",
+  "permissionWarningsCaptured": "unknown",
+  "runtimeTabEvidence": "unknown",
+  "serviceWorkerDevtoolsEvidence": "unknown",
+  "cspViolationsFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "bridgeLiveness": "unknown",
+  "allowedDisallowedOriginEvidence": "unknown",
+  "evidenceRedacted": true,
+  "rawEvidencePayloadStored": false
+}

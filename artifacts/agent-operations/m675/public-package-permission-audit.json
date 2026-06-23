@@ -1,0 +1,13 @@
+{
+  "milestone": "M675",
+  "permissionAuditReady": true,
+  "publicHostPermissionsNarrowed": true,
+  "publicHostPermissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "containsHttpWildcard": false,
+  "containsHttpsWildcard": false,
+  "contentScriptsWildcardPresent": false,
+  "permissionJustificationPrepared": true
+}

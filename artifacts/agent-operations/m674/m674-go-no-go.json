@@ -1,0 +1,17 @@
+{
+  "milestone": "M674",
+  "decision": "HUMAN_MANUAL_QA_EVIDENCE_INTAKE_INCOMPLETE",
+  "manualQaEvidenceReceived": false,
+  "manualQaEvidenceSufficient": false,
+  "manualQaPassed": false,
+  "intakeComplete": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false
+}

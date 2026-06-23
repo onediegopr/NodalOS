@@ -1,0 +1,10 @@
+{
+  "milestone": "M675",
+  "decision": "HUMAN_MANUAL_QA_EVIDENCE_INTAKE_INCOMPLETE",
+  "publicPackageCandidatePrepared": true,
+  "publicPackageFreezeReady": false,
+  "manualQaStatus": "incomplete",
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "reasonIfNotReady": "Human manual QA evidence was not received."
+}

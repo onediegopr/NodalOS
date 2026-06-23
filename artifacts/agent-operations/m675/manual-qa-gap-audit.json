@@ -1,0 +1,15 @@
+{
+  "milestone": "M675",
+  "manualQaStatus": "incomplete",
+  "missingEvidence": [
+    "public variant loaded proof",
+    "manifest selection human verification",
+    "permission warning capture",
+    "Runtime tab evidence",
+    "Service Worker DevTools evidence",
+    "console cleanliness evidence",
+    "bridge liveness evidence",
+    "allowed/disallowed origin evidence"
+  ],
+  "publicPackageFreezeBlocked": true
+}

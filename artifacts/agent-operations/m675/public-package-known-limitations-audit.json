@@ -1,0 +1,8 @@
+{
+  "milestone": "M675",
+  "knownLimitationsAuditReady": true,
+  "publicVariantOmitsContentScripts": true,
+  "publicContentScriptsKnownLimitationDocumented": true,
+  "externalOriginsAutoAccessExpected": false,
+  "siteSpecificFeaturesRequireFutureUserGrantedAccess": true
+}

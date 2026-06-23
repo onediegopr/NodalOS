@@ -1,0 +1,23 @@
+{
+  "milestone": "M676",
+  "risks": [
+    {
+      "id": "M676-RISK-MANUAL-QA-EVIDENCE-MISSING",
+      "severity": "critical-for-package-freeze",
+      "status": "open",
+      "description": "Human manual QA evidence was not provided, so package freeze cannot proceed."
+    },
+    {
+      "id": "M676-RISK-DEVTOOLS-UNKNOWN",
+      "severity": "high-for-public-release",
+      "status": "open",
+      "description": "Service Worker DevTools cleanliness remains unknown for the public variant."
+    },
+    {
+      "id": "M676-RISK-PERMISSION-WARNING-UNKNOWN",
+      "severity": "medium",
+      "status": "open",
+      "description": "Chrome permission warning text was not captured from a real public variant load."
+    }
+  ]
+}

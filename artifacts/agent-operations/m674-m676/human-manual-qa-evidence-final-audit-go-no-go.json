@@ -1,0 +1,30 @@
+{
+  "milestone": "M674-M676",
+  "decision": "HUMAN_MANUAL_QA_EVIDENCE_INTAKE_INCOMPLETE",
+  "internalCandidateReady": true,
+  "publicBuildCandidateReady": true,
+  "manualQaEvidenceReceived": false,
+  "manualQaEvidenceSufficient": false,
+  "manualQaPassed": false,
+  "publicPackageFreezeReady": false,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false,
+  "runtimeProductiveEnabled": false,
+  "providerCloudEnabled": false,
+  "filesystemEnabled": false,
+  "browserAutomationEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "recommendedNextMilestone": "M677-M679 Manual QA Evidence Completion",
+  "percentages": {
+    "internalCandidateReadiness": 95,
+    "publicBuildCandidateReadiness": 90,
+    "publicPackageCandidateReadiness": 86,
+    "manualQaReadiness": 65,
+    "storeDisclosureReadiness": 77,
+    "publicReleaseReadiness": 78,
+    "runtimeProductizationReadiness": 30,
+    "providerCloudReadiness": 22
+  }
+}

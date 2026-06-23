@@ -1,0 +1,12 @@
+{
+  "milestone": "M674",
+  "consoleCleanlinessEvidence": "unknown",
+  "cspViolationsFound": "unknown",
+  "errConnectionRefusedFound": "unknown",
+  "invalidTokenFound": "unknown",
+  "policyViolation1008Found": "unknown",
+  "reconnectStormFound": "unknown",
+  "criticalConsoleErrorsFound": "unknown",
+  "warningsObserved": [],
+  "evidenceReceived": false
+}

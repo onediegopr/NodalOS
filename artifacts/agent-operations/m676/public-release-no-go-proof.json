@@ -1,0 +1,7 @@
+{
+  "milestone": "M676",
+  "publicReleaseReady": false,
+  "publicReleaseBlocked": true,
+  "reason": "Manual QA evidence intake is incomplete and public package freeze is not ready.",
+  "releasePublicationAllowed": false
+}

@@ -1,0 +1,11 @@
+{
+  "milestone": "M676",
+  "decision": "HUMAN_MANUAL_QA_EVIDENCE_INTAKE_INCOMPLETE",
+  "publicPackageFreezeReady": false,
+  "freezeBlockedBy": "manual QA evidence incomplete",
+  "internalCandidateReady": true,
+  "publicBuildCandidateReady": true,
+  "publicPackageCandidateReady": true,
+  "publicReleaseReady": false,
+  "chromeWebStoreReady": false
+}
