@@ -1,0 +1,60 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M871",
+  "contractType": "REAUDIT_RESULT_INTAKE_ELIGIBILITY_MATRIX",
+  "fields": [
+    "reAuditResultId",
+    "auditorType",
+    "auditorModel",
+    "auditedCommit",
+    "decision",
+    "f1Status",
+    "f2Status",
+    "remainingFindings",
+    "blockingFindings",
+    "nonBlockingFindings",
+    "freezeLockEligible",
+    "nextAction"
+  ],
+  "eligibilityRules": [
+    {
+      "decision": "REAUDIT_GO_F1_F2_REMEDIATED",
+      "freezeLockEligible": true,
+      "caveat": false
+    },
+    {
+      "decision": "REAUDIT_CONDITIONAL_GO_MINOR_QUALITY_NOTES",
+      "freezeLockEligible": true,
+      "caveat": true
+    },
+    {
+      "decision": "REAUDIT_NO_GO_F1_STILL_TAUTOLOGICAL",
+      "freezeLockEligible": false
+    },
+    {
+      "decision": "REAUDIT_NO_GO_F2_STILL_THEATER",
+      "freezeLockEligible": false
+    },
+    {
+      "decision": "REAUDIT_NO_GO_SCOPE_OR_SAFETY_DRIFT",
+      "freezeLockEligible": false
+    },
+    {
+      "decision": "REAUDIT_NO_GO_TEST_QUALITY_INSUFFICIENT",
+      "freezeLockEligible": false
+    },
+    {
+      "decision": "NO_REAUDIT_RESULT",
+      "freezeLockEligible": false
+    }
+  ],
+  "noGoBoundaries": {
+    "runtimeProductiveExecution": "DISABLED",
+    "providerCloudLiveCalls": "DISABLED",
+    "filesystemBrowserCapabilityUnlock": "DISABLED",
+    "publicRelease": "NO-GO",
+    "chromeWebStore": "NO-GO",
+    "productFilesModified": false,
+    "bridgeCspModified": false
+  }
+}

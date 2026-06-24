@@ -1,0 +1,78 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M869",
+  "packageType": "FOCUSED_F1_F2_REAUDIT_PACKAGE",
+  "auditedCommit": "b7457b86d4d5704c7567fc67035c8117fc54e5c0",
+  "baseCommitBeforeRemediation": "fe0f63b80c0e83b8a514ff30b1754d467ebf10de",
+  "diffSummary": {
+    "filesChanged": 7,
+    "insertions": 1805,
+    "deletions": 36,
+    "scope": "tests/safety, docs/reports, artifacts/agent-operations only"
+  },
+  "filesTouchedInM863M868": [
+    "artifacts/agent-operations/m863-m868/audit-quality-remediation-go-no-go.json",
+    "artifacts/agent-operations/m863-m868/claude-partial-recovery.patch",
+    "docs/reports/m868-audit-quality-remediation-report.md",
+    "tests/OneBrain.Safety.Tests/NodalOsAuditQualityRemediationM863M868Tests.cs",
+    "tests/OneBrain.Safety.Tests/SimulatedAuditTimelineReplay.cs",
+    "tests/OneBrain.Safety.Tests/SimulatedDryRunOrchestrator.cs",
+    "tests/OneBrain.Safety.Tests/SimulatedRedactor.cs"
+  ],
+  "f1OriginalFinding": "NoExecutionProof and SideEffectSinkInvocations were too hardcoded or tautological.",
+  "f1Remediation": {
+    "status": "READY_FOR_REAUDIT",
+    "summary": "NoExecutionProof.SideEffectSinkInvocations derives from RecordingSideEffectSink.InvocationCount through NoExecutionProof.FromSink.",
+    "nonVacuityEvidence": "Tests inject side-effect records and assert the proof becomes non-clean."
+  },
+  "f2OriginalFinding": "Redaction adversarial test was theatrical and did not use secret-like payloads.",
+  "f2Remediation": {
+    "status": "READY_FOR_REAUDIT",
+    "summary": "Fake secret-like values are injected into RawAuditPayload and passed through SimulatedRedactor and SimulatedRedactingExporter.",
+    "fakeValues": [
+      "FAKE_SECRET_NODAL_OS_TEST_TOKEN_123",
+      "FAKE_PROVIDER_KEY_SHOULD_BE_REDACTED",
+      "FAKE_COOKIE_SESSION_SHOULD_BE_REDACTED",
+      "FAKE_PRIVATE_KEY_SHOULD_BE_REDACTED",
+      "FAKE_BROWSER_SESSION_DATA_SHOULD_BE_REDACTED"
+    ],
+    "nonVacuityEvidence": "Tests compare redaction-enabled and redaction-disabled paths and assert raw values are absent only in the safe export."
+  },
+  "validationEvidence": {
+    "build": "PASS_0_WARNINGS_0_ERRORS",
+    "filterM863M868": "PASS_48",
+    "browserRuntimeSmokeIsolated": "PASS_20",
+    "fullSafetySuite": "PASS_5293_PASSED_37_SKIPPED",
+    "recipesSuite": "PASS_635",
+    "fullSuite": "PASS"
+  },
+  "noGoBoundariesIntact": {
+    "runtimeProductiveExecution": "DISABLED",
+    "providerCloudLiveCalls": "DISABLED",
+    "filesystemWriteUnlockReal": "DISABLED",
+    "browserAutomationReal": "DISABLED",
+    "capabilityUnlock": "DISABLED",
+    "productiveEnabled": "PROHIBITED",
+    "publicRelease": "NO-GO",
+    "chromeWebStore": "NO-GO",
+    "signedPublicZip": false,
+    "productFilesModified": false,
+    "bridgeCspModified": false
+  },
+  "auditorQuestions": {
+    "f1": [
+      "Does NoExecutionProof now derive from a real RecordingSideEffectSink?",
+      "Do tests fail if the sink records side effects?",
+      "Does any CleanProof remain as the primary guarantee?",
+      "Do routing, approval, replay and export use measured no-execution?",
+      "Is there any disguised 0 == 0 assertion?"
+    ],
+    "f2": [
+      "Does the adversarial payload include fake secret-like values?",
+      "Does final export remove raw values?",
+      "Does RedactionProof detect and redact?",
+      "Would the test fail if redaction were disabled?",
+      "Are forbidden fields excluded from final output?"
+    ]
+  }
+}
