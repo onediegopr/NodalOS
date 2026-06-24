@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M952",
+  "checklist": [
+    "local executable/host visible",
+    "bridge connected",
+    "run visible",
+    "tab claim visible",
+    "trace/evidence visible",
+    "command channel allowlisted",
+    "safe no-op executable with logs",
+    "metadata command safe with logs",
+    "dangerous commands blocked",
+    "redaction verified",
+    "no product files modified",
+    "no Bridge/CSP modified",
+    "no provider/cloud",
+    "no filesystem write",
+    "no shell arbitrary",
+    "operator report generated"
+  ],
+  "manualQaTrigger": "NOT_READY",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "providerCloud": false,
+  "filesystemWrite": false,
+  "arbitraryShell": false
+}

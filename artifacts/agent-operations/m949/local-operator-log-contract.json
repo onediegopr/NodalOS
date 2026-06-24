@@ -1,0 +1,24 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M949",
+  "contract": "LocalOperatorLogContract",
+  "fields": [
+    "timestamp",
+    "run id",
+    "command id",
+    "adapter id",
+    "command kind",
+    "decision",
+    "result",
+    "side effect proof",
+    "evidence refs",
+    "trace id",
+    "redaction status",
+    "dangerous blocked status"
+  ],
+  "testOnlyFixture": true,
+  "containsSecrets": false,
+  "containsRawCredentials": false,
+  "containsSensitiveFullPaths": false,
+  "dangerousPayloadRedacted": true
+}

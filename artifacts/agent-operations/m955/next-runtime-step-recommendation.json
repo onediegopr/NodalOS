@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M955",
+  "nextRecommendedMilestone": "M957-M968 - Local Host Visible No-Op Smoke Plan + Manual QA Evidence Protocol",
+  "preparesVisibleNoopSmokeProtocol": true,
+  "implementsDangerousExecution": false,
+  "enablesShell": false,
+  "enablesFilesystemWrite": false,
+  "enablesBrowserAutomation": false,
+  "enablesProviderCloud": false,
+  "triggersManualQaNow": false
+}

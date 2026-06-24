@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M946",
+  "contract": "RuntimeAdapterDescriptor",
+  "adapterId": "adapter-controlled-noop-1",
+  "adapterMode": "ControlledNoOp",
+  "allowedCommandKinds": ["SafeNoOp"],
+  "deniedCommandKinds": ["Unknown", "DangerousCommand", "Shell", "FilesystemWrite", "NetworkCall", "BrowserAutomation"],
+  "executionMode": "TestOnly",
+  "sideEffectPolicy": "NoSideEffects",
+  "evidenceRefs": ["evidence-adapter-1"],
+  "traceId": "trace-adapter-1",
+  "traceRedacted": true,
+  "runtimeUnlockStatus": "NO-GO",
+  "productiveEnabled": false
+}
