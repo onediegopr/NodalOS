@@ -1,0 +1,12 @@
+{
+  "requiredValidations": [
+    "dotnet build .\\OneBrain.slnx --no-restore",
+    "dotnet test .\\OneBrain.slnx --no-build --filter FullyQualifiedName~NodalOsRoutingDenylistM797M799",
+    "dotnet test .\\OneBrain.slnx --no-build --filter FullyQualifiedName~NodalOsRoutingMatrixAuditM800M802",
+    "dotnet test .\\OneBrain.slnx --no-build --filter FullyQualifiedName~BrowserRuntimeSmokeTests",
+    "dotnet test .\\tests\\OneBrain.Safety.Tests\\OneBrain.Safety.Tests.csproj --no-build",
+    "dotnet test .\\OneBrain.slnx --no-build"
+  ],
+  "passRule": "Do not mark full suite PASS unless the full suite command passes.",
+  "noGoRule": "Any routing, denylist, no-execution, or security-related failure produces AUDIT_GATE_NO_GO."
+}

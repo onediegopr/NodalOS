@@ -1,0 +1,20 @@
+{
+  "milestone": "M802",
+  "routingMatrix": "READY",
+  "allowedCapabilities": "READY",
+  "denylistedCapabilities": "READY",
+  "unknownCapabilityBehavior": "DENY",
+  "evidenceEnvelopeByBranch": "READY",
+  "ledgerEventsByBranch": "READY",
+  "redactionProofByBranch": "READY",
+  "noExecutionProofByBranch": "READY",
+  "sideEffectSinkInvocations": 0,
+  "realExecutorInvocationFlags": false,
+  "providerCloudFlags": "DISABLED",
+  "filesystemWriteFlags": "DISABLED",
+  "browserAutomationFlags": "DISABLED",
+  "capabilityUnlockFlags": "DISABLED",
+  "releaseStoreFlags": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

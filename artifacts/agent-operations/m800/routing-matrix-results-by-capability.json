@@ -1,0 +1,18 @@
+{
+  "allowedResults": [
+    { "capabilityName": "local_provider_model", "decision": "ALLOW_SIMULATED_DRY_RUN", "selectedExecutor": "FakeLocalModelExecutor", "evidenceEnvelopeCreated": true, "ledgerEventsCreated": true, "redactionProofCreated": true, "noExecutionProofCreated": true },
+    { "capabilityName": "filesystem_read_metadata", "decision": "ALLOW_SIMULATED_DRY_RUN", "selectedExecutor": "FakeFilesystemReadMetadataExecutor", "evidenceEnvelopeCreated": true, "ledgerEventsCreated": true, "redactionProofCreated": true, "noExecutionProofCreated": true },
+    { "capabilityName": "ledger_append", "decision": "ALLOW_SIMULATED_DRY_RUN", "selectedExecutor": "FakeLedgerAppendExecutor", "evidenceEnvelopeCreated": true, "ledgerEventsCreated": true, "redactionProofCreated": true, "noExecutionProofCreated": true }
+  ],
+  "denylistedResultContract": {
+    "decision": "DENY",
+    "selectedExecutor": null,
+    "evidenceEnvelopeCreated": true,
+    "auditEventCreated": true,
+    "ledgerEventsCreated": true,
+    "redactionProofCreated": true,
+    "noExecutionProofCreated": true
+  },
+  "sideEffectSinkInvocations": 0,
+  "productiveEnabled": false
+}

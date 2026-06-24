@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M800",
+  "matrixMode": "CANONICAL_TEST_ONLY_IN_MEMORY",
+  "denylistEvaluatedBeforeAllowedRouting": true,
+  "allowedCapabilities": [
+    { "capabilityName": "local_provider_model", "expectedExecutor": "FakeLocalModelExecutor", "expectedDecision": "ALLOW_SIMULATED_DRY_RUN" },
+    { "capabilityName": "filesystem_read_metadata", "expectedExecutor": "FakeFilesystemReadMetadataExecutor", "expectedDecision": "ALLOW_SIMULATED_DRY_RUN" },
+    { "capabilityName": "ledger_append", "expectedExecutor": "FakeLedgerAppendExecutor", "expectedDecision": "ALLOW_SIMULATED_DRY_RUN" }
+  ],
+  "denylistedCapabilities": [
+    "provider_cloud_live_call",
+    "provider_credential_use",
+    "filesystem_write",
+    "browser_automation",
+    "credential_captcha_2fa_bypass",
+    "capability_unlock",
+    "public_release",
+    "chrome_web_store_submission",
+    "signed_public_zip_creation",
+    "product_file_modification",
+    "bridge_csp_modification",
+    "productive_enabled"
+  ],
+  "unknownCapabilityBehavior": "DENY",
+  "selectedExecutorOnlyForAllowedCapabilities": true
+}

@@ -1,0 +1,18 @@
+{
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "sideEffectSinkInvocations": 0,
+  "realExecutorInvoked": false,
+  "providerClientInvoked": false,
+  "filesystemWriterInvoked": false,
+  "browserAutomationInvoked": false,
+  "capabilityUnlockInvoked": false
+}

@@ -1,0 +1,34 @@
+{
+  "milestone": "M801",
+  "inheritedCaveat": true,
+  "previousFailedTest": "BrowserRuntimeSmokeRunnerExecutesAllGatesOnFixture",
+  "previousFailure": "WebSocket aborted in Gate 9 idempotency/replay",
+  "previousIsolatedEvidence": "BrowserRuntimeSmokeTests isolated passed 17/17",
+  "classification": "flakey/exogenous browser smoke caveat unless reproduced as routing/security failure",
+  "evidenceExists": [
+    "M797-M799 filter passed",
+    "build passed",
+    "BrowserRuntimeSmokeTests isolated passed 17/17",
+    "full suite previously failed on WebSocket aborted"
+  ],
+  "evidenceMissing": [
+    "No clean full suite pass in this block"
+  ],
+  "m800M802Validation": {
+    "filterM797M799": "PASS",
+    "filterM800M802": "PASS",
+    "browserRuntimeSmokeIsolated": "PASS 17/17",
+    "fullSafetySuite": "PASS 5173 passed, 37 skipped",
+    "fullSuite": "FAIL",
+    "fullSuiteFailure": "BrowserRuntimeSmokeIdempotencyGateReportsDuplicateReplay failed in browser smoke idempotency/replay family"
+  },
+  "fullSuiteClean": false,
+  "blocksM800M802": false,
+  "blocksDeclaringFullSuiteClean": true,
+  "allowedDecisions": [
+    "AUDIT_GATE_CLEAN",
+    "AUDIT_GATE_CONDITIONAL_GO_FLAKY_EXTERNAL",
+    "AUDIT_GATE_NO_GO"
+  ],
+  "currentDecision": "AUDIT_GATE_CONDITIONAL_GO_FLAKY_EXTERNAL"
+}

@@ -1,0 +1,11 @@
+{
+  "recommendedNextMilestone": "M803-M805 — Simulated Runtime Policy Decision Normalization + Unsupported Capability Guard",
+  "scope": "test-only simulated policy normalization and unsupported capability guard",
+  "productiveUnlockAllowed": false,
+  "providerCloudLiveCallsAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserAutomationAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "chromeWebStoreAllowed": false
+}

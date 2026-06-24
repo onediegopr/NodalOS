@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "decision": "SIMULATED_RUNTIME_ROUTING_MATRIX_AUDIT_GATE_CONDITIONAL_READY_FULL_SUITE_FLAKY",
+  "routingMatrix": "READY",
+  "denylistEnforcement": "READY",
+  "noExecutionProof": "READY",
+  "auditGate": "AUDIT_GATE_CONDITIONAL_GO_FLAKY_EXTERNAL",
+  "fullSuiteClean": false,
+  "fullSuiteCaveatStatus": "OPEN_FLAKY_EXTERNAL_BROWSER_RUNTIME_SMOKE_IDEMPOTENCY_REPLAY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "productiveEnabled": "PROHIBITED",
+  "sideEffectSinkInvocations": 0
+}

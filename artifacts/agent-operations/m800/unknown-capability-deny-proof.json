@@ -1,0 +1,11 @@
+{
+  "unknownCapability": "unknown_future_capability",
+  "decision": "DENY",
+  "selectedExecutor": null,
+  "denyReason": "unsupported capability denied",
+  "evidenceEnvelopeCreated": true,
+  "ledgerEventsCreated": true,
+  "redactionProofCreated": true,
+  "noExecutionProofCreated": true,
+  "sideEffectSinkInvocations": 0
+}

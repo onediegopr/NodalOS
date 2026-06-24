@@ -346,7 +346,12 @@ public sealed record SimulatedRoutingResult(
     public bool BridgeCspModified => NoExecutionProof.BridgeCspModified;
 }
 
-public sealed class SimulatedCapabilityRouter
+public sealed record SimulatedCapabilityMatrixEntry(
+    string CapabilityName,
+    string? ExpectedExecutor,
+    bool IsDenylisted);
+
+public static class SimulatedRuntimeRoutingMatrix
 {
     public static readonly IReadOnlyDictionary<string, string> AllowedRoutingTable =
         new Dictionary<string, string>(StringComparer.Ordinal)
@@ -373,13 +378,38 @@ public sealed class SimulatedCapabilityRouter
             "productive_enabled"
         };
 
+    public static IReadOnlyList<SimulatedCapabilityMatrixEntry> Entries =>
+        AllowedRoutingTable
+            .Select(static x => new SimulatedCapabilityMatrixEntry(x.Key, x.Value, IsDenylisted: false))
+            .Concat(DenylistedCapabilities.Select(static x => new SimulatedCapabilityMatrixEntry(x, null, IsDenylisted: true)))
+            .ToArray();
+}
+
+public sealed class SimulatedCapabilityRouter
+{
+    private readonly IReadOnlyDictionary<string, string> _allowedRoutingTable;
+    private readonly IReadOnlySet<string> _denylistedCapabilities;
+
+    public SimulatedCapabilityRouter()
+        : this(SimulatedRuntimeRoutingMatrix.AllowedRoutingTable, SimulatedRuntimeRoutingMatrix.DenylistedCapabilities)
+    {
+    }
+
+    public SimulatedCapabilityRouter(
+        IReadOnlyDictionary<string, string> allowedRoutingTable,
+        IReadOnlySet<string> denylistedCapabilities)
+    {
+        _allowedRoutingTable = allowedRoutingTable;
+        _denylistedCapabilities = denylistedCapabilities;
+    }
+
     public SimulatedRoutingResult Route(string capabilityName)
     {
-        if (DenylistedCapabilities.Contains(capabilityName))
+        if (_denylistedCapabilities.Contains(capabilityName))
             return Deny(capabilityName, $"denylisted capability: {capabilityName}");
 
-        if (!AllowedRoutingTable.TryGetValue(capabilityName, out var selectedExecutor))
-            return Deny(capabilityName, $"no allowed test-only executor route: {capabilityName}");
+        if (!_allowedRoutingTable.TryGetValue(capabilityName, out var selectedExecutor))
+            return Deny(capabilityName, $"unsupported capability denied: {capabilityName}");
 
         var result = CreateExecutor(selectedExecutor).Execute();
         return new SimulatedRoutingResult(
