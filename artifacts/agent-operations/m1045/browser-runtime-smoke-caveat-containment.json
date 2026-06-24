@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1045",
+  "caveat": "Gate 9 WebSocket aborted",
+  "external_smoke_caveat_visible": true,
+  "browser_runtime_smoke_status": "VISIBLE_EXTERNAL_CAVEAT",
+  "full_suite_general_clean_claim_allowed": false,
+  "hundred_percent_confidence_claim_allowed": false,
+  "full_suite_confidence": "95%",
+  "blocks_release_store": true,
+  "blocks_full_clean_claim": true,
+  "invalidates_f001_f002_accepted_safety_freeze_remediation": false,
+  "future_report_requirement": "Every future report must keep this caveat visible until resolved with evidence.",
+  "manual_qa_execution": "NO-GO"
+}

@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1049",
+  "allowed_statuses": [
+    "PLANNED_ONLY",
+    "PROTOCOL_HARDENING_ONLY",
+    "SAFE_EVIDENCE_CHECKLIST_PREP_ONLY",
+    "ABORTED_NO_GO",
+    "EVIDENCE_CAPTURE_PENDING_OPERATOR_ACTION"
+  ],
+  "forbidden_statuses": [
+    "MANUAL_QA_PASSED",
+    "RUNTIME_READY",
+    "PC_COMMANDER_READY",
+    "RELEASE_READY"
+  ],
+  "current_session_status": "PROTOCOL_HARDENING_ONLY",
+  "execution_started": false,
+  "manual_qa_execution": "NO-GO",
+  "operator_confirmation_status": "OPERATOR_CONFIRMATION_PENDING"
+}

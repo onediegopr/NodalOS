@@ -1,0 +1,24 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1044",
+  "checklist_status": "HARDENED_PROTOCOL_ONLY",
+  "required_evidence": [
+    "preflight evidence",
+    "branch/head/worktree evidence",
+    "operator confirmation evidence",
+    "BrowserRuntimeSmoke caveat evidence",
+    "safe no-op evidence requirements",
+    "metadata fixture evidence requirements",
+    "trace/evidence visibility requirements",
+    "dangerous classification evidence requirements",
+    "redaction/no-leak evidence requirements",
+    "no-side-effect evidence requirements",
+    "product files unchanged proof",
+    "Bridge/CSP unchanged proof"
+  ],
+  "execution_started": false,
+  "manual_qa_passed": false,
+  "manual_qa_execution": "NO-GO",
+  "manual_qa_trigger": "NOT_READY_EVIDENCE_PENDING",
+  "route": "PROTOCOL_HARDENING_ONLY"
+}

@@ -1,0 +1,26 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1050",
+  "go": [
+    "protocol hardening",
+    "operator gate",
+    "safe evidence checklist prep",
+    "caveat containment",
+    "redaction checklist",
+    "abort matrix"
+  ],
+  "no_go": [
+    "manual QA execution",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability unlock",
+    "product files",
+    "Bridge/CSP",
+    "release/store",
+    "full-suite clean claim"
+  ],
+  "full_suite_clean_claim_allowed": false,
+  "manual_qa_ready_claim_allowed": false,
+  "release_store_claim_allowed": false
+}

@@ -1,0 +1,24 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1048",
+  "abort_if": [
+    "operator confirmation missing for capture route",
+    "wrong branch",
+    "wrong worktree",
+    "dirty worktree",
+    "HEAD mismatch",
+    "product files changed",
+    "Bridge/CSP changed",
+    "BrowserRuntimeSmoke caveat hidden",
+    "full-suite clean claimed incorrectly",
+    "secret captured",
+    "unsafe raw log captured",
+    "shell route present",
+    "filesystem write route present",
+    "runtime real claim",
+    "PC Commander real claim",
+    "release/store claim"
+  ],
+  "manual_qa_execution": "NO-GO",
+  "route": "PROTOCOL_HARDENING_ONLY"
+}

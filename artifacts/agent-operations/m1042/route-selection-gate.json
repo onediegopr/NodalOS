@@ -1,0 +1,26 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1042",
+  "route": "PROTOCOL_HARDENING_ONLY",
+  "confirmation_status": "OPERATOR_CONFIRMATION_PENDING",
+  "required_explicit_phrase": "OPERATOR_CONFIRMATION_GRANTED_FOR_SAFE_EVIDENCE_CAPTURE_ONLY",
+  "routes": {
+    "when_confirmation_pending": "PROTOCOL_HARDENING_ONLY",
+    "when_explicit_confirmation": "SAFE_EVIDENCE_CHECKLIST_PREP_ONLY"
+  },
+  "rejected_ambiguous_inputs": [
+    "operator approved",
+    "QA ready",
+    "continue",
+    "start QA",
+    "manual test ok"
+  ],
+  "forbidden_outcomes": [
+    "MANUAL_QA_PASSED",
+    "RUNTIME_READY",
+    "PC_COMMANDER_READY",
+    "RELEASE_READY"
+  ],
+  "expected_decision": "MANUAL_QA_PROTOCOL_HARDENING_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "manual_qa_execution": "NO-GO"
+}
