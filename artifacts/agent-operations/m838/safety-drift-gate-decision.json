@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M838",
+  "safetyDriftGateDecision": "SAFETY_DRIFT_GATE_GO_NO_DRIFT",
+  "productiveRuntimeDriftAllowed": false,
+  "providerCloudDriftAllowed": false,
+  "productBridgeCspDriftAllowed": false
+}

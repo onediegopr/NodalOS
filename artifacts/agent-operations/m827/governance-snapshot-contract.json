@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M827",
+  "governanceSnapshot": "READY",
+  "snapshotId": "snapshot-m827-m844",
+  "sourceCommit": "be8da579f4c89623dc1ea3e791188dd947676d76",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "productiveRuntime": false,
+  "unsupportedCapabilityBehavior": "DENY_UNSUPPORTED_CAPABILITY",
+  "auditExportPackageStatus": "READY",
+  "determinismStatus": "READY",
+  "noExecutionProofStatus": "READY",
+  "redactionProofStatus": "READY",
+  "noRealExecutorProofStatus": "PROVEN",
+  "sideEffectSinkInvocations": 0,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

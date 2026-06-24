@@ -1,0 +1,8 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M828",
+  "coverageMatrix": "READY",
+  "domains": ["routing", "denylist", "unsupported guard", "policy decisions", "manual approval", "evidence/ledger", "timeline roundtrip", "replay guard", "audit export", "determinism", "redaction", "no-execution", "no-real-executor", "release/store NO-GO", "product/Bridge/CSP unchanged"],
+  "unknownDomain": false,
+  "productiveRuntime": "DISABLED"
+}

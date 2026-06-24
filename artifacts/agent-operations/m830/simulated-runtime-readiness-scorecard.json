@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M830",
+  "readinessScorecard": "READY",
+  "routingMatrixReadiness": "READY",
+  "denylistReadiness": "READY",
+  "unsupportedCapabilityGuardReadiness": "READY",
+  "policyDecisionReadiness": "READY",
+  "manualApprovalBoundaryReadiness": "READY",
+  "evidenceLedgerReadiness": "READY",
+  "timelineRoundtripReadiness": "READY",
+  "replayGuardReadiness": "READY",
+  "auditExportReadiness": "READY",
+  "determinismReadiness": "READY",
+  "redactionReadiness": "READY",
+  "noExecutionReadiness": "READY",
+  "noRealExecutorReadiness": "READY",
+  "productiveRuntimeUnlockReadiness": "DISABLED_BY_POLICY",
+  "publicReleaseReadiness": "NO_GO",
+  "chromeWebStoreReadiness": "NO_GO"
+}

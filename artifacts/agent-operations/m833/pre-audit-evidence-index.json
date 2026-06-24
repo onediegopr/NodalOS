@@ -1,0 +1,6 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M833",
+  "preAuditEvidenceIndex": "READY",
+  "entries": ["routing matrix artifact", "denylist enforcement artifact", "policy decision normalization report", "unsupported capability guard report", "manual approval boundary report", "approval ledger projection report", "timeline roundtrip report", "replay guard report", "audit export readiness report", "determinism report", "governance snapshot", "readiness scorecard", "validation summary", "caveat/flaky history", "NO-GO boundaries"]
+}

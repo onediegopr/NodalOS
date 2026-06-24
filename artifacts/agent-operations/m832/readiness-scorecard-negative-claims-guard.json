@@ -1,0 +1,6 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M832",
+  "negativeClaimsGuard": "READY",
+  "rejectedClaims": ["PRODUCTIVE_ENABLED ready", "provider/cloud enabled", "filesystem write enabled", "browser automation enabled", "capability unlock enabled", "release ready", "Store ready", "signed ZIP ready", "product files modified", "Bridge/CSP modified", "full suite PASS without evidence", "redaction skipped", "replay executes", "approval grants real execution"]
+}

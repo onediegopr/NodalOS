@@ -1,0 +1,24 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M836",
+  "safetyDriftGuard": "READY",
+  "baseline": {
+    "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+    "fixtureType": "SIMULATED_FAKE_ONLY",
+    "productiveRuntime": false,
+    "providerCloudInvoked": false,
+    "filesystemWritePerformed": false,
+    "browserAutomationPerformed": false,
+    "capabilityUnlocked": false,
+    "releaseStore": false,
+    "productFilesModified": false,
+    "bridgeCspModified": false,
+    "denylistFirst": true,
+    "unknownCapabilityDeny": true,
+    "replayAuditOnly": true,
+    "approvalOverrideBlocked": true,
+    "exportRedacted": true,
+    "noRealExecutorWired": true,
+    "sideEffectSinkInvocations": 0
+  }
+}

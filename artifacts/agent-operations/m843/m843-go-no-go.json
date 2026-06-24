@@ -1,0 +1,7 @@
+{
+  "project": "NODAL OS",
+  "decision": "M843_READY",
+  "macroHitoFinalReport": "READY",
+  "auditGate": "AUDIT_GATE_CLEAN",
+  "finalDecision": "SIMULATED_RUNTIME_GOVERNANCE_SNAPSHOT_PRE_AUDIT_READY"
+}

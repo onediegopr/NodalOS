@@ -1,0 +1,6 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M840",
+  "auditQuestionSet": "READY",
+  "questions": ["fake-only/in-memory", "runtime productivo", "provider/cloud", "filesystem write", "browser automation", "approval override denylist", "Replay re-ejecución", "export secretos", "Unknown capability", "Denylist ordering", "selectedExecutor DENY", "Full suite evidence", "Product files Bridge/CSP", "Release/store", "docs/artifacts/tests consistency"]
+}

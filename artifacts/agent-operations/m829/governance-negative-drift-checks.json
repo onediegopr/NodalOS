@@ -1,0 +1,6 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M829",
+  "negativeDriftChecks": "READY",
+  "rejectedDrift": ["productiveRuntime", "providerCloudInvoked", "filesystemWritePerformed", "browserAutomationPerformed", "capabilityUnlocked", "publicReleasePerformed", "storeSubmissionPerformed", "signedPublicZipCreated", "productFilesModified", "bridgeCspModified", "selectedExecutorSetOnDeny", "unknownCapabilityAllowed", "approvalOverrideAllowedForDenylisted", "replayExecuted", "exportContainsSensitiveData"]
+}

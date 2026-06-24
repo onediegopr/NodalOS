@@ -1,0 +1,25 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M842",
+  "flakeRegressionWatch": "READY",
+  "historicalCaveat": "BrowserRuntimeSmoke Gate 9 idempotency/replay had prior transient flakes.",
+  "validationStatus": "AUDIT_GATE_CLEAN",
+  "caveatStatus": "CLOSED_NO_FLAKE_REPRODUCED_IN_M827_M844",
+  "executedEvidence": {
+    "build": "PASS",
+    "filterM797M799": "PASS_9",
+    "filterM800M802": "PASS_12",
+    "filterM803M805": "PASS_13",
+    "filterM806M814": "PASS_12",
+    "filterM815M826": "PASS_14",
+    "filterM827M844": "PASS_16",
+    "browserRuntimeSmokeIsolated": "PASS_20",
+    "fullSafetySuite": "PASS_5228_SKIPPED_37",
+    "recipesSuite": "PASS_635",
+    "fullSuite": "PASS_RECIPES_635_SAFETY_5228_SKIPPED_37"
+  },
+  "gate9FlakeReproducedThisBlock": false,
+  "securityRelatedFailure": false,
+  "hideFlake": false,
+  "declarePassWithoutEvidence": false
+}

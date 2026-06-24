@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "decision": "SIMULATED_RUNTIME_GOVERNANCE_SNAPSHOT_PRE_AUDIT_READY",
+  "governanceSnapshot": "READY",
+  "readinessScorecard": "READY",
+  "preAuditPackage": "READY",
+  "safetyDriftGuard": "READY",
+  "auditHandoffPack": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productiveEnabled": "PROHIBITED",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "auditGate": "AUDIT_GATE_CLEAN",
+  "caveatStatus": "CLOSED_NO_FLAKE_REPRODUCED_IN_M827_M844",
+  "safetySuiteStatus": "PASS_5228_SKIPPED_37",
+  "recipesSuiteStatus": "PASS_635",
+  "fullSuiteStatus": "PASS"
+}
