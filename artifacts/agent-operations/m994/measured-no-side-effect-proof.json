@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M994",
+  "f001Status": "REMEDIATION_READY_FOR_REAUDIT",
+  "descriptorRole": "Declarative Descriptor Check",
+  "measuredProofRole": "Measured No-Side-Effect Proof",
+  "measuredProofSource": "sink-derived",
+  "coveredPaths": [
+    "safe no-op runner path",
+    "metadata fixture path",
+    "controlled no-op adapter path",
+    "harness prep path",
+    "human evidence gate path"
+  ],
+  "runtimeReal": "NO-GO",
+  "manualQaExecution": "NO-GO"
+}

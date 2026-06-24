@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1000",
+  "contract": "DefaultDenyCommandInterceptor",
+  "implementationStatus": "FUTURE_CONTRACT_ONLY",
+  "f003Status": "HELD_FOR_REAL_CHANNEL",
+  "runtimeImplementationExists": false,
+  "runtimeReal": "NO-GO",
+  "manualQa": "NO-GO",
+  "preconditions": [
+    "only when real command channel exists",
+    "requires new audit",
+    "requires sink instrumentation",
+    "requires negative bypass tests",
+    "requires human approval gate",
+    "requires no provider/cloud unless explicitly scoped",
+    "requires no filesystem write unless explicitly scoped and approved",
+    "requires product/Bridge boundary review"
+  ]
+}

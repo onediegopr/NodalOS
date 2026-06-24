@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M995",
+  "negativeInjectionStatus": "READY",
+  "injectedCounters": [
+    "shell",
+    "filesystem_write",
+    "network",
+    "credential_access",
+    "product_file_mutation",
+    "bridge_csp_mutation"
+  ],
+  "expectedProofResult": "IsClean=false",
+  "runtimeReal": "NO-GO",
+  "manualQaExecution": "NO-GO"
+}
