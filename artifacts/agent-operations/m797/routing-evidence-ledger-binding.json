@@ -1,0 +1,10 @@
+{
+  "allowedRoutesEmitEvidenceEnvelope": true,
+  "allowedRoutesEmitLedgerEvents": true,
+  "allowedRoutesEmitRedactionProof": true,
+  "allowedRoutesEmitNoExecutionProof": true,
+  "denyRoutesEmitEvidenceEnvelope": true,
+  "denyRoutesEmitLedgerEvents": true,
+  "denyRoutesEmitNoExecutionProof": true,
+  "ledgerMode": "IN_MEMORY_ONLY"
+}

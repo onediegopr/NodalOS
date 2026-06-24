@@ -1,0 +1,16 @@
+{
+  "capabilities": [
+    "provider_cloud_live_call",
+    "provider_credential_use",
+    "filesystem_write",
+    "browser_automation",
+    "credential_captcha_2fa_bypass",
+    "capability_unlock",
+    "public_release",
+    "chrome_web_store_submission",
+    "signed_public_zip_creation",
+    "product_file_modification",
+    "bridge_csp_modification",
+    "productive_enabled"
+  ]
+}

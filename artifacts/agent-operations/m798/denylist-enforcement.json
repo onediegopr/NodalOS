@@ -1,0 +1,10 @@
+{
+  "milestone": "M798",
+  "status": "READY",
+  "denylistPriority": true,
+  "blockedCapabilitiesReturn": "DENY",
+  "selectedExecutor": null,
+  "auditEventCreated": true,
+  "evidenceEnvelopeCreated": true,
+  "noExecutionProofCreated": true
+}

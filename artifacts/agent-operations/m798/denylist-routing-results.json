@@ -1,0 +1,16 @@
+{
+  "results": [
+    { "capabilityName": "provider_cloud_live_call", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "provider_credential_use", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "filesystem_write", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "browser_automation", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "credential_captcha_2fa_bypass", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "capability_unlock", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "public_release", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "chrome_web_store_submission", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "signed_public_zip_creation", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "product_file_modification", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "bridge_csp_modification", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" },
+    { "capabilityName": "productive_enabled", "decision": "DENY", "selectedExecutor": null, "denyReason": "denylisted capability" }
+  ]
+}

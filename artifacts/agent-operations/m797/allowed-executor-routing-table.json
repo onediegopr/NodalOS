@@ -1,0 +1,5 @@
+{
+  "local_provider_model": "FakeLocalModelExecutor",
+  "filesystem_read_metadata": "FakeFilesystemReadMetadataExecutor",
+  "ledger_append": "FakeLedgerAppendExecutor"
+}

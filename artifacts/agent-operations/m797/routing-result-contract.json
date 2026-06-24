@@ -1,0 +1,27 @@
+{
+  "fields": [
+    "requestId",
+    "capabilityName",
+    "selectedExecutor",
+    "decision",
+    "runtimeType",
+    "fixtureType",
+    "evidenceEnvelope",
+    "ledgerEvents[]",
+    "redactionProof",
+    "noExecutionProof"
+  ],
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "sideEffectSinkInvocations": 0,
+  "realExecutorInvoked": false,
+  "providerClientInvoked": false,
+  "filesystemWriterInvoked": false,
+  "browserAutomationInvoked": false,
+  "capabilityUnlockInvoked": false,
+  "publicReleaseInvoked": false,
+  "storeSubmissionInvoked": false,
+  "signedZipCreated": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

@@ -319,6 +319,118 @@ public sealed class FakeLedgerAppendExecutor : TestOnlyInMemoryFakeExecutor
     }
 }
 
+public sealed record SimulatedRoutingResult(
+    string RequestId,
+    string CapabilityName,
+    string? SelectedExecutor,
+    SimulatedDecision Decision,
+    string DenyReason,
+    string RuntimeType,
+    string FixtureType,
+    EvidenceEnvelope EvidenceEnvelope,
+    IReadOnlyList<LedgerEvent> LedgerEvents,
+    RedactionProof RedactionProof,
+    NoExecutionProof NoExecutionProof,
+    bool AuditEventCreated)
+{
+    public int SideEffectSinkInvocations => NoExecutionProof.SideEffectSinkInvocations;
+    public bool RealExecutorInvoked => NoExecutionProof.RealExecutorInvoked;
+    public bool ProviderClientInvoked => NoExecutionProof.ProviderClientInvoked;
+    public bool FilesystemWriterInvoked => NoExecutionProof.FilesystemWriterInvoked;
+    public bool BrowserAutomationInvoked => NoExecutionProof.BrowserAutomationInvoked;
+    public bool CapabilityUnlockInvoked => NoExecutionProof.CapabilityUnlockInvoked;
+    public bool PublicReleaseInvoked => NoExecutionProof.PublicReleaseInvoked;
+    public bool StoreSubmissionInvoked => NoExecutionProof.StoreSubmissionInvoked;
+    public bool SignedZipCreated => NoExecutionProof.SignedZipCreated;
+    public bool ProductFilesModified => NoExecutionProof.ProductFilesModified;
+    public bool BridgeCspModified => NoExecutionProof.BridgeCspModified;
+}
+
+public sealed class SimulatedCapabilityRouter
+{
+    public static readonly IReadOnlyDictionary<string, string> AllowedRoutingTable =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["local_provider_model"] = "FakeLocalModelExecutor",
+            ["filesystem_read_metadata"] = "FakeFilesystemReadMetadataExecutor",
+            ["ledger_append"] = "FakeLedgerAppendExecutor"
+        };
+
+    public static readonly IReadOnlySet<string> DenylistedCapabilities =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            "provider_cloud_live_call",
+            "provider_credential_use",
+            "filesystem_write",
+            "browser_automation",
+            "credential_captcha_2fa_bypass",
+            "capability_unlock",
+            "public_release",
+            "chrome_web_store_submission",
+            "signed_public_zip_creation",
+            "product_file_modification",
+            "bridge_csp_modification",
+            "productive_enabled"
+        };
+
+    public SimulatedRoutingResult Route(string capabilityName)
+    {
+        if (DenylistedCapabilities.Contains(capabilityName))
+            return Deny(capabilityName, $"denylisted capability: {capabilityName}");
+
+        if (!AllowedRoutingTable.TryGetValue(capabilityName, out var selectedExecutor))
+            return Deny(capabilityName, $"no allowed test-only executor route: {capabilityName}");
+
+        var result = CreateExecutor(selectedExecutor).Execute();
+        return new SimulatedRoutingResult(
+            RequestId: $"route-{capabilityName}",
+            CapabilityName: capabilityName,
+            SelectedExecutor: selectedExecutor,
+            Decision: result.RuntimeResult.Decision,
+            DenyReason: string.Empty,
+            RuntimeType: result.RuntimeType,
+            FixtureType: SimulatedDryRunOrchestrator.RequiredFixtureType,
+            EvidenceEnvelope: result.EvidenceEnvelope,
+            LedgerEvents: result.LedgerEvents,
+            RedactionProof: result.RedactionProof,
+            NoExecutionProof: result.NoExecutionProof,
+            AuditEventCreated: true);
+    }
+
+    private static ITestOnlyInMemoryFakeExecutor CreateExecutor(string selectedExecutor) =>
+        selectedExecutor switch
+        {
+            "FakeLocalModelExecutor" => new FakeLocalModelExecutor(),
+            "FakeFilesystemReadMetadataExecutor" => new FakeFilesystemReadMetadataExecutor(),
+            "FakeLedgerAppendExecutor" => new FakeLedgerAppendExecutor(),
+            _ => throw new InvalidOperationException($"Unknown allowed fake executor: {selectedExecutor}")
+        };
+
+    private static SimulatedRoutingResult Deny(string capabilityName, string denyReason)
+    {
+        var sink = new RecordingSideEffectSink();
+        var result = new SimulatedDryRunOrchestrator(sink).Process(new SimulatedRequest(
+            SimulatedDryRunOrchestrator.RequiredMode,
+            SimulatedDryRunOrchestrator.RequiredFixtureType,
+            capabilityName,
+            IsProhibitedAction: true));
+
+        return new SimulatedRoutingResult(
+            RequestId: $"route-{capabilityName}",
+            CapabilityName: capabilityName,
+            SelectedExecutor: null,
+            Decision: SimulatedDecision.Deny,
+            DenyReason: denyReason,
+            RuntimeType: result.RuntimeType,
+            FixtureType: result.FixtureType,
+            EvidenceEnvelope: result.EvidenceEnvelope,
+            LedgerEvents: result.LedgerEvents,
+            RedactionProof: result.RedactionProof,
+            NoExecutionProof: result.Proof,
+            AuditEventCreated: true);
+    }
+}
+
 /// <summary>
 /// Fake-only, in-memory simulated dry-run orchestrator. Produces a decision plus
 /// ledger/evidence/no-execution projections. It never invokes the side-effect

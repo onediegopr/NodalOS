@@ -1,0 +1,9 @@
+{
+  "recommendedNextMilestone": "M800-M802 — Simulated Runtime Routing Matrix Consolidation + Audit Gate",
+  "scope": "consolidate simulated routing matrix and prepare audit gate before expanding fake executors",
+  "productiveUnlockAllowed": false,
+  "providerCloudLiveCallsAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserAutomationAllowed": false,
+  "capabilityUnlockAllowed": false
+}

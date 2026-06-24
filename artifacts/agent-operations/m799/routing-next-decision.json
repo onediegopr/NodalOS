@@ -1,0 +1,16 @@
+{
+  "milestone": "M799",
+  "simulatedCapabilityExecutorRouting": "READY",
+  "denylistEnforcement": "READY",
+  "allowedFakeExecutorRouting": "READY",
+  "blockedCapabilitiesRemainDeny": true,
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemWriteUnlock": "DISABLED",
+  "browserAutomationAction": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

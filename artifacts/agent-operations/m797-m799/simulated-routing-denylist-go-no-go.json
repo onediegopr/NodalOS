@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "decision": "SIMULATED_CAPABILITY_ROUTING_DENYLIST_ENFORCEMENT_READY",
+  "simulatedRouting": "READY",
+  "denylistEnforcement": "READY",
+  "allowedFakeExecutorsRouted": "READY",
+  "blockedCapabilitiesDenied": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "productiveEnabled": "PROHIBITED",
+  "sideEffectSinkInvocations": 0
+}

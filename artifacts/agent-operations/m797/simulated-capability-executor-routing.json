@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M797",
+  "status": "READY",
+  "routerType": "TEST_ONLY_IN_MEMORY_SIMULATED_ROUTER",
+  "denylistPriority": true,
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

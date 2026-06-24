@@ -1,0 +1,12 @@
+{
+  "routerName": "SimulatedCapabilityRouter",
+  "scope": "tests/OneBrain.Safety.Tests only",
+  "routerType": "TEST_ONLY_IN_MEMORY_SIMULATED_ROUTER",
+  "routesOnlyAllowedExecutors": true,
+  "denylistPriority": true,
+  "realExecutorWired": false,
+  "providerClientWired": false,
+  "filesystemWriterWired": false,
+  "browserAutomationWired": false,
+  "capabilityUnlockWired": false
+}
