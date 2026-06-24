@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M913",
+  "contract": "EVIDENCE_PACK_EVENT_APPEND_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "appends": ["claim events", "navigation observed", "reload observed", "trace events", "model trace summary", "cost trace summary", "errors", "final result"],
+  "preservesOrder": true,
+  "countsEvents": true,
+  "countsErrors": true,
+  "redactsPayloads": true,
+  "storesRawSecretValues": false
+}

@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M911",
+  "contract": "BROWSER_CLAIM_EVENTS_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "eventTypes": ["tab_detected", "tab_claimed", "tab_claim_updated", "tab_released", "tab_lost", "tab_reattached", "tab_navigation_observed", "tab_reload_observed", "capability_map_updated"],
+  "payloadRedacted": true,
+  "linksRunWhenAvailable": true,
+  "linksTraceWhenAvailable": true,
+  "storesSecrets": false
+}

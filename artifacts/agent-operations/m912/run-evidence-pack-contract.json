@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M912",
+  "contract": "RUN_EVIDENCE_PACK_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "executionModes": ["fake", "no_op", "dry_run", "real_if_currently_allowed"],
+  "realExecutionInvented": false,
+  "providerCloudUnlock": false,
+  "filesystemBrowserCapabilityUnlock": false,
+  "storesSecrets": false,
+  "advancedArtifactExportReady": false,
+  "largeUiCreated": false
+}

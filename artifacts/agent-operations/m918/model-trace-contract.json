@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M918",
+  "contract": "MODEL_TRACE_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "providerModes": ["fake", "local_disabled", "cloud_disabled", "cloud_if_currently_allowed"],
+  "realProviderInvokedByDefault": false,
+  "fakeProviderExplicit": true,
+  "containsApiKeys": false,
+  "providerCloudUnlock": false,
+  "ollamaAdded": false,
+  "lmStudioAdded": false,
+  "janAdded": false,
+  "localModelGatewayAdded": false
+}

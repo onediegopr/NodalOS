@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M914",
+  "guard": "EVIDENCE_PACK_GO_NO_GO",
+  "status": "TEST_ONLY_READY",
+  "artifactExportReadyClaimAllowed": false,
+  "productiveRuntimeClaimAllowed": false,
+  "providerCloudClaimAllowed": false,
+  "filesystemWriteClaimAllowed": false,
+  "browserAutomationClaimAllowed": false,
+  "capabilityUnlockClaimAllowed": false,
+  "releaseStoreClaimAllowed": false,
+  "perActionApprovalClaimAllowed": false
+}

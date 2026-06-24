@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M919",
+  "contract": "COST_TRACE_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "isEstimate": true,
+  "unknownWhenTokensUnavailable": true,
+  "unknownWhenCostUnavailable": true,
+  "billingCreated": false,
+  "adminPanelCreated": false,
+  "quotaSystemCreated": false,
+  "managedAiUnlock": false,
+  "storesSecrets": false
+}

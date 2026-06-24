@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M909",
+  "contract": "BROWSER_CAPABILITY_MAP_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "mode": "permissive",
+  "blockingEnabled": false,
+  "perActionApprovalRequired": false,
+  "browserInjectionShieldEnabled": false,
+  "webRiskFilterEnabled": false,
+  "approvalPromptsEnabled": false,
+  "browserAutomationProductiveUnlock": false,
+  "providerCloudUnlock": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}
