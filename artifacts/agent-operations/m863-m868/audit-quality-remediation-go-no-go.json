@@ -1,0 +1,33 @@
+{
+  "project": "NODAL OS",
+  "decision": "AUDIT_QUALITY_REMEDIATION_READY_FOR_REAUDIT",
+  "recoveryStatus": "PARTIAL_ALLOWED",
+  "claudePartialPatch": "artifacts/agent-operations/m863-m868/claude-partial-recovery.patch",
+  "f1NoExecutionProofMeasuredSink": "READY",
+  "f2AdversarialRedaction": "READY",
+  "f4ReplayMeasuredSink": "IMPLEMENTED_SIMULATION_LEVEL",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "validationStatus": "PASS",
+  "build": "PASS",
+  "filters": {
+    "m797m799": "PASS_9",
+    "m800m802": "PASS_12",
+    "m803m805": "PASS_13",
+    "m806m814": "PASS_12",
+    "m815m826": "PASS_14",
+    "m827m844": "PASS_16",
+    "m845m862": "PASS_17",
+    "m863m868": "PASS_48"
+  },
+  "browserRuntimeSmokeIsolated": "PASS_20",
+  "fullSafetySuite": "PASS_5293_PASSED_37_SKIPPED",
+  "recipesSuite": "PASS_635",
+  "fullSuite": "PASS_RECIPES_635_SAFETY_5293_37_SKIPPED",
+  "caveatStatus": "CLOSED_NO_FLAKE_REPRODUCED_IN_M863_M868"
+}

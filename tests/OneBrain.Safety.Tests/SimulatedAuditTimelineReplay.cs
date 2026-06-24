@@ -255,6 +255,12 @@ public sealed class SimulatedTimelineRoundtrip
 public sealed class SimulatedReplayGuard
 {
     public ReplayGuardResult Evaluate(AuditRoundtripSummary summary, string? approvalRequestId = null) =>
+        Evaluate(summary, new RecordingSideEffectSink(), approvalRequestId);
+
+    public ReplayGuardResult Evaluate(
+        AuditRoundtripSummary summary,
+        RecordingSideEffectSink sink,
+        string? approvalRequestId = null) =>
         Build(
             summary,
             approvalRequestId,
@@ -264,26 +270,28 @@ public sealed class SimulatedReplayGuard
                 "replay_audit_only_in_memory",
                 "replay_execution_prohibited",
                 "replay_executor_invocation_blocked"
-            ]);
+            ],
+            sink);
 
     public ReplayGuardResult DenyMissingEvidence(AuditRoundtripSummary summary) =>
-        Build(summary, null, ReplayMode.ReplayDeniedMissingEvidence, false, ["replay_missing_evidence_denied"]);
+        Build(summary, null, ReplayMode.ReplayDeniedMissingEvidence, false, ["replay_missing_evidence_denied"], new RecordingSideEffectSink());
 
     public ReplayGuardResult DenyMismatchedApprovalRequest(AuditRoundtripSummary summary) =>
-        Build(summary, "mismatched-approval-request", ReplayMode.ReplayDeniedMissingEvidence, false, ["replay_mismatched_approval_request_denied"]);
+        Build(summary, "mismatched-approval-request", ReplayMode.ReplayDeniedMissingEvidence, false, ["replay_mismatched_approval_request_denied"], new RecordingSideEffectSink());
 
     public ReplayGuardResult DenyTamperedLedger(AuditRoundtripSummary summary, string reasonCode = "replay_tampered_ledger_denied") =>
-        Build(summary, null, ReplayMode.ReplayDeniedTamperedLedger, false, [reasonCode]);
+        Build(summary, null, ReplayMode.ReplayDeniedTamperedLedger, false, [reasonCode], new RecordingSideEffectSink());
 
     public ReplayGuardResult DenyUnsupportedDecision(AuditRoundtripSummary summary) =>
-        Build(summary, null, ReplayMode.ReplayDeniedUnsupportedDecision, false, ["replay_unsupported_decision_denied"]);
+        Build(summary, null, ReplayMode.ReplayDeniedUnsupportedDecision, false, ["replay_unsupported_decision_denied"], new RecordingSideEffectSink());
 
     private static ReplayGuardResult Build(
         AuditRoundtripSummary summary,
         string? approvalRequestId,
         ReplayMode mode,
         bool replayAllowed,
-        IReadOnlyList<string> reasonCodes) => new(
+        IReadOnlyList<string> reasonCodes,
+        RecordingSideEffectSink sink) => new(
             ReplayId: $"replay-{summary.RoundtripId}",
             SourceRoundtripId: summary.RoundtripId,
             SourceDecisionId: summary.SourceDecisionId,
@@ -302,27 +310,38 @@ public sealed class SimulatedReplayGuard
             ProductFilesModified: false,
             BridgeCspModified: false,
             ProductiveEnabled: false,
-            SideEffectSinkInvocations: 0,
+            SideEffectSinkInvocations: sink.InvocationCount,
             ReasonCodes: reasonCodes,
             EvidenceEnvelope: summary.EvidenceEnvelopeId,
             LedgerEvents: summary.TimelineEvents.Select(static x => x.SourceLedgerEventId).ToArray(),
             RedactionProof: CleanRedactionProof(),
-            NoExecutionProof: CleanProof());
+            NoExecutionProof: CleanProof(sink));
 
     private static RedactionProof CleanRedactionProof() => new(false, false, false, false, false, false, false, false, false);
 
-    private static NoExecutionProof CleanProof() => new(true, false, false, false, false, false, false, false, false, false, false);
+    // F1: measured from the caller-visible sink instead of an unconditional constant.
+    private static NoExecutionProof CleanProof(RecordingSideEffectSink sink) => NoExecutionProof.FromSink(sink);
 }
 
 public sealed class SimulatedAuditExporter
 {
     public AuditExportPackage Export(AuditRoundtripSummary summary, ReplayGuardResult replay) =>
-        Build(summary, replay, exportSafe: true);
+        Export(summary, replay, new RecordingSideEffectSink());
+
+    public AuditExportPackage Export(
+        AuditRoundtripSummary summary,
+        ReplayGuardResult replay,
+        RecordingSideEffectSink sink) =>
+        Build(summary, replay, exportSafe: true, sink);
 
     public AuditExportPackage ExportWithInjectedDangerousFlag(AuditRoundtripSummary summary, ReplayGuardResult replay, string injectedFlag) =>
-        Build(summary, replay, exportSafe: false);
+        Build(summary, replay, exportSafe: false, new RecordingSideEffectSink());
 
-    private static AuditExportPackage Build(AuditRoundtripSummary summary, ReplayGuardResult replay, bool exportSafe) => new(
+    private static AuditExportPackage Build(
+        AuditRoundtripSummary summary,
+        ReplayGuardResult replay,
+        bool exportSafe,
+        RecordingSideEffectSink sink) => new(
         ExportId: $"export-{summary.RoundtripId}",
         SourceRoundtripId: summary.RoundtripId,
         SourceDecisionId: summary.SourceDecisionId,
@@ -343,7 +362,7 @@ public sealed class SimulatedAuditExporter
         ContainsTokens: false,
         ContainsRawLogs: false,
         ContainsBrowserSessionData: false,
-        ExecutionPerformed: false,
+        ExecutionPerformed: sink.InvocationCount > 0,
         ProductiveRuntime: false,
         ProviderCloudInvoked: false,
         FilesystemWritePerformed: false,

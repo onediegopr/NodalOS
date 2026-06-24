@@ -109,6 +109,15 @@ public sealed class RecordingSideEffectSink : ISimulatedSideEffectSink
         BrowserAutomationInvoked || CapabilityUnlockInvoked || PublicReleaseInvoked ||
         StoreSubmissionInvoked || SignedZipCreated;
 
+    // Measured count of the side effects actually recorded by this sink. F1
+    // remediation: callers derive NoExecutionProof from this real state instead
+    // of a hardcoded constant, so a recorded side effect makes the proof fail.
+    public int InvocationCount =>
+        (RealExecutorInvoked ? 1 : 0) + (ProviderClientInvoked ? 1 : 0) +
+        (FilesystemWriterInvoked ? 1 : 0) + (BrowserAutomationInvoked ? 1 : 0) +
+        (CapabilityUnlockInvoked ? 1 : 0) + (PublicReleaseInvoked ? 1 : 0) +
+        (StoreSubmissionInvoked ? 1 : 0) + (SignedZipCreated ? 1 : 0);
+
     public void InvokeRealExecutor() => RealExecutorInvoked = true;
     public void InvokeProviderClient() => ProviderClientInvoked = true;
     public void InvokeFilesystemWriter() => FilesystemWriterInvoked = true;
@@ -140,7 +149,11 @@ public sealed record NoExecutionProof(
     bool ProductFilesModified,
     bool BridgeCspModified)
 {
-    public bool ActualExecutionPerformed => false;
+    // F1: derived from the real recorded side-effect fields, not a constant.
+    public bool ActualExecutionPerformed =>
+        RealExecutorInvoked || ProviderClientInvoked || FilesystemWriterInvoked ||
+        BrowserAutomationInvoked || CapabilityUnlockInvoked || PublicReleaseInvoked ||
+        StoreSubmissionInvoked || SignedZipCreated || ProductFilesModified || BridgeCspModified;
     public bool LiveCallPerformed => ProviderClientInvoked;
     public bool FilesystemWritePerformed => FilesystemWriterInvoked;
     public bool BrowserAutomationPerformed => BrowserAutomationInvoked;
@@ -149,7 +162,37 @@ public sealed record NoExecutionProof(
     public bool StoreSubmissionPerformed => StoreSubmissionInvoked;
     public bool SignedPublicZipCreated => SignedZipCreated;
     public bool ProductiveEnabled => false;
-    public int SideEffectSinkInvocations => 0;
+
+    // F1: count derived from the real recorded fields, not a literal 0. In clean
+    // simulated paths every field is false so this stays 0 (existing assertions
+    // hold), but a recorded side effect makes it > 0 and fails the proof.
+    public int SideEffectSinkInvocations =>
+        (RealExecutorInvoked ? 1 : 0) + (ProviderClientInvoked ? 1 : 0) +
+        (FilesystemWriterInvoked ? 1 : 0) + (BrowserAutomationInvoked ? 1 : 0) +
+        (CapabilityUnlockInvoked ? 1 : 0) + (PublicReleaseInvoked ? 1 : 0) +
+        (StoreSubmissionInvoked ? 1 : 0) + (SignedZipCreated ? 1 : 0);
+
+    public bool IsClean =>
+        SimulationOnly && SideEffectSinkInvocations == 0 &&
+        !ProductFilesModified && !BridgeCspModified;
+
+    // F1: build the proof from the REAL sink an operation used, so the proof
+    // reflects measured invocation state instead of a hardcoded constant.
+    public static NoExecutionProof FromSink(
+        RecordingSideEffectSink sink,
+        bool productFilesModified = false,
+        bool bridgeCspModified = false) => new(
+        SimulationOnly: true,
+        RealExecutorInvoked: sink.RealExecutorInvoked,
+        ProviderClientInvoked: sink.ProviderClientInvoked,
+        FilesystemWriterInvoked: sink.FilesystemWriterInvoked,
+        BrowserAutomationInvoked: sink.BrowserAutomationInvoked,
+        CapabilityUnlockInvoked: sink.CapabilityUnlockInvoked,
+        PublicReleaseInvoked: sink.PublicReleaseInvoked,
+        StoreSubmissionInvoked: sink.StoreSubmissionInvoked,
+        SignedZipCreated: sink.SignedZipCreated,
+        ProductFilesModified: productFilesModified,
+        BridgeCspModified: bridgeCspModified);
 }
 
 public sealed record RedactionProof(
@@ -374,6 +417,7 @@ public interface ITestOnlyInMemoryFakeExecutor
     string ExecutorType { get; }
     string CapabilityName { get; }
     FakeExecutorExecutionResult Execute();
+    FakeExecutorExecutionResult Execute(RecordingSideEffectSink sink);
 }
 
 public abstract class TestOnlyInMemoryFakeExecutor : ITestOnlyInMemoryFakeExecutor
@@ -395,9 +439,12 @@ public abstract class TestOnlyInMemoryFakeExecutor : ITestOnlyInMemoryFakeExecut
     public string CapabilityName { get; }
     protected bool InMemoryLedgerOnly { get; }
 
-    public FakeExecutorExecutionResult Execute()
+    public FakeExecutorExecutionResult Execute() => Execute(new RecordingSideEffectSink());
+
+    // F1: overload that threads a caller-owned sink so the test can observe and
+    // (adversarially) inject side effects, proving the result proof is measured.
+    public FakeExecutorExecutionResult Execute(RecordingSideEffectSink sink)
     {
-        var sink = new RecordingSideEffectSink();
         var orchestrator = new SimulatedDryRunOrchestrator(sink);
         var result = orchestrator.Process(new SimulatedRequest(
             SimulatedDryRunOrchestrator.RequiredMode,
@@ -538,40 +585,50 @@ public sealed class SimulatedCapabilityRouter
         _denylistedCapabilities = denylistedCapabilities;
     }
 
-    public SimulatedRoutingResult Route(string capabilityName)
+    public SimulatedRoutingResult Route(string capabilityName) =>
+        Route(capabilityName, new RecordingSideEffectSink());
+
+    // F1: overload threading a caller-owned sink through every branch (deny,
+    // manual-approval, allowed) so routing tests assert measured sink state and
+    // can detect an injected side effect instead of asserting a constant 0.
+    public SimulatedRoutingResult Route(string capabilityName, RecordingSideEffectSink sink)
     {
         if (string.IsNullOrWhiteSpace(capabilityName))
             return Deny(
                 capabilityName ?? string.Empty,
                 SimulatedPolicyDecisionType.DenyUnsupportedCapability,
                 SimulatedPolicyReasonCodes.DeniedUnsupportedCapability,
-                "unsupported capability denied: empty or missing capability");
+                "unsupported capability denied: empty or missing capability",
+                sink);
 
         if (_denylistedCapabilities.Contains(capabilityName))
             return Deny(
                 capabilityName,
                 SimulatedPolicyDecisionType.DenyDenylistedCapability,
                 SimulatedPolicyReasonCodes.DeniedDenylistedCapability,
-                $"denylisted capability: {capabilityName}");
+                $"denylisted capability: {capabilityName}",
+                sink);
 
         if (string.Equals(capabilityName, SimulatedRuntimeRoutingMatrix.PolicyViolationCapability, StringComparison.Ordinal))
             return Deny(
                 capabilityName,
                 SimulatedPolicyDecisionType.DenyPolicyViolation,
                 SimulatedPolicyReasonCodes.DeniedPolicyViolation,
-                $"policy violation denied: {capabilityName}");
+                $"policy violation denied: {capabilityName}",
+                sink);
 
         if (string.Equals(capabilityName, SimulatedRuntimeRoutingMatrix.ManualApprovalCapability, StringComparison.Ordinal))
-            return RequireManualApproval(capabilityName);
+            return RequireManualApproval(capabilityName, sink);
 
         if (!_allowedRoutingTable.TryGetValue(capabilityName, out var selectedExecutor))
             return Deny(
                 capabilityName,
                 SimulatedPolicyDecisionType.DenyUnsupportedCapability,
                 SimulatedPolicyReasonCodes.DeniedUnsupportedCapability,
-                $"unsupported capability denied: {capabilityName}");
+                $"unsupported capability denied: {capabilityName}",
+                sink);
 
-        var result = CreateExecutor(selectedExecutor).Execute();
+        var result = CreateExecutor(selectedExecutor).Execute(sink);
         return new SimulatedRoutingResult(
             RequestId: $"route-{capabilityName}",
             CapabilityName: capabilityName,
@@ -602,9 +659,9 @@ public sealed class SimulatedCapabilityRouter
         string capabilityName,
         SimulatedPolicyDecisionType policyDecisionType,
         string reasonCode,
-        string denyReason)
+        string denyReason,
+        RecordingSideEffectSink sink)
     {
-        var sink = new RecordingSideEffectSink();
         var result = new SimulatedDryRunOrchestrator(sink).Process(new SimulatedRequest(
             SimulatedDryRunOrchestrator.RequiredMode,
             SimulatedDryRunOrchestrator.RequiredFixtureType,
@@ -628,9 +685,8 @@ public sealed class SimulatedCapabilityRouter
             AuditEventCreated: true);
     }
 
-    private static SimulatedRoutingResult RequireManualApproval(string capabilityName)
+    private static SimulatedRoutingResult RequireManualApproval(string capabilityName, RecordingSideEffectSink sink)
     {
-        var sink = new RecordingSideEffectSink();
         var result = new SimulatedDryRunOrchestrator(sink).Process(new SimulatedRequest(
             SimulatedDryRunOrchestrator.RequiredMode,
             SimulatedDryRunOrchestrator.RequiredFixtureType,
@@ -676,7 +732,10 @@ public sealed class SimulatedManualApprovalBoundary
         SimulatedApprovalCapabilityClass.PolicyViolation
     ];
 
-    public SimulatedApprovalRequest CreateRequest(string sourceCapability)
+    public SimulatedApprovalRequest CreateRequest(string sourceCapability) =>
+        CreateRequest(sourceCapability, new RecordingSideEffectSink());
+
+    public SimulatedApprovalRequest CreateRequest(string sourceCapability, RecordingSideEffectSink sink)
     {
         var route = new SimulatedCapabilityRouter().Route(sourceCapability);
         var approvalStatus = route.PolicyDecisionType == SimulatedPolicyDecisionType.RequireManualApprovalSimulated
@@ -691,7 +750,8 @@ public sealed class SimulatedManualApprovalBoundary
             "SIMULATED_APPROVAL_REDACTION_PROOF_CREATED",
             "SIMULATED_APPROVAL_NO_EXECUTION_PROOF_CREATED"
         };
-        var proof = CleanProof();
+        // F1: measured from the caller-visible sink rather than a local constant.
+        var proof = NoExecutionProof.FromSink(sink);
         var redactionProof = CleanRedactionProof();
         var approvalRequestId = ApprovalRequestId(sourceCapability);
         var ledgerEvents = BuildApprovalLedgerEvents(approvalRequestId, sourceCapability, approvalStatus, SimulatedApprovalReasonCodes.ApprovalRequiredSimulated, eventTypes);
@@ -714,11 +774,18 @@ public sealed class SimulatedManualApprovalBoundary
             NoExecutionProof: proof);
     }
 
-    public SimulatedApprovalOutcome Decide(string sourceCapability, SimulatedApprovalStatus requestedStatus)
+    public SimulatedApprovalOutcome Decide(string sourceCapability, SimulatedApprovalStatus requestedStatus) =>
+        Decide(sourceCapability, requestedStatus, new RecordingSideEffectSink());
+
+    public SimulatedApprovalOutcome Decide(
+        string sourceCapability,
+        SimulatedApprovalStatus requestedStatus,
+        RecordingSideEffectSink sink)
     {
         var capabilityClass = Classify(sourceCapability);
         var approvalRequestId = ApprovalRequestId(sourceCapability);
-        var proof = CleanProof();
+        // F1: measured from the caller-visible sink rather than a local constant.
+        var proof = NoExecutionProof.FromSink(sink);
         var redactionProof = CleanRedactionProof();
         var reasonCode = ResolveReasonCode(capabilityClass, requestedStatus);
         var selectedExecutor = requestedStatus == SimulatedApprovalStatus.ApprovalGrantedSimulated &&
@@ -922,8 +989,8 @@ public sealed class SimulatedDryRunOrchestrator
     public SimulatedRuntimeResult Process(SimulatedRequest request)
     {
         // No branch below ever calls _sink.* — non-invocation is by construction.
-        _ = _sink;
-
+        // F1: the result proof is now derived from the real _sink (see BuildResult),
+        // so it is measured, not a hardcoded constant.
         if (!string.Equals(request.RequestedMode, RequiredMode, StringComparison.Ordinal))
             return BuildResult(
                 request,
@@ -959,7 +1026,7 @@ public sealed class SimulatedDryRunOrchestrator
             "SIMULATED_ACTION_ALLOWED_FOR_DRY_RUN");
     }
 
-    private static SimulatedRuntimeResult BuildResult(
+    private SimulatedRuntimeResult BuildResult(
         SimulatedRequest request,
         SimulatedDecision decision,
         string reason,
@@ -980,7 +1047,13 @@ public sealed class SimulatedDryRunOrchestrator
         ledger.Append("SIMULATED_REDACTION_PROOF_CREATED", requestId, dryRunId, request.CapabilityName, envelopeId);
         ledger.Append("SIMULATED_NO_EXECUTION_PROOF_CREATED", requestId, dryRunId, request.CapabilityName, envelopeId);
 
-        var proof = CleanProof();
+        // F1: measured from the real sink threaded through this orchestrator
+        // instead of an unconditional CleanProof(). The orchestrator never
+        // invokes the sink, so in normal operation this is all-false (zero),
+        // but it now reflects actual recorded state and can fail.
+        var proof = _sink is RecordingSideEffectSink recordingSink
+            ? NoExecutionProof.FromSink(recordingSink)
+            : CleanProof();
         var redactionProof = CleanRedactionProof();
         var envelope = new EvidenceEnvelope(
             EnvelopeId: envelopeId,
