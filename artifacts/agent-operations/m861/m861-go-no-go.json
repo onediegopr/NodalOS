@@ -1,0 +1,7 @@
+{
+  "project": "NODAL OS",
+  "decision": "M861_READY",
+  "macroHitoFinalReport": "READY",
+  "auditGate": "AUDIT_GATE_CLEAN",
+  "finalDecision": "SIMULATED_RUNTIME_FOUNDATION_FREEZE_CANDIDATE_PREP_READY_AUDIT_EXECUTION_PENDING"
+}

@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M855",
+  "freezeLockEvidence": "READY",
+  "freezeLockId": "freeze-lock-m855",
+  "freezeCandidateId": "freeze-candidate-m851",
+  "lockStatus": "FREEZE_LOCK_BLOCKED",
+  "lockedScope": "SIMULATED_RUNTIME_FOUNDATION_TEST_ONLY",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "productiveRuntime": false,
+  "releaseStore": false
+}

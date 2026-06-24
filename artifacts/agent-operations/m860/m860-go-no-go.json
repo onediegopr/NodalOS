@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "decision": "AUDIT_GATE_CLEAN",
+  "flakeRegressionWatch": "READY",
+  "browserRuntimeSmokeIsolatedRerun": "PASS_20",
+  "fullSafetySuiteRerun": "PASS_5245_SKIPPED_37",
+  "recipesSuite": "PASS_635",
+  "fullSuite": "PASS",
+  "transientFlakesRecorded": true,
+  "securityRelatedFailure": false
+}

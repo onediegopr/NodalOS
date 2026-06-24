@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M858",
+  "outcome": "FREEZE_CANDIDATE_PREP_READY_AUDIT_PENDING",
+  "nextMacroHito": "M863-M874 - External Audit Result Application + Freeze Candidate Lock + Future Runtime Re-Entry Criteria",
+  "productiveUnlockAllowed": false,
+  "releaseStoreAllowed": false,
+  "productBridgeCspModificationAllowed": false
+}

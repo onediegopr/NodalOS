@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M851",
+  "freezeCandidateContract": "READY",
+  "freezeCandidateId": "freeze-candidate-m851",
+  "sourceCommit": "34625bcb5488cd910f8fc8ce547d98cef8983d26",
+  "sourceAuditDecision": "AUDIT_NOT_RUN_PREP_ONLY",
+  "scope": "SIMULATED_RUNTIME_FOUNDATION_TEST_ONLY",
+  "freezeStatus": "FREEZE_CANDIDATE_BLOCKED_BY_AUDIT",
+  "freezeAllowed": false,
+  "productiveRuntime": false,
+  "providerCloud": false,
+  "filesystemWrite": false,
+  "browserAutomation": false,
+  "capabilityUnlock": false,
+  "publicRelease": false,
+  "chromeWebStore": false,
+  "signedPublicZip": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

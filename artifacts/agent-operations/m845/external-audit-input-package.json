@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M845",
+  "packageStatus": "READY",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "commit": "34625bcb5488cd910f8fc8ce547d98cef8983d26",
+  "scope": "tests/safety + docs/reports + artifacts/agent-operations only",
+  "goDomains": ["simulated runtime fake-only", "in-memory evidence ledger", "governance snapshot", "readiness scorecard", "safety drift guard"],
+  "noGoDomains": ["runtime productive execution", "provider/cloud live calls", "filesystem/browser/capability unlock", "public release", "Chrome Web Store", "signed public ZIP", "product files", "Bridge/CSP"],
+  "productiveRuntime": false,
+  "providerCloudLiveCalls": false,
+  "filesystemBrowserCapabilityUnlock": false,
+  "releaseStoreReady": false,
+  "productBridgeCspModified": false
+}

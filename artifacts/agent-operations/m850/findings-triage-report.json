@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M850",
+  "findingsTriageReport": "READY",
+  "auditDecision": "AUDIT_NOT_RUN_PREP_ONLY",
+  "totalFindings": 1,
+  "blockingFindings": 1,
+  "freezeCandidateEligibility": false,
+  "productRuntimeAllowed": false,
+  "releaseStoreAllowed": false,
+  "productBridgeCspAllowed": false
+}

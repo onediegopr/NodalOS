@@ -1,0 +1,6 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M854",
+  "freezeLockGuard": "READY",
+  "forbiddenClaims": ["productive enabled", "provider cloud enabled", "filesystem write enabled", "browser automation enabled", "capability unlock enabled", "public release ready", "Store ready", "signed ZIP ready", "product files can be modified", "Bridge/CSP can be modified", "audit findings can be ignored", "no future tests required"]
+}
