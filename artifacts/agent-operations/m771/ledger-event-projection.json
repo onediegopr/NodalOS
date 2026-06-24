@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M771",
+  "decision": "LEDGER_EVENT_PROJECTION_READY",
+  "projectionMode": "SIMULATED_ONLY",
+  "ledgerEventProjection": "READY",
+  "simulationOnly": true,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false
+}

@@ -1,0 +1,24 @@
+{
+  "flow": "simulated-policy-approval",
+  "steps": [
+    "validate request is SIMULATED_DRY_RUN",
+    "load fake fixture reference",
+    "evaluate simulated policy gate",
+    "evaluate simulated manual approval when high-risk",
+    "deny prohibited actions",
+    "create evidence envelope reference",
+    "project ledger event references",
+    "return no-execution proof flags"
+  ],
+  "policyGateDecisionValues": [
+    "ALLOW_SIMULATED_DRY_RUN",
+    "DENY"
+  ],
+  "approvalDecisionValues": [
+    "APPROVED_FOR_SIMULATION_ONLY",
+    "DENIED",
+    "REQUIRED"
+  ],
+  "realExecutionAllowed": false,
+  "productiveExecutionAllowed": false
+}

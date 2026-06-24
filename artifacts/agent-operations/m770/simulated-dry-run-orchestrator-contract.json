@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M770",
+  "decision": "SIMULATED_DRY_RUN_ORCHESTRATOR_CONTRACT_READY",
+  "orchestratorType": "SIMULATED_FAKE_ONLY",
+  "requestMode": "SIMULATED_DRY_RUN",
+  "processesSimulatedRequestsOnly": true,
+  "realExecutionAllowed": false,
+  "productiveExecutionAllowed": false,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

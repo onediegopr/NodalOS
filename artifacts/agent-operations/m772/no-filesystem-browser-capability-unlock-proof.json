@@ -1,0 +1,8 @@
+{
+  "filesystemUnlockWrite": "DISABLED",
+  "browserAutomationUnlockAction": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false
+}

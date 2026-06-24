@@ -1,0 +1,7 @@
+{
+  "recommendedNextMilestone": "M773-M775 Simulated Orchestrator Negative Flow Tests + Ledger Projection Proof",
+  "scope": "tests/contracts/simulation only",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

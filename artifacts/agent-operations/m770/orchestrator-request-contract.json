@@ -1,0 +1,21 @@
+{
+  "contract": "orchestrator-request",
+  "requiredFields": [
+    "requestId",
+    "dryRunId",
+    "capabilityName",
+    "requestedAction",
+    "requestedMode",
+    "inputFixtureRef",
+    "policyGateRequired",
+    "manualApprovalRequired",
+    "evidenceEnvelopeRequired",
+    "ledgerProjectionRequired"
+  ],
+  "requestedMode": "SIMULATED_DRY_RUN",
+  "policyGateRequired": true,
+  "manualApprovalRequiredWhenHighRisk": true,
+  "evidenceEnvelopeRequired": true,
+  "ledgerProjectionRequired": true,
+  "productiveExecutionAllowed": false
+}

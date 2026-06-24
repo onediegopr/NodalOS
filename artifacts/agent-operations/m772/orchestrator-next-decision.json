@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M772",
+  "decision": "ORCHESTRATOR_NEXT_DECISION_READY",
+  "simulatedDryRunOrchestratorContract": "READY",
+  "ledgerEventProjection": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlockWrite": "DISABLED",
+  "browserAutomationUnlockAction": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

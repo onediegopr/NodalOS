@@ -1,0 +1,46 @@
+{
+  "contract": "orchestrator-response",
+  "requiredFields": [
+    "requestId",
+    "dryRunId",
+    "decision",
+    "decisionReason",
+    "policyGateDecision",
+    "approvalDecision",
+    "evidenceEnvelopeRef",
+    "ledgerEventRefs",
+    "actualExecutionPerformed",
+    "liveCallPerformed",
+    "filesystemWritePerformed",
+    "browserAutomationPerformed",
+    "capabilityUnlocked",
+    "publicReleasePerformed",
+    "storeSubmissionPerformed",
+    "signedPublicZipCreated",
+    "productiveExecutionAllowed"
+  ],
+  "allowedDecisions": [
+    "ALLOW_SIMULATED_DRY_RUN",
+    "DENY",
+    "REQUIRE_MANUAL_APPROVAL"
+  ],
+  "prohibitedDecisions": [
+    "ALLOW_REAL_EXECUTION",
+    "PRODUCTIVE_ENABLED",
+    "LIVE_CALL_ENABLED",
+    "FILESYSTEM_WRITE_ENABLED",
+    "BROWSER_AUTOMATION_ENABLED",
+    "CAPABILITY_UNLOCKED",
+    "PUBLIC_RELEASE_READY",
+    "CHROME_WEB_STORE_READY"
+  ],
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "productiveExecutionAllowed": false
+}

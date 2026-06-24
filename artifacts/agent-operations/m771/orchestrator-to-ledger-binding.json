@@ -1,0 +1,12 @@
+{
+  "binding": "orchestrator-to-ledger",
+  "sourceContract": "artifacts/agent-operations/m770/simulated-dry-run-orchestrator-contract.json",
+  "requestContract": "artifacts/agent-operations/m770/orchestrator-request-contract.json",
+  "responseContract": "artifacts/agent-operations/m770/orchestrator-response-contract.json",
+  "ledgerSchema": "artifacts/agent-operations/m771/projected-ledger-event-schema.json",
+  "evidenceEnvelopeRequired": true,
+  "redactionProofRequired": true,
+  "noExecutionProofRequired": true,
+  "simulationOnly": true,
+  "actualExecutionPerformed": false
+}
