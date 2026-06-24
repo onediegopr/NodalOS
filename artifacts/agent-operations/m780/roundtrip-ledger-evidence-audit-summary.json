@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M780",
+  "status": "READY",
+  "negativeFlows": "READY",
+  "positiveSimulatedFlows": "READY",
+  "ledgerEventProjection": "READY",
+  "evidenceEnvelopes": "READY",
+  "redactionProofs": "READY",
+  "forbiddenFields": "READY",
+  "noExecutionProofFlags": "READY",
+  "policyGateDecisions": "READY",
+  "manualApprovalDecisions": "READY",
+  "evidenceInvented": false,
+  "realExecutionPerformed": false,
+  "productiveUnlockAllowed": false
+}

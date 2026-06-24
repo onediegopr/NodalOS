@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M779",
+  "status": "READY",
+  "sequence": [
+    "SIMULATED_REQUEST_RECEIVED",
+    "SIMULATED_FIXTURE_LOADED",
+    "SIMULATED_POLICY_GATE_EVALUATED",
+    "SIMULATED_MANUAL_APPROVAL_EVALUATED_IF_REQUIRED",
+    "SIMULATED_DECISION_EMITTED",
+    "SIMULATED_EVIDENCE_ENVELOPE_CREATED",
+    "SIMULATED_REDACTION_PROOF_CREATED",
+    "SIMULATED_LEDGER_EVENTS_PROJECTED",
+    "SIMULATED_NO_EXECUTION_PROOF_CREATED",
+    "SIMULATED_RESPONSE_RETURNED"
+  ],
+  "requestedMode": "SIMULATED_DRY_RUN",
+  "simulationOnly": true,
+  "productiveExecutionAllowed": false,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

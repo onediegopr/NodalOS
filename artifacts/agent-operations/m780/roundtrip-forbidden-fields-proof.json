@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M780",
+  "coverageStatus": "READY",
+  "forbiddenFields": [
+    "secrets",
+    "credentials",
+    "tokens",
+    "cookies",
+    "rawUserData",
+    "rawLogs",
+    "providerKeys",
+    "privateKeys",
+    "browserSessionData"
+  ],
+  "secretsIncluded": false,
+  "credentialsIncluded": false,
+  "tokensIncluded": false,
+  "cookiesIncluded": false,
+  "rawUserDataIncluded": false,
+  "rawLogsIncluded": false,
+  "providerKeysIncluded": false,
+  "privateKeysIncluded": false,
+  "browserSessionDataIncluded": false,
+  "evidenceInvented": false,
+  "realExecutionPerformed": false,
+  "productiveUnlockAllowed": false
+}

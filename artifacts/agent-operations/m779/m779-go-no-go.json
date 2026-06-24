@@ -1,0 +1,6 @@
+{
+  "milestone": "M779",
+  "decision": "GO",
+  "simulatedDryRunRoundtripContract": "READY",
+  "productiveExecutionAllowed": false
+}

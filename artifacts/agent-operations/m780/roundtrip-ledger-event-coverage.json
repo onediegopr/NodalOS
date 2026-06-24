@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M780",
+  "coverageStatus": "READY",
+  "coversNegativeFlows": true,
+  "coversPositiveSimulatedFlows": true,
+  "requiredEventProjectionCovered": true,
+  "evidenceInvented": false,
+  "realExecutionPerformed": false,
+  "productiveUnlockAllowed": false
+}
