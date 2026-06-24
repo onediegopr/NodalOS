@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M789",
+  "status": "READY",
+  "allowPathCovered": true,
+  "denyPathCovered": true,
+  "requireApprovalPathCovered": true,
+  "evidenceEnvelopeCovered": true,
+  "ledgerEventsCovered": true,
+  "redactionProofCovered": true,
+  "noExecutionProofCovered": true,
+  "sideEffectSinkInvocations": 0
+}

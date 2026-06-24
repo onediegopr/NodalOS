@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M790",
+  "preferredNextMilestone": "CLAUDE AUDIT POST M790 antes de M791-M793.",
+  "fallbackNextMilestone": "M791-M793 — Simulated Runtime Expansion Boundary + Capability-Specific Fake Executors Plan",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

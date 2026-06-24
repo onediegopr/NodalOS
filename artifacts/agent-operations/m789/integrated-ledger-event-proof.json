@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M789",
+  "status": "READY",
+  "eventId": "sim-ledger-event-m788",
+  "eventType": "SIMULATED_RUNTIME_EVIDENCE_LEDGER_PROJECTED",
+  "requestId": "sim-request-m788",
+  "dryRunId": "sim-dry-run-m788",
+  "capabilityName": "simulated runtime integration",
+  "simulationOnly": true,
+  "evidenceEnvelopeRef": "sim-envelope-m788",
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false
+}

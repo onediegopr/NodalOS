@@ -1,0 +1,25 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M788",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "decision": "DENY",
+  "cases": [
+    "deny_provider_live_call_creates_denial_evidence_and_ledger",
+    "deny_filesystem_write_creates_denial_evidence_and_ledger",
+    "deny_browser_action_creates_denial_evidence_and_ledger"
+  ],
+  "evidenceEnvelopeCreated": true,
+  "ledgerProjectionCreated": true,
+  "redactionProofCreated": true,
+  "noExecutionProofCreated": true,
+  "auditSummaryCreated": true,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "sideEffectSinkInvocations": 0
+}

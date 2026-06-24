@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M790",
+  "auditGate": "READY",
+  "recommendedAudit": "AUDIT POST M790 — Claude external audit before any simulated runtime expansion or dry-run re-entry.",
+  "blocksProductiveRuntime": true,
+  "blocksProviderCloudLiveCalls": true,
+  "blocksFilesystemWrite": true,
+  "blocksBrowserAutomation": true,
+  "blocksCapabilityUnlock": true,
+  "blocksPublicRelease": true,
+  "blocksChromeWebStore": true
+}

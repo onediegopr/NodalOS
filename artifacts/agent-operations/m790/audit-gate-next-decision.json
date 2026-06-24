@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M790",
+  "simulatedRuntimeEvidenceLedgerIntegrationTests": "READY",
+  "integratedEvidenceLedgerProof": "READY",
+  "auditGate": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemWriteUnlock": "DISABLED",
+  "browserAutomationAction": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "recommendedAudit": "AUDIT POST M790 — Claude external audit before any simulated runtime expansion or dry-run re-entry.",
+  "preferredRecommendation": "CLAUDE AUDIT POST M790 antes de M791-M793."
+}

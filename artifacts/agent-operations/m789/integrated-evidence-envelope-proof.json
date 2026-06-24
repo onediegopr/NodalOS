@@ -1,0 +1,25 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M789",
+  "status": "READY",
+  "envelopeId": "sim-envelope-m788",
+  "dryRunId": "sim-dry-run-m788",
+  "requestId": "sim-request-m788",
+  "capabilityName": "simulated runtime integration",
+  "decision": "SIMULATED_RUNTIME_DECISION_PROJECTED",
+  "simulationOnly": true,
+  "redactionProofRef": "integrated-redaction-proof",
+  "ledgerEventRefs": [
+    "sim-ledger-event-m788-request",
+    "sim-ledger-event-m788-decision",
+    "sim-ledger-event-m788-no-execution"
+  ],
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false
+}

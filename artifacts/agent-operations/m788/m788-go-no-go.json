@@ -1,0 +1,6 @@
+{
+  "milestone": "M788",
+  "decision": "GO",
+  "simulatedRuntimeEvidenceLedgerIntegrationTests": "READY",
+  "sideEffectSinkInvocations": 0
+}
