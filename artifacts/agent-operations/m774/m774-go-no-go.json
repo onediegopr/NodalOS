@@ -1,0 +1,7 @@
+{
+  "milestone": "M774",
+  "decision": "LEDGER_PROJECTION_PROOF_READY",
+  "ledgerProjectionProofReady": true,
+  "simulationOnly": true,
+  "actualExecutionPerformed": false
+}

@@ -1,0 +1,11 @@
+{
+  "minimumRequiredSequence": [
+    "SIMULATED_DRY_RUN_REQUESTED",
+    "SIMULATED_POLICY_GATE_EVALUATED",
+    "SIMULATED_ACTION_DENIED",
+    "SIMULATED_EVIDENCE_ENVELOPE_CREATED",
+    "SIMULATED_NO_EXECUTION_PROOF_CREATED"
+  ],
+  "manualApprovalEvent": "SIMULATED_MANUAL_APPROVAL_EVALUATED",
+  "source": "artifacts/agent-operations/m774/negative-flow-ledger-events.json"
+}

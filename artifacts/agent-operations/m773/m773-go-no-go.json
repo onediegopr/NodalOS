@@ -1,0 +1,7 @@
+{
+  "milestone": "M773",
+  "decision": "SIMULATED_ORCHESTRATOR_NEGATIVE_FLOW_TESTS_READY",
+  "negativeFlowTestsReady": true,
+  "allCasesDenied": true,
+  "actualExecutionPerformed": false
+}

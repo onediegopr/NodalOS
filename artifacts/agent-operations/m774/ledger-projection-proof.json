@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M774",
+  "decision": "LEDGER_PROJECTION_PROOF_READY",
+  "ledgerProjectionProof": "READY",
+  "everyNegativeCaseHasLedgerEvents": true,
+  "simulationOnly": true,
+  "actualExecutionPerformed": false
+}

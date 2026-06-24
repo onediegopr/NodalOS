@@ -1,0 +1,6 @@
+{
+  "runtimeProductiveExecution": "DISABLED",
+  "productiveEnabled": "PROHIBITED",
+  "productiveExecutionAllowed": false,
+  "actualExecutionPerformed": false
+}

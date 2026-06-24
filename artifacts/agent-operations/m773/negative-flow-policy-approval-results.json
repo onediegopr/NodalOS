@@ -1,0 +1,18 @@
+{
+  "policyGateDefault": "DENY",
+  "approvalDefault": "DENIED_OR_NOT_APPLICABLE",
+  "caseResults": [
+    {"caseId":"orchestrator_attempt_live_provider_call","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_provider_credential_use","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_filesystem_write","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_browser_action","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_credential_captcha_2fa_bypass","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_capability_unlock","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_public_release","policyGateDecision":"DENY","approvalDecision":"NOT_APPLICABLE","manualApprovalEvaluated":false},
+    {"caseId":"orchestrator_attempt_chrome_web_store_submission","policyGateDecision":"DENY","approvalDecision":"NOT_APPLICABLE","manualApprovalEvaluated":false},
+    {"caseId":"orchestrator_attempt_signed_public_zip_creation","policyGateDecision":"DENY","approvalDecision":"NOT_APPLICABLE","manualApprovalEvaluated":false},
+    {"caseId":"orchestrator_attempt_product_file_modification","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_bridge_csp_modification","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true},
+    {"caseId":"orchestrator_attempt_productive_enabled","policyGateDecision":"DENY","approvalDecision":"DENIED","manualApprovalEvaluated":true}
+  ]
+}

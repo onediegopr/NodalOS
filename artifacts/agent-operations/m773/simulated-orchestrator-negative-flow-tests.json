@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M773",
+  "decision": "SIMULATED_ORCHESTRATOR_NEGATIVE_FLOW_TESTS_READY",
+  "negativeFlowTests": "READY",
+  "simulationOnly": true,
+  "allCasesDenied": true,
+  "ledgerProjectionRequired": true,
+  "evidenceEnvelopeRequired": true,
+  "actualExecutionPerformed": false,
+  "productiveExecutionAllowed": false
+}

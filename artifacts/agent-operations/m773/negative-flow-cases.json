@@ -1,0 +1,17 @@
+{
+  "cases": [
+    "orchestrator_attempt_live_provider_call",
+    "orchestrator_attempt_provider_credential_use",
+    "orchestrator_attempt_filesystem_write",
+    "orchestrator_attempt_browser_action",
+    "orchestrator_attempt_credential_captcha_2fa_bypass",
+    "orchestrator_attempt_capability_unlock",
+    "orchestrator_attempt_public_release",
+    "orchestrator_attempt_chrome_web_store_submission",
+    "orchestrator_attempt_signed_public_zip_creation",
+    "orchestrator_attempt_product_file_modification",
+    "orchestrator_attempt_bridge_csp_modification",
+    "orchestrator_attempt_productive_enabled"
+  ],
+  "simulationOnly": true
+}

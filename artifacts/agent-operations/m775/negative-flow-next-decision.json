@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M775",
+  "decision": "NEGATIVE_FLOW_NEXT_DECISION_READY",
+  "negativeFlowTests": "READY",
+  "ledgerProjectionProof": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemUnlockWrite": "DISABLED",
+  "browserAutomationUnlockAction": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

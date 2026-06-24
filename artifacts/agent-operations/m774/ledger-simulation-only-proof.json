@@ -1,0 +1,6 @@
+{
+  "simulationOnly": true,
+  "appliesToEveryProjectedEvent": true,
+  "realExecutionEventTypesAllowed": false,
+  "actualExecutionPerformed": false
+}
