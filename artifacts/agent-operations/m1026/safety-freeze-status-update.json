@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1026",
+  "SafetyFreeze": "ACTIVE",
+  "ManualQaExecution": "NO-GO",
+  "ManualQaTrigger": "NOT_READY_EVIDENCE_PENDING",
+  "ManualQaHold": "MANUAL_QA_HOLD_ACTIVE",
+  "RuntimeReal": "NO-GO",
+  "PcCommanderReal": "NO-GO",
+  "ProviderCloud": "NO-GO",
+  "FilesystemBrowserCapabilityUnlock": "NO-GO",
+  "ReleaseStore": "NO-GO",
+  "ProductFiles": "unchanged",
+  "BridgeCsp": "unchanged",
+  "BrowserRuntimeSmokeCaveat": "OPEN_BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED_VISIBLE",
+  "automaticUnlocks": false,
+  "blockScope": "tests/docs/artifacts only"
+}

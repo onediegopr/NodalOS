@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1018",
+  "f001Remediation": "SafeNoOp and MetadataFixture use shared sink identity",
+  "safeNoOpPathTouchesSharedSink": true,
+  "metadataFixturePathTouchesSharedSink": true,
+  "proofUsesSameSinkId": true,
+  "cleanPathUsesFreshSink": false,
+  "negativePathTests": [
+    "SafeNoOp shell injection fails proof",
+    "MetadataFixture filesystem read-real injection fails proof",
+    "MetadataFixture filesystem write injection fails proof",
+    "MetadataFixture credential access injection fails proof"
+  ],
+  "runtimeReal": "NO-GO",
+  "manualQaExecution": "NO-GO"
+}

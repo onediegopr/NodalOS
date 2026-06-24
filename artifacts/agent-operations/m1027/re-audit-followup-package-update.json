@@ -1,0 +1,39 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1027",
+  "package": "Re-audit followup for M1017-M1028 blocker remediation",
+  "whatChangedSinceReAuditNoGo": [
+    "F-001 clean path proof is now path-connected to a shared sink identity",
+    "F-001 path-level negative side-effect tests were added",
+    "F-002 generic secret-shaped fake payload tests were added",
+    "F-002 structured JSON/text/header key matching was added",
+    "F-002 safe summary is metadata-only and separate from redacted payload",
+    "F-003 accepted hold remains classification-only and future-contract-only"
+  ],
+  "testsToInspect": [
+    "tests/OneBrain.Safety.Tests/NodalOsAuditFindingsRemediationM993M1004Tests.cs",
+    "tests/OneBrain.Safety.Tests/NodalOsSafetyFreezeReAuditBlockerRemediationM1017M1028Tests.cs"
+  ],
+  "artifactsToInspect": [
+    "artifacts/agent-operations/m1021/f001-path-connected-measured-proof-remediation.json",
+    "artifacts/agent-operations/m1024/f002-generic-redaction-safe-summary-remediation.json",
+    "artifacts/agent-operations/m1025/f003-held-for-real-channel-reaffirmation.json",
+    "artifacts/agent-operations/m1026/safety-freeze-status-update.json"
+  ],
+  "remainingNoGo": [
+    "manual QA execution",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability unlock",
+    "release/store",
+    "product files",
+    "Bridge/CSP"
+  ],
+  "followupPrompt": "PEDIR RE-AUDITORIA GPT-5.5 XHIGH O CLAUDE",
+  "decisionRequested": [
+    "FOLLOWUP_REAUDIT_GO",
+    "FOLLOWUP_REAUDIT_CONDITIONAL_GO",
+    "FOLLOWUP_REAUDIT_NO_GO"
+  ]
+}

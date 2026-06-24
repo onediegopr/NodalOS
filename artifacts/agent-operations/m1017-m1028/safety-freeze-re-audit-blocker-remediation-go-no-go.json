@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "milestones": "M1017-M1028",
+  "decision": "SAFETY_FREEZE_RE_AUDIT_BLOCKER_REMEDIATION_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "go": [
+    "safety-freeze blocker-remediation-only",
+    "tests/docs/artifacts only",
+    "path-connected measured proof",
+    "generic redaction remediation",
+    "F-003 held for real channel"
+  ],
+  "noGo": [
+    "manual QA execution",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability unlock",
+    "release/store",
+    "product files",
+    "Bridge/CSP"
+  ],
+  "manualQaExecution": "NO-GO",
+  "runtimeReal": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "fullSuiteConfidence": "95% WITH_EXTERNAL_SMOKE_CAVEAT",
+  "browserRuntimeSmokeLatestResult": "FAIL_SAME_FAMILY_GATE9_WEBSOCKET_ABORTED_AFTER_PRIOR_PASS",
+  "fullSuiteResult": "FAIL_ONLY_BROWSER_RUNTIME_SMOKE_GATE9_SAME_FAMILY",
+  "validationStatus": "TARGETED_PASS_WITH_EXTERNAL_SMOKE_CAVEAT_FULL_SUITE_GATE9_FAIL"
+}

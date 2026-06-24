@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1023",
+  "finding": "F-002",
+  "structuredKeyMatching": "READY",
+  "coveredKeyForms": [
+    "JSON object",
+    "nested JSON",
+    "key=value text",
+    "YAML-like text",
+    "HTTP header-like text",
+    "mixed text with embedded key"
+  ],
+  "forbiddenKeyFamilies": [
+    "api key",
+    "token",
+    "authorization",
+    "password",
+    "secret",
+    "cookie",
+    "session",
+    "private key",
+    "connection string",
+    "credential",
+    "environment",
+    "ssh key"
+  ],
+  "rawValuesStoredInArtifact": false,
+  "runtimeReal": "NO-GO",
+  "manualQaExecution": "NO-GO"
+}

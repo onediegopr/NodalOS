@@ -37,19 +37,25 @@ public sealed class NodalOsAuditFindingsRemediationM993M1004Tests
     [TestMethod]
     public void clean_paths_produce_sink_derived_clean_proof()
     {
+        var sharedSink = new M993RecordingSideEffectSink("sink-m993-clean-paths");
         var paths = new[]
         {
-            M993HarnessPath.SafeNoOpRunner(),
-            M993HarnessPath.MetadataFixture(),
-            M993HarnessPath.ControlledNoopAdapter(),
-            M993HarnessPath.HarnessPrep(),
-            M993HarnessPath.HumanEvidenceGate()
+            M993HarnessPath.SafeNoOpRunner(sharedSink),
+            M993HarnessPath.MetadataFixture(sharedSink),
+            M993HarnessPath.ControlledNoopAdapter(sharedSink),
+            M993HarnessPath.HarnessPrep(sharedSink),
+            M993HarnessPath.HumanEvidenceGate(sharedSink)
         };
 
         foreach (var path in paths)
         {
             Assert.AreEqual("Declarative Descriptor Check", path.DescriptorRole, path.Name);
             Assert.AreEqual("Measured No-Side-Effect Proof", path.ProofRole, path.Name);
+            Assert.AreEqual(sharedSink.SinkId, path.PathObservedSinkId, path.Name);
+            Assert.AreEqual(sharedSink.SinkId, path.Proof.SourceSinkId, path.Name);
+            Assert.IsTrue(path.ProofDerivedAfterPathExecution, path.Name);
+            Assert.IsFalse(path.CreatedFreshSinkForProof, path.Name);
+            Assert.IsFalse(path.UsesStaticFlagsAsMeasuredProof, path.Name);
             Assert.IsTrue(path.Proof.IsClean, path.Name);
             Assert.AreEqual(0, path.Proof.TotalForbiddenInvocations, path.Name);
         }
@@ -132,6 +138,7 @@ public sealed class NodalOsAuditFindingsRemediationM993M1004Tests
             Assert.IsTrue(payload.Contains("fake", StringComparison.OrdinalIgnoreCase), payload);
             Assert.IsTrue(result.RedactionStatus is "REDACTED" or "BLOCKED", payload);
             Assert.IsFalse(result.RedactedPayload.Contains(payload, StringComparison.Ordinal), payload);
+            Assert.AreNotEqual(result.RedactedPayload, result.SafeSummary, payload);
             Assert.IsFalse(result.SafeSummary.Contains(payload, StringComparison.Ordinal), payload);
             Assert.IsFalse(string.IsNullOrWhiteSpace(result.SafeSummary), payload);
         }
@@ -270,6 +277,21 @@ public sealed class NodalOsAuditFindingsRemediationM993M1004Tests
 internal sealed class M993RecordingSideEffectSink
 {
     private readonly Dictionary<string, List<string>> eventsByKind = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<string> observedPaths = new();
+
+    public M993RecordingSideEffectSink()
+        : this($"sink-{Guid.NewGuid():N}")
+    {
+    }
+
+    public M993RecordingSideEffectSink(string sinkId)
+    {
+        SinkId = sinkId;
+    }
+
+    public string SinkId { get; }
+
+    public IReadOnlyList<string> ObservedPaths => observedPaths;
 
     public int ShellInvocations => Count("shell");
     public int FilesystemWriteInvocations => Count("filesystem_write");
@@ -300,6 +322,7 @@ internal sealed class M993RecordingSideEffectSink
     public void RecordCapabilityUnlock(string detail) => Record("capability_unlock", detail);
     public void RecordProductFileMutation(string detail) => Record("product_file_mutation", detail);
     public void RecordBridgeCspMutation(string detail) => Record("bridge_csp_mutation", detail);
+    public void TouchPath(string pathName) => observedPaths.Add(pathName);
 
     private void Record(string kind, string detail)
     {
@@ -317,7 +340,9 @@ internal sealed class M993RecordingSideEffectSink
 
 internal sealed record M993NoSideEffectProof(
     M993RecordingSideEffectSink SourceSink,
+    string SourceSinkId,
     string ProofSource,
+    int ObservedPathCount,
     int ShellInvocations,
     int FilesystemWriteInvocations,
     int FilesystemReadRealInvocations,
@@ -354,7 +379,9 @@ internal sealed record M993NoSideEffectProof(
     public static M993NoSideEffectProof FromSink(M993RecordingSideEffectSink sink) =>
         new(
             sink,
+            sink.SinkId,
             "sink-derived",
+            sink.ObservedPaths.Count,
             sink.ShellInvocations,
             sink.FilesystemWriteInvocations,
             sink.FilesystemReadRealInvocations,
@@ -371,16 +398,35 @@ internal sealed record M993NoSideEffectProof(
             sink.BridgeCspMutationInvocations);
 }
 
-internal sealed record M993HarnessPath(string Name, string DescriptorRole, string ProofRole, M993NoSideEffectProof Proof)
+internal sealed record M993HarnessPath(
+    string Name,
+    string DescriptorRole,
+    string ProofRole,
+    M993NoSideEffectProof Proof,
+    string PathObservedSinkId,
+    bool ProofDerivedAfterPathExecution,
+    bool CreatedFreshSinkForProof,
+    bool UsesStaticFlagsAsMeasuredProof)
 {
-    public static M993HarnessPath SafeNoOpRunner() => Clean("safe no-op runner path");
-    public static M993HarnessPath MetadataFixture() => Clean("metadata fixture path");
-    public static M993HarnessPath ControlledNoopAdapter() => Clean("controlled no-op adapter path");
-    public static M993HarnessPath HarnessPrep() => Clean("harness prep path");
-    public static M993HarnessPath HumanEvidenceGate() => Clean("human evidence gate path");
+    public static M993HarnessPath SafeNoOpRunner(M993RecordingSideEffectSink sink) => Execute("safe no-op runner path", sink);
+    public static M993HarnessPath MetadataFixture(M993RecordingSideEffectSink sink) => Execute("metadata fixture path", sink);
+    public static M993HarnessPath ControlledNoopAdapter(M993RecordingSideEffectSink sink) => Execute("controlled no-op adapter path", sink);
+    public static M993HarnessPath HarnessPrep(M993RecordingSideEffectSink sink) => Execute("harness prep path", sink);
+    public static M993HarnessPath HumanEvidenceGate(M993RecordingSideEffectSink sink) => Execute("human evidence gate path", sink);
 
-    private static M993HarnessPath Clean(string name) =>
-        new(name, "Declarative Descriptor Check", "Measured No-Side-Effect Proof", M993NoSideEffectProof.FromSink(new M993RecordingSideEffectSink()));
+    private static M993HarnessPath Execute(string name, M993RecordingSideEffectSink sink)
+    {
+        sink.TouchPath(name);
+        return new(
+            name,
+            "Declarative Descriptor Check",
+            "Measured No-Side-Effect Proof",
+            M993NoSideEffectProof.FromSink(sink),
+            sink.SinkId,
+            true,
+            false,
+            false);
+    }
 }
 
 internal sealed record M996RedactionResult(
@@ -416,17 +462,40 @@ internal sealed class M996StructuredForbiddenFieldRedactor
 
     private static readonly (string Name, Regex Pattern)[] SecretPatterns =
     {
-        ("anthropic_key", new Regex(@"sk-ant-fake-[A-Za-z0-9_-]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("openai_project_key", new Regex(@"sk-proj-fake-[A-Za-z0-9_-]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("aws_access_key", new Regex(@"AKIAFAKE[A-Z0-9]{10,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("fake_private_key", new Regex(@"-----BEGIN FAKE PRIVATE KEY-----[\s\S]*?-----END FAKE PRIVATE KEY-----", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("bearer_jwt_like", new Regex(@"Bearer\s+fake\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("postgres_uri", new Regex(@"postgres://fake_user:fake_password@localhost/fake_db", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("slack_bot_token", new Regex(@"xoxb-fake-[A-Za-z0-9_-]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("github_pat", new Regex(@"ghp_fakegithubtoken[A-Za-z0-9_-]*", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("cookie_session", new Regex(@"cookie\s+sessionid=fake-session", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("aws_secret", new Regex(@"AWS_SECRET_ACCESS_KEY=fake-secret-value", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
-        ("openai_env_key", new Regex(@"OPENAI_API_KEY=fake-key-value", RegexOptions.IgnoreCase | RegexOptions.Compiled))
+        ("anthropic_key", new Regex(@"sk-ant-[A-Za-z0-9_-]{8,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("openai_project_key", new Regex(@"sk-proj-[A-Za-z0-9_-]{8,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("openai_key", new Regex(@"sk-[A-Za-z0-9_-]{16,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("aws_access_key", new Regex(@"AKIA[A-Z0-9]{12,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("private_key", new Regex(@"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("bearer_jwt_like", new Regex(@"Bearer\s+[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("database_uri", new Regex(@"(?:postgres|mysql|mongodb)://[^:\s]+:[^@\s]+@[^\s]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("slack_token", new Regex(@"xox[baprs]-[A-Za-z0-9_-]{8,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("github_pat", new Regex(@"gh[pousr]_[A-Za-z0-9_]{12,}", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("cookie_session", new Regex(@"(?:cookie|set-cookie|sessionid)\s*[:=]\s*[^;\s]+", RegexOptions.IgnoreCase | RegexOptions.Compiled)),
+        ("secret_env_assignment", new Regex(@"[A-Z0-9_]*(?:SECRET|TOKEN|API_KEY|PASSWORD|PRIVATE_KEY)[A-Z0-9_]*\s*=\s*[^\s]+", RegexOptions.IgnoreCase | RegexOptions.Compiled))
+    };
+
+    private static readonly Regex ForbiddenKeyValuePattern = new(
+        @"(?<key>api_key|apiKey|apikey|x-api-key|token|access_token|refresh_token|authorization|bearer|password|passwd|secret|client_secret|cookie|session|private_key|connection_string|credential|env|ssh_key)\s*[""']?\s*[:=]\s*[""']?(?<value>[^,""'\r\n}]+)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex AuthorizationHeaderPattern = new(
+        @"Authorization\s*:\s*Bearer\s+[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex ApiKeyHeaderPattern = new(
+        @"x-api-key\s*:\s*[A-Za-z0-9_-]{8,}",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex RedactionFragmentPattern = new(
+        @"\[REDACTED(?::[A-Za-z0-9_-]+)?\]",
+        RegexOptions.Compiled);
+
+    private static readonly (string Name, Regex Pattern)[] StructuredPatterns =
+    {
+        ("forbidden_key_value", ForbiddenKeyValuePattern),
+        ("authorization_header", AuthorizationHeaderPattern),
+        ("api_key_header", ApiKeyHeaderPattern)
     };
 
     public static M996StructuredForbiddenFieldRedactor Create() => new();
@@ -444,6 +513,19 @@ internal sealed class M996StructuredForbiddenFieldRedactor
         var detected = new List<string>();
         var redacted = payload;
 
+        foreach (var (name, pattern) in StructuredPatterns)
+        {
+            if (pattern.IsMatch(redacted))
+            {
+                detected.Add(name);
+                redacted = pattern.Replace(redacted, match =>
+                {
+                    var key = match.Groups["key"].Success ? match.Groups["key"].Value : name;
+                    return $"{key}=[REDACTED:{name}]";
+                });
+            }
+        }
+
         foreach (var (name, pattern) in SecretPatterns)
         {
             if (pattern.IsMatch(redacted))
@@ -454,7 +536,25 @@ internal sealed class M996StructuredForbiddenFieldRedactor
         }
 
         var status = detected.Count == 0 ? "CLEAN" : "REDACTED";
-        return new M996RedactionResult(status, redacted, $"safe summary; patterns={detected.Count}", Array.Empty<string>(), detected);
+        var categories = string.Join(",", detected.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(static item => item, StringComparer.OrdinalIgnoreCase));
+        var lengthBucket = payload.Length switch
+        {
+            < 80 => "short",
+            < 500 => "medium",
+            _ => "large"
+        };
+        var safeSummary = $"status={status}; findings={detected.Count}; categories={categories}; decision={(detected.Count > 0 ? "blocked_or_redacted" : "safe")}; payload_length_bucket={lengthBucket}; source_type=text";
+        return new M996RedactionResult(status, redacted, safeSummary, Array.Empty<string>(), detected);
+    }
+
+    public static bool SafeSummaryContainsPayloadContent(M996RedactionResult result, string rawPayload)
+    {
+        if (result.SafeSummary.Contains(rawPayload, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return RedactionFragmentPattern.IsMatch(result.SafeSummary);
     }
 }
 
@@ -464,6 +564,7 @@ internal static class M997FakeAdversarialPayloadCatalog
     {
         "sk-ant-fake-xxxxxxxx",
         "sk-proj-fake-xxxxxxxx",
+        "sk-fakeopenai1234567890",
         "AKIAFAKE1234567890",
         "-----BEGIN FAKE PRIVATE KEY----- fake material -----END FAKE PRIVATE KEY-----",
         "Bearer fake.jwt.like.value",
@@ -473,6 +574,22 @@ internal static class M997FakeAdversarialPayloadCatalog
         "cookie sessionid=fake-session",
         "AWS_SECRET_ACCESS_KEY=fake-secret-value",
         "OPENAI_API_KEY=fake-key-value"
+    };
+
+    public static IReadOnlyList<string> GenericPayloadsNotInOriginalCatalog { get; } = new[]
+    {
+        "sk-ant-altAlphaBeta987654",
+        "sk-proj-altProject987654",
+        "sk-altopenai9876543210",
+        "AKIAALTFAKE98765432",
+        "ghp_altFakeGitHub987654",
+        "xoxb-alt-slack-token-987654",
+        "Bearer altfake.header.payload",
+        "-----BEGIN TEST PRIVATE KEY----- alt material -----END TEST PRIVATE KEY-----",
+        "mysql://alt_user:alt_password@localhost/alt_db",
+        "cookie: sessionid=alt-session-987",
+        "Authorization: Bearer altfake.header.payload",
+        "ALT_PROVIDER_TOKEN=alt-secret-987"
     };
 }
 
@@ -487,7 +604,7 @@ internal sealed class M998RedactionLeakGuardRegression
     public M998LeakReview Review(string payload)
     {
         var result = redactor.RedactText(payload);
-        return new M998LeakReview(result.PatternsDetected.Count > 0 ? "REJECTED_OR_REDACTED" : "ACCEPTED", result.RedactedPayload, result.PatternsDetected);
+        return new M998LeakReview(result.PatternsDetected.Count > 0 ? "REJECTED_OR_REDACTED" : "ACCEPTED", result.SafeSummary, result.PatternsDetected);
     }
 }
 
