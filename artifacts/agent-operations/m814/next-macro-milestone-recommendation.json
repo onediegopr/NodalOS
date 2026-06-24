@@ -1,0 +1,6 @@
+{
+  "project": "NODAL OS",
+  "nextMilestone": "M815-M823 — Simulated Runtime Evidence Timeline Roundtrip + Approval Decision Replay Guard + Audit Export Readiness",
+  "scope": "simulated runtime / fake-only / in-memory / tests/contracts only",
+  "productiveUnlockAllowed": false
+}

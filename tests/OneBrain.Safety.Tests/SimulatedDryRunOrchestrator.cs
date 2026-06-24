@@ -28,6 +28,24 @@ public enum SimulatedPolicyDecisionType
     RequireManualApprovalSimulated
 }
 
+public enum SimulatedApprovalStatus
+{
+    ApprovalNotRequired,
+    ApprovalRequiredSimulated,
+    ApprovalGrantedSimulated,
+    ApprovalDeniedSimulated,
+    ApprovalExpiredSimulated,
+    ApprovalInvalidSimulated
+}
+
+public enum SimulatedApprovalCapabilityClass
+{
+    Allowed,
+    Denylisted,
+    Unsupported,
+    PolicyViolation
+}
+
 public static class SimulatedPolicyReasonCodes
 {
     public const string AllowedSimulatedFakeExecutor = "allowed_simulated_fake_executor";
@@ -42,6 +60,19 @@ public static class SimulatedPolicyReasonCodes
     public const string BrowserAutomationDisabled = "browser_automation_disabled";
     public const string ReleaseStoreDisabled = "release_store_disabled";
     public const string ProductBridgeCspModificationDisabled = "product_bridge_csp_modification_disabled";
+}
+
+public static class SimulatedApprovalReasonCodes
+{
+    public const string ApprovalRequiredSimulated = "approval_required_simulated";
+    public const string ApprovalGrantedSimulatedFakeOnly = "approval_granted_simulated_fake_only";
+    public const string ApprovalDeniedSimulated = "approval_denied_simulated";
+    public const string ApprovalExpiredSimulated = "approval_expired_simulated";
+    public const string ApprovalInvalidSimulated = "approval_invalid_simulated";
+    public const string ApprovalGrantedDoesNotUnlockProductiveRuntime = "approval_granted_does_not_unlock_productive_runtime";
+    public const string ApprovalGrantedDoesNotOverrideDenylist = "approval_granted_does_not_override_denylist";
+    public const string ApprovalGrantedDoesNotOverrideUnsupportedCapability = "approval_granted_does_not_override_unsupported_capability";
+    public const string ApprovalGrantedDoesNotOverridePolicyViolation = "approval_granted_does_not_override_policy_violation";
 }
 
 /// <summary>
@@ -117,6 +148,7 @@ public sealed record NoExecutionProof(
     public bool PublicReleasePerformed => PublicReleaseInvoked;
     public bool StoreSubmissionPerformed => StoreSubmissionInvoked;
     public bool SignedPublicZipCreated => SignedZipCreated;
+    public bool ProductiveEnabled => false;
     public int SideEffectSinkInvocations => 0;
 }
 
@@ -148,6 +180,19 @@ public sealed record LedgerEvent(
     bool StoreSubmissionPerformed,
     bool SignedPublicZipCreated);
 
+public sealed record ApprovalLedgerEvent(
+    string EventId,
+    string EventType,
+    string ApprovalRequestId,
+    string SourceCapability,
+    SimulatedApprovalStatus DecisionType,
+    string ReasonCode,
+    string RedactedPayload,
+    bool SecretsIncluded,
+    bool RawUserDataIncluded,
+    bool ExecutionPerformed,
+    bool ProductiveUnlock);
+
 public sealed record EvidenceEnvelope(
     string EnvelopeId,
     string DryRunId,
@@ -166,6 +211,66 @@ public sealed record EvidenceEnvelope(
     bool PublicReleasePerformed,
     bool StoreSubmissionPerformed,
     bool SignedPublicZipCreated);
+
+public sealed record ApprovalEvidenceEnvelope(
+    string EvidenceId,
+    string SourceDecisionId,
+    string ApprovalRequestId,
+    string SourceCapability,
+    SimulatedApprovalStatus DecisionType,
+    SimulatedApprovalStatus ApprovalStatus,
+    IReadOnlyList<string> ReasonCodes,
+    string NoExecutionProofRef,
+    string RedactionProofRef,
+    IReadOnlyList<string> LedgerEventRefs,
+    string RuntimeType,
+    string FixtureType,
+    bool ProductiveRuntime,
+    bool ProviderCloudInvoked,
+    bool FilesystemWritePerformed,
+    bool BrowserAutomationPerformed,
+    bool CapabilityUnlocked,
+    bool ReleasePerformed,
+    bool StoreSubmissionPerformed,
+    bool ProductFilesModified,
+    bool BridgeCspModified);
+
+public sealed record SimulatedApprovalRequest(
+    string ApprovalRequestId,
+    string SourceCapability,
+    SimulatedPolicyDecisionType SourcePolicyDecision,
+    string RiskLevel,
+    string RequestedActionSummary,
+    string RequiredHumanDecision,
+    SimulatedApprovalStatus ApprovalStatus,
+    string? SelectedExecutor,
+    bool CanExecute,
+    bool ProductiveUnlockAllowed,
+    ApprovalEvidenceEnvelope EvidenceEnvelope,
+    IReadOnlyList<ApprovalLedgerEvent> LedgerEvents,
+    RedactionProof RedactionProof,
+    NoExecutionProof NoExecutionProof)
+{
+    public int SideEffectSinkInvocations => NoExecutionProof.SideEffectSinkInvocations;
+}
+
+public sealed record SimulatedApprovalOutcome(
+    string ApprovalRequestId,
+    string SourceCapability,
+    SimulatedApprovalCapabilityClass CapabilityClass,
+    SimulatedApprovalStatus ApprovalStatus,
+    string ReasonCode,
+    string? SelectedExecutor,
+    bool CanExecute,
+    bool ProductiveUnlockAllowed,
+    ApprovalEvidenceEnvelope EvidenceEnvelope,
+    IReadOnlyList<ApprovalLedgerEvent> LedgerEvents,
+    RedactionProof RedactionProof,
+    NoExecutionProof NoExecutionProof,
+    bool AuditEventCreated)
+{
+    public int SideEffectSinkInvocations => NoExecutionProof.SideEffectSinkInvocations;
+}
 
 public sealed class InMemoryEvidenceLedger
 {
@@ -550,6 +655,250 @@ public sealed class SimulatedCapabilityRouter
             NoExecutionProof: result.Proof,
             AuditEventCreated: true);
     }
+}
+
+public sealed class SimulatedManualApprovalBoundary
+{
+    public static readonly IReadOnlyList<SimulatedApprovalStatus> AuditDecisionTypes =
+    [
+        SimulatedApprovalStatus.ApprovalRequiredSimulated,
+        SimulatedApprovalStatus.ApprovalGrantedSimulated,
+        SimulatedApprovalStatus.ApprovalDeniedSimulated,
+        SimulatedApprovalStatus.ApprovalExpiredSimulated,
+        SimulatedApprovalStatus.ApprovalInvalidSimulated
+    ];
+
+    public static readonly IReadOnlyList<SimulatedApprovalCapabilityClass> AuditCapabilityClasses =
+    [
+        SimulatedApprovalCapabilityClass.Allowed,
+        SimulatedApprovalCapabilityClass.Denylisted,
+        SimulatedApprovalCapabilityClass.Unsupported,
+        SimulatedApprovalCapabilityClass.PolicyViolation
+    ];
+
+    public SimulatedApprovalRequest CreateRequest(string sourceCapability)
+    {
+        var route = new SimulatedCapabilityRouter().Route(sourceCapability);
+        var approvalStatus = route.PolicyDecisionType == SimulatedPolicyDecisionType.RequireManualApprovalSimulated
+            ? SimulatedApprovalStatus.ApprovalRequiredSimulated
+            : SimulatedApprovalStatus.ApprovalNotRequired;
+
+        var eventTypes = new[]
+        {
+            "SIMULATED_APPROVAL_REQUEST_CREATED",
+            "SIMULATED_APPROVAL_REQUIRED_EVALUATED",
+            "SIMULATED_APPROVAL_EVIDENCE_ENVELOPE_CREATED",
+            "SIMULATED_APPROVAL_REDACTION_PROOF_CREATED",
+            "SIMULATED_APPROVAL_NO_EXECUTION_PROOF_CREATED"
+        };
+        var proof = CleanProof();
+        var redactionProof = CleanRedactionProof();
+        var approvalRequestId = ApprovalRequestId(sourceCapability);
+        var ledgerEvents = BuildApprovalLedgerEvents(approvalRequestId, sourceCapability, approvalStatus, SimulatedApprovalReasonCodes.ApprovalRequiredSimulated, eventTypes);
+        var envelope = BuildApprovalEnvelope(approvalRequestId, sourceCapability, approvalStatus, [SimulatedApprovalReasonCodes.ApprovalRequiredSimulated], ledgerEvents, proof);
+
+        return new SimulatedApprovalRequest(
+            ApprovalRequestId: approvalRequestId,
+            SourceCapability: sourceCapability,
+            SourcePolicyDecision: route.PolicyDecisionType,
+            RiskLevel: "HIGH_SIMULATED",
+            RequestedActionSummary: $"simulated approval boundary for {sourceCapability}",
+            RequiredHumanDecision: "SIMULATED_APPROVAL_DECISION_REQUIRED",
+            ApprovalStatus: approvalStatus,
+            SelectedExecutor: null,
+            CanExecute: false,
+            ProductiveUnlockAllowed: false,
+            EvidenceEnvelope: envelope,
+            LedgerEvents: ledgerEvents,
+            RedactionProof: redactionProof,
+            NoExecutionProof: proof);
+    }
+
+    public SimulatedApprovalOutcome Decide(string sourceCapability, SimulatedApprovalStatus requestedStatus)
+    {
+        var capabilityClass = Classify(sourceCapability);
+        var approvalRequestId = ApprovalRequestId(sourceCapability);
+        var proof = CleanProof();
+        var redactionProof = CleanRedactionProof();
+        var reasonCode = ResolveReasonCode(capabilityClass, requestedStatus);
+        var selectedExecutor = requestedStatus == SimulatedApprovalStatus.ApprovalGrantedSimulated &&
+            capabilityClass == SimulatedApprovalCapabilityClass.Allowed
+                ? SimulatedRuntimeRoutingMatrix.AllowedRoutingTable[sourceCapability]
+                : null;
+        var canExecute = requestedStatus == SimulatedApprovalStatus.ApprovalGrantedSimulated &&
+            capabilityClass == SimulatedApprovalCapabilityClass.Allowed;
+        var eventTypes = ResolveEventTypes(capabilityClass, requestedStatus);
+        var ledgerEvents = BuildApprovalLedgerEvents(approvalRequestId, sourceCapability, requestedStatus, reasonCode, eventTypes);
+        var reasonCodes = requestedStatus == SimulatedApprovalStatus.ApprovalGrantedSimulated
+            ? new[] { reasonCode, SimulatedApprovalReasonCodes.ApprovalGrantedDoesNotUnlockProductiveRuntime }
+            : [reasonCode];
+        var envelope = BuildApprovalEnvelope(approvalRequestId, sourceCapability, requestedStatus, reasonCodes, ledgerEvents, proof);
+
+        return new SimulatedApprovalOutcome(
+            ApprovalRequestId: approvalRequestId,
+            SourceCapability: sourceCapability,
+            CapabilityClass: capabilityClass,
+            ApprovalStatus: requestedStatus,
+            ReasonCode: reasonCode,
+            SelectedExecutor: selectedExecutor,
+            CanExecute: canExecute,
+            ProductiveUnlockAllowed: false,
+            EvidenceEnvelope: envelope,
+            LedgerEvents: ledgerEvents,
+            RedactionProof: redactionProof,
+            NoExecutionProof: proof,
+            AuditEventCreated: true);
+    }
+
+    public IReadOnlyList<SimulatedApprovalOutcome> BuildAuditMatrix()
+    {
+        var capabilitiesByClass = new Dictionary<SimulatedApprovalCapabilityClass, string>
+        {
+            [SimulatedApprovalCapabilityClass.Allowed] = "local_provider_model",
+            [SimulatedApprovalCapabilityClass.Denylisted] = "provider_cloud_live_call",
+            [SimulatedApprovalCapabilityClass.Unsupported] = "unknown_future_capability",
+            [SimulatedApprovalCapabilityClass.PolicyViolation] = SimulatedRuntimeRoutingMatrix.PolicyViolationCapability
+        };
+
+        return AuditCapabilityClasses
+            .SelectMany(capabilityClass => AuditDecisionTypes.Select(status => Decide(capabilitiesByClass[capabilityClass], status)))
+            .ToArray();
+    }
+
+    private static SimulatedApprovalCapabilityClass Classify(string sourceCapability)
+    {
+        if (SimulatedRuntimeRoutingMatrix.AllowedRoutingTable.ContainsKey(sourceCapability))
+            return SimulatedApprovalCapabilityClass.Allowed;
+
+        if (SimulatedRuntimeRoutingMatrix.DenylistedCapabilities.Contains(sourceCapability))
+            return SimulatedApprovalCapabilityClass.Denylisted;
+
+        if (string.Equals(sourceCapability, SimulatedRuntimeRoutingMatrix.PolicyViolationCapability, StringComparison.Ordinal))
+            return SimulatedApprovalCapabilityClass.PolicyViolation;
+
+        return SimulatedApprovalCapabilityClass.Unsupported;
+    }
+
+    private static string ResolveReasonCode(SimulatedApprovalCapabilityClass capabilityClass, SimulatedApprovalStatus status) =>
+        status switch
+        {
+            SimulatedApprovalStatus.ApprovalGrantedSimulated when capabilityClass == SimulatedApprovalCapabilityClass.Allowed =>
+                SimulatedApprovalReasonCodes.ApprovalGrantedSimulatedFakeOnly,
+            SimulatedApprovalStatus.ApprovalGrantedSimulated when capabilityClass == SimulatedApprovalCapabilityClass.Denylisted =>
+                SimulatedApprovalReasonCodes.ApprovalGrantedDoesNotOverrideDenylist,
+            SimulatedApprovalStatus.ApprovalGrantedSimulated when capabilityClass == SimulatedApprovalCapabilityClass.Unsupported =>
+                SimulatedApprovalReasonCodes.ApprovalGrantedDoesNotOverrideUnsupportedCapability,
+            SimulatedApprovalStatus.ApprovalGrantedSimulated when capabilityClass == SimulatedApprovalCapabilityClass.PolicyViolation =>
+                SimulatedApprovalReasonCodes.ApprovalGrantedDoesNotOverridePolicyViolation,
+            SimulatedApprovalStatus.ApprovalDeniedSimulated => SimulatedApprovalReasonCodes.ApprovalDeniedSimulated,
+            SimulatedApprovalStatus.ApprovalExpiredSimulated => SimulatedApprovalReasonCodes.ApprovalExpiredSimulated,
+            SimulatedApprovalStatus.ApprovalInvalidSimulated => SimulatedApprovalReasonCodes.ApprovalInvalidSimulated,
+            _ => SimulatedApprovalReasonCodes.ApprovalRequiredSimulated
+        };
+
+    private static IReadOnlyList<string> ResolveEventTypes(SimulatedApprovalCapabilityClass capabilityClass, SimulatedApprovalStatus status)
+    {
+        var events = new List<string>
+        {
+            "SIMULATED_APPROVAL_REQUEST_CREATED",
+            "SIMULATED_APPROVAL_REQUIRED_EVALUATED"
+        };
+
+        if (status == SimulatedApprovalStatus.ApprovalGrantedSimulated && capabilityClass == SimulatedApprovalCapabilityClass.Allowed)
+            events.Add("SIMULATED_APPROVAL_GRANTED");
+        else if (status == SimulatedApprovalStatus.ApprovalGrantedSimulated && capabilityClass == SimulatedApprovalCapabilityClass.Denylisted)
+            events.Add("SIMULATED_APPROVAL_DENYLIST_OVERRIDE_BLOCKED");
+        else if (status == SimulatedApprovalStatus.ApprovalGrantedSimulated && capabilityClass == SimulatedApprovalCapabilityClass.Unsupported)
+            events.Add("SIMULATED_APPROVAL_UNSUPPORTED_OVERRIDE_BLOCKED");
+        else if (status == SimulatedApprovalStatus.ApprovalGrantedSimulated && capabilityClass == SimulatedApprovalCapabilityClass.PolicyViolation)
+            events.Add("SIMULATED_APPROVAL_POLICY_VIOLATION_OVERRIDE_BLOCKED");
+        else if (status == SimulatedApprovalStatus.ApprovalDeniedSimulated)
+            events.Add("SIMULATED_APPROVAL_DENIED");
+        else if (status == SimulatedApprovalStatus.ApprovalExpiredSimulated)
+            events.Add("SIMULATED_APPROVAL_EXPIRED");
+        else if (status == SimulatedApprovalStatus.ApprovalInvalidSimulated)
+            events.Add("SIMULATED_APPROVAL_INVALID");
+
+        events.Add("SIMULATED_APPROVAL_EVIDENCE_ENVELOPE_CREATED");
+        events.Add("SIMULATED_APPROVAL_REDACTION_PROOF_CREATED");
+        events.Add("SIMULATED_APPROVAL_NO_EXECUTION_PROOF_CREATED");
+        return events;
+    }
+
+    private static IReadOnlyList<ApprovalLedgerEvent> BuildApprovalLedgerEvents(
+        string approvalRequestId,
+        string sourceCapability,
+        SimulatedApprovalStatus status,
+        string reasonCode,
+        IEnumerable<string> eventTypes) =>
+        eventTypes.Select((eventType, index) => new ApprovalLedgerEvent(
+            EventId: $"appr-evt-{index + 1:D3}-{eventType.ToLowerInvariant()}",
+            EventType: eventType,
+            ApprovalRequestId: approvalRequestId,
+            SourceCapability: sourceCapability,
+            DecisionType: status,
+            ReasonCode: reasonCode,
+            RedactedPayload: "REDACTED_SIMULATED_APPROVAL_PAYLOAD",
+            SecretsIncluded: false,
+            RawUserDataIncluded: false,
+            ExecutionPerformed: false,
+            ProductiveUnlock: false)).ToArray();
+
+    private static ApprovalEvidenceEnvelope BuildApprovalEnvelope(
+        string approvalRequestId,
+        string sourceCapability,
+        SimulatedApprovalStatus status,
+        IReadOnlyList<string> reasonCodes,
+        IReadOnlyList<ApprovalLedgerEvent> ledgerEvents,
+        NoExecutionProof proof) => new(
+            EvidenceId: $"approval-env-{approvalRequestId}",
+            SourceDecisionId: $"decision-{sourceCapability}",
+            ApprovalRequestId: approvalRequestId,
+            SourceCapability: sourceCapability,
+            DecisionType: status,
+            ApprovalStatus: status,
+            ReasonCodes: reasonCodes,
+            NoExecutionProofRef: $"noexec-{approvalRequestId}",
+            RedactionProofRef: $"redaction-{approvalRequestId}",
+            LedgerEventRefs: ledgerEvents.Select(static x => x.EventId).ToArray(),
+            RuntimeType: SimulatedDryRunOrchestrator.RuntimeType,
+            FixtureType: SimulatedDryRunOrchestrator.RequiredFixtureType,
+            ProductiveRuntime: false,
+            ProviderCloudInvoked: proof.ProviderClientInvoked,
+            FilesystemWritePerformed: proof.FilesystemWritePerformed,
+            BrowserAutomationPerformed: proof.BrowserAutomationPerformed,
+            CapabilityUnlocked: proof.CapabilityUnlocked,
+            ReleasePerformed: proof.PublicReleasePerformed,
+            StoreSubmissionPerformed: proof.StoreSubmissionPerformed,
+            ProductFilesModified: proof.ProductFilesModified,
+            BridgeCspModified: proof.BridgeCspModified);
+
+    private static string ApprovalRequestId(string sourceCapability) =>
+        $"approval-{sourceCapability.ToLowerInvariant().Replace(' ', '-')}";
+
+    private static RedactionProof CleanRedactionProof() => new(
+        SecretsIncluded: false,
+        CredentialsIncluded: false,
+        TokensIncluded: false,
+        CookiesIncluded: false,
+        RawUserDataIncluded: false,
+        RawLogsIncluded: false,
+        ProviderKeysIncluded: false,
+        PrivateKeysIncluded: false,
+        BrowserSessionDataIncluded: false);
+
+    private static NoExecutionProof CleanProof() => new(
+        SimulationOnly: true,
+        RealExecutorInvoked: false,
+        ProviderClientInvoked: false,
+        FilesystemWriterInvoked: false,
+        BrowserAutomationInvoked: false,
+        CapabilityUnlockInvoked: false,
+        PublicReleaseInvoked: false,
+        StoreSubmissionInvoked: false,
+        SignedZipCreated: false,
+        ProductFilesModified: false,
+        BridgeCspModified: false);
 }
 
 /// <summary>

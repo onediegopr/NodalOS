@@ -1,0 +1,23 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M812",
+  "approvalAuditMatrix": "READY",
+  "decisionTypes": [
+    "REQUIRE_MANUAL_APPROVAL_SIMULATED",
+    "APPROVAL_GRANTED_SIMULATED",
+    "APPROVAL_DENIED_SIMULATED",
+    "APPROVAL_EXPIRED_SIMULATED",
+    "APPROVAL_INVALID_SIMULATED"
+  ],
+  "capabilityClasses": [
+    "allowed",
+    "denylisted",
+    "unsupported",
+    "policy_violation"
+  ],
+  "allowedGranted": "simulated_fake_only_continuation_allowed_no_real_execution",
+  "denylistedGranted": "override_blocked_no_execution",
+  "unsupportedGranted": "override_blocked_no_execution",
+  "policyViolationGranted": "override_blocked_no_execution",
+  "terminalOutcomes": "no_execution_always"
+}

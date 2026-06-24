@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M810",
+  "approvalEvidenceEnvelopeConsistency": "READY",
+  "requiredFields": [
+    "evidenceId",
+    "sourceDecisionId",
+    "approvalRequestId",
+    "sourceCapability",
+    "decisionType",
+    "approvalStatus",
+    "reasonCodes",
+    "noExecutionProofRef",
+    "redactionProofRef",
+    "ledgerEventRefs"
+  ],
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "productiveRuntime": false,
+  "providerCloudInvoked": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "releasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

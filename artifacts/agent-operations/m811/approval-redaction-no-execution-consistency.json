@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M811",
+  "approvalRedactionNoExecutionConsistency": "READY",
+  "forbiddenFieldsIncluded": {
+    "secrets": false,
+    "credentials": false,
+    "tokens": false,
+    "cookies": false,
+    "rawUserData": false,
+    "rawLogs": false,
+    "providerKeys": false,
+    "privateKeys": false,
+    "browserSessionData": false
+  },
+  "noExecutionProof": {
+    "actualExecutionPerformed": false,
+    "liveCallPerformed": false,
+    "filesystemWritePerformed": false,
+    "browserAutomationPerformed": false,
+    "capabilityUnlocked": false,
+    "publicReleasePerformed": false,
+    "storeSubmissionPerformed": false,
+    "signedPublicZipCreated": false,
+    "productFilesModified": false,
+    "bridgeCspModified": false,
+    "productiveEnabled": false,
+    "sideEffectSinkInvocations": 0
+  }
+}

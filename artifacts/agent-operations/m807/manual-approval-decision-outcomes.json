@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M807",
+  "manualApprovalDecisionOutcomes": "READY",
+  "reasonCodes": [
+    "approval_required_simulated",
+    "approval_granted_simulated_fake_only",
+    "approval_denied_simulated",
+    "approval_expired_simulated",
+    "approval_invalid_simulated",
+    "approval_granted_does_not_unlock_productive_runtime",
+    "approval_granted_does_not_override_denylist",
+    "approval_granted_does_not_override_unsupported_capability",
+    "approval_granted_does_not_override_policy_violation"
+  ],
+  "grantedAllowedCapability": "simulated_fake_only_continuation_allowed",
+  "grantedDenylistedCapability": "override_blocked_no_execution",
+  "grantedUnsupportedCapability": "override_blocked_no_execution",
+  "grantedPolicyViolation": "override_blocked_no_execution",
+  "deniedExpiredInvalid": "no_execution",
+  "productiveUnlockAllowed": false
+}

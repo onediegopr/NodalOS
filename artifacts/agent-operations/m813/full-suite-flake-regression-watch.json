@@ -1,0 +1,26 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M813",
+  "flakeRegressionWatch": "READY",
+  "historicalCaveat": "BrowserRuntimeSmoke Gate 9 idempotency/replay showed same-family flake in prior blocks and was closed by full-suite pass in M803-M805.",
+  "allowedGateResults": [
+    "AUDIT_GATE_CLEAN",
+    "AUDIT_GATE_CONDITIONAL_GO_FLAKY_EXTERNAL",
+    "AUDIT_GATE_NO_GO_SECURITY_RELATED"
+  ],
+  "currentValidationStatus": "AUDIT_GATE_CLEAN",
+  "executedEvidence": [
+    "BrowserRuntimeSmoke isolated PASS: 20 passed",
+    "M797-M799 filter PASS: 9 passed",
+    "M800-M802 filter PASS: 12 passed",
+    "M803-M805 filter PASS: 13 passed",
+    "M806-M814 filter PASS: 12 passed",
+    "Recipes suite PASS: 635 passed",
+    "Full safety first run reproduced same-family Gate 9 WebSocket aborted flake",
+    "Full safety rerun PASS: 5198 passed, 37 skipped",
+    "Full suite PASS: Recipes 635 passed; Safety 5198 passed, 37 skipped"
+  ],
+  "caveatStatus": "CLOSED_BY_FULL_SUITE_AND_SAFETY_RERUN_PASS",
+  "hideFlake": false,
+  "declarePassWithoutEvidence": false
+}

@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M808",
+  "negativeApprovalOverrideCases": [
+    "provider_cloud_live_call",
+    "filesystem_write",
+    "browser_automation",
+    "capability_unlock",
+    "public_release",
+    "chrome_web_store_submission",
+    "signed_public_zip_creation",
+    "product_file_modification",
+    "bridge_csp_modification",
+    "productive_enabled",
+    "unknown_future_capability",
+    "simulated_policy_violation"
+  ],
+  "expectedResult": "NO_EXECUTION",
+  "selectedExecutor": null,
+  "canExecute": false,
+  "productiveEnabled": false,
+  "sideEffectSinkInvocations": 0,
+  "evidenceEnvelopeCreated": true,
+  "auditEventCreated": true,
+  "noExecutionProofCreated": true,
+  "redactionProofCreated": true
+}

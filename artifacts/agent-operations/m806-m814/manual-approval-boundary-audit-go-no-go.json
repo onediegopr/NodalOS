@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "decision": "SIMULATED_MANUAL_APPROVAL_BOUNDARY_AUDIT_PROJECTION_READY",
+  "manualApprovalSimulatedBoundary": "READY",
+  "approvalLedgerProjection": "READY",
+  "approvalEvidenceConsistency": "READY",
+  "approvalAuditMatrix": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productiveEnabled": "PROHIBITED",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "fullSuiteStatus": "PASS",
+  "safetySuiteStatus": "PASS_AFTER_RERUN",
+  "caveatStatus": "CLOSED_BY_FULL_SUITE_AND_SAFETY_RERUN_PASS_WITH_TRANSIENT_GATE9_RECORDED",
+  "auditGate": "AUDIT_GATE_CLEAN"
+}

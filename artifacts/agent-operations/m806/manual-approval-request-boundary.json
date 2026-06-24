@@ -1,0 +1,35 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M806",
+  "manualApprovalRequestBoundary": "READY",
+  "approvalStatuses": [
+    "APPROVAL_NOT_REQUIRED",
+    "APPROVAL_REQUIRED_SIMULATED",
+    "APPROVAL_GRANTED_SIMULATED",
+    "APPROVAL_DENIED_SIMULATED",
+    "APPROVAL_EXPIRED_SIMULATED",
+    "APPROVAL_INVALID_SIMULATED"
+  ],
+  "requiredFields": [
+    "approvalRequestId",
+    "sourceCapability",
+    "sourcePolicyDecision",
+    "riskLevel",
+    "requestedActionSummary",
+    "requiredHumanDecision",
+    "approvalStatus",
+    "selectedExecutor",
+    "canExecute",
+    "productiveUnlockAllowed",
+    "evidenceEnvelope",
+    "ledgerEvents",
+    "redactionProof",
+    "noExecutionProof"
+  ],
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "selectedExecutor": null,
+  "canExecute": false,
+  "productiveUnlockAllowed": false,
+  "sideEffectSinkInvocations": 0
+}
