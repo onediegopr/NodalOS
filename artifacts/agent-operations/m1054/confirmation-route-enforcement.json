@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1054",
+  "confirmation_status": "OPERATOR_CONFIRMATION_PENDING",
+  "route": "PROTOCOL_HARDENING_ONLY",
+  "dry_run_packet_status": "PREPARED_FOR_FUTURE_ONLY",
+  "manual_qa_execution": "NO-GO",
+  "routes": {
+    "when_not_exact_confirmation": "PROTOCOL_HARDENING_ONLY",
+    "when_exact_confirmation": "SAFE_EVIDENCE_CHECKLIST_PREP_ONLY"
+  },
+  "ambiguous_status": "OPERATOR_CONFIRMATION_AMBIGUOUS_NO_GO",
+  "ambiguous_inputs_rejected": [
+    "operator approved",
+    "safe to proceed",
+    "manual QA ok",
+    "continue",
+    "go ahead"
+  ],
+  "never_allow": [
+    "MANUAL_QA_READY",
+    "MANUAL_QA_PASSED",
+    "RUNTIME_READY",
+    "PC_COMMANDER_READY",
+    "RELEASE_READY"
+  ]
+}

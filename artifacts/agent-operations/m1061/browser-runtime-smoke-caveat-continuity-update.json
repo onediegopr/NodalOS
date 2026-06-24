@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1061",
+  "browser_runtime_smoke_caveat_visible": true,
+  "latest_observed_status": "29 passed / 1 skipped-inconclusive / 0 failed",
+  "full_suite_confidence": "95%",
+  "hundred_percent_confidence_claim_allowed": false,
+  "full_suite_clean_only_if_caveat_resolved_with_evidence": true,
+  "blocks_release_store_public_claims": true,
+  "manual_qa_execution": "NO-GO"
+}

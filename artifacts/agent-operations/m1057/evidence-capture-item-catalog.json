@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1057",
+  "catalog_status": "FUTURE_ALLOWED_ITEMS_DEFINED",
+  "allowed_future_items": [
+    "branch/head/worktree summary",
+    "product files unchanged summary",
+    "Bridge/CSP unchanged summary",
+    "BrowserRuntimeSmoke caveat summary",
+    "redaction checklist summary",
+    "no-side-effect proof summary",
+    "safe no-op fixture summary",
+    "metadata fixture summary",
+    "trace/evidence refs summary",
+    "dangerous classification summary"
+  ],
+  "forbidden_items": [
+    "raw logs extensive",
+    "secret values",
+    "credentials",
+    "tokens",
+    "cookies",
+    "session data",
+    "environment dumps",
+    "filesystem write outputs",
+    "provider/cloud outputs",
+    "browser automation productive outputs"
+  ],
+  "manual_qa_execution": "NO-GO",
+  "real_evidence_captured": false
+}
