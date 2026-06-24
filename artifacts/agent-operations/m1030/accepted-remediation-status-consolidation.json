@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1030",
+  "f001": {
+    "status": "accepted",
+    "scope": "safety-freeze/test-only",
+    "acceptedControls": [
+      "path-connected measured proof",
+      "shared sink identity",
+      "path-level negative tests"
+    ]
+  },
+  "f002": {
+    "status": "accepted",
+    "scope": "safety-freeze/test-only",
+    "acceptedControls": [
+      "generic redaction",
+      "structured key matching",
+      "metadata-only safe summary"
+    ]
+  },
+  "f003": {
+    "status": "HELD_FOR_REAL_CHANNEL",
+    "classificationOnly": true,
+    "futureDefaultDenyContractOnly": true,
+    "defaultDenyStatus": "future default-deny contract only"
+  },
+  "manualQaExecution": "NO-GO",
+  "runtimeReal": "NO-GO"
+}

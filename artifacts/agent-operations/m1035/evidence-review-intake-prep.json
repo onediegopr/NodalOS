@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1035",
+  "schema": "evidence review intake prep",
+  "acceptedFields": [
+    "session_id",
+    "capture_id",
+    "evidence_type",
+    "review_status",
+    "redaction_status",
+    "side_effect_status",
+    "operator_notes_redacted",
+    "caveat_status",
+    "decision",
+    "missing_items",
+    "unsafe_items",
+    "required_followups"
+  ],
+  "rejectIf": [
+    "manual QA passed claim without full review",
+    "runtime ready claim",
+    "PC Commander ready claim",
+    "release ready claim",
+    "secret leaks",
+    "unredacted credentials",
+    "product files changed without scope",
+    "Bridge/CSP changed without scope"
+  ],
+  "manualQaExecution": "NO-GO",
+  "runtimeReal": "NO-GO"
+}

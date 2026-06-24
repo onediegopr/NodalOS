@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1033",
+  "gate": "operator confirmation required",
+  "requiredInputs": [
+    "operator identity or redacted label",
+    "timestamp",
+    "branch/head confirmation",
+    "worktree clean confirmation",
+    "scope accepted",
+    "forbidden actions acknowledged",
+    "abort conditions acknowledged",
+    "caveat acknowledged",
+    "no secrets capture acknowledged",
+    "manual QA execution still not started"
+  ],
+  "allowedStates": [
+    "OPERATOR_CONFIRMATION_PENDING",
+    "OPERATOR_CONFIRMATION_INCOMPLETE_NO_GO",
+    "OPERATOR_CONFIRMED_FOR_FUTURE_QA_PREP_ONLY",
+    "OPERATOR_REJECTED_OR_ABORTED"
+  ],
+  "rejectedClaims": [
+    "MANUAL_QA_READY",
+    "MANUAL_QA_PASSED",
+    "RUNTIME_READY",
+    "PC_COMMANDER_READY"
+  ],
+  "manualQaExecution": "NO-GO",
+  "runtimeReal": "NO-GO"
+}

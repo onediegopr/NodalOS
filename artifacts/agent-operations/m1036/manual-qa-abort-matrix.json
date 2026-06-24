@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1036",
+  "abortIf": [
+    "wrong worktree",
+    "wrong branch",
+    "dirty worktree",
+    "HEAD mismatch",
+    "product files changed",
+    "Bridge/CSP changed",
+    "BrowserRuntimeSmoke caveat hidden",
+    "full-suite clean claimed incorrectly",
+    "shell route present",
+    "filesystem write route present",
+    "provider/cloud route present",
+    "browser automation productive route present",
+    "dangerous command enforcement misrepresented",
+    "redaction proof missing",
+    "no-side-effect proof missing",
+    "operator confirmation missing",
+    "secret captured",
+    "unsafe log captured"
+  ],
+  "manualQaExecution": "NO-GO",
+  "runtimeReal": "NO-GO",
+  "releaseStore": "NO-GO"
+}

@@ -1,0 +1,23 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1029",
+  "decision": "FOLLOWUP_REAUDIT_CONDITIONAL_GO",
+  "acceptedFindings": [
+    "F-001",
+    "F-002",
+    "F-003 hold"
+  ],
+  "rejectedFindings": [],
+  "newFindings": [
+    "BrowserRuntimeSmoke Gate 9 WebSocket aborted external smoke caveat"
+  ],
+  "f001Status": "accepted for safety-freeze/test-only remediation",
+  "f002Status": "accepted for safety-freeze/test-only remediation",
+  "f003Status": "HELD_FOR_REAL_CHANNEL_ACCEPTED",
+  "browserRuntimeSmokeCaveat": "OPEN_BROWSER_RUNTIME_SMOKE_GATE9_WEBSOCKET_ABORTED_VISIBLE",
+  "manualQaExecution": "NO-GO",
+  "manualQaTrigger": "NOT_READY_EVIDENCE_PENDING",
+  "runtimeReal": "NO-GO",
+  "pcCommanderReal": "NO-GO",
+  "releaseStore": "NO-GO"
+}
