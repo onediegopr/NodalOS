@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "decision": "SIMULATED_EVIDENCE_TIMELINE_REPLAY_EXPORT_DETERMINISM_READY",
+  "evidenceTimelineRoundtrip": "READY",
+  "replayGuard": "READY",
+  "approvalReplayOverrideGuard": "READY",
+  "replayTamperIdempotencyGuard": "READY",
+  "auditExportReadiness": "READY",
+  "crossRunDeterminism": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productiveEnabled": "PROHIBITED",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "fullSuiteStatus": "PASS",
+  "safetySuiteStatus": "PASS",
+  "caveatStatus": "CLOSED_NO_FLAKE_REPRODUCED_IN_M815_M826",
+  "auditGate": "AUDIT_GATE_CLEAN"
+}

@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M825",
+  "flakeRegressionWatch": "READY",
+  "historicalCaveat": "BrowserRuntimeSmoke Gate 9 idempotency/replay had prior transient WebSocket aborted flakes.",
+  "allowedGateResults": ["AUDIT_GATE_CLEAN", "AUDIT_GATE_CONDITIONAL_GO_FLAKY_EXTERNAL", "AUDIT_GATE_NO_GO_SECURITY_RELATED"],
+  "validationStatus": "AUDIT_GATE_CLEAN",
+  "executedEvidence": [
+    "M797-M799 filter PASS: 9 passed",
+    "M800-M802 filter PASS: 12 passed",
+    "M803-M805 filter PASS: 13 passed",
+    "M806-M814 filter PASS: 12 passed",
+    "M815-M826 filter PASS: 14 passed",
+    "BrowserRuntimeSmoke isolated PASS: 20 passed",
+    "Full safety suite PASS: 5212 passed, 37 skipped",
+    "Recipes suite PASS: 635 passed",
+    "Full suite PASS: Recipes 635 passed; Safety 5212 passed, 37 skipped"
+  ],
+  "caveatStatus": "CLOSED_NO_FLAKE_REPRODUCED_IN_M815_M826",
+  "hideFlake": false,
+  "declarePassWithoutEvidence": false
+}

@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M815",
+  "timelineProjectionContract": "READY",
+  "timelineEventFields": ["timelineEventId", "sourceLedgerEventId", "sourceEvidenceId", "sourceCapability", "decisionType", "approvalStatus", "reasonCode", "eventKind", "severity", "sequenceIndex", "redactedSummary", "noExecutionProofRef", "redactionProofRef", "runtimeType", "fixtureType", "createdAtLogical", "replaySafe", "executionPerformed", "productiveRuntime"],
+  "eventKinds": ["SIMULATED_ROUTE_EVALUATED", "SIMULATED_POLICY_DECISION_RECORDED", "SIMULATED_EVIDENCE_ENVELOPE_CREATED", "SIMULATED_NO_EXECUTION_PROOF_CREATED", "SIMULATED_REDACTION_PROOF_CREATED", "SIMULATED_APPROVAL_REQUEST_CREATED", "SIMULATED_APPROVAL_DECISION_RECORDED", "SIMULATED_APPROVAL_OVERRIDE_BLOCKED", "SIMULATED_AUDIT_EXPORT_PREPARED", "SIMULATED_REPLAY_GUARD_EVALUATED"],
+  "executionPerformed": false,
+  "productiveRuntime": false
+}

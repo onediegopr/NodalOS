@@ -1,0 +1,6 @@
+{
+  "project": "NODAL OS",
+  "nextMilestone": "M827-M838 — Simulated Runtime Governance Snapshot + Readiness Scorecard + Pre-Audit Consolidation",
+  "scope": "simulated runtime / fake-only / in-memory / tests/contracts only",
+  "productiveUnlockAllowed": false
+}

@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M824",
+  "crossRunDeterminismContract": "READY",
+  "deterministicFields": ["decisionType", "sourceCapability", "selectedExecutorCategory", "reasonCodes", "evidenceFlags", "ledgerEventKinds", "timelineEventKinds", "noExecutionFlags", "redactionForbiddenFieldFlags", "replayGuardResult", "exportReadinessFlags"],
+  "ignoredVariableFields": ["generated ids", "logical run id", "createdAtLogical", "artifact file path"],
+  "noExecutionFlagsPreserved": true,
+  "redactionFlagsPreserved": true
+}

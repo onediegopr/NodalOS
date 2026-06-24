@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M816",
+  "evidenceTimelineRoundtripConsistency": "READY",
+  "roundtripPath": "SimulatedRuntimeResult -> EvidenceEnvelope -> LedgerEvents -> TimelineEvents -> AuditRoundtripSummary",
+  "allLedgerEventsProjected": true,
+  "allTimelineEventsRedacted": true,
+  "noExecutionProofPreserved": true,
+  "redactionProofPreserved": true,
+  "orderingPreserved": true,
+  "replaySafe": true,
+  "executionPerformed": false,
+  "productiveRuntime": false,
+  "sideEffectSinkInvocations": 0
+}

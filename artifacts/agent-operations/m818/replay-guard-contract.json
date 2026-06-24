@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M818",
+  "replayGuardContract": "READY",
+  "replayModes": ["AUDIT_ONLY_IN_MEMORY", "REPLAY_DENIED_EXECUTION_PROHIBITED", "REPLAY_DENIED_MISSING_EVIDENCE", "REPLAY_DENIED_TAMPERED_LEDGER", "REPLAY_DENIED_UNSUPPORTED_DECISION"],
+  "replayDefinition": "audit-only in-memory reconstruction; never re-execution",
+  "replayExecuted": false,
+  "executorInvoked": false,
+  "providerCloudInvoked": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "productiveEnabled": false,
+  "sideEffectSinkInvocations": 0
+}
