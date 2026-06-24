@@ -1,0 +1,168 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M983",
+  "mode": "audit-only / intake-only",
+  "rows": [
+    {
+      "milestoneRange": "M933-M944",
+      "claim": "No-op runner performs no side effects",
+      "evidenceArtifact": "artifacts/agent-operations/m933-m944",
+      "testCoverage": "NodalOsSafeNoopMetadataOperatorBridgeM933M944Tests.cs",
+      "reportSection": "m944 report",
+      "riskIfFalse": "Accidental real execution / side effect",
+      "expectedAuditFocus": "no-side-effect proof is measured, not declarative",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M944",
+      "claim": "Metadata is fixture-only",
+      "evidenceArtifact": "artifacts/agent-operations/m933-m944",
+      "testCoverage": "NodalOsSafeNoopMetadataOperatorBridgeM933M944Tests.cs",
+      "reportSection": "m944 report",
+      "riskIfFalse": "Real filesystem read confused as fixture",
+      "expectedAuditFocus": "metadata fixture boundary cannot be confused with real read",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "No real filesystem read/write",
+      "evidenceArtifact": "artifacts/agent-operations/m933-m944, m945-m956",
+      "testCoverage": "M933M944 + M945M956 tests",
+      "reportSection": "m944/m956 reports",
+      "riskIfFalse": "Filesystem mutation",
+      "expectedAuditFocus": "no filesystem writer wired, no real scan",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "No shell invocation",
+      "evidenceArtifact": "artifacts/agent-operations/m957-m968",
+      "testCoverage": "M957M968 tests",
+      "reportSection": "m968 report",
+      "riskIfFalse": "Arbitrary shell execution",
+      "expectedAuditFocus": "dangerous command blocking matrix completeness",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "No network/provider/cloud",
+      "evidenceArtifact": "artifacts/agent-operations/m945-m956",
+      "testCoverage": "M945M956 tests",
+      "reportSection": "m956 report",
+      "riskIfFalse": "Live calls / data exfiltration",
+      "expectedAuditFocus": "no provider client wired, no network call",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "No browser automation productive",
+      "evidenceArtifact": "artifacts/agent-operations/m945-m956",
+      "testCoverage": "M945M956 tests",
+      "reportSection": "m956 report",
+      "riskIfFalse": "Real browser automation",
+      "expectedAuditFocus": "browser automation not wired",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "No credential access",
+      "evidenceArtifact": "artifacts/agent-operations/m957-m968",
+      "testCoverage": "M957M968 tests",
+      "reportSection": "m968 report",
+      "riskIfFalse": "Credential exposure",
+      "expectedAuditFocus": "evidence intake rejects sensitive values",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M957-M968",
+      "claim": "Dangerous command blocking",
+      "evidenceArtifact": "artifacts/agent-operations/m957-m968",
+      "testCoverage": "M957M968 tests",
+      "reportSection": "m968 report",
+      "riskIfFalse": "Dangerous command passes",
+      "expectedAuditFocus": "dangerous matrix completeness, no bypass",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M969-M980",
+      "claim": "Evidence/trace redaction",
+      "evidenceArtifact": "artifacts/agent-operations/m969-m980",
+      "testCoverage": "M969M980 tests",
+      "reportSection": "m980 report",
+      "riskIfFalse": "Secret/leak in evidence",
+      "expectedAuditFocus": "redaction/leak guard is adversarial, not superficial",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M957-M980",
+      "claim": "Manual QA NOT READY",
+      "evidenceArtifact": "artifacts/agent-operations/m957-m968, m969-m980",
+      "testCoverage": "M957M968 + M969M980 tests",
+      "reportSection": "m968/m980 reports",
+      "riskIfFalse": "Manual QA mistaken as passed/ready",
+      "expectedAuditFocus": "manual QA hold cannot be confused with QA ready",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M969-M980",
+      "claim": "Human evidence capture gate READY (gate only, not QA ready)",
+      "evidenceArtifact": "artifacts/agent-operations/m969-m980",
+      "testCoverage": "M969M980 tests",
+      "reportSection": "m980 report",
+      "riskIfFalse": "Gate readiness mistaken as QA ready",
+      "expectedAuditFocus": "human evidence gate is capture-protocol only",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M969-M980",
+      "claim": "Harness prep, not execution",
+      "evidenceArtifact": "artifacts/agent-operations/m969-m980",
+      "testCoverage": "M969M980 tests",
+      "reportSection": "m980 report",
+      "riskIfFalse": "Harness prep mistaken as execution",
+      "expectedAuditFocus": "harness-prep-not-execution boundary",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "Product files unchanged",
+      "evidenceArtifact": "git diff boundary over browser-extension/ and src/",
+      "testCoverage": "this block + prior product-bridge-csp-unchanged proofs",
+      "reportSection": "all reports",
+      "riskIfFalse": "Product drift",
+      "expectedAuditFocus": "no product files modified",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "Bridge/CSP unchanged",
+      "evidenceArtifact": "git diff boundary over Bridge/manifest CSP",
+      "testCoverage": "this block + prior proofs",
+      "reportSection": "all reports",
+      "riskIfFalse": "Bridge/CSP drift",
+      "expectedAuditFocus": "no Bridge/CSP modified",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M933-M980",
+      "claim": "Release/store NO-GO",
+      "evidenceArtifact": "artifacts/agent-operations/m969-m980 go/no-go",
+      "testCoverage": "M969M980 tests",
+      "reportSection": "m980 report",
+      "riskIfFalse": "Accidental release/store unlock",
+      "expectedAuditFocus": "release/store remain NO-GO",
+      "noGoProtected": true
+    },
+    {
+      "milestoneRange": "M969-M980",
+      "claim": "BrowserRuntimeSmoke caveat visible",
+      "evidenceArtifact": "artifacts/agent-operations/m969-m980 go/no-go caveatStatus",
+      "testCoverage": "this block",
+      "reportSection": "m980 report",
+      "riskIfFalse": "Hidden flake / false 100% confidence",
+      "expectedAuditFocus": "caveat is not hidden or misrepresented",
+      "noGoProtected": true
+    }
+  ],
+  "coversRequiredClaims": true
+}

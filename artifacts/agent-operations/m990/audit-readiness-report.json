@@ -1,0 +1,29 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M990",
+  "mode": "audit-only / intake-only",
+  "instruction": "PEDIR AUDITORIA CLAUDE",
+  "whatIsAudited": "M933-M980 Safe No-Op + Metadata Runner + Local Operator Evidence Bridge + Controlled No-Op Runtime Adapter + Local Operator QA Prep + Local Host Visible No-Op Smoke Plan + Manual QA Evidence Protocol + Harness Prep + Human Evidence Capture Gate + Redaction/Leak Guard + Manual QA Trigger Gate + BrowserRuntimeSmoke caveat handling",
+  "whyNow": "Foundation/test-only line reached a harness-prep + human-evidence-gate checkpoint; an external deep audit is required before any consideration of real QA evidence capture.",
+  "risksToDetect": [
+    "scope drift", "false/insufficient no-side-effect proof", "confusable wording",
+    "tautological tests", "weak redaction/leak guard", "incomplete dangerous command matrix",
+    "product/Bridge/CSP drift", "hidden caveat", "accidental unlock of any restricted capability"
+  ],
+  "auditMustNotAutomaticallyUnlock": [
+    "manual QA execution", "host real interactive smoke", "PC Commander real",
+    "productive runtime", "provider/cloud", "filesystem/browser/capability",
+    "release/store"
+  ],
+  "expectedDecision": "AUDIT_GO | AUDIT_CONDITIONAL_GO | AUDIT_NO_GO",
+  "onAuditGo": "continue only with next docs/protocol block; manual QA execution stays NO-GO until operator confirmation",
+  "onAuditConditionalGo": "remediate BLOCKER/HIGH-safety findings before any real QA",
+  "onAuditNoGo": "freeze line until remediation",
+  "manualQaExecution": "NO-GO",
+  "manualQaTrigger": "NOT_READY_EVIDENCE_PENDING",
+  "pcCommanderReal": "NO-GO",
+  "productiveRuntime": "NO-GO",
+  "releaseStore": "NO-GO",
+  "externalSmokeCaveat": "OPEN_BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED_VISIBLE",
+  "fullSuiteConfidence": "95% WITH_EXTERNAL_SMOKE_CAVEAT"
+}

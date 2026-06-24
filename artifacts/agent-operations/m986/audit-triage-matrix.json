@@ -1,0 +1,45 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M986",
+  "mode": "audit-only / intake-only",
+  "severityClasses": {
+    "BLOCKER": [
+      "any accidental real unlock",
+      "shell/filesystem/network/provider/browser/credential/process route",
+      "manual QA ready without evidence",
+      "PC Commander real claim",
+      "product files / Bridge/CSP drift",
+      "release/store claim",
+      "hidden caveat",
+      "tautological tests on safety-critical path"
+    ],
+    "HIGH": [
+      "ambiguous wording that could induce runtime real",
+      "insufficient no-side-effect proof",
+      "weak redaction/leak guard",
+      "incomplete dangerous command matrix",
+      "weak metadata fixture boundary",
+      "evidence intake accepts sensitive values"
+    ],
+    "MEDIUM": [
+      "duplicated/confusing artifacts",
+      "incomplete path inventory",
+      "inconsistent test naming",
+      "incomplete report",
+      "missing traceability"
+    ],
+    "LOW_NIT": [
+      "minor wording",
+      "formatting",
+      "naming improvements",
+      "docs clarity"
+    ]
+  },
+  "decisionMapping": {
+    "AUDIT_GO": "may continue only with next docs/protocol block",
+    "AUDIT_CONDITIONAL_GO": "remediate BLOCKER/HIGH findings before any real QA",
+    "AUDIT_NO_GO": "freeze line until remediation"
+  },
+  "accidentalRealUnlockIsBlocker": true,
+  "manualQaReadyWithoutEvidenceIsBlocker": true
+}
