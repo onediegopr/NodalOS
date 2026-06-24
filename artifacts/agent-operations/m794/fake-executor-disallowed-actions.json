@@ -1,0 +1,22 @@
+{
+  "disallowedActions": [
+    "provider/cloud live call",
+    "real credential use",
+    "filesystem write",
+    "real browser automation",
+    "capability unlock",
+    "public release",
+    "Chrome Web Store submission",
+    "signed public ZIP",
+    "product file modification",
+    "Bridge/CSP modification"
+  ],
+  "blockedExecutors": [
+    { "executorName": "FakeProviderCloudExecutor", "status": "BLOCKED" },
+    { "executorName": "FakeFilesystemWriteExecutor", "status": "BLOCKED" },
+    { "executorName": "FakeBrowserAutomationExecutor", "status": "BLOCKED" },
+    { "executorName": "FakeCapabilityUnlockExecutor", "status": "BLOCKED" },
+    { "executorName": "FakePublicReleaseExecutor", "status": "BLOCKED" },
+    { "executorName": "FakeChromeWebStoreExecutor", "status": "BLOCKED" }
+  ]
+}

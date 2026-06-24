@@ -1,0 +1,11 @@
+{
+  "secretsIncluded": false,
+  "credentialsIncluded": false,
+  "tokensIncluded": false,
+  "cookiesIncluded": false,
+  "rawUserDataIncluded": false,
+  "rawLogsIncluded": false,
+  "providerKeysIncluded": false,
+  "privateKeysIncluded": false,
+  "browserSessionDataIncluded": false
+}

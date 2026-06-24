@@ -1,0 +1,9 @@
+{
+  "realExecutorWired": false,
+  "realExecutorInvoked": false,
+  "providerClientWired": false,
+  "filesystemWriterWired": false,
+  "browserAutomationWired": false,
+  "capabilityUnlockWired": false,
+  "sideEffectSinkInvocations": 0
+}

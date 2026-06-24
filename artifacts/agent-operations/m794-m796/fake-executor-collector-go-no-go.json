@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "decision": "CAPABILITY_SPECIFIC_FAKE_EXECUTORS_COLLECTOR_ENFORCEMENT_READY",
+  "fakeExecutors": "READY_TEST_ONLY",
+  "collectorEnforcement": "READY",
+  "inMemoryEvidenceLedger": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "productiveEnabled": "PROHIBITED",
+  "sideEffectSinkInvocations": 0
+}

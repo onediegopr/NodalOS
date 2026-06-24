@@ -1,0 +1,11 @@
+{
+  "executorName": "FakeFilesystemReadMetadataExecutor",
+  "evidenceEnvelope": "CREATED",
+  "ledgerEvents": "CREATED",
+  "redactionProof": "CREATED",
+  "noExecutionProof": "CREATED",
+  "filesystemReaderRealInvoked": false,
+  "filesystemWriterInvoked": false,
+  "filesystemWritePerformed": false,
+  "sideEffectSinkInvocations": 0
+}

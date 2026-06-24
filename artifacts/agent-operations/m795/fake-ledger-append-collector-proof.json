@@ -1,0 +1,10 @@
+{
+  "executorName": "FakeLedgerAppendExecutor",
+  "evidenceEnvelope": "CREATED",
+  "ledgerEvents": "CREATED",
+  "redactionProof": "CREATED",
+  "noExecutionProof": "CREATED",
+  "inMemoryLedgerOnly": true,
+  "filesystemWritePerformed": false,
+  "sideEffectSinkInvocations": 0
+}

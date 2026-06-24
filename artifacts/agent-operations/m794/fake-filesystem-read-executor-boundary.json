@@ -1,0 +1,20 @@
+{
+  "executorName": "FakeFilesystemReadMetadataExecutor",
+  "executorType": "TEST_ONLY_IN_MEMORY_FAKE",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemReaderRealAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false,
+  "evidenceEnvelopeRequired": true,
+  "ledgerEventsRequired": true,
+  "redactionProofRequired": true,
+  "noExecutionProofRequired": true
+}

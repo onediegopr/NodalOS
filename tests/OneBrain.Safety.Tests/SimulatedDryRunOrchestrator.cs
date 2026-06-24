@@ -203,6 +203,122 @@ public sealed record SimulatedRuntimeResult(
     public bool BridgeCspModified => Proof.BridgeCspModified;
 }
 
+public sealed record FakeExecutorExecutionResult(
+    string ExecutorName,
+    string ExecutorType,
+    string RuntimeType,
+    SimulatedRuntimeResult RuntimeResult,
+    bool RealExecutionAllowed,
+    bool LiveCallAllowed,
+    bool CredentialUseAllowed,
+    bool FilesystemWriteAllowed,
+    bool BrowserActionAllowed,
+    bool CapabilityUnlockAllowed,
+    bool PublicReleaseAllowed,
+    bool StoreSubmissionAllowed,
+    bool ProductFilesModificationAllowed,
+    bool BridgeCspModificationAllowed,
+    bool FilesystemReaderRealInvoked,
+    bool InMemoryLedgerOnly)
+{
+    public EvidenceEnvelope EvidenceEnvelope => RuntimeResult.EvidenceEnvelope;
+    public IReadOnlyList<LedgerEvent> LedgerEvents => RuntimeResult.LedgerEvents;
+    public RedactionProof RedactionProof => RuntimeResult.RedactionProof;
+    public NoExecutionProof NoExecutionProof => RuntimeResult.Proof;
+    public int SideEffectSinkInvocations => RuntimeResult.SideEffectSinkInvocations;
+    public bool RealExecutorInvoked => RuntimeResult.RealExecutorInvoked;
+    public bool ProviderClientInvoked => RuntimeResult.ProviderClientInvoked;
+    public bool FilesystemWriterInvoked => RuntimeResult.FilesystemWriterInvoked;
+    public bool BrowserAutomationInvoked => RuntimeResult.BrowserAutomationInvoked;
+    public bool CapabilityUnlockInvoked => RuntimeResult.CapabilityUnlockInvoked;
+    public bool PublicReleaseInvoked => RuntimeResult.PublicReleaseInvoked;
+    public bool StoreSubmissionInvoked => RuntimeResult.StoreSubmissionInvoked;
+    public bool SignedZipCreated => RuntimeResult.SignedZipCreated;
+    public bool ProductFilesModified => RuntimeResult.ProductFilesModified;
+    public bool BridgeCspModified => RuntimeResult.BridgeCspModified;
+}
+
+public interface ITestOnlyInMemoryFakeExecutor
+{
+    string ExecutorName { get; }
+    string ExecutorType { get; }
+    string CapabilityName { get; }
+    FakeExecutorExecutionResult Execute();
+}
+
+public abstract class TestOnlyInMemoryFakeExecutor : ITestOnlyInMemoryFakeExecutor
+{
+    public const string TestOnlyExecutorType = "TEST_ONLY_IN_MEMORY_FAKE";
+
+    protected TestOnlyInMemoryFakeExecutor(
+        string executorName,
+        string capabilityName,
+        bool inMemoryLedgerOnly = false)
+    {
+        ExecutorName = executorName;
+        CapabilityName = capabilityName;
+        InMemoryLedgerOnly = inMemoryLedgerOnly;
+    }
+
+    public string ExecutorName { get; }
+    public string ExecutorType => TestOnlyExecutorType;
+    public string CapabilityName { get; }
+    protected bool InMemoryLedgerOnly { get; }
+
+    public FakeExecutorExecutionResult Execute()
+    {
+        var sink = new RecordingSideEffectSink();
+        var orchestrator = new SimulatedDryRunOrchestrator(sink);
+        var result = orchestrator.Process(new SimulatedRequest(
+            SimulatedDryRunOrchestrator.RequiredMode,
+            SimulatedDryRunOrchestrator.RequiredFixtureType,
+            CapabilityName,
+            IsProhibitedAction: false));
+
+        return new FakeExecutorExecutionResult(
+            ExecutorName,
+            ExecutorType,
+            SimulatedDryRunOrchestrator.RuntimeType,
+            result,
+            RealExecutionAllowed: false,
+            LiveCallAllowed: false,
+            CredentialUseAllowed: false,
+            FilesystemWriteAllowed: false,
+            BrowserActionAllowed: false,
+            CapabilityUnlockAllowed: false,
+            PublicReleaseAllowed: false,
+            StoreSubmissionAllowed: false,
+            ProductFilesModificationAllowed: false,
+            BridgeCspModificationAllowed: false,
+            FilesystemReaderRealInvoked: false,
+            InMemoryLedgerOnly: InMemoryLedgerOnly);
+    }
+}
+
+public sealed class FakeLocalModelExecutor : TestOnlyInMemoryFakeExecutor
+{
+    public FakeLocalModelExecutor()
+        : base("FakeLocalModelExecutor", "fake_local_model_executor")
+    {
+    }
+}
+
+public sealed class FakeFilesystemReadMetadataExecutor : TestOnlyInMemoryFakeExecutor
+{
+    public FakeFilesystemReadMetadataExecutor()
+        : base("FakeFilesystemReadMetadataExecutor", "fake_filesystem_read_metadata_executor")
+    {
+    }
+}
+
+public sealed class FakeLedgerAppendExecutor : TestOnlyInMemoryFakeExecutor
+{
+    public FakeLedgerAppendExecutor()
+        : base("FakeLedgerAppendExecutor", "fake_ledger_append_executor", inMemoryLedgerOnly: true)
+    {
+    }
+}
+
 /// <summary>
 /// Fake-only, in-memory simulated dry-run orchestrator. Produces a decision plus
 /// ledger/evidence/no-execution projections. It never invokes the side-effect

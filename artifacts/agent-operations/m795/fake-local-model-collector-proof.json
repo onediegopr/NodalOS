@@ -1,0 +1,10 @@
+{
+  "executorName": "FakeLocalModelExecutor",
+  "evidenceEnvelope": "CREATED",
+  "ledgerEvents": "CREATED",
+  "redactionProof": "CREATED",
+  "noExecutionProof": "CREATED",
+  "providerClientInvoked": false,
+  "liveCallPerformed": false,
+  "sideEffectSinkInvocations": 0
+}

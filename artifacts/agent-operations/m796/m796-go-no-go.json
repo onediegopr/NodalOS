@@ -1,0 +1,6 @@
+{
+  "milestone": "M796",
+  "decision": "FAKE_EXECUTOR_NEXT_DECISION_READY",
+  "go": true,
+  "nextMilestone": "M797-M799"
+}

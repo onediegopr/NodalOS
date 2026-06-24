@@ -1,0 +1,6 @@
+{
+  "milestone": "M795",
+  "decision": "COLLECTOR_ENFORCEMENT_TESTS_READY",
+  "go": true,
+  "sideEffectSinkInvocations": 0
+}

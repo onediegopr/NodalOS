@@ -1,0 +1,23 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M794",
+  "status": "READY",
+  "scope": "tests/safety only",
+  "fakeExecutorsAllowed": [
+    "FakeLocalModelExecutor",
+    "FakeFilesystemReadMetadataExecutor",
+    "FakeLedgerAppendExecutor"
+  ],
+  "fakeExecutorsDisallowed": [
+    "FakeProviderCloudExecutor",
+    "FakeFilesystemWriteExecutor",
+    "FakeBrowserAutomationExecutor",
+    "FakeCapabilityUnlockExecutor",
+    "FakePublicReleaseExecutor",
+    "FakeChromeWebStoreExecutor"
+  ],
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "executorType": "TEST_ONLY_IN_MEMORY_FAKE",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

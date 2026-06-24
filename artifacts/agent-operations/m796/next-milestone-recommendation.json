@@ -1,0 +1,9 @@
+{
+  "recommendedNextMilestone": "M797-M799 — Simulated Capability Executor Routing + Denylist Enforcement",
+  "scope": "test-only simulated routing toward fake executors",
+  "productiveUnlockAllowed": false,
+  "providerCloudLiveCallsAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserAutomationAllowed": false,
+  "capabilityUnlockAllowed": false
+}

@@ -1,0 +1,33 @@
+{
+  "allowed": [
+    {
+      "executorName": "FakeLocalModelExecutor",
+      "capability": "local model simulated response",
+      "status": "READY_TEST_ONLY",
+      "executorType": "TEST_ONLY_IN_MEMORY_FAKE",
+      "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY"
+    },
+    {
+      "executorName": "FakeFilesystemReadMetadataExecutor",
+      "capability": "filesystem read metadata simulation",
+      "status": "READY_TEST_ONLY",
+      "executorType": "TEST_ONLY_IN_MEMORY_FAKE",
+      "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY"
+    },
+    {
+      "executorName": "FakeLedgerAppendExecutor",
+      "capability": "in-memory evidence ledger append simulation",
+      "status": "READY_TEST_ONLY",
+      "executorType": "TEST_ONLY_IN_MEMORY_FAKE",
+      "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY"
+    }
+  ],
+  "blocked": [
+    { "executorName": "FakeProviderCloudExecutor", "status": "BLOCKED", "reason": "provider/cloud live calls remain prohibited" },
+    { "executorName": "FakeFilesystemWriteExecutor", "status": "BLOCKED", "reason": "filesystem writes remain prohibited" },
+    { "executorName": "FakeBrowserAutomationExecutor", "status": "BLOCKED", "reason": "browser automation remains prohibited" },
+    { "executorName": "FakeCapabilityUnlockExecutor", "status": "BLOCKED", "reason": "capability unlock remains prohibited" },
+    { "executorName": "FakePublicReleaseExecutor", "status": "BLOCKED", "reason": "public release remains NO-GO" },
+    { "executorName": "FakeChromeWebStoreExecutor", "status": "BLOCKED", "reason": "Chrome Web Store remains NO-GO" }
+  ]
+}
