@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M904",
+  "draftType": "M909_M920_SCOPE_BOUNDARY",
+  "status": "TEST_ONLY_READY",
+  "scopeItems": [
+    "Browser Capability Map permissive",
+    "Tab Claiming traceability",
+    "Run Evidence Pack",
+    "Replayable/resumable trace",
+    "Cost/Model Trace simple"
+  ],
+  "permissive": true,
+  "largeUi": false,
+  "approvalPrompts": false,
+  "blockingFlow": false,
+  "unlocks": false,
+  "implementedNow": false
+}

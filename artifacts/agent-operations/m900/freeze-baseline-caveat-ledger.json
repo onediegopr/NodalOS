@@ -1,0 +1,32 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M900",
+  "ledgerType": "FREEZE_BASELINE_CAVEAT_LEDGER",
+  "status": "TEST_ONLY_READY",
+  "caveats": [
+    {
+      "id": "GATE1_CDP_READINESS_TRANSIENT",
+      "category": "external smoke caveat",
+      "status": "historical"
+    },
+    {
+      "id": "GATE9_WEBSOCKET_IDEMPOTENCY_TRANSIENT",
+      "category": "external smoke caveat",
+      "status": "historical"
+    },
+    {
+      "id": "BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED",
+      "category": "external smoke caveat",
+      "status": "open_visible"
+    },
+    {
+      "id": "TEMP_IO_DISK_FULL_TRANSIENT",
+      "category": "external smoke caveat",
+      "status": "historical"
+    }
+  ],
+  "simulatedFoundationSafety": "TEST_ONLY_READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "releaseStore": "NO-GO",
+  "productBridgeCsp": "UNCHANGED"
+}

@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M897",
+  "evidenceType": "BROWSER_RUNTIME_SMOKE_CLEANUP_ROOT_CAUSE",
+  "status": "TEST_ONLY_READY",
+  "failingTest": "BrowserRuntimeSmokeCleanupLeavesNoManagedProcessPortOrProfile",
+  "observedPattern": "%TEMP%/onebrain-cdp-*",
+  "rootCauseClassification": "EXTERNAL_TEMP_CDP_PROFILE_CLEANUP_RACE_OR_IO_LOCK",
+  "diagnosedFactors": [
+    "temp directory residual pattern",
+    "managed process cleanup completed by gate",
+    "port release covered by smoke cleanup gate",
+    "profile cleanup may lag due to external IO/temp lock",
+    "race condition on immediate directory assertion",
+    "test ordering not identified as root cause"
+  ],
+  "externalVsTestInfra": "external cleanup timing with test-infra assertion sensitivity",
+  "productRuntimeUnlock": false,
+  "bridgeCspModification": false,
+  "productFilesModified": false
+}

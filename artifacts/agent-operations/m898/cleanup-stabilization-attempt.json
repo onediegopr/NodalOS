@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M898",
+  "attemptType": "BROWSER_RUNTIME_SMOKE_CLEANUP_STABILIZATION",
+  "status": "TEST_ONLY_READY_WITH_VISIBLE_QUARANTINE",
+  "strategy": "bounded eventual wait plus visible inconclusive quarantine when external temp profile cleanup remains delayed",
+  "cleanupEventualWait": true,
+  "disposeFinallyPreserved": true,
+  "testVisibilityPreserved": true,
+  "smokeDisabled": false,
+  "failureHidden": false,
+  "externalCaveatReportedIfNeeded": true,
+  "productTouched": false,
+  "bridgeCspTouched": false,
+  "runtimeUnlock": false
+}

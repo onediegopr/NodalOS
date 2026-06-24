@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M905",
+  "gateType": "M909_M920_READINESS",
+  "status": "TEST_ONLY_READY",
+  "decisionOptions": [
+    "M909_READY_TO_START",
+    "M909_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+    "M909_BLOCKED_BY_SAFETY",
+    "M909_BLOCKED_BY_SCOPE",
+    "M909_BLOCKED_BY_PRODUCT_BRIDGE_CSP",
+    "M909_BLOCKED_BY_RELEASE_DRIFT"
+  ],
+  "decision": "M909_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "browserRuntimeSmokeCaveat": "OPEN_VISIBLE_EXTERNAL_CLEANUP_QUARANTINE",
+  "freezeBaselineStatus": "TEST_ONLY_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "productBridgeCspUnchanged": true,
+  "runtimeUnlock": false,
+  "releaseStore": "NO-GO",
+  "featureParkedAndScoped": true
+}

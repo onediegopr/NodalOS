@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestones": "M897-M908",
+  "decision": "BROWSER_RUNTIME_SMOKE_QUARANTINED_FREEZE_BASELINE_READY_WITH_EXTERNAL_CAVEAT",
+  "browserRuntimeSmokeStabilization": "VISIBLE_EXTERNAL_QUARANTINE",
+  "freezeBaselineHardeningClosure": "TEST_ONLY_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "m909M920IntakeParking": "TEST_ONLY_READY",
+  "m909M920Readiness": "M909_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "productiveRuntimeUnlock": "0%",
+  "providerCloudLiveCalls": "0%",
+  "filesystemBrowserCapabilityUnlock": "0%",
+  "publicRelease": "0% / NO-GO",
+  "chromeWebStore": "0% / NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "browserRuntimeSmokeIsolated": "PASS_WITH_VISIBLE_INCONCLUSIVE_CLEANUP_CAVEAT_29_PASSED_1_SKIPPED_0_FAILED",
+  "fullSafetySuite": "PASS_WITH_VISIBLE_INCONCLUSIVE_CLEANUP_CAVEAT_5336_PASSED_38_SKIPPED_0_FAILED",
+  "recipesSuite": "PASS_635",
+  "fullSuite": "PASS_WITH_VISIBLE_INCONCLUSIVE_CLEANUP_CAVEAT",
+  "validationStatus": "PASS_WITH_EXTERNAL_SMOKE_CAVEAT"
+}

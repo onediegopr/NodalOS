@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M908",
+  "decisionType": "NEXT_DECISION",
+  "status": "TEST_ONLY_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "finalDecision": "BROWSER_RUNTIME_SMOKE_QUARANTINED_FREEZE_BASELINE_READY_WITH_EXTERNAL_CAVEAT",
+  "nextRecommendedMilestone": "M909-M920 - Permissive Browser Claim + Evidence Trace Foundation",
+  "productiveRuntimeUnlock": "0%",
+  "providerCloudLiveCalls": "0%",
+  "filesystemBrowserCapabilityUnlock": "0%",
+  "publicRelease": "0% / NO-GO",
+  "chromeWebStore": "0% / NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

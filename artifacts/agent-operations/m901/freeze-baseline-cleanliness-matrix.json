@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M901",
+  "matrixType": "FREEZE_BASELINE_CLEANLINESS",
+  "status": "TEST_ONLY_READY",
+  "allowedStatuses": [
+    "CLEAN",
+    "CLEAN_WITH_EXTERNAL_CAVEAT",
+    "CONDITIONAL_EXTERNAL_SMOKE",
+    "NO_GO_SAFETY",
+    "NO_GO_SCOPE",
+    "NO_GO_RELEASE"
+  ],
+  "currentStatus": "CONDITIONAL_EXTERNAL_SMOKE",
+  "falseFullCleanClaimRejected": true,
+  "safetyDriftResult": "NO_GO_SAFETY",
+  "scopeDriftResult": "NO_GO_SCOPE",
+  "releaseDriftResult": "NO_GO_RELEASE",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

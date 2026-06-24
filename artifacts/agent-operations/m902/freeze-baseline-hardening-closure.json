@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M902",
+  "reportType": "FREEZE_BASELINE_HARDENING_CLOSURE",
+  "status": "TEST_ONLY_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "freezeLockStatus": "SIMULATED_FOUNDATION_FREEZE_LOCK_READY_WITH_CAVEAT",
+  "caveatStatus": "OPEN_BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED_VISIBLE",
+  "browserRuntimeSmokeStatus": "PASS_WITH_VISIBLE_INCONCLUSIVE_CLEANUP_CAVEAT",
+  "simulatedFoundationStatus": "TEST_ONLY_READY",
+  "fullSuiteStatus": "PASS_WITH_VISIBLE_EXTERNAL_SMOKE_CAVEAT",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "m909M920CanStart": true,
+  "m909M920StartCondition": "READY_WITH_EXTERNAL_SMOKE_CAVEAT"
+}

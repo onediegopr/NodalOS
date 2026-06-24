@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M903",
+  "parkingType": "BROWSER_CLAIM_FEATURE_INTAKE",
+  "status": "TEST_ONLY_READY",
+  "acceptedIdea": "M909-M920 - Permissive Browser Claim + Evidence Trace Foundation",
+  "implementedInM897M908": false,
+  "reasonNotImplemented": "close quality caveat first and park scope for next macro-hito",
+  "renumberedFromRequestedM806M808": true,
+  "scope": "permissive observational routing-oriented",
+  "authorizationOriented": false,
+  "perActionApproval": false,
+  "blockingUx": false,
+  "outOfScopeFeatures": [
+    "Browser Injection Shield",
+    "Web Risk Filter",
+    "Recipe Lab",
+    "RAG",
+    "local models",
+    "Ollama",
+    "LM Studio",
+    "Jan"
+  ],
+  "providerCloudUnlock": false,
+  "browserAutomationUnlock": false,
+  "productBridgeCspRequiresSeparateGate": true
+}

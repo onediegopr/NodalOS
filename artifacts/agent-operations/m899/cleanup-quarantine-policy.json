@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M899",
+  "policyType": "BROWSER_RUNTIME_SMOKE_CLEANUP_QUARANTINE_POLICY",
+  "status": "TEST_ONLY_READY",
+  "externalCleanupMayBeQuarantined": true,
+  "quarantineVisible": true,
+  "quarantineEqualsCleanPass": false,
+  "twentyOfTwentyCleanClaimAllowedWhenSkippedOrInconclusive": false,
+  "foundationMayProceedWhenSafetyPasses": true,
+  "fullSuiteConfidenceWithCaveat": "95%",
+  "hiddenFailureAllowed": false,
+  "runtimeUnlock": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}
