@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1084",
+  "allowed": [
+    "delta summaries",
+    "test count summaries",
+    "caveat status summaries",
+    "redacted evidence refs",
+    "go/no-go summaries",
+    "operator confirmation status summaries",
+    "no-go lock summaries"
+  ],
+  "forbidden": [
+    "raw logs",
+    "secret values",
+    "tokens",
+    "cookies",
+    "session data",
+    "environment dumps",
+    "provider/cloud outputs",
+    "browser automation outputs",
+    "filesystem write outputs",
+    "large console dumps",
+    "full screenshots with secrets"
+  ],
+  "real_evidence_captured": false
+}

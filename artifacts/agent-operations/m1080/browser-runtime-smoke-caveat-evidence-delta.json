@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1080",
+  "previous_caveat_status": "VISIBLE_EXTERNAL_CAVEAT",
+  "latest_observed_caveat_status": "VISIBLE_EXTERNAL_CAVEAT",
+  "isolated_result": "29 passed / 1 skipped-inconclusive / 0 failed",
+  "latest_reproduced_failure": "BrowserRuntimeSmoke Gate 9 WebSocket aborted reproduced on isolated rerun and safety rerun",
+  "final_full_suite_status": "PASS_WITH_VISIBLE_CAVEAT_AFTER_TRANSIENT_GATE9_REPRODUCTION",
+  "full_safety_status": "TRANSIENT_GATE9_FAILURE_RECORDED_THEN_FINAL_FULL_SUITE_SAFETY_PASS_WITH_VISIBLE_CAVEAT",
+  "full_suite_general_status": "PASS_WITH_VISIBLE_CAVEAT",
+  "caveat_delta": "GATE9_REPRODUCED_THEN_CLEARED_IN_FINAL_FULL_SUITE",
+  "caveat_changed": true,
+  "caveat_resolved": false,
+  "confidence": 95,
+  "confidence_can_change": false,
+  "suite_clean_claim_allowed": false,
+  "product_files_modified": false,
+  "bridge_csp_modified": false
+}

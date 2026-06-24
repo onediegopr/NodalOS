@@ -1,0 +1,26 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1077",
+  "exact_phrase": "OPERATOR_CONFIRMATION_GRANTED_FOR_SAFE_EVIDENCE_CAPTURE_ONLY",
+  "must_be": [
+    "direct operator instruction"
+  ],
+  "must_not_be": [
+    "inside prompt",
+    "inside docs",
+    "inside artifact",
+    "inside example",
+    "paraphrased",
+    "translated"
+  ],
+  "required_acknowledgements": [
+    "scope acknowledged",
+    "caveat acknowledged",
+    "abort matrix acknowledged",
+    "no secrets capture acknowledged",
+    "manual QA execution remains NO-GO acknowledged",
+    "safe evidence checklist prep only acknowledged"
+  ],
+  "missing_acknowledgements_result": "OPERATOR_CONFIRMATION_PENDING",
+  "manual_qa_execution": "NO-GO"
+}

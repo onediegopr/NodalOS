@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1082",
+  "caveat_resolved": false,
+  "blocked_claims_when_unresolved": [
+    "suite-clean",
+    "confidence above 95",
+    "release-ready",
+    "Chrome-Web-Store-ready",
+    "manual-QA-ready",
+    "runtime-ready",
+    "PC-Commander-ready",
+    "caveat-resolved"
+  ],
+  "manual_qa_execution": "NO-GO",
+  "release_store": "NO-GO"
+}
