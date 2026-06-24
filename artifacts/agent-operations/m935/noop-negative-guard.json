@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M935",
+  "guard": "NoOpNegativeClaimGuard",
+  "blockedClaims": [
+    "no-op means PC commander ready",
+    "no-op means command execution real enabled",
+    "no-op means shell enabled",
+    "no-op means filesystem write enabled",
+    "no-op means browser automation enabled",
+    "no-op means provider/cloud enabled",
+    "no-op means process kill/network/credentials enabled",
+    "no-op means release/store ready"
+  ],
+  "manualQaReady": false,
+  "realCommandExecutionEnabled": false
+}

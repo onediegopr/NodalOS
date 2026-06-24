@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M941",
+  "guard": "OperatorEvidenceBridgeGoNoGoGuard",
+  "blockedClaims": [
+    "evidence bridge means Browser Bridge modified",
+    "evidence bridge means CSP modified",
+    "evidence bridge means command execution real ready",
+    "evidence bridge means PC commander QA ready",
+    "evidence bridge means filesystem write enabled",
+    "evidence bridge means shell enabled",
+    "evidence bridge means provider/cloud enabled",
+    "evidence bridge means browser automation enabled"
+  ],
+  "browserBridgeModified": false,
+  "cspModified": false,
+  "realCommandExecutionReady": false,
+  "pcCommanderQaReady": false
+}

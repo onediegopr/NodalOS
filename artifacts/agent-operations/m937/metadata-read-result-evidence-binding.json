@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M937",
+  "contract": "MetadataReadResult",
+  "statuses": ["completed_metadata_read", "blocked", "unavailable", "failed"],
+  "allowedDecision": "allowed_metadata",
+  "blockedDecision": "blocked",
+  "outputRedacted": true,
+  "evidencePackLinked": true,
+  "traceLinked": true,
+  "traceEventCreated": true,
+  "noExecutionProofRequired": true,
+  "redactionProofRequired": true,
+  "readsFileContents": false,
+  "storesSecrets": false
+}

@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M943",
+  "nextRecommendedMilestone": "M945-M956 - Controlled No-Op Runtime Adapter + Local Operator QA Prep",
+  "manualQaTriggeredYet": false,
+  "nextBlockMayPrepareControlledNoopRuntimeAdapter": true,
+  "manualQaRequiresAdapterChecklistEvidenceVisible": true,
+  "shellEnabled": false,
+  "filesystemWriteEnabled": false,
+  "browserAutomationEnabled": false,
+  "providerCloudEnabled": false,
+  "releaseStoreEnabled": false,
+  "productBridgeCspModified": false
+}

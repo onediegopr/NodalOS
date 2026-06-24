@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M939",
+  "contract": "LocalOperatorEvidenceBridge",
+  "importantBoundary": "This Evidence Bridge is not Browser Bridge/CSP.",
+  "bridgeMode": ["test_only", "no_op", "simulated"],
+  "linksCommandResult": true,
+  "linksEvidencePack": true,
+  "linksTrace": true,
+  "realRuntimeBridge": false,
+  "productBridgeModified": false,
+  "cspModified": false,
+  "extensionBridgeModified": false,
+  "manifestCspModified": false,
+  "outputRedacted": true,
+  "redactionProofRequired": true,
+  "noExecutionProofRequired": true
+}

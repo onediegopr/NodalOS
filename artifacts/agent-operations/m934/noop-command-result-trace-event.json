@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M934",
+  "contract": "NoOpCommandResult",
+  "statuses": ["completed_noop", "failed_noop", "blocked"],
+  "commandDecision": "allowed_noop",
+  "traceEvents": ["command_noop_started", "command_noop_completed", "command_noop_failed"],
+  "outputRedacted": true,
+  "evidencePackLinked": true,
+  "traceLinked": true,
+  "noExecutionProofRequired": true,
+  "redactionProofRequired": true,
+  "realExecutionMarked": false
+}
