@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M877",
+  "controlType": "FROZEN_BASELINE_CHANGE_CONTROL",
+  "changeClasses": [
+    "DOC_ONLY_ALLOWED",
+    "TEST_ONLY_ALLOWED",
+    "ARTIFACT_CONSOLIDATION_ALLOWED",
+    "QUALITY_HARDENING_ALLOWED",
+    "REQUIRES_REAUDIT",
+    "REQUIRES_NEW_SAFETY_GATE",
+    "BLOCKED_PRODUCTIVE_RUNTIME",
+    "BLOCKED_PROVIDER_CLOUD",
+    "BLOCKED_FILESYSTEM_BROWSER_UNLOCK",
+    "BLOCKED_RELEASE_STORE",
+    "BLOCKED_PRODUCT_BRIDGE_CSP"
+  ],
+  "rules": {
+    "docOnly": "DOC_ONLY_ALLOWED if no GO/NO-GO drift",
+    "testOnly": "TEST_ONLY_ALLOWED if no runtime/product scope drift",
+    "artifactConsolidation": "ARTIFACT_CONSOLIDATION_ALLOWED if no safety claims are weakened",
+    "qualityHardening": "QUALITY_HARDENING_ALLOWED for F3/F5/F6/F7/F9",
+    "boundaryChanges": "REQUIRES_REAUDIT",
+    "runtimeReentry": "REQUIRES_NEW_SAFETY_GATE",
+    "productiveRuntime": "BLOCKED_PRODUCTIVE_RUNTIME",
+    "providerCloud": "BLOCKED_PROVIDER_CLOUD",
+    "filesystemBrowserUnlock": "BLOCKED_FILESYSTEM_BROWSER_UNLOCK",
+    "releaseStore": "BLOCKED_RELEASE_STORE",
+    "productBridgeCsp": "BLOCKED_PRODUCT_BRIDGE_CSP"
+  }
+}

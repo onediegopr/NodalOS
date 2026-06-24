@@ -1,0 +1,80 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M874",
+  "freezeLockId": "freeze-lock-m873-m884-simulated-foundation",
+  "freezeCandidateId": "freeze-candidate-m845-m862-simulated-foundation",
+  "sourceCommit": "9eee2919206ed6c6f41da54725af5ef6a7f63cd5",
+  "reAuditDecision": "REAUDIT_READY_FOR_FREEZE_LOCK",
+  "lockStatus": "SIMULATED_FOUNDATION_FREEZE_LOCK_READY",
+  "lockedScope": "SIMULATED_RUNTIME_FOUNDATION_TEST_ONLY",
+  "lockMode": "INTERNAL_TEST_ONLY_BASELINE",
+  "allowedDomains": [
+    "tests/safety only",
+    "docs/reports only",
+    "artifacts/agent-operations only",
+    "in-memory fake-only simulated runtime foundation",
+    "quality hardening without GO/NO-GO drift"
+  ],
+  "noGoDomains": [
+    "runtime productive execution",
+    "provider/cloud live calls",
+    "filesystem write/unlock real",
+    "browser automation real",
+    "capability unlock",
+    "public release",
+    "Chrome Web Store",
+    "signed public ZIP",
+    "product files modification",
+    "Bridge/CSP modification"
+  ],
+  "frozenArtifacts": [
+    "governance snapshot",
+    "readiness scorecard",
+    "pre-audit package",
+    "audit handoff pack",
+    "F1/F2 remediation package",
+    "focused re-audit eligibility package"
+  ],
+  "validationRefs": [
+    "M863-M868 PASS 48",
+    "M869-M872 PASS 10",
+    "BrowserRuntimeSmoke isolated PASS 20",
+    "Full safety PASS",
+    "Recipes PASS",
+    "Full suite PASS"
+  ],
+  "reAuditRefs": [
+    "artifacts/agent-operations/m869/focused-f1-f2-re-audit-package.json",
+    "artifacts/agent-operations/m871/focused-re-audit-result.json"
+  ],
+  "measuredNoExecutionRefs": [
+    "tests/OneBrain.Safety.Tests/NodalOsAuditQualityRemediationM863M868Tests.cs",
+    "tests/OneBrain.Safety.Tests/SimulatedDryRunOrchestrator.cs"
+  ],
+  "redactionRemediationRefs": [
+    "tests/OneBrain.Safety.Tests/SimulatedRedactor.cs",
+    "tests/OneBrain.Safety.Tests/NodalOsAuditQualityRemediationM863M868Tests.cs"
+  ],
+  "safetyDriftRefs": [
+    "artifacts/agent-operations/m827-m844/simulated-runtime-governance-pre-audit-go-no-go.json",
+    "artifacts/agent-operations/m869-m872/focused-re-audit-freeze-eligibility-go-no-go.json"
+  ],
+  "caveatHistory": [
+    "BrowserRuntimeSmoke Gate 9 historical flake did not reproduce in M869-M872",
+    "Recipes transient TEMP IO was closed by rerun and full suite PASS"
+  ],
+  "futureReEntryCriteriaRefs": [
+    "artifacts/agent-operations/m879/future-runtime-re-entry-criteria.json",
+    "artifacts/agent-operations/m880/re-entry-gate-decision-matrix.json"
+  ],
+  "productiveRuntime": false,
+  "providerCloud": false,
+  "filesystemWrite": false,
+  "browserAutomation": false,
+  "capabilityUnlock": false,
+  "publicRelease": false,
+  "chromeWebStore": false,
+  "signedPublicZip": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

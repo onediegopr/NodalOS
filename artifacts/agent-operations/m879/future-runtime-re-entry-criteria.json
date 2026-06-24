@@ -1,0 +1,33 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M879",
+  "contractType": "FUTURE_RUNTIME_RE_ENTRY_CRITERIA",
+  "reEntryClasses": [
+    "SIMULATED_ONLY_CONTINUATION",
+    "LOCAL_DRY_RUN_PLANNING",
+    "LOCAL_PROVIDER_PLANNING",
+    "FILESYSTEM_READ_ONLY_PLANNING",
+    "UI_READ_ONLY_SURFACING_PLANNING",
+    "PRODUCTIVE_RUNTIME_REQUEST",
+    "PROVIDER_CLOUD_REQUEST",
+    "FILESYSTEM_WRITE_REQUEST",
+    "BROWSER_AUTOMATION_REQUEST",
+    "CAPABILITY_UNLOCK_REQUEST",
+    "RELEASE_STORE_REQUEST",
+    "PRODUCT_BRIDGE_CSP_REQUEST"
+  ],
+  "rules": {
+    "SIMULATED_ONLY_CONTINUATION": "allowed under freeze change control",
+    "LOCAL_DRY_RUN_PLANNING": "conditional planning-only if docs/tests only",
+    "LOCAL_PROVIDER_PLANNING": "conditional planning-only; no provider/cloud",
+    "FILESYSTEM_READ_ONLY_PLANNING": "conditional planning-only; no write",
+    "UI_READ_ONLY_SURFACING_PLANNING": "conditional planning-only; no Bridge/CSP changes",
+    "PRODUCTIVE_RUNTIME_REQUEST": "requires new safety gate, explicit approval and separate audit",
+    "PROVIDER_CLOUD_REQUEST": "requires provider audit and secret/redaction gate",
+    "FILESYSTEM_WRITE_REQUEST": "requires path jail, rollback and no-execution-to-execution transition audit",
+    "BROWSER_AUTOMATION_REQUEST": "requires separate browser safety gate",
+    "CAPABILITY_UNLOCK_REQUEST": "requires explicit manual owner gate",
+    "RELEASE_STORE_REQUEST": "NO-GO unless separate owner acceptance phrase and release audit",
+    "PRODUCT_BRIDGE_CSP_REQUEST": "requires separate product gate"
+  }
+}

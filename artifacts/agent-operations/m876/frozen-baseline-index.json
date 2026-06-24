@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M876",
+  "indexType": "FROZEN_BASELINE_INDEX",
+  "sourceCommit": "9eee2919206ed6c6f41da54725af5ef6a7f63cd5",
+  "freezeLockId": "freeze-lock-m873-m884-simulated-foundation",
+  "governanceSnapshotRefs": ["artifacts/agent-operations/m827"],
+  "readinessScorecardRefs": ["artifacts/agent-operations/m830", "artifacts/agent-operations/m831"],
+  "preAuditPackageRefs": ["artifacts/agent-operations/m833", "artifacts/agent-operations/m835"],
+  "auditPackageRefs": ["artifacts/agent-operations/m845", "artifacts/agent-operations/m846", "artifacts/agent-operations/m847"],
+  "f1F2RemediationRefs": ["artifacts/agent-operations/m863-m868", "docs/reports/m868-audit-quality-remediation-report.md"],
+  "reAuditRefs": ["artifacts/agent-operations/m869-m872", "docs/reports/m872-re-audit-summary-next-decision.md"],
+  "timelineReplayExportRefs": ["artifacts/agent-operations/m815", "artifacts/agent-operations/m818", "artifacts/agent-operations/m821"],
+  "approvalBoundaryRefs": ["artifacts/agent-operations/m806", "artifacts/agent-operations/m809", "artifacts/agent-operations/m812"],
+  "routingDenylistRefs": ["artifacts/agent-operations/m797", "artifacts/agent-operations/m798", "artifacts/agent-operations/m800"],
+  "noExecutionProofRefs": ["tests/OneBrain.Safety.Tests/NodalOsAuditQualityRemediationM863M868Tests.cs"],
+  "redactionProofRefs": ["tests/OneBrain.Safety.Tests/SimulatedRedactor.cs"],
+  "validationRefs": ["M869-M872 validation PASS"],
+  "caveatHistoryRefs": ["docs/reports/m872-re-audit-summary-next-decision.md"],
+  "deferredFindingsRefs": ["artifacts/agent-operations/m878/deferred-findings-register.json"],
+  "noGoBoundaries": [
+    "runtime productive execution",
+    "provider/cloud live calls",
+    "filesystem/browser/capability unlock",
+    "public release",
+    "Chrome Web Store",
+    "signed public ZIP",
+    "product files modification",
+    "Bridge/CSP modification"
+  ]
+}

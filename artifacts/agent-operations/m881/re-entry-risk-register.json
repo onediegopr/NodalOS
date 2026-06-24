@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M881",
+  "registerType": "RE_ENTRY_RISK_REGISTER",
+  "risks": [
+    "simulated freeze misread as runtime approval",
+    "planning-only work becomes implementation",
+    "provider/cloud accidentally wired",
+    "secrets leak through provider setup",
+    "filesystem read-only drifts to write",
+    "browser automation bypasses HIL",
+    "capability unlock bypasses owner gate",
+    "product files touched without product gate",
+    "Bridge/CSP changed without CSP audit",
+    "release/store accidentally reopened",
+    "tests assume no-execution but runtime executes",
+    "redaction regression under real provider"
+  ]
+}

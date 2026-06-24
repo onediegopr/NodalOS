@@ -1,0 +1,69 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M878",
+  "registerType": "DEFERRED_FINDINGS_REGISTER",
+  "findings": [
+    {
+      "id": "F3",
+      "title": "drift guard real path scan",
+      "severity": "LOW",
+      "blockingStatus": false,
+      "reasonDeferred": "quality hardening after foundation freeze lock",
+      "allowedRemediationScope": ["tests/OneBrain.Safety.Tests", "docs/reports", "artifacts/agent-operations"],
+      "prohibitedScope": ["product files", "Bridge/CSP", "runtime productivo"],
+      "targetFutureMacroHito": "M885-M896",
+      "auditRequired": true,
+      "freezeImpact": "none"
+    },
+    {
+      "id": "F5",
+      "title": "reduce JSON string self-checks",
+      "severity": "LOW",
+      "blockingStatus": false,
+      "reasonDeferred": "test quality hardening without freeze impact",
+      "allowedRemediationScope": ["tests/OneBrain.Safety.Tests"],
+      "prohibitedScope": ["product files", "Bridge/CSP"],
+      "targetFutureMacroHito": "M885-M896",
+      "auditRequired": false,
+      "freezeImpact": "none"
+    },
+    {
+      "id": "F6",
+      "title": "isolate/quarantine BrowserRuntimeSmoke flakey",
+      "severity": "LOW",
+      "blockingStatus": false,
+      "reasonDeferred": "historical flake did not reproduce in latest full validation",
+      "allowedRemediationScope": ["tests/OneBrain.Safety.Tests", "docs/reports"],
+      "prohibitedScope": ["Bridge/CSP", "browser automation real"],
+      "targetFutureMacroHito": "M885-M896",
+      "auditRequired": false,
+      "freezeImpact": "none"
+    },
+    {
+      "id": "F7",
+      "title": "READY to SIMULATED_READY / TEST_ONLY_READY wording",
+      "severity": "INFO",
+      "blockingStatus": false,
+      "reasonDeferred": "naming precision hardening",
+      "allowedRemediationScope": ["docs/reports", "artifacts/agent-operations", "tests/OneBrain.Safety.Tests"],
+      "prohibitedScope": ["product files", "Bridge/CSP"],
+      "targetFutureMacroHito": "M885-M896",
+      "auditRequired": false,
+      "freezeImpact": "none"
+    },
+    {
+      "id": "F9",
+      "title": "future extraction to src if real runtime approaches",
+      "severity": "INFO",
+      "blockingStatus": false,
+      "reasonDeferred": "not applicable until real runtime planning approaches",
+      "allowedRemediationScope": ["planning only until separate gate"],
+      "prohibitedScope": ["runtime productivo", "provider/cloud", "filesystem write", "browser automation"],
+      "targetFutureMacroHito": "future gated runtime planning",
+      "auditRequired": true,
+      "freezeImpact": "none"
+    }
+  ],
+  "runtimeUnlocked": false,
+  "releaseStoreStatusChanged": false
+}
