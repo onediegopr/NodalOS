@@ -1,0 +1,14 @@
+{
+  "cases": [
+    "unknown_future_capability",
+    "typo_local_provider_modell",
+    "empty_capability",
+    "null_or_missing_capability",
+    "mixed_case_unsupported_capability",
+    "capability_with_forbidden_prefix",
+    "capability_with_release_like_name_not_registered"
+  ],
+  "expectedDecision": "DENY_UNSUPPORTED_CAPABILITY",
+  "expectedReasonCode": "denied_unsupported_capability",
+  "selectedExecutor": null
+}

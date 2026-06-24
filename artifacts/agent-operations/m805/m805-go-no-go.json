@@ -1,0 +1,7 @@
+{
+  "milestone": "M805",
+  "decision": "POLICY_DECISION_AUDIT_SUMMARY_READY",
+  "go": true,
+  "fullSuiteClean": true,
+  "caveatStatus": "CLOSED_BY_FULL_SUITE_PASS"
+}

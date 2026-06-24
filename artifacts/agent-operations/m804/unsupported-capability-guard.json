@@ -1,0 +1,19 @@
+{
+  "milestone": "M804",
+  "status": "READY",
+  "unregisteredCapabilityDecision": "DENY_UNSUPPORTED_CAPABILITY",
+  "selectedExecutor": null,
+  "auditEventCreated": true,
+  "evidenceEnvelopeCreated": true,
+  "redactionProofCreated": true,
+  "noExecutionProofCreated": true,
+  "sideEffectSinkInvocations": 0,
+  "providerCloudInvoked": false,
+  "filesystemRealInvoked": false,
+  "browserAutomationInvoked": false,
+  "releaseStoreTouched": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "productiveEnabled": false,
+  "reasonCode": "denied_unsupported_capability"
+}

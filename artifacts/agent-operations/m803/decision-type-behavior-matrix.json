@@ -1,0 +1,22 @@
+{
+  "ALLOW_SIMULATED_DRY_RUN": {
+    "selectedExecutor": "allowed fake executor only",
+    "reasonCode": "allowed_simulated_fake_executor"
+  },
+  "DENY_DENYLISTED_CAPABILITY": {
+    "selectedExecutor": null,
+    "reasonCode": "denied_denylisted_capability"
+  },
+  "DENY_UNSUPPORTED_CAPABILITY": {
+    "selectedExecutor": null,
+    "reasonCode": "denied_unsupported_capability"
+  },
+  "DENY_POLICY_VIOLATION": {
+    "selectedExecutor": null,
+    "reasonCode": "denied_policy_violation"
+  },
+  "REQUIRE_MANUAL_APPROVAL_SIMULATED": {
+    "selectedExecutor": null,
+    "reasonCode": "requires_manual_approval_simulated"
+  }
+}

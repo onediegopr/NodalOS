@@ -1,0 +1,18 @@
+{
+  "inheritedCaveat": true,
+  "previousFullSuiteStatus": "NOT_CLEAN",
+  "previousFailure": "BrowserRuntimeSmokeIdempotencyGateReportsDuplicateReplay in Gate 9 idempotency/replay family",
+  "routingDenylistSecurityFailures": false,
+  "currentBlockFullSuiteStatus": "PASS",
+  "currentBlockEvidence": [
+    "M797-M799 filter PASS",
+    "M800-M802 filter PASS",
+    "M803-M805 filter PASS",
+    "BrowserRuntimeSmokeTests rerun isolated PASS 17/17 after one same-family flaky failure",
+    "Safety suite PASS 5186 passed, 37 skipped",
+    "Recipes suite PASS 635 passed",
+    "Full suite PASS: Recipes 635 passed; Safety 5186 passed, 37 skipped"
+  ],
+  "caveatStatus": "CLOSED_BY_FULL_SUITE_PASS",
+  "doNotDeclareFullSuitePassWithoutEvidence": true
+}

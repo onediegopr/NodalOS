@@ -1,0 +1,11 @@
+{
+  "recommendedNextMilestone": "M806-M808 — Simulated Runtime Manual Approval Decision Boundary + Audit Projection",
+  "scope": "test-only manual approval decision boundary and audit projection",
+  "productiveUnlockAllowed": false,
+  "providerCloudLiveCallsAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserAutomationAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "chromeWebStoreAllowed": false
+}

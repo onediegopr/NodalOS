@@ -19,6 +19,31 @@ public enum SimulatedDecision
     RequireManualApproval
 }
 
+public enum SimulatedPolicyDecisionType
+{
+    AllowSimulatedDryRun,
+    DenyDenylistedCapability,
+    DenyUnsupportedCapability,
+    DenyPolicyViolation,
+    RequireManualApprovalSimulated
+}
+
+public static class SimulatedPolicyReasonCodes
+{
+    public const string AllowedSimulatedFakeExecutor = "allowed_simulated_fake_executor";
+    public const string DeniedDenylistedCapability = "denied_denylisted_capability";
+    public const string DeniedUnsupportedCapability = "denied_unsupported_capability";
+    public const string DeniedPolicyViolation = "denied_policy_violation";
+    public const string RequiresManualApprovalSimulated = "requires_manual_approval_simulated";
+    public const string ProductiveRuntimeProhibited = "productive_runtime_prohibited";
+    public const string RealExecutorNotWired = "real_executor_not_wired";
+    public const string ProviderCloudDisabled = "provider_cloud_disabled";
+    public const string FilesystemWriteDisabled = "filesystem_write_disabled";
+    public const string BrowserAutomationDisabled = "browser_automation_disabled";
+    public const string ReleaseStoreDisabled = "release_store_disabled";
+    public const string ProductBridgeCspModificationDisabled = "product_bridge_csp_modification_disabled";
+}
+
 /// <summary>
 /// Surface a REAL runtime would have to call to cause an effect. The simulated
 /// orchestrator never references any member of this interface; the spy below
@@ -324,6 +349,8 @@ public sealed record SimulatedRoutingResult(
     string CapabilityName,
     string? SelectedExecutor,
     SimulatedDecision Decision,
+    SimulatedPolicyDecisionType PolicyDecisionType,
+    string ReasonCode,
     string DenyReason,
     string RuntimeType,
     string FixtureType,
@@ -353,6 +380,9 @@ public sealed record SimulatedCapabilityMatrixEntry(
 
 public static class SimulatedRuntimeRoutingMatrix
 {
+    public const string ManualApprovalCapability = "high_risk_simulated_manual_approval";
+    public const string PolicyViolationCapability = "simulated_policy_violation";
+
     public static readonly IReadOnlyDictionary<string, string> AllowedRoutingTable =
         new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -405,11 +435,36 @@ public sealed class SimulatedCapabilityRouter
 
     public SimulatedRoutingResult Route(string capabilityName)
     {
+        if (string.IsNullOrWhiteSpace(capabilityName))
+            return Deny(
+                capabilityName ?? string.Empty,
+                SimulatedPolicyDecisionType.DenyUnsupportedCapability,
+                SimulatedPolicyReasonCodes.DeniedUnsupportedCapability,
+                "unsupported capability denied: empty or missing capability");
+
         if (_denylistedCapabilities.Contains(capabilityName))
-            return Deny(capabilityName, $"denylisted capability: {capabilityName}");
+            return Deny(
+                capabilityName,
+                SimulatedPolicyDecisionType.DenyDenylistedCapability,
+                SimulatedPolicyReasonCodes.DeniedDenylistedCapability,
+                $"denylisted capability: {capabilityName}");
+
+        if (string.Equals(capabilityName, SimulatedRuntimeRoutingMatrix.PolicyViolationCapability, StringComparison.Ordinal))
+            return Deny(
+                capabilityName,
+                SimulatedPolicyDecisionType.DenyPolicyViolation,
+                SimulatedPolicyReasonCodes.DeniedPolicyViolation,
+                $"policy violation denied: {capabilityName}");
+
+        if (string.Equals(capabilityName, SimulatedRuntimeRoutingMatrix.ManualApprovalCapability, StringComparison.Ordinal))
+            return RequireManualApproval(capabilityName);
 
         if (!_allowedRoutingTable.TryGetValue(capabilityName, out var selectedExecutor))
-            return Deny(capabilityName, $"unsupported capability denied: {capabilityName}");
+            return Deny(
+                capabilityName,
+                SimulatedPolicyDecisionType.DenyUnsupportedCapability,
+                SimulatedPolicyReasonCodes.DeniedUnsupportedCapability,
+                $"unsupported capability denied: {capabilityName}");
 
         var result = CreateExecutor(selectedExecutor).Execute();
         return new SimulatedRoutingResult(
@@ -417,6 +472,8 @@ public sealed class SimulatedCapabilityRouter
             CapabilityName: capabilityName,
             SelectedExecutor: selectedExecutor,
             Decision: result.RuntimeResult.Decision,
+            PolicyDecisionType: SimulatedPolicyDecisionType.AllowSimulatedDryRun,
+            ReasonCode: SimulatedPolicyReasonCodes.AllowedSimulatedFakeExecutor,
             DenyReason: string.Empty,
             RuntimeType: result.RuntimeType,
             FixtureType: SimulatedDryRunOrchestrator.RequiredFixtureType,
@@ -436,7 +493,11 @@ public sealed class SimulatedCapabilityRouter
             _ => throw new InvalidOperationException($"Unknown allowed fake executor: {selectedExecutor}")
         };
 
-    private static SimulatedRoutingResult Deny(string capabilityName, string denyReason)
+    private static SimulatedRoutingResult Deny(
+        string capabilityName,
+        SimulatedPolicyDecisionType policyDecisionType,
+        string reasonCode,
+        string denyReason)
     {
         var sink = new RecordingSideEffectSink();
         var result = new SimulatedDryRunOrchestrator(sink).Process(new SimulatedRequest(
@@ -450,7 +511,37 @@ public sealed class SimulatedCapabilityRouter
             CapabilityName: capabilityName,
             SelectedExecutor: null,
             Decision: SimulatedDecision.Deny,
+            PolicyDecisionType: policyDecisionType,
+            ReasonCode: reasonCode,
             DenyReason: denyReason,
+            RuntimeType: result.RuntimeType,
+            FixtureType: result.FixtureType,
+            EvidenceEnvelope: result.EvidenceEnvelope,
+            LedgerEvents: result.LedgerEvents,
+            RedactionProof: result.RedactionProof,
+            NoExecutionProof: result.Proof,
+            AuditEventCreated: true);
+    }
+
+    private static SimulatedRoutingResult RequireManualApproval(string capabilityName)
+    {
+        var sink = new RecordingSideEffectSink();
+        var result = new SimulatedDryRunOrchestrator(sink).Process(new SimulatedRequest(
+            SimulatedDryRunOrchestrator.RequiredMode,
+            SimulatedDryRunOrchestrator.RequiredFixtureType,
+            capabilityName,
+            IsProhibitedAction: false,
+            RequiresManualApproval: true,
+            ManualApprovalGranted: false));
+
+        return new SimulatedRoutingResult(
+            RequestId: $"route-{capabilityName}",
+            CapabilityName: capabilityName,
+            SelectedExecutor: null,
+            Decision: SimulatedDecision.RequireManualApproval,
+            PolicyDecisionType: SimulatedPolicyDecisionType.RequireManualApprovalSimulated,
+            ReasonCode: SimulatedPolicyReasonCodes.RequiresManualApprovalSimulated,
+            DenyReason: string.Empty,
             RuntimeType: result.RuntimeType,
             FixtureType: result.FixtureType,
             EvidenceEnvelope: result.EvidenceEnvelope,

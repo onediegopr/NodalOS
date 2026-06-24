@@ -1,0 +1,6 @@
+{
+  "milestone": "M803",
+  "decision": "POLICY_DECISION_NORMALIZATION_READY",
+  "go": true,
+  "scope": "test-only/in-memory"
+}

@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "decision": "SIMULATED_POLICY_DECISION_NORMALIZATION_UNSUPPORTED_GUARD_READY",
+  "policyDecisionNormalization": "READY",
+  "unsupportedCapabilityGuard": "READY",
+  "simulatedRoutingMatrix": "READY",
+  "denylistEnforcement": "READY",
+  "noExecutionProof": "READY",
+  "fullSuiteClean": true,
+  "fullSuiteCaveatStatus": "CLOSED_BY_FULL_SUITE_PASS",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "productiveEnabled": "PROHIBITED",
+  "sideEffectSinkInvocations": 0
+}

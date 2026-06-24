@@ -1,0 +1,6 @@
+{
+  "milestone": "M804",
+  "decision": "UNSUPPORTED_CAPABILITY_GUARD_READY",
+  "go": true,
+  "unknownCapabilityAllowedByDefault": false
+}

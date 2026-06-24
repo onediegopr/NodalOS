@@ -1,0 +1,16 @@
+{
+  "reasonCodes": [
+    "allowed_simulated_fake_executor",
+    "denied_denylisted_capability",
+    "denied_unsupported_capability",
+    "denied_policy_violation",
+    "requires_manual_approval_simulated",
+    "productive_runtime_prohibited",
+    "real_executor_not_wired",
+    "provider_cloud_disabled",
+    "filesystem_write_disabled",
+    "browser_automation_disabled",
+    "release_store_disabled",
+    "product_bridge_csp_modification_disabled"
+  ]
+}

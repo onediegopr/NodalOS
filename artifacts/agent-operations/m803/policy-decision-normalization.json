@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M803",
+  "status": "READY",
+  "decisionTypes": [
+    "ALLOW_SIMULATED_DRY_RUN",
+    "DENY_DENYLISTED_CAPABILITY",
+    "DENY_UNSUPPORTED_CAPABILITY",
+    "DENY_POLICY_VIOLATION",
+    "REQUIRE_MANUAL_APPROVAL_SIMULATED"
+  ],
+  "rules": {
+    "allowedCapability": "ALLOW_SIMULATED_DRY_RUN",
+    "denylistedCapability": "DENY_DENYLISTED_CAPABILITY",
+    "unknownCapability": "DENY_UNSUPPORTED_CAPABILITY",
+    "policyViolation": "DENY_POLICY_VIOLATION",
+    "manualApprovalRequired": "REQUIRE_MANUAL_APPROVAL_SIMULATED",
+    "denySelectsExecutor": false,
+    "allowSelectsOnlyAllowedFakeExecutor": true
+  }
+}

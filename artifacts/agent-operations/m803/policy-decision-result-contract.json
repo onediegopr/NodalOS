@@ -1,0 +1,17 @@
+{
+  "fields": [
+    "decision",
+    "policyDecisionType",
+    "reasonCode",
+    "selectedExecutor",
+    "evidenceEnvelope",
+    "ledgerEvents[]",
+    "redactionProof",
+    "noExecutionProof"
+  ],
+  "everyDecisionHasEvidenceEnvelope": true,
+  "everyDecisionHasLedgerEvents": true,
+  "everyDecisionHasRedactionProof": true,
+  "everyDecisionHasNoExecutionProof": true,
+  "sideEffectSinkInvocations": 0
+}
