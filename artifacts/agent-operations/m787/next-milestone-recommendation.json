@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M787",
+  "recommendedNextMilestone": "M788-M790 — Simulated Runtime Evidence/Ledger Integration Tests + Audit Gate",
+  "scope": "simulated runtime/tests only",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

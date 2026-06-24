@@ -1,0 +1,23 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M785",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "cases": [
+    "negative_deny_provider_live_call",
+    "negative_deny_filesystem_write",
+    "negative_deny_browser_action",
+    "negative_deny_capability_unlock",
+    "negative_deny_public_release",
+    "negative_deny_store_submission"
+  ],
+  "decision": "DENY",
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "sideEffectSinkInvocations": 0
+}

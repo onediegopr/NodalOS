@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M786",
+  "decision": "REQUIRE_MANUAL_APPROVAL",
+  "approvalGateCreated": true,
+  "evidenceEnvelopeCreated": true,
+  "ledgerProjectionCreated": true,
+  "actualExecutionPerformed": false,
+  "sideEffectSinkInvocations": 0,
+  "realExecutorInvoked": false
+}

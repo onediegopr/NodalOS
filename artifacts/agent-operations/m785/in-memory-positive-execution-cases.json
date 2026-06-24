@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M785",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "cases": [
+    "positive_allow_simulated_local_model",
+    "positive_allow_simulated_filesystem_read_metadata",
+    "positive_allow_simulated_ledger_append"
+  ],
+  "decision": "ALLOW_SIMULATED_DRY_RUN",
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "sideEffectSinkInvocations": 0
+}

@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M785",
+  "status": "PROVEN",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "sideEffectSinkInvocations": 0,
+  "realExecutorInvoked": false,
+  "providerClientInvoked": false,
+  "filesystemWriterInvoked": false,
+  "browserAutomationInvoked": false,
+  "capabilityUnlockInvoked": false,
+  "publicReleaseInvoked": false,
+  "storeSubmissionInvoked": false,
+  "signedZipCreated": false
+}

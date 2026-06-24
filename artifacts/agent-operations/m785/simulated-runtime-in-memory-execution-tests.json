@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M785",
+  "status": "READY",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "positiveExecutionCases": "READY",
+  "negativeExecutionCases": "READY",
+  "requireApprovalCases": "READY",
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "sideEffectSinkInvocations": 0
+}
