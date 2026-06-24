@@ -1,0 +1,16 @@
+{
+  "fixtureName": "fake-websocket-bridge-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "simulates": "WebSocket bridge event metadata without external or live socket call",
+  "fakeEvent": "FAKE_WEBSOCKET_BRIDGE_EVENT",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}

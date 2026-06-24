@@ -1,0 +1,28 @@
+{
+  "cases": [
+    "attempt_live_provider_call",
+    "attempt_provider_credential_use",
+    "attempt_filesystem_write",
+    "attempt_browser_action",
+    "attempt_credential_captcha_2fa_bypass",
+    "attempt_capability_unlock",
+    "attempt_public_release",
+    "attempt_chrome_web_store_submission",
+    "attempt_signed_public_zip_creation",
+    "attempt_product_file_modification",
+    "attempt_bridge_csp_modification"
+  ],
+  "caseResults": [
+    {"caseId": "attempt_live_provider_call", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_provider_credential_use", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_filesystem_write", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_browser_action", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_credential_captcha_2fa_bypass", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_capability_unlock", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_public_release", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_chrome_web_store_submission", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_signed_public_zip_creation", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_product_file_modification", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false},
+    {"caseId": "attempt_bridge_csp_modification", "decision": "DENY", "auditEventRequired": true, "evidenceEnvelopeRequired": true, "actualExecutionPerformed": false, "liveCallPerformed": false, "filesystemWritePerformed": false, "browserAutomationPerformed": false, "capabilityUnlocked": false, "publicReleasePerformed": false, "storeSubmissionPerformed": false, "signedPublicZipCreated": false, "productFilesModified": false, "bridgeCspModified": false}
+  ]
+}

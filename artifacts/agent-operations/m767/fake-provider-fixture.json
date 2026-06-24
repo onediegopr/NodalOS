@@ -1,0 +1,16 @@
+{
+  "fixtureName": "fake-provider-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "simulates": "provider/cloud denied response and metadata-only fake output",
+  "fakeResponse": "FAKE_PROVIDER_RESPONSE",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}

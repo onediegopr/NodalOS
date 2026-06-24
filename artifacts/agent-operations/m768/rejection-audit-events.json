@@ -1,0 +1,14 @@
+{
+  "auditEventStatus": "READY",
+  "auditEventRequiredForEveryRejection": true,
+  "eventType": "SIMULATED_PROHIBITED_ACTION_DENIED",
+  "eventFields": [
+    "caseId",
+    "decision",
+    "denialReason",
+    "evidenceEnvelopeRef",
+    "noExecutionProofRef",
+    "createdAt"
+  ],
+  "actualExecutionPerformed": false
+}

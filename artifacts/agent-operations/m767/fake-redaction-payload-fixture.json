@@ -1,0 +1,26 @@
+{
+  "fixtureName": "fake-redaction-payload-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "payloadKind": "SYNTHETIC_FORBIDDEN_FIELDS",
+  "forbiddenFields": {
+    "secrets": "FAKE_SECRET_VALUE",
+    "credentials": "FAKE_CREDENTIAL_VALUE",
+    "tokens": "FAKE_TOKEN_VALUE",
+    "cookies": "FAKE_COOKIE_VALUE",
+    "rawUserData": "FAKE_RAW_USER_DATA_VALUE",
+    "rawLogs": "FAKE_RAW_LOG_VALUE",
+    "providerKeys": "FAKE_PROVIDER_KEY_VALUE",
+    "privateKeys": "FAKE_PRIVATE_KEY_VALUE",
+    "browserSessionData": "FAKE_BROWSER_SESSION_DATA_VALUE"
+  },
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}

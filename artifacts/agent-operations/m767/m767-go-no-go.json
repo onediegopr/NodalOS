@@ -1,0 +1,9 @@
+{
+  "milestone": "M767",
+  "decision": "SIMULATION_HARNESS_TEST_FIXTURES_READY",
+  "simulationFixturesReady": true,
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "actualExecutionPerformed": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

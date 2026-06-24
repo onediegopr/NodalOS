@@ -1,0 +1,15 @@
+{
+  "payloadSource": "artifacts/agent-operations/m767/fake-redaction-payload-fixture.json",
+  "payloadType": "SYNTHETIC_ONLY",
+  "inputContainsFakePlaceholdersOnly": true,
+  "outputRedacted": true,
+  "secretsIncluded": false,
+  "credentialsIncluded": false,
+  "tokensIncluded": false,
+  "cookiesIncluded": false,
+  "rawUserDataIncluded": false,
+  "rawLogsIncluded": false,
+  "providerKeysIncluded": false,
+  "privateKeysIncluded": false,
+  "browserSessionDataIncluded": false
+}

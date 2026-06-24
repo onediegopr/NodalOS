@@ -1,0 +1,7 @@
+{
+  "recommendedNextMilestone": "M770-M772 Simulated Dry-Run Orchestrator Contract + Ledger Event Projection",
+  "scope": "simulation/contracts/tests only",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

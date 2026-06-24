@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M767",
+  "decision": "SIMULATION_HARNESS_TEST_FIXTURES_READY",
+  "fixtureMode": "SIMULATED_FAKE_ONLY",
+  "fixturesStatus": "READY",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false,
+  "evidenceClass": "OWNER_ATTESTATION_NON_AUDITABLE",
+  "evidenceInvented": false
+}

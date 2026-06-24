@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M768",
+  "decision": "NO_EXECUTION_PROOF_SUITE_READY",
+  "negativeEnforcementTests": "READY",
+  "prohibitedActionsRejected": true,
+  "auditEventsRequired": true,
+  "evidenceEnvelopesRequired": true,
+  "actualExecutionPerformed": false,
+  "productiveRuntimeExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED"
+}

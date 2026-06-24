@@ -1,0 +1,17 @@
+{
+  "fixtureName": "fake-policy-approval-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "simulates": "policy gate denial and manual approval denial metadata",
+  "fakePolicyDecision": "DENY",
+  "fakeApprovalDecision": "DENY",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}

@@ -1,0 +1,16 @@
+{
+  "fixtureName": "fake-extension-bridge-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "simulates": "extension bridge event metadata without bridge modification",
+  "fakeEvent": "FAKE_EXTENSION_BRIDGE_EVENT",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}

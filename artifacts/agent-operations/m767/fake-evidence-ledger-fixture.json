@@ -1,0 +1,16 @@
+{
+  "fixtureName": "fake-evidence-ledger-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "simulates": "fake evidence ledger append event without durable runtime mutation",
+  "fakeEventId": "FAKE_LEDGER_EVENT_ID",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}

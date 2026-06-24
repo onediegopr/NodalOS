@@ -1,0 +1,16 @@
+{
+  "fixtureName": "fake-local-model-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "simulates": "local provider/model metadata-only response",
+  "fakeResponse": "FAKE_LOCAL_MODEL_RESPONSE",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}

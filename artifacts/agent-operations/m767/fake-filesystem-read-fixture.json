@@ -1,0 +1,17 @@
+{
+  "fixtureName": "fake-filesystem-read-fixture",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "simulates": "filesystem read metadata without real file access or write",
+  "fakePath": "FAKE_REDACTED_PATH",
+  "fakeMetadata": "FAKE_FILE_METADATA_ONLY",
+  "realExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "credentialUseAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserActionAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false
+}
