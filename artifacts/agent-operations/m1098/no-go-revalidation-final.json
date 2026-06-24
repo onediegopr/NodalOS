@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1098",
+  "go": [
+    "final pre-capture gate",
+    "confirmation eligibility matrix",
+    "caveat resolution criteria audit",
+    "caveat evidence delta",
+    "claim guard finalization",
+    "dry-run locks",
+    "next path decision"
+  ],
+  "no_go": [
+    "manual QA execution",
+    "safe evidence capture real",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability",
+    "product files",
+    "Bridge/CSP",
+    "release/store",
+    "suite-clean claim",
+    "confidence above 95 claim",
+    "caveat-resolved claim"
+  ]
+}

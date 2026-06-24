@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1092",
+  "required_to_resolve": [
+    "independent clean BrowserRuntimeSmoke isolated run",
+    "no skipped/inconclusive cleanup gate",
+    "no Gate 9 WebSocket aborted",
+    "repeatable clean run if required",
+    "full safety suite without external caveat",
+    "no product/Bridge/CSP drift",
+    "no secret/log leak",
+    "report updated",
+    "separate review before release/store claim"
+  ],
+  "caveat_resolved": false,
+  "confidence": 95,
+  "full_suite_clean_claim_allowed": false,
+  "current_conclusion": "CAVEAT_UNRESOLVED_REVIEW_ONLY"
+}

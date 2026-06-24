@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone_range": "M1089-M1100",
+  "decision": "OPERATOR_CONFIRMATION_PENDING_FINAL_PRE_CAPTURE_GATE_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "go": [
+    "final pre-capture gate",
+    "caveat criteria audit",
+    "dry-run lock finalization",
+    "next path decision"
+  ],
+  "no_go": [
+    "manual QA execution",
+    "safe evidence capture real",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability unlock",
+    "product files",
+    "Bridge/CSP",
+    "release/store",
+    "suite-clean claim",
+    "confidence above 95 claim"
+  ],
+  "operator_confirmation": "OPERATOR_CONFIRMATION_PENDING",
+  "safe_evidence_capture": "NOT_STARTED",
+  "caveat_resolved": false
+}

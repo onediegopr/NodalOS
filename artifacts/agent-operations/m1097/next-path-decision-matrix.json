@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1097",
+  "decisions": {
+    "OPERATOR_CONFIRMATION_PENDING": "M1101-M1112 - BrowserRuntimeSmoke Gate 9 Isolation Review OR Protocol Hardening Hold",
+    "OPERATOR_CONFIRMATION_GRANTED_FOR_SAFE_EVIDENCE_CAPTURE_ONLY_WITH_ACKNOWLEDGEMENTS": "M1101-M1112 - Safe Evidence Checklist Prep Gate, still no dangerous actions",
+    "BROWSERRUNTIME_SMOKE_DETERIORATES": "M1101-M1112 - BrowserRuntimeSmoke Caveat Containment Remediation"
+  },
+  "recommendation": "Prefer BrowserRuntimeSmoke Gate 9 Isolation Review before manual evidence capture path because caveat keeps causing repeated instability."
+}

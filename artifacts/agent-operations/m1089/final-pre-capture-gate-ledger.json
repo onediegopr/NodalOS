@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1089",
+  "operator_confirmation": "OPERATOR_CONFIRMATION_PENDING",
+  "safe_evidence_capture": "NOT_STARTED",
+  "manual_qa_execution": "NO-GO",
+  "manual_qa_trigger": "NOT_READY_EVIDENCE_PENDING",
+  "runtime_real": "NO-GO",
+  "pc_commander_real": "NO-GO",
+  "provider_cloud": "NO-GO",
+  "filesystem_browser_capability_unlock": "NO-GO",
+  "release_store": "NO-GO",
+  "product_files": "unchanged",
+  "bridge_csp": "unchanged",
+  "browserruntime_caveat": "visible_unresolved",
+  "full_suite_confidence": 95
+}
