@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M923",
+  "contract": "HOST_LIVENESS_EVIDENCE_TRACE_LINK",
+  "status": "TEST_ONLY_READY",
+  "hostLivenessEventCreated": true,
+  "linksRunEvidencePack": true,
+  "linksRunTrace": true,
+  "recordsStatus": true,
+  "errorRedacted": true,
+  "successInventedOnUnavailable": false,
+  "commandsExecuted": false,
+  "sideEffects": false
+}

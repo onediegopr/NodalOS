@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M922",
+  "contract": "LOCAL_HOST_LIVENESS_PROBE_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "probeModes": ["test_only", "no_op", "simulated"],
+  "startsArbitraryProcess": false,
+  "invokesShell": false,
+  "writesFilesystem": false,
+  "automatesBrowser": false,
+  "touchesBridgeCsp": false,
+  "unavailableRecordedWithoutSuccess": true,
+  "errorRedacted": true
+}

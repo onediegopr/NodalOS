@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M921",
+  "contract": "LOCAL_EXECUTABLE_HOST_DESCRIPTOR_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "machineScope": "local_only",
+  "runtimeMode": "test_only",
+  "productiveEnabled": false,
+  "commandChannelEnabledByDefault": false,
+  "arbitraryShellEnabled": false,
+  "filesystemWriteEnabled": false,
+  "browserAutomationEnabled": false,
+  "providerCloudEnabled": false,
+  "capabilityUnlockEnabled": false,
+  "releaseStoreEnabled": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

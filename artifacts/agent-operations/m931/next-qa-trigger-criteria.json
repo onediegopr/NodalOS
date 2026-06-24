@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M931",
+  "criteria": "NEXT_QA_TRIGGER",
+  "status": "TEST_ONLY_READY",
+  "rejectsBrowserOnly": true,
+  "rejectsDocsOnly": true,
+  "rejectsTraceOnly": true,
+  "requiresLocalHostVisible": true,
+  "requiresCommandChannelAllowlisted": true,
+  "requiresSafeNoopOrMetadataCommand": true,
+  "requiresDangerousCommandsBlocked": true,
+  "requiresQaChecklist": true
+}

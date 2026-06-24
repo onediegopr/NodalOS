@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M928",
+  "guard": "PC_COMMANDER_BOUNDARY_CLAIMS",
+  "status": "TEST_ONLY_READY",
+  "pcCommanderReadyClaimAllowed": false,
+  "shellEnabledClaimAllowed": false,
+  "filesystemWriteEnabledClaimAllowed": false,
+  "browserAutomationEnabledClaimAllowed": false,
+  "providerCloudEnabledClaimAllowed": false,
+  "capabilityUnlockEnabledClaimAllowed": false,
+  "releaseStoreClaimAllowed": false,
+  "productBridgeCspClaimAllowed": false
+}

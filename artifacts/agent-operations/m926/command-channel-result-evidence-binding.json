@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M926",
+  "contract": "COMMAND_CHANNEL_RESULT_EVIDENCE_BINDING",
+  "status": "TEST_ONLY_READY",
+  "unknownCommandDecision": "blocked",
+  "allowedNoopExecuted": false,
+  "metadataReadSideEffects": false,
+  "plannedFocusRealWindowFocused": false,
+  "linksEvidencePack": true,
+  "linksTrace": true,
+  "hasNoExecutionProof": true,
+  "hasRedactionProof": true,
+  "outputRedacted": true,
+  "runtimeUnlock": false
+}

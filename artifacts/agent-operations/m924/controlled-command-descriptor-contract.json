@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M924",
+  "contract": "CONTROLLED_COMMAND_DESCRIPTOR_FOUNDATION",
+  "status": "TEST_ONLY_READY",
+  "requiresAllowlist": true,
+  "unknownCommandsBlocked": true,
+  "destructiveCommandsBlocked": true,
+  "shellInvocationBlocked": true,
+  "filesystemWriteBlocked": true,
+  "browserAutomationBlocked": true,
+  "providerCloudBlocked": true,
+  "capabilityUnlockBlocked": true,
+  "releaseStoreBlocked": true,
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "payloadRedacted": true
+}
