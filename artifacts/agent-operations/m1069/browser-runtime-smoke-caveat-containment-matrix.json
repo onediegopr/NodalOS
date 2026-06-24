@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1069",
+  "caveat_visible_in_all_reports": true,
+  "any_full_suite_clean_claim_must_fail": true,
+  "any_confidence_above_95_claim_must_fail": true,
+  "any_release_store_claim_must_fail": true,
+  "any_manual_qa_ready_claim_must_fail": true,
+  "any_runtime_ready_claim_must_fail_unless_resolved": true,
+  "browser_runtime_smoke_caveat": "VISIBLE_EXTERNAL_CAVEAT"
+}

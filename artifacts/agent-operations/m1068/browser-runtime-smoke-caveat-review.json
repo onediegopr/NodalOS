@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1068",
+  "latest_isolated_result": "29 passed / 1 skipped-inconclusive / 0 failed",
+  "history": "Gate 9 WebSocket aborted history",
+  "external_smoke_caveat_visible": true,
+  "full_suite_confidence": "95%",
+  "full_suite_clean_claim_allowed": false,
+  "confidence_above_95_claim_allowed": false,
+  "release_store": "NO-GO",
+  "manual_qa_execution": "NO-GO",
+  "runtime_real": "NO-GO"
+}

@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1065",
+  "confirmation_status": "OPERATOR_CONFIRMATION_PENDING",
+  "confirmation_phrase_required": "OPERATOR_CONFIRMATION_GRANTED_FOR_SAFE_EVIDENCE_CAPTURE_ONLY",
+  "confirmation_phrase_not_detected_as_operational_instruction": true,
+  "route": "PROTOCOL_HARDENING_ONLY",
+  "safe_evidence_capture_status": "NOT_STARTED",
+  "manual_qa_execution": "NO-GO",
+  "distinctions": [
+    "phrase mentioned in prompt/rules is not operator confirmation",
+    "phrase stated as direct operator instruction is possible confirmation only after scope checks",
+    "prompt template references do not grant execution"
+  ]
+}

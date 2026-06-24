@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1067",
+  "required_for_future_valid_confirmation": [
+    "exact phrase",
+    "operator label redacted",
+    "scope acknowledged",
+    "forbidden actions acknowledged",
+    "BrowserRuntimeSmoke caveat acknowledged",
+    "no secrets capture acknowledged",
+    "abort matrix acknowledged",
+    "manual QA execution still NO-GO acknowledged",
+    "safe evidence checklist prep only acknowledged"
+  ],
+  "current_confirmation_status": "OPERATOR_CONFIRMATION_PENDING",
+  "manual_qa_execution": "NO-GO"
+}

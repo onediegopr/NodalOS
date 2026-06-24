@@ -1,0 +1,17 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1070",
+  "plan_status": "FUTURE_PLAN_ONLY",
+  "future_options": [
+    "keep quarantine visible",
+    "isolate Gate 9 cleanup path",
+    "separate product safety from external smoke cleanup",
+    "require independent clean run before confidence above 95",
+    "require no product/Bridge/CSP drift",
+    "require no secret/log leakage"
+  ],
+  "modifies_browser_runtime_smoke_now": false,
+  "product_files_modified": false,
+  "bridge_csp_modified": false,
+  "manual_qa_execution": "NO-GO"
+}

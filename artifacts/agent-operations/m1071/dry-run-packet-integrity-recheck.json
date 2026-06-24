@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1071",
+  "execution_started": false,
+  "manual_qa_passed": false,
+  "safe_evidence_capture": "NOT_STARTED",
+  "operator_confirmation_status": "OPERATOR_CONFIRMATION_PENDING",
+  "real_evidence_captured": false,
+  "host_smoke_executed": false,
+  "runtime_enabled": false,
+  "pc_commander_enabled": false,
+  "dry_run_packet_mode": "PROTOCOL_ONLY"
+}

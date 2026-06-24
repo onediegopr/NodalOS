@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1065-M1076",
+  "decision": "OPERATOR_CONFIRMATION_PENDING_PROTOCOL_HARDENING_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "route_taken": "PROTOCOL_HARDENING_ONLY",
+  "confirmation_status": "OPERATOR_CONFIRMATION_PENDING",
+  "go": [
+    "protocol hardening",
+    "confirmation pending ledger",
+    "ambiguous confirmation rejection",
+    "caveat containment",
+    "dry-run packet hardening",
+    "redaction/abort precheck tightening"
+  ],
+  "no_go": [
+    "manual QA execution",
+    "safe evidence capture real",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability",
+    "product files",
+    "Bridge/CSP",
+    "release/store"
+  ],
+  "safe_evidence_capture_status": "NOT_STARTED",
+  "browser_runtime_smoke_caveat": "VISIBLE_EXTERNAL_CAVEAT"
+}
