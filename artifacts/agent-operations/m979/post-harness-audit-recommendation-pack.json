@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M979",
+  "recommendation": "PEDIR AUDITORIA CLAUDE",
+  "beforeJumpsTo": [
+    "manual QA execution",
+    "runtime real",
+    "PC Commander real",
+    "host real interactive smoke",
+    "browser/Bridge changes",
+    "product files changes",
+    "release/store"
+  ],
+  "auditMustReview": [
+    "scope drift",
+    "test-only vs runtime real wording",
+    "manual QA gate",
+    "no-side-effect proofs",
+    "dangerous command blocking",
+    "redaction/leak guard",
+    "product files unchanged",
+    "Bridge/CSP unchanged",
+    "BrowserRuntimeSmoke caveat",
+    "contradicciones entre artifacts",
+    "tests superficiales/tautologicos",
+    "riesgos de convertir harness en ejecucion"
+  ]
+}

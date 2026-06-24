@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M971",
+  "hostVisibleIndicator": "host-visible-indicator",
+  "livenessIndicator": "liveness-visible-indicator",
+  "runId": "run-harness-1",
+  "commandId": "cmd-safe-noop-1",
+  "adapterId": "adapter-controlled-noop-1",
+  "safeNoOpResult": "completed_noop_fixture",
+  "metadataFixtureResult": "completed_metadata_fixture",
+  "dangerousBlockedResult": "blocked_dangerous_fixture",
+  "redactionStatus": "redacted",
+  "rawSecrets": false,
+  "rawCredentials": false,
+  "fullUnredactedSensitivePaths": false,
+  "unsafePayloads": false,
+  "shellOutputReal": false,
+  "filesystemScanOutputReal": false,
+  "providerCloudLogsReal": false,
+  "browserAutomationProductiveLogs": false
+}

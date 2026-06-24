@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M970",
+  "harnessId": "harness-m970-1",
+  "harnessMode": "PrepOnly",
+  "manualQaStatus": "NOT_READY_EVIDENCE_PENDING",
+  "caveatStatus": "OPEN_BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED_VISIBLE",
+  "noExecutionBoundary": {
+    "shellInvocations": 0,
+    "filesystemWriteInvocations": 0,
+    "filesystemReadRealInvocations": 0,
+    "networkInvocations": 0,
+    "browserAutomationInvocations": 0,
+    "providerCloudInvocations": 0,
+    "credentialAccessInvocations": 0,
+    "processMutationInvocations": 0,
+    "bridgeCspModifications": 0,
+    "productFilesModifications": 0
+  }
+}

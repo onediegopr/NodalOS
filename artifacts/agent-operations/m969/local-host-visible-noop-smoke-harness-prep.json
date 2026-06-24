@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M969",
+  "harnessMode": "PrepOnly",
+  "executionMode": "ProtocolOnly",
+  "foundationMode": "TestOnly",
+  "manualQaExecution": "NO-GO",
+  "manualQaTrigger": "NOT_READY_EVIDENCE_PENDING",
+  "pcCommanderReal": "NO-GO",
+  "productiveRuntime": "NO-GO",
+  "allowedCommandKinds": [
+    "SafeNoOp",
+    "MetadataFixtureOnly"
+  ],
+  "forbiddenCommandKinds": [
+    "shell",
+    "filesystem write",
+    "filesystem scan",
+    "network",
+    "browser automation",
+    "provider/cloud",
+    "credentials",
+    "process mutation",
+    "release/store"
+  ],
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

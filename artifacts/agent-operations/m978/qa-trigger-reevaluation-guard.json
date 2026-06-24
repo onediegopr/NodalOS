@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M978",
+  "manualQaTrigger": "NOT_READY_EVIDENCE_PENDING",
+  "manualQaExecution": "NO-GO",
+  "humanEvidenceCaptureGate": "READY",
+  "harnessPrep": "READY",
+  "pcCommanderReal": "NO-GO",
+  "productiveRuntime": "NO-GO",
+  "futureEligibleWithoutHumanEvidence": false
+}
