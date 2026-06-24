@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1013",
+  "recommendationByDecision": {
+    "RE_AUDIT_GO": "M1017-M1028 - Manual QA Evidence Capture Protocol Execution Prep, still NO-GO until operator confirmation",
+    "RE_AUDIT_CONDITIONAL_GO": "M1017-M1028 - Re-Audit Followup Remediation Block",
+    "RE_AUDIT_NO_GO": "M1017-M1028 - Safety Freeze + Re-Audit Blocker Remediation"
+  }
+}

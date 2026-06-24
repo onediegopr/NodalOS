@@ -1,0 +1,36 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1005",
+  "scope": "re-audit-package-only",
+  "baseCommit": "64666a587e208e17d81b0ba181741e6ac4e52485",
+  "findingsInScope": [
+    "F-001",
+    "F-002",
+    "F-003"
+  ],
+  "f001ReviewItems": [
+    "RecordingSideEffectSink",
+    "NoSideEffectProof.FromSink(sink)",
+    "clean sink positive test",
+    "negative side-effect injection tests",
+    "descriptor vs measured proof wording"
+  ],
+  "f002ReviewItems": [
+    "structured forbidden-field redactor",
+    "pattern detection",
+    "realistic-shaped fake adversarial payloads",
+    "leak guard regression",
+    "safe summary behavior"
+  ],
+  "f003ReviewItems": [
+    "classification-only wording",
+    "no runtime interceptor implemented",
+    "DefaultDenyCommandInterceptor future contract",
+    "HELD_FOR_REAL_CHANNEL status"
+  ],
+  "manualQaExecution": "NO-GO",
+  "runtimeReal": "NO-GO",
+  "pcCommanderReal": "NO-GO",
+  "releaseStore": "NO-GO",
+  "browserRuntimeSmokeCaveat": "OPEN_BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED_VISIBLE"
+}

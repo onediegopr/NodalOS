@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1011",
+  "manualQaExecution": "NO-GO",
+  "manualQaTrigger": "NOT_READY_EVIDENCE_PENDING",
+  "manualQaHold": "MANUAL_QA_HOLD_ACTIVE",
+  "reAuditDoesNotAutoUnlockQa": true,
+  "nextBlockOnlyIfAccepted": "protocol/execution-prep only"
+}
