@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M791",
+  "status": "READY",
+  "collector": "InMemoryEvidenceLedger",
+  "location": "tests/OneBrain.Safety.Tests/SimulatedDryRunOrchestrator.cs",
+  "scope": "test-only",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

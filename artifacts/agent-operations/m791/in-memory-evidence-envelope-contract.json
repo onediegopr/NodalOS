@@ -1,0 +1,25 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M791",
+  "status": "READY",
+  "fields": [
+    "EnvelopeId",
+    "DryRunId",
+    "RequestId",
+    "CapabilityName",
+    "Decision",
+    "SimulationOnly",
+    "RedactionProof",
+    "LedgerEventRefs",
+    "NoExecutionProof"
+  ],
+  "simulationOnly": true,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false
+}

@@ -1,0 +1,9 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M793",
+  "recommendedNextMilestone": "M794-M796 — Capability-Specific Fake Executors In-Memory Plan + Collector Enforcement Tests",
+  "scope": "tests/safety fake-only in-memory",
+  "productiveUnlockAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false
+}

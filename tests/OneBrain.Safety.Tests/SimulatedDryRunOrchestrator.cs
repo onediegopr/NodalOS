@@ -82,7 +82,100 @@ public sealed record NoExecutionProof(
     bool StoreSubmissionInvoked,
     bool SignedZipCreated,
     bool ProductFilesModified,
-    bool BridgeCspModified);
+    bool BridgeCspModified)
+{
+    public bool ActualExecutionPerformed => false;
+    public bool LiveCallPerformed => ProviderClientInvoked;
+    public bool FilesystemWritePerformed => FilesystemWriterInvoked;
+    public bool BrowserAutomationPerformed => BrowserAutomationInvoked;
+    public bool CapabilityUnlocked => CapabilityUnlockInvoked;
+    public bool PublicReleasePerformed => PublicReleaseInvoked;
+    public bool StoreSubmissionPerformed => StoreSubmissionInvoked;
+    public bool SignedPublicZipCreated => SignedZipCreated;
+    public int SideEffectSinkInvocations => 0;
+}
+
+public sealed record RedactionProof(
+    bool SecretsIncluded,
+    bool CredentialsIncluded,
+    bool TokensIncluded,
+    bool CookiesIncluded,
+    bool RawUserDataIncluded,
+    bool RawLogsIncluded,
+    bool ProviderKeysIncluded,
+    bool PrivateKeysIncluded,
+    bool BrowserSessionDataIncluded);
+
+public sealed record LedgerEvent(
+    string EventId,
+    string EventType,
+    string RequestId,
+    string DryRunId,
+    string CapabilityName,
+    bool SimulationOnly,
+    string EvidenceEnvelopeRef,
+    bool ActualExecutionPerformed,
+    bool LiveCallPerformed,
+    bool FilesystemWritePerformed,
+    bool BrowserAutomationPerformed,
+    bool CapabilityUnlocked,
+    bool PublicReleasePerformed,
+    bool StoreSubmissionPerformed,
+    bool SignedPublicZipCreated);
+
+public sealed record EvidenceEnvelope(
+    string EnvelopeId,
+    string DryRunId,
+    string RequestId,
+    string CapabilityName,
+    SimulatedDecision Decision,
+    bool SimulationOnly,
+    RedactionProof RedactionProof,
+    IReadOnlyList<string> LedgerEventRefs,
+    NoExecutionProof NoExecutionProof,
+    bool ActualExecutionPerformed,
+    bool LiveCallPerformed,
+    bool FilesystemWritePerformed,
+    bool BrowserAutomationPerformed,
+    bool CapabilityUnlocked,
+    bool PublicReleasePerformed,
+    bool StoreSubmissionPerformed,
+    bool SignedPublicZipCreated);
+
+public sealed class InMemoryEvidenceLedger
+{
+    private readonly List<LedgerEvent> _events = [];
+
+    public IReadOnlyList<LedgerEvent> Events => _events;
+
+    public LedgerEvent Append(
+        string eventType,
+        string requestId,
+        string dryRunId,
+        string capabilityName,
+        string evidenceEnvelopeRef)
+    {
+        var item = new LedgerEvent(
+            EventId: $"evt-{_events.Count + 1:D3}-{eventType.ToLowerInvariant()}",
+            EventType: eventType,
+            RequestId: requestId,
+            DryRunId: dryRunId,
+            CapabilityName: capabilityName,
+            SimulationOnly: true,
+            EvidenceEnvelopeRef: evidenceEnvelopeRef,
+            ActualExecutionPerformed: false,
+            LiveCallPerformed: false,
+            FilesystemWritePerformed: false,
+            BrowserAutomationPerformed: false,
+            CapabilityUnlocked: false,
+            PublicReleasePerformed: false,
+            StoreSubmissionPerformed: false,
+            SignedPublicZipCreated: false);
+
+        _events.Add(item);
+        return item;
+    }
+}
 
 public sealed record SimulatedRuntimeResult(
     SimulatedDecision Decision,
@@ -90,7 +183,25 @@ public sealed record SimulatedRuntimeResult(
     bool LedgerProjected,
     bool EvidenceEnvelopeCreated,
     bool RedactionProofCreated,
-    NoExecutionProof Proof);
+    NoExecutionProof Proof,
+    string RuntimeType,
+    string FixtureType,
+    EvidenceEnvelope EvidenceEnvelope,
+    IReadOnlyList<LedgerEvent> LedgerEvents,
+    RedactionProof RedactionProof)
+{
+    public int SideEffectSinkInvocations => Proof.SideEffectSinkInvocations;
+    public bool RealExecutorInvoked => Proof.RealExecutorInvoked;
+    public bool ProviderClientInvoked => Proof.ProviderClientInvoked;
+    public bool FilesystemWriterInvoked => Proof.FilesystemWriterInvoked;
+    public bool BrowserAutomationInvoked => Proof.BrowserAutomationInvoked;
+    public bool CapabilityUnlockInvoked => Proof.CapabilityUnlockInvoked;
+    public bool PublicReleaseInvoked => Proof.PublicReleaseInvoked;
+    public bool StoreSubmissionInvoked => Proof.StoreSubmissionInvoked;
+    public bool SignedZipCreated => Proof.SignedZipCreated;
+    public bool ProductFilesModified => Proof.ProductFilesModified;
+    public bool BridgeCspModified => Proof.BridgeCspModified;
+}
 
 /// <summary>
 /// Fake-only, in-memory simulated dry-run orchestrator. Produces a decision plus
@@ -102,6 +213,7 @@ public sealed class SimulatedDryRunOrchestrator
 {
     public const string RequiredMode = "SIMULATED_DRY_RUN";
     public const string RequiredFixtureType = "SIMULATED_FAKE_ONLY";
+    public const string RuntimeType = "SIMULATED_FAKE_ONLY_IN_MEMORY";
 
     private readonly ISimulatedSideEffectSink _sink;
 
@@ -115,38 +227,106 @@ public sealed class SimulatedDryRunOrchestrator
         _ = _sink;
 
         if (!string.Equals(request.RequestedMode, RequiredMode, StringComparison.Ordinal))
-            return Deny("requestedMode must be SIMULATED_DRY_RUN");
+            return BuildResult(
+                request,
+                SimulatedDecision.Deny,
+                "requestedMode must be SIMULATED_DRY_RUN",
+                "SIMULATED_ACTION_DENIED");
 
         if (!string.Equals(request.FixtureType, RequiredFixtureType, StringComparison.Ordinal))
-            return Deny("fixtureType must be SIMULATED_FAKE_ONLY");
+            return BuildResult(
+                request,
+                SimulatedDecision.Deny,
+                "fixtureType must be SIMULATED_FAKE_ONLY",
+                "SIMULATED_ACTION_DENIED");
 
         if (request.IsProhibitedAction)
-            return Deny($"prohibited action denied: {request.CapabilityName}");
+            return BuildResult(
+                request,
+                SimulatedDecision.Deny,
+                $"prohibited action denied: {request.CapabilityName}",
+                "SIMULATED_ACTION_DENIED");
 
         if (request.RequiresManualApproval && !request.ManualApprovalGranted)
-            return new SimulatedRuntimeResult(
+            return BuildResult(
+                request,
                 SimulatedDecision.RequireManualApproval,
                 $"manual approval required: {request.CapabilityName}",
-                LedgerProjected: true,
-                EvidenceEnvelopeCreated: true,
-                RedactionProofCreated: true,
-                Proof: CleanProof());
+                "SIMULATED_MANUAL_APPROVAL_REQUIRED");
 
-        return new SimulatedRuntimeResult(
+        return BuildResult(
+            request,
             SimulatedDecision.AllowSimulatedDryRun,
             $"simulated dry-run allowed: {request.CapabilityName}",
-            LedgerProjected: true,
-            EvidenceEnvelopeCreated: true,
-            RedactionProofCreated: true,
-            Proof: CleanProof());
+            "SIMULATED_ACTION_ALLOWED_FOR_DRY_RUN");
     }
 
-    private static SimulatedRuntimeResult Deny(string reason) =>
-        new(SimulatedDecision.Deny, reason,
-            LedgerProjected: true,
+    private static SimulatedRuntimeResult BuildResult(
+        SimulatedRequest request,
+        SimulatedDecision decision,
+        string reason,
+        string decisionEventType)
+    {
+        var requestId = $"req-{request.CapabilityName.ToLowerInvariant().Replace(' ', '-')}";
+        var dryRunId = $"dry-{requestId}";
+        var envelopeId = $"env-{requestId}";
+        var ledger = new InMemoryEvidenceLedger();
+
+        ledger.Append("SIMULATED_DRY_RUN_REQUESTED", requestId, dryRunId, request.CapabilityName, envelopeId);
+        ledger.Append("SIMULATED_POLICY_GATE_EVALUATED", requestId, dryRunId, request.CapabilityName, envelopeId);
+        if (decision == SimulatedDecision.RequireManualApproval)
+            ledger.Append("SIMULATED_MANUAL_APPROVAL_EVALUATED", requestId, dryRunId, request.CapabilityName, envelopeId);
+
+        ledger.Append(decisionEventType, requestId, dryRunId, request.CapabilityName, envelopeId);
+        ledger.Append("SIMULATED_EVIDENCE_ENVELOPE_CREATED", requestId, dryRunId, request.CapabilityName, envelopeId);
+        ledger.Append("SIMULATED_REDACTION_PROOF_CREATED", requestId, dryRunId, request.CapabilityName, envelopeId);
+        ledger.Append("SIMULATED_NO_EXECUTION_PROOF_CREATED", requestId, dryRunId, request.CapabilityName, envelopeId);
+
+        var proof = CleanProof();
+        var redactionProof = CleanRedactionProof();
+        var envelope = new EvidenceEnvelope(
+            EnvelopeId: envelopeId,
+            DryRunId: dryRunId,
+            RequestId: requestId,
+            CapabilityName: request.CapabilityName,
+            Decision: decision,
+            SimulationOnly: true,
+            RedactionProof: redactionProof,
+            LedgerEventRefs: ledger.Events.Select(static x => x.EventId).ToArray(),
+            NoExecutionProof: proof,
+            ActualExecutionPerformed: false,
+            LiveCallPerformed: false,
+            FilesystemWritePerformed: false,
+            BrowserAutomationPerformed: false,
+            CapabilityUnlocked: false,
+            PublicReleasePerformed: false,
+            StoreSubmissionPerformed: false,
+            SignedPublicZipCreated: false);
+
+        return new SimulatedRuntimeResult(
+            decision,
+            reason,
+            LedgerProjected: ledger.Events.Count > 0,
             EvidenceEnvelopeCreated: true,
             RedactionProofCreated: true,
-            Proof: CleanProof());
+            Proof: proof,
+            RuntimeType: RuntimeType,
+            FixtureType: request.FixtureType,
+            EvidenceEnvelope: envelope,
+            LedgerEvents: ledger.Events.ToArray(),
+            RedactionProof: redactionProof);
+    }
+
+    private static RedactionProof CleanRedactionProof() => new(
+        SecretsIncluded: false,
+        CredentialsIncluded: false,
+        TokensIncluded: false,
+        CookiesIncluded: false,
+        RawUserDataIncluded: false,
+        RawLogsIncluded: false,
+        ProviderKeysIncluded: false,
+        PrivateKeysIncluded: false,
+        BrowserSessionDataIncluded: false);
 
     private static NoExecutionProof CleanProof() => new(
         SimulationOnly: true,

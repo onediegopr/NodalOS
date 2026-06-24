@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M792",
+  "decision": "REQUIRE_MANUAL_APPROVAL",
+  "approvalGateEventRequired": true,
+  "evidenceEnvelopeObject": "READY",
+  "redactionProofObject": "READY",
+  "noExecutionProofObject": "READY",
+  "sideEffectSinkInvocations": 0
+}

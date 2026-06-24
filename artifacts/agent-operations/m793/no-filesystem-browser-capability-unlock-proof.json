@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M793",
+  "filesystemWriteUnlock": "DISABLED",
+  "browserAutomationAction": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false
+}

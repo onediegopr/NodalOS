@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M792",
+  "decision": "DENY",
+  "evidenceEnvelopeObject": "READY",
+  "ledgerEventsMinimumCount": 3,
+  "redactionProofObject": "READY",
+  "noExecutionProofObject": "READY",
+  "sideEffectSinkInvocations": 0
+}

@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M792",
+  "status": "READY",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "runtimeTypeMeaning": "describes the in-memory simulated execution environment",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "fixtureTypeMeaning": "describes the fake-only input fixture",
+  "contradiction": false
+}

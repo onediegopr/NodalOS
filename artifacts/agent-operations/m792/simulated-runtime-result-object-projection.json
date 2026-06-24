@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M792",
+  "status": "READY",
+  "simulatedRuntimeResultObjectProjection": "READY",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "fixtureType": "SIMULATED_FAKE_ONLY",
+  "evidenceEnvelopeObject": "READY",
+  "ledgerEventObjects": "READY",
+  "redactionProofObject": "READY",
+  "noExecutionProofObject": "READY",
+  "sideEffectSinkInvocations": 0
+}

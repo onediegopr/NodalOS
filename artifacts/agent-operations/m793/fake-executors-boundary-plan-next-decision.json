@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M793",
+  "status": "READY",
+  "fakeExecutorBoundaryPlan": "READY",
+  "runtimeProductiveExecution": "DISABLED",
+  "providerCloudLiveCalls": "DISABLED",
+  "filesystemBrowserCapabilityUnlock": "DISABLED",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "recommendedNextMilestone": "M794-M796 — Capability-Specific Fake Executors In-Memory Plan + Collector Enforcement Tests"
+}

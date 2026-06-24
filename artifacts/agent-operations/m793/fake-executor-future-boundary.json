@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M793",
+  "status": "READY",
+  "fakeExecutorsMayBeIntroducedOnlyAs": "test-only in-memory adapters",
+  "providerCloudCallsAllowed": false,
+  "filesystemWritesAllowed": false,
+  "browserControlAllowed": false,
+  "capabilityUnlockAllowed": false,
+  "productFilesModificationAllowed": false,
+  "bridgeCspModificationAllowed": false,
+  "outputOnlyThroughInMemoryEvidenceLedger": true
+}

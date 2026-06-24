@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M791",
+  "status": "READY",
+  "collector": "InMemoryEvidenceLedger",
+  "stores": ["LedgerEvent"],
+  "appendOnly": true,
+  "testOnly": true,
+  "realExecutionAllowed": false,
+  "sideEffectSinkInvocations": 0
+}

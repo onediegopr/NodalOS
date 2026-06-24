@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M792",
+  "decision": "ALLOW_SIMULATED_DRY_RUN",
+  "evidenceEnvelopeObject": "READY",
+  "ledgerEventsMinimumCount": 4,
+  "redactionProofObject": "READY",
+  "noExecutionProofObject": "READY",
+  "sideEffectSinkInvocations": 0
+}
