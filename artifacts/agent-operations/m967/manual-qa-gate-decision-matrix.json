@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M967",
+  "matrix": "ManualQaGateDecisionMatrix",
+  "decisions": [
+    "NO-GO: missing evidence",
+    "NO-GO: caveat undocumented",
+    "NO-GO: product files changed",
+    "NO-GO: Bridge/CSP changed",
+    "NO-GO: dangerous command not blocked",
+    "NO-GO: side-effect proof missing",
+    "CONDITIONAL: protocol ready but evidence pending",
+    "GO-FUTURE: all evidence captured by human operator"
+  ],
+  "canDeclareQaReadyFromTestsDocsArtifactsOnly": false,
+  "manualQaExecution": "NO-GO",
+  "manualQaTrigger": "NOT_READY / evidence pending"
+}

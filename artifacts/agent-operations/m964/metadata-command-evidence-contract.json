@@ -1,0 +1,25 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M964",
+  "contract": "MetadataCommandEvidenceContract",
+  "metadataSource": "fixture/in-memory/test-only",
+  "realFilesystemRead": false,
+  "realFilesystemWrite": false,
+  "realNetworkCall": false,
+  "realShell": false,
+  "realProviderCloud": false,
+  "realBrowserAutomation": false,
+  "blockedAttempts": [
+    "leer path real",
+    "hacer directory listing real",
+    "abrir archivo real",
+    "leer env vars",
+    "leer credenciales",
+    "leer registry",
+    "usar shell",
+    "usar network",
+    "usar browser automation",
+    "usar provider/cloud",
+    "hacer process inspection real"
+  ]
+}

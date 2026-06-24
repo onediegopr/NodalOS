@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M965",
+  "protocol": "DangerousCommandBlockEvidenceProtocol",
+  "requiredEvidenceFields": ["blocked decision", "reason", "risk category", "trace id", "evidence ref", "redaction status", "side effects = zero"],
+  "coveredCases": [
+    "unknown command",
+    "shell payload",
+    "powershell/cmd/bash hint",
+    "filesystem write hint",
+    "filesystem delete hint",
+    "filesystem scan hint",
+    "network call hint",
+    "browser automation hint",
+    "provider/cloud hint",
+    "credential/env var hint",
+    "process kill hint",
+    "registry modification hint",
+    "privilege escalation hint",
+    "PRODUCTIVE_ENABLED claim",
+    "PC Commander real claim",
+    "release/store claim",
+    "Bridge/CSP modification claim",
+    "product files modification claim"
+  ],
+  "expectedDecision": "blocked",
+  "sideEffects": 0
+}

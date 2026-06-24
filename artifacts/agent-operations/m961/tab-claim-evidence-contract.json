@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M961",
+  "contract": "TabClaimEvidenceContract",
+  "integratesWith": "M909-M920 permissive browser claim foundation",
+  "fields": [
+    "tab claim id",
+    "claim lifecycle status",
+    "claim evidence ref",
+    "redacted browser claim event",
+    "run link",
+    "trace link",
+    "operator visible status"
+  ],
+  "browserAutomationProductive": false,
+  "pageControlReal": false,
+  "browserInjection": false,
+  "extensionRelease": false,
+  "bridgeCspModification": false
+}

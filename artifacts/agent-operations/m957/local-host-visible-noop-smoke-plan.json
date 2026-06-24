@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M957",
+  "plan": "Local Host Visible No-Op Smoke Plan",
+  "scope": "protocol-only/foundation/test-only",
+  "futureValidationItems": [
+    "local host visible",
+    "liveness visible",
+    "run visible",
+    "command channel visible",
+    "safe no-op command visible",
+    "metadata command visible",
+    "trace/evidence visible",
+    "dangerous commands blocked",
+    "redaction visible",
+    "no-side-effect proof visible"
+  ],
+  "manualQaExecution": "NO-GO",
+  "pcCommanderReal": "NO-GO",
+  "productiveRuntime": "NO-GO",
+  "executionMode": "ProtocolOnly / TestOnly",
+  "smokeMode": "NoOpOnly",
+  "runtimeRealCreated": false,
+  "smokeRealExecuted": false,
+  "hostRealOpened": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

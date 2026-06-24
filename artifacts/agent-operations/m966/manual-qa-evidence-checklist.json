@@ -1,0 +1,35 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M966",
+  "checklist": "ManualQaEvidenceChecklist",
+  "requiredBeforeManualQa": [
+    "local host visible",
+    "bridge connected evidence",
+    "run visible",
+    "tab claim visible",
+    "trace/evidence visible",
+    "safe no-op logs",
+    "metadata safe logs",
+    "dangerous blocked evidence",
+    "redaction proof",
+    "no-side-effect proof",
+    "external smoke caveat documented",
+    "product files unchanged",
+    "Bridge/CSP unchanged"
+  ],
+  "forbiddenDuringQa": [
+    "shell arbitrary",
+    "filesystem write",
+    "filesystem mutation",
+    "browser automation productive",
+    "provider/cloud",
+    "network call real",
+    "process kill",
+    "credential access",
+    "capability unlock",
+    "release/store",
+    "PC Commander real"
+  ],
+  "manualQaTrigger": "NOT_READY / PROTOCOL_READY / EVIDENCE_REQUIRED",
+  "manualQaExecuted": false
+}

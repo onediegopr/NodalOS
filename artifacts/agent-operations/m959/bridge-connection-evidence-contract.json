@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M959",
+  "contract": "BridgeConnectionEvidenceContract",
+  "bridgeStatus": "future_evidence_required",
+  "connectionState": "not_connected_by_this_block",
+  "allowedChannel": "controlled_noop_evidence_channel",
+  "disallowedChannel": "productive_browser_automation_channel",
+  "redactionStatus": "redacted",
+  "traceId": "trace-bridge-evidence-1",
+  "productBridgeModified": false,
+  "cspModified": false,
+  "productiveConnectionCreated": false,
+  "browserAutomationProductiveEnabled": false
+}
