@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M891",
+  "assertionType": "TYPED_ARTIFACT_ASSERTIONS",
+  "status": "TEST_ONLY_READY",
+  "criticalArtifacts": [
+    "artifacts/agent-operations/m873-m884/simulated-runtime-foundation-freeze-lock-go-no-go.json",
+    "artifacts/agent-operations/m874/simulated-foundation-freeze-lock-contract.json",
+    "artifacts/agent-operations/m871/focused-re-audit-result.json",
+    "artifacts/agent-operations/m863-m868/audit-quality-remediation-go-no-go.json"
+  ],
+  "parsingMode": "JsonDocument typed property assertions",
+  "semanticAssertions": [
+    "decision exact",
+    "booleans exact",
+    "productFilesModified false",
+    "bridgeCspModified false",
+    "productiveRuntime false",
+    "providerCloud false",
+    "release/store NO-GO"
+  ]
+}

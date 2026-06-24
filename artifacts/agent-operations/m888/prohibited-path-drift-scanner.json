@@ -1,0 +1,32 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M888",
+  "scannerType": "REAL_PATH_DRIFT_SCANNER_TEST_ONLY",
+  "status": "TEST_ONLY_READY",
+  "method": "Evaluate real changed file paths against allowlist and denylist path prefixes.",
+  "allowedPathPrefixes": [
+    "tests/OneBrain.Safety.Tests/",
+    "docs/reports/",
+    "artifacts/agent-operations/"
+  ],
+  "prohibitedPathPrefixes": [
+    "browser-extension/",
+    "src/",
+    "release/",
+    "store/",
+    "packaging/",
+    "provider/",
+    "cloud/",
+    "filesystem-write/",
+    "browser-automation/",
+    "capability-unlock/"
+  ],
+  "bridgeCspPathPatterns": [
+    "Bridge",
+    "CSP",
+    "content-security-policy"
+  ],
+  "currentResult": "PASS_ALLOWED_PATHS_ONLY",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

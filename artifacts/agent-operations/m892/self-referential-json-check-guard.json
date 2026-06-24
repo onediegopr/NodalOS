@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M892",
+  "guardType": "SELF_REFERENTIAL_JSON_CHECK_GUARD",
+  "status": "TEST_ONLY_READY",
+  "criticalArtifactsRequireTypedAssertions": true,
+  "docSmokeStringChecksAllowedAsNonBlocking": true,
+  "remainingSelfChecksStatus": "NON_BLOCKING_DOC_SMOKE_ONLY",
+  "reportsRemainingSelfChecks": true
+}

@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M885",
+  "diagnosisType": "BROWSER_RUNTIME_SMOKE_CLEANUP_DIAGNOSIS",
+  "status": "TEST_ONLY_READY",
+  "failingTest": "BrowserRuntimeSmokeCleanupLeavesNoManagedProcessPortOrProfile",
+  "observedFailure": "WaitForManagedCdpTempDirectoriesToClearAsync did not clear onebrain-cdp-* temp profile directories after smoke cleanup gate passed.",
+  "identifiedCauses": [
+    "temp directory residual onebrain-cdp-*",
+    "profile cleanup tardy or locked by external browser/OS timing",
+    "cleanup assertion too immediate for environment state"
+  ],
+  "notIdentifiedAsRootCause": [
+    "product runtime unlock",
+    "provider/cloud live call",
+    "Bridge/CSP modification",
+    "public release"
+  ],
+  "productRuntimeUnlock": false,
+  "bridgeCspModification": false,
+  "productFilesModified": false
+}

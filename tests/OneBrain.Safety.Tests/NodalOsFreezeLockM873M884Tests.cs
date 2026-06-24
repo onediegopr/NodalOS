@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace OneBrain.Safety.Tests;
@@ -288,18 +289,19 @@ public sealed class NodalOsFreezeLockM873M884Tests
     [TestMethod]
     public void go_no_go_records_freeze_lock_ready_without_productive_release_or_product_bridge_claims()
     {
-        var content = ReadAll(GoNoGoPath);
+        using var doc = JsonDocument.Parse(ReadAll(GoNoGoPath));
+        var root = doc.RootElement;
 
-        StringAssert.Contains(content, "\"decision\": \"SIMULATED_RUNTIME_FOUNDATION_FREEZE_LOCK_READY\"");
-        StringAssert.Contains(content, "\"simulatedRuntimeFoundation\": \"LOCKED_TEST_ONLY_BASELINE\"");
-        StringAssert.Contains(content, "\"productiveRuntimeUnlock\": \"0%\"");
-        StringAssert.Contains(content, "\"providerCloudLiveCalls\": \"0%\"");
-        StringAssert.Contains(content, "\"filesystemBrowserCapabilityUnlock\": \"0%\"");
-        StringAssert.Contains(content, "\"publicRelease\": \"0% / NO-GO\"");
-        StringAssert.Contains(content, "\"chromeWebStore\": \"0% / NO-GO\"");
-        StringAssert.Contains(content, "\"signedPublicZipCreated\": false");
-        StringAssert.Contains(content, "\"productFilesModified\": false");
-        StringAssert.Contains(content, "\"bridgeCspModified\": false");
+        Assert.AreEqual("SIMULATED_RUNTIME_FOUNDATION_FREEZE_LOCK_READY_WITH_FLAKY_OR_IO_CAVEAT", root.GetProperty("decision").GetString());
+        Assert.AreEqual("LOCKED_TEST_ONLY_BASELINE", root.GetProperty("simulatedRuntimeFoundation").GetString());
+        Assert.AreEqual("0%", root.GetProperty("productiveRuntimeUnlock").GetString());
+        Assert.AreEqual("0%", root.GetProperty("providerCloudLiveCalls").GetString());
+        Assert.AreEqual("0%", root.GetProperty("filesystemBrowserCapabilityUnlock").GetString());
+        Assert.AreEqual("0% / NO-GO", root.GetProperty("publicRelease").GetString());
+        Assert.AreEqual("0% / NO-GO", root.GetProperty("chromeWebStore").GetString());
+        Assert.IsFalse(root.GetProperty("signedPublicZipCreated").GetBoolean());
+        Assert.IsFalse(root.GetProperty("productFilesModified").GetBoolean());
+        Assert.IsFalse(root.GetProperty("bridgeCspModified").GetBoolean());
     }
 
     private static readonly string[] NoGoFalseFields =

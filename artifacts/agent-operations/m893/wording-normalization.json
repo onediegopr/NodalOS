@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M893",
+  "normalizationType": "SIMULATED_TEST_ONLY_READINESS_WORDING",
+  "status": "TEST_ONLY_READY",
+  "rules": [
+    "READY claims in simulated runtime contexts must be SIMULATED_READY or TEST_ONLY_READY unless they are canonical decisions.",
+    "Product ready, release ready, Store ready, and productive runtime ready claims are forbidden.",
+    "NO-GO wording is preserved."
+  ],
+  "forbiddenClaims": [
+    "PRODUCT_READY",
+    "PUBLIC_RELEASE_READY",
+    "CHROME_WEB_STORE_READY",
+    "PRODUCTIVE_RUNTIME_READY"
+  ],
+  "canonicalDecisionsIntentionallyUnchanged": [
+    "SIMULATED_RUNTIME_FOUNDATION_FREEZE_LOCK_READY_WITH_FLAKY_OR_IO_CAVEAT",
+    "REAUDIT_READY_FOR_FREEZE_LOCK"
+  ]
+}

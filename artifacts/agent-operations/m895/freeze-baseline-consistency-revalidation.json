@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M895",
+  "revalidationType": "FREEZE_BASELINE_CONSISTENCY_REVALIDATION",
+  "status": "TEST_ONLY_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "freezeLockStillSimulatedTestOnly": true,
+  "runtimeProductive": false,
+  "providerCloud": false,
+  "filesystemBrowserCapabilityUnlock": false,
+  "releaseStore": "NO-GO",
+  "productFilesModified": false,
+  "bridgeCspModified": false,
+  "deferredFindingsRegisterUpdated": true,
+  "pathDriftScan": "TEST_ONLY_READY",
+  "typedAssertions": "TEST_ONLY_READY",
+  "wordingPrecision": "TEST_ONLY_READY",
+  "browserRuntimeSmokeCleanupStatus": "BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED"
+}

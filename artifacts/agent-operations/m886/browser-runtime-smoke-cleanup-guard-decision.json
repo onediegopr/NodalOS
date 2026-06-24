@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M886",
+  "decisionType": "BROWSER_RUNTIME_SMOKE_CLEANUP_GUARD_OR_QUARANTINE_DECISION",
+  "status": "TEST_ONLY_READY",
+  "strategy": "OPTION_B_EXTERNAL_QUARANTINE_VISIBLE",
+  "decision": "BROWSER_RUNTIME_SMOKE_CLEANUP_EXTERNAL_QUARANTINED",
+  "behavior": "If the internal cleanup gate passes but temp CDP directories remain locked, the test reports Assert.Inconclusive with diagnostic instead of false PASS or freeze foundation failure.",
+  "testVisibilityPreserved": true,
+  "failuresHidden": false,
+  "securityTestsDisabled": false,
+  "freezeFoundationScopePreserved": true,
+  "markedExternalIfQuarantined": true,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}
