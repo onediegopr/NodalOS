@@ -1,0 +1,13 @@
+{
+  "appliesToEveryEnvelope": true,
+  "simulationOnly": true,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedPublicZipCreated": false,
+  "productiveExecutionAllowed": false
+}

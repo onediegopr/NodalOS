@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M777",
+  "decision": "EVIDENCE_ENVELOPE_PROJECTION_READY",
+  "evidenceEnvelopeProjection": "READY",
+  "redactionProofProjection": "READY",
+  "ledgerBindings": "READY",
+  "simulationOnly": true,
+  "actualExecutionPerformed": false
+}

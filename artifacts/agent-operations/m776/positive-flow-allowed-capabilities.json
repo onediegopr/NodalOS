@@ -1,0 +1,18 @@
+{
+  "allowedCapabilities": [
+    "local provider/model",
+    "filesystem read metadata",
+    "extension bridge event",
+    "WebSocket bridge event",
+    "evidence ledger append projection",
+    "timeline/reporting projection",
+    "policy gate allow",
+    "manual approval allow",
+    "redaction proof creation"
+  ],
+  "productiveExecutionAllowed": false,
+  "liveCallAllowed": false,
+  "filesystemWriteAllowed": false,
+  "browserAutomationAllowed": false,
+  "capabilityUnlockAllowed": false
+}

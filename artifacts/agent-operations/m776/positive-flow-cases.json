@@ -1,0 +1,23 @@
+{
+  "cases": [
+    "simulated_local_provider_model_response",
+    "simulated_filesystem_read_metadata",
+    "simulated_extension_bridge_event",
+    "simulated_websocket_bridge_event",
+    "simulated_evidence_ledger_append",
+    "simulated_timeline_reporting_projection",
+    "simulated_policy_gate_allow",
+    "simulated_manual_approval_allow",
+    "simulated_redaction_proof_creation"
+  ],
+  "excludedFromPositiveCases": [
+    "provider/cloud live calls",
+    "filesystem write",
+    "browser automation",
+    "capability unlock",
+    "public release",
+    "Chrome Web Store",
+    "signed public ZIP"
+  ],
+  "simulationOnly": true
+}

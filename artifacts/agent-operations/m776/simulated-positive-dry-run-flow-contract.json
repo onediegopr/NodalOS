@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M776",
+  "decision": "SIMULATED_POSITIVE_DRY_RUN_FLOW_CONTRACT_READY",
+  "positiveSimulatedDryRunFlow": "READY",
+  "simulationOnly": true,
+  "allowedDecision": "ALLOW_SIMULATED_DRY_RUN",
+  "requestedMode": "SIMULATED_DRY_RUN",
+  "eligibleCapabilitiesOnly": true,
+  "productiveExecutionAllowed": false,
+  "actualExecutionPerformed": false
+}

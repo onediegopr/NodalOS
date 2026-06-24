@@ -1,0 +1,7 @@
+{
+  "milestone": "M776",
+  "decision": "SIMULATED_POSITIVE_DRY_RUN_FLOW_CONTRACT_READY",
+  "positiveFlowContractReady": true,
+  "actualExecutionPerformed": false,
+  "productiveExecutionAllowed": false
+}
