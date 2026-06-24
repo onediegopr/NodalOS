@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M784",
+  "noFilesystemBrowserCapabilityUnlockProof": "PROVEN",
+  "filesystemWriteUnlock": "DISABLED",
+  "browserAutomationAction": "DISABLED",
+  "capabilityUnlock": "DISABLED",
+  "filesystemWriterWired": false,
+  "filesystemWriterInvoked": false,
+  "browserAutomationWired": false,
+  "browserAutomationInvoked": false,
+  "capabilityUnlockWired": false,
+  "capabilityUnlockInvoked": false
+}

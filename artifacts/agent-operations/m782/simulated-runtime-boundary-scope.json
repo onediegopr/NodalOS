@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M782",
+  "scopeStatus": "READY",
+  "inScope": [
+    "fake-only in-memory simulated runtime boundary",
+    "in-memory policy gate evaluation (simulated)",
+    "in-memory manual approval evaluation (simulated)",
+    "simulated decision production (ALLOW_SIMULATED_DRY_RUN / DENY / REQUIRE_MANUAL_APPROVAL)",
+    "evidence envelope projection (simulated)",
+    "ledger event projection (simulated)",
+    "no-execution proof production"
+  ],
+  "outOfScope": [
+    "real executor",
+    "real provider or cloud client",
+    "real filesystem writer",
+    "real browser automation adapter",
+    "capability unlock executor",
+    "public release procedure",
+    "Chrome Web Store submission procedure",
+    "signed public ZIP creation",
+    "product file mutation",
+    "Bridge or CSP mutation",
+    "any productive runtime adapter"
+  ],
+  "simulationOnly": true,
+  "realExecutionAllowed": false,
+  "productiveExecutionAllowed": false
+}

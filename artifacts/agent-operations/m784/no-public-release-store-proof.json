@@ -1,0 +1,14 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M784",
+  "noPublicReleaseStoreProof": "PROVEN",
+  "publicRelease": "NO-GO",
+  "chromeWebStore": "NO-GO",
+  "publicReleaseWired": false,
+  "publicReleaseInvoked": false,
+  "storeSubmissionWired": false,
+  "storeSubmissionInvoked": false,
+  "signedPublicZipCreated": false,
+  "actualPublicationPerformed": false,
+  "actualStoreSubmissionPerformed": false
+}

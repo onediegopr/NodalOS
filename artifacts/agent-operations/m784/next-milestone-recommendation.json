@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M784",
+  "recommendedNextMilestone": "M785-M787 — Simulated Runtime In-Memory Execution Tests + Enforcement Proof",
+  "scope": "simulated runtime in-memory execution only; fixtures/tests/enforcement proof",
+  "productiveUnlockAllowed": false,
+  "realRuntimeAllowed": false,
+  "publicReleaseAllowed": false,
+  "storeSubmissionAllowed": false,
+  "note": "M785-M787 may execute only the simulated in-memory runtime. No productive runtime, no real provider/cloud, no filesystem write, no browser action, no capability unlock, no release/store."
+}

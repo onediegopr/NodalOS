@@ -1,0 +1,30 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M783",
+  "simulatedAllowPathProof": "PROVEN",
+  "decision": "ALLOW_SIMULATED_DRY_RUN",
+  "appliesToCapabilities": [
+    "local provider/model (simulated)",
+    "filesystem read metadata (simulated)",
+    "extension bridge event (simulated)",
+    "WebSocket bridge event (simulated)",
+    "evidence ledger append projection (simulated)",
+    "timeline/reporting projection (simulated)",
+    "policy gate allow (simulated)",
+    "manual approval allow (simulated)",
+    "redaction proof creation (simulated)"
+  ],
+  "ledgerProjected": true,
+  "evidenceEnvelopeCreated": true,
+  "redactionProofCreated": true,
+  "realExecutorInvoked": false,
+  "providerClientInvoked": false,
+  "filesystemWriterInvoked": false,
+  "browserAutomationInvoked": false,
+  "capabilityUnlockInvoked": false,
+  "publicReleaseInvoked": false,
+  "storeSubmissionInvoked": false,
+  "signedZipCreated": false,
+  "simulationOnly": true,
+  "productiveExecutionAllowed": false
+}

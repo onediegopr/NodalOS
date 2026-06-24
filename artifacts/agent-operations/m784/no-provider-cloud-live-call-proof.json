@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M784",
+  "noProviderCloudLiveCallProof": "PROVEN",
+  "providerCloudLiveCalls": "DISABLED",
+  "providerClientWired": false,
+  "providerClientInvoked": false,
+  "liveCallPerformed": false,
+  "realExecutionAllowed": false
+}

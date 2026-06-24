@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M782",
+  "disallowedPathsStatus": "READY",
+  "disallowedPaths": [
+    "real executor",
+    "provider/cloud client",
+    "filesystem writer",
+    "browser automation adapter",
+    "capability unlock executor",
+    "public release procedure",
+    "Chrome Web Store submission procedure",
+    "signed ZIP creation",
+    "product files mutation",
+    "Bridge/CSP mutation"
+  ],
+  "denyOnDisallowedPath": true,
+  "auditEventRequired": true,
+  "evidenceEnvelopeRequired": true,
+  "realExecutionAllowed": false
+}

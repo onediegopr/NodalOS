@@ -1,0 +1,11 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M784",
+  "noProductiveRuntimeUnlockProof": "PROVEN",
+  "runtimeProductiveExecution": "DISABLED",
+  "productiveEnabled": "PROHIBITED",
+  "productiveExecutionAllowed": false,
+  "productiveRuntimeUnlocked": false,
+  "realExecutorWired": false,
+  "actualExecutionPerformed": false
+}

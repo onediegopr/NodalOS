@@ -1,0 +1,24 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M783",
+  "contractStatus": "READY",
+  "input": "simulated request fixture (requestedMode, fixtureType, capabilityName, isProhibitedAction, requiresManualApproval, manualApprovalGranted)",
+  "process": [
+    "validate requestedMode == SIMULATED_DRY_RUN else DENY",
+    "validate fixtureType == SIMULATED_FAKE_ONLY else DENY",
+    "if prohibited action -> DENY",
+    "evaluate policy gate in-memory",
+    "if manual approval required and not granted -> REQUIRE_MANUAL_APPROVAL",
+    "else -> ALLOW_SIMULATED_DRY_RUN",
+    "produce evidence envelope projection",
+    "produce ledger event projection",
+    "produce no-execution proof"
+  ],
+  "output": ["ALLOW_SIMULATED_DRY_RUN", "DENY", "REQUIRE_MANUAL_APPROVAL"],
+  "everyBranchProducesLedgerProjection": true,
+  "everyBranchProducesEvidenceEnvelope": true,
+  "everyBranchProducesNoExecutionProof": true,
+  "noBranchInvokesSideEffectSink": true,
+  "realExecutionAllowed": false,
+  "productiveExecutionAllowed": false
+}

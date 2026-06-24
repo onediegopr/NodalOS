@@ -1,0 +1,23 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M784",
+  "productBridgeCspUnchangedProof": "PROVEN",
+  "productFilesModified": false,
+  "bridgeModified": false,
+  "cspModified": false,
+  "manifestsModified": false,
+  "serviceWorkerModified": false,
+  "sidepanelModified": false,
+  "contentScriptModified": false,
+  "changedSurfaces": [
+    "docs/reports/m782-*.md",
+    "docs/reports/m783-*.md",
+    "docs/reports/m784-*.md",
+    "artifacts/agent-operations/m782/*",
+    "artifacts/agent-operations/m783/*",
+    "artifacts/agent-operations/m784/*",
+    "artifacts/agent-operations/m782-m784/*",
+    "tests/OneBrain.Safety.Tests/SimulatedDryRunOrchestrator.cs",
+    "tests/OneBrain.Safety.Tests/NodalOsSimulatedRuntimeBoundaryM782M784Tests.cs"
+  ]
+}

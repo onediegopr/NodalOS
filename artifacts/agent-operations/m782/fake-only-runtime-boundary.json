@@ -1,0 +1,29 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M782",
+  "fakeOnlyRuntimeBoundary": "READY",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "acceptsOnly": {
+    "requestedMode": "SIMULATED_DRY_RUN",
+    "fixtureType": "SIMULATED_FAKE_ONLY"
+  },
+  "rejectsAnythingElseWith": "DENY",
+  "producesPerRequest": [
+    "decision",
+    "evidence envelope projection",
+    "ledger event projection",
+    "no-execution proof"
+  ],
+  "realExecutionAllowed": false,
+  "productiveExecutionAllowed": false,
+  "actualExecutionPerformed": false,
+  "liveCallPerformed": false,
+  "filesystemWritePerformed": false,
+  "browserAutomationPerformed": false,
+  "capabilityUnlocked": false,
+  "publicReleasePerformed": false,
+  "storeSubmissionPerformed": false,
+  "signedZipCreated": false,
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}

@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M782",
+  "noRealExecutorWiredPlan": "READY",
+  "approach": "The simulated orchestrator holds no reference that can perform a real side effect. A side-effect sink interface is injected ONLY so tests can prove non-invocation; the orchestrator code path never calls it on any branch (ALLOW_SIMULATED_DRY_RUN, DENY, or REQUIRE_MANUAL_APPROVAL).",
+  "provenByConstruction": true,
+  "provenByTest": true,
+  "realExecutorWired": false,
+  "providerClientWired": false,
+  "filesystemWriterWired": false,
+  "browserAutomationWired": false,
+  "capabilityUnlockWired": false,
+  "publicReleaseWired": false,
+  "storeSubmissionWired": false,
+  "signedZipWired": false,
+  "productFilesMutationWired": false,
+  "bridgeCspMutationWired": false
+}

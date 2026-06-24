@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M782",
+  "decision": "SIMULATED_RUNTIME_BOUNDARY_IMPLEMENTATION_PLAN_READY",
+  "runtimeType": "SIMULATED_FAKE_ONLY_IN_MEMORY",
+  "realExecutorWired": false,
+  "providerClientWired": false,
+  "filesystemWriterWired": false,
+  "browserAutomationWired": false,
+  "capabilityUnlockWired": false,
+  "publicReleaseWired": false,
+  "storeSubmissionWired": false,
+  "productiveExecutionAllowed": false,
+  "planSummary": "Define a fake-only, in-memory simulated runtime boundary that processes a simulated dry-run roundtrip and proves by construction that an ALLOW_SIMULATED_DRY_RUN decision can never reach any real executor, provider client, filesystem writer, browser automation adapter, capability unlock executor, public release procedure, or store submission procedure.",
+  "implementationLocation": "tests/OneBrain.Safety.Tests (safety-only test helper); no product files, no Bridge/CSP, no src product adapters",
+  "productFilesModified": false,
+  "bridgeCspModified": false
+}
