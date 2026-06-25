@@ -1,0 +1,21 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1118",
+  "implementation_status": "PLAN_ONLY",
+  "guidance": [
+    "temp profile cleanup review",
+    "CDP profile lock observation",
+    "WebSocket close timing observation",
+    "process/port/profile release observation",
+    "test isolation timing observation",
+    "repeat-run logging plan"
+  ],
+  "forbidden_actions": [
+    "process kill",
+    "temp file delete",
+    "filesystem mutation",
+    "test behavior modification",
+    "runtime modification",
+    "Bridge/CSP modification"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1114",
+  "suggested_consecutive_clean_isolated_runs": 3,
+  "required_full_safety_clean_runs": 1,
+  "required_full_suite_clean_runs": 1,
+  "minimum_conditions": [
+    "N consecutive clean BrowserRuntimeSmoke isolated runs",
+    "zero skipped/inconclusive cleanup gates",
+    "zero Gate 9 WebSocket aborted",
+    "full safety without external caveat",
+    "full suite general without external caveat",
+    "product/Bridge/CSP scan clean",
+    "leak scan clean",
+    "false-clean-claim scan clean",
+    "report updated",
+    "review required before raising confidence"
+  ],
+  "execution_status": "PLAN_ONLY_NOT_EXECUTED"
+}

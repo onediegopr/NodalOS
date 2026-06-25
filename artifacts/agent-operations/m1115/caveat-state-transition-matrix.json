@@ -1,0 +1,15 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1115",
+  "states": [
+    "VISIBLE_UNRESOLVED",
+    "CONTAINMENT_PLAN_READY",
+    "CONTAINMENT_POLICY_HARDENED",
+    "REPEATABILITY_EVIDENCE_PENDING",
+    "ELIGIBLE_FOR_RESOLUTION_REVIEW",
+    "RESOLVED_AFTER_REVIEW"
+  ],
+  "current_state": "VISIBLE_UNRESOLVED",
+  "target_state_for_this_block": "CONTAINMENT_PLAN_READY",
+  "allows_direct_visible_unresolved_to_resolved": false
+}

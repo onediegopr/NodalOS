@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1116",
+  "implementation_status": "PLAN_ONLY",
+  "rules": {
+    "initial_fail": "record_fail_family_and_keep_caveat_visible",
+    "same_family_gate9_fail": "same_family_external_smoke_caveat",
+    "timeout": "not_pass_requires_rerun_or_abort",
+    "rerun_pass_with_caveat": "pass_with_caveat_only",
+    "rerun_fail": "fail_visible_no_clean_claim",
+    "repeatable_clean_run": "candidate_evidence_only_until_threshold_met",
+    "stop_retrying": "after defined threshold or repeated same-family instability",
+    "label_external_caveat": "when evidence indicates environment/timing/smoke cleanup",
+    "block_clean_claim": "until RESOLVED_AFTER_REVIEW"
+  },
+  "rerun_pass_can_claim_clean": false,
+  "timeout_can_count_as_pass": false,
+  "runtime_modified": false
+}

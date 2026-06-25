@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1119",
+  "implementation_status": "PLAN_ONLY",
+  "required_fields": [
+    "run ids",
+    "timestamps",
+    "isolated BrowserRuntimeSmoke results",
+    "full safety results",
+    "full suite results",
+    "skip/inconclusive counts",
+    "Gate 9 status",
+    "product/Bridge/CSP scan results",
+    "leak scan results",
+    "false-clean-claim scan results",
+    "review decision"
+  ],
+  "forbidden_evidence": [
+    "raw logs with secrets",
+    "environment dumps",
+    "credentials",
+    "tokens",
+    "cookies",
+    "session data",
+    "large raw console dumps"
+  ]
+}

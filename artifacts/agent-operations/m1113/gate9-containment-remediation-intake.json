@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1113",
+  "previous_caveat_classification": "EXTERNAL_SMOKE_CLEANUP_WEBSOCKET_ABORTED_ENVIRONMENT_TIMING",
+  "latest_isolated_result": "PASS_30_PASSED_0_SKIPPED_0_FAILED",
+  "historical_gate9_websocket_aborted": true,
+  "full_safety_rerun_result": "PASS_5544_PASSED_37_SKIPPED_0_FAILED",
+  "full_suite_final_result": "PASS_WITH_HISTORICAL_CAVEAT_VISIBLE",
+  "why_caveat_remains_unresolved": "REPEATABILITY_AND_REVIEW_CRITERIA_NOT_MET",
+  "allowed_remediation_plan": "plan-only containment/remediation planning",
+  "remediation_execution_not_allowed": "NO_RUNTIME_OR_TEST_BEHAVIOR_CHANGE",
+  "caveat_resolved": false
+}
