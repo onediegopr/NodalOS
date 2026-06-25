@@ -1349,7 +1349,7 @@ function renderTimelineStep(item, index) {
     ? `<div class="timeline-blockers">${step.blockers.map(renderTimelineBlocker).join('')}</div>`
     : '';
   const blockedOptions = step.blockedOptions.length
-    ? `<div class="timeline-options"><span>No permitido</span>${step.blockedOptions.map((option) => `<b>${safeHtml(option)}</b>`).join('')}</div>`
+    ? `<div class="timeline-options"><span>Límites</span>${step.blockedOptions.map((option) => `<b>${safeHtml(option)}</b>`).join('')}</div>`
     : '';
   const safeAction = step.safeNextAction
     ? `<p class="timeline-safe-action"><strong>Next safe action:</strong> ${safeHtml(step.safeNextAction)}</p>`
@@ -1412,7 +1412,7 @@ function renderGroundingCard(snapshot) {
   const screenshotRef = persistenceAllowed ? (snapshot.screenshotRef || '') : '';
   const warning = persistenceAllowed
     ? ''
-    : '<div class="timeline-grounding-warning">Grounding blocked: redaction failed or sensitive screenshot. Raw screenshot/DOM is not persisted.</div>';
+    : '<div class="timeline-grounding-warning">Revisar captura: redacción incompleta o contenido sensible. No se guarda captura ni DOM raw.</div>';
   const thumbnail = screenshotRef
     ? `<div class="timeline-grounding-thumb" aria-label="safe redacted screenshot thumbnail">safe thumbnail ref: ${safeHtml(screenshotRef)}</div>`
     : '<div class="timeline-grounding-thumb muted-thumb">no safe screenshot thumbnail</div>';
@@ -1443,8 +1443,8 @@ function renderTimelineBlocker(blocker) {
   const item = typeof blocker === 'string' ? { reason: blocker, expectedOperatorAction: 'Stop and ask Core/human review.' } : blocker;
   return `
     <section class="timeline-blocker-card">
-      <strong>Blocked</strong>
-      <p>${safeHtml(item.reason || 'Blocked by policy')}</p>
+      <strong>Revisar</strong>
+      <p>${safeHtml(item.reason || 'Revisar antes de seguir')}</p>
       <small>${safeHtml(item.expectedOperatorAction || 'No bypass allowed.')}</small>
     </section>`;
 }
@@ -1721,7 +1721,7 @@ function normalizeTimelineStatus(status) {
     done: ['done', 'Done'],
     completed: ['done', 'Done'],
     passed: ['done', 'Done'],
-    blocked: ['blocked', 'Blocked'],
+    blocked: ['blocked', 'Revisar'],
     'needs-human': ['needs-human', 'Needs human'],
     needshuman: ['needs-human', 'Needs human'],
     'evidence-required': ['evidence-required', 'Evidence required'],
@@ -1746,8 +1746,8 @@ function normalizeTimelineStatus(status) {
     planeditedbyhuman: ['warning', 'Edited by human'],
     'execution-started': ['running', 'Execution started'],
     executionstarted: ['running', 'Execution started'],
-    'execution-blocked-by-policy': ['blocked', 'Blocked by policy'],
-    executionblockedbypolicy: ['blocked', 'Blocked by policy'],
+    'execution-blocked-by-policy': ['blocked', 'Revisar antes de seguir'],
+    executionblockedbypolicy: ['blocked', 'Revisar antes de seguir'],
     'recovery-required': ['blocked', 'Recovery required'],
     recoveryrequired: ['blocked', 'Recovery required'],
     'waiting-for-human-input': ['needs-human', 'Waiting for human'],

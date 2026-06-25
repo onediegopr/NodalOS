@@ -133,15 +133,18 @@
         </div>
       </section>
 
-      <section class="surface command-surface">
-        <label for="instructionInput">¿Qué querés que haga NODAL OS?</label>
-        <textarea id="instructionInput" rows="8" wrap="soft">Revisá el dashboard local de readiness, resumí evidencia redacted y listá blockers activos sin usar credenciales ni acciones sensibles.</textarea>
+      <details class="surface command-surface advanced-command-surface">
+        <summary>Modo avanzado</summary>
+        <div class="advanced-command-body">
+        <label for="instructionInput">Instrucción avanzada</label>
+        <textarea id="instructionInput" rows="8" wrap="soft">Prepará un resumen local de la demo y próximos pasos sin acciones peligrosas.</textarea>
         <div class="control-row">
-          <button id="startRunBtn" class="primary">Ejecutar</button>
+          <button id="startRunBtn" class="primary">Ejecutar instrucción</button>
           <button id="pauseRunBtn">Pausar</button>
           <button id="resumeRunBtn">Reanudar</button>
         </div>
-      </section>
+        </div>
+      </details>
 
       <section id="handoffSurface" class="surface handoff-surface hidden" data-legacy-action="Reobservar pagina">
         <h2 id="handoffTitle">NODAL OS necesita intervención humana</h2>

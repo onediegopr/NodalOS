@@ -470,7 +470,25 @@ main {
 }
 
 .command-surface {
-  border-color: rgba(31, 95, 191, 0.25);
+  border-color: rgba(159, 181, 204, 0.12);
+  background: rgba(13, 19, 27, 0.52);
+}
+
+.advanced-command-surface {
+  padding: 0;
+}
+
+.advanced-command-surface summary {
+  padding: 12px;
+  color: var(--nos-color-text-muted);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.advanced-command-body {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
 }
 
 h2 {

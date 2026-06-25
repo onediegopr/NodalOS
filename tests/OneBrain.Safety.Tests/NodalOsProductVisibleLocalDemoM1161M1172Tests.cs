@@ -36,6 +36,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(html, "Local Operator Demo");
         StringAssert.Contains(html, "Run safe demo");
         StringAssert.Contains(html, "Copiar resumen");
+        StringAssert.Contains(html, "Modo avanzado");
     }
 
     [TestMethod]
@@ -139,8 +140,11 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(html, "Listo para probar");
         StringAssert.Contains(html, "Demo scope");
         StringAssert.Contains(js, "Sin acciones peligrosas");
+        StringAssert.Contains(js, "Límites");
+        StringAssert.Contains(js, "Revisar antes de seguir");
         Assert.IsFalse(html.Contains("Smoke caveat", StringComparison.Ordinal));
         Assert.IsFalse(js.Contains("BrowserRuntimeSmoke caveat visible", StringComparison.Ordinal));
+        Assert.IsFalse(js.Contains("Blocked by policy", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("MANUAL_QA_HOLD_ACTIVE", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("NOT_ELIGIBLE_EVIDENCE_PENDING", StringComparison.Ordinal));
     }
