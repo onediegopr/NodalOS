@@ -132,7 +132,7 @@ async function handleTask(msg) {
 
   console.log('[StealthSession:' + taskId + '] Starting: ' + (instruction || '').substring(0, 80));
 
-  const fingerprintProfile = msgProfile && msgProfile.preset
+  var fingerprintProfile = msgProfile && msgProfile.preset
     ? FingerprintGenerator.generate({ preset: msgProfile.preset })
     : FingerprintGenerator.generate({ preset: CONFIG.fingerprint?.defaultPreset || 'desktop-win-chrome' });
 
@@ -144,7 +144,7 @@ async function handleTask(msg) {
   }
 
   if (proxy && proxy.country) {
-    FingerprintProfile.ensureCoherence(fingerprintProfile, proxy.country);
+    fingerprintProfile = FingerprintProfile.ensureCoherence(fingerprintProfile, proxy.country);
   }
 
   const behaviorProfile = CONFIG.behavior?.defaultProfile || 'casual';
