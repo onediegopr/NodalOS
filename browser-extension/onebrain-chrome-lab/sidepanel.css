@@ -388,6 +388,55 @@ main {
   background: rgba(13, 19, 27, 0.62);
 }
 
+.browser-skills-card {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid rgba(143, 184, 255, 0.18);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(143, 184, 255, 0.09), transparent 46%),
+    rgba(6, 10, 15, 0.28);
+}
+
+.browser-skills-card h2 {
+  margin: 8px 0 6px;
+  font-family: var(--nos-font-heading);
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.browser-skills-card p {
+  margin: 4px 0 0;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.browser-skills-card dl {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.9fr) minmax(0, 1fr);
+  gap: 7px 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(159, 181, 204, 0.12);
+}
+
+.browser-skills-card dt {
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.browser-skills-card dd {
+  margin: 0;
+  color: var(--nos-color-text);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .mission-guidance-card {
   overflow: hidden;
   border-color: rgba(143, 184, 255, 0.2);
