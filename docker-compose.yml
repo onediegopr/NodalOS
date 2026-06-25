@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  bridge:
+    build:
+      context: ./src/OneBrain.ChromeLab.Bridge
+      dockerfile: Dockerfile
+    ports:
+      - "8787:8787"
+      - "8788:8788"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Bridge__Host=0.0.0.0
+      - Bridge__Port=8787
+      - Bridge__HandoffPort=8788
+      - Bridge__Token=${NODAL_OS_BRIDGE_TOKEN:-}
+      - OpenAiApiKey=${OPENAI_API_KEY:-}
+      - Stealth__Enabled=${STEALTH_ENABLED:-true}
+      - Stealth__MaxConcurrentSessions=${STEALTH_MAX_SESSIONS:-5}
+      - Stealth__TaskTimeoutMs=${STEALTH_TASK_TIMEOUT_MS:-300000}
+      - Stealth__Captcha__TwoCaptchaApiKey=${CAPTCHA_API_KEY:-}
+      - Stealth__Captcha__VisualCaptchaEnabled=${VISUAL_CAPTCHA_ENABLED:-false}
+      - Stealth__Proxy__Enabled=${STEALTH_PROXY_ENABLED:-false}
+    volumes:
+      - ./config:/app/config:ro
+      - evidence_data:/app/evidence
+      - logs_data:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8787/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  stealth-engine:
+    build:
+      context: ./stealth-engine
+      dockerfile: Dockerfile
+    environment:
+      - BRIDGE_HOST=bridge
+      - BRIDGE_PORT=8787
+      - NODE_ENV=production
+    depends_on:
+      bridge:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+
+  stealth-panel:
+    build:
+      context: ./stealth-panel
+      dockerfile: Dockerfile
+    ports:
+      - "8789:80"
+    environment:
+      - BRIDGE_HOST=bridge
+      - BRIDGE_HANDOFF_PORT=8788
+    depends_on:
+      - bridge
+    restart: unless-stopped
+
+volumes:
+  evidence_data:
+  logs_data:

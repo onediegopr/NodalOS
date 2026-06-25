@@ -1,0 +1,64 @@
+{
+  "bridgeHost": "127.0.0.1",
+  "bridgePort": 8787,
+
+  "fingerprint": {
+    "defaultPreset": "desktop-win-chrome",
+    "autoRotate": false,
+    "canvasNoise": true,
+    "audioNoise": true,
+    "webglSpoof": true,
+    "webrtcBlock": true
+  },
+
+  "proxy": {
+    "enabled": false,
+    "rotationMode": "sticky",
+    "providers": {
+      "brightdata": { "enabled": false, "apiKey": "", "endpoint": "" },
+      "oxylabs": { "enabled": false, "username": "", "password": "", "endpoint": "" },
+      "iproyal": { "enabled": false, "apiKey": "", "endpoint": "" }
+    },
+    "staticProxies": [],
+    "healthCheckIntervalMs": 60000
+  },
+
+  "antiBlocking": {
+    "maxRecoveryAttempts": 5,
+    "baseBackoffMs": 5000,
+    "maxBackoffMs": 120000,
+    "rotateProxyOnBlock": true,
+    "rotateProfileOnBlock": false,
+    "domainBlacklistSize": 100
+  },
+
+  "behavior": {
+    "defaultProfile": "casual",
+    "adaptive": true,
+    "profileVariance": 0.2,
+    "profiles": {
+      "casual": { "typoRate": 0.03, "baseDelay": 80, "clickPauseMin": 80, "clickPauseMax": 230, "scrollPauseMs": 1500 },
+      "pro": { "typoRate": 0.01, "baseDelay": 40, "clickPauseMin": 50, "clickPauseMax": 150, "scrollPauseMs": 600 },
+      "elderly": { "typoRate": 0.05, "baseDelay": 150, "clickPauseMin": 150, "clickPauseMax": 400, "scrollPauseMs": 3000 }
+    }
+  },
+
+  "visualCaptcha": {
+    "enabled": false,
+    "ocrEngine": "tesseract",
+    "aiVision": {
+      "enabled": false,
+      "provider": "openai",
+      "apiKey": "",
+      "model": "gpt-4-vision-preview"
+    }
+  },
+
+  "fingerprintEvolution": {
+    "runOnStartup": false
+  },
+
+  "captcha": {
+    "twoCaptchaApiKey": ""
+  }
+}

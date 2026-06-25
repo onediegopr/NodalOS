@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NODAL OS — Remote Handoff</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Segoe UI,system-ui,sans-serif;background:#0d1117;color:#c9d1d9;display:flex;flex-direction:column;height:100vh}
+header{background:#161b22;padding:12px 20px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:16px;color:#58a6ff}
+.status{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.status.connected{background:#23863622;color:#3fb950}
+.status.waiting{background:#9e6a0322;color:#d29922}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:16px}
+#viewport{border:2px solid #30363d;border-radius:8px;max-width:90vw;max-height:65vh;background:#010409}
+.info{font-size:14px;color:#8b949e;text-align:center;max-width:600px}
+.controls{display:flex;gap:12px;margin-top:8px}
+button{padding:10px 24px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+button:hover{opacity:.85}
+.btn-continue{background:#238636;color:#fff}
+.btn-cancel{background:#da3633;color:#fff}
+.btn-refresh{background:#30363d;color:#c9d1d9}
+footer{background:#161b22;padding:8px 20px;border-top:1px solid #30363d;text-align:center;font-size:11px;color:#484f58}
+.loading{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>NODAL OS — Remote Handoff</h1>
+  <span id="status" class="status waiting">Waiting...</span>
+</header>
+<main>
+  <canvas id="viewport" width="640" height="360"></canvas>
+  <div id="info" class="info loading">Connecting to session...</div>
+  <div class="controls">
+    <button class="btn-continue" id="btn-continue" onclick="sendDone()" disabled>Continue</button>
+    <button class="btn-cancel" id="btn-cancel" onclick="sendCancel()">Cancel</button>
+  </div>
+</main>
+<footer>NODAL OS v1.0 — Stealth Handoff Panel</footer>
+<script src="panel.js"></script>
+</body>
+</html>

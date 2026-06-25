@@ -25,6 +25,20 @@ public sealed class ChromeLabOptions
     public bool HasApiKey => !string.IsNullOrWhiteSpace(ApiKey);
     public bool RequiresToken => !string.IsNullOrWhiteSpace(ConnectionToken);
 
+    public bool StealthEnabled { get; init; }
+    public int StealthRunnerPort { get; init; } = 8788;
+    public int StealthMaxSessions { get; init; } = 3;
+    public string StealthFingerprintProfile { get; init; } = "desktop-win-chrome";
+    public string? CaptchaTwoCaptchaApiKey { get; init; }
+    public string? CaptchaAntiCaptchaApiKey { get; init; }
+    public string? CaptchaCapSolverApiKey { get; init; }
+    public int CaptchaMaxAttempts { get; init; } = 4;
+    public int StealthMaxRetries { get; init; } = 4;
+    public int StealthCooldownMs { get; init; } = 5000;
+
+    public int GetStealthMaxRetries() => StealthMaxRetries;
+    public int GetStealthCooldownMs() => StealthCooldownMs;
+
     public static ChromeLabOptions Load(string[] args)
     {
         var configFile = TryReadLocalConfig();
@@ -62,6 +76,17 @@ public sealed class ChromeLabOptions
         if (!allowLan && !IsLoopbackHost(host))
             host = "127.0.0.1";
 
+        var stealthEnabled = TryReadBool(configFile, "StealthEnabled") ?? false;
+        var stealthRunnerPort = TryReadInt(configFile, "StealthRunnerPort") ?? 8788;
+        var stealthMaxSessions = TryReadInt(configFile, "StealthMaxSessions") ?? 3;
+        var stealthFingerprintProfile = TryReadStealthString(configFile, "FingerprintProfile") ?? "desktop-win-chrome";
+        var captchaTwoApiKey = TryReadStealthString(configFile, "CaptchaTwoCaptchaApiKey");
+        var captchaAntiApiKey = TryReadStealthString(configFile, "CaptchaAntiCaptchaApiKey");
+        var captchaCapApiKey = TryReadStealthString(configFile, "CaptchaCapSolverApiKey");
+        var captchaMaxAttempts = TryReadStealthInt(configFile, "CaptchaMaxAttempts") ?? 4;
+        var stealthMaxRetries = TryReadStealthInt(configFile, "StealthMaxRetries") ?? 4;
+        var stealthCooldownMs = TryReadStealthInt(configFile, "StealthCooldownMs") ?? 5000;
+
         return new ChromeLabOptions
         {
             Host = host,
@@ -72,7 +97,17 @@ public sealed class ChromeLabOptions
             ConnectionTokenSource = tokenSource,
             ConnectionTokenGenerated = tokenGenerated,
             AllowLan = allowLan,
-            SelfTest = selfTest
+            SelfTest = selfTest,
+            StealthEnabled = stealthEnabled,
+            StealthRunnerPort = stealthRunnerPort,
+            StealthMaxSessions = stealthMaxSessions,
+            StealthFingerprintProfile = stealthFingerprintProfile,
+            CaptchaTwoCaptchaApiKey = captchaTwoApiKey,
+            CaptchaAntiCaptchaApiKey = captchaAntiApiKey,
+            CaptchaCapSolverApiKey = captchaCapApiKey,
+            CaptchaMaxAttempts = captchaMaxAttempts,
+            StealthMaxRetries = stealthMaxRetries,
+            StealthCooldownMs = stealthCooldownMs
         };
     }
 
@@ -196,6 +231,31 @@ public sealed class ChromeLabOptions
     {
         return doc != null && doc.RootElement.TryGetProperty(propertyName, out var property) && property.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? property.GetBoolean()
+            : null;
+    }
+
+    private static string? TryReadStealthString(JsonDocument? doc, string propertyName)
+    {
+        if (doc == null || !doc.RootElement.TryGetProperty("stealth", out var stealthSection)
+            || stealthSection.ValueKind != JsonValueKind.Object)
+            return null;
+
+        return stealthSection.TryGetProperty(propertyName, out var prop)
+            && prop.ValueKind == JsonValueKind.String
+            ? prop.GetString()
+            : null;
+    }
+
+    private static int? TryReadStealthInt(JsonDocument? doc, string propertyName)
+    {
+        if (doc == null || !doc.RootElement.TryGetProperty("stealth", out var stealthSection)
+            || stealthSection.ValueKind != JsonValueKind.Object)
+            return null;
+
+        return stealthSection.TryGetProperty(propertyName, out var prop)
+            && prop.ValueKind == JsonValueKind.Number
+            && prop.TryGetInt32(out var value)
+            ? value
             : null;
     }
 

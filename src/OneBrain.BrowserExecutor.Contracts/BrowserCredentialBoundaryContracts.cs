@@ -28,7 +28,8 @@ public enum BrowserCredentialBoundaryDecisionKind
     RequiresHuman,
     RequiresApproval,
     RedactAndContinue,
-    FailClosed
+    FailClosed,
+    RetryWithBackoff
 }
 
 public enum BrowserSensitiveInputPolicy

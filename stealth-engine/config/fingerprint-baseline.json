@@ -1,0 +1,11 @@
+{
+  "fingerprint": {
+    "defaultPreset": "desktop-win-chrome",
+    "autoRotate": false
+  },
+  "baseline": {
+    "description": "Baseline captured from a real Chrome 131 browser on Windows 11",
+    "lastUpdated": null,
+    "metrics": {}
+  }
+}
