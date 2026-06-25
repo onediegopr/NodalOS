@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\src\OneBrain.AgentOperations.Core\OneBrain.AgentOperations.Core.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.BrowserExecutor.Cdp\OneBrain.BrowserExecutor.Cdp.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.BrowserExecutor.Contracts\OneBrain.BrowserExecutor.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\OneBrain.BrowserRuntime\OneBrain.BrowserRuntime.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.Core\OneBrain.Core.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.Actions\OneBrain.Actions.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.ChromeLab.Bridge\OneBrain.ChromeLab.Bridge.csproj" />

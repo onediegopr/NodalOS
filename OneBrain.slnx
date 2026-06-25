@@ -6,6 +6,7 @@
     <Project Path="src/OneBrain.AgentOperations.Core/OneBrain.AgentOperations.Core.csproj" />
     <Project Path="src/OneBrain.BrowserExecutor.Cdp/OneBrain.BrowserExecutor.Cdp.csproj" />
     <Project Path="src/OneBrain.BrowserExecutor.Contracts/OneBrain.BrowserExecutor.Contracts.csproj" />
+    <Project Path="src/OneBrain.BrowserRuntime/OneBrain.BrowserRuntime.csproj" />
     <Project Path="src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj" />
     <Project Path="src/OneBrain.Cli/OneBrain.Cli.csproj" />
     <Project Path="src/OneBrain.Core/OneBrain.Core.csproj" />

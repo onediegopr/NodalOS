@@ -1,0 +1,15 @@
+{
+  "provider": "cloakbrowser",
+  "mode": "cdp-direct",
+  "extension_enabled": false,
+  "runtime_source": "fork",
+  "runtime_repo": "nodal-cloakbrowser-runtime",
+  "runtime_channel": "nodal-runtime",
+  "runtime_version": "pending",
+  "runtime_commit": "pending",
+  "upstream_commit": "pending",
+  "binary_sha256": "pending",
+  "cdp_host": "127.0.0.1",
+  "cdp_port_policy": "ephemeral-or-reserved",
+  "system_browser_allowed": false
+}
