@@ -2,6 +2,8 @@ let port = null;
 let portConnected = false;
 const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
 const DEMO_GUIDANCE_COLLAPSED_KEY = 'nodal-os.demoGuidanceCollapsed.v1';
+const BROWSER_SKILLS_SNAPSHOT_KEY = 'nodal-os.browserSkills.snapshots.v1';
+const BROWSER_SKILLS_MAX_SNAPSHOTS = 20;
 const DEMO_SCRIPT_STEPS = [
   'Abrí NODAL OS y presentá Mission Control como centro de misiones locales.',
   'Creá una misión corta para mostrar que el flujo empieza desde una intención simple.',
@@ -14,6 +16,7 @@ const DEMO_SCRIPT_STEPS = [
 const state = {
   activeTab: 'operate',
   demo: loadDemoStore(),
+  browserSkills: loadBrowserSkillStore(),
   connection: {
     status: 'disconnected',
     health: 'untested',
@@ -172,6 +175,22 @@ const el = {
   saveRunNoteBtn: document.getElementById('saveRunNoteBtn'),
   clearRunNoteBtn: document.getElementById('clearRunNoteBtn'),
   demoTechnicalReport: document.getElementById('demoTechnicalReport'),
+  captureBrowserTabBtn: document.getElementById('captureBrowserTabBtn'),
+  indexBrowserPageBtn: document.getElementById('indexBrowserPageBtn'),
+  copyBrowserSkillSummaryBtn: document.getElementById('copyBrowserSkillSummaryBtn'),
+  clearBrowserSnapshotsBtn: document.getElementById('clearBrowserSnapshotsBtn'),
+  browserSkillStatus: document.getElementById('browserSkillStatus'),
+  browserSkillUrl: document.getElementById('browserSkillUrl'),
+  browserSkillTitleValue: document.getElementById('browserSkillTitleValue'),
+  browserSkillElementCount: document.getElementById('browserSkillElementCount'),
+  browserSkillFriction: document.getElementById('browserSkillFriction'),
+  browserIndexedElements: document.getElementById('browserIndexedElements'),
+  browserEvidencePanel: document.getElementById('browserEvidencePanel'),
+  browserSnapshotHistory: document.getElementById('browserSnapshotHistory'),
+  browserCaptchaState: document.getElementById('browserCaptchaState'),
+  browserProxyState: document.getElementById('browserProxyState'),
+  browserStealthState: document.getElementById('browserStealthState'),
+  browserSessionResilienceState: document.getElementById('browserSessionResilienceState'),
   learningName: document.getElementById('learningName'),
   learningDescription: document.getElementById('learningDescription'),
   startLearningBtn: document.getElementById('startLearningBtn'),
@@ -297,6 +316,10 @@ function bindEvents() {
   el.copyDemoScriptBtn.addEventListener('click', copyDemoScript);
   el.saveRunNoteBtn.addEventListener('click', saveRunNote);
   el.clearRunNoteBtn.addEventListener('click', clearRunNote);
+  el.captureBrowserTabBtn.addEventListener('click', captureBrowserActiveTab);
+  el.indexBrowserPageBtn.addEventListener('click', indexBrowserActivePage);
+  el.copyBrowserSkillSummaryBtn.addEventListener('click', copyBrowserSkillSummary);
+  el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
 
   el.startRunBtn.addEventListener('click', () => {
     state.operator.goal = el.instructionInput.value.trim();
@@ -653,6 +676,7 @@ function renderHeader() {
 
 function renderOperate() {
   renderDemoMissionControl();
+  renderBrowserSkills();
   el.operatorGoal.textContent = state.operator.goal || '-';
   el.operatorPlan.textContent = state.operator.planPreview
     ? `Plan preview: ${state.operator.planPreview.status || 'PlanDrafted'}`
@@ -731,6 +755,102 @@ function saveDemoGuidanceCollapsed(collapsed) {
   }
 }
 
+function loadBrowserSkillStore() {
+  try {
+    const raw = localStorage.getItem(BROWSER_SKILLS_SNAPSHOT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const snapshots = Array.isArray(parsed && parsed.snapshots)
+        ? parsed.snapshots.map(normalizeBrowserSkillSnapshot).filter(Boolean)
+        : [];
+      return {
+        snapshots,
+        selectedSnapshotId: parsed && parsed.selectedSnapshotId && snapshots.some((item) => item.id === parsed.selectedSnapshotId)
+          ? parsed.selectedSnapshotId
+          : snapshots[0] ? snapshots[0].id : '',
+        status: 'idle',
+        statusMessage: 'Listo para capturar la pestaña activa.',
+        lastError: ''
+      };
+    }
+  } catch (error) {
+    console.warn('NODAL OS browser skills store unavailable', error);
+  }
+  return {
+    snapshots: [],
+    selectedSnapshotId: '',
+    status: 'idle',
+    statusMessage: 'Listo para capturar la pestaña activa.',
+    lastError: ''
+  };
+}
+
+function saveBrowserSkillStore(store = state.browserSkills) {
+  try {
+    const payload = {
+      schemaVersion: 1,
+      snapshots: (store.snapshots || []).slice(0, BROWSER_SKILLS_MAX_SNAPSHOTS),
+      selectedSnapshotId: store.selectedSnapshotId || ''
+    };
+    localStorage.setItem(BROWSER_SKILLS_SNAPSHOT_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('NODAL OS browser skills store save failed', error);
+  }
+}
+
+function normalizeBrowserSkillSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') {
+    return null;
+  }
+  const elements = Array.isArray(snapshot.elements)
+    ? snapshot.elements.map(normalizeBrowserIndexedElement).filter(Boolean)
+    : [];
+  const frictionEvents = Array.isArray(snapshot.frictionEvents)
+    ? snapshot.frictionEvents.map(normalizeBrowserFrictionEvent).filter(Boolean)
+    : [];
+  return {
+    id: String(snapshot.id || `browser-snapshot-${Date.now().toString(36)}`),
+    url: String(snapshot.url || ''),
+    title: String(snapshot.title || ''),
+    capturedAt: snapshot.capturedAt || new Date().toISOString(),
+    source: String(snapshot.source || 'sidepanel'),
+    status: String(snapshot.status || 'captured'),
+    elements,
+    frictionEvents,
+    summary: String(snapshot.summary || ''),
+    suggestedAction: String(snapshot.suggestedAction || browserSuggestedAction(frictionEvents)),
+    missionId: String(snapshot.missionId || ''),
+    missionTitle: String(snapshot.missionTitle || ''),
+    capabilitySummary: snapshot.capabilitySummary || browserCapabilitySummary(frictionEvents)
+  };
+}
+
+function normalizeBrowserIndexedElement(element) {
+  if (!element || typeof element !== 'object') {
+    return null;
+  }
+  return {
+    tag: String(element.tag || ''),
+    role: String(element.role || ''),
+    label: String(element.label || element.text || ''),
+    selector: String(element.selector || ''),
+    visible: element.visible !== false,
+    confidence: Number.isFinite(element.confidence) ? element.confidence : 0.7
+  };
+}
+
+function normalizeBrowserFrictionEvent(event) {
+  if (!event || typeof event !== 'object') {
+    return null;
+  }
+  return {
+    type: String(event.type || 'unknown'),
+    label: String(event.label || event.type || 'Fricción detectada'),
+    evidence: String(event.evidence || ''),
+    suggestedAction: String(event.suggestedAction || '')
+  };
+}
+
 function saveDemoStore(store = state.demo) {
   try {
     const payload = {
@@ -777,7 +897,8 @@ function createMissionRecord(title, description, createdAt = new Date().toISOStr
     createdAt,
     updatedAt: createdAt,
     status: 'ready',
-    runs: []
+    runs: [],
+    browserSkillSnapshots: []
   };
 }
 
@@ -792,7 +913,10 @@ function normalizeMissionRecord(mission) {
     createdAt: mission.createdAt || new Date().toISOString(),
     updatedAt: mission.updatedAt || mission.createdAt || new Date().toISOString(),
     status: mission.status || 'ready',
-    runs: Array.isArray(mission.runs) ? mission.runs.map(normalizeRunRecord).filter(Boolean) : []
+    runs: Array.isArray(mission.runs) ? mission.runs.map(normalizeRunRecord).filter(Boolean) : [],
+    browserSkillSnapshots: Array.isArray(mission.browserSkillSnapshots)
+      ? mission.browserSkillSnapshots.map(normalizeBrowserSkillSnapshot).filter(Boolean)
+      : []
   };
 }
 
@@ -1349,6 +1473,624 @@ async function copyDemoReport() {
     addLog('local', { kind: 'DemoReportCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
   }
   render();
+}
+
+async function captureBrowserActiveTab() {
+  await captureBrowserSkillSnapshot({ includeDom: false });
+}
+
+async function indexBrowserActivePage() {
+  await captureBrowserSkillSnapshot({ includeDom: true });
+}
+
+async function captureBrowserSkillSnapshot(options = {}) {
+  const includeDom = Boolean(options.includeDom);
+  state.browserSkills.status = includeDom ? 'indexing' : 'capturing';
+  state.browserSkills.statusMessage = includeDom ? 'Indexando página activa...' : 'Capturando pestaña activa...';
+  state.browserSkills.lastError = '';
+  renderBrowserSkills();
+
+  try {
+    const tab = await readActiveBrowserTab();
+    let pageState = null;
+    let technicalBlock = '';
+    if (includeDom) {
+      const canIndex = isBrowserScriptingAvailable() && /^https?:\/\//i.test(tab.url || '');
+      if (canIndex) {
+        try {
+          pageState = await executeBrowserPageIndex(tab.id);
+        } catch (error) {
+          technicalBlock = toMessage(error);
+        }
+      } else {
+        technicalBlock = browserIndexingBlockReason(tab);
+      }
+    }
+    const snapshot = buildBrowserSkillSnapshot(tab, pageState, {
+      includeDom,
+      indexed: Boolean(pageState),
+      technicalBlock
+    });
+    persistBrowserSkillSnapshot(snapshot);
+    state.browserSkills.status = snapshot.status === 'NOT_IMPLEMENTED_BLOCKED_BY_CURRENT_EXTENSION_CAPABILITIES' ? 'limited' : 'captured';
+    state.browserSkills.statusMessage = snapshot.status === 'indexed'
+      ? 'Página indexada y guardada en historial.'
+      : snapshot.status === 'captured'
+        ? 'Pestaña capturada. Usá Indexar página para leer elementos visibles.'
+        : 'No pude leer la pestaña desde este contexto.';
+    addLog('local', {
+      kind: 'BrowserSkillSnapshot',
+      snapshotId: snapshot.id,
+      status: snapshot.status,
+      elements: snapshot.elements.length,
+      friction: snapshot.frictionEvents.map((item) => item.type).join(', ') || 'none'
+    });
+  } catch (error) {
+    const snapshot = createUnavailableBrowserSnapshot(toMessage(error));
+    persistBrowserSkillSnapshot(snapshot);
+    state.browserSkills.status = 'limited';
+    state.browserSkills.statusMessage = 'No pude leer la pestaña desde este contexto.';
+    state.browserSkills.lastError = snapshot.summary;
+    addLog('local', {
+      kind: 'BrowserSkillSnapshotUnavailable',
+      status: snapshot.status,
+      reason: snapshot.summary
+    });
+  }
+
+  render();
+}
+
+function isBrowserTabsAvailable() {
+  return typeof chrome !== 'undefined' && Boolean(chrome.tabs && typeof chrome.tabs.query === 'function');
+}
+
+function isBrowserScriptingAvailable() {
+  return typeof chrome !== 'undefined' && Boolean(chrome.scripting && typeof chrome.scripting.executeScript === 'function');
+}
+
+async function readActiveBrowserTab() {
+  if (!isBrowserTabsAvailable()) {
+    throw new Error('chrome.tabs.query no está disponible fuera del sidepanel instalado.');
+  }
+  const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const tab = tabs && tabs[0];
+  if (!tab || typeof tab.id !== 'number') {
+    throw new Error('No se encontró una pestaña activa legible.');
+  }
+  return tab;
+}
+
+function browserIndexingBlockReason(tab) {
+  if (!isBrowserScriptingAvailable()) {
+    return 'chrome.scripting.executeScript no está disponible en este contexto.';
+  }
+  if (!/^https?:\/\//i.test(tab && tab.url ? tab.url : '')) {
+    return 'La indexación DOM sólo está disponible para páginas http/https desde la extensión instalada.';
+  }
+  return '';
+}
+
+async function executeBrowserPageIndex(tabId) {
+  if (!isBrowserScriptingAvailable()) {
+    throw new Error('chrome.scripting.executeScript no está disponible en este contexto.');
+  }
+  const result = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: collectBrowserSkillPageState
+  });
+  const pageState = result && result[0] && result[0].result ? result[0].result : null;
+  if (!pageState) {
+    throw new Error('La página no devolvió un snapshot indexable.');
+  }
+  return pageState;
+}
+
+function buildBrowserSkillSnapshot(tab, pageState, options = {}) {
+  const mission = activeDemoMission();
+  const capturedAt = new Date().toISOString();
+  const elements = Array.isArray(pageState && pageState.elements)
+    ? pageState.elements.map(normalizeBrowserIndexedElement).filter(Boolean)
+    : [];
+  const frictionEvents = Array.isArray(pageState && pageState.frictionEvents)
+    ? pageState.frictionEvents.map(normalizeBrowserFrictionEvent).filter(Boolean)
+    : [];
+  const url = safeBrowserUrl(pageState && pageState.url ? pageState.url : tab.url || '');
+  const title = redactSensitive(pageState && pageState.title ? pageState.title : tab.title || 'Pestaña activa');
+  const technicalBlock = options.technicalBlock || '';
+  const status = technicalBlock
+    ? 'NOT_IMPLEMENTED_BLOCKED_BY_CURRENT_EXTENSION_CAPABILITIES'
+    : options.indexed
+      ? 'indexed'
+      : 'captured';
+  const suggestedAction = technicalBlock
+    ? 'Abrir NODAL OS como extensión instalada sobre una página http/https.'
+    : browserSuggestedAction(frictionEvents);
+  const summary = technicalBlock
+    ? technicalBlock
+    : `${title || 'Pestaña activa'} · ${elements.length} elementos · ${browserFrictionLabel(frictionEvents)}`;
+
+  return normalizeBrowserSkillSnapshot({
+    id: `browser-snapshot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    url,
+    title,
+    capturedAt,
+    source: options.indexed ? 'chrome.scripting.executeScript' : 'chrome.tabs.query',
+    status,
+    elements,
+    frictionEvents,
+    summary,
+    suggestedAction,
+    missionId: mission ? mission.id : '',
+    missionTitle: mission ? mission.title : '',
+    capabilitySummary: browserCapabilitySummary(frictionEvents)
+  });
+}
+
+function createUnavailableBrowserSnapshot(reason) {
+  const mission = activeDemoMission();
+  const frictionEvents = [{
+    type: 'extension_context_unavailable',
+    label: 'Contexto de extensión no disponible',
+    evidence: reason,
+    suggestedAction: 'Abrir el sidepanel desde la extensión instalada.'
+  }];
+  return normalizeBrowserSkillSnapshot({
+    id: `browser-snapshot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    url: '',
+    title: 'Sin captura de pestaña',
+    capturedAt: new Date().toISOString(),
+    source: 'sidepanel-local-context',
+    status: 'NOT_IMPLEMENTED_BLOCKED_BY_CURRENT_EXTENSION_CAPABILITIES',
+    elements: [],
+    frictionEvents,
+    summary: reason || 'No pude leer la pestaña desde este contexto.',
+    suggestedAction: 'Abrir el sidepanel real instalado y volver a capturar.',
+    missionId: mission ? mission.id : '',
+    missionTitle: mission ? mission.title : '',
+    capabilitySummary: browserCapabilitySummary(frictionEvents)
+  });
+}
+
+function persistBrowserSkillSnapshot(snapshot) {
+  const normalized = normalizeBrowserSkillSnapshot(snapshot);
+  if (!normalized) {
+    return;
+  }
+  state.browserSkills.snapshots = [
+    normalized,
+    ...(state.browserSkills.snapshots || []).filter((item) => item.id !== normalized.id)
+  ].slice(0, BROWSER_SKILLS_MAX_SNAPSHOTS);
+  state.browserSkills.selectedSnapshotId = normalized.id;
+  attachBrowserSkillSnapshotToMission(normalized);
+  saveBrowserSkillStore();
+}
+
+function attachBrowserSkillSnapshotToMission(snapshot) {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  const summary = {
+    ...snapshot,
+    elements: snapshot.elements.slice(0, 12),
+    frictionEvents: snapshot.frictionEvents.slice(0, 6)
+  };
+  mission.browserSkillSnapshots = [
+    summary,
+    ...(mission.browserSkillSnapshots || []).filter((item) => item.id !== snapshot.id)
+  ].slice(0, 8);
+
+  const run = selectedDemoRun() || (mission.runs && mission.runs[0]) || null;
+  if (run) {
+    const evidenceRef = `browser-skill:${snapshot.id}`;
+    const alreadyLinked = Array.isArray(run.timeline)
+      && run.timeline.some((step) => JSON.stringify(step.evidenceRefs || []).includes(evidenceRef));
+    if (!alreadyLinked) {
+      run.timeline.push(demoTimelineStep(
+        'Browser Skill capturado',
+        `${snapshot.elements.length} elementos indexados en ${snapshot.title || snapshot.url || 'pestaña activa'}.`,
+        'evidence-ready',
+        'BrowserSkill',
+        evidenceRef));
+    }
+    run.logs = [
+      { label: 'browser skill', value: `${snapshot.elements.length} elementos · ${browserFrictionLabel(snapshot.frictionEvents)}` },
+      ...(Array.isArray(run.logs) ? run.logs : [])
+    ].slice(0, 12);
+    run.summary = `${mission.title}: run demo con Browser Skill ${snapshot.id}.`;
+  }
+
+  syncDemoViewFromStore();
+  saveDemoStore();
+}
+
+function selectedBrowserSkillSnapshot() {
+  const snapshots = state.browserSkills.snapshots || [];
+  return snapshots.find((item) => item.id === state.browserSkills.selectedSnapshotId) || snapshots[0] || null;
+}
+
+function selectBrowserSkillSnapshot(snapshotId) {
+  if (!(state.browserSkills.snapshots || []).some((item) => item.id === snapshotId)) {
+    return;
+  }
+  state.browserSkills.selectedSnapshotId = snapshotId;
+  saveBrowserSkillStore();
+  renderBrowserSkills();
+}
+
+function clearBrowserSnapshotHistory() {
+  if (!confirm('Limpiar historial local de Browser Skills?')) {
+    return;
+  }
+  state.browserSkills.snapshots = [];
+  state.browserSkills.selectedSnapshotId = '';
+  state.browserSkills.status = 'idle';
+  state.browserSkills.statusMessage = 'Historial limpio. Capturá una pestaña para empezar.';
+  saveBrowserSkillStore();
+  addLog('local', { kind: 'BrowserSkillHistoryCleared' });
+  render();
+}
+
+function renderBrowserSkills() {
+  const snapshot = selectedBrowserSkillSnapshot();
+  const statusMessage = state.browserSkills.statusMessage || 'Listo para capturar la pestaña activa.';
+  el.browserSkillStatus.textContent = snapshot ? statusLabelForBrowserSnapshot(snapshot) : statusMessage;
+  el.browserSkillUrl.textContent = snapshot && snapshot.url ? compactText(snapshot.url, 72) : 'Sin captura';
+  el.browserSkillTitleValue.textContent = snapshot && snapshot.title ? compactText(snapshot.title, 72) : 'Sin captura';
+  el.browserSkillElementCount.textContent = snapshot ? String(snapshot.elements.length) : '0';
+  el.browserSkillFriction.textContent = snapshot ? browserFrictionLabel(snapshot.frictionEvents) : 'Sin señales';
+  el.browserCaptchaState.textContent = snapshot ? snapshot.capabilitySummary.captcha : 'sin señales';
+  el.browserProxyState.textContent = snapshot ? snapshot.capabilitySummary.proxy : 'no configurado en esta demo';
+  el.browserStealthState.textContent = snapshot ? snapshot.capabilitySummary.stealth : 'no activo en esta demo';
+  el.browserSessionResilienceState.textContent = snapshot ? snapshot.capabilitySummary.sessionResilience : 'sin fricción detectada';
+  renderBrowserIndexedElements(snapshot);
+  renderBrowserEvidence(snapshot);
+  renderBrowserSnapshotHistory();
+}
+
+function renderBrowserIndexedElements(snapshot) {
+  const elements = snapshot && Array.isArray(snapshot.elements) ? snapshot.elements : [];
+  if (!elements.length) {
+    el.browserIndexedElements.innerHTML = '<p class="browser-empty-state">Capturá e indexá una página para ver links, botones, inputs y headings.</p>';
+    return;
+  }
+  el.browserIndexedElements.innerHTML = elements.slice(0, 24).map((item) => `
+    <div class="browser-element-row">
+      <span>${safeHtml(item.role || item.tag || 'elemento')}</span>
+      <strong>${safeHtml(compactText(item.label || item.selector || 'sin etiqueta', 78))}</strong>
+      <small>${safeHtml(item.selector || item.tag)} · ${Math.round((item.confidence || 0) * 100)}%</small>
+    </div>`).join('');
+}
+
+function renderBrowserEvidence(snapshot) {
+  if (!snapshot) {
+    el.browserEvidencePanel.innerHTML = '<p class="browser-empty-state">La evidencia aparece después de capturar una pestaña.</p>';
+    return;
+  }
+  const friction = snapshot.frictionEvents.length
+    ? snapshot.frictionEvents.map((event) => `<li>${safeHtml(event.label)}${event.evidence ? ` · ${safeHtml(compactText(event.evidence, 72))}` : ''}</li>`).join('')
+    : '<li>Sin fricción visible.</li>';
+  el.browserEvidencePanel.innerHTML = `
+    <dl>
+      <dt>Snapshot</dt><dd>${safeHtml(snapshot.id)}</dd>
+      <dt>Estado</dt><dd>${safeHtml(statusLabelForBrowserSnapshot(snapshot))}</dd>
+      <dt>Fuente</dt><dd>${safeHtml(snapshot.source)}</dd>
+      <dt>Fecha</dt><dd>${safeHtml(formatDemoDate(snapshot.capturedAt))}</dd>
+      <dt>Misión</dt><dd>${safeHtml(snapshot.missionTitle || 'sin misión asociada')}</dd>
+      <dt>Acción sugerida</dt><dd>${safeHtml(snapshot.suggestedAction || browserSuggestedAction(snapshot.frictionEvents))}</dd>
+    </dl>
+    <div class="browser-friction-list">
+      <strong>Fricción detectada</strong>
+      <ul>${friction}</ul>
+    </div>`;
+}
+
+function renderBrowserSnapshotHistory() {
+  const snapshots = state.browserSkills.snapshots || [];
+  if (!snapshots.length) {
+    el.browserSnapshotHistory.innerHTML = '<p class="browser-empty-state">Sin snapshots todavía.</p>';
+    return;
+  }
+  el.browserSnapshotHistory.innerHTML = snapshots.map((snapshot) => {
+    const active = snapshot.id === state.browserSkills.selectedSnapshotId;
+    return `
+      <button class="browser-snapshot-item${active ? ' active' : ''}" type="button" data-browser-snapshot-id="${safeHtml(snapshot.id)}">
+        <strong>${safeHtml(compactText(snapshot.title || snapshot.url || 'Pestaña capturada', 64))}</strong>
+        <small>${safeHtml(formatDemoDate(snapshot.capturedAt))} · ${snapshot.elements.length} elementos</small>
+        <span>${safeHtml(browserFrictionLabel(snapshot.frictionEvents))}</span>
+      </button>`;
+  }).join('');
+  el.browserSnapshotHistory.querySelectorAll('[data-browser-snapshot-id]').forEach((button) => {
+    button.addEventListener('click', () => selectBrowserSkillSnapshot(button.getAttribute('data-browser-snapshot-id')));
+  });
+}
+
+async function copyBrowserSkillSummary() {
+  const snapshot = selectedBrowserSkillSnapshot();
+  if (!snapshot) {
+    addLog('local', { kind: 'BrowserSkillCopySkipped', reason: 'no snapshot' });
+    render();
+    return;
+  }
+  const summary = buildBrowserSkillSummary(snapshot);
+  try {
+    await navigator.clipboard.writeText(summary);
+    addLog('local', { kind: 'BrowserSkillSummaryCopied', snapshotId: snapshot.id });
+  } catch (error) {
+    addLog('local', { kind: 'BrowserSkillSummaryCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
+function buildBrowserSkillSummary(snapshot) {
+  const elements = snapshot.elements.slice(0, 12).map((item) => `- ${item.role || item.tag}: ${item.label || item.selector || 'sin etiqueta'}`);
+  const friction = snapshot.frictionEvents.length
+    ? snapshot.frictionEvents.map((event) => `- ${event.label}: ${event.evidence || event.suggestedAction || 'detectado'}`)
+    : ['- Sin fricción visible'];
+  return [
+    'NODAL OS — Browser Skill',
+    `snapshot_id: ${snapshot.id}`,
+    `captured_at: ${snapshot.capturedAt}`,
+    `url: ${snapshot.url || 'sin url'}`,
+    `title: ${snapshot.title || 'sin título'}`,
+    `status: ${snapshot.status}`,
+    `mission: ${snapshot.missionTitle || 'sin misión asociada'}`,
+    `elements_found: ${snapshot.elements.length}`,
+    `friction: ${browserFrictionLabel(snapshot.frictionEvents)}`,
+    `suggested_action: ${snapshot.suggestedAction || browserSuggestedAction(snapshot.frictionEvents)}`,
+    'indexed_elements:',
+    ...(elements.length ? elements : ['- Sin elementos indexados']),
+    'friction_events:',
+    ...friction,
+    `captcha: ${snapshot.capabilitySummary.captcha}`,
+    `proxy: ${snapshot.capabilitySummary.proxy}`,
+    `stealth: ${snapshot.capabilitySummary.stealth}`,
+    `session_resilience: ${snapshot.capabilitySummary.sessionResilience}`,
+    'BrowserAct: referencia externa no usada en runtime'
+  ].join('\n');
+}
+
+function statusLabelForBrowserSnapshot(snapshot) {
+  if (!snapshot) {
+    return 'Esperando captura';
+  }
+  if (snapshot.status === 'indexed') {
+    return 'Página indexada';
+  }
+  if (snapshot.status === 'captured') {
+    return 'Pestaña capturada';
+  }
+  if (snapshot.status === 'NOT_IMPLEMENTED_BLOCKED_BY_CURRENT_EXTENSION_CAPABILITIES') {
+    return 'Captura no disponible en este contexto';
+  }
+  return snapshot.status || 'Captura registrada';
+}
+
+function browserFrictionLabel(events) {
+  const list = Array.isArray(events) ? events : [];
+  if (!list.length) {
+    return 'Sin señales';
+  }
+  return list.map((item) => item.label || item.type).join(', ');
+}
+
+function browserSuggestedAction(events) {
+  const list = Array.isArray(events) ? events : [];
+  if (!list.length) {
+    return 'Continuar con revisión de elementos y evidencia.';
+  }
+  if (list.some((item) => item.type === 'captcha_visible')) {
+    return 'Revisar captcha manualmente antes de continuar.';
+  }
+  if (list.some((item) => item.type === 'login_required' || item.type === 'session_expired')) {
+    return 'Confirmar sesión manualmente y volver a capturar.';
+  }
+  if (list.some((item) => item.type === 'access_restricted')) {
+    return 'Revisar acceso o permisos de la página.';
+  }
+  if (list.some((item) => item.type === 'empty_or_error')) {
+    return 'Recargar la página o revisar la URL.';
+  }
+  return list[0].suggestedAction || 'Revisar la señal detectada.';
+}
+
+function browserCapabilitySummary(events) {
+  const list = Array.isArray(events) ? events : [];
+  const hasCaptcha = list.some((item) => item.type === 'captcha_visible');
+  const sessionIssue = list.find((item) => item.type === 'session_expired' || item.type === 'login_required' || item.type === 'access_restricted');
+  return {
+    captcha: hasCaptcha ? 'detectado; revisión humana sugerida' : 'no detectado',
+    proxy: 'no configurado en esta demo',
+    stealth: 'no activo en esta demo',
+    sessionResilience: sessionIssue ? sessionIssue.suggestedAction || 'revisar sesión manualmente' : 'sin fricción detectada'
+  };
+}
+
+function safeBrowserUrl(value) {
+  const raw = String(value || '');
+  if (!raw) {
+    return '';
+  }
+  try {
+    const url = new URL(raw);
+    const sensitiveKeys = ['token', 'access_token', 'refresh_token', 'id_token', 'api_key', 'apikey', 'key', 'secret', 'password', 'session', 'cookie', 'code'];
+    sensitiveKeys.forEach((key) => {
+      if (url.searchParams.has(key)) {
+        url.searchParams.set(key, '[redacted]');
+      }
+    });
+    return redactSensitive(url.toString());
+  } catch {
+    return redactSensitive(raw);
+  }
+}
+
+function compactText(value, maxLength = 80) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return text.length > maxLength ? `${text.slice(0, Math.max(0, maxLength - 1))}…` : text;
+}
+
+function collectBrowserSkillPageState() {
+  const now = new Date().toISOString();
+  const bodyText = ((document.body && document.body.innerText) || '').replace(/\s+/g, ' ').trim();
+  const selectors = [
+    'a[href]',
+    'button',
+    'input',
+    'textarea',
+    'select',
+    'h1',
+    'h2',
+    'h3',
+    'form',
+    '[role="button"]',
+    '[role="link"]'
+  ];
+
+  function scrub(value, maxLength) {
+    return String(value || '')
+      .replace(/\s+/g, ' ')
+      .replace(/(password|passwd|secret|token|access_token|refresh_token|api[_-]?key|cookie|authorization)\s*[:=]\s*[^;\s,}]+/gi, '$1=[redacted]')
+      .trim()
+      .slice(0, maxLength || 120);
+  }
+
+  function isVisible(element) {
+    if (!element || !(element instanceof Element)) {
+      return false;
+    }
+    const style = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return style.display !== 'none'
+      && style.visibility !== 'hidden'
+      && Number(style.opacity || 1) > 0
+      && rect.width > 0
+      && rect.height > 0;
+  }
+
+  function cssEscape(value) {
+    if (window.CSS && typeof window.CSS.escape === 'function') {
+      return window.CSS.escape(String(value));
+    }
+    return String(value).replace(/["\\#.:,[\]>+~*'=]/g, '\\$&');
+  }
+
+  function selectorFor(element) {
+    const tag = element.tagName.toLowerCase();
+    if (element.id) {
+      return `#${cssEscape(element.id)}`;
+    }
+    const aria = element.getAttribute('aria-label');
+    if (aria) {
+      return `${tag}[aria-label="${scrub(aria, 60).replace(/"/g, '\\"')}"]`;
+    }
+    const name = element.getAttribute('name');
+    if (name) {
+      return `${tag}[name="${scrub(name, 60).replace(/"/g, '\\"')}"]`;
+    }
+    const type = element.getAttribute('type');
+    if (type && (tag === 'input' || tag === 'button')) {
+      return `${tag}[type="${scrub(type, 24).replace(/"/g, '\\"')}"]`;
+    }
+    const siblings = Array.from(element.parentElement ? element.parentElement.children : []);
+    const sameTag = siblings.filter((item) => item.tagName === element.tagName);
+    const index = sameTag.indexOf(element) + 1;
+    return index > 0 ? `${tag}:nth-of-type(${index})` : tag;
+  }
+
+  function roleFor(element) {
+    const explicit = element.getAttribute('role');
+    if (explicit) {
+      return scrub(explicit, 40);
+    }
+    const tag = element.tagName.toLowerCase();
+    if (tag === 'a') return 'link';
+    if (tag === 'button') return 'button';
+    if (tag === 'textarea') return 'textbox';
+    if (tag === 'select') return 'select';
+    if (/^h[1-6]$/.test(tag)) return 'heading';
+    if (tag === 'form') return 'form';
+    if (tag === 'input') {
+      const type = (element.getAttribute('type') || 'text').toLowerCase();
+      if (type === 'checkbox' || type === 'radio') return type;
+      if (type === 'submit') return 'button';
+      return 'textbox';
+    }
+    return tag;
+  }
+
+  function labelFor(element) {
+    const tag = element.tagName.toLowerCase();
+    const labelledBy = element.getAttribute('aria-labelledby');
+    const labelledByText = labelledBy
+      ? labelledBy.split(/\s+/).map((id) => {
+        const ref = document.getElementById(id);
+        return ref ? ref.innerText : '';
+      }).join(' ')
+      : '';
+    const labelNode = element.id ? document.querySelector(`label[for="${cssEscape(element.id)}"]`) : null;
+    const label = element.getAttribute('aria-label')
+      || labelledByText
+      || (labelNode && labelNode.innerText)
+      || element.getAttribute('placeholder')
+      || element.getAttribute('name')
+      || (tag === 'input' ? element.getAttribute('type') : '')
+      || element.innerText
+      || element.textContent
+      || tag;
+    return scrub(label, 96);
+  }
+
+  const elements = Array.from(document.querySelectorAll(selectors.join(',')))
+    .filter(isVisible)
+    .slice(0, 60)
+    .map((element) => ({
+      tag: element.tagName.toLowerCase(),
+      role: roleFor(element),
+      label: labelFor(element),
+      selector: selectorFor(element),
+      visible: true,
+      confidence: element.id || element.getAttribute('aria-label') ? 0.92 : 0.72
+    }));
+
+  const frictionEvents = [];
+  function addFriction(type, label, evidence, suggestedAction) {
+    if (!frictionEvents.some((item) => item.type === type)) {
+      frictionEvents.push({ type, label, evidence: scrub(evidence, 96), suggestedAction });
+    }
+  }
+
+  const text = bodyText.toLowerCase();
+  const title = document.title || '';
+  if (/captcha|recaptcha|hcaptcha|verify you are human|i'?m not a robot|no soy un robot|verifica que eres humano/i.test(bodyText)
+    || document.querySelector('[class*="captcha" i], [id*="captcha" i], iframe[src*="captcha" i]')) {
+    addFriction('captcha_visible', 'Captcha visible', 'captcha marker', 'Resolver o revisar captcha manualmente.');
+  }
+  if (document.querySelector('input[type="password"], input[name*="email" i], input[type="email"]')
+    || /sign in|log in|login|iniciar sesión|ingresar|password|contraseña/i.test(bodyText)) {
+    addFriction('login_required', 'Login requerido', 'login/password marker', 'Confirmar sesión manualmente.');
+  }
+  if (/access denied|forbidden|not authorized|blocked|unavailable|acceso denegado|prohibido|no autorizado/i.test(bodyText)) {
+    addFriction('access_restricted', 'Acceso restringido', 'access restriction marker', 'Revisar permisos de acceso.');
+  }
+  if (!bodyText || bodyText.length < 20 || /error|not found|404|500|server error/i.test(title)) {
+    addFriction('empty_or_error', 'Página vacía o error', title || 'low text content', 'Recargar o revisar la URL.');
+  }
+  if (/session expired|session timeout|sesión expirada|sesion expirada|tu sesión expiró|expired session/i.test(text)) {
+    addFriction('session_expired', 'Sesión expirada', 'session marker', 'Renovar sesión manualmente.');
+  }
+
+  const summary = `${title || location.hostname || 'Página'} · ${elements.length} elementos · ${frictionEvents.length ? frictionEvents.map((item) => item.label).join(', ') : 'sin fricción visible'}`;
+  return {
+    url: location.href,
+    title,
+    timestamp: now,
+    elements,
+    frictionEvents,
+    summary,
+    source: 'page-dom'
+  };
 }
 
 function applyPlanPreview(plan) {

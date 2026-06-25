@@ -437,6 +437,210 @@ main {
   font-weight: 800;
 }
 
+.browser-skills-workspace {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(143, 184, 255, 0.2);
+  border-radius: 20px;
+  padding: 14px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(143, 184, 255, 0.16), transparent 38%),
+    linear-gradient(135deg, rgba(102, 227, 196, 0.08), transparent 44%),
+    rgba(8, 13, 20, 0.7);
+}
+
+.browser-skills-head {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.browser-skills-head h2 {
+  margin: 8px 0 0;
+  font-family: var(--nos-font-heading);
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+
+.browser-skills-head p {
+  max-width: 560px;
+  margin: 7px 0 0;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.browser-skills-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.browser-skill-status-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.browser-skill-status-grid article,
+.browser-skill-panel {
+  border: 1px solid rgba(159, 181, 204, 0.14);
+  border-radius: 16px;
+  background: rgba(6, 10, 15, 0.42);
+}
+
+.browser-skill-status-grid article {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+}
+
+.browser-skill-status-grid span,
+.browser-skill-capability-strip span {
+  color: var(--nos-color-text-muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.browser-skill-status-grid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--nos-color-text);
+  font-size: 12px;
+}
+
+.browser-skills-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(180px, 0.7fr);
+  gap: 10px;
+}
+
+.browser-skill-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.browser-skill-panel h3 {
+  margin: 0;
+  font-family: var(--nos-font-heading);
+  font-size: 17px;
+  letter-spacing: -0.03em;
+}
+
+.browser-indexed-elements,
+.browser-evidence-panel,
+.browser-snapshot-history {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.browser-element-row,
+.browser-snapshot-item,
+.browser-empty-state,
+.browser-friction-list {
+  border: 1px solid rgba(159, 181, 204, 0.12);
+  border-radius: 13px;
+  background: rgba(13, 19, 27, 0.58);
+}
+
+.browser-element-row,
+.browser-snapshot-item {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 9px;
+  color: var(--nos-color-text);
+  text-align: left;
+}
+
+.browser-element-row span {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: rgba(102, 227, 196, 0.1);
+  color: #B9FFF0;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.browser-element-row strong,
+.browser-snapshot-item strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.browser-element-row small,
+.browser-snapshot-item small,
+.browser-snapshot-item span {
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+}
+
+.browser-snapshot-item.active {
+  border-color: rgba(102, 227, 196, 0.45);
+  background: rgba(102, 227, 196, 0.1);
+}
+
+.browser-empty-state {
+  margin: 0;
+  padding: 12px;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.browser-evidence-panel dl {
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 7px;
+  padding: 0;
+}
+
+.browser-friction-list {
+  padding: 10px;
+}
+
+.browser-friction-list strong {
+  color: var(--nos-color-text);
+  font-size: 12px;
+}
+
+.browser-friction-list ul {
+  display: grid;
+  gap: 5px;
+  margin: 7px 0 0;
+  padding-left: 18px;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+}
+
+.browser-skill-capability-strip {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.browser-skill-capability-strip span {
+  border: 1px solid rgba(159, 181, 204, 0.12);
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: rgba(6, 10, 15, 0.34);
+}
+
+.browser-skill-capability-strip strong {
+  color: var(--nos-color-text);
+  text-transform: none;
+}
+
 .mission-guidance-card {
   overflow: hidden;
   border-color: rgba(143, 184, 255, 0.2);
@@ -801,6 +1005,8 @@ main {
   .mission-layout,
   .mission-evidence-grid,
   .mission-workbench,
+  .browser-skill-status-grid,
+  .browser-skills-layout,
   .onboarding-grid,
   .guided-stepper {
     grid-template-columns: 1fr;

@@ -162,15 +162,17 @@ public sealed class NativeBrowserSkillsFoundationM1269ATests
     }
 
     [TestMethod]
-    public void SidepanelShowsBrowserSkillsDiscreetlyInAdvancedModeAndKeepsDemoHooks()
+    public void SidepanelShowsNativeBrowserSkillsProductSurfaceAndKeepsDemoHooks()
     {
         var html = ReadRepoText(SidepanelHtmlPath);
 
         StringAssert.Contains(html, "Browser Skills");
-        StringAssert.Contains(html, "Base futura para habilidades de navegador.");
-        StringAssert.Contains(html, "Sin runtime activo en esta demo.");
+        StringAssert.Contains(html, "browserSkillsWorkspace");
+        StringAssert.Contains(html, "Capturar pestaña");
+        StringAssert.Contains(html, "Indexar página");
+        StringAssert.Contains(html, "Browser Evidence");
         StringAssert.Contains(html, "BrowserAct");
-        StringAssert.Contains(html, "reference only");
+        StringAssert.Contains(html, "referencia externa no usada");
         StringAssert.Contains(html, "Run demo");
         StringAssert.Contains(html, "demoGuidanceCard");
         StringAssert.Contains(html, "demoReadyCard");

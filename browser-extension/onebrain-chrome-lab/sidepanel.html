@@ -40,6 +40,7 @@
             <a href="#missionCreateForm">Misiones</a>
             <a href="#demoRunHistory">Historial</a>
             <a href="#demoScriptPanel">Guion demo</a>
+            <a href="#browserSkillsWorkspace">Browser Skills</a>
             <a href="#demoTimeline">Timeline</a>
             <a href="#demoEvidencePanel">Evidencia</a>
             <a href="#demoTechnicalReport">Resumen</a>
@@ -169,6 +170,78 @@
             <p id="demoNextStep">Próximo paso: tocar Run demo.</p>
           </section>
 
+          <section id="browserSkillsWorkspace" class="browser-skills-workspace" aria-labelledby="browserSkillsTitle">
+            <div class="section-head browser-skills-head">
+              <div>
+                <span class="mission-kicker">Browser Skills</span>
+                <h2 id="browserSkillsTitle">Leer pestaña activa</h2>
+                <p>Capturá URL, título, elementos visibles y fricción básica desde la extensión instalada.</p>
+              </div>
+              <div class="browser-skills-actions">
+                <button id="captureBrowserTabBtn" class="primary" type="button">Capturar pestaña</button>
+                <button id="indexBrowserPageBtn" type="button">Indexar página</button>
+                <button id="copyBrowserSkillSummaryBtn" type="button">Copiar resumen Browser Skill</button>
+              </div>
+            </div>
+
+            <div class="browser-skill-status-grid" aria-label="Browser skill capture status">
+              <article>
+                <span>Estado</span>
+                <strong id="browserSkillStatus">Esperando captura</strong>
+              </article>
+              <article>
+                <span>URL</span>
+                <strong id="browserSkillUrl">Sin captura</strong>
+              </article>
+              <article>
+                <span>Título</span>
+                <strong id="browserSkillTitleValue">Sin captura</strong>
+              </article>
+              <article>
+                <span>Elementos</span>
+                <strong id="browserSkillElementCount">0</strong>
+              </article>
+              <article>
+                <span>Fricción</span>
+                <strong id="browserSkillFriction">Sin señales</strong>
+              </article>
+            </div>
+
+            <div class="browser-skills-layout">
+              <article class="browser-skill-panel">
+                <div class="section-head">
+                  <h3>Elementos indexados</h3>
+                  <span class="mission-chip">links / botones / inputs</span>
+                </div>
+                <div id="browserIndexedElements" class="browser-indexed-elements"></div>
+              </article>
+
+              <article class="browser-skill-panel">
+                <div class="section-head">
+                  <h3>Browser Evidence</h3>
+                  <span class="mission-chip">local</span>
+                </div>
+                <div id="browserEvidencePanel" class="browser-evidence-panel"></div>
+              </article>
+
+              <article class="browser-skill-panel">
+                <div class="section-head">
+                  <h3>Historial snapshots</h3>
+                  <button id="clearBrowserSnapshotsBtn" type="button">Limpiar</button>
+                </div>
+                <div id="browserSnapshotHistory" class="browser-snapshot-history"></div>
+              </article>
+            </div>
+
+            <div class="browser-skill-capability-strip" aria-label="Browser skill capabilities">
+              <span>Captcha: <strong id="browserCaptchaState">sin señales</strong></span>
+              <span>Proxy: <strong id="browserProxyState">no configurado en esta demo</strong></span>
+              <span>Stealth: <strong id="browserStealthState">no activo en esta demo</strong></span>
+              <span>Sesión: <strong id="browserSessionResilienceState">sin fricción detectada</strong></span>
+              <span>BrowserAct: <strong>referencia externa no usada en runtime</strong></span>
+            </div>
+          </section>
+
           <div class="mission-layout">
             <section class="mission-timeline-card" aria-labelledby="demoTimelineTitle">
               <div class="section-head">
@@ -265,19 +338,19 @@
       <details class="surface command-surface advanced-command-surface">
         <summary>Modo avanzado</summary>
         <div class="advanced-command-body">
-        <section class="browser-skills-card" aria-labelledby="browserSkillsTitle">
+        <section class="browser-skills-card" aria-labelledby="browserSkillsAdvancedTitle">
           <div>
-            <span class="mission-kicker">Native foundation</span>
-            <h2 id="browserSkillsTitle">Browser Skills</h2>
-            <p>Base futura para habilidades de navegador.</p>
-            <p>Sin runtime activo en esta demo.</p>
+            <span class="mission-kicker">Browser Skills</span>
+            <h2 id="browserSkillsAdvancedTitle">Capacidades nativas</h2>
+            <p>La captura e indexación viven arriba en Mission Control.</p>
+            <p>BrowserAct queda como referencia externa, sin dependencia runtime.</p>
           </div>
           <dl>
-            <dt>Native browser skills</dt><dd>planned</dd>
-            <dt>CDP skills</dt><dd>planned</dd>
-            <dt>BrowserAct</dt><dd>reference only</dd>
-            <dt>Stealth / Proxy / Captcha</dt><dd>future descriptors</dd>
-            <dt>Runtime</dt><dd>not active</dd>
+            <dt>Native browser skills</dt><dd>captura e indexación local</dd>
+            <dt>CDP skills</dt><dd>lectura de estado con chrome.scripting</dd>
+            <dt>BrowserAct</dt><dd>referencia externa no usada</dd>
+            <dt>Stealth / Proxy / Captcha</dt><dd>resumen visible, sin bypass</dd>
+            <dt>Runtime</dt><dd>demo local</dd>
           </dl>
         </section>
         <label for="instructionInput">Instrucción avanzada</label>
