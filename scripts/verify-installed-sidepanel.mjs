@@ -21,6 +21,51 @@ const demoMissionTitle = 'Repo Harness Installed Sidepanel Mission';
 const demoMissionDescription = 'Repo-owned installed extension verification';
 const runNote = 'Repo harness installed sidepanel note';
 const timeoutMs = 30000;
+const workspaceHarnessMaxFiles = 80;
+const workspaceHarnessMaxDepth = 5;
+const workspaceHarnessIgnoredDirs = new Set([
+  '.cache',
+  '.git',
+  '.idea',
+  '.next',
+  '.turbo',
+  '.vs',
+  'bin',
+  'build',
+  'coverage',
+  'dist',
+  'node_modules',
+  'obj'
+]);
+const workspaceHarnessIgnoredFiles = new Set(['.git']);
+const workspaceHarnessIgnoredFilePrefixes = ['.env'];
+const workspaceHarnessProtectedPrefixes = [
+  'stealth-engine/',
+  'stealth-panel/',
+  'src/onebrain.chromelab.bridge/stealth/',
+  'src/onebrain.chromelab.bridge/sessions/'
+];
+const workspaceHarnessProtectedPaths = new Set([
+  'changelog.md',
+  'docker-compose.yml',
+  'docs/architecture.md',
+  'docs/configuration.md',
+  'docs/deployment.md',
+  'docs/operations.md',
+  'docs/roadmap.md',
+  'docs/stealth-audit-report.md',
+  'docs/stealth-engine-design.md',
+  'docs/stealth-reaudit-report.md',
+  'docs/unified-friction-integration-design.md',
+  'scripts/deploy.ps1',
+  'scripts/stop.ps1',
+  'src/onebrain.browserexecutor.cdp/browsercredentialboundaryservice.cs',
+  'src/onebrain.browserexecutor.contracts/browsercredentialboundarycontracts.cs',
+  'src/onebrain.chromelab.bridge/chromelaboptions.cs',
+  'src/onebrain.chromelab.bridge/chromelabprotocol.cs',
+  'src/onebrain.chromelab.bridge/dockerfile',
+  'src/onebrain.chromelab.bridge/program.cs'
+]);
 
 const result = {
   status: 'RUNNING',
@@ -69,9 +114,12 @@ async function main() {
 
   const fixture = await startFixtureServer();
   const workspaceFixture = await createWorkspaceFixture();
+  const repoWorkspaceFiles = await collectRepoWorkspaceFiles();
+  const workspaceFiles = repoWorkspaceFiles.length > 0 ? repoWorkspaceFiles : workspaceFixture.files;
   result.fixture = {
     url: fixture.url,
-    workspaceFiles: workspaceFixture.files.length
+    workspaceSelectionMode: repoWorkspaceFiles.length > 0 ? 'repo-limited-real-files' : 'fixture-fallback',
+    workspaceFiles: workspaceFiles.length
   };
 
   const debugPort = await getFreePort();
@@ -156,7 +204,7 @@ async function main() {
       result.missionFlow = await runMissionFlow(sidepanel);
       addCheck('Mission Control flow works in installed extension page', result.missionFlow.ok, result.missionFlow);
 
-      result.workspaceUnderstanding = await runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFixture.files);
+      result.workspaceUnderstanding = await runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFiles);
       addCheck('Workspace Understanding compatibility selection works in installed extension page', result.workspaceUnderstanding.ok, result.workspaceUnderstanding);
 
       await browser.send('Target.activateTarget', { targetId: fixtureTarget.id });
@@ -287,6 +335,29 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
     return true;
   })()`);
   await delay(700);
+  const planClearState = await evaluate(sidepanel, `(async () => {
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const clear = document.getElementById('clearMissionPlanBtn');
+    if (clear) clear.click();
+    await delay(250);
+    const missionStore = JSON.parse(localStorage.getItem('nodal-os.demoMissions.v1') || '{}');
+    const mission = Array.isArray(missionStore.missions) ? missionStore.missions.find((item) => item.id === missionStore.activeMissionId) || missionStore.missions[0] : null;
+    return {
+      clearButtonPresent: Boolean(clear),
+      planCleared: Boolean(mission && !mission.plan),
+      taskGraphText: document.getElementById('missionTaskGraph') ? document.getElementById('missionTaskGraph').innerText.slice(0, 300) : ''
+    };
+  })()`);
+  await evaluate(sidepanel, `(() => {
+    const regenerate = document.getElementById('regenerateMissionPlanBtn');
+    const copy = document.getElementById('copyMissionPlanBtn');
+    const run = document.getElementById('runSafeDemoBtn');
+    if (regenerate) regenerate.click();
+    if (copy) copy.click();
+    if (run) run.click();
+    return true;
+  })()`);
+  await delay(700);
 
   return evaluate(sidepanel, `(() => {
     const workspace = document.getElementById('workspaceUnderstanding');
@@ -297,6 +368,13 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
     const treeText = document.getElementById('workspaceTree') ? document.getElementById('workspaceTree').innerText.slice(0, 900) : '';
     const keyFilesText = document.getElementById('workspaceKeyFiles') ? document.getElementById('workspaceKeyFiles').innerText.slice(0, 900) : '';
     const stacksText = document.getElementById('workspaceStack') ? document.getElementById('workspaceStack').innerText : '';
+    const missionStore = JSON.parse(localStorage.getItem('nodal-os.demoMissions.v1') || '{}');
+    const mission = Array.isArray(missionStore.missions) ? missionStore.missions.find((item) => item.id === missionStore.activeMissionId) || missionStore.missions[0] : null;
+    const selectedRun = mission && Array.isArray(mission.runs)
+      ? mission.runs.find((item) => item.id === missionStore.selectedRunId) || mission.runs[0]
+      : null;
+    const plan = mission && mission.plan ? mission.plan : null;
+    const runPlan = selectedRun && selectedRun.plan ? selectedRun.plan : null;
     return {
       ok: Boolean(
         workspace
@@ -306,6 +384,14 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
         && context.commandsExecuted === false
         && context.filesModified === false
         && Number(store.counts && store.counts.files) > 0
+        && plan
+        && plan.tasks
+        && plan.tasks.length >= 3
+        && runPlan
+        && runPlan.tasks
+        && runPlan.tasks.length >= 3
+        && ${JSON.stringify(planClearState)}.clearButtonPresent === true
+        && ${JSON.stringify(planClearState)}.planCleared === true
         && evidenceText.includes('No se ejecutaron comandos')
         && evidenceText.includes('No se modificaron archivos')
       ),
@@ -326,6 +412,12 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
       keyFilesText,
       treeText,
       evidenceText,
+      planTaskCount: plan && Array.isArray(plan.tasks) ? plan.tasks.length : 0,
+      planClearState: ${JSON.stringify(planClearState)},
+      taskGraphText: document.getElementById('missionTaskGraph') ? document.getElementById('missionTaskGraph').innerText.slice(0, 900) : '',
+      planContextText: document.getElementById('missionPlanContext') ? document.getElementById('missionPlanContext').innerText : '',
+      runHasPlan: Boolean(runPlan),
+      runHasMissionContext: Boolean(selectedRun && selectedRun.missionContext),
       readOnly: context.readOnly === true,
       commandsExecuted: context.commandsExecuted === true,
       filesModified: context.filesModified === true
@@ -600,6 +692,91 @@ async function createWorkspaceFixture() {
     root: workspaceFixtureDir,
     files: absoluteFiles
   };
+}
+
+async function collectRepoWorkspaceFiles() {
+  const selected = [];
+  const seen = new Set();
+  const preferred = [
+    'OneBrain.slnx',
+    'package.json',
+    'tsconfig.json',
+    'README.md',
+    '.gitignore',
+    'browser-extension/onebrain-chrome-lab/manifest.json',
+    'browser-extension/onebrain-chrome-lab/sidepanel.html',
+    'browser-extension/onebrain-chrome-lab/sidepanel.js',
+    'scripts/verify-installed-sidepanel.mjs',
+    'tests/OneBrain.Safety.Tests/NodalOsProductVisibleLocalDemoM1161M1172Tests.cs'
+  ];
+
+  const addFile = (relativePath) => {
+    const normalized = normalizeHarnessPath(relativePath);
+    if (!normalized || seen.has(normalized) || isHarnessProtectedPath(normalized) || isHarnessIgnoredFilePath(normalized)) {
+      return;
+    }
+    const absolutePath = path.join(repoRoot, normalized);
+    if (!existsSync(absolutePath)) {
+      return;
+    }
+    seen.add(normalized);
+    selected.push(absolutePath);
+  };
+
+  for (const relativePath of preferred) {
+    addFile(relativePath);
+  }
+
+  async function walk(directory, depth) {
+    if (selected.length >= workspaceHarnessMaxFiles || depth > workspaceHarnessMaxDepth) {
+      return;
+    }
+    let entries = [];
+    try {
+      entries = await readdir(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    entries.sort((left, right) => left.name.localeCompare(right.name));
+    for (const entry of entries) {
+      if (selected.length >= workspaceHarnessMaxFiles) {
+        return;
+      }
+      const absolutePath = path.join(directory, entry.name);
+      const relativePath = normalizeHarnessPath(path.relative(repoRoot, absolutePath));
+      if (!relativePath || isHarnessProtectedPath(relativePath)) {
+        continue;
+      }
+      if (entry.isDirectory()) {
+        if (!workspaceHarnessIgnoredDirs.has(entry.name.toLowerCase())) {
+          await walk(absolutePath, depth + 1);
+        }
+        continue;
+      }
+      if (entry.isFile()) {
+        addFile(relativePath);
+      }
+    }
+  }
+
+  await walk(repoRoot, 0);
+  return selected.slice(0, workspaceHarnessMaxFiles);
+}
+
+function normalizeHarnessPath(value) {
+  return String(value || '').replace(/\\/g, '/').replace(/^\/+/, '').toLowerCase();
+}
+
+function isHarnessProtectedPath(relativePath) {
+  const normalized = normalizeHarnessPath(relativePath);
+  return workspaceHarnessProtectedPaths.has(normalized)
+    || workspaceHarnessProtectedPrefixes.some((prefix) => normalized.startsWith(prefix));
+}
+
+function isHarnessIgnoredFilePath(relativePath) {
+  const fileName = path.basename(normalizeHarnessPath(relativePath));
+  return workspaceHarnessIgnoredFiles.has(fileName)
+    || workspaceHarnessIgnoredFilePrefixes.some((prefix) => fileName.startsWith(prefix));
 }
 
 function getFreePort() {

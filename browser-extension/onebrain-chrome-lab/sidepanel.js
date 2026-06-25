@@ -29,6 +29,36 @@ const WORKSPACE_IGNORED_DIRS = new Set([
   '.yarn',
   'packages-cache'
 ]);
+const WORKSPACE_IGNORED_FILE_NAMES = new Set(['.git']);
+const WORKSPACE_IGNORED_FILE_PREFIXES = ['.env'];
+const WORKSPACE_PROTECTED_PATH_PREFIXES = [
+  'stealth-engine',
+  'stealth-panel',
+  'src/onebrain.chromelab.bridge/stealth',
+  'src/onebrain.chromelab.bridge/sessions'
+];
+const WORKSPACE_PROTECTED_PATHS = new Set([
+  'docker-compose.yml',
+  'scripts/deploy.ps1',
+  'scripts/stop.ps1',
+  'src/onebrain.chromelab.bridge/dockerfile',
+  'src/onebrain.chromelab.bridge/chromelaboptions.cs',
+  'src/onebrain.chromelab.bridge/chromelabprotocol.cs',
+  'src/onebrain.chromelab.bridge/program.cs',
+  'src/onebrain.browserexecutor.cdp/browsercredentialboundaryservice.cs',
+  'src/onebrain.browserexecutor.contracts/browsercredentialboundarycontracts.cs',
+  'docs/stealth-engine-design.md',
+  'docs/stealth-audit-report.md',
+  'docs/stealth-reaudit-report.md',
+  'docs/unified-friction-integration-design.md',
+  'docs/architecture.md',
+  'docs/configuration.md',
+  'docs/deployment.md',
+  'docs/operations.md',
+  'docs/roadmap.md',
+  'changelog.md'
+]);
+const MISSION_PLAN_TASK_RANGE = { min: 3, max: 7 };
 const DEMO_SCRIPT_STEPS = [
   'Abrí NODAL OS y presentá Mission Control como centro de misiones locales.',
   'Creá una misión corta para mostrar que el flujo empieza desde una intención simple.',
@@ -178,6 +208,12 @@ const el = {
   saveMissionBtn: document.getElementById('saveMissionBtn'),
   cancelMissionEditBtn: document.getElementById('cancelMissionEditBtn'),
   deleteMissionBtn: document.getElementById('deleteMissionBtn'),
+  regenerateMissionPlanBtn: document.getElementById('regenerateMissionPlanBtn'),
+  copyMissionPlanBtn: document.getElementById('copyMissionPlanBtn'),
+  clearMissionPlanBtn: document.getElementById('clearMissionPlanBtn'),
+  missionPlanContext: document.getElementById('missionPlanContext'),
+  missionPlanChips: document.getElementById('missionPlanChips'),
+  missionTaskGraph: document.getElementById('missionTaskGraph'),
   runSafeDemoBtn: document.getElementById('runSafeDemoBtn'),
   copyDemoReportBtn: document.getElementById('copyDemoReportBtn'),
   demoRunState: document.getElementById('demoRunState'),
@@ -354,6 +390,9 @@ function bindEvents() {
   el.saveMissionBtn.addEventListener('click', saveMissionEdit);
   el.cancelMissionEditBtn.addEventListener('click', cancelMissionEdit);
   el.deleteMissionBtn.addEventListener('click', deleteActiveMission);
+  el.regenerateMissionPlanBtn.addEventListener('click', regenerateMissionPlan);
+  el.copyMissionPlanBtn.addEventListener('click', copyMissionPlan);
+  el.clearMissionPlanBtn.addEventListener('click', clearMissionPlan);
   el.runSafeDemoBtn.addEventListener('click', runSafeDemo);
   el.copyDemoReportBtn.addEventListener('click', copyDemoReport);
   el.copyDemoScriptBtn.addEventListener('click', copyDemoScript);
@@ -1120,7 +1159,9 @@ function createMissionRecord(title, description, createdAt = new Date().toISOStr
     status: 'ready',
     runs: [],
     browserSkillSnapshots: [],
-    workspace: null
+    workspace: null,
+    missionContext: null,
+    plan: null
   };
 }
 
@@ -1139,7 +1180,9 @@ function normalizeMissionRecord(mission) {
     browserSkillSnapshots: Array.isArray(mission.browserSkillSnapshots)
       ? mission.browserSkillSnapshots.map(normalizeBrowserSkillSnapshot).filter(Boolean)
       : [],
-    workspace: normalizeMissionWorkspaceSummary(mission.workspace)
+    workspace: normalizeMissionWorkspaceSummary(mission.workspace),
+    missionContext: normalizeMissionContext(mission.missionContext),
+    plan: normalizeMissionPlan(mission.plan)
   };
 }
 
@@ -1152,10 +1195,83 @@ function normalizeMissionWorkspaceSummary(workspace) {
     pathLabel: String(workspace.pathLabel || ''),
     scannedAt: String(workspace.scannedAt || ''),
     status: String(workspace.status || ''),
+    source: String(workspace.source || ''),
+    selectedAt: String(workspace.selectedAt || ''),
     stacks: normalizeWorkspaceTextList(workspace.stacks),
     files: Number.isFinite(workspace.files) ? workspace.files : 0,
     folders: Number.isFinite(workspace.folders) ? workspace.folders : 0,
-    keyFiles: normalizeWorkspaceTextList(workspace.keyFiles).slice(0, 10)
+    keyFiles: normalizeWorkspaceTextList(workspace.keyFiles).slice(0, 10),
+    treeSummary: Array.isArray(workspace.treeSummary)
+      ? workspace.treeSummary.map(normalizeWorkspaceTreeItem).filter(Boolean).slice(0, 12)
+      : [],
+    projectSignals: Array.isArray(workspace.projectSignals)
+      ? workspace.projectSignals.map(normalizeWorkspaceSignal).filter(Boolean)
+      : []
+  };
+}
+
+function normalizeMissionContext(context) {
+  if (!context || typeof context !== 'object') {
+    return null;
+  }
+  return {
+    missionId: String(context.missionId || ''),
+    missionTitle: String(context.missionTitle || ''),
+    workspaceName: String(context.workspaceName || ''),
+    workspaceSource: String(context.workspaceSource || ''),
+    workspaceSelectedAt: String(context.workspaceSelectedAt || ''),
+    workspaceLastReadAt: String(context.workspaceLastReadAt || ''),
+    stacks: normalizeWorkspaceTextList(context.stacks),
+    keyFiles: normalizeWorkspaceTextList(context.keyFiles).slice(0, 10),
+    treeSummary: Array.isArray(context.treeSummary)
+      ? context.treeSummary.map(normalizeWorkspaceTreeItem).filter(Boolean).slice(0, 12)
+      : [],
+    projectSignals: Array.isArray(context.projectSignals)
+      ? context.projectSignals.map(normalizeWorkspaceSignal).filter(Boolean)
+      : [],
+    readOnly: context.readOnly !== false,
+    commandsExecuted: context.commandsExecuted === true,
+    filesModified: context.filesModified === true
+  };
+}
+
+function normalizeMissionPlan(plan) {
+  if (!plan || typeof plan !== 'object') {
+    return null;
+  }
+  const tasks = Array.isArray(plan.tasks)
+    ? plan.tasks.map(normalizeMissionPlanTask).filter(Boolean).slice(0, MISSION_PLAN_TASK_RANGE.max)
+    : [];
+  if (!tasks.length) {
+    return null;
+  }
+  return {
+    id: String(plan.id || `plan-${Date.now().toString(36)}`),
+    generatedAt: String(plan.generatedAt || new Date().toISOString()),
+    source: String(plan.source || 'local-deterministic'),
+    summary: String(plan.summary || 'Plan inicial local'),
+    contextUsed: normalizeWorkspaceTextList(plan.contextUsed),
+    readOnly: plan.readOnly !== false,
+    commandsExecuted: plan.commandsExecuted === true,
+    filesModified: plan.filesModified === true,
+    tasks
+  };
+}
+
+function normalizeMissionPlanTask(task) {
+  if (!task || typeof task !== 'object') {
+    return null;
+  }
+  return {
+    id: String(task.id || `task-${Date.now().toString(36)}`),
+    title: String(task.title || 'Paso local'),
+    status: String(task.status || 'Por hacer'),
+    reason: String(task.reason || 'Paso sugerido por contexto local.'),
+    source: String(task.source || 'local-deterministic'),
+    dependsOn: normalizeWorkspaceTextList(task.dependsOn),
+    evidenceRefs: normalizeWorkspaceTextList(task.evidenceRefs),
+    workspaceSignals: normalizeWorkspaceTextList(task.workspaceSignals),
+    readOnly: task.readOnly !== false
   };
 }
 
@@ -1176,7 +1292,9 @@ function normalizeRunRecord(run) {
     evidenceRef: run.evidenceRef || `evidence:demo:${run.id || 'run'}`,
     timeline: Array.isArray(run.timeline) ? run.timeline : [],
     logs: Array.isArray(run.logs) ? run.logs : [],
-    summary: run.summary || 'Run demo no-op completado.'
+    summary: run.summary || 'Run demo no-op completado.',
+    missionContext: normalizeMissionContext(run.missionContext),
+    plan: normalizeMissionPlan(run.plan)
   };
 }
 
@@ -1236,6 +1354,8 @@ function createMissionFromForm(event) {
   }
   const mission = createMissionRecord(title, description || 'Demo local no-op para probar Mission Control.');
   mission.workspace = workspaceMissionSummary();
+  mission.missionContext = buildMissionWorkspaceContext(mission);
+  mission.plan = generateMissionPlanSkeleton(mission);
   state.demo.missions.unshift(mission);
   state.demo.activeMissionId = mission.id;
   state.demo.selectedRunId = '';
@@ -1271,6 +1391,9 @@ function saveMissionEdit() {
   }
   mission.title = title;
   mission.description = el.editMissionDescriptionInput.value.trim() || 'Demo local no-op para probar Mission Control.';
+  mission.workspace = workspaceMissionSummary() || mission.workspace;
+  mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
+  mission.plan = generateMissionPlanSkeleton(mission);
   mission.updatedAt = new Date().toISOString();
   state.demo.editingMission = false;
   syncDemoViewFromStore();
@@ -1387,6 +1510,8 @@ function runSafeDemo() {
   if (!mission) {
     return;
   }
+  mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
+  const plan = ensureMissionPlan(mission);
   const now = new Date();
   const iso = now.toISOString();
   const runId = `demo-${now.getTime().toString(36)}`;
@@ -1405,10 +1530,19 @@ function runSafeDemo() {
       'WorkspaceContext',
       `workspace:${state.workspace.name}`));
   }
+  if (plan && plan.tasks.length) {
+    timeline.splice(timeline.length - 1, 0, demoTimelineStep(
+      'Plan inicial listo',
+      `${plan.tasks.length} tareas locales quedaron disponibles para revisar.`,
+      'evidence-ready',
+      'TaskGraph',
+      `plan:${plan.id}`));
+  }
   const logs = [
     { label: 'run id', value: runId },
     { label: 'mission', value: mission.title },
     { label: 'workspace', value: state.workspace && state.workspace.name ? state.workspace.name : 'sin workspace' },
+    { label: 'plan tasks', value: plan ? String(plan.tasks.length) : '0' },
     { label: 'command kind', value: 'SafeNoOp' },
     { label: 'result', value: 'Completed with no side effects' },
     { label: 'timestamp', value: iso },
@@ -1427,7 +1561,9 @@ function runSafeDemo() {
     evidenceRef,
     timeline,
     logs,
-    summary: `${mission.title}: run demo no-op completado.`
+    summary: `${mission.title}: run demo no-op completado.`,
+    missionContext: mission.missionContext || null,
+    plan: plan || null
   };
   mission.status = 'completed';
   mission.runs.unshift(run);
@@ -1480,6 +1616,7 @@ function renderDemoMissionControl() {
   renderDemoRunHistory();
   renderDemoScript();
   renderRunNoteEditor();
+  renderMissionPlan();
   renderTimeline(el.demoTimeline, demo.timeline);
   el.demoEvidencePanel.innerHTML = demo.logs.map((item) => `
     <div class="demo-log-item">
@@ -1487,6 +1624,134 @@ function renderDemoMissionControl() {
       <strong>${safeHtml(item.value)}</strong>
     </div>`).join('');
   el.demoTechnicalReport.textContent = demo.report || buildDemoTechnicalReport();
+}
+
+function renderMissionPlan() {
+  const mission = activeDemoMission();
+  const plan = mission ? mission.plan : null;
+  const context = mission ? mission.missionContext : null;
+  el.regenerateMissionPlanBtn.disabled = !mission;
+  el.copyMissionPlanBtn.disabled = !mission || !plan;
+  el.clearMissionPlanBtn.disabled = !mission || !plan;
+  el.missionPlanContext.textContent = mission
+    ? planContextLabel(mission, context, plan)
+    : 'El plan aparece cuando hay una misión activa.';
+  el.missionPlanChips.innerHTML = missionPlanChips(mission, context, plan)
+    .map((chip) => `<span>${safeHtml(chip)}</span>`)
+    .join('');
+  const tasks = plan && Array.isArray(plan.tasks) ? plan.tasks : [];
+  if (!tasks.length) {
+    el.missionTaskGraph.innerHTML = '<li class="mission-task-item"><strong>Sin plan inicial</strong><p>Usá Regenerar plan local para crear tareas revisables.</p></li>';
+    return;
+  }
+  el.missionTaskGraph.innerHTML = tasks.map((task, index) => `
+    <li class="mission-task-item">
+      <div class="mission-task-meta">
+        <span>${index + 1}</span>
+        <span>${safeHtml(task.status)}</span>
+        <span>${safeHtml(missionPlanSourceLabel(task.source))}</span>
+        ${task.dependsOn.length ? `<span>${task.dependsOn.length === 1 ? 'Depende de paso previo' : `Depende de ${task.dependsOn.length} pasos previos`}</span>` : ''}
+      </div>
+      <strong>${safeHtml(task.title)}</strong>
+      <p>${safeHtml(task.reason)}</p>
+    </li>`).join('');
+}
+
+function missionPlanSourceLabel(source) {
+  return source === 'local-deterministic' ? 'Plan local' : source || 'Plan local';
+}
+
+function planContextLabel(mission, context, plan) {
+  if (!mission) {
+    return 'El plan aparece cuando hay una misión activa.';
+  }
+  if (context && context.workspaceName) {
+    return `${mission.title} usa ${context.workspaceName} como contexto local de solo lectura.`;
+  }
+  if (plan) {
+    return `${mission.title} tiene un plan inicial local sin workspace activo.`;
+  }
+  return `${mission.title} todavía no tiene plan inicial.`;
+}
+
+function missionPlanChips(mission, context, plan) {
+  const chips = [];
+  if (mission) chips.push('Misión activa');
+  if (context && context.workspaceName) {
+    chips.push(`Workspace: ${context.workspaceName}`);
+    if (context.workspaceSource) chips.push(`Origen: ${workspaceSourceLabel(context.workspaceSource) || context.workspaceSource}`);
+    for (const stack of (context.stacks || []).slice(0, 3)) chips.push(stack);
+  } else {
+    chips.push('Sin workspace');
+  }
+  if (plan) {
+    chips.push(`${plan.tasks.length} tareas`);
+    chips.push('Solo lectura');
+  }
+  return chips;
+}
+
+function regenerateMissionPlan() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  mission.workspace = workspaceMissionSummary() || mission.workspace;
+  mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
+  mission.plan = generateMissionPlanSkeleton(mission);
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'MissionPlanGenerated', missionId: mission.id, tasks: mission.plan.tasks.length });
+  render();
+}
+
+function clearMissionPlan() {
+  const mission = activeDemoMission();
+  if (!mission || !mission.plan) {
+    return;
+  }
+  mission.plan = null;
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'MissionPlanCleared', missionId: mission.id });
+  render();
+}
+
+async function copyMissionPlan() {
+  const summary = buildMissionPlanSummary();
+  try {
+    await navigator.clipboard.writeText(summary);
+    addLog('local', { kind: 'MissionPlanCopied', missionId: activeDemoMission() ? activeDemoMission().id : 'none' });
+  } catch (error) {
+    addLog('local', { kind: 'MissionPlanCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
+function buildMissionPlanSummary(mission = activeDemoMission()) {
+  if (!mission) {
+    return 'NODAL OS — Plan inicial\nmission: none';
+  }
+  const plan = ensureMissionPlan(mission);
+  const context = mission.missionContext || buildMissionWorkspaceContext(mission);
+  return [
+    'NODAL OS — Plan inicial',
+    `mission: ${mission.title}`,
+    `mission_id: ${mission.id}`,
+    `workspace: ${context && context.workspaceName ? context.workspaceName : 'sin workspace'}`,
+    `workspace_source: ${context && context.workspaceSource ? context.workspaceSource : 'sin origen'}`,
+    `stacks: ${context && context.stacks.length ? context.stacks.join(' + ') : 'sin workspace'}`,
+    `key_files: ${context && context.keyFiles.length ? context.keyFiles.join('; ') : 'sin archivos clave'}`,
+    `plan_id: ${plan ? plan.id : 'none'}`,
+    `tasks: ${plan ? plan.tasks.length : 0}`,
+    `generated_at: ${plan ? plan.generatedAt : 'pending'}`,
+    `read_only: ${plan ? plan.readOnly === true : true}`,
+    `commands_executed: ${plan ? plan.commandsExecuted === true : false}`,
+    `files_modified: ${plan ? plan.filesModified === true : false}`,
+    ...(plan ? plan.tasks.map((task, index) => `${index + 1}. ${task.title} [${task.status}] - ${task.reason}`) : [])
+  ].join('\n');
 }
 
 function renderWorkspaceUnderstanding() {
@@ -1818,15 +2083,22 @@ function composeDemoTechnicalReport(store, context = {}) {
   const runtimeContext = context.runtime || null;
   const operatorPageContext = context.operatorPage || '';
   const workspace = state.workspace || createEmptyWorkspaceStore();
+  const plan = run && run.plan ? run.plan : mission && mission.plan ? mission.plan : null;
+  const missionContext = run && run.missionContext ? run.missionContext : mission && mission.missionContext ? mission.missionContext : null;
   const lines = [
     'NODAL OS — Demo local',
     `mission: ${demo.missionName}`,
     `mission_id: ${mission ? mission.id : 'none'}`,
     `description: ${mission ? mission.description : 'pending'}`,
     `workspace: ${workspace.name || 'sin workspace'}`,
+    `mission_context_workspace: ${missionContext && missionContext.workspaceName ? missionContext.workspaceName : 'sin workspace'}`,
+    `workspace_source: ${missionContext && missionContext.workspaceSource ? missionContext.workspaceSource : workspace.source || 'sin origen'}`,
     `workspace_status: ${workspaceStatusLabel(workspace)}`,
     `workspace_stack: ${(workspace.stacks || []).join(' + ') || 'sin lectura'}`,
     `workspace_counts: ${workspace.counts ? workspace.counts.files : 0} files / ${workspace.counts ? workspace.counts.folders : 0} folders`,
+    `plan_id: ${plan ? plan.id : 'sin plan'}`,
+    `plan_tasks: ${plan ? plan.tasks.length : 0}`,
+    `plan_summary: ${plan ? plan.summary : 'sin plan inicial'}`,
     `status: ${demo.statusLabel}`,
     `run_id: ${demo.runId || 'pending'}`,
     `run_note: ${run && run.note ? run.note : 'sin nota'}`,
@@ -1837,6 +2109,7 @@ function composeDemoTechnicalReport(store, context = {}) {
     `result: ${demo.result}`,
     `evidence_ref: ${demo.evidenceRef}`,
     `timeline: ${(demo.timeline || []).map((step) => step.title || step).join(' -> ')}`,
+    `taskgraph: ${plan ? plan.tasks.map((task) => `${task.title} [${task.status}]`).join(' -> ') : 'sin tareas'}`,
     `logs: ${(demo.logs || []).map((item) => `${item.label}=${item.value}`).join('; ')}`,
     `host_status: ${demoHostStatus(connectionContext)}`,
     `bridge_status: ${demoBridgeStatus(connectionContext)}`,
@@ -2208,6 +2481,9 @@ async function walkWorkspaceDirectory(directoryHandle, relativePath, depth, scan
       return;
     }
     const itemPath = relativePath ? `${relativePath}/${name}` : name;
+    if (isWorkspaceProtectedPath(itemPath)) {
+      continue;
+    }
     if (handle.kind === 'directory') {
       if (WORKSPACE_IGNORED_DIRS.has(name)) {
         scan.counts.ignoredFolders++;
@@ -2222,6 +2498,9 @@ async function walkWorkspaceDirectory(directoryHandle, relativePath, depth, scan
       }
       await walkWorkspaceDirectory(handle, itemPath, depth + 1, scan);
     } else if (handle.kind === 'file') {
+      if (isWorkspaceIgnoredFileName(name)) {
+        continue;
+      }
       scan.counts.files++;
       trackWorkspaceSignals(itemPath, handle.kind, scan);
       const important = isWorkspaceKeyPath(itemPath, handle.kind);
@@ -2242,9 +2521,15 @@ function addWorkspaceFileListPath(scan, relativePath, hasRelativePath) {
   if (!normalized) {
     return;
   }
+  if (isWorkspaceProtectedPath(normalized)) {
+    return;
+  }
   const parts = normalized.split('/').filter(Boolean);
   const fileName = parts.pop();
   if (!fileName) {
+    return;
+  }
+  if (isWorkspaceIgnoredFileName(fileName)) {
     return;
   }
 
@@ -2296,6 +2581,18 @@ function addWorkspaceFileListPath(scan, relativePath, hasRelativePath) {
   if (scan.counts.files >= WORKSPACE_SCAN_LIMITS.maxFiles) {
     scan.truncated = true;
   }
+}
+
+function isWorkspaceProtectedPath(path) {
+  const normalized = cleanWorkspacePath(path).toLowerCase();
+  return WORKSPACE_PROTECTED_PATHS.has(normalized)
+    || WORKSPACE_PROTECTED_PATH_PREFIXES.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}/`));
+}
+
+function isWorkspaceIgnoredFileName(name) {
+  const normalized = String(name || '').toLowerCase();
+  return WORKSPACE_IGNORED_FILE_NAMES.has(normalized)
+    || WORKSPACE_IGNORED_FILE_PREFIXES.some((prefix) => normalized.startsWith(prefix));
 }
 
 function addWorkspaceTreeItem(scan, path, kind, depth, important) {
@@ -2381,6 +2678,8 @@ function attachWorkspaceToActiveMission() {
     return;
   }
   mission.workspace = workspaceMissionSummary();
+  mission.missionContext = buildMissionWorkspaceContext(mission);
+  mission.plan = generateMissionPlanSkeleton(mission);
   mission.updatedAt = new Date().toISOString();
 }
 
@@ -2393,12 +2692,116 @@ function workspaceMissionSummary() {
     name: workspace.name,
     pathLabel: workspace.pathLabel,
     source: workspace.source || '',
+    selectedAt: workspace.openedAt || '',
     scannedAt: workspace.scannedAt,
     status: workspace.status,
     stacks: workspace.stacks || [],
     files: workspace.counts ? workspace.counts.files : 0,
     folders: workspace.counts ? workspace.counts.folders : 0,
-    keyFiles: (workspace.keyFiles || []).slice(0, 10)
+    keyFiles: (workspace.keyFiles || []).filter((path) => !isWorkspaceProtectedPath(path)).slice(0, 10),
+    treeSummary: (workspace.treeItems || []).filter((item) => item && !isWorkspaceProtectedPath(item.path)).slice(0, 12),
+    projectSignals: workspace.signals || []
+  };
+}
+
+function buildMissionWorkspaceContext(mission) {
+  if (!mission || !state.workspace || !state.workspace.name) {
+    return null;
+  }
+  const workspace = state.workspace;
+  return {
+    missionId: mission.id,
+    missionTitle: mission.title,
+    workspaceName: workspace.name,
+    workspaceSource: workspace.source || '',
+    workspaceSelectedAt: workspace.openedAt || '',
+    workspaceLastReadAt: workspace.scannedAt || '',
+    stacks: workspace.stacks || [],
+    keyFiles: (workspace.keyFiles || []).filter((path) => !isWorkspaceProtectedPath(path)).slice(0, 10),
+    treeSummary: (workspace.treeItems || []).filter((item) => item && !isWorkspaceProtectedPath(item.path)).slice(0, 12),
+    projectSignals: workspace.signals || [],
+    readOnly: true,
+    commandsExecuted: false,
+    filesModified: false
+  };
+}
+
+function ensureMissionPlan(mission) {
+  if (!mission) {
+    return null;
+  }
+  if (!mission.plan) {
+    mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext || null;
+    mission.plan = generateMissionPlanSkeleton(mission);
+  }
+  return mission.plan;
+}
+
+function generateMissionPlanSkeleton(mission) {
+  const currentMission = mission || activeDemoMission();
+  const context = currentMission ? (buildMissionWorkspaceContext(currentMission) || currentMission.missionContext) : null;
+  const stacks = context ? context.stacks || [] : [];
+  const keyFiles = context ? context.keyFiles || [] : [];
+  const hasStack = (needle) => stacks.some((stack) => stack.toLowerCase().includes(needle));
+  const now = new Date().toISOString();
+  const tasks = [
+    missionPlanTask('understand-goal', 'Entender objetivo', 'En revisión', 'Alinear intención, alcance y resultado esperado.', [], ['mission']),
+    missionPlanTask('review-context', context ? 'Revisar contexto del workspace' : 'Revisar contexto disponible', context ? 'Listo' : 'Requiere contexto', context
+      ? `Usar ${context.workspaceName} en modo solo lectura.`
+      : 'No hay workspace activo; el plan queda genérico.', ['understand-goal'], context ? ['workspace'] : ['mission'])
+  ];
+
+  if (hasStack('.net') || hasStack('c#')) {
+    tasks.push(missionPlanTask('review-dotnet', 'Revisar solución y tests .NET', 'Por hacer', 'La lectura detectó señales .NET/C#.', ['review-context'], ['.NET / C#']));
+  }
+  if (hasStack('chrome extension')) {
+    tasks.push(missionPlanTask('review-extension', 'Revisar extensión Chrome visible', 'Por hacer', 'La lectura detectó manifest o estructura de extensión.', ['review-context'], ['Chrome Extension']));
+  }
+  if (hasStack('scripts')) {
+    tasks.push(missionPlanTask('review-scripts', 'Identificar validaciones disponibles', 'Por hacer', 'La lectura detectó scripts útiles para validar sin ejecutar desde producto.', ['review-context'], ['Scripts']));
+  }
+  if (hasStack('docs')) {
+    tasks.push(missionPlanTask('review-docs', 'Revisar documentación útil', 'Por hacer', 'La lectura detectó documentación del proyecto.', ['review-context'], ['Docs']));
+  }
+
+  tasks.push(missionPlanTask('propose-next', 'Proponer próximos pasos', 'Por hacer', 'Convertir contexto en una secuencia de trabajo revisable.', ['review-context'], ['planning']));
+  tasks.push(missionPlanTask('summarize-evidence', 'Resumir evidencia', 'Por hacer', 'Dejar un resumen copiable de contexto y plan.', ['propose-next'], ['evidence']));
+
+  const boundedTasks = tasks.slice(0, MISSION_PLAN_TASK_RANGE.max);
+  while (boundedTasks.length < MISSION_PLAN_TASK_RANGE.min) {
+    boundedTasks.push(missionPlanTask(`step-${boundedTasks.length + 1}`, 'Preparar siguiente paso', 'Por hacer', 'Completar el plan local con un paso revisable.', [], ['planning']));
+  }
+
+  return normalizeMissionPlan({
+    id: `plan-${Date.now().toString(36)}`,
+    generatedAt: now,
+    source: 'local-deterministic',
+    summary: context
+      ? `Plan inicial local usando ${context.workspaceName}.`
+      : 'Plan inicial local sin workspace activo.',
+    contextUsed: [
+      currentMission ? currentMission.title : 'misión local',
+      ...(stacks.length ? stacks.slice(0, 4) : ['sin workspace']),
+      ...keyFiles.slice(0, 3)
+    ],
+    readOnly: true,
+    commandsExecuted: false,
+    filesModified: false,
+    tasks: boundedTasks
+  });
+}
+
+function missionPlanTask(id, title, status, reason, dependsOn = [], workspaceSignals = []) {
+  return {
+    id,
+    title,
+    status,
+    reason,
+    source: 'local-deterministic',
+    dependsOn,
+    evidenceRefs: [],
+    workspaceSignals,
+    readOnly: true
   };
 }
 

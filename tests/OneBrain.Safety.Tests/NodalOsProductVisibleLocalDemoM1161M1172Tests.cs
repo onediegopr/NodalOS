@@ -486,13 +486,56 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 
         StringAssert.Contains(js, "attachWorkspaceToActiveMission");
         StringAssert.Contains(js, "workspaceMissionSummary");
+        StringAssert.Contains(js, "buildMissionWorkspaceContext");
         StringAssert.Contains(js, "mission.workspace");
+        StringAssert.Contains(js, "mission.missionContext");
         StringAssert.Contains(js, "Workspace en contexto");
         StringAssert.Contains(js, "copyWorkspaceEvidence");
         StringAssert.Contains(js, "buildWorkspaceEvidenceSummary");
         StringAssert.Contains(js, "workspace_status:");
         StringAssert.Contains(js, "workspace_stack:");
         StringAssert.Contains(js, "workspace_counts:");
+    }
+
+    [TestMethod]
+    public void MissionPlanningSkeletonIsVisibleAndReadOnly()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var js = ReadRepoText(SidepanelJsPath);
+        var css = ReadRepoText(SidepanelCssPath);
+
+        foreach (var expected in new[]
+        {
+            "missionPlanCard",
+            "Plan inicial",
+            "missionTaskGraph",
+            "Regenerar plan local",
+            "Copiar plan",
+            "Limpiar plan"
+        })
+        {
+            StringAssert.Contains(html, expected);
+        }
+
+        foreach (var expected in new[]
+        {
+            "generateMissionPlanSkeleton",
+            "missionPlanTask",
+            "renderMissionPlan",
+            "copyMissionPlan",
+            "buildMissionPlanSummary",
+            "local-deterministic",
+            "readOnly: true",
+            "commandsExecuted: false",
+            "filesModified: false"
+        })
+        {
+            StringAssert.Contains(js, expected);
+        }
+
+        StringAssert.Contains(css, ".mission-plan-card");
+        StringAssert.Contains(css, ".mission-task-graph");
+        StringAssert.Contains(css, ".mission-task-item");
     }
 
     [TestMethod]

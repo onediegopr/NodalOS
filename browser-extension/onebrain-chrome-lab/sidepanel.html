@@ -228,6 +228,23 @@
             </div>
           </section>
 
+          <section id="missionPlanCard" class="mission-plan-card" aria-labelledby="missionPlanTitle">
+            <div class="section-head mission-plan-head">
+              <div>
+                <span class="mission-kicker">Planning local</span>
+                <h2 id="missionPlanTitle">Plan inicial</h2>
+                <p id="missionPlanContext">El plan aparece cuando hay una misión activa.</p>
+              </div>
+              <div class="mission-plan-actions">
+                <button id="regenerateMissionPlanBtn" class="primary" type="button">Regenerar plan local</button>
+                <button id="copyMissionPlanBtn" type="button">Copiar plan</button>
+                <button id="clearMissionPlanBtn" type="button">Limpiar plan</button>
+              </div>
+            </div>
+            <div id="missionPlanChips" class="mission-plan-chips"></div>
+            <ol id="missionTaskGraph" class="mission-task-graph"></ol>
+          </section>
+
           <section class="mission-progress-card" aria-label="Demo progress">
             <div class="mission-progress-head">
               <span id="demoRunState">Ready</span>
