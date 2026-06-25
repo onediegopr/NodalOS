@@ -5,6 +5,14 @@ public sealed class CdpInjectionManager
     public const string MarkerName = "__NODAL_OS_CDP_INJECTED__";
     public const string BootstrapVersion = "cdp-bootstrap-v1";
 
+    public void EnsureReadySession(string? sessionId)
+    {
+        if (string.IsNullOrWhiteSpace(sessionId))
+        {
+            throw new InvalidOperationException("CDP session is not ready for bootstrap injection.");
+        }
+    }
+
     public string BuildBootstrapScript()
     {
         return $$"""
@@ -51,4 +59,6 @@ public sealed class CdpInjectionManager
     public bool ContainsDoubleInjectionGuard(string script) =>
         script.Contains($"window.{MarkerName} === true", StringComparison.Ordinal)
         && script.Contains("alreadyInjected: true", StringComparison.Ordinal);
+
+    public string BuildPageMetadataExpression() => "window.__NODAL_OS_CDP_PAGE_METADATA__ && window.__NODAL_OS_CDP_PAGE_METADATA__()";
 }

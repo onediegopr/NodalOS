@@ -16,7 +16,7 @@ public sealed class CloakBrowserRuntimeLiveTests
         var result = await RequireLiveResultAsync().ConfigureAwait(false);
 
         Assert.AreEqual("PASS", result.Status);
-        Assert.AreEqual("NODAL_OS_CLOAKBROWSER_CDP_LIVE_HEALTHCHECK_READY", result.Decision);
+        Assert.AreEqual("NODAL_OS_CLOAKBROWSER_CDP_SESSION_LIFECYCLE_HARDENED", result.Decision);
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.BrowserVersion));
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.ProtocolVersion));
     }
@@ -28,7 +28,18 @@ public sealed class CloakBrowserRuntimeLiveTests
         var result = await RequireLiveResultAsync().ConfigureAwait(false);
 
         Assert.IsTrue(result.TargetCreated);
+        Assert.IsTrue(result.TargetClosed);
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.TargetId));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CdpSessionRegistry_TracksLiveSessionLifecycle()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(result.SessionCreated);
+        Assert.IsTrue(result.SessionClosed);
     }
 
     [TestMethod]
@@ -113,7 +124,44 @@ public sealed class CloakBrowserRuntimeLiveTests
         Assert.IsFalse(result.FilesModified);
         Assert.IsTrue(result.RuntimeShutdown);
         Assert.IsTrue(result.ProcessExited);
+        Assert.IsFalse(result.ForcedKillUsed);
         Assert.IsFalse(result.OrphanProcessDetected);
+        Assert.IsTrue(result.ProcessStarted);
+        Assert.AreEqual("127.0.0.1", result.CdpEndpointHost);
+        CollectionAssert.Contains(result.LaunchArgsRedacted.ToList(), "--user-data-dir=<local-verification-profile>");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CloakBrowserRuntimeProvider_ShutdownExitsProcess()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(result.RuntimeShutdown);
+        Assert.IsTrue(result.ProcessExited);
+        Assert.IsFalse(result.OrphanProcessDetected);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CloakBrowserRuntimeProvider_ShutdownIsIdempotent()
+    {
+        var first = await RequireLiveResultAsync().ConfigureAwait(false);
+        var second = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.AreSame(first, second);
+        Assert.IsTrue(first.ProcessExited);
+        Assert.IsFalse(second.OrphanProcessDetected);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task NoOrphanCloakBrowserProcessProof_Passes()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsNotNull(result.ProcessId);
+        Assert.IsFalse(IsProcessAlive(result.ProcessId.Value));
     }
 
     private static async Task<CloakBrowserCdpHealthcheckResult> RequireLiveResultAsync()
@@ -156,5 +204,18 @@ public sealed class CloakBrowserRuntimeLiveTests
 
         Assert.Fail("Repository root with browser-runtime.lock.json was not found.");
         return string.Empty;
+    }
+
+    private static bool IsProcessAlive(int processId)
+    {
+        try
+        {
+            using var process = System.Diagnostics.Process.GetProcessById(processId);
+            return !process.HasExited;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 }

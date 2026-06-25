@@ -33,13 +33,21 @@ public sealed record CloakBrowserCdpHealthcheckResult(
     string? Url,
     string? Title,
     bool TargetCreated,
+    bool TargetClosed,
+    bool SessionCreated,
+    bool SessionClosed,
     bool NavigationOk,
     bool TitleRead,
     bool BootstrapInjected,
     bool DoubleInjectionPrevented,
     bool ScreenshotCaptured,
+    bool ProcessStarted,
+    IReadOnlyList<string> LaunchArgsRedacted,
+    bool LaunchTimeout,
+    string? CdpEndpointHost,
     bool RuntimeShutdown,
     bool ProcessExited,
+    bool ForcedKillUsed,
     bool OrphanProcessDetected,
     bool SystemBrowserUsed,
     bool ExtensionUsed,
@@ -52,7 +60,7 @@ public sealed record CloakBrowserCdpHealthcheckResult(
 
 public sealed class CloakBrowserCdpHealthcheckRunner
 {
-    private const string SuccessDecision = "NODAL_OS_CLOAKBROWSER_CDP_LIVE_HEALTHCHECK_READY";
+    private const string SuccessDecision = "NODAL_OS_CLOAKBROWSER_CDP_SESSION_LIFECYCLE_HARDENED";
     private const string BlockedDecision = "NODAL_OS_CLOAKBROWSER_CDP_LIVE_BLOCKED_WITH_CAUSE";
     private const string PageTitle = "NODAL OS CloakBrowser CDP Healthcheck";
 
@@ -133,15 +141,22 @@ public sealed class CloakBrowserCdpHealthcheckRunner
         var screenshotPath = Path.Combine(artifactsRoot, "cloakbrowser-cdp-healthcheck-" + timestamp + ".png");
 
         var port = ReserveTcpPort();
+        var launchArgs = BuildLaunchArguments(port, profileDirectory);
+        ValidateSafeLaunchArguments(launchArgs);
         Process? process = null;
         string? browserVersion = null;
         string? protocolVersion = null;
         string? webSocketDebuggerUrl = null;
+        string? cdpEndpointHost = null;
         string? targetId = null;
         string? sessionId = null;
         string? url = null;
         string? title = null;
+        var processStarted = false;
         var targetCreated = false;
+        var targetClosed = false;
+        var sessionCreated = false;
+        var sessionClosed = false;
         var navigationOk = false;
         var titleRead = false;
         var bootstrapInjected = false;
@@ -149,16 +164,22 @@ public sealed class CloakBrowserCdpHealthcheckRunner
         var screenshotCaptured = false;
         var runtimeShutdown = false;
         var processExited = false;
+        var forcedKillUsed = false;
+        var launchTimeout = false;
         var stdout = new StringBuilder();
         var stderr = new StringBuilder();
+        var sessionRegistry = new CdpSessionRegistry();
+        var targetManager = new CdpTargetManager();
 
         try
         {
-            process = StartCloakBrowser(runtimeArtifactPath, port, profileDirectory, stdout, stderr);
+            process = StartCloakBrowser(runtimeArtifactPath, launchArgs, stdout, stderr);
+            processStarted = true;
             var versionInfo = await WaitForCdpVersionAsync(port, timeoutSource.Token).ConfigureAwait(false);
             browserVersion = versionInfo.BrowserVersion;
             protocolVersion = versionInfo.ProtocolVersion;
             webSocketDebuggerUrl = versionInfo.WebSocketDebuggerUrl;
+            cdpEndpointHost = new Uri(webSocketDebuggerUrl).Host;
 
             await using var liveCdp = await CdpWebSocketClient.ConnectAsync(webSocketDebuggerUrl, timeoutSource.Token).ConfigureAwait(false);
 
@@ -169,6 +190,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             }
 
             var dataUrl = BuildHealthcheckDataUrl();
+            new CdpActionController().CreateHealthcheckNavigation(new Uri(dataUrl));
             var createTarget = await liveCdp.SendAsync(
                     "Target.createTarget",
                     new Dictionary<string, object?> { ["url"] = "about:blank" },
@@ -177,6 +199,10 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 .ConfigureAwait(false);
             targetId = createTarget.GetProperty("targetId").GetString();
             targetCreated = !string.IsNullOrWhiteSpace(targetId);
+            if (targetCreated && targetId is not null)
+            {
+                targetManager.TrackPageTarget(targetId, "about:blank", string.Empty);
+            }
 
             var attachTarget = await liveCdp.SendAsync(
                     "Target.attachToTarget",
@@ -185,6 +211,12 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                     timeoutSource.Token)
                 .ConfigureAwait(false);
             sessionId = attachTarget.GetProperty("sessionId").GetString();
+            sessionCreated = !string.IsNullOrWhiteSpace(sessionId);
+            if (sessionCreated && targetId is not null && sessionId is not null)
+            {
+                sessionRegistry.Register(targetId, sessionId, DateTimeOffset.UtcNow);
+                sessionRegistry.MarkState(sessionId, "attached");
+            }
 
             await liveCdp.SendAsync("Page.enable", null, sessionId, timeoutSource.Token).ConfigureAwait(false);
             await liveCdp.SendAsync("Runtime.enable", null, sessionId, timeoutSource.Token).ConfigureAwait(false);
@@ -200,8 +232,18 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             title = await EvaluateStringAsync(liveCdp, sessionId, "String(document.title)", timeoutSource.Token).ConfigureAwait(false);
             navigationOk = url?.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase) == true;
             titleRead = string.Equals(title, PageTitle, StringComparison.Ordinal);
+            if (sessionId is not null)
+            {
+                sessionRegistry.MarkState(sessionId, "navigated");
+            }
+
+            if (targetId is not null && url is not null && title is not null)
+            {
+                targetManager.MarkNavigated(targetId, url, title);
+            }
 
             var injectionManager = new CdpInjectionManager();
+            injectionManager.EnsureReadySession(sessionId);
             var firstInjection = await liveCdp.SendAsync(
                     "Runtime.evaluate",
                     new Dictionary<string, object?>
@@ -214,6 +256,10 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                     timeoutSource.Token)
                 .ConfigureAwait(false);
             bootstrapInjected = ReadRuntimeObjectBoolean(firstInjection, "injected");
+            if (bootstrapInjected && sessionId is not null)
+            {
+                sessionRegistry.MarkState(sessionId, "injected");
+            }
 
             var secondInjection = await liveCdp.SendAsync(
                     "Runtime.evaluate",
@@ -250,6 +296,13 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                         null,
                         timeoutSource.Token)
                     .ConfigureAwait(false);
+                targetClosed = true;
+                targetManager.Close(targetId, DateTimeOffset.UtcNow);
+                if (sessionId is not null)
+                {
+                    sessionRegistry.MarkClosed(sessionId, DateTimeOffset.UtcNow);
+                    sessionClosed = true;
+                }
             }
 
             try
@@ -266,6 +319,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             if (!processExited && !process.HasExited)
             {
                 process.Kill(entireProcessTree: true);
+                forcedKillUsed = true;
                 processExited = await WaitForExitAsync(process, TimeSpan.FromSeconds(5), CancellationToken.None).ConfigureAwait(false);
             }
 
@@ -277,6 +331,9 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 && bootstrapInjected
                 && doubleInjectionPrevented
                 && screenshotCaptured
+                && targetClosed
+                && sessionCreated
+                && sessionClosed
                 && processExited;
 
             var result = new CloakBrowserCdpHealthcheckResult(
@@ -293,13 +350,21 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 Url: url,
                 Title: title,
                 TargetCreated: targetCreated,
+                TargetClosed: targetClosed,
+                SessionCreated: sessionCreated,
+                SessionClosed: sessionClosed,
                 NavigationOk: navigationOk,
                 TitleRead: titleRead,
                 BootstrapInjected: bootstrapInjected,
                 DoubleInjectionPrevented: doubleInjectionPrevented,
                 ScreenshotCaptured: screenshotCaptured,
+                ProcessStarted: processStarted,
+                LaunchArgsRedacted: RedactLaunchArguments(launchArgs),
+                LaunchTimeout: launchTimeout,
+                CdpEndpointHost: cdpEndpointHost,
                 RuntimeShutdown: runtimeShutdown,
                 ProcessExited: processExited,
+                ForcedKillUsed: forcedKillUsed,
                 OrphanProcessDetected: !processExited,
                 SystemBrowserUsed: false,
                 ExtensionUsed: false,
@@ -312,6 +377,31 @@ public sealed class CloakBrowserCdpHealthcheckRunner
 
             return await WriteEvidenceAsync(options.RepositoryRoot, result, cancellationToken).ConfigureAwait(false);
         }
+        catch (TimeoutException)
+        {
+            launchTimeout = true;
+            if (process is { HasExited: false })
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                    forcedKillUsed = true;
+                    await WaitForExitAsync(process, TimeSpan.FromSeconds(5), CancellationToken.None).ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Best effort cleanup. The evidence records the blocked launch.
+                }
+            }
+
+            return await WriteBlockedEvidenceAsync(
+                    options.RepositoryRoot,
+                    runtimeLock,
+                    runtimeArtifactPath,
+                    "CloakBrowser CDP live healthcheck timed out before lifecycle completion.",
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
         catch (Exception ex)
         {
             if (process is { HasExited: false })
@@ -319,6 +409,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 try
                 {
                     process.Kill(entireProcessTree: true);
+                    forcedKillUsed = true;
                     await WaitForExitAsync(process, TimeSpan.FromSeconds(5), CancellationToken.None).ConfigureAwait(false);
                 }
                 catch
@@ -344,8 +435,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
 
     private static Process StartCloakBrowser(
         string runtimeArtifactPath,
-        int port,
-        string profileDirectory,
+        IReadOnlyList<string> launchArguments,
         StringBuilder stdout,
         StringBuilder stderr)
     {
@@ -358,13 +448,10 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             CreateNoWindow = true
         };
 
-        startInfo.ArgumentList.Add("--headless=new");
-        startInfo.ArgumentList.Add("--remote-debugging-address=127.0.0.1");
-        startInfo.ArgumentList.Add("--remote-debugging-port=" + port.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        startInfo.ArgumentList.Add("--user-data-dir=" + profileDirectory);
-        startInfo.ArgumentList.Add("--no-first-run");
-        startInfo.ArgumentList.Add("--disable-default-apps");
-        startInfo.ArgumentList.Add("about:blank");
+        foreach (var argument in launchArguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
 
         var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         process.OutputDataReceived += (_, args) =>
@@ -392,6 +479,38 @@ public sealed class CloakBrowserCdpHealthcheckRunner
         return process;
     }
 
+    private static IReadOnlyList<string> BuildLaunchArguments(int port, string profileDirectory) =>
+    [
+        "--headless=new",
+        "--remote-debugging-address=127.0.0.1",
+        "--remote-debugging-port=" + port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        "--user-data-dir=" + profileDirectory,
+        "--no-first-run",
+        "--disable-default-apps",
+        "about:blank"
+    ];
+
+    private static void ValidateSafeLaunchArguments(IReadOnlyList<string> launchArguments)
+    {
+        foreach (var argument in launchArguments)
+        {
+            if (argument.Contains("channel=chrome", StringComparison.OrdinalIgnoreCase)
+                || argument.Contains("channel=msedge", StringComparison.OrdinalIgnoreCase)
+                || argument.Contains("msedge", StringComparison.OrdinalIgnoreCase)
+                || argument.Contains("playwright", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Unsafe CloakBrowser launch argument rejected.");
+            }
+        }
+    }
+
+    private static IReadOnlyList<string> RedactLaunchArguments(IReadOnlyList<string> launchArguments) =>
+        launchArguments
+            .Select(argument => argument.StartsWith("--user-data-dir=", StringComparison.OrdinalIgnoreCase)
+                ? "--user-data-dir=<local-verification-profile>"
+                : argument)
+            .ToArray();
+
     private static async Task<CdpVersionInfo> WaitForCdpVersionAsync(int port, CancellationToken cancellationToken)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
@@ -409,11 +528,14 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                     await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
                     var root = json.RootElement;
+                    var webSocketDebuggerUrl = root.GetProperty("webSocketDebuggerUrl").GetString()
+                        ?? throw new InvalidOperationException("CDP version endpoint did not include webSocketDebuggerUrl.");
+                    var webSocketUri = CdpEndpointDiscovery.ValidateWebSocketDebuggerUrl(webSocketDebuggerUrl);
+
                     return new CdpVersionInfo(
                         BrowserVersion: root.TryGetProperty("Browser", out var browser) ? browser.GetString() : null,
                         ProtocolVersion: root.TryGetProperty("Protocol-Version", out var protocol) ? protocol.GetString() : null,
-                        WebSocketDebuggerUrl: root.GetProperty("webSocketDebuggerUrl").GetString()
-                            ?? throw new InvalidOperationException("CDP version endpoint did not include webSocketDebuggerUrl."));
+                        WebSocketDebuggerUrl: webSocketUri.ToString());
                 }
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException)
@@ -424,7 +546,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             await Task.Delay(250, cancellationToken).ConfigureAwait(false);
         }
 
-        throw new TimeoutException("CDP /json/version did not become ready. Last error: " + lastError?.Message);
+        throw new TimeoutException(CdpEndpointDiscovery.CreateTimeoutMessage(endpoint, lastError));
     }
 
     private static async Task WaitForDocumentReadyAsync(CdpWebSocketClient cdp, string? sessionId, CancellationToken cancellationToken)
@@ -528,13 +650,21 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             Url: null,
             Title: null,
             TargetCreated: false,
+            TargetClosed: false,
+            SessionCreated: false,
+            SessionClosed: false,
             NavigationOk: false,
             TitleRead: false,
             BootstrapInjected: false,
             DoubleInjectionPrevented: false,
             ScreenshotCaptured: false,
+            ProcessStarted: false,
+            LaunchArgsRedacted: [],
+            LaunchTimeout: false,
+            CdpEndpointHost: null,
             RuntimeShutdown: false,
             ProcessExited: false,
+            ForcedKillUsed: false,
             OrphanProcessDetected: false,
             SystemBrowserUsed: false,
             ExtensionUsed: false,
@@ -572,7 +702,15 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             targetId = result.TargetId,
             url = result.Url,
             title = result.Title,
+            processStarted = result.ProcessStarted,
+            processId = result.ProcessId,
+            launchArgsRedacted = result.LaunchArgsRedacted,
+            launchTimeout = result.LaunchTimeout,
+            cdpEndpointHost = result.CdpEndpointHost,
             targetCreated = result.TargetCreated,
+            targetClosed = result.TargetClosed,
+            sessionCreated = result.SessionCreated,
+            sessionClosed = result.SessionClosed,
             navigationOk = result.NavigationOk,
             titleRead = result.TitleRead,
             bootstrapInjected = result.BootstrapInjected,
@@ -581,13 +719,13 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             screenshotArtifact = result.ScreenshotPath is null ? null : Path.GetFileName(result.ScreenshotPath),
             runtimeShutdown = result.RuntimeShutdown,
             processExited = result.ProcessExited,
+            forcedKillUsed = result.ForcedKillUsed,
             orphanProcessDetected = result.OrphanProcessDetected,
             systemBrowserUsed = result.SystemBrowserUsed,
             extensionUsed = result.ExtensionUsed,
             commandsExecuted = result.CommandsExecuted,
             cdpCommandsExecuted = result.CdpCommandsExecuted,
             filesModified = result.FilesModified,
-            processId = result.ProcessId,
             timestamp = DateTimeOffset.UtcNow
         };
 
@@ -654,7 +792,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
 internal sealed class CdpWebSocketClient : IAsyncDisposable
 {
     private readonly ClientWebSocket socket;
-    private int nextId;
+    private readonly CdpConnectionLifecycle lifecycle = new();
 
     private CdpWebSocketClient(ClientWebSocket socket)
     {
@@ -676,7 +814,8 @@ internal sealed class CdpWebSocketClient : IAsyncDisposable
         string? sessionId,
         CancellationToken cancellationToken)
     {
-        var id = Interlocked.Increment(ref nextId);
+        lifecycle.ThrowIfDisposed();
+        var id = lifecycle.NextCommandId();
         var message = new Dictionary<string, object?>
         {
             ["id"] = id,
@@ -694,30 +833,38 @@ internal sealed class CdpWebSocketClient : IAsyncDisposable
         }
 
         var json = JsonSerializer.Serialize(message);
-        await socket.SendAsync(
-                Encoding.UTF8.GetBytes(json),
-                WebSocketMessageType.Text,
-                WebSocketMessageFlags.EndOfMessage,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        while (true)
+        try
         {
-            var responseJson = await ReceiveTextMessageAsync(cancellationToken).ConfigureAwait(false);
-            using var document = JsonDocument.Parse(responseJson);
-            var root = document.RootElement;
+            await socket.SendAsync(
+                    Encoding.UTF8.GetBytes(json),
+                    WebSocketMessageType.Text,
+                    WebSocketMessageFlags.EndOfMessage,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
-            if (!root.TryGetProperty("id", out var responseId) || responseId.GetInt32() != id)
+            while (true)
             {
-                continue;
-            }
+                var responseJson = await ReceiveTextMessageAsync(cancellationToken).ConfigureAwait(false);
+                using var document = JsonDocument.Parse(responseJson);
+                var root = document.RootElement;
 
-            if (root.TryGetProperty("error", out var error))
-            {
-                throw new InvalidOperationException("CDP command failed: " + error.ToString());
-            }
+                if (!root.TryGetProperty("id", out var responseId) || responseId.GetInt32() != id)
+                {
+                    continue;
+                }
 
-            return root.GetProperty("result").Clone();
+                if (root.TryGetProperty("error", out var error))
+                {
+                    throw new InvalidOperationException("CDP command failed for " + method + ": " + error.ToString());
+                }
+
+                return root.GetProperty("result").Clone();
+            }
+        }
+        catch (OperationCanceledException ex)
+        {
+            var timeout = lifecycle.CreateCommandTimeout(method, TimeSpan.FromSeconds(30));
+            throw new TimeoutException(timeout.Message, ex);
         }
     }
 
@@ -744,6 +891,13 @@ internal sealed class CdpWebSocketClient : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (socket.State is WebSocketState.Closed or WebSocketState.Aborted or WebSocketState.None)
+        {
+            lifecycle.Dispose();
+            socket.Dispose();
+            return;
+        }
+
         if (socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
@@ -757,6 +911,7 @@ internal sealed class CdpWebSocketClient : IAsyncDisposable
             }
         }
 
+        lifecycle.Dispose();
         socket.Dispose();
     }
 }

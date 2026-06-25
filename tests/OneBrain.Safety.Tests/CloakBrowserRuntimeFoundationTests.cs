@@ -250,6 +250,149 @@ public sealed class CloakBrowserRuntimeFoundationTests
 
     [TestMethod]
     [TestCategory("CloakBrowserRuntime")]
+    public void CdpConnection_EndpointDiscoveryRejectsExternalHost()
+    {
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            CdpEndpointDiscovery.ValidateWebSocketDebuggerUrl("ws://example.com/devtools/browser/1"));
+
+        StringAssert.Contains(error.Message, "127.0.0.1");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpConnection_EndpointDiscoveryTimesOutClearly()
+    {
+        var message = CdpEndpointDiscovery.CreateTimeoutMessage(
+            new Uri("http://127.0.0.1:65530/json/version"),
+            new InvalidOperationException("connection refused"));
+
+        StringAssert.Contains(message, "127.0.0.1");
+        StringAssert.Contains(message, "connection refused");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpConnection_CommandTimeoutIsClear()
+    {
+        var lifecycle = new CdpConnectionLifecycle();
+        var error = lifecycle.CreateCommandTimeout("Runtime.evaluate", TimeSpan.FromSeconds(2));
+
+        StringAssert.Contains(error.Message, "Runtime.evaluate");
+        StringAssert.Contains(error.Message, "2");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpConnection_DisposeIsIdempotent()
+    {
+        var lifecycle = new CdpConnectionLifecycle();
+
+        lifecycle.Dispose();
+        lifecycle.Dispose();
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpConnection_RejectsCommandAfterDispose()
+    {
+        var lifecycle = new CdpConnectionLifecycle();
+        lifecycle.Dispose();
+
+        Assert.ThrowsExactly<ObjectDisposedException>(() => lifecycle.NextCommandId());
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpSessionRegistry_TracksTargetSessionLifecycle()
+    {
+        var registry = new CdpSessionRegistry();
+        var session = registry.Register("target-1", "session-1", DateTimeOffset.UtcNow);
+        registry.MarkState(session.SessionId, "navigated");
+        var closed = registry.MarkClosed(session.SessionId, DateTimeOffset.UtcNow);
+
+        Assert.AreEqual("target-1", session.TargetId);
+        Assert.AreEqual("closed", closed.State);
+        Assert.IsNotNull(closed.ClosedAt);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpSessionRegistry_DoesNotDuplicateSessions()
+    {
+        var registry = new CdpSessionRegistry();
+        var first = registry.Register("target-1", DateTimeOffset.UtcNow);
+        var second = registry.Register("target-1", DateTimeOffset.UtcNow);
+
+        Assert.AreEqual(first.SessionId, second.SessionId);
+        Assert.AreEqual(1, registry.Snapshot().Count);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpSessionRegistry_CleansClosedSession()
+    {
+        var registry = new CdpSessionRegistry();
+        var session = registry.Register("target-1", "session-1", DateTimeOffset.UtcNow);
+        registry.MarkClosed(session.SessionId, DateTimeOffset.UtcNow);
+
+        Assert.AreEqual("closed", registry.Find(session.SessionId)?.State);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpTargetManager_CanCreateNavigateAndClosePage()
+    {
+        var targets = new CdpTargetManager();
+        targets.TrackPageTarget("target-1", "about:blank", string.Empty);
+        targets.MarkNavigated("target-1", "data:text/html,ok", "OK");
+        var closed = targets.Close("target-1", DateTimeOffset.UtcNow);
+
+        Assert.AreEqual("closed", closed.State);
+        Assert.IsNotNull(closed.ClosedAt);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpTargetManager_CloseIsIdempotent()
+    {
+        var targets = new CdpTargetManager();
+        var first = targets.Close("target-1", DateTimeOffset.UtcNow);
+        var second = targets.Close("target-1", DateTimeOffset.UtcNow.AddSeconds(1));
+
+        Assert.AreEqual(first.ClosedAt, second.ClosedAt);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpTargetManager_RejectsExternalNavigationInHealthcheck()
+    {
+        var controller = new CdpActionController();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
+            controller.CreateHealthcheckNavigation(new Uri("https://example.com")));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpInjectionManager_RequiresReadySession()
+    {
+        var manager = new CdpInjectionManager();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => manager.EnsureReadySession(null));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpInjectionManager_ReturnsPageMetadata()
+    {
+        var manager = new CdpInjectionManager();
+
+        StringAssert.Contains(manager.BuildBootstrapScript(), "__NODAL_OS_CDP_PAGE_METADATA__");
+        StringAssert.Contains(manager.BuildPageMetadataExpression(), "__NODAL_OS_CDP_PAGE_METADATA__");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
     public void CdpEvidenceAdapter_UsesCloakBrowserCdpDirectSource()
     {
         var evidence = new CdpEvidenceAdapter().CreateBlockedEvidence("about:blank", "Blank");
@@ -259,6 +402,77 @@ public sealed class CloakBrowserRuntimeFoundationTests
         Assert.IsFalse(evidence.SystemBrowserUsed);
         Assert.IsFalse(evidence.BootstrapInjected);
         Assert.IsFalse(evidence.ScreenshotCaptured);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpEvidenceAdapter_RecordsLifecycleWithoutSecrets()
+    {
+        var result = new CloakBrowserCdpHealthcheckResult(
+            Status: "PASS",
+            Decision: "NODAL_OS_CLOAKBROWSER_CDP_SESSION_LIFECYCLE_HARDENED",
+            Reason: "ok",
+            RuntimeProvider: "cloakbrowser",
+            CdpMode: "cdp-direct",
+            RuntimeVersion: "146.0.7680.177.5",
+            BinarySha256: "hash",
+            BrowserVersion: "Chrome/146.0.7680.177",
+            ProtocolVersion: "1.3",
+            TargetId: "target-1",
+            Url: "data:text/html,ok",
+            Title: "OK",
+            TargetCreated: true,
+            TargetClosed: true,
+            SessionCreated: true,
+            SessionClosed: true,
+            NavigationOk: true,
+            TitleRead: true,
+            BootstrapInjected: true,
+            DoubleInjectionPrevented: true,
+            ScreenshotCaptured: true,
+            ProcessStarted: true,
+            LaunchArgsRedacted: ["--user-data-dir=<local-verification-profile>"],
+            LaunchTimeout: false,
+            CdpEndpointHost: "127.0.0.1",
+            RuntimeShutdown: true,
+            ProcessExited: true,
+            ForcedKillUsed: false,
+            OrphanProcessDetected: false,
+            SystemBrowserUsed: false,
+            ExtensionUsed: false,
+            CommandsExecuted: false,
+            CdpCommandsExecuted: true,
+            FilesModified: false,
+            EvidencePath: null,
+            ScreenshotPath: null,
+            ProcessId: 123);
+
+        var evidence = new CdpEvidenceAdapter().CreateLifecycleEvidence(result);
+
+        Assert.IsTrue(evidence.TargetCreated);
+        Assert.IsTrue(evidence.TargetClosed);
+        Assert.IsTrue(evidence.SessionCreated);
+        Assert.IsTrue(evidence.SessionClosed);
+        Assert.IsFalse(evidence.StoresRawLogs);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpEvidenceAdapter_MarksExtensionAndSystemBrowserFalse()
+    {
+        var evidence = new CdpEvidenceAdapter().CreateBlockedEvidence();
+
+        Assert.IsFalse(evidence.ExtensionUsed);
+        Assert.IsFalse(evidence.SystemBrowserUsed);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpEvidenceAdapter_DoesNotStoreRawLogs()
+    {
+        var evidence = new CdpEvidenceAdapter().CreateBlockedEvidence();
+
+        Assert.IsFalse(evidence.StoresRawLogs);
     }
 
     private static BrowserRuntimeLock ValidLock() =>
