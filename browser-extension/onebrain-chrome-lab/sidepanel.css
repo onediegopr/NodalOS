@@ -382,9 +382,9 @@ main {
   padding: 11px;
 }
 
-.mission-status-card.caveat {
-  border-color: rgba(248, 191, 95, 0.24);
-  background: rgba(248, 191, 95, 0.08);
+.mission-status-card.scope {
+  border-color: rgba(102, 227, 196, 0.24);
+  background: rgba(102, 227, 196, 0.08);
 }
 
 .mission-evidence-grid {

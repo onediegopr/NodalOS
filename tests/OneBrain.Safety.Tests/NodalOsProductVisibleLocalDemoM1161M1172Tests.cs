@@ -60,7 +60,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         }
 
         StringAssert.Contains(html, "started → accepted → evidence → completed");
-        StringAssert.Contains(html, "badge informativo, no bloquea esta demo");
+        StringAssert.Contains(html, "sin shell, filesystem ni cloud");
     }
 
     [TestMethod]
@@ -137,7 +137,10 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 
         StringAssert.Contains(html, "Demo segura");
         StringAssert.Contains(html, "Listo para probar");
+        StringAssert.Contains(html, "Demo scope");
         StringAssert.Contains(js, "Sin acciones peligrosas");
+        Assert.IsFalse(html.Contains("Smoke caveat", StringComparison.Ordinal));
+        Assert.IsFalse(js.Contains("BrowserRuntimeSmoke caveat visible", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("MANUAL_QA_HOLD_ACTIVE", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("NOT_ELIGIBLE_EVIDENCE_PENDING", StringComparison.Ordinal));
     }

@@ -720,7 +720,7 @@ function renderDemoMissionControl() {
   el.demoHostStatus.textContent = demoHostStatus();
   el.demoBridgeStatus.textContent = demoBridgeStatus();
   el.demoBrowserClaimStatus.textContent = demoBrowserClaimStatus();
-  el.demoCaveatStatus.textContent = 'BrowserRuntimeSmoke caveat visible';
+  el.demoCaveatStatus.textContent = 'No-op local';
   renderTimeline(el.demoTimeline, demo.timeline);
   el.demoEvidencePanel.innerHTML = demo.logs.map((item) => `
     <div class="demo-log-item">
@@ -771,8 +771,8 @@ function buildDemoTechnicalReport() {
     `host_status: ${demoHostStatus()}`,
     `bridge_status: ${demoBridgeStatus()}`,
     `browser_claim_status: ${demoBrowserClaimStatus()}`,
-    'safety: no shell, no filesystem write, no provider/cloud call',
-    'caveat: BrowserRuntimeSmoke caveat visible as non-blocking demo badge'
+    'scope: no shell, no filesystem write, no provider/cloud call',
+    'mode: demo local visible'
   ];
   return lines.join('\n');
 }
