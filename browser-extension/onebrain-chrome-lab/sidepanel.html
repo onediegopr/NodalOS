@@ -38,6 +38,7 @@
           <h2 id="missionControlTitle">NODAL OS</h2>
           <nav class="mission-side-nav" aria-label="Demo sections">
             <a href="#missionCreateForm">Misiones</a>
+            <a href="#workspaceUnderstanding">Workspace</a>
             <a href="#demoRunHistory">Historial</a>
             <a href="#demoScriptPanel">Guion demo</a>
             <a href="#browserSkillsWorkspace">Browser Skills</a>
@@ -120,12 +121,75 @@
             </div>
           </section>
 
+          <section id="workspaceUnderstanding" class="workspace-understanding-card" aria-labelledby="workspaceUnderstandingTitle">
+            <div class="section-head workspace-head">
+              <div>
+                <span class="mission-kicker">Workspace</span>
+                <h2 id="workspaceUnderstandingTitle">Proyecto activo</h2>
+                <p>Seleccioná una carpeta local para leer estructura, detectar stack y sumar contexto visible a Mission Control.</p>
+              </div>
+              <div class="workspace-actions">
+                <button id="openWorkspaceBtn" class="primary" type="button">Abrir workspace</button>
+                <button id="rescanWorkspaceBtn" type="button">Releer</button>
+                <button id="clearWorkspaceBtn" type="button">Quitar</button>
+              </div>
+            </div>
+
+            <div class="workspace-status-grid" aria-label="Workspace status">
+              <article>
+                <span>Estado</span>
+                <strong id="workspaceStatus">Sin workspace</strong>
+              </article>
+              <article>
+                <span>Nombre</span>
+                <strong id="workspaceName">Seleccioná una carpeta</strong>
+              </article>
+              <article>
+                <span>Ubicación</span>
+                <strong id="workspacePath">No seleccionada</strong>
+              </article>
+              <article>
+                <span>Lectura</span>
+                <strong id="workspaceReadMode">Solo lectura</strong>
+              </article>
+            </div>
+
+            <div class="workspace-summary-grid">
+              <article class="workspace-panel">
+                <div class="section-head">
+                  <h3>Resumen</h3>
+                  <span id="workspaceCounts" class="mission-chip">0 archivos</span>
+                </div>
+                <div id="workspaceSignals" class="workspace-signals"></div>
+              </article>
+
+              <article class="workspace-panel">
+                <div class="section-head">
+                  <h3>Stack detectado</h3>
+                  <span id="workspaceStack" class="mission-chip">sin lectura</span>
+                </div>
+                <div id="workspaceKeyFiles" class="workspace-key-files"></div>
+              </article>
+
+              <article class="workspace-panel">
+                <div class="section-head">
+                  <h3>Árbol resumido</h3>
+                  <span class="mission-chip">read-only</span>
+                </div>
+                <div id="workspaceTree" class="workspace-tree"></div>
+              </article>
+            </div>
+
+            <div id="workspaceEvidence" class="workspace-evidence"></div>
+          </section>
+
           <section class="mission-workbench" aria-label="Mission setup">
             <form id="missionCreateForm" class="mission-create-form">
               <div class="section-head">
                 <h2>Nueva misión</h2>
                 <span class="mission-chip">local</span>
               </div>
+              <p id="missionWorkspaceContext" class="mission-help-text">Sin workspace activo todavía.</p>
               <label for="missionTitleInput">Nombre de misión</label>
               <input id="missionTitleInput" maxlength="80" placeholder="Qué querés probar o avanzar">
               <label for="missionDescriptionInput">Descripción corta</label>

@@ -333,6 +333,7 @@ main {
 .mission-list-card,
 .mission-editor-card,
 .mission-guidance-card,
+.workspace-understanding-card,
 .mission-script-card,
 .mission-run-note-card,
 .mission-timeline-card,
@@ -381,11 +382,171 @@ main {
 .mission-list-card,
 .mission-editor-card,
 .mission-guidance-card,
+.workspace-understanding-card,
 .mission-script-card,
 .mission-run-note-card {
   border: 1px solid rgba(159, 181, 204, 0.14);
   border-radius: 18px;
   background: rgba(13, 19, 27, 0.62);
+}
+
+.workspace-understanding-card {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(102, 227, 196, 0.2);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(102, 227, 196, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(143, 184, 255, 0.08), transparent 48%),
+    rgba(8, 13, 20, 0.72);
+}
+
+.workspace-head {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.workspace-head h2 {
+  margin: 8px 0 0;
+  font-family: var(--nos-font-heading);
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+
+.workspace-head p {
+  max-width: 620px;
+  margin: 7px 0 0;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.workspace-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.workspace-status-grid,
+.workspace-summary-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.workspace-status-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.workspace-summary-grid {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.95fr) minmax(190px, 1fr);
+}
+
+.workspace-status-grid article,
+.workspace-panel {
+  border: 1px solid rgba(159, 181, 204, 0.14);
+  border-radius: 16px;
+  background: rgba(6, 10, 15, 0.42);
+}
+
+.workspace-status-grid article {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+}
+
+.workspace-status-grid span {
+  color: var(--nos-color-text-muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.workspace-status-grid strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--nos-color-text);
+  font-size: 12px;
+}
+
+.workspace-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.workspace-panel h3 {
+  margin: 0;
+  font-family: var(--nos-font-heading);
+  font-size: 17px;
+  letter-spacing: -0.03em;
+}
+
+.workspace-signals,
+.workspace-key-files,
+.workspace-tree {
+  display: grid;
+  gap: 8px;
+  max-height: 250px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.workspace-signal,
+.workspace-key-file,
+.workspace-tree-item,
+.workspace-empty-state,
+.workspace-evidence {
+  border: 1px solid rgba(159, 181, 204, 0.12);
+  border-radius: 13px;
+  background: rgba(13, 19, 27, 0.58);
+}
+
+.workspace-signal,
+.workspace-key-file,
+.workspace-tree-item {
+  display: grid;
+  gap: 4px;
+  padding: 9px;
+}
+
+.workspace-signal span,
+.workspace-key-file span,
+.workspace-tree-item span {
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+}
+
+.workspace-signal strong,
+.workspace-key-file strong,
+.workspace-tree-item strong {
+  overflow-wrap: anywhere;
+  color: var(--nos-color-text);
+  font-size: 12px;
+}
+
+.workspace-empty-state {
+  margin: 0;
+  padding: 12px;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.workspace-evidence {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+}
+
+.workspace-evidence strong {
+  color: var(--nos-color-text);
 }
 
 .browser-skills-card {
@@ -1005,6 +1166,8 @@ main {
   .mission-layout,
   .mission-evidence-grid,
   .mission-workbench,
+  .workspace-status-grid,
+  .workspace-summary-grid,
   .browser-skill-status-grid,
   .browser-skills-layout,
   .onboarding-grid,

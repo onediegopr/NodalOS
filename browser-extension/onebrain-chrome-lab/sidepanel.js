@@ -4,6 +4,31 @@ const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
 const DEMO_GUIDANCE_COLLAPSED_KEY = 'nodal-os.demoGuidanceCollapsed.v1';
 const BROWSER_SKILLS_SNAPSHOT_KEY = 'nodal-os.browserSkills.snapshots.v1';
 const BROWSER_SKILLS_MAX_SNAPSHOTS = 20;
+const WORKSPACE_STORE_KEY = 'nodal-os.workspaceUnderstanding.v1';
+const WORKSPACE_SCAN_LIMITS = {
+  maxDepth: 4,
+  maxFiles: 520,
+  maxFolders: 180,
+  maxTreeItems: 90,
+  maxKeyFiles: 40
+};
+const WORKSPACE_IGNORED_DIRS = new Set([
+  'node_modules',
+  'bin',
+  'obj',
+  '.git',
+  '.vs',
+  '.idea',
+  '.next',
+  'dist',
+  'build',
+  'coverage',
+  '.turbo',
+  '.cache',
+  '.pnpm-store',
+  '.yarn',
+  'packages-cache'
+]);
 const DEMO_SCRIPT_STEPS = [
   'Abrí NODAL OS y presentá Mission Control como centro de misiones locales.',
   'Creá una misión corta para mostrar que el flujo empieza desde una intención simple.',
@@ -17,6 +42,7 @@ const state = {
   activeTab: 'operate',
   demo: loadDemoStore(),
   browserSkills: loadBrowserSkillStore(),
+  workspace: loadWorkspaceStore(),
   connection: {
     status: 'disconnected',
     health: 'untested',
@@ -179,6 +205,20 @@ const el = {
   indexBrowserPageBtn: document.getElementById('indexBrowserPageBtn'),
   copyBrowserSkillSummaryBtn: document.getElementById('copyBrowserSkillSummaryBtn'),
   clearBrowserSnapshotsBtn: document.getElementById('clearBrowserSnapshotsBtn'),
+  openWorkspaceBtn: document.getElementById('openWorkspaceBtn'),
+  rescanWorkspaceBtn: document.getElementById('rescanWorkspaceBtn'),
+  clearWorkspaceBtn: document.getElementById('clearWorkspaceBtn'),
+  workspaceStatus: document.getElementById('workspaceStatus'),
+  workspaceName: document.getElementById('workspaceName'),
+  workspacePath: document.getElementById('workspacePath'),
+  workspaceReadMode: document.getElementById('workspaceReadMode'),
+  workspaceCounts: document.getElementById('workspaceCounts'),
+  workspaceStack: document.getElementById('workspaceStack'),
+  workspaceSignals: document.getElementById('workspaceSignals'),
+  workspaceKeyFiles: document.getElementById('workspaceKeyFiles'),
+  workspaceTree: document.getElementById('workspaceTree'),
+  workspaceEvidence: document.getElementById('workspaceEvidence'),
+  missionWorkspaceContext: document.getElementById('missionWorkspaceContext'),
   browserSkillStatus: document.getElementById('browserSkillStatus'),
   browserSkillUrl: document.getElementById('browserSkillUrl'),
   browserSkillTitleValue: document.getElementById('browserSkillTitleValue'),
@@ -320,6 +360,9 @@ function bindEvents() {
   el.indexBrowserPageBtn.addEventListener('click', indexBrowserActivePage);
   el.copyBrowserSkillSummaryBtn.addEventListener('click', copyBrowserSkillSummary);
   el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
+  el.openWorkspaceBtn.addEventListener('click', openWorkspaceDirectory);
+  el.rescanWorkspaceBtn.addEventListener('click', rescanWorkspaceDirectory);
+  el.clearWorkspaceBtn.addEventListener('click', clearWorkspaceUnderstanding);
 
   el.startRunBtn.addEventListener('click', () => {
     state.operator.goal = el.instructionInput.value.trim();
@@ -676,6 +719,7 @@ function renderHeader() {
 
 function renderOperate() {
   renderDemoMissionControl();
+  renderWorkspaceUnderstanding();
   renderBrowserSkills();
   el.operatorGoal.textContent = state.operator.goal || '-';
   el.operatorPlan.textContent = state.operator.planPreview
@@ -798,6 +842,129 @@ function saveBrowserSkillStore(store = state.browserSkills) {
   }
 }
 
+function createEmptyWorkspaceStore() {
+  return {
+    schemaVersion: 1,
+    status: 'empty',
+    statusMessage: 'Seleccioná una carpeta para entender el proyecto.',
+    name: '',
+    pathLabel: '',
+    openedAt: '',
+    scannedAt: '',
+    counts: { files: 0, folders: 0, ignoredFolders: 0, listedItems: 0 },
+    stacks: [],
+    keyFiles: [],
+    treeItems: [],
+    signals: [],
+    evidence: null,
+    error: '',
+    directoryHandle: null
+  };
+}
+
+function loadWorkspaceStore() {
+  try {
+    const raw = localStorage.getItem(WORKSPACE_STORE_KEY);
+    if (raw) {
+      return normalizeWorkspaceStore(JSON.parse(raw));
+    }
+  } catch (error) {
+    console.warn('NODAL OS workspace store unavailable', error);
+  }
+  return createEmptyWorkspaceStore();
+}
+
+function saveWorkspaceStore(store = state.workspace) {
+  try {
+    const payload = {
+      schemaVersion: 1,
+      status: store.status === 'ready' ? 'metadata' : store.status || 'empty',
+      statusMessage: store.status === 'ready'
+        ? 'Resumen guardado. Releé para actualizar estructura.'
+        : store.statusMessage || '',
+      name: store.name || '',
+      pathLabel: store.pathLabel || '',
+      openedAt: store.openedAt || '',
+      scannedAt: store.scannedAt || '',
+      counts: store.counts || { files: 0, folders: 0, ignoredFolders: 0, listedItems: 0 },
+      stacks: store.stacks || [],
+      keyFiles: store.keyFiles || [],
+      treeItems: store.treeItems || [],
+      signals: store.signals || [],
+      evidence: store.evidence || null,
+      error: store.error || ''
+    };
+    localStorage.setItem(WORKSPACE_STORE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('NODAL OS workspace store save failed', error);
+  }
+}
+
+function normalizeWorkspaceStore(store) {
+  if (!store || typeof store !== 'object') {
+    return createEmptyWorkspaceStore();
+  }
+  return {
+    ...createEmptyWorkspaceStore(),
+    schemaVersion: 1,
+    status: String(store.status || 'metadata'),
+    statusMessage: String(store.statusMessage || 'Resumen guardado. Releé para actualizar estructura.'),
+    name: String(store.name || ''),
+    pathLabel: String(store.pathLabel || ''),
+    openedAt: String(store.openedAt || ''),
+    scannedAt: String(store.scannedAt || ''),
+    counts: normalizeWorkspaceCounts(store.counts),
+    stacks: normalizeWorkspaceTextList(store.stacks),
+    keyFiles: normalizeWorkspaceTextList(store.keyFiles).slice(0, WORKSPACE_SCAN_LIMITS.maxKeyFiles),
+    treeItems: Array.isArray(store.treeItems)
+      ? store.treeItems.map(normalizeWorkspaceTreeItem).filter(Boolean).slice(0, WORKSPACE_SCAN_LIMITS.maxTreeItems)
+      : [],
+    signals: Array.isArray(store.signals)
+      ? store.signals.map(normalizeWorkspaceSignal).filter(Boolean)
+      : [],
+    evidence: store.evidence && typeof store.evidence === 'object' ? store.evidence : null,
+    error: String(store.error || ''),
+    directoryHandle: null
+  };
+}
+
+function normalizeWorkspaceCounts(counts) {
+  return {
+    files: Number.isFinite(counts && counts.files) ? counts.files : 0,
+    folders: Number.isFinite(counts && counts.folders) ? counts.folders : 0,
+    ignoredFolders: Number.isFinite(counts && counts.ignoredFolders) ? counts.ignoredFolders : 0,
+    listedItems: Number.isFinite(counts && counts.listedItems) ? counts.listedItems : 0
+  };
+}
+
+function normalizeWorkspaceTextList(items) {
+  return Array.isArray(items)
+    ? items.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+}
+
+function normalizeWorkspaceTreeItem(item) {
+  if (!item || typeof item !== 'object') {
+    return null;
+  }
+  return {
+    path: String(item.path || ''),
+    kind: item.kind === 'directory' ? 'directory' : 'file',
+    depth: Number.isFinite(item.depth) ? item.depth : 0,
+    important: Boolean(item.important)
+  };
+}
+
+function normalizeWorkspaceSignal(item) {
+  if (!item || typeof item !== 'object') {
+    return null;
+  }
+  return {
+    label: String(item.label || ''),
+    value: String(item.value || '')
+  };
+}
+
 function normalizeBrowserSkillSnapshot(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') {
     return null;
@@ -898,7 +1065,8 @@ function createMissionRecord(title, description, createdAt = new Date().toISOStr
     updatedAt: createdAt,
     status: 'ready',
     runs: [],
-    browserSkillSnapshots: []
+    browserSkillSnapshots: [],
+    workspace: null
   };
 }
 
@@ -916,7 +1084,24 @@ function normalizeMissionRecord(mission) {
     runs: Array.isArray(mission.runs) ? mission.runs.map(normalizeRunRecord).filter(Boolean) : [],
     browserSkillSnapshots: Array.isArray(mission.browserSkillSnapshots)
       ? mission.browserSkillSnapshots.map(normalizeBrowserSkillSnapshot).filter(Boolean)
-      : []
+      : [],
+    workspace: normalizeMissionWorkspaceSummary(mission.workspace)
+  };
+}
+
+function normalizeMissionWorkspaceSummary(workspace) {
+  if (!workspace || typeof workspace !== 'object') {
+    return null;
+  }
+  return {
+    name: String(workspace.name || ''),
+    pathLabel: String(workspace.pathLabel || ''),
+    scannedAt: String(workspace.scannedAt || ''),
+    status: String(workspace.status || ''),
+    stacks: normalizeWorkspaceTextList(workspace.stacks),
+    files: Number.isFinite(workspace.files) ? workspace.files : 0,
+    folders: Number.isFinite(workspace.folders) ? workspace.folders : 0,
+    keyFiles: normalizeWorkspaceTextList(workspace.keyFiles).slice(0, 10)
   };
 }
 
@@ -996,6 +1181,7 @@ function createMissionFromForm(event) {
     return;
   }
   const mission = createMissionRecord(title, description || 'Demo local no-op para probar Mission Control.');
+  mission.workspace = workspaceMissionSummary();
   state.demo.missions.unshift(mission);
   state.demo.activeMissionId = mission.id;
   state.demo.selectedRunId = '';
@@ -1157,9 +1343,18 @@ function runSafeDemo() {
     demoTimelineStep('Evidencia lista', 'Se generó un resumen demo en memoria para el panel visible.', 'evidence', 'EvidenceProjection', evidenceRef),
     demoTimelineStep('Run completado', 'Timeline, historial y logs quedaron actualizados para la grabación.', 'completed', 'Result', evidenceRef)
   ];
+  if (state.workspace && state.workspace.name) {
+    timeline.splice(1, 0, demoTimelineStep(
+      'Workspace en contexto',
+      `${state.workspace.name} leído en modo solo lectura para orientar la misión.`,
+      'evidence-ready',
+      'WorkspaceContext',
+      `workspace:${state.workspace.name}`));
+  }
   const logs = [
     { label: 'run id', value: runId },
     { label: 'mission', value: mission.title },
+    { label: 'workspace', value: state.workspace && state.workspace.name ? state.workspace.name : 'sin workspace' },
     { label: 'command kind', value: 'SafeNoOp' },
     { label: 'result', value: 'Completed with no side effects' },
     { label: 'timestamp', value: iso },
@@ -1207,6 +1402,7 @@ function runSafeDemo() {
 function renderDemoMissionControl() {
   syncDemoViewFromStore();
   const demo = state.demo;
+  const workspace = state.workspace || createEmptyWorkspaceStore();
   el.demoMissionName.textContent = demo.missionName;
   el.demoMissionObjective.textContent = demo.objective;
   el.demoStatusBadge.textContent = demo.statusLabel;
@@ -1221,6 +1417,9 @@ function renderDemoMissionControl() {
   el.demoBridgeStatus.textContent = demoBridgeStatus();
   el.demoBrowserClaimStatus.textContent = demoBrowserClaimStatus();
   el.demoScopeStatus.textContent = 'No-op local';
+  el.missionWorkspaceContext.textContent = workspace.name
+    ? `Workspace activo: ${workspace.name} · ${(workspace.stacks || []).slice(0, 3).join(' + ') || 'Proyecto local'}`
+    : 'Sin workspace activo todavía.';
   renderDemoGuidance();
   renderMissionEditor();
   renderDemoMissionList();
@@ -1234,6 +1433,117 @@ function renderDemoMissionControl() {
       <strong>${safeHtml(item.value)}</strong>
     </div>`).join('');
   el.demoTechnicalReport.textContent = demo.report || buildDemoTechnicalReport();
+}
+
+function renderWorkspaceUnderstanding() {
+  const workspace = state.workspace || createEmptyWorkspaceStore();
+  const counts = workspace.counts || { files: 0, folders: 0, ignoredFolders: 0, listedItems: 0 };
+  el.workspaceStatus.textContent = workspaceStatusLabel(workspace);
+  el.workspaceName.textContent = workspace.name || 'Seleccioná una carpeta';
+  el.workspacePath.textContent = workspace.pathLabel || 'No seleccionada';
+  el.workspaceReadMode.textContent = 'Solo lectura';
+  el.workspaceCounts.textContent = `${counts.files} archivos · ${counts.folders} carpetas`;
+  el.workspaceStack.textContent = (workspace.stacks || []).slice(0, 3).join(' + ') || 'sin lectura';
+  el.rescanWorkspaceBtn.disabled = !workspace.name && !isWorkspacePickerAvailable();
+  el.clearWorkspaceBtn.disabled = !workspace.name && workspace.status !== 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES';
+  renderWorkspaceSignals(workspace);
+  renderWorkspaceKeyFiles(workspace);
+  renderWorkspaceTree(workspace);
+  renderWorkspaceEvidence(workspace);
+}
+
+function workspaceStatusLabel(workspace) {
+  if (!workspace || workspace.status === 'empty') {
+    return 'Sin workspace';
+  }
+  if (workspace.status === 'reading') {
+    return 'Leyendo...';
+  }
+  if (workspace.status === 'ready') {
+    return 'Leído';
+  }
+  if (workspace.status === 'metadata') {
+    return 'Resumen guardado';
+  }
+  if (workspace.status === 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES') {
+    return 'No disponible';
+  }
+  return workspace.statusMessage || workspace.status || 'Workspace';
+}
+
+function renderWorkspaceSignals(workspace) {
+  const signals = Array.isArray(workspace.signals) ? workspace.signals : [];
+  if (!signals.length) {
+    el.workspaceSignals.innerHTML = '<p class="workspace-empty-state">Abrí un workspace para ver tipo de proyecto, tests, scripts y señales principales.</p>';
+    return;
+  }
+  el.workspaceSignals.innerHTML = signals.map((item) => `
+    <div class="workspace-signal">
+      <span>${safeHtml(item.label)}</span>
+      <strong>${safeHtml(item.value)}</strong>
+    </div>`).join('');
+}
+
+function renderWorkspaceKeyFiles(workspace) {
+  const keyFiles = Array.isArray(workspace.keyFiles) ? workspace.keyFiles : [];
+  if (!keyFiles.length) {
+    el.workspaceKeyFiles.innerHTML = '<p class="workspace-empty-state">Los archivos clave aparecen después de la lectura read-only.</p>';
+    return;
+  }
+  el.workspaceKeyFiles.innerHTML = keyFiles.slice(0, 24).map((path) => `
+    <div class="workspace-key-file">
+      <span>${safeHtml(workspaceKeyLabel(path))}</span>
+      <strong>${safeHtml(path)}</strong>
+    </div>`).join('');
+}
+
+function renderWorkspaceTree(workspace) {
+  const treeItems = Array.isArray(workspace.treeItems) ? workspace.treeItems : [];
+  if (!treeItems.length) {
+    el.workspaceTree.innerHTML = '<p class="workspace-empty-state">El árbol resumido se arma con límites de profundidad y carpetas pesadas ignoradas.</p>';
+    return;
+  }
+  el.workspaceTree.innerHTML = treeItems.slice(0, WORKSPACE_SCAN_LIMITS.maxTreeItems).map((item) => `
+    <div class="workspace-tree-item${item.important ? ' important' : ''}">
+      <span>${item.kind === 'directory' ? 'carpeta' : 'archivo'} · nivel ${item.depth}</span>
+      <strong>${safeHtml(item.path)}</strong>
+    </div>`).join('');
+}
+
+function renderWorkspaceEvidence(workspace) {
+  if (workspace.status === 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES') {
+    el.workspaceEvidence.innerHTML = `
+      <span><strong>Bloqueado:</strong> ${safeHtml(workspace.error || 'selector no disponible')}</span>
+      <span>No se leyó estructura.</span>`;
+    return;
+  }
+  if (!workspace.evidence) {
+    el.workspaceEvidence.innerHTML = '<span><strong>Workspace:</strong> pendiente de selección.</span><span>No se ejecutaron comandos.</span><span>No se modificaron archivos.</span>';
+    return;
+  }
+  const evidence = workspace.evidence;
+  el.workspaceEvidence.innerHTML = `
+    <span><strong>${safeHtml(evidence.summary || 'Workspace leído')}</strong></span>
+    <span>${safeHtml(formatDemoDate(evidence.timestamp))}</span>
+    <span>${safeHtml(evidence.files)} archivos / ${safeHtml(evidence.folders)} carpetas</span>
+    <span>${safeHtml((evidence.stacks || []).join(' + ') || 'Proyecto local')}</span>
+    <span>No se ejecutaron comandos.</span>
+    <span>No se modificaron archivos.</span>`;
+}
+
+function workspaceKeyLabel(path) {
+  const lower = String(path || '').toLowerCase();
+  if (lower.endsWith('.sln') || lower.endsWith('.slnx')) return 'solución .NET';
+  if (lower.endsWith('.csproj')) return 'proyecto C#';
+  if (lower.endsWith('package.json')) return 'Node package';
+  if (lower.endsWith('manifest.json')) return 'manifest';
+  if (lower.includes('browser-extension')) return 'extensión';
+  if (lower.startsWith('src') || lower.includes('/src/')) return 'código fuente';
+  if (lower.startsWith('tests') || lower.includes('/tests/')) return 'tests';
+  if (lower.startsWith('scripts') || lower.includes('/scripts/')) return 'scripts';
+  if (lower.startsWith('docs') || lower.includes('/docs/')) return 'docs';
+  if (lower.includes('docker')) return 'docker';
+  return 'archivo clave';
 }
 
 function renderDemoGuidance() {
@@ -1399,11 +1709,16 @@ function composeDemoTechnicalReport(store, context = {}) {
   const connectionContext = context.connection || { host: '127.0.0.1', port: '8787', health: 'untested', status: 'disconnected' };
   const runtimeContext = context.runtime || null;
   const operatorPageContext = context.operatorPage || '';
+  const workspace = state.workspace || createEmptyWorkspaceStore();
   const lines = [
     'NODAL OS — Demo local',
     `mission: ${demo.missionName}`,
     `mission_id: ${mission ? mission.id : 'none'}`,
     `description: ${mission ? mission.description : 'pending'}`,
+    `workspace: ${workspace.name || 'sin workspace'}`,
+    `workspace_status: ${workspaceStatusLabel(workspace)}`,
+    `workspace_stack: ${(workspace.stacks || []).join(' + ') || 'sin lectura'}`,
+    `workspace_counts: ${workspace.counts ? workspace.counts.files : 0} files / ${workspace.counts ? workspace.counts.folders : 0} folders`,
     `status: ${demo.statusLabel}`,
     `run_id: ${demo.runId || 'pending'}`,
     `run_note: ${run && run.note ? run.note : 'sin nota'}`,
@@ -1473,6 +1788,312 @@ async function copyDemoReport() {
     addLog('local', { kind: 'DemoReportCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
   }
   render();
+}
+
+async function openWorkspaceDirectory() {
+  if (!isWorkspacePickerAvailable()) {
+    setWorkspaceBlocked('El selector de carpeta no está disponible en este contexto.');
+    render();
+    return;
+  }
+
+  state.workspace.status = 'reading';
+  state.workspace.statusMessage = 'Leyendo estructura del proyecto...';
+  state.workspace.error = '';
+  renderWorkspaceUnderstanding();
+
+  try {
+    const directoryHandle = await window.showDirectoryPicker({ mode: 'read' });
+    state.workspace = await scanWorkspaceDirectory(directoryHandle);
+    state.workspace.directoryHandle = directoryHandle;
+    attachWorkspaceToActiveMission();
+    saveWorkspaceStore();
+    saveDemoStore();
+    addLog('local', {
+      kind: 'WorkspaceRead',
+      name: state.workspace.name,
+      files: state.workspace.counts.files,
+      folders: state.workspace.counts.folders,
+      stacks: state.workspace.stacks.join(', ') || 'none'
+    });
+  } catch (error) {
+    if (error && error.name === 'AbortError') {
+      state.workspace.status = state.workspace.name ? 'metadata' : 'empty';
+      state.workspace.statusMessage = 'Selección cancelada.';
+    } else {
+      setWorkspaceBlocked(toMessage(error));
+    }
+  }
+  render();
+}
+
+async function rescanWorkspaceDirectory() {
+  if (state.workspace.directoryHandle) {
+    state.workspace.status = 'reading';
+    state.workspace.statusMessage = 'Releyendo workspace...';
+    renderWorkspaceUnderstanding();
+    try {
+      const directoryHandle = state.workspace.directoryHandle;
+      state.workspace = await scanWorkspaceDirectory(directoryHandle);
+      state.workspace.directoryHandle = directoryHandle;
+      attachWorkspaceToActiveMission();
+      saveWorkspaceStore();
+      saveDemoStore();
+      addLog('local', { kind: 'WorkspaceRescan', name: state.workspace.name });
+    } catch (error) {
+      setWorkspaceBlocked(toMessage(error));
+    }
+    render();
+    return;
+  }
+  await openWorkspaceDirectory();
+}
+
+function clearWorkspaceUnderstanding() {
+  if (state.workspace.name && !confirm('Quitar workspace activo de Mission Control?')) {
+    return;
+  }
+  state.workspace = createEmptyWorkspaceStore();
+  saveWorkspaceStore();
+  attachWorkspaceToActiveMission();
+  saveDemoStore();
+  addLog('local', { kind: 'WorkspaceCleared' });
+  render();
+}
+
+function isWorkspacePickerAvailable() {
+  return typeof window !== 'undefined' && typeof window.showDirectoryPicker === 'function';
+}
+
+function setWorkspaceBlocked(reason) {
+  state.workspace = {
+    ...state.workspace,
+    status: 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES',
+    statusMessage: 'No pude abrir el workspace desde este contexto.',
+    error: reason || 'Workspace picker unavailable',
+    evidence: {
+      summary: 'Workspace no leído.',
+      timestamp: new Date().toISOString(),
+      readOnly: true,
+      noCommands: true,
+      noWrites: true
+    }
+  };
+  saveWorkspaceStore();
+  addLog('local', { kind: 'WorkspaceOpenBlocked', reason: state.workspace.error });
+}
+
+async function scanWorkspaceDirectory(directoryHandle) {
+  const now = new Date().toISOString();
+  const scan = {
+    rootName: directoryHandle && directoryHandle.name ? directoryHandle.name : 'workspace',
+    counts: { files: 0, folders: 0, ignoredFolders: 0, listedItems: 0 },
+    treeItems: [],
+    keyFiles: [],
+    flags: {
+      dotnet: false,
+      node: false,
+      typescript: false,
+      chromeExtension: false,
+      playwright: false,
+      scripts: false,
+      tests: false,
+      docs: false,
+      docker: false,
+      browserExtension: false,
+      source: false
+    },
+    truncated: false
+  };
+
+  await walkWorkspaceDirectory(directoryHandle, '', 0, scan);
+  const stacks = workspaceStacksFromFlags(scan.flags);
+  const signals = workspaceSignalsFromScan(scan, stacks);
+  const evidence = {
+    summary: 'Workspace leído',
+    timestamp: now,
+    workspace: scan.rootName,
+    files: scan.counts.files,
+    folders: scan.counts.folders,
+    stacks,
+    keyFiles: scan.keyFiles.slice(0, 12),
+    readOnly: true,
+    noCommands: true,
+    noWrites: true,
+    truncated: scan.truncated
+  };
+
+  return normalizeWorkspaceStore({
+    status: 'ready',
+    statusMessage: scan.truncated
+      ? 'Workspace leído en modo solo lectura con límites aplicados.'
+      : 'Workspace leído en modo solo lectura.',
+    name: scan.rootName,
+    pathLabel: `${scan.rootName} (ruta absoluta no expuesta por el navegador)`,
+    openedAt: now,
+    scannedAt: now,
+    counts: scan.counts,
+    stacks,
+    keyFiles: scan.keyFiles,
+    treeItems: scan.treeItems,
+    signals,
+    evidence,
+    error: ''
+  });
+}
+
+async function walkWorkspaceDirectory(directoryHandle, relativePath, depth, scan) {
+  if (depth > WORKSPACE_SCAN_LIMITS.maxDepth || scan.truncated) {
+    scan.truncated = true;
+    return;
+  }
+
+  const entries = [];
+  for await (const [name, handle] of directoryHandle.entries()) {
+    entries.push([name, handle]);
+  }
+  entries.sort(([leftName, leftHandle], [rightName, rightHandle]) => {
+    if (leftHandle.kind !== rightHandle.kind) {
+      return leftHandle.kind === 'directory' ? -1 : 1;
+    }
+    return leftName.localeCompare(rightName);
+  });
+
+  for (const [name, handle] of entries) {
+    if (scan.truncated) {
+      return;
+    }
+    const itemPath = relativePath ? `${relativePath}/${name}` : name;
+    if (handle.kind === 'directory') {
+      if (WORKSPACE_IGNORED_DIRS.has(name)) {
+        scan.counts.ignoredFolders++;
+        continue;
+      }
+      scan.counts.folders++;
+      trackWorkspaceSignals(itemPath, handle.kind, scan);
+      addWorkspaceTreeItem(scan, itemPath, handle.kind, depth, isWorkspaceKeyPath(itemPath, handle.kind));
+      if (scan.counts.folders >= WORKSPACE_SCAN_LIMITS.maxFolders) {
+        scan.truncated = true;
+        return;
+      }
+      await walkWorkspaceDirectory(handle, itemPath, depth + 1, scan);
+    } else if (handle.kind === 'file') {
+      scan.counts.files++;
+      trackWorkspaceSignals(itemPath, handle.kind, scan);
+      const important = isWorkspaceKeyPath(itemPath, handle.kind);
+      addWorkspaceTreeItem(scan, itemPath, handle.kind, depth, important);
+      if (important && scan.keyFiles.length < WORKSPACE_SCAN_LIMITS.maxKeyFiles) {
+        scan.keyFiles.push(itemPath);
+      }
+      if (scan.counts.files >= WORKSPACE_SCAN_LIMITS.maxFiles) {
+        scan.truncated = true;
+        return;
+      }
+    }
+  }
+}
+
+function addWorkspaceTreeItem(scan, path, kind, depth, important) {
+  if (scan.treeItems.length >= WORKSPACE_SCAN_LIMITS.maxTreeItems) {
+    return;
+  }
+  scan.treeItems.push({ path, kind, depth, important });
+  scan.counts.listedItems = scan.treeItems.length;
+}
+
+function isWorkspaceKeyPath(path, kind) {
+  const normalized = path.replace(/\\/g, '/');
+  const lower = normalized.toLowerCase();
+  const fileName = lower.split('/').pop() || lower;
+  if (kind === 'directory') {
+    return ['src', 'tests', 'browser-extension', 'scripts', 'docs'].includes(fileName);
+  }
+  return fileName === 'package.json'
+    || fileName === 'tsconfig.json'
+    || fileName.startsWith('vite.config.')
+    || fileName === 'manifest.json'
+    || fileName.endsWith('.sln')
+    || fileName.endsWith('.slnx')
+    || fileName.endsWith('.csproj')
+    || fileName === 'program.cs'
+    || /^appsettings.*\.json$/i.test(fileName)
+    || fileName.startsWith('readme')
+    || fileName === 'dockerfile'
+    || fileName.startsWith('docker-compose')
+    || fileName.startsWith('playwright.config.')
+    || fileName === '.gitignore';
+}
+
+function trackWorkspaceSignals(path, kind, scan) {
+  const normalized = path.replace(/\\/g, '/');
+  const lower = normalized.toLowerCase();
+  const fileName = lower.split('/').pop() || lower;
+  if (kind === 'directory') {
+    if (fileName === 'src') scan.flags.source = true;
+    if (fileName === 'tests' || fileName.endsWith('.tests')) scan.flags.tests = true;
+    if (fileName === 'browser-extension') scan.flags.browserExtension = true;
+    if (fileName === 'scripts') scan.flags.scripts = true;
+    if (fileName === 'docs') scan.flags.docs = true;
+    return;
+  }
+  if (fileName === 'package.json') scan.flags.node = true;
+  if (fileName === 'tsconfig.json' || lower.endsWith('.ts') || lower.endsWith('.tsx')) scan.flags.typescript = true;
+  if (fileName.endsWith('.sln') || fileName.endsWith('.slnx') || fileName.endsWith('.csproj') || lower.endsWith('.cs')) scan.flags.dotnet = true;
+  if (fileName === 'manifest.json' && lower.includes('browser-extension/')) scan.flags.chromeExtension = true;
+  if (fileName.startsWith('playwright.config.')) scan.flags.playwright = true;
+  if (fileName === 'dockerfile' || fileName.startsWith('docker-compose')) scan.flags.docker = true;
+}
+
+function workspaceStacksFromFlags(flags) {
+  const stacks = [];
+  if (flags.dotnet) stacks.push('.NET / C#');
+  if (flags.node || flags.typescript) stacks.push(flags.typescript ? 'Node / JS / TS' : 'Node / JS');
+  if (flags.chromeExtension) stacks.push('Chrome Extension');
+  if (flags.playwright) stacks.push('Playwright');
+  if (flags.scripts) stacks.push('Scripts');
+  if (flags.tests) stacks.push('Tests');
+  if (flags.docs) stacks.push('Docs');
+  if (flags.docker) stacks.push('Docker');
+  return stacks.length ? stacks : ['Proyecto local'];
+}
+
+function workspaceSignalsFromScan(scan, stacks) {
+  return [
+    { label: 'Tipo probable', value: stacks.slice(0, 3).join(' + ') || 'Proyecto local' },
+    { label: 'Archivos visibles', value: String(scan.counts.files) },
+    { label: 'Carpetas visibles', value: String(scan.counts.folders) },
+    { label: 'Ignoradas por peso', value: String(scan.counts.ignoredFolders) },
+    { label: 'Tests', value: scan.flags.tests ? 'detectados' : 'sin señal' },
+    { label: 'Scripts', value: scan.flags.scripts ? 'detectados' : 'sin señal' },
+    { label: 'Browser extension', value: scan.flags.browserExtension || scan.flags.chromeExtension ? 'detectada' : 'sin señal' },
+    { label: 'Solución .NET', value: scan.flags.dotnet ? 'detectada' : 'sin señal' }
+  ];
+}
+
+function attachWorkspaceToActiveMission() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  mission.workspace = workspaceMissionSummary();
+  mission.updatedAt = new Date().toISOString();
+}
+
+function workspaceMissionSummary() {
+  const workspace = state.workspace || createEmptyWorkspaceStore();
+  if (!workspace.name) {
+    return null;
+  }
+  return {
+    name: workspace.name,
+    pathLabel: workspace.pathLabel,
+    scannedAt: workspace.scannedAt,
+    status: workspace.status,
+    stacks: workspace.stacks || [],
+    files: workspace.counts ? workspace.counts.files : 0,
+    folders: workspace.counts ? workspace.counts.folders : 0,
+    keyFiles: (workspace.keyFiles || []).slice(0, 10)
+  };
 }
 
 async function captureBrowserActiveTab() {

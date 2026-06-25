@@ -412,6 +412,91 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(report, "No se inventa QA instalada");
     }
 
+    [TestMethod]
+    public void WorkspaceOpenAndProjectUnderstandingAreVisibleInMissionControl()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+
+        StringAssert.Contains(html, "workspaceUnderstanding");
+        StringAssert.Contains(html, "Proyecto activo");
+        StringAssert.Contains(html, "Abrir workspace");
+        StringAssert.Contains(html, "Releer");
+        StringAssert.Contains(html, "Quitar");
+        StringAssert.Contains(html, "workspaceStatus");
+        StringAssert.Contains(html, "workspaceName");
+        StringAssert.Contains(html, "workspacePath");
+        StringAssert.Contains(html, "workspaceReadMode");
+        StringAssert.Contains(html, "workspaceSignals");
+        StringAssert.Contains(html, "workspaceKeyFiles");
+        StringAssert.Contains(html, "workspaceTree");
+        StringAssert.Contains(html, "workspaceEvidence");
+        StringAssert.Contains(html, "missionWorkspaceContext");
+    }
+
+    [TestMethod]
+    public void WorkspaceScanUsesReadOnlyPickerMetadataAndLocalStorage()
+    {
+        var js = ReadRepoText(SidepanelJsPath);
+
+        foreach (var expected in new[]
+        {
+            "WORKSPACE_STORE_KEY",
+            "nodal-os.workspaceUnderstanding.v1",
+            "showDirectoryPicker({ mode: 'read' })",
+            "openWorkspaceDirectory",
+            "scanWorkspaceDirectory",
+            "walkWorkspaceDirectory",
+            "WORKSPACE_IGNORED_DIRS",
+            "node_modules",
+            ".git",
+            "dist",
+            "build",
+            "coverage",
+            "package.json",
+            ".slnx",
+            ".csproj",
+            "manifest.json",
+            "browser-extension",
+            "Workspace leído",
+            "No se ejecutaron comandos.",
+            "No se modificaron archivos."
+        })
+        {
+            StringAssert.Contains(js, expected);
+        }
+
+        Assert.IsFalse(js.Contains("createWritable(", StringComparison.Ordinal));
+        Assert.IsFalse(js.Contains("removeEntry(", StringComparison.Ordinal));
+        Assert.IsFalse(js.Contains("FileSystemWritableFileStream", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void WorkspaceUnderstandingIsIntegratedWithMissionAndReport()
+    {
+        var js = ReadRepoText(SidepanelJsPath);
+
+        StringAssert.Contains(js, "attachWorkspaceToActiveMission");
+        StringAssert.Contains(js, "workspaceMissionSummary");
+        StringAssert.Contains(js, "mission.workspace");
+        StringAssert.Contains(js, "Workspace en contexto");
+        StringAssert.Contains(js, "workspace_status:");
+        StringAssert.Contains(js, "workspace_stack:");
+        StringAssert.Contains(js, "workspace_counts:");
+    }
+
+    [TestMethod]
+    public void WorkspaceStylingKeepsProductSurfaceReadable()
+    {
+        var css = ReadRepoText(SidepanelCssPath);
+
+        StringAssert.Contains(css, ".workspace-understanding-card");
+        StringAssert.Contains(css, ".workspace-status-grid");
+        StringAssert.Contains(css, ".workspace-summary-grid");
+        StringAssert.Contains(css, ".workspace-panel");
+        StringAssert.Contains(css, ".workspace-tree");
+        StringAssert.Contains(css, ".workspace-evidence");
+    }
+
     private static string ExtractFunctionBody(string source, string functionName)
     {
         var match = Regex.Match(source, $@"function\s+{Regex.Escape(functionName)}\s*\([^)]*\)\s*\{{", RegexOptions.CultureInvariant);
