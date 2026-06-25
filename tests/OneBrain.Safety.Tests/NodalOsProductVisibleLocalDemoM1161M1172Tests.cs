@@ -539,6 +539,82 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     }
 
     [TestMethod]
+    public void ProposalDraftIsVisibleReviewableAndReadOnly()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var js = ReadRepoText(SidepanelJsPath);
+        var css = ReadRepoText(SidepanelCssPath);
+
+        foreach (var expected in new[]
+        {
+            "missionProposalCard",
+            "Propuesta",
+            "Generar propuesta",
+            "Regenerar propuesta",
+            "Copiar propuesta",
+            "Marcar revisada",
+            "Limpiar propuesta"
+        })
+        {
+            StringAssert.Contains(html, expected);
+        }
+
+        foreach (var expected in new[]
+        {
+            "normalizeMissionProposal",
+            "generateMissionProposalDraft",
+            "renderMissionProposal",
+            "copyProposal",
+            "markProposalReviewed",
+            "buildProposalSummary",
+            "proposal.diffGenerated === true",
+            "diffGenerated: false",
+            "executionReady: false",
+            "commandsExecuted: false",
+            "filesModified: false",
+            "Propuesta revisable incluida"
+        })
+        {
+            StringAssert.Contains(js, expected);
+        }
+
+        StringAssert.Contains(css, ".mission-proposal-card");
+        StringAssert.Contains(css, ".mission-proposal-detail");
+        StringAssert.Contains(css, ".mission-proposal-flags");
+    }
+
+    [TestMethod]
+    public void ProposalDraftDoesNotAddDiffExecutionOrWorkspaceWrites()
+    {
+        var js = ReadRepoText(SidepanelJsPath);
+        var proposalStart = js.IndexOf("function renderMissionProposal", StringComparison.Ordinal);
+        var proposalEnd = js.IndexOf("function renderWorkspaceUnderstanding", StringComparison.Ordinal);
+
+        Assert.IsTrue(proposalStart >= 0, "Proposal block should exist.");
+        Assert.IsTrue(proposalEnd > proposalStart, "Proposal block should end before Workspace Understanding.");
+        var proposalJs = js[proposalStart..proposalEnd];
+
+        foreach (var forbidden in new[]
+        {
+            "fetch(",
+            "XMLHttpRequest",
+            "WebSocket",
+            "createWritable(",
+            "removeEntry(",
+            "post(",
+            "chrome.scripting.executeScript"
+        })
+        {
+            Assert.IsFalse(proposalJs.Contains(forbidden, StringComparison.Ordinal), forbidden);
+        }
+
+        StringAssert.Contains(js, "run.proposal");
+        StringAssert.Contains(js, "proposal_diff_generated:");
+        StringAssert.Contains(js, "proposal_commands_executed:");
+        StringAssert.Contains(js, "proposal_files_modified:");
+    }
+
+    [TestMethod]
     public void WorkspaceContextContractIsMetadataOnlyAndReadOnly()
     {
         var js = ReadRepoText(SidepanelJsPath);

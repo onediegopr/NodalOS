@@ -59,6 +59,12 @@ const WORKSPACE_PROTECTED_PATHS = new Set([
   'changelog.md'
 ]);
 const MISSION_PLAN_TASK_RANGE = { min: 3, max: 7 };
+const PROPOSAL_STATUS = {
+  draft: 'Borrador',
+  ready: 'Listo para revisar',
+  needsContext: 'Requiere contexto',
+  reviewed: 'Revisado'
+};
 const DEMO_SCRIPT_STEPS = [
   'Abrí NODAL OS y presentá Mission Control como centro de misiones locales.',
   'Creá una misión corta para mostrar que el flujo empieza desde una intención simple.',
@@ -214,6 +220,15 @@ const el = {
   missionPlanContext: document.getElementById('missionPlanContext'),
   missionPlanChips: document.getElementById('missionPlanChips'),
   missionTaskGraph: document.getElementById('missionTaskGraph'),
+  generateProposalBtn: document.getElementById('generateProposalBtn'),
+  regenerateProposalBtn: document.getElementById('regenerateProposalBtn'),
+  copyProposalBtn: document.getElementById('copyProposalBtn'),
+  reviewProposalBtn: document.getElementById('reviewProposalBtn'),
+  clearProposalBtn: document.getElementById('clearProposalBtn'),
+  missionProposalContext: document.getElementById('missionProposalContext'),
+  missionProposalFlags: document.getElementById('missionProposalFlags'),
+  missionProposalSummary: document.getElementById('missionProposalSummary'),
+  missionProposalDetails: document.getElementById('missionProposalDetails'),
   runSafeDemoBtn: document.getElementById('runSafeDemoBtn'),
   copyDemoReportBtn: document.getElementById('copyDemoReportBtn'),
   demoRunState: document.getElementById('demoRunState'),
@@ -393,6 +408,11 @@ function bindEvents() {
   el.regenerateMissionPlanBtn.addEventListener('click', regenerateMissionPlan);
   el.copyMissionPlanBtn.addEventListener('click', copyMissionPlan);
   el.clearMissionPlanBtn.addEventListener('click', clearMissionPlan);
+  el.generateProposalBtn.addEventListener('click', generateProposal);
+  el.regenerateProposalBtn.addEventListener('click', regenerateProposal);
+  el.copyProposalBtn.addEventListener('click', copyProposal);
+  el.reviewProposalBtn.addEventListener('click', markProposalReviewed);
+  el.clearProposalBtn.addEventListener('click', clearProposal);
   el.runSafeDemoBtn.addEventListener('click', runSafeDemo);
   el.copyDemoReportBtn.addEventListener('click', copyDemoReport);
   el.copyDemoScriptBtn.addEventListener('click', copyDemoScript);
@@ -1161,7 +1181,8 @@ function createMissionRecord(title, description, createdAt = new Date().toISOStr
     browserSkillSnapshots: [],
     workspace: null,
     missionContext: null,
-    plan: null
+    plan: null,
+    proposal: null
   };
 }
 
@@ -1182,7 +1203,8 @@ function normalizeMissionRecord(mission) {
       : [],
     workspace: normalizeMissionWorkspaceSummary(mission.workspace),
     missionContext: normalizeMissionContext(mission.missionContext),
-    plan: normalizeMissionPlan(mission.plan)
+    plan: normalizeMissionPlan(mission.plan),
+    proposal: normalizeMissionProposal(mission.proposal)
   };
 }
 
@@ -1275,6 +1297,66 @@ function normalizeMissionPlanTask(task) {
   };
 }
 
+function normalizeMissionProposal(proposal) {
+  if (!proposal || typeof proposal !== 'object') {
+    return null;
+  }
+  const tasks = Array.isArray(proposal.tasks)
+    ? proposal.tasks.map(normalizeProposalTask).filter(Boolean).slice(0, MISSION_PLAN_TASK_RANGE.max)
+    : [];
+  if (!tasks.length) {
+    return null;
+  }
+  const now = new Date().toISOString();
+  return {
+    proposalId: String(proposal.proposalId || `proposal-${Date.now().toString(36)}`),
+    missionId: String(proposal.missionId || ''),
+    missionTitle: String(proposal.missionTitle || ''),
+    workspaceName: String(proposal.workspaceName || ''),
+    workspaceSource: String(proposal.workspaceSource || ''),
+    createdAt: String(proposal.createdAt || now),
+    updatedAt: String(proposal.updatedAt || proposal.createdAt || now),
+    status: normalizeProposalStatus(proposal.status),
+    summary: String(proposal.summary || 'Propuesta local para revisar.'),
+    contextUsed: normalizeWorkspaceTextList(proposal.contextUsed).slice(0, 12),
+    tasks,
+    suggestedReviewOrder: normalizeWorkspaceTextList(proposal.suggestedReviewOrder).slice(0, MISSION_PLAN_TASK_RANGE.max),
+    relevantAreas: normalizeWorkspaceTextList(proposal.relevantAreas).filter((item) => !isWorkspaceProtectedPath(item)).slice(0, 10),
+    assumptions: normalizeWorkspaceTextList(proposal.assumptions).slice(0, 6),
+    risks: normalizeWorkspaceTextList(proposal.risks).slice(0, 6),
+    evidence: normalizeWorkspaceTextList(proposal.evidence).slice(0, 8),
+    nextHumanDecision: String(proposal.nextHumanDecision || 'Revisar la propuesta y decidir el próximo paso.'),
+    readOnly: proposal.readOnly !== false,
+    commandsExecuted: proposal.commandsExecuted === true,
+    filesModified: proposal.filesModified === true,
+    diffGenerated: proposal.diffGenerated === true,
+    executionReady: proposal.executionReady === true
+  };
+}
+
+function normalizeProposalTask(task) {
+  if (!task || typeof task !== 'object') {
+    return null;
+  }
+  return {
+    id: String(task.id || `proposal-task-${Date.now().toString(36)}`),
+    title: String(task.title || 'Tarea a revisar'),
+    reason: String(task.reason || 'Derivada del plan inicial local.'),
+    status: String(task.status || 'Por hacer'),
+    sourceTaskId: String(task.sourceTaskId || ''),
+    needsHumanReview: task.needsHumanReview !== false,
+    readOnly: task.readOnly !== false
+  };
+}
+
+function normalizeProposalStatus(status) {
+  const value = String(status || PROPOSAL_STATUS.draft).toLowerCase();
+  if (value === PROPOSAL_STATUS.ready.toLowerCase() || value === 'ready') return PROPOSAL_STATUS.ready;
+  if (value === PROPOSAL_STATUS.needsContext.toLowerCase() || value === 'needs-context') return PROPOSAL_STATUS.needsContext;
+  if (value === PROPOSAL_STATUS.reviewed.toLowerCase() || value === 'reviewed') return PROPOSAL_STATUS.reviewed;
+  return PROPOSAL_STATUS.draft;
+}
+
 function normalizeRunRecord(run) {
   if (!run || typeof run !== 'object') {
     return null;
@@ -1294,7 +1376,8 @@ function normalizeRunRecord(run) {
     logs: Array.isArray(run.logs) ? run.logs : [],
     summary: run.summary || 'Run demo no-op completado.',
     missionContext: normalizeMissionContext(run.missionContext),
-    plan: normalizeMissionPlan(run.plan)
+    plan: normalizeMissionPlan(run.plan),
+    proposal: normalizeMissionProposal(run.proposal)
   };
 }
 
@@ -1394,6 +1477,7 @@ function saveMissionEdit() {
   mission.workspace = workspaceMissionSummary() || mission.workspace;
   mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
   mission.plan = generateMissionPlanSkeleton(mission);
+  mission.proposal = null;
   mission.updatedAt = new Date().toISOString();
   state.demo.editingMission = false;
   syncDemoViewFromStore();
@@ -1512,6 +1596,7 @@ function runSafeDemo() {
   }
   mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
   const plan = ensureMissionPlan(mission);
+  const proposal = mission.proposal || null;
   const now = new Date();
   const iso = now.toISOString();
   const runId = `demo-${now.getTime().toString(36)}`;
@@ -1538,11 +1623,21 @@ function runSafeDemo() {
       'TaskGraph',
       `plan:${plan.id}`));
   }
+  if (proposal) {
+    timeline.splice(timeline.length - 1, 0, demoTimelineStep(
+      'Propuesta revisable incluida',
+      `${proposal.status}: ${proposal.summary}`,
+      'evidence-ready',
+      'ProposalDraft',
+      `proposal:${proposal.proposalId}`));
+  }
   const logs = [
     { label: 'run id', value: runId },
     { label: 'mission', value: mission.title },
     { label: 'workspace', value: state.workspace && state.workspace.name ? state.workspace.name : 'sin workspace' },
     { label: 'plan tasks', value: plan ? String(plan.tasks.length) : '0' },
+    { label: 'proposal', value: proposal ? proposal.status : 'sin propuesta' },
+    { label: 'proposal tasks', value: proposal ? String(proposal.tasks.length) : '0' },
     { label: 'command kind', value: 'SafeNoOp' },
     { label: 'result', value: 'Completed with no side effects' },
     { label: 'timestamp', value: iso },
@@ -1563,7 +1658,8 @@ function runSafeDemo() {
     logs,
     summary: `${mission.title}: run demo no-op completado.`,
     missionContext: mission.missionContext || null,
-    plan: plan || null
+    plan: plan || null,
+    proposal: proposal || null
   };
   mission.status = 'completed';
   mission.runs.unshift(run);
@@ -1617,6 +1713,7 @@ function renderDemoMissionControl() {
   renderDemoScript();
   renderRunNoteEditor();
   renderMissionPlan();
+  renderMissionProposal();
   renderTimeline(el.demoTimeline, demo.timeline);
   el.demoEvidencePanel.innerHTML = demo.logs.map((item) => `
     <div class="demo-log-item">
@@ -1699,6 +1796,7 @@ function regenerateMissionPlan() {
   mission.workspace = workspaceMissionSummary() || mission.workspace;
   mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
   mission.plan = generateMissionPlanSkeleton(mission);
+  mission.proposal = null;
   mission.updatedAt = new Date().toISOString();
   syncDemoViewFromStore();
   saveDemoStore();
@@ -1712,6 +1810,7 @@ function clearMissionPlan() {
     return;
   }
   mission.plan = null;
+  mission.proposal = null;
   mission.updatedAt = new Date().toISOString();
   syncDemoViewFromStore();
   saveDemoStore();
@@ -1751,6 +1850,153 @@ function buildMissionPlanSummary(mission = activeDemoMission()) {
     `commands_executed: ${plan ? plan.commandsExecuted === true : false}`,
     `files_modified: ${plan ? plan.filesModified === true : false}`,
     ...(plan ? plan.tasks.map((task, index) => `${index + 1}. ${task.title} [${task.status}] - ${task.reason}`) : [])
+  ].join('\n');
+}
+
+function renderMissionProposal() {
+  const mission = activeDemoMission();
+  const proposal = mission ? mission.proposal : null;
+  el.generateProposalBtn.disabled = !mission;
+  el.regenerateProposalBtn.disabled = !mission;
+  el.copyProposalBtn.disabled = !mission || !proposal;
+  el.reviewProposalBtn.disabled = !mission || !proposal || proposal.status === PROPOSAL_STATUS.reviewed;
+  el.clearProposalBtn.disabled = !mission || !proposal;
+  el.missionProposalContext.textContent = mission
+    ? proposalContextLabel(mission, proposal)
+    : 'Generá una propuesta revisable desde el plan inicial.';
+  const flags = proposal
+    ? proposalFlags(proposal)
+    : ['Sin propuesta', 'Solo lectura', 'Sin diff', 'Sin ejecución'];
+  el.missionProposalFlags.innerHTML = flags.map((flag) => `<span>${safeHtml(flag)}</span>`).join('');
+  if (!proposal) {
+    el.missionProposalSummary.innerHTML = '<strong>Sin propuesta todavía</strong><p>Usá Generar propuesta para convertir el TaskGraph en un borrador revisable.</p>';
+    el.missionProposalDetails.innerHTML = '';
+    return;
+  }
+  el.missionProposalSummary.innerHTML = `
+    <strong>${safeHtml(proposal.status)}</strong>
+    <p>${safeHtml(proposal.summary)}</p>`;
+  el.missionProposalDetails.innerHTML = [
+    proposalDetailBlock('Contexto usado', proposal.contextUsed),
+    proposalDetailBlock('Tareas propuestas', proposal.tasks.map((task) => `${task.title}: ${task.reason}`)),
+    proposalDetailBlock('Áreas relevantes', proposal.relevantAreas),
+    proposalDetailBlock('Supuestos y riesgos', [...proposal.assumptions, ...proposal.risks]),
+    proposalDetailBlock('Evidencia', proposal.evidence),
+    proposalDetailBlock('Siguiente decisión', [proposal.nextHumanDecision])
+  ].join('');
+}
+
+function proposalContextLabel(mission, proposal) {
+  if (!proposal) {
+    return `${mission.title} puede generar una propuesta local desde su plan inicial.`;
+  }
+  const workspaceLabel = proposal.workspaceName || 'sin workspace';
+  return `${mission.title} tiene una propuesta ${proposal.status.toLowerCase()} usando ${workspaceLabel}.`;
+}
+
+function proposalFlags(proposal) {
+  return [
+    proposal.status,
+    proposal.readOnly ? 'Solo lectura' : 'Lectura no confirmada',
+    proposal.diffGenerated ? 'Diff generado' : 'Sin diff',
+    proposal.commandsExecuted ? 'Con comandos' : 'Sin ejecución',
+    proposal.filesModified ? 'Con modificaciones' : 'No se modificaron archivos'
+  ];
+}
+
+function proposalDetailBlock(title, items) {
+  const values = (Array.isArray(items) ? items : []).filter(Boolean).slice(0, 6);
+  return `
+    <article class="mission-proposal-detail">
+      <span>${safeHtml(title)}</span>
+      <ul>${(values.length ? values : ['Sin datos todavía']).map((item) => `<li>${safeHtml(item)}</li>`).join('')}</ul>
+    </article>`;
+}
+
+function generateProposal() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext || null;
+  mission.plan = ensureMissionPlan(mission);
+  mission.proposal = generateMissionProposalDraft(mission);
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'ProposalGenerated', missionId: mission.id, proposalId: mission.proposal.proposalId });
+  render();
+}
+
+function regenerateProposal() {
+  generateProposal();
+}
+
+async function copyProposal() {
+  const summary = buildProposalSummary();
+  try {
+    await navigator.clipboard.writeText(summary);
+    addLog('local', { kind: 'ProposalCopied', missionId: activeDemoMission() ? activeDemoMission().id : 'none' });
+  } catch (error) {
+    addLog('local', { kind: 'ProposalCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
+function markProposalReviewed() {
+  const mission = activeDemoMission();
+  if (!mission || !mission.proposal) {
+    return;
+  }
+  mission.proposal.status = PROPOSAL_STATUS.reviewed;
+  mission.proposal.updatedAt = new Date().toISOString();
+  mission.updatedAt = mission.proposal.updatedAt;
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'ProposalReviewed', missionId: mission.id, proposalId: mission.proposal.proposalId });
+  render();
+}
+
+function clearProposal() {
+  const mission = activeDemoMission();
+  if (!mission || !mission.proposal) {
+    return;
+  }
+  mission.proposal = null;
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'ProposalCleared', missionId: mission.id });
+  render();
+}
+
+function buildProposalSummary(mission = activeDemoMission()) {
+  if (!mission) {
+    return 'NODAL OS — Propuesta\nmission: none';
+  }
+  const proposal = mission.proposal || generateMissionProposalDraft(mission);
+  return [
+    'NODAL OS — Propuesta revisable',
+    `proposal_id: ${proposal.proposalId}`,
+    `mission: ${proposal.missionTitle}`,
+    `mission_id: ${proposal.missionId}`,
+    `workspace: ${proposal.workspaceName || 'sin workspace'}`,
+    `workspace_source: ${proposal.workspaceSource || 'sin origen'}`,
+    `status: ${proposal.status}`,
+    `summary: ${proposal.summary}`,
+    `context_used: ${proposal.contextUsed.join(' + ') || 'misión local'}`,
+    `relevant_areas: ${proposal.relevantAreas.join('; ') || 'sin áreas específicas'}`,
+    `tasks: ${proposal.tasks.length}`,
+    ...proposal.tasks.map((task, index) => `${index + 1}. ${task.title} - ${task.reason}`),
+    `assumptions: ${proposal.assumptions.join('; ') || 'sin supuestos adicionales'}`,
+    `risks: ${proposal.risks.join('; ') || 'sin riesgos adicionales'}`,
+    `evidence: ${proposal.evidence.join('; ') || 'sin evidencia adicional'}`,
+    `next_human_decision: ${proposal.nextHumanDecision}`,
+    `read_only: ${proposal.readOnly === true}`,
+    `diff_generated: ${proposal.diffGenerated === true}`,
+    `commands_executed: ${proposal.commandsExecuted === true}`,
+    `files_modified: ${proposal.filesModified === true}`,
+    `execution_ready: ${proposal.executionReady === true}`
   ].join('\n');
 }
 
@@ -2084,6 +2330,7 @@ function composeDemoTechnicalReport(store, context = {}) {
   const operatorPageContext = context.operatorPage || '';
   const workspace = state.workspace || createEmptyWorkspaceStore();
   const plan = run && run.plan ? run.plan : mission && mission.plan ? mission.plan : null;
+  const proposal = run && run.proposal ? run.proposal : mission && mission.proposal ? mission.proposal : null;
   const missionContext = run && run.missionContext ? run.missionContext : mission && mission.missionContext ? mission.missionContext : null;
   const lines = [
     'NODAL OS — Demo local',
@@ -2099,6 +2346,14 @@ function composeDemoTechnicalReport(store, context = {}) {
     `plan_id: ${plan ? plan.id : 'sin plan'}`,
     `plan_tasks: ${plan ? plan.tasks.length : 0}`,
     `plan_summary: ${plan ? plan.summary : 'sin plan inicial'}`,
+    `proposal_id: ${proposal ? proposal.proposalId : 'sin propuesta'}`,
+    `proposal_status: ${proposal ? proposal.status : 'sin propuesta'}`,
+    `proposal_summary: ${proposal ? proposal.summary : 'sin propuesta revisable'}`,
+    `proposal_tasks: ${proposal ? proposal.tasks.length : 0}`,
+    `proposal_read_only: ${proposal ? proposal.readOnly === true : true}`,
+    `proposal_diff_generated: ${proposal ? proposal.diffGenerated === true : false}`,
+    `proposal_commands_executed: ${proposal ? proposal.commandsExecuted === true : false}`,
+    `proposal_files_modified: ${proposal ? proposal.filesModified === true : false}`,
     `status: ${demo.statusLabel}`,
     `run_id: ${demo.runId || 'pending'}`,
     `run_note: ${run && run.note ? run.note : 'sin nota'}`,
@@ -2110,6 +2365,7 @@ function composeDemoTechnicalReport(store, context = {}) {
     `evidence_ref: ${demo.evidenceRef}`,
     `timeline: ${(demo.timeline || []).map((step) => step.title || step).join(' -> ')}`,
     `taskgraph: ${plan ? plan.tasks.map((task) => `${task.title} [${task.status}]`).join(' -> ') : 'sin tareas'}`,
+    `proposal_review_order: ${proposal ? proposal.suggestedReviewOrder.join(' -> ') : 'sin propuesta'}`,
     `logs: ${(demo.logs || []).map((item) => `${item.label}=${item.value}`).join('; ')}`,
     `host_status: ${demoHostStatus(connectionContext)}`,
     `bridge_status: ${demoBridgeStatus(connectionContext)}`,
@@ -2680,6 +2936,7 @@ function attachWorkspaceToActiveMission() {
   mission.workspace = workspaceMissionSummary();
   mission.missionContext = buildMissionWorkspaceContext(mission);
   mission.plan = generateMissionPlanSkeleton(mission);
+  mission.proposal = null;
   mission.updatedAt = new Date().toISOString();
 }
 
@@ -2803,6 +3060,112 @@ function missionPlanTask(id, title, status, reason, dependsOn = [], workspaceSig
     workspaceSignals,
     readOnly: true
   };
+}
+
+function generateMissionProposalDraft(mission) {
+  const currentMission = mission || activeDemoMission();
+  if (!currentMission) {
+    return null;
+  }
+  currentMission.missionContext = buildMissionWorkspaceContext(currentMission) || currentMission.missionContext || null;
+  const context = currentMission.missionContext;
+  const plan = ensureMissionPlan(currentMission);
+  const tasks = plan && Array.isArray(plan.tasks) ? plan.tasks : [];
+  const stacks = context ? context.stacks || [] : [];
+  const keyFiles = context ? context.keyFiles || [] : [];
+  const now = new Date().toISOString();
+  const relevantAreas = proposalRelevantAreas(stacks, keyFiles);
+  const hasWorkspace = Boolean(context && context.workspaceName);
+  const proposalTasks = tasks.map((task) => ({
+    id: `proposal-${task.id}`,
+    title: task.title,
+    reason: proposalTaskReason(task),
+    status: task.status || 'Por hacer',
+    sourceTaskId: task.id,
+    needsHumanReview: true,
+    readOnly: true
+  }));
+
+  return normalizeMissionProposal({
+    proposalId: `proposal-${Date.now().toString(36)}`,
+    missionId: currentMission.id,
+    missionTitle: currentMission.title,
+    workspaceName: hasWorkspace ? context.workspaceName : '',
+    workspaceSource: hasWorkspace ? context.workspaceSource : '',
+    createdAt: now,
+    updatedAt: now,
+    status: hasWorkspace ? PROPOSAL_STATUS.ready : PROPOSAL_STATUS.draft,
+    summary: hasWorkspace
+      ? `Se propone revisar ${currentMission.title} usando ${context.workspaceName} como contexto local.`
+      : `Se propone revisar ${currentMission.title} con contexto de misión y plan local.`,
+    contextUsed: [
+      currentMission.title,
+      ...(hasWorkspace ? [context.workspaceName, workspaceSourceLabel(context.workspaceSource) || context.workspaceSource] : ['sin workspace activo']),
+      ...stacks.slice(0, 4),
+      ...keyFiles.slice(0, 4)
+    ],
+    tasks: proposalTasks,
+    suggestedReviewOrder: proposalTasks.map((task) => task.title),
+    relevantAreas,
+    assumptions: proposalAssumptions(hasWorkspace, stacks),
+    risks: proposalRisks(hasWorkspace, stacks),
+    evidence: proposalEvidence(context, plan),
+    nextHumanDecision: 'Revisar la propuesta y decidir si el próximo bloque prepara diff read-only o pide más contexto.',
+    readOnly: true,
+    commandsExecuted: false,
+    filesModified: false,
+    diffGenerated: false,
+    executionReady: false
+  });
+}
+
+function proposalTaskReason(task) {
+  return `Se sugiere revisar: ${task.reason || task.title}`;
+}
+
+function proposalRelevantAreas(stacks, keyFiles) {
+  const areas = [];
+  const hasStack = (needle) => stacks.some((stack) => stack.toLowerCase().includes(needle));
+  if (hasStack('.net') || hasStack('c#')) areas.push('Solución y tests .NET');
+  if (hasStack('chrome extension')) areas.push('Extensión Chrome visible');
+  if (hasStack('scripts')) areas.push('Scripts de validación disponibles');
+  if (hasStack('docs')) areas.push('Documentación del proyecto');
+  for (const file of keyFiles) {
+    if (!isWorkspaceProtectedPath(file)) areas.push(file);
+  }
+  return [...new Set(areas)].slice(0, 10);
+}
+
+function proposalAssumptions(hasWorkspace, stacks) {
+  const assumptions = ['La propuesta se generó localmente desde Mission Context y TaskGraph.'];
+  if (!hasWorkspace) assumptions.push('No hay workspace activo; la propuesta queda genérica.');
+  if (stacks.length) assumptions.push(`Las señales detectadas son: ${stacks.slice(0, 4).join(', ')}.`);
+  return assumptions;
+}
+
+function proposalRisks(hasWorkspace, stacks) {
+  const risks = ['La propuesta no valida cambios de código ni comportamiento runtime.'];
+  if (!hasWorkspace) risks.push('Falta contexto de workspace para priorizar áreas concretas.');
+  if (stacks.some((stack) => stack.toLowerCase().includes('chrome extension'))) {
+    risks.push('Cambios futuros de extensión deben verificarse con el harness instalado.');
+  }
+  return risks;
+}
+
+function proposalEvidence(context, plan) {
+  const evidence = [
+    plan ? `TaskGraph local: ${plan.tasks.length} tareas` : 'TaskGraph no disponible',
+    'readOnly=true',
+    'diffGenerated=false',
+    'commandsExecuted=false',
+    'filesModified=false'
+  ];
+  if (context && context.workspaceName) {
+    evidence.unshift(`Workspace: ${context.workspaceName}`);
+    if (context.stacks && context.stacks.length) evidence.push(`Stacks: ${context.stacks.slice(0, 4).join(' + ')}`);
+    if (context.keyFiles && context.keyFiles.length) evidence.push(`Key files: ${context.keyFiles.slice(0, 4).join('; ')}`);
+  }
+  return evidence;
 }
 
 async function captureBrowserActiveTab() {

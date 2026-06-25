@@ -245,6 +245,26 @@
             <ol id="missionTaskGraph" class="mission-task-graph"></ol>
           </section>
 
+          <section id="missionProposalCard" class="mission-proposal-card" aria-labelledby="missionProposalTitle">
+            <div class="section-head mission-proposal-head">
+              <div>
+                <span class="mission-kicker">Review draft</span>
+                <h2 id="missionProposalTitle">Propuesta</h2>
+                <p id="missionProposalContext">Generá una propuesta revisable desde el plan inicial.</p>
+              </div>
+              <div class="mission-proposal-actions">
+                <button id="generateProposalBtn" class="primary" type="button">Generar propuesta</button>
+                <button id="regenerateProposalBtn" type="button">Regenerar propuesta</button>
+                <button id="copyProposalBtn" type="button">Copiar propuesta</button>
+                <button id="reviewProposalBtn" type="button">Marcar revisada</button>
+                <button id="clearProposalBtn" type="button">Limpiar propuesta</button>
+              </div>
+            </div>
+            <div id="missionProposalFlags" class="mission-proposal-flags"></div>
+            <div id="missionProposalSummary" class="mission-proposal-summary"></div>
+            <div id="missionProposalDetails" class="mission-proposal-details"></div>
+          </section>
+
           <section class="mission-progress-card" aria-label="Demo progress">
             <div class="mission-progress-head">
               <span id="demoRunState">Ready</span>

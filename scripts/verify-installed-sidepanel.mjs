@@ -351,9 +351,44 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
   await evaluate(sidepanel, `(() => {
     const regenerate = document.getElementById('regenerateMissionPlanBtn');
     const copy = document.getElementById('copyMissionPlanBtn');
-    const run = document.getElementById('runSafeDemoBtn');
     if (regenerate) regenerate.click();
     if (copy) copy.click();
+    return true;
+  })()`);
+  await delay(400);
+  const proposalClearState = await evaluate(sidepanel, `(async () => {
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const generate = document.getElementById('generateProposalBtn');
+    const copy = document.getElementById('copyProposalBtn');
+    const review = document.getElementById('reviewProposalBtn');
+    const clear = document.getElementById('clearProposalBtn');
+    if (generate) generate.click();
+    await delay(250);
+    if (copy) copy.click();
+    await delay(150);
+    if (review) review.click();
+    await delay(150);
+    if (clear) clear.click();
+    await delay(250);
+    const missionStore = JSON.parse(localStorage.getItem('nodal-os.demoMissions.v1') || '{}');
+    const mission = Array.isArray(missionStore.missions) ? missionStore.missions.find((item) => item.id === missionStore.activeMissionId) || missionStore.missions[0] : null;
+    return {
+      generateButtonPresent: Boolean(generate),
+      copyButtonPresent: Boolean(copy),
+      reviewButtonPresent: Boolean(review),
+      clearButtonPresent: Boolean(clear),
+      proposalCleared: Boolean(mission && !mission.proposal),
+      proposalText: document.getElementById('missionProposalCard') ? document.getElementById('missionProposalCard').innerText.slice(0, 500) : ''
+    };
+  })()`);
+  await evaluate(sidepanel, `(() => {
+    const generate = document.getElementById('generateProposalBtn');
+    const copy = document.getElementById('copyProposalBtn');
+    const review = document.getElementById('reviewProposalBtn');
+    const run = document.getElementById('runSafeDemoBtn');
+    if (generate) generate.click();
+    if (copy) copy.click();
+    if (review) review.click();
     if (run) run.click();
     return true;
   })()`);
@@ -375,6 +410,8 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
       : null;
     const plan = mission && mission.plan ? mission.plan : null;
     const runPlan = selectedRun && selectedRun.plan ? selectedRun.plan : null;
+    const proposal = mission && mission.proposal ? mission.proposal : null;
+    const runProposal = selectedRun && selectedRun.proposal ? selectedRun.proposal : null;
     return {
       ok: Boolean(
         workspace
@@ -392,6 +429,23 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
         && runPlan.tasks.length >= 3
         && ${JSON.stringify(planClearState)}.clearButtonPresent === true
         && ${JSON.stringify(planClearState)}.planCleared === true
+        && proposal
+        && proposal.tasks
+        && proposal.tasks.length >= 3
+        && proposal.status === 'Revisado'
+        && proposal.readOnly === true
+        && proposal.diffGenerated === false
+        && proposal.commandsExecuted === false
+        && proposal.filesModified === false
+        && runProposal
+        && runProposal.tasks
+        && runProposal.tasks.length >= 3
+        && runProposal.diffGenerated === false
+        && ${JSON.stringify(proposalClearState)}.generateButtonPresent === true
+        && ${JSON.stringify(proposalClearState)}.copyButtonPresent === true
+        && ${JSON.stringify(proposalClearState)}.reviewButtonPresent === true
+        && ${JSON.stringify(proposalClearState)}.clearButtonPresent === true
+        && ${JSON.stringify(proposalClearState)}.proposalCleared === true
         && evidenceText.includes('No se ejecutaron comandos')
         && evidenceText.includes('No se modificaron archivos')
       ),
@@ -414,10 +468,19 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
       evidenceText,
       planTaskCount: plan && Array.isArray(plan.tasks) ? plan.tasks.length : 0,
       planClearState: ${JSON.stringify(planClearState)},
+      proposalTaskCount: proposal && Array.isArray(proposal.tasks) ? proposal.tasks.length : 0,
+      proposalStatus: proposal ? proposal.status : '',
+      proposalClearState: ${JSON.stringify(proposalClearState)},
+      proposalText: document.getElementById('missionProposalCard') ? document.getElementById('missionProposalCard').innerText.slice(0, 900) : '',
       taskGraphText: document.getElementById('missionTaskGraph') ? document.getElementById('missionTaskGraph').innerText.slice(0, 900) : '',
       planContextText: document.getElementById('missionPlanContext') ? document.getElementById('missionPlanContext').innerText : '',
       runHasPlan: Boolean(runPlan),
+      runHasProposal: Boolean(runProposal),
       runHasMissionContext: Boolean(selectedRun && selectedRun.missionContext),
+      proposalReadOnly: proposal ? proposal.readOnly === true : false,
+      proposalDiffGenerated: proposal ? proposal.diffGenerated === true : null,
+      proposalCommandsExecuted: proposal ? proposal.commandsExecuted === true : null,
+      proposalFilesModified: proposal ? proposal.filesModified === true : null,
       readOnly: context.readOnly === true,
       commandsExecuted: context.commandsExecuted === true,
       filesModified: context.filesModified === true
