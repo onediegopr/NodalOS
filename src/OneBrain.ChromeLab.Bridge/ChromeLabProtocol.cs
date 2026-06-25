@@ -175,6 +175,7 @@ public sealed class ChromeLabRunManager
 public sealed class ChromeLabClientRegistry
 {
     private readonly ConcurrentDictionary<string, ClientConnection> _clients = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _sendLocks = new(StringComparer.OrdinalIgnoreCase);
 
     public bool HasConnectedClients => _clients.Values.Any(client => client.Connected && client.Socket.State == WebSocketState.Open);
 
@@ -197,6 +198,7 @@ public sealed class ChromeLabClientRegistry
             CurrentRunId: null,
             PendingRequestId: null,
             LastError: "Awaiting hello");
+        _sendLocks[clientId] = new SemaphoreSlim(1, 1);
         return clientId;
     }
 
@@ -251,6 +253,58 @@ public sealed class ChromeLabClientRegistry
     public void Remove(string clientId)
     {
         Update(clientId, current => current with { Connected = false, LastError = "Disconnected", LastSeenAt = DateTimeOffset.UtcNow });
+        if (_sendLocks.TryRemove(clientId, out var sem))
+            sem.Dispose();
+    }
+
+    public async Task SendAsync(string clientId, object message, CancellationToken ct)
+    {
+        if (!_clients.TryGetValue(clientId, out var client)
+            || client.Socket.State != WebSocketState.Open)
+            return;
+
+        if (!_sendLocks.TryGetValue(clientId, out var sem))
+            return;
+
+        var payload = JsonSerializer.Serialize(message, ChromeLabProtocol.JsonOptions);
+        var bytes = Encoding.UTF8.GetBytes(payload);
+
+        await sem.WaitAsync(ct);
+        try
+        {
+            await client.Socket.SendAsync(bytes, WebSocketMessageType.Text, true, ct);
+        }
+        finally
+        {
+            sem.Release();
+        }
+    }
+
+    public async Task BroadcastAsync(object message, CancellationToken cancellationToken)
+    {
+        var payload = JsonSerializer.Serialize(message, ChromeLabProtocol.JsonOptions);
+        var bytes = Encoding.UTF8.GetBytes(payload);
+        foreach (var (clientId, client) in _clients.ToArray())
+        {
+            if (!client.Connected || client.Socket.State != WebSocketState.Open)
+            {
+                Remove(clientId);
+                continue;
+            }
+
+            if (!_sendLocks.TryGetValue(clientId, out var sem))
+                continue;
+
+            await sem.WaitAsync(cancellationToken);
+            try
+            {
+                await client.Socket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
+            }
+            finally
+            {
+                sem.Release();
+            }
+        }
     }
 
     public ClientDiagnosticsResponse Diagnostics()
@@ -272,22 +326,6 @@ public sealed class ChromeLabClientRegistry
             .ToArray();
 
         return new ClientDiagnosticsResponse(clients.Count(client => client.Connected), clients);
-    }
-
-    public async Task BroadcastAsync(object message, CancellationToken cancellationToken)
-    {
-        var payload = JsonSerializer.Serialize(message, ChromeLabProtocol.JsonOptions);
-        var bytes = Encoding.UTF8.GetBytes(payload);
-        foreach (var client in _clients.ToArray())
-        {
-            if (!client.Value.Connected || client.Value.Socket.State != WebSocketState.Open)
-            {
-                Remove(client.Key);
-                continue;
-            }
-
-            await client.Value.Socket.SendAsync(bytes, WebSocketMessageType.Text, true, cancellationToken);
-        }
     }
 
     private void Update(string clientId, Func<ClientConnection, ClientConnection> update)

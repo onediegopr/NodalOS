@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using OneBrain.BrowserExecutor.Contracts;
 
 namespace OneBrain.BrowserExecutor.Cdp;
@@ -160,6 +161,8 @@ public sealed class BrowserCredentialBoundaryDetector
 
 public sealed class BrowserHumanHandoffCoordinator
 {
+    private readonly ConcurrentDictionary<string, bool> _completedHandoffs = new(StringComparer.Ordinal);
+
     public BrowserHumanHandoffRequest CreateApprovalRequest(
         BrowserAction action,
         string correlationId,
@@ -236,6 +239,9 @@ public sealed class BrowserHumanHandoffCoordinator
         BrowserVerification? postHandoffVerification,
         DateTimeOffset now)
     {
+        if (_completedHandoffs.TryGetValue(request.RequestId, out _))
+            return Decision(false, true, BrowserHumanHandoffStatus.Resumed, "handoff already completed (idempotent)");
+
         if (request.ResumeToken.IsExpired(now) || userStatus == BrowserHumanHandoffStatus.Expired)
             return Decision(false, false, BrowserHumanHandoffStatus.Expired, "handoff expired");
         if (userStatus == BrowserHumanHandoffStatus.UserCancelled)
@@ -248,6 +254,8 @@ public sealed class BrowserHumanHandoffCoordinator
             return Decision(false, false, BrowserHumanHandoffStatus.WaitingForUser, "waiting for user completion");
         if (postHandoffVerification is null || postHandoffVerification.Status != BrowserVerificationStatus.Verified || !postHandoffVerification.HasSemanticProof)
             return Decision(false, false, BrowserHumanHandoffStatus.UserCompleted, "user completed is not success without re-observation and verification");
+
+        _completedHandoffs.TryAdd(request.RequestId, true);
 
         return new BrowserHumanHandoffResumeDecision(
             CanResume: true,

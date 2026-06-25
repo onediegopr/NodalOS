@@ -210,6 +210,7 @@ public sealed record StealthTask(
 public sealed class StealthRunnerRegistry
 {
     private readonly ConcurrentDictionary<string, StealthRunnerConnection> _runners = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _sendLocks = new(StringComparer.Ordinal);
 
     public bool HasConnectedRunner =>
         _runners.Values.Any(r => r.Connected && r.Socket.State == WebSocketState.Open);
@@ -224,6 +225,7 @@ public sealed class StealthRunnerRegistry
             LastSeenAt: DateTimeOffset.UtcNow,
             CurrentTaskId: null,
             Capabilities: []);
+        _sendLocks[runnerId] = new SemaphoreSlim(1, 1);
         return runnerId;
     }
 
@@ -252,28 +254,54 @@ public sealed class StealthRunnerRegistry
     {
         var json = JsonSerializer.Serialize(message, StealthProtocol.JsonOptions);
         var bytes = Encoding.UTF8.GetBytes(json);
-        foreach (var (_, runner) in _runners)
+        foreach (var (runnerId, runner) in _runners)
         {
-            if (runner.Connected && runner.Socket.State == WebSocketState.Open)
+            if (!runner.Connected || runner.Socket.State != WebSocketState.Open)
+                continue;
+
+            if (!_sendLocks.TryGetValue(runnerId, out var sem))
+                continue;
+
+            await sem.WaitAsync(ct);
+            try
             {
                 await runner.Socket.SendAsync(bytes, WebSocketMessageType.Text, true, ct);
+            }
+            finally
+            {
+                sem.Release();
             }
         }
     }
 
     public async Task SendToRunnerAsync(string runnerId, object message, CancellationToken ct)
     {
-        if (_runners.TryGetValue(runnerId, out var runner)
-            && runner.Socket.State == WebSocketState.Open)
+        if (!_runners.TryGetValue(runnerId, out var runner)
+            || runner.Socket.State != WebSocketState.Open)
+            return;
+
+        if (!_sendLocks.TryGetValue(runnerId, out var sem))
+            return;
+
+        var json = JsonSerializer.Serialize(message, StealthProtocol.JsonOptions);
+        var bytes = Encoding.UTF8.GetBytes(json);
+
+        await sem.WaitAsync(ct);
+        try
         {
-            var json = JsonSerializer.Serialize(message, StealthProtocol.JsonOptions);
-            await runner.Socket.SendAsync(Encoding.UTF8.GetBytes(json), WebSocketMessageType.Text, true, ct);
+            await runner.Socket.SendAsync(bytes, WebSocketMessageType.Text, true, ct);
+        }
+        finally
+        {
+            sem.Release();
         }
     }
 
     public void Remove(string runnerId)
     {
         _runners.TryRemove(runnerId, out _);
+        if (_sendLocks.TryRemove(runnerId, out var sem))
+            sem.Dispose();
     }
 }
 
