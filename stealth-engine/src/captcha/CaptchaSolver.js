@@ -11,7 +11,7 @@ export class CaptchaSolver {
     if (sitekey && this.twoCaptchaApiKey) {
       try {
         console.log(`[${taskId}] Attempting CAPTCHA solve via 2captcha for ${detection.type}`);
-        const result = await this._solve2captcha(sitekey, url, taskId);
+        const result = await this._solve2captcha(sitekey, url, taskId, detection.type);
         if (result.success) return result;
         console.warn(`[${taskId}] 2captcha failed: ${result.error}, trying visual solver`);
       } catch (e) {
@@ -39,13 +39,32 @@ export class CaptchaSolver {
     return { success: false, error: 'All solvers failed' };
   }
 
-  async _solve2captcha(sitekey, url, taskId) {
+  async _solve2captcha(sitekey, url, taskId, captchaType) {
     const startTime = Date.now();
+
+    var safeUrl;
+    try { const u = new URL(url); safeUrl = u.origin + u.pathname; } catch { safeUrl = url; }
+
+    var taskType;
+    var taskConfig;
+    switch ((captchaType || '').split('_')[0]) {
+      case 'hcaptcha':
+        taskType = 'HCaptchaTaskProxyless';
+        taskConfig = { type: taskType, websiteURL: safeUrl, websiteKey: sitekey };
+        break;
+      case 'cloudflare':
+        taskType = 'TurnstileTaskProxyless';
+        taskConfig = { type: taskType, websiteURL: safeUrl, websiteKey: sitekey };
+        break;
+      default:
+        taskType = 'NoCaptchaTaskProxyless';
+        taskConfig = { type: taskType, websiteURL: safeUrl, websiteKey: sitekey };
+    }
 
     const createResp = await fetch('https://api.2captcha.com/createTask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientKey: this.twoCaptchaApiKey, task: { type: 'NoCaptchaTaskProxyless', websiteURL: url, websiteKey: sitekey } }),
+      body: JSON.stringify({ clientKey: this.twoCaptchaApiKey, task: taskConfig }),
     });
     const createResult = await createResp.json();
     if (createResult.errorId !== 0) return { success: false, error: createResult.errorDescription || 'create task failed' };

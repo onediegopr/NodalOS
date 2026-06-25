@@ -51,7 +51,7 @@ export class RecoveryStrategy {
       try {
         const SessionClass = this.stealthManager.SessionClass;
         const newSession = new SessionClass({
-          taskId: crypto.randomUUID(),
+          taskId: taskId,
           instruction: origInstruction,
           profile: decision.RotateProfile ? this.stealthManager.fingerprintGenerator.generate({
             preset: this.stealthManager.config?.fingerprint?.defaultPreset,

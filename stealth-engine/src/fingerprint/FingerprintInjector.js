@@ -18,11 +18,57 @@ export class FingerprintInjector {
         { get: () => p.hardwareConcurrency, configurable: true });
       Object.defineProperty(Navigator.prototype, 'deviceMemory',
         { get: () => p.deviceMemory, configurable: true });
+
+      // Navigator: productSub, appCodeName, appName (legacy)
+      try { Object.defineProperty(Navigator.prototype, 'productSub', { get: () => '20030107', configurable: true }); } catch(e) {}
+      try { Object.defineProperty(Navigator.prototype, 'appCodeName', { get: () => 'Mozilla', configurable: true }); } catch(e) {}
+      try { Object.defineProperty(Navigator.prototype, 'appName', { get: () => 'Netscape', configurable: true }); } catch(e) {}
+      Object.defineProperty(Navigator.prototype, 'doNotTrack', { get: () => null, configurable: true });
+      Object.defineProperty(Navigator.prototype, 'cookieEnabled', { get: () => true, configurable: true });
+      Object.defineProperty(Navigator.prototype, 'onLine', { get: () => true, configurable: true });
+
       if (navigator.languages) {
         Object.defineProperty(Navigator.prototype, 'languages',
           { get: () => Object.freeze([...p.languages]), configurable: true });
         Object.defineProperty(Navigator.prototype, 'language',
           { get: () => p.languages[0], configurable: true });
+      }
+
+      // Connection
+      if (navigator.connection || window.NetworkInformation) {
+        try {
+          Object.defineProperty(Navigator.prototype, 'connection', {
+            get: () => ({ effectiveType: '4g', rtt: 50, downlink: 10, saveData: false, type: 'cellular' }),
+            configurable: true,
+          });
+        } catch(e) {}
+      }
+
+      // Battery
+      if (navigator.getBattery) {
+        navigator.getBattery = () => Promise.resolve({
+          charging: true, chargingTime: 0, dischargingTime: Infinity, level: 1,
+          addEventListener: () => {}, removeEventListener: () => {}, onchargingchange: null, onlevelchange: null,
+        });
+      }
+
+      // Bluetooth, USB, Gamepad, Serial, Locks, Keyboard, Storage
+      const apisToNull = ['bluetooth', 'usb', 'serial', 'locks', 'keyboard', 'storage', 'hid', 'xr'];
+      apisToNull.forEach(api => {
+        try { Object.defineProperty(Navigator.prototype, api, { get: () => undefined, configurable: true }); } catch(e) {}
+      });
+      try { if (navigator.getGamepads) navigator.getGamepads = () => [null, null, null, null]; } catch(e) {}
+
+      // MediaDevices
+      if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+        var origEnum = navigator.mediaDevices.enumerateDevices;
+        navigator.mediaDevices.enumerateDevices = function() {
+          return origEnum.call(this).then(function(ds) {
+            return ds.map(function(d, i) { return {
+              deviceId: d.deviceId || 'default-' + i, kind: d.kind, label: d.label || '', groupId: d.groupId || 'default-group-' + i,
+            }; });
+          });
+        };
       }
 
       // ── Plugins ──
@@ -200,6 +246,29 @@ export class FingerprintInjector {
       // ── Notification ──
       if (typeof Notification !== 'undefined') {
         Object.defineProperty(Notification, 'permission', { get: () => 'default', configurable: true });
+      }
+
+      // ── Font fingerprinting ──
+      if (p.fonts && p.fonts.length > 0) {
+        try {
+          var fontList = p.fonts;
+          if (document.fonts && document.fonts.check) {
+            var origCheck = document.fonts.check;
+            document.fonts.check = function(font, text) {
+              var family = String(font || '').replace(/["']/g, '').split(',')[0].trim();
+              if (fontList.indexOf(family) >= 0) return true;
+              return origCheck.call(document.fonts, font, text || ' ');
+            };
+          }
+          if (document.fonts && document.fonts.forEach) {
+            var origForEach = document.fonts.forEach;
+            document.fonts.forEach = function(cb, thisArg) {
+              var results = [];
+              fontList.forEach(function(f, i) { results.push({ family: f, status: 'loaded' }); });
+              results.forEach(function(r) { try { cb.call(thisArg || document.fonts, r, r, document.fonts); } catch(e) {} });
+            };
+          }
+        } catch(e) {}
       }
 
       // ── Cleanup automation props ──

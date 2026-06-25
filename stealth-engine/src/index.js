@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { readFile } from 'node:fs/promises';
 
 import { StealthSession } from './StealthSession.js';
-import { FingerprintGenerator } from './fingerprint/FingerprintProfile.js';
+import { FingerprintGenerator, FingerprintProfile } from './fingerprint/FingerprintProfile.js';
 import { CaptchaDetector } from './captcha/CaptchaDetector.js';
 import { CaptchaSolver } from './captcha/CaptchaSolver.js';
 import { VisualCaptchaSolver } from './captcha/VisualCaptchaSolver.js';
@@ -136,11 +136,15 @@ async function handleTask(msg) {
     ? FingerprintGenerator.generate({ preset: msgProfile.preset })
     : FingerprintGenerator.generate({ preset: CONFIG.fingerprint?.defaultPreset || 'desktop-win-chrome' });
 
-  let proxy = null;
+  var proxy = null;
   if (CONFIG.proxy?.enabled) {
     proxy = msgProxy && msgProxy.server
       ? msgProxy
       : proxyManager?.acquire(taskId, { sticky: CONFIG.proxy.rotationMode !== 'random' });
+  }
+
+  if (proxy && proxy.country) {
+    FingerprintProfile.ensureCoherence(fingerprintProfile, proxy.country);
   }
 
   const behaviorProfile = CONFIG.behavior?.defaultProfile || 'casual';
@@ -177,6 +181,7 @@ async function handleToolRequest(msg) {
     if (tool === 'navigate' || tool === 'observePage') {
       const captcha = await CaptchaDetector.detect(session.page);
       if (captcha) {
+        session._lastCaptchaType = captcha.type;
         sendFrictionSignal(taskId, captcha, CaptchaDetector.mapToFrictionKind(captcha.type));
         return;
       }
@@ -232,9 +237,10 @@ async function handleFrictionDecision(msg) {
         twoCaptchaApiKey: CONFIG.captcha?.twoCaptchaApiKey || '',
         visualSolver: visualCaptchaSolver,
       });
-      const result = await solver.solve(session.page, { type: 'recaptcha_v2', sitekey }, taskId);
+      const captchaType = session._lastCaptchaType || 'recaptcha_v2';
+      const result = await solver.solve(session.page, { type: captchaType, sitekey }, taskId);
       if (result.success) {
-        await TokenInjector.inject(session.page, 'recaptcha_v2', result.token);
+        await TokenInjector.inject(session.page, captchaType, result.token);
         const stillThere = await CaptchaDetector.detect(session.page);
         if (!stillThere) {
           send({ type: 'stealth.friction.solved', taskId, signalId: msg.signalId, success: true, token: result.token, provider: result.provider, durationMs: result.durationMs, cost: result.cost });

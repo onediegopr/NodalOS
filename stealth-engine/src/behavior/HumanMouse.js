@@ -17,26 +17,25 @@ export class HumanMouse {
   }
 
   async _ballisticMove(page, sx, sy, tx, ty, opts = {}) {
-    const steps = opts.steps || 80 + Math.floor(Math.random() * 60);
-    const jitter = opts.jitterAmount || 3;
-    const baseDelay = this.profile.baseDelay || 80;
-    let lastX = sx, lastY = sy;
+    var steps = opts.steps || 80 + Math.floor(Math.random() * 60);
+    var jitter = opts.jitterAmount || 3;
+    var baseDelay = this.profile.baseDelay || 80;
+    var dist = Math.sqrt((tx - sx) ** 2 + (ty - sy) ** 2);
 
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const curveT = 1 - Math.pow(1 - t, 3);
-      const speedT = Math.sin(t * Math.PI);
-      const x = sx + (tx - sx) * curveT;
-      const y = sy + (ty - sy) * curveT;
-      const delay = (2 + speedT * 12) * (baseDelay / 80);
+    for (var i = 0; i <= steps; i++) {
+      var t = i / steps;
+      var curveT = 1 - Math.pow(1 - t, 3);
+      var speedT = Math.sin(t * Math.PI);
+      var x = sx + (tx - sx) * curveT;
+      var y = sy + (ty - sy) * curveT;
+      var delay = (2 + speedT * 12) * (baseDelay / 80);
 
-      const noiseScale = dist > 500 ? 1.5 : 1;
-      const jx = (Math.random() - 0.5) * jitter * noiseScale;
-      const jy = (Math.random() - 0.5) * jitter * noiseScale;
+      var noiseScale = dist > 500 ? 1.5 : 1;
+      var jx = (Math.random() - 0.5) * jitter * noiseScale;
+      var jy = (Math.random() - 0.5) * jitter * noiseScale;
 
       await page.mouse.move(Math.round(x + jx), Math.round(y + jy));
       await new Promise(r => setTimeout(r, delay));
-      lastX = x; lastY = y;
     }
 
     await page.mouse.move(tx, ty);

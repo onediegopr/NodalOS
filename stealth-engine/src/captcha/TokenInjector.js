@@ -8,14 +8,26 @@ export class TokenInjector {
 
   static async injectRecaptcha(page, token) {
     await page.evaluate((t) => {
-      const ta = document.querySelector('#g-recaptcha-response')
+      var ta = document.querySelector('#g-recaptcha-response')
         || document.querySelector('textarea[name="g-recaptcha-response"]');
       if (ta) { ta.value = t; ta.dispatchEvent(new Event('input', { bubbles: true })); ta.dispatchEvent(new Event('change', { bubbles: true })); }
 
-      const cfg = window.___grecaptcha_cfg;
+      var widget = document.querySelector('.g-recaptcha');
+      if (widget) {
+        var cbName = widget.getAttribute('data-callback');
+        if (cbName && window[cbName] && typeof window[cbName] === 'function') {
+          try { window[cbName](t); } catch(e) {}
+        }
+        var expCb = widget.getAttribute('data-expired-callback');
+        if (expCb && window[expCb] && typeof window[expCb] === 'function') {
+          try { window[expCb] = function() {}; } catch(e) {}
+        }
+      }
+
+      var cfg = window.___grecaptcha_cfg;
       if (cfg && cfg.clients) {
-        for (const id of Object.keys(cfg.clients)) {
-          const c = cfg.clients[id];
+        for (var id of Object.keys(cfg.clients)) {
+          var c = cfg.clients[id];
           if (c && c.callback) {
             try {
               if (typeof c.callback === 'function') c.callback(t);
