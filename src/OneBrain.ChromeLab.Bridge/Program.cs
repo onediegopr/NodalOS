@@ -274,7 +274,8 @@ app.Map("/ws/extension", async (
 
     using var socket = await context.WebSockets.AcceptWebSocketAsync();
     var clientId = clients.Add(socket);
-    var session = new WebSocketSession(clientId, handler, events);
+    var sendLock = clients.GetSendLock(clientId) ?? new SemaphoreSlim(1, 1);
+    var session = new WebSocketSession(clientId, handler, events, sendLock);
     await session.RunAsync(socket, context.RequestAborted);
     clients.Remove(clientId);
 });

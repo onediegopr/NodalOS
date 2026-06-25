@@ -7,16 +7,20 @@ namespace OneBrain.ChromeLab.Bridge.Sessions;
 
 public sealed class WebSocketSession : IWebSocketSession
 {
+    private const int MaxMessageSizeBytes = 1 * 1024 * 1024;
+
     private readonly IMessageHandler _handler;
     private readonly ProtocolEventBuffer _events;
+    private readonly SemaphoreSlim _sendLock;
 
     public string ClientId { get; }
 
-    public WebSocketSession(string clientId, IMessageHandler handler, ProtocolEventBuffer events)
+    public WebSocketSession(string clientId, IMessageHandler handler, ProtocolEventBuffer events, SemaphoreSlim sendLock)
     {
         ClientId = clientId;
         _handler = handler;
         _events = events;
+        _sendLock = sendLock;
     }
 
     public async Task RunAsync(WebSocket socket, CancellationToken ct)
@@ -49,12 +53,12 @@ public sealed class WebSocketSession : IWebSocketSession
                 }
                 catch (Exception ex)
                 {
-                    _events.Add("protocol.error", ex.Message, clientId: ClientId);
+                    _events.Add("protocol.error", $"Handler exception: {ex.GetType().Name}", clientId: ClientId);
                     await SendRawAsync(socket, JsonSerializer.Serialize(new
                     {
                         type = "protocol.error",
-                        error = "message_failed",
-                        message = ex.Message
+                        error = "internal_error",
+                        message = "An internal error occurred. Check server logs for details."
                     }, ChromeLabProtocol.JsonOptions), ct);
                 }
             }
@@ -71,6 +75,9 @@ public sealed class WebSocketSession : IWebSocketSession
         using var stream = new MemoryStream();
         while (true)
         {
+            if (stream.Length + buffer.Length > MaxMessageSizeBytes)
+                throw new InvalidOperationException($"WebSocket message exceeds max size of {MaxMessageSizeBytes} bytes");
+
             var result = await socket.ReceiveAsync(buffer, ct);
             if (result.MessageType == WebSocketMessageType.Close)
                 return null;
@@ -83,9 +90,17 @@ public sealed class WebSocketSession : IWebSocketSession
         return Encoding.UTF8.GetString(stream.ToArray());
     }
 
-    private static async Task SendRawAsync(WebSocket socket, string payload, CancellationToken ct)
+    private async Task SendRawAsync(WebSocket socket, string payload, CancellationToken ct)
     {
         var bytes = Encoding.UTF8.GetBytes(payload);
-        await socket.SendAsync(bytes, WebSocketMessageType.Text, true, ct);
+        await _sendLock.WaitAsync(ct);
+        try
+        {
+            await socket.SendAsync(bytes, WebSocketMessageType.Text, true, ct);
+        }
+        finally
+        {
+            _sendLock.Release();
+        }
     }
 }

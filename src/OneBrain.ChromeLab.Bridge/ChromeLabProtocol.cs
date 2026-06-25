@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace OneBrain.ChromeLab.Bridge;
 
@@ -145,8 +146,20 @@ public sealed class ChromeLabRunManager
     public ChromeLabRun Pause(string runId, string reason = "humanInterventionRequired") =>
         Update(runId, "paused", reason, stopRequested: false, pausedReason: reason);
 
-    public ChromeLabRun Resume(string runId) =>
-        Update(runId, "running", "resumed", stopRequested: false, pausedReason: null);
+    public ChromeLabRun Resume(string runId)
+    {
+        if (_runs.TryGetValue(runId, out var current))
+        {
+            if (string.Equals(current.Status, "running", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(current.Status, "completed", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(current.Status, "stopped", StringComparison.OrdinalIgnoreCase))
+            {
+                current.Log.Add($"run.{current.Status}:resume-noop");
+                return current;
+            }
+        }
+        return Update(runId, "running", "resumed", stopRequested: false, pausedReason: null);
+    }
 
     public ChromeLabRun CredentialRequired(string runId, string reason) =>
         Update(runId, "paused", reason, stopRequested: false, pausedReason: "credentialRequired");
@@ -200,6 +213,12 @@ public sealed class ChromeLabClientRegistry
             LastError: "Awaiting hello");
         _sendLocks[clientId] = new SemaphoreSlim(1, 1);
         return clientId;
+    }
+
+    public SemaphoreSlim? GetSendLock(string clientId)
+    {
+        _sendLocks.TryGetValue(clientId, out var sem);
+        return sem;
     }
 
     public void RegisterHello(
@@ -377,16 +396,26 @@ public sealed class ProtocolEventBuffer
 
     public IReadOnlyList<ProtocolEvent> Snapshot() => _events.ToArray();
 
+    private static readonly Regex _jwtRedact = new(@"\b[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex _bearerRedact = new(@"\bBearer\s+[A-Za-z0-9._\-]{8,}\b", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex _apiKeyRedact = new(@"\b(sk-[A-Za-z0-9]{32,}|[A-Za-z0-9_-]{32,})\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex _secretRedact = new(@"(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\s+fiscal)?|sessionid|csrf|xsrf|jwt)\s*[:=]\s*[^\s;,}\""']+", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex _privateIpRedact = new(@"\b(10\.\d{1,3}|172\.(1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex _emailRedact = new(@"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     private static string Redact(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return "";
 
-        var redacted = value
-            .Replace("password", "[redacted]", StringComparison.OrdinalIgnoreCase)
-            .Replace("clave", "[redacted]", StringComparison.OrdinalIgnoreCase)
-            .Replace("token", "[redacted]", StringComparison.OrdinalIgnoreCase);
-        return redacted.Length > 500 ? string.Concat(redacted.AsSpan(0, 500), "...") : redacted;
+        var redacted = _jwtRedact.Replace(value, "[REDACTED-JWT]");
+        redacted = _bearerRedact.Replace(redacted, "[REDACTED-TOKEN]");
+        redacted = _apiKeyRedact.Replace(redacted, "[REDACTED-KEY]");
+        redacted = _secretRedact.Replace(redacted, m => $"{m.Groups[1].Value}[REDACTED]");
+        redacted = _privateIpRedact.Replace(redacted, "[REDACTED-IP]");
+        redacted = _emailRedact.Replace(redacted, "[REDACTED-EMAIL]");
+
+        return redacted.Length > 2000 ? string.Concat(redacted.AsSpan(0, 2000), "...") : redacted;
     }
 }
 

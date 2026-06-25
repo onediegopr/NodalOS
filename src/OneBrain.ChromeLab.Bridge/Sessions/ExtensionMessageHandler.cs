@@ -178,10 +178,10 @@ public sealed class ExtensionMessageHandler : IMessageHandler
             _pending.Track(nextId, runId, decision.Tool);
             return JsonSerializer.Serialize(new ToolRequest("tool.request", runId, nextId, decision.Tool, decision.Args), ChromeLabProtocol.JsonOptions);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _runs.Stop(runId, ex.Message);
-            return JsonSerializer.Serialize(new { type = "run.status", runId, status = "error", message = ex.Message }, ChromeLabProtocol.JsonOptions);
+            _runs.Stop(runId, "internal error");
+            return JsonSerializer.Serialize(new { type = "run.status", runId, status = "error", message = "An internal error occurred. Check server logs." }, ChromeLabProtocol.JsonOptions);
         }
     }
 
