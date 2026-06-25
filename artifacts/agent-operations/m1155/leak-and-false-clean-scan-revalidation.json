@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1155",
+  "scan_revalidation_status": "DEFINED_FOR_FINAL_VALIDATION",
+  "leak_scan_required": true,
+  "false_clean_claim_scan_required": true,
+  "forbidden_secret_patterns": [
+    "OpenAI-like key",
+    "AWS-like key",
+    "private key block",
+    "authorization bearer token",
+    "password assignment",
+    "api key assignment"
+  ],
+  "forbidden_claim_patterns": [
+    "suite-clean final claim",
+    "confidence above 95",
+    "caveat-resolved",
+    "release-ready",
+    "manual-QA-ready",
+    "runtime-ready",
+    "PC-Commander-ready",
+    "repeatability-proven"
+  ],
+  "raw_logs_allowed": false,
+  "secret_values_allowed": false
+}

@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1156",
+  "boundary_status": "REVALIDATED",
+  "allowed_paths": [
+    "tests/OneBrain.Safety.Tests",
+    "docs/reports",
+    "artifacts/agent-operations"
+  ],
+  "product_files_modified": false,
+  "bridge_csp_modified": false,
+  "runtime_real_modified": false,
+  "release_store_modified": false,
+  "scope_scan_required": true,
+  "scope_scan_status": "PENDING_FINAL_VALIDATION"
+}

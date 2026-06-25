@@ -1,0 +1,13 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1158",
+  "decision_matrix": {
+    "NO_DIRECT_EXECUTION_PHRASE": "M1161-M1172 - Repeatability Evidence Plan Hold Continuity + Execution Phrase Watch",
+    "DIRECT_EXECUTION_PHRASE_APPEARS": "M1161-M1172 - BrowserRuntimeSmoke Repeatability Evidence Collection Execution, no product/runtime changes",
+    "GATE9_FAILS_AGAIN": "M1161-M1172 - Gate 9 Retry/Quarantine Policy Remediation"
+  },
+  "recommended_next": "M1161-M1172 - Repeatability Evidence Plan Hold Continuity + Execution Phrase Watch",
+  "reason": "No direct execution phrase was provided in this block.",
+  "caveat_state": "VISIBLE_UNRESOLVED",
+  "confidence": 95
+}

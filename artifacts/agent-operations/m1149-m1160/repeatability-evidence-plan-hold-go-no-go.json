@@ -1,0 +1,32 @@
+{
+  "project": "NODAL OS",
+  "milestone_range": "M1149-M1160",
+  "decision": "REPEATABILITY_EVIDENCE_PLAN_HOLD_READY_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "go": [
+    "hold gate",
+    "exact phrase requirement",
+    "prompt-rule context rejection",
+    "abort matrix revalidation",
+    "claim guard revalidation",
+    "leak and false-clean scan revalidation",
+    "product/Bridge/CSP boundary revalidation"
+  ],
+  "no_go": [
+    "manual QA execution",
+    "safe evidence capture real",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability unlock",
+    "product files",
+    "Bridge/CSP",
+    "release/store",
+    "suite-clean claim",
+    "confidence above 95 claim",
+    "caveat-resolved claim"
+  ],
+  "future_execution_status": "NOT_REQUESTED",
+  "resolution_eligibility": "NOT_ELIGIBLE_EVIDENCE_PENDING",
+  "caveat_resolved": false,
+  "confidence": 95
+}

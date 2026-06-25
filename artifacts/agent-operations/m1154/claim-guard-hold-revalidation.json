@@ -1,0 +1,22 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1154",
+  "claim_guard_status": "REVALIDATED",
+  "resolution_eligibility": "NOT_ELIGIBLE_EVIDENCE_PENDING",
+  "caveat_resolved": false,
+  "confidence": 95,
+  "blocked_while_hold_active": [
+    "manual-QA-ready",
+    "manual-QA-passed",
+    "runtime-ready",
+    "PC-Commander-ready",
+    "release-ready",
+    "Chrome-Web-Store-ready",
+    "suite-clean",
+    "caveat-resolved",
+    "confidence above 95",
+    "repeatability-proven"
+  ],
+  "product_files_modified": false,
+  "bridge_csp_modified": false
+}

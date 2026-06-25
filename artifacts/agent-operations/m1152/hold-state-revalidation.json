@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1152",
+  "hold_state": "ACTIVE",
+  "plan_only": true,
+  "revalidation_only": true,
+  "evidence_collection_executed": false,
+  "resolution_transition_executed": false,
+  "caveat_resolved": false,
+  "repeatability_proven": false,
+  "confidence": 95,
+  "blocked_claims": [
+    "caveat-resolved",
+    "suite-clean",
+    "confidence above 95",
+    "repeatability-proven",
+    "safe-evidence-capture-started"
+  ],
+  "no_go_locks": [
+    "manual QA execution",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability unlock",
+    "release/store"
+  ]
+}
