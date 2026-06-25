@@ -1,13 +1,14 @@
 let port = null;
 let portConnected = false;
 const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
+const DEMO_GUIDANCE_COLLAPSED_KEY = 'nodal-os.demoGuidanceCollapsed.v1';
 const DEMO_SCRIPT_STEPS = [
-  'Mostrar Mission Control y crear una misión corta.',
-  'Editar el título para que se vea claro en pantalla.',
-  'Ejecutar Run demo y esperar el timeline completo.',
-  'Agregar una nota breve al run seleccionado.',
-  'Abrir Historial para mostrar que el run quedó guardado.',
-  'Copiar el script o el resumen para cerrar la demo.'
+  'Abrí NODAL OS y presentá Mission Control como centro de misiones locales.',
+  'Creá una misión corta para mostrar que el flujo empieza desde una intención simple.',
+  'Ejecutá Run demo para generar timeline, evidencia e historial en segundos.',
+  'Abrí Historial y reabrí el run para mostrar continuidad local.',
+  'Agregá una nota breve para que el run tenga contexto de video.',
+  'Copiá el resumen y cerrá con el valor: una demo local, visible y compartible.'
 ];
 
 const state = {
@@ -127,6 +128,15 @@ const el = {
   demoStatusBadge: document.getElementById('demoStatusBadge'),
   demoMissionName: document.getElementById('demoMissionName'),
   demoMissionObjective: document.getElementById('demoMissionObjective'),
+  demoGuidanceCard: document.getElementById('demoGuidanceCard'),
+  demoGuidanceBody: document.getElementById('demoGuidanceBody'),
+  toggleGuidanceBtn: document.getElementById('toggleGuidanceBtn'),
+  guideStepMission: document.getElementById('guideStepMission'),
+  guideStepRun: document.getElementById('guideStepRun'),
+  guideStepCopy: document.getElementById('guideStepCopy'),
+  demoReadyCard: document.getElementById('demoReadyCard'),
+  demoReadyLabel: document.getElementById('demoReadyLabel'),
+  demoReadyText: document.getElementById('demoReadyText'),
   missionCreateForm: document.getElementById('missionCreateForm'),
   missionTitleInput: document.getElementById('missionTitleInput'),
   missionDescriptionInput: document.getElementById('missionDescriptionInput'),
@@ -275,6 +285,7 @@ function bindEvents() {
   el.consentDenyBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.userDenied`));
   el.consentCancelBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.cancelled`));
   el.consentCopyLogBtn.addEventListener('click', copyConsentLog);
+  el.toggleGuidanceBtn.addEventListener('click', toggleDemoGuidance);
   el.missionCreateForm.addEventListener('submit', createMissionFromForm);
   el.clearDemoHistoryBtn.addEventListener('click', clearDemoHistory);
   el.editMissionBtn.addEventListener('click', beginEditMission);
@@ -704,6 +715,22 @@ function loadDemoStore() {
   return seed;
 }
 
+function loadDemoGuidanceCollapsed() {
+  try {
+    return localStorage.getItem(DEMO_GUIDANCE_COLLAPSED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function saveDemoGuidanceCollapsed(collapsed) {
+  try {
+    localStorage.setItem(DEMO_GUIDANCE_COLLAPSED_KEY, collapsed ? 'true' : 'false');
+  } catch (error) {
+    console.warn('NODAL OS demo guidance preference unavailable', error);
+  }
+}
+
 function saveDemoStore(store = state.demo) {
   try {
     const payload = {
@@ -1070,6 +1097,7 @@ function renderDemoMissionControl() {
   el.demoBridgeStatus.textContent = demoBridgeStatus();
   el.demoBrowserClaimStatus.textContent = demoBrowserClaimStatus();
   el.demoScopeStatus.textContent = 'No-op local';
+  renderDemoGuidance();
   renderMissionEditor();
   renderDemoMissionList();
   renderDemoRunHistory();
@@ -1082,6 +1110,45 @@ function renderDemoMissionControl() {
       <strong>${safeHtml(item.value)}</strong>
     </div>`).join('');
   el.demoTechnicalReport.textContent = demo.report || buildDemoTechnicalReport();
+}
+
+function renderDemoGuidance() {
+  const collapsed = loadDemoGuidanceCollapsed();
+  const status = demoRecordingReadiness();
+  el.demoGuidanceCard.classList.toggle('is-collapsed', collapsed);
+  el.toggleGuidanceBtn.textContent = collapsed ? 'Mostrar guía' : 'Minimizar';
+  el.toggleGuidanceBtn.setAttribute('aria-expanded', String(!collapsed));
+  setGuidedStep(el.guideStepMission, status.hasMission);
+  setGuidedStep(el.guideStepRun, status.hasRun);
+  setGuidedStep(el.guideStepCopy, status.canCopy);
+  el.demoReadyCard.classList.toggle('is-ready', status.ready);
+  el.demoReadyLabel.textContent = status.ready ? 'Lista para grabar' : 'Prepará un run para grabar';
+  el.demoReadyText.textContent = status.ready
+    ? 'Tenés misión, run, timeline y resumen copiable para una demo corta.'
+    : 'La demo queda lista cuando hay misión, run, timeline y resumen.';
+}
+
+function setGuidedStep(node, complete) {
+  node.classList.toggle('is-complete', Boolean(complete));
+  node.setAttribute('aria-current', complete ? 'step' : 'false');
+}
+
+function demoRecordingReadiness() {
+  const mission = activeDemoMission();
+  const run = selectedDemoRun();
+  const timelineVisible = Array.isArray(state.demo.timeline) && state.demo.timeline.length > 0;
+  const reportReady = Boolean(state.demo.report || state.demo.runId);
+  return {
+    hasMission: Boolean(mission),
+    hasRun: Boolean(run),
+    canCopy: Boolean(run && timelineVisible && reportReady),
+    ready: Boolean(mission && run && timelineVisible && reportReady)
+  };
+}
+
+function toggleDemoGuidance() {
+  saveDemoGuidanceCollapsed(!loadDemoGuidanceCollapsed());
+  renderDemoGuidance();
 }
 
 function renderDemoMissionList() {

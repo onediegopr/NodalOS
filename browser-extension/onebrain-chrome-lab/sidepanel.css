@@ -332,6 +332,7 @@ main {
 .mission-create-form,
 .mission-list-card,
 .mission-editor-card,
+.mission-guidance-card,
 .mission-script-card,
 .mission-run-note-card,
 .mission-timeline-card,
@@ -379,11 +380,153 @@ main {
 .mission-create-form,
 .mission-list-card,
 .mission-editor-card,
+.mission-guidance-card,
 .mission-script-card,
 .mission-run-note-card {
   border: 1px solid rgba(159, 181, 204, 0.14);
   border-radius: 18px;
   background: rgba(13, 19, 27, 0.62);
+}
+
+.mission-guidance-card {
+  overflow: hidden;
+  border-color: rgba(143, 184, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(143, 184, 255, 0.12), transparent 42%),
+    rgba(13, 19, 27, 0.68);
+}
+
+.mission-guidance-head {
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mission-guidance-head h2 {
+  margin: 8px 0 0;
+  font-family: var(--nos-font-heading);
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.mission-guidance-card.is-collapsed .mission-guidance-body {
+  display: none;
+}
+
+.mission-guidance-card.is-collapsed .mission-guidance-head {
+  margin-bottom: 0;
+}
+
+.mission-guidance-body {
+  display: grid;
+  gap: 12px;
+}
+
+.onboarding-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.onboarding-grid article {
+  display: grid;
+  gap: 5px;
+  min-height: 112px;
+  border: 1px solid rgba(159, 181, 204, 0.12);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(6, 10, 15, 0.34);
+}
+
+.onboarding-grid span,
+.guided-step span {
+  color: var(--nos-color-accent);
+  font-family: var(--nos-font-mono);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.onboarding-grid strong {
+  color: var(--nos-color-text);
+  font-size: 13px;
+}
+
+.onboarding-grid p {
+  margin: 0;
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.guided-stepper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.guided-step {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(159, 181, 204, 0.13);
+  border-radius: 14px;
+  padding: 10px 10px 10px 13px;
+  background: rgba(6, 10, 15, 0.3);
+}
+
+.guided-step::before {
+  content: "";
+  position: absolute;
+  inset: 10px auto 10px 0;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(159, 181, 204, 0.22);
+}
+
+.guided-step.is-complete {
+  border-color: rgba(102, 227, 196, 0.34);
+  background: rgba(102, 227, 196, 0.08);
+}
+
+.guided-step.is-complete::before {
+  background: linear-gradient(180deg, #66E3C4, #8FB8FF);
+}
+
+.guided-step strong {
+  font-size: 13px;
+}
+
+.guided-step small {
+  color: var(--nos-color-text-muted);
+  line-height: 1.35;
+}
+
+.demo-ready-card {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(159, 181, 204, 0.14);
+  border-radius: 15px;
+  padding: 12px;
+  background: rgba(6, 10, 15, 0.42);
+}
+
+.demo-ready-card span {
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.demo-ready-card strong {
+  color: var(--nos-color-text);
+  font-size: 13px;
+}
+
+.demo-ready-card.is-ready {
+  border-color: rgba(102, 227, 196, 0.42);
+  background: rgba(102, 227, 196, 0.1);
 }
 
 .mission-create-form,
@@ -413,9 +556,18 @@ main {
   padding-right: 2px;
 }
 
-.mission-list:empty::before,
+.mission-list:empty::before {
+  content: "Crea una misión para empezar la demo.";
+  display: block;
+  border: 1px dashed rgba(159, 181, 204, 0.18);
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+}
+
 .run-history-list:empty::before {
-  content: "Todavia no hay datos. Crea una mision y ejecuta Run demo.";
+  content: "Ejecuta Run demo para ver el primer run guardado.";
   display: block;
   border: 1px dashed rgba(159, 181, 204, 0.18);
   border-radius: 14px;
@@ -599,7 +751,9 @@ main {
   .mission-control-shell,
   .mission-layout,
   .mission-evidence-grid,
-  .mission-workbench {
+  .mission-workbench,
+  .onboarding-grid,
+  .guided-stepper {
     grid-template-columns: 1fr;
   }
 

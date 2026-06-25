@@ -64,6 +64,61 @@
             </div>
           </header>
 
+          <section id="demoGuidanceCard" class="mission-guidance-card" aria-labelledby="demoGuidanceTitle">
+            <div class="section-head mission-guidance-head">
+              <div>
+                <span class="mission-kicker">Guía rápida</span>
+                <h2 id="demoGuidanceTitle">Grabá una demo en 60-90 segundos</h2>
+              </div>
+              <button id="toggleGuidanceBtn" type="button">Minimizar</button>
+            </div>
+            <div id="demoGuidanceBody" class="mission-guidance-body">
+              <div class="onboarding-grid" aria-label="Primeros pasos">
+                <article>
+                  <span>01</span>
+                  <strong>Creá una misión</strong>
+                  <p>Usá una frase corta para contar qué vas a mostrar.</p>
+                </article>
+                <article>
+                  <span>02</span>
+                  <strong>Ejecutá una demo</strong>
+                  <p>Run demo genera timeline, logs e historial local.</p>
+                </article>
+                <article>
+                  <span>03</span>
+                  <strong>Revisá timeline e historial</strong>
+                  <p>Mostrá que el run queda guardado y reabrible.</p>
+                </article>
+                <article>
+                  <span>04</span>
+                  <strong>Copiá el resumen</strong>
+                  <p>Cerrá el video con un reporte corto y compartible.</p>
+                </article>
+              </div>
+              <div class="guided-stepper" aria-label="Progreso de demo">
+                <div id="guideStepMission" class="guided-step">
+                  <span>Paso 1</span>
+                  <strong>Crear misión</strong>
+                  <small>Nombre y objetivo visibles.</small>
+                </div>
+                <div id="guideStepRun" class="guided-step">
+                  <span>Paso 2</span>
+                  <strong>Run demo</strong>
+                  <small>Timeline y evidencia aparecen.</small>
+                </div>
+                <div id="guideStepCopy" class="guided-step">
+                  <span>Paso 3</span>
+                  <strong>Copiar resumen</strong>
+                  <small>Listo para cerrar la grabación.</small>
+                </div>
+              </div>
+              <div id="demoReadyCard" class="demo-ready-card">
+                <span id="demoReadyLabel">Prepará un run para grabar</span>
+                <strong id="demoReadyText">La demo queda lista cuando hay misión, run, timeline y resumen.</strong>
+              </div>
+            </div>
+          </section>
+
           <section class="mission-workbench" aria-label="Mission setup">
             <form id="missionCreateForm" class="mission-create-form">
               <div class="section-head">

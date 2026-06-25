@@ -53,6 +53,18 @@ namespace OneBrain.Safety.Tests;
 [TestCategory("M1242")]
 [TestCategory("M1243")]
 [TestCategory("M1244")]
+[TestCategory("M1245")]
+[TestCategory("M1246")]
+[TestCategory("M1247")]
+[TestCategory("M1248")]
+[TestCategory("M1249")]
+[TestCategory("M1250")]
+[TestCategory("M1251")]
+[TestCategory("M1252")]
+[TestCategory("M1253")]
+[TestCategory("M1254")]
+[TestCategory("M1255")]
+[TestCategory("M1256")]
 [TestCategory("M1161M1172")]
 public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 {
@@ -63,6 +75,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     private const string DemoV1ReportPath = "docs/reports/m1220-product-demo-v1-mission-creation-local-history.md";
     private const string DemoV2ReportPath = "docs/reports/m1232-product-demo-v2-mission-editing-demo-recording.md";
     private const string DemoV3ReportPath = "docs/reports/m1244-product-demo-v3-visual-qa-demo-recording.md";
+    private const string DemoV4ReportPath = "docs/reports/m1256-product-demo-v4-guided-recording-polish.md";
 
     [TestMethod]
     public void MissionControlShellIsVisibleInOperateTab()
@@ -300,8 +313,8 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(css, ".mission-timeline .timeline-safe-action");
         StringAssert.Contains(css, ".mission-timeline .timeline-redaction");
         StringAssert.Contains(css, "max-height: 270px");
-        StringAssert.Contains(js, "Mostrar Mission Control y crear una misión corta.");
-        StringAssert.Contains(js, "Editar el título para que se vea claro en pantalla.");
+        StringAssert.Contains(js, "Abrí NODAL OS y presentá Mission Control");
+        StringAssert.Contains(js, "una demo local, visible y compartible");
         StringAssert.Contains(js, "recording_flow: Mission Control -> Run demo -> Historial -> Copiar resumen");
     }
 
@@ -315,6 +328,60 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(report, "Checklist para grabar");
         StringAssert.Contains(report, "Run demo");
         StringAssert.Contains(report, "Copiar resumen");
+    }
+
+    [TestMethod]
+    public void DemoV4AddsLightweightOnboardingStepperAndReadyState()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var css = ReadRepoText(SidepanelCssPath);
+        var js = ReadRepoText(SidepanelJsPath);
+
+        StringAssert.Contains(html, "demoGuidanceCard");
+        StringAssert.Contains(html, "Grabá una demo en 60-90 segundos");
+        StringAssert.Contains(html, "Creá una misión");
+        StringAssert.Contains(html, "Ejecutá una demo");
+        StringAssert.Contains(html, "Revisá timeline e historial");
+        StringAssert.Contains(html, "Copiá el resumen");
+        StringAssert.Contains(html, "guideStepMission");
+        StringAssert.Contains(html, "guideStepRun");
+        StringAssert.Contains(html, "guideStepCopy");
+        StringAssert.Contains(js, "Lista para grabar");
+        StringAssert.Contains(css, ".mission-guidance-card");
+        StringAssert.Contains(css, ".guided-stepper");
+        StringAssert.Contains(css, ".demo-ready-card.is-ready");
+        StringAssert.Contains(js, "DEMO_GUIDANCE_COLLAPSED_KEY");
+        StringAssert.Contains(js, "renderDemoGuidance()");
+        StringAssert.Contains(js, "demoRecordingReadiness()");
+        StringAssert.Contains(js, "saveDemoGuidanceCollapsed");
+    }
+
+    [TestMethod]
+    public void DemoV4ScriptAndChecklistRemainProductCopy()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var js = ReadRepoText(SidepanelJsPath);
+
+        StringAssert.Contains(js, "Abrí NODAL OS y presentá Mission Control");
+        StringAssert.Contains(js, "una demo local, visible y compartible");
+        StringAssert.Contains(html, "Checklist para grabar");
+        StringAssert.Contains(html, "Copiar script o resumen para cerrar la demo");
+        Assert.IsFalse(html.Contains("NO-GO", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("claim guard", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("operator confirmation", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("caveat", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void DemoV4ReportDocumentsGuidedRecordingPolish()
+    {
+        var report = ReadRepoText(DemoV4ReportPath);
+
+        StringAssert.Contains(report, "Product Demo v4");
+        StringAssert.Contains(report, "onboarding liviano");
+        StringAssert.Contains(report, "Paso 1");
+        StringAssert.Contains(report, "Lista para grabar");
+        StringAssert.Contains(report, "60-90 segundos");
     }
 
     private static string ExtractFunctionBody(string source, string functionName)
