@@ -1,0 +1,33 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1126",
+  "schema_status": "PREP_ONLY",
+  "required_runs": 3,
+  "fields": [
+    "run_id",
+    "timestamp",
+    "command_or_filter",
+    "passed_count",
+    "skipped_count",
+    "failed_count",
+    "inconclusive_count",
+    "Gate9_status",
+    "WebSocket_aborted",
+    "cleanup_gate_status",
+    "duration",
+    "environment_note_redacted",
+    "log_summary_redacted",
+    "evidence_ref"
+  ],
+  "required_counts": {
+    "passed_count": 30,
+    "skipped_count": 0,
+    "failed_count": 0,
+    "inconclusive_count": 0
+  },
+  "required_gate": {
+    "Gate9_status": "CLEAN",
+    "WebSocket_aborted": false
+  },
+  "execution_status": "SCHEMA_ONLY_NOT_EXECUTED"
+}

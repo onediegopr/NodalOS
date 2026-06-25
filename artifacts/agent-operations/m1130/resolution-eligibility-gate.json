@@ -1,0 +1,23 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1130",
+  "resolution_eligibility": "NOT_ELIGIBLE_EVIDENCE_PENDING",
+  "caveat_resolved": false,
+  "confidence": 95,
+  "eligible_only_if": [
+    "all threshold evidence present",
+    "all three isolated runs clean",
+    "full safety and full suite evidence present",
+    "all scans present",
+    "formal review complete"
+  ],
+  "ineligible_if": [
+    "any run missing",
+    "any skip/inconclusive",
+    "any Gate 9 fail",
+    "any WebSocket aborted",
+    "any timeout counted as PASS",
+    "any boundary scan missing",
+    "false-clean claim appears"
+  ]
+}

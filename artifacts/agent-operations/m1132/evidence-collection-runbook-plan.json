@@ -1,0 +1,28 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1132",
+  "implementation_status": "PLAN_ONLY",
+  "safe_future_steps": [
+    "confirm branch/head/worktree",
+    "run isolated BrowserRuntimeSmoke 3 times",
+    "record counts",
+    "run full safety",
+    "run recipes",
+    "run full suite general",
+    "run scans",
+    "parse JSON",
+    "run leak scan",
+    "run false-clean scan",
+    "update review checklist"
+  ],
+  "forbidden_actions": [
+    "manual QA real",
+    "runtime real",
+    "PC Commander real",
+    "product/Bridge/CSP modification",
+    "filesystem cleanup",
+    "process kill",
+    "secret/log dumping",
+    "release/store claim"
+  ]
+}

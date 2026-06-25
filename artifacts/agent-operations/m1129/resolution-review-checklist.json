@@ -1,0 +1,20 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1129",
+  "review_status": "REVIEW_NOT_STARTED",
+  "checklist": [
+    "3 isolated clean runs verified",
+    "full safety clean verified",
+    "suite-clean-without-caveat evidence verified",
+    "boundary scans clean",
+    "leak scan clean",
+    "false-clean-claim scan clean",
+    "no skipped/inconclusive Gate 9",
+    "no WebSocket aborted",
+    "no product/Bridge/CSP drift",
+    "no release/store claims",
+    "reviewer decision",
+    "review timestamp",
+    "remaining caveats"
+  ]
+}
