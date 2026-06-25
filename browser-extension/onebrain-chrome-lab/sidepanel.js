@@ -2882,11 +2882,11 @@ function buildPlanPreviewTimeline(plan) {
     ],
     evidenceRefs: [{ label: 'plan', refId: plan.planId || 'plan-preview:redacted' }],
     blockers: hasSensitive ? [{
-      reason: `Sensitive actions detected: ${sensitiveActions.join(', ') || 'blocked by policy'}`,
-      expectedOperatorAction: 'Do not execute. Ask Core/human review.',
+      reason: `Acciones sensibles detectadas: ${sensitiveActions.join(', ') || 'requiere revisión'}`,
+      expectedOperatorAction: 'No ejecutar desde la UI. Revisar antes de seguir.',
       blockedOptions: policy.blockedOptions || ['credentials', 'submit/pay/sign/delete', 'sensitive sites']
     }] : [],
-    safeNextAction: hasSensitive ? 'Stop and review policy blocker.' : 'Review plan preview; wait for Core decision.',
+    safeNextAction: hasSensitive ? 'Revisar antes de seguir.' : 'Revisar el plan; esperar decisión de Core.',
     blockedOptions: policy.blockedOptions || ['auto execution from UI', 'production/SaaS public', 'external general CDP'],
     coreAuthorityRequired: true,
     humanInterventionRequired: planStatus === 'needs-human' || hasSensitive
@@ -2903,11 +2903,11 @@ function buildPlanPreviewTimeline(plan) {
       riskLevel: stepSensitive ? 'prohibited' : String(step.risk || 'low'),
       evidenceRefs: (step.evidenceRequirements || []).map((req) => ({ label: 'evidence', refId: `plan-evidence:${req}` })),
       blockers: stepSensitive ? [{
-        reason: 'Sensitive action detected in plan step.',
-        expectedOperatorAction: 'Do not execute from UI.',
+        reason: 'Acción sensible detectada en este paso.',
+        expectedOperatorAction: 'No ejecutar desde la UI.',
         blockedOptions: policy.blockedOptions || ['submit/pay/sign/delete', 'credentials']
       }] : [],
-      safeNextAction: stepSensitive ? 'Stop; Core policy review required.' : 'Wait for Core decision.',
+      safeNextAction: stepSensitive ? 'Revisar con Core antes de seguir.' : 'Esperar decisión de Core.',
       coreAuthorityRequired: true,
       humanInterventionRequired: Boolean(step.humanApprovalRequired || stepSensitive)
     };
@@ -3019,7 +3019,7 @@ function normalizeTimelineStatus(status) {
   const value = String(status || 'planned').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
   const map = {
     pending: ['pending', 'Pendiente'],
-    planned: ['planned', 'Planned'],
+    planned: ['planned', 'Por hacer'],
     ready: ['ready', 'Ready'],
     running: ['running', 'Running'],
     done: ['done', 'Done'],
@@ -3036,30 +3036,30 @@ function normalizeTimelineStatus(status) {
     warning: ['warning', 'Warning'],
     failed: ['failed', 'Failed'],
     error: ['failed', 'Failed'],
-    'plan-drafted': ['planned', 'Plan drafted'],
-    plandrafted: ['planned', 'Plan drafted'],
-    'plan-preview-ready': ['ready', 'Plan preview ready'],
-    planpreviewready: ['ready', 'Plan preview ready'],
-    'plan-awaiting-approval': ['needs-human', 'Awaiting approval'],
-    planawaitingapproval: ['needs-human', 'Awaiting approval'],
-    'plan-approved': ['ready', 'Plan approved'],
-    planapproved: ['ready', 'Plan approved'],
-    'plan-rejected': ['not-allowed', 'Plan rejected'],
-    planrejected: ['not-allowed', 'Plan rejected'],
-    'plan-edited-by-human': ['warning', 'Edited by human'],
-    planeditedbyhuman: ['warning', 'Edited by human'],
-    'execution-started': ['running', 'Execution started'],
-    executionstarted: ['running', 'Execution started'],
+    'plan-drafted': ['planned', 'Plan armado'],
+    plandrafted: ['planned', 'Plan armado'],
+    'plan-preview-ready': ['ready', 'Plan listo para revisar'],
+    planpreviewready: ['ready', 'Plan listo para revisar'],
+    'plan-awaiting-approval': ['needs-human', 'Esperando revisión'],
+    planawaitingapproval: ['needs-human', 'Esperando revisión'],
+    'plan-approved': ['ready', 'Plan aprobado'],
+    planapproved: ['ready', 'Plan aprobado'],
+    'plan-rejected': ['not-allowed', 'Plan rechazado'],
+    planrejected: ['not-allowed', 'Plan rechazado'],
+    'plan-edited-by-human': ['warning', 'Editado por humano'],
+    planeditedbyhuman: ['warning', 'Editado por humano'],
+    'execution-started': ['running', 'Ejecución iniciada'],
+    executionstarted: ['running', 'Ejecución iniciada'],
     'execution-blocked-by-policy': ['blocked', 'Revisar antes de seguir'],
     executionblockedbypolicy: ['blocked', 'Revisar antes de seguir'],
-    'recovery-required': ['blocked', 'Recovery required'],
-    recoveryrequired: ['blocked', 'Recovery required'],
-    'waiting-for-human-input': ['needs-human', 'Waiting for human'],
-    waitingforhumaninput: ['needs-human', 'Waiting for human'],
-    'not-allowed': ['not-allowed', 'Not allowed'],
-    notallowed: ['not-allowed', 'Not allowed']
+    'recovery-required': ['blocked', 'Revisión requerida'],
+    recoveryrequired: ['blocked', 'Revisión requerida'],
+    'waiting-for-human-input': ['needs-human', 'Esperando intervención'],
+    waitingforhumaninput: ['needs-human', 'Esperando intervención'],
+    'not-allowed': ['not-allowed', 'No permitido'],
+    notallowed: ['not-allowed', 'No permitido']
   };
-  const normalized = map[value] || ['planned', 'Planned'];
+  const normalized = map[value] || ['planned', 'Por hacer'];
   return { value: normalized[0], label: normalized[1] };
 }
 
