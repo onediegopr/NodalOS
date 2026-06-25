@@ -15,9 +15,16 @@ function New-RedactedPath {
 }
 
 function Test-SystemBrowserPath {
-    param([string] $Path)
+    param(
+        [string] $Path,
+        [object] $Lock
+    )
 
     if ([string]::IsNullOrWhiteSpace($Path)) {
+        return $false
+    }
+
+    if (Test-PinnedCloakBrowserArtifactPath -Path $Path -Lock $Lock) {
         return $false
     }
 
@@ -29,6 +36,34 @@ function Test-SystemBrowserPath {
     return $Path -match '\\Google\\Chrome\\' `
         -or $Path -match '\\Microsoft\\Edge\\' `
         -or $Path -match '\\Chromium\\Application\\'
+}
+
+function Test-PinnedCloakBrowserArtifactPath {
+    param(
+        [string] $Path,
+        [object] $Lock
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not $Lock) {
+        return $false
+    }
+
+    $hasPinnedMetadata = -not [string]::IsNullOrWhiteSpace([string] $Lock.runtime_version) `
+        -and [string] $Lock.runtime_version -ne "pending" `
+        -and -not [string]::IsNullOrWhiteSpace([string] $Lock.runtime_commit) `
+        -and [string] $Lock.runtime_commit -ne "pending" `
+        -and -not [string]::IsNullOrWhiteSpace([string] $Lock.binary_sha256) `
+        -and [string] $Lock.binary_sha256 -ne "pending"
+
+    if (-not $hasPinnedMetadata) {
+        return $false
+    }
+
+    $normalized = $Path -replace '/', '\'
+    $repo = [regex]::Escape([string] $Lock.runtime_repo)
+
+    return $normalized -match "\\$repo\\" `
+        -and $normalized -match "\\\.cloakbrowser\\chromium-[^\\]+\\chrome\.exe$"
 }
 
 function Get-LocalConfigPath {
@@ -134,9 +169,9 @@ if (-not (Test-Path -LiteralPath $runtimePathInfo.path -PathType Leaf)) {
     exit 0
 }
 
-if (Test-SystemBrowserPath -Path $runtimePathInfo.path) {
+if (Test-SystemBrowserPath -Path $runtimePathInfo.path -Lock $lock) {
     Write-Evidence -Status "BLOCKED" -Decision "NODAL_OS_CLOAKBROWSER_CDP_LIVE_STILL_BLOCKED_RUNTIME_ARTIFACT_REQUIRED" -Reason "Configured runtime path is a forbidden system browser." -RuntimePathInfo $runtimePathInfo -Lock $lock
     exit 3
 }
 
-Write-Evidence -Status "BLOCKED" -Decision "NODAL_OS_CLOAKBROWSER_CDP_LIVE_STILL_BLOCKED_RUNTIME_ARTIFACT_REQUIRED" -Reason "Runtime artifact discovered but live launch is intentionally not executed until lock metadata is pinned with version, commit, and sha256." -RuntimePathInfo $runtimePathInfo -Lock $lock
+Write-Evidence -Status "READY" -Decision "NODAL_OS_CLOAKBROWSER_RUNTIME_ARTIFACT_PINNED_READY_FOR_CDP_LIVE" -Reason "Runtime artifact discovered and lock metadata is pinned. CDP live healthcheck is not executed by this provisioning script." -RuntimePathInfo $runtimePathInfo -Lock $lock

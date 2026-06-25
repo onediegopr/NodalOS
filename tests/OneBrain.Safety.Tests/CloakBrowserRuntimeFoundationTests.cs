@@ -19,6 +19,26 @@ public sealed class CloakBrowserRuntimeFoundationTests
 
     [TestMethod]
     [TestCategory("CloakBrowserRuntime")]
+    public void BrowserRuntimeGuard_AllowsPinnedCloakBrowserArtifactNamedChromeExe()
+    {
+        var pinnedLock = ValidLock() with
+        {
+            RuntimeVersion = "146.0.7680.177.5",
+            RuntimeCommit = "8432254124667a3d2742b1727132d8a045e115da",
+            UpstreamCommit = "0bb3737a29d9133f6207793eb0eeeefe36c9d910",
+            BinarySha256 = "03f53661a5c47e7b0a661bee2bce8a0d302b7a60834c328df417561fa0636d80"
+        };
+
+        var result = BrowserRuntimeGuard.ValidateLaunch(
+            new BrowserRuntimeLaunchRequest(
+                ExecutablePath: @"C:\DESARROLLO\NodalOS\nodal-cloakbrowser-runtime\.cloakbrowser\chromium-146.0.7680.177.5\chrome.exe"),
+            pinnedLock);
+
+        Assert.IsTrue(result.IsAllowed, result.Reason);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
     public void BrowserRuntimeGuard_RejectsEdgeExecutablePath()
     {
         var result = BrowserRuntimeGuard.ValidateLaunch(
