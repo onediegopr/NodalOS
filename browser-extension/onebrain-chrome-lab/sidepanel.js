@@ -206,6 +206,8 @@ const el = {
   copyBrowserSkillSummaryBtn: document.getElementById('copyBrowserSkillSummaryBtn'),
   clearBrowserSnapshotsBtn: document.getElementById('clearBrowserSnapshotsBtn'),
   openWorkspaceBtn: document.getElementById('openWorkspaceBtn'),
+  openWorkspaceFallbackBtn: document.getElementById('openWorkspaceFallbackBtn'),
+  workspaceDirectoryInput: document.getElementById('workspaceDirectoryInput'),
   rescanWorkspaceBtn: document.getElementById('rescanWorkspaceBtn'),
   copyWorkspaceEvidenceBtn: document.getElementById('copyWorkspaceEvidenceBtn'),
   clearWorkspaceBtn: document.getElementById('clearWorkspaceBtn'),
@@ -362,6 +364,8 @@ function bindEvents() {
   el.copyBrowserSkillSummaryBtn.addEventListener('click', copyBrowserSkillSummary);
   el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
   el.openWorkspaceBtn.addEventListener('click', openWorkspaceDirectory);
+  el.openWorkspaceFallbackBtn.addEventListener('click', openWorkspaceDirectoryInput);
+  el.workspaceDirectoryInput.addEventListener('change', handleWorkspaceDirectoryInput);
   el.rescanWorkspaceBtn.addEventListener('click', rescanWorkspaceDirectory);
   el.copyWorkspaceEvidenceBtn.addEventListener('click', copyWorkspaceEvidence);
   el.clearWorkspaceBtn.addEventListener('click', clearWorkspaceUnderstanding);
@@ -851,6 +855,7 @@ function createEmptyWorkspaceStore() {
     statusMessage: 'Seleccioná una carpeta para entender el proyecto.',
     name: '',
     pathLabel: '',
+    source: '',
     openedAt: '',
     scannedAt: '',
     counts: { files: 0, folders: 0, ignoredFolders: 0, listedItems: 0 },
@@ -887,6 +892,7 @@ function saveWorkspaceStore(store = state.workspace) {
         : store.statusMessage || '',
       name: store.name || '',
       pathLabel: store.pathLabel || '',
+      source: store.source || '',
       openedAt: store.openedAt || '',
       scannedAt: store.scannedAt || '',
       counts: store.counts || { files: 0, folders: 0, ignoredFolders: 0, listedItems: 0 },
@@ -915,6 +921,7 @@ function normalizeWorkspaceStore(store) {
     statusMessage: String(store.statusMessage || 'Resumen guardado. Releé para actualizar estructura.'),
     name: String(store.name || ''),
     pathLabel: String(store.pathLabel || ''),
+    source: String(store.source || ''),
     openedAt: String(store.openedAt || ''),
     scannedAt: String(store.scannedAt || ''),
     counts: normalizeWorkspaceCounts(store.counts),
@@ -977,6 +984,7 @@ function createWorkspaceContextContract(workspace) {
   const counts = normalizeWorkspaceCounts(source.counts);
   return normalizeWorkspaceContextContract({
     workspaceName: source.name || '',
+    source: source.source || '',
     selectedAt: source.openedAt || source.selectedAt || '',
     lastReadAt: source.scannedAt || source.lastReadAt || '',
     fileCount: counts.files,
@@ -994,6 +1002,7 @@ function createWorkspaceContextContract(workspace) {
 function normalizeWorkspaceContextContract(context) {
   return {
     workspaceName: String(context.workspaceName || ''),
+    source: String(context.source || ''),
     selectedAt: String(context.selectedAt || ''),
     lastReadAt: String(context.lastReadAt || ''),
     fileCount: Number.isFinite(context.fileCount) ? context.fileCount : 0,
@@ -1486,7 +1495,9 @@ function renderWorkspaceUnderstanding() {
   el.workspaceStatus.textContent = workspaceStatusLabel(workspace);
   el.workspaceName.textContent = workspace.name || 'Seleccioná una carpeta';
   el.workspacePath.textContent = workspace.pathLabel || 'No seleccionada';
-  el.workspaceReadMode.textContent = 'Solo lectura';
+  el.workspaceReadMode.textContent = workspace.source
+    ? `Solo lectura · ${workspaceSourceLabel(workspace.source)}`
+    : 'Solo lectura';
   el.workspaceCounts.textContent = `${counts.files} archivos · ${counts.folders} carpetas`;
   el.workspaceStack.textContent = (workspace.stacks || []).slice(0, 3).join(' + ') || 'sin lectura';
   el.rescanWorkspaceBtn.disabled = !workspace.name && !isWorkspacePickerAvailable();
@@ -1515,6 +1526,16 @@ function workspaceStatusLabel(workspace) {
     return 'No disponible';
   }
   return workspace.statusMessage || workspace.status || 'Workspace';
+}
+
+function workspaceSourceLabel(source) {
+  if (source === 'directory-picker') {
+    return 'acceso de carpeta';
+  }
+  if (source === 'file-directory-input') {
+    return 'modo compatible';
+  }
+  return '';
 }
 
 function renderWorkspaceSignals(workspace) {
@@ -1604,6 +1625,7 @@ function buildWorkspaceEvidenceSummary(workspace) {
     `status: ${workspaceStatusLabel(current)}`,
     `selected_at: ${context.selectedAt || current.openedAt || 'sin fecha'}`,
     `last_read_at: ${context.lastReadAt || current.scannedAt || 'sin lectura'}`,
+    `source: ${context.source || current.source || 'sin origen'}`,
     `files: ${counts.files}`,
     `folders: ${counts.folders}`,
     `ignored_folders: ${counts.ignoredFolders}`,
@@ -1913,6 +1935,49 @@ async function openWorkspaceDirectory() {
   render();
 }
 
+function openWorkspaceDirectoryInput() {
+  if (!el.workspaceDirectoryInput) {
+    setWorkspaceBlocked('El selector compatible de carpeta no está disponible en este contexto.');
+    render();
+    return;
+  }
+  el.workspaceDirectoryInput.value = '';
+  el.workspaceDirectoryInput.click();
+}
+
+async function handleWorkspaceDirectoryInput(event) {
+  const files = Array.from(event && event.target && event.target.files ? event.target.files : []);
+  if (!files.length) {
+    state.workspace.status = state.workspace.name ? 'metadata' : 'empty';
+    state.workspace.statusMessage = 'Selección cancelada.';
+    render();
+    return;
+  }
+
+  state.workspace.status = 'reading';
+  state.workspace.statusMessage = 'Leyendo carpeta en modo compatible...';
+  state.workspace.error = '';
+  renderWorkspaceUnderstanding();
+
+  try {
+    state.workspace = await scanWorkspaceFileList(files);
+    state.workspace.directoryHandle = null;
+    attachWorkspaceToActiveMission();
+    saveWorkspaceStore();
+    saveDemoStore();
+    addLog('local', {
+      kind: 'WorkspaceReadCompatible',
+      name: state.workspace.name,
+      files: state.workspace.counts.files,
+      folders: state.workspace.counts.folders,
+      stacks: state.workspace.stacks.join(', ') || 'none'
+    });
+  } catch (error) {
+    setWorkspaceBlocked(toMessage(error));
+  }
+  render();
+}
+
 async function rescanWorkspaceDirectory() {
   if (state.workspace.directoryHandle) {
     state.workspace.status = 'reading';
@@ -1930,6 +1995,13 @@ async function rescanWorkspaceDirectory() {
       setWorkspaceBlocked(toMessage(error));
     }
     render();
+    return;
+  }
+  if (state.workspace.source === 'file-directory-input') {
+    state.workspace.status = 'metadata';
+    state.workspace.statusMessage = 'Seleccioná nuevamente la carpeta compatible para releer.';
+    renderWorkspaceUnderstanding();
+    openWorkspaceDirectoryInput();
     return;
   }
   await openWorkspaceDirectory();
@@ -1967,6 +2039,7 @@ function setWorkspaceBlocked(reason) {
     },
     context: createWorkspaceContextContract({
       ...state.workspace,
+      source: state.workspace.source || '',
       scannedAt: timestamp,
       evidence: { summary: 'Workspace no leído.' }
     })
@@ -1977,11 +2050,66 @@ function setWorkspaceBlocked(reason) {
 
 async function scanWorkspaceDirectory(directoryHandle) {
   const now = new Date().toISOString();
-  const scan = {
-    rootName: directoryHandle && directoryHandle.name ? directoryHandle.name : 'workspace',
+  const scan = createWorkspaceScan(directoryHandle && directoryHandle.name ? directoryHandle.name : 'workspace');
+
+  await walkWorkspaceDirectory(directoryHandle, '', 0, scan);
+  return finalizeWorkspaceScan(scan, now, {
+    source: 'directory-picker',
+    pathLabel: `${scan.rootName} (ruta absoluta no expuesta por el navegador)`,
+    statusMessage: scan.truncated
+      ? 'Workspace leído en modo solo lectura con límites aplicados.'
+      : 'Workspace leído en modo solo lectura.'
+  });
+}
+
+async function scanWorkspaceFileList(files) {
+  const now = new Date().toISOString();
+  const normalizedFiles = files
+    .map((file) => ({
+      name: String(file.name || '').trim(),
+      relativePath: cleanWorkspacePath(file.webkitRelativePath || file.name || ''),
+      hasRelativePath: Boolean(file.webkitRelativePath)
+    }))
+    .filter((file) => file.name && file.relativePath);
+  if (!normalizedFiles.length) {
+    throw new Error('La carpeta compatible no expuso archivos legibles.');
+  }
+
+  const firstRelative = normalizedFiles.find((file) => file.hasRelativePath);
+  const rootName = firstRelative && firstRelative.relativePath.includes('/')
+    ? firstRelative.relativePath.split('/')[0]
+    : 'workspace compatible';
+  const scan = createWorkspaceScan(rootName);
+  scan.hasRelativePaths = normalizedFiles.some((file) => file.hasRelativePath);
+
+  for (const file of normalizedFiles) {
+    if (scan.truncated) {
+      break;
+    }
+    const itemPath = workspacePathWithoutRoot(file.relativePath, scan.rootName);
+    addWorkspaceFileListPath(scan, itemPath || file.name, file.hasRelativePath);
+  }
+
+  const relativeNote = scan.hasRelativePaths
+    ? 'Workspace leído en modo compatible.'
+    : 'Archivos leídos en modo compatible; el navegador no expuso árbol relativo completo.';
+  return finalizeWorkspaceScan(scan, now, {
+    source: 'file-directory-input',
+    pathLabel: `${scan.rootName} (modo compatible del navegador)`,
+    statusMessage: scan.truncated
+      ? `${relativeNote} Límites aplicados.`
+      : relativeNote
+  });
+}
+
+function createWorkspaceScan(rootName) {
+  return {
+    rootName,
     counts: { files: 0, folders: 0, ignoredFolders: 0, listedItems: 0 },
     treeItems: [],
     keyFiles: [],
+    seenDirs: new Set(),
+    ignoredDirs: new Set(),
     flags: {
       dotnet: false,
       node: false,
@@ -1995,16 +2123,19 @@ async function scanWorkspaceDirectory(directoryHandle) {
       browserExtension: false,
       source: false
     },
-    truncated: false
+    truncated: false,
+    hasRelativePaths: true
   };
+}
 
-  await walkWorkspaceDirectory(directoryHandle, '', 0, scan);
+function finalizeWorkspaceScan(scan, now, options) {
   const stacks = workspaceStacksFromFlags(scan.flags);
   const signals = workspaceSignalsFromScan(scan, stacks);
   const evidence = {
     summary: 'Workspace leído',
     timestamp: now,
     workspace: scan.rootName,
+    source: options.source,
     files: scan.counts.files,
     folders: scan.counts.folders,
     stacks,
@@ -2016,6 +2147,7 @@ async function scanWorkspaceDirectory(directoryHandle) {
   };
   const context = createWorkspaceContextContract({
     name: scan.rootName,
+    source: options.source,
     openedAt: now,
     scannedAt: now,
     counts: scan.counts,
@@ -2027,11 +2159,10 @@ async function scanWorkspaceDirectory(directoryHandle) {
 
   return normalizeWorkspaceStore({
     status: 'ready',
-    statusMessage: scan.truncated
-      ? 'Workspace leído en modo solo lectura con límites aplicados.'
-      : 'Workspace leído en modo solo lectura.',
+    statusMessage: options.statusMessage,
     name: scan.rootName,
-    pathLabel: `${scan.rootName} (ruta absoluta no expuesta por el navegador)`,
+    pathLabel: options.pathLabel,
+    source: options.source,
     openedAt: now,
     scannedAt: now,
     counts: scan.counts,
@@ -2043,6 +2174,16 @@ async function scanWorkspaceDirectory(directoryHandle) {
     context,
     error: ''
   });
+}
+
+function cleanWorkspacePath(path) {
+  return String(path || '').replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+/g, '/').trim();
+}
+
+function workspacePathWithoutRoot(relativePath, rootName) {
+  const normalized = cleanWorkspacePath(relativePath);
+  const rootPrefix = `${rootName}/`;
+  return normalized.startsWith(rootPrefix) ? normalized.slice(rootPrefix.length) : normalized;
 }
 
 async function walkWorkspaceDirectory(directoryHandle, relativePath, depth, scan) {
@@ -2093,6 +2234,67 @@ async function walkWorkspaceDirectory(directoryHandle, relativePath, depth, scan
         return;
       }
     }
+  }
+}
+
+function addWorkspaceFileListPath(scan, relativePath, hasRelativePath) {
+  const normalized = cleanWorkspacePath(relativePath);
+  if (!normalized) {
+    return;
+  }
+  const parts = normalized.split('/').filter(Boolean);
+  const fileName = parts.pop();
+  if (!fileName) {
+    return;
+  }
+
+  const ignoredSegment = parts.find((part) => WORKSPACE_IGNORED_DIRS.has(part));
+  if (ignoredSegment) {
+    if (!scan.ignoredDirs.has(ignoredSegment)) {
+      scan.ignoredDirs.add(ignoredSegment);
+      scan.counts.ignoredFolders++;
+    }
+    return;
+  }
+
+  let currentPath = '';
+  for (let index = 0; index < parts.length; index += 1) {
+    if (scan.truncated) {
+      return;
+    }
+    const depth = index;
+    if (depth > WORKSPACE_SCAN_LIMITS.maxDepth) {
+      scan.truncated = true;
+      return;
+    }
+    currentPath = currentPath ? `${currentPath}/${parts[index]}` : parts[index];
+    if (!scan.seenDirs.has(currentPath)) {
+      scan.seenDirs.add(currentPath);
+      scan.counts.folders++;
+      trackWorkspaceSignals(currentPath, 'directory', scan);
+      addWorkspaceTreeItem(scan, currentPath, 'directory', depth, isWorkspaceKeyPath(currentPath, 'directory'));
+      if (scan.counts.folders >= WORKSPACE_SCAN_LIMITS.maxFolders) {
+        scan.truncated = true;
+        return;
+      }
+    }
+  }
+
+  const filePath = parts.length ? `${parts.join('/')}/${fileName}` : fileName;
+  const fileDepth = hasRelativePath ? parts.length : 0;
+  if (fileDepth > WORKSPACE_SCAN_LIMITS.maxDepth) {
+    scan.truncated = true;
+    return;
+  }
+  scan.counts.files++;
+  trackWorkspaceSignals(filePath, 'file', scan);
+  const important = isWorkspaceKeyPath(filePath, 'file');
+  addWorkspaceTreeItem(scan, filePath, 'file', fileDepth, important);
+  if (important && scan.keyFiles.length < WORKSPACE_SCAN_LIMITS.maxKeyFiles) {
+    scan.keyFiles.push(filePath);
+  }
+  if (scan.counts.files >= WORKSPACE_SCAN_LIMITS.maxFiles) {
+    scan.truncated = true;
   }
 }
 
@@ -2190,6 +2392,7 @@ function workspaceMissionSummary() {
   return {
     name: workspace.name,
     pathLabel: workspace.pathLabel,
+    source: workspace.source || '',
     scannedAt: workspace.scannedAt,
     status: workspace.status,
     stacks: workspace.stacks || [],

@@ -15,6 +15,7 @@ const repoRoot = path.resolve(__dirname, '..');
 const extensionPath = path.join(repoRoot, 'browser-extension', 'onebrain-chrome-lab');
 const manifestPath = path.join(extensionPath, 'manifest.json');
 const outputDir = path.join(repoRoot, 'artifacts', 'local-verification');
+const workspaceFixtureDir = path.join(outputDir, 'workspace-fixture');
 const fixtureTitle = 'NODAL OS Browser Skills Fixture';
 const demoMissionTitle = 'Repo Harness Installed Sidepanel Mission';
 const demoMissionDescription = 'Repo-owned installed extension verification';
@@ -67,8 +68,10 @@ async function main() {
   }
 
   const fixture = await startFixtureServer();
+  const workspaceFixture = await createWorkspaceFixture();
   result.fixture = {
-    url: fixture.url
+    url: fixture.url,
+    workspaceFiles: workspaceFixture.files.length
   };
 
   const debugPort = await getFreePort();
@@ -153,8 +156,8 @@ async function main() {
       result.missionFlow = await runMissionFlow(sidepanel);
       addCheck('Mission Control flow works in installed extension page', result.missionFlow.ok, result.missionFlow);
 
-      result.workspaceUnderstanding = await runWorkspaceUnderstandingSurfaceCheck(sidepanel);
-      addCheck('Workspace Understanding surface is visible in installed extension page', result.workspaceUnderstanding.ok, result.workspaceUnderstanding);
+      result.workspaceUnderstanding = await runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFixture.files);
+      addCheck('Workspace Understanding compatibility selection works in installed extension page', result.workspaceUnderstanding.ok, result.workspaceUnderstanding);
 
       await browser.send('Target.activateTarget', { targetId: fixtureTarget.id });
       await delay(300);
@@ -235,6 +238,97 @@ async function runWorkspaceUnderstandingSurfaceCheck(sidepanel) {
       statusText: document.getElementById('workspaceStatus') ? document.getElementById('workspaceStatus').innerText : '',
       evidenceText: evidence ? evidence.innerText.slice(0, 500) : '',
       storePresentBeforePicker: Boolean(storeBefore)
+    };
+  })()`);
+}
+
+async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFiles) {
+  await sidepanel.send('DOM.enable');
+  const documentResult = await sidepanel.send('DOM.getDocument', { depth: 1, pierce: true });
+  const inputResult = await sidepanel.send('DOM.querySelector', {
+    nodeId: documentResult.root.nodeId,
+    selector: '#workspaceDirectoryInput'
+  });
+  if (!inputResult.nodeId) {
+    return {
+      ok: false,
+      error: 'workspaceDirectoryInput not found'
+    };
+  }
+
+  await evaluate(sidepanel, `(() => {
+    const input = document.getElementById('workspaceDirectoryInput');
+    if (input) {
+      input.removeAttribute('webkitdirectory');
+      input.removeAttribute('directory');
+      input.setAttribute('multiple', '');
+      input.dataset.harnessFileListMode = 'true';
+    }
+    return true;
+  })()`);
+  await sidepanel.send('DOM.setFileInputFiles', {
+    nodeId: inputResult.nodeId,
+    files: workspaceFiles
+  });
+  const fileInputState = await evaluate(sidepanel, `(() => {
+    const input = document.getElementById('workspaceDirectoryInput');
+    return {
+      fileCount: input && input.files ? input.files.length : 0,
+      firstName: input && input.files && input.files[0] ? input.files[0].name : '',
+      firstRelativePath: input && input.files && input.files[0] ? input.files[0].webkitRelativePath : ''
+    };
+  })()`);
+  await evaluate(sidepanel, `(() => {
+    const input = document.getElementById('workspaceDirectoryInput');
+    if (input) {
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    return true;
+  })()`);
+  await delay(700);
+
+  return evaluate(sidepanel, `(() => {
+    const workspace = document.getElementById('workspaceUnderstanding');
+    const evidence = document.getElementById('workspaceEvidence');
+    const store = JSON.parse(localStorage.getItem('nodal-os.workspaceUnderstanding.v1') || '{}');
+    const context = store.context || {};
+    const evidenceText = evidence ? evidence.innerText.slice(0, 900) : '';
+    const treeText = document.getElementById('workspaceTree') ? document.getElementById('workspaceTree').innerText.slice(0, 900) : '';
+    const keyFilesText = document.getElementById('workspaceKeyFiles') ? document.getElementById('workspaceKeyFiles').innerText.slice(0, 900) : '';
+    const stacksText = document.getElementById('workspaceStack') ? document.getElementById('workspaceStack').innerText : '';
+    return {
+      ok: Boolean(
+        workspace
+        && store.name
+        && store.source === 'file-directory-input'
+        && context.readOnly === true
+        && context.commandsExecuted === false
+        && context.filesModified === false
+        && Number(store.counts && store.counts.files) > 0
+        && evidenceText.includes('No se ejecutaron comandos')
+        && evidenceText.includes('No se modificaron archivos')
+      ),
+      pickerAvailable: typeof window.showDirectoryPicker === 'function',
+      compatibleButton: document.getElementById('openWorkspaceFallbackBtn') ? document.getElementById('openWorkspaceFallbackBtn').innerText : '',
+      inputPresent: Boolean(document.getElementById('workspaceDirectoryInput')),
+      harnessFileListMode: document.getElementById('workspaceDirectoryInput') ? document.getElementById('workspaceDirectoryInput').dataset.harnessFileListMode === 'true' : false,
+      fileInputState: ${JSON.stringify(fileInputState)},
+      title: workspace ? workspace.querySelector('h2').innerText : '',
+      statusText: document.getElementById('workspaceStatus') ? document.getElementById('workspaceStatus').innerText : '',
+      readModeText: document.getElementById('workspaceReadMode') ? document.getElementById('workspaceReadMode').innerText : '',
+      name: store.name || '',
+      source: store.source || '',
+      contextSource: context.source || '',
+      fileCount: store.counts ? store.counts.files : 0,
+      folderCount: store.counts ? store.counts.folders : 0,
+      stacksText,
+      keyFilesText,
+      treeText,
+      evidenceText,
+      readOnly: context.readOnly === true,
+      commandsExecuted: context.commandsExecuted === true,
+      filesModified: context.filesModified === true
     };
   })()`);
 }
@@ -478,6 +572,33 @@ async function startFixtureServer() {
   return {
     port,
     url: `http://127.0.0.1:${port}/fixture`
+  };
+}
+
+async function createWorkspaceFixture() {
+  await rm(workspaceFixtureDir, { recursive: true, force: true });
+  const files = [
+    ['package.json', '{ "name": "nodal-os-workspace-fixture", "private": true }\n'],
+    ['tsconfig.json', '{ "compilerOptions": { "target": "ES2022" } }\n'],
+    ['README.md', '# NODAL OS Workspace Fixture\n'],
+    ['NodalOS.slnx', '<Solution></Solution>\n'],
+    ['playwright.config.ts', 'export default {};\n'],
+    ['Dockerfile', 'FROM scratch\n'],
+    ['browser-extension/onebrain-chrome-lab/manifest.json', '{ "manifest_version": 3, "name": "Fixture Extension" }\n'],
+    ['tests/sample.test.cs', 'namespace Fixture.Tests; public sealed class SampleTest {}\n'],
+    ['scripts/check.mjs', 'console.log("fixture");\n'],
+    ['node_modules/ignored/index.js', 'console.log("ignored");\n']
+  ];
+  const absoluteFiles = [];
+  for (const [relativePath, content] of files) {
+    const absolutePath = path.join(workspaceFixtureDir, relativePath);
+    await mkdir(path.dirname(absolutePath), { recursive: true });
+    await writeFile(absolutePath, content, 'utf8');
+    absoluteFiles.push(absolutePath);
+  }
+  return {
+    root: workspaceFixtureDir,
+    files: absoluteFiles
   };
 }
 

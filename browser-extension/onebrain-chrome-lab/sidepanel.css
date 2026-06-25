@@ -802,6 +802,14 @@ main {
   text-transform: none;
 }
 
+.workspace-directory-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .mission-guidance-card {
   overflow: hidden;
   border-color: rgba(143, 184, 255, 0.2);

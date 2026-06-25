@@ -420,6 +420,9 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(html, "workspaceUnderstanding");
         StringAssert.Contains(html, "Proyecto activo");
         StringAssert.Contains(html, "Abrir workspace");
+        StringAssert.Contains(html, "Seleccionar carpeta compatible");
+        StringAssert.Contains(html, "workspaceDirectoryInput");
+        StringAssert.Contains(html, "webkitdirectory");
         StringAssert.Contains(html, "Releer");
         StringAssert.Contains(html, "Copiar evidencia");
         StringAssert.Contains(html, "Quitar");
@@ -445,7 +448,10 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
             "nodal-os.workspaceUnderstanding.v1",
             "showDirectoryPicker({ mode: 'read' })",
             "openWorkspaceDirectory",
+            "openWorkspaceDirectoryInput",
+            "handleWorkspaceDirectoryInput",
             "scanWorkspaceDirectory",
+            "scanWorkspaceFileList",
             "walkWorkspaceDirectory",
             "WORKSPACE_IGNORED_DIRS",
             "node_modules",
@@ -459,6 +465,8 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
             "manifest.json",
             "browser-extension",
             "Workspace leído",
+            "directory-picker",
+            "file-directory-input",
             "No se ejecutaron comandos.",
             "No se modificaron archivos."
         })
@@ -509,6 +517,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
             "directoryCount",
             "treeSummary",
             "evidenceSummary",
+            "source",
             "readOnly: true",
             "commandsExecuted: false",
             "filesModified: false"
@@ -530,6 +539,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         var css = ReadRepoText(SidepanelCssPath);
 
         StringAssert.Contains(css, ".workspace-understanding-card");
+        StringAssert.Contains(css, ".workspace-directory-input");
         StringAssert.Contains(css, ".workspace-status-grid");
         StringAssert.Contains(css, ".workspace-summary-grid");
         StringAssert.Contains(css, ".workspace-panel");
