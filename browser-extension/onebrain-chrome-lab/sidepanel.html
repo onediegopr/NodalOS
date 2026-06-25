@@ -32,6 +32,107 @@
 
   <main>
     <section id="tab-operate" class="tab-panel active">
+      <section class="surface mission-control-shell" aria-labelledby="missionControlTitle">
+        <aside class="mission-sidebar" aria-label="Mission navigation">
+          <span class="mission-kicker">Mission Control</span>
+          <h2 id="missionControlTitle">NODAL OS</h2>
+          <nav class="mission-side-nav" aria-label="Demo sections">
+            <a href="#demoTimeline">Timeline</a>
+            <a href="#demoEvidencePanel">Evidence</a>
+            <a href="#demoTechnicalReport">Report</a>
+          </nav>
+          <div class="mission-mini-card">
+            <span>Modo</span>
+            <strong>Demo segura</strong>
+            <small>no-op local / in-memory</small>
+          </div>
+        </aside>
+
+        <div class="mission-main">
+          <header class="mission-hero">
+            <div>
+              <span id="demoStatusBadge" class="mission-badge">Listo para probar</span>
+              <h2 id="demoMissionName">Local Operator Demo</h2>
+              <p id="demoMissionObjective">Ejecutar un no-op visible, generar evidencia demo y proyectar el run en timeline.</p>
+            </div>
+            <div class="mission-actions">
+              <button id="runSafeDemoBtn" class="primary mission-run-button">Run safe demo</button>
+              <button id="copyDemoReportBtn">Copiar resumen</button>
+            </div>
+          </header>
+
+          <section class="mission-progress-card" aria-label="Demo progress">
+            <div class="mission-progress-head">
+              <span id="demoRunState">Ready</span>
+              <strong id="demoProgressLabel">0%</strong>
+            </div>
+            <div class="mission-progress-track"><span id="demoProgressBar"></span></div>
+            <p id="demoNextStep">Próximo paso: tocar Run safe demo.</p>
+          </section>
+
+          <div class="mission-layout">
+            <section class="mission-timeline-card" aria-labelledby="demoTimelineTitle">
+              <div class="section-head">
+                <h2 id="demoTimelineTitle">Timeline visible</h2>
+                <span id="demoRunId" class="mission-chip">run: pending</span>
+              </div>
+              <ol id="demoTimeline" class="timeline mission-timeline"></ol>
+            </section>
+
+            <aside class="mission-status-rail" aria-label="Local status">
+              <article class="mission-status-card">
+                <span>Host local</span>
+                <strong id="demoHostStatus">Descriptor local</strong>
+                <small>visible si el bridge reporta estado</small>
+              </article>
+              <article class="mission-status-card">
+                <span>Bridge</span>
+                <strong id="demoBridgeStatus">Sin conectar</strong>
+                <small>la demo no requiere conexión real</small>
+              </article>
+              <article class="mission-status-card">
+                <span>Browser claim</span>
+                <strong id="demoBrowserClaimStatus">No activo</strong>
+                <small>sin automation productiva</small>
+              </article>
+              <article class="mission-status-card caveat">
+                <span>Smoke caveat</span>
+                <strong id="demoCaveatStatus">Visible</strong>
+                <small>badge informativo, no bloquea esta demo</small>
+              </article>
+            </aside>
+          </div>
+
+          <section class="mission-evidence-grid">
+            <article class="mission-evidence-card">
+              <div class="section-head">
+                <h2>Logs / evidence</h2>
+                <span id="demoCommandKind" class="mission-chip">SafeNoOp</span>
+              </div>
+              <div id="demoEvidencePanel" class="demo-log-list"></div>
+            </article>
+            <article class="mission-evidence-card">
+              <h2>Checklist para probar</h2>
+              <ol id="demoTryChecklist" class="try-checklist">
+                <li>Abrir NODAL OS en el sidepanel.</li>
+                <li>Ver la misión Local Operator Demo.</li>
+                <li>Tocar Run safe demo.</li>
+                <li>Ver timeline: started → accepted → evidence → completed.</li>
+                <li>Ver logs/evidence y copiar resumen.</li>
+              </ol>
+            </article>
+          </section>
+
+          <section class="mission-report-card" aria-labelledby="demoReportTitle">
+            <div class="section-head">
+              <h2 id="demoReportTitle">Reporte técnico copiable</h2>
+              <span class="mission-chip">redacted</span>
+            </div>
+            <pre id="demoTechnicalReport" class="technical-report"></pre>
+          </section>
+        </div>
+      </section>
+
       <section class="surface command-surface">
         <label for="instructionInput">¿Qué querés que haga NODAL OS?</label>
         <textarea id="instructionInput" rows="8" wrap="soft">Revisá el dashboard local de readiness, resumí evidencia redacted y listá blockers activos sin usar credenciales ni acciones sensibles.</textarea>

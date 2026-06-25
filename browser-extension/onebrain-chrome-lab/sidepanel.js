@@ -3,6 +3,7 @@ let portConnected = false;
 
 const state = {
   activeTab: 'operate',
+  demo: createDemoSeed(),
   connection: {
     status: 'disconnected',
     health: 'untested',
@@ -114,6 +115,24 @@ const el = {
   verificationExpected: document.getElementById('verificationExpected'),
   verificationReason: document.getElementById('verificationReason'),
   operatorTimeline: document.getElementById('operatorTimeline'),
+  demoStatusBadge: document.getElementById('demoStatusBadge'),
+  demoMissionName: document.getElementById('demoMissionName'),
+  demoMissionObjective: document.getElementById('demoMissionObjective'),
+  runSafeDemoBtn: document.getElementById('runSafeDemoBtn'),
+  copyDemoReportBtn: document.getElementById('copyDemoReportBtn'),
+  demoRunState: document.getElementById('demoRunState'),
+  demoProgressLabel: document.getElementById('demoProgressLabel'),
+  demoProgressBar: document.getElementById('demoProgressBar'),
+  demoNextStep: document.getElementById('demoNextStep'),
+  demoRunId: document.getElementById('demoRunId'),
+  demoTimeline: document.getElementById('demoTimeline'),
+  demoHostStatus: document.getElementById('demoHostStatus'),
+  demoBridgeStatus: document.getElementById('demoBridgeStatus'),
+  demoBrowserClaimStatus: document.getElementById('demoBrowserClaimStatus'),
+  demoCaveatStatus: document.getElementById('demoCaveatStatus'),
+  demoCommandKind: document.getElementById('demoCommandKind'),
+  demoEvidencePanel: document.getElementById('demoEvidencePanel'),
+  demoTechnicalReport: document.getElementById('demoTechnicalReport'),
   learningName: document.getElementById('learningName'),
   learningDescription: document.getElementById('learningDescription'),
   startLearningBtn: document.getElementById('startLearningBtn'),
@@ -227,6 +246,8 @@ function bindEvents() {
   el.consentDenyBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.userDenied`));
   el.consentCancelBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.cancelled`));
   el.consentCopyLogBtn.addEventListener('click', copyConsentLog);
+  el.runSafeDemoBtn.addEventListener('click', runSafeDemo);
+  el.copyDemoReportBtn.addEventListener('click', copyDemoReport);
 
   el.startRunBtn.addEventListener('click', () => {
     state.operator.goal = el.instructionInput.value.trim();
@@ -582,6 +603,7 @@ function renderHeader() {
 }
 
 function renderOperate() {
+  renderDemoMissionControl();
   el.operatorGoal.textContent = state.operator.goal || '-';
   el.operatorPlan.textContent = state.operator.planPreview
     ? `Plan preview: ${state.operator.planPreview.status || 'PlanDrafted'}`
@@ -593,6 +615,178 @@ function renderOperate() {
   renderTargetResolution();
   renderVerification();
   renderTimeline(el.operatorTimeline, state.operator.timeline);
+}
+
+function createDemoSeed() {
+  return {
+    missionName: 'Local Operator Demo',
+    objective: 'Ejecutar un no-op visible, generar evidencia demo y proyectar el run en timeline.',
+    status: 'ready',
+    statusLabel: 'Listo para probar',
+    progress: 0,
+    nextStep: 'Próximo paso: tocar Run safe demo.',
+    runId: '',
+    commandKind: 'SafeNoOp',
+    result: 'Not started',
+    evidenceRef: 'evidence:demo:pending',
+    startedAt: '',
+    completedAt: '',
+    timeline: [
+      demoTimelineStep('Misión demo lista', 'NODAL OS tiene una misión local in-memory preparada para ejecutar un SafeNoOp visible.', 'ready', 'MissionSeed', 'evidence:demo:seed'),
+      demoTimelineStep('Esperando run seguro', 'Tocá Run safe demo para proyectar un run no-op en timeline y logs.', 'waiting', 'OperatorAction', 'evidence:demo:pending')
+    ],
+    logs: [
+      {
+        label: 'Demo seed',
+        value: 'Local Operator Demo cargada. Sin acciones peligrosas.'
+      }
+    ],
+    report: ''
+  };
+}
+
+function demoTimelineStep(title, description, status, nodeType, evidenceRef) {
+  return {
+    title,
+    description,
+    status,
+    nodeType,
+    scopeLabel: 'local-demo',
+    riskLevel: 'low',
+    redactionSummary: 'redacted demo metadata only',
+    safeNextAction: 'Revisar el estado visible en Mission Control.',
+    evidenceRefs: [{ label: 'demo', refId: evidenceRef }]
+  };
+}
+
+function runSafeDemo() {
+  const now = new Date();
+  const iso = now.toISOString();
+  const runId = `demo-${now.getTime().toString(36)}`;
+  const evidenceRef = `evidence:demo:${runId}`;
+  state.demo.status = 'completed';
+  state.demo.statusLabel = 'Demo completada';
+  state.demo.progress = 100;
+  state.demo.nextStep = 'Próximo paso: copiar resumen o repetir la demo.';
+  state.demo.runId = runId;
+  state.demo.commandKind = 'SafeNoOp';
+  state.demo.result = 'Completed with no side effects';
+  state.demo.evidenceRef = evidenceRef;
+  state.demo.startedAt = iso;
+  state.demo.completedAt = iso;
+  state.demo.timeline = [
+    demoTimelineStep('Run started', `Run ${runId} iniciado en modo demo local.`, 'running', 'RunVisible', evidenceRef),
+    demoTimelineStep('No-op command accepted', 'Command kind SafeNoOp aceptado para demo visible. No se llamó shell, filesystem ni provider/cloud.', 'accepted', 'SafeNoOp', evidenceRef),
+    demoTimelineStep('Evidence generated', 'Se generó evidencia demo redacted en memoria para el panel visible.', 'evidence', 'EvidenceProjection', evidenceRef),
+    demoTimelineStep('Run completed', 'Run demo completado; timeline y logs quedaron actualizados visualmente.', 'completed', 'Result', evidenceRef)
+  ];
+  state.demo.logs = [
+    { label: 'run id', value: runId },
+    { label: 'command kind', value: 'SafeNoOp' },
+    { label: 'result', value: 'Completed with no side effects' },
+    { label: 'timestamp', value: iso },
+    { label: 'evidence ref', value: evidenceRef }
+  ];
+  state.run.runId = runId;
+  state.run.status = 'completed';
+  state.run.currentTool = 'SafeNoOpDemo';
+  state.run.lastResult = 'Demo no-op completed';
+  state.operator.goal = 'Local Operator Demo';
+  state.operator.plan = 'seed -> safe no-op -> evidence -> report';
+  state.operator.action = 'Run safe demo';
+  state.operator.timeline = state.demo.timeline;
+  addLog('local', {
+    kind: 'SafeNoOpDemo',
+    runId,
+    result: 'completed',
+    evidenceRef
+  });
+  state.demo.report = buildDemoTechnicalReport();
+  render();
+}
+
+function renderDemoMissionControl() {
+  const demo = state.demo;
+  el.demoMissionName.textContent = demo.missionName;
+  el.demoMissionObjective.textContent = demo.objective;
+  el.demoStatusBadge.textContent = demo.statusLabel;
+  el.demoStatusBadge.dataset.status = demo.status;
+  el.demoRunState.textContent = demo.status === 'completed' ? 'Completed' : 'Ready';
+  el.demoProgressLabel.textContent = `${demo.progress}%`;
+  el.demoProgressBar.style.width = `${demo.progress}%`;
+  el.demoNextStep.textContent = demo.nextStep;
+  el.demoRunId.textContent = demo.runId ? `run: ${demo.runId}` : 'run: pending';
+  el.demoCommandKind.textContent = demo.commandKind;
+  el.demoHostStatus.textContent = demoHostStatus();
+  el.demoBridgeStatus.textContent = demoBridgeStatus();
+  el.demoBrowserClaimStatus.textContent = demoBrowserClaimStatus();
+  el.demoCaveatStatus.textContent = 'BrowserRuntimeSmoke caveat visible';
+  renderTimeline(el.demoTimeline, demo.timeline);
+  el.demoEvidencePanel.innerHTML = demo.logs.map((item) => `
+    <div class="demo-log-item">
+      <span>${safeHtml(item.label)}</span>
+      <strong>${safeHtml(item.value)}</strong>
+    </div>`).join('');
+  el.demoTechnicalReport.textContent = demo.report || buildDemoTechnicalReport();
+}
+
+function demoHostStatus() {
+  const host = state.connection.host || '127.0.0.1';
+  const portValue = state.connection.port || '8787';
+  const health = state.connection.health || 'untested';
+  return `${host}:${portValue} · ${health}`;
+}
+
+function demoBridgeStatus() {
+  if (state.connection.status === 'connected' || state.connection.status === 'running') {
+    return 'Conectado';
+  }
+  if (state.connection.status === 'connecting') {
+    return 'Conectando';
+  }
+  return 'Sin conectar';
+}
+
+function demoBrowserClaimStatus() {
+  const tab = state.runtime && state.runtime.debug && state.runtime.debug.tab;
+  if (tab && tab.claimStatus) {
+    return tab.claimStatus;
+  }
+  if (state.operator.page) {
+    return 'Página observada';
+  }
+  return 'No activo';
+}
+
+function buildDemoTechnicalReport() {
+  const demo = state.demo;
+  const lines = [
+    'NODAL OS — Local Operator Demo',
+    `mission: ${demo.missionName}`,
+    `status: ${demo.statusLabel}`,
+    `run_id: ${demo.runId || 'pending'}`,
+    `command_kind: ${demo.commandKind}`,
+    `result: ${demo.result}`,
+    `evidence_ref: ${demo.evidenceRef}`,
+    `host_status: ${demoHostStatus()}`,
+    `bridge_status: ${demoBridgeStatus()}`,
+    `browser_claim_status: ${demoBrowserClaimStatus()}`,
+    'safety: no shell, no filesystem write, no provider/cloud call',
+    'caveat: BrowserRuntimeSmoke caveat visible as non-blocking demo badge'
+  ];
+  return lines.join('\n');
+}
+
+async function copyDemoReport() {
+  const report = buildDemoTechnicalReport();
+  state.demo.report = report;
+  try {
+    await navigator.clipboard.writeText(report);
+    addLog('local', { kind: 'DemoReportCopied', runId: state.demo.runId || 'pending' });
+  } catch (error) {
+    addLog('local', { kind: 'DemoReportCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
 }
 
 function applyPlanPreview(plan) {
