@@ -1,6 +1,14 @@
 let port = null;
 let portConnected = false;
 const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
+const DEMO_SCRIPT_STEPS = [
+  'Crear misión con un objetivo simple.',
+  'Ejecutar Run demo.',
+  'Revisar Timeline visible.',
+  'Abrir Historial y seleccionar el run.',
+  'Agregar una nota corta al run.',
+  'Copiar resumen para compartir.'
+];
 
 const state = {
   activeTab: 'operate',
@@ -124,6 +132,13 @@ const el = {
   missionDescriptionInput: document.getElementById('missionDescriptionInput'),
   missionList: document.getElementById('missionList'),
   clearDemoHistoryBtn: document.getElementById('clearDemoHistoryBtn'),
+  editMissionBtn: document.getElementById('editMissionBtn'),
+  missionEditFields: document.getElementById('missionEditFields'),
+  editMissionTitleInput: document.getElementById('editMissionTitleInput'),
+  editMissionDescriptionInput: document.getElementById('editMissionDescriptionInput'),
+  saveMissionBtn: document.getElementById('saveMissionBtn'),
+  cancelMissionEditBtn: document.getElementById('cancelMissionEditBtn'),
+  deleteMissionBtn: document.getElementById('deleteMissionBtn'),
   runSafeDemoBtn: document.getElementById('runSafeDemoBtn'),
   copyDemoReportBtn: document.getElementById('copyDemoReportBtn'),
   demoRunState: document.getElementById('demoRunState'),
@@ -140,6 +155,12 @@ const el = {
   demoEvidencePanel: document.getElementById('demoEvidencePanel'),
   demoRunHistory: document.getElementById('demoRunHistory'),
   demoRunCount: document.getElementById('demoRunCount'),
+  demoScriptPanel: document.getElementById('demoScriptPanel'),
+  copyDemoScriptBtn: document.getElementById('copyDemoScriptBtn'),
+  runNoteInput: document.getElementById('runNoteInput'),
+  runNoteState: document.getElementById('runNoteState'),
+  saveRunNoteBtn: document.getElementById('saveRunNoteBtn'),
+  clearRunNoteBtn: document.getElementById('clearRunNoteBtn'),
   demoTechnicalReport: document.getElementById('demoTechnicalReport'),
   learningName: document.getElementById('learningName'),
   learningDescription: document.getElementById('learningDescription'),
@@ -256,8 +277,15 @@ function bindEvents() {
   el.consentCopyLogBtn.addEventListener('click', copyConsentLog);
   el.missionCreateForm.addEventListener('submit', createMissionFromForm);
   el.clearDemoHistoryBtn.addEventListener('click', clearDemoHistory);
+  el.editMissionBtn.addEventListener('click', beginEditMission);
+  el.saveMissionBtn.addEventListener('click', saveMissionEdit);
+  el.cancelMissionEditBtn.addEventListener('click', cancelMissionEdit);
+  el.deleteMissionBtn.addEventListener('click', deleteActiveMission);
   el.runSafeDemoBtn.addEventListener('click', runSafeDemo);
   el.copyDemoReportBtn.addEventListener('click', copyDemoReport);
+  el.copyDemoScriptBtn.addEventListener('click', copyDemoScript);
+  el.saveRunNoteBtn.addEventListener('click', saveRunNote);
+  el.clearRunNoteBtn.addEventListener('click', clearRunNote);
 
   el.startRunBtn.addEventListener('click', () => {
     state.operator.goal = el.instructionInput.value.trim();
@@ -631,9 +659,11 @@ function createDemoSeed() {
   const createdAt = new Date().toISOString();
   const mission = createMissionRecord('Local Operator Demo', 'Ejecutar un no-op visible, generar evidencia demo y proyectar el run en timeline.', createdAt);
   return {
+    schemaVersion: 2,
     missions: [mission],
     activeMissionId: mission.id,
     selectedRunId: '',
+    editingMission: false,
     missionName: mission.title,
     objective: mission.description,
     status: 'ready',
@@ -677,6 +707,7 @@ function loadDemoStore() {
 function saveDemoStore(store = state.demo) {
   try {
     const payload = {
+      schemaVersion: 2,
       missions: store.missions || [],
       activeMissionId: store.activeMissionId || '',
       selectedRunId: store.selectedRunId || ''
@@ -694,9 +725,11 @@ function normalizeDemoStore(store) {
     : [];
   const normalized = {
     ...seed,
+    schemaVersion: 2,
     missions: missions.length ? missions : seed.missions,
     activeMissionId: store && store.activeMissionId ? store.activeMissionId : '',
-    selectedRunId: store && store.selectedRunId ? store.selectedRunId : ''
+    selectedRunId: store && store.selectedRunId ? store.selectedRunId : '',
+    editingMission: false
   };
   if (!normalized.missions.some((mission) => mission.id === normalized.activeMissionId)) {
     normalized.activeMissionId = normalized.missions[0].id;
@@ -715,6 +748,7 @@ function createMissionRecord(title, description, createdAt = new Date().toISOStr
     title: title || 'Nueva misión',
     description: description || 'Demo local no-op para probar Mission Control.',
     createdAt,
+    updatedAt: createdAt,
     status: 'ready',
     runs: []
   };
@@ -729,6 +763,7 @@ function normalizeMissionRecord(mission) {
     title: String(mission.title || mission.missionName || 'Nueva misión'),
     description: String(mission.description || mission.objective || 'Demo local no-op para probar Mission Control.'),
     createdAt: mission.createdAt || new Date().toISOString(),
+    updatedAt: mission.updatedAt || mission.createdAt || new Date().toISOString(),
     status: mission.status || 'ready',
     runs: Array.isArray(mission.runs) ? mission.runs.map(normalizeRunRecord).filter(Boolean) : []
   };
@@ -744,6 +779,8 @@ function normalizeRunRecord(run) {
     startedAt: run.startedAt || new Date().toISOString(),
     completedAt: run.completedAt || run.startedAt || new Date().toISOString(),
     status: run.status || 'completed',
+    note: String(run.note || run.title || ''),
+    durationMs: Number.isFinite(run.durationMs) ? run.durationMs : 640,
     commandKind: run.commandKind || 'SafeNoOp',
     result: run.result || 'Completed with no side effects',
     evidenceRef: run.evidenceRef || `evidence:demo:${run.id || 'run'}`,
@@ -819,6 +856,65 @@ function createMissionFromForm(event) {
   render();
 }
 
+function beginEditMission() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  state.demo.editingMission = true;
+  el.editMissionTitleInput.value = mission.title;
+  el.editMissionDescriptionInput.value = mission.description || '';
+  render();
+  el.editMissionTitleInput.focus();
+}
+
+function saveMissionEdit() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  const title = el.editMissionTitleInput.value.trim();
+  if (!title) {
+    el.editMissionTitleInput.focus();
+    return;
+  }
+  mission.title = title;
+  mission.description = el.editMissionDescriptionInput.value.trim() || 'Demo local no-op para probar Mission Control.';
+  mission.updatedAt = new Date().toISOString();
+  state.demo.editingMission = false;
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'MissionEdited', missionId: mission.id, title: mission.title });
+  render();
+}
+
+function cancelMissionEdit() {
+  state.demo.editingMission = false;
+  render();
+}
+
+function deleteActiveMission() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  if (!confirm('Borrar misión demo y sus runs locales?')) {
+    return;
+  }
+  state.demo.missions = state.demo.missions.filter((item) => item.id !== mission.id);
+  if (!state.demo.missions.length) {
+    state.demo = createDemoSeed();
+  } else {
+    state.demo.activeMissionId = state.demo.missions[0].id;
+    state.demo.selectedRunId = state.demo.missions[0].runs[0] ? state.demo.missions[0].runs[0].id : '';
+    state.demo.editingMission = false;
+  }
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'MissionDeleted', missionId: mission.id, title: mission.title });
+  render();
+}
+
 function selectDemoMission(missionId) {
   if (!state.demo.missions.some((mission) => mission.id === missionId)) {
     return;
@@ -826,6 +922,7 @@ function selectDemoMission(missionId) {
   state.demo.activeMissionId = missionId;
   const mission = activeDemoMission();
   state.demo.selectedRunId = mission && mission.runs[0] ? mission.runs[0].id : '';
+  state.demo.editingMission = false;
   syncDemoViewFromStore();
   saveDemoStore();
   render();
@@ -849,6 +946,34 @@ function clearDemoHistory() {
   state.demo = createDemoSeed();
   saveDemoStore();
   addLog('local', { kind: 'DemoHistoryCleared' });
+  render();
+}
+
+function saveRunNote() {
+  const run = selectedDemoRun();
+  const mission = activeDemoMission();
+  if (!run || !mission) {
+    return;
+  }
+  run.note = el.runNoteInput.value.trim();
+  run.summary = run.note ? `${run.note} · ${mission.title}` : `${mission.title}: run demo no-op completado.`;
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'RunNoteSaved', runId: run.id, note: run.note || 'empty' });
+  render();
+}
+
+function clearRunNote() {
+  const run = selectedDemoRun();
+  const mission = activeDemoMission();
+  if (!run || !mission) {
+    return;
+  }
+  run.note = '';
+  run.summary = `${mission.title}: run demo no-op completado.`;
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'RunNoteCleared', runId: run.id });
   render();
 }
 
@@ -895,6 +1020,8 @@ function runSafeDemo() {
     startedAt: iso,
     completedAt: iso,
     status: 'completed',
+    note: '',
+    durationMs: 640,
     commandKind: 'SafeNoOp',
     result: 'Completed with no side effects',
     evidenceRef,
@@ -943,8 +1070,11 @@ function renderDemoMissionControl() {
   el.demoBridgeStatus.textContent = demoBridgeStatus();
   el.demoBrowserClaimStatus.textContent = demoBrowserClaimStatus();
   el.demoScopeStatus.textContent = 'No-op local';
+  renderMissionEditor();
   renderDemoMissionList();
   renderDemoRunHistory();
+  renderDemoScript();
+  renderRunNoteEditor();
   renderTimeline(el.demoTimeline, demo.timeline);
   el.demoEvidencePanel.innerHTML = demo.logs.map((item) => `
     <div class="demo-log-item">
@@ -962,7 +1092,12 @@ function renderDemoMissionList() {
     return `
       <button class="mission-list-item${active ? ' active' : ''}" type="button" data-demo-mission-id="${safeHtml(mission.id)}">
         <strong>${safeHtml(mission.title)}</strong>
-        <small>${safeHtml(created)} · ${runCount} ${runCount === 1 ? 'run' : 'runs'}</small>
+        <small>${safeHtml(mission.description || 'Demo local')}</small>
+        <span class="mission-list-meta">
+          <span>${safeHtml(created)}</span>
+          <span>${runCount} ${runCount === 1 ? 'run' : 'runs'}</span>
+          <span>${active ? 'activa' : 'ver'}</span>
+        </span>
       </button>`;
   }).join('');
   el.missionList.querySelectorAll('[data-demo-mission-id]').forEach((button) => {
@@ -978,13 +1113,55 @@ function renderDemoRunHistory() {
     const active = run.id === state.demo.selectedRunId;
     return `
       <button class="run-history-item${active ? ' active' : ''}" type="button" data-demo-run-id="${safeHtml(run.id)}">
-        <strong>${safeHtml(formatDemoDate(run.completedAt || run.startedAt))}</strong>
+        <strong>${safeHtml(run.note || 'Run demo local')}</strong>
         <small>${safeHtml(run.summary || run.result || 'Run demo local')}</small>
+        <span class="run-history-meta">
+          <span>${safeHtml(formatDemoDate(run.completedAt || run.startedAt))}</span>
+          <span>${safeHtml(formatDuration(run.durationMs))}</span>
+          <span>${Array.isArray(run.timeline) ? run.timeline.length : 0} eventos</span>
+          <span>${safeHtml(run.status || 'completed')}</span>
+          <span>Ver</span>
+        </span>
       </button>`;
   }).join('');
   el.demoRunHistory.querySelectorAll('[data-demo-run-id]').forEach((button) => {
     button.addEventListener('click', () => selectDemoRun(button.getAttribute('data-demo-run-id')));
   });
+}
+
+function renderMissionEditor() {
+  const mission = activeDemoMission();
+  const editing = Boolean(state.demo.editingMission && mission);
+  el.editMissionBtn.textContent = editing ? 'Editando' : 'Editar';
+  el.editMissionBtn.disabled = !mission;
+  el.missionEditFields.classList.toggle('hidden', !editing);
+  if (editing && document.activeElement !== el.editMissionTitleInput && document.activeElement !== el.editMissionDescriptionInput) {
+    el.editMissionTitleInput.value = mission.title;
+    el.editMissionDescriptionInput.value = mission.description || '';
+  }
+}
+
+function renderRunNoteEditor() {
+  const run = selectedDemoRun();
+  el.runNoteState.textContent = run ? 'run seleccionado' : 'sin run';
+  el.runNoteInput.disabled = !run;
+  el.saveRunNoteBtn.disabled = !run;
+  el.clearRunNoteBtn.disabled = !run;
+  if (!run) {
+    el.runNoteInput.value = '';
+    el.runNoteInput.placeholder = 'Ejecuta un run demo para agregar nota.';
+    return;
+  }
+  if (document.activeElement !== el.runNoteInput) {
+    el.runNoteInput.value = run.note || '';
+  }
+  el.runNoteInput.placeholder = run.note ? 'Editar nota del run' : 'Demo para video, prueba cliente, run de validación visual';
+}
+
+function renderDemoScript() {
+  el.demoScriptPanel.innerHTML = DEMO_SCRIPT_STEPS
+    .map((step) => `<li>${safeHtml(step)}</li>`)
+    .join('');
 }
 
 function demoHostStatus() {
@@ -1028,10 +1205,13 @@ function composeDemoTechnicalReport(store) {
     'NODAL OS — Demo local',
     `mission: ${demo.missionName}`,
     `mission_id: ${mission ? mission.id : 'none'}`,
+    `description: ${mission ? mission.description : 'pending'}`,
     `status: ${demo.statusLabel}`,
     `run_id: ${demo.runId || 'pending'}`,
+    `run_note: ${run && run.note ? run.note : 'sin nota'}`,
     `started_at: ${run ? run.startedAt : 'pending'}`,
     `completed_at: ${run ? run.completedAt : 'pending'}`,
+    `duration: ${run ? formatDuration(run.durationMs) : 'pending'}`,
     `command_kind: ${demo.commandKind}`,
     `result: ${demo.result}`,
     `evidence_ref: ${demo.evidenceRef}`,
@@ -1046,6 +1226,22 @@ function composeDemoTechnicalReport(store) {
   return lines.join('\n');
 }
 
+async function copyDemoScript() {
+  const mission = activeDemoMission();
+  const script = [
+    'NODAL OS — Demo script',
+    `Misión sugerida: ${mission ? mission.title : 'Nueva misión'}`,
+    ...DEMO_SCRIPT_STEPS.map((step, index) => `${index + 1}. ${step}`)
+  ].join('\n');
+  try {
+    await navigator.clipboard.writeText(script);
+    addLog('local', { kind: 'DemoScriptCopied', missionId: mission ? mission.id : 'none' });
+  } catch (error) {
+    addLog('local', { kind: 'DemoScriptCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
 function formatDemoDate(value) {
   if (!value) {
     return 'sin fecha';
@@ -1055,6 +1251,17 @@ function formatDemoDate(value) {
     return String(value);
   }
   return date.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+}
+
+function formatDuration(value) {
+  const duration = Number.isFinite(value) ? value : 0;
+  if (duration <= 0) {
+    return 'instantáneo';
+  }
+  if (duration < 1000) {
+    return `${duration} ms`;
+  }
+  return `${(duration / 1000).toFixed(1)} s`;
 }
 
 async function copyDemoReport() {

@@ -39,6 +39,7 @@
           <nav class="mission-side-nav" aria-label="Demo sections">
             <a href="#missionCreateForm">Misiones</a>
             <a href="#demoRunHistory">Historial</a>
+            <a href="#demoScriptPanel">Demo script</a>
             <a href="#demoTimeline">Timeline</a>
             <a href="#demoEvidencePanel">Evidence</a>
             <a href="#demoTechnicalReport">Report</a>
@@ -83,6 +84,25 @@
               </div>
               <div id="missionList" class="mission-list"></div>
             </section>
+          </section>
+
+          <section class="mission-editor-card" aria-labelledby="missionEditorTitle">
+            <div class="section-head">
+              <h2 id="missionEditorTitle">Misión activa</h2>
+              <button id="editMissionBtn" type="button">Editar</button>
+            </div>
+            <div id="missionEditFields" class="mission-edit-fields hidden">
+              <label for="editMissionTitleInput">Título</label>
+              <input id="editMissionTitleInput" maxlength="80">
+              <label for="editMissionDescriptionInput">Descripción</label>
+              <textarea id="editMissionDescriptionInput" rows="3" wrap="soft"></textarea>
+              <div class="control-row">
+                <button id="saveMissionBtn" class="primary" type="button">Guardar</button>
+                <button id="cancelMissionEditBtn" type="button">Cancelar</button>
+                <button id="deleteMissionBtn" class="danger" type="button">Borrar misión</button>
+              </div>
+              <p class="mission-help-text">Esto edita la misión demo local y sus runs asociados.</p>
+            </div>
           </section>
 
           <section class="mission-progress-card" aria-label="Demo progress">
@@ -152,6 +172,27 @@
                 <li>Seleccionar un run anterior y copiar resumen.</li>
               </ol>
             </article>
+          </section>
+
+          <section class="mission-script-card" aria-labelledby="demoScriptTitle">
+            <div class="section-head">
+              <h2 id="demoScriptTitle">Demo script</h2>
+              <button id="copyDemoScriptBtn" type="button">Copiar script</button>
+            </div>
+            <ol id="demoScriptPanel" class="demo-script-list"></ol>
+          </section>
+
+          <section class="mission-run-note-card" aria-labelledby="runNoteTitle">
+            <div class="section-head">
+              <h2 id="runNoteTitle">Nota del run</h2>
+              <span id="runNoteState" class="mission-chip">sin run</span>
+            </div>
+            <label for="runNoteInput">Título o nota corta</label>
+            <input id="runNoteInput" maxlength="90" placeholder="Demo para video, prueba cliente, run de validación visual">
+            <div class="control-row">
+              <button id="saveRunNoteBtn" class="primary" type="button">Guardar nota</button>
+              <button id="clearRunNoteBtn" type="button">Quitar nota</button>
+            </div>
           </section>
 
           <section class="mission-report-card" aria-labelledby="demoReportTitle">

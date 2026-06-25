@@ -331,6 +331,9 @@ main {
 .mission-progress-card,
 .mission-create-form,
 .mission-list-card,
+.mission-editor-card,
+.mission-script-card,
+.mission-run-note-card,
 .mission-timeline-card,
 .mission-evidence-card,
 .mission-report-card {
@@ -374,22 +377,30 @@ main {
 }
 
 .mission-create-form,
-.mission-list-card {
+.mission-list-card,
+.mission-editor-card,
+.mission-script-card,
+.mission-run-note-card {
   border: 1px solid rgba(159, 181, 204, 0.14);
   border-radius: 18px;
   background: rgba(13, 19, 27, 0.62);
 }
 
-.mission-create-form {
+.mission-create-form,
+.mission-edit-fields,
+.mission-run-note-card {
   display: grid;
   gap: 8px;
 }
 
-.mission-create-form label {
+.mission-create-form label,
+.mission-edit-fields label,
+.mission-run-note-card label {
   margin: 0;
 }
 
-.mission-create-form textarea {
+.mission-create-form textarea,
+.mission-edit-fields textarea {
   min-height: 74px;
 }
 
@@ -438,6 +449,41 @@ main {
 .run-history-item small {
   color: var(--nos-color-text-muted);
   font-size: 11px;
+}
+
+.mission-list-meta,
+.run-history-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mission-list-meta span,
+.run-history-meta span {
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: rgba(159, 181, 204, 0.1);
+  color: var(--nos-color-text-muted);
+  font-size: 10px;
+}
+
+.mission-help-text {
+  margin: 0;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+}
+
+.demo-script-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--nos-color-text-muted);
+}
+
+.demo-script-list li::marker {
+  color: var(--nos-color-accent);
+  font-weight: 900;
 }
 
 .mission-layout {

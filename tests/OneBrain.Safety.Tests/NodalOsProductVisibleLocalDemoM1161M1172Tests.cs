@@ -29,6 +29,18 @@ namespace OneBrain.Safety.Tests;
 [TestCategory("M1218")]
 [TestCategory("M1219")]
 [TestCategory("M1220")]
+[TestCategory("M1221")]
+[TestCategory("M1222")]
+[TestCategory("M1223")]
+[TestCategory("M1224")]
+[TestCategory("M1225")]
+[TestCategory("M1226")]
+[TestCategory("M1227")]
+[TestCategory("M1228")]
+[TestCategory("M1229")]
+[TestCategory("M1230")]
+[TestCategory("M1231")]
+[TestCategory("M1232")]
 [TestCategory("M1161M1172")]
 public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 {
@@ -37,6 +49,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     private const string SidepanelJsPath = "browser-extension/onebrain-chrome-lab/sidepanel.js";
     private const string ReportPath = "docs/reports/m1172-product-visible-local-demo-v0.md";
     private const string DemoV1ReportPath = "docs/reports/m1220-product-demo-v1-mission-creation-local-history.md";
+    private const string DemoV2ReportPath = "docs/reports/m1232-product-demo-v2-mission-editing-demo-recording.md";
 
     [TestMethod]
     public void MissionControlShellIsVisibleInOperateTab()
@@ -71,7 +84,10 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
             "missionCreateForm",
             "missionList",
             "demoRunHistory",
-            "demoRunCount"
+            "demoRunCount",
+            "missionEditFields",
+            "demoScriptPanel",
+            "runNoteInput"
         })
         {
             StringAssert.Contains(html, id);
@@ -82,6 +98,8 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(html, "Nueva misión");
         StringAssert.Contains(html, "Qué querés probar o avanzar");
         StringAssert.Contains(html, "Historial");
+        StringAssert.Contains(html, "Demo script");
+        StringAssert.Contains(html, "Nota del run");
     }
 
     [TestMethod]
@@ -97,6 +115,9 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(js, "SafeNoOp");
         StringAssert.Contains(js, "runSafeDemo()");
         StringAssert.Contains(js, "createMissionFromForm");
+        StringAssert.Contains(js, "saveMissionEdit");
+        StringAssert.Contains(js, "deleteActiveMission");
+        StringAssert.Contains(js, "saveRunNote");
         StringAssert.Contains(js, "selectDemoRun");
         StringAssert.Contains(js, "EvidenceProjection");
         StringAssert.Contains(js, "Completed with no side effects");
@@ -141,6 +162,9 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(css, ".mission-sidebar");
         StringAssert.Contains(css, ".mission-run-button");
         StringAssert.Contains(css, ".mission-workbench");
+        StringAssert.Contains(css, ".mission-editor-card");
+        StringAssert.Contains(css, ".mission-script-card");
+        StringAssert.Contains(css, ".mission-run-note-card");
         StringAssert.Contains(css, ".run-history-list");
         StringAssert.Contains(css, ".mission-timeline");
         StringAssert.Contains(css, ".technical-report");
@@ -197,6 +221,28 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     }
 
     [TestMethod]
+    public void DemoV2SupportsMissionEditingDeleteRunNotesAndDemoScript()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var js = ReadRepoText(SidepanelJsPath);
+
+        StringAssert.Contains(html, "editMissionBtn");
+        StringAssert.Contains(html, "saveMissionBtn");
+        StringAssert.Contains(html, "cancelMissionEditBtn");
+        StringAssert.Contains(html, "deleteMissionBtn");
+        StringAssert.Contains(html, "saveRunNoteBtn");
+        StringAssert.Contains(html, "clearRunNoteBtn");
+        StringAssert.Contains(html, "copyDemoScriptBtn");
+        StringAssert.Contains(js, "schemaVersion: 2");
+        StringAssert.Contains(js, "DEMO_SCRIPT_STEPS");
+        StringAssert.Contains(js, "copyDemoScript");
+        StringAssert.Contains(js, "renderDemoScript()");
+        StringAssert.Contains(js, "renderRunNoteEditor()");
+        StringAssert.Contains(js, "formatDuration");
+        StringAssert.Contains(js, "run.note");
+    }
+
+    [TestMethod]
     public void DemoV1ReportDocumentsMissionHistoryAndHowToTryIt()
     {
         var report = ReadRepoText(DemoV1ReportPath);
@@ -207,6 +253,19 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(report, "Run demo");
         StringAssert.Contains(report, "Historial");
         StringAssert.Contains(report, "Copiar resumen");
+    }
+
+    [TestMethod]
+    public void DemoV2ReportDocumentsEditingNotesAndRecordingFlow()
+    {
+        var report = ReadRepoText(DemoV2ReportPath);
+
+        StringAssert.Contains(report, "Product Demo v2");
+        StringAssert.Contains(report, "Editar misión");
+        StringAssert.Contains(report, "Borrar misión");
+        StringAssert.Contains(report, "Nota del run");
+        StringAssert.Contains(report, "Demo script");
+        StringAssert.Contains(report, "Copiar script");
     }
 
     private static string ExtractFunctionBody(string source, string functionName)
