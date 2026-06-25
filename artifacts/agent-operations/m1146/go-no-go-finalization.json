@@ -1,0 +1,33 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1146",
+  "go": [
+    "plan revalidation",
+    "schema consistency revalidation",
+    "threshold integrity revalidation",
+    "eligibility revalidation",
+    "claim guard revalidation",
+    "runbook revalidation",
+    "future execution eligibility matrix",
+    "abort matrix",
+    "next path decision"
+  ],
+  "no_go": [
+    "manual QA execution",
+    "safe evidence capture real",
+    "runtime real",
+    "PC Commander real",
+    "provider/cloud",
+    "filesystem/browser/capability",
+    "product files",
+    "Bridge/CSP",
+    "release/store",
+    "suite-clean claim",
+    "confidence above 95 claim",
+    "caveat-resolved claim"
+  ],
+  "decision": "BROWSERRUNTIMESMOKE_REPEATABILITY_EVIDENCE_PLAN_REVALIDATED_WITH_EXTERNAL_SMOKE_CAVEAT",
+  "resolution_eligibility": "NOT_ELIGIBLE_EVIDENCE_PENDING",
+  "caveat_resolved": false,
+  "confidence": 95
+}

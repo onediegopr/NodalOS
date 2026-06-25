@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1143",
+  "future_execution_phrase_required": "EXECUTE_BROWSERRUNTIME_REPEATABILITY_EVIDENCE_COLLECTION_ONLY",
+  "phrase_present_in_current_user_request": false,
+  "future_execution_status": "NOT_REQUESTED",
+  "default_next_block": "plan-only/revalidation-only",
+  "if_phrase_absent": {
+    "future_execution_status": "NOT_REQUESTED",
+    "next_block": "M1149-M1160 - Repeatability Evidence Plan Hold + Operator/Execution Request Gate"
+  },
+  "if_phrase_present_in_future": {
+    "allowed_scope": [
+      "BrowserRuntimeSmoke repeatability evidence collection commands",
+      "read-only validation summaries",
+      "scans already scoped to safety boundary"
+    ],
+    "still_forbidden": [
+      "product changes",
+      "Bridge/CSP changes",
+      "runtime unlock",
+      "manual QA",
+      "arbitrary shell",
+      "cleanup mutation",
+      "process kill",
+      "release/store"
+    ]
+  },
+  "manual_qa_execution": "NO-GO",
+  "runtime_real": "NO-GO"
+}

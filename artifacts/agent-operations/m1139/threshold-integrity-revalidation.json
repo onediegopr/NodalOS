@@ -1,0 +1,27 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1139",
+  "threshold_status": "REVALIDATED",
+  "required_threshold": {
+    "consecutive_isolated_browserruntime_runs": 3,
+    "isolated_run_required_counts": "30 passed / 0 skipped / 0 failed / 0 inconclusive",
+    "gate9_required_status": "CLEAN",
+    "websocket_aborted_allowed": false,
+    "full_safety_required": "clean without external caveat",
+    "full_suite_required": "suite-clean without external caveat",
+    "product_bridge_csp_scan_required": true,
+    "leak_scan_required": true,
+    "false_clean_claim_scan_required": true,
+    "formal_review_required": true
+  },
+  "latest_observed_single_clean_isolated_run": {
+    "status": "POSITIVE_EVIDENCE_ONLY",
+    "insufficient_for_resolution": true
+  },
+  "latest_observed_full_suite_pass": {
+    "status": "POSITIVE_EVIDENCE_ONLY",
+    "insufficient_for_resolution": true
+  },
+  "resolution_eligibility": "NOT_ELIGIBLE_EVIDENCE_PENDING",
+  "confidence": 95
+}

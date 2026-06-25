@@ -1,0 +1,31 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1142",
+  "runbook_status": "PLAN_ONLY_REVALIDATED",
+  "execution_started": false,
+  "evidence_collection_executed": false,
+  "allowed_future_steps": [
+    "confirm branch/head/worktree",
+    "run isolated BrowserRuntimeSmoke 3 times only when explicitly requested",
+    "record counts",
+    "run full safety",
+    "run recipes",
+    "run full suite general",
+    "run JSON parse",
+    "run leak scan",
+    "run false-clean scan",
+    "update formal review checklist"
+  ],
+  "forbidden_actions": [
+    "manual QA real",
+    "runtime real",
+    "PC Commander real",
+    "product/Bridge/CSP modification",
+    "filesystem cleanup",
+    "process kill",
+    "secret/log dumping",
+    "release/store claim"
+  ],
+  "operator_confirmation": "OPERATOR_CONFIRMATION_PENDING",
+  "safe_evidence_capture": "NOT_STARTED"
+}
