@@ -615,6 +615,83 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     }
 
     [TestMethod]
+    public void ChangeCandidatePreviewIsVisibleReviewableAndReadOnly()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var js = ReadRepoText(SidepanelJsPath);
+        var css = ReadRepoText(SidepanelCssPath);
+
+        foreach (var expected in new[]
+        {
+            "changeCandidateCard",
+            "Cambios candidatos",
+            "Generar candidatos",
+            "Regenerar candidatos",
+            "Copiar candidatos",
+            "Marcar revisados",
+            "Limpiar candidatos"
+        })
+        {
+            StringAssert.Contains(html, expected);
+        }
+
+        foreach (var expected in new[]
+        {
+            "normalizeChangeCandidate",
+            "generateReadOnlyChangeCandidates",
+            "renderChangeCandidates",
+            "copyChangeCandidates",
+            "markChangeCandidatesReviewed",
+            "buildChangeCandidateSummary",
+            "patchGenerated: false",
+            "diffGenerated: false",
+            "executionReady: false",
+            "commandsExecuted: false",
+            "filesModified: false",
+            "Cambios candidatos incluidos"
+        })
+        {
+            StringAssert.Contains(js, expected);
+        }
+
+        StringAssert.Contains(css, ".change-candidate-card");
+        StringAssert.Contains(css, ".change-candidate-item");
+        StringAssert.Contains(css, ".change-candidate-flags");
+    }
+
+    [TestMethod]
+    public void ChangeCandidatePreviewDoesNotAddDiffPatchExecutionOrWrites()
+    {
+        var js = ReadRepoText(SidepanelJsPath);
+        var candidateStart = js.IndexOf("function renderChangeCandidates", StringComparison.Ordinal);
+        var candidateEnd = js.IndexOf("function renderWorkspaceUnderstanding", StringComparison.Ordinal);
+
+        Assert.IsTrue(candidateStart >= 0, "Candidate preview block should exist.");
+        Assert.IsTrue(candidateEnd > candidateStart, "Candidate preview block should end before Workspace Understanding.");
+        var candidateJs = js[candidateStart..candidateEnd];
+
+        foreach (var forbidden in new[]
+        {
+            "fetch(",
+            "XMLHttpRequest",
+            "WebSocket",
+            "createWritable(",
+            "removeEntry(",
+            "post(",
+            "chrome.scripting.executeScript"
+        })
+        {
+            Assert.IsFalse(candidateJs.Contains(forbidden, StringComparison.Ordinal), forbidden);
+        }
+
+        StringAssert.Contains(js, "run.changeCandidates");
+        StringAssert.Contains(js, "candidate_diff_generated:");
+        StringAssert.Contains(js, "candidate_patch_generated:");
+        StringAssert.Contains(js, "candidate_commands_executed:");
+        StringAssert.Contains(js, "candidate_files_modified:");
+    }
+
+    [TestMethod]
     public void WorkspaceContextContractIsMetadataOnlyAndReadOnly()
     {
         var js = ReadRepoText(SidepanelJsPath);

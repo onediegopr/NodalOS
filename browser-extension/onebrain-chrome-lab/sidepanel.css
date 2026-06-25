@@ -422,6 +422,16 @@ main {
     rgba(10, 15, 22, 0.74);
 }
 
+.change-candidate-card {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(255, 211, 122, 0.22);
+  background:
+    radial-gradient(circle at 100% 100%, rgba(255, 211, 122, 0.15), transparent 34%),
+    linear-gradient(135deg, rgba(102, 227, 196, 0.08), transparent 48%),
+    rgba(10, 15, 22, 0.74);
+}
+
 .mission-plan-head {
   align-items: flex-start;
   justify-content: space-between;
@@ -432,17 +442,25 @@ main {
   justify-content: space-between;
 }
 
+.change-candidate-head {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
 .mission-plan-actions,
 .mission-plan-chips,
 .mission-proposal-actions,
-.mission-proposal-flags {
+.mission-proposal-flags,
+.change-candidate-actions,
+.change-candidate-flags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 .mission-plan-chips span,
-.mission-proposal-flags span {
+.mission-proposal-flags span,
+.change-candidate-flags span {
   border: 1px solid rgba(159, 181, 204, 0.12);
   border-radius: 999px;
   padding: 6px 9px;
@@ -450,6 +468,11 @@ main {
   color: var(--nos-color-text-muted);
   font-size: 11px;
   font-weight: 800;
+}
+
+.change-candidate-flags span {
+  background: rgba(255, 211, 122, 0.1);
+  color: #FFE8A6;
 }
 
 .mission-proposal-summary {
@@ -471,6 +494,70 @@ main {
   color: var(--nos-color-text-muted);
   font-size: 12px;
   line-height: 1.5;
+}
+
+.change-candidate-summary {
+  border: 1px solid rgba(255, 211, 122, 0.16);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(6, 10, 15, 0.36);
+}
+
+.change-candidate-summary strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--nos-color-text);
+  font-size: 14px;
+}
+
+.change-candidate-summary p {
+  margin: 0;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.change-candidate-list {
+  display: grid;
+  gap: 8px;
+}
+
+.change-candidate-item {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(159, 181, 204, 0.12);
+  border-radius: 15px;
+  padding: 11px;
+  background: rgba(6, 10, 15, 0.34);
+}
+
+.change-candidate-item strong {
+  color: var(--nos-color-text);
+  font-size: 13px;
+}
+
+.change-candidate-item p {
+  margin: 0;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.change-candidate-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.change-candidate-meta span {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: rgba(255, 211, 122, 0.1);
+  color: #FFE8A6;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .mission-proposal-details {

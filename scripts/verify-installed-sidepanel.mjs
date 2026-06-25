@@ -385,6 +385,41 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
     const generate = document.getElementById('generateProposalBtn');
     const copy = document.getElementById('copyProposalBtn');
     const review = document.getElementById('reviewProposalBtn');
+    if (generate) generate.click();
+    if (copy) copy.click();
+    if (review) review.click();
+    return true;
+  })()`);
+  await delay(400);
+  const candidateClearState = await evaluate(sidepanel, `(async () => {
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const generate = document.getElementById('generateCandidatesBtn');
+    const copy = document.getElementById('copyCandidatesBtn');
+    const review = document.getElementById('reviewCandidatesBtn');
+    const clear = document.getElementById('clearCandidatesBtn');
+    if (generate) generate.click();
+    await delay(250);
+    if (copy) copy.click();
+    await delay(150);
+    if (review) review.click();
+    await delay(150);
+    if (clear) clear.click();
+    await delay(250);
+    const missionStore = JSON.parse(localStorage.getItem('nodal-os.demoMissions.v1') || '{}');
+    const mission = Array.isArray(missionStore.missions) ? missionStore.missions.find((item) => item.id === missionStore.activeMissionId) || missionStore.missions[0] : null;
+    return {
+      generateButtonPresent: Boolean(generate),
+      copyButtonPresent: Boolean(copy),
+      reviewButtonPresent: Boolean(review),
+      clearButtonPresent: Boolean(clear),
+      candidatesCleared: Boolean(mission && Array.isArray(mission.changeCandidates) && mission.changeCandidates.length === 0),
+      candidateText: document.getElementById('changeCandidateCard') ? document.getElementById('changeCandidateCard').innerText.slice(0, 500) : ''
+    };
+  })()`);
+  await evaluate(sidepanel, `(() => {
+    const generate = document.getElementById('generateCandidatesBtn');
+    const copy = document.getElementById('copyCandidatesBtn');
+    const review = document.getElementById('reviewCandidatesBtn');
     const run = document.getElementById('runSafeDemoBtn');
     if (generate) generate.click();
     if (copy) copy.click();
@@ -412,6 +447,8 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
     const runPlan = selectedRun && selectedRun.plan ? selectedRun.plan : null;
     const proposal = mission && mission.proposal ? mission.proposal : null;
     const runProposal = selectedRun && selectedRun.proposal ? selectedRun.proposal : null;
+    const candidates = mission && Array.isArray(mission.changeCandidates) ? mission.changeCandidates : [];
+    const runCandidates = selectedRun && Array.isArray(selectedRun.changeCandidates) ? selectedRun.changeCandidates : [];
     return {
       ok: Boolean(
         workspace
@@ -446,6 +483,20 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
         && ${JSON.stringify(proposalClearState)}.reviewButtonPresent === true
         && ${JSON.stringify(proposalClearState)}.clearButtonPresent === true
         && ${JSON.stringify(proposalClearState)}.proposalCleared === true
+        && candidates.length >= 2
+        && candidates.every((candidate) => candidate.status === 'Revisado')
+        && candidates.every((candidate) => candidate.readOnly === true)
+        && candidates.every((candidate) => candidate.diffGenerated === false)
+        && candidates.every((candidate) => candidate.patchGenerated === false)
+        && candidates.every((candidate) => candidate.commandsExecuted === false)
+        && candidates.every((candidate) => candidate.filesModified === false)
+        && runCandidates.length >= 2
+        && runCandidates.every((candidate) => candidate.patchGenerated === false)
+        && ${JSON.stringify(candidateClearState)}.generateButtonPresent === true
+        && ${JSON.stringify(candidateClearState)}.copyButtonPresent === true
+        && ${JSON.stringify(candidateClearState)}.reviewButtonPresent === true
+        && ${JSON.stringify(candidateClearState)}.clearButtonPresent === true
+        && ${JSON.stringify(candidateClearState)}.candidatesCleared === true
         && evidenceText.includes('No se ejecutaron comandos')
         && evidenceText.includes('No se modificaron archivos')
       ),
@@ -472,6 +523,10 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
       proposalStatus: proposal ? proposal.status : '',
       proposalClearState: ${JSON.stringify(proposalClearState)},
       proposalText: document.getElementById('missionProposalCard') ? document.getElementById('missionProposalCard').innerText.slice(0, 900) : '',
+      candidateCount: candidates.length,
+      runCandidateCount: runCandidates.length,
+      candidateClearState: ${JSON.stringify(candidateClearState)},
+      candidateText: document.getElementById('changeCandidateCard') ? document.getElementById('changeCandidateCard').innerText.slice(0, 900) : '',
       taskGraphText: document.getElementById('missionTaskGraph') ? document.getElementById('missionTaskGraph').innerText.slice(0, 900) : '',
       planContextText: document.getElementById('missionPlanContext') ? document.getElementById('missionPlanContext').innerText : '',
       runHasPlan: Boolean(runPlan),
@@ -481,6 +536,11 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
       proposalDiffGenerated: proposal ? proposal.diffGenerated === true : null,
       proposalCommandsExecuted: proposal ? proposal.commandsExecuted === true : null,
       proposalFilesModified: proposal ? proposal.filesModified === true : null,
+      candidatesReadOnly: candidates.every((candidate) => candidate.readOnly === true),
+      candidatesDiffGenerated: candidates.some((candidate) => candidate.diffGenerated === true),
+      candidatesPatchGenerated: candidates.some((candidate) => candidate.patchGenerated === true),
+      candidatesCommandsExecuted: candidates.some((candidate) => candidate.commandsExecuted === true),
+      candidatesFilesModified: candidates.some((candidate) => candidate.filesModified === true),
       readOnly: context.readOnly === true,
       commandsExecuted: context.commandsExecuted === true,
       filesModified: context.filesModified === true

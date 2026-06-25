@@ -65,6 +65,14 @@ const PROPOSAL_STATUS = {
   needsContext: 'Requiere contexto',
   reviewed: 'Revisado'
 };
+const CHANGE_CANDIDATE_STATUS = {
+  candidate: 'Candidato',
+  reviewing: 'En revisión',
+  reviewed: 'Revisado',
+  needsContext: 'Necesita contexto',
+  discarded: 'Descartado'
+};
+const CHANGE_CANDIDATE_LIMITS = { min: 2, max: 6 };
 const DEMO_SCRIPT_STEPS = [
   'Abrí NODAL OS y presentá Mission Control como centro de misiones locales.',
   'Creá una misión corta para mostrar que el flujo empieza desde una intención simple.',
@@ -229,6 +237,15 @@ const el = {
   missionProposalFlags: document.getElementById('missionProposalFlags'),
   missionProposalSummary: document.getElementById('missionProposalSummary'),
   missionProposalDetails: document.getElementById('missionProposalDetails'),
+  generateCandidatesBtn: document.getElementById('generateCandidatesBtn'),
+  regenerateCandidatesBtn: document.getElementById('regenerateCandidatesBtn'),
+  copyCandidatesBtn: document.getElementById('copyCandidatesBtn'),
+  reviewCandidatesBtn: document.getElementById('reviewCandidatesBtn'),
+  clearCandidatesBtn: document.getElementById('clearCandidatesBtn'),
+  changeCandidateContext: document.getElementById('changeCandidateContext'),
+  changeCandidateFlags: document.getElementById('changeCandidateFlags'),
+  changeCandidateSummary: document.getElementById('changeCandidateSummary'),
+  changeCandidateList: document.getElementById('changeCandidateList'),
   runSafeDemoBtn: document.getElementById('runSafeDemoBtn'),
   copyDemoReportBtn: document.getElementById('copyDemoReportBtn'),
   demoRunState: document.getElementById('demoRunState'),
@@ -413,6 +430,11 @@ function bindEvents() {
   el.copyProposalBtn.addEventListener('click', copyProposal);
   el.reviewProposalBtn.addEventListener('click', markProposalReviewed);
   el.clearProposalBtn.addEventListener('click', clearProposal);
+  el.generateCandidatesBtn.addEventListener('click', generateChangeCandidates);
+  el.regenerateCandidatesBtn.addEventListener('click', regenerateChangeCandidates);
+  el.copyCandidatesBtn.addEventListener('click', copyChangeCandidates);
+  el.reviewCandidatesBtn.addEventListener('click', markChangeCandidatesReviewed);
+  el.clearCandidatesBtn.addEventListener('click', clearChangeCandidates);
   el.runSafeDemoBtn.addEventListener('click', runSafeDemo);
   el.copyDemoReportBtn.addEventListener('click', copyDemoReport);
   el.copyDemoScriptBtn.addEventListener('click', copyDemoScript);
@@ -1182,7 +1204,8 @@ function createMissionRecord(title, description, createdAt = new Date().toISOStr
     workspace: null,
     missionContext: null,
     plan: null,
-    proposal: null
+    proposal: null,
+    changeCandidates: []
   };
 }
 
@@ -1204,7 +1227,8 @@ function normalizeMissionRecord(mission) {
     workspace: normalizeMissionWorkspaceSummary(mission.workspace),
     missionContext: normalizeMissionContext(mission.missionContext),
     plan: normalizeMissionPlan(mission.plan),
-    proposal: normalizeMissionProposal(mission.proposal)
+    proposal: normalizeMissionProposal(mission.proposal),
+    changeCandidates: normalizeChangeCandidates(mission.changeCandidates)
   };
 }
 
@@ -1357,6 +1381,71 @@ function normalizeProposalStatus(status) {
   return PROPOSAL_STATUS.draft;
 }
 
+function normalizeChangeCandidates(candidates) {
+  return Array.isArray(candidates)
+    ? candidates.map(normalizeChangeCandidate).filter(Boolean).slice(0, CHANGE_CANDIDATE_LIMITS.max)
+    : [];
+}
+
+function normalizeChangeCandidate(candidate) {
+  if (!candidate || typeof candidate !== 'object') {
+    return null;
+  }
+  return {
+    candidateId: String(candidate.candidateId || `candidate-${Date.now().toString(36)}`),
+    proposalId: String(candidate.proposalId || ''),
+    missionId: String(candidate.missionId || ''),
+    sourceTaskId: String(candidate.sourceTaskId || ''),
+    title: String(candidate.title || 'Cambio candidato'),
+    area: sanitizeCandidateTarget(candidate.area || 'Área por revisar'),
+    likelyTarget: sanitizeCandidateTarget(candidate.likelyTarget || 'sin objetivo específico'),
+    targetKind: normalizeCandidateTargetKind(candidate.targetKind),
+    intent: String(candidate.intent || 'Preparar revisión futura.'),
+    reason: String(candidate.reason || 'Derivado de propuesta y TaskGraph local.'),
+    evidenceRefs: normalizeWorkspaceTextList(candidate.evidenceRefs).slice(0, 8),
+    workspaceSignals: normalizeWorkspaceTextList(candidate.workspaceSignals).slice(0, 8),
+    riskLevel: normalizeCandidateRisk(candidate.riskLevel),
+    humanReviewNeeded: candidate.humanReviewNeeded !== false,
+    status: normalizeCandidateStatus(candidate.status),
+    readOnly: candidate.readOnly !== false,
+    diffGenerated: candidate.diffGenerated === true,
+    patchGenerated: candidate.patchGenerated === true,
+    commandsExecuted: candidate.commandsExecuted === true,
+    filesModified: candidate.filesModified === true,
+    executionReady: candidate.executionReady === true
+  };
+}
+
+function normalizeCandidateStatus(status) {
+  const value = String(status || CHANGE_CANDIDATE_STATUS.candidate).toLowerCase();
+  if (value === CHANGE_CANDIDATE_STATUS.reviewing.toLowerCase() || value === 'reviewing') return CHANGE_CANDIDATE_STATUS.reviewing;
+  if (value === CHANGE_CANDIDATE_STATUS.reviewed.toLowerCase() || value === 'reviewed') return CHANGE_CANDIDATE_STATUS.reviewed;
+  if (value === CHANGE_CANDIDATE_STATUS.needsContext.toLowerCase() || value === 'needs-context') return CHANGE_CANDIDATE_STATUS.needsContext;
+  if (value === CHANGE_CANDIDATE_STATUS.discarded.toLowerCase() || value === 'discarded') return CHANGE_CANDIDATE_STATUS.discarded;
+  return CHANGE_CANDIDATE_STATUS.candidate;
+}
+
+function normalizeCandidateTargetKind(kind) {
+  const value = String(kind || '').toLowerCase();
+  if (['archivo probable', 'carpeta probable', 'documentación', 'test/validación', 'configuración', 'ui', 'unknown'].includes(value)) {
+    return value;
+  }
+  return 'unknown';
+}
+
+function normalizeCandidateRisk(risk) {
+  const value = String(risk || 'bajo').toLowerCase();
+  return ['bajo', 'medio', 'alto'].includes(value) ? value : 'bajo';
+}
+
+function sanitizeCandidateTarget(value) {
+  const target = String(value || '').trim();
+  if (!target || isWorkspaceProtectedPath(target)) {
+    return 'sin objetivo específico';
+  }
+  return target;
+}
+
 function normalizeRunRecord(run) {
   if (!run || typeof run !== 'object') {
     return null;
@@ -1377,7 +1466,8 @@ function normalizeRunRecord(run) {
     summary: run.summary || 'Run demo no-op completado.',
     missionContext: normalizeMissionContext(run.missionContext),
     plan: normalizeMissionPlan(run.plan),
-    proposal: normalizeMissionProposal(run.proposal)
+    proposal: normalizeMissionProposal(run.proposal),
+    changeCandidates: normalizeChangeCandidates(run.changeCandidates)
   };
 }
 
@@ -1478,6 +1568,8 @@ function saveMissionEdit() {
   mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
   mission.plan = generateMissionPlanSkeleton(mission);
   mission.proposal = null;
+  mission.changeCandidates = [];
+  mission.changeCandidates = [];
   mission.updatedAt = new Date().toISOString();
   state.demo.editingMission = false;
   syncDemoViewFromStore();
@@ -1597,6 +1689,7 @@ function runSafeDemo() {
   mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext;
   const plan = ensureMissionPlan(mission);
   const proposal = mission.proposal || null;
+  const changeCandidates = normalizeChangeCandidates(mission.changeCandidates);
   const now = new Date();
   const iso = now.toISOString();
   const runId = `demo-${now.getTime().toString(36)}`;
@@ -1631,6 +1724,14 @@ function runSafeDemo() {
       'ProposalDraft',
       `proposal:${proposal.proposalId}`));
   }
+  if (changeCandidates.length) {
+    timeline.splice(timeline.length - 1, 0, demoTimelineStep(
+      'Cambios candidatos incluidos',
+      `${changeCandidates.length} candidatos quedaron listos para revisión humana futura.`,
+      'evidence-ready',
+      'ChangeCandidatePreview',
+      `candidates:${runId}`));
+  }
   const logs = [
     { label: 'run id', value: runId },
     { label: 'mission', value: mission.title },
@@ -1638,6 +1739,7 @@ function runSafeDemo() {
     { label: 'plan tasks', value: plan ? String(plan.tasks.length) : '0' },
     { label: 'proposal', value: proposal ? proposal.status : 'sin propuesta' },
     { label: 'proposal tasks', value: proposal ? String(proposal.tasks.length) : '0' },
+    { label: 'change candidates', value: String(changeCandidates.length) },
     { label: 'command kind', value: 'SafeNoOp' },
     { label: 'result', value: 'Completed with no side effects' },
     { label: 'timestamp', value: iso },
@@ -1659,7 +1761,8 @@ function runSafeDemo() {
     summary: `${mission.title}: run demo no-op completado.`,
     missionContext: mission.missionContext || null,
     plan: plan || null,
-    proposal: proposal || null
+    proposal: proposal || null,
+    changeCandidates
   };
   mission.status = 'completed';
   mission.runs.unshift(run);
@@ -1714,6 +1817,7 @@ function renderDemoMissionControl() {
   renderRunNoteEditor();
   renderMissionPlan();
   renderMissionProposal();
+  renderChangeCandidates();
   renderTimeline(el.demoTimeline, demo.timeline);
   el.demoEvidencePanel.innerHTML = demo.logs.map((item) => `
     <div class="demo-log-item">
@@ -1811,6 +1915,7 @@ function clearMissionPlan() {
   }
   mission.plan = null;
   mission.proposal = null;
+  mission.changeCandidates = [];
   mission.updatedAt = new Date().toISOString();
   syncDemoViewFromStore();
   saveDemoStore();
@@ -1921,6 +2026,7 @@ function generateProposal() {
   mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext || null;
   mission.plan = ensureMissionPlan(mission);
   mission.proposal = generateMissionProposalDraft(mission);
+  mission.changeCandidates = [];
   mission.updatedAt = new Date().toISOString();
   syncDemoViewFromStore();
   saveDemoStore();
@@ -1963,6 +2069,7 @@ function clearProposal() {
     return;
   }
   mission.proposal = null;
+  mission.changeCandidates = [];
   mission.updatedAt = new Date().toISOString();
   syncDemoViewFromStore();
   saveDemoStore();
@@ -1997,6 +2104,159 @@ function buildProposalSummary(mission = activeDemoMission()) {
     `commands_executed: ${proposal.commandsExecuted === true}`,
     `files_modified: ${proposal.filesModified === true}`,
     `execution_ready: ${proposal.executionReady === true}`
+  ].join('\n');
+}
+
+function renderChangeCandidates() {
+  const mission = activeDemoMission();
+  const candidates = mission ? normalizeChangeCandidates(mission.changeCandidates) : [];
+  el.generateCandidatesBtn.disabled = !mission;
+  el.regenerateCandidatesBtn.disabled = !mission;
+  el.copyCandidatesBtn.disabled = !mission || !candidates.length;
+  el.reviewCandidatesBtn.disabled = !mission || !candidates.length || candidates.every((candidate) => candidate.status === CHANGE_CANDIDATE_STATUS.reviewed);
+  el.clearCandidatesBtn.disabled = !mission || !candidates.length;
+  el.changeCandidateContext.textContent = mission
+    ? changeCandidateContextLabel(mission, candidates)
+    : 'Convertí la propuesta en cambios candidatos para revisar, sin diff ni patch.';
+  const flags = candidates.length
+    ? changeCandidateFlags(candidates)
+    : ['Sin candidatos', 'Solo lectura', 'Sin diff', 'Sin patch', 'Sin ejecución'];
+  el.changeCandidateFlags.innerHTML = flags.map((flag) => `<span>${safeHtml(flag)}</span>`).join('');
+  if (!candidates.length) {
+    el.changeCandidateSummary.innerHTML = '<strong>Sin candidatos todavía</strong><p>Usá Generar candidatos para preparar una vista revisable, sin cambios en archivos.</p>';
+    el.changeCandidateList.innerHTML = '';
+    return;
+  }
+  el.changeCandidateSummary.innerHTML = `
+    <strong>${candidates.length} cambios candidatos</strong>
+    <p>Vista previa local para decidir qué revisar después. No se generó diff ni patch.</p>`;
+  el.changeCandidateList.innerHTML = candidates.map((candidate, index) => `
+    <article class="change-candidate-item">
+      <div class="change-candidate-meta">
+        <span>${index + 1}</span>
+        <span>${safeHtml(candidate.status)}</span>
+        <span>${safeHtml(candidate.targetKind)}</span>
+        <span>Riesgo ${safeHtml(candidate.riskLevel)}</span>
+      </div>
+      <strong>${safeHtml(candidate.title)}</strong>
+      <p><b>Área:</b> ${safeHtml(candidate.area)} · <b>Objetivo probable:</b> ${safeHtml(candidate.likelyTarget)}</p>
+      <p>${safeHtml(candidate.reason)}</p>
+      <p><b>Revisión humana:</b> ${candidate.humanReviewNeeded ? 'requerida antes de cualquier diff futuro' : 'no marcada'}</p>
+    </article>`).join('');
+}
+
+function changeCandidateContextLabel(mission, candidates) {
+  if (!candidates.length) {
+    return `${mission.title} puede convertir su propuesta en candidatos read-only.`;
+  }
+  return `${mission.title} tiene ${candidates.length} candidatos para revisión futura.`;
+}
+
+function changeCandidateFlags(candidates) {
+  return [
+    `${candidates.length} candidatos`,
+    'Solo lectura',
+    candidates.some((candidate) => candidate.diffGenerated) ? 'Diff generado' : 'Sin diff',
+    candidates.some((candidate) => candidate.patchGenerated) ? 'Patch generado' : 'Sin patch',
+    candidates.some((candidate) => candidate.commandsExecuted) ? 'Con comandos' : 'Sin ejecución',
+    candidates.some((candidate) => candidate.filesModified) ? 'Con modificaciones' : 'No se modificaron archivos'
+  ];
+}
+
+function generateChangeCandidates() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
+  mission.missionContext = buildMissionWorkspaceContext(mission) || mission.missionContext || null;
+  mission.plan = ensureMissionPlan(mission);
+  if (!mission.proposal) {
+    mission.proposal = generateMissionProposalDraft(mission);
+  }
+  mission.changeCandidates = generateReadOnlyChangeCandidates(mission);
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'ChangeCandidatesGenerated', missionId: mission.id, candidates: mission.changeCandidates.length });
+  render();
+}
+
+function regenerateChangeCandidates() {
+  generateChangeCandidates();
+}
+
+async function copyChangeCandidates() {
+  const summary = buildChangeCandidateSummary();
+  try {
+    await navigator.clipboard.writeText(summary);
+    addLog('local', { kind: 'ChangeCandidatesCopied', missionId: activeDemoMission() ? activeDemoMission().id : 'none' });
+  } catch (error) {
+    addLog('local', { kind: 'ChangeCandidatesCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
+function markChangeCandidatesReviewed() {
+  const mission = activeDemoMission();
+  if (!mission || !mission.changeCandidates || !mission.changeCandidates.length) {
+    return;
+  }
+  mission.changeCandidates = mission.changeCandidates.map((candidate) => normalizeChangeCandidate({
+    ...candidate,
+    status: CHANGE_CANDIDATE_STATUS.reviewed
+  })).filter(Boolean);
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'ChangeCandidatesReviewed', missionId: mission.id, candidates: mission.changeCandidates.length });
+  render();
+}
+
+function clearChangeCandidates() {
+  const mission = activeDemoMission();
+  if (!mission || !mission.changeCandidates || !mission.changeCandidates.length) {
+    return;
+  }
+  mission.changeCandidates = [];
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'ChangeCandidatesCleared', missionId: mission.id });
+  render();
+}
+
+function buildChangeCandidateSummary(mission = activeDemoMission()) {
+  if (!mission) {
+    return 'NODAL OS — Cambios candidatos\nmission: none';
+  }
+  const candidates = mission.changeCandidates && mission.changeCandidates.length
+    ? normalizeChangeCandidates(mission.changeCandidates)
+    : generateReadOnlyChangeCandidates(mission);
+  const proposal = mission.proposal || generateMissionProposalDraft(mission);
+  const context = mission.missionContext || buildMissionWorkspaceContext(mission);
+  return [
+    'NODAL OS — Cambios candidatos',
+    `mission: ${mission.title}`,
+    `mission_id: ${mission.id}`,
+    `workspace: ${context && context.workspaceName ? context.workspaceName : 'sin workspace'}`,
+    `workspace_source: ${context && context.workspaceSource ? context.workspaceSource : 'sin origen'}`,
+    `proposal_id: ${proposal ? proposal.proposalId : 'sin propuesta'}`,
+    `candidate_count: ${candidates.length}`,
+    ...candidates.map((candidate, index) => [
+      `${index + 1}. ${candidate.title}`,
+      `   area: ${candidate.area}`,
+      `   likely_target: ${candidate.likelyTarget}`,
+      `   target_kind: ${candidate.targetKind}`,
+      `   reason: ${candidate.reason}`,
+      `   risk: ${candidate.riskLevel}`,
+      `   human_review_needed: ${candidate.humanReviewNeeded}`,
+      `   read_only: ${candidate.readOnly === true}`,
+      `   diff_generated: ${candidate.diffGenerated === true}`,
+      `   patch_generated: ${candidate.patchGenerated === true}`,
+      `   commands_executed: ${candidate.commandsExecuted === true}`,
+      `   files_modified: ${candidate.filesModified === true}`
+    ].join('\n')),
+    'next_human_review: Revisar candidatos y decidir si el próximo bloque prepara un diff preview también read-only.'
   ].join('\n');
 }
 
@@ -2331,6 +2591,7 @@ function composeDemoTechnicalReport(store, context = {}) {
   const workspace = state.workspace || createEmptyWorkspaceStore();
   const plan = run && run.plan ? run.plan : mission && mission.plan ? mission.plan : null;
   const proposal = run && run.proposal ? run.proposal : mission && mission.proposal ? mission.proposal : null;
+  const changeCandidates = run && run.changeCandidates ? normalizeChangeCandidates(run.changeCandidates) : mission ? normalizeChangeCandidates(mission.changeCandidates) : [];
   const missionContext = run && run.missionContext ? run.missionContext : mission && mission.missionContext ? mission.missionContext : null;
   const lines = [
     'NODAL OS — Demo local',
@@ -2354,6 +2615,12 @@ function composeDemoTechnicalReport(store, context = {}) {
     `proposal_diff_generated: ${proposal ? proposal.diffGenerated === true : false}`,
     `proposal_commands_executed: ${proposal ? proposal.commandsExecuted === true : false}`,
     `proposal_files_modified: ${proposal ? proposal.filesModified === true : false}`,
+    `change_candidates: ${changeCandidates.length}`,
+    `candidate_read_only: ${changeCandidates.length ? changeCandidates.every((candidate) => candidate.readOnly === true) : true}`,
+    `candidate_diff_generated: ${changeCandidates.some((candidate) => candidate.diffGenerated === true)}`,
+    `candidate_patch_generated: ${changeCandidates.some((candidate) => candidate.patchGenerated === true)}`,
+    `candidate_commands_executed: ${changeCandidates.some((candidate) => candidate.commandsExecuted === true)}`,
+    `candidate_files_modified: ${changeCandidates.some((candidate) => candidate.filesModified === true)}`,
     `status: ${demo.statusLabel}`,
     `run_id: ${demo.runId || 'pending'}`,
     `run_note: ${run && run.note ? run.note : 'sin nota'}`,
@@ -2366,6 +2633,7 @@ function composeDemoTechnicalReport(store, context = {}) {
     `timeline: ${(demo.timeline || []).map((step) => step.title || step).join(' -> ')}`,
     `taskgraph: ${plan ? plan.tasks.map((task) => `${task.title} [${task.status}]`).join(' -> ') : 'sin tareas'}`,
     `proposal_review_order: ${proposal ? proposal.suggestedReviewOrder.join(' -> ') : 'sin propuesta'}`,
+    `candidate_preview: ${changeCandidates.length ? changeCandidates.map((candidate) => `${candidate.title} -> ${candidate.likelyTarget}`).join(' | ') : 'sin candidatos'}`,
     `logs: ${(demo.logs || []).map((item) => `${item.label}=${item.value}`).join('; ')}`,
     `host_status: ${demoHostStatus(connectionContext)}`,
     `bridge_status: ${demoBridgeStatus(connectionContext)}`,
@@ -3166,6 +3434,152 @@ function proposalEvidence(context, plan) {
     if (context.keyFiles && context.keyFiles.length) evidence.push(`Key files: ${context.keyFiles.slice(0, 4).join('; ')}`);
   }
   return evidence;
+}
+
+function generateReadOnlyChangeCandidates(mission) {
+  const currentMission = mission || activeDemoMission();
+  if (!currentMission) {
+    return [];
+  }
+  currentMission.missionContext = buildMissionWorkspaceContext(currentMission) || currentMission.missionContext || null;
+  currentMission.plan = ensureMissionPlan(currentMission);
+  currentMission.proposal = currentMission.proposal || generateMissionProposalDraft(currentMission);
+  const context = currentMission.missionContext;
+  const proposal = currentMission.proposal;
+  const stacks = context ? context.stacks || [] : [];
+  const keyFiles = context ? (context.keyFiles || []).filter((path) => !isWorkspaceProtectedPath(path)) : [];
+  const hasStack = (needle) => stacks.some((stack) => stack.toLowerCase().includes(needle));
+  const baseTasks = proposal && Array.isArray(proposal.tasks) ? proposal.tasks : [];
+  const candidates = [];
+
+  const addCandidate = (candidate) => {
+    if (candidates.length >= CHANGE_CANDIDATE_LIMITS.max) {
+      return;
+    }
+    const normalized = normalizeChangeCandidate(candidate);
+    if (!normalized || isWorkspaceProtectedPath(normalized.likelyTarget) || candidates.some((item) => item.title === normalized.title)) {
+      return;
+    }
+    candidates.push(normalized);
+  };
+
+  if (hasStack('chrome extension')) {
+    addCandidate(changeCandidateFromSignal(currentMission, proposal, {
+      sourceTaskId: findSourceTaskId(baseTasks, 'extensión') || findSourceTaskId(baseTasks, 'contexto'),
+      title: 'Revisar Mission Control visible',
+      area: 'Extensión Chrome',
+      likelyTarget: keyFiles.find((file) => /sidepanel\.(html|js|css)$/i.test(file)) || 'browser-extension/onebrain-chrome-lab',
+      targetKind: 'ui',
+      intent: 'Preparar revisión de la experiencia visible.',
+      reason: 'La propuesta y el workspace apuntan a flujo visible de extensión.',
+      riskLevel: 'medio'
+    }));
+  }
+  if (hasStack('.net') || hasStack('c#')) {
+    addCandidate(changeCandidateFromSignal(currentMission, proposal, {
+      sourceTaskId: findSourceTaskId(baseTasks, '.net') || findSourceTaskId(baseTasks, 'tests'),
+      title: 'Preparar validación de Mission Control',
+      area: 'Tests de producto',
+      likelyTarget: keyFiles.find((file) => /tests|\.csproj|\.slnx$/i.test(file)) || 'tests',
+      targetKind: 'test/validación',
+      intent: 'Preparar cobertura futura sin ejecutar desde producto.',
+      reason: 'La propuesta detectó señales .NET/C# y tareas de validación.',
+      riskLevel: 'bajo'
+    }));
+  }
+  if (hasStack('scripts')) {
+    addCandidate(changeCandidateFromSignal(currentMission, proposal, {
+      sourceTaskId: findSourceTaskId(baseTasks, 'validaciones') || findSourceTaskId(baseTasks, 'scripts'),
+      title: 'Revisar validaciones disponibles',
+      area: 'Scripts',
+      likelyTarget: keyFiles.find((file) => /scripts/i.test(file)) || 'scripts',
+      targetKind: 'test/validación',
+      intent: 'Identificar qué validaciones podrían usarse en un bloque futuro.',
+      reason: 'El workspace indica scripts disponibles como apoyo de revisión.',
+      riskLevel: 'bajo'
+    }));
+  }
+  if (hasStack('docs')) {
+    addCandidate(changeCandidateFromSignal(currentMission, proposal, {
+      sourceTaskId: findSourceTaskId(baseTasks, 'documentación') || findSourceTaskId(baseTasks, 'evidencia'),
+      title: 'Revisar documentación visible',
+      area: 'Documentación',
+      likelyTarget: keyFiles.find((file) => /readme|docs/i.test(file)) || 'README/docs',
+      targetKind: 'documentación',
+      intent: 'Preparar revisión documental futura.',
+      reason: 'La propuesta detectó documentación como contexto útil.',
+      riskLevel: 'bajo'
+    }));
+  }
+
+  for (const task of baseTasks) {
+    addCandidate(changeCandidateFromSignal(currentMission, proposal, {
+      sourceTaskId: task.sourceTaskId || task.id,
+      title: `Preparar revisión: ${task.title}`,
+      area: proposal && proposal.workspaceName ? proposal.workspaceName : 'Misión local',
+      likelyTarget: firstSafeRelevantArea(proposal) || 'sin objetivo específico',
+      targetKind: 'unknown',
+      intent: 'Convertir tarea propuesta en revisión futura.',
+      reason: task.reason || 'Derivado de propuesta local.',
+      riskLevel: 'bajo'
+    }));
+  }
+
+  while (candidates.length < CHANGE_CANDIDATE_LIMITS.min) {
+    addCandidate(changeCandidateFromSignal(currentMission, proposal, {
+      sourceTaskId: baseTasks[candidates.length] ? baseTasks[candidates.length].id : '',
+      title: candidates.length === 0 ? 'Revisar intención de la misión' : 'Preparar siguiente revisión humana',
+      area: proposal && proposal.workspaceName ? proposal.workspaceName : 'Misión local',
+      likelyTarget: firstSafeRelevantArea(proposal) || 'sin objetivo específico',
+      targetKind: 'unknown',
+      intent: 'Preparar revisión futura sin generar cambios.',
+      reason: 'No hay señales suficientes para un objetivo más específico.',
+      riskLevel: 'bajo'
+    }));
+  }
+
+  return candidates.slice(0, CHANGE_CANDIDATE_LIMITS.max);
+}
+
+function changeCandidateFromSignal(mission, proposal, input) {
+  const evidenceRefs = [
+    proposal ? `proposal:${proposal.proposalId}` : 'proposal:none',
+    input.sourceTaskId ? `task:${input.sourceTaskId}` : 'task:none'
+  ];
+  return {
+    candidateId: `candidate-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    proposalId: proposal ? proposal.proposalId : '',
+    missionId: mission ? mission.id : '',
+    sourceTaskId: input.sourceTaskId || '',
+    title: input.title,
+    area: input.area,
+    likelyTarget: input.likelyTarget,
+    targetKind: input.targetKind,
+    intent: input.intent,
+    reason: input.reason,
+    evidenceRefs,
+    workspaceSignals: proposal ? proposal.contextUsed || [] : [],
+    riskLevel: input.riskLevel || 'bajo',
+    humanReviewNeeded: true,
+    status: CHANGE_CANDIDATE_STATUS.candidate,
+    readOnly: true,
+    diffGenerated: false,
+    patchGenerated: false,
+    commandsExecuted: false,
+    filesModified: false,
+    executionReady: false
+  };
+}
+
+function findSourceTaskId(tasks, needle) {
+  const value = String(needle || '').toLowerCase();
+  const match = (tasks || []).find((task) => `${task.title} ${task.reason}`.toLowerCase().includes(value));
+  return match ? match.sourceTaskId || match.id : '';
+}
+
+function firstSafeRelevantArea(proposal) {
+  const areas = proposal && Array.isArray(proposal.relevantAreas) ? proposal.relevantAreas : [];
+  return areas.find((area) => !isWorkspaceProtectedPath(area)) || '';
 }
 
 async function captureBrowserActiveTab() {
