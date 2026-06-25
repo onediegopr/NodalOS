@@ -17,6 +17,18 @@ namespace OneBrain.Safety.Tests;
 [TestCategory("M1170")]
 [TestCategory("M1171")]
 [TestCategory("M1172")]
+[TestCategory("M1209")]
+[TestCategory("M1210")]
+[TestCategory("M1211")]
+[TestCategory("M1212")]
+[TestCategory("M1213")]
+[TestCategory("M1214")]
+[TestCategory("M1215")]
+[TestCategory("M1216")]
+[TestCategory("M1217")]
+[TestCategory("M1218")]
+[TestCategory("M1219")]
+[TestCategory("M1220")]
 [TestCategory("M1161M1172")]
 public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 {
@@ -24,6 +36,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     private const string SidepanelCssPath = "browser-extension/onebrain-chrome-lab/sidepanel.css";
     private const string SidepanelJsPath = "browser-extension/onebrain-chrome-lab/sidepanel.js";
     private const string ReportPath = "docs/reports/m1172-product-visible-local-demo-v0.md";
+    private const string DemoV1ReportPath = "docs/reports/m1220-product-demo-v1-mission-creation-local-history.md";
 
     [TestMethod]
     public void MissionControlShellIsVisibleInOperateTab()
@@ -34,7 +47,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(html, "Mission Control");
         StringAssert.Contains(html, "NODAL OS");
         StringAssert.Contains(html, "Local Operator Demo");
-        StringAssert.Contains(html, "Run safe demo");
+        StringAssert.Contains(html, "Run demo");
         StringAssert.Contains(html, "Copiar resumen");
         StringAssert.Contains(html, "Modo avanzado");
     }
@@ -53,8 +66,12 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
             "demoHostStatus",
             "demoBridgeStatus",
             "demoBrowserClaimStatus",
-            "demoCaveatStatus",
-            "demoTryChecklist"
+            "demoScopeStatus",
+            "demoTryChecklist",
+            "missionCreateForm",
+            "missionList",
+            "demoRunHistory",
+            "demoRunCount"
         })
         {
             StringAssert.Contains(html, id);
@@ -62,6 +79,9 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 
         StringAssert.Contains(html, "started → accepted → evidence → completed");
         StringAssert.Contains(html, "sin shell, filesystem ni cloud");
+        StringAssert.Contains(html, "Nueva misión");
+        StringAssert.Contains(html, "Qué querés probar o avanzar");
+        StringAssert.Contains(html, "Historial");
     }
 
     [TestMethod]
@@ -70,9 +90,14 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         var js = ReadRepoText(SidepanelJsPath);
 
         StringAssert.Contains(js, "createDemoSeed()");
+        StringAssert.Contains(js, "loadDemoStore()");
+        StringAssert.Contains(js, "saveDemoStore()");
+        StringAssert.Contains(js, "localStorage");
         StringAssert.Contains(js, "Local Operator Demo");
         StringAssert.Contains(js, "SafeNoOp");
         StringAssert.Contains(js, "runSafeDemo()");
+        StringAssert.Contains(js, "createMissionFromForm");
+        StringAssert.Contains(js, "selectDemoRun");
         StringAssert.Contains(js, "EvidenceProjection");
         StringAssert.Contains(js, "Completed with no side effects");
         StringAssert.Contains(js, "buildDemoTechnicalReport()");
@@ -91,7 +116,6 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
             "fetch(",
             "XMLHttpRequest",
             "WebSocket",
-            "localStorage.setItem",
             "document.cookie",
             "eval(",
             "new Function"
@@ -101,6 +125,8 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         }
 
         StringAssert.Contains(body, "state.demo");
+        StringAssert.Contains(body, "mission.runs.unshift(run)");
+        StringAssert.Contains(body, "saveDemoStore()");
         StringAssert.Contains(body, "addLog('local'");
         StringAssert.Contains(body, "render();");
     }
@@ -114,6 +140,8 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(css, ".mission-control-shell");
         StringAssert.Contains(css, ".mission-sidebar");
         StringAssert.Contains(css, ".mission-run-button");
+        StringAssert.Contains(css, ".mission-workbench");
+        StringAssert.Contains(css, ".run-history-list");
         StringAssert.Contains(css, ".mission-timeline");
         StringAssert.Contains(css, ".technical-report");
     }
@@ -147,6 +175,38 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         Assert.IsFalse(js.Contains("Blocked by policy", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("MANUAL_QA_HOLD_ACTIVE", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("NOT_ELIGIBLE_EVIDENCE_PENDING", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void DemoV1SupportsMissionCreationLocalHistoryAndReopenRun()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var js = ReadRepoText(SidepanelJsPath);
+
+        StringAssert.Contains(html, "missionTitleInput");
+        StringAssert.Contains(html, "missionDescriptionInput");
+        StringAssert.Contains(html, "clearDemoHistoryBtn");
+        StringAssert.Contains(js, "DEMO_STORE_KEY");
+        StringAssert.Contains(js, "activeMissionId");
+        StringAssert.Contains(js, "selectedRunId");
+        StringAssert.Contains(js, "runs: []");
+        StringAssert.Contains(js, "renderDemoMissionList()");
+        StringAssert.Contains(js, "renderDemoRunHistory()");
+        StringAssert.Contains(js, "data-demo-run-id");
+        StringAssert.Contains(js, "composeDemoTechnicalReport");
+    }
+
+    [TestMethod]
+    public void DemoV1ReportDocumentsMissionHistoryAndHowToTryIt()
+    {
+        var report = ReadRepoText(DemoV1ReportPath);
+
+        StringAssert.Contains(report, "Product Demo v1");
+        StringAssert.Contains(report, "Crear misión");
+        StringAssert.Contains(report, "localStorage");
+        StringAssert.Contains(report, "Run demo");
+        StringAssert.Contains(report, "Historial");
+        StringAssert.Contains(report, "Copiar resumen");
     }
 
     private static string ExtractFunctionBody(string source, string functionName)

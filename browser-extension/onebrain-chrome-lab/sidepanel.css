@@ -329,6 +329,8 @@ main {
 }
 
 .mission-progress-card,
+.mission-create-form,
+.mission-list-card,
 .mission-timeline-card,
 .mission-evidence-card,
 .mission-report-card {
@@ -365,6 +367,79 @@ main {
   font-size: 12px;
 }
 
+.mission-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(190px, 1.08fr);
+  gap: 12px;
+}
+
+.mission-create-form,
+.mission-list-card {
+  border: 1px solid rgba(159, 181, 204, 0.14);
+  border-radius: 18px;
+  background: rgba(13, 19, 27, 0.62);
+}
+
+.mission-create-form {
+  display: grid;
+  gap: 8px;
+}
+
+.mission-create-form label {
+  margin: 0;
+}
+
+.mission-create-form textarea {
+  min-height: 74px;
+}
+
+.mission-list,
+.run-history-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mission-list:empty::before,
+.run-history-list:empty::before {
+  content: "Todavia no hay datos. Crea una mision y ejecuta un run demo.";
+  display: block;
+  border: 1px dashed rgba(159, 181, 204, 0.18);
+  border-radius: 14px;
+  padding: 12px;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+}
+
+.mission-list-item,
+.run-history-item {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(159, 181, 204, 0.14);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(6, 10, 15, 0.38);
+  color: var(--nos-color-text);
+  text-align: left;
+}
+
+.mission-list-item.active,
+.run-history-item.active {
+  border-color: rgba(102, 227, 196, 0.46);
+  background: rgba(102, 227, 196, 0.1);
+}
+
+.mission-list-item strong,
+.run-history-item strong {
+  font-size: 13px;
+}
+
+.mission-list-item small,
+.run-history-item small {
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+}
+
 .mission-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(142px, 0.35fr);
@@ -389,7 +464,7 @@ main {
 
 .mission-evidence-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(170px, 0.7fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -452,7 +527,8 @@ main {
 @media (max-width: 620px) {
   .mission-control-shell,
   .mission-layout,
-  .mission-evidence-grid {
+  .mission-evidence-grid,
+  .mission-workbench {
     grid-template-columns: 1fr;
   }
 

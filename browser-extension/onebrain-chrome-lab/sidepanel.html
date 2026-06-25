@@ -37,6 +37,8 @@
           <span class="mission-kicker">Mission Control</span>
           <h2 id="missionControlTitle">NODAL OS</h2>
           <nav class="mission-side-nav" aria-label="Demo sections">
+            <a href="#missionCreateForm">Misiones</a>
+            <a href="#demoRunHistory">Historial</a>
             <a href="#demoTimeline">Timeline</a>
             <a href="#demoEvidencePanel">Evidence</a>
             <a href="#demoTechnicalReport">Report</a>
@@ -56,10 +58,32 @@
               <p id="demoMissionObjective">Ejecutar un no-op visible, generar evidencia demo y proyectar el run en timeline.</p>
             </div>
             <div class="mission-actions">
-              <button id="runSafeDemoBtn" class="primary mission-run-button">Run safe demo</button>
+              <button id="runSafeDemoBtn" class="primary mission-run-button">Run demo</button>
               <button id="copyDemoReportBtn">Copiar resumen</button>
             </div>
           </header>
+
+          <section class="mission-workbench" aria-label="Mission setup">
+            <form id="missionCreateForm" class="mission-create-form">
+              <div class="section-head">
+                <h2>Nueva misión</h2>
+                <span class="mission-chip">local</span>
+              </div>
+              <label for="missionTitleInput">Nombre de misión</label>
+              <input id="missionTitleInput" maxlength="80" placeholder="Qué querés probar o avanzar">
+              <label for="missionDescriptionInput">Descripción corta</label>
+              <textarea id="missionDescriptionInput" rows="3" wrap="soft" placeholder="Ejemplo: revisar una idea, simular un run, preparar un resumen."></textarea>
+              <button id="createMissionBtn" class="primary" type="submit">Crear</button>
+            </form>
+
+            <section class="mission-list-card" aria-labelledby="missionListTitle">
+              <div class="section-head">
+                <h2 id="missionListTitle">Misiones</h2>
+                <button id="clearDemoHistoryBtn" type="button">Limpiar historial demo</button>
+              </div>
+              <div id="missionList" class="mission-list"></div>
+            </section>
+          </section>
 
           <section class="mission-progress-card" aria-label="Demo progress">
             <div class="mission-progress-head">
@@ -67,7 +91,7 @@
               <strong id="demoProgressLabel">0%</strong>
             </div>
             <div class="mission-progress-track"><span id="demoProgressBar"></span></div>
-            <p id="demoNextStep">Próximo paso: tocar Run safe demo.</p>
+            <p id="demoNextStep">Próximo paso: tocar Run demo.</p>
           </section>
 
           <div class="mission-layout">
@@ -97,7 +121,7 @@
               </article>
               <article class="mission-status-card scope">
                 <span>Demo scope</span>
-                <strong id="demoCaveatStatus">No-op local</strong>
+                <strong id="demoScopeStatus">No-op local</strong>
                 <small>sin shell, filesystem ni cloud</small>
               </article>
             </aside>
@@ -111,14 +135,21 @@
               </div>
               <div id="demoEvidencePanel" class="demo-log-list"></div>
             </article>
+            <article class="mission-evidence-card" aria-labelledby="demoRunHistoryTitle">
+              <div class="section-head">
+                <h2 id="demoRunHistoryTitle">Historial</h2>
+                <span id="demoRunCount" class="mission-chip">0 runs</span>
+              </div>
+              <div id="demoRunHistory" class="run-history-list"></div>
+            </article>
             <article class="mission-evidence-card">
               <h2>Checklist para probar</h2>
               <ol id="demoTryChecklist" class="try-checklist">
                 <li>Abrir NODAL OS en el sidepanel.</li>
-                <li>Ver la misión Local Operator Demo.</li>
-                <li>Tocar Run safe demo.</li>
+                <li>Crear o seleccionar una misión.</li>
+                <li>Tocar Run demo.</li>
                 <li>Ver timeline: started → accepted → evidence → completed.</li>
-                <li>Ver logs/evidence y copiar resumen.</li>
+                <li>Seleccionar un run anterior y copiar resumen.</li>
               </ol>
             </article>
           </section>

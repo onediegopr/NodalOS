@@ -1,9 +1,10 @@
 let port = null;
 let portConnected = false;
+const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
 
 const state = {
   activeTab: 'operate',
-  demo: createDemoSeed(),
+  demo: loadDemoStore(),
   connection: {
     status: 'disconnected',
     health: 'untested',
@@ -118,6 +119,11 @@ const el = {
   demoStatusBadge: document.getElementById('demoStatusBadge'),
   demoMissionName: document.getElementById('demoMissionName'),
   demoMissionObjective: document.getElementById('demoMissionObjective'),
+  missionCreateForm: document.getElementById('missionCreateForm'),
+  missionTitleInput: document.getElementById('missionTitleInput'),
+  missionDescriptionInput: document.getElementById('missionDescriptionInput'),
+  missionList: document.getElementById('missionList'),
+  clearDemoHistoryBtn: document.getElementById('clearDemoHistoryBtn'),
   runSafeDemoBtn: document.getElementById('runSafeDemoBtn'),
   copyDemoReportBtn: document.getElementById('copyDemoReportBtn'),
   demoRunState: document.getElementById('demoRunState'),
@@ -129,9 +135,11 @@ const el = {
   demoHostStatus: document.getElementById('demoHostStatus'),
   demoBridgeStatus: document.getElementById('demoBridgeStatus'),
   demoBrowserClaimStatus: document.getElementById('demoBrowserClaimStatus'),
-  demoCaveatStatus: document.getElementById('demoCaveatStatus'),
+  demoScopeStatus: document.getElementById('demoScopeStatus'),
   demoCommandKind: document.getElementById('demoCommandKind'),
   demoEvidencePanel: document.getElementById('demoEvidencePanel'),
+  demoRunHistory: document.getElementById('demoRunHistory'),
+  demoRunCount: document.getElementById('demoRunCount'),
   demoTechnicalReport: document.getElementById('demoTechnicalReport'),
   learningName: document.getElementById('learningName'),
   learningDescription: document.getElementById('learningDescription'),
@@ -246,6 +254,8 @@ function bindEvents() {
   el.consentDenyBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.userDenied`));
   el.consentCancelBtn.addEventListener('click', () => sendConsentUiEvent(`${state.consent && state.consent.kind === 'profile' ? 'profileConsent' : 'vaultConsent'}.cancelled`));
   el.consentCopyLogBtn.addEventListener('click', copyConsentLog);
+  el.missionCreateForm.addEventListener('submit', createMissionFromForm);
+  el.clearDemoHistoryBtn.addEventListener('click', clearDemoHistory);
   el.runSafeDemoBtn.addEventListener('click', runSafeDemo);
   el.copyDemoReportBtn.addEventListener('click', copyDemoReport);
 
@@ -618,13 +628,18 @@ function renderOperate() {
 }
 
 function createDemoSeed() {
+  const createdAt = new Date().toISOString();
+  const mission = createMissionRecord('Local Operator Demo', 'Ejecutar un no-op visible, generar evidencia demo y proyectar el run en timeline.', createdAt);
   return {
-    missionName: 'Local Operator Demo',
-    objective: 'Ejecutar un no-op visible, generar evidencia demo y proyectar el run en timeline.',
+    missions: [mission],
+    activeMissionId: mission.id,
+    selectedRunId: '',
+    missionName: mission.title,
+    objective: mission.description,
     status: 'ready',
     statusLabel: 'Listo para probar',
     progress: 0,
-    nextStep: 'Próximo paso: tocar Run safe demo.',
+    nextStep: 'Próximo paso: tocar Run demo.',
     runId: '',
     commandKind: 'SafeNoOp',
     result: 'Not started',
@@ -632,17 +647,209 @@ function createDemoSeed() {
     startedAt: '',
     completedAt: '',
     timeline: [
-      demoTimelineStep('Misión demo lista', 'NODAL OS tiene una misión local in-memory preparada para ejecutar un SafeNoOp visible.', 'ready', 'MissionSeed', 'evidence:demo:seed'),
-      demoTimelineStep('Esperando run seguro', 'Tocá Run safe demo para proyectar un run no-op en timeline y logs.', 'waiting', 'OperatorAction', 'evidence:demo:pending')
+      demoTimelineStep('Misión demo lista', 'NODAL OS tiene una misión local preparada para ejecutar un SafeNoOp visible.', 'ready', 'MissionSeed', 'evidence:demo:seed'),
+      demoTimelineStep('Esperando run demo', 'Tocá Run demo para proyectar un run no-op en timeline y logs.', 'waiting', 'OperatorAction', 'evidence:demo:pending')
     ],
     logs: [
       {
         label: 'Demo seed',
-        value: 'Local Operator Demo cargada. Sin acciones peligrosas.'
+        value: 'Local Operator Demo guardada localmente. Sin acciones peligrosas.'
       }
     ],
     report: ''
   };
+}
+
+function loadDemoStore() {
+  try {
+    const raw = localStorage.getItem(DEMO_STORE_KEY);
+    if (raw) {
+      return normalizeDemoStore(JSON.parse(raw));
+    }
+  } catch (error) {
+    console.warn('NODAL OS demo store unavailable', error);
+  }
+  const seed = createDemoSeed();
+  saveDemoStore(seed);
+  return seed;
+}
+
+function saveDemoStore(store = state.demo) {
+  try {
+    const payload = {
+      missions: store.missions || [],
+      activeMissionId: store.activeMissionId || '',
+      selectedRunId: store.selectedRunId || ''
+    };
+    localStorage.setItem(DEMO_STORE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn('NODAL OS demo store save failed', error);
+  }
+}
+
+function normalizeDemoStore(store) {
+  const seed = createDemoSeed();
+  const missions = Array.isArray(store && store.missions)
+    ? store.missions.map(normalizeMissionRecord).filter(Boolean)
+    : [];
+  const normalized = {
+    ...seed,
+    missions: missions.length ? missions : seed.missions,
+    activeMissionId: store && store.activeMissionId ? store.activeMissionId : '',
+    selectedRunId: store && store.selectedRunId ? store.selectedRunId : ''
+  };
+  if (!normalized.missions.some((mission) => mission.id === normalized.activeMissionId)) {
+    normalized.activeMissionId = normalized.missions[0].id;
+  }
+  if (!selectedDemoRun(normalized)) {
+    normalized.selectedRunId = '';
+  }
+  syncDemoViewFromStore(normalized);
+  return normalized;
+}
+
+function createMissionRecord(title, description, createdAt = new Date().toISOString()) {
+  const id = `mission-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  return {
+    id,
+    title: title || 'Nueva misión',
+    description: description || 'Demo local no-op para probar Mission Control.',
+    createdAt,
+    status: 'ready',
+    runs: []
+  };
+}
+
+function normalizeMissionRecord(mission) {
+  if (!mission || typeof mission !== 'object') {
+    return null;
+  }
+  return {
+    id: String(mission.id || `mission-${Date.now().toString(36)}`),
+    title: String(mission.title || mission.missionName || 'Nueva misión'),
+    description: String(mission.description || mission.objective || 'Demo local no-op para probar Mission Control.'),
+    createdAt: mission.createdAt || new Date().toISOString(),
+    status: mission.status || 'ready',
+    runs: Array.isArray(mission.runs) ? mission.runs.map(normalizeRunRecord).filter(Boolean) : []
+  };
+}
+
+function normalizeRunRecord(run) {
+  if (!run || typeof run !== 'object') {
+    return null;
+  }
+  return {
+    id: String(run.id || run.runId || `demo-${Date.now().toString(36)}`),
+    missionId: String(run.missionId || ''),
+    startedAt: run.startedAt || new Date().toISOString(),
+    completedAt: run.completedAt || run.startedAt || new Date().toISOString(),
+    status: run.status || 'completed',
+    commandKind: run.commandKind || 'SafeNoOp',
+    result: run.result || 'Completed with no side effects',
+    evidenceRef: run.evidenceRef || `evidence:demo:${run.id || 'run'}`,
+    timeline: Array.isArray(run.timeline) ? run.timeline : [],
+    logs: Array.isArray(run.logs) ? run.logs : [],
+    summary: run.summary || 'Run demo no-op completado.'
+  };
+}
+
+function activeDemoMission(store = state.demo) {
+  return (store.missions || []).find((mission) => mission.id === store.activeMissionId)
+    || (store.missions || [])[0]
+    || null;
+}
+
+function selectedDemoRun(store = state.demo) {
+  const mission = activeDemoMission(store);
+  if (!mission || !Array.isArray(mission.runs)) {
+    return null;
+  }
+  return mission.runs.find((run) => run.id === store.selectedRunId) || mission.runs[0] || null;
+}
+
+function syncDemoViewFromStore(store = state.demo) {
+  const mission = activeDemoMission(store);
+  const run = selectedDemoRun(store);
+  if (!mission) {
+    return store;
+  }
+
+  store.missionName = mission.title;
+  store.objective = mission.description || 'Demo local no-op para probar Mission Control.';
+  store.status = run ? 'completed' : 'ready';
+  store.statusLabel = run ? 'Demo completada' : 'Listo para probar';
+  store.progress = run ? 100 : 0;
+  store.nextStep = run ? 'Próximo paso: seleccionar otro run o copiar resumen.' : 'Próximo paso: tocar Run demo.';
+  store.runId = run ? run.id : '';
+  store.commandKind = run ? run.commandKind : 'SafeNoOp';
+  store.result = run ? run.result : 'Not started';
+  store.evidenceRef = run ? run.evidenceRef : 'evidence:demo:pending';
+  store.startedAt = run ? run.startedAt : '';
+  store.completedAt = run ? run.completedAt : '';
+  store.timeline = run && run.timeline.length
+    ? run.timeline
+    : [
+      demoTimelineStep('Misión lista', `${mission.title} está lista para un run demo local.`, 'ready', 'MissionSeed', 'evidence:demo:seed'),
+      demoTimelineStep('Esperando run demo', 'Tocá Run demo para ver timeline, logs y evidencia.', 'waiting', 'OperatorAction', 'evidence:demo:pending')
+    ];
+  store.logs = run && run.logs.length
+    ? run.logs
+    : [{ label: 'Misión activa', value: `${mission.title} · ${mission.runs.length} runs guardados` }];
+  store.report = composeDemoTechnicalReport(store);
+  return store;
+}
+
+function createMissionFromForm(event) {
+  event.preventDefault();
+  const title = el.missionTitleInput.value.trim();
+  const description = el.missionDescriptionInput.value.trim();
+  if (!title) {
+    el.missionTitleInput.focus();
+    return;
+  }
+  const mission = createMissionRecord(title, description || 'Demo local no-op para probar Mission Control.');
+  state.demo.missions.unshift(mission);
+  state.demo.activeMissionId = mission.id;
+  state.demo.selectedRunId = '';
+  el.missionTitleInput.value = '';
+  el.missionDescriptionInput.value = '';
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'MissionCreated', missionId: mission.id, title: mission.title });
+  render();
+}
+
+function selectDemoMission(missionId) {
+  if (!state.demo.missions.some((mission) => mission.id === missionId)) {
+    return;
+  }
+  state.demo.activeMissionId = missionId;
+  const mission = activeDemoMission();
+  state.demo.selectedRunId = mission && mission.runs[0] ? mission.runs[0].id : '';
+  syncDemoViewFromStore();
+  saveDemoStore();
+  render();
+}
+
+function selectDemoRun(runId) {
+  const mission = activeDemoMission();
+  if (!mission || !mission.runs.some((run) => run.id === runId)) {
+    return;
+  }
+  state.demo.selectedRunId = runId;
+  syncDemoViewFromStore();
+  saveDemoStore();
+  render();
+}
+
+function clearDemoHistory() {
+  if (!confirm('Limpiar misiones y runs demo locales?')) {
+    return;
+  }
+  state.demo = createDemoSeed();
+  saveDemoStore();
+  addLog('local', { kind: 'DemoHistoryCleared' });
+  render();
 }
 
 function demoTimelineStep(title, description, status, nodeType, evidenceRef) {
@@ -660,52 +867,67 @@ function demoTimelineStep(title, description, status, nodeType, evidenceRef) {
 }
 
 function runSafeDemo() {
+  const mission = activeDemoMission();
+  if (!mission) {
+    return;
+  }
   const now = new Date();
   const iso = now.toISOString();
   const runId = `demo-${now.getTime().toString(36)}`;
   const evidenceRef = `evidence:demo:${runId}`;
-  state.demo.status = 'completed';
-  state.demo.statusLabel = 'Demo completada';
-  state.demo.progress = 100;
-  state.demo.nextStep = 'Próximo paso: copiar resumen o repetir la demo.';
-  state.demo.runId = runId;
-  state.demo.commandKind = 'SafeNoOp';
-  state.demo.result = 'Completed with no side effects';
-  state.demo.evidenceRef = evidenceRef;
-  state.demo.startedAt = iso;
-  state.demo.completedAt = iso;
-  state.demo.timeline = [
+  const timeline = [
     demoTimelineStep('Run started', `Run ${runId} iniciado en modo demo local.`, 'running', 'RunVisible', evidenceRef),
     demoTimelineStep('No-op command accepted', 'Command kind SafeNoOp aceptado para demo visible. No se llamó shell, filesystem ni provider/cloud.', 'accepted', 'SafeNoOp', evidenceRef),
     demoTimelineStep('Evidence generated', 'Se generó evidencia demo redacted en memoria para el panel visible.', 'evidence', 'EvidenceProjection', evidenceRef),
     demoTimelineStep('Run completed', 'Run demo completado; timeline y logs quedaron actualizados visualmente.', 'completed', 'Result', evidenceRef)
   ];
-  state.demo.logs = [
+  const logs = [
     { label: 'run id', value: runId },
+    { label: 'mission', value: mission.title },
     { label: 'command kind', value: 'SafeNoOp' },
     { label: 'result', value: 'Completed with no side effects' },
     { label: 'timestamp', value: iso },
     { label: 'evidence ref', value: evidenceRef }
   ];
+  const run = {
+    id: runId,
+    missionId: mission.id,
+    startedAt: iso,
+    completedAt: iso,
+    status: 'completed',
+    commandKind: 'SafeNoOp',
+    result: 'Completed with no side effects',
+    evidenceRef,
+    timeline,
+    logs,
+    summary: `${mission.title}: run demo no-op completado.`
+  };
+  mission.status = 'completed';
+  mission.runs.unshift(run);
+  state.demo.activeMissionId = mission.id;
+  state.demo.selectedRunId = run.id;
+  syncDemoViewFromStore();
+  saveDemoStore();
   state.run.runId = runId;
   state.run.status = 'completed';
   state.run.currentTool = 'SafeNoOpDemo';
   state.run.lastResult = 'Demo no-op completed';
-  state.operator.goal = 'Local Operator Demo';
+  state.operator.goal = mission.title;
   state.operator.plan = 'seed -> safe no-op -> evidence -> report';
-  state.operator.action = 'Run safe demo';
-  state.operator.timeline = state.demo.timeline;
+  state.operator.action = 'Run demo';
+  state.operator.timeline = timeline;
   addLog('local', {
     kind: 'SafeNoOpDemo',
     runId,
+    missionId: mission.id,
     result: 'completed',
     evidenceRef
   });
-  state.demo.report = buildDemoTechnicalReport();
   render();
 }
 
 function renderDemoMissionControl() {
+  syncDemoViewFromStore();
   const demo = state.demo;
   el.demoMissionName.textContent = demo.missionName;
   el.demoMissionObjective.textContent = demo.objective;
@@ -720,7 +942,9 @@ function renderDemoMissionControl() {
   el.demoHostStatus.textContent = demoHostStatus();
   el.demoBridgeStatus.textContent = demoBridgeStatus();
   el.demoBrowserClaimStatus.textContent = demoBrowserClaimStatus();
-  el.demoCaveatStatus.textContent = 'No-op local';
+  el.demoScopeStatus.textContent = 'No-op local';
+  renderDemoMissionList();
+  renderDemoRunHistory();
   renderTimeline(el.demoTimeline, demo.timeline);
   el.demoEvidencePanel.innerHTML = demo.logs.map((item) => `
     <div class="demo-log-item">
@@ -728,6 +952,39 @@ function renderDemoMissionControl() {
       <strong>${safeHtml(item.value)}</strong>
     </div>`).join('');
   el.demoTechnicalReport.textContent = demo.report || buildDemoTechnicalReport();
+}
+
+function renderDemoMissionList() {
+  el.missionList.innerHTML = state.demo.missions.map((mission) => {
+    const active = mission.id === state.demo.activeMissionId;
+    const created = formatDemoDate(mission.createdAt);
+    const runCount = Array.isArray(mission.runs) ? mission.runs.length : 0;
+    return `
+      <button class="mission-list-item${active ? ' active' : ''}" type="button" data-demo-mission-id="${safeHtml(mission.id)}">
+        <strong>${safeHtml(mission.title)}</strong>
+        <small>${safeHtml(created)} · ${runCount} ${runCount === 1 ? 'run' : 'runs'}</small>
+      </button>`;
+  }).join('');
+  el.missionList.querySelectorAll('[data-demo-mission-id]').forEach((button) => {
+    button.addEventListener('click', () => selectDemoMission(button.getAttribute('data-demo-mission-id')));
+  });
+}
+
+function renderDemoRunHistory() {
+  const mission = activeDemoMission();
+  const runs = mission && Array.isArray(mission.runs) ? mission.runs : [];
+  el.demoRunCount.textContent = `${runs.length} ${runs.length === 1 ? 'run' : 'runs'}`;
+  el.demoRunHistory.innerHTML = runs.map((run) => {
+    const active = run.id === state.demo.selectedRunId;
+    return `
+      <button class="run-history-item${active ? ' active' : ''}" type="button" data-demo-run-id="${safeHtml(run.id)}">
+        <strong>${safeHtml(formatDemoDate(run.completedAt || run.startedAt))}</strong>
+        <small>${safeHtml(run.summary || run.result || 'Run demo local')}</small>
+      </button>`;
+  }).join('');
+  el.demoRunHistory.querySelectorAll('[data-demo-run-id]').forEach((button) => {
+    button.addEventListener('click', () => selectDemoRun(button.getAttribute('data-demo-run-id')));
+  });
 }
 
 function demoHostStatus() {
@@ -759,15 +1016,27 @@ function demoBrowserClaimStatus() {
 }
 
 function buildDemoTechnicalReport() {
-  const demo = state.demo;
+  syncDemoViewFromStore();
+  return composeDemoTechnicalReport(state.demo);
+}
+
+function composeDemoTechnicalReport(store) {
+  const demo = store || state.demo;
+  const mission = activeDemoMission(demo);
+  const run = selectedDemoRun(demo);
   const lines = [
-    'NODAL OS — Local Operator Demo',
+    'NODAL OS — Demo local',
     `mission: ${demo.missionName}`,
+    `mission_id: ${mission ? mission.id : 'none'}`,
     `status: ${demo.statusLabel}`,
     `run_id: ${demo.runId || 'pending'}`,
+    `started_at: ${run ? run.startedAt : 'pending'}`,
+    `completed_at: ${run ? run.completedAt : 'pending'}`,
     `command_kind: ${demo.commandKind}`,
     `result: ${demo.result}`,
     `evidence_ref: ${demo.evidenceRef}`,
+    `timeline: ${(demo.timeline || []).map((step) => step.title || step).join(' -> ')}`,
+    `logs: ${(demo.logs || []).map((item) => `${item.label}=${item.value}`).join('; ')}`,
     `host_status: ${demoHostStatus()}`,
     `bridge_status: ${demoBridgeStatus()}`,
     `browser_claim_status: ${demoBrowserClaimStatus()}`,
@@ -775,6 +1044,17 @@ function buildDemoTechnicalReport() {
     'mode: demo local visible'
   ];
   return lines.join('\n');
+}
+
+function formatDemoDate(value) {
+  if (!value) {
+    return 'sin fecha';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  return date.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
 }
 
 async function copyDemoReport() {
