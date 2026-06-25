@@ -207,6 +207,7 @@ const el = {
   clearBrowserSnapshotsBtn: document.getElementById('clearBrowserSnapshotsBtn'),
   openWorkspaceBtn: document.getElementById('openWorkspaceBtn'),
   rescanWorkspaceBtn: document.getElementById('rescanWorkspaceBtn'),
+  copyWorkspaceEvidenceBtn: document.getElementById('copyWorkspaceEvidenceBtn'),
   clearWorkspaceBtn: document.getElementById('clearWorkspaceBtn'),
   workspaceStatus: document.getElementById('workspaceStatus'),
   workspaceName: document.getElementById('workspaceName'),
@@ -362,6 +363,7 @@ function bindEvents() {
   el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
   el.openWorkspaceBtn.addEventListener('click', openWorkspaceDirectory);
   el.rescanWorkspaceBtn.addEventListener('click', rescanWorkspaceDirectory);
+  el.copyWorkspaceEvidenceBtn.addEventListener('click', copyWorkspaceEvidence);
   el.clearWorkspaceBtn.addEventListener('click', clearWorkspaceUnderstanding);
 
   el.startRunBtn.addEventListener('click', () => {
@@ -857,6 +859,7 @@ function createEmptyWorkspaceStore() {
     treeItems: [],
     signals: [],
     evidence: null,
+    context: null,
     error: '',
     directoryHandle: null
   };
@@ -892,6 +895,7 @@ function saveWorkspaceStore(store = state.workspace) {
       treeItems: store.treeItems || [],
       signals: store.signals || [],
       evidence: store.evidence || null,
+      context: store.context || createWorkspaceContextContract(store),
       error: store.error || ''
     };
     localStorage.setItem(WORKSPACE_STORE_KEY, JSON.stringify(payload));
@@ -923,6 +927,9 @@ function normalizeWorkspaceStore(store) {
       ? store.signals.map(normalizeWorkspaceSignal).filter(Boolean)
       : [],
     evidence: store.evidence && typeof store.evidence === 'object' ? store.evidence : null,
+    context: store.context && typeof store.context === 'object'
+      ? normalizeWorkspaceContextContract(store.context)
+      : createWorkspaceContextContract(store),
     error: String(store.error || ''),
     directoryHandle: null
   };
@@ -962,6 +969,44 @@ function normalizeWorkspaceSignal(item) {
   return {
     label: String(item.label || ''),
     value: String(item.value || '')
+  };
+}
+
+function createWorkspaceContextContract(workspace) {
+  const source = workspace || {};
+  const counts = normalizeWorkspaceCounts(source.counts);
+  return normalizeWorkspaceContextContract({
+    workspaceName: source.name || '',
+    selectedAt: source.openedAt || source.selectedAt || '',
+    lastReadAt: source.scannedAt || source.lastReadAt || '',
+    fileCount: counts.files,
+    directoryCount: counts.folders,
+    stacks: source.stacks || [],
+    keyFiles: source.keyFiles || [],
+    treeSummary: source.treeItems || [],
+    evidenceSummary: source.evidence && source.evidence.summary ? source.evidence.summary : '',
+    readOnly: true,
+    commandsExecuted: false,
+    filesModified: false
+  });
+}
+
+function normalizeWorkspaceContextContract(context) {
+  return {
+    workspaceName: String(context.workspaceName || ''),
+    selectedAt: String(context.selectedAt || ''),
+    lastReadAt: String(context.lastReadAt || ''),
+    fileCount: Number.isFinite(context.fileCount) ? context.fileCount : 0,
+    directoryCount: Number.isFinite(context.directoryCount) ? context.directoryCount : 0,
+    stacks: normalizeWorkspaceTextList(context.stacks),
+    keyFiles: normalizeWorkspaceTextList(context.keyFiles).slice(0, 12),
+    treeSummary: Array.isArray(context.treeSummary)
+      ? context.treeSummary.map(normalizeWorkspaceTreeItem).filter(Boolean).slice(0, 20)
+      : [],
+    evidenceSummary: String(context.evidenceSummary || ''),
+    readOnly: context.readOnly !== false,
+    commandsExecuted: context.commandsExecuted === true,
+    filesModified: context.filesModified === true
   };
 }
 
@@ -1445,6 +1490,7 @@ function renderWorkspaceUnderstanding() {
   el.workspaceCounts.textContent = `${counts.files} archivos · ${counts.folders} carpetas`;
   el.workspaceStack.textContent = (workspace.stacks || []).slice(0, 3).join(' + ') || 'sin lectura';
   el.rescanWorkspaceBtn.disabled = !workspace.name && !isWorkspacePickerAvailable();
+  el.copyWorkspaceEvidenceBtn.disabled = !workspace.name && !workspace.evidence && workspace.status !== 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES';
   el.clearWorkspaceBtn.disabled = !workspace.name && workspace.status !== 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES';
   renderWorkspaceSignals(workspace);
   renderWorkspaceKeyFiles(workspace);
@@ -1529,6 +1575,46 @@ function renderWorkspaceEvidence(workspace) {
     <span>${safeHtml((evidence.stacks || []).join(' + ') || 'Proyecto local')}</span>
     <span>No se ejecutaron comandos.</span>
     <span>No se modificaron archivos.</span>`;
+}
+
+async function copyWorkspaceEvidence() {
+  const workspace = state.workspace || createEmptyWorkspaceStore();
+  if (!workspace.name && !workspace.evidence && workspace.status !== 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES') {
+    addLog('local', { kind: 'WorkspaceEvidenceCopySkipped', reason: 'no workspace' });
+    render();
+    return;
+  }
+  const summary = buildWorkspaceEvidenceSummary(workspace);
+  try {
+    await navigator.clipboard.writeText(summary);
+    addLog('local', { kind: 'WorkspaceEvidenceCopied', workspace: workspace.name || 'none' });
+  } catch (error) {
+    addLog('local', { kind: 'WorkspaceEvidenceCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
+function buildWorkspaceEvidenceSummary(workspace) {
+  const current = workspace || createEmptyWorkspaceStore();
+  const context = current.context || createWorkspaceContextContract(current);
+  const counts = current.counts || { files: 0, folders: 0, ignoredFolders: 0 };
+  return [
+    'NODAL OS — Workspace',
+    `workspace: ${current.name || 'sin workspace'}`,
+    `status: ${workspaceStatusLabel(current)}`,
+    `selected_at: ${context.selectedAt || current.openedAt || 'sin fecha'}`,
+    `last_read_at: ${context.lastReadAt || current.scannedAt || 'sin lectura'}`,
+    `files: ${counts.files}`,
+    `folders: ${counts.folders}`,
+    `ignored_folders: ${counts.ignoredFolders}`,
+    `stacks: ${(current.stacks || []).join(' + ') || 'sin lectura'}`,
+    `key_files: ${(current.keyFiles || []).slice(0, 12).join('; ') || 'sin archivos clave'}`,
+    `tree_summary: ${(current.treeItems || []).slice(0, 12).map((item) => item.path).join('; ') || 'sin árbol'}`,
+    `evidence: ${current.evidence && current.evidence.summary ? current.evidence.summary : current.error || 'pendiente'}`,
+    `read_only: ${context.readOnly === true}`,
+    `commands_executed: ${context.commandsExecuted === true}`,
+    `files_modified: ${context.filesModified === true}`
+  ].join('\n');
 }
 
 function workspaceKeyLabel(path) {
@@ -1866,6 +1952,7 @@ function isWorkspacePickerAvailable() {
 }
 
 function setWorkspaceBlocked(reason) {
+  const timestamp = new Date().toISOString();
   state.workspace = {
     ...state.workspace,
     status: 'BLOCKED_BY_CURRENT_BROWSER_CAPABILITIES',
@@ -1877,7 +1964,12 @@ function setWorkspaceBlocked(reason) {
       readOnly: true,
       noCommands: true,
       noWrites: true
-    }
+    },
+    context: createWorkspaceContextContract({
+      ...state.workspace,
+      scannedAt: timestamp,
+      evidence: { summary: 'Workspace no leído.' }
+    })
   };
   saveWorkspaceStore();
   addLog('local', { kind: 'WorkspaceOpenBlocked', reason: state.workspace.error });
@@ -1922,6 +2014,16 @@ async function scanWorkspaceDirectory(directoryHandle) {
     noWrites: true,
     truncated: scan.truncated
   };
+  const context = createWorkspaceContextContract({
+    name: scan.rootName,
+    openedAt: now,
+    scannedAt: now,
+    counts: scan.counts,
+    stacks,
+    keyFiles: scan.keyFiles,
+    treeItems: scan.treeItems,
+    evidence
+  });
 
   return normalizeWorkspaceStore({
     status: 'ready',
@@ -1938,6 +2040,7 @@ async function scanWorkspaceDirectory(directoryHandle) {
     treeItems: scan.treeItems,
     signals,
     evidence,
+    context,
     error: ''
   });
 }

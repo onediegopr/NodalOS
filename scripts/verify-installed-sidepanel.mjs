@@ -30,6 +30,7 @@ const result = {
   extensionId: '',
   apiAvailability: {},
   missionFlow: {},
+  workspaceUnderstanding: {},
   browserSkills: {},
   elementCount: 0,
   frictionSummary: 'not evaluated',
@@ -142,6 +143,7 @@ async function main() {
       await evaluate(sidepanel, `(() => {
         localStorage.removeItem('nodal-os.demoMissions.v1');
         localStorage.removeItem('nodal-os.browserSkills.snapshots.v1');
+        localStorage.removeItem('nodal-os.workspaceUnderstanding.v1');
         localStorage.removeItem('nodal-os.demoGuidanceCollapsed.v1');
         return true;
       })()`);
@@ -150,6 +152,9 @@ async function main() {
 
       result.missionFlow = await runMissionFlow(sidepanel);
       addCheck('Mission Control flow works in installed extension page', result.missionFlow.ok, result.missionFlow);
+
+      result.workspaceUnderstanding = await runWorkspaceUnderstandingSurfaceCheck(sidepanel);
+      addCheck('Workspace Understanding surface is visible in installed extension page', result.workspaceUnderstanding.ok, result.workspaceUnderstanding);
 
       await browser.send('Target.activateTarget', { targetId: fixtureTarget.id });
       await delay(300);
@@ -211,6 +216,25 @@ async function runMissionFlow(sidepanel) {
       runNote: run ? run.note || '' : '',
       historyText: document.getElementById('demoRunHistory').innerText.slice(0, 600),
       reportTextPresent: Boolean(document.getElementById('demoTechnicalReport').innerText.includes('NODAL OS'))
+    };
+  })()`);
+}
+
+async function runWorkspaceUnderstandingSurfaceCheck(sidepanel) {
+  return evaluate(sidepanel, `(async () => {
+    const workspace = document.getElementById('workspaceUnderstanding');
+    const openButton = document.getElementById('openWorkspaceBtn');
+    const evidence = document.getElementById('workspaceEvidence');
+    const pickerAvailable = typeof window.showDirectoryPicker === 'function';
+    const storeBefore = localStorage.getItem('nodal-os.workspaceUnderstanding.v1');
+    return {
+      ok: Boolean(workspace && openButton && evidence && workspace.innerText.includes('Proyecto activo')),
+      pickerAvailable,
+      title: workspace ? workspace.querySelector('h2').innerText : '',
+      openButton: openButton ? openButton.innerText : '',
+      statusText: document.getElementById('workspaceStatus') ? document.getElementById('workspaceStatus').innerText : '',
+      evidenceText: evidence ? evidence.innerText.slice(0, 500) : '',
+      storePresentBeforePicker: Boolean(storeBefore)
     };
   })()`);
 }

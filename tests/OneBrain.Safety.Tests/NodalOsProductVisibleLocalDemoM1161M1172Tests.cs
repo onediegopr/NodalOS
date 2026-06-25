@@ -421,6 +421,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(html, "Proyecto activo");
         StringAssert.Contains(html, "Abrir workspace");
         StringAssert.Contains(html, "Releer");
+        StringAssert.Contains(html, "Copiar evidencia");
         StringAssert.Contains(html, "Quitar");
         StringAssert.Contains(html, "workspaceStatus");
         StringAssert.Contains(html, "workspaceName");
@@ -479,9 +480,48 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(js, "workspaceMissionSummary");
         StringAssert.Contains(js, "mission.workspace");
         StringAssert.Contains(js, "Workspace en contexto");
+        StringAssert.Contains(js, "copyWorkspaceEvidence");
+        StringAssert.Contains(js, "buildWorkspaceEvidenceSummary");
         StringAssert.Contains(js, "workspace_status:");
         StringAssert.Contains(js, "workspace_stack:");
         StringAssert.Contains(js, "workspace_counts:");
+    }
+
+    [TestMethod]
+    public void WorkspaceContextContractIsMetadataOnlyAndReadOnly()
+    {
+        var js = ReadRepoText(SidepanelJsPath);
+        var workspaceStart = js.IndexOf("async function openWorkspaceDirectory", StringComparison.Ordinal);
+        var workspaceEnd = js.IndexOf("async function captureBrowserActiveTab", StringComparison.Ordinal);
+
+        Assert.IsTrue(workspaceStart >= 0, "Workspace function block should exist.");
+        Assert.IsTrue(workspaceEnd > workspaceStart, "Workspace block should end before Browser Skills.");
+        var workspaceJs = js[workspaceStart..workspaceEnd];
+
+        foreach (var expected in new[]
+        {
+            "createWorkspaceContextContract",
+            "normalizeWorkspaceContextContract",
+            "workspaceName",
+            "selectedAt",
+            "lastReadAt",
+            "fileCount",
+            "directoryCount",
+            "treeSummary",
+            "evidenceSummary",
+            "readOnly: true",
+            "commandsExecuted: false",
+            "filesModified: false"
+        })
+        {
+            StringAssert.Contains(js, expected);
+        }
+
+        Assert.IsFalse(workspaceJs.Contains("readAsText(", StringComparison.Ordinal));
+        Assert.IsFalse(workspaceJs.Contains("arrayBuffer(", StringComparison.Ordinal));
+        Assert.IsFalse(workspaceJs.Contains("FileReader", StringComparison.Ordinal));
+        Assert.IsFalse(workspaceJs.Contains("createWritable(", StringComparison.Ordinal));
+        Assert.IsFalse(workspaceJs.Contains("removeEntry(", StringComparison.Ordinal));
     }
 
     [TestMethod]
