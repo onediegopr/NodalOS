@@ -2,12 +2,12 @@ let port = null;
 let portConnected = false;
 const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
 const DEMO_SCRIPT_STEPS = [
-  'Crear misión con un objetivo simple.',
-  'Ejecutar Run demo.',
-  'Revisar Timeline visible.',
-  'Abrir Historial y seleccionar el run.',
-  'Agregar una nota corta al run.',
-  'Copiar resumen para compartir.'
+  'Mostrar Mission Control y crear una misión corta.',
+  'Editar el título para que se vea claro en pantalla.',
+  'Ejecutar Run demo y esperar el timeline completo.',
+  'Agregar una nota breve al run seleccionado.',
+  'Abrir Historial para mostrar que el run quedó guardado.',
+  'Copiar el script o el resumen para cerrar la demo.'
 ];
 
 const state = {
@@ -1001,10 +1001,10 @@ function runSafeDemo() {
   const runId = `demo-${now.getTime().toString(36)}`;
   const evidenceRef = `evidence:demo:${runId}`;
   const timeline = [
-    demoTimelineStep('Run started', `Run ${runId} iniciado en modo demo local.`, 'running', 'RunVisible', evidenceRef),
-    demoTimelineStep('No-op command accepted', 'Command kind SafeNoOp aceptado para demo visible. No se llamó shell, filesystem ni provider/cloud.', 'accepted', 'SafeNoOp', evidenceRef),
-    demoTimelineStep('Evidence generated', 'Se generó evidencia demo redacted en memoria para el panel visible.', 'evidence', 'EvidenceProjection', evidenceRef),
-    demoTimelineStep('Run completed', 'Run demo completado; timeline y logs quedaron actualizados visualmente.', 'completed', 'Result', evidenceRef)
+    demoTimelineStep('Run iniciado', `Run ${runId} arrancó en modo demo local.`, 'running', 'RunVisible', evidenceRef),
+    demoTimelineStep('No-op aceptado', 'La acción demo fue aceptada sin shell, filesystem ni cloud.', 'accepted', 'SafeNoOp', evidenceRef),
+    demoTimelineStep('Evidencia lista', 'Se generó un resumen demo en memoria para el panel visible.', 'evidence', 'EvidenceProjection', evidenceRef),
+    demoTimelineStep('Run completado', 'Timeline, historial y logs quedaron actualizados para la grabación.', 'completed', 'Result', evidenceRef)
   ];
   const logs = [
     { label: 'run id', value: runId },
@@ -1164,29 +1164,29 @@ function renderDemoScript() {
     .join('');
 }
 
-function demoHostStatus() {
-  const host = state.connection.host || '127.0.0.1';
-  const portValue = state.connection.port || '8787';
-  const health = state.connection.health || 'untested';
+function demoHostStatus(connection = state.connection) {
+  const host = connection.host || '127.0.0.1';
+  const portValue = connection.port || '8787';
+  const health = connection.health || 'untested';
   return `${host}:${portValue} · ${health}`;
 }
 
-function demoBridgeStatus() {
-  if (state.connection.status === 'connected' || state.connection.status === 'running') {
+function demoBridgeStatus(connection = state.connection) {
+  if (connection.status === 'connected' || connection.status === 'running') {
     return 'Conectado';
   }
-  if (state.connection.status === 'connecting') {
+  if (connection.status === 'connecting') {
     return 'Conectando';
   }
   return 'Sin conectar';
 }
 
-function demoBrowserClaimStatus() {
-  const tab = state.runtime && state.runtime.debug && state.runtime.debug.tab;
+function demoBrowserClaimStatus(runtime = state.runtime, operatorPage = state.operator.page) {
+  const tab = runtime && runtime.debug && runtime.debug.tab;
   if (tab && tab.claimStatus) {
     return tab.claimStatus;
   }
-  if (state.operator.page) {
+  if (operatorPage) {
     return 'Página observada';
   }
   return 'No activo';
@@ -1194,13 +1194,20 @@ function demoBrowserClaimStatus() {
 
 function buildDemoTechnicalReport() {
   syncDemoViewFromStore();
-  return composeDemoTechnicalReport(state.demo);
+  return composeDemoTechnicalReport(state.demo, {
+    connection: state.connection,
+    runtime: state.runtime,
+    operatorPage: state.operator.page
+  });
 }
 
-function composeDemoTechnicalReport(store) {
+function composeDemoTechnicalReport(store, context = {}) {
   const demo = store || state.demo;
   const mission = activeDemoMission(demo);
   const run = selectedDemoRun(demo);
+  const connectionContext = context.connection || { host: '127.0.0.1', port: '8787', health: 'untested', status: 'disconnected' };
+  const runtimeContext = context.runtime || null;
+  const operatorPageContext = context.operatorPage || '';
   const lines = [
     'NODAL OS — Demo local',
     `mission: ${demo.missionName}`,
@@ -1217,11 +1224,12 @@ function composeDemoTechnicalReport(store) {
     `evidence_ref: ${demo.evidenceRef}`,
     `timeline: ${(demo.timeline || []).map((step) => step.title || step).join(' -> ')}`,
     `logs: ${(demo.logs || []).map((item) => `${item.label}=${item.value}`).join('; ')}`,
-    `host_status: ${demoHostStatus()}`,
-    `bridge_status: ${demoBridgeStatus()}`,
-    `browser_claim_status: ${demoBrowserClaimStatus()}`,
+    `host_status: ${demoHostStatus(connectionContext)}`,
+    `bridge_status: ${demoBridgeStatus(connectionContext)}`,
+    `browser_status: ${demoBrowserClaimStatus(runtimeContext, operatorPageContext)}`,
     'scope: no shell, no filesystem write, no provider/cloud call',
-    'mode: demo local visible'
+    'mode: demo local visible',
+    'recording_flow: Mission Control -> Run demo -> Historial -> Copiar resumen'
   ];
   return lines.join('\n');
 }

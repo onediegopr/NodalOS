@@ -41,6 +41,18 @@ namespace OneBrain.Safety.Tests;
 [TestCategory("M1230")]
 [TestCategory("M1231")]
 [TestCategory("M1232")]
+[TestCategory("M1233")]
+[TestCategory("M1234")]
+[TestCategory("M1235")]
+[TestCategory("M1236")]
+[TestCategory("M1237")]
+[TestCategory("M1238")]
+[TestCategory("M1239")]
+[TestCategory("M1240")]
+[TestCategory("M1241")]
+[TestCategory("M1242")]
+[TestCategory("M1243")]
+[TestCategory("M1244")]
 [TestCategory("M1161M1172")]
 public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 {
@@ -50,6 +62,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     private const string ReportPath = "docs/reports/m1172-product-visible-local-demo-v0.md";
     private const string DemoV1ReportPath = "docs/reports/m1220-product-demo-v1-mission-creation-local-history.md";
     private const string DemoV2ReportPath = "docs/reports/m1232-product-demo-v2-mission-editing-demo-recording.md";
+    private const string DemoV3ReportPath = "docs/reports/m1244-product-demo-v3-visual-qa-demo-recording.md";
 
     [TestMethod]
     public void MissionControlShellIsVisibleInOperateTab()
@@ -93,12 +106,14 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
             StringAssert.Contains(html, id);
         }
 
-        StringAssert.Contains(html, "started → accepted → evidence → completed");
+        StringAssert.Contains(html, "Checklist para grabar");
+        StringAssert.Contains(html, "Abrir Mission Control");
+        StringAssert.Contains(html, "Copiar script o resumen para cerrar la demo");
         StringAssert.Contains(html, "sin shell, filesystem ni cloud");
         StringAssert.Contains(html, "Nueva misión");
         StringAssert.Contains(html, "Qué querés probar o avanzar");
         StringAssert.Contains(html, "Historial");
-        StringAssert.Contains(html, "Demo script");
+        StringAssert.Contains(html, "Guion demo");
         StringAssert.Contains(html, "Nota del run");
     }
 
@@ -190,7 +205,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 
         StringAssert.Contains(html, "Demo segura");
         StringAssert.Contains(html, "Listo para probar");
-        StringAssert.Contains(html, "Demo scope");
+        StringAssert.Contains(html, "Alcance demo");
         StringAssert.Contains(js, "Sin acciones peligrosas");
         StringAssert.Contains(js, "Límites");
         StringAssert.Contains(js, "Revisar antes de seguir");
@@ -266,6 +281,40 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(report, "Nota del run");
         StringAssert.Contains(report, "Demo script");
         StringAssert.Contains(report, "Copiar script");
+    }
+
+    [TestMethod]
+    public void DemoV3VisualQaKeepsMissionControlCleanAndRecordable()
+    {
+        var html = ReadRepoText(SidepanelHtmlPath);
+        var css = ReadRepoText(SidepanelCssPath);
+        var js = ReadRepoText(SidepanelJsPath);
+
+        StringAssert.Contains(html, "Checklist para grabar");
+        StringAssert.Contains(html, "Abrir Mission Control");
+        StringAssert.Contains(html, "Agregar una nota al run");
+        StringAssert.Contains(html, "Guion demo");
+        StringAssert.Contains(html, "Logs / evidencia");
+        StringAssert.Contains(html, "Alcance demo");
+        StringAssert.Contains(css, ".mission-timeline .timeline-meta");
+        StringAssert.Contains(css, ".mission-timeline .timeline-safe-action");
+        StringAssert.Contains(css, ".mission-timeline .timeline-redaction");
+        StringAssert.Contains(css, "max-height: 270px");
+        StringAssert.Contains(js, "Mostrar Mission Control y crear una misión corta.");
+        StringAssert.Contains(js, "Editar el título para que se vea claro en pantalla.");
+        StringAssert.Contains(js, "recording_flow: Mission Control -> Run demo -> Historial -> Copiar resumen");
+    }
+
+    [TestMethod]
+    public void DemoV3ReportDocumentsVisualQaAndRecordingChecklist()
+    {
+        var report = ReadRepoText(DemoV3ReportPath);
+
+        StringAssert.Contains(report, "Product Demo v3");
+        StringAssert.Contains(report, "QA visual real");
+        StringAssert.Contains(report, "Checklist para grabar");
+        StringAssert.Contains(report, "Run demo");
+        StringAssert.Contains(report, "Copiar resumen");
     }
 
     private static string ExtractFunctionBody(string source, string functionName)

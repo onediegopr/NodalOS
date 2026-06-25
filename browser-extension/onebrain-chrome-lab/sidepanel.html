@@ -39,10 +39,10 @@
           <nav class="mission-side-nav" aria-label="Demo sections">
             <a href="#missionCreateForm">Misiones</a>
             <a href="#demoRunHistory">Historial</a>
-            <a href="#demoScriptPanel">Demo script</a>
+            <a href="#demoScriptPanel">Guion demo</a>
             <a href="#demoTimeline">Timeline</a>
-            <a href="#demoEvidencePanel">Evidence</a>
-            <a href="#demoTechnicalReport">Report</a>
+            <a href="#demoEvidencePanel">Evidencia</a>
+            <a href="#demoTechnicalReport">Resumen</a>
           </nav>
           <div class="mission-mini-card">
             <span>Modo</span>
@@ -135,12 +135,12 @@
                 <small>la demo no requiere conexión real</small>
               </article>
               <article class="mission-status-card">
-                <span>Browser claim</span>
+                <span>Navegador</span>
                 <strong id="demoBrowserClaimStatus">No activo</strong>
-                <small>sin automation productiva</small>
+                <small>sin navegador conectado</small>
               </article>
               <article class="mission-status-card scope">
-                <span>Demo scope</span>
+                <span>Alcance demo</span>
                 <strong id="demoScopeStatus">No-op local</strong>
                 <small>sin shell, filesystem ni cloud</small>
               </article>
@@ -150,7 +150,7 @@
           <section class="mission-evidence-grid">
             <article class="mission-evidence-card">
               <div class="section-head">
-                <h2>Logs / evidence</h2>
+                <h2>Logs / evidencia</h2>
                 <span id="demoCommandKind" class="mission-chip">SafeNoOp</span>
               </div>
               <div id="demoEvidencePanel" class="demo-log-list"></div>
@@ -163,20 +163,22 @@
               <div id="demoRunHistory" class="run-history-list"></div>
             </article>
             <article class="mission-evidence-card">
-              <h2>Checklist para probar</h2>
+              <h2>Checklist para grabar</h2>
               <ol id="demoTryChecklist" class="try-checklist">
-                <li>Abrir NODAL OS en el sidepanel.</li>
-                <li>Crear o seleccionar una misión.</li>
-                <li>Tocar Run demo.</li>
-                <li>Ver timeline: started → accepted → evidence → completed.</li>
-                <li>Seleccionar un run anterior y copiar resumen.</li>
+                <li>Abrir Mission Control.</li>
+                <li>Crear una misión corta.</li>
+                <li>Editar el título si hace falta.</li>
+                <li>Ejecutar Run demo.</li>
+                <li>Agregar una nota al run.</li>
+                <li>Abrir Historial y seleccionar el run.</li>
+                <li>Copiar script o resumen para cerrar la demo.</li>
               </ol>
             </article>
           </section>
 
           <section class="mission-script-card" aria-labelledby="demoScriptTitle">
             <div class="section-head">
-              <h2 id="demoScriptTitle">Demo script</h2>
+              <h2 id="demoScriptTitle">Guion demo</h2>
               <button id="copyDemoScriptBtn" type="button">Copiar script</button>
             </div>
             <ol id="demoScriptPanel" class="demo-script-list"></ol>
