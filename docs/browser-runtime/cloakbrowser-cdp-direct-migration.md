@@ -33,4 +33,18 @@ Provide a real CloakBrowser runtime artifact and update the lock metadata:
 * `upstream_commit`
 * `binary_sha256`
 
+Local runtime path configuration is intentionally not committed. Use either:
+
+* `NODAL_CLOAKBROWSER_RUNTIME_PATH`
+* `.local/browser-runtime.local.json`
+
+Example local config:
+
+```json
+{
+  "cloakbrowser_executable_path": "D:\\runtimes\\cloakbrowser\\cloakbrowser.exe",
+  "cdp_port": "ephemeral-or-reserved"
+}
+```
+
 Until then, live CDP healthcheck status is `BLOCKED_RUNTIME_ARTIFACT_REQUIRED`.

@@ -22,6 +22,7 @@ Thumbs.db
 # Local environment
 .env
 .env.*
+.local/
 config/*.local.json
 **/config/*.local.json
 appsettings.Development.local.json

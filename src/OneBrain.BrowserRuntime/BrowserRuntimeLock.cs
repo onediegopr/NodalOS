@@ -23,6 +23,9 @@ public sealed record BrowserRuntimeLock
     [JsonPropertyName("runtime_channel")]
     public string RuntimeChannel { get; init; } = string.Empty;
 
+    [JsonPropertyName("runtime_path_policy")]
+    public string RuntimePathPolicy { get; init; } = string.Empty;
+
     [JsonPropertyName("runtime_version")]
     public string RuntimeVersion { get; init; } = string.Empty;
 

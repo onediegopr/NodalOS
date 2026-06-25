@@ -104,6 +104,7 @@ public sealed class CloakBrowserRuntimeFoundationTests
 
         Assert.AreEqual("cloakbrowser", runtimeLock.Provider);
         Assert.AreEqual("cdp-direct", runtimeLock.Mode);
+        Assert.AreEqual("env-or-local-config", runtimeLock.RuntimePathPolicy);
         Assert.IsFalse(runtimeLock.SystemBrowserAllowed);
         Assert.IsFalse(invalid.Validate().IsValid);
         CollectionAssert.Contains(invalid.Validate().Errors.ToList(), "SystemBrowserMustNotBeAllowed");
@@ -132,6 +133,65 @@ public sealed class CloakBrowserRuntimeFoundationTests
         Assert.IsTrue(status.CdpDirectMode);
         Assert.IsFalse(status.SystemBrowserAllowed);
         Assert.AreEqual("BLOCKED_RUNTIME_ARTIFACT_REQUIRED", status.State);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void BrowserRuntimeLocalConfig_DiscoversEnvironmentPathBeforeLocalFile()
+    {
+        var environment = new Dictionary<string, string?>
+        {
+            ["NODAL_CLOAKBROWSER_RUNTIME_PATH"] = @"D:\runtimes\cloakbrowser\cloakbrowser.exe"
+        };
+
+        var config = BrowserRuntimeLocalConfig.Discover(FindRepositoryRoot(), environment);
+
+        Assert.AreEqual(@"D:\runtimes\cloakbrowser\cloakbrowser.exe", config.CloakBrowserExecutablePath);
+        Assert.IsTrue(config.HasExecutablePath);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void BrowserRuntimeLocalConfig_LoadsLocalJsonWithoutCommittingPrivatePath()
+    {
+        var tempRoot = Path.Combine(Path.GetTempPath(), "nodal-runtime-local-config-" + Guid.NewGuid().ToString("N"));
+        var localDirectory = Path.Combine(tempRoot, ".local");
+        Directory.CreateDirectory(localDirectory);
+        var configPath = Path.Combine(localDirectory, "browser-runtime.local.json");
+        File.WriteAllText(
+            configPath,
+            """
+            {
+              "cloakbrowser_executable_path": "D:\\runtimes\\cloakbrowser\\cloakbrowser.exe",
+              "cdp_port": "ephemeral-or-reserved"
+            }
+            """);
+
+        try
+        {
+            var config = BrowserRuntimeLocalConfig.Discover(tempRoot, new Dictionary<string, string?>());
+
+            Assert.AreEqual(@"D:\runtimes\cloakbrowser\cloakbrowser.exe", config.CloakBrowserExecutablePath);
+            Assert.AreEqual("ephemeral-or-reserved", config.CdpPort);
+            Assert.IsTrue(config.HasExecutablePath);
+        }
+        finally
+        {
+            Directory.Delete(tempRoot, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CloakBrowserRuntimeVerificationScriptExistsAndReportsBlockedWhenArtifactMissing()
+    {
+        var scriptPath = Path.Combine(FindRepositoryRoot(), "scripts", "verify-cloakbrowser-cdp-runtime.ps1");
+        var script = File.ReadAllText(scriptPath);
+
+        StringAssert.Contains(script, "NODAL_CLOAKBROWSER_RUNTIME_PATH");
+        StringAssert.Contains(script, ".local/browser-runtime.local.json");
+        StringAssert.Contains(script, "NODAL_OS_CLOAKBROWSER_CDP_LIVE_STILL_BLOCKED_RUNTIME_ARTIFACT_REQUIRED");
+        StringAssert.Contains(script, "CloakBrowser runtime artifact required.");
     }
 
     [TestMethod]
@@ -190,6 +250,7 @@ public sealed class CloakBrowserRuntimeFoundationTests
             RuntimeSource = "fork",
             RuntimeRepo = "nodal-cloakbrowser-runtime",
             RuntimeChannel = "nodal-runtime",
+            RuntimePathPolicy = "env-or-local-config",
             RuntimeVersion = "pending",
             RuntimeCommit = "pending",
             UpstreamCommit = "pending",

@@ -5,6 +5,7 @@
   "runtime_source": "fork",
   "runtime_repo": "nodal-cloakbrowser-runtime",
   "runtime_channel": "nodal-runtime",
+  "runtime_path_policy": "env-or-local-config",
   "runtime_version": "pending",
   "runtime_commit": "pending",
   "upstream_commit": "pending",
