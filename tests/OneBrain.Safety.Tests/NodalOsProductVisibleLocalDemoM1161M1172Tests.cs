@@ -65,6 +65,18 @@ namespace OneBrain.Safety.Tests;
 [TestCategory("M1254")]
 [TestCategory("M1255")]
 [TestCategory("M1256")]
+[TestCategory("M1257")]
+[TestCategory("M1258")]
+[TestCategory("M1259")]
+[TestCategory("M1260")]
+[TestCategory("M1261")]
+[TestCategory("M1262")]
+[TestCategory("M1263")]
+[TestCategory("M1264")]
+[TestCategory("M1265")]
+[TestCategory("M1266")]
+[TestCategory("M1267")]
+[TestCategory("M1268")]
 [TestCategory("M1161M1172")]
 public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
 {
@@ -76,6 +88,7 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
     private const string DemoV2ReportPath = "docs/reports/m1232-product-demo-v2-mission-editing-demo-recording.md";
     private const string DemoV3ReportPath = "docs/reports/m1244-product-demo-v3-visual-qa-demo-recording.md";
     private const string DemoV4ReportPath = "docs/reports/m1256-product-demo-v4-guided-recording-polish.md";
+    private const string DemoV5ReportPath = "docs/reports/m1268-product-demo-v5-installed-sidepanel-verification.md";
 
     [TestMethod]
     public void MissionControlShellIsVisibleInOperateTab()
@@ -382,6 +395,21 @@ public sealed class NodalOsProductVisibleLocalDemoM1161M1172Tests
         StringAssert.Contains(report, "Paso 1");
         StringAssert.Contains(report, "Lista para grabar");
         StringAssert.Contains(report, "60-90 segundos");
+    }
+
+    [TestMethod]
+    public void DemoV5ReportDocumentsInstalledSidepanelAttemptAndDryRunBoundary()
+    {
+        var report = ReadRepoText(DemoV5ReportPath);
+
+        StringAssert.Contains(report, "Product Demo v5");
+        StringAssert.Contains(report, "sidepanel real instalado");
+        StringAssert.Contains(report, "chrome-extension://");
+        StringAssert.Contains(report, "--load-extension");
+        StringAssert.Contains(report, "extensión mínima temporal");
+        StringAssert.Contains(report, "dry run");
+        StringAssert.Contains(report, "60-90 segundos");
+        StringAssert.Contains(report, "No se inventa QA instalada");
     }
 
     private static string ExtractFunctionBody(string source, string functionName)
