@@ -1,0 +1,18 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1107",
+  "implementation_status": "PLAN_ONLY",
+  "options": [
+    "environment cleanup guidance",
+    "temp profile cleanup delay review",
+    "CDP profile lock investigation",
+    "WebSocket aborted handling review",
+    "test fixture timeout/rerun policy",
+    "separate external smoke bucket",
+    "manual artifact capture if operator later confirms",
+    "independent repeated clean isolated runs"
+  ],
+  "product_files": "unchanged",
+  "bridge_csp": "unchanged",
+  "test_real_modified_now": false
+}

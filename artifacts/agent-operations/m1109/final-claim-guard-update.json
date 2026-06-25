@@ -1,0 +1,16 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1109",
+  "caveat_resolved": false,
+  "blocked_when_caveat_unresolved": [
+    "suite-clean",
+    "confidence above 95",
+    "caveat-resolved",
+    "release-ready",
+    "Chrome-Web-Store-ready",
+    "manual-QA-ready",
+    "runtime-ready",
+    "PC-Commander-ready",
+    "safe-evidence-capture-started"
+  ]
+}

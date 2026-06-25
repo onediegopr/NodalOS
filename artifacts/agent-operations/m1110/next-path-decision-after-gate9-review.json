@@ -1,0 +1,10 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1110",
+  "decisions": {
+    "CAVEAT_UNRESOLVED": "M1113-M1124 - BrowserRuntimeSmoke Gate 9 Containment Remediation Plan",
+    "BETTER_CLASSIFIED_BUT_UNRESOLVED": "M1113-M1124 - BrowserRuntimeSmoke Retry/Quarantine Policy Hardening",
+    "DIRECT_OPERATOR_CONFIRMATION_APPEARS": "M1113-M1124 - Safe Evidence Checklist Prep Gate, caveat visibility retained and no dangerous actions"
+  },
+  "recommendation": "Prefer Gate 9 Containment Remediation Plan before any operator evidence capture."
+}

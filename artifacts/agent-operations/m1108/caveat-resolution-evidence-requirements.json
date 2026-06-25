@@ -1,0 +1,19 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1108",
+  "required_evidence": [
+    "clean BrowserRuntimeSmoke isolated run",
+    "no skipped/inconclusive cleanup gate",
+    "no Gate 9 WebSocket aborted",
+    "repeatable clean result or defined threshold",
+    "full safety suite without external caveat",
+    "full suite general without external caveat",
+    "product/Bridge/CSP scan clean",
+    "leak scan clean",
+    "false-clean-claim scan clean",
+    "report updated",
+    "review before release/store claims"
+  ],
+  "caveat_resolved": false,
+  "confidence": 95
+}

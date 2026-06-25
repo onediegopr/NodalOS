@@ -1,0 +1,12 @@
+{
+  "project": "NODAL OS",
+  "milestone": "M1103",
+  "browserruntime_caveat": "VISIBLE_UNRESOLVED_EXTERNAL_SMOKE_CAVEAT",
+  "product_files_boundary": "unchanged",
+  "bridge_csp_boundary": "unchanged",
+  "runtime_unlock_boundary": "NO-GO",
+  "manual_qa_boundary": "NO-GO",
+  "release_store_boundary": "NO-GO",
+  "caveat_unlocks_anything": false,
+  "caveat_blocks_clean_claims": true
+}
