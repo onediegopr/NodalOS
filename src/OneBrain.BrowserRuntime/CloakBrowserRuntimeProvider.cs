@@ -11,6 +11,11 @@ public sealed record CloakBrowserRuntimeStatus(
 
 public sealed class CloakBrowserRuntimeProvider
 {
+    public Task<CloakBrowserCdpHealthcheckResult> RunLiveHealthcheckAsync(
+        CloakBrowserCdpHealthcheckOptions options,
+        CancellationToken cancellationToken = default) =>
+        new CloakBrowserCdpHealthcheckRunner().RunAsync(options, cancellationToken);
+
     public CloakBrowserRuntimeStatus GetStatus(BrowserRuntimeLock runtimeLock, string? runtimeArtifactPath = null)
     {
         ArgumentNullException.ThrowIfNull(runtimeLock);

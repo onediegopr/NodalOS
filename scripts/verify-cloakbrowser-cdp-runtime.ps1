@@ -174,4 +174,33 @@ if (Test-SystemBrowserPath -Path $runtimePathInfo.path -Lock $lock) {
     exit 3
 }
 
-Write-Evidence -Status "READY" -Decision "NODAL_OS_CLOAKBROWSER_RUNTIME_ARTIFACT_PINNED_READY_FOR_CDP_LIVE" -Reason "Runtime artifact discovered and lock metadata is pinned. CDP live healthcheck is not executed by this provisioning script." -RuntimePathInfo $runtimePathInfo -Lock $lock
+$testProject = Join-Path $RepositoryRoot "tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj"
+$testArgs = @(
+    "test",
+    $testProject,
+    "--no-build",
+    "--filter",
+    "TestCategory=CloakBrowserRuntimeLive"
+)
+
+& dotnet @testArgs
+$testExitCode = $LASTEXITCODE
+if ($testExitCode -ne 0) {
+    Write-Evidence -Status "BLOCKED" -Decision "NODAL_OS_CLOAKBROWSER_CDP_LIVE_BLOCKED_WITH_CAUSE" -Reason "CloakBrowser CDP live healthcheck test failed with exit code $testExitCode." -RuntimePathInfo $runtimePathInfo -Lock $lock
+    exit $testExitCode
+}
+
+$latestEvidence = Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "artifacts/local-verification") -Filter "cloakbrowser-cdp-healthcheck-*.redacted.json" |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
+if (-not $latestEvidence) {
+    Write-Evidence -Status "BLOCKED" -Decision "NODAL_OS_CLOAKBROWSER_CDP_LIVE_BLOCKED_WITH_CAUSE" -Reason "CloakBrowser CDP live healthcheck completed but evidence JSON was not found." -RuntimePathInfo $runtimePathInfo -Lock $lock
+    exit 4
+}
+
+$evidenceJson = Get-Content -LiteralPath $latestEvidence.FullName -Raw | ConvertFrom-Json
+"status=$($evidenceJson.status)"
+"decision=$($evidenceJson.decision)"
+"reason=$($evidenceJson.reason)"
+"evidence=$($latestEvidence.FullName)"
