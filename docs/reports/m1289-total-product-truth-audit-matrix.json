@@ -1,0 +1,161 @@
+{
+  "decision": "PRODUCT_TRUTH_AUDIT_MATRIX_CREATED_NO_PRODUCT_FIXES",
+  "scope": "audit-only",
+  "head": "e8b1b58aaf6f2627b4e4ae9b8788d7dbfbcdb76e",
+  "status_legend": [
+    "IMPLEMENTED_VERIFIED",
+    "IMPLEMENTED_UNVERIFIED",
+    "PARTIAL",
+    "DOCS_ONLY",
+    "PLANNED_ONLY",
+    "FOUNDATION_ONLY",
+    "BLOCKED",
+    "NOT_DONE",
+    "NOT_FOUND",
+    "CONTRADICTED",
+    "ARCHIVED_OR_DELETED"
+  ],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "requirement": "Mission Control visible product shell",
+      "status": "IMPLEMENTED_VERIFIED",
+      "evidence": "sidepanel.html has Mission Control shell and product demo tests pass",
+      "files": [
+        "browser-extension/onebrain-chrome-lab/sidepanel.html",
+        "browser-extension/onebrain-chrome-lab/sidepanel.css",
+        "tests/OneBrain.Safety.Tests/NodalOsProductVisibleLocalDemoM1161M1172Tests.cs"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "requirement": "Create, edit, delete missions from UI with local persistence",
+      "status": "IMPLEMENTED_VERIFIED",
+      "evidence": "mission form/edit/delete handlers and localStorage key nodal-os.demoMissions.v1 exist; tests pass",
+      "files": [
+        "browser-extension/onebrain-chrome-lab/sidepanel.html",
+        "browser-extension/onebrain-chrome-lab/sidepanel.js"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "requirement": "Run demo per mission with timeline, evidence, logs, and copy report",
+      "status": "IMPLEMENTED_VERIFIED",
+      "evidence": "runSafeDemo creates no-op local run, timeline, evidence and report; M1161M1172 tests pass",
+      "files": [
+        "browser-extension/onebrain-chrome-lab/sidepanel.js",
+        "tests/OneBrain.Safety.Tests/NodalOsProductVisibleLocalDemoM1161M1172Tests.cs"
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "requirement": "Demo recording onboarding, script, checklist, and ready-to-record state",
+      "status": "IMPLEMENTED_VERIFIED",
+      "evidence": "guide card, stepper, demo script and Lista para grabar state exist and are tested",
+      "files": [
+        "browser-extension/onebrain-chrome-lab/sidepanel.html",
+        "browser-extension/onebrain-chrome-lab/sidepanel.js"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "requirement": "Browser Skills visible and usable, not just planned/foundation",
+      "status": "IMPLEMENTED_UNVERIFIED",
+      "evidence": "UI, handlers, chrome.tabs.query, chrome.scripting.executeScript, localStorage history, copy summary and tests exist; installed sidepanel not manually verified",
+      "files": [
+        "browser-extension/onebrain-chrome-lab/sidepanel.html",
+        "browser-extension/onebrain-chrome-lab/sidepanel.js",
+        "browser-extension/onebrain-chrome-lab/manifest.json",
+        "tests/OneBrain.Safety.Tests/NativeBrowserSkillsProductM1269BTests.cs"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "requirement": "Installed Chrome sidepanel verification",
+      "status": "BLOCKED",
+      "evidence": "m1268 report states extension unpacked load was attempted but not registered; no installed QA was invented",
+      "files": [
+        "docs/reports/m1268-product-demo-v5-installed-sidepanel-verification.md"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "requirement": "Open workspace and understand project",
+      "status": "FOUNDATION_ONLY",
+      "evidence": "AgentOperations contracts/services exist but explicitly report no real scan, no filesystem scan, no LLM context build",
+      "files": [
+        "src/OneBrain.AgentOperations.Core/NodalOsProjectUnderstandingPreconditionsServices.cs",
+        "src/OneBrain.AgentOperations.Contracts/NodalOsWorkspaceContracts.cs"
+      ]
+    },
+    {
+      "id": "REQ-008",
+      "requirement": "Use AI/LLM to plan or reason over workspace",
+      "status": "FOUNDATION_ONLY",
+      "evidence": "Prompt governance and BYOK provider services set CallsLlmProvider=false and no final prompt/provider call",
+      "files": [
+        "src/OneBrain.AgentOperations.Core/NodalOsPromptGovernanceServices.cs",
+        "src/OneBrain.AgentOperations.Core/NodalOsByokProviderServices.cs"
+      ]
+    },
+    {
+      "id": "REQ-009",
+      "requirement": "Propose changes / diff workflow",
+      "status": "PARTIAL",
+      "evidence": "plan preview and orchestration contracts exist; no visible product diff editor or verified patch proposal flow",
+      "files": [
+        "src/OneBrain.AgentOperations.Core/NodalOsMissionPlanPreviewServices.cs",
+        "browser-extension/onebrain-chrome-lab/sidepanel.html"
+      ]
+    },
+    {
+      "id": "REQ-010",
+      "requirement": "Execute real runtime / PC Commander",
+      "status": "CONTRADICTED",
+      "evidence": "sidepanel has runtime controls and bridge path, but core/runtime services explicitly keep RuntimeExecutionAllowed=false and legacy runner disabled",
+      "files": [
+        "browser-extension/onebrain-chrome-lab/service_worker.js",
+        "src/OneBrain.AgentOperations.Core/NodalOsCoreRuntimeServices.cs"
+      ]
+    },
+    {
+      "id": "REQ-011",
+      "requirement": "Browser/CDP runtime foundation",
+      "status": "PARTIAL",
+      "evidence": "CDP executor and opt-in live tests exist; product-visible installed sidepanel path still unverified",
+      "files": [
+        "src/OneBrain.BrowserExecutor.Cdp/ChromeCdpBrowserExecutor.cs",
+        "tests/OneBrain.Safety.Tests/BrowserCdpLiveTests.cs"
+      ]
+    },
+    {
+      "id": "REQ-012",
+      "requirement": "OCR",
+      "status": "PARTIAL",
+      "evidence": "ONNX/Paddle OCR contracts/services/tests exist; no primary product UI flow uses OCR as a visible feature",
+      "files": [
+        "src/OneBrain.BrowserExecutor.Cdp/NodalOsOnnxOcrSyntheticInferencePipeline.cs",
+        "src/OneBrain.BrowserExecutor.Contracts/NodalOsOcrVisionContracts.cs"
+      ]
+    },
+    {
+      "id": "REQ-013",
+      "requirement": "Cleanup bureaucracy/docs/artifacts/tests",
+      "status": "PARTIAL",
+      "evidence": "phase 1/2 archived/deleted some protocol history, but 500 reports, 1689 agent-operation artifacts and 414 safety test files remain tracked",
+      "files": [
+        "docs/archive/security-protocol-history/INDEX.md",
+        "docs/reports/m1208-product-cleanup-phase2-report.md"
+      ]
+    },
+    {
+      "id": "REQ-014",
+      "requirement": "No BrowserAct runtime dependency",
+      "status": "IMPLEMENTED_VERIFIED",
+      "evidence": "BrowserAct dependency scan and tests verify no project/package dependency",
+      "files": [
+        "tests/OneBrain.Safety.Tests/NativeBrowserSkillsProductM1269BTests.cs"
+      ]
+    }
+  ]
+}
