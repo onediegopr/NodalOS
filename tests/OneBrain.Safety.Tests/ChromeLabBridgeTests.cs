@@ -1,7 +1,10 @@
 using System.Text.Json;
+using System.Text;
 using System.Net.WebSockets;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneBrain.ChromeLab.Bridge;
+using OneBrain.ChromeLab.Bridge.Sessions;
+using OneBrain.ChromeLab.Bridge.Stealth;
 
 namespace OneBrain.Safety.Tests;
 
@@ -524,12 +527,224 @@ public sealed class ChromeLabBridgeTests
     }
 
     [TestMethod]
+    [TestCategory("CompanionBridgeBugfix")]
+    public async Task WebSocketSessionSendRawUsesClientSendLock()
+    {
+        using var socket = new SerializedTestWebSocket("""{"type":"extension.ping","seq":1}""");
+        var registry = new ChromeLabClientRegistry();
+        var clientId = registry.Add(socket);
+        registry.RegisterHello(clientId, ChromeLabProtocol.Version, "test-extension", "fixture", null);
+        var sendLock = registry.GetSendLock(clientId);
+        Assert.IsNotNull(sendLock);
+
+        var broadcast = registry.BroadcastAsync(new { type = "run.resume", runId = "run-1" }, CancellationToken.None);
+        await socket.FirstSendEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        var session = new WebSocketSession(
+            clientId,
+            new StaticMessageHandler("""{"type":"engine.pong","seq":1}"""),
+            new ProtocolEventBuffer(),
+            sendLock!);
+        var run = session.RunAsync(socket, CancellationToken.None);
+
+        await Task.Delay(50);
+        Assert.AreEqual(1, socket.MaxConcurrentSends);
+        Assert.AreEqual(1, socket.SendCount);
+
+        socket.ReleaseFirstSend.SetResult();
+        await Task.WhenAll(broadcast, run).WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.AreEqual(1, socket.MaxConcurrentSends);
+        Assert.AreEqual(2, socket.SendCount);
+    }
+
+    [TestMethod]
+    [TestCategory("CompanionBridgeBugfix")]
+    public async Task HandoffCompletionIsIdempotentByHandoffId()
+    {
+        var events = new ProtocolEventBuffer();
+        var gateway = new StealthHandoffGateway(
+            new StealthRunnerRegistry(),
+            new HandoffVerificationService(),
+            events);
+
+        var first = await gateway.CompleteAsync("task-1", "handoff-1", success: true, CancellationToken.None);
+        var duplicate = await gateway.CompleteAsync("task-1", "handoff-1", success: true, CancellationToken.None);
+        var snapshot = events.Snapshot();
+
+        Assert.IsTrue(first.FirstCompletion);
+        Assert.IsTrue(first.Verified);
+        Assert.IsFalse(duplicate.FirstCompletion);
+        Assert.AreEqual(1, snapshot.Count(e => e.EventType == "handoff.completed"));
+        Assert.AreEqual(1, snapshot.Count(e => e.EventType == "stealth.handoff.verifying"));
+        Assert.AreEqual(1, snapshot.Count(e => e.EventType == "stealth.handoff.verified"));
+    }
+
+    [TestMethod]
+    [TestCategory("CompanionBridgeBugfix")]
+    public void ChromeLabRedactorRedactsStructuredSensitiveFields()
+    {
+        const string raw = """
+            {
+              "token": "tok-raw",
+              "apiKey": "key-raw",
+              "secret": "secret-raw",
+              "password": "password-raw",
+              "authorization": "Bearer authorization-raw",
+              "cookie": "cookie-raw",
+              "credential": "credential-raw",
+              "accessToken": "access-raw",
+              "refreshToken": "refresh-raw",
+              "sessionId": "session-raw",
+              "safeField": "safe-value"
+            }
+            """;
+
+        var redacted = ChromeLabRedactor.Redact(raw);
+
+        foreach (var leaked in new[]
+        {
+            "tok-raw",
+            "key-raw",
+            "secret-raw",
+            "password-raw",
+            "authorization-raw",
+            "cookie-raw",
+            "credential-raw",
+            "access-raw",
+            "refresh-raw",
+            "session-raw"
+        })
+        {
+            Assert.IsFalse(redacted.Contains(leaked, StringComparison.OrdinalIgnoreCase), leaked);
+        }
+
+        Assert.IsTrue(redacted.Contains("safe-value", StringComparison.Ordinal));
+        Assert.IsTrue(redacted.Contains("[REDACTED]", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    [TestCategory("CompanionBridgeBugfix")]
+    public void ClientDiagnosticsRedactsStructuredSensitiveErrors()
+    {
+        using var socket = new SerializedTestWebSocket("""{"type":"noop"}""");
+        var registry = new ChromeLabClientRegistry();
+        var clientId = registry.Add(socket);
+        registry.MarkError(clientId, """{"apiKey":"key-raw","sessionId":"session-raw","safe":"visible"}""");
+
+        var lastError = registry.Diagnostics().Clients.Single(c => c.ClientId == clientId).LastError;
+
+        Assert.IsNotNull(lastError);
+        Assert.IsFalse(lastError!.Contains("key-raw", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(lastError.Contains("session-raw", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(lastError.Contains("visible", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void ManifestVersionIsThree()
     {
         var manifestPath = Path.Combine(FindRepoRoot(), "browser-extension", "onebrain-chrome-lab", "manifest.json");
         using var doc = JsonDocument.Parse(File.ReadAllText(manifestPath));
 
         Assert.AreEqual(3, doc.RootElement.GetProperty("manifest_version").GetInt32());
+    }
+
+    private sealed class StaticMessageHandler : IMessageHandler
+    {
+        private readonly string _response;
+
+        public StaticMessageHandler(string response) => _response = response;
+
+        public Task<string?> HandleAsync(string json, string clientId, CancellationToken ct) =>
+            Task.FromResult<string?>(_response);
+    }
+
+    private sealed class SerializedTestWebSocket : WebSocket
+    {
+        private readonly byte[] _message;
+        private int _receiveCount;
+        private int _activeSends;
+        private int _sendCount;
+        private WebSocketState _state = WebSocketState.Open;
+
+        public SerializedTestWebSocket(string message) => _message = Encoding.UTF8.GetBytes(message);
+
+        public TaskCompletionSource FirstSendEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource ReleaseFirstSend { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public int SendCount => Volatile.Read(ref _sendCount);
+
+        public int MaxConcurrentSends { get; private set; }
+
+        public override WebSocketCloseStatus? CloseStatus => null;
+
+        public override string? CloseStatusDescription => null;
+
+        public override WebSocketState State => _state;
+
+        public override string? SubProtocol => null;
+
+        public override void Abort() => _state = WebSocketState.Aborted;
+
+        public override Task CloseAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+        {
+            _state = WebSocketState.Closed;
+            return Task.CompletedTask;
+        }
+
+        public override Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string? statusDescription, CancellationToken cancellationToken)
+        {
+            _state = WebSocketState.CloseSent;
+            return Task.CompletedTask;
+        }
+
+        public override void Dispose() => _state = WebSocketState.Closed;
+
+        public override Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
+        {
+            var receive = Interlocked.Increment(ref _receiveCount);
+            if (receive > 1)
+                return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+
+            Buffer.BlockCopy(_message, 0, buffer.Array!, buffer.Offset, _message.Length);
+            return Task.FromResult(new WebSocketReceiveResult(_message.Length, WebSocketMessageType.Text, true));
+        }
+
+        public override ValueTask<ValueWebSocketReceiveResult> ReceiveAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            var receive = Interlocked.Increment(ref _receiveCount);
+            if (receive > 1)
+                return ValueTask.FromResult(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+
+            _message.CopyTo(buffer);
+            return ValueTask.FromResult(new ValueWebSocketReceiveResult(_message.Length, WebSocketMessageType.Text, true));
+        }
+
+        public override async Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+        {
+            await SendCoreAsync(cancellationToken);
+        }
+
+        public override async ValueTask SendAsync(ReadOnlyMemory<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
+        {
+            await SendCoreAsync(cancellationToken);
+        }
+
+        private async Task SendCoreAsync(CancellationToken cancellationToken)
+        {
+            var active = Interlocked.Increment(ref _activeSends);
+            MaxConcurrentSends = Math.Max(MaxConcurrentSends, active);
+            var count = Interlocked.Increment(ref _sendCount);
+            if (count == 1)
+            {
+                FirstSendEntered.SetResult();
+                await ReleaseFirstSend.Task.WaitAsync(cancellationToken);
+            }
+
+            await Task.Delay(5, cancellationToken);
+            Interlocked.Decrement(ref _activeSends);
+        }
     }
 
     private static string FindRepoRoot()

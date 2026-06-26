@@ -274,7 +274,7 @@ app.Map("/ws/extension", async (
 
     using var socket = await context.WebSockets.AcceptWebSocketAsync();
     var clientId = clients.Add(socket);
-    var sendLock = clients.GetSendLock(clientId) ?? new SemaphoreSlim(1, 1);
+    var sendLock = clients.GetSendLock(clientId) ?? throw new InvalidOperationException("client send lock not found");
     var session = new WebSocketSession(clientId, handler, events, sendLock);
     await session.RunAsync(socket, context.RequestAborted);
     clients.Remove(clientId);
@@ -610,16 +610,16 @@ static async Task HandleStealthMessage(
     if (type == StealthProtocol.MessageTypeHandoffCompleted)
     {
         var taskId = doc.RootElement.TryGetProperty("taskId", out var hcProp) ? hcProp.GetString() ?? "" : "";
+        var handoffId = doc.RootElement.TryGetProperty("handoffId", out var hidProp) ? hidProp.GetString() ?? "" : "";
         var hSuccess = doc.RootElement.TryGetProperty("success", out var hsuccProp)
             && hsuccProp.ValueKind == JsonValueKind.True;
 
-        events.Add("handoff.completed", $"Handoff completed: success={hSuccess}", runId: taskId);
+        var completion = await handoffGateway.CompleteAsync(taskId, handoffId, hSuccess, ct);
+        if (!completion.FirstCompletion)
+            return;
 
         if (hSuccess)
-        {
-            var verified = await handoffGateway.VerifyAndResumeAsync(taskId, ct);
-            events.Add("handoff.verified", $"Handoff verified: {verified}", runId: taskId);
-        }
+            events.Add("handoff.verified", $"Handoff verified: {completion.Verified}", runId: taskId);
 
         tasks.Resume(taskId);
         var obsReqId2 = Guid.NewGuid().ToString("n");

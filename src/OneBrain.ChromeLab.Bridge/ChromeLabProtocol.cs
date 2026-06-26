@@ -355,8 +355,11 @@ public sealed class ChromeLabClientRegistry
             (_, current) => update(current));
     }
 
-    private static string Redact(string value) =>
-        string.IsNullOrWhiteSpace(value) ? "" : value.Length > 240 ? string.Concat(value.AsSpan(0, 240), "...") : value;
+    private static string Redact(string value)
+    {
+        var redacted = ChromeLabRedactor.Redact(value);
+        return redacted.Length > 240 ? string.Concat(redacted.AsSpan(0, 240), "...") : redacted;
+    }
 }
 
 public sealed record ClientConnection(
@@ -396,26 +399,140 @@ public sealed class ProtocolEventBuffer
 
     public IReadOnlyList<ProtocolEvent> Snapshot() => _events.ToArray();
 
-    private static readonly Regex _jwtRedact = new(@"\b[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex _bearerRedact = new(@"\bBearer\s+[A-Za-z0-9._\-]{8,}\b", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    private static readonly Regex _apiKeyRedact = new(@"\b(sk-[A-Za-z0-9]{32,}|[A-Za-z0-9_-]{32,})\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex _secretRedact = new(@"(password|passwd|secret|token|access_token|refresh_token|id_token|api[_-]?key|cookie|set-cookie|authorization|bearer|otp|code|clave(?:\s+fiscal)?|sessionid|csrf|xsrf|jwt)\s*[:=]\s*[^\s;,}\""']+", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    private static readonly Regex _privateIpRedact = new(@"\b(10\.\d{1,3}|172\.(1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-    private static readonly Regex _emailRedact = new(@"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
     private static string Redact(string value)
+    {
+        var redacted = ChromeLabRedactor.Redact(value);
+        return redacted.Length > 2000 ? string.Concat(redacted.AsSpan(0, 2000), "...") : redacted;
+    }
+}
+
+public static class ChromeLabRedactor
+{
+    private const string Redacted = "[REDACTED]";
+    private static readonly HashSet<string> SensitiveFieldNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "token",
+        "apikey",
+        "api_key",
+        "api-key",
+        "secret",
+        "password",
+        "passwd",
+        "authorization",
+        "cookie",
+        "setcookie",
+        "set-cookie",
+        "credential",
+        "credentials",
+        "accesstoken",
+        "access_token",
+        "access-token",
+        "refreshtoken",
+        "refresh_token",
+        "refresh-token",
+        "sessionid",
+        "session_id",
+        "session-id",
+        "idtoken",
+        "id_token",
+        "csrf",
+        "xsrf",
+        "jwt"
+    };
+
+    private static readonly Regex JwtRedact = new(@"\b[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex BearerRedact = new(@"\bBearer\s+[A-Za-z0-9._\-]{8,}\b", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex ApiKeyRedact = new(@"\b(sk-[A-Za-z0-9]{32,}|[A-Za-z0-9_-]{32,})\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex SecretAssignmentRedact = new(@"(password|passwd|secret|token|access[_-]?token|refresh[_-]?token|id[_-]?token|api[_-]?key|cookie|set-cookie|authorization|credential|session[_-]?id|csrf|xsrf|jwt)\s*[:=]\s*[^\s;,}\""']+", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex SensitiveWordRedact = new(@"\b(password|secret|token|clave(?:\s+fiscal)?|credential|cookie|authorization)\b", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    private static readonly Regex PrivateIpRedact = new(@"\b(10\.\d{1,3}|172\.(1[6-9]|2\d|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex EmailRedact = new(@"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    public static string Redact(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return "";
 
-        var redacted = _jwtRedact.Replace(value, "[REDACTED-JWT]");
-        redacted = _bearerRedact.Replace(redacted, "[REDACTED-TOKEN]");
-        redacted = _apiKeyRedact.Replace(redacted, "[REDACTED-KEY]");
-        redacted = _secretRedact.Replace(redacted, m => $"{m.Groups[1].Value}[REDACTED]");
-        redacted = _privateIpRedact.Replace(redacted, "[REDACTED-IP]");
-        redacted = _emailRedact.Replace(redacted, "[REDACTED-EMAIL]");
+        var trimmed = value.TrimStart();
+        if (trimmed.StartsWith("{", StringComparison.Ordinal) || trimmed.StartsWith("[", StringComparison.Ordinal))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(value);
+                using var stream = new MemoryStream();
+                using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = false }))
+                    WriteRedactedElement(writer, doc.RootElement, parentSensitive: false);
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
+            catch (JsonException)
+            {
+                // Fall through to text redaction for malformed diagnostics.
+            }
+        }
 
-        return redacted.Length > 2000 ? string.Concat(redacted.AsSpan(0, 2000), "...") : redacted;
+        return RedactText(value);
+    }
+
+    private static void WriteRedactedElement(Utf8JsonWriter writer, JsonElement element, bool parentSensitive)
+    {
+        if (parentSensitive)
+        {
+            writer.WriteStringValue(Redacted);
+            return;
+        }
+
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var property in element.EnumerateObject())
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteRedactedElement(writer, property.Value, IsSensitiveFieldName(property.Name));
+                }
+                writer.WriteEndObject();
+                break;
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
+                    WriteRedactedElement(writer, item, parentSensitive: false);
+                writer.WriteEndArray();
+                break;
+            case JsonValueKind.String:
+                writer.WriteStringValue(RedactText(element.GetString() ?? ""));
+                break;
+            case JsonValueKind.Number:
+                element.WriteTo(writer);
+                break;
+            case JsonValueKind.True:
+            case JsonValueKind.False:
+                element.WriteTo(writer);
+                break;
+            case JsonValueKind.Null:
+            case JsonValueKind.Undefined:
+                writer.WriteNullValue();
+                break;
+        }
+    }
+
+    private static bool IsSensitiveFieldName(string fieldName)
+    {
+        var normalized = fieldName.Replace(".", "", StringComparison.Ordinal)
+            .Replace("_", "", StringComparison.Ordinal)
+            .Replace("-", "", StringComparison.Ordinal);
+        return SensitiveFieldNames.Contains(fieldName) || SensitiveFieldNames.Contains(normalized);
+    }
+
+    private static string RedactText(string value)
+    {
+        var redacted = JwtRedact.Replace(value, "[REDACTED-JWT]");
+        redacted = BearerRedact.Replace(redacted, "[REDACTED-TOKEN]");
+        redacted = ApiKeyRedact.Replace(redacted, "[REDACTED-KEY]");
+        redacted = SecretAssignmentRedact.Replace(redacted, m => $"{m.Groups[1].Value}={Redacted}");
+        redacted = SensitiveWordRedact.Replace(redacted, Redacted);
+        redacted = PrivateIpRedact.Replace(redacted, "[REDACTED-IP]");
+        redacted = EmailRedact.Replace(redacted, "[REDACTED-EMAIL]");
+        return redacted;
     }
 }
 
