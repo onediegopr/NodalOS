@@ -1,0 +1,107 @@
+{
+  "block": "CBPR-005-006",
+  "line": "CLOAK_BROWSER_PERCEPTION_ROUTER_V1",
+  "date": "2026-06-26",
+  "decision": "GO_CLOAK_BROWSER_LOCATOR_BLOCKAGE_FOUNDATION",
+  "project": "NODAL OS",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "06191f14f7a59cf68e7e0939ac1366b9c7878633",
+  "finalHead": "recorded-in-final-response-after-commit",
+  "mode": "read-only-fixture-safe",
+  "scope": {
+    "productiveAutomationAdded": false,
+    "externalNavigationAdded": false,
+    "productionInjectionAdded": false,
+    "captchaBypassAdded": false,
+    "protectedScopeTouched": false,
+    "stealthCoreTouched": false,
+    "bridgeWebSocketTouched": false
+  },
+  "createdFiles": [
+    "src/OneBrain.BrowserPerception/Locator/LocatorEngine.cs",
+    "src/OneBrain.BrowserPerception/Blockage/BlockageDetector.cs",
+    "tests/OneBrain.Safety.Tests/CloakBrowserLocatorBlockageTests.cs",
+    "docs/qa/cbpr-005-006-locator-blockage/report.md",
+    "docs/qa/cbpr-005-006-locator-blockage/report.json"
+  ],
+  "modifiedFiles": [
+    "src/OneBrain.BrowserPerception/BrowserPerceptionRouter.cs",
+    "docs/architecture/browser/cloak-browser-perception-router-v1.md"
+  ],
+  "protectedPaths": [
+    "stealth-engine/src/evasion/**",
+    "stealth-engine/src/captcha/**",
+    "stealth-engine/src/fingerprint/**",
+    "stealth-engine/src/behavior/**",
+    "stealth-engine/src/proxy/**",
+    "stealth-engine/src/antiBlocking/**",
+    "stealth-engine/src/handoff/**",
+    "stealth-engine/src/StealthSession.js",
+    "stealth-engine/src/StealthBrowserManager.js",
+    "stealth-engine/src/index.js",
+    "stealth-engine/tests/stealth-suite.test.js"
+  ],
+  "locatorStrategyMatrix": [
+    { "fixture": "SPA semantic UI", "strategy": "Accessibility", "status": "implemented" },
+    { "fixture": "Legacy form", "strategy": "Css", "status": "implemented" },
+    { "fixture": "Iframe page", "strategy": "FrameTargetRequired", "status": "implemented" },
+    { "fixture": "Shadow DOM page", "strategy": "ShadowPiercingRequired", "status": "implemented" },
+    { "fixture": "Canvas/visual page", "strategy": "Visual", "status": "implemented" },
+    { "fixture": "CAPTCHA/auth page", "strategy": "HumanHandoff", "status": "implemented" },
+    { "fixture": "Contradictory/complex signals", "strategy": "HumanHandoff", "status": "implemented" },
+    { "fixture": "Element locator generation", "strategy": "candidate-only", "status": "implemented" }
+  ],
+  "blockageMatrix": [
+    { "fixture": "CAPTCHA marker", "blockage": "Captcha", "humanHandoff": true, "status": "implemented" },
+    { "fixture": "Login form", "blockage": "Login", "humanHandoff": true, "status": "implemented" },
+    { "fixture": "2FA marker", "blockage": "TwoFactor", "humanHandoff": true, "status": "implemented" },
+    { "fixture": "Anti-bot marker", "blockage": "AntiBot", "humanHandoff": true, "status": "implemented" },
+    { "fixture": "HTTP 403", "blockage": "AccessDenied", "canContinueAutomatically": false, "status": "implemented" },
+    { "fixture": "HTTP 429", "blockage": "RateLimit", "canContinueAutomatically": false, "status": "implemented" },
+    { "fixture": "Cookie wall", "blockage": "CookieWall", "severity": "Warning", "status": "implemented" },
+    { "fixture": "Console critical error", "blockage": "ConsoleError", "canContinueAutomatically": false, "status": "implemented" },
+    { "fixture": "Network 500", "blockage": "NetworkFailure", "canContinueAutomatically": false, "status": "implemented" },
+    { "fixture": "Router priority", "blockage": "HumanHandoffWins", "status": "implemented" }
+  ],
+  "validations": {
+    "dotnetBuildNoRestore": "PASS",
+    "CloakBrowserPerceptionRouter": "PASS 32/32",
+    "CloakBrowserRuntime": "PASS 50/50",
+    "CloakBrowserRuntimeLive": "PASS 18/18",
+    "CdpBrowserSkills": "PASS 19/19",
+    "CdpBrowserSkillsSession": "PASS 12/12",
+    "CdpBrowserSkillsProductSurface": "PASS 8/8",
+    "CdpUiRuntimeBoundary": "PASS 14/14",
+    "CdpUiLiveStatusAdapter": "PASS 16/16",
+    "CdpUiStatusRefresh": "PASS 11/11",
+    "CdpSafeLocalStatusChannel": "PASS 11/11",
+    "NoExtensionDefaultHarness": "PASS 7/7",
+    "MinimalNoExtensionProductSurface": "PASS 9/9",
+    "ExtensionDeprecationHardening": "PASS 7/7",
+    "ForkUpdateReleasePipeline": "PASS 7/7",
+    "nodeCheckSidepanel": "PASS",
+    "nodeCheckInstalledSidepanelHarness": "PASS",
+    "legacyInstalledSidepanelHarness": "PASS after one retry; first run hit Inspected target navigated or closed",
+    "CloakBrowserCdpNoExtensionScripts": "PASS",
+    "gitDiffCheck": "PASS",
+    "secretScan": "PASS",
+    "protectedScopeScan": "PASS no protected changed/new paths",
+    "forbiddenBrowserUsageScan": "PASS no changed/new forbidden browser usage",
+    "badUxWordingScan": "PASS"
+  },
+  "percentages": {
+    "cloakBrowserRuntimeBase": 100,
+    "perceptionRouter": 40,
+    "browserDiagnosis": 35,
+    "locatorEngine": 25,
+    "blockageDetector": 25,
+    "safeActions": 0,
+    "productiveBrowserAutomation": 0
+  },
+  "risks": [
+    "Locator candidates are not live-validated.",
+    "Blockage detection is metadata-based and fixture-safe.",
+    "Safe Actions remain future planning contracts only."
+  ],
+  "nextBlock": "CBPR-007/008 - Safe Actions Planning + Pre/Post Verification Contracts"
+}

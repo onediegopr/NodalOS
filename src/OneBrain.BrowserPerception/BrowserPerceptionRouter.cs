@@ -53,10 +53,28 @@ public enum BlockageKind
     NetworkFailure,
     ConsoleRuntimeError,
     UnsupportedPageShape,
-    HighRiskOrContradictorySignals
+    HighRiskOrContradictorySignals,
+    Captcha,
+    Login,
+    TwoFactor,
+    AntiBot,
+    RateLimit,
+    AccessDenied,
+    Popup,
+    CookieWall,
+    BrokenPage,
+    ConsoleError,
+    Unknown
 }
 
 public enum BrowserPerceptionSeverity
+{
+    Info,
+    Warning,
+    Critical
+}
+
+public enum BlockageSeverity
 {
     Info,
     Warning,
@@ -195,7 +213,12 @@ public sealed record StrategyRouterDecision(
     IReadOnlyList<string> ProhibitedActions,
     bool HumanHandoffRequired,
     IReadOnlyList<string> Reasons,
-    IReadOnlyList<string> EvidenceRefs);
+    IReadOnlyList<string> EvidenceRefs)
+{
+    public LocatorStrategy? LocatorStrategy { get; init; }
+
+    public IReadOnlyList<BlockageReport> Blockages { get; init; } = [];
+}
 
 public sealed record BlockageReport(
     BlockageKind BlockageKind,
@@ -203,7 +226,16 @@ public sealed record BlockageReport(
     string Reason,
     bool CanContinueAutomatically,
     bool RequiresHumanHandoff,
-    string EvidenceSummary);
+    string EvidenceSummary)
+{
+    public BlockageSeverity BlockageSeverity =>
+        Severity switch
+        {
+            BrowserPerceptionSeverity.Critical => BlockageSeverity.Critical,
+            BrowserPerceptionSeverity.Warning => BlockageSeverity.Warning,
+            _ => BlockageSeverity.Info
+        };
+}
 
 public sealed record BrowserEvidencePack(
     string SnapshotBeforeRef,
@@ -235,7 +267,10 @@ public sealed record BrowserPerceptionFixture(
     bool IsSpa = false,
     bool IsSsr = false,
     bool OverlayPresent = false,
-    string TextPreview = "");
+    string TextPreview = "",
+    bool TwoFactorDetected = false,
+    bool CookieWallDetected = false,
+    bool PopupDetected = false);
 
 public sealed class BrowserPerceptionSnapshotBuilder
 {
@@ -348,9 +383,15 @@ public sealed class BrowserPerceptionSnapshotBuilder
         if (fixture.LoginFormDetected)
             signals.Add(new PerceptionSignal(PerceptionSignalKind.FORM_STATE, "auth-required", BrowserPerceptionSeverity.Critical, "Login or credentials required.", BlocksAutomation: true, RequiresHumanHandoff: true));
         if (fixture.HumanVerificationDetected)
-            signals.Add(new PerceptionSignal(PerceptionSignalKind.HIT_TEST, "human-verification", BrowserPerceptionSeverity.Critical, "CAPTCHA or 2FA marker requires human handoff.", BlocksAutomation: true, RequiresHumanHandoff: true));
+            signals.Add(new PerceptionSignal(PerceptionSignalKind.HIT_TEST, "captcha-marker", BrowserPerceptionSeverity.Critical, "CAPTCHA marker requires human handoff.", BlocksAutomation: true, RequiresHumanHandoff: true));
+        if (fixture.TwoFactorDetected)
+            signals.Add(new PerceptionSignal(PerceptionSignalKind.FORM_STATE, "two-factor-marker", BrowserPerceptionSeverity.Critical, "2FA marker requires human handoff.", BlocksAutomation: true, RequiresHumanHandoff: true));
         if (fixture.AntiBotDetected)
             signals.Add(new PerceptionSignal(PerceptionSignalKind.NETWORK, "anti-bot-marker", BrowserPerceptionSeverity.Critical, "Anti-bot marker requires human handoff.", BlocksAutomation: true, RequiresHumanHandoff: true));
+        if (fixture.CookieWallDetected)
+            signals.Add(new PerceptionSignal(PerceptionSignalKind.HIT_TEST, "cookie-wall", BrowserPerceptionSeverity.Warning, "Cookie wall marker present.", BlocksAutomation: false));
+        if (fixture.PopupDetected)
+            signals.Add(new PerceptionSignal(PerceptionSignalKind.HIT_TEST, "popup-modal", BrowserPerceptionSeverity.Warning, "Popup or modal marker present.", BlocksAutomation: false));
 
         return signals;
     }
@@ -490,20 +531,47 @@ public sealed class StrategyRouter
         "useExtensionFallback"
     ];
 
-    public StrategyRouterDecision Route(PageCapabilityProfile profile)
+    public StrategyRouterDecision Route(PageCapabilityProfile profile) =>
+        RouteCore(profile, snapshot: null);
+
+    public StrategyRouterDecision Route(PageCapabilityProfile profile, BrowserPerceptionSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        return RouteCore(profile, snapshot);
+    }
+
+    private static StrategyRouterDecision RouteCore(PageCapabilityProfile profile, BrowserPerceptionSnapshot? snapshot)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
         var strategy = profile.RecommendedStrategy;
         var reasons = profile.Reasons.ToList();
         var humanHandoff = strategy == BrowserPerceptionStrategy.HUMAN_HANDOFF_REQUIRED;
+        var blockages = snapshot is null
+            ? new BlockageDetector().DetectBlockages(profile)
+            : new BlockageDetector().DetectBlockages(snapshot);
+        LocatorStrategy? locatorStrategy = null;
 
-        if (strategy == BrowserPerceptionStrategy.HUMAN_HANDOFF_REQUIRED
+        if (blockages.Any(blockage => blockage.RequiresHumanHandoff)
+            || strategy == BrowserPerceptionStrategy.HUMAN_HANDOFF_REQUIRED
             || profile.DetectedSignals.Any(signal => signal.RequiresHumanHandoff))
         {
             strategy = BrowserPerceptionStrategy.HUMAN_HANDOFF_REQUIRED;
             humanHandoff = true;
             reasons.Add("Human handoff has priority over all automated strategies.");
+        }
+        else if (blockages.Any(blockage =>
+            blockage.Severity == BrowserPerceptionSeverity.Critical
+            && blockage.BlockageKind is BlockageKind.AccessDenied or BlockageKind.RateLimit or BlockageKind.BrokenPage or BlockageKind.NetworkFailure or BlockageKind.ConsoleError or BlockageKind.ConsoleRuntimeError))
+        {
+            var criticalBlockage = blockages.First(blockage => blockage.Severity == BrowserPerceptionSeverity.Critical);
+            strategy = criticalBlockage.BlockageKind switch
+            {
+                BlockageKind.ConsoleError or BlockageKind.ConsoleRuntimeError => BrowserPerceptionStrategy.CONSOLE_DIAGNOSIS_REQUIRED,
+                BlockageKind.BrokenPage when profile.RecommendedStrategy is BrowserPerceptionStrategy.CONSOLE_DIAGNOSIS_REQUIRED or BrowserPerceptionStrategy.NETWORK_DIAGNOSIS_REQUIRED => profile.RecommendedStrategy,
+                _ => BrowserPerceptionStrategy.NETWORK_DIAGNOSIS_REQUIRED
+            };
+            reasons.Add("Critical blockage detected before locator routing.");
         }
         else if (profile.DetectedSignals.Any(signal => signal.Kind == PerceptionSignalKind.NETWORK && signal.Severity == BrowserPerceptionSeverity.Critical))
         {
@@ -520,6 +588,17 @@ public sealed class StrategyRouter
             strategy = BrowserPerceptionStrategy.UNSUPPORTED_OR_HIGH_RISK;
             reasons.Add("Unknown or low-confidence page cannot receive automatic action routing.");
         }
+        else if (snapshot is not null)
+        {
+            var technologyProfile = new PageCapabilityClassifier().BuildTechnologyProfile(snapshot);
+            locatorStrategy = new LocatorEngine().SelectLocatorStrategy(technologyProfile, snapshot);
+            reasons.Add("Locator strategy selected: " + locatorStrategy.Strategy + ".");
+        }
+
+        if (locatorStrategy is null && humanHandoff)
+        {
+            locatorStrategy = LocatorStrategy.HumanHandoff("Human handoff required before locator routing.");
+        }
 
         return new StrategyRouterDecision(
             Strategy: strategy,
@@ -528,7 +607,11 @@ public sealed class StrategyRouter
             ProhibitedActions: DefaultProhibitedActions,
             HumanHandoffRequired: humanHandoff,
             Reasons: reasons.Distinct(StringComparer.Ordinal).ToArray(),
-            EvidenceRefs: ["pending:evidence-pack"]);
+            EvidenceRefs: ["pending:evidence-pack"])
+        {
+            LocatorStrategy = locatorStrategy,
+            Blockages = blockages
+        };
     }
 
     private static IReadOnlyList<PerceptionSignalKind> RequiredSignalsFor(BrowserPerceptionStrategy strategy) =>

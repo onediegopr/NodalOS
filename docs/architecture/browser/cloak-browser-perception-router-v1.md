@@ -63,6 +63,33 @@ The current block implements only contracts, fixture-safe snapshot V0, classifie
 
 It must not store raw DOM, raw HTML, cookies, localStorage/sessionStorage values, input values, credentials, screenshots inline, or external page payloads.
 
+### Locator Engine
+
+`LocatorEngine` is a read-only candidate generator. It chooses the safest locator strategy from `PageTechnologyProfile` and `BrowserPerceptionSnapshot` metadata, then emits locator candidates for future layers. It does not execute locators, click, type, validate against real pages, pierce shadow DOM, inspect live frames, run JavaScript, or perform visual recognition.
+
+Initial locator strategies:
+
+- `Css`
+- `XPath`
+- `Accessibility`
+- `Text`
+- `Visual`
+- `Hybrid`
+- `FrameTargetRequired`
+- `ShadowPiercingRequired`
+- `HumanHandoff`
+
+Locator routing rules:
+
+- Modern SPA or semantic UI -> `Accessibility`
+- Legacy/simple forms -> `Css`
+- Relevant iframe metadata -> `FrameTargetRequired`
+- Shadow DOM marker -> `ShadowPiercingRequired`
+- Canvas/visual-only marker -> `Visual`
+- Auth, CAPTCHA, 2FA, anti-bot, or low-confidence/contradictory signals -> `HumanHandoff`
+
+All locators are candidates only. They include `CandidateOnly=true` and `ExecutesAction=false`.
+
 ### Page Capability Classifier
 
 `PageCapabilityClassifier` is a pure deterministic classifier over a `BrowserPerceptionSnapshot`. It returns a `PageCapabilityProfile` with:
@@ -110,16 +137,47 @@ Priority rules:
 - Critical console/runtime failures route to `CONSOLE_DIAGNOSIS_REQUIRED`.
 - Unknown or low-confidence pages route to `UNSUPPORTED_OR_HIGH_RISK`.
 
+From CBPR-005/006 forward, `StrategyRouter` consults `BlockageDetector` before final routing. If a blockage requires human handoff, final routing is `HUMAN_HANDOFF_REQUIRED`. If no critical blockage exists and a snapshot is available, the router enriches the decision with locator strategy metadata.
+
+### Blockage Detector
+
+`BlockageDetector` detects metadata-only obstacles that block or condition future automation. It does not solve, bypass, dismiss, click, submit, wait out, or mutate anything.
+
+Initial blockage kinds:
+
+- `Captcha`
+- `Login`
+- `TwoFactor`
+- `AntiBot`
+- `RateLimit`
+- `AccessDenied`
+- `Popup`
+- `CookieWall`
+- `BrokenPage`
+- `NetworkFailure`
+- `ConsoleError`
+- `Unknown`
+
+Rules:
+
+- CAPTCHA, 2FA, anti-bot, login, and credential entry always require human handoff.
+- HTTP 403 blocks automatic continuation.
+- HTTP 429 blocks automatic continuation and may require future backoff policy, never bypass.
+- Cookie walls and popups are warnings only in this block; no dismissal is executed.
+- Critical console and network failures block automatic continuation.
+
 ### Future Layers
 
 The following are deliberately out of scope:
 
-- Locator Engine
+- Locator execution or live locator validation
 - Blockage Detector deep implementation
 - Safe Injection
 - Controlled Action Controller integration
 - Productive actions
 - External page navigation
+
+After CBPR-005/006, Locator Engine V1 and Blockage Detector V1 exist only as read-only candidate/diagnostic layers. Productive actions, live page mutation, safe injection, and external navigation remain out of scope.
 
 ## Guardrails
 
