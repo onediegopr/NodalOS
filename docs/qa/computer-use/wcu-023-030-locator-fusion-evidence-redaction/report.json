@@ -3,9 +3,9 @@
   "decision": "GO_WCU_LOCATOR_FUSION_EVIDENCE_REDACTION_FIXTURE_READY",
   "branch": "chrome-lab-001-extension-local-ai-bridge",
   "initialHead": "877de6fc30c439febad3eaa0f76d3de719b6b857",
-  "finalHead": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
-  "commit": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
-  "pushStatus": "RECORDED_IN_FINAL_RESPONSE",
+  "finalHead": "990eef67686782de6d578a614b44ca75107f5b94",
+  "commit": "990eef67686782de6d578a614b44ca75107f5b94",
+  "pushStatus": "PUSHED_OK",
   "originDivergenceStart": {
     "ahead": 0,
     "behind": 0
