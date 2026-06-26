@@ -1,7 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { FingerprintGenerator, FingerprintProfile } from '../src/fingerprint/FingerprintProfile.js';
-import { FingerprintInjector } from '../src/fingerprint/FingerprintInjector.js';
 
 const TEST_SITES = [
   {
@@ -152,7 +151,6 @@ async function run() {
     ignoreHTTPSErrors: true,
   });
 
-  await context.addInitScript(FingerprintInjector.getFullInitScript(profile));
   const page = await context.newPage();
 
   const report = {
@@ -201,7 +199,7 @@ async function run() {
     allLeaks.forEach(l => {
       switch (l.check) {
         case 'WebDriver':
-          console.log(`  WebDriver leak → Ensure navigator.webdriver is undefined (not false). Check FingerprintInjector getFullInitScript.`);
+          console.log(`  WebDriver leak → Ensure navigator.webdriver is undefined (not false). Verify CloakBrowser binary patches are active.`);
           break;
         case 'Chrome':
           console.log(`  Chrome runtime leak → Ensure window.chrome is properly spoofed with runtime.* methods.`);
@@ -213,7 +211,7 @@ async function run() {
           console.log(`  WebGL leak → Verify getParameter hooks for UNMASKED_VENDOR_WEBGL and UNMASKED_RENDERER_WEBGL.`);
           break;
         default:
-          console.log(`  ${l.check} leak → Review and extend FingerprintInjector for this property.`);
+          console.log(`  ${l.check} leak → Review CloakBrowser binary patches for this property.`);
       }
     });
   }

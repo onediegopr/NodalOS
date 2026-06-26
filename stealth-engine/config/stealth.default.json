@@ -2,6 +2,8 @@
   "bridgeHost": "127.0.0.1",
   "bridgePort": 8787,
 
+  "cloakbrowserExecutablePath": "",
+
   "fingerprint": {
     "defaultPreset": "desktop-win-chrome",
     "autoRotate": false,

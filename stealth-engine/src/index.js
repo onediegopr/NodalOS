@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import { readFile } from 'node:fs/promises';
 
+import { CloakBrowserResolver } from './runtime/CloakBrowserResolver.js';
 import { StealthSession } from './StealthSession.js';
 import { FingerprintGenerator, FingerprintProfile } from './fingerprint/FingerprintProfile.js';
 import { CaptchaDetector } from './captcha/CaptchaDetector.js';
@@ -304,6 +305,14 @@ async function shutdown() {
   for (const [, s] of sessions) { await s.dispose().catch(() => {}); }
   if (ws) ws.close();
   process.exit(0);
+}
+
+try {
+  const cloakbrowserPath = CloakBrowserResolver.resolveExecutablePath();
+  console.log('[StealthEngine] CloakBrowser resolved: ' + cloakbrowserPath);
+} catch (e) {
+  console.error('[StealthEngine] FATAL: ' + e.message);
+  process.exit(1);
 }
 
 console.log('NODAL OS Stealth Engine v0.2.0');

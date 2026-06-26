@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FingerprintProfile, FingerprintGenerator } from '../src/fingerprint/FingerprintProfile.js';
-import { FingerprintInjector } from '../src/fingerprint/FingerprintInjector.js';
 import { BehaviorProfile } from '../src/behavior/BehaviorProfile.js';
 import { HumanMouse } from '../src/behavior/HumanMouse.js';
 import { HumanKeyboard } from '../src/behavior/HumanKeyboard.js';
@@ -52,12 +51,6 @@ test('FingerprintProfile.ensureCoherence updates country data', () => {
   assert.equal(result.country, 'AR');
   assert.equal(result.locale, 'es-AR');
   assert.equal(result.timezone, 'America/Argentina/Buenos_Aires');
-});
-
-test('FingerprintInjector.getFullInitScript returns a function', () => {
-  const p = FingerprintGenerator.generate();
-  const fn = FingerprintInjector.getFullInitScript(p);
-  assert.equal(typeof fn, 'function');
 });
 
 // ── Behavior Tests ──

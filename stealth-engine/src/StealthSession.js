@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { FingerprintInjector } from './fingerprint/FingerprintInjector.js';
+import { CloakBrowserResolver } from './runtime/CloakBrowserResolver.js';
 import { BehaviorProfile } from './behavior/BehaviorProfile.js';
 import { AdaptiveBehaviorEngine } from './behavior/AdaptiveBehaviorEngine.js';
 import { HumanMouse } from './behavior/HumanMouse.js';
@@ -36,9 +36,11 @@ export class StealthSession {
     };
     this.behavior.navigation = new HumanNavigation(this.behavior.mouse);
 
+    const executablePath = CloakBrowserResolver.resolveExecutablePath();
+
     this.browser = await chromium.launch({
       headless: false,
-      channel: 'chromium',
+      executablePath,
       args: this.buildLaunchArgs(),
       ignoreDefaultArgs: [
         '--enable-automation',
@@ -69,8 +71,6 @@ export class StealthSession {
     }
 
     this.context = await this.browser.newContext(ctxOpts);
-
-    await this.context.addInitScript(FingerprintInjector.getFullInitScript(this.profile));
 
     this.page = await this.context.newPage();
     return this;
