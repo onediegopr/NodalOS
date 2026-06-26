@@ -166,6 +166,56 @@ Rules:
 - Cookie walls and popups are warnings only in this block; no dismissal is executed.
 - Critical console and network failures block automatic continuation.
 
+### Safe Action Planner
+
+`SafeActionPlanner` creates theoretical, fixture-only action plans from `PageTechnologyProfile`, `BrowserPerceptionSnapshot`, and a requested objective. It does not execute actions, navigate, click, type, select, call CDP, call WebSocket, inject JavaScript, or mutate page state.
+
+Initial action kinds:
+
+- `Scroll`
+- `Focus`
+- `Click`
+- `Type`
+- `Select`
+- `Wait`
+- `HumanHandoff`
+
+Planning rules:
+
+- CAPTCHA, 2FA, anti-bot, login, credential entry, sensitive data, or bypass objectives return only `HumanHandoff`.
+- Low-confidence or contradictory snapshots return `HumanHandoff`.
+- Legacy form fixtures may produce theoretical `Type` and `Click` plans.
+- SPA fixtures may produce theoretical accessibility-based `Focus` and `Click` plans.
+- Visual/canvas surfaces return `HumanHandoff` in this block.
+- Every plan is `PlanOnly`, `CanExecuteInFixtureOnly`, `ProhibitedOnExternalPages`, and metadata-only.
+
+### Pre/Post Verification Contracts
+
+`BrowserActionVerifier` evaluates preconditions and postconditions against snapshots only. It does not execute the action being verified.
+
+Initial preconditions:
+
+- `NoHumanHandoffBlockage`
+- `TargetLocatorPresent`
+- `TargetVisible`
+- `TargetEnabled`
+- `PageStable`
+- `ConfidenceAboveThreshold`
+- `FixtureOrControlledPageOnly`
+
+Initial postconditions:
+
+- `UrlChanged`
+- `DomChanged`
+- `ElementAppeared`
+- `ElementDisappeared`
+- `InputValueChanged`
+- `NetworkSettled`
+- `NoCriticalConsoleError`
+- `ExpectedStateObserved`
+
+Verification contracts are planning gates for future action layers. They do not grant execution authority.
+
 ### Future Layers
 
 The following are deliberately out of scope:
@@ -178,6 +228,8 @@ The following are deliberately out of scope:
 - External page navigation
 
 After CBPR-005/006, Locator Engine V1 and Blockage Detector V1 exist only as read-only candidate/diagnostic layers. Productive actions, live page mutation, safe injection, and external navigation remain out of scope.
+
+After CBPR-007/008, Safe Action Planner V1 and Pre/Post Verification Contracts V1 exist only as read-only fixture planning and snapshot comparison layers. Controlled action execution is explicitly deferred to CBPR-009 and must not run without human confirmation.
 
 ## Guardrails
 
