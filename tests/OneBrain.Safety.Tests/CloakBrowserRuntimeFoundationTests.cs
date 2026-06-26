@@ -1,4 +1,5 @@
 using OneBrain.BrowserRuntime;
+using System.Text.Json;
 
 namespace OneBrain.Safety.Tests;
 
@@ -475,6 +476,220 @@ public sealed class CloakBrowserRuntimeFoundationTests
         Assert.IsFalse(evidence.StoresRawLogs);
     }
 
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpDomSnapshot_CapturesPageMetadata()
+    {
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+
+        Assert.AreEqual("data:text/html,controlled", snapshot.PageMetadata.Url);
+        Assert.AreEqual("NODAL OS CDP Controlled Action Test", snapshot.PageMetadata.Title);
+        Assert.AreEqual("complete", snapshot.PageMetadata.ReadyState);
+        Assert.AreEqual("cloakbrowser-cdp-direct", snapshot.Source);
+        Assert.IsFalse(snapshot.ExtensionUsed);
+        Assert.IsFalse(snapshot.SystemBrowserUsed);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpDomSnapshot_LimitsTextPreview()
+    {
+        var manager = new CdpDomSnapshotManager();
+        var script = manager.BuildDomSnapshotExpression(maxTextPreviewCharacters: 64);
+
+        StringAssert.Contains(script, "slice(0, limit)");
+        StringAssert.Contains(script, "maxTextPreviewCharacters = 64");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpDomSnapshot_DoesNotStoreInputValues()
+    {
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+
+        Assert.IsFalse(snapshot.StoresInputValues);
+        Assert.IsTrue(snapshot.SecretsRedacted);
+        Assert.IsFalse(snapshot.InteractiveElements.Any(element => element.Label.Contains("never-store-this", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpDomSnapshot_DoesNotStoreRawHtml()
+    {
+        var manager = new CdpDomSnapshotManager();
+        var script = manager.BuildDomSnapshotExpression();
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+
+        Assert.IsFalse(manager.ContainsForbiddenRawDataReads(script));
+        Assert.IsFalse(snapshot.StoresRawHtml);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpDomSnapshot_DetectsButtonsInputsLinks()
+    {
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+
+        Assert.AreEqual(1, snapshot.ButtonsCount);
+        Assert.AreEqual(2, snapshot.InputsCount);
+        Assert.AreEqual(1, snapshot.LinksCount);
+        Assert.IsTrue(snapshot.InteractiveElements.Any(element => element.Tag == "button"));
+        Assert.IsTrue(snapshot.InteractiveElements.Any(element => element.Tag == "input"));
+        Assert.IsTrue(snapshot.InteractiveElements.Any(element => element.Tag == "a"));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpDomSnapshot_RedactsPasswordInputs()
+    {
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+        var sensitiveInput = snapshot.InteractiveElements.Single(element => element.InputType == "password");
+
+        Assert.AreEqual("[redacted input]", sensitiveInput.Label);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpDomSnapshot_LimitsInteractiveElementCount()
+    {
+        var script = new CdpDomSnapshotManager().BuildDomSnapshotExpression(maxInteractiveElements: 7);
+
+        StringAssert.Contains(script, "maxInteractiveElements = 7");
+        StringAssert.Contains(script, ".slice(0, maxInteractiveElements)");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpActionController_CanClickControlledButton()
+    {
+        var controller = new CdpActionController();
+        var request = controller.CreateClickElementByStableId("cdp-el-1");
+        var script = controller.BuildControlledActionExpression(request);
+
+        Assert.AreEqual(CdpControlledActionKind.ClickElementByStableId, request.ActionKind);
+        StringAssert.Contains(script, "element.click()");
+        StringAssert.Contains(script, "Controlled click completed.");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpActionController_CanTypeIntoControlledInput()
+    {
+        var controller = new CdpActionController();
+        var request = controller.CreateTypeTextByStableId("cdp-el-2", "NODAL OS controlled text");
+        var script = controller.BuildControlledActionExpression(request);
+
+        Assert.AreEqual(CdpControlledActionKind.TypeTextByStableId, request.ActionKind);
+        StringAssert.Contains(script, "element.value = text");
+        StringAssert.Contains(script, "Controlled text entered.");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpActionController_RejectsExternalNavigation()
+    {
+        var controller = new CdpActionController();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
+            controller.CreateExternalNavigation(new Uri("https://example.invalid/blocked")));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpActionController_RejectsFormSubmit()
+    {
+        var controller = new CdpActionController();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
+            controller.CreateForbiddenFormSubmit("cdp-el-4"));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpActionController_RejectsUnknownStableId()
+    {
+        var controller = new CdpActionController();
+        var request = controller.CreateClickElementByStableId("cdp-el-99");
+        var result = controller.RejectUnknownStableId(request, ParseSnapshot(SampleSnapshotJson()));
+
+        Assert.AreEqual("blocked", result.Status);
+        Assert.AreEqual("Unknown stable id.", result.Reason);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpActionController_DoesNotUseExtension()
+    {
+        var controller = new CdpActionController();
+        var evidence = controller.CreateEvidence(
+            CdpControlledActionKind.ClickElementByStableId,
+            "cdp-el-1",
+            "completed",
+            "ok");
+
+        Assert.IsFalse(evidence.ExtensionUsed);
+        Assert.IsFalse(evidence.SystemBrowserUsed);
+        Assert.IsFalse(evidence.ProductCommandsExecuted);
+        Assert.IsFalse(evidence.FilesModified);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpEvidenceAdapter_RecordsDomSnapshotWithoutRawHtml()
+    {
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+        var evidence = new CdpEvidenceAdapter().CreateDomActionEvidence(
+            snapshot,
+            [],
+            screenshotCaptured: false,
+            externalNavigationAttempted: false,
+            externalNavigationBlocked: false);
+
+        Assert.IsFalse(evidence.StoresRawHtml);
+        Assert.IsFalse(evidence.StoresInputValues);
+        Assert.IsTrue(evidence.SecretsRedacted);
+        Assert.IsNotNull(evidence.DomSnapshot);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpEvidenceAdapter_RecordsControlledActions()
+    {
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+        var actionEvidence = new CdpActionController().CreateEvidence(
+            CdpControlledActionKind.ClickElementByStableId,
+            "cdp-el-1",
+            "completed",
+            "ok");
+        var evidence = new CdpEvidenceAdapter().CreateDomActionEvidence(
+            snapshot,
+            [actionEvidence],
+            screenshotCaptured: true,
+            externalNavigationAttempted: true,
+            externalNavigationBlocked: true);
+
+        Assert.IsTrue(evidence.ScreenshotCaptured);
+        Assert.IsTrue(evidence.ExternalNavigationAttempted);
+        Assert.IsTrue(evidence.ExternalNavigationBlocked);
+        Assert.AreEqual(1, evidence.ActionResults?.Count);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntime")]
+    public void CdpEvidenceAdapter_RedactsInputsAndSecrets()
+    {
+        var snapshot = ParseSnapshot(SampleSnapshotJson());
+        var evidence = new CdpEvidenceAdapter().CreateDomActionEvidence(
+            snapshot,
+            [],
+            screenshotCaptured: false,
+            externalNavigationAttempted: false,
+            externalNavigationBlocked: false);
+
+        Assert.IsTrue(evidence.SecretsRedacted);
+        Assert.IsFalse(evidence.StoresInputValues);
+    }
+
     private static BrowserRuntimeLock ValidLock() =>
         new()
         {
@@ -514,4 +729,77 @@ public sealed class CloakBrowserRuntimeFoundationTests
         Assert.Fail("Repository root with browser-runtime.lock.json was not found.");
         return string.Empty;
     }
+
+    private static CdpDomSnapshot ParseSnapshot(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+        return new CdpDomSnapshotManager().ParseRuntimeEvaluateResult(document.RootElement.Clone());
+    }
+
+    private static string SampleSnapshotJson() =>
+        """
+        {
+          "pageMetadata": {
+            "url": "data:text/html,controlled",
+            "title": "NODAL OS CDP Controlled Action Test",
+            "readyState": "complete"
+          },
+          "nodeCount": 12,
+          "textPreview": "Controlled local data URL.",
+          "interactiveElements": [
+            {
+              "stableId": "cdp-el-1",
+              "tag": "button",
+              "role": "button",
+              "label": "Record controlled click",
+              "inputType": null,
+              "href": null,
+              "enabled": true,
+              "visible": true,
+              "selectorHint": "[data-nodal-cdp-stable-id=\"cdp-el-1\"]"
+            },
+            {
+              "stableId": "cdp-el-2",
+              "tag": "input",
+              "role": "input",
+              "label": "safe text",
+              "inputType": "text",
+              "href": null,
+              "enabled": true,
+              "visible": true,
+              "selectorHint": "[data-nodal-cdp-stable-id=\"cdp-el-2\"]"
+            },
+            {
+              "stableId": "cdp-el-3",
+              "tag": "input",
+              "role": "input",
+              "label": "[redacted input]",
+              "inputType": "password",
+              "href": null,
+              "enabled": true,
+              "visible": true,
+              "selectorHint": "[data-nodal-cdp-stable-id=\"cdp-el-3\"]"
+            },
+            {
+              "stableId": "cdp-el-4",
+              "tag": "a",
+              "role": "link",
+              "label": "External link blocked by controller",
+              "inputType": null,
+              "href": "external-url-redacted",
+              "enabled": true,
+              "visible": true,
+              "selectorHint": "[data-nodal-cdp-stable-id=\"cdp-el-4\"]"
+            }
+          ],
+          "formsCount": 1,
+          "linksCount": 1,
+          "buttonsCount": 1,
+          "inputsCount": 2,
+          "screenshotsAvailable": true,
+          "source": "cloakbrowser-cdp-direct",
+          "extensionUsed": false,
+          "systemBrowserUsed": false
+        }
+        """;
 }

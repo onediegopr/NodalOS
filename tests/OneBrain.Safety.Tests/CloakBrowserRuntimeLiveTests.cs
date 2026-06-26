@@ -16,7 +16,7 @@ public sealed class CloakBrowserRuntimeLiveTests
         var result = await RequireLiveResultAsync().ConfigureAwait(false);
 
         Assert.AreEqual("PASS", result.Status);
-        Assert.AreEqual("NODAL_OS_CLOAKBROWSER_CDP_SESSION_LIFECYCLE_HARDENED", result.Decision);
+        Assert.AreEqual("NODAL_OS_CLOAKBROWSER_CDP_DOM_SNAPSHOT_ACTION_CONTROLLER_READY", result.Decision);
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.BrowserVersion));
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.ProtocolVersion));
     }
@@ -68,7 +68,7 @@ public sealed class CloakBrowserRuntimeLiveTests
 
         Assert.IsTrue(result.NavigationOk);
         Assert.IsTrue(result.TitleRead);
-        Assert.AreEqual("NODAL OS CloakBrowser CDP Healthcheck", result.Title);
+        Assert.AreEqual("NODAL OS CDP Controlled Action Test", result.Title);
     }
 
     [TestMethod]
@@ -129,6 +129,86 @@ public sealed class CloakBrowserRuntimeLiveTests
         Assert.IsTrue(result.ProcessStarted);
         Assert.AreEqual("127.0.0.1", result.CdpEndpointHost);
         CollectionAssert.Contains(result.LaunchArgsRedacted.ToList(), "--user-data-dir=<local-verification-profile>");
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CdpDomSnapshot_CapturesPageMetadata_Live()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(result.DomSnapshotCaptured);
+        Assert.IsNotNull(result.DomSnapshotEvidence);
+        Assert.AreEqual("NODAL OS CDP Controlled Action Test", result.DomSnapshotEvidence.PageMetadata.Title);
+        Assert.AreEqual("cloakbrowser-cdp-direct", result.DomSnapshotEvidence.Source);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CdpDomSnapshot_DetectsInteractiveElements_Live()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(result.InteractiveElementCount >= 4);
+        Assert.IsTrue(result.ButtonsCount >= 2);
+        Assert.IsTrue(result.InputsCount >= 2);
+        Assert.IsTrue(result.LinksCount >= 1);
+        Assert.IsTrue(result.FormsCount >= 1);
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CdpActionController_CanClickControlledButton_Live()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(result.ControlledClickOk);
+        Assert.IsNotNull(result.ControlledActionEvidence);
+        Assert.IsTrue(result.ControlledActionEvidence.Any(action =>
+            action.ActionKind == CdpControlledActionKind.ClickElementByStableId
+            && action.Status == "completed"));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CdpActionController_CanTypeIntoControlledInput_Live()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(result.ControlledTypeOk);
+        Assert.IsNotNull(result.ControlledActionEvidence);
+        Assert.IsTrue(result.ControlledActionEvidence.Any(action =>
+            action.ActionKind == CdpControlledActionKind.TypeTextByStableId
+            && action.Status == "completed"));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CdpActionController_BlocksExternalNavigation_Live()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsTrue(result.ExternalNavigationAttempted);
+        Assert.IsTrue(result.ExternalNavigationBlocked);
+        Assert.IsNotNull(result.ControlledActionEvidence);
+        Assert.IsTrue(result.ControlledActionEvidence.Any(action =>
+            action.ActionKind == CdpControlledActionKind.NavigateExternalUrl
+            && action.Status == "blocked"));
+    }
+
+    [TestMethod]
+    [TestCategory("CloakBrowserRuntimeLive")]
+    public async Task CdpEvidenceAdapter_CapturesDomActionEvidence_Live()
+    {
+        var result = await RequireLiveResultAsync().ConfigureAwait(false);
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(result.DomActionEvidencePath));
+        Assert.IsTrue(File.Exists(result.DomActionEvidencePath));
+        Assert.IsTrue(result.SecretsRedacted);
+        Assert.IsFalse(result.RawHtmlStored);
+        Assert.IsFalse(result.InputValuesStored);
+        Assert.IsFalse(result.ExtensionUsed);
+        Assert.IsFalse(result.SystemBrowserUsed);
     }
 
     [TestMethod]

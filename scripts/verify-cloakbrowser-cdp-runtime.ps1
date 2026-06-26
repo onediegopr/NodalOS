@@ -194,12 +194,17 @@ $latestEvidence = Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "artifac
     Sort-Object LastWriteTime -Descending |
     Select-Object -First 1
 
+$latestDomActionEvidence = Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "artifacts/local-verification") -Filter "cloakbrowser-cdp-dom-action-*.redacted.json" |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
 if (-not $latestEvidence) {
     Write-Evidence -Status "BLOCKED" -Decision "NODAL_OS_CLOAKBROWSER_CDP_LIVE_BLOCKED_WITH_CAUSE" -Reason "CloakBrowser CDP live healthcheck completed but evidence JSON was not found." -RuntimePathInfo $runtimePathInfo -Lock $lock
     exit 4
 }
 
 $evidenceJson = Get-Content -LiteralPath $latestEvidence.FullName -Raw | ConvertFrom-Json
+$domActionEvidenceJson = if ($latestDomActionEvidence) { Get-Content -LiteralPath $latestDomActionEvidence.FullName -Raw | ConvertFrom-Json } else { $null }
 "status=$($evidenceJson.status)"
 "decision=$($evidenceJson.decision)"
 "reason=$($evidenceJson.reason)"
@@ -210,6 +215,11 @@ $evidenceJson = Get-Content -LiteralPath $latestEvidence.FullName -Raw | Convert
 "targetLifecycle=$($evidenceJson.targetCreated)/$($evidenceJson.targetClosed)"
 "sessionLifecycle=$($evidenceJson.sessionCreated)/$($evidenceJson.sessionClosed)"
 "injectionOk=$($evidenceJson.bootstrapInjected)"
+"domSnapshotOk=$($evidenceJson.domSnapshotCaptured)"
+"interactiveElements=$($evidenceJson.interactiveElementCount)"
+"controlledClickOk=$($evidenceJson.controlledClickOk)"
+"controlledTypeOk=$($evidenceJson.controlledTypeOk)"
+"externalNavigationBlocked=$($evidenceJson.externalNavigationBlocked)"
 "screenshotOk=$($evidenceJson.screenshotCaptured)"
 "shutdownOk=$($evidenceJson.runtimeShutdown)"
 "processExited=$($evidenceJson.processExited)"
@@ -217,3 +227,8 @@ $evidenceJson = Get-Content -LiteralPath $latestEvidence.FullName -Raw | Convert
 "systemBrowserUsed=$($evidenceJson.systemBrowserUsed)"
 "extensionUsed=$($evidenceJson.extensionUsed)"
 "evidence=$($latestEvidence.FullName)"
+if ($latestDomActionEvidence) {
+    "domActionEvidence=$($latestDomActionEvidence.FullName)"
+    "domActionSource=$($domActionEvidenceJson.source)"
+    "domActionSecretsRedacted=$($domActionEvidenceJson.secretsRedacted)"
+}

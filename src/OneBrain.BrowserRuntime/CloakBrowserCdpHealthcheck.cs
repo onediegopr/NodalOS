@@ -56,13 +56,29 @@ public sealed record CloakBrowserCdpHealthcheckResult(
     bool FilesModified,
     string? EvidencePath,
     string? ScreenshotPath,
-    int? ProcessId);
+    int? ProcessId,
+    bool DomSnapshotCaptured = false,
+    int InteractiveElementCount = 0,
+    int FormsCount = 0,
+    int LinksCount = 0,
+    int ButtonsCount = 0,
+    int InputsCount = 0,
+    bool ControlledClickOk = false,
+    bool ControlledTypeOk = false,
+    bool ExternalNavigationAttempted = false,
+    bool ExternalNavigationBlocked = false,
+    bool SecretsRedacted = true,
+    bool RawHtmlStored = false,
+    bool InputValuesStored = false,
+    CdpDomSnapshotEvidence? DomSnapshotEvidence = null,
+    IReadOnlyList<CdpControlledActionEvidence>? ControlledActionEvidence = null,
+    string? DomActionEvidencePath = null);
 
 public sealed class CloakBrowserCdpHealthcheckRunner
 {
-    private const string SuccessDecision = "NODAL_OS_CLOAKBROWSER_CDP_SESSION_LIFECYCLE_HARDENED";
+    private const string SuccessDecision = "NODAL_OS_CLOAKBROWSER_CDP_DOM_SNAPSHOT_ACTION_CONTROLLER_READY";
     private const string BlockedDecision = "NODAL_OS_CLOAKBROWSER_CDP_LIVE_BLOCKED_WITH_CAUSE";
-    private const string PageTitle = "NODAL OS CloakBrowser CDP Healthcheck";
+    private const string PageTitle = "NODAL OS CDP Controlled Action Test";
 
     public async Task<CloakBrowserCdpHealthcheckResult> RunAsync(
         CloakBrowserCdpHealthcheckOptions options,
@@ -161,6 +177,19 @@ public sealed class CloakBrowserCdpHealthcheckRunner
         var titleRead = false;
         var bootstrapInjected = false;
         var doubleInjectionPrevented = false;
+        var domSnapshotCaptured = false;
+        var interactiveElementCount = 0;
+        var formsCount = 0;
+        var linksCount = 0;
+        var buttonsCount = 0;
+        var inputsCount = 0;
+        var controlledClickOk = false;
+        var controlledTypeOk = false;
+        var externalNavigationAttempted = false;
+        var externalNavigationBlocked = false;
+        CdpDomSnapshot? domSnapshot = null;
+        CdpDomSnapshotEvidence? domSnapshotEvidence = null;
+        var controlledActionEvidence = new List<CdpControlledActionEvidence>();
         var screenshotCaptured = false;
         var runtimeShutdown = false;
         var processExited = false;
@@ -274,6 +303,83 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 .ConfigureAwait(false);
             doubleInjectionPrevented = ReadRuntimeObjectBoolean(secondInjection, "alreadyInjected");
 
+            var domSnapshotManager = new CdpDomSnapshotManager();
+            var domSnapshotResult = await liveCdp.SendAsync(
+                    "Runtime.evaluate",
+                    new Dictionary<string, object?>
+                    {
+                        ["expression"] = domSnapshotManager.BuildDomSnapshotExpression(),
+                        ["returnByValue"] = true,
+                        ["awaitPromise"] = true
+                    },
+                    sessionId,
+                    timeoutSource.Token)
+                .ConfigureAwait(false);
+            domSnapshot = domSnapshotManager.ParseRuntimeEvaluateResult(domSnapshotResult);
+            domSnapshotEvidence = domSnapshotManager.CreateEvidence(domSnapshot);
+            domSnapshotCaptured = domSnapshot.NodeCount > 0 && domSnapshot.InteractiveElements.Count > 0;
+            interactiveElementCount = domSnapshot.InteractiveElements.Count;
+            formsCount = domSnapshot.FormsCount;
+            linksCount = domSnapshot.LinksCount;
+            buttonsCount = domSnapshot.ButtonsCount;
+            inputsCount = domSnapshot.InputsCount;
+
+            var actionController = new CdpActionController();
+            var buttonStableId = FindStableId(domSnapshot, "button", "button");
+            if (!string.IsNullOrWhiteSpace(buttonStableId))
+            {
+                var clickRequest = actionController.CreateClickElementByStableId(buttonStableId);
+                var clickResult = await liveCdp.SendAsync(
+                        "Runtime.evaluate",
+                        new Dictionary<string, object?>
+                        {
+                            ["expression"] = actionController.BuildControlledActionExpression(clickRequest),
+                            ["returnByValue"] = true,
+                            ["awaitPromise"] = true
+                        },
+                        sessionId,
+                        timeoutSource.Token)
+                    .ConfigureAwait(false);
+                var parsedClick = actionController.ParseRuntimeEvaluateActionResult(clickRequest.ActionKind, buttonStableId, clickResult);
+                controlledClickOk = parsedClick.Status.Equals("completed", StringComparison.OrdinalIgnoreCase);
+                controlledActionEvidence.Add(parsedClick.Evidence);
+            }
+
+            var inputStableId = FindStableId(domSnapshot, "input", "input");
+            if (!string.IsNullOrWhiteSpace(inputStableId))
+            {
+                var typeRequest = actionController.CreateTypeTextByStableId(inputStableId, "NODAL OS controlled text");
+                var typeResult = await liveCdp.SendAsync(
+                        "Runtime.evaluate",
+                        new Dictionary<string, object?>
+                        {
+                            ["expression"] = actionController.BuildControlledActionExpression(typeRequest),
+                            ["returnByValue"] = true,
+                            ["awaitPromise"] = true
+                        },
+                        sessionId,
+                        timeoutSource.Token)
+                    .ConfigureAwait(false);
+                var parsedType = actionController.ParseRuntimeEvaluateActionResult(typeRequest.ActionKind, inputStableId, typeResult);
+                controlledTypeOk = parsedType.Status.Equals("completed", StringComparison.OrdinalIgnoreCase);
+                controlledActionEvidence.Add(parsedType.Evidence);
+            }
+
+            externalNavigationAttempted = true;
+            try
+            {
+                actionController.CreateExternalNavigation(new Uri("https://example.invalid/blocked"));
+            }
+            catch (InvalidOperationException)
+            {
+                externalNavigationBlocked = true;
+                controlledActionEvidence.Add(actionController.CreateEvidence(
+                    CdpControlledActionKind.NavigateExternalUrl,
+                    "https://example.invalid/blocked",
+                    "blocked",
+                    "Controlled CDP actions do not allow external navigation in V1."));
+            }
+
             var screenshot = await liveCdp.SendAsync(
                     "Page.captureScreenshot",
                     new Dictionary<string, object?> { ["format"] = "png", ["fromSurface"] = true },
@@ -330,6 +436,10 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 && titleRead
                 && bootstrapInjected
                 && doubleInjectionPrevented
+                && domSnapshotCaptured
+                && controlledClickOk
+                && controlledTypeOk
+                && externalNavigationBlocked
                 && screenshotCaptured
                 && targetClosed
                 && sessionCreated
@@ -373,7 +483,22 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 FilesModified: false,
                 EvidencePath: null,
                 ScreenshotPath: screenshotCaptured ? screenshotPath : null,
-                ProcessId: process.Id);
+                ProcessId: process.Id,
+                DomSnapshotCaptured: domSnapshotCaptured,
+                InteractiveElementCount: interactiveElementCount,
+                FormsCount: formsCount,
+                LinksCount: linksCount,
+                ButtonsCount: buttonsCount,
+                InputsCount: inputsCount,
+                ControlledClickOk: controlledClickOk,
+                ControlledTypeOk: controlledTypeOk,
+                ExternalNavigationAttempted: externalNavigationAttempted,
+                ExternalNavigationBlocked: externalNavigationBlocked,
+                SecretsRedacted: domSnapshot?.SecretsRedacted ?? true,
+                RawHtmlStored: domSnapshot?.StoresRawHtml ?? false,
+                InputValuesStored: domSnapshot?.StoresInputValues ?? false,
+                DomSnapshotEvidence: domSnapshotEvidence,
+                ControlledActionEvidence: controlledActionEvidence);
 
             return await WriteEvidenceAsync(options.RepositoryRoot, result, cancellationToken).ConfigureAwait(false);
         }
@@ -605,13 +730,35 @@ public sealed class CloakBrowserCdpHealthcheckRunner
         const string html = """
 <!doctype html>
 <html>
-  <head><meta charset="utf-8"><title>NODAL OS CloakBrowser CDP Healthcheck</title></head>
-  <body><main><h1>NODAL OS CloakBrowser CDP Healthcheck</h1><p>Controlled local data URL.</p></main></body>
+  <head><meta charset="utf-8"><title>NODAL OS CDP Controlled Action Test</title></head>
+  <body>
+    <main>
+      <h1>NODAL OS CDP Controlled Action Test</h1>
+      <p>Controlled local data URL.</p>
+      <button id="controlled-button" type="button" onclick="document.body.setAttribute('data-clicked', 'true')">Record controlled click</button>
+      <label for="controlled-input">Controlled input</label>
+      <input id="controlled-input" name="controlledInput" type="text" placeholder="safe text" />
+      <input id="redacted-password" name="password" type="password" value="never-store-this" />
+      <a id="external-link" href="https://example.invalid/blocked?token=do-not-store">External link blocked by controller</a>
+      <form id="blocked-form" action="https://example.invalid/post" onsubmit="document.body.setAttribute('data-submit-attempted', 'true'); return false;">
+        <button type="submit">Submit should stay blocked</button>
+      </form>
+    </main>
+  </body>
 </html>
 """;
 
         return "data:text/html;charset=utf-8," + Uri.EscapeDataString(html);
     }
+
+    private static string? FindStableId(CdpDomSnapshot snapshot, string tag, string role) =>
+        snapshot.InteractiveElements
+            .FirstOrDefault(element =>
+                element.Tag.Equals(tag, StringComparison.OrdinalIgnoreCase)
+                && element.Role.Equals(role, StringComparison.OrdinalIgnoreCase)
+                && element.Visible
+                && element.Enabled)
+            ?.StableId;
 
     private static int ReserveTcpPort()
     {
@@ -726,6 +873,19 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             commandsExecuted = result.CommandsExecuted,
             cdpCommandsExecuted = result.CdpCommandsExecuted,
             filesModified = result.FilesModified,
+            domSnapshotCaptured = result.DomSnapshotCaptured,
+            interactiveElementCount = result.InteractiveElementCount,
+            formsCount = result.FormsCount,
+            linksCount = result.LinksCount,
+            buttonsCount = result.ButtonsCount,
+            inputsCount = result.InputsCount,
+            controlledClickOk = result.ControlledClickOk,
+            controlledTypeOk = result.ControlledTypeOk,
+            externalNavigationAttempted = result.ExternalNavigationAttempted,
+            externalNavigationBlocked = result.ExternalNavigationBlocked,
+            secretsRedacted = result.SecretsRedacted,
+            rawHtmlStored = result.RawHtmlStored,
+            inputValuesStored = result.InputValuesStored,
             timestamp = DateTimeOffset.UtcNow
         };
 
@@ -735,7 +895,64 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 cancellationToken)
             .ConfigureAwait(false);
 
-        return result with { EvidencePath = evidencePath };
+        string? domActionEvidencePath = null;
+        if (result.DomSnapshotCaptured
+            || result.ControlledClickOk
+            || result.ControlledTypeOk
+            || result.ExternalNavigationBlocked)
+        {
+            domActionEvidencePath = Path.Combine(artifactsRoot, "cloakbrowser-cdp-dom-action-" + timestamp + ".redacted.json");
+            var domActionEvidence = new
+            {
+                status = result.Status,
+                decision = result.Decision,
+                runtimeProvider = result.RuntimeProvider,
+                cdpMode = result.CdpMode,
+                source = "cloakbrowser-cdp-direct",
+                runtimeVersion = result.RuntimeVersion,
+                binarySha256 = result.BinarySha256,
+                browserVersion = result.BrowserVersion,
+                protocolVersion = result.ProtocolVersion,
+                targetId = result.TargetId,
+                url = result.Url,
+                title = result.Title,
+                pageMetadata = result.DomSnapshotEvidence?.PageMetadata,
+                domSnapshotSummary = result.DomSnapshotEvidence is null
+                    ? null
+                    : new
+                    {
+                        nodeCount = result.DomSnapshotEvidence.NodeCount,
+                        interactiveElementCount = result.DomSnapshotEvidence.InteractiveElementCount,
+                        formsCount = result.DomSnapshotEvidence.FormsCount,
+                        linksCount = result.DomSnapshotEvidence.LinksCount,
+                        buttonsCount = result.DomSnapshotEvidence.ButtonsCount,
+                        inputsCount = result.DomSnapshotEvidence.InputsCount,
+                        screenshotsAvailable = result.DomSnapshotEvidence.ScreenshotsAvailable,
+                        storesRawHtml = result.DomSnapshotEvidence.StoresRawHtml,
+                        storesInputValues = result.DomSnapshotEvidence.StoresInputValues,
+                        secretsRedacted = result.DomSnapshotEvidence.SecretsRedacted
+                    },
+                actionResults = result.ControlledActionEvidence,
+                screenshotCaptured = result.ScreenshotCaptured,
+                extensionUsed = result.ExtensionUsed,
+                systemBrowserUsed = result.SystemBrowserUsed,
+                externalNavigationAttempted = result.ExternalNavigationAttempted,
+                externalNavigationBlocked = result.ExternalNavigationBlocked,
+                productFilesModified = result.FilesModified,
+                secretsRedacted = result.SecretsRedacted,
+                cdpCommandsExecuted = result.CdpCommandsExecuted,
+                productCommandsExecuted = result.CommandsExecuted,
+                timestamp = DateTimeOffset.UtcNow
+            };
+
+            await File.WriteAllTextAsync(
+                    domActionEvidencePath,
+                    JsonSerializer.Serialize(domActionEvidence, JsonOptions),
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        return result with { EvidencePath = evidencePath, DomActionEvidencePath = domActionEvidencePath };
     }
 
     private static async Task<bool> WaitForExitAsync(Process process, TimeSpan timeout, CancellationToken cancellationToken)
