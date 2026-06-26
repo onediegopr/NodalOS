@@ -72,6 +72,10 @@ const result = {
   decision: 'INSTALLED_SIDEPANEL_VERIFICATION_HARNESS_RUNNING',
   startedAt: new Date().toISOString(),
   browserUsed: '',
+  browserRuntimeDefault: 'cloakbrowser-cdp-no-extension',
+  defaultRuntimeHarness: 'legacy-installed-sidepanel-compat-only',
+  installedSidepanelHarnessDefault: false,
+  extensionRuntimeDefault: false,
   extensionRegistered: false,
   extensionId: '',
   apiAvailability: {},
@@ -103,6 +107,12 @@ async function main() {
     name: manifest.name,
     sidePanelPath: manifest.side_panel && manifest.side_panel.default_path,
     permissions: manifest.permissions || []
+  });
+  addCheck('installed sidepanel harness remains legacy compatibility only', true, {
+    browserRuntimeDefault: result.browserRuntimeDefault,
+    defaultRuntimeHarness: result.defaultRuntimeHarness,
+    installedSidepanelHarnessDefault: result.installedSidepanelHarnessDefault,
+    extensionRuntimeDefault: result.extensionRuntimeDefault
   });
   result.cdpSafeLocalStatusChannel = await exportCdpSafeLocalStatusSnapshot();
   addCheck('CDP safe local status snapshot exported', result.cdpSafeLocalStatusChannel.ok, result.cdpSafeLocalStatusChannel);

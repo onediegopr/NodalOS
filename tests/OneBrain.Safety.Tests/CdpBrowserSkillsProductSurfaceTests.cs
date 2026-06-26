@@ -234,6 +234,18 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         StringAssert.Contains(emptyStateFunction, "cdpLiveExecutedFromUi = false");
     }
 
+    [TestMethod]
+    public void InstalledSidepanelHarnessRemainsLegacyCompatibilityOnly()
+    {
+        var harness = ReadRepoText("scripts/verify-installed-sidepanel.mjs");
+
+        StringAssert.Contains(harness, "browserRuntimeDefault: 'cloakbrowser-cdp-no-extension'");
+        StringAssert.Contains(harness, "defaultRuntimeHarness: 'legacy-installed-sidepanel-compat-only'");
+        StringAssert.Contains(harness, "installedSidepanelHarnessDefault: false");
+        StringAssert.Contains(harness, "extensionRuntimeDefault: false");
+        StringAssert.Contains(harness, "installed sidepanel harness remains legacy compatibility only");
+    }
+
     private static string ExtractBrowserSkillsSection(string html)
     {
         const string startMarker = "id=\"browserSkillsWorkspace\"";
