@@ -237,15 +237,6 @@ public sealed record BlockageReport(
         };
 }
 
-public sealed record BrowserEvidencePack(
-    string SnapshotBeforeRef,
-    string? SnapshotAfterRef,
-    string StrategyDecisionRef,
-    string ConsoleSummaryRef,
-    string NetworkSummaryRef,
-    bool RedactionStatus,
-    bool NoSensitivePayloadGuarantee);
-
 public sealed record BrowserPerceptionFixture(
     string FixtureId,
     string Url,
@@ -684,13 +675,38 @@ public sealed class BrowserEvidencePackBuilder
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(decision);
 
+        var noSensitivePayloadGuarantee = !snapshot.StoresRawDom && !snapshot.StoresSensitivePayloads && !snapshot.StorageMetadata.ValuesCaptured;
         return new BrowserEvidencePack(
-            SnapshotBeforeRef: snapshot.SnapshotId,
-            SnapshotAfterRef: null,
-            StrategyDecisionRef: "strategy:" + decision.Strategy,
-            ConsoleSummaryRef: "console:metadata-only",
-            NetworkSummaryRef: "network:metadata-only",
-            RedactionStatus: snapshot.Redacted,
-            NoSensitivePayloadGuarantee: !snapshot.StoresRawDom && !snapshot.StoresSensitivePayloads && !snapshot.StorageMetadata.ValuesCaptured);
+            EvidenceId: "browser-evidence-" + Guid.NewGuid().ToString("N"),
+            CorrelationId: snapshot.SnapshotId,
+            EvidenceKind: BrowserEvidenceKind.PlanOnly,
+            SnapshotBefore: snapshot.SnapshotId,
+            SnapshotAfter: null,
+            StrategyDecision: "strategy:" + decision.Strategy,
+            ActionPlan: null,
+            ExecutionResult: null,
+            BlockageReport: null,
+            ActionSucceeded: null,
+            HumanHandoffTriggered: decision.HumanHandoffRequired,
+            RedactionStatus: snapshot.Redacted ? BrowserEvidenceRedactionStatus.None : BrowserEvidenceRedactionStatus.Partial,
+            SensitiveFieldsRedacted: [],
+            EvidenceSummary: "Metadata-only perception evidence pack.",
+            EvidenceRefs:
+            [
+                new BrowserEvidenceReference(snapshot.SnapshotId, "snapshot-before", "Metadata-only perception snapshot.", Redacted: true),
+                new BrowserEvidenceReference("strategy:" + decision.Strategy, "strategy-decision", "Strategy router decision metadata.", Redacted: true)
+            ],
+            CreatedAtUtc: DateTimeOffset.UtcNow,
+            MetadataOnly: true,
+            FixtureOnly: true,
+            CdpInvoked: false,
+            WebSocketInvoked: false,
+            BrowserLaunched: false,
+            SystemBrowserUsed: false,
+            ExtensionInvoked: false,
+            ExternalNavigationAttempted: false,
+            ProductFilesModified: false,
+            LiveExecutionDisabled: true,
+            NoSensitivePayloadGuarantee: noSensitivePayloadGuarantee);
     }
 }

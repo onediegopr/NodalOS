@@ -178,7 +178,7 @@ public sealed class CloakBrowserPerceptionRouterFoundationTests
 
         Assert.AreEqual("perception-fixture-evidence", evidence.SnapshotBeforeRef);
         Assert.IsNull(evidence.SnapshotAfterRef);
-        Assert.IsTrue(evidence.RedactionStatus);
+        Assert.AreEqual(BrowserEvidenceRedactionStatus.None, evidence.RedactionStatus);
         Assert.IsTrue(evidence.NoSensitivePayloadGuarantee);
     }
 

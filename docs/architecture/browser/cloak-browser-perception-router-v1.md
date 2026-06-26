@@ -236,6 +236,10 @@ After CBPR-007/008, Safe Action Planner V1 and Pre/Post Verification Contracts V
 
 After CBPR-009, Controlled Action Executor V0 exists only as a fixture/in-memory executor. It accepts `FixtureOnly` mode, aborts all live modes, mutates only `FixturePageState`, and records metadata-only evidence flags proving no CDP, WebSocket, browser launch, extension, external navigation, product file write, or system browser path was invoked. CBPR-010 is not implemented by CBPR-009.
 
+After CBPR-010, Browser Evidence Pack V1 closes the fixture-safe line with metadata-only evidence for plan-only decisions, fixture execution success, fixture execution failure, blockage, human handoff, and verification failure. The evidence collector works only over snapshots, strategy decisions, plans, blockages, verification results, and fixture execution results. It does not collect live browser state, call CDP, call WebSocket, open a browser, invoke the Chrome Extension, navigate externally, or enable product actions.
+
+CBPR-010 also adds defensive redaction for sensitive field names and secret-like text patterns including passwords, tokens, API keys, client secrets, bearer/authorization values, session/cookie values, OTP/2FA/MFA markers, captcha markers, GitHub token patterns, OpenAI-style `sk-` patterns, and JWT-like strings. The next step after CBPR-010 is a deep audit of CBPR-001/010 before any future live CDP design.
+
 ## Guardrails
 
 - No CAPTCHA, 2FA, anti-bot, paywall, or login bypass.
