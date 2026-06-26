@@ -7,6 +7,9 @@ const BROWSER_SKILLS_MAX_SNAPSHOTS = 20;
 const CDP_BROWSER_SKILLS_SURFACE = {
   runtimeLabel: 'CloakBrowser CDP',
   status: 'Disponible',
+  runtimeStatus: 'configurado',
+  lastCaptureStatus: 'disponible por harness',
+  commandBoundary: 'solo lectura',
   source: 'cloakbrowser-cdp-direct',
   extensionMode: 'legacy / no-default',
   extensionUsed: false,
@@ -19,7 +22,8 @@ const CDP_BROWSER_SKILLS_SURFACE = {
   frictionCount: 5,
   actionMapCount: 6,
   screenshotCaptured: true,
-  evidenceAvailable: true
+  evidenceAvailable: true,
+  boundaryReadOnly: true
 };
 const WORKSPACE_STORE_KEY = 'nodal-os.workspaceUnderstanding.v1';
 const WORKSPACE_SCAN_LIMITS = {
@@ -314,6 +318,9 @@ const el = {
   browserSkillFriction: document.getElementById('browserSkillFriction'),
   cdpRuntimeLabel: document.getElementById('cdpRuntimeLabel'),
   cdpBrowserSkillStatus: document.getElementById('cdpBrowserSkillStatus'),
+  cdpBoundaryState: document.getElementById('cdpBoundaryState'),
+  cdpRuntimeStatus: document.getElementById('cdpRuntimeStatus'),
+  cdpLastCaptureStatus: document.getElementById('cdpLastCaptureStatus'),
   cdpExtensionMode: document.getElementById('cdpExtensionMode'),
   cdpElementCount: document.getElementById('cdpElementCount'),
   cdpFrictionCount: document.getElementById('cdpFrictionCount'),
@@ -322,6 +329,7 @@ const el = {
   cdpDomIndexState: document.getElementById('cdpDomIndexState'),
   cdpEvidenceState: document.getElementById('cdpEvidenceState'),
   cdpScreenshotState: document.getElementById('cdpScreenshotState'),
+  cdpBoundaryReadOnlyState: document.getElementById('cdpBoundaryReadOnlyState'),
   cdpExtensionUsedState: document.getElementById('cdpExtensionUsedState'),
   cdpSystemBrowserState: document.getElementById('cdpSystemBrowserState'),
   cdpExternalNavState: document.getElementById('cdpExternalNavState'),
@@ -3894,6 +3902,9 @@ function renderCdpBrowserSkillsSurface() {
   const model = CDP_BROWSER_SKILLS_SURFACE;
   el.cdpRuntimeLabel.textContent = model.runtimeLabel;
   el.cdpBrowserSkillStatus.textContent = model.status;
+  el.cdpBoundaryState.textContent = model.commandBoundary;
+  el.cdpRuntimeStatus.textContent = model.runtimeStatus;
+  el.cdpLastCaptureStatus.textContent = model.lastCaptureStatus;
   el.cdpExtensionMode.textContent = model.extensionMode;
   el.cdpElementCount.textContent = String(model.elementCount);
   el.cdpFrictionCount.textContent = `${model.frictionCount} señales`;
@@ -3902,6 +3913,7 @@ function renderCdpBrowserSkillsSurface() {
   el.cdpDomIndexState.textContent = model.domIndex;
   el.cdpEvidenceState.textContent = model.evidenceAvailable ? 'disponible' : 'sin evidencia';
   el.cdpScreenshotState.textContent = model.screenshotCaptured ? 'capturado en página controlada' : 'no capturado';
+  el.cdpBoundaryReadOnlyState.textContent = model.boundaryReadOnly ? 'true' : 'false';
   el.cdpExtensionUsedState.textContent = model.extensionUsed ? 'false' : 'true';
   el.cdpSystemBrowserState.textContent = model.systemBrowserUsed ? 'false' : 'true';
   el.cdpExternalNavState.textContent = model.externalNavigationBlocked ? 'true' : 'false';
@@ -4001,6 +4013,9 @@ function buildCdpBrowserSkillSummary() {
     `runtime: ${model.runtimeLabel}`,
     `source: ${model.source}`,
     `status: ${model.status}`,
+    `runtimeStatus: ${model.runtimeStatus}`,
+    `lastCaptureStatus: ${model.lastCaptureStatus}`,
+    `boundaryReadOnly: ${model.boundaryReadOnly}`,
     `readOnly: ${model.readOnly}`,
     `domIndex: ${model.domIndex}`,
     `interactiveElements: ${model.elementCount}`,

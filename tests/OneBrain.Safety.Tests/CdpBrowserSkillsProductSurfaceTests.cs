@@ -18,6 +18,9 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         StringAssert.Contains(section, "Browser Skills CDP");
         StringAssert.Contains(section, "CloakBrowser CDP");
         StringAssert.Contains(section, "Runtime principal");
+        StringAssert.Contains(section, "Boundary");
+        StringAssert.Contains(section, "Runtime status");
+        StringAssert.Contains(section, "Última captura");
         StringAssert.Contains(section, "legacy / no-default");
         StringAssert.Contains(section, "Copiar resumen CDP");
         StringAssert.Contains(section, "source:");
@@ -27,6 +30,7 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         StringAssert.Contains(section, "Sin navegador del sistema");
         StringAssert.Contains(section, "Sin navegación externa");
         StringAssert.Contains(section, "No se modificaron archivos");
+        StringAssert.Contains(section, "Boundary read-only");
     }
 
     [TestMethod]
@@ -38,6 +42,9 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         {
             "CDP_BROWSER_SKILLS_SURFACE",
             "runtimeLabel: 'CloakBrowser CDP'",
+            "runtimeStatus: 'configurado'",
+            "lastCaptureStatus: 'disponible por harness'",
+            "commandBoundary: 'solo lectura'",
             "source: 'cloakbrowser-cdp-direct'",
             "extensionMode: 'legacy / no-default'",
             "extensionUsed: false",
@@ -45,6 +52,7 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
             "externalNavigationBlocked: true",
             "productFilesModified: false",
             "readOnly: true",
+            "boundaryReadOnly: true",
             "domIndex: 'metadata-only'",
             "renderCdpBrowserSkillsSurface",
             "copyCdpBrowserSkillSummary",
@@ -69,6 +77,9 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         {
             "runtime:",
             "source:",
+            "runtimeStatus:",
+            "lastCaptureStatus:",
+            "boundaryReadOnly:",
             "readOnly:",
             "interactiveElements:",
             "frictionSignals:",

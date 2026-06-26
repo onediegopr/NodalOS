@@ -580,6 +580,9 @@ async function runBrowserSkillsFlow(sidepanel) {
       present: Boolean(document.getElementById('copyCdpBrowserSkillSummaryBtn')),
       runtimeLabel: document.getElementById('cdpRuntimeLabel').innerText,
       status: document.getElementById('cdpBrowserSkillStatus').innerText,
+      boundary: document.getElementById('cdpBoundaryState').innerText,
+      runtimeStatus: document.getElementById('cdpRuntimeStatus').innerText,
+      lastCaptureStatus: document.getElementById('cdpLastCaptureStatus').innerText,
       extensionMode: document.getElementById('cdpExtensionMode').innerText,
       elementCount: document.getElementById('cdpElementCount').innerText,
       frictionCount: document.getElementById('cdpFrictionCount').innerText,
@@ -588,6 +591,7 @@ async function runBrowserSkillsFlow(sidepanel) {
       domIndex: document.getElementById('cdpDomIndexState').innerText,
       evidence: document.getElementById('cdpEvidenceState').innerText,
       screenshot: document.getElementById('cdpScreenshotState').innerText,
+      boundaryReadOnly: document.getElementById('cdpBoundaryReadOnlyState').innerText,
       extensionFree: document.getElementById('cdpExtensionUsedState').innerText,
       systemBrowserFree: document.getElementById('cdpSystemBrowserState').innerText,
       externalNavigationBlocked: document.getElementById('cdpExternalNavState').innerText,
@@ -596,6 +600,9 @@ async function runBrowserSkillsFlow(sidepanel) {
     };
     cdpSurface.ok = cdpSurface.runtimeLabel === 'CloakBrowser CDP'
       && cdpSurface.source === 'cloakbrowser-cdp-direct'
+      && cdpSurface.boundary === 'solo lectura'
+      && cdpSurface.runtimeStatus === 'configurado'
+      && cdpSurface.boundaryReadOnly === 'true'
       && cdpSurface.extensionMode.includes('legacy')
       && cdpSurface.extensionFree === 'true'
       && cdpSurface.systemBrowserFree === 'true'
@@ -603,6 +610,8 @@ async function runBrowserSkillsFlow(sidepanel) {
       && cdpSurface.filesUnmodified === 'true'
       && cdpSurface.copiedSummary.includes('extensionUsed: false')
       && cdpSurface.copiedSummary.includes('systemBrowserUsed: false')
+      && cdpSurface.copiedSummary.includes('boundaryReadOnly: true')
+      && cdpSurface.copiedSummary.includes('runtimeStatus: configurado')
       && !/raw html|<html|document\.cookie|\blocalStorage\b|\bsessionStorage\b/i.test(cdpSurface.copiedSummary);
     const rawStore = JSON.parse(localStorage.getItem('nodal-os.browserSkills.snapshots.v1') || '{}');
     const snapshots = Array.isArray(rawStore.snapshots) ? rawStore.snapshots : [];
