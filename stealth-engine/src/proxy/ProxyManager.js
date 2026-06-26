@@ -37,7 +37,7 @@ export class ProxyManager {
       if (p && p.status !== 'banned' && !this.isOnCooldown(p)) {
         p.status = 'in_use';
         p.assignedTo = taskId;
-        return { server: p.url, username: p.username, password: p.password, type: p.type, country: p.country };
+        return { id: p.id, server: p.url, url: p.url, username: p.username, password: p.password, type: p.type, country: p.country, provider: p.provider };
       }
       this.lock.delete(taskId);
     }
@@ -67,7 +67,7 @@ export class ProxyManager {
     p.assignedTo = taskId;
     p.usageCount++;
     this.lock.set(taskId, p.id);
-    return { server: p.url, username: p.username, password: p.password, type: p.type, country: p.country };
+    return { id: p.id, server: p.url, url: p.url, username: p.username, password: p.password, type: p.type, country: p.country, provider: p.provider };
   }
 
   release(taskId) {

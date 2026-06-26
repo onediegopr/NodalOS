@@ -3,12 +3,16 @@
  * @policy no-audit, no-modify, no-analyze, no-refactor
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
+import pLimit from 'p-limit';
+
 export class ProxyHealthChecker {
-  constructor(proxyManager, intervalMs = 60000) {
+  constructor(proxyManager, intervalMs = 60000, maxConcurrency = 10) {
     this.manager = proxyManager;
     this.intervalMs = intervalMs;
+    this.maxConcurrency = maxConcurrency;
     this.timer = null;
     this.running = false;
+    this.limiter = pLimit(maxConcurrency);
   }
 
   start() {
@@ -28,8 +32,8 @@ export class ProxyHealthChecker {
     this.manager.checkCooldowns();
     if (this.manager.pool.length === 0) return;
 
-    for (const p of this.manager.pool) {
-      if (p.status === 'banned' || p.status === 'cooldown') continue;
+    const checkOne = async (p) => {
+      if (p.status === 'banned' || p.status === 'cooldown') return;
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
@@ -49,6 +53,8 @@ export class ProxyHealthChecker {
         p.successRate = Math.max(0, (p.successRate || 0.5) - 0.2);
         p.lastHealthCheck = new Date().toISOString();
       }
-    }
+    };
+
+    await Promise.all(this.manager.pool.map(p => this.limiter(() => checkOne(p))));
   }
 }

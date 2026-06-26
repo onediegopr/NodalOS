@@ -15,6 +15,10 @@ import { RemoteHandoffServer } from './handoff/RemoteHandoffServer.js';
 import { ProxyManager } from './proxy/ProxyManager.js';
 import { ProxyHealthChecker } from './proxy/ProxyHealthChecker.js';
 import { ProxyProviderIntegrations } from './proxy/ProxyProviderIntegrations.js';
+import { ProxyReputationEngine } from './proxy/ProxyReputationEngine.js';
+import { PredictiveRotator } from './proxy/PredictiveRotator.js';
+import { DomainRateLimiter } from './proxy/DomainRateLimiter.js';
+import { DomainProfile } from './learning/DomainProfile.js';
 import { executeTool } from './tools/tools.js';
 
 const CONFIG = await loadConfig();
@@ -28,6 +32,10 @@ let proxyHealthChecker = null;
 let domainBlacklist = null;
 let recoveryStrategy = null;
 let visualCaptchaSolver = null;
+let proxyReputationEngine = null;
+let predictiveRotator = null;
+let domainRateLimiter = null;
+let domainProfile = null;
 
 async function loadConfig() {
   try {
@@ -40,9 +48,12 @@ function initProxies() {
   const staticProxies = CONFIG.proxy?.staticProxies || [];
   const providerCfgs = CONFIG.proxy?.providers || {};
   proxyManager = new ProxyManager(staticProxies, providerCfgs);
+  proxyReputationEngine = new ProxyReputationEngine(CONFIG.proxy?.reputation || {});
+  predictiveRotator = new PredictiveRotator(CONFIG.proxy?.predictive || {});
+  domainRateLimiter = new DomainRateLimiter(CONFIG.proxy?.rateLimit || {});
 
   if (CONFIG.proxy?.enabled && proxyManager.pool.length > 0) {
-    proxyHealthChecker = new ProxyHealthChecker(proxyManager, CONFIG.proxy.healthCheckIntervalMs || 60000);
+    proxyHealthChecker = new ProxyHealthChecker(proxyManager, CONFIG.proxy.healthCheckIntervalMs || 60000, CONFIG.proxy?.healthCheckConcurrency || 10);
     proxyHealthChecker.start();
     console.log('[ProxyManager] Initialized with ' + proxyManager.pool.length + ' proxies');
   } else {
@@ -52,6 +63,7 @@ function initProxies() {
 
 function initAntiBlocking() {
   domainBlacklist = new DomainBlacklist(CONFIG.antiBlocking?.domainBlacklistSize || 100);
+  domainProfile = new DomainProfile(CONFIG.learning?.domainProfile || {});
   recoveryStrategy = new RecoveryStrategy(
     { sessions, proxyManager, SessionClass: StealthSession,
       fingerprintGenerator: FingerprintGenerator, config: CONFIG },
@@ -87,7 +99,7 @@ function connect() {
       type: 'stealth.hello',
       protocolVersion: 'stealth-v1',
       runnerId: CONFIG.runnerId || 'runner-' + Date.now().toString(36),
-      capabilities: ['stealthBrowser', 'captchaSolving', 'proxyRotation', 'remoteHandoff'],
+      capabilities: ['stealthBrowser', 'captchaSolving', 'proxyRotation', 'remoteHandoff', 'tlsFingerprintSpoofing', 'predictiveProxyRotation', 'domainLearning'],
     }));
     console.log('[StealthEngine] Connected');
   });
@@ -133,37 +145,52 @@ async function handleTask(msg) {
 
   console.log('[StealthSession:' + taskId + '] Starting: ' + (instruction || '').substring(0, 80));
 
+  const targetUrl = url || extractUrl(instruction) || 'about:blank';
+  const targetDomain = new URL(targetUrl).hostname;
+
+  await domainProfile?.load();
+  const learned = domainProfile?.suggest(targetDomain, {
+    proxyType: null,
+    behaviorProfile: CONFIG.behavior?.defaultProfile || 'casual',
+    captchaType: null,
+  });
+
   var fingerprintProfile = msgProfile && msgProfile.preset
     ? FingerprintGenerator.generate({ preset: msgProfile.preset })
     : FingerprintGenerator.generate({ preset: CONFIG.fingerprint?.defaultPreset || 'desktop-win-chrome' });
 
   var proxy = null;
   if (CONFIG.proxy?.enabled) {
+    const acquireOpts = { sticky: CONFIG.proxy.rotationMode !== 'random' };
+    if (learned?.proxyType) acquireOpts.excludeTypes = [learned.proxyType === 'residential' ? 'datacenter' : 'residential'];
     proxy = msgProxy && msgProxy.server
       ? msgProxy
-      : proxyManager?.acquire(taskId, { sticky: CONFIG.proxy.rotationMode !== 'random' });
+      : proxyManager?.acquire(taskId, acquireOpts);
   }
 
   if (proxy && proxy.country) {
     fingerprintProfile = FingerprintProfile.ensureCoherence(fingerprintProfile, proxy.country);
   }
 
-  const behaviorProfile = CONFIG.behavior?.defaultProfile || 'casual';
+  const behaviorProfile = learned?.behaviorProfile || CONFIG.behavior?.defaultProfile || 'casual';
 
   try {
     const session = new StealthSession({
-      taskId, instruction, profile: fingerprintProfile, proxy, behaviorProfile,
+      taskId, instruction, profile: fingerprintProfile, proxy, proxyId: proxy?.id || null, behaviorProfile,
+      tlsFingerprint: CONFIG.tlsFingerprint || { enabled: false },
     });
     await session.initialize();
     sessions.set(taskId, session);
 
-    const targetUrl = url || extractUrl(instruction) || 'about:blank';
+    await domainRateLimiter.wait(targetDomain);
     await session.navigate(targetUrl);
 
     const observation = await executeTool(session, 'observePage');
+    domainProfile?.update(targetDomain, { success: true, proxyType: proxy?.type, behaviorProfile });
     send({ type: 'stealth.result', taskId, stepId: 'step-1', tool: 'observePage', success: true, result: observation, timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('[StealthSession:' + taskId + '] Init error:', error.message);
+    domainProfile?.update(targetDomain, { success: false, proxyType: proxy?.type, behaviorProfile });
     send({ type: 'stealth.result', taskId, stepId: 'step-1', tool: 'navigate', success: false, error: error.message, timestamp: new Date().toISOString() });
   }
 }
@@ -183,6 +210,8 @@ async function handleToolRequest(msg) {
       const captcha = await CaptchaDetector.detect(session.page);
       if (captcha) {
         session._lastCaptchaType = captcha.type;
+        const domain = new URL(session.page.url()).hostname;
+        domainProfile?.update(domain, { success: false, captchaType: captcha.type });
         sendFrictionSignal(taskId, captcha, CaptchaDetector.mapToFrictionKind(captcha.type));
         return;
       }
@@ -232,15 +261,19 @@ async function handleFrictionDecision(msg) {
   if (!session) return;
   console.log('[' + taskId + '] Friction decision: ' + decision);
 
+  const domain = new URL(session.page.url()).hostname;
+
   switch (decision) {
     case 'SolveAndRetry': {
       const solver = new CaptchaSolver({
         twoCaptchaApiKey: CONFIG.captcha?.twoCaptchaApiKey || '',
+        capSolverApiKey: CONFIG.captcha?.capSolverApiKey || '',
         visualSolver: visualCaptchaSolver,
       });
       const captchaType = session._lastCaptchaType || 'recaptcha_v2';
       const result = await solver.solve(session.page, { type: captchaType, sitekey }, taskId, session.proxy);
       if (result.success) {
+        proxyReputationEngine?.recordSuccess(session.proxyId, domain);
         await TokenInjector.inject(session.page, captchaType, result.token);
         const stillThere = await CaptchaDetector.detect(session.page);
         if (!stillThere) {
@@ -248,13 +281,24 @@ async function handleFrictionDecision(msg) {
           return;
         }
       }
+      proxyReputationEngine?.recordFailure(session.proxyId, domain, 'captcha_solve_failed');
       send({ type: 'stealth.friction.solved', taskId, signalId: msg.signalId, success: false, error: result.error || 'Not solved' });
       break;
     }
 
     case 'RotateAndRetry': {
-      const recovery = await recoveryStrategy.recover(taskId, session, msg);
+      proxyReputationEngine?.recordFailure(session.proxyId, domain, 'block_detected');
+      const rotateDecision = { ...msg, RotateProxy: true };
+      if (predictiveRotator?.shouldRotate(session.proxyId, domain, proxyReputationEngine)) {
+        const predictiveNewProxy = predictiveRotator.selectNewProxy(taskId, session.proxyId, domain, proxyManager);
+        if (predictiveNewProxy) {
+          rotateDecision.predictiveNewProxy = predictiveNewProxy;
+          console.log(`[PredictiveRotator] Preemptive rotation for ${domain}`);
+        }
+      }
+      const recovery = await recoveryStrategy.recover(taskId, session, rotateDecision);
       if (recovery.success) {
+        predictiveRotator?.recordPredictionSuccess();
         sessions.set(taskId, recovery.session);
         send({ type: 'stealth.friction.solved', taskId, signalId: msg.signalId, success: true, rotated: true, attempt: recovery.attempt });
       } else {
@@ -338,7 +382,7 @@ try {
   process.exit(1);
 }
 
-console.log('NODAL OS Stealth Engine v0.2.0');
+console.log('NODAL OS Stealth Engine v0.4.0');
 console.log('Bridge: ws://' + (CONFIG.bridgeHost || '127.0.0.1') + ':' + (CONFIG.bridgePort || 8787) + '/ws/stealth');
 initProxies();
 initAntiBlocking();

@@ -20,6 +20,9 @@ export class CaptchaDetector {
       'hcaptcha': ['.h-captcha', 'iframe[src*="hcaptcha.com/captcha"]', 'div[data-hcaptcha-widget-id]'],
       'cloudflare_turnstile': ['.cf-turnstile', 'iframe[src*="challenges.cloudflare.com"]', '#challenge-stage'],
       'datadome': ['iframe[src*="datadome.co"]', '#datadome-captcha'],
+      'geetest': ['.geetest_captcha', '.geetest_holder', 'iframe[src*="geetest.com"]'],
+      'funcaptcha': ['iframe[src*="arkoselabs.com"]', '#arkose-iframe', 'div[data-api-key]', '#FunCaptcha'],
+      'kasada': ['#kpsdk-*', 'script[src*="kasada"]', 'meta[name="kasada"]', '[data-kasada]'],
     };
     for (const [type, sels] of Object.entries(map)) {
       for (const sel of sels) {
@@ -44,6 +47,10 @@ export class CaptchaDetector {
         return { type: 'hcaptcha', sitekey: this.extractFromUrl(url), detectedBy: 'frame', frameId: 'hcaptcha-frame' };
       if (url.includes('challenges.cloudflare.com'))
         return { type: 'cloudflare_turnstile', sitekey: this.extractFromUrl(url), detectedBy: 'frame', frameId: 'turnstile-frame' };
+      if (url.includes('geetest.com'))
+        return { type: 'geetest', sitekey: null, detectedBy: 'frame', frameId: 'geetest-frame' };
+      if (url.includes('arkoselabs.com') || url.includes('funcaptcha'))
+        return { type: 'funcaptcha', sitekey: this.extractFromUrl(url), detectedBy: 'frame', frameId: 'funcaptcha-frame' };
     }
     return null;
   }
@@ -59,6 +66,12 @@ export class CaptchaDetector {
         return { type: 'cloudflare_turnstile', sitekey: null, detectedBy: 'text', frameId: 'main' };
       if (txt.includes('datadome') || txt.includes('are you a bot'))
         return { type: 'datadome', sitekey: null, detectedBy: 'text', frameId: 'main' };
+      if (txt.includes('geetest'))
+        return { type: 'geetest', sitekey: null, detectedBy: 'text', frameId: 'main' };
+      if (txt.includes('funcaptcha') || txt.includes('arkose'))
+        return { type: 'funcaptcha', sitekey: null, detectedBy: 'text', frameId: 'main' };
+      if (txt.includes('kasada'))
+        return { type: 'kasada', sitekey: null, detectedBy: 'text', frameId: 'main' };
     } catch (e) { }
     return null;
   }
@@ -81,19 +94,22 @@ export class CaptchaDetector {
   }
 
   static isAutoSolvable(type) {
-    return ['recaptcha_v2', 'hcaptcha', 'cloudflare_turnstile'].some(t => (type || '').startsWith(t));
+    return ['recaptcha_v2', 'hcaptcha', 'cloudflare_turnstile', 'geetest', 'funcaptcha'].some(t => (type || '').startsWith(t));
   }
 
   static recommendSolver(type) {
     if ((type || '').startsWith('recaptcha')) return '2captcha';
     if (type === 'hcaptcha') return '2captcha';
     if (type === 'cloudflare_turnstile') return 'capsolver';
+    if (type === 'geetest' || type === 'funcaptcha') return 'capsolver';
+    if (type === 'kasada') return 'none';
     return 'none';
   }
 
   static mapToFrictionKind(type) {
-    if ((type || '').startsWith('recaptcha') || type === 'hcaptcha' || type === 'cloudflare_turnstile')
+    if ((type || '').startsWith('recaptcha') || type === 'hcaptcha' || type === 'cloudflare_turnstile' || type === 'geetest' || type === 'funcaptcha')
       return 'CaptchaDetected';
+    if (type === 'kasada') return 'JavaScriptChallengeDetected';
     if (type === 'datadome') return 'BotBlockDetected';
     return 'UnknownFriction';
   }

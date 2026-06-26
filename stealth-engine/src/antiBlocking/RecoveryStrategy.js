@@ -55,13 +55,29 @@ export class RecoveryStrategy {
 
       try {
         const SessionClass = this.stealthManager.SessionClass;
+        let proxy = null;
+        let proxyId = null;
+        if (decision.RotateProxy) {
+          if (decision.predictiveNewProxy) {
+            proxy = decision.predictiveNewProxy;
+            proxyId = decision.predictiveNewProxy.id;
+            this.proxyManager.lock.set(taskId, proxyId);
+            const p = this.proxyManager.pool.find(x => x.id === proxyId);
+            if (p) { p.status = 'in_use'; p.assignedTo = taskId; p.usageCount++; }
+          } else {
+            proxy = this.proxyManager.acquire(taskId, { sticky: false });
+            proxyId = proxy?.id || null;
+          }
+        }
+
         const newSession = new SessionClass({
           taskId: taskId,
           instruction: origInstruction,
           profile: decision.RotateProfile ? this.stealthManager.fingerprintGenerator.generate({
             preset: this.stealthManager.config?.fingerprint?.defaultPreset,
           }) : session.profile,
-          proxy: decision.RotateProxy ? this.proxyManager.acquire(taskId, { sticky: false }) : null,
+          proxy: proxy ? { server: proxy.server || proxy.url, username: proxy.username, password: proxy.password } : null,
+          proxyId,
           behaviorProfile: session.behaviorProfile || 'casual',
         });
 

@@ -1,4 +1,4 @@
-import { chromium } from 'playwright';
+import { chromium as vanillaChromium } from 'playwright';
 import { CloakBrowserResolver } from './runtime/CloakBrowserResolver.js';
 import { BehaviorProfile } from './behavior/BehaviorProfile.js';
 import { AdaptiveBehaviorEngine } from './behavior/AdaptiveBehaviorEngine.js';
@@ -7,13 +7,26 @@ import { HumanKeyboard } from './behavior/HumanKeyboard.js';
 import { HumanScroll } from './behavior/HumanScroll.js';
 import { HumanNavigation } from './behavior/HumanNavigation.js';
 
+let chromium = vanillaChromium;
+let stealthPlugin = null;
+try {
+  const { chromium: extraChromium } = await import('playwright-extra');
+  const { default: StealthPlugin } = await import('puppeteer-extra-plugin-stealth');
+  chromium = extraChromium;
+  stealthPlugin = StealthPlugin();
+} catch {
+  // playwright-extra/puppeteer-extra-plugin-stealth no instalado; se usa Playwright vanilla
+}
+
 export class StealthSession {
   constructor(config) {
     this.taskId = config.taskId;
     this.instruction = config.instruction;
     this.profile = config.profile;
     this.proxy = config.proxy;
+    this.proxyId = config.proxyId || null;
     this.behaviorName = config.behaviorProfile || 'casual';
+    this.tlsFingerprint = config.tlsFingerprint || { enabled: false };
     this.browser = null;
     this.context = null;
     this.page = null;
@@ -38,10 +51,20 @@ export class StealthSession {
 
     const executablePath = CloakBrowserResolver.resolveExecutablePath();
 
+    const launchArgs = this.buildLaunchArgs();
+
+    if (this.tlsFingerprint.enabled && stealthPlugin && chromium.use) {
+      try {
+        chromium.use(stealthPlugin);
+      } catch (e) {
+        console.warn('[StealthSession] Could not enable stealth plugin:', e.message);
+      }
+    }
+
     this.browser = await chromium.launch({
       headless: false,
       executablePath,
-      args: this.buildLaunchArgs(),
+      args: launchArgs,
       ignoreDefaultArgs: [
         '--enable-automation',
         '--disable-component-extensions-with-background-pages',

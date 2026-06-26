@@ -6,6 +6,7 @@
 export class CaptchaSolver {
   constructor(config = {}) {
     this.twoCaptchaApiKey = config.twoCaptchaApiKey || '';
+    this.capSolverApiKey = config.capSolverApiKey || '';
     this.visualSolver = config.visualSolver || null;
     this.proxy = config.proxy || null;
   }
@@ -13,6 +14,17 @@ export class CaptchaSolver {
   async solve(page, detection, taskId, proxy = null) {
     const sitekey = detection.sitekey || await this.findSitekey(page);
     const url = page.url();
+
+    if (['geetest', 'funcaptcha', 'kasada'].includes(detection.type) && this.capSolverApiKey) {
+      try {
+        console.log(`[${taskId}] Attempting CAPTCHA solve via CapSolver for ${detection.type}`);
+        const result = await this._solveCapSolver(sitekey, url, taskId, detection.type, proxy);
+        if (result.success) return result;
+        console.warn(`[${taskId}] CapSolver failed: ${result.error}`);
+      } catch (e) {
+        console.warn(`[${taskId}] CapSolver error: ${e.message}`);
+      }
+    }
 
     if (sitekey && this.twoCaptchaApiKey) {
       try {
@@ -116,6 +128,85 @@ export class CaptchaSolver {
     const durationMs = Date.now() - startTime;
     console.log(`[${taskId}] 2captcha solved in ${durationMs}ms`);
     return { success: true, token, provider: '2captcha', durationMs, cost: 0.002 };
+  }
+
+  async _solveCapSolver(sitekey, url, taskId, captchaType, proxy = null) {
+    const startTime = Date.now();
+
+    var safeUrl;
+    try { const u = new URL(url); safeUrl = u.origin + u.pathname; } catch { safeUrl = url; }
+
+    var taskType;
+    var taskConfig;
+    switch (captchaType) {
+      case 'geetest':
+        taskType = 'GeeTestTaskProxyLess';
+        taskConfig = { type: taskType, websiteURL: safeUrl, gt: sitekey || '', challenge: '' };
+        break;
+      case 'funcaptcha':
+        taskType = 'FunCaptchaTaskProxyLess';
+        taskConfig = { type: taskType, websiteURL: safeUrl, websitePublicKey: sitekey || '' };
+        break;
+      case 'kasada':
+        taskType = 'AntiKasadaTaskProxyLess';
+        taskConfig = { type: taskType, websiteURL: safeUrl };
+        break;
+      default:
+        return { success: false, error: 'Unsupported CapSolver type: ' + captchaType };
+    }
+
+    const fetchOpts = { headers: { 'Content-Type': 'application/json' } };
+    if (proxy) {
+      try {
+        const { Agent } = await import('undici');
+        const parsedProxy = new URL(proxy.server);
+        const dispatcher = new Agent({
+          keepAliveTimeout: 30000,
+          keepAliveMaxTimeout: 120000,
+          connect: {
+            host: parsedProxy.hostname,
+            port: parsedProxy.port || 8080,
+          },
+        });
+        fetchOpts.dispatcher = dispatcher;
+      } catch (e) {
+        console.warn(`[${taskId}] Could not create proxy dispatcher: ${e.message}`);
+      }
+    }
+
+    const createResp = await fetch('https://api.capsolver.com/createTask', {
+      ...fetchOpts,
+      method: 'POST',
+      body: JSON.stringify({ clientKey: this.capSolverApiKey, task: taskConfig }),
+    });
+    const createResult = await createResp.json();
+    if (createResult.errorId !== 0) return { success: false, error: createResult.errorDescription || 'create task failed' };
+
+    const taskId2 = createResult.taskId;
+    const maxWait = 120000;
+    const startWait = Date.now();
+    let token = null;
+
+    while (!token && Date.now() - startWait < maxWait) {
+      await new Promise(r => setTimeout(r, 3000));
+      const checkResp = await fetch('https://api.capsolver.com/getTaskResult', {
+        ...fetchOpts,
+        method: 'POST',
+        body: JSON.stringify({ clientKey: this.capSolverApiKey, taskId: taskId2 }),
+      });
+      const checkResult = await checkResp.json();
+      if (checkResult.status === 'ready') {
+        token = checkResult.solution?.token || checkResult.solution?.gRecaptchaResponse || JSON.stringify(checkResult.solution);
+      } else if (checkResult.errorId !== 0) {
+        return { success: false, error: checkResult.errorDescription || 'get result failed' };
+      }
+    }
+
+    if (!token) return { success: false, error: 'Timed out after 120s' };
+
+    const durationMs = Date.now() - startTime;
+    console.log(`[${taskId}] CapSolver solved in ${durationMs}ms`);
+    return { success: true, token, provider: 'capsolver', durationMs, cost: 0.003 };
   }
 
   async findSitekey(page) {

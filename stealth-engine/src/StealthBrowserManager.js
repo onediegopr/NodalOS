@@ -64,7 +64,9 @@ export class StealthBrowserManager {
     const session = new this.SessionClass({
       taskId, instruction, profile,
       proxy: proxy ? { server: proxy.url || proxy.server, username: proxy.username, password: proxy.password } : null,
+      proxyId: proxy?.id || null,
       behaviorProfile: this.config.behavior?.defaultProfile || 'casual',
+      tlsFingerprint: this.config.tlsFingerprint || { enabled: false },
     });
 
     await session.initialize();

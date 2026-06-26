@@ -13,6 +13,17 @@
     "webrtcBlock": true
   },
 
+  "tlsFingerprint": {
+    "enabled": false,
+    "impersonate": "chrome131",
+    "useStealthPlugin": true,
+    "tlsProxy": {
+      "enabled": false,
+      "type": "cycletls",
+      "endpoint": ""
+    }
+  },
+
   "proxy": {
     "enabled": false,
     "rotationMode": "sticky",
@@ -22,7 +33,25 @@
       "iproyal": { "enabled": false, "apiKey": "", "endpoint": "" }
     },
     "staticProxies": [],
-    "healthCheckIntervalMs": 60000
+    "healthCheckIntervalMs": 60000,
+    "healthCheckConcurrency": 10,
+    "reputation": {
+      "reputationTtlMs": 3600000,
+      "maxReputationEntries": 2000,
+      "failureThreshold": 0.6,
+      "minSamples": 3
+    },
+    "predictive": {
+      "predictiveRotation": true,
+      "minRiskScore": 0.5
+    },
+    "rateLimit": {
+      "baseDelayMs": 1000,
+      "minDelayMs": 200,
+      "maxDelayMs": 60000,
+      "backoffMultiplier": 2.0,
+      "recoveryFactor": 0.9
+    }
   },
 
   "antiBlocking": {
@@ -61,7 +90,16 @@
     "runOnStartup": false
   },
 
+  "learning": {
+    "domainProfile": {
+      "filePath": "./src/data/domain-profiles.json",
+      "maxDomains": 500,
+      "ttlMs": 2592000000
+    }
+  },
+
   "captcha": {
-    "twoCaptchaApiKey": ""
+    "twoCaptchaApiKey": "",
+    "capSolverApiKey": ""
   }
 }
