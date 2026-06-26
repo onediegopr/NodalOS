@@ -3,7 +3,7 @@
  * @policy no-audit, no-modify, no-analyze, no-refactor
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
-import { cryptoRandom } from './behavior/AdaptiveBehaviorEngine.js';
+import { cryptoRandom } from '../behavior/AdaptiveBehaviorEngine.js';
 
 export async function executeTool(session, tool, args = {}) {
   const page = session.page;

@@ -24,7 +24,7 @@ builder.Services.AddSingleton<PendingToolRequestRegistry>();
 builder.Services.AddSingleton<ProtocolEventBuffer>();
 builder.Services.AddHttpClient<OpenAiAgentClient>();
 
-builder.Services.AddSingleton<UnifiedFrictionPolicyEngine>();
+builder.Services.AddSingleton<IUnifiedFrictionPolicyEngine, UnifiedFrictionPolicyEngine>();
 builder.Services.AddSingleton<StealthTaskManager>();
 builder.Services.AddSingleton<StealthRunnerRegistry>();
 builder.Services.AddSingleton<StealthHandoffGateway>();
