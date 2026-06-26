@@ -103,6 +103,13 @@ public sealed class ComputerUseUnifiedEvidencePackBuilder
         foreach (var candidate in locatorFusion.LocatorCandidates)
         {
             AddRange(_redactor.Redact(candidate.LabelRedacted).SensitiveFieldsRedacted);
+            if (candidate.Identity is not null)
+            {
+                AddRange(_redactor.Redact(candidate.Identity.Name).SensitiveFieldsRedacted);
+                AddRange(_redactor.Redact(candidate.Identity.AutomationId).SensitiveFieldsRedacted);
+                AddRange(_redactor.Redact(candidate.Identity.RuntimeId).SensitiveFieldsRedacted);
+            }
+
             foreach (var evidence in candidate.Evidence)
                 AddRange(_redactor.Redact(evidence.DetailRedacted).SensitiveFieldsRedacted);
         }

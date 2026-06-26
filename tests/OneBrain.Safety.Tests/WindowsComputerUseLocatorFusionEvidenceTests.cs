@@ -233,6 +233,22 @@ public sealed class WindowsComputerUseLocatorFusionEvidenceTests
         Assert.IsFalse(result.ActionAuthorityGranted);
     }
 
+    [TestMethod]
+    public void NonBestCandidateSensitiveEvidenceIsCapturedInUnifiedPack()
+    {
+        var snapshot = BasicSnapshot(
+            Element("continueButton", "runtime-continue", "Continue", "Button", invoke: true),
+            Element("", "runtime-delete", "Delete user@example.com", "Button", invoke: true));
+
+        var result = Fuse(snapshot, "Continue", MatchingWin32(), FixtureWindowsUiAutomationEvents.NotepadNoBlockage());
+        var pack = new ComputerUseUnifiedEvidencePackBuilder().Build(snapshot, result);
+
+        Assert.IsTrue(result.LocatorCandidates.Count >= 2, "Expected multiple candidates.");
+        Assert.AreEqual("continueButton", result.BestCandidate?.Identity?.AutomationId, "Expected the non-sensitive candidate to rank first.");
+        Assert.IsTrue(pack.SensitiveFieldsRedacted.Contains("email", StringComparer.OrdinalIgnoreCase), "Sensitive field from a non-best candidate must be consolidated in the unified evidence pack.");
+        Assert.IsFalse(pack.ActionAuthorityGranted);
+    }
+
     private static ComputerUseLocatorFusionResult Fuse(
         ComputerUseSnapshot snapshot,
         string objective,
