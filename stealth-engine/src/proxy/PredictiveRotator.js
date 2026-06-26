@@ -24,10 +24,9 @@ export class PredictiveRotator {
 
   selectNewProxy(taskId, currentProxyId, domain, proxyManager) {
     if (!proxyManager || proxyManager.pool.length === 0) return null;
-    // Elegir un proxy distinto al actual, preferiblemente de distinto país y mejor successRate
     const candidates = proxyManager.pool
       .filter(p => p.id !== currentProxyId)
-      .filter(p => p.status !== 'banned' && !ProxyRotatorHelper.isOnCooldown(p))
+      .filter(p => p.status !== 'banned' && !proxyManager.isOnCooldown(p))
       .sort((a, b) => (b.successRate || 0) - (a.successRate || 0));
 
     if (candidates.length === 0) return null;
@@ -50,12 +49,5 @@ export class PredictiveRotator {
 
   getMetrics() {
     return { ...this.metrics };
-  }
-}
-
-class ProxyRotatorHelper {
-  static isOnCooldown(p) {
-    if (p.status === 'cooldown' && p.cooldownUntil && Date.now() < p.cooldownUntil) return true;
-    return false;
   }
 }

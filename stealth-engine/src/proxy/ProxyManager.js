@@ -46,8 +46,22 @@ export class ProxyManager {
       .filter(p => p.status === 'available')
       .filter(p => !opts.country || p.country === opts.country)
       .filter(p => !opts.excludeTypes || !opts.excludeTypes.includes(p.type))
-      .filter(p => !this.isOnCooldown(p))
-      .sort((a, b) => b.successRate - a.successRate);
+      .filter(p => !this.isOnCooldown(p));
+
+    const preferTypes = opts.preferTypes && opts.preferTypes.length > 0
+      ? opts.preferTypes
+      : null;
+
+    if (preferTypes) {
+      avail.sort((a, b) => {
+        const aPreferred = preferTypes.includes(a.type) ? 1 : 0;
+        const bPreferred = preferTypes.includes(b.type) ? 1 : 0;
+        if (aPreferred !== bPreferred) return bPreferred - aPreferred;
+        return (b.successRate || 0) - (a.successRate || 0);
+      });
+    } else {
+      avail.sort((a, b) => (b.successRate || 0) - (a.successRate || 0));
+    }
 
     let p;
     if (avail.length) {

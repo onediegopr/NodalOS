@@ -37,6 +37,8 @@ let predictiveRotator = null;
 let domainRateLimiter = null;
 let domainProfile = null;
 
+domainProfile = new DomainProfile(CONFIG.learning?.domainProfile || {});
+
 async function loadConfig() {
   try {
     const data = await readFile('./config/stealth.default.json', 'utf-8');
@@ -63,7 +65,6 @@ function initProxies() {
 
 function initAntiBlocking() {
   domainBlacklist = new DomainBlacklist(CONFIG.antiBlocking?.domainBlacklistSize || 100);
-  domainProfile = new DomainProfile(CONFIG.learning?.domainProfile || {});
   recoveryStrategy = new RecoveryStrategy(
     { sessions, proxyManager, SessionClass: StealthSession,
       fingerprintGenerator: FingerprintGenerator, config: CONFIG },
@@ -159,10 +160,10 @@ async function handleTask(msg) {
     ? FingerprintGenerator.generate({ preset: msgProfile.preset })
     : FingerprintGenerator.generate({ preset: CONFIG.fingerprint?.defaultPreset || 'desktop-win-chrome' });
 
-  var proxy = null;
+    var proxy = null;
   if (CONFIG.proxy?.enabled) {
     const acquireOpts = { sticky: CONFIG.proxy.rotationMode !== 'random' };
-    if (learned?.proxyType) acquireOpts.excludeTypes = [learned.proxyType === 'residential' ? 'datacenter' : 'residential'];
+    if (learned?.proxyType) acquireOpts.preferTypes = [learned.proxyType];
     proxy = msgProxy && msgProxy.server
       ? msgProxy
       : proxyManager?.acquire(taskId, acquireOpts);
@@ -211,6 +212,7 @@ async function handleToolRequest(msg) {
       if (captcha) {
         session._lastCaptchaType = captcha.type;
         const domain = new URL(session.page.url()).hostname;
+        domainRateLimiter?.recordResponse(domain, 200);
         domainProfile?.update(domain, { success: false, captchaType: captcha.type });
         sendFrictionSignal(taskId, captcha, CaptchaDetector.mapToFrictionKind(captcha.type));
         return;
@@ -220,10 +222,13 @@ async function handleToolRequest(msg) {
         sendFrictionSignal(taskId, block, block.kind);
         if (block.blockPattern) {
           const domain = new URL(session.page.url()).hostname;
+          domainRateLimiter?.recordResponse(domain, block.blockHttpCode || 403);
           domainBlacklist?.record(domain, block.kind);
         }
         return;
       }
+      const domain = new URL(session.page.url()).hostname;
+      domainRateLimiter?.recordResponse(domain, 200);
     }
 
     send({ type: 'stealth.result', taskId, stepId: requestId, tool, success: true, result, timestamp: new Date().toISOString() });
@@ -354,6 +359,9 @@ process.on('SIGTERM', shutdown);
 async function shutdown() {
   console.log('[StealthEngine] Shutting down...');
   if (proxyHealthChecker) proxyHealthChecker.stop();
+  if (domainRateLimiter?.shutdown) domainRateLimiter.shutdown();
+  if (proxyReputationEngine?.shutdown) proxyReputationEngine.shutdown();
+  if (predictiveRotator?.shutdown) predictiveRotator.shutdown();
 
   const timeout = (ms) => new Promise(resolve => setTimeout(() => resolve('timeout'), ms));
   const disposePromises = Array.from(sessions.values()).map(s => s.dispose().catch(() => {}));

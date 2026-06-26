@@ -22,7 +22,7 @@ export class CaptchaDetector {
       'datadome': ['iframe[src*="datadome.co"]', '#datadome-captcha'],
       'geetest': ['.geetest_captcha', '.geetest_holder', 'iframe[src*="geetest.com"]'],
       'funcaptcha': ['iframe[src*="arkoselabs.com"]', '#arkose-iframe', 'div[data-api-key]', '#FunCaptcha'],
-      'kasada': ['#kpsdk-*', 'script[src*="kasada"]', 'meta[name="kasada"]', '[data-kasada]'],
+      'kasada': ['[id^="kpsdk-"]', 'script[src*="kasada"]', 'meta[name="kasada"]', '[data-kasada]'],
     };
     for (const [type, sels] of Object.entries(map)) {
       for (const sel of sels) {

@@ -14,6 +14,9 @@ export class DomainProfile {
     this.ttlMs = config.ttlMs || 30 * 24 * 60 * 60 * 1000; // 30 días
     this.profiles = new Map();
     this.loaded = false;
+    this._saveTimer = null;
+    this._savePending = false;
+    this._debounceMs = 5000;
   }
 
   async load() {
@@ -42,9 +45,23 @@ export class DomainProfile {
         profiles: Array.from(this.profiles.values()),
       };
       await writeFile(this.filePath, JSON.stringify(payload, null, 2));
+      this._savePending = false;
     } catch (e) {
       console.warn('[DomainProfile] Could not save profiles:', e.message);
+      this._savePending = false;
     }
+  }
+
+  _scheduleSave() {
+    if (this._saveTimer) return;
+    this._savePending = true;
+    this._saveTimer = setTimeout(async () => {
+      this._saveTimer = null;
+      if (this._savePending) {
+        this._savePending = false;
+        await this.save();
+      }
+    }, this._debounceMs);
   }
 
   _cleanup() {
@@ -99,7 +116,7 @@ export class DomainProfile {
 
     this.profiles.set(domain, profile);
     this._ensureSize();
-    this.save().catch(() => {});
+    this._scheduleSave();
     return profile;
   }
 

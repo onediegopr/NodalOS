@@ -1,4 +1,4 @@
-import { chromium as vanillaChromium } from 'playwright';
+import { chromium } from 'playwright';
 import { CloakBrowserResolver } from './runtime/CloakBrowserResolver.js';
 import { BehaviorProfile } from './behavior/BehaviorProfile.js';
 import { AdaptiveBehaviorEngine } from './behavior/AdaptiveBehaviorEngine.js';
@@ -6,17 +6,6 @@ import { HumanMouse } from './behavior/HumanMouse.js';
 import { HumanKeyboard } from './behavior/HumanKeyboard.js';
 import { HumanScroll } from './behavior/HumanScroll.js';
 import { HumanNavigation } from './behavior/HumanNavigation.js';
-
-let chromium = vanillaChromium;
-let stealthPlugin = null;
-try {
-  const { chromium: extraChromium } = await import('playwright-extra');
-  const { default: StealthPlugin } = await import('puppeteer-extra-plugin-stealth');
-  chromium = extraChromium;
-  stealthPlugin = StealthPlugin();
-} catch {
-  // playwright-extra/puppeteer-extra-plugin-stealth no instalado; se usa Playwright vanilla
-}
 
 export class StealthSession {
   constructor(config) {
@@ -50,18 +39,21 @@ export class StealthSession {
     this.behavior.navigation = new HumanNavigation(this.behavior.mouse);
 
     const executablePath = CloakBrowserResolver.resolveExecutablePath();
-
     const launchArgs = this.buildLaunchArgs();
 
-    if (this.tlsFingerprint.enabled && stealthPlugin && chromium.use) {
+    let browserChromium = chromium;
+    if (this.tlsFingerprint.enabled) {
       try {
-        chromium.use(stealthPlugin);
+        const { chromium: extraChromium } = await import('playwright-extra');
+        const { default: stealthPlugin } = await import('puppeteer-extra-plugin-stealth');
+        browserChromium = extraChromium;
+        browserChromium.use(stealthPlugin());
       } catch (e) {
-        console.warn('[StealthSession] Could not enable stealth plugin:', e.message);
+        console.warn('[StealthSession] Stealth plugin unavailable, using standard browser:', e.message);
       }
     }
 
-    this.browser = await chromium.launch({
+    this.browser = await browserChromium.launch({
       headless: false,
       executablePath,
       args: launchArgs,
@@ -103,7 +95,6 @@ export class StealthSession {
     const args = [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--disable-infobars',
       '--disable-blink-features=AutomationControlled',
       '--disable-features=IsolateOrigins,site-per-process',
       '--no-first-run',

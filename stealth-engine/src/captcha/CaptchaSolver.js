@@ -18,7 +18,7 @@ export class CaptchaSolver {
     if (['geetest', 'funcaptcha', 'kasada'].includes(detection.type) && this.capSolverApiKey) {
       try {
         console.log(`[${taskId}] Attempting CAPTCHA solve via CapSolver for ${detection.type}`);
-        const result = await this._solveCapSolver(sitekey, url, taskId, detection.type, proxy);
+        const result = await this._solveCapSolver(page, sitekey, url, taskId, detection.type, proxy);
         if (result.success) return result;
         console.warn(`[${taskId}] CapSolver failed: ${result.error}`);
       } catch (e) {
@@ -130,7 +130,7 @@ export class CaptchaSolver {
     return { success: true, token, provider: '2captcha', durationMs, cost: 0.002 };
   }
 
-  async _solveCapSolver(sitekey, url, taskId, captchaType, proxy = null) {
+  async _solveCapSolver(page, sitekey, url, taskId, captchaType, proxy = null) {
     const startTime = Date.now();
 
     var safeUrl;
@@ -139,18 +139,29 @@ export class CaptchaSolver {
     var taskType;
     var taskConfig;
     switch (captchaType) {
-      case 'geetest':
+      case 'geetest': {
         taskType = 'GeeTestTaskProxyLess';
-        taskConfig = { type: taskType, websiteURL: safeUrl, gt: sitekey || '', challenge: '' };
+        const gt = sitekey || await this._extractGeeTestGt(page);
+        const challenge = await this._extractGeeTestChallenge(page, gt);
+        taskConfig = { type: taskType, websiteURL: safeUrl, gt: gt || '', challenge: challenge || '' };
+        if (!gt || !challenge) {
+          return { success: false, error: 'Could not extract GeeTest challenge data' };
+        }
         break;
+      }
       case 'funcaptcha':
         taskType = 'FunCaptchaTaskProxyLess';
         taskConfig = { type: taskType, websiteURL: safeUrl, websitePublicKey: sitekey || '' };
         break;
-      case 'kasada':
+      case 'kasada': {
         taskType = 'AntiKasadaTaskProxyLess';
-        taskConfig = { type: taskType, websiteURL: safeUrl };
+        const kasadaData = await this._extractKasadaData(page);
+        if (!kasadaData) {
+          return { success: false, error: 'Could not extract Kasada challenge data' };
+        }
+        taskConfig = { type: taskType, websiteURL: safeUrl, ...kasadaData };
         break;
+      }
       default:
         return { success: false, error: 'Unsupported CapSolver type: ' + captchaType };
     }
@@ -219,5 +230,44 @@ export class CaptchaSolver {
       }
       return null;
     });
+  }
+
+  async _extractGeeTestGt(page) {
+    try {
+      return await page.evaluate(() => {
+        if (window.geetest?.gt) return window.geetest.gt;
+        const el = document.querySelector('[data-gt]');
+        if (el) return el.getAttribute('data-gt');
+        const match = document.body.innerHTML.match(/"gt"\s*:\s*"([^"]+)"/);
+        if (match) return match[1];
+        return null;
+      });
+    } catch { return null; }
+  }
+
+  async _extractGeeTestChallenge(page, gt) {
+    try {
+      return await page.evaluate((g) => {
+        if (window.geetest?.challenge) return window.geetest.challenge;
+        const el = document.querySelector('[data-challenge]');
+        if (el) return el.getAttribute('data-challenge');
+        const match = document.body.innerHTML.match(/"challenge"\s*:\s*"([^"]+)"/);
+        if (match) return match[1];
+        return null;
+      }, gt);
+    } catch { return null; }
+  }
+
+  async _extractKasadaData(page) {
+    try {
+      return await page.evaluate(() => {
+        const el = document.querySelector('[id^="kpsdk-"]');
+        if (!el) return null;
+        const kpsdk = el.dataset?.kpsdk || el.getAttribute('data-kpsdk') || '';
+        const challenge = el.dataset?.kpsdkChallenge || el.getAttribute('data-kpsdk-challenge') || '';
+        if (!kpsdk && !challenge) return null;
+        return { kpsdk, challenge };
+      });
+    } catch { return null; }
   }
 }

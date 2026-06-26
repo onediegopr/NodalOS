@@ -16,6 +16,14 @@ export class RecoveryStrategy {
     this.rotateProxy = config.rotateProxyOnBlock !== false;
     this.rotateProfile = config.rotateProfileOnBlock || false;
     this.failureLog = [];
+    this.failureLogMaxSize = 1000;
+  }
+
+  _pushFailure(entry) {
+    this.failureLog.push(entry);
+    if (this.failureLog.length > this.failureLogMaxSize) {
+      this.failureLog.shift();
+    }
   }
 
   async recover(taskId, session, decision) {
@@ -25,7 +33,7 @@ export class RecoveryStrategy {
 
     console.log(`[Recovery] Attempting recovery for task ${taskId} at ${domain}`);
 
-    this.failureLog.push({
+    this._pushFailure({
       taskId, domain, proxy: session.proxy?.server || 'none',
       reason: decision.Message, timestamp: new Date().toISOString(),
     });
