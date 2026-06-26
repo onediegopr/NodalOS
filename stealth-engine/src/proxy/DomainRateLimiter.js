@@ -60,4 +60,8 @@ export class DomainRateLimiter {
       delays: Object.fromEntries(Array.from(this._domains).map(([d, e]) => [d, e.delayMs])),
     };
   }
+
+  shutdown() {
+    this._domains.clear();
+  }
 }

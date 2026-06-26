@@ -37,7 +37,18 @@ export class ProxyHealthChecker {
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
-        const resp = await fetch('http://httpbin.org/ip', { signal: controller.signal });
+        const fetchOpts = { signal: controller.signal };
+
+        if (p.url) {
+          try {
+            const { ProxyAgent } = await import('undici');
+            fetchOpts.dispatcher = new ProxyAgent({ uri: p.url });
+          } catch (e) {
+            console.warn('[ProxyHealthChecker] ProxyAgent unavailable for proxy ' + p.id.substring(0, 8) + ', testing direct:', e.message);
+          }
+        }
+
+        const resp = await fetch('http://httpbin.org/ip', fetchOpts);
         clearTimeout(timeout);
 
         p.lastHealthCheck = new Date().toISOString();

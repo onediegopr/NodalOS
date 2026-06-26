@@ -7,9 +7,9 @@ export class BlockDetector {
   static async detect(page, response) {
     if (response) {
       const status = response.status();
-      if (status === 403) return this.buildSignal('AccessDeniedDetected', `http_${status}`, `HTTP ${status} Forbidden`);
-      if (status === 429) return this.buildSignal('RateLimitDetected', `http_${status}`, `HTTP ${status} Too Many Requests`);
-      if (status === 503) return this.buildSignal('ServiceUnavailable', `http_${status}`, `HTTP ${status} Service Unavailable`);
+      if (status === 403) return this.buildSignal('AccessDeniedDetected', `HTTP ${status}`, `HTTP ${status} Forbidden`, status);
+      if (status === 429) return this.buildSignal('RateLimitDetected', `HTTP ${status}`, `HTTP ${status} Too Many Requests`, status);
+      if (status === 503) return this.buildSignal('ServiceUnavailable', `HTTP ${status}`, `HTTP ${status} Service Unavailable`, status);
     }
 
     const patterns = [
@@ -44,12 +44,12 @@ export class BlockDetector {
     return null;
   }
 
-  static buildSignal(kind, blockPattern, reason) {
+  static buildSignal(kind, blockPattern, reason, blockHttpCode = null) {
     return {
       kind,
       severity: 'Critical',
       source: 'stealth-block-detector',
-      blockHttpCode: kind.startsWith('http_') ? kind.replace('http_', '') : null,
+      blockHttpCode,
       blockPattern,
       redactedEvidence: `Block detected: ${kind}`,
       reason,

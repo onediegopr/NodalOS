@@ -79,4 +79,8 @@ export class ProxyReputationEngine {
       ttlMs: this.ttlMs,
     };
   }
+
+  shutdown() {
+    this._reputation.clear();
+  }
 }

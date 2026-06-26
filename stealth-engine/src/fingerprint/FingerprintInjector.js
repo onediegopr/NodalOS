@@ -109,7 +109,7 @@ export class FingerprintInjector {
         if (param === 37446) return p.webglRenderer;
         return origGetParam.call(this, param);
       };
-      if (WebGL2RenderingContext) {
+      if (typeof WebGL2RenderingContext !== 'undefined') {
         WebGL2RenderingContext.prototype.getParameter = function(param) {
           if (param === 37445) return p.webglVendor;
           if (param === 37446) return p.webglRenderer;

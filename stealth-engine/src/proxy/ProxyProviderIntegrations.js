@@ -47,16 +47,22 @@ export class ProxyProviderIntegrations {
       }
       const data = await resp.json();
       const proxies = [];
+      const seenUrls = new Set();
       if (data.access_whitelist && Array.isArray(data.access_whitelist)) {
-        for (const ip of data.access_whitelist) {
+        const proxyUrl = `http://${cfg.username}:${cfg.password}@proxy.oxylabs.io:8010`;
+        if (!seenUrls.has(proxyUrl)) {
+          seenUrls.add(proxyUrl);
           proxies.push({
-            url: `http://${cfg.username}:${cfg.password}@proxy.oxylabs.io:8010`,
+            url: proxyUrl,
             type: 'residential',
             country: cfg.country || 'US',
             provider: 'oxylabs',
             username: cfg.username,
             password: cfg.password,
           });
+        }
+        if (data.access_whitelist.length > 1) {
+          console.warn(`[ProxyProvider] Oxylabs: ${data.access_whitelist.length} whitelisted IPs share same proxy endpoint, single entry created`);
         }
       }
       return proxies;

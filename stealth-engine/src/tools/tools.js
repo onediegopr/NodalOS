@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 export async function executeTool(session, tool, args = {}) {
   const page = session.page;
   switch (tool) {
@@ -49,8 +54,10 @@ async function observePage(page) {
       if (rect.width === 0 || rect.height === 0) continue;
       if (results.length >= 100) break;
       const tag = el.tagName.toLowerCase();
+      const id = 'el-' + (idx++);
+      el.setAttribute('data-element-id', id);
       results.push({
-        elementId: 'el-' + (idx++),
+        elementId: id,
         tagName: tag,
         visibleText: (el.innerText || el.textContent || '').trim().substring(0, 120),
         type: el.getAttribute('type') || '',

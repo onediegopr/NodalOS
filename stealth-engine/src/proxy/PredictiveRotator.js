@@ -50,4 +50,8 @@ export class PredictiveRotator {
   getMetrics() {
     return { ...this.metrics };
   }
+
+  shutdown() {
+    this.enabled = false;
+  }
 }

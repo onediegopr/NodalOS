@@ -16,6 +16,39 @@ export class RemoteHandoffServer {
   start() {
     this.wss = new WebSocketServer({ port: this.port, host: '127.0.0.1' });
     console.log(`[Handoff] Server listening on ws://127.0.0.1:${this.port}`);
+
+    this.wss.on('connection', async (ws) => {
+      let handoffTaskId = null;
+      let handoffHandled = false;
+
+      ws.on('message', async (data) => {
+        try {
+          const msg = JSON.parse(data);
+          if (msg.type === 'handoff.connect' && !handoffHandled) {
+            handoffTaskId = msg.taskId;
+            const page = this._pendingPages?.get(handoffTaskId);
+            if (page) {
+              handoffHandled = true;
+              this._pendingPages.delete(handoffTaskId);
+              await this.startHandoff(handoffTaskId, page, ws);
+            } else {
+              ws.send(JSON.stringify({ type: 'handoff.error', error: 'No pending page for task: ' + handoffTaskId }));
+            }
+          }
+        } catch (e) {
+          ws.send(JSON.stringify({ type: 'handoff.error', error: e.message }));
+        }
+      });
+
+      ws.on('close', () => {
+        if (handoffTaskId) this.stopHandoff(handoffTaskId);
+      });
+    });
+  }
+
+  registerPendingHandoff(taskId, page) {
+    if (!this._pendingPages) this._pendingPages = new Map();
+    this._pendingPages.set(taskId, page);
   }
 
   async startHandoff(taskId, page, ws) {
