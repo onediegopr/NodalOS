@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 export class TokenInjector {
   static async inject(page, captchaType, token) {
     if ((captchaType || '').startsWith('recaptcha')) return this.injectRecaptcha(page, token);

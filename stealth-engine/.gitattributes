@@ -1,0 +1,10 @@
+.codex-guard.json merge=restricted
+src/evasion/** merge=restricted
+src/captcha/** merge=restricted
+src/fingerprint/** merge=restricted
+src/behavior/** merge=restricted
+src/proxy/** merge=restricted
+src/antiBlocking/** merge=restricted
+src/handoff/** merge=restricted
+tools/fingerprint-evolution.js merge=restricted
+tests/stealth-suite.test.js merge=restricted

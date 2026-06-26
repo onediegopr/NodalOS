@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 export class HumanScroll {
   constructor(profile) {
     this.profile = profile;

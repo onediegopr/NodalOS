@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { FingerprintGenerator, FingerprintProfile } from '../src/fingerprint/FingerprintProfile.js';

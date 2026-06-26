@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FingerprintProfile, FingerprintGenerator } from '../src/fingerprint/FingerprintProfile.js';

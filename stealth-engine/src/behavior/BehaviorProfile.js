@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 export class BehaviorProfile {
   static PRESETS = {
     casual: { typoRate: 0.03, baseDelay: 80, clickPauseMin: 80, clickPauseMax: 230, scrollPauseMs: 1500, overShootRate: 0.6 },

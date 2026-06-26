@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 export class ProxyHealthChecker {
   constructor(proxyManager, intervalMs = 60000) {
     this.manager = proxyManager;

@@ -1,0 +1,14 @@
+{
+  "policy": "audit_restricted",
+  "restricted_dirs": [
+    "src/evasion/",
+    "src/captcha/",
+    "src/fingerprint/",
+    "src/behavior/",
+    "src/proxy/",
+    "src/antiBlocking/",
+    "src/handoff/",
+    "tools/fingerprint-evolution.js",
+    "tests/stealth-suite.test.js"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "restricted": true,
+  "notice": "CÓDIGO RESTRINGIDO - NO MODIFICAR, AUDITAR NI ANALIZAR. Propiedad de NODAL OS.",
+  "allow_read": false,
+  "allow_modify": false,
+  "allow_audit": false,
+  "allow_analyze": false
+}

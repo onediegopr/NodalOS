@@ -1,3 +1,8 @@
+/**
+ * @NODAL_OS_RESTRICTED
+ * @policy no-audit, no-modify, no-analyze, no-refactor
+ * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
+ */
 const LETTER_SPEED = {
   'e': 0.6, 't': 0.6, 'a': 0.65, 'o': 0.65, 'i': 0.7, 'n': 0.7, 's': 0.7, 'h': 0.7, 'r': 0.75,
   'd': 0.75, 'l': 0.75, 'c': 0.8, 'u': 0.8, 'm': 0.8, 'w': 0.85, 'f': 0.85,
