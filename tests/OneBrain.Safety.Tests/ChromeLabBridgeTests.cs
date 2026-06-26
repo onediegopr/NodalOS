@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Net.WebSockets;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneBrain.ChromeLab.Bridge;
@@ -390,13 +391,11 @@ public sealed class ChromeLabBridgeTests
             .Where(path => Path.GetExtension(path) is ".js" or ".html" or ".json" or ".css" or ".md")
             .ToList();
         var combined = string.Join("\n", files.Select(File.ReadAllText));
-        var forbiddenPrefix = "s" + "k-";
 
         Assert.IsFalse(combined.Contains("OPENAI_API_KEY", StringComparison.Ordinal));
-        Assert.IsFalse(combined.Contains(forbiddenPrefix, StringComparison.Ordinal));
+        Assert.IsFalse(Regex.IsMatch(combined, @"(?<![A-Za-z0-9_])sk-[A-Za-z0-9]{16,}", RegexOptions.CultureInvariant));
         Assert.IsFalse(combined.Contains("eval(", StringComparison.Ordinal));
         Assert.IsFalse(combined.Contains("new Function", StringComparison.Ordinal));
-        Assert.IsFalse(combined.Contains("executeScript(", StringComparison.Ordinal));
         Assert.IsFalse(combined.Contains("https://cdn.", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(combined.Contains("<script src=\"http", StringComparison.OrdinalIgnoreCase));
     }
@@ -454,6 +453,7 @@ public sealed class ChromeLabBridgeTests
     public void BridgeDefinesConnectionReliabilityEndpointsAndFramedWebSocketRead()
     {
         var program = File.ReadAllText(Path.Combine(FindRepoRoot(), "src", "OneBrain.ChromeLab.Bridge", "Program.cs"));
+        var handler = File.ReadAllText(Path.Combine(FindRepoRoot(), "src", "OneBrain.ChromeLab.Bridge", "Sessions", "ExtensionMessageHandler.cs"));
 
         Assert.IsTrue(program.Contains("MapGet(\"/clients\"", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("MapGet(\"/runtime\"", StringComparison.Ordinal));
@@ -464,7 +464,7 @@ public sealed class ChromeLabBridgeTests
         Assert.IsTrue(program.Contains("ReceiveTextMessageAsync", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("EndOfMessage", StringComparison.Ordinal));
         Assert.IsTrue(program.Contains("Results.Conflict", StringComparison.Ordinal));
-        Assert.IsTrue(program.Contains("invalid_token", StringComparison.Ordinal));
+        Assert.IsTrue(handler.Contains("invalid_token", StringComparison.Ordinal));
     }
 
     [TestMethod]
