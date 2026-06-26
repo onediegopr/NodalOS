@@ -1,0 +1,152 @@
+{
+  "block": "WCU-008-014",
+  "decision": "GO_WCU_UIA_READ_ONLY_OCR_INTEROP_READY",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialExpectedHead": "1aadf7543afa25c50816bf05b93cf4f9d8c53d8c",
+  "initialActualHead": "1aadf7543afa25c50816bf05b93cf4f9d8c53d8c",
+  "finalHead": "PENDING_COMMIT_HASH",
+  "commit": "PENDING_COMMIT_HASH",
+  "pushStatus": "NOT_PUSHED",
+  "originDivergenceStart": {
+    "ahead": 0,
+    "behind": 0
+  },
+  "protectedScopeDiff": "PASS",
+  "preexistingDirtyWorktree": [
+    "OneBrain.slnx",
+    "tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj",
+    "src/OneBrain.DocumentIntelligence/**",
+    "tests/OneBrain.Safety.Tests/MistralOcrProviderRouterDesignOnlyTests.cs"
+  ],
+  "ocrModulesFound": [
+    {
+      "module": "NodalOsRobustPerceptionServices",
+      "path": "src/OneBrain.BrowserExecutor.Cdp/NodalOsRobustPerceptionServices.cs",
+      "classification": "WRAP_ONLY"
+    },
+    {
+      "module": "NodalOsLowRiskOcrObservationEvaluator",
+      "path": "src/OneBrain.BrowserExecutor.Cdp/NodalOsLowRiskOcrObservationServices.cs",
+      "classification": "REUSE_AS_IS"
+    },
+    {
+      "module": "ONNX OCR pipeline",
+      "path": "src/OneBrain.BrowserExecutor.Cdp/NodalOsOnnxOcr*",
+      "classification": "REUSE_AS_IS"
+    },
+    {
+      "module": "PaddleOCR worker",
+      "path": "tools/ocr-worker/**",
+      "classification": "LEGACY_REFERENCE_ONLY"
+    },
+    {
+      "module": "Mistral OCR Provider Router",
+      "path": "src/OneBrain.DocumentIntelligence/OcrDocumentProviderRouter.cs",
+      "classification": "WRAP_ONLY"
+    },
+    {
+      "module": "Cloak Browser Perception Router",
+      "path": "src/OneBrain.BrowserPerception/**",
+      "classification": "DO_NOT_TOUCH"
+    }
+  ],
+  "filesCreatedOrModifiedByThisBlock": [
+    "src/OneBrain.WindowsComputerUse/VisualPerceptionInterop.cs",
+    "src/OneBrain.WindowsComputerUse/WindowsUiAutomationReadOnlyCollector.cs",
+    "src/OneBrain.WindowsComputerUse/ComputerUsePerceptionFusion.cs",
+    "tests/OneBrain.Safety.Tests/WindowsComputerUseOcrInteropTests.cs",
+    "docs/qa/computer-use/wcu-008-014-uia-ocr-interop/inventory.md",
+    "docs/architecture/computer-use/windows-computer-use-robust-perception-interop-v1.md",
+    "docs/qa/computer-use/wcu-008-014-uia-ocr-interop/report.md",
+    "docs/qa/computer-use/wcu-008-014-uia-ocr-interop/report.json",
+    "docs/handoff/nodal-os-wcu-uia-read-only-ocr-interop-handoff.md",
+    "docs/prompts/computer-use/next-wcu-win32-context-uia-events-read-only-prompt.md"
+  ],
+  "validations": [
+    {
+      "name": "dotnet restore .\\OneBrain.slnx",
+      "result": "PASS"
+    },
+    {
+      "name": "dotnet build .\\OneBrain.slnx --no-restore",
+      "result": "PASS"
+    },
+    {
+      "name": "WindowsComputerUseFixtureSafe",
+      "result": "PASS",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "WindowsComputerUseOcrInterop",
+      "result": "PASS",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "CloakBrowserPerceptionRouter",
+      "result": "PASS",
+      "passed": 83,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "name": "git diff --cached --check",
+      "result": "PASS"
+    },
+    {
+      "name": "json validation",
+      "result": "PASS"
+    },
+    {
+      "name": "protected scope scan",
+      "result": "PASS"
+    },
+    {
+      "name": "no-live usage scan",
+      "result": "PASS",
+      "details": "No live API patterns found in WCU interop code/tests."
+    },
+    {
+      "name": "bad UX wording scan",
+      "result": "PASS_NEGATIVE_ONLY",
+      "details": "Only no-claim wording for production-ready/live-ready appeared."
+    },
+    {
+      "name": "secret scan changed/new",
+      "result": "PASS_FIXTURE_ONLY",
+      "details": "Only fake adversarial values in redaction tests were found."
+    }
+  ],
+  "noLiveProof": {
+    "flaUiDependencyAdded": false,
+    "liveUiaAdapterAdded": false,
+    "mouseKeyboardClipboardScreenshotApisAdded": false,
+    "browserLiveCdpWebSocketNetworkOcrAdded": false,
+    "testsUseFixtureBridgeOnly": true,
+    "rawScreenshotPersistence": false,
+    "ocrEngineCreated": false
+  },
+  "percentages": {
+    "wcuFixtureSafeFoundation": 100,
+    "wcuOcrRobustPerceptionInteropDesign": 70,
+    "wcuUiaReadOnlyDesignReadiness": 35,
+    "wcuUiaLiveReadOnlyReadiness": 10,
+    "wcuControlledActionReadiness": 0,
+    "wcuProductAutomationReadiness": 0,
+    "ocrAuthorityOverActions": 0
+  },
+  "remainingRisks": [
+    "Provider-neutral WCU bridge does not yet adapt real Robust Perception result types.",
+    "No live UIA read-only collector was run or claimed.",
+    "Win32 context and UIA event streams remain next-block work.",
+    "Preexisting dirty Document Intelligence/Mistral router files remain to reconcile if intended."
+  ],
+  "nextBlock": "WCU-008-015 -- Win32 Context + UIA Events Read-Only Fixture Interop"
+}
