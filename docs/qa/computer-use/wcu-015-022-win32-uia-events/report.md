@@ -13,9 +13,10 @@ This block added fixture-safe Win32 context contracts, UIA event stream contract
 - Initial actual HEAD at resumed guard: `0242d53f2f8fb343782d9387a9b8ea4f0e0d81be`
 - Note: expected base `9072c3ec34e3fcd5eb9da9e70d13b467deabb880` is present in history; branch had already advanced to `0242d53f2f8fb343782d9387a9b8ea4f0e0d81be` with origin in sync before this block's uncommitted changes.
 - Origin divergence at start: `0 ahead / 0 behind`
-- Final HEAD: recorded in final response after commit
-- Commit: recorded in final response after commit
-- Push status: recorded in final response
+- Final HEAD: `f6c723dcb22dbbe2bf2c88f14a6f287541400a36`
+- Commit: `f6c723dcb22dbbe2bf2c88f14a6f287541400a36`
+- Push status: `PUSHED_OK`
+- Origin sync: `0 ahead / 0 behind`
 - Protected scope diff: `PASS`, no protected path diff detected.
 
 ## Modules Found

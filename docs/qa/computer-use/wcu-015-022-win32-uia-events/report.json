@@ -5,9 +5,9 @@
   "initialExpectedHead": "9072c3ec34e3fcd5eb9da9e70d13b467deabb880",
   "initialActualHead": "0242d53f2f8fb343782d9387a9b8ea4f0e0d81be",
   "expectedBaseNote": "Expected base 9072c3ec34e3fcd5eb9da9e70d13b467deabb880 is present in history; branch had already advanced to 0242d53f2f8fb343782d9387a9b8ea4f0e0d81be with origin in sync before this block's uncommitted changes.",
-  "finalHead": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
-  "commit": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
-  "pushStatus": "RECORDED_IN_FINAL_RESPONSE",
+  "finalHead": "f6c723dcb22dbbe2bf2c88f14a6f287541400a36",
+  "commit": "f6c723dcb22dbbe2bf2c88f14a6f287541400a36",
+  "pushStatus": "PUSHED_OK",
   "originDivergenceStart": {
     "ahead": 0,
     "behind": 0
