@@ -1,0 +1,59 @@
+{
+  "decision": "GO_WCU_FIXTURE_SAFE_FOUNDATION_READY",
+  "block": "WCU-000-007",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initial_head": "ab741ed7261142925bee77bbea549a873d94314e",
+  "final_head": "recorded-in-final-operator-response-after-commit",
+  "mode": "fixture-safe-design-first-no-live-execution",
+  "protected_scope": {
+    "touched": false
+  },
+  "implemented": [
+    "OneBrain.WindowsComputerUse project",
+    "fixture-safe contracts",
+    "fixture snapshot builder",
+    "capability classifier",
+    "blockage detector",
+    "sensitive surface detector",
+    "locator engine",
+    "safe action planner dry-run only",
+    "evidence pack builder",
+    "evidence redactor",
+    "unit tests",
+    "architecture docs",
+    "handoff docs"
+  ],
+  "no_live_proof": {
+    "live_cdp": false,
+    "browser_live": false,
+    "websocket_live_bridge": false,
+    "safe_injection_live": false,
+    "real_mouse": false,
+    "real_keyboard": false,
+    "live_uia_action": false,
+    "flaui_action": false,
+    "clipboard_capture": false,
+    "screenshot_persisted": false,
+    "product_ui_action_enablement": false
+  },
+  "percentages": {
+    "wcu_fixture_safe_foundation": 100,
+    "wcu_observability_design_readiness": 40,
+    "wcu_uia_live_read_only_readiness": 5,
+    "wcu_controlled_action_readiness": 0,
+    "wcu_product_automation_readiness": 0
+  },
+  "validations": {
+    "dotnet_restore": "PASS",
+    "dotnet_build": "PASS",
+    "wcu_tests": "PASS_12_OF_12",
+    "cbpr_regression_tests": "PASS_83_OF_83",
+    "git_diff_check": "PASS",
+    "json_validation": "PASS",
+    "protected_scope_scan": "PASS",
+    "allowed_paths_scan": "PASS",
+    "secret_scan": "PASS_ALLOWED_FAKE_REDACTION_TEST_LITERALS_ONLY",
+    "no_live_usage_scan": "PASS",
+    "bad_ux_wording_scan": "PASS"
+  }
+}

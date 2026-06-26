@@ -16,6 +16,7 @@
     <Project Path="src/OneBrain.Safety/OneBrain.Safety.csproj" />
     <Project Path="src/OneBrain.SemanticState/OneBrain.SemanticState.csproj" />
     <Project Path="src/OneBrain.Verification/OneBrain.Verification.csproj" />
+    <Project Path="src/OneBrain.WindowsComputerUse/OneBrain.WindowsComputerUse.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj" />
