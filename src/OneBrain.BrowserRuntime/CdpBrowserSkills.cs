@@ -107,6 +107,8 @@ public sealed record CdpBrowserSkillCaptureResult(
     bool ExtensionUsed,
     bool SystemBrowserUsed,
     bool ExternalNavigationBlocked,
+    bool RuntimeShutdown,
+    bool ProcessExited,
     bool OrphanProcessDetected);
 
 public static class CdpBrowserSkillsControlledPage
@@ -217,6 +219,8 @@ public sealed class CdpBrowserSkillsService
             ExtensionUsed: healthcheck.ExtensionUsed,
             SystemBrowserUsed: healthcheck.SystemBrowserUsed,
             ExternalNavigationBlocked: healthcheck.ExternalNavigationBlocked,
+            RuntimeShutdown: healthcheck.RuntimeShutdown,
+            ProcessExited: healthcheck.ProcessExited,
             OrphanProcessDetected: healthcheck.OrphanProcessDetected);
 
         return await WriteEvidenceAsync(request.RepositoryRoot, result, cancellationToken).ConfigureAwait(false);
@@ -436,7 +440,8 @@ public sealed class CdpBrowserSkillsService
             extensionUsed = result.ExtensionUsed,
             systemBrowserUsed = result.SystemBrowserUsed,
             externalNavigationBlocked = result.ExternalNavigationBlocked,
-            shutdownOk = !result.OrphanProcessDetected,
+            shutdownOk = result.RuntimeShutdown && result.ProcessExited && !result.OrphanProcessDetected,
+            processExited = result.ProcessExited,
             orphanProcessDetected = result.OrphanProcessDetected,
             pageSummary = result.PageSummary,
             domIndexSummary = new
