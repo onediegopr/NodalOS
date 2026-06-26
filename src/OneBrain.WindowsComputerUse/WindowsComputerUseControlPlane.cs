@@ -75,6 +75,10 @@ public enum ComputerUseHandoffReason
 public enum ComputerUseEvidenceKind
 {
     ObserveOnlySnapshot,
+    Win32ContextObservation,
+    UiaEventObservation,
+    EventDerivedBlockage,
+    ActiveWindowChanged,
     PlannedActionDryRun,
     BlockageDetected,
     SensitiveSurfaceDetected,
@@ -751,6 +755,7 @@ public sealed class ComputerUseEvidenceRedactor
     private static readonly Regex CreditCardPattern = new(@"\b(?:\d{4}[-\s]?){3}\d{4}\b", RegexOptions.Compiled);
     private static readonly Regex SsnPattern = new(@"\b\d{3}-\d{2}-\d{4}\b", RegexOptions.Compiled);
     private static readonly Regex TokenPattern = new(@"\b(sk-[A-Za-z0-9_-]{8,}|ghp_[A-Za-z0-9_]{8,}|Bearer\s+[A-Za-z0-9._-]{12,})\b", RegexOptions.Compiled);
+    private static readonly Regex WindowsUserProfilePattern = new(@"(?i)\b[A-Z]:\\Users\\[^\\\s,;]+", RegexOptions.Compiled);
 
     public ComputerUseRedactionResult Redact(string value)
     {
@@ -767,6 +772,7 @@ public sealed class ComputerUseEvidenceRedactor
         redacted = Replace(CreditCardPattern, redacted, fields, "credit-card");
         redacted = Replace(SsnPattern, redacted, fields, "ssn");
         redacted = Replace(TokenPattern, redacted, fields, "token");
+        redacted = Replace(WindowsUserProfilePattern, redacted, fields, "windows-user-profile");
 
         return new ComputerUseRedactionResult(
             redacted,

@@ -1,0 +1,174 @@
+{
+  "block": "WCU-015-022",
+  "decision": "GO_WCU_WIN32_CONTEXT_UIA_EVENTS_READ_ONLY_FIXTURE_READY",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialExpectedHead": "9072c3ec34e3fcd5eb9da9e70d13b467deabb880",
+  "initialActualHead": "0242d53f2f8fb343782d9387a9b8ea4f0e0d81be",
+  "expectedBaseNote": "Expected base 9072c3ec34e3fcd5eb9da9e70d13b467deabb880 is present in history; branch had already advanced to 0242d53f2f8fb343782d9387a9b8ea4f0e0d81be with origin in sync before this block's uncommitted changes.",
+  "finalHead": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "commit": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "pushStatus": "RECORDED_IN_FINAL_RESPONSE",
+  "originDivergenceStart": {
+    "ahead": 0,
+    "behind": 0
+  },
+  "protectedScopeDiff": "PASS",
+  "moduleClassifications": [
+    {
+      "module": "WCU foundation",
+      "path": "src/OneBrain.WindowsComputerUse/WindowsComputerUseControlPlane.cs",
+      "classification": "REUSE_AS_IS"
+    },
+    {
+      "module": "WCU OCR/Robust Perception interop",
+      "path": "src/OneBrain.WindowsComputerUse/VisualPerceptionInterop.cs",
+      "classification": "REUSE_AS_IS"
+    },
+    {
+      "module": "OneBrain.Actions UIA executors",
+      "path": "src/OneBrain.Actions/Uia/**",
+      "classification": "LEGACY_REFERENCE_ONLY"
+    },
+    {
+      "module": "Pilot FlaUI harness",
+      "path": "src/OneBrain.Pilot/Program.cs",
+      "classification": "LEGACY_REFERENCE_ONLY"
+    },
+    {
+      "module": "OneBrain.Observation",
+      "path": "src/OneBrain.Observation/**",
+      "classification": "EXTEND_LATER"
+    },
+    {
+      "module": "Robust Perception",
+      "path": "src/OneBrain.BrowserExecutor.Cdp/NodalOsRobustPerceptionServices.cs",
+      "classification": "WRAP_ONLY"
+    },
+    {
+      "module": "CBPR",
+      "path": "src/OneBrain.BrowserPerception/**",
+      "classification": "DO_NOT_TOUCH"
+    },
+    {
+      "module": "Stealth Core protected scope",
+      "path": "stealth-engine protected paths",
+      "classification": "DO_NOT_TOUCH"
+    }
+  ],
+  "filesCreatedOrModified": [
+    "src/OneBrain.WindowsComputerUse/Win32ReadOnlyContext.cs",
+    "src/OneBrain.WindowsComputerUse/WindowsUiAutomationEventStream.cs",
+    "src/OneBrain.WindowsComputerUse/ComputerUseReadOnlyContextEvidence.cs",
+    "src/OneBrain.WindowsComputerUse/WindowsComputerUseControlPlane.cs",
+    "src/OneBrain.WindowsComputerUse/ComputerUsePerceptionFusion.cs",
+    "tests/OneBrain.Safety.Tests/WindowsComputerUseWin32UiaEventsTests.cs",
+    "docs/qa/computer-use/wcu-015-022-win32-uia-events/inventory.md",
+    "docs/architecture/computer-use/windows-computer-use-win32-context-v1.md",
+    "docs/architecture/computer-use/windows-computer-use-uia-events-v1.md",
+    "docs/qa/computer-use/wcu-015-022-win32-uia-events/report.md",
+    "docs/qa/computer-use/wcu-015-022-win32-uia-events/report.json",
+    "docs/handoff/nodal-os-wcu-win32-context-uia-events-read-only-fixture-handoff.md",
+    "docs/prompts/computer-use/next-wcu-locator-fusion-evidence-redaction-prompt.md"
+  ],
+  "validations": [
+    {
+      "name": "dotnet restore .\\OneBrain.slnx",
+      "result": "PASS"
+    },
+    {
+      "name": "dotnet build .\\OneBrain.slnx --no-restore",
+      "result": "PASS"
+    },
+    {
+      "name": "WindowsComputerUseFixtureSafe",
+      "result": "PASS",
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "WindowsComputerUseOcrInterop",
+      "result": "PASS",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "WindowsComputerUseWin32UiaEvents",
+      "result": "PASS",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "CloakBrowserPerceptionRouter",
+      "result": "PASS",
+      "passed": 83,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "name": "git diff --cached --check",
+      "result": "PASS"
+    },
+    {
+      "name": "json validation",
+      "result": "PASS"
+    },
+    {
+      "name": "protected scope scan",
+      "result": "PASS"
+    },
+    {
+      "name": "no-live usage scan",
+      "result": "PASS"
+    },
+    {
+      "name": "bad UX wording scan",
+      "result": "PASS_NEGATIVE_ONLY"
+    },
+    {
+      "name": "secret scan changed/new",
+      "result": "PASS_FIXTURE_ONLY"
+    }
+  ],
+  "noLiveProof": {
+    "pInvokeAdded": false,
+    "flaUiDependencyAdded": false,
+    "liveUiaSubscription": false,
+    "realPcReadByDefault": false,
+    "windowManipulation": false,
+    "focusStealing": false,
+    "inputInjection": false,
+    "clipboard": false,
+    "rawScreenshotPersistence": false,
+    "browserLiveCdpWebSocket": false,
+    "actionAuthorityFromEvents": false,
+    "actionAuthorityFromWin32": false,
+    "secretMatchesLimitedToFakeFixtures": true
+  },
+  "percentages": {
+    "wcuFixtureSafeFoundation": 100,
+    "wcuOcrRobustPerceptionInteropDesign": 72,
+    "wcuWin32ContextDesignReadiness": 65,
+    "wcuUiaEventsDesignReadiness": 60,
+    "wcuUiaReadOnlyDesignReadiness": 45,
+    "wcuUiaLiveReadOnlyReadiness": 12,
+    "wcuControlledActionReadiness": 0,
+    "wcuProductAutomationReadiness": 0,
+    "ocrAuthorityOverActions": 0,
+    "uiaEventsAuthorityOverActions": 0,
+    "win32AuthorityOverActions": 0
+  },
+  "remainingRisks": [
+    "Win32 context is fixture-only; no live read-only collector was run or claimed.",
+    "UIA event stream is fixture-only; no live subscription was run or claimed.",
+    "Real read-only adapter design still needs isolation proof before any live collector is enabled.",
+    "Locator fusion still needs a deeper evidence/redaction pass before controlled action planning changes."
+  ],
+  "nextBlock": "WCU-023-030 -- Locator Fusion + Evidence Redaction Hardening"
+}

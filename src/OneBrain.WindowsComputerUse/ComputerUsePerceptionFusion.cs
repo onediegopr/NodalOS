@@ -2,7 +2,9 @@ namespace OneBrain.WindowsComputerUse;
 
 public sealed record ComputerUsePerceptionFusionRequest(
     ComputerUseSnapshot Snapshot,
-    RobustPerceptionBridgeResult VisualBridgeResult);
+    RobustPerceptionBridgeResult VisualBridgeResult,
+    Win32ContextCollectionResult? Win32Context = null,
+    WindowsUiAutomationEventStreamState? UiaEvents = null);
 
 public sealed record ComputerUsePerceptionFusionResult(
     ComputerUseCapabilityClassification CapabilityClassification,
@@ -14,6 +16,12 @@ public sealed record ComputerUsePerceptionFusionResult(
     string? LowConfidenceReason,
     ComputerUseHandoffReason HumanHandoffReason,
     IReadOnlyList<string> Reasons,
+    ComputerUseSnapshot EnrichedSnapshot,
+    double UiaRichnessScore,
+    bool ActiveWindowMatched,
+    bool ModalOrOverlayState,
+    double EventDerivedConfidence,
+    IReadOnlyList<string> EvidenceRefs,
     bool ActionAuthorityGranted);
 
 public sealed record ComputerUsePerceptionFusionDecision(
@@ -31,10 +39,35 @@ public sealed class ComputerUsePerceptionFusionClassifier
         var visualSignals = request.VisualBridgeResult.Observations.SelectMany(o => o.Signals).ToArray();
         var visualRisks = visualSignals.SelectMany(s => s.SurfaceRisks).Where(r => r != VisualSurfaceRisk.None).Distinct().ToArray();
         var lowConfidenceSignal = visualSignals.FirstOrDefault(s => s.Confidence is VisualSignalConfidence.Missing or VisualSignalConfidence.Low);
+        var eventState = request.UiaEvents ?? new DisabledWindowsUiAutomationEventStream().Read(new WindowsUiAutomationEventStreamOptions("disabled"));
+        var win32 = request.Win32Context;
+        var evidenceRefs = new List<string>();
+        evidenceRefs.AddRange(request.VisualBridgeResult.Observations.SelectMany(o => o.Signals).SelectMany(s => s.TextObservations.Select(t => t.ObservationId)));
+        evidenceRefs.AddRange(request.VisualBridgeResult.Observations.SelectMany(o => o.Signals).SelectMany(s => s.ElementObservations.Select(e => e.ObservationId)));
+        evidenceRefs.AddRange(win32?.Windows.SelectMany(w => w.EvidenceRefs) ?? []);
+        evidenceRefs.AddRange(eventState.Events.SelectMany(e => e.EvidenceRefs));
 
         if (!request.VisualBridgeResult.Available)
         {
             reasons.Add("Visual bridge unavailable; UIA fixture path remains usable when semantic metadata is sufficient.");
+        }
+
+        if (win32 is null || win32.Status == Win32ContextCollectionStatus.Disabled)
+        {
+            reasons.Add("Win32 context unavailable; fixture fusion falls back to UIA snapshot and visual bridge.");
+        }
+        else
+        {
+            ApplyWin32Context(win32, request.Snapshot, blockages, reasons);
+        }
+
+        if (eventState.Status == WindowsUiAutomationEventStreamStatus.Disabled)
+        {
+            reasons.Add("UIA event stream unavailable; no live event subscription was attempted.");
+        }
+        else
+        {
+            ApplyUiaEvents(eventState, blockages, sensitive, reasons);
         }
 
         if (request.VisualBridgeResult.RawScreenshotStored)
@@ -85,8 +118,23 @@ public sealed class ComputerUsePerceptionFusionClassifier
             reasons.Add("Visual bridge explicitly requested human handoff; perception fusion honors the request.");
         }
 
+        var eventDerivedConfidence = CalculateEventDerivedConfidence(eventState);
+        var activeWindowMatched = ActiveWindowMatchesSnapshot(win32, request.Snapshot);
+        var modalOrOverlay = (win32?.ActiveWindow?.Modal.IsModal ?? false) ||
+            eventState.Events.Any(e => e.Kind is WindowsUiAutomationEventKind.ModalAppeared or WindowsUiAutomationEventKind.WindowOpened) ||
+            blockages.Any(b => b.Kind == ComputerUseBlockageKind.HiddenWindowOrModal);
         var handoff = ResolveHandoff(blockages, sensitiveDetected, visualFallbackRequired, lowConfidenceSignal, bridgeRequestedHandoff);
-        var adjustedClassification = AdjustClassification(baseClassification, visualSignals.Length > 0, visualFallbackRequired, blockageDetected, reasons);
+        var uiaRichnessScore = CalculateUiaRichnessScore(request.Snapshot, eventState);
+        var adjustedClassification = AdjustClassification(
+            baseClassification,
+            visualSignals.Length > 0,
+            win32 is { Status: Win32ContextCollectionStatus.FixtureOnly },
+            eventState.Status == WindowsUiAutomationEventStreamStatus.FixtureOnly,
+            visualFallbackRequired,
+            blockageDetected,
+            reasons,
+            eventDerivedConfidence,
+            activeWindowMatched);
 
         return new ComputerUsePerceptionFusionResult(
             adjustedClassification,
@@ -98,20 +146,38 @@ public sealed class ComputerUsePerceptionFusionClassifier
             lowConfidenceSignal is null ? null : $"Visual signal '{lowConfidenceSignal.SignalId}' has {lowConfidenceSignal.Confidence} confidence.",
             handoff,
             reasons.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            request.Snapshot,
+            uiaRichnessScore,
+            activeWindowMatched,
+            modalOrOverlay,
+            eventDerivedConfidence,
+            evidenceRefs.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             ActionAuthorityGranted: false);
     }
 
     private static ComputerUseCapabilityClassification AdjustClassification(
         ComputerUseCapabilityClassification baseClassification,
         bool hasVisualSignals,
+        bool hasWin32Context,
+        bool hasUiaEvents,
         bool visualFallbackRequired,
         bool blockageDetected,
-        IReadOnlyList<string> reasons)
+        IReadOnlyList<string> reasons,
+        double eventDerivedConfidence,
+        bool activeWindowMatched)
     {
         var capabilities = baseClassification.Capabilities.ToList();
         if (hasVisualSignals)
         {
             capabilities.Add("visual.observation.redacted");
+        }
+        if (hasWin32Context)
+        {
+            capabilities.Add("win32.context.redacted");
+        }
+        if (hasUiaEvents)
+        {
+            capabilities.Add("uia.events.redacted");
         }
 
         var missing = baseClassification.MissingSignals.ToList();
@@ -122,9 +188,7 @@ public sealed class ComputerUsePerceptionFusionClassifier
 
         return new ComputerUseCapabilityClassification(
             baseClassification.TechnologyKind,
-            hasVisualSignals && baseClassification.TechnologyKind == WindowTechnologyKind.UiaPoor
-                ? Math.Min(0.59, baseClassification.Confidence + 0.06)
-                : baseClassification.Confidence,
+            AdjustConfidence(baseClassification, hasVisualSignals, hasWin32Context, hasUiaEvents, eventDerivedConfidence, activeWindowMatched),
             capabilities.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             missing.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             CanPlanFixtureOnly: baseClassification.CanPlanFixtureOnly && !blockageDetected && !visualFallbackRequired,
@@ -193,6 +257,177 @@ public sealed class ComputerUsePerceptionFusionClassifier
         if (bridgeRequestedHandoff)
             return ComputerUseHandoffReason.VerificationFailed;
         return ComputerUseHandoffReason.None;
+    }
+
+    private static void ApplyWin32Context(
+        Win32ContextCollectionResult result,
+        ComputerUseSnapshot snapshot,
+        ICollection<ComputerUseBlockage> blockages,
+        ICollection<string> reasons)
+    {
+        if (result.WindowManipulationUsed || result.FocusStealingUsed || result.InputInjectionUsed || result.ClipboardUsed || result.ScreenshotCaptured || result.ActionAuthority)
+        {
+            blockages.Add(Critical(ComputerUseBlockageKind.AuditLogBypassRisk, "Win32 context attempted an action or unsafe capture."));
+        }
+
+        var active = result.ActiveWindow;
+        if (active is null)
+        {
+            blockages.Add(new ComputerUseBlockage(ComputerUseBlockageKind.LowConfidenceLocator, ComputerUseBlockageSeverity.Warning, "Win32 active window context is missing.", false, true));
+            return;
+        }
+
+        if (!active.Process.IsAllowlisted)
+        {
+            blockages.Add(Critical(ComputerUseBlockageKind.AppNotAllowlisted, "Win32 active process is not allowlisted."));
+        }
+
+        if (active.Modal.IsModal)
+        {
+            blockages.Add(new ComputerUseBlockage(ComputerUseBlockageKind.HiddenWindowOrModal, ComputerUseBlockageSeverity.Warning, "Win32 modal/top-level relationship detected.", false, true));
+        }
+
+        if (active.Dpi.MismatchDetected)
+        {
+            blockages.Add(new ComputerUseBlockage(ComputerUseBlockageKind.DpiMonitorMismatch, ComputerUseBlockageSeverity.Warning, "Win32 monitor/DPI mismatch detected.", false, true));
+        }
+
+        if (!ActiveWindowMatchesSnapshot(result, snapshot))
+        {
+            blockages.Add(new ComputerUseBlockage(ComputerUseBlockageKind.LowConfidenceLocator, ComputerUseBlockageSeverity.Warning, "Win32 active window does not match UIA fixture snapshot.", false, true));
+        }
+
+        reasons.Add("Win32 context contributes read-only active window metadata.");
+    }
+
+    private static void ApplyUiaEvents(
+        WindowsUiAutomationEventStreamState state,
+        ICollection<ComputerUseBlockage> blockages,
+        ICollection<ComputerUseSensitiveSurface> sensitive,
+        ICollection<string> reasons)
+    {
+        if (state.LiveSubscribed || state.ActionCallbackRegistered || state.ActionAuthority || state.Events.Any(e => e.CanTriggerExecution || e.ActionAuthority))
+        {
+            blockages.Add(Critical(ComputerUseBlockageKind.AuditLogBypassRisk, "UIA event stream attempted live subscription, callback execution, or action authority."));
+        }
+
+        foreach (var ev in state.Events)
+        {
+            if ((ev.Kind is WindowsUiAutomationEventKind.SensitiveValueChanged or WindowsUiAutomationEventKind.TextValueChanged) &&
+                (ev.Payload.SensitiveFieldsRedacted.Count > 0 || ContainsSensitiveEventHint(ev)))
+            {
+                sensitive.Add(new ComputerUseSensitiveSurface($"uia-event-{ev.EventId}", "uia-event-sensitive-payload", "Sensitive UIA event payload detected.", true));
+                blockages.Add(Critical(ComputerUseBlockageKind.CredentialField, "UIA event payload indicates sensitive value/text change."));
+            }
+
+            if (ev.Kind is WindowsUiAutomationEventKind.ModalAppeared or WindowsUiAutomationEventKind.WindowOpened)
+            {
+                var combined = $"{ev.Payload.NameRedacted} {ev.Payload.ValueRedacted}";
+                if (combined.Contains("User Account Control", StringComparison.OrdinalIgnoreCase) ||
+                    combined.Contains("administrator", StringComparison.OrdinalIgnoreCase))
+                {
+                    blockages.Add(Critical(ComputerUseBlockageKind.UacAdmin, "UIA event indicates UAC/admin-like blocker."));
+                }
+                else if (combined.Contains("modal", StringComparison.OrdinalIgnoreCase) ||
+                         combined.Contains("confirm", StringComparison.OrdinalIgnoreCase) ||
+                         combined.Contains("overwrite", StringComparison.OrdinalIgnoreCase))
+                {
+                    blockages.Add(new ComputerUseBlockage(ComputerUseBlockageKind.HiddenWindowOrModal, ComputerUseBlockageSeverity.Warning, "UIA event indicates modal/overlay blocker.", false, true));
+                }
+            }
+
+            if (ev.Kind is WindowsUiAutomationEventKind.AppBecameUnresponsive or WindowsUiAutomationEventKind.BlockedStateDetected)
+            {
+                blockages.Add(new ComputerUseBlockage(ComputerUseBlockageKind.HiddenWindowOrModal, ComputerUseBlockageSeverity.Warning, "UIA event indicates blocked or stale surface.", false, true));
+            }
+        }
+
+        reasons.Add("UIA events contribute read-only event evidence only.");
+    }
+
+    private static bool ContainsSensitiveEventHint(WindowsUiAutomationEvent ev)
+    {
+        var value = $"{ev.Payload.NameRedacted} {ev.Payload.PropertyName} {ev.Payload.ValueRedacted}".ToLowerInvariant();
+        return value.Contains("password") || value.Contains("credential") || value.Contains("token") || value.Contains("otp") || value.Contains("[redacted]");
+    }
+
+    private static bool ActiveWindowMatchesSnapshot(Win32ContextCollectionResult? result, ComputerUseSnapshot snapshot)
+    {
+        var active = result?.ActiveWindow;
+        if (active is null)
+        {
+            return false;
+        }
+
+        return snapshot.Windows.Any(window =>
+            string.Equals(window.ProcessName, active.Process.ProcessName, StringComparison.OrdinalIgnoreCase) ||
+            active.Identity.TitleRedacted.Contains(window.Title, StringComparison.OrdinalIgnoreCase) ||
+            window.Title.Contains(active.Identity.TitleRedacted, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(window.ClassName, active.Identity.ClassName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static double CalculateUiaRichnessScore(ComputerUseSnapshot snapshot, WindowsUiAutomationEventStreamState events)
+    {
+        var elements = snapshot.Windows.SelectMany(w => ComputerUseBlockageDetector.Flatten(w.Elements)).ToArray();
+        if (elements.Length == 0)
+        {
+            return 0;
+        }
+
+        var richElements = elements.Count(e =>
+            !string.IsNullOrWhiteSpace(e.Identity.AutomationId) ||
+            !string.IsNullOrWhiteSpace(e.Identity.RuntimeId) ||
+            e.Patterns.SupportsInvoke ||
+            e.Patterns.SupportsValue ||
+            e.Patterns.SupportsText);
+        var score = richElements / (double)elements.Length;
+        if (events.Events.Any(e => e.Kind is WindowsUiAutomationEventKind.FocusChanged or WindowsUiAutomationEventKind.StructureChanged or WindowsUiAutomationEventKind.PropertyChanged))
+        {
+            score += 0.05;
+        }
+
+        return Math.Clamp(score, 0, 1);
+    }
+
+    private static double CalculateEventDerivedConfidence(WindowsUiAutomationEventStreamState state)
+    {
+        if (state.Status != WindowsUiAutomationEventStreamStatus.FixtureOnly || state.Events.Count == 0)
+        {
+            return 0;
+        }
+
+        var baseScore = state.Events.All(e => e.EvidenceOnly && !e.CanTriggerExecution && !e.ActionAuthority) ? 0.72 : 0.2;
+        if (state.Events.Any(e => e.Kind is WindowsUiAutomationEventKind.AppBecameUnresponsive or WindowsUiAutomationEventKind.BlockedStateDetected or WindowsUiAutomationEventKind.ModalAppeared))
+        {
+            return Math.Min(baseScore, 0.55);
+        }
+
+        return baseScore;
+    }
+
+    private static double AdjustConfidence(
+        ComputerUseCapabilityClassification baseClassification,
+        bool hasVisualSignals,
+        bool hasWin32Context,
+        bool hasUiaEvents,
+        double eventDerivedConfidence,
+        bool activeWindowMatched)
+    {
+        var confidence = baseClassification.Confidence;
+        if (hasVisualSignals && baseClassification.TechnologyKind == WindowTechnologyKind.UiaPoor)
+        {
+            confidence = Math.Min(0.59, confidence + 0.06);
+        }
+        if (hasWin32Context && activeWindowMatched)
+        {
+            confidence += 0.04;
+        }
+        if (hasUiaEvents && eventDerivedConfidence > 0)
+        {
+            confidence += 0.03;
+        }
+
+        return Math.Clamp(confidence, 0, 0.99);
     }
 
     private static ComputerUseBlockage Critical(ComputerUseBlockageKind kind, string reason) =>
