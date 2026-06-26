@@ -368,6 +368,37 @@ public sealed class CdpUiLiveStatusAdapter
             }
         }
 
+        var bridgeSummaryValue = GetUiBridgeSummaryInt(root, propertyNames);
+        if (bridgeSummaryValue.HasValue)
+        {
+            return bridgeSummaryValue.Value;
+        }
+
         return 0;
+    }
+
+    private static int? GetUiBridgeSummaryInt(JsonElement root, params string[] propertyNames)
+    {
+        if (!root.TryGetProperty("uiBridgeModel", out var bridge)
+            || bridge.ValueKind != JsonValueKind.Object
+            || !bridge.TryGetProperty("Summary", out var summary)
+            || summary.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var candidate = propertyNames.Any(name => name is "interactiveElements" or "interactiveElementCount")
+            ? "ElementCount"
+            : propertyNames.Any(name => name is "frictionSignals")
+                ? "FrictionCount"
+                : propertyNames.Any(name => name is "actionMap" or "actionMapEntries")
+                    ? "ActionMapCount"
+                    : null;
+        return candidate is not null
+            && summary.TryGetProperty(candidate, out var property)
+            && property.ValueKind == JsonValueKind.Number
+            && property.TryGetInt32(out var value)
+                ? value
+                : null;
     }
 }

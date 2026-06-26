@@ -32,6 +32,9 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         StringAssert.Contains(section, "Refresh source");
         StringAssert.Contains(section, "Runtime lanzado");
         StringAssert.Contains(section, "CDP live");
+        StringAssert.Contains(section, "Canal local");
+        StringAssert.Contains(section, "Snapshot");
+        StringAssert.Contains(section, "safe-local-status-snapshot");
         StringAssert.Contains(section, "source:");
         StringAssert.Contains(section, "cloakbrowser-cdp-direct");
         StringAssert.Contains(section, "metadata-only");
@@ -79,7 +82,17 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
             "evidenceRead: true",
             "runtimeLaunched: false",
             "cdpLiveExecuted: false",
+            "runtimeLaunchedFromUi: false",
+            "cdpLiveExecutedFromUi: false",
+            "channel: 'safe-local-status-snapshot'",
+            "snapshotGeneratedAt: 'sin snapshot'",
+            "snapshotFreshness: 'sin snapshot'",
             "domIndex: 'metadata-only'",
+            "CDP_STATUS_SNAPSHOT_URL",
+            "generated/cdp-status.snapshot.json",
+            "applyCdpStatusSnapshot",
+            "applyMissingCdpStatusSnapshot",
+            "applyInvalidCdpStatusSnapshot",
             "renderCdpBrowserSkillsSurface",
             "refreshCdpStatus",
             "copyCdpBrowserSkillSummary",
@@ -114,6 +127,11 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
             "evidenceRead:",
             "runtimeLaunched:",
             "cdpLiveExecuted:",
+            "runtimeLaunchedFromUi:",
+            "cdpLiveExecutedFromUi:",
+            "channel:",
+            "snapshotGeneratedAt:",
+            "snapshotFreshness:",
             "evidenceStatus:",
             "artifactPinned:",
             "hashStatus:",
@@ -176,6 +194,44 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         StringAssert.Contains(css, ".browser-cdp-evidence");
         StringAssert.Contains(css, ".browser-cdp-status-grid,");
         StringAssert.Contains(css, "grid-template-columns: 1fr;");
+    }
+
+    [TestMethod]
+    public void BrowserSkillsCdpRefreshReadsGeneratedSnapshot()
+    {
+        var js = ReadRepoText(SidepanelJsPath);
+        var start = js.IndexOf("async function refreshCdpStatus()", StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, "CDP refresh function is missing.");
+        var end = js.IndexOf("function applyCdpStatusSnapshot", start, StringComparison.Ordinal);
+        Assert.IsTrue(end > start, "CDP snapshot apply function is missing.");
+        var refreshFunction = js[start..end];
+
+        StringAssert.Contains(refreshFunction, "fetch(`${CDP_STATUS_SNAPSHOT_URL}?t=${Date.now()}`");
+        StringAssert.Contains(refreshFunction, "cache: 'no-store'");
+        StringAssert.Contains(refreshFunction, "applyMissingCdpStatusSnapshot");
+        StringAssert.Contains(refreshFunction, "applyInvalidCdpStatusSnapshot");
+        Assert.IsFalse(refreshFunction.Contains("post(", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(refreshFunction.Contains("chrome.runtime", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(refreshFunction.Contains("runtimeLaunched = true", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(refreshFunction.Contains("cdpLiveExecuted = true", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void BrowserSkillsCdpRefreshShowsClearMissingSnapshotState()
+    {
+        var js = ReadRepoText(SidepanelJsPath);
+        var start = js.IndexOf("function applyEmptyCdpStatusSnapshot", StringComparison.Ordinal);
+        Assert.IsTrue(start >= 0, "CDP empty snapshot state function is missing.");
+        var end = js.IndexOf("function cdpFreshnessLabel", start, StringComparison.Ordinal);
+        Assert.IsTrue(end > start, "CDP freshness label function is missing.");
+        var emptyStateFunction = js[start..end];
+
+        StringAssert.Contains(emptyStateFunction, "sin snapshot");
+        StringAssert.Contains(emptyStateFunction, "sin snapshot local");
+        StringAssert.Contains(emptyStateFunction, "elementCount = 0");
+        StringAssert.Contains(emptyStateFunction, "evidenceAvailable = false");
+        StringAssert.Contains(emptyStateFunction, "runtimeLaunchedFromUi = false");
+        StringAssert.Contains(emptyStateFunction, "cdpLiveExecutedFromUi = false");
     }
 
     private static string ExtractBrowserSkillsSection(string html)

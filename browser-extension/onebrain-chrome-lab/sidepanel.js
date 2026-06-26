@@ -4,6 +4,7 @@ const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
 const DEMO_GUIDANCE_COLLAPSED_KEY = 'nodal-os.demoGuidanceCollapsed.v1';
 const BROWSER_SKILLS_SNAPSHOT_KEY = 'nodal-os.browserSkills.snapshots.v1';
 const BROWSER_SKILLS_MAX_SNAPSHOTS = 20;
+const CDP_STATUS_SNAPSHOT_URL = 'generated/cdp-status.snapshot.json';
 const CDP_BROWSER_SKILLS_SURFACE = {
   runtimeLabel: 'CloakBrowser CDP',
   status: 'listo',
@@ -32,11 +33,16 @@ const CDP_BROWSER_SKILLS_SURFACE = {
   screenshotCaptured: true,
   evidenceAvailable: true,
   boundaryReadOnly: true,
+  channel: 'safe-local-status-snapshot',
+  snapshotGeneratedAt: 'sin snapshot',
+  snapshotFreshness: 'sin snapshot',
   lastRefreshAt: 'sin actualizar',
   refreshSource: 'local-redacted-evidence',
   evidenceRead: true,
   runtimeLaunched: false,
-  cdpLiveExecuted: false
+  cdpLiveExecuted: false,
+  runtimeLaunchedFromUi: false,
+  cdpLiveExecutedFromUi: false
 };
 const WORKSPACE_STORE_KEY = 'nodal-os.workspaceUnderstanding.v1';
 const WORKSPACE_SCAN_LIMITS = {
@@ -343,6 +349,8 @@ const el = {
   cdpElementCount: document.getElementById('cdpElementCount'),
   cdpFrictionCount: document.getElementById('cdpFrictionCount'),
   cdpActionMapCount: document.getElementById('cdpActionMapCount'),
+  cdpChannelState: document.getElementById('cdpChannelState'),
+  cdpSnapshotGeneratedState: document.getElementById('cdpSnapshotGeneratedState'),
   cdpLastRefreshState: document.getElementById('cdpLastRefreshState'),
   cdpRefreshSourceState: document.getElementById('cdpRefreshSourceState'),
   cdpRuntimeLaunchedState: document.getElementById('cdpRuntimeLaunchedState'),
@@ -3941,6 +3949,8 @@ function renderCdpBrowserSkillsSurface() {
   el.cdpElementCount.textContent = String(model.elementCount);
   el.cdpFrictionCount.textContent = `${model.frictionCount} señales`;
   el.cdpActionMapCount.textContent = `${model.actionMapCount} acciones`;
+  el.cdpChannelState.textContent = model.channel;
+  el.cdpSnapshotGeneratedState.textContent = model.snapshotGeneratedAt;
   el.cdpLastRefreshState.textContent = model.lastRefreshAt;
   el.cdpRefreshSourceState.textContent = model.refreshSource;
   el.cdpRuntimeLaunchedState.textContent = model.runtimeLaunched ? 'true' : 'false';
@@ -4045,24 +4055,139 @@ async function copyCdpBrowserSkillSummary() {
   render();
 }
 
-function refreshCdpStatus() {
-  CDP_BROWSER_SKILLS_SURFACE.lastRefreshAt = new Date().toISOString();
+async function refreshCdpStatus() {
+  const requestedAt = new Date().toISOString();
+  try {
+    const response = await fetch(`${CDP_STATUS_SNAPSHOT_URL}?t=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) {
+      applyMissingCdpStatusSnapshot(requestedAt, `HTTP ${response.status}`);
+      render();
+      return;
+    }
+
+    const snapshot = await response.json();
+    applyCdpStatusSnapshot(snapshot, requestedAt);
+  } catch (error) {
+    applyInvalidCdpStatusSnapshot(requestedAt, error && error.message ? error.message : 'snapshot read failed');
+  }
+
+  render();
+}
+
+function applyCdpStatusSnapshot(snapshot, refreshedAt) {
+  if (!snapshot || snapshot.schemaVersion !== '1.0') {
+    throw new Error('invalid snapshot schema');
+  }
+  if (snapshot.channel !== 'safe-local-status-snapshot') {
+    throw new Error('invalid snapshot channel');
+  }
+  if (snapshot.source !== 'cloakbrowser-cdp-direct' || snapshot.runtimeProvider !== 'cloakbrowser') {
+    throw new Error('invalid snapshot source');
+  }
+
+  CDP_BROWSER_SKILLS_SURFACE.channel = snapshot.channel;
+  CDP_BROWSER_SKILLS_SURFACE.snapshotGeneratedAt = snapshot.generatedAt || 'sin snapshot';
+  CDP_BROWSER_SKILLS_SURFACE.snapshotFreshness = snapshot.freshness || 'Missing';
+  CDP_BROWSER_SKILLS_SURFACE.lastRefreshAt = refreshedAt;
   CDP_BROWSER_SKILLS_SURFACE.refreshSource = 'local-redacted-evidence';
-  CDP_BROWSER_SKILLS_SURFACE.evidenceRead = CDP_BROWSER_SKILLS_SURFACE.evidenceAvailable === true;
+  CDP_BROWSER_SKILLS_SURFACE.status = snapshot.runtimeStatus || 'revisar';
+  CDP_BROWSER_SKILLS_SURFACE.freshness = cdpFreshnessLabel(snapshot.freshness);
+  CDP_BROWSER_SKILLS_SURFACE.runtimeStatus = snapshot.artifactHashVerified ? 'configurado' : 'revisar artifact';
+  CDP_BROWSER_SKILLS_SURFACE.lastCaptureStatus = snapshot.lastSessionAt || 'sin captura CDP reciente';
+  CDP_BROWSER_SKILLS_SURFACE.lastHealthcheckStatus = snapshot.lastHealthcheckAt || 'sin verificación CDP reciente';
+  CDP_BROWSER_SKILLS_SURFACE.evidenceStatus = snapshot.evidenceAvailable ? 'disponible' : 'no disponible';
+  CDP_BROWSER_SKILLS_SURFACE.runtimeShutdown = snapshot.runtimeShutdown === true;
+  CDP_BROWSER_SKILLS_SURFACE.processExited = snapshot.processExited === true;
+  CDP_BROWSER_SKILLS_SURFACE.orphanProcessDetected = snapshot.orphanProcessDetected === true;
+  CDP_BROWSER_SKILLS_SURFACE.hashStatus = snapshot.artifactHashVerified ? 'verificado' : 'revisar';
+  CDP_BROWSER_SKILLS_SURFACE.extensionUsed = snapshot.extensionUsed === true;
+  CDP_BROWSER_SKILLS_SURFACE.systemBrowserUsed = snapshot.systemBrowserUsed === true;
+  CDP_BROWSER_SKILLS_SURFACE.externalNavigationBlocked = snapshot.externalNavigationBlocked !== false;
+  CDP_BROWSER_SKILLS_SURFACE.productFilesModified = snapshot.productFilesModified === true;
+  CDP_BROWSER_SKILLS_SURFACE.elementCount = Number(snapshot.interactiveElements || 0);
+  CDP_BROWSER_SKILLS_SURFACE.frictionCount = Number(snapshot.frictionSignals || 0);
+  CDP_BROWSER_SKILLS_SURFACE.actionMapCount = Number(snapshot.actionMapEntries || 0);
+  CDP_BROWSER_SKILLS_SURFACE.screenshotCaptured = snapshot.screenshotCaptured === true;
+  CDP_BROWSER_SKILLS_SURFACE.evidenceAvailable = snapshot.evidenceAvailable === true;
+  CDP_BROWSER_SKILLS_SURFACE.evidenceRead = true;
   CDP_BROWSER_SKILLS_SURFACE.runtimeLaunched = false;
   CDP_BROWSER_SKILLS_SURFACE.cdpLiveExecuted = false;
+  CDP_BROWSER_SKILLS_SURFACE.runtimeLaunchedFromUi = snapshot.runtimeLaunchedFromUi === true;
+  CDP_BROWSER_SKILLS_SURFACE.cdpLiveExecutedFromUi = snapshot.cdpLiveExecutedFromUi === true;
+  CDP_BROWSER_SKILLS_SURFACE.boundaryReadOnly = snapshot.boundaryReadOnly !== false;
+  addLog('local', {
+    kind: 'CdpSafeLocalStatusSnapshotRead',
+    channel: snapshot.channel,
+    freshness: snapshot.freshness,
+    runtimeLaunchedFromUi: false,
+    cdpLiveExecutedFromUi: false
+  });
+}
+
+function applyMissingCdpStatusSnapshot(refreshedAt, reason) {
+  applyEmptyCdpStatusSnapshot(refreshedAt, {
+    status: 'sin snapshot CDP local',
+    freshness: 'missing',
+    evidenceStatus: 'no disponible',
+    reason
+  });
+}
+
+function applyInvalidCdpStatusSnapshot(refreshedAt, reason) {
+  applyEmptyCdpStatusSnapshot(refreshedAt, {
+    status: 'No pude leer estado CDP',
+    freshness: 'error',
+    evidenceStatus: 'revisar',
+    reason
+  });
+}
+
+function applyEmptyCdpStatusSnapshot(refreshedAt, state) {
+  CDP_BROWSER_SKILLS_SURFACE.channel = 'safe-local-status-snapshot';
+  CDP_BROWSER_SKILLS_SURFACE.snapshotGeneratedAt = 'sin snapshot';
+  CDP_BROWSER_SKILLS_SURFACE.snapshotFreshness = state.freshness;
+  CDP_BROWSER_SKILLS_SURFACE.lastRefreshAt = refreshedAt;
+  CDP_BROWSER_SKILLS_SURFACE.refreshSource = 'local-redacted-evidence';
+  CDP_BROWSER_SKILLS_SURFACE.status = state.status;
+  CDP_BROWSER_SKILLS_SURFACE.freshness = state.freshness === 'error' ? 'revisar' : 'sin evidencia';
+  CDP_BROWSER_SKILLS_SURFACE.runtimeStatus = 'configurado';
+  CDP_BROWSER_SKILLS_SURFACE.lastCaptureStatus = 'sin snapshot local';
+  CDP_BROWSER_SKILLS_SURFACE.lastHealthcheckStatus = 'sin snapshot local';
+  CDP_BROWSER_SKILLS_SURFACE.evidenceStatus = state.evidenceStatus;
+  CDP_BROWSER_SKILLS_SURFACE.runtimeShutdown = false;
+  CDP_BROWSER_SKILLS_SURFACE.processExited = false;
+  CDP_BROWSER_SKILLS_SURFACE.orphanProcessDetected = false;
+  CDP_BROWSER_SKILLS_SURFACE.hashStatus = 'sin snapshot';
   CDP_BROWSER_SKILLS_SURFACE.extensionUsed = false;
   CDP_BROWSER_SKILLS_SURFACE.systemBrowserUsed = false;
-  CDP_BROWSER_SKILLS_SURFACE.productFilesModified = false;
-  CDP_BROWSER_SKILLS_SURFACE.boundaryReadOnly = true;
   CDP_BROWSER_SKILLS_SURFACE.externalNavigationBlocked = true;
+  CDP_BROWSER_SKILLS_SURFACE.productFilesModified = false;
+  CDP_BROWSER_SKILLS_SURFACE.elementCount = 0;
+  CDP_BROWSER_SKILLS_SURFACE.frictionCount = 0;
+  CDP_BROWSER_SKILLS_SURFACE.actionMapCount = 0;
+  CDP_BROWSER_SKILLS_SURFACE.screenshotCaptured = false;
+  CDP_BROWSER_SKILLS_SURFACE.evidenceAvailable = false;
+  CDP_BROWSER_SKILLS_SURFACE.evidenceRead = false;
+  CDP_BROWSER_SKILLS_SURFACE.runtimeLaunched = false;
+  CDP_BROWSER_SKILLS_SURFACE.cdpLiveExecuted = false;
+  CDP_BROWSER_SKILLS_SURFACE.runtimeLaunchedFromUi = false;
+  CDP_BROWSER_SKILLS_SURFACE.cdpLiveExecutedFromUi = false;
+  CDP_BROWSER_SKILLS_SURFACE.boundaryReadOnly = true;
   addLog('local', {
-    kind: 'CdpStatusRefreshReadOnly',
-    source: CDP_BROWSER_SKILLS_SURFACE.refreshSource,
-    runtimeLaunched: false,
-    cdpLiveExecuted: false
+    kind: 'CdpSafeLocalStatusSnapshotMissing',
+    reason: state.reason,
+    runtimeLaunchedFromUi: false,
+    cdpLiveExecutedFromUi: false
   });
-  render();
+}
+
+function cdpFreshnessLabel(value) {
+  const normalized = String(value || '').toLowerCase();
+  if (normalized === 'fresh') return 'reciente';
+  if (normalized === 'stale') return 'antiguo';
+  if (normalized === 'missing') return 'sin evidencia';
+  if (normalized === 'error') return 'revisar';
+  return 'revisar';
 }
 
 function buildCdpBrowserSkillSummary() {
@@ -4070,9 +4195,12 @@ function buildCdpBrowserSkillSummary() {
   return [
     'NODAL OS — Browser Skills CDP',
     `runtime: ${model.runtimeLabel}`,
+    `channel: ${model.channel}`,
     `source: ${model.source}`,
     `status: ${model.status}`,
     `freshness: ${model.freshness}`,
+    `snapshotGeneratedAt: ${model.snapshotGeneratedAt}`,
+    `snapshotFreshness: ${model.snapshotFreshness}`,
     `runtimeStatus: ${model.runtimeStatus}`,
     `lastCaptureStatus: ${model.lastCaptureStatus}`,
     `lastHealthcheckAt: ${model.lastHealthcheckStatus}`,
@@ -4082,6 +4210,8 @@ function buildCdpBrowserSkillSummary() {
     `evidenceRead: ${model.evidenceRead}`,
     `runtimeLaunched: ${model.runtimeLaunched}`,
     `cdpLiveExecuted: ${model.cdpLiveExecuted}`,
+    `runtimeLaunchedFromUi: ${model.runtimeLaunchedFromUi}`,
+    `cdpLiveExecutedFromUi: ${model.cdpLiveExecutedFromUi}`,
     `evidenceStatus: ${model.evidenceStatus}`,
     `artifactPinned: ${model.artifactPinned}`,
     `hashStatus: ${model.hashStatus}`,

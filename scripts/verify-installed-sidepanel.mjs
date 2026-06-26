@@ -78,6 +78,7 @@ const result = {
   missionFlow: {},
   workspaceUnderstanding: {},
   browserSkills: {},
+  cdpSafeLocalStatusChannel: {},
   elementCount: 0,
   frictionSummary: 'not evaluated',
   errors: [],
@@ -103,6 +104,11 @@ async function main() {
     sidePanelPath: manifest.side_panel && manifest.side_panel.default_path,
     permissions: manifest.permissions || []
   });
+  result.cdpSafeLocalStatusChannel = await exportCdpSafeLocalStatusSnapshot();
+  addCheck('CDP safe local status snapshot exported', result.cdpSafeLocalStatusChannel.ok, result.cdpSafeLocalStatusChannel);
+  if (!result.cdpSafeLocalStatusChannel.ok) {
+    throw new Error(`CDP safe local status snapshot export failed: ${result.cdpSafeLocalStatusChannel.status || 'unknown'}`);
+  }
 
   const chromiumPath = await locatePlaywrightChromium();
   addCheck('Playwright Chromium executable found', Boolean(chromiumPath), {
@@ -230,6 +236,84 @@ async function main() {
   if (result.status !== 'PASS') {
     process.exitCode = 1;
   }
+}
+
+async function exportCdpSafeLocalStatusSnapshot() {
+  const scriptPath = path.join(repoRoot, 'scripts', 'export-cloakbrowser-cdp-ui-status-snapshot.ps1');
+  if (!existsSync(scriptPath)) {
+    return {
+      ok: false,
+      status: 'MISSING_SCRIPT',
+      snapshotWritten: false,
+      stdout: '',
+      stderr: 'export script not found'
+    };
+  }
+
+  const processResult = await runProcess('powershell', [
+    '-NoProfile',
+    '-ExecutionPolicy',
+    'Bypass',
+    '-File',
+    scriptPath
+  ], repoRoot);
+  const fields = Object.fromEntries(processResult.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const separator = line.indexOf('=');
+      return separator > 0 ? [line.slice(0, separator), line.slice(separator + 1)] : [line, ''];
+    }));
+
+  return {
+    ok: processResult.code === 0
+      && fields.status === 'READY'
+      && fields.snapshotWritten === 'True'
+      && fields.channel === 'safe-local-status-snapshot'
+      && fields.runtimeLaunched === 'false'
+      && fields.cdpLiveExecuted === 'false'
+      && fields.extensionUsed === 'false'
+      && fields.systemBrowserUsed === 'false',
+    exitCode: processResult.code,
+    status: fields.status || 'UNKNOWN',
+    snapshotWritten: fields.snapshotWritten === 'True',
+    snapshotName: fields.snapshotName || '',
+    channel: fields.channel || '',
+    freshness: fields.freshness || '',
+    evidenceAvailable: fields.evidenceAvailable || '',
+    runtimeLaunched: fields.runtimeLaunched || '',
+    cdpLiveExecuted: fields.cdpLiveExecuted || '',
+    extensionUsed: fields.extensionUsed || '',
+    systemBrowserUsed: fields.systemBrowserUsed || '',
+    productFilesModified: fields.productFilesModified || '',
+    stdout: processResult.stdout.slice(0, 1200),
+    stderr: processResult.stderr.slice(0, 1200)
+  };
+}
+
+async function runProcess(command, args, cwd) {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on('error', (error) => {
+      resolve({ code: -1, stdout, stderr: `${stderr}\n${error.message}` });
+    });
+    child.on('close', (code) => {
+      resolve({ code: code ?? -1, stdout, stderr });
+    });
+  });
 }
 
 async function runMissionFlow(sidepanel) {
@@ -598,6 +682,8 @@ async function runBrowserSkillsFlow(sidepanel) {
       elementCount: document.getElementById('cdpElementCount').innerText,
       frictionCount: document.getElementById('cdpFrictionCount').innerText,
       actionMapCount: document.getElementById('cdpActionMapCount').innerText,
+      channel: document.getElementById('cdpChannelState').innerText,
+      snapshotGeneratedAt: document.getElementById('cdpSnapshotGeneratedState').innerText,
       lastRefreshAt: document.getElementById('cdpLastRefreshState').innerText,
       refreshSource: document.getElementById('cdpRefreshSourceState').innerText,
       runtimeLaunched: document.getElementById('cdpRuntimeLaunchedState').innerText,
@@ -626,7 +712,7 @@ async function runBrowserSkillsFlow(sidepanel) {
       && cdpSurface.freshness === 'reciente'
       && cdpSurface.boundary === 'solo lectura'
       && cdpSurface.runtimeStatus === 'configurado'
-      && cdpSurface.lastHealthcheckStatus.includes('reciente')
+      && cdpSurface.lastHealthcheckStatus !== 'sin snapshot local'
       && cdpSurface.evidenceAvailability === 'disponible'
       && cdpSurface.runtimeShutdown === 'OK'
       && cdpSurface.processStatus === 'cerrado'
@@ -634,6 +720,8 @@ async function runBrowserSkillsFlow(sidepanel) {
       && cdpSurface.orphanProcess === 'false'
       && cdpSurface.boundaryReadOnly === 'true'
       && cdpSurface.extensionMode.includes('legacy')
+      && cdpSurface.channel === 'safe-local-status-snapshot'
+      && cdpSurface.snapshotGeneratedAt !== 'sin snapshot'
       && cdpSurface.lastRefreshAt !== 'sin actualizar'
       && cdpSurface.refreshSource === 'local-redacted-evidence'
       && cdpSurface.evidenceRead === 'true'
@@ -647,11 +735,16 @@ async function runBrowserSkillsFlow(sidepanel) {
       && cdpSurface.copiedSummary.includes('extensionUsed: false')
       && cdpSurface.copiedSummary.includes('systemBrowserUsed: false')
       && cdpSurface.copiedSummary.includes('boundaryReadOnly: true')
+      && cdpSurface.copiedSummary.includes('channel: safe-local-status-snapshot')
+      && cdpSurface.copiedSummary.includes('snapshotGeneratedAt:')
+      && cdpSurface.copiedSummary.includes('snapshotFreshness: Fresh')
       && cdpSurface.copiedSummary.includes('lastRefreshAt:')
       && cdpSurface.copiedSummary.includes('refreshSource: local-redacted-evidence')
       && cdpSurface.copiedSummary.includes('evidenceRead: true')
       && cdpSurface.copiedSummary.includes('runtimeLaunched: false')
       && cdpSurface.copiedSummary.includes('cdpLiveExecuted: false')
+      && cdpSurface.copiedSummary.includes('runtimeLaunchedFromUi: false')
+      && cdpSurface.copiedSummary.includes('cdpLiveExecutedFromUi: false')
       && cdpSurface.copiedSummary.includes('runtimeStatus: configurado')
       && cdpSurface.copiedSummary.includes('freshness: reciente')
       && cdpSurface.copiedSummary.includes('hashStatus: verificado')

@@ -30,3 +30,6 @@ ApiKey.txt
 
 # Recipe artifacts
 artifacts/
+
+# Generated extension-local CDP status snapshots
+browser-extension/onebrain-chrome-lab/generated/*.json
