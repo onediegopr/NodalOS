@@ -1,0 +1,84 @@
+{
+  "decision": "GO_MISTRAL_OCR_PROVIDER_ROUTER_DESIGN_ONLY_READY_WITH_KNOWN_OUT_OF_SCOPE_UNTRACKED_WCU_FILES",
+  "block": "MISTRAL-OCR-4-PROVIDER-ROUTER-DESIGN-ONLY",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initial_head": "1aadf7543afa25c50816bf05b93cf4f9d8c53d8c",
+  "final_head": "recorded-in-final-operator-response-after-commit",
+  "mode": "design-only-fixture-safe-no-live-no-billing",
+  "providers": [
+    {
+      "provider_id": "local.onnx_ocr_fixture",
+      "mode": "fixture_only",
+      "network_calls_enabled": false,
+      "live_execution_enabled": false
+    },
+    {
+      "provider_id": "cloud.mistral_ocr_4",
+      "mode": "live_candidate_blocked",
+      "network_calls_enabled": false,
+      "live_execution_enabled": false
+    },
+    {
+      "provider_id": "cloud.mistral_document_ai",
+      "mode": "live_candidate_blocked",
+      "network_calls_enabled": false,
+      "live_execution_enabled": false
+    },
+    {
+      "provider_id": "human.review",
+      "mode": "fixture_only",
+      "network_calls_enabled": false,
+      "live_execution_enabled": false
+    }
+  ],
+  "protected_scope": {
+    "touched": false
+  },
+  "no_live_proof": {
+    "real_api_calls": false,
+    "mistral_api_key_usage": false,
+    "network_requests": false,
+    "billing_integration": false,
+    "live_provider_execution": false,
+    "browser_automation": false,
+    "desktop_automation": false,
+    "cdp_live_execution": false,
+    "safe_injection_live": false,
+    "ocr_action_authority": false
+  },
+  "no_go_preserved": {
+    "live_mistral_ocr_calls": true,
+    "paid_provider_execution": true,
+    "ocr_action_authority": true,
+    "browser_live_automation": true,
+    "desktop_live_automation": true,
+    "captcha_login_2fa_payment_fiscal_automation": true,
+    "public_release_unlock": true,
+    "paid_beta_unlock": true
+  },
+  "known_out_of_scope_untracked_files": {
+    "files": [
+      "docs/architecture/computer-use/windows-computer-use-robust-perception-interop-v1.md",
+      "docs/qa/computer-use/wcu-008-014-uia-ocr-interop/",
+      "src/OneBrain.WindowsComputerUse/ComputerUsePerceptionFusion.cs",
+      "src/OneBrain.WindowsComputerUse/VisualPerceptionInterop.cs",
+      "src/OneBrain.WindowsComputerUse/WindowsUiAutomationReadOnlyCollector.cs",
+      "tests/OneBrain.Safety.Tests/WindowsComputerUseOcrInteropTests.cs"
+    ],
+    "touched": false,
+    "committed": false,
+    "deleted": false,
+    "worktree_clean": false
+  },
+  "validations": {
+    "dotnet_restore": "PASS",
+    "dotnet_build": "PASS",
+    "provider_router_tests": "PASS_14_OF_14",
+    "git_diff_check": "PASS",
+    "json_validation": "PASS",
+    "protected_scope_scan": "PASS",
+    "secret_scan": "PASS_ALLOWED_SYNTHETIC_REDACTION_TEST_LITERALS_ONLY",
+    "forbidden_live_usage_scan": "PASS",
+    "browser_desktop_automation_change_scan": "PASS"
+  }
+}

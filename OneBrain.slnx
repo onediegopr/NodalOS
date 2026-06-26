@@ -11,6 +11,7 @@
     <Project Path="src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj" />
     <Project Path="src/OneBrain.Cli/OneBrain.Cli.csproj" />
     <Project Path="src/OneBrain.Core/OneBrain.Core.csproj" />
+    <Project Path="src/OneBrain.DocumentIntelligence/OneBrain.DocumentIntelligence.csproj" />
     <Project Path="src/OneBrain.Observation/OneBrain.Observation.csproj" />
     <Project Path="src/OneBrain.Pilot/OneBrain.Pilot.csproj" />
     <Project Path="src/OneBrain.Safety/OneBrain.Safety.csproj" />
