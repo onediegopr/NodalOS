@@ -3,14 +3,17 @@
  * @policy no-audit, no-modify, no-analyze, no-refactor
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
+import { cryptoRandom } from './AdaptiveBehaviorEngine.js';
+
 export class HumanMouse {
   constructor(profile) {
     this.profile = profile;
   }
 
   async move(page, tx, ty, opts = {}) {
-    const sx = opts.startX ?? Math.floor(Math.random() * 400);
-    const sy = opts.startY ?? Math.floor(Math.random() * 300);
+    const vp = page.viewportSize() || { width: 1920, height: 1080 };
+    const sx = opts.startX ?? Math.floor(cryptoRandom() * vp.width);
+    const sy = opts.startY ?? Math.floor(cryptoRandom() * vp.height);
     const dist = Math.sqrt((tx - sx) ** 2 + (ty - sy) ** 2);
     const threshold = this.profile.ballisticsThreshold || 600;
 
@@ -22,7 +25,7 @@ export class HumanMouse {
   }
 
   async _ballisticMove(page, sx, sy, tx, ty, opts = {}) {
-    var steps = opts.steps || 80 + Math.floor(Math.random() * 60);
+    var steps = opts.steps || 80 + Math.floor(cryptoRandom() * 60);
     var jitter = opts.jitterAmount || 3;
     var baseDelay = this.profile.baseDelay || 80;
     var dist = Math.sqrt((tx - sx) ** 2 + (ty - sy) ** 2);
@@ -36,8 +39,8 @@ export class HumanMouse {
       var delay = (2 + speedT * 12) * (baseDelay / 80);
 
       var noiseScale = dist > 500 ? 1.5 : 1;
-      var jx = (Math.random() - 0.5) * jitter * noiseScale;
-      var jy = (Math.random() - 0.5) * jitter * noiseScale;
+      var jx = (cryptoRandom() - 0.5) * jitter * noiseScale;
+      var jy = (cryptoRandom() - 0.5) * jitter * noiseScale;
 
       await page.mouse.move(Math.round(x + jx), Math.round(y + jy));
       await new Promise(r => setTimeout(r, delay));
@@ -47,17 +50,17 @@ export class HumanMouse {
   }
 
   async _bezierMove(page, sx, sy, tx, ty, opts = {}) {
-    const steps = opts.steps || 60 + Math.floor(Math.random() * 40);
+    const steps = opts.steps || 60 + Math.floor(cryptoRandom() * 40);
     const jitter = opts.jitterAmount || 3;
     const baseDelay = this.profile.baseDelay || 80;
     const variance = this.profile.bezierVariance || 120;
 
-    const c1x = sx + (tx - sx) * 0.25 + (Math.random() - 0.5) * variance;
-    const c1y = sy + (ty - sy) * 0.25 + (Math.random() - 0.5) * variance * 0.7;
-    const c2x = sx + (tx - sx) * 0.75 + (Math.random() - 0.5) * variance * 0.8;
-    const c2y = sy + (ty - sy) * 0.75 + (Math.random() - 0.5) * variance * 0.5;
+    const c1x = sx + (tx - sx) * 0.25 + (cryptoRandom() - 0.5) * variance;
+    const c1y = sy + (ty - sy) * 0.25 + (cryptoRandom() - 0.5) * variance * 0.7;
+    const c2x = sx + (tx - sx) * 0.75 + (cryptoRandom() - 0.5) * variance * 0.8;
+    const c2y = sy + (ty - sy) * 0.75 + (cryptoRandom() - 0.5) * variance * 0.5;
 
-    const over = opts.overshoot !== false && Math.random() < (this.profile.overShootRate || 0.6);
+    const over = opts.overshoot !== false && cryptoRandom() < (this.profile.overShootRate || 0.6);
     const ex = over ? tx + (tx - c2x) * 0.25 : tx;
     const ey = over ? ty + (ty - c2y) * 0.25 : ty;
 
@@ -74,28 +77,28 @@ export class HumanMouse {
       const t = i / pts.length;
       const easing = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
       const delay = 2 + easing * 8 * (baseDelay / 80);
-      await page.mouse.move(pts[i].x + (Math.random() - 0.5) * jitter, pts[i].y + (Math.random() - 0.5) * jitter);
+      await page.mouse.move(pts[i].x + (cryptoRandom() - 0.5) * jitter, pts[i].y + (cryptoRandom() - 0.5) * jitter);
       await new Promise(r => setTimeout(r, delay));
     }
 
     if (over) {
-      await new Promise(r => setTimeout(r, 30 + Math.random() * 50));
+      await new Promise(r => setTimeout(r, 30 + cryptoRandom() * 50));
       for (let i = 0; i <= 8; i++) {
         const t = i / 8;
-        await page.mouse.move(ex + (tx - ex) * t + (Math.random() - 0.5) * 2, ey + (ty - ey) * t + (Math.random() - 0.5) * 2);
-        await new Promise(r => setTimeout(r, 5 + Math.random() * 5));
+        await page.mouse.move(ex + (tx - ex) * t + (cryptoRandom() - 0.5) * 2, ey + (ty - ey) * t + (cryptoRandom() - 0.5) * 2);
+        await new Promise(r => setTimeout(r, 5 + cryptoRandom() * 5));
       }
     }
   }
 
   async click(page, x, y, opts = {}) {
     await this.move(page, x, y, opts);
-    const pause = this.profile.clickPauseMin + Math.random() * (this.profile.clickPauseMax - this.profile.clickPauseMin);
+    const pause = this.profile.clickPauseMin + cryptoRandom() * (this.profile.clickPauseMax - this.profile.clickPauseMin);
     await new Promise(r => setTimeout(r, pause));
     await page.mouse.click(x, y, { ...opts });
-    await new Promise(r => setTimeout(r, 50 + Math.random() * 100));
-    if (Math.random() > 0.7) {
-      await page.mouse.move(x + (Math.random() - 0.5) * 3, y + (Math.random() - 0.5) * 3);
+    await new Promise(r => setTimeout(r, 50 + cryptoRandom() * 100));
+    if (cryptoRandom() > 0.7) {
+      await page.mouse.move(x + (cryptoRandom() - 0.5) * 3, y + (cryptoRandom() - 0.5) * 3);
     }
   }
 
@@ -104,8 +107,8 @@ export class HumanMouse {
     if (!el) throw new Error('Element not found: ' + selector);
     const box = await el.boundingBox();
     if (!box) throw new Error('Element not visible: ' + selector);
-    const x = box.x + box.width * (0.2 + Math.random() * 0.6);
-    const y = box.y + box.height * (0.2 + Math.random() * 0.6);
+    const x = box.x + box.width * (0.2 + cryptoRandom() * 0.6);
+    const y = box.y + box.height * (0.2 + cryptoRandom() * 0.6);
     await this.click(page, x, y);
   }
 }

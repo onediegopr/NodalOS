@@ -31,7 +31,8 @@ export class DomainRateLimiter {
   recordResponse(domain, statusCode) {
     const e = this._entry(domain);
     e.updatedAt = Date.now();
-    if (statusCode === 429) {
+    const code = statusCode || 429;
+    if (code === 429 || code === 403 || code === 503) {
       e.consecutive429++;
       e.consecutiveSuccess = 0;
       e.delayMs = Math.min(this.maxDelayMs, e.delayMs * this.backoffMultiplier);

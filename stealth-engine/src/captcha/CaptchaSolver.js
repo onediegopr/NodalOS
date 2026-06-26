@@ -82,17 +82,10 @@ export class CaptchaSolver {
     const fetchOpts = { headers: { 'Content-Type': 'application/json' } };
     if (proxy) {
       try {
-        const { Agent } = await import('undici');
-        const parsedProxy = new URL(proxy.server);
-        const dispatcher = new Agent({
-          keepAliveTimeout: 30000,
-          keepAliveMaxTimeout: 120000,
-          connect: {
-            host: parsedProxy.hostname,
-            port: parsedProxy.port || 8080,
-          },
-        });
-        fetchOpts.dispatcher = dispatcher;
+        const { ProxyAgent } = await import('undici');
+        const parsed = new URL(proxy.server);
+        const proxyUrl = `http://${proxy.username || ''}:${proxy.password || ''}@${parsed.hostname}:${parsed.port || 8080}`;
+        fetchOpts.dispatcher = new ProxyAgent(proxyUrl);
       } catch (e) {
         console.warn(`[${taskId}] Could not create proxy dispatcher: ${e.message}`);
       }
@@ -140,7 +133,7 @@ export class CaptchaSolver {
     var taskConfig;
     switch (captchaType) {
       case 'geetest': {
-        taskType = 'GeeTestTaskProxyLess';
+        taskType = 'GeeTestTaskProxyless';
         const gt = sitekey || await this._extractGeeTestGt(page);
         const challenge = await this._extractGeeTestChallenge(page, gt);
         taskConfig = { type: taskType, websiteURL: safeUrl, gt: gt || '', challenge: challenge || '' };
@@ -150,11 +143,11 @@ export class CaptchaSolver {
         break;
       }
       case 'funcaptcha':
-        taskType = 'FunCaptchaTaskProxyLess';
+        taskType = 'FunCaptchaTaskProxyless';
         taskConfig = { type: taskType, websiteURL: safeUrl, websitePublicKey: sitekey || '' };
         break;
       case 'kasada': {
-        taskType = 'AntiKasadaTaskProxyLess';
+        taskType = 'AntiKasadaTaskProxyless';
         const kasadaData = await this._extractKasadaData(page);
         if (!kasadaData) {
           return { success: false, error: 'Could not extract Kasada challenge data' };
@@ -169,17 +162,10 @@ export class CaptchaSolver {
     const fetchOpts = { headers: { 'Content-Type': 'application/json' } };
     if (proxy) {
       try {
-        const { Agent } = await import('undici');
-        const parsedProxy = new URL(proxy.server);
-        const dispatcher = new Agent({
-          keepAliveTimeout: 30000,
-          keepAliveMaxTimeout: 120000,
-          connect: {
-            host: parsedProxy.hostname,
-            port: parsedProxy.port || 8080,
-          },
-        });
-        fetchOpts.dispatcher = dispatcher;
+        const { ProxyAgent } = await import('undici');
+        const parsed = new URL(proxy.server);
+        const proxyUrl = `http://${proxy.username || ''}:${proxy.password || ''}@${parsed.hostname}:${parsed.port || 8080}`;
+        fetchOpts.dispatcher = new ProxyAgent(proxyUrl);
       } catch (e) {
         console.warn(`[${taskId}] Could not create proxy dispatcher: ${e.message}`);
       }

@@ -5,8 +5,7 @@
  */
 export class FingerprintInjector {
   static getFullInitScript(profile) {
-    const p = profile;
-    return () => {
+    return (p) => {
 
       // ── Navigator ──
       Object.defineProperty(Navigator.prototype, 'webdriver',

@@ -3,6 +3,8 @@
  * @policy no-audit, no-modify, no-analyze, no-refactor
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
+import { cryptoRandom } from './AdaptiveBehaviorEngine.js';
+
 export class HumanNavigation {
   constructor(mouse) {
     this.mouse = mouse;
@@ -24,17 +26,17 @@ export class HumanNavigation {
     for (let i = 0; i < moveCount; i++) {
       await this.mouse.move(
         page,
-        Math.random() * w * 0.8,
-        Math.random() * h * 0.8,
+        cryptoRandom() * w * 0.8,
+        cryptoRandom() * h * 0.8,
         { steps: 20 }
       );
-      await new Promise(r => setTimeout(r, 1500 + Math.random() * 1500));
+      await new Promise(r => setTimeout(r, 1500 + cryptoRandom() * 1500));
     }
 
     await new Promise(r => setTimeout(r, readingTimeMs));
   }
 
   async randomPause(min, max) {
-    await new Promise(r => setTimeout(r, min + Math.random() * (max - min)));
+    await new Promise(r => setTimeout(r, min + cryptoRandom() * (max - min)));
   }
 }

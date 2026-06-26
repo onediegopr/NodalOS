@@ -3,36 +3,38 @@
  * @policy no-audit, no-modify, no-analyze, no-refactor
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
+import { cryptoRandom } from './AdaptiveBehaviorEngine.js';
+
 export class HumanScroll {
   constructor(profile) {
     this.profile = profile;
   }
 
   async scroll(page, opts = {}) {
-    const max = opts.maxScrolls || 2 + Math.floor(Math.random() * 5);
+    const max = opts.maxScrolls || 2 + Math.floor(cryptoRandom() * 5);
     const direction = opts.direction || 'down';
     const sign = direction === 'down' ? 1 : -1;
     const subMin = this.profile.scrollSubStepsMin || 5;
     const subMax = this.profile.scrollSubStepsMax || 15;
 
-    for (let i = 0; i < max; i++) {
-      const textDensity = await this._estimateTextDensity(page);
-      const densityFactor = 0.5 + textDensity * 1.5;
+    const textDensity = await this._estimateTextDensity(page);
+    const densityFactor = 0.5 + textDensity * 1.5;
 
-      const delta = sign * (200 + Math.random() * 400);
-      const subSteps = subMin + Math.floor(Math.random() * (subMax - subMin));
+    for (let i = 0; i < max; i++) {
+      const delta = sign * (200 + cryptoRandom() * 400);
+      const subSteps = subMin + Math.floor(cryptoRandom() * (subMax - subMin));
       const sd = Math.round(delta / subSteps);
 
       for (let j = 0; j < subSteps; j++) {
         await page.mouse.wheel(0, sd);
-        await new Promise(r => setTimeout(r, (8 + Math.random() * 15) * densityFactor));
+        await new Promise(r => setTimeout(r, (8 + cryptoRandom() * 15) * densityFactor));
       }
 
-      const readTime = this.profile.scrollPauseMs * (0.5 + Math.random()) * densityFactor;
+      const readTime = this.profile.scrollPauseMs * (0.5 + cryptoRandom()) * densityFactor;
       await new Promise(r => setTimeout(r, readTime));
 
-      if (Math.random() < 0.4) {
-        await page.mouse.wheel(0, (Math.random() - 0.5) * 40);
+      if (cryptoRandom() < 0.4) {
+        await page.mouse.wheel(0, (cryptoRandom() - 0.5) * 40);
       }
     }
   }
@@ -41,12 +43,12 @@ export class HumanScroll {
     const el = await page.$(selector);
     if (!el) throw new Error('Element not found: ' + selector);
     await el.scrollIntoViewIfNeeded();
-    await new Promise(r => setTimeout(r, 300 + Math.random() * 500));
+    await new Promise(r => setTimeout(r, 300 + cryptoRandom() * 500));
     const box = await el.boundingBox();
     if (box) {
-      const ty = box.y - 100 + Math.random() * 200;
+      const ty = box.y - 100 + cryptoRandom() * 200;
       await page.evaluate((y) => window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }), ty);
-      await new Promise(r => setTimeout(r, 400 + Math.random() * 600));
+      await new Promise(r => setTimeout(r, 400 + cryptoRandom() * 600));
     }
   }
 

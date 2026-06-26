@@ -5,6 +5,7 @@
  */
 import crypto from 'node:crypto';
 import { BlockDetector } from './BlockDetector.js';
+import { cryptoRandom } from '../behavior/AdaptiveBehaviorEngine.js';
 
 export class RecoveryStrategy {
   constructor(stealthManager, proxyManager, config = {}) {
@@ -48,7 +49,7 @@ export class RecoveryStrategy {
 
     for (let attempt = 1; attempt <= this.maxAttempts; attempt++) {
       const backoff = Math.min(
-        this.baseBackoffMs * Math.pow(2, attempt - 1) + Math.random() * 3000,
+        this.baseBackoffMs * Math.pow(2, attempt - 1) + cryptoRandom() * 3000,
         this.maxBackoffMs
       );
 
@@ -69,11 +70,9 @@ export class RecoveryStrategy {
           if (decision.predictiveNewProxy) {
             proxy = decision.predictiveNewProxy;
             proxyId = decision.predictiveNewProxy.id;
-            this.proxyManager.lock.set(taskId, proxyId);
-            const p = this.proxyManager.pool.find(x => x.id === proxyId);
-            if (p) { p.status = 'in_use'; p.assignedTo = taskId; p.usageCount++; }
+            this.proxyManager.assignReservedProxy(taskId, proxy);
           } else {
-            proxy = this.proxyManager.acquire(taskId, { sticky: false });
+            proxy = await this.proxyManager.acquire(taskId, { sticky: false });
             proxyId = proxy?.id || null;
           }
         }

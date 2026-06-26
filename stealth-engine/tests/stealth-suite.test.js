@@ -110,15 +110,15 @@ test('HumanKeyboard.nearbyKey returns plausible key', () => {
 
 // ── Proxy Tests ──
 
-test('ProxyManager with empty pool returns null on acquire', () => {
+test('ProxyManager with empty pool returns null on acquire', async () => {
   const pm = new ProxyManager([]);
-  const result = pm.acquire('task-1');
+  const result = await pm.acquire('task-1');
   assert.equal(result, null);
 });
 
-test('ProxyManager acquires from pool', () => {
+test('ProxyManager acquires from pool', async () => {
   const pm = new ProxyManager([{ url: 'http://proxy1:8080', type: 'residential', country: 'US' }]);
-  const result = pm.acquire('task-1');
+  const result = await pm.acquire('task-1');
   assert.ok(result);
   assert.ok(result.server.includes('proxy1'));
   assert.equal(result.country, 'US');
@@ -127,30 +127,30 @@ test('ProxyManager acquires from pool', () => {
   assert.equal(stats.available, 0);
 });
 
-test('ProxyManager release and rotate', () => {
+test('ProxyManager release and rotate', async () => {
   const pm = new ProxyManager([
     { url: 'http://p1:8080', type: 'residential', country: 'US' },
     { url: 'http://p2:8080', type: 'datacenter', country: 'DE' },
   ]);
-  pm.acquire('task-1');
+  await pm.acquire('task-1');
   pm.release('task-1');
   assert.equal(pm.getStats().available, 2);
-  pm.acquire('task-2');
+  await pm.acquire('task-2');
   pm.markBanned('task-2');
   assert.equal(pm.getStats().banned, 1);
 });
 
-test('ProxyManager sticky sessions', () => {
+test('ProxyManager sticky sessions', async () => {
   const pm = new ProxyManager([{ url: 'http://p1:8080', type: 'residential' }]);
-  const first = pm.acquire('task-1', { sticky: true });
+  const first = await pm.acquire('task-1', { sticky: true });
   pm.release('task-1');
-  const second = pm.acquire('task-1', { sticky: true });
+  const second = await pm.acquire('task-1', { sticky: true });
   assert.equal(second.server, first.server);
 });
 
-test('ProxyManager cooldown', () => {
+test('ProxyManager cooldown', async () => {
   const pm = new ProxyManager([{ url: 'http://p1:8080' }]);
-  pm.acquire('task-1');
+  await pm.acquire('task-1');
   pm.markCooldown('task-1', 100);
   assert.equal(pm.getStats().cooldown, 1);
   pm.checkCooldowns();
@@ -164,10 +164,10 @@ test('ProxyManager stats', () => {
   assert.equal(pm.getStats().available, 3);
 });
 
-test('ProxyManager falls back when all in use', () => {
+test('ProxyManager falls back when all in use', async () => {
   const pm = new ProxyManager([{ url: 'http://p1:8080' }]);
-  pm.acquire('task-1');
-  const second = pm.acquire('task-2');
+  await pm.acquire('task-1');
+  const second = await pm.acquire('task-2');
   assert.ok(second);
 });
 

@@ -32,6 +32,7 @@ let ws = null;
 let connected = false;
 let reconnectTimer = null;
 let sessions = new Map();
+let pendingFrictionTimers = new Map();
 let proxyManager = null;
 let proxyHealthChecker = null;
 let domainBlacklist = null;
@@ -171,7 +172,7 @@ async function handleTask(msg) {
     if (learned?.proxyType) acquireOpts.preferTypes = [learned.proxyType];
     proxy = msgProxy && msgProxy.server
       ? msgProxy
-      : proxyManager?.acquire(taskId, acquireOpts);
+      : await proxyManager?.acquire(taskId, acquireOpts);
   }
 
   if (proxy && proxy.country) {
@@ -180,8 +181,9 @@ async function handleTask(msg) {
 
   const behaviorProfile = learned?.behaviorProfile || CONFIG.behavior?.defaultProfile || 'casual';
 
+  var session;
   try {
-    const session = new StealthSession({
+    session = new StealthSession({
       taskId, instruction, profile: fingerprintProfile, proxy, proxyId: proxy?.id || null, behaviorProfile,
       tlsFingerprint: CONFIG.tlsFingerprint || { enabled: false },
     });
@@ -196,6 +198,8 @@ async function handleTask(msg) {
     send({ type: 'stealth.result', taskId, stepId: 'step-1', tool: 'observePage', success: true, result: observation, timestamp: new Date().toISOString() });
   } catch (error) {
     console.error('[StealthSession:' + taskId + '] Init error:', error.message);
+    sessions.delete(taskId);
+    await session?.dispose().catch(() => {});
     domainProfile?.update(targetDomain, { success: false, proxyType: proxy?.type, behaviorProfile });
     send({ type: 'stealth.result', taskId, stepId: 'step-1', tool: 'navigate', success: false, error: error.message, timestamp: new Date().toISOString() });
   }
@@ -217,7 +221,7 @@ async function handleToolRequest(msg) {
       if (captcha) {
         session._lastCaptchaType = captcha.type;
         const domain = new URL(session.page.url()).hostname;
-        domainRateLimiter?.recordResponse(domain, 403);
+        domainRateLimiter?.recordResponse(domain, 429);
         domainProfile?.update(domain, { success: false, captchaType: captcha.type });
         sendFrictionSignal(taskId, captcha, CaptchaDetector.mapToFrictionKind(captcha.type));
         return;
@@ -227,7 +231,7 @@ async function handleToolRequest(msg) {
         sendFrictionSignal(taskId, block, block.kind);
         if (block.blockPattern) {
           const domain = new URL(session.page.url()).hostname;
-          domainRateLimiter?.recordResponse(domain, block.blockHttpCode);
+          domainRateLimiter?.recordResponse(domain, block.blockHttpCode || 429);
           domainBlacklist?.record(domain, block.kind);
         }
         return;
@@ -243,6 +247,20 @@ async function handleToolRequest(msg) {
 }
 
 function sendFrictionSignal(taskId, detection, kind) {
+  if (pendingFrictionTimers.has(taskId)) {
+    clearTimeout(pendingFrictionTimers.get(taskId));
+  }
+  const timer = setTimeout(() => {
+    pendingFrictionTimers.delete(taskId);
+    const session = sessions.get(taskId);
+    if (session) {
+      proxyManager?.release(taskId);
+      session.dispose().catch(() => {});
+      sessions.delete(taskId);
+      console.warn(`[StealthEngine] Friction signal timeout for ${taskId}, cleaned up`);
+    }
+  }, 120000);
+  pendingFrictionTimers.set(taskId, timer);
   send({
     type: 'stealth.friction.signal',
     taskId,
@@ -269,6 +287,10 @@ async function handleFrictionDecision(msg) {
   const { taskId, decision, solverProvider, sitekey, retryAttempt, maxRetries, cooldownMs } = msg;
   const session = sessions.get(taskId);
   if (!session) return;
+  if (pendingFrictionTimers.has(taskId)) {
+    clearTimeout(pendingFrictionTimers.get(taskId));
+    pendingFrictionTimers.delete(taskId);
+  }
   console.log('[' + taskId + '] Friction decision: ' + decision);
 
   const domain = new URL(session.page.url()).hostname;
@@ -363,6 +385,8 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 async function shutdown() {
   console.log('[StealthEngine] Shutting down...');
+  for (const t of pendingFrictionTimers.values()) clearTimeout(t);
+  pendingFrictionTimers.clear();
   if (proxyHealthChecker) proxyHealthChecker.stop();
   if (domainRateLimiter?.shutdown) domainRateLimiter.shutdown();
   if (proxyReputationEngine?.shutdown) proxyReputationEngine.shutdown();

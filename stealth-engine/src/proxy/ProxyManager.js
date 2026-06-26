@@ -26,9 +26,21 @@ export class ProxyManager {
     }));
     this.providerConfigs = providerCfgs;
     this.lock = new Map();
+    this._acquireQueue = Promise.resolve();
   }
 
   acquire(taskId, opts = {}) {
+    return this._enqueueAcquire(taskId, opts);
+  }
+
+  _enqueueAcquire(taskId, opts) {
+    const doAcquire = () => this._doAcquire(taskId, opts);
+    const result = this._acquireQueue.then(doAcquire, doAcquire);
+    this._acquireQueue = result.catch(() => {});
+    return result;
+  }
+
+  _doAcquire(taskId, opts) {
     if (this.pool.length === 0) return null;
 
     if (opts.sticky !== false && this.lock.has(taskId)) {
@@ -123,7 +135,7 @@ export class ProxyManager {
     }
   }
 
-  rotate(taskId, opts = {}) {
+  async rotate(taskId, opts = {}) {
     this.release(taskId);
     return this.acquire(taskId, { ...opts, sticky: false });
   }
@@ -132,8 +144,7 @@ export class ProxyManager {
     const now = Date.now();
     for (const p of this.pool) {
       if (p.status === 'cooldown' && p.cooldownUntil && now >= p.cooldownUntil) {
-        p.status = 'available';
-        p.cooldownUntil = null;
+        this.checkCooldown(p);
         console.log(`[ProxyManager] Proxy ${p.id.substring(0, 8)} cooldown expired, now available`);
       }
     }
@@ -141,11 +152,24 @@ export class ProxyManager {
 
   isOnCooldown(p) {
     if (p.status === 'cooldown' && p.cooldownUntil && Date.now() < p.cooldownUntil) return true;
+    return false;
+  }
+
+  checkCooldown(p) {
     if (p.status === 'cooldown' && p.cooldownUntil && Date.now() >= p.cooldownUntil) {
       p.status = 'available';
       p.cooldownUntil = null;
     }
-    return false;
+  }
+
+  assignReservedProxy(taskId, proxy) {
+    const p = this.pool.find(x => x.id === proxy.id);
+    if (!p) return false;
+    p.status = 'in_use';
+    p.assignedTo = taskId;
+    p.usageCount++;
+    this.lock.set(taskId, p.id);
+    return true;
   }
 
   getStats() {

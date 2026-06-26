@@ -4,6 +4,7 @@
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
 import crypto from 'node:crypto';
+import { cryptoRandom } from '../behavior/AdaptiveBehaviorEngine.js';
 
 const COUNTRY_MAPPING = {
   'US': { timezone: 'America/New_York', locale: 'en-US', languages: ['en-US', 'en'], geolocation: { latitude: 40.71, longitude: -74.0 } },
@@ -121,8 +122,8 @@ export class FingerprintProfile {
     this.permissions = data.permissions || ['geolocation', 'notifications'];
     this.screen = data.screen || { width: 1920, height: 1080, availWidth: 1920, availHeight: 1040, colorDepth: 24, pixelDepth: 24 };
     this.fonts = data.fonts || (data.os === 'macOS' ? FONTS_MAC : FONTS_WIN);
-    this.audioNoiseFactor = data.audioNoiseFactor ?? (Math.random() * 0.0003 + 0.00005);
-    this.canvasNoiseFactor = data.canvasNoiseFactor ?? (Math.random() * 0.0002 + 0.00003);
+    this.audioNoiseFactor = data.audioNoiseFactor ?? (cryptoRandom() * 0.0003 + 0.00005);
+    this.canvasNoiseFactor = data.canvasNoiseFactor ?? (cryptoRandom() * 0.0002 + 0.00003);
     this.colorScheme = data.colorScheme || 'light';
     this.reducedMotion = data.reducedMotion || 'no-preference';
   }
@@ -134,7 +135,7 @@ export class FingerprintProfile {
   }
 }
 
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const pick = (arr) => arr[Math.floor(cryptoRandom() * arr.length)];
 
 export class FingerprintGenerator {
   static generate(options = {}) {
@@ -187,8 +188,8 @@ export class FingerprintGenerator {
       country: options.country || 'US',
       permissions: ['geolocation', 'notifications'],
       fonts,
-      audioNoiseFactor: Math.random() * 0.0003 + 0.00005,
-      canvasNoiseFactor: Math.random() * 0.0002 + 0.00003,
+      audioNoiseFactor: cryptoRandom() * 0.0003 + 0.00005,
+      canvasNoiseFactor: cryptoRandom() * 0.0002 + 0.00003,
     });
   }
 

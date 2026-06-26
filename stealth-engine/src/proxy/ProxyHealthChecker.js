@@ -42,7 +42,14 @@ export class ProxyHealthChecker {
         if (p.url) {
           try {
             const { ProxyAgent } = await import('undici');
-            fetchOpts.dispatcher = new ProxyAgent({ uri: p.url });
+            let proxyUrl = p.url;
+            if (p.username && p.password) {
+              try {
+                const u = new URL(p.url);
+                proxyUrl = `http://${p.username}:${p.password}@${u.hostname}:${u.port || 8080}`;
+              } catch (_) { }
+            }
+            fetchOpts.dispatcher = new ProxyAgent({ uri: proxyUrl });
           } catch (e) {
             console.warn('[ProxyHealthChecker] ProxyAgent unavailable for proxy ' + p.id.substring(0, 8) + ', testing direct:', e.message);
           }

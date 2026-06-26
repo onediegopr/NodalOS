@@ -51,37 +51,45 @@ export class StealthBrowserManager {
   async _doCreateSession(taskId, instruction, options) {
     const startTime = Date.now();
     let proxy = null;
+    let session = null;
 
-    if (this.proxyManager && this.config.proxy?.enabled) {
-      proxy = this.proxyManager.acquire(taskId, { sticky: this.config.proxy?.rotationMode !== 'random' });
-    }
+    try {
 
-    let profile;
-    if (options.fingerprintProfile) {
-      profile = FingerprintProfile.ensureCoherence(options.fingerprintProfile, proxy?.country);
-    } else {
-      profile = this.fingerprintGenerator.generate({
-        preset: this.config.fingerprint?.defaultPreset,
-        country: proxy?.country,
+      if (this.proxyManager && this.config.proxy?.enabled) {
+        proxy = await this.proxyManager.acquire(taskId, { sticky: this.config.proxy?.rotationMode !== 'random' });
+      }
+
+      let profile;
+      if (options.fingerprintProfile) {
+        profile = FingerprintProfile.ensureCoherence(options.fingerprintProfile, proxy?.country);
+      } else {
+        profile = this.fingerprintGenerator.generate({
+          preset: this.config.fingerprint?.defaultPreset,
+          country: proxy?.country,
+        });
+      }
+
+      session = new this.SessionClass({
+        taskId, instruction, profile,
+        proxy: proxy ? { server: proxy.url || proxy.server, username: proxy.username, password: proxy.password } : null,
+        proxyId: proxy?.id || null,
+        behaviorProfile: this.config.behavior?.defaultProfile || 'casual',
+        tlsFingerprint: this.config.tlsFingerprint || { enabled: false },
       });
+
+      await session.initialize();
+      this.activeSessions.set(taskId, { session, startTime });
+      this.stats.totalCreated++;
+
+      console.log(`[SessionManager] Task ${taskId} session created (active: ${this.activeSessions.size}, max: ${this.maxConcurrent})`);
+
+      this._processQueue();
+      return session;
+    } catch (e) {
+      if (proxy) this.proxyManager.release(taskId);
+      if (session) await session.dispose().catch(() => {});
+      throw e;
     }
-
-    const session = new this.SessionClass({
-      taskId, instruction, profile,
-      proxy: proxy ? { server: proxy.url || proxy.server, username: proxy.username, password: proxy.password } : null,
-      proxyId: proxy?.id || null,
-      behaviorProfile: this.config.behavior?.defaultProfile || 'casual',
-      tlsFingerprint: this.config.tlsFingerprint || { enabled: false },
-    });
-
-    await session.initialize();
-    this.activeSessions.set(taskId, { session, startTime });
-    this.stats.totalCreated++;
-
-    console.log(`[SessionManager] Task ${taskId} session created (active: ${this.activeSessions.size}, max: ${this.maxConcurrent})`);
-
-    this._processQueue();
-    return session;
   }
 
   async destroySession(taskId) {
@@ -132,9 +140,13 @@ export class StealthBrowserManager {
   async shutdown() {
     for (const [taskId, entry] of this.activeSessions) {
       try { await entry.session.dispose(); } catch (e) { }
+      this.proxyManager.release(taskId);
     }
     this.activeSessions.clear();
     this.queue.forEach(q => { clearTimeout(q._timeout); q.reject(new Error('Shutdown')); });
     this.queue = [];
+    for (const [taskId] of this.proxyManager.lock) {
+      this.proxyManager.release(taskId);
+    }
   }
 }

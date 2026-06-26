@@ -86,16 +86,21 @@ export class ProxyProviderIntegrations {
       const text = await resp.text();
       const lines = text.trim().split('\n').filter(Boolean);
       return lines.map(line => {
-        const [host, port, user, pass, country] = line.split(':');
+        const parts = line.split(':');
+        if (parts.length < 4) return null;
+        const [host, port, user, pass, country] = parts;
+        if (!host || !port || !user || !pass) return null;
+        const proxyUrl = `http://${user}:${pass}@${host}:${port}`;
+        if (!proxyUrl.includes('@')) return null;
         return {
-          url: `http://${user}:${pass}@${host}:${port}`,
+          url: proxyUrl,
           type: 'residential',
           country: country || 'US',
           provider: 'iproyal',
           username: user,
           password: pass,
         };
-      }).filter(p => p.url.includes('@'));
+      }).filter(Boolean);
     } catch (e) {
       console.warn('[ProxyProvider] IPRoyal fetch failed:', e.message);
       return [];

@@ -9,7 +9,7 @@ export class VisualCaptchaSolver {
     this.ocrEngine = config.ocrEngine || 'tesseract';
     this.aiVision = config.aiVision || { enabled: false, provider: 'openai', apiKey: '', model: 'gpt-4-vision-preview' };
     this.tesseractReady = false;
-    this._initOcr();
+    this._initPromise = this._initOcr();
   }
 
   async _initOcr() {
@@ -74,6 +74,7 @@ export class VisualCaptchaSolver {
   }
 
   async _solveText(imageBuffer) {
+    await this._initPromise;
     if (!this.tesseractReady) return this._solveWithAI(imageBuffer, { prompt: 'Extract only the distorted text from this CAPTCHA image. Return only the text, nothing else.' }, null);
 
     try {

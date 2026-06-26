@@ -3,6 +3,8 @@
  * @policy no-audit, no-modify, no-analyze, no-refactor
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
+import { cryptoRandom } from './behavior/AdaptiveBehaviorEngine.js';
+
 export async function executeTool(session, tool, args = {}) {
   const page = session.page;
   switch (tool) {
@@ -22,6 +24,66 @@ export async function executeTool(session, tool, args = {}) {
     default:
       throw new Error('Unknown tool: ' + tool);
   }
+}
+
+function buildSelector(el, index) {
+  const tag = el.tagName.toLowerCase();
+  const type = el.getAttribute('type');
+  const href = el.getAttribute('href');
+  const placeholder = el.getAttribute('placeholder');
+  const ariaLabel = el.getAttribute('aria-label');
+  const name = el.getAttribute('name');
+  const id = el.id;
+  const classes = Array.from(el.classList).filter(c => c.length > 1 && c.length < 30);
+
+  if (id && /^[a-zA-Z][a-zA-Z0-9_-]*$/.test(id)) {
+    return `#${CSS.escape(id)}`;
+  }
+
+  if (name && /^[a-zA-Z][a-zA-Z0-9_-]*$/.test(name)) {
+    return `${tag}[name="${CSS.escape(name)}"]`;
+  }
+
+  if (type && tag === 'input') {
+    return `input[type="${CSS.escape(type)}"]`;
+  }
+
+  if (placeholder) {
+    const sel = `${tag}[placeholder="${CSS.escape(placeholder)}"]`;
+    const all = document.querySelectorAll(sel);
+    if (all.length === 1) return sel;
+  }
+
+  if (href && tag === 'a') {
+    let h = href;
+    if (h.length > 60) h = h.substring(0, 60);
+    const sel = `a[href^="${CSS.escape(h)}"]`;
+    const all = document.querySelectorAll(sel);
+    if (all.length === 1) return sel;
+  }
+
+  if (ariaLabel) {
+    const sel = `${tag}[aria-label="${CSS.escape(ariaLabel)}"]`;
+    const all = document.querySelectorAll(sel);
+    if (all.length === 1) return sel;
+  }
+
+  if (classes.length > 0) {
+    const sel = `${tag}.${classes.map(c => CSS.escape(c)).join('.')}`;
+    const all = document.querySelectorAll(sel);
+    if (all.length === 1) return sel;
+  }
+
+  const sameTag = document.querySelectorAll(tag);
+  let count = 0;
+  for (const s of sameTag) {
+    count++;
+    if (s === el)   return `${tag}:nth-of-type(${count})`;
+  }
+}
+
+function buildText(text) {
+  return (text || '').trim().substring(0, 120);
 }
 
 async function observePage(page) {
@@ -45,19 +107,24 @@ async function observePage(page) {
   });
 
   const elements = await page.evaluate(() => {
+    const CSS = {
+      escape: (s) => String(s).replace(/([^\w-])/g, '\\$1'),
+    };
+
     const results = [];
     const candidates = document.querySelectorAll(
-      'a[href], button, input, textarea, select, [role="button"], [role="link"], [role="menuitem"]');
-    let idx = 1;
+      'button, input, textarea, a[href], select');
+
+    let idx = 0;
     for (const el of candidates) {
       const rect = el.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) continue;
       if (results.length >= 100) break;
       const tag = el.tagName.toLowerCase();
-      const id = 'el-' + (idx++);
-      el.setAttribute('data-element-id', id);
+      const selector = buildSelector(el, idx);
       results.push({
-        elementId: id,
+        elementIndex: idx++,
+        selector,
         tagName: tag,
         visibleText: (el.innerText || el.textContent || '').trim().substring(0, 120),
         type: el.getAttribute('type') || '',
@@ -88,53 +155,126 @@ async function navigatePage(page, url) {
   return { navigated: true, url };
 }
 
+function resolveSelector(args) {
+  if (args.selector) return args.selector;
+  if (typeof args.elementIndex === 'number') {
+    return `(function(){var els=document.querySelectorAll('button,input,textarea,a[href],select');return els[${args.elementIndex}];})()`;
+  }
+  if (args.elementId) {
+    return `[id="${args.elementId}"]`;
+  }
+  return null;
+}
+
 async function clickElement(session, args) {
-  const selector = args.selector
-    || (args.elementId ? '[data-element-id="' + args.elementId + '"]' : null);
-  if (!selector) throw new Error('selector or elementId required');
+  const selector = resolveSelector(args);
+  if (!selector) throw new Error('selector, elementIndex, or elementId required');
+
+  const useEval = typeof args.elementIndex === 'number' && !args.selector;
 
   if (session.behavior) {
-    await session.behavior.mouse.humanClick(session.page, selector);
+    if (useEval) {
+      await session.page.evaluate((idx) => {
+        const els = document.querySelectorAll('button,input,textarea,a[href],select');
+        const el = els[idx];
+        if (el) el.click();
+      }, args.elementIndex);
+    } else {
+      await session.behavior.mouse.humanClick(session.page, selector);
+    }
   } else {
-    const el = await session.page.$(selector);
-    if (!el) throw new Error('Element not found');
-    const box = await el.boundingBox();
-    if (!box) throw new Error('Element not visible');
-    await session.page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    if (useEval) {
+      await session.page.evaluate((idx) => {
+        const els = document.querySelectorAll('button,input,textarea,a[href],select');
+        const el = els[idx];
+        if (!el) throw new Error('Element not found');
+        el.scrollIntoViewIfNeeded?.();
+        el.click();
+      }, args.elementIndex);
+    } else {
+      const el = await session.page.$(selector);
+      if (!el) throw new Error('Element not found');
+      const box = await el.boundingBox();
+      if (!box) throw new Error('Element not visible');
+      await session.page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    }
   }
 
-  return { clicked: true, selector };
+  return { clicked: true, selector: selector.substring(0, 120) };
 }
 
 async function setElementValue(session, args) {
-  const selector = args.selector
-    || (args.elementId ? '[data-element-id="' + args.elementId + '"]' : null);
-  if (!selector) throw new Error('selector or elementId required');
+  const selector = resolveSelector(args);
+  if (!selector) throw new Error('selector, elementIndex, or elementId required');
+
+  const useEval = typeof args.elementIndex === 'number' && !args.selector;
+  const valueStr = String(args.value || '');
 
   if (session.behavior) {
-    await session.behavior.keyboard.type(session.page, selector, String(args.value || ''));
+    if (useEval) {
+      await session.page.evaluate(({ idx, val }) => {
+        const els = document.querySelectorAll('button,input,textarea,a[href],select');
+        const el = els[idx];
+        if (!el) throw new Error('Element not found');
+        el.focus();
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, { idx: args.elementIndex, val: valueStr });
+    } else {
+      await session.behavior.keyboard.type(session.page, selector, valueStr);
+    }
   } else {
-    const el = await session.page.$(selector);
-    if (!el) throw new Error('Element not found');
-    await el.click();
-    await el.fill('');
-    await el.type(String(args.value || ''), { delay: 30 + Math.random() * 50 });
+    if (useEval) {
+      await session.page.evaluate(({ idx, val }) => {
+        const els = document.querySelectorAll('button,input,textarea,a[href],select');
+        const el = els[idx];
+        if (!el) throw new Error('Element not found');
+        el.focus();
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, { idx: args.elementIndex, val: valueStr });
+    } else {
+      const el = await session.page.$(selector);
+      if (!el) throw new Error('Element not found');
+      await el.click();
+      await el.fill('');
+      await el.type(valueStr, { delay: 30 + cryptoRandom() * 50 });
+    }
   }
 
-  return { set: true, selector, value: String(args.value || '') };
+  return { set: true, selector: selector.substring(0, 120), value: valueStr };
 }
 
 async function scrollToElement(session, args) {
-  const selector = args.selector
-    || (args.elementId ? '[data-element-id="' + args.elementId + '"]' : null);
-  if (!selector) throw new Error('selector required');
+  const selector = resolveSelector(args);
+  if (!selector) throw new Error('selector, elementIndex, or elementId required');
+
+  const useEval = typeof args.elementIndex === 'number' && !args.selector;
 
   if (session.behavior) {
-    await session.behavior.scroll.scrollToElement(session.page, selector);
+    if (useEval) {
+      await session.page.evaluate((idx) => {
+        const els = document.querySelectorAll('button,input,textarea,a[href],select');
+        const el = els[idx];
+        if (el) el.scrollIntoViewIfNeeded?.();
+      }, args.elementIndex);
+    } else {
+      await session.behavior.scroll.scrollToElement(session.page, selector);
+    }
   } else {
-    const el = await session.page.$(selector);
-    if (el) await el.scrollIntoViewIfNeeded();
+    if (useEval) {
+      await session.page.evaluate((idx) => {
+        const els = document.querySelectorAll('button,input,textarea,a[href],select');
+        const el = els[idx];
+        if (el) el.scrollIntoViewIfNeeded?.();
+      }, args.elementIndex);
+    } else {
+      const el = await session.page.$(selector);
+      if (el) await el.scrollIntoViewIfNeeded();
+    }
   }
 
-  return { scrolled: true, selector };
+  return { scrolled: true, selector: selector.substring(0, 120) };
 }

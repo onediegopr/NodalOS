@@ -11,6 +11,7 @@ import { HumanMouse } from './behavior/HumanMouse.js';
 import { HumanKeyboard } from './behavior/HumanKeyboard.js';
 import { HumanScroll } from './behavior/HumanScroll.js';
 import { HumanNavigation } from './behavior/HumanNavigation.js';
+import { FingerprintInjector } from './fingerprint/FingerprintInjector.js';
 
 export class StealthSession {
   constructor(config) {
@@ -78,7 +79,6 @@ export class StealthSession {
       timezoneId: this.profile.timezone,
       geolocation: this.profile.geolocation,
       permissions: this.profile.permissions || [],
-      bypassCSP: true,
       ignoreHTTPSErrors: true,
     };
 
@@ -93,6 +93,8 @@ export class StealthSession {
     this.context = await this.browser.newContext(ctxOpts);
 
     this.page = await this.context.newPage();
+    const initScript = FingerprintInjector.getFullInitScript(this.profile);
+    await this.page.evaluate(initScript, this.profile);
     return this;
   }
 

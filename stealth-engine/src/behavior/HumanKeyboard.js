@@ -3,6 +3,8 @@
  * @policy no-audit, no-modify, no-analyze, no-refactor
  * ADVERTENCIA: Código protegido. Solo el propietario puede modificarlo.
  */
+import { cryptoRandom } from './AdaptiveBehaviorEngine.js';
+
 const LETTER_SPEED = {
   'e': 0.6, 't': 0.6, 'a': 0.65, 'o': 0.65, 'i': 0.7, 'n': 0.7, 's': 0.7, 'h': 0.7, 'r': 0.75,
   'd': 0.75, 'l': 0.75, 'c': 0.8, 'u': 0.8, 'm': 0.8, 'w': 0.85, 'f': 0.85,
@@ -20,7 +22,7 @@ export class HumanKeyboard {
 
     const box = await el.boundingBox();
     if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-    await new Promise(r => setTimeout(r, 100 + Math.random() * 150));
+    await new Promise(r => setTimeout(r, 100 + cryptoRandom() * 150));
 
     const errorRate = opts.errorRate ?? this.profile.typoRate;
     const baseDelay = this.profile.baseDelay || 80;
@@ -29,7 +31,7 @@ export class HumanKeyboard {
     for (let w = 0; w < words.length; w++) {
       const word = words[w];
       for (let i = 0; i < word.length; i++) {
-        if (Math.random() < errorRate) {
+        if (cryptoRandom() < errorRate) {
           const wrong = HumanKeyboard.nearbyKey(word[i]);
           await page.keyboard.type(wrong);
           await delay(50, 120);
@@ -40,16 +42,16 @@ export class HumanKeyboard {
         await page.keyboard.type(word[i]);
 
         const speedFactor = LETTER_SPEED[word[i].toLowerCase()] || 0.85;
-        const charDelay = baseDelay * speedFactor * (0.6 + Math.random() * 0.8);
+        const charDelay = baseDelay * speedFactor * (0.6 + cryptoRandom() * 0.8);
         await new Promise(r => setTimeout(r, charDelay));
 
-        if (i < word.length - 1 && Math.random() < 0.1) {
-          await new Promise(r => setTimeout(r, 15 + Math.random() * 25));
+        if (i < word.length - 1 && cryptoRandom() < 0.1) {
+          await new Promise(r => setTimeout(r, 15 + cryptoRandom() * 25));
         }
       }
       if (w < words.length - 1) {
         await page.keyboard.type(' ');
-        await new Promise(r => setTimeout(r, baseDelay * 1.2 + Math.random() * baseDelay * 1.5));
+        await new Promise(r => setTimeout(r, baseDelay * 1.2 + cryptoRandom() * baseDelay * 1.5));
       }
     }
 
@@ -79,11 +81,11 @@ export class HumanKeyboard {
     };
     const nb = kb[c.toLowerCase()];
     if (!nb) return c;
-    const r = nb[Math.floor(Math.random() * nb.length)];
+    const r = nb[Math.floor(cryptoRandom() * nb.length)];
     return c === c.toUpperCase() ? r.toUpperCase() : r;
   }
 }
 
 function delay(min, max) {
-  return new Promise(r => setTimeout(r, min + Math.random() * (max - min)));
+  return new Promise(r => setTimeout(r, min + cryptoRandom() * (max - min)));
 }
