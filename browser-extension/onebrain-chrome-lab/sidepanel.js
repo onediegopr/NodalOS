@@ -6,9 +6,17 @@ const BROWSER_SKILLS_SNAPSHOT_KEY = 'nodal-os.browserSkills.snapshots.v1';
 const BROWSER_SKILLS_MAX_SNAPSHOTS = 20;
 const CDP_BROWSER_SKILLS_SURFACE = {
   runtimeLabel: 'CloakBrowser CDP',
-  status: 'Disponible',
+  status: 'listo',
+  freshness: 'reciente',
   runtimeStatus: 'configurado',
   lastCaptureStatus: 'disponible por harness',
+  lastHealthcheckStatus: 'reciente por harness',
+  evidenceStatus: 'disponible',
+  runtimeShutdown: true,
+  processExited: true,
+  orphanProcessDetected: false,
+  hashStatus: 'verificado',
+  artifactPinned: true,
   commandBoundary: 'solo lectura',
   source: 'cloakbrowser-cdp-direct',
   extensionMode: 'legacy / no-default',
@@ -318,9 +326,14 @@ const el = {
   browserSkillFriction: document.getElementById('browserSkillFriction'),
   cdpRuntimeLabel: document.getElementById('cdpRuntimeLabel'),
   cdpBrowserSkillStatus: document.getElementById('cdpBrowserSkillStatus'),
+  cdpFreshnessStatus: document.getElementById('cdpFreshnessStatus'),
   cdpBoundaryState: document.getElementById('cdpBoundaryState'),
   cdpRuntimeStatus: document.getElementById('cdpRuntimeStatus'),
   cdpLastCaptureStatus: document.getElementById('cdpLastCaptureStatus'),
+  cdpLastHealthcheckStatus: document.getElementById('cdpLastHealthcheckStatus'),
+  cdpEvidenceAvailabilityStatus: document.getElementById('cdpEvidenceAvailabilityStatus'),
+  cdpRuntimeShutdownStatus: document.getElementById('cdpRuntimeShutdownStatus'),
+  cdpProcessStatus: document.getElementById('cdpProcessStatus'),
   cdpExtensionMode: document.getElementById('cdpExtensionMode'),
   cdpElementCount: document.getElementById('cdpElementCount'),
   cdpFrictionCount: document.getElementById('cdpFrictionCount'),
@@ -329,6 +342,8 @@ const el = {
   cdpDomIndexState: document.getElementById('cdpDomIndexState'),
   cdpEvidenceState: document.getElementById('cdpEvidenceState'),
   cdpScreenshotState: document.getElementById('cdpScreenshotState'),
+  cdpHashStatusState: document.getElementById('cdpHashStatusState'),
+  cdpOrphanProcessState: document.getElementById('cdpOrphanProcessState'),
   cdpBoundaryReadOnlyState: document.getElementById('cdpBoundaryReadOnlyState'),
   cdpExtensionUsedState: document.getElementById('cdpExtensionUsedState'),
   cdpSystemBrowserState: document.getElementById('cdpSystemBrowserState'),
@@ -3902,9 +3917,14 @@ function renderCdpBrowserSkillsSurface() {
   const model = CDP_BROWSER_SKILLS_SURFACE;
   el.cdpRuntimeLabel.textContent = model.runtimeLabel;
   el.cdpBrowserSkillStatus.textContent = model.status;
+  el.cdpFreshnessStatus.textContent = model.freshness;
   el.cdpBoundaryState.textContent = model.commandBoundary;
   el.cdpRuntimeStatus.textContent = model.runtimeStatus;
   el.cdpLastCaptureStatus.textContent = model.lastCaptureStatus;
+  el.cdpLastHealthcheckStatus.textContent = model.lastHealthcheckStatus;
+  el.cdpEvidenceAvailabilityStatus.textContent = model.evidenceStatus;
+  el.cdpRuntimeShutdownStatus.textContent = model.runtimeShutdown ? 'OK' : 'revisar';
+  el.cdpProcessStatus.textContent = model.processExited ? 'cerrado' : 'revisar';
   el.cdpExtensionMode.textContent = model.extensionMode;
   el.cdpElementCount.textContent = String(model.elementCount);
   el.cdpFrictionCount.textContent = `${model.frictionCount} señales`;
@@ -3913,6 +3933,8 @@ function renderCdpBrowserSkillsSurface() {
   el.cdpDomIndexState.textContent = model.domIndex;
   el.cdpEvidenceState.textContent = model.evidenceAvailable ? 'disponible' : 'sin evidencia';
   el.cdpScreenshotState.textContent = model.screenshotCaptured ? 'capturado en página controlada' : 'no capturado';
+  el.cdpHashStatusState.textContent = model.hashStatus;
+  el.cdpOrphanProcessState.textContent = model.orphanProcessDetected ? 'true' : 'false';
   el.cdpBoundaryReadOnlyState.textContent = model.boundaryReadOnly ? 'true' : 'false';
   el.cdpExtensionUsedState.textContent = model.extensionUsed ? 'false' : 'true';
   el.cdpSystemBrowserState.textContent = model.systemBrowserUsed ? 'false' : 'true';
@@ -4013,8 +4035,17 @@ function buildCdpBrowserSkillSummary() {
     `runtime: ${model.runtimeLabel}`,
     `source: ${model.source}`,
     `status: ${model.status}`,
+    `freshness: ${model.freshness}`,
     `runtimeStatus: ${model.runtimeStatus}`,
     `lastCaptureStatus: ${model.lastCaptureStatus}`,
+    `lastHealthcheckAt: ${model.lastHealthcheckStatus}`,
+    `lastSessionAt: ${model.lastCaptureStatus}`,
+    `evidenceStatus: ${model.evidenceStatus}`,
+    `artifactPinned: ${model.artifactPinned}`,
+    `hashStatus: ${model.hashStatus}`,
+    `runtimeShutdown: ${model.runtimeShutdown}`,
+    `processExited: ${model.processExited}`,
+    `orphanProcessDetected: ${model.orphanProcessDetected}`,
     `boundaryReadOnly: ${model.boundaryReadOnly}`,
     `readOnly: ${model.readOnly}`,
     `domIndex: ${model.domIndex}`,

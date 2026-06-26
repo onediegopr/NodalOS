@@ -580,9 +580,14 @@ async function runBrowserSkillsFlow(sidepanel) {
       present: Boolean(document.getElementById('copyCdpBrowserSkillSummaryBtn')),
       runtimeLabel: document.getElementById('cdpRuntimeLabel').innerText,
       status: document.getElementById('cdpBrowserSkillStatus').innerText,
+      freshness: document.getElementById('cdpFreshnessStatus').innerText,
       boundary: document.getElementById('cdpBoundaryState').innerText,
       runtimeStatus: document.getElementById('cdpRuntimeStatus').innerText,
       lastCaptureStatus: document.getElementById('cdpLastCaptureStatus').innerText,
+      lastHealthcheckStatus: document.getElementById('cdpLastHealthcheckStatus').innerText,
+      evidenceAvailability: document.getElementById('cdpEvidenceAvailabilityStatus').innerText,
+      runtimeShutdown: document.getElementById('cdpRuntimeShutdownStatus').innerText,
+      processStatus: document.getElementById('cdpProcessStatus').innerText,
       extensionMode: document.getElementById('cdpExtensionMode').innerText,
       elementCount: document.getElementById('cdpElementCount').innerText,
       frictionCount: document.getElementById('cdpFrictionCount').innerText,
@@ -591,6 +596,8 @@ async function runBrowserSkillsFlow(sidepanel) {
       domIndex: document.getElementById('cdpDomIndexState').innerText,
       evidence: document.getElementById('cdpEvidenceState').innerText,
       screenshot: document.getElementById('cdpScreenshotState').innerText,
+      hashStatus: document.getElementById('cdpHashStatusState').innerText,
+      orphanProcess: document.getElementById('cdpOrphanProcessState').innerText,
       boundaryReadOnly: document.getElementById('cdpBoundaryReadOnlyState').innerText,
       extensionFree: document.getElementById('cdpExtensionUsedState').innerText,
       systemBrowserFree: document.getElementById('cdpSystemBrowserState').innerText,
@@ -600,8 +607,16 @@ async function runBrowserSkillsFlow(sidepanel) {
     };
     cdpSurface.ok = cdpSurface.runtimeLabel === 'CloakBrowser CDP'
       && cdpSurface.source === 'cloakbrowser-cdp-direct'
+      && cdpSurface.status === 'listo'
+      && cdpSurface.freshness === 'reciente'
       && cdpSurface.boundary === 'solo lectura'
       && cdpSurface.runtimeStatus === 'configurado'
+      && cdpSurface.lastHealthcheckStatus.includes('reciente')
+      && cdpSurface.evidenceAvailability === 'disponible'
+      && cdpSurface.runtimeShutdown === 'OK'
+      && cdpSurface.processStatus === 'cerrado'
+      && cdpSurface.hashStatus === 'verificado'
+      && cdpSurface.orphanProcess === 'false'
       && cdpSurface.boundaryReadOnly === 'true'
       && cdpSurface.extensionMode.includes('legacy')
       && cdpSurface.extensionFree === 'true'
@@ -612,6 +627,11 @@ async function runBrowserSkillsFlow(sidepanel) {
       && cdpSurface.copiedSummary.includes('systemBrowserUsed: false')
       && cdpSurface.copiedSummary.includes('boundaryReadOnly: true')
       && cdpSurface.copiedSummary.includes('runtimeStatus: configurado')
+      && cdpSurface.copiedSummary.includes('freshness: reciente')
+      && cdpSurface.copiedSummary.includes('hashStatus: verificado')
+      && cdpSurface.copiedSummary.includes('runtimeShutdown: true')
+      && cdpSurface.copiedSummary.includes('processExited: true')
+      && cdpSurface.copiedSummary.includes('orphanProcessDetected: false')
       && !/raw html|<html|document\.cookie|\blocalStorage\b|\bsessionStorage\b/i.test(cdpSurface.copiedSummary);
     const rawStore = JSON.parse(localStorage.getItem('nodal-os.browserSkills.snapshots.v1') || '{}');
     const snapshots = Array.isArray(rawStore.snapshots) ? rawStore.snapshots : [];
