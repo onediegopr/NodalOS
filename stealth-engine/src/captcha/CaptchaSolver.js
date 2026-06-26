@@ -14,6 +14,7 @@ export class CaptchaSolver {
   async solve(page, detection, taskId, proxy = null) {
     const sitekey = detection.sitekey || await this.findSitekey(page);
     const url = page.url();
+    const viewport = page.viewportSize() || { width: 1280, height: 720 };
 
     if (['geetest', 'funcaptcha', 'kasada'].includes(detection.type) && this.capSolverApiKey) {
       try {
@@ -40,7 +41,7 @@ export class CaptchaSolver {
     if (this.visualSolver && this.visualSolver.enabled) {
       try {
         console.log(`[${taskId}] Attempting visual CAPTCHA solve`);
-        const screenshot = await page.screenshot({ clip: { x: 0, y: 0, width: Math.min(page.viewportSize().width, 600), height: Math.min(page.viewportSize().height, 400) } });
+        const screenshot = await page.screenshot({ clip: { x: 0, y: 0, width: Math.min(viewport.width, 600), height: Math.min(viewport.height, 400) } });
         const captchaType = await this.visualSolver.classify(screenshot);
         console.log(`[${taskId}] Visual CAPTCHA classified as: ${captchaType}`);
         const result = await this.visualSolver.solve(screenshot, captchaType, {}, proxy);
@@ -84,7 +85,10 @@ export class CaptchaSolver {
       try {
         const { ProxyAgent } = await import('undici');
         const parsed = new URL(proxy.server);
-        const proxyUrl = `http://${proxy.username || ''}:${proxy.password || ''}@${parsed.hostname}:${parsed.port || 8080}`;
+        const auth = (proxy.username || proxy.password)
+          ? `${encodeURIComponent(proxy.username || '')}:${encodeURIComponent(proxy.password || '')}@`
+          : '';
+        const proxyUrl = `http://${auth}${parsed.hostname}:${parsed.port || 8080}`;
         fetchOpts.dispatcher = new ProxyAgent(proxyUrl);
       } catch (e) {
         console.warn(`[${taskId}] Could not create proxy dispatcher: ${e.message}`);
@@ -112,7 +116,7 @@ export class CaptchaSolver {
         body: JSON.stringify({ clientKey: this.twoCaptchaApiKey, taskId: taskId2 }),
       });
       const checkResult = await checkResp.json();
-      if (checkResult.status === 'ready') token = checkResult.solution.gRecaptchaResponse;
+      if (checkResult.status === 'ready') token = checkResult.solution?.gRecaptchaResponse || null;
       else if (checkResult.errorId !== 0) return { success: false, error: checkResult.errorDescription || 'get result failed' };
     }
 
@@ -164,7 +168,10 @@ export class CaptchaSolver {
       try {
         const { ProxyAgent } = await import('undici');
         const parsed = new URL(proxy.server);
-        const proxyUrl = `http://${proxy.username || ''}:${proxy.password || ''}@${parsed.hostname}:${parsed.port || 8080}`;
+        const auth = (proxy.username || proxy.password)
+          ? `${encodeURIComponent(proxy.username || '')}:${encodeURIComponent(proxy.password || '')}@`
+          : '';
+        const proxyUrl = `http://${auth}${parsed.hostname}:${parsed.port || 8080}`;
         fetchOpts.dispatcher = new ProxyAgent(proxyUrl);
       } catch (e) {
         console.warn(`[${taskId}] Could not create proxy dispatcher: ${e.message}`);

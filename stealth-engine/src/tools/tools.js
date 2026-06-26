@@ -144,7 +144,7 @@ async function observePage(page) {
     hasPasswordField: !!(await page.evaluate(() => !!document.querySelector('input[type="password"]'))),
     hasCaptchaLike: ['captcha', 'recaptcha', 'hcaptcha', 'turnstile'].some(k => lower.includes(k)),
     hasTwoFactorLike: ['2fa', 'two factor', 'otp', 'verification code'].some(k => lower.includes(k)),
-    viewport: { width: page.viewportSize().width, height: page.viewportSize().height },
+    viewport: page.viewportSize() || { width: 1280, height: 720 },
     timestamp: new Date().toISOString(),
   };
 }

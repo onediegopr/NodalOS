@@ -79,13 +79,21 @@ export class RemoteHandoffServer {
     ws.on('close', () => this.stopHandoff(taskId));
   }
 
-  async startScreenshotStream(taskId, page, ws, intervalMs = 500) {
+  async startScreenshotStream(taskId, page, ws, intervalMs = 500, maxDurationMs = 600000) {
     const session = this.sessions.get(taskId);
     if (!session) return;
 
+    const viewport = page.viewportSize() || { width: 1280, height: 720 };
+    const startTime = Date.now();
+
     while (session.streaming && ws.readyState === ws.OPEN) {
+      if (Date.now() - startTime > maxDurationMs) {
+        ws.send(JSON.stringify({ type: 'handoff.error', taskId, error: 'Screenshot stream exceeded maximum duration' }));
+        this.stopHandoff(taskId);
+        break;
+      }
       try {
-        const screenshot = await page.screenshot({ type: 'jpeg', quality: 50, clip: { x: 0, y: 0, width: Math.min(page.viewportSize().width, 1280), height: Math.min(page.viewportSize().height, 720) } });
+        const screenshot = await page.screenshot({ type: 'jpeg', quality: 50, clip: { x: 0, y: 0, width: Math.min(viewport.width, 1280), height: Math.min(viewport.height, 720) } });
         ws.send(JSON.stringify({
           type: 'handoff.screenshot',
           taskId,

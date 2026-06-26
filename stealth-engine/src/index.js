@@ -391,6 +391,7 @@ async function shutdown() {
   if (domainRateLimiter?.shutdown) domainRateLimiter.shutdown();
   if (proxyReputationEngine?.shutdown) proxyReputationEngine.shutdown();
   if (predictiveRotator?.shutdown) predictiveRotator.shutdown();
+  if (domainProfile?.shutdown) await domainProfile.shutdown();
 
   const timeout = (ms) => new Promise(resolve => setTimeout(() => resolve('timeout'), ms));
   const disposePromises = Array.from(sessions.values()).map(s => s.dispose().catch(() => {}));

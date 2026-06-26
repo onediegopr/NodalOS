@@ -129,4 +129,14 @@ export class DomainProfile {
       captchaType: profile.captchaType || defaults.captchaType,
     };
   }
+
+  async shutdown() {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
+    }
+    if (this._savePending) {
+      await this.save();
+    }
+  }
 }
