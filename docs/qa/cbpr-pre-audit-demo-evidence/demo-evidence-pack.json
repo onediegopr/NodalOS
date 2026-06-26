@@ -1,0 +1,107 @@
+{
+  "pack": "cbpr-pre-audit-demo-evidence",
+  "date": "2026-06-26",
+  "project": "NODAL OS",
+  "line": "CLOAK_BROWSER_PERCEPTION_ROUTER",
+  "scope": "fixture-safe-demo-evidence-only",
+  "liveExecutionEnabled": false,
+  "externalNavigationEnabled": false,
+  "realActionsEnabled": false,
+  "safeInjectionLiveEnabled": false,
+  "webSocketLiveBridgeEnabled": false,
+  "systemBrowserFallbackEnabled": false,
+  "extensionDefaultFallbackEnabled": false,
+  "scenarios": [
+    {
+      "scenarioId": "DEMO-001-plan-only",
+      "inputFixture": "legacy-form-fixture",
+      "expectedDecision": "plan-only-dom-or-css-strategy",
+      "expectedEvidence": "BrowserEvidenceKind.PlanOnly",
+      "noLiveProof": ["no-cdp", "no-websocket", "no-browser-launch", "no-external-navigation", "no-real-action"],
+      "redactionExpectation": "RedactionStatus.None",
+      "testReference": ["CloakBrowserPerceptionRouterFoundationTests", "CloakBrowserSafeActionPlannerTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-002-blockage",
+      "inputFixture": "captcha-marker-fixture",
+      "expectedDecision": "HUMAN_HANDOFF_REQUIRED",
+      "expectedEvidence": "BlockageDetected or HumanHandoff",
+      "noLiveProof": ["no-solver", "no-bypass", "no-action"],
+      "redactionExpectation": "challenge-category-only",
+      "testReference": ["CloakBrowserLocatorBlockageTests", "CloakBrowserEvidencePackTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-003-locator",
+      "inputFixture": "spa-semantic-fixture",
+      "expectedDecision": "ACCESSIBILITY_FIRST",
+      "expectedEvidence": "locator-candidate-metadata",
+      "noLiveProof": ["candidate-only", "no-execution"],
+      "redactionExpectation": "locator-metadata-redacted",
+      "testReference": ["CloakBrowserLocatorBlockageTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-004-human-handoff",
+      "inputFixture": "auth-2fa-fixture",
+      "expectedDecision": "HUMAN_HANDOFF_REQUIRED",
+      "expectedEvidence": "human-handoff-evidence",
+      "noLiveProof": ["no-login-automation", "no-otp-handling", "no-credential-entry"],
+      "redactionExpectation": "no-credential-session-values",
+      "testReference": ["CloakBrowserSafeActionPlannerTests", "CloakBrowserEvidencePackTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-005-plan-not-live",
+      "inputFixture": "safe-action-plan-fixture",
+      "expectedDecision": "safe-action-planned-but-not-live",
+      "expectedEvidence": "action-plan-evidence",
+      "noLiveProof": ["CanExecuteInFixtureOnly", "ProhibitedOnExternalPages"],
+      "redactionExpectation": "no-secret",
+      "testReference": ["CloakBrowserSafeActionPlannerTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-006-fixture-success",
+      "inputFixture": "fixture-page-state-success",
+      "expectedDecision": "fixture-execution-succeeded",
+      "expectedEvidence": "FixtureExecutionSucceeded",
+      "noLiveProof": ["in-memory-only"],
+      "redactionExpectation": "RedactionStatus.None",
+      "testReference": ["CloakBrowserControlledActionExecutorTests", "CloakBrowserEvidencePackTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-007-fixture-failure",
+      "inputFixture": "fixture-postcondition-mismatch",
+      "expectedDecision": "fixture-execution-failed",
+      "expectedEvidence": "FixtureExecutionFailed or VerificationFailed",
+      "noLiveProof": ["no-live-retry"],
+      "redactionExpectation": "no-secret",
+      "testReference": ["CloakBrowserControlledActionExecutorTests", "CloakBrowserEvidencePackTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-008-verification-failure",
+      "inputFixture": "missing-target-fixture",
+      "expectedDecision": "action-aborted-before-mutation",
+      "expectedEvidence": "verification-failure",
+      "noLiveProof": ["aborted-before-side-effects"],
+      "redactionExpectation": "no-secret",
+      "testReference": ["CloakBrowserControlledActionExecutorTests"],
+      "status": "PASS"
+    },
+    {
+      "scenarioId": "DEMO-009-redaction-adversarial",
+      "inputFixture": "secret-like-metadata-fixture",
+      "expectedDecision": "evidence-redacted",
+      "expectedEvidence": "SensitiveFieldsRedacted-without-values",
+      "noLiveProof": ["fixture-string-only", "no-live-capture"],
+      "redactionExpectation": "serialized-json-does-not-contain-raw-sensitive-values",
+      "testReference": ["CloakBrowserEvidencePackTests", "CloakBrowserControlledActionExecutorTests", "CloakBrowserLocatorBlockageTests"],
+      "status": "PASS"
+    }
+  ],
+  "decision": "PRE_AUDIT_DEMO_EVIDENCE_PACK_READY"
+}
