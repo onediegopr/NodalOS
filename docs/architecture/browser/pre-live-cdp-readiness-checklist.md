@@ -10,11 +10,13 @@ This checklist is a readiness model only. It does not authorize live implementat
 
 ## Status Values
 
-- `READY`: completed for fixture-safe or governance scope.
-- `PARTIAL`: partially defined but not live-ready.
-- `BLOCKED`: blocked until a new decision or design exists.
-- `NOT_STARTED`: not designed or not implemented.
-- `NO_GO_FOR_LIVE`: live implementation must not start.
+- `READY`: documentation, contract, or checklist is completely defined for that stage.
+- `PARTIAL`: conceptual design or partial documentation exists, but this does not imply implementation has started.
+- `BLOCKED`: missing human decision, architecture, audit, or required guardrail.
+- `NOT_STARTED`: not started.
+- `NO_GO_FOR_LIVE`: explicitly prohibited for live.
+
+Any `PARTIAL` item remains non-live unless explicitly promoted by a future human decision, ADR, implementation prompt, and audit. `PARTIAL` does not mean live readiness.
 
 ## Architecture Required Before Live
 
@@ -206,7 +208,7 @@ This checklist is a readiness model only. It does not authorize live implementat
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| CBPR fixture-safe re-audit | READY | GPT/Kimi GO |
+| CBPR fixture-safe re-audit | READY | GPT/Kimi GO reported by operators; future auditors should verify repository evidence where available |
 | Pre-audit pack review | READY | This pack prepares it |
 | Live design external audit | BLOCKED | Required before live |
 | Live implementation external audit | NO_GO_FOR_LIVE | Not authorized |

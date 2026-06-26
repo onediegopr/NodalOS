@@ -34,12 +34,18 @@ This matrix separates fixture-safe capability from live-readiness. Fixture-safe 
 ## Current Capability Percentages
 
 - CloakBrowser runtime base: 100%
-- Perception Router: 70%
-- Browser diagnosis: 65%
+- CBPR fixture-safe: 100%
+- Perception Router: 72%
+- Browser diagnosis: 67%
 - Locator Engine: 50%
 - Blockage Detector: 60%
 - Safe actions fixture-safe: 55%
+- Governance / threat model readiness: 90%
+- Pre-live design readiness: 38%
 - Browser automation productive: 0%
+- Live implementation readiness: 0%
+
+The 72% Perception Router and 67% Browser diagnosis values include documentation and governance hardening after the technical fixture-safe close. They do not represent live readiness.
 
 ## Decision
 

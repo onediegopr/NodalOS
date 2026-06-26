@@ -37,6 +37,13 @@ Audits:
 - `KIMI_RE_AUDIT_GO`
 - `RE_AUDIT_GO`
 
+Audit traceability note:
+
+- These audit labels come from previous operator-reported audit results.
+- If a repository artifact is not available for a specific audit, treat the label as a reported claim that future auditors must verify.
+- These audit labels do not authorize live implementation.
+- They do not replace future design reviews, implementation gates, or audits.
+
 Fixture-safe closure decision:
 
 - `SAFE_TO_CLOSE_FIXTURE_SAFE_LINE: YES`

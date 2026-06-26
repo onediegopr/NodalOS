@@ -1,0 +1,81 @@
+{
+  "decision": "GO_CBPR_DUAL_AUDIT_P2_P3_DOC_CLEANUP_READY",
+  "audited_head": "af4ce97a110dab9b294e97895ab94adc74ed6bda",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "mode": "documentation-cleanup-only-no-live-implementation",
+  "dual_audit_consensus": {
+    "overall": "GO",
+    "p0_findings": 0,
+    "p1_findings": 0,
+    "protected_scope": "PASS",
+    "fixture_safe_boundary": "PASS",
+    "no_live_proof": "PASS",
+    "safe_to_close_pre_audit_stage": true,
+    "safe_to_start_live_implementation": false
+  },
+  "findings_resolved": [
+    "final HEAD origin sync worktree placeholders replaced with audited state",
+    "GPT and Kimi audit traceability clarified as operator-reported unless repo artifact exists",
+    "canonical percentages synchronized to post-dual-audit values",
+    "secondary no-live gates added",
+    "PARTIAL checklist status clarified as conceptual or partial documentation only"
+  ],
+  "protected_scope": {
+    "touched": false,
+    "paths": [
+      "stealth-engine/src/evasion/**",
+      "stealth-engine/src/captcha/**",
+      "stealth-engine/src/fingerprint/**",
+      "stealth-engine/src/behavior/**",
+      "stealth-engine/src/proxy/**",
+      "stealth-engine/src/antiBlocking/**",
+      "stealth-engine/src/handoff/**",
+      "stealth-engine/src/StealthSession.js",
+      "stealth-engine/src/StealthBrowserManager.js",
+      "stealth-engine/src/index.js",
+      "stealth-engine/tests/stealth-suite.test.js"
+    ]
+  },
+  "no_live_proof": {
+    "live_cdp": false,
+    "websocket_live_bridge": false,
+    "safe_injection_live": false,
+    "external_navigation": false,
+    "real_browser_actions": false,
+    "runtime_code_changes": false,
+    "product_ui_action_enablement": false,
+    "system_browser_fallback": false,
+    "chrome_extension_default_fallback": false
+  },
+  "percentages": {
+    "cloakbrowser_runtime_base": 100,
+    "cbpr_fixture_safe": 100,
+    "perception_router": 72,
+    "browser_diagnosis": 67,
+    "locator_engine": 50,
+    "blockage_detector": 60,
+    "safe_actions_fixture_safe": 55,
+    "governance_threat_model_readiness": 90,
+    "pre_live_design_readiness": 38,
+    "productive_browser_automation": 0,
+    "live_implementation_readiness": 0
+  },
+  "validations": {
+    "dotnet_build_no_restore": "recorded-in-final-operator-response",
+    "cbpr_tests": "recorded-in-final-operator-response",
+    "git_diff_check": "recorded-in-final-operator-response",
+    "git_diff_cached_check": "recorded-in-final-operator-response",
+    "protected_scope_scan": "recorded-in-final-operator-response",
+    "allowed_paths_scan": "recorded-in-final-operator-response",
+    "secret_scan": "recorded-in-final-operator-response",
+    "forbidden_browser_usage_scan": "recorded-in-final-operator-response",
+    "bad_ux_wording_scan": "recorded-in-final-operator-response",
+    "json_validation": "recorded-in-final-operator-response",
+    "no_runtime_code_product_ui_changes": "recorded-in-final-operator-response"
+  },
+  "safe_to_close_improvement_stage": true,
+  "safe_to_close_pre_audit_stage": true,
+  "safe_to_start_live_implementation": false,
+  "ready_for_final_handoff": true,
+  "next_step": "ENTREGAR INFORME FINAL / HANDOFF PARA OTRA VENTANA"
+}

@@ -20,6 +20,14 @@ Scope: mandatory gates for every future browser automation block. These gates ar
 | `NO_EXTENSION_DEFAULT_FALLBACK_GATE` | Block extension default fallback | Extension remains legacy/no-default | Extension used as default runtime |
 | `NO_STEALTH_CORE_TOUCH_GATE` | Protect Stealth Core | Protected paths unchanged | Any protected path diff |
 | `NO_CREDENTIAL_OR_CHALLENGE_BYPASS_GATE` | Block credential/challenge automation | Human handoff for sensitive/challenge cases | Bypass or credential automation |
+| `NO_LIVE_COLLECTOR_GATE` | Block live collector implementation | Collector remains design-only or fixture-only | Any live collector reads browser state without new approval |
+| `NO_FILESYSTEM_LEAKAGE_GATE` | Block local data leakage | No private paths or file contents leak into evidence | Raw filesystem paths or file contents exposed |
+| `NO_PROMPT_INJECTION_WEB_GATE` | Block web content influence over policy | Page content cannot change safety policy | Page text can override gates or approval |
+| `NO_SCREENSHOT_LEAKAGE_GATE` | Block raw screenshot leakage | Screenshot metadata only unless separately approved | Raw screenshot persisted or exposed |
+| `NO_SESSION_STORAGE_CAPTURE_GATE` | Block session/storage capture | No cookie/storage/session values collected | Cookie, localStorage, sessionStorage, or token values captured |
+| `NO_UI_WORDING_OVERCLAIM_GATE` | Block misleading product copy | UI/docs clearly say live is disabled | Copy implies live actions are enabled |
+| `NO_EVIDENCE_TAMPERING_GATE` | Protect evidence integrity | Evidence remains traceable and redacted | Evidence can be silently changed or forged |
+| `NO_AUDIT_LOG_BYPASS_GATE` | Protect auditability | Required decisions and validations are recorded | Live-relevant steps bypass audit logging |
 
 ## `NO_LIVE_CDP_GATE`
 
@@ -141,6 +149,102 @@ Scope: mandatory gates for every future browser automation block. These gates ar
 - NO-GO: any automatic bypass or credential entry is introduced.
 - Suggested scan: `rg -n "captcha|2fa|otp|credential|password|anti-bot|bypass|login" src tests docs`
 - Report as: `NO_CREDENTIAL_OR_CHALLENGE_BYPASS_GATE=PASS/NO_GO`.
+
+## `NO_LIVE_COLLECTOR_GATE`
+
+- Purpose: prevent a live browser collector from being implemented under a fixture-safe or design-only block.
+- Blocks: live DOM/AX/layout/screenshot/console/network collection without a new human decision, ADR, implementation prompt, and audit.
+- Paths/keywords to watch: collector, CDP, DOM snapshot, AX tree, layout boxes, screenshot capture, console live, network live.
+- Expected evidence: no collector code or live read path is introduced.
+- PASS: collector remains fixture-safe or design-only.
+- NO-GO: any code reads live browser state without explicit approval.
+- Suggested scan: `rg -n "collector|DOM snapshot|AX tree|layout boxes|screenshot|console summary|network summary|CDP" src tests scripts docs`
+- Severity if fails: P0.
+- Report as: `NO_LIVE_COLLECTOR_GATE=PASS/NO_GO`.
+
+## `NO_FILESYSTEM_LEAKAGE_GATE`
+
+- Purpose: prevent local filesystem data from leaking into browser evidence or docs.
+- Blocks: raw private paths, source content dumps, local artifact contents, and unredacted workspace paths.
+- Paths/keywords to watch: drive roots, user profile paths, full local paths, file contents, evidence summaries.
+- Expected evidence: path redaction and no raw local payloads in changed/new files.
+- PASS: changed/new evidence is metadata-only and does not expose private local content.
+- NO-GO: private paths or file contents are exposed without explicit redaction policy.
+- Suggested scan: `rg -n "C:\\\\Users|C:\\\\DESARROLLO|/home/|/Users/|file contents|raw path" docs src tests`
+- Severity if fails: P1, or P0 if secrets are exposed.
+- Report as: `NO_FILESYSTEM_LEAKAGE_GATE=PASS/NO_GO`.
+
+## `NO_PROMPT_INJECTION_WEB_GATE`
+
+- Purpose: prevent page content from becoming policy, approval, or execution authority.
+- Blocks: trusting DOM/page text as commands, gate overrides, approvals, or safety policy.
+- Paths/keywords to watch: prompt injection, page instruction, web content, override, policy, approval, trust.
+- Expected evidence: docs and code preserve policy outside page content.
+- PASS: web content is treated as untrusted signal only.
+- NO-GO: page content can authorize, bypass, or modify safety policy.
+- Suggested scan: `rg -n "prompt injection|page instruction|web content|override.*policy|approval.*page" docs src tests`
+- Severity if fails: P0 for executable policy bypass, P1 for ambiguous design.
+- Report as: `NO_PROMPT_INJECTION_WEB_GATE=PASS/NO_GO`.
+
+## `NO_SCREENSHOT_LEAKAGE_GATE`
+
+- Purpose: prevent raw screenshots from leaking sensitive page data.
+- Blocks: raw screenshot persistence, inline screenshots in evidence, unredacted visual payloads.
+- Paths/keywords to watch: screenshot, image bytes, base64 image, visual capture, evidence pack.
+- Expected evidence: screenshot metadata only unless a future approved live visual policy exists.
+- PASS: only screenshot metadata is documented or stored.
+- NO-GO: raw screenshots are collected or exposed without approval and redaction policy.
+- Suggested scan: `rg -n "screenshot|base64|image bytes|visual capture" docs src tests artifacts`
+- Severity if fails: P1, or P0 if secrets are exposed.
+- Report as: `NO_SCREENSHOT_LEAKAGE_GATE=PASS/NO_GO`.
+
+## `NO_SESSION_STORAGE_CAPTURE_GATE`
+
+- Purpose: block collection of cookies, storage values, session tokens, or credential material.
+- Blocks: cookie values, localStorage/sessionStorage values, session IDs, auth headers, bearer tokens.
+- Paths/keywords to watch: cookie, localStorage, sessionStorage, storage value, authorization, bearer, session.
+- Expected evidence: metadata counts or redacted keys only; no values.
+- PASS: no storage/session values are captured.
+- NO-GO: storage/session values are captured or serialized.
+- Suggested scan: `rg -n "cookie|localStorage|sessionStorage|authorization|bearer|session" docs src tests`
+- Severity if fails: P0 if raw secret/session values are exposed.
+- Report as: `NO_SESSION_STORAGE_CAPTURE_GATE=PASS/NO_GO`.
+
+## `NO_UI_WORDING_OVERCLAIM_GATE`
+
+- Purpose: prevent UI or docs from implying live capabilities are enabled.
+- Blocks: wording such as live ready, execute now, autonomous browser action, or productive automation enabled unless explicitly negated.
+- Paths/keywords to watch: ready for live, execute live, automation enabled, run browser action, safe to execute.
+- Expected evidence: product copy and docs state live remains blocked.
+- PASS: wording is explicit that live/productive automation is disabled.
+- NO-GO: wording implies live actions can be used.
+- Suggested scan: `rg -n -i "ready for live|execute live|automation enabled|run browser action|safe to execute" docs src browser-extension`
+- Severity if fails: P1, or P0 if it enables an action path.
+- Report as: `NO_UI_WORDING_OVERCLAIM_GATE=PASS/NO_GO`.
+
+## `NO_EVIDENCE_TAMPERING_GATE`
+
+- Purpose: preserve evidence integrity for audits and product timeline use.
+- Blocks: silent mutation, missing correlation IDs, untraceable evidence edits, or forged pass claims.
+- Paths/keywords to watch: evidence, correlation, generatedAt, source, redaction status, pass.
+- Expected evidence: evidence records include source, decision, redaction status, and validation references.
+- PASS: evidence remains traceable and metadata-only.
+- NO-GO: evidence can be changed or reported without traceable source or validation.
+- Suggested scan: `rg -n "evidence|correlation|generatedAt|redaction|PASS|decision" docs src tests`
+- Severity if fails: P1, or P0 if it fabricates safety pass.
+- Report as: `NO_EVIDENCE_TAMPERING_GATE=PASS/NO_GO`.
+
+## `NO_AUDIT_LOG_BYPASS_GATE`
+
+- Purpose: ensure future live-relevant decisions and validations cannot bypass audit recording.
+- Blocks: unlogged approvals, unlogged live actions, unlogged gate overrides, and missing validation evidence.
+- Paths/keywords to watch: audit log, approval, gate override, validation, decision, bypass.
+- Expected evidence: every future live-relevant gate reports command, result, and reviewed files.
+- PASS: audit records remain mandatory for gate transitions.
+- NO-GO: live-relevant decisions can occur without audit log or validation evidence.
+- Suggested scan: `rg -n "audit log|approval|gate override|validation|decision|bypass" docs src tests`
+- Severity if fails: P1, or P0 if a live action can bypass logging.
+- Report as: `NO_AUDIT_LOG_BYPASS_GATE=PASS/NO_GO`.
 
 ## Reporting Format
 

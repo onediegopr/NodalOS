@@ -23,10 +23,18 @@ Do not implement live CDP, Safe Injection live, WebSocket live bridge, external 
 
 ## Final State
 
-- Final HEAD: recorded in final response after commit
-- Origin sync final: recorded in final response
-- Worktree final: recorded in final response
+- Audited pre-cleanup HEAD: `af4ce97a110dab9b294e97895ab94adc74ed6bda`
+- Branch verified by dual audit: `chrome-lab-001-extension-local-ai-bridge`
+- Origin sync verified by dual audit: `0 0`
+- Worktree verified by dual audit: clean
+- Final cleanup commit: reported in operator final response; cannot be self-referenced inside the same commit
 - Protected scope final: must be PASS
+
+Git commit hashes cannot be self-referenced inside the same commit. The final cleanup commit is recorded in the final operator report; this document records the audited HEAD and the verification state.
+
+## Audit Traceability
+
+The `KIMI_RE_AUDIT_GO` and `RE_AUDIT_GO` references are operational audit results reported by the team for the audited pre-cleanup HEAD. They are useful governance context, but they are not a live implementation authorization and do not replace future audits. If an audit artifact is not present in the repository, treat the reference as a reported claim that must be re-verified by future auditors.
 
 ## Relevant Commits
 
@@ -131,32 +139,26 @@ The current scope must preserve:
 
 ## Percentages
 
-Before this macro-block:
+Canonical post-dual-audit percentages:
 
 - CloakBrowser runtime base: 100%
-- Perception Router: 70%
-- Browser diagnosis: 65%
-- Locator Engine: 50%
-- Blockage Detector: 60%
-- Safe actions fixture-safe: 55%
-- Browser automation productive: 0%
-
-After this macro-block:
-
-- CloakBrowser runtime base: 100%
+- CBPR fixture-safe: 100%
 - Perception Router: 72%
 - Browser diagnosis: 67%
 - Locator Engine: 50%
 - Blockage Detector: 60%
 - Safe actions fixture-safe: 55%
-- Governance/threat model readiness: 85%
-- Pre-live design readiness: 35%
+- Governance/threat model readiness: 90%
+- Pre-live design readiness: 38%
 - Browser automation productive: 0%
+- Live implementation readiness: 0%
 
 Aggregate:
 
-- Fixture-safe/design-only readiness: 75%
+- Fixture-safe/design-only readiness: 76%
 - Live/productive automation readiness: 0%
+
+The 72% Perception Router and 67% Browser diagnosis values include documentation and governance hardening after the technical fixture-safe close. They do not represent live readiness.
 
 ## Remaining Risks
 
