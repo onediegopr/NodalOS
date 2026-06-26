@@ -17,8 +17,8 @@
     "enabled": false,
     "rotationMode": "sticky",
     "providers": {
-      "brightdata": { "enabled": false, "apiKey": "", "endpoint": "" },
-      "oxylabs": { "enabled": false, "username": "", "password": "", "endpoint": "" },
+      "brightdata": { "enabled": false, "apiKey": "", "zone": "", "port": 22225 },
+      "oxylabs": { "enabled": false, "username": "", "password": "", "endpoint": "", "country": "US" },
       "iproyal": { "enabled": false, "apiKey": "", "endpoint": "" }
     },
     "staticProxies": [],
@@ -52,7 +52,8 @@
       "enabled": false,
       "provider": "openai",
       "apiKey": "",
-      "model": "gpt-4-vision-preview"
+      "model": "gpt-4-vision-preview",
+      "consentGiven": false
     }
   },
 

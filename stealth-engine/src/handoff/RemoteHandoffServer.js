@@ -1,4 +1,5 @@
 import { WebSocketServer } from 'ws';
+import crypto from 'node:crypto';
 
 export class RemoteHandoffServer {
   constructor(port = 8788) {
@@ -13,7 +14,8 @@ export class RemoteHandoffServer {
   }
 
   async startHandoff(taskId, page, ws) {
-    this.sessions.set(taskId, { page, ws, streaming: true });
+    const handoffToken = crypto.randomUUID();
+    this.sessions.set(taskId, { page, ws, streaming: true, handoffToken });
 
     ws.send(JSON.stringify({
       type: 'handoff.start',
@@ -22,6 +24,7 @@ export class RemoteHandoffServer {
       title: await page.title().catch(() => ''),
       instruction: 'CAPTCHA/2FA validation requires human intervention. Take control of the browser.',
       timestamp: Date.now(),
+      handoffToken,
     }));
 
     this.startScreenshotStream(taskId, page, ws);
@@ -29,7 +32,7 @@ export class RemoteHandoffServer {
     ws.on('message', async (data) => {
       try {
         const msg = JSON.parse(data);
-        await this.handleOperatorInput(taskId, page, msg);
+        await this.handleOperatorInput(taskId, msg);
       } catch (e) {
         ws.send(JSON.stringify({ type: 'handoff.error', error: e.message }));
       }
@@ -56,25 +59,36 @@ export class RemoteHandoffServer {
     }
   }
 
-  async handleOperatorInput(taskId, page, msg) {
+  async handleOperatorInput(taskId, msg) {
     const session = this.sessions.get(taskId);
     if (!session) return;
 
+    if (msg.type !== 'handoff.connect' && msg.type !== 'handoff.pong') {
+      if (!msg.token || msg.token !== session.handoffToken) {
+        session.ws.send(JSON.stringify({ type: 'handoff.error', error: 'Invalid or missing handoff token', taskId }));
+        return;
+      }
+    }
+
     switch (msg.type) {
-      case 'handoff.mousemove': await page.mouse.move(msg.x, msg.y); break;
-      case 'handoff.mouseclick': await page.mouse.click(msg.x, msg.y); break;
-      case 'handoff.keydown': await page.keyboard.down(msg.key); break;
-      case 'handoff.keyup': await page.keyboard.up(msg.key); break;
-      case 'handoff.type': await page.keyboard.type(msg.text); break;
-      case 'handoff.scroll': await page.mouse.wheel(msg.deltaX || 0, msg.deltaY || 0); break;
+      case 'handoff.mousemove': await session.page.mouse.move(msg.x, msg.y); break;
+      case 'handoff.mouseclick': await session.page.mouse.click(msg.x, msg.y); break;
+      case 'handoff.keydown': await session.page.keyboard.down(msg.key); break;
+      case 'handoff.keyup': await session.page.keyboard.up(msg.key); break;
+      case 'handoff.type': await session.page.keyboard.type(msg.text); break;
+      case 'handoff.scroll': await session.page.mouse.wheel(msg.deltaX || 0, msg.deltaY || 0); break;
       case 'handoff.done':
         session.ws.send(JSON.stringify({ type: 'handoff.completed', taskId, success: true }));
+        this.stopHandoff(taskId);
         break;
     }
   }
 
   stopHandoff(taskId) {
     const session = this.sessions.get(taskId);
-    if (session) { session.streaming = false; this.sessions.delete(taskId); }
+    if (session) {
+      session.streaming = false;
+      this.sessions.delete(taskId);
+    }
   }
 }

@@ -1,16 +1,24 @@
 export class ProxyProviderIntegrations {
   static async fetchFromBrightData(cfg) {
     if (!cfg.enabled || !cfg.apiKey) return [];
+    if (!cfg.zone) {
+      console.warn('[ProxyProvider] BrightData zone not configured');
+      return [];
+    }
     try {
-      const resp = await fetch(cfg.endpoint || 'https://api.brightdata.com/zone/get_proxy_ips?zone=res', {
+      const resp = await fetch(`https://api.brightdata.com/v1/zone/get_proxy_ips?zone=${encodeURIComponent(cfg.zone)}`, {
         headers: { 'Authorization': 'Bearer ' + cfg.apiKey, 'Content-Type': 'application/json' },
       });
+      if (!resp.ok) {
+        console.warn('[ProxyProvider] BrightData fetch failed:', resp.status, resp.statusText);
+        return [];
+      }
       const data = await resp.json();
       if (!Array.isArray(data)) return [];
-      return data.map(ip => ({
-        url: `http://${ip}:${cfg.port || 22225}`,
+      return data.map(entry => ({
+        url: `http://${entry.ip || entry.host}:${entry.port || cfg.port || 22225}`,
         type: 'residential',
-        country: 'US',
+        country: entry.country || entry.country_code || 'US',
         provider: 'brightdata',
         username: cfg.username || '',
         password: cfg.password || '',
@@ -22,15 +30,31 @@ export class ProxyProviderIntegrations {
   }
 
   static async fetchFromOxylabs(cfg) {
-    if (!cfg.enabled || !cfg.username) return [];
+    if (!cfg.enabled || !cfg.username || !cfg.password) return [];
     try {
-      const endpoint = cfg.endpoint || 'https://realtime.oxylabs.io/v1/queries';
+      const endpoint = cfg.endpoint || 'https://proxy.oxylabs.io/credentials/' + encodeURIComponent(cfg.username) + '/whitelist';
       const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Basic ' + Buffer.from(cfg.username + ':' + cfg.password).toString('base64') },
-        body: JSON.stringify({ source: 'universal', url: 'http://httpbin.org/ip', geo_location: 'United States' }),
+        headers: { 'Authorization': 'Basic ' + Buffer.from(cfg.username + ':' + cfg.password).toString('base64') },
       });
-      return [];
+      if (!resp.ok) {
+        console.warn('[ProxyProvider] Oxylabs fetch failed:', resp.status, resp.statusText);
+        return [];
+      }
+      const data = await resp.json();
+      const proxies = [];
+      if (data.access_whitelist && Array.isArray(data.access_whitelist)) {
+        for (const ip of data.access_whitelist) {
+          proxies.push({
+            url: `http://${cfg.username}:${cfg.password}@proxy.oxylabs.io:8010`,
+            type: 'residential',
+            country: cfg.country || 'US',
+            provider: 'oxylabs',
+            username: cfg.username,
+            password: cfg.password,
+          });
+        }
+      }
+      return proxies;
     } catch (e) {
       console.warn('[ProxyProvider] Oxylabs fetch failed:', e.message);
       return [];
@@ -39,7 +63,32 @@ export class ProxyProviderIntegrations {
 
   static async fetchFromIPRoyal(cfg) {
     if (!cfg.enabled || !cfg.apiKey) return [];
-    return [];
+    try {
+      const endpoint = cfg.endpoint || 'https://panel.iproyal.com/api/residential/export';
+      const resp = await fetch(endpoint, {
+        headers: { 'Authorization': 'Bearer ' + cfg.apiKey, 'Content-Type': 'application/json' },
+      });
+      if (!resp.ok) {
+        console.warn('[ProxyProvider] IPRoyal fetch failed:', resp.status, resp.statusText);
+        return [];
+      }
+      const text = await resp.text();
+      const lines = text.trim().split('\n').filter(Boolean);
+      return lines.map(line => {
+        const [host, port, user, pass, country] = line.split(':');
+        return {
+          url: `http://${user}:${pass}@${host}:${port}`,
+          type: 'residential',
+          country: country || 'US',
+          provider: 'iproyal',
+          username: user,
+          password: pass,
+        };
+      }).filter(p => p.url.includes('@'));
+    } catch (e) {
+      console.warn('[ProxyProvider] IPRoyal fetch failed:', e.message);
+      return [];
+    }
   }
 
   static async fetchAll(providerCfgs = {}) {

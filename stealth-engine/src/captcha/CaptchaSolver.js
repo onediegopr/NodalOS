@@ -2,16 +2,17 @@ export class CaptchaSolver {
   constructor(config = {}) {
     this.twoCaptchaApiKey = config.twoCaptchaApiKey || '';
     this.visualSolver = config.visualSolver || null;
+    this.proxy = config.proxy || null;
   }
 
-  async solve(page, detection, taskId) {
+  async solve(page, detection, taskId, proxy = null) {
     const sitekey = detection.sitekey || await this.findSitekey(page);
     const url = page.url();
 
     if (sitekey && this.twoCaptchaApiKey) {
       try {
         console.log(`[${taskId}] Attempting CAPTCHA solve via 2captcha for ${detection.type}`);
-        const result = await this._solve2captcha(sitekey, url, taskId, detection.type);
+        const result = await this._solve2captcha(sitekey, url, taskId, detection.type, proxy);
         if (result.success) return result;
         console.warn(`[${taskId}] 2captcha failed: ${result.error}, trying visual solver`);
       } catch (e) {
@@ -25,7 +26,7 @@ export class CaptchaSolver {
         const screenshot = await page.screenshot({ clip: { x: 0, y: 0, width: Math.min(page.viewportSize().width, 600), height: Math.min(page.viewportSize().height, 400) } });
         const captchaType = await this.visualSolver.classify(screenshot);
         console.log(`[${taskId}] Visual CAPTCHA classified as: ${captchaType}`);
-        const result = await this.visualSolver.solve(screenshot, captchaType, {});
+        const result = await this.visualSolver.solve(screenshot, captchaType, {}, proxy);
         if (result.success) return { ...result, provider: 'visual', durationMs: 0, cost: 0 };
       } catch (e) {
         console.warn(`[${taskId}] Visual solver error: ${e.message}`);
@@ -39,7 +40,7 @@ export class CaptchaSolver {
     return { success: false, error: 'All solvers failed' };
   }
 
-  async _solve2captcha(sitekey, url, taskId, captchaType) {
+  async _solve2captcha(sitekey, url, taskId, captchaType, proxy = null) {
     const startTime = Date.now();
 
     var safeUrl;
@@ -61,9 +62,28 @@ export class CaptchaSolver {
         taskConfig = { type: taskType, websiteURL: safeUrl, websiteKey: sitekey };
     }
 
+    const fetchOpts = { headers: { 'Content-Type': 'application/json' } };
+    if (proxy) {
+      try {
+        const { Agent } = await import('undici');
+        const parsedProxy = new URL(proxy.server);
+        const dispatcher = new Agent({
+          keepAliveTimeout: 30000,
+          keepAliveMaxTimeout: 120000,
+          connect: {
+            host: parsedProxy.hostname,
+            port: parsedProxy.port || 8080,
+          },
+        });
+        fetchOpts.dispatcher = dispatcher;
+      } catch (e) {
+        console.warn(`[${taskId}] Could not create proxy dispatcher: ${e.message}`);
+      }
+    }
+
     const createResp = await fetch('https://api.2captcha.com/createTask', {
+      ...fetchOpts,
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ clientKey: this.twoCaptchaApiKey, task: taskConfig }),
     });
     const createResult = await createResp.json();
@@ -77,8 +97,8 @@ export class CaptchaSolver {
     while (!token && Date.now() - startWait < maxWait) {
       await new Promise(r => setTimeout(r, 3000));
       const checkResp = await fetch('https://api.2captcha.com/getTaskResult', {
+        ...fetchOpts,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clientKey: this.twoCaptchaApiKey, taskId: taskId2 }),
       });
       const checkResult = await checkResp.json();

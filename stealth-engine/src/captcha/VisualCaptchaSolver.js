@@ -56,20 +56,20 @@ export class VisualCaptchaSolver {
     }
   }
 
-  async solve(imageBuffer, type, options = {}) {
+  async solve(imageBuffer, type, options = {}, proxy = null) {
     if (!this.enabled) return { success: false, error: 'VisualCaptchaSolver not enabled' };
 
     switch (type) {
       case 'text-distorted': return this._solveText(imageBuffer);
       case 'image-selection': return this._solveImageSelection(imageBuffer, options);
       case 'puzzle-slider': return this._solvePuzzleSlider(imageBuffer);
-      case 'unknown': return this._solveWithAI(imageBuffer, options);
-      default: return this._solveWithAI(imageBuffer, options);
+      case 'unknown': return this._solveWithAI(imageBuffer, options, proxy);
+      default: return this._solveWithAI(imageBuffer, options, proxy);
     }
   }
 
   async _solveText(imageBuffer) {
-    if (!this.tesseractReady) return this._solveWithAI(imageBuffer, { prompt: 'Extract only the distorted text from this CAPTCHA image. Return only the text, nothing else.' });
+    if (!this.tesseractReady) return this._solveWithAI(imageBuffer, { prompt: 'Extract only the distorted text from this CAPTCHA image. Return only the text, nothing else.' }, null);
 
     try {
       const sharp = (await import('sharp')).default;
@@ -97,11 +97,11 @@ export class VisualCaptchaSolver {
     }
   }
 
-  async _solveImageSelection(imageBuffer, options = {}) {
+  async _solveImageSelection(imageBuffer, options = {}, proxy = null) {
     const objective = options.objective || 'the requested object';
     return this._solveWithAI(imageBuffer, {
       prompt: `This is a CAPTCHA image. The question asks to select images containing ${objective}. Analyze the grid of images and return ONLY the 1-based index numbers of the images you would select, separated by commas. Example: "1,3,4"`,
-    });
+    }, proxy);
   }
 
   async _solvePuzzleSlider(imageBuffer) {
@@ -125,15 +125,24 @@ export class VisualCaptchaSolver {
     }
   }
 
-  async _solveWithAI(imageBuffer, options = {}) {
+  async _solveWithAI(imageBuffer, options = {}, proxy = null) {
     if (!this.aiVision.enabled || !this.aiVision.apiKey) {
       return { success: false, error: 'AI vision not configured' };
+    }
+    if (!this.aiVision.consentGiven) {
+      return { success: false, error: 'AI vision requires explicit consent (visualCaptcha.aiVision.consentGiven must be true)' };
     }
 
     const prompt = options.prompt || 'Solve this CAPTCHA. Return only the answer, nothing else.';
 
     try {
-      const base64 = imageBuffer.toString('base64');
+      const sharp = (await import('sharp')).default;
+      const redacted = await sharp(imageBuffer)
+        .resize(600, 400, { fit: 'inside' })
+        .blur(1)
+        .jpeg({ quality: 60 })
+        .toBuffer();
+      const base64 = redacted.toString('base64');
       const provider = this.aiVision.provider || 'openai';
 
       if (provider === 'openai') {

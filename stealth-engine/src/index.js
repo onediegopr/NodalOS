@@ -239,7 +239,7 @@ async function handleFrictionDecision(msg) {
         visualSolver: visualCaptchaSolver,
       });
       const captchaType = session._lastCaptchaType || 'recaptcha_v2';
-      const result = await solver.solve(session.page, { type: captchaType, sitekey }, taskId);
+      const result = await solver.solve(session.page, { type: captchaType, sitekey }, taskId, session.proxy);
       if (result.success) {
         await TokenInjector.inject(session.page, captchaType, result.token);
         const stillThere = await CaptchaDetector.detect(session.page);
@@ -278,16 +278,24 @@ async function handleHandoffActivate(msg) {
   if (!session) return;
 
   const handoffWs = new WebSocket('ws://127.0.0.1:' + (CONFIG.handoffPort || 8788) + '/handoff/' + handoffId);
+  let handoffToken = null;
+
   handoffWs.on('open', () => { const srv = new RemoteHandoffServer(); srv.startHandoff(taskId, session.page, handoffWs); });
+
   handoffWs.on('message', (data) => {
     try {
       const m = JSON.parse(data);
-      if (m.type === 'handoff.done' || m.type === 'handoff.completed') {
+      if (m.type === 'handoff.start') {
+        handoffToken = m.handoffToken;
+      } else if (m.type === 'handoff.done' || m.type === 'handoff.completed') {
         send({ type: 'stealth.handoff.completed', taskId, handoffId, success: true });
         handoffWs.close();
+      } else if (m.type === 'handoff.error') {
+        send({ type: 'stealth.handoff.error', taskId, handoffId, error: m.error });
       }
     } catch (e) { }
   });
+
   handoffWs.on('error', (err) => send({ type: 'stealth.handoff.completed', taskId, handoffId, success: false, error: err.message }));
 }
 
@@ -302,8 +310,23 @@ process.on('SIGTERM', shutdown);
 async function shutdown() {
   console.log('[StealthEngine] Shutting down...');
   if (proxyHealthChecker) proxyHealthChecker.stop();
-  for (const [, s] of sessions) { await s.dispose().catch(() => {}); }
+
+  const timeout = (ms) => new Promise(resolve => setTimeout(() => resolve('timeout'), ms));
+  const disposePromises = Array.from(sessions.values()).map(s => s.dispose().catch(() => {}));
+
+  const result = await Promise.race([
+    Promise.all(disposePromises),
+    timeout(10000),
+  ]);
+
   if (ws) ws.close();
+
+  if (result === 'timeout') {
+    console.warn('[StealthEngine] Shutdown timeout - some sessions may not have closed gracefully');
+    process.exit(1);
+  }
+
+  console.log('[StealthEngine] All sessions disposed cleanly');
   process.exit(0);
 }
 

@@ -25,6 +25,8 @@ export class StealthBrowserManager {
   async createSession(taskId, instruction, options = {}) {
     const now = Date.now();
 
+    const limitedCreate = () => this._doCreateSession(taskId, instruction, options);
+
     if (this.activeSessions.size >= this.maxConcurrent) {
       return new Promise((resolve, reject) => {
         const queued = { taskId, instruction, options, resolve, reject, queuedAt: now };
@@ -38,7 +40,7 @@ export class StealthBrowserManager {
       });
     }
 
-    return this._doCreateSession(taskId, instruction, options);
+    return this.limiter(limitedCreate);
   }
 
   async _doCreateSession(taskId, instruction, options) {
@@ -67,9 +69,11 @@ export class StealthBrowserManager {
 
     await session.initialize();
     this.activeSessions.set(taskId, { session, startTime });
+    this.stats.totalCreated++;
 
     console.log(`[SessionManager] Task ${taskId} session created (active: ${this.activeSessions.size}, max: ${this.maxConcurrent})`);
 
+    this._processQueue();
     return session;
   }
 
@@ -94,9 +98,10 @@ export class StealthBrowserManager {
 
   _processQueue() {
     if (this.queue.length === 0) return;
+    if (this.activeSessions.size >= this.maxConcurrent) return;
     const next = this.queue.shift();
     clearTimeout(next._timeout);
-    this._doCreateSession(next.taskId, next.instruction, next.options)
+    this.limiter(() => this._doCreateSession(next.taskId, next.instruction, next.options))
       .then(session => next.resolve(session))
       .catch(err => next.reject(err));
   }
