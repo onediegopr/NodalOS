@@ -229,7 +229,8 @@ public sealed record CdpInteractiveElementSummary(
     string? Href,
     bool Enabled,
     bool Visible,
-    string SelectorHint);
+    string SelectorHint,
+    bool Required = false);
 
 public sealed record CdpDomSnapshot(
     CdpPageMetadata PageMetadata,
@@ -243,7 +244,11 @@ public sealed record CdpDomSnapshot(
     bool ScreenshotsAvailable,
     string Source,
     bool ExtensionUsed,
-    bool SystemBrowserUsed)
+    bool SystemBrowserUsed,
+    int HeadingsCount = 0,
+    int DisabledElementsCount = 0,
+    int RequiredEmptyFieldsCount = 0,
+    string PageStructureSummary = "")
 {
     public bool StoresRawHtml => false;
 
@@ -266,7 +271,11 @@ public sealed record CdpDomSnapshotEvidence(
     bool SystemBrowserUsed,
     bool StoresRawHtml,
     bool StoresInputValues,
-    bool SecretsRedacted);
+    bool SecretsRedacted,
+    int HeadingsCount = 0,
+    int DisabledElementsCount = 0,
+    int RequiredEmptyFieldsCount = 0,
+    string PageStructureSummary = "");
 
 public enum CdpControlledActionKind
 {
@@ -405,9 +414,22 @@ public sealed class CdpDomSnapshotManager
         href: tag === 'a' ? safeHref(element) : null,
         enabled: !element.disabled,
         visible: isVisible(element),
-        selectorHint: selectorHintFor(element, stableId)
+        selectorHint: selectorHintFor(element, stableId),
+        required: element.hasAttribute('required')
       };
     });
+  const headingsCount = document.querySelectorAll('h1,h2,h3,h4,h5,h6,[role="heading"]').length;
+  const disabledElementsCount = document.querySelectorAll('button:disabled,input:disabled,textarea:disabled,select:disabled,[aria-disabled="true"]').length;
+  const requiredEmptyFieldsCount = Array.from(document.querySelectorAll('input[required],textarea[required],select[required]'))
+    .filter((element) => element.validity && element.validity.valueMissing)
+    .length;
+  const pageStructureSummary = [
+    `headings:${headingsCount}`,
+    `forms:${document.forms ? document.forms.length : 0}`,
+    `links:${document.links ? document.links.length : 0}`,
+    `buttons:${document.querySelectorAll('button,[role="button"]').length}`,
+    `inputs:${document.querySelectorAll('input,textarea,select,[contenteditable="true"]').length}`
+  ].join(' ');
 
   return {
     pageMetadata: {
@@ -422,6 +444,10 @@ public sealed class CdpDomSnapshotManager
     linksCount: document.links ? document.links.length : 0,
     buttonsCount: document.querySelectorAll('button,[role="button"]').length,
     inputsCount: document.querySelectorAll('input,textarea,select,[contenteditable="true"]').length,
+    headingsCount,
+    disabledElementsCount,
+    requiredEmptyFieldsCount,
+    pageStructureSummary,
     screenshotsAvailable: true,
     source: 'cloakbrowser-cdp-direct',
     extensionUsed: false,
@@ -453,7 +479,8 @@ public sealed class CdpDomSnapshotManager
                     Href: ReadNullableString(element, "href"),
                     Enabled: ReadBoolean(element, "enabled"),
                     Visible: ReadBoolean(element, "visible"),
-                    SelectorHint: ReadString(element, "selectorHint")));
+                    SelectorHint: ReadString(element, "selectorHint"),
+                    Required: ReadBoolean(element, "required")));
             }
         }
 
@@ -472,7 +499,11 @@ public sealed class CdpDomSnapshotManager
             ScreenshotsAvailable: ReadBoolean(value, "screenshotsAvailable"),
             Source: ReadString(value, "source"),
             ExtensionUsed: ReadBoolean(value, "extensionUsed"),
-            SystemBrowserUsed: ReadBoolean(value, "systemBrowserUsed"));
+            SystemBrowserUsed: ReadBoolean(value, "systemBrowserUsed"),
+            HeadingsCount: ReadInt32(value, "headingsCount"),
+            DisabledElementsCount: ReadInt32(value, "disabledElementsCount"),
+            RequiredEmptyFieldsCount: ReadInt32(value, "requiredEmptyFieldsCount"),
+            PageStructureSummary: ReadString(value, "pageStructureSummary"));
     }
 
     public CdpDomSnapshotEvidence CreateEvidence(CdpDomSnapshot snapshot) =>
@@ -490,7 +521,11 @@ public sealed class CdpDomSnapshotManager
             SystemBrowserUsed: snapshot.SystemBrowserUsed,
             StoresRawHtml: snapshot.StoresRawHtml,
             StoresInputValues: snapshot.StoresInputValues,
-            SecretsRedacted: snapshot.SecretsRedacted);
+            SecretsRedacted: snapshot.SecretsRedacted,
+            HeadingsCount: snapshot.HeadingsCount,
+            DisabledElementsCount: snapshot.DisabledElementsCount,
+            RequiredEmptyFieldsCount: snapshot.RequiredEmptyFieldsCount,
+            PageStructureSummary: snapshot.PageStructureSummary);
 
     public bool ContainsForbiddenRawDataReads(string script) =>
         script.Contains("outerHTML", StringComparison.Ordinal)

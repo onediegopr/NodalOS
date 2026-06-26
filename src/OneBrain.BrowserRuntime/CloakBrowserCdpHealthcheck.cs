@@ -14,7 +14,10 @@ public sealed record CloakBrowserCdpHealthcheckOptions(
     string RepositoryRoot,
     string LockfilePath,
     string? RuntimeArtifactPath = null,
-    TimeSpan? Timeout = null)
+    TimeSpan? Timeout = null,
+    string? ControlledPageTitle = null,
+    string? ControlledPageHtml = null,
+    string? SuccessDecisionOverride = null)
 {
     public TimeSpan EffectiveTimeout => Timeout ?? TimeSpan.FromSeconds(30);
 }
@@ -72,7 +75,8 @@ public sealed record CloakBrowserCdpHealthcheckResult(
     bool InputValuesStored = false,
     CdpDomSnapshotEvidence? DomSnapshotEvidence = null,
     IReadOnlyList<CdpControlledActionEvidence>? ControlledActionEvidence = null,
-    string? DomActionEvidencePath = null);
+    string? DomActionEvidencePath = null,
+    CdpDomSnapshot? DomSnapshot = null);
 
 public sealed class CloakBrowserCdpHealthcheckRunner
 {
@@ -218,7 +222,10 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 browserVersion = product.GetString() ?? browserVersion;
             }
 
-            var dataUrl = BuildHealthcheckDataUrl();
+            var expectedPageTitle = options.ControlledPageTitle ?? PageTitle;
+            var dataUrl = string.IsNullOrWhiteSpace(options.ControlledPageHtml)
+                ? BuildHealthcheckDataUrl()
+                : BuildDataUrl(options.ControlledPageHtml);
             new CdpActionController().CreateHealthcheckNavigation(new Uri(dataUrl));
             var createTarget = await liveCdp.SendAsync(
                     "Target.createTarget",
@@ -260,7 +267,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
             url = await EvaluateStringAsync(liveCdp, sessionId, "String(window.location.href)", timeoutSource.Token).ConfigureAwait(false);
             title = await EvaluateStringAsync(liveCdp, sessionId, "String(document.title)", timeoutSource.Token).ConfigureAwait(false);
             navigationOk = url?.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase) == true;
-            titleRead = string.Equals(title, PageTitle, StringComparison.Ordinal);
+            titleRead = string.Equals(title, expectedPageTitle, StringComparison.Ordinal);
             if (sessionId is not null)
             {
                 sessionRegistry.MarkState(sessionId, "navigated");
@@ -448,7 +455,7 @@ public sealed class CloakBrowserCdpHealthcheckRunner
 
             var result = new CloakBrowserCdpHealthcheckResult(
                 Status: success ? "PASS" : "BLOCKED",
-                Decision: success ? SuccessDecision : BlockedDecision,
+                Decision: success ? options.SuccessDecisionOverride ?? SuccessDecision : BlockedDecision,
                 Reason: success ? "CloakBrowser CDP live healthcheck completed." : "CloakBrowser CDP live healthcheck did not complete all checks.",
                 RuntimeProvider: "cloakbrowser",
                 CdpMode: "cdp-direct",
@@ -498,7 +505,8 @@ public sealed class CloakBrowserCdpHealthcheckRunner
                 RawHtmlStored: domSnapshot?.StoresRawHtml ?? false,
                 InputValuesStored: domSnapshot?.StoresInputValues ?? false,
                 DomSnapshotEvidence: domSnapshotEvidence,
-                ControlledActionEvidence: controlledActionEvidence);
+                ControlledActionEvidence: controlledActionEvidence,
+                DomSnapshot: domSnapshot);
 
             return await WriteEvidenceAsync(options.RepositoryRoot, result, cancellationToken).ConfigureAwait(false);
         }
@@ -750,6 +758,9 @@ public sealed class CloakBrowserCdpHealthcheckRunner
 
         return "data:text/html;charset=utf-8," + Uri.EscapeDataString(html);
     }
+
+    internal static string BuildDataUrl(string html) =>
+        "data:text/html;charset=utf-8," + Uri.EscapeDataString(html);
 
     private static string? FindStableId(CdpDomSnapshot snapshot, string tag, string role) =>
         snapshot.InteractiveElements
