@@ -688,7 +688,7 @@ public sealed class BrowserEvidencePackBuilder
             BlockageReport: null,
             ActionSucceeded: null,
             HumanHandoffTriggered: decision.HumanHandoffRequired,
-            RedactionStatus: snapshot.Redacted ? BrowserEvidenceRedactionStatus.None : BrowserEvidenceRedactionStatus.Partial,
+            RedactionStatus: snapshot.Redacted ? BrowserEvidenceRedactionStatus.Partial : BrowserEvidenceRedactionStatus.None,
             SensitiveFieldsRedacted: [],
             EvidenceSummary: "Metadata-only perception evidence pack.",
             EvidenceRefs:

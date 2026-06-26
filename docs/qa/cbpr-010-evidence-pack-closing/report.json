@@ -6,7 +6,7 @@
   "project": "NODAL OS",
   "branch": "chrome-lab-001-extension-local-ai-bridge",
   "initialHead": "d240e38f8db1561761edcd865c4dffcdf4d7066c",
-  "finalHead": "recorded-in-final-response-after-commit",
+  "finalHead": "6074089468970758f71d32e93430c6122dbd23c7",
   "originSyncAtStart": "0 0",
   "mode": "fixture-safe-metadata-only-no-live-execution",
   "scope": {
@@ -99,7 +99,7 @@
     "CdpUiRuntimeBoundary": "PASS 14/14",
     "NoExtensionDefaultHarness": "PASS 7/7",
     "MinimalNoExtensionProductSurface": "PASS 9/9",
-    "gitDiffCheck": "pending-final-run-after-report-update",
+    "gitDiffCheck": "PASS",
     "secretScan": "PASS; only allowed fake redaction-test literals detected",
     "protectedScopeScan": "PASS; protected_scope_changed=false",
     "forbiddenBrowserUsageScan": "PASS; forbidden_browser_usage=false",

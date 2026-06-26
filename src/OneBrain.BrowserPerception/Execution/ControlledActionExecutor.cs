@@ -130,6 +130,8 @@ public sealed class FixturePageState
 
 public sealed class ControlledActionExecutor
 {
+    private static readonly BrowserEvidenceRedactor SensitiveInputRedactor = new();
+
     private static readonly SafeBrowserActionKind[] SupportedActions =
     [
         SafeBrowserActionKind.Scroll,
@@ -400,26 +402,7 @@ public sealed class ControlledActionExecutor
         string.IsNullOrWhiteSpace(candidate) ? fallback : candidate.Trim();
 
     private static bool ContainsSensitiveInput(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        var normalized = value.ToLowerInvariant();
-        var blockedTerms = new[]
-        {
-            "password",
-            "token",
-            "api key",
-            "apikey",
-            "secret",
-            "credential",
-            "2fa",
-            "otp",
-            "captcha"
-        };
-
-        return blockedTerms.Any(normalized.Contains);
-    }
+        => SensitiveInputRedactor.ContainsSensitiveValue(value);
 
     private static bool IsFixtureSafe(BrowserPerceptionSnapshot snapshot) =>
         string.Equals(snapshot.Source, "fixture-safe-read-only", StringComparison.Ordinal);

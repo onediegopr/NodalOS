@@ -32,16 +32,29 @@ public sealed class BrowserEvidenceRedactor
         "session",
         "cookie",
         "refresh_token",
-        "access_token"
+        "access_token",
+        "pin",
+        "cvv",
+        "cvc",
+        "ssn",
+        "social security",
+        "credit card",
+        "card number",
+        "cardnumber",
+        "debit card",
+        "secret answer",
+        "secret question"
     ];
 
     private static readonly Regex[] SecretPatterns =
     [
         new(@"Bearer\s+[A-Za-z0-9._\-~+/]+=*", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        new(@"sk-[A-Za-z0-9]{12,}", RegexOptions.Compiled),
-        new(@"ghp_[A-Za-z0-9]{12,}", RegexOptions.Compiled),
-        new(@"\beyJ[A-Za-z0-9_\-]+?\.[A-Za-z0-9_\-]+?\.[A-Za-z0-9_\-]+?\b", RegexOptions.Compiled),
-        new(@"(?i)\b(api[_ -]?key|access[_ -]?token|refresh[_ -]?token|client[_ -]?secret|password|secret|authorization|cookie|session)\s*[:=]\s*[^;,\s]+", RegexOptions.Compiled),
+        new(@"sk-[A-Za-z0-9_\-]{8,}", RegexOptions.Compiled),
+        new(@"ghp_[A-Za-z0-9_\-]{8,}", RegexOptions.Compiled),
+        new(@"eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+", RegexOptions.Compiled),
+        new(@"\b(?:\d{4}[-\s]?){3}\d{4}\b", RegexOptions.Compiled),
+        new(@"\b\d{3}-\d{2}-\d{4}\b", RegexOptions.Compiled),
+        new(@"(?i)\b(api[_ -]?key|access[_ -]?token|refresh[_ -]?token|client[_ -]?secret|password|secret|authorization|cookie|session|pin|cvv|cvc|ssn|card[_ -]?number)\s*[:=]\s*[^;,\s]+", RegexOptions.Compiled),
         new(@"\b[A-Za-z0-9_\-]{32,}\b", RegexOptions.Compiled)
     ];
 
@@ -85,6 +98,15 @@ public sealed class BrowserEvidenceRedactor
     public bool IsSensitiveFieldName(string fieldName) =>
         !string.IsNullOrWhiteSpace(fieldName)
         && SensitiveFieldNames.Any(sensitive => fieldName.Contains(sensitive, StringComparison.OrdinalIgnoreCase));
+
+    public bool ContainsSensitiveValue(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        return SensitiveFieldNames.Any(sensitive => value.Contains(sensitive, StringComparison.OrdinalIgnoreCase))
+            || SecretPatterns.Any(pattern => pattern.IsMatch(value));
+    }
 
     private static string RedactText(string value, ICollection<string> redactedFields)
     {

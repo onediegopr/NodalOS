@@ -56,7 +56,9 @@ public sealed class BlockageDetector
     {
         foreach (var signal in signals)
         {
-            var name = signal.Name;
+            // Signal names are metadata markers emitted by fixture/read-only collectors.
+            // Matching is normalized here so casing and incidental whitespace do not change diagnostics.
+            var name = NormalizeSignalName(signal.Name);
             if (Contains(name, "captcha") || Contains(name, "human-verification"))
             {
                 reports.Add(HumanHandoff(BlockageKind.Captcha, "CAPTCHA marker requires human handoff; no bypass is allowed."));
@@ -176,4 +178,12 @@ public sealed class BlockageDetector
 
     private static bool Contains(string value, string expected) =>
         value.Contains(expected, StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeSignalName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "";
+
+        return string.Join(' ', value.Trim().ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+    }
 }

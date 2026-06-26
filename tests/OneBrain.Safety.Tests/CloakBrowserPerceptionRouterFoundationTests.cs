@@ -176,10 +176,34 @@ public sealed class CloakBrowserPerceptionRouterFoundationTests
 
         var evidence = new BrowserEvidencePackBuilder().Build(snapshot, decision);
 
-        Assert.AreEqual("perception-fixture-evidence", evidence.SnapshotBeforeRef);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(evidence.SnapshotBeforeRef));
+        Assert.IsTrue(evidence.EvidenceRefs.Any(reference => reference.RefKind == "snapshot-before"));
+        Assert.IsTrue(evidence.MetadataOnly);
+        Assert.IsTrue(evidence.FixtureOnly);
+        Assert.IsFalse(evidence.CdpInvoked);
+        Assert.IsFalse(evidence.WebSocketInvoked);
+        Assert.IsFalse(evidence.BrowserLaunched);
         Assert.IsNull(evidence.SnapshotAfterRef);
-        Assert.AreEqual(BrowserEvidenceRedactionStatus.None, evidence.RedactionStatus);
+        Assert.AreEqual(BrowserEvidenceRedactionStatus.Partial, evidence.RedactionStatus);
         Assert.IsTrue(evidence.NoSensitivePayloadGuarantee);
+    }
+
+    [TestMethod]
+    public void EvidencePackBuilder_RedactionStatusTracksSnapshotRedactionSemantics()
+    {
+        var snapshot = Snapshot(new BrowserPerceptionFixture(
+            FixtureId: "redaction-status",
+            Url: "https://example.test/redaction-status",
+            Title: "Redaction Status",
+            FormsCount: 1));
+        var profile = new PageCapabilityClassifier().Classify(snapshot);
+        var decision = new StrategyRouter().Route(profile);
+
+        var redactedEvidence = new BrowserEvidencePackBuilder().Build(snapshot, decision);
+        var nonRedactedEvidence = new BrowserEvidencePackBuilder().Build(snapshot with { Redacted = false }, decision);
+
+        Assert.AreEqual(BrowserEvidenceRedactionStatus.Partial, redactedEvidence.RedactionStatus);
+        Assert.AreEqual(BrowserEvidenceRedactionStatus.None, nonRedactedEvidence.RedactionStatus);
     }
 
     [TestMethod]

@@ -138,6 +138,66 @@ public sealed class CloakBrowserLocatorBlockageTests
     }
 
     [TestMethod]
+    public void LocatorEngine_GenerateElementLocators_RedactsSecretLikeMetadata()
+    {
+        var strategy = new LocatorStrategy(
+            LocatorStrategyKind.FrameTargetRequired,
+            0.8,
+            "fixture strategy",
+            [PerceptionSignalKind.FRAME_TREE, PerceptionSignalKind.DOM],
+            HumanHandoffRequired: false);
+        var elements = new[]
+        {
+            new InteractiveElementSnapshot(
+                ElementRef: "secret-element",
+                TagName: "button",
+                Role: "button",
+                AccessibleName: "deploy ghp_fakeSecretToken123456789",
+                Text: "click sk-test_secret_1234567890",
+                Id: "safe-id",
+                FrameId: "frame Bearer abcdefghijklmnopqrstuvwxyz123456",
+                ShadowRootHint: "shadow eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature",
+                IsVisible: true,
+                IsEnabled: true)
+        };
+
+        var joined = string.Join(" | ", new LocatorEngine().GenerateElementLocators(elements, strategy).Select(locator => locator.Value));
+
+        Assert.IsFalse(joined.Contains("ghp_fakeSecretToken123456789", StringComparison.Ordinal));
+        Assert.IsFalse(joined.Contains("sk-test_secret_1234567890", StringComparison.Ordinal));
+        Assert.IsFalse(joined.Contains("Bearer abcdefghijklmnopqrstuvwxyz123456", StringComparison.Ordinal));
+        Assert.IsFalse(joined.Contains("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature", StringComparison.Ordinal));
+        Assert.IsTrue(joined.Contains(BrowserEvidenceRedactor.RedactedValue, StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void LocatorEngine_GenerateElementLocators_KeepsNormalMetadata()
+    {
+        var strategy = new LocatorStrategy(
+            LocatorStrategyKind.Accessibility,
+            0.8,
+            "fixture strategy",
+            [PerceptionSignalKind.ACCESSIBILITY],
+            HumanHandoffRequired: false);
+        var elements = new[]
+        {
+            new InteractiveElementSnapshot(
+                ElementRef: "normal-element",
+                TagName: "button",
+                Role: "button",
+                AccessibleName: "Save changes",
+                Text: "Save changes",
+                IsVisible: true,
+                IsEnabled: true)
+        };
+
+        var joined = string.Join(" | ", new LocatorEngine().GenerateElementLocators(elements, strategy).Select(locator => locator.Value));
+
+        StringAssert.Contains(joined, "Save changes");
+        Assert.IsFalse(joined.Contains(BrowserEvidenceRedactor.RedactedValue, StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void BlockageDetector_CaptchaMarker_HumanHandoff()
     {
         var blockages = Detect(new BrowserPerceptionFixture(
@@ -255,6 +315,29 @@ public sealed class CloakBrowserLocatorBlockageTests
 
         Assert.AreEqual(BrowserPerceptionSeverity.Critical, blockage.Severity);
         Assert.IsFalse(blockage.CanContinueAutomatically);
+    }
+
+    [TestMethod]
+    public void BlockageDetector_NormalizesSignalNameBeforeMatching()
+    {
+        var snapshot = Snapshot(new BrowserPerceptionFixture(
+            FixtureId: "block-normalized-signal",
+            Url: "https://example.test/challenge",
+            Title: "Challenge")) with
+        {
+            Signals =
+            [
+                new PerceptionSignal(
+                    PerceptionSignalKind.HIT_TEST,
+                    "  CaPtChA  ",
+                    BrowserPerceptionSeverity.Critical,
+                    "fixture signal")
+            ]
+        };
+
+        var blockage = new BlockageDetector().DetectBlockages(snapshot).Single(report => report.BlockageKind == BlockageKind.Captcha);
+
+        Assert.IsTrue(blockage.RequiresHumanHandoff);
     }
 
     [TestMethod]

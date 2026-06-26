@@ -253,10 +253,13 @@ public sealed class BrowserEvidenceCollector
         IReadOnlyList<BrowserEvidenceReference> refs,
         IReadOnlyList<string> AdditionalSensitiveFields)
     {
+        var executionResult = redactor.RedactSummary(ExecutionResult);
         var sensitiveFields = summary.SensitiveFieldsRedacted
+            .Concat(executionResult.SensitiveFieldsRedacted)
             .Concat(AdditionalSensitiveFields)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var redactionStatus = redactor.MergeStatuses(summary.Status, executionResult.Status);
 
         return new BrowserEvidencePack(
             EvidenceId: "browser-evidence-" + Guid.NewGuid().ToString("N"),
@@ -266,11 +269,11 @@ public sealed class BrowserEvidenceCollector
             SnapshotAfter,
             StrategyDecision,
             ActionPlan,
-            ExecutionResult: redactor.RedactSummary(ExecutionResult).Value,
+            ExecutionResult: executionResult.Value,
             BlockageReport,
             ActionSucceeded,
             HumanHandoffTriggered,
-            RedactionStatus: sensitiveFields.Length > 0 ? BrowserEvidenceRedactionStatus.Partial : summary.Status,
+            RedactionStatus: sensitiveFields.Length > 0 ? BrowserEvidenceRedactionStatus.Partial : redactionStatus,
             SensitiveFieldsRedacted: sensitiveFields,
             EvidenceSummary: summary.Value,
             EvidenceRefs: refs,

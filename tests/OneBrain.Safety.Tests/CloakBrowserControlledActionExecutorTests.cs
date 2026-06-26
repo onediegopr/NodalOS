@@ -192,7 +192,18 @@ public sealed class CloakBrowserControlledActionExecutorTests
             "password fixture value",
             "token fixture value",
             "API key fixture value",
-            "OTP fixture value"
+            "OTP fixture value",
+            "cvv fixture value",
+            "ssn fixture value",
+            "pin fixture value",
+            "secret answer fixture value",
+            "sk-test_secret_1234567890",
+            "ghp_fakeSecretToken123456789",
+            "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature",
+            "Bearer abcdefghijklmnopqrstuvwxyz123456",
+            "4111 1111 1111 1111",
+            "123-45-6789",
+            "abcdefghijklmnopqrstuvwxyz1234567890"
         };
         var snapshot = FormSnapshot("executor-sensitive-input");
         var plan = Plan(snapshot, "type fixture").Single(candidate => candidate.ActionKind == SafeBrowserActionKind.Type);
@@ -208,6 +219,23 @@ public sealed class CloakBrowserControlledActionExecutorTests
             Assert.AreEqual(BrowserActionPreconditionKind.SensitiveInputSafe, result.PreVerification.FailedPreconditions.Single().Kind);
             AssertNoLiveInvocation(result);
         }
+    }
+
+    [TestMethod]
+    public void ControlledActionExecutor_LiveSourceSnapshot_AbortsDespiteFixtureState()
+    {
+        var snapshot = FormSnapshot("executor-live-source") with { Source = "live" };
+        var plan = Plan(FormSnapshot("executor-live-source-plan"), "click fixture").Single(candidate => candidate.ActionKind == SafeBrowserActionKind.Click);
+        var state = new FixturePageState();
+
+        var result = Execute(plan, snapshot, state);
+
+        Assert.IsFalse(result.Attempted);
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsTrue(result.AbortedByPrecondition);
+        Assert.AreEqual(BrowserActionPreconditionKind.FixtureOrControlledPageOnly, result.PreVerification.FailedPreconditions.Single().Kind);
+        Assert.AreEqual(0, state.SyntheticDomChangeMarkers.Count);
+        AssertNoLiveInvocation(result);
     }
 
     [TestMethod]

@@ -229,6 +229,52 @@ public sealed class CloakBrowserEvidencePackTests
     }
 
     [TestMethod]
+    public void BrowserEvidenceRedactor_JwtCreditCardAndSsnPatterns_AreRedacted()
+    {
+        var redactor = new BrowserEvidenceRedactor();
+        var values = new[]
+        {
+            "jwt eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature",
+            "card 4111 1111 1111 1111",
+            "card 4111-1111-1111-1111",
+            "ssn 123-45-6789"
+        };
+
+        foreach (var value in values)
+        {
+            var result = redactor.RedactSummary(value);
+
+            Assert.AreEqual(BrowserEvidenceRedactionStatus.Partial, result.Status);
+            Assert.IsTrue(result.Value.Contains(BrowserEvidenceRedactor.RedactedValue, StringComparison.Ordinal));
+            Assert.IsFalse(result.Value.Contains("4111 1111 1111 1111", StringComparison.Ordinal));
+            Assert.IsFalse(result.Value.Contains("4111-1111-1111-1111", StringComparison.Ordinal));
+            Assert.IsFalse(result.Value.Contains("123-45-6789", StringComparison.Ordinal));
+            Assert.IsFalse(result.Value.Contains("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.signature", StringComparison.Ordinal));
+        }
+    }
+
+    [TestMethod]
+    public void BrowserEvidenceCollector_ExecutionResultRedactionMetadata_IsMerged()
+    {
+        var snapshot = FormSnapshot("evidence-execution-result-redaction");
+        var plan = CustomPlan(SafeBrowserActionKind.Click, snapshot, []);
+        var pre = new PreActionVerificationResult(true, [], "pre ok", RequiresHumanHandoff: false);
+        var post = new PostActionVerificationResult(
+            false,
+            [],
+            "post failed token=sk-abcdefghijklmnopqrstuvwxyz123456",
+            RequiresHumanHandoff: false);
+
+        var pack = new BrowserEvidenceCollector().CollectFromVerificationFailure(plan, pre, post, snapshot);
+        var json = JsonSerializer.Serialize(pack);
+
+        Assert.AreEqual(BrowserEvidenceRedactionStatus.Partial, pack.RedactionStatus);
+        CollectionAssert.Contains(pack.SensitiveFieldsRedacted.ToList(), "secret-pattern");
+        Assert.IsFalse(json.Contains("sk-abcdefghijklmnopqrstuvwxyz123456", StringComparison.Ordinal));
+        Assert.IsTrue(json.Contains(BrowserEvidenceRedactor.RedactedValue, StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void BrowserEvidenceRedactor_NormalFieldText_DoesNotRedact()
     {
         var redactor = new BrowserEvidenceRedactor();

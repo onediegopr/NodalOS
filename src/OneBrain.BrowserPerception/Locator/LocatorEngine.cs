@@ -73,6 +73,8 @@ public sealed record ElementLocator(
 
 public sealed class LocatorEngine
 {
+    private static readonly BrowserEvidenceRedactor LocatorRedactor = new();
+
     public LocatorStrategy SelectLocatorStrategy(PageTechnologyProfile profile, BrowserPerceptionSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(profile);
@@ -257,7 +259,7 @@ public sealed class LocatorEngine
         if (string.IsNullOrWhiteSpace(value))
             return "";
 
-        var normalized = value.Trim();
+        var normalized = LocatorRedactor.RedactSummary(value.Trim()).Value;
         return normalized.Length <= 80 ? normalized : string.Concat(normalized.AsSpan(0, 80), "...");
     }
 

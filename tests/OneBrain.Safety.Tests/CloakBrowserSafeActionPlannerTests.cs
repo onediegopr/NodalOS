@@ -103,6 +103,37 @@ public sealed class CloakBrowserSafeActionPlannerTests
     }
 
     [TestMethod]
+    public void SafeActionPlanner_FinancialIdentityAndAuthObjectives_ReturnHumanHandoff()
+    {
+        var blockedObjectives = new[]
+        {
+            "enter credit card",
+            "fill card number",
+            "provide ssn",
+            "use social security number",
+            "answer secret question",
+            "authenticate account",
+            "signin now",
+            "sign in",
+            "verify account",
+            "complete verification"
+        };
+
+        foreach (var objective in blockedObjectives)
+        {
+            var plans = Plan(new BrowserPerceptionFixture(
+                FixtureId: "safe-sensitive-objective",
+                Url: "https://example.test/form",
+                Title: "Form",
+                FormsCount: 1,
+                InputsCount: 1,
+                ButtonsCount: 1), objective);
+
+            AssertHumanHandoffOnly(plans);
+        }
+    }
+
+    [TestMethod]
     public void BrowserActionVerifier_PreconditionsSatisfied_CanProceed()
     {
         var snapshot = Snapshot(new BrowserPerceptionFixture(
