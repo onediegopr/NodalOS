@@ -1,0 +1,69 @@
+{
+  "block": "CBPR-001-004",
+  "line": "CLOAK_BROWSER_PERCEPTION_ROUTER_V1",
+  "date": "2026-06-26",
+  "project": "NODAL OS",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "3021836bae7c01f028f9a04a91928ab515b6dc83",
+  "mode": "read-only-inventory",
+  "classifications": [
+    {
+      "classification": "REUSE",
+      "paths": [
+        "browser-runtime.lock.json",
+        "src/OneBrain.BrowserRuntime/*Runtime*",
+        "src/OneBrain.BrowserRuntime/*Guard*",
+        "src/OneBrain.BrowserRuntime/CdpBrowserSkills.cs",
+        "src/OneBrain.BrowserRuntime/CdpBrowserSkillsSession.cs",
+        "src/OneBrain.BrowserRuntime/CdpDirectContracts.cs",
+        "src/OneBrain.BrowserRuntime/*SafeLocalStatus*"
+      ],
+      "reason": "Existing CloakBrowser/CDP runtime, browser skills metadata, and safe local evidence are reusable through contracts."
+    },
+    {
+      "classification": "READ_ONLY_PROTECTED",
+      "paths": [
+        "stealth-engine/**",
+        "stealth-panel/**",
+        "src/OneBrain.ChromeLab.Bridge/Program.cs",
+        "src/OneBrain.ChromeLab.Bridge/ChromeLabProtocol.cs",
+        "src/OneBrain.ChromeLab.Bridge/ChromeLabOptions.cs",
+        "src/OneBrain.ChromeLab.Bridge/Stealth/**",
+        "src/OneBrain.ChromeLab.Bridge/Sessions/**",
+        "src/OneBrain.BrowserExecutor.Cdp/BrowserCredentialBoundaryService.cs",
+        "src/OneBrain.BrowserExecutor.Contracts/BrowserCredentialBoundaryContracts.cs"
+      ],
+      "reason": "Protected post-M1345 isolated browser execution, stealth, bridge, profile, and credential boundary scope."
+    },
+    {
+      "classification": "EXTEND_BY_INTERFACE_ONLY",
+      "paths": [
+        "src/OneBrain.BrowserRuntime/*",
+        "src/OneBrain.BrowserExecutor.Cdp/*"
+      ],
+      "reason": "Future collectors may adapt existing metadata through interfaces without modifying protected internals."
+    },
+    {
+      "classification": "CREATE_NEW",
+      "paths": [
+        "src/OneBrain.BrowserPerception/**",
+        "tests/OneBrain.Safety.Tests/CloakBrowserPerceptionRouterFoundationTests.cs",
+        "docs/architecture/browser/cloak-browser-perception-router-v1.md",
+        "docs/qa/cbpr-001-004-cloak-browser-perception-router/**"
+      ],
+      "reason": "New read-only perception contracts, fixture-safe snapshot builder, classifier, router, tests, and reports."
+    }
+  ],
+  "fingerprinterFinding": {
+    "currentFingerprinterScope": "stealth/runtime browser fingerprinting",
+    "pageCapabilityClassifierExistsInProtectedScope": false,
+    "newLayerUsesPageFingerprinterName": false,
+    "protectedFingerprinterTouched": false
+  },
+  "risks": [
+    "Future live collector must not modify protected executor or stealth internals.",
+    "Current snapshot V0 is fixture-safe and not a live CDP collector.",
+    "Safe actions and locator engine are intentionally out of scope."
+  ],
+  "recommendation": "Reuse CloakBrowser/CDP runtime outputs through adapter boundaries and keep page capability classification separate from stealth fingerprinting."
+}

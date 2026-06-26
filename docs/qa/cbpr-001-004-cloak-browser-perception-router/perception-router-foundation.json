@@ -1,0 +1,68 @@
+{
+  "block": "CBPR-001-004",
+  "line": "CLOAK_BROWSER_PERCEPTION_ROUTER_V1",
+  "date": "2026-06-26",
+  "decision": "GO_CLOAK_BROWSER_PERCEPTION_ROUTER_FOUNDATION",
+  "initialHead": "3021836bae7c01f028f9a04a91928ab515b6dc83",
+  "scope": {
+    "readOnlyFoundation": true,
+    "productiveAutomationAdded": false,
+    "productionInjectionAdded": false,
+    "externalNavigationAdded": false,
+    "protectedExecutorTouched": false,
+    "stealthFingerprinterTouched": false
+  },
+  "createdModules": [
+    "src/OneBrain.BrowserPerception/OneBrain.BrowserPerception.csproj",
+    "src/OneBrain.BrowserPerception/BrowserPerceptionRouter.cs"
+  ],
+  "createdTests": [
+    "tests/OneBrain.Safety.Tests/CloakBrowserPerceptionRouterFoundationTests.cs"
+  ],
+  "createdDocs": [
+    "docs/architecture/browser/cloak-browser-perception-router-v1.md",
+    "docs/qa/cbpr-001-004-cloak-browser-perception-router/browser-runtime-inventory.md",
+    "docs/qa/cbpr-001-004-cloak-browser-perception-router/browser-runtime-inventory.json",
+    "docs/qa/cbpr-001-004-cloak-browser-perception-router/perception-router-foundation.md",
+    "docs/qa/cbpr-001-004-cloak-browser-perception-router/perception-router-foundation.json"
+  ],
+  "fixtureStrategyMatrix": [
+    { "fixture": "legacy form simple", "strategy": "DOM_FIRST", "status": "implemented" },
+    { "fixture": "modern SPA-like page", "strategy": "ACCESSIBILITY_FIRST", "status": "implemented" },
+    { "fixture": "iframe metadata", "strategy": "FRAME_TARGET_REQUIRED", "status": "implemented" },
+    { "fixture": "shadow DOM marker", "strategy": "SHADOW_DOM_REQUIRED", "status": "implemented" },
+    { "fixture": "canvas marker", "strategy": "VISUAL_REQUIRED", "status": "implemented" },
+    { "fixture": "console critical error", "strategy": "CONSOLE_DIAGNOSIS_REQUIRED", "status": "implemented" },
+    { "fixture": "network 500 failure", "strategy": "NETWORK_DIAGNOSIS_REQUIRED", "status": "implemented" },
+    { "fixture": "network 401/403 auth failure", "strategy": "HUMAN_HANDOFF_REQUIRED", "status": "implemented" },
+    { "fixture": "CAPTCHA/2FA/anti-bot marker", "strategy": "HUMAN_HANDOFF_REQUIRED", "status": "implemented" },
+    { "fixture": "unknown page", "strategy": "UNSUPPORTED_OR_HIGH_RISK", "status": "implemented" }
+  ],
+  "metadataOnly": {
+    "rawDomStored": false,
+    "rawHtmlStored": false,
+    "cookiesStored": false,
+    "storageValuesCaptured": false,
+    "inputValuesStored": false,
+    "rawScreenshotsRequired": false
+  },
+  "validations": {
+    "dotnetRestoreRequiredOnceForNewProject": true,
+    "dotnetBuildNoRestore": "PASS",
+    "CloakBrowserPerceptionRouterTests": "PASS 14/14",
+    "CloakBrowserCdpMigrationGates": "PASS",
+    "legacyInstalledSidepanelCompat": "PASS",
+    "productReadOnlyRegressionCategories": "PASS",
+    "gitDiffCheck": "PASS",
+    "protectedScopeScan": "PASS no protected changed/new paths",
+    "forbiddenBrowserUsageScan": "PASS no changed/new forbidden runtime usage",
+    "secretScan": "PASS no changed/new secrets",
+    "badUxWordingScan": "PASS"
+  },
+  "risks": [
+    "Fixture-safe snapshot V0 is not a live CDP collector.",
+    "Future live collection must use adapter boundaries only.",
+    "Locator Engine and Blockage Detector remain future work."
+  ],
+  "nextBlock": "CBPR-005/006 - Locator Engine V1 + Blockage Detector V1, still without productive actions"
+}
