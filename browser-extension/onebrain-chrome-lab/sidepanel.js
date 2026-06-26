@@ -113,6 +113,17 @@ const CHANGE_CANDIDATE_STATUS = {
   discarded: 'Descartado'
 };
 const CHANGE_CANDIDATE_LIMITS = { min: 2, max: 6 };
+const CANDIDATE_REVIEW_NOTE_LIMIT = 700;
+const DIFF_PREVIEW_V2_FLAGS = {
+  readOnly: true,
+  diffGenerated: false,
+  patchGenerated: false,
+  commandsExecuted: false,
+  filesModified: false,
+  executionReady: false,
+  productFilesModified: false,
+  realDiffAvailable: false
+};
 const DEMO_SCRIPT_STEPS = [
   'Abrí NODAL OS y presentá Mission Control como centro de misiones locales.',
   'Creá una misión corta para mostrar que el flujo empieza desde una intención simple.',
@@ -127,6 +138,7 @@ const state = {
   demo: loadDemoStore(),
   browserSkills: loadBrowserSkillStore(),
   workspace: loadWorkspaceStore(),
+  selectedChangeCandidateId: '',
   connection: {
     status: 'disconnected',
     health: 'untested',
@@ -286,6 +298,15 @@ const el = {
   changeCandidateFlags: document.getElementById('changeCandidateFlags'),
   changeCandidateSummary: document.getElementById('changeCandidateSummary'),
   changeCandidateList: document.getElementById('changeCandidateList'),
+  candidateDetailReviewPanel: document.getElementById('candidateDetailReviewPanel'),
+  candidateDetailFlags: document.getElementById('candidateDetailFlags'),
+  candidateDetailBody: document.getElementById('candidateDetailBody'),
+  candidateReviewNoteInput: document.getElementById('candidateReviewNoteInput'),
+  saveCandidateReviewNoteBtn: document.getElementById('saveCandidateReviewNoteBtn'),
+  clearCandidateReviewNoteBtn: document.getElementById('clearCandidateReviewNoteBtn'),
+  copyCandidateDetailBtn: document.getElementById('copyCandidateDetailBtn'),
+  markSelectedCandidateReviewedBtn: document.getElementById('markSelectedCandidateReviewedBtn'),
+  candidateReviewNoteStatus: document.getElementById('candidateReviewNoteStatus'),
   runSafeDemoBtn: document.getElementById('runSafeDemoBtn'),
   copyDemoReportBtn: document.getElementById('copyDemoReportBtn'),
   demoRunState: document.getElementById('demoRunState'),
@@ -509,6 +530,11 @@ function bindEvents() {
   el.copyCandidatesBtn.addEventListener('click', copyChangeCandidates);
   el.reviewCandidatesBtn.addEventListener('click', markChangeCandidatesReviewed);
   el.clearCandidatesBtn.addEventListener('click', clearChangeCandidates);
+  el.changeCandidateList.addEventListener('click', handleChangeCandidateListClick);
+  el.saveCandidateReviewNoteBtn.addEventListener('click', saveSelectedCandidateReviewNote);
+  el.clearCandidateReviewNoteBtn.addEventListener('click', clearSelectedCandidateReviewNote);
+  el.copyCandidateDetailBtn.addEventListener('click', copySelectedCandidateDetail);
+  el.markSelectedCandidateReviewedBtn.addEventListener('click', markSelectedCandidateReviewed);
   el.runSafeDemoBtn.addEventListener('click', runSafeDemo);
   el.copyDemoReportBtn.addEventListener('click', copyDemoReport);
   el.copyDemoScriptBtn.addEventListener('click', copyDemoScript);
@@ -1488,7 +1514,48 @@ function normalizeChangeCandidate(candidate) {
     patchGenerated: candidate.patchGenerated === true,
     commandsExecuted: candidate.commandsExecuted === true,
     filesModified: candidate.filesModified === true,
-    executionReady: candidate.executionReady === true
+    executionReady: candidate.executionReady === true,
+    productFilesModified: candidate.productFilesModified === true,
+    realDiffAvailable: candidate.realDiffAvailable === true,
+    diffPreviewV2: normalizeCandidateDiffPreview(candidate.diffPreviewV2, candidate),
+    humanReviewNotes: normalizeCandidateReviewNotes(candidate.humanReviewNotes)
+  };
+}
+
+function normalizeCandidateDiffPreview(preview, candidate) {
+  const safePreview = preview && typeof preview === 'object' ? preview : {};
+  const title = candidate && candidate.title ? candidate.title : 'Cambio candidato';
+  const target = candidate && candidate.likelyTarget ? candidate.likelyTarget : 'sin objetivo específico';
+  return {
+    previewId: String(safePreview.previewId || `diff-preview-v2-${candidate && candidate.candidateId ? candidate.candidateId : Date.now().toString(36)}`),
+    title: String(safePreview.title || `Revisar candidato: ${title}`),
+    suggestedChange: String(safePreview.suggestedChange || `Preparar revisión humana sobre ${target}.`),
+    rationale: String(safePreview.rationale || (candidate && candidate.reason ? candidate.reason : 'Derivado de propuesta y TaskGraph local.')),
+    likelyTarget: sanitizeCandidateTarget(safePreview.likelyTarget || target),
+    risk: normalizeCandidateRisk(safePreview.risk || (candidate && candidate.riskLevel) || 'bajo'),
+    reviewNeeded: String(safePreview.reviewNeeded || 'Revisión humana requerida antes de cualquier diff real futuro.'),
+    evidenceRefs: normalizeWorkspaceTextList(safePreview.evidenceRefs || (candidate && candidate.evidenceRefs) || []).slice(0, 8),
+    workspaceSignals: normalizeWorkspaceTextList(safePreview.workspaceSignals || (candidate && candidate.workspaceSignals) || []).slice(0, 8),
+    source: String(safePreview.source || 'change-candidate-preview'),
+    readOnly: true,
+    diffGenerated: false,
+    patchGenerated: false,
+    commandsExecuted: false,
+    filesModified: false,
+    productFilesModified: false,
+    realDiffAvailable: false
+  };
+}
+
+function normalizeCandidateReviewNotes(notes) {
+  const safeNotes = notes && typeof notes === 'object' ? notes : {};
+  return {
+    text: String(safeNotes.text || '').slice(0, CANDIDATE_REVIEW_NOTE_LIMIT),
+    updatedAt: String(safeNotes.updatedAt || ''),
+    reviewer: String(safeNotes.reviewer || 'human-review'),
+    readOnly: true,
+    enablesExecution: false,
+    filesModified: false
   };
 }
 
@@ -2186,39 +2253,49 @@ function buildProposalSummary(mission = activeDemoMission()) {
 function renderChangeCandidates() {
   const mission = activeDemoMission();
   const candidates = mission ? normalizeChangeCandidates(mission.changeCandidates) : [];
+  const selectedCandidate = selectedChangeCandidate(candidates);
   el.generateCandidatesBtn.disabled = !mission;
   el.regenerateCandidatesBtn.disabled = !mission;
   el.copyCandidatesBtn.disabled = !mission || !candidates.length;
   el.reviewCandidatesBtn.disabled = !mission || !candidates.length || candidates.every((candidate) => candidate.status === CHANGE_CANDIDATE_STATUS.reviewed);
   el.clearCandidatesBtn.disabled = !mission || !candidates.length;
+  el.copyCandidateDetailBtn.disabled = !mission || !selectedCandidate;
+  el.markSelectedCandidateReviewedBtn.disabled = !mission || !selectedCandidate || selectedCandidate.status === CHANGE_CANDIDATE_STATUS.reviewed;
+  el.saveCandidateReviewNoteBtn.disabled = !mission || !selectedCandidate;
+  el.clearCandidateReviewNoteBtn.disabled = !mission || !selectedCandidate;
   el.changeCandidateContext.textContent = mission
     ? changeCandidateContextLabel(mission, candidates)
     : 'Convertí la propuesta en cambios candidatos para revisar, sin diff ni patch.';
   const flags = candidates.length
     ? changeCandidateFlags(candidates)
-    : ['Sin candidatos', 'Solo lectura', 'Sin diff', 'Sin patch', 'Sin ejecución'];
+    : ['Sin candidatos', 'Solo lectura', 'Diff Preview V2', 'Sin diff', 'Sin patch', 'Sin ejecución'];
   el.changeCandidateFlags.innerHTML = flags.map((flag) => `<span>${safeHtml(flag)}</span>`).join('');
   if (!candidates.length) {
     el.changeCandidateSummary.innerHTML = '<strong>Sin candidatos todavía</strong><p>Usá Generar candidatos para preparar una vista revisable, sin cambios en archivos.</p>';
     el.changeCandidateList.innerHTML = '';
+    renderCandidateDetailReview(null);
     return;
   }
   el.changeCandidateSummary.innerHTML = `
     <strong>${candidates.length} cambios candidatos</strong>
-    <p>Vista previa local para decidir qué revisar después. No se generó diff ni patch.</p>`;
+    <p>Diff Preview V2 muestra detalle revisable y notas humanas. No se generó diff real ni patch.</p>`;
   el.changeCandidateList.innerHTML = candidates.map((candidate, index) => `
-    <article class="change-candidate-item">
+    <article class="change-candidate-item${selectedCandidate && selectedCandidate.candidateId === candidate.candidateId ? ' selected' : ''}" data-candidate-id="${safeHtml(candidate.candidateId)}">
       <div class="change-candidate-meta">
         <span>${index + 1}</span>
         <span>${safeHtml(candidate.status)}</span>
         <span>${safeHtml(candidate.targetKind)}</span>
         <span>Riesgo ${safeHtml(candidate.riskLevel)}</span>
+        <span>Diff Preview V2</span>
       </div>
       <strong>${safeHtml(candidate.title)}</strong>
       <p><b>Área:</b> ${safeHtml(candidate.area)} · <b>Objetivo probable:</b> ${safeHtml(candidate.likelyTarget)}</p>
       <p>${safeHtml(candidate.reason)}</p>
+      <p><b>Nota humana:</b> ${candidate.humanReviewNotes && candidate.humanReviewNotes.text ? 'guardada localmente' : 'sin nota'}</p>
       <p><b>Revisión humana:</b> ${candidate.humanReviewNeeded ? 'requerida antes de cualquier diff futuro' : 'no marcada'}</p>
+      <button type="button" data-candidate-id="${safeHtml(candidate.candidateId)}">Ver detalle</button>
     </article>`).join('');
+  renderCandidateDetailReview(selectedCandidate);
 }
 
 function changeCandidateContextLabel(mission, candidates) {
@@ -2232,11 +2309,78 @@ function changeCandidateFlags(candidates) {
   return [
     `${candidates.length} candidatos`,
     'Solo lectura',
+    'Diff Preview V2',
     candidates.some((candidate) => candidate.diffGenerated) ? 'Diff generado' : 'Sin diff',
     candidates.some((candidate) => candidate.patchGenerated) ? 'Patch generado' : 'Sin patch',
     candidates.some((candidate) => candidate.commandsExecuted) ? 'Con comandos' : 'Sin ejecución',
     candidates.some((candidate) => candidate.filesModified) ? 'Con modificaciones' : 'No se modificaron archivos'
   ];
+}
+
+function selectedChangeCandidate(candidates = normalizeChangeCandidates(activeDemoMission() ? activeDemoMission().changeCandidates : [])) {
+  if (!candidates.length) {
+    state.selectedChangeCandidateId = '';
+    return null;
+  }
+  const match = candidates.find((candidate) => candidate.candidateId === state.selectedChangeCandidateId);
+  const selected = match || candidates[0];
+  state.selectedChangeCandidateId = selected.candidateId;
+  return selected;
+}
+
+function handleChangeCandidateListClick(event) {
+  const button = event.target && event.target.closest ? event.target.closest('[data-candidate-id]') : null;
+  if (!button) {
+    return;
+  }
+  const candidateId = button.getAttribute('data-candidate-id');
+  if (!candidateId) {
+    return;
+  }
+  state.selectedChangeCandidateId = candidateId;
+  render();
+}
+
+function renderCandidateDetailReview(candidate) {
+  if (!candidate) {
+    el.candidateDetailFlags.innerHTML = ['Sin candidato', 'Solo lectura', 'Sin diff', 'Sin patch', 'Sin ejecución', 'No se modificaron archivos']
+      .map((flag) => `<span>${safeHtml(flag)}</span>`)
+      .join('');
+    el.candidateDetailBody.innerHTML = '<p class="mission-help-text">Seleccioná o generá un candidato para ver el detalle read-only.</p>';
+    el.candidateReviewNoteInput.value = '';
+    el.candidateReviewNoteStatus.textContent = 'Notas locales read-only para revisión futura.';
+    return;
+  }
+  const preview = normalizeCandidateDiffPreview(candidate.diffPreviewV2, candidate);
+  const notes = normalizeCandidateReviewNotes(candidate.humanReviewNotes);
+  const flags = [
+    'Solo lectura',
+    'Diff Preview V2',
+    preview.diffGenerated ? 'Diff generado' : 'Sin diff real',
+    preview.patchGenerated ? 'Patch generado' : 'Sin patch',
+    preview.commandsExecuted ? 'Con comandos' : 'Sin ejecución',
+    preview.filesModified ? 'Con modificaciones' : 'No se modificaron archivos'
+  ];
+  el.candidateDetailFlags.innerHTML = flags.map((flag) => `<span>${safeHtml(flag)}</span>`).join('');
+  el.candidateDetailBody.innerHTML = `
+    <div class="candidate-detail-grid">
+      <article><span>Cambio sugerido</span><strong>${safeHtml(preview.suggestedChange)}</strong></article>
+      <article><span>Archivo o área probable</span><strong>${safeHtml(preview.likelyTarget)}</strong></article>
+      <article><span>Origen</span><strong>${safeHtml(candidate.sourceTaskId || 'TaskGraph/propuesta local')}</strong></article>
+      <article><span>Riesgo</span><strong>${safeHtml(preview.risk)}</strong></article>
+      <article><span>Motivo</span><strong>${safeHtml(preview.rationale)}</strong></article>
+      <article><span>Revisión humana siguiente</span><strong>${safeHtml(preview.reviewNeeded)}</strong></article>
+    </div>
+    <div class="candidate-detail-evidence">
+      <span>Evidencia/contexto</span>
+      <ul>${(preview.evidenceRefs.length ? preview.evidenceRefs : ['sin evidencia adicional']).map((item) => `<li>${safeHtml(item)}</li>`).join('')}</ul>
+      <span>Señales workspace</span>
+      <ul>${(preview.workspaceSignals.length ? preview.workspaceSignals : ['sin señales adicionales']).map((item) => `<li>${safeHtml(item)}</li>`).join('')}</ul>
+    </div>`;
+  el.candidateReviewNoteInput.value = notes.text;
+  el.candidateReviewNoteStatus.textContent = notes.updatedAt
+    ? `Nota guardada localmente: ${notes.updatedAt}`
+    : 'Notas locales read-only para revisión futura.';
 }
 
 function generateChangeCandidates() {
@@ -2250,6 +2394,7 @@ function generateChangeCandidates() {
     mission.proposal = generateMissionProposalDraft(mission);
   }
   mission.changeCandidates = generateReadOnlyChangeCandidates(mission);
+  state.selectedChangeCandidateId = mission.changeCandidates[0] ? mission.changeCandidates[0].candidateId : '';
   mission.updatedAt = new Date().toISOString();
   syncDemoViewFromStore();
   saveDemoStore();
@@ -2269,6 +2414,83 @@ async function copyChangeCandidates() {
   } catch (error) {
     addLog('local', { kind: 'ChangeCandidatesCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
   }
+  render();
+}
+
+async function copySelectedCandidateDetail() {
+  const summary = buildSelectedCandidateDetailSummary();
+  try {
+    await navigator.clipboard.writeText(summary);
+    addLog('local', { kind: 'CandidateDetailCopied', missionId: activeDemoMission() ? activeDemoMission().id : 'none' });
+  } catch (error) {
+    addLog('local', { kind: 'CandidateDetailCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
+function saveSelectedCandidateReviewNote() {
+  const mission = activeDemoMission();
+  const candidate = selectedChangeCandidate();
+  if (!mission || !candidate) {
+    return;
+  }
+  const note = sanitizeCandidateReviewNote(el.candidateReviewNoteInput.value);
+  mission.changeCandidates = normalizeChangeCandidates(mission.changeCandidates).map((item) => item.candidateId === candidate.candidateId
+    ? normalizeChangeCandidate({
+      ...item,
+      humanReviewNotes: {
+        text: note,
+        updatedAt: new Date().toISOString(),
+        reviewer: 'human-review',
+        readOnly: true,
+        enablesExecution: false,
+        filesModified: false
+      },
+      status: item.status === CHANGE_CANDIDATE_STATUS.candidate ? CHANGE_CANDIDATE_STATUS.reviewing : item.status
+    })
+    : item).filter(Boolean);
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'CandidateReviewNoteSaved', missionId: mission.id, candidateId: candidate.candidateId });
+  render();
+}
+
+function clearSelectedCandidateReviewNote() {
+  const mission = activeDemoMission();
+  const candidate = selectedChangeCandidate();
+  if (!mission || !candidate) {
+    return;
+  }
+  mission.changeCandidates = normalizeChangeCandidates(mission.changeCandidates).map((item) => item.candidateId === candidate.candidateId
+    ? normalizeChangeCandidate({
+      ...item,
+      humanReviewNotes: normalizeCandidateReviewNotes({})
+    })
+    : item).filter(Boolean);
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'CandidateReviewNoteCleared', missionId: mission.id, candidateId: candidate.candidateId });
+  render();
+}
+
+function markSelectedCandidateReviewed() {
+  const mission = activeDemoMission();
+  const candidate = selectedChangeCandidate();
+  if (!mission || !candidate) {
+    return;
+  }
+  mission.changeCandidates = normalizeChangeCandidates(mission.changeCandidates).map((item) => item.candidateId === candidate.candidateId
+    ? normalizeChangeCandidate({
+      ...item,
+      status: CHANGE_CANDIDATE_STATUS.reviewed
+    })
+    : item).filter(Boolean);
+  mission.updatedAt = new Date().toISOString();
+  syncDemoViewFromStore();
+  saveDemoStore();
+  addLog('local', { kind: 'CandidateDetailReviewed', missionId: mission.id, candidateId: candidate.candidateId });
   render();
 }
 
@@ -2294,11 +2516,18 @@ function clearChangeCandidates() {
     return;
   }
   mission.changeCandidates = [];
+  state.selectedChangeCandidateId = '';
   mission.updatedAt = new Date().toISOString();
   syncDemoViewFromStore();
   saveDemoStore();
   addLog('local', { kind: 'ChangeCandidatesCleared', missionId: mission.id });
   render();
+}
+
+function sanitizeCandidateReviewNote(value) {
+  return String(value || '')
+    .replace(/(password|token|api[_-]?key|secret)\s*[:=]\s*\S+/gi, '$1=[redacted]')
+    .slice(0, CANDIDATE_REVIEW_NOTE_LIMIT);
 }
 
 function buildChangeCandidateSummary(mission = activeDemoMission()) {
@@ -2318,6 +2547,7 @@ function buildChangeCandidateSummary(mission = activeDemoMission()) {
     `workspace_source: ${context && context.workspaceSource ? context.workspaceSource : 'sin origen'}`,
     `proposal_id: ${proposal ? proposal.proposalId : 'sin propuesta'}`,
     `candidate_count: ${candidates.length}`,
+    'preview_version: Diff Preview V2 read-only',
     ...candidates.map((candidate, index) => [
       `${index + 1}. ${candidate.title}`,
       `   area: ${candidate.area}`,
@@ -2325,14 +2555,61 @@ function buildChangeCandidateSummary(mission = activeDemoMission()) {
       `   target_kind: ${candidate.targetKind}`,
       `   reason: ${candidate.reason}`,
       `   risk: ${candidate.riskLevel}`,
+      `   detail_review: ${candidate.diffPreviewV2 ? candidate.diffPreviewV2.title : 'sin detalle'}`,
+      `   evidence_refs: ${candidate.diffPreviewV2 && candidate.diffPreviewV2.evidenceRefs.length ? candidate.diffPreviewV2.evidenceRefs.join(' | ') : 'sin evidencia adicional'}`,
+      `   workspace_signals: ${candidate.diffPreviewV2 && candidate.diffPreviewV2.workspaceSignals.length ? candidate.diffPreviewV2.workspaceSignals.join(' | ') : 'sin señales adicionales'}`,
+      `   human_review_note_present: ${Boolean(candidate.humanReviewNotes && candidate.humanReviewNotes.text)}`,
+      `   human_review_note_read_only: ${candidate.humanReviewNotes ? candidate.humanReviewNotes.readOnly === true : true}`,
       `   human_review_needed: ${candidate.humanReviewNeeded}`,
       `   read_only: ${candidate.readOnly === true}`,
       `   diff_generated: ${candidate.diffGenerated === true}`,
       `   patch_generated: ${candidate.patchGenerated === true}`,
       `   commands_executed: ${candidate.commandsExecuted === true}`,
-      `   files_modified: ${candidate.filesModified === true}`
+      `   files_modified: ${candidate.filesModified === true}`,
+      `   product_files_modified: ${candidate.productFilesModified === true}`,
+      `   real_diff_available: ${candidate.realDiffAvailable === true}`
     ].join('\n')),
-    'next_human_review: Revisar candidatos y decidir si el próximo bloque prepara un diff preview también read-only.'
+    'flags: readOnly=true diffGenerated=false patchGenerated=false commandsExecuted=false filesModified=false',
+    'next_human_review: Revisar detalle y notas humanas antes de cualquier diff real futuro.'
+  ].join('\n');
+}
+
+function buildSelectedCandidateDetailSummary(mission = activeDemoMission()) {
+  if (!mission) {
+    return 'NODAL OS — Diff Preview V2\nmission: none';
+  }
+  const candidates = normalizeChangeCandidates(mission.changeCandidates);
+  const candidate = selectedChangeCandidate(candidates);
+  if (!candidate) {
+    return `NODAL OS — Diff Preview V2\nmission: ${mission.title}\ncandidate: none`;
+  }
+  const preview = normalizeCandidateDiffPreview(candidate.diffPreviewV2, candidate);
+  const notes = normalizeCandidateReviewNotes(candidate.humanReviewNotes);
+  return [
+    'NODAL OS — Diff Preview V2 read-only',
+    `mission: ${mission.title}`,
+    `candidate_id: ${candidate.candidateId}`,
+    `candidate: ${candidate.title}`,
+    `source_task_id: ${candidate.sourceTaskId || 'sin task'}`,
+    `proposal_id: ${candidate.proposalId || 'sin propuesta'}`,
+    `suggested_change: ${preview.suggestedChange}`,
+    `likely_target: ${preview.likelyTarget}`,
+    `area: ${candidate.area}`,
+    `reason: ${preview.rationale}`,
+    `risk: ${preview.risk}`,
+    `human_review_needed: ${candidate.humanReviewNeeded}`,
+    `human_review_note_present: ${Boolean(notes.text)}`,
+    `human_review_note_read_only: ${notes.readOnly === true}`,
+    `evidence_refs: ${preview.evidenceRefs.length ? preview.evidenceRefs.join(' | ') : 'sin evidencia adicional'}`,
+    `workspace_signals: ${preview.workspaceSignals.length ? preview.workspaceSignals.join(' | ') : 'sin señales adicionales'}`,
+    `read_only: ${candidate.readOnly === true}`,
+    `diff_generated: ${candidate.diffGenerated === true}`,
+    `patch_generated: ${candidate.patchGenerated === true}`,
+    `commands_executed: ${candidate.commandsExecuted === true}`,
+    `files_modified: ${candidate.filesModified === true}`,
+    `product_files_modified: ${candidate.productFilesModified === true}`,
+    `real_diff_available: ${candidate.realDiffAvailable === true}`,
+    'not_done: no diff real, no patch, no shell, no provider, no filesystem write, no execution'
   ].join('\n');
 }
 

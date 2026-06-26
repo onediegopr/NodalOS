@@ -516,6 +516,14 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
     const review = document.getElementById('reviewCandidatesBtn');
     const run = document.getElementById('runSafeDemoBtn');
     if (generate) generate.click();
+    const detail = document.querySelector('#changeCandidateList [data-candidate-id]');
+    if (detail) detail.click();
+    const note = document.getElementById('candidateReviewNoteInput');
+    if (note) note.value = 'Nota humana local para revisar el candidato sin diff real.';
+    const saveNote = document.getElementById('saveCandidateReviewNoteBtn');
+    if (saveNote) saveNote.click();
+    const copyDetail = document.getElementById('copyCandidateDetailBtn');
+    if (copyDetail) copyDetail.click();
     if (copy) copy.click();
     if (review) review.click();
     if (run) run.click();
@@ -543,6 +551,11 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
     const runProposal = selectedRun && selectedRun.proposal ? selectedRun.proposal : null;
     const candidates = mission && Array.isArray(mission.changeCandidates) ? mission.changeCandidates : [];
     const runCandidates = selectedRun && Array.isArray(selectedRun.changeCandidates) ? selectedRun.changeCandidates : [];
+    const candidateDetailText = document.getElementById('candidateDetailReviewPanel') ? document.getElementById('candidateDetailReviewPanel').innerText.slice(0, 900) : '';
+    const candidateDetailTextLower = candidateDetailText.toLowerCase();
+    const candidateDangerousButtons = Array.from(document.querySelectorAll('#changeCandidateCard button'))
+      .map((button) => button.innerText || '')
+      .filter((label) => /aplicar|ejecutar|crear patch|crear diff|shell|proveedor|llm/i.test(label));
     return {
       ok: Boolean(
         workspace
@@ -584,6 +597,15 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
         && candidates.every((candidate) => candidate.patchGenerated === false)
         && candidates.every((candidate) => candidate.commandsExecuted === false)
         && candidates.every((candidate) => candidate.filesModified === false)
+        && candidates.every((candidate) => candidate.diffPreviewV2 && candidate.diffPreviewV2.readOnly === true)
+        && candidates.every((candidate) => candidate.diffPreviewV2 && candidate.diffPreviewV2.diffGenerated === false)
+        && candidates.every((candidate) => candidate.diffPreviewV2 && candidate.diffPreviewV2.patchGenerated === false)
+        && candidates.every((candidate) => candidate.diffPreviewV2 && candidate.diffPreviewV2.commandsExecuted === false)
+        && candidates.every((candidate) => candidate.diffPreviewV2 && candidate.diffPreviewV2.filesModified === false)
+        && candidates.some((candidate) => candidate.humanReviewNotes && candidate.humanReviewNotes.readOnly === true)
+        && candidateDetailTextLower.includes('diff preview v2')
+        && candidateDetailTextLower.includes('notas humanas de revisión')
+        && candidateDangerousButtons.length === 0
         && runCandidates.length >= 2
         && runCandidates.every((candidate) => candidate.patchGenerated === false)
         && ${JSON.stringify(candidateClearState)}.generateButtonPresent === true
@@ -621,6 +643,8 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
       runCandidateCount: runCandidates.length,
       candidateClearState: ${JSON.stringify(candidateClearState)},
       candidateText: document.getElementById('changeCandidateCard') ? document.getElementById('changeCandidateCard').innerText.slice(0, 900) : '',
+      candidateDetailText,
+      candidateDangerousButtons,
       taskGraphText: document.getElementById('missionTaskGraph') ? document.getElementById('missionTaskGraph').innerText.slice(0, 900) : '',
       planContextText: document.getElementById('missionPlanContext') ? document.getElementById('missionPlanContext').innerText : '',
       runHasPlan: Boolean(runPlan),
@@ -635,6 +659,8 @@ async function runWorkspaceUnderstandingCompatibilityFlow(sidepanel, workspaceFi
       candidatesPatchGenerated: candidates.some((candidate) => candidate.patchGenerated === true),
       candidatesCommandsExecuted: candidates.some((candidate) => candidate.commandsExecuted === true),
       candidatesFilesModified: candidates.some((candidate) => candidate.filesModified === true),
+      candidatesDiffPreviewV2: candidates.every((candidate) => candidate.diffPreviewV2 && candidate.diffPreviewV2.readOnly === true),
+      candidateHumanReviewNotes: candidates.filter((candidate) => candidate.humanReviewNotes && candidate.humanReviewNotes.text).length,
       readOnly: context.readOnly === true,
       commandsExecuted: context.commandsExecuted === true,
       filesModified: context.filesModified === true

@@ -283,6 +283,30 @@
             <div id="changeCandidateFlags" class="change-candidate-flags"></div>
             <div id="changeCandidateSummary" class="change-candidate-summary"></div>
             <div id="changeCandidateList" class="change-candidate-list"></div>
+            <article id="candidateDetailReviewPanel" class="candidate-detail-review" aria-labelledby="candidateDetailReviewTitle">
+              <div class="section-head candidate-detail-head">
+                <div>
+                  <span class="mission-kicker">Diff Preview V2</span>
+                  <h3 id="candidateDetailReviewTitle">Detalle de candidato</h3>
+                  <p>Revisión read-only del cambio candidato. No genera diff real, patch, comandos ni modificaciones.</p>
+                </div>
+                <div class="candidate-detail-actions">
+                  <button id="copyCandidateDetailBtn" type="button">Copiar detalle</button>
+                  <button id="markSelectedCandidateReviewedBtn" type="button">Marcar este revisado</button>
+                </div>
+              </div>
+              <div id="candidateDetailFlags" class="candidate-detail-flags"></div>
+              <div id="candidateDetailBody" class="candidate-detail-body"></div>
+              <div class="candidate-review-notes">
+                <label for="candidateReviewNoteInput">Notas humanas de revisión</label>
+                <textarea id="candidateReviewNoteInput" rows="3" maxlength="700" wrap="soft" placeholder="Anotá contexto para revisión humana futura. No habilita ejecución ni modifica archivos."></textarea>
+                <div class="candidate-note-actions">
+                  <button id="saveCandidateReviewNoteBtn" type="button">Guardar nota</button>
+                  <button id="clearCandidateReviewNoteBtn" type="button">Limpiar nota</button>
+                </div>
+                <p id="candidateReviewNoteStatus" class="mission-help-text">Notas locales read-only para revisión futura.</p>
+              </div>
+            </article>
           </section>
 
           <section class="mission-progress-card" aria-label="Demo progress">
