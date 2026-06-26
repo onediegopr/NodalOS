@@ -11,8 +11,8 @@ This block added fixture-safe locator fusion and evidence redaction hardening fo
 - Branch: `chrome-lab-001-extension-local-ai-bridge`
 - Initial HEAD: `877de6fc30c439febad3eaa0f76d3de719b6b857`
 - Origin divergence at start: `0 ahead / 0 behind`
-- Final HEAD: `990eef67686782de6d578a614b44ca75107f5b94`
-- Commit: `990eef67686782de6d578a614b44ca75107f5b94`
+- Final HEAD: `bf3408105c06ed7b0f3a1a6e86b0b1e48c3b8d20`
+- Commit: `990eef67686782de6d578a614b44ca75107f5b94` (implementation), metadata recorded in `bf3408105c06ed7b0f3a1a6e86b0b1e48c3b8d20`
 - Push status: `PUSHED_OK`
 - Protected scope diff: `PASS`, no protected path diff detected.
 
