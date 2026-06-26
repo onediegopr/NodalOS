@@ -1,0 +1,78 @@
+{
+  "block": "WCU-031-036",
+  "title": "READ-ONLY LIVE DESIGN GATE + AUDIT PACK",
+  "decision": "GO_WCU_READ_ONLY_LIVE_DESIGN_GATE_AUDIT_PACK_READY",
+  "expected_base_head": "990eef67686782de6d578a614b44ca75107f5b94",
+  "actual_initial_head": "bb0aff351325427fa436793b4f82e01784ef25db",
+  "base_head_note": "Expected base is an ancestor of actual initial HEAD because prior WCU-023-030 metadata normalization commits were already present.",
+  "final_head": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "commit": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "push_status": "PENDING_UNTIL_COMMIT",
+  "origin_sync": "PENDING_UNTIL_COMMIT",
+  "protected_scope": {
+    "status": "PASS",
+    "proof": "Guard scan reported no diff under protected stealth/browser scope."
+  },
+  "gates": [
+    "WCU_LIVE_READ_DISABLED_BY_DEFAULT",
+    "WCU_LIVE_READ_DEV_FLAG_REQUIRED",
+    "WCU_NO_INPUT_INJECTION_GATE",
+    "WCU_NO_WINDOW_MANIPULATION_GATE",
+    "WCU_NO_CLIPBOARD_GATE",
+    "WCU_NO_RAW_SCREENSHOT_GATE",
+    "WCU_NO_CREDENTIAL_VALUE_CAPTURE_GATE",
+    "WCU_NO_UAC_ADMIN_AUTOMATION_GATE",
+    "WCU_EVENT_STREAM_NO_ACTION_TRIGGER_GATE",
+    "WCU_EVIDENCE_REDACTION_REQUIRED_GATE",
+    "WCU_AUDIT_LOG_REQUIRED_GATE",
+    "WCU_KILL_SWITCH_REQUIRED_GATE",
+    "WCU_ALLOWLISTED_TEST_APPS_ONLY_GATE",
+    "WCU_HUMAN_OPERATOR_CONFIRMATION_GATE"
+  ],
+  "readiness_matrix": {
+    "wcu_foundation": "100%",
+    "ocr_robust_perception_interop_design": "80%",
+    "win32_context_design_readiness": "78%",
+    "uia_events_design_readiness": "78%",
+    "locator_fusion_readiness": "83%",
+    "evidence_redaction_unification": "86%",
+    "read_only_live_design_gate_readiness": "80%",
+    "uia_live_read_only_implementation_readiness": "20%",
+    "controlled_action_readiness": "0%",
+    "product_automation_readiness": "0%",
+    "ocr_uia_events_win32_locator_evidence_authority_over_actions": "0%"
+  },
+  "validations": {
+    "dotnet_restore": "PASS",
+    "dotnet_build_no_restore": "PASS_WITH_EXISTING_WARNINGS",
+    "WindowsComputerUseFixtureSafe": "PASS 93/93",
+    "WindowsComputerUseOcrInterop": "PASS 16/16",
+    "WindowsComputerUseWin32UiaEvents": "PASS 14/14",
+    "WindowsComputerUseLocatorFusion": "PASS 30/30",
+    "WindowsComputerUseLocatorFusionEvidence": "PASS 15/15",
+    "WindowsComputerUseReadOnlyLiveDesignGate": "PASS 6/6",
+    "CloakBrowserPerceptionRouter": "PASS 83/83",
+    "git_diff_check": "PASS",
+    "git_diff_cached_check": "PASS_PRE_STAGE_EMPTY",
+    "json_validation": "PASS",
+    "protected_scope_scan": "PASS",
+    "no_live_no_action_scan": "PASS_STRICT_NO_ACTION_API_MATCHES",
+    "bad_ux_wording_scan": "PASS_NEGATIVE_ONLY",
+    "secret_scan_changed_new": "PASS"
+  },
+  "no_action_proof": {
+    "live_read_permitted": false,
+    "action_authority_granted": false,
+    "product_automation_enabled": false,
+    "raw_screenshot_allowed": false,
+    "clipboard_allowed": false,
+    "input_injection_allowed": false,
+    "window_manipulation_allowed": false
+  },
+  "remaining_risks": [
+    "No live read-only prototype has been implemented or validated.",
+    "Future live collection requires external audit, explicit human decision, allowlisted test apps, and kill-switch proof.",
+    "Privacy risk remains for any future live metadata collection and must be handled with redaction-first evidence."
+  ],
+  "next_recommended_block": "WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED, only if the audit pack receives GO."
+}

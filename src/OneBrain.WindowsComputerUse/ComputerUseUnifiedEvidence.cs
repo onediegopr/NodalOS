@@ -59,16 +59,14 @@ public sealed class ComputerUseUnifiedEvidencePackBuilder
             locatorFusion.VisualFallbackRequired,
             locatorFusion.RequiresHumanHandoff);
         var tamperInput = $"{snapshot.SnapshotId}|{redaction.Value}|{string.Join(",", refs.Select(r => r.RefId))}|{summary}";
+        var sensitiveFields = CollectSensitiveFieldsRedacted(redaction, locatorFusion, refs, dryRunPlan, perceptionFusion);
 
         return new ComputerUseUnifiedEvidencePack(
             EvidenceId: $"wcu-unified-evidence-{Guid.NewGuid():N}",
             CorrelationId: snapshot.SnapshotId,
             SourceSignals: sourceSignals,
             RedactionStatus: redaction.Status,
-            SensitiveFieldsRedacted: redaction.SensitiveFieldsRedacted
-                .Concat(locatorFusion.BestCandidate?.Evidence.SelectMany(e => _redactor.Redact(e.DetailRedacted).SensitiveFieldsRedacted) ?? [])
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
+            SensitiveFieldsRedacted: sensitiveFields,
             RawScreenshotPresent: false,
             ClipboardPresent: false,
             ActionAuthorityGranted: false,
@@ -83,6 +81,83 @@ public sealed class ComputerUseUnifiedEvidencePackBuilder
 
     public string Serialize(ComputerUseUnifiedEvidencePack pack) =>
         JsonSerializer.Serialize(pack, new JsonSerializerOptions { WriteIndented = true });
+
+    private IReadOnlyList<string> CollectSensitiveFieldsRedacted(
+        ComputerUseRedactionResult summaryRedaction,
+        ComputerUseLocatorFusionResult locatorFusion,
+        IReadOnlyList<ComputerUseEvidenceRef> refs,
+        ComputerUsePolicyDecision? dryRunPlan,
+        ComputerUsePerceptionFusionResult? perceptionFusion)
+    {
+        var fields = new HashSet<string>(summaryRedaction.SensitiveFieldsRedacted, StringComparer.OrdinalIgnoreCase);
+
+        void AddRange(IEnumerable<string> values)
+        {
+            foreach (var value in values)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                    fields.Add(value);
+            }
+        }
+
+        foreach (var candidate in locatorFusion.LocatorCandidates)
+        {
+            AddRange(_redactor.Redact(candidate.LabelRedacted).SensitiveFieldsRedacted);
+            foreach (var evidence in candidate.Evidence)
+                AddRange(_redactor.Redact(evidence.DetailRedacted).SensitiveFieldsRedacted);
+        }
+
+        foreach (var visual in locatorFusion.VisualHintMatches)
+            AddRange(_redactor.Redact(visual.TextRedacted).SensitiveFieldsRedacted);
+
+        AddRange(_redactor.Redact(locatorFusion.Ambiguity.ReasonRedacted).SensitiveFieldsRedacted);
+        foreach (var reason in locatorFusion.StaleElementRisk.Reasons)
+            AddRange(_redactor.Redact(reason).SensitiveFieldsRedacted);
+
+        AddRange(_redactor.Redact(locatorFusion.Win32Anchor.WindowTitleRedacted).SensitiveFieldsRedacted);
+        AddRange(_redactor.Redact(locatorFusion.Win32Anchor.ProcessNameRedacted).SensitiveFieldsRedacted);
+
+        foreach (var blockage in locatorFusion.Blockages)
+            AddRange(_redactor.Redact(blockage.Reason).SensitiveFieldsRedacted);
+
+        foreach (var surface in locatorFusion.SensitiveSurfaces)
+        {
+            AddRange(_redactor.Redact(surface.SurfaceId).SensitiveFieldsRedacted);
+            AddRange(_redactor.Redact(surface.Category).SensitiveFieldsRedacted);
+            AddRange(_redactor.Redact(surface.Reason).SensitiveFieldsRedacted);
+        }
+
+        foreach (var r in refs)
+            AddRange(_redactor.Redact(r.Description).SensitiveFieldsRedacted);
+
+        if (dryRunPlan is not null)
+        {
+            foreach (var candidate in dryRunPlan.Candidates)
+            {
+                AddRange(_redactor.Redact(candidate.Objective).SensitiveFieldsRedacted);
+                AddRange(_redactor.Redact(candidate.Reason).SensitiveFieldsRedacted);
+                if (candidate.Target is not null)
+                    AddRange(_redactor.Redact(candidate.Target.SelectorKind).SensitiveFieldsRedacted);
+            }
+
+            foreach (var blockage in dryRunPlan.Blockages)
+                AddRange(_redactor.Redact(blockage.Reason).SensitiveFieldsRedacted);
+            foreach (var surface in dryRunPlan.SensitiveSurfaces)
+                AddRange(_redactor.Redact(surface.Reason).SensitiveFieldsRedacted);
+        }
+
+        if (perceptionFusion is not null)
+        {
+            foreach (var reason in perceptionFusion.Reasons)
+                AddRange(_redactor.Redact(reason).SensitiveFieldsRedacted);
+            foreach (var blockage in perceptionFusion.Blockages)
+                AddRange(_redactor.Redact(blockage.Reason).SensitiveFieldsRedacted);
+            foreach (var surface in perceptionFusion.SensitiveSurfaces)
+                AddRange(_redactor.Redact(surface.Reason).SensitiveFieldsRedacted);
+        }
+
+        return fields.ToArray();
+    }
 
     private static IReadOnlyList<string> BuildSourceSignals(
         ComputerUseLocatorFusionResult locatorFusion,
