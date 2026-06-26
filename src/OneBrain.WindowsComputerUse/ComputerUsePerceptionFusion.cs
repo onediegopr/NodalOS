@@ -42,6 +42,12 @@ public sealed class ComputerUsePerceptionFusionClassifier
             blockages.Add(Critical(ComputerUseBlockageKind.ScreenshotRisk, "Visual bridge attempted raw screenshot persistence."));
         }
 
+        if (request.VisualBridgeResult.LiveProviderCalled)
+        {
+            blockages.Add(Critical(ComputerUseBlockageKind.AuditLogBypassRisk, "Visual bridge attempted to call a live OCR/vision provider; fixture-only enforcement violated."));
+            reasons.Add("Live OCR/vision provider call detected; fixture-only enforcement violated.");
+        }
+
         if (request.VisualBridgeResult.ActionAuthority || ComputerUseVisualSignalPolicy.HasActionAuthority(request.VisualBridgeResult.Observations))
         {
             blockages.Add(Critical(ComputerUseBlockageKind.AuditLogBypassRisk, "Visual/OCR signal attempted to claim action authority."));
@@ -73,7 +79,13 @@ public sealed class ComputerUsePerceptionFusionClassifier
 
         var sensitiveDetected = sensitive.Count > 0;
         var blockageDetected = blockages.Any(b => b.RequiresHumanHandoff);
-        var handoff = ResolveHandoff(blockages, sensitiveDetected, visualFallbackRequired, lowConfidenceSignal);
+        var bridgeRequestedHandoff = request.VisualBridgeResult.RequiresHumanHandoff;
+        if (bridgeRequestedHandoff)
+        {
+            reasons.Add("Visual bridge explicitly requested human handoff; perception fusion honors the request.");
+        }
+
+        var handoff = ResolveHandoff(blockages, sensitiveDetected, visualFallbackRequired, lowConfidenceSignal, bridgeRequestedHandoff);
         var adjustedClassification = AdjustClassification(baseClassification, visualSignals.Length > 0, visualFallbackRequired, blockageDetected, reasons);
 
         return new ComputerUsePerceptionFusionResult(
@@ -163,7 +175,8 @@ public sealed class ComputerUsePerceptionFusionClassifier
         IReadOnlyList<ComputerUseBlockage> blockages,
         bool sensitiveDetected,
         bool visualFallbackRequired,
-        VisualPerceptionSignal? lowConfidenceSignal)
+        VisualPerceptionSignal? lowConfidenceSignal,
+        bool bridgeRequestedHandoff)
     {
         if (sensitiveDetected || blockages.Any(b => b.Kind == ComputerUseBlockageKind.CredentialField))
             return ComputerUseHandoffReason.SensitiveSurface;
@@ -176,6 +189,8 @@ public sealed class ComputerUsePerceptionFusionClassifier
         if (visualFallbackRequired)
             return ComputerUseHandoffReason.VisualOnlyTarget;
         if (blockages.Any(b => b.RequiresHumanHandoff))
+            return ComputerUseHandoffReason.VerificationFailed;
+        if (bridgeRequestedHandoff)
             return ComputerUseHandoffReason.VerificationFailed;
         return ComputerUseHandoffReason.None;
     }

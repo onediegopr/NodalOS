@@ -210,6 +210,62 @@ public sealed class WindowsComputerUseOcrInteropTests
         Assert.IsTrue(result.Reasons.Count >= 7);
     }
 
+    [TestMethod]
+    public void HostileBridgeClaimingActionAuthorityIsBlocked()
+    {
+        var request = HostileRequest(actionAuthority: true);
+
+        var decision = new ComputerUsePerceptionFusionPlanner().Plan(request, "click", ComputerUseActionKind.Click);
+
+        Assert.IsTrue(decision.Fusion.Blockages.Any(b => b.Kind == ComputerUseBlockageKind.AuditLogBypassRisk));
+        Assert.IsFalse(decision.Fusion.ActionAuthorityGranted);
+        Assert.IsFalse(decision.PolicyDecision.AllowedToPlan);
+        Assert.IsFalse(decision.PolicyDecision.AllowedToExecuteLive);
+        Assert.AreEqual(ComputerUseActionKind.HumanHandoff, decision.PolicyDecision.Candidates.Single().ActionKind);
+    }
+
+    [TestMethod]
+    public void HostileBridgeStoringRawScreenshotIsBlocked()
+    {
+        var request = HostileRequest(rawScreenshotStored: true);
+
+        var decision = new ComputerUsePerceptionFusionPlanner().Plan(request, "wait", ComputerUseActionKind.WaitForElement);
+
+        Assert.IsTrue(decision.Fusion.Blockages.Any(b => b.Kind == ComputerUseBlockageKind.ScreenshotRisk));
+        Assert.IsFalse(decision.PolicyDecision.AllowedToPlan);
+        Assert.IsFalse(decision.PolicyDecision.AllowedToExecuteLive);
+        Assert.AreEqual(ComputerUseActionKind.HumanHandoff, decision.PolicyDecision.Candidates.Single().ActionKind);
+    }
+
+    [TestMethod]
+    public void HostileBridgeCallingLiveProviderIsBlocked()
+    {
+        var request = HostileRequest(liveProviderCalled: true);
+
+        var decision = new ComputerUsePerceptionFusionPlanner().Plan(request, "click", ComputerUseActionKind.Click);
+
+        Assert.IsTrue(decision.Fusion.Blockages.Any(b => b.Kind == ComputerUseBlockageKind.AuditLogBypassRisk));
+        Assert.IsTrue(decision.Fusion.Reasons.Any(r => r.Contains("live", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(decision.PolicyDecision.AllowedToPlan);
+        Assert.IsFalse(decision.PolicyDecision.AllowedToExecuteLive);
+        Assert.AreEqual(ComputerUseActionKind.HumanHandoff, decision.PolicyDecision.Candidates.Single().ActionKind);
+    }
+
+    [TestMethod]
+    public void BridgeRequestingHumanHandoffIsHonoredDirectly()
+    {
+        var snapshot = FixtureComputerUseSnapshotBuilder.CalculatorLikeUiaRichApp();
+        var request = HostileRequest(snapshot, requiresHumanHandoff: true);
+
+        var decision = new ComputerUsePerceptionFusionPlanner().Plan(request, "click", ComputerUseActionKind.Click);
+
+        Assert.AreEqual(ComputerUseHandoffReason.VerificationFailed, decision.Fusion.HumanHandoffReason);
+        Assert.IsFalse(decision.PolicyDecision.AllowedToPlan);
+        Assert.IsFalse(decision.PolicyDecision.AllowedToExecuteLive);
+        Assert.AreEqual(ComputerUseActionKind.HumanHandoff, decision.PolicyDecision.Candidates.Single().ActionKind);
+        Assert.IsTrue(decision.Fusion.Reasons.Any(r => r.Contains("explicitly requested human handoff", StringComparison.OrdinalIgnoreCase)));
+    }
+
     private static ComputerUsePerceptionFusionRequest Request(
         ComputerUseSnapshot snapshot,
         params RedactedVisualObservation[] observations)
@@ -221,11 +277,55 @@ public sealed class WindowsComputerUseOcrInteropTests
         return new ComputerUsePerceptionFusionRequest(snapshot, bridge.Observe(snapshot));
     }
 
+    private static ComputerUsePerceptionFusionRequest HostileRequest(
+        ComputerUseSnapshot? snapshot = null,
+        bool actionAuthority = false,
+        bool rawScreenshotStored = false,
+        bool liveProviderCalled = false,
+        bool requiresHumanHandoff = false)
+    {
+        snapshot ??= FixtureComputerUseSnapshotBuilder.NotepadLikeUiaRichApp();
+        var bridge = new ComputerUseHostileVisualPerceptionBridge(actionAuthority, rawScreenshotStored, liveProviderCalled, requiresHumanHandoff);
+        return new ComputerUsePerceptionFusionRequest(snapshot, bridge.Observe(snapshot));
+    }
+
     private static void AssertHandoff(ComputerUsePolicyDecision decision, ComputerUseHandoffReason expectedReason)
     {
         Assert.IsFalse(decision.AllowedToPlan);
         Assert.IsFalse(decision.AllowedToExecuteLive);
         Assert.AreEqual(ComputerUseActionKind.HumanHandoff, decision.Candidates.Single().ActionKind);
         CollectionAssert.Contains(decision.Candidates.Single().HandoffReasons.ToList(), expectedReason);
+    }
+
+    private sealed class ComputerUseHostileVisualPerceptionBridge : IComputerUseVisualPerceptionBridge
+    {
+        private readonly bool _actionAuthority;
+        private readonly bool _rawScreenshotStored;
+        private readonly bool _liveProviderCalled;
+        private readonly bool _requiresHumanHandoff;
+
+        public ComputerUseHostileVisualPerceptionBridge(
+            bool actionAuthority,
+            bool rawScreenshotStored,
+            bool liveProviderCalled,
+            bool requiresHumanHandoff)
+        {
+            _actionAuthority = actionAuthority;
+            _rawScreenshotStored = rawScreenshotStored;
+            _liveProviderCalled = liveProviderCalled;
+            _requiresHumanHandoff = requiresHumanHandoff;
+        }
+
+        public RobustPerceptionBridgeResult Observe(ComputerUseSnapshot snapshot) =>
+            new(
+                Available: true,
+                ProviderId: "adversarial.hostile-bridge",
+                Mode: "AdversarialFixture",
+                Observations: [],
+                RequiresHumanHandoff: _requiresHumanHandoff,
+                RawScreenshotStored: _rawScreenshotStored,
+                LiveProviderCalled: _liveProviderCalled,
+                ActionAuthority: _actionAuthority,
+                Reasons: ["Hostile bridge used only to verify fusion hardening."]);
     }
 }

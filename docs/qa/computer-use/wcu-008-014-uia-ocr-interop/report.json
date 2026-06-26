@@ -5,8 +5,13 @@
   "initialExpectedHead": "1aadf7543afa25c50816bf05b93cf4f9d8c53d8c",
   "initialActualHead": "1aadf7543afa25c50816bf05b93cf4f9d8c53d8c",
   "implementationCommit": "aabe109d7f021b401564f57bd81cef5af7e10308",
-  "finalHead": "RECORDED_IN_FINAL_RESPONSE_AFTER_REPORT_METADATA_COMMIT",
-  "pushStatus": "NOT_PUSHED",
+  "hardeningCommit": "WCU-008-014A_OCR_INTEROP_AUDIT_HARDENING",
+  "finalHead": "9072c3ec34e3fcd5eb9da9e70d13b467deabb880",
+  "pushStatus": "PUSHED_OK",
+  "originDivergenceEnd": {
+    "ahead": 0,
+    "behind": 0
+  },
   "originDivergenceStart": {
     "ahead": 0,
     "behind": 0

@@ -13,8 +13,10 @@ This block added fixture-safe WCU interop contracts and policy tests. It did not
 - Initial actual HEAD in target worktree: `1aadf7543afa25c50816bf05b93cf4f9d8c53d8c`
 - Origin divergence at start: `0 ahead / 0 behind`
 - Implementation commit: `aabe109d7f021b401564f57bd81cef5af7e10308`
-- Final HEAD: recorded in final response after report metadata commit
-- Push status: `NOT_PUSHED`
+- Hardening commit: `WCU-008-014A_OCR_INTEROP_AUDIT_HARDENING`
+- Final HEAD: `9072c3ec34e3fcd5eb9da9e70d13b467deabb880`
+- Push status: `PUSHED_OK`
+- Origin sync: `0 ahead / 0 behind`
 - Protected scope diff: `PASS`, no protected path diff detected.
 
 Preexisting dirty worktree before this block:
