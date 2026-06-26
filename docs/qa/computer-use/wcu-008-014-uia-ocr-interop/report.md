@@ -12,8 +12,8 @@ This block added fixture-safe WCU interop contracts and policy tests. It did not
 - Initial expected HEAD: `1aadf7543afa25c50816bf05b93cf4f9d8c53d8c`
 - Initial actual HEAD in target worktree: `1aadf7543afa25c50816bf05b93cf4f9d8c53d8c`
 - Origin divergence at start: `0 ahead / 0 behind`
-- Final HEAD: `PENDING_COMMIT_HASH`
-- Commit: `PENDING_COMMIT_HASH`
+- Implementation commit: `aabe109d7f021b401564f57bd81cef5af7e10308`
+- Final HEAD: recorded in final response after report metadata commit
 - Push status: `NOT_PUSHED`
 - Protected scope diff: `PASS`, no protected path diff detected.
 
