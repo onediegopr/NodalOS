@@ -1,0 +1,155 @@
+{
+  "block": "WCU-023-030",
+  "decision": "GO_WCU_LOCATOR_FUSION_EVIDENCE_REDACTION_FIXTURE_READY",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "877de6fc30c439febad3eaa0f76d3de719b6b857",
+  "finalHead": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "commit": "RECORDED_IN_FINAL_RESPONSE_AFTER_COMMIT",
+  "pushStatus": "RECORDED_IN_FINAL_RESPONSE",
+  "originDivergenceStart": {
+    "ahead": 0,
+    "behind": 0
+  },
+  "protectedScopeDiff": "PASS",
+  "filesCreated": [
+    "src/OneBrain.WindowsComputerUse/ComputerUseLocatorFusion.cs",
+    "src/OneBrain.WindowsComputerUse/ComputerUseUnifiedEvidence.cs",
+    "tests/OneBrain.Safety.Tests/WindowsComputerUseLocatorFusionTests.cs",
+    "tests/OneBrain.Safety.Tests/WindowsComputerUseLocatorFusionEvidenceTests.cs",
+    "docs/architecture/computer-use/windows-computer-use-locator-fusion-v1.md",
+    "docs/architecture/computer-use/windows-computer-use-evidence-redaction-unification-v1.md",
+    "docs/qa/computer-use/wcu-023-030-locator-fusion-evidence-redaction/inventory.md",
+    "docs/qa/computer-use/wcu-023-030-locator-fusion-evidence-redaction/report.md",
+    "docs/qa/computer-use/wcu-023-030-locator-fusion-evidence-redaction/report.json",
+    "docs/handoff/nodal-os-wcu-locator-fusion-evidence-redaction-fixture-handoff.md",
+    "docs/prompts/computer-use/next-wcu-read-only-live-design-gate-audit-prompt.md"
+  ],
+  "filesModified": [
+    "src/OneBrain.WindowsComputerUse/WindowsComputerUseControlPlane.cs"
+  ],
+  "validations": [
+    {
+      "name": "dotnet restore .\\OneBrain.slnx",
+      "result": "PASS"
+    },
+    {
+      "name": "dotnet build .\\OneBrain.slnx --no-restore",
+      "result": "PASS"
+    },
+    {
+      "name": "WindowsComputerUseLocatorFusion",
+      "result": "PASS",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "WindowsComputerUseLocatorFusionEvidence",
+      "result": "PASS",
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "WindowsComputerUseFixtureSafe",
+      "result": "PASS",
+      "passed": 87,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "WindowsComputerUseOcrInterop",
+      "result": "PASS",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "WindowsComputerUseWin32UiaEvents",
+      "result": "PASS",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "CloakBrowserPerceptionRouter",
+      "result": "PASS",
+      "passed": 83,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "name": "git diff --cached --check",
+      "result": "PASS"
+    },
+    {
+      "name": "json validation",
+      "result": "PASS"
+    },
+    {
+      "name": "protected scope scan",
+      "result": "PASS"
+    },
+    {
+      "name": "no-live usage scan",
+      "result": "PASS"
+    },
+    {
+      "name": "bad UX wording scan",
+      "result": "PASS_NEGATIVE_ONLY"
+    },
+    {
+      "name": "secret scan changed/new",
+      "result": "PASS_FIXTURE_ONLY"
+    }
+  ],
+  "noLiveProof": {
+    "pInvokeAdded": false,
+    "dllImportAdded": false,
+    "unsafeAdded": false,
+    "flaUiDependencyAdded": false,
+    "liveUiaSubscription": false,
+    "realPcReadByDefault": false,
+    "windowManipulation": false,
+    "focusStealing": false,
+    "inputInjection": false,
+    "clipboard": false,
+    "rawScreenshotPersistence": false,
+    "browserLiveCdpWebSocket": false,
+    "safeInjectionLive": false,
+    "actionAuthorityFromLocator": false,
+    "actionAuthorityFromOcr": false,
+    "actionAuthorityFromEvents": false,
+    "actionAuthorityFromWin32": false,
+    "locatorTriggeredExecution": false,
+    "evidenceActionAuthority": false,
+    "secretMatchesLimitedToFakeFixtures": true
+  },
+  "percentages": {
+    "wcuFixtureSafeFoundation": 100,
+    "wcuOcrRobustPerceptionInteropDesign": 78,
+    "wcuWin32ContextDesignReadiness": 73,
+    "wcuUiaEventsDesignReadiness": 70,
+    "wcuLocatorFusionReadiness": 80,
+    "wcuEvidenceRedactionUnification": 82,
+    "wcuUiaReadOnlyDesignReadiness": 55,
+    "wcuUiaLiveReadOnlyReadiness": 15,
+    "wcuControlledActionReadiness": 0,
+    "wcuProductAutomationReadiness": 0,
+    "ocrAuthorityOverActions": 0,
+    "uiaEventsAuthorityOverActions": 0,
+    "win32AuthorityOverActions": 0,
+    "locatorAuthorityOverActions": 0
+  },
+  "remainingRisks": [
+    "Locator fusion is fixture-only; no live desktop integration was run or claimed.",
+    "Real read-only adapter isolation remains future work.",
+    "Confidence thresholds are deterministic heuristics; live surfaces may need calibration.",
+    "Controlled action planning remains blocked and must be hardened separately."
+  ],
+  "nextBlock": "WCU-031-036 -- READ-ONLY LIVE DESIGN GATE + AUDIT PACK"
+}
