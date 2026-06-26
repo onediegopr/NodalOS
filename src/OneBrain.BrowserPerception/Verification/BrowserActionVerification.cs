@@ -8,7 +8,10 @@ public enum BrowserActionPreconditionKind
     TargetEnabled,
     PageStable,
     ConfidenceAboveThreshold,
-    FixtureOrControlledPageOnly
+    FixtureOrControlledPageOnly,
+    LiveExecutionDisabled,
+    SensitiveInputSafe,
+    SupportedAction
 }
 
 public enum BrowserActionPostconditionKind

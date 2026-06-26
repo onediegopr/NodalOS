@@ -1,0 +1,111 @@
+{
+  "block": "CBPR-009",
+  "line": "CLOAK_BROWSER_PERCEPTION_ROUTER_V1",
+  "date": "2026-06-26",
+  "decision": "GO_CLOAK_BROWSER_CONTROLLED_ACTION_EXECUTOR_V0_FIXTURE_ONLY",
+  "project": "NODAL OS",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "38d6565e05e593fed61a2dd9f923db511a3ca685",
+  "finalHead": "recorded-in-final-response-after-commit",
+  "originSyncAtStart": "0 0",
+  "mode": "fixture-only-in-memory-no-live-execution",
+  "scope": {
+    "productiveAutomationAdded": false,
+    "externalNavigationAdded": false,
+    "productionInjectionAdded": false,
+    "cdpLiveActionAdded": false,
+    "webSocketLiveActionAdded": false,
+    "browserLaunchAdded": false,
+    "extensionInvocationAdded": false,
+    "captchaBypassAdded": false,
+    "protectedScopeTouched": false,
+    "stealthCoreTouched": false,
+    "bridgeWebSocketTouched": false,
+    "cbpr010Implemented": false
+  },
+  "createdFiles": [
+    "src/OneBrain.BrowserPerception/Execution/ControlledActionExecutor.cs",
+    "tests/OneBrain.Safety.Tests/CloakBrowserControlledActionExecutorTests.cs",
+    "docs/qa/cbpr-009-controlled-action-executor-v0/report.md",
+    "docs/qa/cbpr-009-controlled-action-executor-v0/report.json"
+  ],
+  "modifiedFiles": [
+    "src/OneBrain.BrowserPerception/Verification/BrowserActionVerification.cs",
+    "docs/architecture/browser/cloak-browser-perception-router-v1.md"
+  ],
+  "protectedPaths": [
+    "stealth-engine/src/evasion/**",
+    "stealth-engine/src/captcha/**",
+    "stealth-engine/src/fingerprint/**",
+    "stealth-engine/src/behavior/**",
+    "stealth-engine/src/proxy/**",
+    "stealth-engine/src/antiBlocking/**",
+    "stealth-engine/src/handoff/**",
+    "stealth-engine/src/StealthSession.js",
+    "stealth-engine/src/StealthBrowserManager.js",
+    "stealth-engine/src/index.js",
+    "stealth-engine/tests/stealth-suite.test.js"
+  ],
+  "testMatrix": [
+    { "requirement": "Click fixture action succeeds in memory", "status": "implemented" },
+    { "requirement": "Type fixture action records safe value in memory", "status": "implemented" },
+    { "requirement": "Scroll fixture action updates in-memory scroll position", "status": "implemented" },
+    { "requirement": "Select fixture action records selected value in memory", "status": "implemented" },
+    { "requirement": "Wait fixture action increments in-memory wait ticks", "status": "implemented" },
+    { "requirement": "Failed precondition aborts without side effects", "status": "implemented" },
+    { "requirement": "Failed postcondition is reported", "status": "implemented" },
+    { "requirement": "CAPTCHA/2FA/anti-bot/login plans require human handoff", "status": "implemented" },
+    { "requirement": "Low confidence handoff plan does not execute", "status": "implemented" },
+    { "requirement": "Non-fixture execution mode aborts", "status": "implemented" },
+    { "requirement": "Missing fixture state aborts", "status": "implemented" },
+    { "requirement": "Sensitive input guard blocks password/token/API key/OTP text", "status": "implemented" },
+    { "requirement": "Unsupported action aborts", "status": "implemented" },
+    { "requirement": "No CDP/WebSocket/browser/extension invocation flags remain false", "status": "implemented" }
+  ],
+  "noLiveExecutionProof": {
+    "fixtureOnlyAccepted": true,
+    "liveDisabledModeAborts": true,
+    "cdpInvoked": false,
+    "webSocketInvoked": false,
+    "browserLaunched": false,
+    "systemBrowserUsed": false,
+    "extensionInvoked": false,
+    "externalNavigationAttempted": false,
+    "productFilesModified": false
+  },
+  "validations": {
+    "dotnetBuildNoRestore": "PASS",
+    "CloakBrowserPerceptionRouter": "PASS 60/60",
+    "CloakBrowserRuntime": "PASS 50/50",
+    "CloakBrowserRuntimeLive": "PASS 18/18",
+    "CdpBrowserSkills": "PASS 19/19",
+    "CdpBrowserSkillsSession": "PASS 12/12",
+    "CdpBrowserSkillsProductSurface": "PASS 8/8",
+    "CdpUiRuntimeBoundary": "PASS 14/14",
+    "NoExtensionDefaultHarness": "PASS 7/7",
+    "MinimalNoExtensionProductSurface": "PASS 9/9",
+    "noExtensionDefaultScript": "PASS",
+    "minimalProductSurfaceScript": "PASS",
+    "gitDiffCheck": "PASS",
+    "secretScan": "PASS",
+    "protectedScopeScan": "PASS",
+    "forbiddenBrowserUsageScan": "PASS",
+    "badUxWordingScan": "PASS(no changed product UI files)"
+  },
+  "percentages": {
+    "cloakBrowserRuntimeBase": 100,
+    "perceptionRouter": 60,
+    "browserDiagnosis": 45,
+    "locatorEngine": 35,
+    "blockageDetector": 35,
+    "safeActions": 30,
+    "productiveBrowserAutomation": 0
+  },
+  "risks": [
+    "Fixture execution is synthetic and in-memory.",
+    "Postcondition verification compares snapshots only.",
+    "CBPR-010 remains blocked until explicit human confirmation."
+  ],
+  "hardStop": "CBPR-010 was not executed.",
+  "nextBlock": "CBPR-010 - Browser Evidence Pack V1 + cierre de linea fixture-safe, only after explicit human confirmation"
+}

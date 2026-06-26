@@ -202,6 +202,9 @@ Initial preconditions:
 - `PageStable`
 - `ConfidenceAboveThreshold`
 - `FixtureOrControlledPageOnly`
+- `LiveExecutionDisabled`
+- `SensitiveInputSafe`
+- `SupportedAction`
 
 Initial postconditions:
 
@@ -230,6 +233,8 @@ The following are deliberately out of scope:
 After CBPR-005/006, Locator Engine V1 and Blockage Detector V1 exist only as read-only candidate/diagnostic layers. Productive actions, live page mutation, safe injection, and external navigation remain out of scope.
 
 After CBPR-007/008, Safe Action Planner V1 and Pre/Post Verification Contracts V1 exist only as read-only fixture planning and snapshot comparison layers. Controlled action execution is explicitly deferred to CBPR-009 and must not run without human confirmation.
+
+After CBPR-009, Controlled Action Executor V0 exists only as a fixture/in-memory executor. It accepts `FixtureOnly` mode, aborts all live modes, mutates only `FixturePageState`, and records metadata-only evidence flags proving no CDP, WebSocket, browser launch, extension, external navigation, product file write, or system browser path was invoked. CBPR-010 is not implemented by CBPR-009.
 
 ## Guardrails
 
