@@ -225,8 +225,13 @@ public sealed class ComputerUseLocatorFusionEngine
         }
 
         var selectorKind = ResolveSelectorKind(element, window, win32Anchor);
-        var label = _redactor.Redact($"{element.Identity.Name} {element.Identity.AutomationId}").Value.Trim();
+        var labelRedaction = _redactor.Redact($"{element.Identity.Name} {element.Identity.AutomationId}");
+        var label = labelRedaction.Value.Trim();
         var evidence = BuildSelectorEvidence(element, window, selectorKind, win32Anchor, visualHint, continuity);
+        var candidateFields = labelRedaction.SensitiveFieldsRedacted
+            .Concat(evidence.SelectMany(e => e.SensitiveFieldsRedacted))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         var breakdown = new ComputerUseSelectorConfidenceBreakdown(
             automationId,
             runtimeId,
@@ -266,7 +271,8 @@ public sealed class ComputerUseLocatorFusionEngine
             SensitiveSurface: sensitiveTarget,
             Stale: staleRisk.IsStale,
             Ambiguous: false,
-            ActionAuthority: false);
+            ActionAuthority: false,
+            candidateFields);
     }
 
     private IEnumerable<ComputerUseSelectorCandidate> BuildVisualOnlyCandidates(IReadOnlyList<ComputerUseVisualHintMatch> visualHints)
@@ -275,20 +281,23 @@ public sealed class ComputerUseLocatorFusionEngine
         {
             var score = Math.Min(0.42, hint.MatchScore);
             var breakdown = new ComputerUseSelectorConfidenceBreakdown(0, 0, 0, 0, 0, 0, 0, score, 0, 0, 0, 0, 0, score);
+            var visualRedaction = _redactor.Redact(hint.TextRedacted);
+            var visualFields = visualRedaction.SensitiveFieldsRedacted.ToArray();
             yield return new ComputerUseSelectorCandidate(
                 $"visual-{hint.ObservationId}",
                 "VisualHintOnly",
                 Identity: null,
                 Bounds: null,
-                hint.TextRedacted,
+                visualRedaction.Value,
                 breakdown,
-                [new ComputerUseSelectorEvidence($"visual:{hint.ObservationId}:redacted", ComputerUseEvidenceKind.SelectorConfidenceBreakdown, "ocr.visual.hint", hint.TextRedacted, score, Redacted: true, ActionAuthority: false)],
+                [new ComputerUseSelectorEvidence($"visual:{hint.ObservationId}:redacted", ComputerUseEvidenceKind.SelectorConfidenceBreakdown, "ocr.visual.hint", visualRedaction.Value, score, Redacted: true, ActionAuthority: false, visualFields)],
                 RequiresVisualFallback: true,
                 RequiresHumanHandoff: true,
                 SensitiveSurface: false,
                 Stale: false,
                 Ambiguous: false,
-                ActionAuthority: false);
+                ActionAuthority: false,
+                visualFields);
         }
     }
 
@@ -538,19 +547,20 @@ public sealed class ComputerUseLocatorFusionEngine
             : $"{detailRedaction.Value}; redacted_fields={string.Join(",", detailRedaction.SensitiveFieldsRedacted)}";
         var evidence = new List<ComputerUseSelectorEvidence>
         {
-            new($"selector:{CandidateId(element)}:redacted", ComputerUseEvidenceKind.SelectorConfidenceBreakdown, "uia.identity", detail, 1, Redacted: true, ActionAuthority: false)
+            new($"selector:{CandidateId(element)}:redacted", ComputerUseEvidenceKind.SelectorConfidenceBreakdown, "uia.identity", detail, 1, Redacted: true, ActionAuthority: false, detailRedaction.SensitiveFieldsRedacted)
         };
         if (win32Anchor.ActiveWindowMatched)
         {
-            evidence.Add(new($"selector:{CandidateId(element)}:win32-anchor", ComputerUseEvidenceKind.Win32ContextObservation, "win32.anchor", win32Anchor.WindowTitleRedacted, win32Anchor.ConfidenceDelta, Redacted: true, ActionAuthority: false));
+            var titleRedaction = redactor.Redact(win32Anchor.WindowTitleRedacted);
+            evidence.Add(new($"selector:{CandidateId(element)}:win32-anchor", ComputerUseEvidenceKind.Win32ContextObservation, "win32.anchor", titleRedaction.Value, win32Anchor.ConfidenceDelta, Redacted: true, ActionAuthority: false, titleRedaction.SensitiveFieldsRedacted));
         }
         if (continuity > 0)
         {
-            evidence.Add(new($"selector:{CandidateId(element)}:uia-event-continuity", ComputerUseEvidenceKind.UiaEventObservation, "uia.event.continuity", "Read-only UIA event continuity.", continuity, Redacted: true, ActionAuthority: false));
+            evidence.Add(new($"selector:{CandidateId(element)}:uia-event-continuity", ComputerUseEvidenceKind.UiaEventObservation, "uia.event.continuity", "Read-only UIA event continuity.", continuity, Redacted: true, ActionAuthority: false, []));
         }
         if (visualHint > 0)
         {
-            evidence.Add(new($"selector:{CandidateId(element)}:visual-hint", ComputerUseEvidenceKind.SelectorConfidenceBreakdown, "ocr.visual.hint", "Redacted visual/OCR text hint.", visualHint, Redacted: true, ActionAuthority: false));
+            evidence.Add(new($"selector:{CandidateId(element)}:visual-hint", ComputerUseEvidenceKind.SelectorConfidenceBreakdown, "ocr.visual.hint", "Redacted visual/OCR text hint.", visualHint, Redacted: true, ActionAuthority: false, []));
         }
 
         return evidence;
