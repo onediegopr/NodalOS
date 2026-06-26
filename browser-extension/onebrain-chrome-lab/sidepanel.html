@@ -364,6 +364,54 @@
               <span>Sesión: <strong id="browserSessionResilienceState">sin fricción detectada</strong></span>
               <span>BrowserAct: <strong>referencia externa no usada en runtime</strong></span>
             </div>
+
+            <article class="browser-cdp-surface" aria-labelledby="browserCdpSurfaceTitle">
+              <div class="section-head browser-cdp-surface-head">
+                <div>
+                  <span class="mission-kicker">Browser Skills CDP</span>
+                  <h3 id="browserCdpSurfaceTitle">CloakBrowser CDP</h3>
+                  <p>Superficie de producto read-only para la captura controlada CDP. La verificación live corre por harness, sin usar la extensión como runtime principal.</p>
+                </div>
+                <button id="copyCdpBrowserSkillSummaryBtn" type="button">Copiar resumen CDP</button>
+              </div>
+              <div class="browser-cdp-status-grid" aria-label="Browser Skills CDP status">
+                <article>
+                  <span>Runtime principal</span>
+                  <strong id="cdpRuntimeLabel">CloakBrowser CDP</strong>
+                </article>
+                <article>
+                  <span>Estado</span>
+                  <strong id="cdpBrowserSkillStatus">Disponible</strong>
+                </article>
+                <article>
+                  <span>Extensión</span>
+                  <strong id="cdpExtensionMode">legacy / no-default</strong>
+                </article>
+                <article>
+                  <span>Elementos</span>
+                  <strong id="cdpElementCount">6</strong>
+                </article>
+                <article>
+                  <span>Fricción</span>
+                  <strong id="cdpFrictionCount">5 señales</strong>
+                </article>
+                <article>
+                  <span>Action map</span>
+                  <strong id="cdpActionMapCount">6 acciones</strong>
+                </article>
+              </div>
+              <div class="browser-cdp-evidence" aria-label="Browser Skills CDP evidence summary">
+                <span>source: <strong id="cdpSourceState">cloakbrowser-cdp-direct</strong></span>
+                <span>DOM index: <strong id="cdpDomIndexState">metadata-only</strong></span>
+                <span>Evidence: <strong id="cdpEvidenceState">disponible</strong></span>
+                <span>Screenshot: <strong id="cdpScreenshotState">capturado en página controlada</strong></span>
+                <span>Sin extensión: <strong id="cdpExtensionUsedState">true</strong></span>
+                <span>Sin navegador del sistema: <strong id="cdpSystemBrowserState">true</strong></span>
+                <span>Sin navegación externa: <strong id="cdpExternalNavState">true</strong></span>
+                <span>No se modificaron archivos: <strong id="cdpFilesModifiedState">true</strong></span>
+              </div>
+              <p class="browser-cdp-note">Solo lectura. Sin credenciales, sin resolver verificaciones, sin navegación externa y sin acciones peligrosas desde la UI.</p>
+            </article>
           </section>
 
           <div class="mission-layout">

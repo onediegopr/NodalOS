@@ -4,6 +4,23 @@ const DEMO_STORE_KEY = 'nodal-os.demoMissions.v1';
 const DEMO_GUIDANCE_COLLAPSED_KEY = 'nodal-os.demoGuidanceCollapsed.v1';
 const BROWSER_SKILLS_SNAPSHOT_KEY = 'nodal-os.browserSkills.snapshots.v1';
 const BROWSER_SKILLS_MAX_SNAPSHOTS = 20;
+const CDP_BROWSER_SKILLS_SURFACE = {
+  runtimeLabel: 'CloakBrowser CDP',
+  status: 'Disponible',
+  source: 'cloakbrowser-cdp-direct',
+  extensionMode: 'legacy / no-default',
+  extensionUsed: false,
+  systemBrowserUsed: false,
+  externalNavigationBlocked: true,
+  productFilesModified: false,
+  readOnly: true,
+  domIndex: 'metadata-only',
+  elementCount: 6,
+  frictionCount: 5,
+  actionMapCount: 6,
+  screenshotCaptured: true,
+  evidenceAvailable: true
+};
 const WORKSPACE_STORE_KEY = 'nodal-os.workspaceUnderstanding.v1';
 const WORKSPACE_SCAN_LIMITS = {
   maxDepth: 4,
@@ -295,6 +312,21 @@ const el = {
   browserSkillTitleValue: document.getElementById('browserSkillTitleValue'),
   browserSkillElementCount: document.getElementById('browserSkillElementCount'),
   browserSkillFriction: document.getElementById('browserSkillFriction'),
+  cdpRuntimeLabel: document.getElementById('cdpRuntimeLabel'),
+  cdpBrowserSkillStatus: document.getElementById('cdpBrowserSkillStatus'),
+  cdpExtensionMode: document.getElementById('cdpExtensionMode'),
+  cdpElementCount: document.getElementById('cdpElementCount'),
+  cdpFrictionCount: document.getElementById('cdpFrictionCount'),
+  cdpActionMapCount: document.getElementById('cdpActionMapCount'),
+  cdpSourceState: document.getElementById('cdpSourceState'),
+  cdpDomIndexState: document.getElementById('cdpDomIndexState'),
+  cdpEvidenceState: document.getElementById('cdpEvidenceState'),
+  cdpScreenshotState: document.getElementById('cdpScreenshotState'),
+  cdpExtensionUsedState: document.getElementById('cdpExtensionUsedState'),
+  cdpSystemBrowserState: document.getElementById('cdpSystemBrowserState'),
+  cdpExternalNavState: document.getElementById('cdpExternalNavState'),
+  cdpFilesModifiedState: document.getElementById('cdpFilesModifiedState'),
+  copyCdpBrowserSkillSummaryBtn: document.getElementById('copyCdpBrowserSkillSummaryBtn'),
   browserIndexedElements: document.getElementById('browserIndexedElements'),
   browserEvidencePanel: document.getElementById('browserEvidencePanel'),
   browserSnapshotHistory: document.getElementById('browserSnapshotHistory'),
@@ -443,6 +475,7 @@ function bindEvents() {
   el.captureBrowserTabBtn.addEventListener('click', captureBrowserActiveTab);
   el.indexBrowserPageBtn.addEventListener('click', indexBrowserActivePage);
   el.copyBrowserSkillSummaryBtn.addEventListener('click', copyBrowserSkillSummary);
+  el.copyCdpBrowserSkillSummaryBtn.addEventListener('click', copyCdpBrowserSkillSummary);
   el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
   el.openWorkspaceBtn.addEventListener('click', openWorkspaceDirectory);
   el.openWorkspaceFallbackBtn.addEventListener('click', openWorkspaceDirectoryInput);
@@ -3854,6 +3887,25 @@ function renderBrowserSkills() {
   renderBrowserIndexedElements(snapshot);
   renderBrowserEvidence(snapshot);
   renderBrowserSnapshotHistory();
+  renderCdpBrowserSkillsSurface();
+}
+
+function renderCdpBrowserSkillsSurface() {
+  const model = CDP_BROWSER_SKILLS_SURFACE;
+  el.cdpRuntimeLabel.textContent = model.runtimeLabel;
+  el.cdpBrowserSkillStatus.textContent = model.status;
+  el.cdpExtensionMode.textContent = model.extensionMode;
+  el.cdpElementCount.textContent = String(model.elementCount);
+  el.cdpFrictionCount.textContent = `${model.frictionCount} señales`;
+  el.cdpActionMapCount.textContent = `${model.actionMapCount} acciones`;
+  el.cdpSourceState.textContent = model.source;
+  el.cdpDomIndexState.textContent = model.domIndex;
+  el.cdpEvidenceState.textContent = model.evidenceAvailable ? 'disponible' : 'sin evidencia';
+  el.cdpScreenshotState.textContent = model.screenshotCaptured ? 'capturado en página controlada' : 'no capturado';
+  el.cdpExtensionUsedState.textContent = model.extensionUsed ? 'false' : 'true';
+  el.cdpSystemBrowserState.textContent = model.systemBrowserUsed ? 'false' : 'true';
+  el.cdpExternalNavState.textContent = model.externalNavigationBlocked ? 'true' : 'false';
+  el.cdpFilesModifiedState.textContent = model.productFilesModified ? 'false' : 'true';
 }
 
 function renderBrowserIndexedElements(snapshot) {
@@ -3928,6 +3980,44 @@ async function copyBrowserSkillSummary() {
     addLog('local', { kind: 'BrowserSkillSummaryCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
   }
   render();
+}
+
+async function copyCdpBrowserSkillSummary() {
+  const summary = buildCdpBrowserSkillSummary();
+  window.__nodalLastCdpBrowserSkillsSummary = summary;
+  try {
+    await navigator.clipboard.writeText(summary);
+    addLog('local', { kind: 'CdpBrowserSkillSummaryCopied', source: CDP_BROWSER_SKILLS_SURFACE.source });
+  } catch (error) {
+    addLog('local', { kind: 'CdpBrowserSkillSummaryCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+  render();
+}
+
+function buildCdpBrowserSkillSummary() {
+  const model = CDP_BROWSER_SKILLS_SURFACE;
+  return [
+    'NODAL OS — Browser Skills CDP',
+    `runtime: ${model.runtimeLabel}`,
+    `source: ${model.source}`,
+    `status: ${model.status}`,
+    `readOnly: ${model.readOnly}`,
+    `domIndex: ${model.domIndex}`,
+    `interactiveElements: ${model.elementCount}`,
+    `frictionSignals: ${model.frictionCount}`,
+    `actionMapEntries: ${model.actionMapCount}`,
+    `evidenceAvailable: ${model.evidenceAvailable}`,
+    `screenshotCaptured: ${model.screenshotCaptured}`,
+    `extensionUsed: ${model.extensionUsed}`,
+    `systemBrowserUsed: ${model.systemBrowserUsed}`,
+    `externalNavigationBlocked: ${model.externalNavigationBlocked}`,
+    `productFilesModified: ${model.productFilesModified}`,
+    `extensionMode: ${model.extensionMode}`,
+    'scope: página controlada/data URL verificada por harness CDP',
+    'rawDomStored: false',
+    'inputValuesStored: false',
+    'cookiesOrStorageStored: false'
+  ].join('\n');
 }
 
 function buildBrowserSkillSummary(snapshot) {

@@ -574,12 +574,43 @@ async function runBrowserSkillsFlow(sidepanel) {
     };
     document.getElementById('copyBrowserSkillSummaryBtn').click();
     await delay(200);
+    document.getElementById('copyCdpBrowserSkillSummaryBtn').click();
+    await delay(200);
+    const cdpSurface = {
+      present: Boolean(document.getElementById('copyCdpBrowserSkillSummaryBtn')),
+      runtimeLabel: document.getElementById('cdpRuntimeLabel').innerText,
+      status: document.getElementById('cdpBrowserSkillStatus').innerText,
+      extensionMode: document.getElementById('cdpExtensionMode').innerText,
+      elementCount: document.getElementById('cdpElementCount').innerText,
+      frictionCount: document.getElementById('cdpFrictionCount').innerText,
+      actionMapCount: document.getElementById('cdpActionMapCount').innerText,
+      source: document.getElementById('cdpSourceState').innerText,
+      domIndex: document.getElementById('cdpDomIndexState').innerText,
+      evidence: document.getElementById('cdpEvidenceState').innerText,
+      screenshot: document.getElementById('cdpScreenshotState').innerText,
+      extensionFree: document.getElementById('cdpExtensionUsedState').innerText,
+      systemBrowserFree: document.getElementById('cdpSystemBrowserState').innerText,
+      externalNavigationBlocked: document.getElementById('cdpExternalNavState').innerText,
+      filesUnmodified: document.getElementById('cdpFilesModifiedState').innerText,
+      copiedSummary: window.__nodalLastCdpBrowserSkillsSummary || ''
+    };
+    cdpSurface.ok = cdpSurface.runtimeLabel === 'CloakBrowser CDP'
+      && cdpSurface.source === 'cloakbrowser-cdp-direct'
+      && cdpSurface.extensionMode.includes('legacy')
+      && cdpSurface.extensionFree === 'true'
+      && cdpSurface.systemBrowserFree === 'true'
+      && cdpSurface.externalNavigationBlocked === 'true'
+      && cdpSurface.filesUnmodified === 'true'
+      && cdpSurface.copiedSummary.includes('extensionUsed: false')
+      && cdpSurface.copiedSummary.includes('systemBrowserUsed: false')
+      && !/raw html|<html|document\.cookie|\blocalStorage\b|\bsessionStorage\b/i.test(cdpSurface.copiedSummary);
     const rawStore = JSON.parse(localStorage.getItem('nodal-os.browserSkills.snapshots.v1') || '{}');
     const snapshots = Array.isArray(rawStore.snapshots) ? rawStore.snapshots : [];
     return {
-      ok: afterIndex.status === 'Página indexada' && Number(afterIndex.elementCount) > 0 && snapshots.length > 0,
+      ok: afterIndex.status === 'Página indexada' && Number(afterIndex.elementCount) > 0 && snapshots.length > 0 && cdpSurface.ok,
       afterCapture,
       afterIndex,
+      cdpSurface,
       snapshotCount: snapshots.length,
       selectedSnapshotId: rawStore.selectedSnapshotId || '',
       snapshotSummaries: snapshots.slice(0, 3).map((snapshot) => ({

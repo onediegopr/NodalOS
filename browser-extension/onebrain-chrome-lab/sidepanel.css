@@ -1041,6 +1041,90 @@ main {
   text-transform: none;
 }
 
+.browser-cdp-surface {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(102, 227, 196, 0.24);
+  border-radius: 18px;
+  padding: 12px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(102, 227, 196, 0.14), transparent 36%),
+    linear-gradient(135deg, rgba(143, 184, 255, 0.08), transparent 44%),
+    rgba(6, 10, 15, 0.54);
+}
+
+.browser-cdp-surface-head {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.browser-cdp-surface h3 {
+  margin: 8px 0 0;
+  font-family: var(--nos-font-heading);
+  font-size: 20px;
+  letter-spacing: -0.035em;
+}
+
+.browser-cdp-surface p {
+  max-width: 620px;
+  margin: 7px 0 0;
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.browser-cdp-status-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.browser-cdp-status-grid article,
+.browser-cdp-evidence span {
+  border: 1px solid rgba(159, 181, 204, 0.13);
+  border-radius: 14px;
+  background: rgba(13, 19, 27, 0.58);
+}
+
+.browser-cdp-status-grid article {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+}
+
+.browser-cdp-status-grid span,
+.browser-cdp-evidence span {
+  color: var(--nos-color-text-muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.browser-cdp-status-grid strong,
+.browser-cdp-evidence strong {
+  color: var(--nos-color-text);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  text-transform: none;
+}
+
+.browser-cdp-evidence {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.browser-cdp-evidence span {
+  padding: 6px 9px;
+}
+
+.browser-cdp-note {
+  border-left: 3px solid rgba(102, 227, 196, 0.36);
+  padding-left: 10px;
+}
+
 .workspace-directory-input {
   position: absolute;
   width: 1px;
@@ -1416,6 +1500,7 @@ main {
   .workspace-status-grid,
   .workspace-summary-grid,
   .browser-skill-status-grid,
+  .browser-cdp-status-grid,
   .browser-skills-layout,
   .onboarding-grid,
   .guided-stepper {
