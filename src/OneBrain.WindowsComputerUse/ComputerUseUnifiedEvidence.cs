@@ -111,7 +111,10 @@ public sealed class ComputerUseUnifiedEvidencePackBuilder
             }
 
             foreach (var evidence in candidate.Evidence)
+            {
                 AddRange(_redactor.Redact(evidence.DetailRedacted).SensitiveFieldsRedacted);
+                AddRange(ExtractRedactedFieldMarkers(evidence.DetailRedacted));
+            }
         }
 
         foreach (var visual in locatorFusion.VisualHintMatches)
@@ -164,6 +167,22 @@ public sealed class ComputerUseUnifiedEvidencePackBuilder
         }
 
         return fields.ToArray();
+    }
+
+    private static IEnumerable<string> ExtractRedactedFieldMarkers(string value)
+    {
+        const string marker = "redacted_fields=";
+        var index = value.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (index < 0)
+        {
+            return [];
+        }
+
+        var fields = value[(index + marker.Length)..]
+            .Split([';', ' ', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(field => field.All(ch => char.IsLetterOrDigit(ch) || ch is '_' or '-'))
+            .ToArray();
+        return fields;
     }
 
     private static IReadOnlyList<string> BuildSourceSignals(

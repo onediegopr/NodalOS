@@ -29,7 +29,8 @@ public sealed record ComputerUseSelectorEvidence(
     string DetailRedacted,
     double Weight,
     bool Redacted,
-    bool ActionAuthority);
+    bool ActionAuthority,
+    IReadOnlyList<string> SensitiveFieldsRedacted);
 
 public sealed record ComputerUseSelectorConfidenceBreakdown(
     double AutomationIdScore,
@@ -60,7 +61,8 @@ public sealed record ComputerUseSelectorCandidate(
     bool SensitiveSurface,
     bool Stale,
     bool Ambiguous,
-    bool ActionAuthority);
+    bool ActionAuthority,
+    IReadOnlyList<string> SensitiveFieldsRedacted);
 
 public sealed record ComputerUseLocatorAmbiguity(
     bool IsAmbiguous,
@@ -530,7 +532,10 @@ public sealed class ComputerUseLocatorFusionEngine
         double continuity)
     {
         var redactor = new ComputerUseEvidenceRedactor();
-        var detail = redactor.Redact($"{selectorKind}; name={element.Identity.Name}; automationId={element.Identity.AutomationId}; process={window.ProcessName}; win32={win32Anchor.ActiveWindowMatched}").Value;
+        var detailRedaction = redactor.Redact($"{selectorKind}; name={element.Identity.Name}; automationId={element.Identity.AutomationId}; process={window.ProcessName}; win32={win32Anchor.ActiveWindowMatched}");
+        var detail = detailRedaction.SensitiveFieldsRedacted.Count == 0
+            ? detailRedaction.Value
+            : $"{detailRedaction.Value}; redacted_fields={string.Join(",", detailRedaction.SensitiveFieldsRedacted)}";
         var evidence = new List<ComputerUseSelectorEvidence>
         {
             new($"selector:{CandidateId(element)}:redacted", ComputerUseEvidenceKind.SelectorConfidenceBreakdown, "uia.identity", detail, 1, Redacted: true, ActionAuthority: false)

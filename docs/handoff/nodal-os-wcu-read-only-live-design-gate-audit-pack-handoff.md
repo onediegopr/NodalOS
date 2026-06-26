@@ -12,7 +12,7 @@
 
 - Added a fixture-safe read-only live gate catalog.
 - Added regression tests proving the gates stay fail-closed and no source signal grants action authority.
-- Tightened unified evidence sensitive-field aggregation without adding live collection or action authority.
+- Tightened selector/evidence sensitive-field aggregation without adding live collection or action authority.
 - Added threat model, gate design, readiness checklist, audit prompts, QA index, report, and next prompt.
 
 ## What Did Not Change

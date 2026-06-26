@@ -19,8 +19,10 @@ This block prepares a design gate and audit pack only. It does not implement a p
 ## Artifacts
 
 - `src/OneBrain.WindowsComputerUse/ComputerUseReadOnlyLiveDesignGates.cs`
+- `src/OneBrain.WindowsComputerUse/ComputerUseLocatorFusion.cs`
 - `src/OneBrain.WindowsComputerUse/ComputerUseUnifiedEvidence.cs`
 - `tests/OneBrain.Safety.Tests/WindowsComputerUseReadOnlyLiveDesignGateTests.cs`
+- `tests/OneBrain.Safety.Tests/WindowsComputerUseLocatorFusionEvidenceTests.cs`
 - `docs/qa/computer-use/wcu-031-036-read-only-live-design-gate-audit-pack/inventory.md`
 - `docs/architecture/computer-use/windows-computer-use-read-only-live-threat-model.md`
 - `docs/architecture/computer-use/windows-computer-use-read-only-live-gates.md`
@@ -56,11 +58,11 @@ This block prepares a design gate and audit pack only. It does not implement a p
 | --- | --- |
 | `dotnet restore .\OneBrain.slnx` | `PASS` |
 | `dotnet build .\OneBrain.slnx --no-restore` | `PASS_WITH_EXISTING_WARNINGS` |
-| `WindowsComputerUseFixtureSafe` | `PASS 93/93` |
+| `WindowsComputerUseFixtureSafe` | `PASS 94/94` |
 | `WindowsComputerUseOcrInterop` | `PASS 16/16` |
 | `WindowsComputerUseWin32UiaEvents` | `PASS 14/14` |
 | `WindowsComputerUseLocatorFusion` | `PASS 30/30` |
-| `WindowsComputerUseLocatorFusionEvidence` | `PASS 15/15` |
+| `WindowsComputerUseLocatorFusionEvidence` | `PASS 16/16` |
 | `WindowsComputerUseReadOnlyLiveDesignGate` | `PASS 6/6` |
 | `CloakBrowserPerceptionRouter` | `PASS 83/83` |
 | `git diff --check` | `PASS` |

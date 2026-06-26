@@ -45,11 +45,11 @@
   "validations": {
     "dotnet_restore": "PASS",
     "dotnet_build_no_restore": "PASS_WITH_EXISTING_WARNINGS",
-    "WindowsComputerUseFixtureSafe": "PASS 93/93",
+    "WindowsComputerUseFixtureSafe": "PASS 94/94",
     "WindowsComputerUseOcrInterop": "PASS 16/16",
     "WindowsComputerUseWin32UiaEvents": "PASS 14/14",
     "WindowsComputerUseLocatorFusion": "PASS 30/30",
-    "WindowsComputerUseLocatorFusionEvidence": "PASS 15/15",
+    "WindowsComputerUseLocatorFusionEvidence": "PASS 16/16",
     "WindowsComputerUseReadOnlyLiveDesignGate": "PASS 6/6",
     "CloakBrowserPerceptionRouter": "PASS 83/83",
     "git_diff_check": "PASS",
