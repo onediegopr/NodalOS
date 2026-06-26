@@ -245,7 +245,11 @@ public sealed class WindowsComputerUseLocatorFusionEvidenceTests
 
         Assert.IsTrue(result.LocatorCandidates.Count >= 2, "Expected multiple candidates.");
         Assert.AreEqual("continueButton", result.BestCandidate?.Identity?.AutomationId, "Expected the non-sensitive candidate to rank first.");
-        Assert.IsTrue(pack.SensitiveFieldsRedacted.Contains("email", StringComparer.OrdinalIgnoreCase), "Sensitive field from a non-best candidate must be consolidated in the unified evidence pack.");
+        var nonBest = result.LocatorCandidates.FirstOrDefault(c => c.Identity?.AutomationId != "continueButton");
+        Assert.IsNotNull(nonBest);
+        var actualFields = string.Join(",", pack.SensitiveFieldsRedacted);
+        var nonBestEvidence = string.Join(" | ", nonBest!.Evidence.Select(e => e.DetailRedacted));
+        Assert.IsTrue(pack.SensitiveFieldsRedacted.Contains("email", StringComparer.OrdinalIgnoreCase), $"Sensitive field from a non-best candidate must be consolidated. Fields=[{actualFields}]; NonBestEvidence=[{nonBestEvidence}]");
         Assert.IsFalse(pack.ActionAuthorityGranted);
     }
 
