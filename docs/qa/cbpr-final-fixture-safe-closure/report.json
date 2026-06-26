@@ -1,0 +1,66 @@
+{
+  "block": "CBPR-FINAL-001-004",
+  "line": "CLOAK_BROWSER_PERCEPTION_ROUTER",
+  "date": "2026-06-26",
+  "decision": "GO_CBPR_FIXTURE_SAFE_LINE_FORMALLY_CLOSED",
+  "mode": "documentation-governance-no-live-implementation",
+  "project": "NODAL OS",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "3e18454f99223ff787ab2a4dc97a5d0800a3512d",
+  "finalHead": "recorded-in-final-response-after-commit",
+  "originSyncAtStart": "0 0",
+  "worktreeAtStart": "clean",
+  "audits": {
+    "kimi27": "KIMI_RE_AUDIT_GO",
+    "gpt55XHigh": "RE_AUDIT_GO"
+  },
+  "scope": {
+    "protectedScopeChanged": false,
+    "cdpLiveImplementationAdded": false,
+    "webSocketLiveBridgeAdded": false,
+    "safeInjectionLiveAdded": false,
+    "externalNavigationAdded": false,
+    "realActionsAdded": false,
+    "productUiActionEnablementAdded": false,
+    "systemBrowserFallbackAdded": false,
+    "extensionDefaultFallbackAdded": false
+  },
+  "createdArtifacts": [
+    "docs/architecture/browser/cbpr-fixture-safe-closure.md",
+    "docs/architecture/browser/browser-automation-capability-matrix.md",
+    "docs/architecture/browser/live-cdp-design-gate-adr.md",
+    "docs/handoff/nodal-os-cbpr-fixture-safe-handoff.md",
+    "docs/prompts/browser/next-live-cdp-design-only-prompt.md",
+    "docs/qa/cbpr-final-fixture-safe-closure/report.md",
+    "docs/qa/cbpr-final-fixture-safe-closure/report.json"
+  ],
+  "protectedPaths": [
+    "stealth-engine/src/evasion/**",
+    "stealth-engine/src/captcha/**",
+    "stealth-engine/src/fingerprint/**",
+    "stealth-engine/src/behavior/**",
+    "stealth-engine/src/proxy/**",
+    "stealth-engine/src/antiBlocking/**",
+    "stealth-engine/src/handoff/**",
+    "stealth-engine/src/StealthSession.js",
+    "stealth-engine/src/StealthBrowserManager.js",
+    "stealth-engine/src/index.js",
+    "stealth-engine/tests/stealth-suite.test.js"
+  ],
+  "percentages": {
+    "cloakBrowserRuntimeBase": 100,
+    "perceptionRouter": 70,
+    "browserDiagnosis": 65,
+    "locatorEngine": 50,
+    "blockageDetector": 60,
+    "safeActionsFixtureSafe": 55,
+    "productiveBrowserAutomation": 0
+  },
+  "decisions": {
+    "safeToCloseFixtureSafeLine": true,
+    "safeToStartLiveCdpActions": false,
+    "safeToStartLiveSafeInjection": false,
+    "safeToEnableProductiveBrowserAutomation": false
+  },
+  "nextStep": "review live CDP design as documentation only or decide a new design-only macro-block"
+}
