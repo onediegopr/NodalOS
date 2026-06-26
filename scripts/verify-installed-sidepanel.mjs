@@ -574,10 +574,16 @@ async function runBrowserSkillsFlow(sidepanel) {
     };
     document.getElementById('copyBrowserSkillSummaryBtn').click();
     await delay(200);
+    document.getElementById('refreshCdpStatusBtn').click();
+    await delay(200);
     document.getElementById('copyCdpBrowserSkillSummaryBtn').click();
     await delay(200);
+    const dangerousCdpButtons = Array.from(document.querySelectorAll('.browser-cdp-surface button'))
+      .map((button) => button.innerText || '')
+      .filter((label) => /aplicar|ejecutar|navegar|abrir url|resolver|login|submit|crear patch|crear diff/i.test(label));
     const cdpSurface = {
       present: Boolean(document.getElementById('copyCdpBrowserSkillSummaryBtn')),
+      refreshPresent: Boolean(document.getElementById('refreshCdpStatusBtn')),
       runtimeLabel: document.getElementById('cdpRuntimeLabel').innerText,
       status: document.getElementById('cdpBrowserSkillStatus').innerText,
       freshness: document.getElementById('cdpFreshnessStatus').innerText,
@@ -592,9 +598,14 @@ async function runBrowserSkillsFlow(sidepanel) {
       elementCount: document.getElementById('cdpElementCount').innerText,
       frictionCount: document.getElementById('cdpFrictionCount').innerText,
       actionMapCount: document.getElementById('cdpActionMapCount').innerText,
+      lastRefreshAt: document.getElementById('cdpLastRefreshState').innerText,
+      refreshSource: document.getElementById('cdpRefreshSourceState').innerText,
+      runtimeLaunched: document.getElementById('cdpRuntimeLaunchedState').innerText,
+      cdpLiveExecuted: document.getElementById('cdpLiveExecutedState').innerText,
       source: document.getElementById('cdpSourceState').innerText,
       domIndex: document.getElementById('cdpDomIndexState').innerText,
       evidence: document.getElementById('cdpEvidenceState').innerText,
+      evidenceRead: document.getElementById('cdpEvidenceReadState').innerText,
       screenshot: document.getElementById('cdpScreenshotState').innerText,
       hashStatus: document.getElementById('cdpHashStatusState').innerText,
       orphanProcess: document.getElementById('cdpOrphanProcessState').innerText,
@@ -603,9 +614,13 @@ async function runBrowserSkillsFlow(sidepanel) {
       systemBrowserFree: document.getElementById('cdpSystemBrowserState').innerText,
       externalNavigationBlocked: document.getElementById('cdpExternalNavState').innerText,
       filesUnmodified: document.getElementById('cdpFilesModifiedState').innerText,
+      dangerousButtonsAbsent: dangerousCdpButtons.length === 0,
+      dangerousCdpButtons,
       copiedSummary: window.__nodalLastCdpBrowserSkillsSummary || ''
     };
-    cdpSurface.ok = cdpSurface.runtimeLabel === 'CloakBrowser CDP'
+    cdpSurface.ok = cdpSurface.present
+      && cdpSurface.refreshPresent
+      && cdpSurface.runtimeLabel === 'CloakBrowser CDP'
       && cdpSurface.source === 'cloakbrowser-cdp-direct'
       && cdpSurface.status === 'listo'
       && cdpSurface.freshness === 'reciente'
@@ -619,13 +634,24 @@ async function runBrowserSkillsFlow(sidepanel) {
       && cdpSurface.orphanProcess === 'false'
       && cdpSurface.boundaryReadOnly === 'true'
       && cdpSurface.extensionMode.includes('legacy')
+      && cdpSurface.lastRefreshAt !== 'sin actualizar'
+      && cdpSurface.refreshSource === 'local-redacted-evidence'
+      && cdpSurface.evidenceRead === 'true'
+      && cdpSurface.runtimeLaunched === 'false'
+      && cdpSurface.cdpLiveExecuted === 'false'
       && cdpSurface.extensionFree === 'true'
       && cdpSurface.systemBrowserFree === 'true'
       && cdpSurface.externalNavigationBlocked === 'true'
       && cdpSurface.filesUnmodified === 'true'
+      && cdpSurface.dangerousButtonsAbsent
       && cdpSurface.copiedSummary.includes('extensionUsed: false')
       && cdpSurface.copiedSummary.includes('systemBrowserUsed: false')
       && cdpSurface.copiedSummary.includes('boundaryReadOnly: true')
+      && cdpSurface.copiedSummary.includes('lastRefreshAt:')
+      && cdpSurface.copiedSummary.includes('refreshSource: local-redacted-evidence')
+      && cdpSurface.copiedSummary.includes('evidenceRead: true')
+      && cdpSurface.copiedSummary.includes('runtimeLaunched: false')
+      && cdpSurface.copiedSummary.includes('cdpLiveExecuted: false')
       && cdpSurface.copiedSummary.includes('runtimeStatus: configurado')
       && cdpSurface.copiedSummary.includes('freshness: reciente')
       && cdpSurface.copiedSummary.includes('hashStatus: verificado')

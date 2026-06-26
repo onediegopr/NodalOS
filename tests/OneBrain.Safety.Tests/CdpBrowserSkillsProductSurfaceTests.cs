@@ -26,10 +26,16 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
         StringAssert.Contains(section, "Runtime shutdown");
         StringAssert.Contains(section, "Proceso");
         StringAssert.Contains(section, "legacy / no-default");
+        StringAssert.Contains(section, "Actualizar estado");
         StringAssert.Contains(section, "Copiar resumen CDP");
+        StringAssert.Contains(section, "Última actualización");
+        StringAssert.Contains(section, "Refresh source");
+        StringAssert.Contains(section, "Runtime lanzado");
+        StringAssert.Contains(section, "CDP live");
         StringAssert.Contains(section, "source:");
         StringAssert.Contains(section, "cloakbrowser-cdp-direct");
         StringAssert.Contains(section, "metadata-only");
+        StringAssert.Contains(section, "Evidence read");
         StringAssert.Contains(section, "Sin extensión");
         StringAssert.Contains(section, "Sin navegador del sistema");
         StringAssert.Contains(section, "Sin navegación externa");
@@ -68,8 +74,14 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
             "productFilesModified: false",
             "readOnly: true",
             "boundaryReadOnly: true",
+            "lastRefreshAt: 'sin actualizar'",
+            "refreshSource: 'local-redacted-evidence'",
+            "evidenceRead: true",
+            "runtimeLaunched: false",
+            "cdpLiveExecuted: false",
             "domIndex: 'metadata-only'",
             "renderCdpBrowserSkillsSurface",
+            "refreshCdpStatus",
             "copyCdpBrowserSkillSummary",
             "buildCdpBrowserSkillSummary"
         })
@@ -97,6 +109,11 @@ public sealed class CdpBrowserSkillsProductSurfaceTests
             "lastCaptureStatus:",
             "lastHealthcheckAt:",
             "lastSessionAt:",
+            "lastRefreshAt:",
+            "refreshSource:",
+            "evidenceRead:",
+            "runtimeLaunched:",
+            "cdpLiveExecuted:",
             "evidenceStatus:",
             "artifactPinned:",
             "hashStatus:",

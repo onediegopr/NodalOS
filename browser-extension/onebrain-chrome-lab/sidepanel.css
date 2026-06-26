@@ -1058,6 +1058,13 @@ main {
   justify-content: space-between;
 }
 
+.browser-cdp-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .browser-cdp-surface h3 {
   margin: 8px 0 0;
   font-family: var(--nos-font-heading);

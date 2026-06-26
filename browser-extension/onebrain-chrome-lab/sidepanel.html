@@ -372,7 +372,10 @@
                   <h3 id="browserCdpSurfaceTitle">CloakBrowser CDP</h3>
                   <p>Superficie de producto read-only para la captura controlada CDP. La verificación live corre por harness, sin usar la extensión como runtime principal.</p>
                 </div>
-                <button id="copyCdpBrowserSkillSummaryBtn" type="button">Copiar resumen CDP</button>
+                <div class="browser-cdp-actions">
+                  <button id="refreshCdpStatusBtn" type="button">Actualizar estado</button>
+                  <button id="copyCdpBrowserSkillSummaryBtn" type="button">Copiar resumen CDP</button>
+                </div>
               </div>
               <div class="browser-cdp-status-grid" aria-label="Browser Skills CDP status">
                 <article>
@@ -431,11 +434,28 @@
                   <span>Action map</span>
                   <strong id="cdpActionMapCount">6 acciones</strong>
                 </article>
+                <article>
+                  <span>Última actualización</span>
+                  <strong id="cdpLastRefreshState">sin actualizar</strong>
+                </article>
+                <article>
+                  <span>Refresh source</span>
+                  <strong id="cdpRefreshSourceState">local-redacted-evidence</strong>
+                </article>
+                <article>
+                  <span>Runtime lanzado</span>
+                  <strong id="cdpRuntimeLaunchedState">false</strong>
+                </article>
+                <article>
+                  <span>CDP live</span>
+                  <strong id="cdpLiveExecutedState">false</strong>
+                </article>
               </div>
               <div class="browser-cdp-evidence" aria-label="Browser Skills CDP evidence summary">
                 <span>source: <strong id="cdpSourceState">cloakbrowser-cdp-direct</strong></span>
                 <span>DOM index: <strong id="cdpDomIndexState">metadata-only</strong></span>
                 <span>Evidence: <strong id="cdpEvidenceState">disponible</strong></span>
+                <span>Evidence read: <strong id="cdpEvidenceReadState">true</strong></span>
                 <span>Screenshot: <strong id="cdpScreenshotState">capturado en página controlada</strong></span>
                 <span>Artifact hash: <strong id="cdpHashStatusState">verificado</strong></span>
                 <span>Proceso huérfano: <strong id="cdpOrphanProcessState">false</strong></span>

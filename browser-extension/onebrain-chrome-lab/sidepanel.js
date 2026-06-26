@@ -31,7 +31,12 @@ const CDP_BROWSER_SKILLS_SURFACE = {
   actionMapCount: 6,
   screenshotCaptured: true,
   evidenceAvailable: true,
-  boundaryReadOnly: true
+  boundaryReadOnly: true,
+  lastRefreshAt: 'sin actualizar',
+  refreshSource: 'local-redacted-evidence',
+  evidenceRead: true,
+  runtimeLaunched: false,
+  cdpLiveExecuted: false
 };
 const WORKSPACE_STORE_KEY = 'nodal-os.workspaceUnderstanding.v1';
 const WORKSPACE_SCAN_LIMITS = {
@@ -338,9 +343,14 @@ const el = {
   cdpElementCount: document.getElementById('cdpElementCount'),
   cdpFrictionCount: document.getElementById('cdpFrictionCount'),
   cdpActionMapCount: document.getElementById('cdpActionMapCount'),
+  cdpLastRefreshState: document.getElementById('cdpLastRefreshState'),
+  cdpRefreshSourceState: document.getElementById('cdpRefreshSourceState'),
+  cdpRuntimeLaunchedState: document.getElementById('cdpRuntimeLaunchedState'),
+  cdpLiveExecutedState: document.getElementById('cdpLiveExecutedState'),
   cdpSourceState: document.getElementById('cdpSourceState'),
   cdpDomIndexState: document.getElementById('cdpDomIndexState'),
   cdpEvidenceState: document.getElementById('cdpEvidenceState'),
+  cdpEvidenceReadState: document.getElementById('cdpEvidenceReadState'),
   cdpScreenshotState: document.getElementById('cdpScreenshotState'),
   cdpHashStatusState: document.getElementById('cdpHashStatusState'),
   cdpOrphanProcessState: document.getElementById('cdpOrphanProcessState'),
@@ -349,6 +359,7 @@ const el = {
   cdpSystemBrowserState: document.getElementById('cdpSystemBrowserState'),
   cdpExternalNavState: document.getElementById('cdpExternalNavState'),
   cdpFilesModifiedState: document.getElementById('cdpFilesModifiedState'),
+  refreshCdpStatusBtn: document.getElementById('refreshCdpStatusBtn'),
   copyCdpBrowserSkillSummaryBtn: document.getElementById('copyCdpBrowserSkillSummaryBtn'),
   browserIndexedElements: document.getElementById('browserIndexedElements'),
   browserEvidencePanel: document.getElementById('browserEvidencePanel'),
@@ -498,6 +509,7 @@ function bindEvents() {
   el.captureBrowserTabBtn.addEventListener('click', captureBrowserActiveTab);
   el.indexBrowserPageBtn.addEventListener('click', indexBrowserActivePage);
   el.copyBrowserSkillSummaryBtn.addEventListener('click', copyBrowserSkillSummary);
+  el.refreshCdpStatusBtn.addEventListener('click', refreshCdpStatus);
   el.copyCdpBrowserSkillSummaryBtn.addEventListener('click', copyCdpBrowserSkillSummary);
   el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
   el.openWorkspaceBtn.addEventListener('click', openWorkspaceDirectory);
@@ -3929,9 +3941,14 @@ function renderCdpBrowserSkillsSurface() {
   el.cdpElementCount.textContent = String(model.elementCount);
   el.cdpFrictionCount.textContent = `${model.frictionCount} señales`;
   el.cdpActionMapCount.textContent = `${model.actionMapCount} acciones`;
+  el.cdpLastRefreshState.textContent = model.lastRefreshAt;
+  el.cdpRefreshSourceState.textContent = model.refreshSource;
+  el.cdpRuntimeLaunchedState.textContent = model.runtimeLaunched ? 'true' : 'false';
+  el.cdpLiveExecutedState.textContent = model.cdpLiveExecuted ? 'true' : 'false';
   el.cdpSourceState.textContent = model.source;
   el.cdpDomIndexState.textContent = model.domIndex;
   el.cdpEvidenceState.textContent = model.evidenceAvailable ? 'disponible' : 'sin evidencia';
+  el.cdpEvidenceReadState.textContent = model.evidenceRead ? 'true' : 'false';
   el.cdpScreenshotState.textContent = model.screenshotCaptured ? 'capturado en página controlada' : 'no capturado';
   el.cdpHashStatusState.textContent = model.hashStatus;
   el.cdpOrphanProcessState.textContent = model.orphanProcessDetected ? 'true' : 'false';
@@ -4028,6 +4045,26 @@ async function copyCdpBrowserSkillSummary() {
   render();
 }
 
+function refreshCdpStatus() {
+  CDP_BROWSER_SKILLS_SURFACE.lastRefreshAt = new Date().toISOString();
+  CDP_BROWSER_SKILLS_SURFACE.refreshSource = 'local-redacted-evidence';
+  CDP_BROWSER_SKILLS_SURFACE.evidenceRead = CDP_BROWSER_SKILLS_SURFACE.evidenceAvailable === true;
+  CDP_BROWSER_SKILLS_SURFACE.runtimeLaunched = false;
+  CDP_BROWSER_SKILLS_SURFACE.cdpLiveExecuted = false;
+  CDP_BROWSER_SKILLS_SURFACE.extensionUsed = false;
+  CDP_BROWSER_SKILLS_SURFACE.systemBrowserUsed = false;
+  CDP_BROWSER_SKILLS_SURFACE.productFilesModified = false;
+  CDP_BROWSER_SKILLS_SURFACE.boundaryReadOnly = true;
+  CDP_BROWSER_SKILLS_SURFACE.externalNavigationBlocked = true;
+  addLog('local', {
+    kind: 'CdpStatusRefreshReadOnly',
+    source: CDP_BROWSER_SKILLS_SURFACE.refreshSource,
+    runtimeLaunched: false,
+    cdpLiveExecuted: false
+  });
+  render();
+}
+
 function buildCdpBrowserSkillSummary() {
   const model = CDP_BROWSER_SKILLS_SURFACE;
   return [
@@ -4040,6 +4077,11 @@ function buildCdpBrowserSkillSummary() {
     `lastCaptureStatus: ${model.lastCaptureStatus}`,
     `lastHealthcheckAt: ${model.lastHealthcheckStatus}`,
     `lastSessionAt: ${model.lastCaptureStatus}`,
+    `lastRefreshAt: ${model.lastRefreshAt}`,
+    `refreshSource: ${model.refreshSource}`,
+    `evidenceRead: ${model.evidenceRead}`,
+    `runtimeLaunched: ${model.runtimeLaunched}`,
+    `cdpLiveExecuted: ${model.cdpLiveExecuted}`,
     `evidenceStatus: ${model.evidenceStatus}`,
     `artifactPinned: ${model.artifactPinned}`,
     `hashStatus: ${model.hashStatus}`,
