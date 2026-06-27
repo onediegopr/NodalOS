@@ -1,0 +1,49 @@
+{
+  "block": "WCU-CONTAINMENT-PROPERTY-AUDIT-004",
+  "static_scan_harness": "LOCKED",
+  "protected_boundary": "CONSOLIDATED",
+  "contained_artifact": true,
+  "live_prototype_authorized": false,
+  "live_remains_blocked": true,
+  "wcu_037_044_status": "BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO",
+  "scan_categories": [
+    "NoLiveNoAction",
+    "ProtectedBoundary",
+    "ClaimWording",
+    "SecretLeakage",
+    "JsonReport",
+    "ManualDiffCheck"
+  ],
+  "status": {
+    "no_pinvoke_dllimport": "LOCKED",
+    "no_flaui_live_uia": "LOCKED",
+    "no_mouse_keyboard": "LOCKED",
+    "no_window_manipulation": "LOCKED",
+    "no_clipboard": "LOCKED",
+    "no_raw_screenshot": "LOCKED",
+    "no_process_shell_subprocess": "LOCKED",
+    "no_browser_live_cdp_websocket_safe_injection": "LOCKED",
+    "no_product_ui_enablement": "LOCKED",
+    "no_live_ready_wording": "LOCKED",
+    "no_release_public_paid_beta_unlock": "LOCKED",
+    "no_claim_drift": "LOCKED",
+    "no_secret_leakage": "LOCKED",
+    "protected_scope_no_diff": "PASS"
+  },
+  "allowed_negative_hits": [
+    "NO_P_INVOKE_OR_DLLIMPORT",
+    "NO_REAL_MOUSE_KEYBOARD_CONTROL",
+    "NO_CLIPBOARD_REAL",
+    "NO_SAFE_INJECTION_LIVE",
+    "BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO",
+    "LiveReadPermitted=false",
+    "ActionAuthorityGranted=false",
+    "ProductAutomationEnabled=false"
+  ],
+  "prohibited_hits": [],
+  "protected_scope_status": "PASS",
+  "claim_drift_status": "LOCKED",
+  "live_boundary_status": "BLOCKED",
+  "action_authority_status": "DENIED",
+  "sidepanel_hash_debt_touched": false
+}
