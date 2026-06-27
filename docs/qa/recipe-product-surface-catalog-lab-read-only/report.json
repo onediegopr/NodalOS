@@ -1,0 +1,67 @@
+{
+  "block": "NODAL_RECIPE_RUNTIME_PRODUCT_SURFACE_001_CATALOG_LAB_READ_ONLY",
+  "decisionTarget": "GO_RECIPE_PRODUCT_SURFACE_CATALOG_LAB_READ_ONLY_READY",
+  "decision": "GO_RECIPE_PRODUCT_SURFACE_CATALOG_LAB_READ_ONLY_READY",
+  "productSurfaceLine": {
+    "totalPhases": 4,
+    "currentPhase": "1/4",
+    "phaseName": "Recipe Catalog + Lab Read-only Product Surface",
+    "phaseStartProgressPercent": 0,
+    "phaseCompletionEstimatePercent": 95,
+    "overallLineCompletionEstimatePercent": 25
+  },
+  "baseRecipeRuntime": {
+    "line": "NODAL_OS_RECIPE_RUNTIME_OPENRPA_INSPIRED_CRITICAL_HIGH_ONLY",
+    "status": "COMPLETE_FIXTURE_SAFE_DESIGN_LINE_GO_WITH_P2_P3_BACKLOG",
+    "finalHardeningCommit": "409cd6da0ff902287d85b3dbc6a6b6262cd54162"
+  },
+  "milestones": {
+    "1.1_guard_inventory": "PASS",
+    "1.2_architecture_no_duplication": "PASS",
+    "1.3_catalog_surface": "PASS",
+    "1.4_lab_surface": "PASS",
+    "1.5_safety_copy": "PASS",
+    "1.6_tests": "PASS",
+    "1.7_docs_handoff_report": "PASS"
+  },
+  "surfaceStatus": {
+    "recipeCatalogSurface": "READY_READ_ONLY",
+    "recipeLabSurface": "READY_READ_ONLY",
+    "templatePacksVisible": true,
+    "canonicalReadinessVisible": true,
+    "liveDisabledExplanationsVisible": true,
+    "toolTrustSummaries": "BY_REFERENCE",
+    "secretSummaries": "BY_REFERENCE_ONLY",
+    "triggerSummaries": "OBSERVE_ONLY",
+    "locatorRepairSummaries": "PREVIEW_ONLY",
+    "captureDraftSummaries": "DRAFT_ONLY"
+  },
+  "safetyMatrix": {
+    "realRecipeExecution": "NO",
+    "browserAutomation": "NO",
+    "desktopAutomation": "NO",
+    "cdpPlaywrightSeleniumPuppeteer": "NO",
+    "connectorApiNetwork": "NO",
+    "vaultSecretsAccess": "NO",
+    "schedulerWatcherHookListener": "NO",
+    "recorderReplayCapture": "NO",
+    "automaticWorkitemProcessing": "NO",
+    "liveRuntimeEnabled": "NO",
+    "productCopyOverclaimsLiveAutomation": "NO"
+  },
+  "validation": {
+    "dotnetRestore": "PASS",
+    "dotnetBuildNoRestore": "PASS_WITH_EXISTING_WARNINGS",
+    "productSurfaceFilteredTests": "PASS_13",
+    "fullOneBrainRecipesTests": "PASS_849",
+    "recipeSafetyFilter": "PASS_155_SKIPPED_1",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "gitDiffCachedCheck": "PASS",
+    "protectedScopeScan": "PASS",
+    "secretScanChangedNew": "PASS",
+    "noLiveNoActionSourceScan": "PASS",
+    "dependencyScan": "PASS"
+  },
+  "nextPhase": "2/4 - Template Detail + Readiness Explanation UX"
+}
