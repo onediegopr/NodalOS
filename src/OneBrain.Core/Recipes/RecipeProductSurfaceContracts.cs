@@ -151,6 +151,27 @@ public enum RecipeProductSurfaceDemoFlowStepKind
     SafeClosingSummary
 }
 
+public enum RecipeProductSurfaceNavigationMessagingAuditArea
+{
+    ScopeDrift,
+    LiveExecutionLeakage,
+    ProductOverclaimRisk,
+    CopyConsistency,
+    TestCoverage,
+    DocsConsistency,
+    ProtectedScope,
+    SafetyMatrix,
+    DependencyChanges,
+    FutureWorkOutsideLine
+}
+
+public enum RecipeProductSurfaceNavigationMessagingAuditReadinessStatus
+{
+    ReadyForFinalAudit,
+    NeedsMicroCleanup,
+    Blocked
+}
+
 public sealed record RecipeCatalogSafetyBadge(
     RecipeCatalogSafetyBadgeKind Kind,
     string Label,
@@ -780,6 +801,71 @@ public sealed record RecipeProductSurfaceDemoFlowCopySurface(
     public bool LiveRuntimeEnabled => false;
 }
 
+public sealed record RecipeProductSurfaceNavigationMessagingAuditMatrixItem(
+    RecipeProductSurfaceNavigationMessagingAuditArea Area,
+    RecipeProductSurfaceNavigationMessagingAuditReadinessStatus Status,
+    string RedactedSummary,
+    string EvidenceSummary)
+{
+    public bool BlocksFinalAudit => Status == RecipeProductSurfaceNavigationMessagingAuditReadinessStatus.Blocked;
+    public bool GrantsRuntimeCapability => false;
+    public bool GrantsLiveRuntime => false;
+}
+
+public sealed record RecipeProductSurfaceNavigationMessagingFinalComposition(
+    string CompositionId,
+    RecipeProductSurfaceNavigationMessagingAuditReadinessStatus AuditReadinessStatus,
+    string NavigationTaxonomyReadiness,
+    string CapabilityBadgeReadiness,
+    string DisabledActionMessagingReadiness,
+    string DemoFlowCopyReadiness,
+    string EmptyStateReadiness,
+    string ProductClaimGuardrailReadiness,
+    string AuditReadinessSummary,
+    IReadOnlyList<RecipeProductSurfaceNavigationMessagingAuditMatrixItem> AuditMatrix,
+    string AllowedFinalClaim,
+    string ForbiddenFinalClaim,
+    string FinalLineStatus)
+{
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+    public bool FixtureSafeOnly => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanCallNetwork => false;
+    public bool CanCreateSchedulerWatcherHookOrListener => false;
+    public bool CanCreateRecorderReplayOrCapture => false;
+    public bool CanWriteExportFile => false;
+    public bool CanApplyLocatorRepair => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeProductSurfaceNavigationMessagingFinalPolishSurface(
+    string SurfaceId,
+    RecipeProductSurfaceNavigationMessagingTaxonomy Taxonomy,
+    RecipeProductSurfaceDemoFlowCopySurface DemoFlow,
+    RecipeProductSurfaceNavigationMessagingFinalComposition FinalComposition,
+    IReadOnlyList<string> FinalCopyConsistencySet,
+    bool ReadOnly = true,
+    bool PreviewSafe = true)
+{
+    public bool FixtureSafeOnly => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanCallNetwork => false;
+    public bool CanCreateSchedulerWatcherHookOrListener => false;
+    public bool CanCreateRecorderReplayOrCapture => false;
+    public bool CanWriteExportFile => false;
+    public bool CanApplyLocatorRepair => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
 public sealed record RecipeLabSectionViewModel(
     string SectionId,
     string Label,
@@ -941,6 +1027,63 @@ public static class RecipeProductSurfaceCopyPolicy
 
 public static class RecipeProductSurfaceFactory
 {
+    public static RecipeProductSurfaceNavigationMessagingFinalPolishSurface CreateNavigationMessagingFinalPolishSurface()
+    {
+        var taxonomy = CreateNavigationMessagingTaxonomy();
+        var demoFlow = CreateDemoFlowCopySurface();
+        var auditMatrix = new RecipeProductSurfaceNavigationMessagingAuditMatrixItem[]
+        {
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.ScopeDrift, "Scope drift check is ready: this line only adds navigation, messaging, labels, demo copy, docs, tests, handoff, and audit prompt.", "Phase 1 taxonomy and Phase 2 demo flow are read-only contracts."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.LiveExecutionLeakage, "Live execution leakage check is ready: live runtime, live recipe execution, automation, connector/API, vault, worker, recording/playback/capture-draft, workitem processing, real export, and live mutation remain not enabled.", "All final composition capability flags return false."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.ProductOverclaimRisk, "Product overclaim risk check is ready: allowed claim is present and forbidden claim is excluded from product-facing copy.", "Copy policy tests cover forbidden action wording."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.CopyConsistency, "Copy consistency check is ready: read-only, preview-safe, fixture-safe, demo-safe, live runtime blocked, connector execution disabled, secrets by reference only, and export preview only are stated consistently.", "Final copy consistency set contains every required phrase."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.TestCoverage, "Test coverage check is ready: taxonomy, demo flow, and final polish tests cover flags, claims, disabled actions, and negated live/action terms.", "Focused test categories remain separate for Phases 1, 2, and 3."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.DocsConsistency, "Docs consistency check is ready: docs and QA reports describe read-only preview-safe fixture-safe messaging only.", "Final handoff and audit prompt preserve the closed Product Surface boundary."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.ProtectedScope, "Protected scope check is ready: no protected browser/live execution, Docker, runner, remote-control, proxy, or challenge scope is part of this line.", "Changed files are core contracts, tests, docs, QA, handoff, and prompt."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.SafetyMatrix, "Safety matrix check is ready: all blocked capability categories remain blocked.", "Safety matrix repeats blocked live/runtime/connector/vault/scheduler/recorder/export boundaries."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.DependencyChanges, "Dependency change check is ready: no dependencies are required for this line.", "No project, package, lock, or dependency manifest changes are expected."),
+            AuditItem(RecipeProductSurfaceNavigationMessagingAuditArea.FutureWorkOutsideLine, "Future work check is ready: any live runtime, automation, connector/API, vault, capture, recorder, workitem processing, or real export work is outside this closed messaging line.", "Final status is audit-ready, not runtime-ready.")
+        };
+
+        var finalComposition = new RecipeProductSurfaceNavigationMessagingFinalComposition(
+            "recipe.product.surface.navigation.messaging.final.composition.v1",
+            RecipeProductSurfaceNavigationMessagingAuditReadinessStatus.ReadyForFinalAudit,
+            "Navigation taxonomy readiness: labels are read-only and avoid live-action wording.",
+            "Capability badge readiness: badges are explanatory only and grant no capability.",
+            "Disabled action messaging readiness: every unavailable action has a blocked reason and safe next action.",
+            "Demo flow copy readiness: step copy, empty states, disabled controls, and safe closing summary remain preview-safe.",
+            "Empty state readiness: no live runtime, connector, credentials, export file, workitem processing, browser/desktop automation, or non-fixture data state is presented as available.",
+            "Product claim guardrail readiness: allowed claim is present and forbidden live automation claim is excluded from product-facing copy.",
+            "Audit readiness: line is complete as read-only navigation and messaging, pending external final audit.",
+            auditMatrix,
+            taxonomy.AllowedFinalClaim,
+            taxonomy.ForbiddenFinalClaim,
+            "COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_AUDIT_READY");
+
+        var finalCopy = new[]
+        {
+            "read-only",
+            "preview-safe",
+            "fixture-safe",
+            "demo-safe",
+            "live runtime blocked",
+            "automation not enabled",
+            "connector execution disabled",
+            "secrets by reference only",
+            "export preview only",
+            "no real file generated",
+            "no workitems processed",
+            "safe next action: review readiness and prepare requirements"
+        };
+
+        return new(
+            "recipe.product.surface.navigation.messaging.final.polish.v1",
+            taxonomy,
+            demoFlow,
+            finalComposition,
+            finalCopy);
+    }
+
     public static RecipeProductSurfaceDemoFlowCopySurface CreateDemoFlowCopySurface()
     {
         var taxonomy = CreateNavigationMessagingTaxonomy();
@@ -1057,7 +1200,7 @@ public static class RecipeProductSurfaceFactory
             ],
             [
                 new("empty.no-live-runtime", "No live runtime available", "Live runtime is not enabled in this read-only product surface.", "Review readiness and blocked-state copy."),
-                new("empty.no-connector", "No connector connected", "Connector/API calls are not enabled; connector refs remain preview metadata.", "Review connector eligibility refs."),
+                new("empty.no-connector", "No connector connected", "Connector/API calls are not enabled; connector refs remain preview metadata.", "Review connector eligibility refs only."),
                 new("empty.no-credentials", "No credentials requested", "No credentials are read or requested; secrets stay by reference only.", "Review secret aliases or refs by reference only."),
                 new("empty.no-export-file", "No export file generated", "Export preview does not write a real file.", "Review the safe handoff summary."),
                 new("empty.no-workitems", "No workitems processed", "Automatic workitem processing is not enabled.", "Review workitem metadata only."),
@@ -1157,7 +1300,7 @@ public static class RecipeProductSurfaceFactory
         {
             Disabled(RecipeProductSurfaceDisabledActionKind.RecipeExecution, "Recipe execution blocked", "Recipe execution is not enabled in this read-only product surface.", "Review readiness and prepare requirements."),
             Disabled(RecipeProductSurfaceDisabledActionKind.WorkitemProcessing, "Workitem processing blocked", "Automatic workitem processing is not enabled in this closed product surface.", "Review queue metadata and handoff notes."),
-            Disabled(RecipeProductSurfaceDisabledActionKind.ConnectorApi, "Connector/API blocked", "Connector/API/network calls are not enabled.", "Review connector eligibility and tool trust refs."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.ConnectorApi, "Connector/API blocked", "Connector/API/network calls are not enabled.", "Review connector eligibility and tool trust refs only."),
             Disabled(RecipeProductSurfaceDisabledActionKind.VaultSecrets, "Vault/secrets blocked", "Vault access and secret reading are not enabled; secrets remain by reference only.", "Review required secret aliases or refs by reference only."),
             Disabled(RecipeProductSurfaceDisabledActionKind.BrowserAutomation, "Browser automation blocked", "Browser automation and CDP-driven runtime paths are not enabled.", "Use preview summaries and blocked runtime explanations."),
             Disabled(RecipeProductSurfaceDisabledActionKind.DesktopAutomation, "Desktop automation blocked", "Desktop/computer-use automation is not enabled.", "Use manual playbook and preview-only summaries."),
@@ -1918,6 +2061,16 @@ public static class RecipeProductSurfaceFactory
             SafeProductCopy(safeNextAction),
             unavailableActionLabels.Select(SafeProductCopy).ToArray(),
             SafeProductCopy(claimGuardrailReminder));
+
+    private static RecipeProductSurfaceNavigationMessagingAuditMatrixItem AuditItem(
+        RecipeProductSurfaceNavigationMessagingAuditArea area,
+        string summary,
+        string evidence) =>
+        new(
+            area,
+            RecipeProductSurfaceNavigationMessagingAuditReadinessStatus.ReadyForFinalAudit,
+            SafeProductCopy(summary),
+            SafeProductCopy(evidence));
 
     private static RecipeCatalogReadinessBadge ReadinessBadge(RecipeTemplateReadiness readiness)
     {

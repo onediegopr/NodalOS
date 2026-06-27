@@ -1,0 +1,63 @@
+{
+  "decisionTarget": "GO_RECIPE_NAVIGATION_MESSAGING_FINAL_POLISH_AUDIT_READY",
+  "line": "NODAL_RECIPE_PRODUCT_SURFACE_NAVIGATION_MESSAGING_READ_ONLY",
+  "phase": "3/3",
+  "phaseName": "Final Polish + Audit Readiness",
+  "status": "PASS",
+  "finalLineStatusBeforeExternalAudit": "COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_AUDIT_READY",
+  "startHead": "18b430935d76038fcc59991763933172b1a27cbc",
+  "phaseCommits": {
+    "phase1": "103e22fe32de79d10438328fcb221c9ee46e54cf",
+    "phase2": "18b430935d76038fcc59991763933172b1a27cbc",
+    "phase3": "pending-final-commit-at-report-generation"
+  },
+  "closedProductSurface": {
+    "line": "NODAL_RECIPE_RUNTIME_PRODUCT_SURFACE",
+    "status": "COMPLETE_READ_ONLY_PREVIEW_SAFE_FIXTURE_SAFE_PRODUCT_SURFACE_CLOSED",
+    "commit": "df92f6fb4c86f246e1d956ede9fd4876e1d0080d"
+  },
+  "milestones": {
+    "3.1 Guard/inventory": "PASS",
+    "3.2 Final navigation/messaging composition": "PASS",
+    "3.3 Copy consistency and claim hardening": "PASS",
+    "3.4 Final audit readiness matrix": "PASS",
+    "3.5 Final tests": "PASS",
+    "3.6 Final docs/report/handoff": "PASS",
+    "3.7 Final audit prompt": "PASS"
+  },
+  "safetyMatrix": {
+    "liveRecipeExecution": "NO",
+    "liveRuntime": "NO",
+    "browserAutomation": "NO",
+    "desktopAutomation": "NO",
+    "cdpPlaywrightSeleniumPuppeteer": "NO",
+    "connectorApiNetwork": "NO",
+    "vaultSecretsAccess": "NO",
+    "schedulerWatcherHookListener": "NO",
+    "recorderReplayCapture": "NO",
+    "automaticWorkitemProcessing": "NO",
+    "fiscalPaymentMarketplaceMessageDeleteWriteLiveActions": "NO",
+    "realExportFileGeneration": "NO",
+    "protectedBrowserLiveScopeTouched": "NO",
+    "dependenciesAdded": "NO"
+  },
+  "validation": {
+    "dotnet restore .\\OneBrain.slnx": "PASS",
+    "dotnet build .\\OneBrain.slnx --no-restore": "PASS - 32 existing warnings in OneBrain.Safety.Tests, 0 errors; SDK preview informational messages also shown",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessagingFinalPolish": "PASS - 9/9",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceDemoFlowCopy": "PASS - 8/8",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessaging": "PASS - 8/8",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build": "PASS - 904/904",
+    "dotnet test .\\tests\\OneBrain.Safety.Tests\\OneBrain.Safety.Tests.csproj --no-build --filter FullyQualifiedName~Recipe": "PASS - 155 passed, 1 skipped",
+    "jsonValidation": "PASS",
+    "git diff --check": "PASS",
+    "git diff --cached --check": "PASS",
+    "protectedScopeScan": "PASS",
+    "secretScanChangedNew": "PASS",
+    "noLiveNoActionNoExecutionScanChangedNew": "PASS - live/action terms only in prohibited, blocked, disabled, or negated contexts",
+    "dependencyScan": "PASS"
+  },
+  "allowedClaim": "NODAL OS has a fixture-safe Recipe Runtime product surface with read-only catalog, lab, templates, readiness explanations, operator previews and handoff/export preview summaries.",
+  "forbiddenClaim": "NODAL OS can execute/live automate these recipes.",
+  "recommendation": "Request Claude final audit for the navigation/messaging read-only line."
+}
