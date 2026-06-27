@@ -1,0 +1,57 @@
+{
+  "block": "NODAL_RECIPE_RUNTIME_007_RECIPE_LAB_LOCATOR_REPAIR_STUDIO",
+  "decision": "GO_RECIPE_LAB_LOCATOR_REPAIR_STUDIO_READY",
+  "phase": {
+    "total_phases": 9,
+    "current_phase": "7/9",
+    "phase_name": "Recipe Lab + Locator Repair Studio",
+    "start_progress": "0%",
+    "completion": "95%",
+    "overall_line_completion": "86%",
+    "next_phase": "8/9 - Global + LATAM Recipe Templates Pack v1"
+  },
+  "previous_commits": {
+    "phase_1": "2079a04efe66e6187f7fe018c772ec3f6b51f9d8",
+    "phase_2": "29573f36c8ce1e9fef83d2627aaeb34d592b8b2c",
+    "phase_3": "edfc1693dd0e067113a523a56479f089679f881e",
+    "phase_4": "08e2f9abb7792f6aed757694609195c476a8640a",
+    "audit_cleanup": "8590468494313155f1e1dfd43a9fd485e1e9df90",
+    "phase_5": "c18dbfa1e3eeff68bfff0585072355122db6389a",
+    "phase_6": "aedaad02f9ffd5fda42779d4bce5ee92803e1bc5"
+  },
+  "milestones": {
+    "7.1_repo_branch_head_guard_inventory": "100%",
+    "7.2_recipe_lab_contracts_view_models": "95%",
+    "7.3_recipe_notebook_cell_inspection_model": "95%",
+    "7.4_locator_repair_studio_contracts": "95%",
+    "7.5_readiness_evidence_approval_tool_trigger_integration": "95%",
+    "7.6_fixture_safe_tests": "95%",
+    "7.7_docs_handoff_report": "95%"
+  },
+  "safety_matrix": {
+    "openrpa_dependency": false,
+    "code_copy": false,
+    "xaml_import": false,
+    "browser_extension_native_messaging": false,
+    "real_browser_automation": false,
+    "real_desktop_automation": false,
+    "cdp_playwright_selenium_puppeteer": false,
+    "real_dom_accessibility_screenshot_har_capture": false,
+    "scheduler_background_worker": false,
+    "real_file_watcher": false,
+    "os_hook_hotkey_listener": false,
+    "browser_desktop_listener": false,
+    "network_webhook_listener": false,
+    "connector_execution": false,
+    "vault_implementation": false,
+    "raw_secrets_stored": false,
+    "recorder_replay": false,
+    "real_locator_replay_testing": false,
+    "live_locator_repair_apply": false,
+    "automatic_recipe_run": false,
+    "automatic_workitem_processing": false,
+    "approval_unlocks_live_runtime": false,
+    "recipe_lab_unlocks_live_runtime": false,
+    "live_runtime_enabled": false
+  }
+}
