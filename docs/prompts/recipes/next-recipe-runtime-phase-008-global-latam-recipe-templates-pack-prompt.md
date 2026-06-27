@@ -25,9 +25,12 @@ Scope:
 Required guardrails:
 
 - Templates are catalog/preview/fixture-safe only.
+- Phase 8 must add a composite template readiness evaluator that composes `RecipePolicyPreflightEvaluator`, tool/secret readiness, trigger observe-only readiness, locator/lab safety, and evidence/approval readiness.
+- Template readiness must block live-blocked, future-gated, disabled, browser-runtime, desktop-runtime, or connector-runtime-backed tool entries even when a tool entry is otherwise approved for fixture use.
 - Payment/fiscal/legal/message/delete/publication templates remain approval/human gated.
 - LATAM fiscal and marketplace templates must not include real integrations.
 - Recipe Lab can inspect templates but cannot execute them.
+- Tool trust and secret refs must remain by-reference only; no real vault/API/network/connector execution is allowed.
 
 Expected phase:
 

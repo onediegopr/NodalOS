@@ -537,7 +537,7 @@ public static class RecipeLabSnapshotFactory
             new("evidence", "Evidence", evidencePack is null ? RecipeLabSectionStatus.NotStarted : RecipeLabSectionStatus.ReferenceOnly, evidencePack?.CompletenessStatus.ToString() ?? "No evidence pack.", evidencePack is null ? [] : [evidencePack.EvidencePackId]),
             new("timeline", "Timeline", timelineProjection is null ? RecipeLabSectionStatus.NotStarted : RecipeLabSectionStatus.ReferenceOnly, timelineProjection?.Status.ToString() ?? "No timeline projection.", timelineProjection is null ? [] : [timelineProjection.ProjectionId]),
             new("approval", "Human/approval", approvalNarrative is null ? RecipeLabSectionStatus.NotStarted : RecipeLabSectionStatus.NeedsHuman, approvalNarrative?.OperatorVisibleExplanation ?? "No approval narrative.", approvalNarrative is null ? [] : [approvalNarrative.NarrativeId]),
-            new("tool-trust", "Tool trust", toolTrustRegistry is null ? RecipeLabSectionStatus.NotStarted : RecipeLabSectionStatus.ReferenceOnly, $"{toolTrustRegistry?.Entries.Count ?? 0} tool trust entries.", toolTrustRegistry?.Entries.Select(e => e.ToolId).ToArray() ?? []),
+            new("tool-trust", "Tool trust", ToolTrustSectionStatus(toolTrustRegistry), ToolTrustSectionSummary(toolTrustRegistry), toolTrustRegistry?.Entries.Select(e => e.ToolId).ToArray() ?? []),
             new("secrets", "Secret refs", RecipeLabSectionStatus.Redacted, $"{secretRefs?.Count ?? recipe.RequiredSecretRefs.Count} secret refs/aliases; values omitted.", secretRefs?.Select(s => s.SecretRefId).ToArray() ?? recipe.RequiredSecretRefs.ToArray()),
             new("trigger", "Trigger observe-only", triggerReadiness is null ? RecipeLabSectionStatus.NotStarted : triggerReadiness.IsReady ? RecipeLabSectionStatus.FixtureOnly : RecipeLabSectionStatus.FutureGated, triggerReadiness?.Status.ToString() ?? "No trigger readiness.", []),
             new("locator", "Locator repair", locatorSnapshot is null ? RecipeLabSectionStatus.NotStarted : locatorSnapshot.Decision.Status == RecipeLocatorRepairDecisionStatus.SuggestedPreviewOnly ? RecipeLabSectionStatus.FixtureOnly : RecipeLabSectionStatus.NeedsHuman, locatorSnapshot?.Decision.Summary ?? "No locator studio snapshot.", locatorSnapshot?.Candidates.Select(c => c.LocatorId).ToArray() ?? [])
@@ -545,6 +545,34 @@ public static class RecipeLabSnapshotFactory
 
     private static RecipeLabBlockingIssue ToLabIssue(RecipeReadinessIssue issue) =>
         new(issue.IssueId, issue.Status, issue.Severity, issue.Message, issue.BlockId);
+
+    private static RecipeLabSectionStatus ToolTrustSectionStatus(RecipeToolTrustRegistry? registry)
+    {
+        if (registry is null)
+            return RecipeLabSectionStatus.NotStarted;
+
+        if (registry.Entries.Any(e => e.RuntimeStatus == RecipeToolRuntimeStatus.FutureGated))
+            return RecipeLabSectionStatus.FutureGated;
+
+        if (registry.Entries.Any(e => e.IsLiveBlocked))
+            return RecipeLabSectionStatus.LiveBlocked;
+
+        return RecipeLabSectionStatus.ReferenceOnly;
+    }
+
+    private static string ToolTrustSectionSummary(RecipeToolTrustRegistry? registry)
+    {
+        if (registry is null)
+            return "No tool trust registry.";
+
+        if (registry.Entries.Any(e => e.RuntimeStatus == RecipeToolRuntimeStatus.FutureGated))
+            return $"{registry.Entries.Count} tool trust entries; at least one entry is future-gated.";
+
+        if (registry.Entries.Any(e => e.IsLiveBlocked))
+            return $"{registry.Entries.Count} tool trust entries; at least one entry is live-blocked or runtime-blocked.";
+
+        return $"{registry.Entries.Count} tool trust entries.";
+    }
 
     private static RecipeLabCell Cell(
         string id,

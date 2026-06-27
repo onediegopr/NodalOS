@@ -59,6 +59,44 @@ public sealed class RecipeToolTrustSecretsByReferenceTests
     }
 
     [TestMethod]
+    public void RuntimeBlockedToolsRemainBlockedEvenWhenApprovedForFixture()
+    {
+        var cases = new[]
+        {
+            TrustedTool(RecipeToolCategory.BrowserRuntime) with { TrustLevel = RecipeToolTrustLevel.ApprovedForFixture },
+            TrustedTool(RecipeToolCategory.DesktopRuntime) with { TrustLevel = RecipeToolTrustLevel.ApprovedForFixture },
+            TrustedTool(RecipeToolCategory.Connector) with { TrustLevel = RecipeToolTrustLevel.ApprovedForFixture, RuntimeStatus = RecipeToolRuntimeStatus.FutureGated },
+            TrustedTool(RecipeToolCategory.Connector) with { TrustLevel = RecipeToolTrustLevel.ApprovedForFixture, RuntimeStatus = RecipeToolRuntimeStatus.LiveBlocked },
+            TrustedTool(RecipeToolCategory.Connector) with { TrustLevel = RecipeToolTrustLevel.ApprovedForFixture, RuntimeStatus = RecipeToolRuntimeStatus.Disabled }
+        };
+
+        foreach (var tool in cases)
+        {
+            var registry = new RecipeToolTrustRegistry([tool]);
+            var readiness = RecipeToolTrustSecretsPolicy.EvaluateCredentialedAction(ActionRequirement() with { ToolTrustRef = tool.ToolId }, registry, [PresentSecret()]);
+
+            Assert.IsFalse(readiness.IsReady, $"{tool.Category}:{tool.RuntimeStatus}");
+            Assert.AreEqual(RecipeCredentialedActionDecisionStatus.BlockedLiveRuntimeDisabled, readiness.Decision.Status, $"{tool.Category}:{tool.RuntimeStatus}");
+            StringAssert.Contains(readiness.Decision.Summary, "runtime-blocked");
+            Assert.IsFalse(readiness.Decision.AllowsLiveRuntime);
+            Assert.IsFalse(readiness.Decision.AllowsConnectorExecution);
+            Assert.IsFalse(readiness.Decision.ActionAuthorityGranted);
+        }
+    }
+
+    [TestMethod]
+    public void SafeFixtureOnlyTrustedToolCanStillPassCredentialedActionReadiness()
+    {
+        var readiness = RecipeToolTrustSecretsPolicy.EvaluateCredentialedAction(ActionRequirement(), TrustedRegistry(), [PresentSecret()]);
+
+        Assert.IsTrue(readiness.IsReady);
+        Assert.AreEqual(RecipeCredentialedActionDecisionStatus.ReadyForFixture, readiness.Decision.Status);
+        Assert.IsFalse(readiness.Decision.AllowsLiveRuntime);
+        Assert.IsFalse(readiness.Decision.AllowsConnectorExecution);
+        Assert.IsFalse(readiness.Decision.ActionAuthorityGranted);
+    }
+
+    [TestMethod]
     public void ToolRequiringSecretWithoutSecretRefBlocksReadiness()
     {
         var readiness = RecipeToolTrustSecretsPolicy.EvaluateCredentialedAction(ActionRequirement(), TrustedRegistry(), []);

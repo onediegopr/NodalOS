@@ -414,6 +414,8 @@ public static class RecipeToolTrustSecretsPolicy
 
         if (tool is null)
             blocking.Add(Issue("missing-tool-trust", RecipeReadinessStatus.BlockedMissingToolTrust, "Credentialed action requires a known tool trust ref."));
+        else if (tool.IsLiveBlocked)
+            blocking.Add(Issue("tool-live-runtime-blocked", RecipeReadinessStatus.BlockedLiveRuntimeDisabled, "Tool live runtime is blocked, future-gated, disabled, or runtime-backed; credentialed action cannot be considered ready with a runtime-blocked tool."));
         else if (!tool.IsTrustedForFixture)
             blocking.Add(Issue("untrusted-tool", RecipeReadinessStatus.BlockedMissingToolTrust, "Tool is not trusted for fixture-safe use."));
 
@@ -448,6 +450,7 @@ public static class RecipeToolTrustSecretsPolicy
             var status = blocking[0].IssueId switch
             {
                 "missing-tool-trust" => RecipeCredentialedActionDecisionStatus.BlockedMissingToolTrust,
+                "tool-live-runtime-blocked" => RecipeCredentialedActionDecisionStatus.BlockedLiveRuntimeDisabled,
                 "untrusted-tool" => RecipeCredentialedActionDecisionStatus.BlockedUntrustedTool,
                 "missing-secret-reference" => RecipeCredentialedActionDecisionStatus.BlockedMissingSecretReference,
                 "raw-secret-detected" => RecipeCredentialedActionDecisionStatus.BlockedRawSecretDetected,

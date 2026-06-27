@@ -125,7 +125,9 @@ public sealed class RecipeLabLocatorRepairStudioTests
             toolTrustRegistry: registry);
 
         Assert.IsTrue(entry.IsLiveBlocked);
-        Assert.IsTrue(snapshot.ViewModel.Sections.Any(s => s.SectionId == "tool-trust"));
+        var section = snapshot.ViewModel.Sections.Single(s => s.SectionId == "tool-trust");
+        Assert.AreEqual(RecipeLabSectionStatus.LiveBlocked, section.Status);
+        StringAssert.Contains(section.RedactedSummary, "live-blocked");
         Assert.IsFalse(snapshot.CanUnlockLiveRuntime);
     }
 
