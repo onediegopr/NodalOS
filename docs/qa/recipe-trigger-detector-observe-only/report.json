@@ -1,0 +1,55 @@
+{
+  "block": "NODAL_RECIPE_RUNTIME_006_TRIGGER_DETECTOR_OBSERVE_ONLY",
+  "decision": "GO_RECIPE_TRIGGER_DETECTOR_OBSERVE_ONLY_READY",
+  "phase": {
+    "total_phases": 9,
+    "current_phase": "6/9",
+    "phase_name": "Trigger / Detector Layer observe-only",
+    "start_progress": "0%",
+    "completion": "95%",
+    "overall_line_completion": "75%",
+    "next_phase": "7/9 - Recipe Lab + Locator Repair Studio"
+  },
+  "previous_commits": {
+    "phase_1": "2079a04efe66e6187f7fe018c772ec3f6b51f9d8",
+    "phase_2": "29573f36c8ce1e9fef83d2627aaeb34d592b8b2c",
+    "phase_3": "edfc1693dd0e067113a523a56479f089679f881e",
+    "phase_4": "08e2f9abb7792f6aed757694609195c476a8640a",
+    "audit_cleanup": "8590468494313155f1e1dfd43a9fd485e1e9df90",
+    "phase_5": "c18dbfa1e3eeff68bfff0585072355122db6389a"
+  },
+  "milestones": {
+    "6.1_repo_branch_head_guard_inventory": "100%",
+    "6.2_trigger_detector_contracts": "95%",
+    "6.3_observe_only_policy_eligibility": "95%",
+    "6.4_trigger_evidence_timeline_projection": "95%",
+    "6.5_workitem_recipe_association_without_autorun": "95%",
+    "6.6_fixture_safe_tests": "95%",
+    "6.7_docs_handoff_report": "95%"
+  },
+  "safety_matrix": {
+    "openrpa_dependency": false,
+    "code_copy": false,
+    "xaml_import": false,
+    "browser_extension_native_messaging": false,
+    "real_browser_automation": false,
+    "real_desktop_automation": false,
+    "cdp_playwright_selenium_puppeteer": false,
+    "scheduler_background_worker": false,
+    "real_file_watcher": false,
+    "os_hook_hotkey_listener": false,
+    "browser_desktop_listener": false,
+    "network_webhook_listener": false,
+    "connector_execution": false,
+    "vault_implementation": false,
+    "raw_secrets_stored": false,
+    "recorder_replay": false,
+    "automatic_recipe_run": false,
+    "automatic_workitem_processing": false,
+    "real_screenshot_har_dom_accessibility_capture": false,
+    "captcha_2fa_bypass": false,
+    "approval_unlocks_trigger_autorun": false,
+    "trigger_unlocks_live_runtime": false,
+    "live_runtime_enabled": false
+  }
+}
