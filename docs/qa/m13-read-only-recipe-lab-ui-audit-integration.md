@@ -26,7 +26,7 @@ No frontend route/page was added. No browser/runtime/stealth panel was touched.
 - Added `ReliableRecipeLabAuditSurfaceViewModel`.
 - Added `ReliableRecipeLabAuditSurfacePresenter`.
 - Added UI-ready section, badge, metric, milestone, design-system and external-audit handoff models.
-- Added a read-only surface integrating M1-M12 quality, preflight, recorder draft, eval, sandbox, perception, adapter readiness, structured prerequisites, authoring, operator review and closeout/audit panels.
+- Added a read-only surface integrating M1-M13 quality, preflight, recorder draft, eval, sandbox, perception, adapter readiness, structured prerequisites, authoring, operator review, closeout/audit and presenter milestone panels.
 - Added focused M13 tests.
 
 ## UI Sections
@@ -44,7 +44,7 @@ No frontend route/page was added. No browser/runtime/stealth panel was touched.
 - Structured prerequisite authoring.
 - Operator review pack.
 - Closeout/audit.
-- M1-M12 milestone timeline.
+- M1-M13 milestone timeline.
 - External audit handoff.
 
 ## Product Surface Statement
@@ -76,6 +76,11 @@ No frontend route/page was added. No browser/runtime/stealth panel was touched.
 - No frontend route/page added.
 - No new dependency.
 
+Scoped runtime claim:
+
+- M1-M13 did not add or enable runtime; existing protected runtime scopes remain present and untouched.
+- This report does not make repo-wide runtime-absence claims and does not deny that protected browser/CDP projects exist elsewhere.
+
 ## Protected Scope Statement
 
 - OCR files touched: no.
@@ -91,9 +96,9 @@ No frontend route/page was added. No browser/runtime/stealth panel was touched.
 ## Validation
 
 - `dotnet restore .\OneBrain.slnx`: PASS.
-- `dotnet build .\OneBrain.slnx --no-restore`: PASS, 0 warnings, 0 errors.
-- `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=ReadOnlyRecipeLabUiAuditIntegration`: PASS, 29/29.
-- `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build`: PASS, 1279/1279.
+- `dotnet build .\OneBrain.slnx --no-restore`: PASS. The final audit rerun observed 32 warnings, mostly preexisting Safety/OCR obsolete/nullability warnings outside the M13 presenter scope; no M13 compile errors were observed.
+- `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=ReadOnlyRecipeLabUiAuditIntegration`: PASS, 31/31 after M13.1 timeline hardening.
+- `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build`: PASS, 1285/1285 after M13.1 hardening tests.
 - `dotnet test .\tests\OneBrain.Safety.Tests\OneBrain.Safety.Tests.csproj --no-build --filter FullyQualifiedName~Recipe`: PASS, 155 passed / 1 skipped.
 - `git diff --check`: PASS.
 - Protected scope scan: PASS, no protected-scope paths changed.
@@ -103,6 +108,17 @@ No frontend route/page was added. No browser/runtime/stealth panel was touched.
 - Dependency scan: PASS, no dependency files changed.
 - UI build/lint: not applicable; no UI framework files changed.
 - JSON validation: not applicable; no JSON files changed.
+
+## Final Audit Micro-Hardening Note
+
+The GPT-5.5 XHigh final audit found no runtime leak and no protected-scope violation, but flagged P2/P3 fidelity issues:
+
+- Timeline copy previously implied M1-M12 while rows represented M1-M11.
+- Build warning copy previously claimed zero warnings, which was stale relative to the final audit rerun.
+- Future UI mounting should rely on centralized forbidden labels, blocked capabilities and milestone metadata.
+- Runtime claims must remain scoped to M1-M13 additions because protected runtime projects exist elsewhere in the repo.
+
+M13.1 addresses these items without adding runtime or touching protected scope.
 
 ## Percentages
 

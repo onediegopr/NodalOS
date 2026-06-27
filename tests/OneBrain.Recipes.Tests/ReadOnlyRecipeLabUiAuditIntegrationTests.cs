@@ -108,13 +108,40 @@ public sealed class ReadOnlyRecipeLabUiAuditIntegrationTests
     }
 
     [TestMethod]
-    public void TimelinePreviewIncludesM1M12()
+    public void TimelinePreviewIncludesM1M13()
     {
         var surface = Surface();
 
-        Assert.AreEqual(11, surface.Timeline.Count);
-        CollectionAssert.AreEqual(Enumerable.Range(1, 11).Select(i => $"M{i}").ToArray(), surface.Timeline.Select(m => m.BlockId).ToArray());
+        Assert.AreEqual(13, surface.Timeline.Count);
+        CollectionAssert.AreEqual(Enumerable.Range(1, 13).Select(i => $"M{i}").ToArray(), surface.Timeline.Select(m => m.BlockId).ToArray());
         AssertSection(ReliableRecipeLabAuditSectionKind.TimelinePreview);
+    }
+
+    [TestMethod]
+    public void TimelineSectionLabelMatchesMilestoneRows()
+    {
+        var surface = Surface();
+        var timelineSection = surface.Sections.Single(s => s.Kind == ReliableRecipeLabAuditSectionKind.TimelinePreview);
+
+        Assert.AreEqual("M1-M13", timelineSection.Eyebrow);
+        Assert.AreEqual(surface.Timeline.Count.ToString(), timelineSection.Metrics.Single(m => m.Label == "Milestones").Value);
+        Assert.IsTrue(timelineSection.KeyRows.Any(r => r.StartsWith("M12:", StringComparison.Ordinal)));
+        Assert.IsTrue(timelineSection.KeyRows.Any(r => r.StartsWith("M13:", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void M12CloseoutAndM13PresenterAreRepresentedExplicitly()
+    {
+        var milestones = Surface().Timeline;
+        var m12 = milestones.Single(m => m.BlockId == "M12");
+        var m13 = milestones.Single(m => m.BlockId == "M13");
+
+        Assert.IsTrue(m12.Summary.Contains("closeout", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(m12.Summary.Contains("protected-scope proof", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(m13.Summary.Contains("presenter", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(m13.Summary.Contains("external-audit handoff", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(m12.RuntimeEnabled);
+        Assert.IsFalse(m13.RuntimeEnabled);
     }
 
     [TestMethod]

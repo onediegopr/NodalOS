@@ -243,11 +243,11 @@ public static class ReliableRecipeLabAuditSurfacePresenter
             [lab.CloseoutPanel.InvariantSummary, lab.CloseoutPanel.ProtectedScopeSummary, lab.CloseoutPanel.NoRuntimeSummary, lab.CloseoutPanel.ExternalAuditSummary],
             ["External audit required before runtime.", "Protected scope untouched."],
             lab.CloseoutPanel.NoRuntimeNotice),
-        Section(ReliableRecipeLabAuditSectionKind.TimelinePreview, "Milestone timeline", "M1-M12", ReliableRecipeLabAuditTone.Neutral,
-            "Vertical milestone preview links the closed foundation blocks without exposing runtime state.",
-            [Metric("Milestones", closeout.BlockSummaries.Count.ToString(), ReliableRecipeLabAuditTone.Info), Metric("Runtime autonomy", "0%", ReliableRecipeLabAuditTone.Danger)],
-            closeout.BlockSummaries.Select(b => $"{b.BlockId}: {b.Purpose}").ToArray(),
-            ["Read-only timeline preview."],
+        Section(ReliableRecipeLabAuditSectionKind.TimelinePreview, "Milestone timeline", "M1-M13", ReliableRecipeLabAuditTone.Neutral,
+            "Vertical milestone preview links M1-M11 foundation blocks plus M12 closeout and M13 presenter audit surface without exposing runtime state.",
+            [Metric("Milestones", Timeline(closeout).Count.ToString(), ReliableRecipeLabAuditTone.Info), Metric("Runtime autonomy", "0%", ReliableRecipeLabAuditTone.Danger)],
+            Timeline(closeout).Select(m => $"{m.BlockId}: {m.Summary}").ToArray(),
+            ["Read-only timeline preview.", "M12 closeout and M13 presenter are explicit audit milestones."],
             "Milestones are audit references, not action history.")
     ];
 
@@ -289,7 +289,28 @@ public static class ReliableRecipeLabAuditSurfacePresenter
             b.Purpose,
             ReliableRecipeLabAuditTone.Neutral,
             ReadOnly: true,
-            RuntimeEnabled: false)).ToArray();
+            RuntimeEnabled: false))
+        .Concat([
+            new ReliableRecipeLabAuditMilestone(
+                "M12",
+                "GO_M12_NO_RUNTIME_REVIEW_PACK_CLOSEOUT_AUDIT_READINESS_READY",
+                "5dcc50877cbc85fa6440cb68cb7532c1172e58b5",
+                "NoRuntimeReviewPackCloseoutAuditReadiness",
+                "No-runtime closeout, invariant matrix, protected-scope proof and external audit handoff.",
+                ReliableRecipeLabAuditTone.Audit,
+                ReadOnly: true,
+                RuntimeEnabled: false),
+            new ReliableRecipeLabAuditMilestone(
+                "M13",
+                "GO_M13_READ_ONLY_RECIPE_LAB_UI_AUDIT_INTEGRATION_READY",
+                "a817a2015488da00d9be7dc49248602fb2e36e02",
+                "ReadOnlyRecipeLabUiAuditIntegration",
+                "Read-only Recipe Lab audit presenter and external-audit handoff surface.",
+                ReliableRecipeLabAuditTone.Info,
+                ReadOnly: true,
+                RuntimeEnabled: false)
+        ])
+        .ToArray();
 
     private static ReliableRecipeLabAuditSurfaceExternalAuditHandoff Handoff(ReliableRecipeNoRuntimeCloseoutReport closeout) =>
         new(

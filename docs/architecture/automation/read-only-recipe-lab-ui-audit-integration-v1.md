@@ -35,6 +35,8 @@ M13 adds:
 
 No UI framework files are touched. No route or page is registered. The presenter is deterministic and consumes existing fixture/viewmodel data.
 
+M1-M13 did not add or enable runtime; existing protected runtime scopes remain present and untouched.
+
 ## UI Sections
 
 The surface exposes:
@@ -52,7 +54,7 @@ The surface exposes:
 - Structured prerequisite authoring.
 - Operator review pack.
 - Closeout/audit.
-- M1-M12 milestone timeline.
+- M1-M13 milestone timeline.
 
 ## Visual Direction
 
@@ -67,6 +69,16 @@ The presenter records design tokens for a dark-first Mission Control surface:
 - warnings and audit gates visible.
 
 Success states mean fixture/read-only readiness only. They do not imply runtime.
+
+## Timeline Semantics
+
+The Recipe Lab audit presenter separates the closeout model from the product timeline:
+
+- M12 closeout models the M1-M11 no-runtime foundation, invariant matrix, protected-scope proof and external audit handoff.
+- M13 adds the read-only presenter/audit surface.
+- The visible timeline therefore includes M1-M13 rows, while the M12 closeout report keeps its M1-M11 foundation summary intact.
+
+This avoids claiming that the M12 closeout generator itself owns M12/M13 milestones.
 
 ## Product Wording
 
@@ -107,9 +119,23 @@ Forbidden labels remain absent from action labels:
 
 M13 does not add an executable adapter, runtime command, browser launch, CDP connection, browser driver framework path, Cloak mutation, desktop/UIA/Win32 live behavior, OCR live activation, screenshot capture, recorder runtime, sandbox/VM/container runtime, provider/LLM call, network call, shell/process runner, productive filesystem action or UI execution action.
 
+This is a scoped claim about the M1-M13 Reliable Recipe foundation. It is not a repo-wide claim that browser/CDP/runtime projects do not exist elsewhere. Existing protected runtime scopes remain present and untouched.
+
 ## External Audit Handoff Visibility
 
 The presenter surfaces the M12 external audit handoff with audit questions, evidence references, runtime prohibited statement and audit decision labels.
+
+## Shared Wording And Capability Centralization Backlog
+
+Before mounting this presenter into a real UI host, centralize the following shared data to reduce drift:
+
+- forbidden product action labels,
+- blocked runtime capability names,
+- no-runtime notices,
+- protected-scope wording,
+- M1-M13 milestone metadata.
+
+M13.1 adds focused static guard tests, but a mounted UI should use one shared source for these labels and capability lists.
 
 ## Future Work
 
