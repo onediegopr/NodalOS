@@ -1,0 +1,57 @@
+{
+  "block": "NODAL_RECIPE_RUNTIME_005_TOOL_TRUST_SECRETS_BY_REFERENCE",
+  "decision": "GO_RECIPE_TOOL_TRUST_SECRETS_BY_REFERENCE_READY",
+  "phase": {
+    "total_phases": 9,
+    "current_phase": "5/9",
+    "phase_name": "Tool Trust Registry + Secrets by Reference",
+    "start_progress": "0%",
+    "completion": "95%",
+    "overall_line_completion": "64%",
+    "next_phase": "6/9 - Trigger / Detector Layer observe-only"
+  },
+  "previous_commits": {
+    "phase_1": "2079a04efe66e6187f7fe018c772ec3f6b51f9d8",
+    "phase_2": "29573f36c8ce1e9fef83d2627aaeb34d592b8b2c",
+    "phase_3": "edfc1693dd0e067113a523a56479f089679f881e",
+    "phase_4": "08e2f9abb7792f6aed757694609195c476a8640a",
+    "audit_cleanup": "8590468494313155f1e1dfd43a9fd485e1e9df90"
+  },
+  "milestones": {
+    "5.1_repo_branch_head_guard_inventory": "100%",
+    "5.2_tool_trust_registry_contracts": "95%",
+    "5.3_secrets_by_reference_contracts": "95%",
+    "5.4_credentialed_action_gate_connector_eligibility": "95%",
+    "5.5_audit_p2_hardening": "95%",
+    "5.6_fixture_safe_tests": "95%",
+    "5.7_docs_handoff_report": "95%"
+  },
+  "audit_cleanup_carry_forward": {
+    "F-001": "fixed_tested",
+    "F-002": "documented_canonical_preflight_guardrail",
+    "F-003": "fixed_sensitive_category_gates",
+    "F-004": "fixed_future_connector_and_failed_validation_completeness"
+  },
+  "safety_matrix": {
+    "openrpa_dependency": false,
+    "code_copy": false,
+    "xaml_import": false,
+    "browser_extension_native_messaging": false,
+    "real_browser_automation": false,
+    "real_desktop_automation": false,
+    "cdp_playwright_selenium_puppeteer": false,
+    "scheduler_background_worker": false,
+    "recorder_replay": false,
+    "file_watcher_os_hook": false,
+    "network_api_calls": false,
+    "real_connector_execution": false,
+    "real_vault_implementation": false,
+    "raw_secrets_stored": false,
+    "real_screenshot_har_dom_accessibility_capture": false,
+    "captcha_2fa_bypass": false,
+    "approval_unlocks_live_runtime": false,
+    "tool_trust_unlocks_live_connector_execution": false,
+    "secrets_exposed": false,
+    "live_runtime_enabled": false
+  }
+}

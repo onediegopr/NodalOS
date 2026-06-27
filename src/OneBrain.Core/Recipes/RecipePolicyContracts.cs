@@ -249,6 +249,20 @@ public static class RecipePolicyPreflightEvaluator
         SensitiveActionCategory.PublicPosting
     ];
 
+    private static readonly SensitiveActionCategory[] HumanOrApprovalRequiredCategories =
+    [
+        SensitiveActionCategory.Login,
+        SensitiveActionCategory.CredentialUse,
+        SensitiveActionCategory.DataDeletion,
+        SensitiveActionCategory.DataMutation,
+        SensitiveActionCategory.FileWrite,
+        SensitiveActionCategory.ExternalSystemMutation,
+        SensitiveActionCategory.MarketplaceListingChange,
+        SensitiveActionCategory.PriceOrStockChange,
+        SensitiveActionCategory.PersonalDataHandling,
+        SensitiveActionCategory.SecretHandling
+    ];
+
     public static RecipePolicyPreflightResult Evaluate(RecipeDefinition definition, RecipeRunMode mode)
     {
         var blocking = new List<RecipeReadinessIssue>();
@@ -387,6 +401,9 @@ public static class RecipePolicyPreflightEvaluator
         {
             if (ApprovalRequiredCategories.Contains(category) && !risk.ApprovalPolicyPresent)
                 blocking.Add(Issue("category-requires-approval", RecipeReadinessStatus.BlockedMissingApprovalPolicy, $"{category} requires approval."));
+
+            if (HumanOrApprovalRequiredCategories.Contains(category) && !risk.ApprovalPolicyPresent && !risk.HumanInterventionPathPresent)
+                blocking.Add(Issue("sensitive-requires-human-or-approval", RecipeReadinessStatus.BlockedMissingApprovalPolicy, $"{category} requires approval or human intervention path."));
 
             if (category is SensitiveActionCategory.CaptchaOrChallenge or SensitiveActionCategory.TwoFactor)
                 blocking.Add(Issue("challenge-human-required", RecipeReadinessStatus.BlockedRiskGate, "Captcha/2FA/challenge categories must block to human intervention, never auto-bypass."));

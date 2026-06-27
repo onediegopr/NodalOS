@@ -17,6 +17,8 @@ public sealed record RecipeDefinition(
     public List<string> RequiredCapabilities { get; init; } = new();
     public List<string> RequiredToolTrustRefs { get; init; } = new();
     public List<string> RequiredSecretRefs { get; init; } = new();
+    public List<string> ConnectorEligibilityRefs { get; init; } = new();
+    public List<string> CredentialedActionGateRefs { get; init; } = new();
     public string? InputSchemaRef { get; init; }
     public string? OutputSchemaRef { get; init; }
     public List<RecipeLifecycleStage> LifecycleStages { get; init; } = new();

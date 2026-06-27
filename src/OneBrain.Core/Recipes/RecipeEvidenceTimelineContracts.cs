@@ -487,13 +487,17 @@ public static class RecipeEvidencePolicy
         IReadOnlyList<RecipeStepEvidenceResult> stepResults,
         IReadOnlyList<RecipeValidationEvidence> validationEvidence)
     {
-        if (pack.CaptureMode is RecipeEvidenceCaptureMode.FutureBrowserRuntime or RecipeEvidenceCaptureMode.FutureDesktopRuntime)
+        if (pack.CaptureMode is RecipeEvidenceCaptureMode.FutureBrowserRuntime or RecipeEvidenceCaptureMode.FutureDesktopRuntime or RecipeEvidenceCaptureMode.FutureConnectorRuntime)
             return RecipeEvidenceCompleteness.BlockedLiveRuntimeDisabled;
 
         if (pack.RedactionSummary.HasRawSecretExposure || !pack.RedactionSummary.EvidenceSafeForHandoff || !pack.RedactionSummary.EvidenceSafeForTimeline)
             return RecipeEvidenceCompleteness.BlockedByRedactionPolicy;
 
-        if (stepResults.Any(r => !r.Satisfied) || validationEvidence.Any(v => v.Status is RecipeValidationEvidenceStatus.Blocked or RecipeValidationEvidenceStatus.NotRun && v.BlockingSeverity == RecipeValidationSeverity.Blocking))
+        if (stepResults.Any(r => !r.Satisfied) ||
+            validationEvidence.Any(v =>
+                v.Status is RecipeValidationEvidenceStatus.Blocked ||
+                v.Status is RecipeValidationEvidenceStatus.Failed && v.BlockingSeverity == RecipeValidationSeverity.Blocking ||
+                v.Status is RecipeValidationEvidenceStatus.NotRun && v.BlockingSeverity == RecipeValidationSeverity.Blocking))
             return RecipeEvidenceCompleteness.BlockedMissingRequiredEvidence;
 
         return RecipeEvidenceCompleteness.Complete;
