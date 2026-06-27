@@ -1,0 +1,69 @@
+{
+  "block": "NODAL_RECIPE_RUNTIME_PRODUCT_SURFACE_003_OPERATOR_PREVIEW_FLOW_HANDOFF_EXPORT_SURFACE",
+  "decisionTarget": "GO_RECIPE_PRODUCT_SURFACE_OPERATOR_PREVIEW_HANDOFF_EXPORT_READY",
+  "decision": "GO_RECIPE_PRODUCT_SURFACE_OPERATOR_PREVIEW_HANDOFF_EXPORT_READY",
+  "productSurfaceLine": {
+    "totalPhases": 4,
+    "currentPhase": "3/4",
+    "phaseName": "Operator Preview Flow + Handoff Export Surface",
+    "phaseStartProgressPercent": 0,
+    "phaseCompletionEstimatePercent": 95,
+    "overallLineCompletionEstimatePercent": 78
+  },
+  "baseCommits": {
+    "productSurfacePhase1": "2b93eb4392f7817d9e13550a9aff83df246f5cb9",
+    "productSurfacePhase2": "a8993e132999b7e004ee67bcc9393c158cb79812",
+    "recipeRuntimeFinalHardening": "409cd6da0ff902287d85b3dbc6a6b6262cd54162"
+  },
+  "milestones": {
+    "3.1_guard_inventory": "PASS",
+    "3.2_operator_preview_flow_model": "PASS",
+    "3.3_handoff_export_preview_model": "PASS",
+    "3.4_operator_ux_copy_disabled_actions": "PASS",
+    "3.5_system_specific_preview_summaries": "PASS",
+    "3.6_tests": "PASS",
+    "3.7_docs_handoff_report": "PASS"
+  },
+  "surfaceStatus": {
+    "operatorPreviewSurface": "READY_READ_ONLY",
+    "handoffExportPreviewSurface": "READY_PREVIEW_ONLY",
+    "disabledActionSemantics": "READY",
+    "systemSpecificSummaries": "READY",
+    "toolTrustSummaries": "BY_REFERENCE",
+    "secretSummaries": "BY_REFERENCE_ONLY",
+    "triggerSummaries": "OBSERVE_ONLY",
+    "locatorCaptureSummaries": "PREVIEW_ONLY",
+    "liveRuntimeStatus": "BLOCKED"
+  },
+  "safetyMatrix": {
+    "realRecipeExecution": "NO",
+    "browserAutomation": "NO",
+    "desktopAutomation": "NO",
+    "cdpPlaywrightSeleniumPuppeteer": "NO",
+    "connectorApiNetwork": "NO",
+    "vaultSecretsAccess": "NO",
+    "schedulerWatcherHookListener": "NO",
+    "recorderReplayCapture": "NO",
+    "automaticWorkitemProcessing": "NO",
+    "fiscalPaymentMarketplaceMessageDeleteWriteLiveActions": "NO",
+    "liveRuntimeEnabled": "NO",
+    "productCopyOverclaimsLiveAutomation": "NO"
+  },
+  "validation": {
+    "dotnetRestore": "PASS",
+    "dotnetBuildNoRestore": "PASS_0_WARNINGS_0_ERRORS",
+    "productSurfacePhase3FilteredTests": "PASS_8",
+    "productSurfacePhase2FilteredTests": "PASS_12",
+    "productSurfacePhase1FilteredTests": "PASS_13",
+    "fullOneBrainRecipesTests": "PASS_869",
+    "recipeSafetyFilter": "PASS_155_SKIPPED_1",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "gitDiffCachedCheck": "PASS",
+    "protectedScopeScan": "PASS",
+    "secretScanChangedNew": "PASS",
+    "noLiveNoActionSourceScan": "PASS",
+    "dependencyScan": "PASS"
+  },
+  "nextPhase": "4/4 - Product QA / UX Polish / Safe Demo Readiness"
+}

@@ -58,6 +58,28 @@ public enum RecipeTemplateBlockingReasonCategory
     UnknownUnsafe
 }
 
+public enum RecipeOperatorPreviewSectionKind
+{
+    Overview,
+    Readiness,
+    BlockingReasons,
+    MissingRequirements,
+    ApprovalPath,
+    EvidenceValidation,
+    ToolTrustSecrets,
+    TriggerObserveOnly,
+    LocatorCapturePreview,
+    SafeNextAction,
+    NotAutomated
+}
+
+public enum RecipeHandoffExportAvailability
+{
+    PreviewOnly,
+    Disabled,
+    NoRealFileWritten
+}
+
 public sealed record RecipeCatalogSafetyBadge(
     RecipeCatalogSafetyBadgeKind Kind,
     string Label,
@@ -341,6 +363,106 @@ public sealed record RecipeTemplateDetailSurface(
     public bool CanCreateCapture => false;
 }
 
+public sealed record RecipeOperatorPreviewReviewSection(
+    RecipeOperatorPreviewSectionKind Kind,
+    string Label,
+    RecipeLabSectionStatus Status,
+    string RedactedSummary,
+    IReadOnlyList<string> SourceRefs)
+{
+    public bool ReadOnly => true;
+}
+
+public sealed record RecipeOperatorPreviewDisabledActionState(
+    string ActionId,
+    string Label,
+    string DisabledReason,
+    bool Available = false)
+{
+    public bool CanInvoke => false;
+    public bool GrantsLiveRuntime => false;
+}
+
+public sealed record RecipeOperatorPreviewViewModel(
+    string ViewModelId,
+    RecipeTemplateDetailHeader Template,
+    RecipeTemplateStatus PreviewStatus,
+    RecipeReadinessStatus ReadinessStatus,
+    string OperatorReviewSummary,
+    IReadOnlyList<RecipeOperatorPreviewReviewSection> RequiredReviewSections,
+    string RequiredApprovalsSummary,
+    string RequiredEvidenceSummary,
+    IReadOnlyList<string> ExpectedHumanInterventionPoints,
+    string BlockedLiveRuntimeExplanation,
+    IReadOnlyList<RecipeOperatorPreviewDisabledActionState> DisabledActions,
+    RecipeTemplateSafeNextActionExplanation SafeNextAction,
+    string NotAutomatedSummary,
+    string SystemSpecificPreviewSummary)
+{
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanCreateScheduler => false;
+    public bool CanCreateWatcherHookOrListener => false;
+    public bool CanCreateRecorderReplayOrCapture => false;
+    public bool CanApplyLocatorRepair => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeHandoffExportPreviewViewModel(
+    string ViewModelId,
+    string HandoffTitle,
+    string TemplateSummary,
+    string ReadinessSnapshot,
+    IReadOnlyList<RecipeTemplateBlockingReason> BlockingReasons,
+    IReadOnlyList<RecipeTemplateMissingRequirement> MissingRequirements,
+    string ApprovalPathSummary,
+    string ToolTrustSummary,
+    string SecretReferencesSummary,
+    IReadOnlyList<string> EvidenceRequirements,
+    IReadOnlyList<string> ValidationRequirements,
+    string LocatorCaptureImplications,
+    string TriggerObserveOnlySummary,
+    IReadOnlyList<string> OperatorNotes,
+    IReadOnlyList<string> NotIncludedNotAutomated,
+    RecipeHandoffExportAvailability ExportAvailability,
+    string ProductSafeCopy)
+{
+    public bool ReadOnly => true;
+    public bool PreviewOnly => true;
+    public bool WritesRealFile => false;
+    public bool GeneratesPdfOrDocx => false;
+    public bool OpensSaveDialog => false;
+    public bool CallsNetwork => false;
+    public bool OpensConnector => false;
+    public bool ReadsSecrets => false;
+    public bool RawSecretValuesShown => false;
+    public bool RawPayloadShown => false;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeOperatorPreviewHandoffExportSurface(
+    string SurfaceId,
+    RecipeOperatorPreviewViewModel OperatorPreview,
+    RecipeHandoffExportPreviewViewModel HandoffExportPreview,
+    IReadOnlyList<string> SafetyCopy,
+    bool ReadOnly = true,
+    bool PreviewSafe = true)
+{
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanWriteExportFile => false;
+}
+
 public sealed record RecipeLabSectionViewModel(
     string SectionId,
     string Label,
@@ -458,15 +580,18 @@ public static class RecipeProductSurfaceCopyPolicy
     public static IReadOnlyList<string> ForbiddenCopy { get; } =
     [
         "Run recipe",
+        "Run now",
         "Execute",
         "Automate now",
         "Autofill",
+        "Apply",
         "Submit",
         "Sync live",
         "Pay",
         "Publish",
         "Send",
         "Invoice live",
+        "Connect",
         "Connect now",
         "Use credentials",
         "Record",
@@ -661,6 +786,67 @@ public static class RecipeProductSurfaceFactory
                 "Observe-only trigger",
                 "Not included",
                 "Future-gated"
+            ]);
+    }
+
+    public static RecipeOperatorPreviewHandoffExportSurface CreateOperatorPreviewHandoffExportSurface(
+        RecipeTemplateCatalog catalog,
+        string templateId,
+        RecipeTemplateReadinessContext readinessContext,
+        IReadOnlyList<string>? operatorNotes = null)
+    {
+        var detail = CreateTemplateDetailSurface(catalog, templateId, readinessContext);
+        var view = detail.ViewModel;
+        var notes = (operatorNotes ?? []).Select(SafeProductCopy).ToArray();
+
+        var operatorPreview = new RecipeOperatorPreviewViewModel(
+            $"recipe.operator.preview.{templateId}",
+            view.Header,
+            view.ReadinessExplanation.ReadinessStatus,
+            view.ReadinessExplanation.CanonicalReadinessStatus,
+            $"Operator preview for {view.Header.DisplayName}: review readiness, requirements, blocked states, and handoff metadata only.",
+            OperatorReviewSections(view),
+            view.SystemSummary.HumanReviewSummary,
+            view.EvidenceValidationSummary,
+            HumanInterventionPoints(view),
+            view.SafetySummary.LiveBlockedExplanation,
+            DisabledActionStates(view),
+            view.ReadinessExplanation.SafeNextAction,
+            view.SafetySummary.NotIncludedSummary,
+            OperatorSystemPreviewSummary(view));
+
+        var handoffPreview = new RecipeHandoffExportPreviewViewModel(
+            $"recipe.handoff.export.preview.{templateId}",
+            $"Handoff preview - {view.Header.DisplayName}",
+            $"{view.Header.TemplateId} / {view.Header.SystemFamily} / {view.Header.Region} / {view.Header.Category}",
+            $"{view.ReadinessExplanation.ReadinessStatus}; canonical {view.ReadinessExplanation.CanonicalReadinessStatus}; preview-only.",
+            view.ReadinessExplanation.BlockingReasons,
+            view.ReadinessExplanation.MissingRequirements,
+            view.SystemSummary.HumanReviewSummary,
+            ToolTrustSummary(view.Requirements.RequiredToolTrustRefs),
+            SecretRefsSummary(view.Requirements.RequiredSecretRefs),
+            view.Requirements.EvidenceRequirementRefs,
+            view.Requirements.ValidationRequirementRefs,
+            view.LocatorCaptureImplicationsSummary,
+            view.TriggerObserveOnlySummary,
+            notes,
+            NotIncludedList(view),
+            RecipeHandoffExportAvailability.PreviewOnly,
+            "Export preview only. Handoff package not generated as a real file. No live execution.");
+
+        return new(
+            $"recipe.operator.preview.handoff.surface.{templateId}",
+            operatorPreview,
+            handoffPreview,
+            [
+                "Preview only",
+                "No live execution",
+                "Export preview only",
+                "Handoff package not generated as a real file",
+                "Operator review required",
+                "Live runtime blocked",
+                "Automation not enabled",
+                "Safe next action: review readiness and prepare requirements"
             ]);
     }
 
@@ -896,6 +1082,79 @@ public static class RecipeProductSurfaceFactory
         new("safe-next", "Safe next action", RecipeLabSectionStatus.ReferenceOnly, explanation.SafeNextAction.RedactedSummary, [])
     ];
 
+    private static IReadOnlyList<RecipeOperatorPreviewReviewSection> OperatorReviewSections(RecipeTemplateDetailViewModel view) =>
+    [
+        new(RecipeOperatorPreviewSectionKind.Overview, "Overview", RecipeLabSectionStatus.ReferenceOnly, view.OperatorVisibleSummary, [view.Header.TemplateId]),
+        new(RecipeOperatorPreviewSectionKind.Readiness, "Readiness", view.ReadinessExplanation.IsFixtureReady ? RecipeLabSectionStatus.FixtureOnly : RecipeLabSectionStatus.Blocked, view.ReadinessExplanation.OperatorVisibleSummary, [view.ReadinessExplanation.CanonicalReadinessStatus.ToString()]),
+        new(RecipeOperatorPreviewSectionKind.BlockingReasons, "Blocking reasons", view.ReadinessExplanation.BlockingReasons.Count > 0 ? RecipeLabSectionStatus.Blocked : RecipeLabSectionStatus.Ready, JoinOrDefault(view.ReadinessExplanation.BlockingReasons.Select(r => r.RedactedSummary), "No blocking reason for preview."), view.ReadinessExplanation.BlockingReasons.Select(r => r.ReasonId).ToArray()),
+        new(RecipeOperatorPreviewSectionKind.MissingRequirements, "Missing requirements", view.ReadinessExplanation.MissingRequirements.Count > 0 ? RecipeLabSectionStatus.Warning : RecipeLabSectionStatus.Ready, JoinOrDefault(view.ReadinessExplanation.MissingRequirements.Select(r => r.RedactedSummary), "No missing requirement for preview."), view.ReadinessExplanation.MissingRequirements.Select(r => r.RequirementId).ToArray()),
+        new(RecipeOperatorPreviewSectionKind.ApprovalPath, "Approval path", view.SafetySummary.RequiresHumanReview ? RecipeLabSectionStatus.NeedsHuman : RecipeLabSectionStatus.ReferenceOnly, view.SystemSummary.HumanReviewSummary, view.Requirements.ApprovalHumanInterventionRequirementRefs),
+        new(RecipeOperatorPreviewSectionKind.EvidenceValidation, "Evidence and validation", RecipeLabSectionStatus.ReferenceOnly, view.EvidenceValidationSummary, view.Requirements.EvidenceRequirementRefs.Concat(view.Requirements.ValidationRequirementRefs).ToArray()),
+        new(RecipeOperatorPreviewSectionKind.ToolTrustSecrets, "Tool trust and secret refs", RecipeLabSectionStatus.ReferenceOnly, $"{ToolTrustSummary(view.Requirements.RequiredToolTrustRefs)} {SecretRefsSummary(view.Requirements.RequiredSecretRefs)}", view.Requirements.RequiredToolTrustRefs.Concat(view.Requirements.RequiredSecretRefs).ToArray()),
+        new(RecipeOperatorPreviewSectionKind.TriggerObserveOnly, "Observe-only trigger", RecipeLabSectionStatus.ReferenceOnly, view.TriggerObserveOnlySummary, view.Requirements.TriggerRefs),
+        new(RecipeOperatorPreviewSectionKind.LocatorCapturePreview, "Locator and capture preview", RecipeLabSectionStatus.ReferenceOnly, view.LocatorCaptureImplicationsSummary, []),
+        new(RecipeOperatorPreviewSectionKind.SafeNextAction, "Safe next action", RecipeLabSectionStatus.ReferenceOnly, view.ReadinessExplanation.SafeNextAction.RedactedSummary, []),
+        new(RecipeOperatorPreviewSectionKind.NotAutomated, "Not automated", RecipeLabSectionStatus.LiveBlocked, view.SafetySummary.NotIncludedSummary, [])
+    ];
+
+    private static IReadOnlyList<RecipeOperatorPreviewDisabledActionState> DisabledActionStates(RecipeTemplateDetailViewModel view) =>
+    [
+        new("recipe-start", "Recipe start unavailable", "Preview surface cannot start recipes."),
+        new("workitem-processing", "Workitem processing unavailable", "Preview surface cannot process workitems."),
+        new("connector-activation", "Connector activation unavailable", "Connector execution not enabled."),
+        new("secret-value-access", "Secret value access unavailable", "Secrets are shown by reference only."),
+        new("browser-runtime", "Browser runtime unavailable", "Browser automation not enabled."),
+        new("desktop-runtime", "Desktop runtime unavailable", "Desktop automation not enabled."),
+        new("file-output", "Real file output unavailable", "Export preview does not write files."),
+        new("live-mutation", "Live mutation unavailable", view.SafetySummary.LiveBlockedExplanation)
+    ];
+
+    private static IReadOnlyList<string> HumanInterventionPoints(RecipeTemplateDetailViewModel view)
+    {
+        var points = new List<string>();
+        if (view.SafetySummary.RequiresHumanReview)
+            points.Add(view.SystemSummary.HumanReviewSummary);
+        if (view.ReadinessExplanation.BlockingReasons.Count > 0)
+            points.Add("Operator must review blocked readiness before future runtime planning.");
+        if (view.Requirements.RequiredSecretRefs.Count > 0)
+            points.Add("Secret refs must remain alias/id only; no values are requested.");
+        return points.Count == 0 ? ["Operator review confirms preview-only readiness."] : points.Select(SafeProductCopy).ToArray();
+    }
+
+    private static string OperatorSystemPreviewSummary(RecipeTemplateDetailViewModel view) =>
+        view.Header.Category switch
+        {
+            RecipeTemplateCategory.ExcelMicrosoft365 => "Previewable: workbook refs, validations, evidence expectations. Blocked: live connector and file sync. Operator reviews evidence requirements.",
+            RecipeTemplateCategory.GoogleWorkspace => "Previewable: Workspace refs and review queues. Blocked: Google API calls and Gmail delivery. Operator reviews draft-only handoff.",
+            RecipeTemplateCategory.SAP => "Previewable: SAP template intent and requirements. Blocked: SAP GUI, RFC, BAPI, OData, and connector execution. Operator reviews human-gated future path.",
+            RecipeTemplateCategory.MercadoLibreMercadoPago => "Previewable: marketplace/payment review metadata. Blocked: API calls, stock, price, listing, message, and payment mutations. Operator approval path required.",
+            RecipeTemplateCategory.ARCAFiscal => "Previewable: fiscal review metadata. Blocked: fiscal submission, web service calls, certificate/private-key use. Human/legal review required.",
+            RecipeTemplateCategory.ERPLocalLATAM => "Previewable: ERP draft/review metadata. Blocked: ERP API, desktop automation, and mutation. Operator reviews local system fit.",
+            RecipeTemplateCategory.GenericBrowserPortal => "Previewable: portal readiness/check/playbook metadata. Blocked: browser automation, real login, and challenge bypass.",
+            RecipeTemplateCategory.ComputerUseLegacy => "Previewable: manual playbook and draft metadata. Blocked: desktop automation, UIA/vision, hotkey hooks, and live continuation.",
+            _ => "Previewable: template metadata only. Blocked: unknown live path."
+        };
+
+    private static IReadOnlyList<string> NotIncludedList(RecipeTemplateDetailViewModel view)
+    {
+        var items = new List<string>
+        {
+            view.SafetySummary.NotIncludedSummary,
+            view.SafetySummary.LiveBlockedExplanation,
+            "No real handoff file is written.",
+            "No raw secret values are included.",
+            "No automatic workitem processing is included."
+        };
+
+        return items.Select(SafeProductCopy).ToArray();
+    }
+
+    private static string JoinOrDefault(IEnumerable<string> values, string fallback)
+    {
+        var materialized = values.Where(v => !string.IsNullOrWhiteSpace(v)).ToArray();
+        return materialized.Length == 0 ? fallback : string.Join("; ", materialized);
+    }
+
     private static IReadOnlyList<RecipeCatalogSafetyBadge> DetailSafetyBadges(RecipeTemplateDefinition template)
     {
         var badges = new List<RecipeCatalogSafetyBadge>
@@ -971,10 +1230,10 @@ public static class RecipeProductSurfaceFactory
     private static string LocatorCaptureSummary(RecipeTemplateDefinition template)
     {
         if (template.Category == RecipeTemplateCategory.GenericBrowserPortal)
-            return "Locator implications are preview-only; no browser selector test or live locator repair apply.";
+            return "Locator implications are preview-only; no browser selector test or live locator repair activation.";
         if (template.Category == RecipeTemplateCategory.ComputerUseLegacy)
             return "Locator and capture implications are manual/preview-only; no UIA, vision, hook, capture, or playback path.";
-        return "Capture and locator summaries remain reference-only; no recorder, playback, or live repair apply.";
+        return "Capture and locator summaries remain reference-only; no recorder, playback, or live repair activation.";
     }
 
     private static RecipeCatalogSafetyBadge Badge(RecipeCatalogSafetyBadgeKind kind, string label, string summary) =>
@@ -1031,10 +1290,16 @@ public static class RecipeProductSurfaceFactory
             ? "No tool trust refs required."
             : $"Tool trust refs: {string.Join(", ", template.RequiredToolTrustRefs)}.";
 
+    private static string ToolTrustSummary(IReadOnlyList<string> refs) =>
+        refs.Count == 0 ? "No tool trust refs required." : $"Tool trust refs: {string.Join(", ", refs)}.";
+
     private static string SecretSummary(RecipeTemplateDefinition template) =>
         template.RequiredSecretRefs.Count == 0
             ? "No secret refs required."
             : $"Secret refs only: {string.Join(", ", template.RequiredSecretRefs)}.";
+
+    private static string SecretRefsSummary(IReadOnlyList<string> refs) =>
+        refs.Count == 0 ? "No secret refs required." : $"Secret refs only: {string.Join(", ", refs)}.";
 
     private static string TriggerSummary(RecipeTemplateDefinition template) =>
         template.TriggerRefs.Count == 0
@@ -1053,16 +1318,19 @@ public static class RecipeProductSurfaceFactory
         {
             ("Live automation ready", "Live runtime blocked"),
             ("Run recipe", "Inspect template"),
+            ("Run now", "Preview only"),
             ("Automate now", "Preview only"),
             ("Sync live", "Sync draft"),
             ("Invoice live", "Invoice draft review"),
             ("Connect now", "Connector preview"),
+            ("Connect", "Connector preview"),
             ("Use credentials", "Use secret refs"),
             ("Capture now", "Capture draft review"),
             ("Control browser", "Browser preview"),
             ("Control desktop", "Desktop preview"),
             ("Execute", "Preview"),
             ("Autofill", "Draft fill"),
+            ("Apply", "Review"),
             ("Submit", "Submission review"),
             ("Publish", "Listing review"),
             ("Send", "Message review"),
