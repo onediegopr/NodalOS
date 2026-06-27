@@ -24,6 +24,7 @@ public sealed record ReliableRecipeLabViewModel(
     ReliableRecipeLabPanelViewModel PerceptionPanel,
     ReliableRecipeLabPanelViewModel RecorderDraftPanel,
     ReliableRecipeLabRecorderDraftReviewPanel RecorderDraftReview,
+    ReliableRecipeLabEvalPanel EvalPanel,
     IReadOnlyList<ReliableRecipeLabTimelinePreviewItem> TimelinePreview,
     ReliableRecipeLabNoLiveRuntimeNotice NoLiveRuntimeNotice,
     IReadOnlyList<string> ReadOnlyActionLabels)
@@ -117,6 +118,36 @@ public sealed record ReliableRecipeLabDetectedVariableRow(
     bool IsSensitive,
     bool NeedsUserConfirmation);
 
+public sealed record ReliableRecipeLabEvalPanel(
+    string ScenarioId,
+    string FinalDecision,
+    string SuccessRateLabel,
+    string ExpectedOutcomeMatchRateLabel,
+    string FlakinessLabel,
+    string EvidenceCompletenessLabel,
+    string ValidationCompletenessLabel,
+    IReadOnlyList<string> TopFailureKinds,
+    ReliableRecipeLabEvalNotice EvalNotice,
+    IReadOnlyList<string> ReadOnlyActionLabels)
+{
+    public bool ReadOnly => true;
+    public bool FixtureOnly => true;
+    public bool CanRunEvalLive => false;
+    public bool CanExecuteRecipe => false;
+    public bool CanReplayRecording => false;
+    public bool CanCreateBrowserOrDesktopRuntime => false;
+}
+
+public sealed record ReliableRecipeLabEvalScenarioRow(
+    string ScenarioId,
+    string Name,
+    string ExpectedOutcome,
+    string FinalDecision,
+    string Tone,
+    string Summary);
+
+public sealed record ReliableRecipeLabEvalNotice(string Message);
+
 public sealed record ReliableRecipeLabFixture(
     string FixtureId,
     ReliableRecipeDefinition Recipe,
@@ -158,6 +189,7 @@ public static class ReliableRecipeLabViewModelMapper
             PerceptionPanel(quality),
             RecorderPanel(recipe, quality),
             EmptyRecorderDraftReview(recipe),
+            EmptyEvalPanel(),
             TimelineItems(recipe),
             NoLiveNotice(report),
             ReadOnlyActions);
@@ -366,6 +398,19 @@ public static class ReliableRecipeLabViewModelMapper
             "No sensitive recorder input summary is attached to this lab snapshot.",
             "Recorder-to-recipe conversion is fixture-only and cannot create live-ready recipes.");
 
+    private static ReliableRecipeLabEvalPanel EmptyEvalPanel() =>
+        new(
+            "not-evaluated",
+            "Not evaluated",
+            "No fixture eval attached",
+            "No fixture eval attached",
+            "No fixture eval attached",
+            "No fixture eval attached",
+            "No fixture eval attached",
+            [],
+            new ReliableRecipeLabEvalNotice("Fixture-only evaluation. Runtime not enabled."),
+            ["Review scenario", "Open report", "Copy summary"]);
+
     private static IReadOnlyList<ReliableRecipeLabTimelinePreviewItem> TimelineItems(ReliableRecipeDefinition recipe) =>
         recipe.Blocks.Select(b => new ReliableRecipeLabTimelinePreviewItem(
             b.Id,
@@ -388,7 +433,7 @@ public static class ReliableRecipeLabViewModelMapper
                 "Sandbox/VM runtime",
                 "Provider/LLM calls",
                 "OCR runtime activation",
-                "Screenshot capture"
+                "No screenshot capture"
             ],
             report.ModeAllowed == ReliableRecipeRunMode.DryRun ? "Dry-run candidate" : "Draft only");
 }
