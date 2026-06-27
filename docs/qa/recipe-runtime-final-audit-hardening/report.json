@@ -1,0 +1,86 @@
+{
+  "block": "NODAL_RECIPE_RUNTIME_FINAL_AUDIT_P2_P3_HARDENING",
+  "decision": "GO_RECIPE_RUNTIME_FINAL_AUDIT_HARDENING_COMPLETE",
+  "finalAuditDecisionBeforeHardening": "FINAL_AUDIT_GO_WITH_P2_P3_FINDINGS",
+  "postHardeningStatus": "COMPLETE_FIXTURE_SAFE_DESIGN_LINE_GO_WITH_P2_P3_BACKLOG",
+  "totalPhases": "9/9",
+  "overallCompletionPercent": 100,
+  "findingsHandled": {
+    "R-01": "DONE",
+    "R-02": "DONE",
+    "R-03": "DONE",
+    "R-04": "DONE"
+  },
+  "dynamicSuite": {
+    "restore": "PASS",
+    "build": "PASS_WITH_EXISTING_WARNINGS",
+    "phaseFilters": {
+      "RecipeRuntimeFoundation": { "status": "PASS", "passed": 11 },
+      "RecipeLimitsValidationRiskPolicy": { "status": "PASS", "passed": 20 },
+      "RecipeEvidencePackTimelineProjection": { "status": "PASS", "passed": 22 },
+      "RecipeHumanInterventionApprovalNarrative": { "status": "PASS", "passed": 33 },
+      "RecipeToolTrustSecretsByReference": { "status": "PASS", "passed": 21 },
+      "RecipeTriggerDetectorObserveOnly": { "status": "PASS", "passed": 14 },
+      "RecipeLabLocatorRepairStudio": { "status": "PASS", "passed": 17 },
+      "RecipeGlobalLatamTemplatesPack": { "status": "PASS", "passed": 24 },
+      "RecipeCaptureDraft": { "status": "PASS", "passed": 36 },
+      "RecipeRuntimeFinalAuditHardening": { "status": "PASS", "passed": 3 }
+    },
+    "fullRecipesTests": { "status": "PASS", "passed": 836, "skipped": 0 },
+    "safetyRecipeFilter": { "status": "PASS", "passed": 155, "skipped": 1 }
+  },
+  "safetyByAbsence": {
+    "executorRuntimePrimitiveScanTestAdded": true,
+    "liveBehavioralProofClaimed": false,
+    "scope": "src/OneBrain.Core/Recipes"
+  },
+  "compositeReadinessSpotAudit": {
+    "policyPreflight": true,
+    "toolSecretReadiness": true,
+    "credentialedActionGate": true,
+    "connectorEligibility": true,
+    "triggerObserveOnlyReadiness": true,
+    "evidenceValidationReadiness": true,
+    "approvalHumanReadiness": true,
+    "locatorLabSafety": true,
+    "liveBlockedStatus": true,
+    "captureMappingCannotBypassCompositeReadiness": true
+  },
+  "safetyMatrix": {
+    "openRpaDependency": "NO",
+    "codeCopy": "NO",
+    "xamlImport": "NO",
+    "browserExtensionNativeMessaging": "NO",
+    "realBrowserAutomation": "NO",
+    "realDesktopAutomation": "NO",
+    "cdpPlaywrightSeleniumPuppeteer": "NO",
+    "realDomAccessibilityScreenshotHarCapture": "NO",
+    "schedulerBackgroundWorker": "NO",
+    "realFileWatcher": "NO",
+    "osHookHotkeyListener": "NO",
+    "browserDesktopListener": "NO",
+    "networkWebhookListener": "NO",
+    "connectorExecution": "NO",
+    "vaultImplementation": "NO",
+    "rawSecretsStored": "NO",
+    "recorderReplay": "NO",
+    "realCapture": "NO",
+    "realLocatorReplayTesting": "NO",
+    "liveLocatorRepairApply": "NO",
+    "automaticRecipeRun": "NO",
+    "automaticWorkitemProcessing": "NO",
+    "fiscalPaymentMarketplaceMessageDeleteWriteLiveAction": "NO",
+    "captcha2faBypass": "NO",
+    "approvalToolTrustTriggerRecipeLabTemplatesCaptureUnlockLiveRuntime": "NO",
+    "liveRuntimeEnabled": "NO"
+  },
+  "productBoundary": {
+    "safeClaim": "fixture-safe Recipe Runtime design/contracts/templates/capture draft",
+    "notClearedFor": [
+      "live automation readiness",
+      "live browser or desktop execution readiness",
+      "connector execution readiness",
+      "fiscal/payment/marketplace mutation readiness"
+    ]
+  }
+}
