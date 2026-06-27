@@ -1,5 +1,9 @@
 # Windows Computer Use Read-Only Live Readiness Checklist
 
+External audit reconciliation status: `AUDIT_CONTAINMENT_PASS_BUT_LIVE_ADVANCE_NO_GO`.
+
+`WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED` is `BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO`. This checklist is retained as a safety boundary, not as an implementation authorization.
+
 ## Future Prototype Preconditions
 
 | Criterion | Required state |

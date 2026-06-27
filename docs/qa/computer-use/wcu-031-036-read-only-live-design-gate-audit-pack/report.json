@@ -36,8 +36,10 @@
     "uia_events_design_readiness": "78%",
     "locator_fusion_readiness": "83%",
     "evidence_redaction_unification": "86%",
-    "read_only_live_design_gate_readiness": "80%",
-    "uia_live_read_only_implementation_readiness": "20%",
+    "read_only_live_design_gate_readiness": "85%",
+    "external_containment_confidence": "85%",
+    "uia_live_read_only_implementation_authorization": "0%",
+    "uia_live_read_only_implementation_readiness": "0% AUTHORIZED",
     "controlled_action_readiness": "0%",
     "product_automation_readiness": "0%",
     "ocr_uia_events_win32_locator_evidence_authority_over_actions": "0%"
@@ -70,10 +72,21 @@
     "input_injection_allowed": false,
     "window_manipulation_allowed": false
   },
+  "external_audit_reconciliation": {
+    "decision": "AUDIT_CONTAINMENT_PASS_BUT_LIVE_ADVANCE_NO_GO",
+    "audited_head": "c0ce467f5472dc65cafd9faeed6ee406930f7b6d",
+    "containment_current_tree": "PASS",
+    "live_advance": "NO_GO",
+    "auditor_ran_build": false,
+    "auditor_ran_tests": false,
+    "behavioral_live_safety_proven": false,
+    "current_code_defect_found": false
+  },
   "remaining_risks": [
     "No live read-only prototype has been implemented or validated.",
-    "Future live collection requires external audit, explicit human decision, allowlisted test apps, and kill-switch proof.",
+    "External audit did not authorize live prototype advancement.",
     "Privacy risk remains for any future live metadata collection and must be handled with redaction-first evidence."
   ],
-  "next_recommended_block": "WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED, only if the audit pack receives GO."
+  "next_recommended_block": "WCU-CONTAINMENT-PROPERTY-AUDIT-001 — REDACTION/EVIDENCE/NO-LIVE NEGATIVE PROPERTY LOCK",
+  "blocked_block": "WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED is BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO."
 }

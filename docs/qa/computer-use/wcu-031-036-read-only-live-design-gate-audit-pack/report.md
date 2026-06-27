@@ -4,7 +4,9 @@
 
 `GO_WCU_READ_ONLY_LIVE_DESIGN_GATE_AUDIT_PACK_READY`
 
-This block prepares a design gate and audit pack only. It does not implement a productive live read-only collector and does not approve Windows actions.
+This block prepared a design gate and audit pack only. It did not implement a productive live read-only collector and did not approve Windows actions.
+
+External audit reconciliation update: containment passed for current HEAD `c0ce467f5472dc65cafd9faeed6ee406930f7b6d`, but live advancement is `NO_GO`. `WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED` is now `BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO`.
 
 ## HEAD
 
@@ -93,8 +95,9 @@ This block prepares a design gate and audit pack only. It does not implement a p
 | WCU UIA events design readiness | 78% |
 | WCU locator fusion readiness | 83% |
 | WCU evidence/redaction unification | 86% |
-| WCU read-only live design gate readiness | 80% |
-| WCU UIA live read-only implementation readiness | 20% |
+| WCU read-only live design gate readiness | 85% |
+| External containment confidence | 85% |
+| WCU UIA live read-only implementation authorization | 0% |
 | WCU controlled action readiness | 0% |
 | WCU product automation readiness | 0% |
 | OCR/UIA events/Win32/Locator/Evidence authority over actions | 0% |
@@ -107,4 +110,6 @@ This block prepares a design gate and audit pack only. It does not implement a p
 
 ## Next Block
 
-Recommended only after audit GO: `WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED`. It must remain disabled by default, read-only, allowlisted-test-app-only, no actions, no raw screenshots, no clipboard, and no product UI.
+Recommended next work: `WCU-CONTAINMENT-PROPERTY-AUDIT-001 — REDACTION/EVIDENCE/NO-LIVE NEGATIVE PROPERTY LOCK`.
+
+Blocked: `WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED` is not a direct next executable block and remains `BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO`.

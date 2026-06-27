@@ -23,9 +23,15 @@
 - No OCR engine was duplicated.
 - Protected stealth/browser scope remains out of scope.
 
+## External Audit Reconciliation
+
+External audit of current HEAD `c0ce467f5472dc65cafd9faeed6ee406930f7b6d` found containment/read-only PASS and protected scope PASS, but did not authorize live advancement. The reconciled result is `AUDIT_CONTAINMENT_PASS_BUT_LIVE_ADVANCE_NO_GO`.
+
+The audit did not run build/tests and did not prove behavioral live safety.
+
 ## Required Future Condition
 
-The next block can only be used if the audit pack receives external GO. Future work must remain read-only, disabled by default, allowlisted-test-app-only, redacted-metadata-only, and no-action.
+`WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED` is blocked as `BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO`. The next block must be containment-only, such as `WCU-CONTAINMENT-PROPERTY-AUDIT-*` or `WCU-REDACTION-EVIDENCE-NEGATIVE-PROPERTY-LOCK`.
 
 ## Residual Risks
 

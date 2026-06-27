@@ -1,10 +1,12 @@
-# Next Prompt: WCU Read-Only Live Prototype Gated
+# Blocked Historical Prompt: WCU Read-Only Live Prototype Gated
 
-Use this prompt only if `WCU-031-036` receives external audit GO.
+Status: `BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO`.
+
+External audit reconciliation recorded containment PASS but live advancement NO-GO. Do not use this as a direct next executable prompt.
 
 ## Block
 
-`WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED`
+`WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED` is blocked.
 
 ## Non-Negotiable Scope
 
@@ -24,14 +26,13 @@ Use this prompt only if `WCU-031-036` receives external audit GO.
 - No browser live/CDP/WebSocket/Safe Injection.
 - No OCR engine duplication.
 
-## Required First Steps
+## Required Before This Can Be Reconsidered
 
-1. Re-run protected scope scan.
-2. Re-run no-action scan.
-3. Verify all `WCU-031-036` audit findings are GO.
-4. Add a live provider only as disabled-by-default experimental prototype.
-5. Keep tests fixture-safe unless a human explicitly runs a local allowlisted manual verification.
+1. Separate human policy decision.
+2. Separate external GO specifically authorizing reconsideration.
+3. New containment audit showing no hidden live/action code.
+4. Explicit report update that does not invent build/test PASS.
 
 ## Expected Outcome
 
-A gated, disabled-by-default read-only prototype may collect redacted metadata from allowlisted test apps only. It still cannot authorize or execute actions.
+No implementation outcome is authorized by this prompt. Use `next-wcu-containment-property-audit-prompt.md` instead.

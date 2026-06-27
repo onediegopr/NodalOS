@@ -4,7 +4,7 @@
 
 `GO_WCU_READ_ONLY_LIVE_DESIGN_GATE_AUDIT_PACK_READY`
 
-This pack prepares a future audit decision for a read-only live prototype. It does not implement live read-only collection and does not approve product automation.
+This pack prepared a design gate for future review. The external audit reconciliation recorded containment PASS but live advancement NO-GO, so it does not authorize live read-only collection or product automation.
 
 ## Architecture Documents
 
@@ -26,7 +26,9 @@ This pack prepares a future audit decision for a read-only live prototype. It do
 ## Handoff And Next Prompt
 
 - `docs/handoff/nodal-os-wcu-read-only-live-design-gate-audit-pack-handoff.md`
-- `docs/prompts/computer-use/next-wcu-read-only-live-prototype-gated-prompt.md`
+- `docs/handoff/nodal-os-wcu-external-audit-nogo-reconciliation-handoff.md`
+- `docs/prompts/computer-use/next-wcu-containment-property-audit-prompt.md`
+- `docs/prompts/computer-use/next-wcu-read-only-live-prototype-gated-prompt.md` is retained only as blocked historical context.
 
 ## Audit Questions
 
@@ -34,4 +36,5 @@ This pack prepares a future audit decision for a read-only live prototype. It do
 - Is any live provider active by default?
 - Are raw screenshots, clipboard, credential values, input injection, and window manipulation excluded?
 - Are protected stealth/browser scopes untouched?
-- Are claims limited to design gate and audit readiness?
+- Are claims limited to containment/design-gate readiness?
+- Does every reference to `WCU-037-044` mark it as `BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO`?

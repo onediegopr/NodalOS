@@ -21,4 +21,4 @@ Return:
 - `GO` or `NO_GO`.
 - Blocking findings with file references.
 - Missing gates or unclear claims.
-- Whether a future read-only live prototype may be considered after technical no-action verification.
+- Whether containment remains intact. Do not treat containment PASS as authorization to run a live prototype.

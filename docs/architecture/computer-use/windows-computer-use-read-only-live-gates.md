@@ -2,7 +2,7 @@
 
 ## Purpose
 
-These gates define the minimum design boundary for any future read-only live Windows/UIA/Win32 prototype. They do not implement a live provider and do not permit actions.
+These gates define the minimum design boundary for read-only review. External audit reconciliation recorded containment PASS but live advancement NO-GO, so `WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED` is blocked pending human policy decision and external GO. The gates do not implement a live provider and do not permit actions.
 
 ## Required Gates
 
@@ -36,4 +36,4 @@ These gates define the minimum design boundary for any future read-only live Win
 
 ## Contract Representation
 
-The gate catalog is represented in `ComputerUseReadOnlyLiveDesignGates.cs`. Its evaluation result always denies live read permission and action authority in this block. The contract is an audit artifact, not a live implementation.
+The gate catalog is represented in `ComputerUseReadOnlyLiveDesignGates.cs`. Its evaluation result always denies live read permission and action authority in this block. The external reconciliation record also maps containment PASS to live advancement NO-GO. The contract is an audit artifact, not a live implementation.

@@ -37,4 +37,4 @@ Canonical rule: perception is not authorization. Read-only is not action authori
 
 ## Decision Boundary
 
-A future read-only live prototype may only be considered after external audit validates that all live-read gates are represented, disabled by default, fail closed, and limited to allowlisted test apps. Even then, it remains read-only observation and cannot authorize actions.
+External audit reconciliation after this design pack recorded containment PASS but live advancement NO-GO. `WCU-037-044 — READ-ONLY LIVE PROTOTYPE GATED` is `BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO`; the next allowed work is containment/redaction/evidence/policy review only.
