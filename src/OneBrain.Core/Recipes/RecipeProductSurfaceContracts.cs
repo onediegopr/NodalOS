@@ -30,6 +30,34 @@ public enum RecipeCatalogReadinessBadgeKind
     BlockedByPolicy
 }
 
+public enum RecipeTemplateBlockingReasonCategory
+{
+    MissingLimits,
+    MissingValidation,
+    MissingEvidence,
+    MissingApprovalPath,
+    MissingHumanInterventionPath,
+    MissingToolTrust,
+    MissingSecretReference,
+    RawSecretDetected,
+    ToolLiveBlocked,
+    ConnectorExecutionBlocked,
+    BrowserRuntimeBlocked,
+    DesktopRuntimeBlocked,
+    TriggerAutorunBlocked,
+    RecorderReplayBlocked,
+    CaptureBlocked,
+    LocatorRepairApplyBlocked,
+    SensitiveActionRequiresReview,
+    FiscalSubmissionBlocked,
+    PaymentExecutionBlocked,
+    MarketplaceMutationBlocked,
+    MessageSendBlocked,
+    DeleteWriteBlocked,
+    UnknownSystemBlocked,
+    UnknownUnsafe
+}
+
 public sealed record RecipeCatalogSafetyBadge(
     RecipeCatalogSafetyBadgeKind Kind,
     string Label,
@@ -142,6 +170,177 @@ public sealed record RecipeCatalogSurface(
     public bool CanRequestSecrets => false;
 }
 
+public sealed record RecipeTemplateDetailHeader(
+    string TemplateId,
+    string DisplayName,
+    string Description,
+    string PackName,
+    RecipeTemplateSystem SystemFamily,
+    RecipeTemplateCategory Category,
+    RecipeTemplateRegion Region,
+    IReadOnlyList<RecipeTemplateCountry> Countries,
+    string BusinessUseCaseSummary);
+
+public sealed record RecipeTemplateDetailPackSummary(
+    string PackId,
+    string PackName,
+    RecipeTemplateCategory Category,
+    RecipeTemplateRegion Region);
+
+public sealed record RecipeTemplateDetailSystemSummary(
+    RecipeTemplateSystem SystemFamily,
+    string RedactedSummary,
+    string ConnectorBoundarySummary,
+    string RuntimeBoundarySummary,
+    string HumanReviewSummary,
+    IReadOnlyList<string> ApplicableSystemMetadata);
+
+public sealed record RecipeTemplateDetailRequirementSummary(
+    IReadOnlyList<string> RequiredCapabilities,
+    IReadOnlyList<string> RequiredToolTrustRefs,
+    IReadOnlyList<string> RequiredSecretRefs,
+    IReadOnlyList<string> ConnectorEligibilityRefs,
+    IReadOnlyList<string> TriggerRefs,
+    IReadOnlyList<string> EvidenceRequirementRefs,
+    IReadOnlyList<string> ValidationRequirementRefs,
+    IReadOnlyList<string> ApprovalHumanInterventionRequirementRefs)
+{
+    public bool SecretValuesShown => false;
+    public bool RawPayloadShown => false;
+}
+
+public sealed record RecipeTemplateDetailSafetySummary(
+    RecipeRiskLevel RiskLevel,
+    IReadOnlyList<SensitiveActionCategory> SensitiveActionCategories,
+    bool RequiresHumanReview,
+    string LiveBlockedExplanation,
+    string NotIncludedSummary,
+    IReadOnlyList<RecipeCatalogSafetyBadge> SafetyBadges);
+
+public sealed record RecipeTemplateMissingRequirement(
+    string RequirementId,
+    RecipeTemplateBlockingReasonCategory Category,
+    string RedactedSummary,
+    RecipeReadinessIssueSeverity Severity);
+
+public sealed record RecipeTemplateBlockingReason(
+    string ReasonId,
+    RecipeTemplateBlockingReasonCategory Category,
+    RecipeReadinessStatus Status,
+    string RedactedSummary,
+    RecipeReadinessIssueSeverity Severity);
+
+public sealed record RecipeTemplateWarning(
+    string WarningId,
+    RecipeTemplateBlockingReasonCategory Category,
+    string RedactedSummary,
+    RecipeReadinessIssueSeverity Severity);
+
+public sealed record RecipeTemplateReadinessReason(
+    string ReasonId,
+    string RedactedSummary,
+    bool IsBlocking,
+    RecipeReadinessIssueSeverity Severity);
+
+public sealed record RecipeTemplateSafeNextActionExplanation(
+    RecipeSafeNextActionKind Kind,
+    string RedactedSummary,
+    bool AllowsLiveRuntime = false,
+    bool AllowsExternalMutation = false)
+{
+    public bool ActionAuthorityGranted => false;
+}
+
+public sealed record RecipeTemplateFutureEnablementNote(
+    string NoteId,
+    RecipeTemplateBlockingReasonCategory Category,
+    string RedactedSummary,
+    bool EnabledNow = false);
+
+public sealed record RecipeTemplateReadinessExplanation(
+    bool IsPreviewable,
+    bool IsFixtureReady,
+    RecipeTemplateStatus ReadinessStatus,
+    RecipeReadinessStatus CanonicalReadinessStatus,
+    string OperatorVisibleSummary,
+    IReadOnlyList<RecipeTemplateReadinessReason> Reasons,
+    IReadOnlyList<RecipeTemplateBlockingReason> BlockingReasons,
+    IReadOnlyList<RecipeTemplateMissingRequirement> MissingRequirements,
+    IReadOnlyList<RecipeTemplateWarning> Warnings,
+    IReadOnlyList<RecipeTemplateFutureEnablementNote> FutureEnablementNotes,
+    RecipeTemplateSafeNextActionExplanation SafeNextAction,
+    IReadOnlyList<RecipeRunMode> BlockedRunModes,
+    string ExplicitlyNotIncludedSummary)
+{
+    public bool LiveRuntimeEnabled => false;
+    public bool ConnectorExecutionEnabled => false;
+    public bool StartsRecipeRun => false;
+    public bool ProcessesWorkitems => false;
+}
+
+public sealed record RecipeTemplateDetailSection(
+    string SectionId,
+    string Label,
+    RecipeLabSectionStatus Status,
+    string RedactedSummary,
+    IReadOnlyList<string> SourceRefs)
+{
+    public bool ReadOnly => true;
+    public bool CanExecute => false;
+    public bool CanApply => false;
+}
+
+public sealed record RecipeTemplateDetailViewModel(
+    string ViewModelId,
+    RecipeTemplateDetailHeader Header,
+    RecipeTemplateDetailPackSummary PackSummary,
+    RecipeTemplateDetailSystemSummary SystemSummary,
+    RecipeTemplateDetailSafetySummary SafetySummary,
+    RecipeTemplateDetailRequirementSummary Requirements,
+    RecipeTemplateReadinessExplanation ReadinessExplanation,
+    IReadOnlyList<RecipeTemplateDetailSection> Sections,
+    string TriggerObserveOnlySummary,
+    string EvidenceValidationSummary,
+    string LocatorCaptureImplicationsSummary,
+    string OperatorVisibleSummary)
+{
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+    public bool FixtureSafeOnly => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestRawSecret => false;
+    public bool CanReadRawSecret => false;
+    public bool CanEnableConnectorExecution => false;
+    public bool CanEnableBrowserRuntime => false;
+    public bool CanEnableDesktopRuntime => false;
+    public bool CanCreateRecorder => false;
+    public bool CanCreateReplay => false;
+    public bool CanCreateCapture => false;
+    public bool CanApplyLocatorRepair => false;
+    public bool RawSecretValuesShown => false;
+    public bool RawPayloadShown => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeTemplateDetailSurface(
+    string SurfaceId,
+    RecipeTemplateDetailViewModel ViewModel,
+    IReadOnlyList<string> SafetyCopy,
+    bool ReadOnly = true,
+    bool PreviewSafe = true)
+{
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanCreateRecorder => false;
+    public bool CanCreateReplay => false;
+    public bool CanCreateCapture => false;
+}
+
 public sealed record RecipeLabSectionViewModel(
     string SectionId,
     string Label,
@@ -241,15 +440,19 @@ public static class RecipeProductSurfaceCopyPolicy
         "Fixture-safe",
         "Read-only",
         "Template",
+        "Template detail",
         "Draft",
         "Requires human review",
+        "Approval required",
         "Live runtime blocked",
         "Connector execution not enabled",
         "Browser automation not enabled",
         "Desktop automation not enabled",
         "Secrets by reference only",
         "Evidence by reference only",
-        "Observe-only trigger"
+        "Observe-only trigger",
+        "Not included",
+        "Future-gated"
     ];
 
     public static IReadOnlyList<string> ForbiddenCopy { get; } =
@@ -268,6 +471,7 @@ public static class RecipeProductSurfaceCopyPolicy
         "Use credentials",
         "Record",
         "Replay",
+        "Capture now",
         "Control browser",
         "Control desktop",
         "Live automation ready"
@@ -392,6 +596,74 @@ public static class RecipeProductSurfaceFactory
             ]);
     }
 
+    public static RecipeTemplateDetailSurface CreateTemplateDetailSurface(
+        RecipeTemplateCatalog catalog,
+        string templateId,
+        RecipeTemplateReadinessContext readinessContext)
+    {
+        var pack = catalog.Packs.Single(p => p.Templates.Any(t => t.TemplateId == templateId));
+        var template = pack.Templates.Single(t => t.TemplateId == templateId);
+        var readiness = RecipeTemplateReadinessEvaluator.Evaluate(template, readinessContext);
+        var systemSummary = SystemSummary(template);
+        var explanation = ReadinessExplanation(template, readiness);
+
+        var viewModel = new RecipeTemplateDetailViewModel(
+            $"recipe.template.detail.{template.TemplateId}",
+            new RecipeTemplateDetailHeader(
+                template.TemplateId,
+                SafeProductCopy(template.DisplayName),
+                SafeProductCopy(template.Description),
+                pack.DisplayName,
+                template.System,
+                template.Category,
+                template.Region,
+                template.Countries,
+                SafeProductCopy(template.OperatorVisibleSummary)),
+            new RecipeTemplateDetailPackSummary(pack.PackId, pack.DisplayName, pack.Category, pack.Region),
+            systemSummary,
+            new RecipeTemplateDetailSafetySummary(
+                template.SafetyProfile.RiskLevel,
+                template.SafetyProfile.SensitiveCategories,
+                template.SafetyProfile.RequiresHumanApproval || template.ApprovalHumanInterventionRequirementRefs.Count > 0 || template.SafetyProfile.SensitiveCategories.Count > 0,
+                LiveBlockedExplanation(template),
+                SafeProductCopy(template.NotIncludedOrNotAutomatedSummary),
+                DetailSafetyBadges(template)),
+            new RecipeTemplateDetailRequirementSummary(
+                template.RequiredCapabilities,
+                template.RequiredToolTrustRefs,
+                template.RequiredSecretRefs,
+                template.ConnectorEligibilityRefs,
+                template.TriggerRefs,
+                template.EvidenceRequirementRefs,
+                template.ValidationRequirementRefs,
+                template.ApprovalHumanInterventionRequirementRefs),
+            explanation,
+            DetailSections(template, readiness, systemSummary, explanation),
+            TriggerSummary(template),
+            $"Evidence refs: {RefSummary(template.EvidenceRequirementRefs)}. Validation refs: {RefSummary(template.ValidationRequirementRefs)}.",
+            LocatorCaptureSummary(template),
+            SafeProductCopy(template.OperatorVisibleSummary));
+
+        return new(
+            $"recipe.template.detail.surface.{template.TemplateId}",
+            viewModel,
+            [
+                "Preview",
+                "Fixture-safe",
+                "Read-only",
+                "Template detail",
+                "Live runtime blocked",
+                "Connector execution not enabled",
+                "Browser automation not enabled",
+                "Desktop automation not enabled",
+                "Secrets by reference only",
+                "Evidence by reference only",
+                "Observe-only trigger",
+                "Not included",
+                "Future-gated"
+            ]);
+    }
+
     private static RecipeCatalogPackViewModel CreatePackViewModel(
         RecipeTemplatePack pack,
         RecipeTemplateReadinessContext readinessContext)
@@ -466,6 +738,245 @@ public static class RecipeProductSurfaceFactory
             readiness.BlockingIssues.Select(i => SafeProductCopy(i.Message)).ToArray());
     }
 
+    private static RecipeTemplateReadinessExplanation ReadinessExplanation(
+        RecipeTemplateDefinition template,
+        RecipeTemplateReadiness readiness)
+    {
+        var blocking = readiness.BlockingIssues.Select(i => new RecipeTemplateBlockingReason(
+            i.IssueId,
+            ToBlockingCategory(i, template),
+            i.Status,
+            SafeProductCopy(i.Message),
+            i.Severity)).ToArray();
+
+        var warnings = readiness.Warnings.Select(i => new RecipeTemplateWarning(
+            i.IssueId,
+            ToBlockingCategory(i, template),
+            SafeProductCopy(i.Message),
+            i.Severity)).ToArray();
+
+        var missing = MissingRequirements(template, blocking);
+        var reasons = blocking
+            .Select(b => new RecipeTemplateReadinessReason(b.ReasonId, b.RedactedSummary, IsBlocking: true, b.Severity))
+            .Concat(warnings.Select(w => new RecipeTemplateReadinessReason(w.WarningId, w.RedactedSummary, IsBlocking: false, w.Severity)))
+            .DefaultIfEmpty(new RecipeTemplateReadinessReason("template-previewable", "Template is available for read-only preview.", IsBlocking: false, RecipeReadinessIssueSeverity.Info))
+            .ToArray();
+
+        return new(
+            IsPreviewable: true,
+            IsFixtureReady: readiness.IsReady && template.RuntimeEligibility == RecipeTemplateRuntimeEligibility.FixtureOnly,
+            readiness.Status,
+            readiness.CanonicalReadinessStatus,
+            SafeProductCopy(readiness.OperatorSummary),
+            reasons,
+            blocking,
+            missing,
+            warnings,
+            FutureEnablementNotes(template, blocking),
+            new RecipeTemplateSafeNextActionExplanation(
+                readiness.SafeNextAction.Kind,
+                SafeProductCopy(readiness.SafeNextAction.Summary),
+                readiness.SafeNextAction.AllowsLiveRuntime,
+                readiness.SafeNextAction.AllowsExternalMutation),
+            readiness.BlockedRunModes,
+            SafeProductCopy(template.NotIncludedOrNotAutomatedSummary));
+    }
+
+    private static RecipeTemplateBlockingReasonCategory ToBlockingCategory(RecipeReadinessIssue issue, RecipeTemplateDefinition template)
+    {
+        var id = issue.IssueId.ToLowerInvariant();
+        var message = issue.Message.ToLowerInvariant();
+
+        if (id.Contains("limit"))
+            return RecipeTemplateBlockingReasonCategory.MissingLimits;
+        if (id.Contains("validation") && issue.Status == RecipeReadinessStatus.BlockedMissingValidation)
+            return RecipeTemplateBlockingReasonCategory.MissingValidation;
+        if (id.Contains("evidence"))
+            return RecipeTemplateBlockingReasonCategory.MissingEvidence;
+        if (id.Contains("approval"))
+            return RecipeTemplateBlockingReasonCategory.MissingApprovalPath;
+        if (id.Contains("tool") && message.Contains("live-blocked"))
+            return RecipeTemplateBlockingReasonCategory.ToolLiveBlocked;
+        if (id.Contains("tool"))
+            return RecipeTemplateBlockingReasonCategory.MissingToolTrust;
+        if (id.Contains("secret") && message.Contains("raw"))
+            return RecipeTemplateBlockingReasonCategory.RawSecretDetected;
+        if (id.Contains("secret"))
+            return RecipeTemplateBlockingReasonCategory.MissingSecretReference;
+        if (id.Contains("connector"))
+            return RecipeTemplateBlockingReasonCategory.ConnectorExecutionBlocked;
+        if (id.Contains("trigger"))
+            return RecipeTemplateBlockingReasonCategory.TriggerAutorunBlocked;
+        if (id.Contains("challenge"))
+            return RecipeTemplateBlockingReasonCategory.SensitiveActionRequiresReview;
+        if (template.Category == RecipeTemplateCategory.GenericBrowserPortal)
+            return RecipeTemplateBlockingReasonCategory.BrowserRuntimeBlocked;
+        if (template.Category == RecipeTemplateCategory.ComputerUseLegacy)
+            return RecipeTemplateBlockingReasonCategory.DesktopRuntimeBlocked;
+        if (template.System is RecipeTemplateSystem.ARCA or RecipeTemplateSystem.Fiscal)
+            return RecipeTemplateBlockingReasonCategory.FiscalSubmissionBlocked;
+        if (template.System == RecipeTemplateSystem.MercadoPago || template.SafetyProfile.SensitiveCategories.Contains(SensitiveActionCategory.Payment))
+            return RecipeTemplateBlockingReasonCategory.PaymentExecutionBlocked;
+        if (template.Category == RecipeTemplateCategory.MercadoLibreMercadoPago)
+            return RecipeTemplateBlockingReasonCategory.MarketplaceMutationBlocked;
+        if (issue.Status == RecipeReadinessStatus.BlockedByProtectedScope)
+            return RecipeTemplateBlockingReasonCategory.UnknownSystemBlocked;
+
+        return RecipeTemplateBlockingReasonCategory.UnknownUnsafe;
+    }
+
+    private static IReadOnlyList<RecipeTemplateMissingRequirement> MissingRequirements(
+        RecipeTemplateDefinition template,
+        IReadOnlyList<RecipeTemplateBlockingReason> blocking)
+    {
+        var missing = blocking
+            .Where(b => b.Category is RecipeTemplateBlockingReasonCategory.MissingLimits
+                or RecipeTemplateBlockingReasonCategory.MissingValidation
+                or RecipeTemplateBlockingReasonCategory.MissingEvidence
+                or RecipeTemplateBlockingReasonCategory.MissingApprovalPath
+                or RecipeTemplateBlockingReasonCategory.MissingHumanInterventionPath
+                or RecipeTemplateBlockingReasonCategory.MissingToolTrust
+                or RecipeTemplateBlockingReasonCategory.MissingSecretReference)
+            .Select(b => new RecipeTemplateMissingRequirement(b.ReasonId, b.Category, b.RedactedSummary, b.Severity))
+            .ToList();
+
+        if (template.RequiredToolTrustRefs.Count > 0 && blocking.Any(b => b.Category is RecipeTemplateBlockingReasonCategory.ToolLiveBlocked or RecipeTemplateBlockingReasonCategory.MissingToolTrust))
+            missing.Add(new("template-tool-trust-summary", RecipeTemplateBlockingReasonCategory.MissingToolTrust, $"Tool trust refs remain unresolved or blocked: {string.Join(", ", template.RequiredToolTrustRefs)}.", RecipeReadinessIssueSeverity.Blocking));
+
+        if (template.RequiredSecretRefs.Count > 0 && blocking.Any(b => b.Category is RecipeTemplateBlockingReasonCategory.MissingSecretReference or RecipeTemplateBlockingReasonCategory.RawSecretDetected))
+            missing.Add(new("template-secret-ref-summary", RecipeTemplateBlockingReasonCategory.MissingSecretReference, $"Secret refs by alias/id only: {string.Join(", ", template.RequiredSecretRefs)}.", RecipeReadinessIssueSeverity.Blocking));
+
+        return missing;
+    }
+
+    private static IReadOnlyList<RecipeTemplateFutureEnablementNote> FutureEnablementNotes(
+        RecipeTemplateDefinition template,
+        IReadOnlyList<RecipeTemplateBlockingReason> blocking)
+    {
+        var notes = new List<RecipeTemplateFutureEnablementNote>();
+
+        if (template.RuntimeEligibility is RecipeTemplateRuntimeEligibility.FutureGated or RecipeTemplateRuntimeEligibility.LiveBlocked)
+            notes.Add(new("future-runtime-not-enabled", RuntimeCategory(template), LiveBlockedExplanation(template)));
+
+        if (template.ConnectorEligibilityRefs.Count > 0)
+            notes.Add(new("future-connector-not-enabled", RecipeTemplateBlockingReasonCategory.ConnectorExecutionBlocked, "Connector eligibility is reference/fixture-only and does not enable connector execution."));
+
+        if (template.TriggerRefs.Count > 0)
+            notes.Add(new("future-trigger-not-enabled", RecipeTemplateBlockingReasonCategory.TriggerAutorunBlocked, "Trigger refs remain observe-only and cannot start a recipe."));
+
+        if (blocking.Any(b => b.Category == RecipeTemplateBlockingReasonCategory.RawSecretDetected))
+            notes.Add(new("raw-secret-blocks", RecipeTemplateBlockingReasonCategory.RawSecretDetected, "Raw secret markers block readiness; only secret refs are allowed."));
+
+        return notes;
+    }
+
+    private static RecipeTemplateBlockingReasonCategory RuntimeCategory(RecipeTemplateDefinition template) =>
+        template.Category switch
+        {
+            RecipeTemplateCategory.GenericBrowserPortal => RecipeTemplateBlockingReasonCategory.BrowserRuntimeBlocked,
+            RecipeTemplateCategory.ComputerUseLegacy => RecipeTemplateBlockingReasonCategory.DesktopRuntimeBlocked,
+            RecipeTemplateCategory.ARCAFiscal => RecipeTemplateBlockingReasonCategory.FiscalSubmissionBlocked,
+            RecipeTemplateCategory.MercadoLibreMercadoPago when template.System == RecipeTemplateSystem.MercadoPago => RecipeTemplateBlockingReasonCategory.PaymentExecutionBlocked,
+            RecipeTemplateCategory.MercadoLibreMercadoPago => RecipeTemplateBlockingReasonCategory.MarketplaceMutationBlocked,
+            _ => RecipeTemplateBlockingReasonCategory.ConnectorExecutionBlocked
+        };
+
+    private static IReadOnlyList<RecipeTemplateDetailSection> DetailSections(
+        RecipeTemplateDefinition template,
+        RecipeTemplateReadiness readiness,
+        RecipeTemplateDetailSystemSummary systemSummary,
+        RecipeTemplateReadinessExplanation explanation) =>
+    [
+        new("overview", "Overview", RecipeLabSectionStatus.ReferenceOnly, SafeProductCopy(template.OperatorVisibleSummary), [template.TemplateId]),
+        new("readiness", "Readiness", readiness.IsReady ? RecipeLabSectionStatus.FixtureOnly : RecipeLabSectionStatus.Blocked, explanation.OperatorVisibleSummary, [readiness.CanonicalReadinessStatus.ToString()]),
+        new("blocking", "Blocking and missing requirements", explanation.BlockingReasons.Count > 0 ? RecipeLabSectionStatus.Blocked : RecipeLabSectionStatus.Ready, string.Join("; ", explanation.BlockingReasons.Select(b => b.RedactedSummary).DefaultIfEmpty("No blocking issue for preview.")), explanation.BlockingReasons.Select(b => b.ReasonId).ToArray()),
+        new("requirements", "Requirements", RecipeLabSectionStatus.ReferenceOnly, $"Tools: {RefSummary(template.RequiredToolTrustRefs)}. Secrets: {RefSummary(template.RequiredSecretRefs)}. Evidence: {RefSummary(template.EvidenceRequirementRefs)}.", template.RequiredToolTrustRefs.Concat(template.RequiredSecretRefs).Concat(template.EvidenceRequirementRefs).ToArray()),
+        new("human-review", "Human review", template.SafetyProfile.RequiresHumanApproval || template.SafetyProfile.SensitiveCategories.Count > 0 ? RecipeLabSectionStatus.NeedsHuman : RecipeLabSectionStatus.ReferenceOnly, HumanReviewSummary(template), template.ApprovalHumanInterventionRequirementRefs),
+        new("system-boundary", "System boundary", template.RuntimeEligibility is RecipeTemplateRuntimeEligibility.LiveBlocked ? RecipeLabSectionStatus.LiveBlocked : RecipeLabSectionStatus.FutureGated, systemSummary.RuntimeBoundarySummary, template.ConnectorEligibilityRefs),
+        new("safe-next", "Safe next action", RecipeLabSectionStatus.ReferenceOnly, explanation.SafeNextAction.RedactedSummary, [])
+    ];
+
+    private static IReadOnlyList<RecipeCatalogSafetyBadge> DetailSafetyBadges(RecipeTemplateDefinition template)
+    {
+        var badges = new List<RecipeCatalogSafetyBadge>
+        {
+            Badge(RecipeCatalogSafetyBadgeKind.Preview, "Preview", "Template detail inspection only."),
+            Badge(RecipeCatalogSafetyBadgeKind.FixtureSafe, "Fixture-safe", "No real systems are called."),
+            Badge(RecipeCatalogSafetyBadgeKind.ReadOnly, "Read-only", "No product action is exposed."),
+            Badge(RecipeCatalogSafetyBadgeKind.SecretsByReference, "Secrets by reference only", SecretSummary(template)),
+            Badge(RecipeCatalogSafetyBadgeKind.EvidenceByReference, "Evidence by reference only", "Evidence requirements are refs only.")
+        };
+
+        if (template.RuntimeEligibility == RecipeTemplateRuntimeEligibility.LiveBlocked)
+            badges.Add(Badge(RecipeCatalogSafetyBadgeKind.LiveBlocked, "Live runtime blocked", LiveBlockedExplanation(template)));
+        if (template.RuntimeEligibility == RecipeTemplateRuntimeEligibility.FutureGated)
+            badges.Add(Badge(RecipeCatalogSafetyBadgeKind.FutureGated, "Future-gated", LiveBlockedExplanation(template)));
+        if (template.SafetyProfile.RequiresHumanApproval || template.SafetyProfile.SensitiveCategories.Count > 0)
+            badges.Add(Badge(RecipeCatalogSafetyBadgeKind.HumanReviewRequired, "Requires human review", HumanReviewSummary(template)));
+        if (template.TriggerRefs.Count > 0)
+            badges.Add(Badge(RecipeCatalogSafetyBadgeKind.ObserveOnlyTrigger, "Observe-only trigger", TriggerSummary(template)));
+
+        return badges;
+    }
+
+    private static RecipeTemplateDetailSystemSummary SystemSummary(RecipeTemplateDefinition template)
+    {
+        var summary = template.Category switch
+        {
+            RecipeTemplateCategory.ExcelMicrosoft365 => "Excel / Microsoft 365 preview workflow. Spreadsheet refs, validations, and evidence expectations are inspectable without a live M365 connector or file sync.",
+            RecipeTemplateCategory.GoogleWorkspace => "Google Workspace preview workflow. Google API calls and Gmail delivery are not enabled; attachment and calendar flows stay draft/review only.",
+            RecipeTemplateCategory.SAP => "SAP template is future API/connector-first. SAP GUI automation, RFC, BAPI, and OData calls are not enabled.",
+            RecipeTemplateCategory.MercadoLibreMercadoPago => "Mercado Libre / Mercado Pago template is review-only. API calls, stock, price, listing, message, and payment mutations are not enabled.",
+            RecipeTemplateCategory.ARCAFiscal => "ARCA / Fiscal template is legal/fiscal review-only. Fiscal submission, certificate/private-key usage, and web service calls are not enabled.",
+            RecipeTemplateCategory.ERPLocalLATAM => "ERP Local LATAM template is draft/review only. ERP API calls, desktop automation, and real ERP mutation are not enabled.",
+            RecipeTemplateCategory.GenericBrowserPortal => "Browser portal template is readiness/check/playbook only. Browser automation, real login, and challenge bypass are not enabled.",
+            RecipeTemplateCategory.ComputerUseLegacy => "Computer Use legacy template is manual playbook/draft only. Desktop automation, UIA/vision execution, and hotkey hooks are not enabled.",
+            _ => "Unknown template system remains blocked."
+        };
+
+        return new(
+            template.System,
+            summary,
+            template.ConnectorEligibilityRefs.Count == 0 ? "Connector execution not enabled." : "Connector refs are future-gated/reference-only.",
+            LiveBlockedExplanation(template),
+            HumanReviewSummary(template),
+            template.Category == RecipeTemplateCategory.ERPLocalLATAM
+                ? ["Tango", "Bejerman", "Contabilium", "Alegra", "Siigo", "Odoo", "TOTVS", "CONTPAQi", "Aspel"]
+                : []);
+    }
+
+    private static string LiveBlockedExplanation(RecipeTemplateDefinition template) =>
+        template.Category switch
+        {
+            RecipeTemplateCategory.GenericBrowserPortal => "Browser automation not enabled; live runtime blocked.",
+            RecipeTemplateCategory.ComputerUseLegacy => "Desktop automation not enabled; live runtime blocked.",
+            RecipeTemplateCategory.ARCAFiscal => "Fiscal submission is not enabled; live runtime blocked.",
+            RecipeTemplateCategory.MercadoLibreMercadoPago when template.System == RecipeTemplateSystem.MercadoPago => "Payment execution is not enabled; live runtime blocked.",
+            RecipeTemplateCategory.MercadoLibreMercadoPago => "Marketplace mutation is not enabled; live runtime blocked.",
+            RecipeTemplateCategory.SAP => "SAP connector execution and SAP GUI automation are not enabled.",
+            RecipeTemplateCategory.ERPLocalLATAM => "ERP connector execution and desktop mutation are not enabled.",
+            RecipeTemplateCategory.GoogleWorkspace => "Google API and Gmail delivery are not enabled.",
+            RecipeTemplateCategory.ExcelMicrosoft365 => "Live connector and file sync are not enabled.",
+            _ => "Live runtime blocked."
+        };
+
+    private static string HumanReviewSummary(RecipeTemplateDefinition template)
+    {
+        if (!template.SafetyProfile.RequiresHumanApproval && template.SafetyProfile.SensitiveCategories.Count == 0)
+            return "No human approval path required for preview inspection.";
+
+        return $"Requires human review for: {string.Join(", ", template.SafetyProfile.SensitiveCategories)}.";
+    }
+
+    private static string LocatorCaptureSummary(RecipeTemplateDefinition template)
+    {
+        if (template.Category == RecipeTemplateCategory.GenericBrowserPortal)
+            return "Locator implications are preview-only; no browser selector test or live locator repair apply.";
+        if (template.Category == RecipeTemplateCategory.ComputerUseLegacy)
+            return "Locator and capture implications are manual/preview-only; no UIA, vision, hook, capture, or playback path.";
+        return "Capture and locator summaries remain reference-only; no recorder, playback, or live repair apply.";
+    }
+
     private static RecipeCatalogSafetyBadge Badge(RecipeCatalogSafetyBadgeKind kind, string label, string summary) =>
         new(kind, label, SafeProductCopy(summary));
 
@@ -534,24 +1045,47 @@ public static class RecipeProductSurfaceFactory
         $"Tools: {string.Join(", ", summary.RequiredToolTrustRefs)}; secrets: {string.Join(", ", summary.RequiredSecretAliasesOrRefs)}; triggers: {string.Join(", ", summary.TriggerRefs)}.";
 
     private static string SafeProductCopy(string value) =>
-        value
-            .Replace("Run recipe", "Inspect template", StringComparison.OrdinalIgnoreCase)
-            .Replace("Execute", "Preview", StringComparison.OrdinalIgnoreCase)
-            .Replace("Automate now", "Preview only", StringComparison.OrdinalIgnoreCase)
-            .Replace("Autofill", "Draft fill", StringComparison.OrdinalIgnoreCase)
-            .Replace("Submit", "Submission review", StringComparison.OrdinalIgnoreCase)
-            .Replace("Sync live", "Sync draft", StringComparison.OrdinalIgnoreCase)
-            .Replace("Pay", "Payment review", StringComparison.OrdinalIgnoreCase)
-            .Replace("Publish", "Listing review", StringComparison.OrdinalIgnoreCase)
-            .Replace("Send", "Message review", StringComparison.OrdinalIgnoreCase)
-            .Replace("Invoice live", "Invoice draft review", StringComparison.OrdinalIgnoreCase)
-            .Replace("Connect now", "Connector preview", StringComparison.OrdinalIgnoreCase)
-            .Replace("Use credentials", "Use secret refs", StringComparison.OrdinalIgnoreCase)
-            .Replace("Record", "Capture draft", StringComparison.OrdinalIgnoreCase)
-            .Replace("Replay", "Playback review", StringComparison.OrdinalIgnoreCase)
-            .Replace("Control browser", "Browser preview", StringComparison.OrdinalIgnoreCase)
-            .Replace("Control desktop", "Desktop preview", StringComparison.OrdinalIgnoreCase)
-            .Replace("Live automation ready", "Live runtime blocked", StringComparison.OrdinalIgnoreCase);
+        ReplaceForbiddenProductCopy(value);
+
+    private static string ReplaceForbiddenProductCopy(string value)
+    {
+        var replacements = new (string Forbidden, string Safe)[]
+        {
+            ("Live automation ready", "Live runtime blocked"),
+            ("Run recipe", "Inspect template"),
+            ("Automate now", "Preview only"),
+            ("Sync live", "Sync draft"),
+            ("Invoice live", "Invoice draft review"),
+            ("Connect now", "Connector preview"),
+            ("Use credentials", "Use secret refs"),
+            ("Capture now", "Capture draft review"),
+            ("Control browser", "Browser preview"),
+            ("Control desktop", "Desktop preview"),
+            ("Execute", "Preview"),
+            ("Autofill", "Draft fill"),
+            ("Submit", "Submission review"),
+            ("Publish", "Listing review"),
+            ("Send", "Message review"),
+            ("Record", "Capture draft"),
+            ("Replay", "Playback review"),
+            ("Pay", "Payment review")
+        };
+
+        var result = value;
+        foreach (var (forbidden, safe) in replacements)
+        {
+            var escaped = Regex.Escape(forbidden);
+            var pattern = char.IsLetterOrDigit(forbidden[0]) && char.IsLetterOrDigit(forbidden[^1])
+                ? $@"\b{escaped}\b"
+                : escaped;
+            result = Regex.Replace(result, pattern, safe, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        return result;
+    }
+
+    private static string RefSummary(IReadOnlyList<string> refs) =>
+        refs.Count == 0 ? "none" : string.Join(", ", refs);
 
     private static RecipeLabCellKind ToCellKind(string sectionId)
     {
