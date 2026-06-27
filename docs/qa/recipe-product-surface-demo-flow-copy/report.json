@@ -1,0 +1,52 @@
+{
+  "decisionTarget": "GO_RECIPE_NAVIGATION_MESSAGING_DEMO_FLOW_COPY_READY",
+  "line": "NODAL_RECIPE_PRODUCT_SURFACE_NAVIGATION_MESSAGING_READ_ONLY",
+  "phase": "2/3",
+  "phaseName": "Demo Flow Copy",
+  "status": "PASS",
+  "startHead": "103e22fe32de79d10438328fcb221c9ee46e54cf",
+  "closedProductSurfaceStatus": "COMPLETE_READ_ONLY_PREVIEW_SAFE_FIXTURE_SAFE_PRODUCT_SURFACE_CLOSED",
+  "previousPhaseDecision": "GO_RECIPE_NAVIGATION_MESSAGING_TAXONOMY_READY",
+  "milestones": {
+    "2.1 Guard/inventory": "PASS",
+    "2.2 Demo flow step model": "PASS",
+    "2.3 Demo flow microcopy set": "PASS",
+    "2.4 Demo-safe empty/disabled states": "PASS",
+    "2.5 Tests": "PASS",
+    "2.6 Docs/report/handoff": "PASS"
+  },
+  "safetyMatrix": {
+    "liveRecipeExecution": "NO",
+    "liveRuntime": "NO",
+    "browserAutomation": "NO",
+    "desktopAutomation": "NO",
+    "cdpPlaywrightSeleniumPuppeteer": "NO",
+    "connectorApiNetwork": "NO",
+    "vaultSecretsAccess": "NO",
+    "schedulerWatcherHookListener": "NO",
+    "recorderReplayCapture": "NO",
+    "automaticWorkitemProcessing": "NO",
+    "fiscalPaymentMarketplaceMessageDeleteWriteLiveActions": "NO",
+    "realExportFileGeneration": "NO",
+    "protectedBrowserLiveScopeTouched": "NO",
+    "dependenciesAdded": "NO"
+  },
+  "validation": {
+    "dotnet restore .\\OneBrain.slnx": "PASS",
+    "dotnet build .\\OneBrain.slnx --no-restore": "PASS - 32 existing warnings in OneBrain.Safety.Tests, 0 errors; SDK preview informational messages also shown",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceDemoFlowCopy": "PASS - 8/8",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessaging": "PASS - 8/8",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build": "PASS - 895/895",
+    "dotnet test .\\tests\\OneBrain.Safety.Tests\\OneBrain.Safety.Tests.csproj --no-build --filter FullyQualifiedName~Recipe": "PASS - 155 passed, 1 skipped",
+    "jsonValidation": "PASS",
+    "git diff --check": "PASS",
+    "git diff --cached --check": "PASS",
+    "protectedScopeScan": "PASS",
+    "secretScanChangedNew": "PASS",
+    "noLiveNoActionNoExecutionScanChangedNew": "PASS - live/action terms only in prohibited, blocked, disabled, or negated contexts",
+    "dependencyScan": "PASS"
+  },
+  "allowedClaim": "NODAL OS has a fixture-safe Recipe Runtime product surface with read-only catalog, lab, templates, readiness explanations, operator previews and handoff/export preview summaries.",
+  "forbiddenClaim": "NODAL OS can execute/live automate these recipes.",
+  "nextPhase": "3/3 - Final Polish + Audit Readiness"
+}

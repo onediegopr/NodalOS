@@ -139,6 +139,18 @@ public enum RecipeProductSurfaceDisabledActionKind
     FiscalPaymentMarketplaceMessageDeleteWrite
 }
 
+public enum RecipeProductSurfaceDemoFlowStepKind
+{
+    CatalogOverview,
+    LabOverview,
+    TemplateDetail,
+    ReadinessExplanation,
+    OperatorPreview,
+    HandoffExportPreview,
+    BlockedLiveRuntimeExplanation,
+    SafeClosingSummary
+}
+
 public sealed record RecipeCatalogSafetyBadge(
     RecipeCatalogSafetyBadgeKind Kind,
     string Label,
@@ -684,6 +696,90 @@ public sealed record RecipeProductSurfaceNavigationMessagingTaxonomy(
     public bool LiveRuntimeEnabled => false;
 }
 
+public sealed record RecipeProductSurfaceDemoFlowStepCopy(
+    RecipeProductSurfaceDemoFlowStepKind Kind,
+    string StepId,
+    string Title,
+    string Subtitle,
+    string OperatorDescription,
+    IReadOnlyList<RecipeProductSurfaceCapabilityBadgeKind> SafetyBadges,
+    string BlockedActionNote,
+    string SafeNextAction,
+    IReadOnlyList<string> UnavailableActionLabels,
+    string ClaimGuardrailReminder)
+{
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+    public bool StartsRecipeRun => false;
+    public bool ProcessesWorkitem => false;
+    public bool OpensConnector => false;
+    public bool RequestsSecrets => false;
+    public bool CallsNetwork => false;
+    public bool WritesFile => false;
+    public bool EnablesBrowserAutomation => false;
+    public bool EnablesDesktopAutomation => false;
+    public bool CreatesRecorderReplayOrCapture => false;
+    public bool EnablesExternalMutation => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeProductSurfaceDemoFlowEmptyStateCopy(
+    string StateId,
+    string Label,
+    string RedactedSummary,
+    string SafeNextAction)
+{
+    public bool ReadOnly => true;
+    public bool PreviewOnly => true;
+    public bool StartsRecipeRun => false;
+    public bool CallsNetwork => false;
+    public bool ReadsSecrets => false;
+    public bool WritesFile => false;
+}
+
+public sealed record RecipeProductSurfaceDemoFlowCopySet(
+    string Intro,
+    IReadOnlyList<string> StepTransitions,
+    IReadOnlyList<RecipeProductSurfaceDemoFlowEmptyStateCopy> EmptyStates,
+    IReadOnlyList<string> DisabledControlCopy,
+    string BlockedLiveRuntimeCopy,
+    string ExportPreviewOnlyCopy,
+    string NoCredentialsReadCopy,
+    string NoConnectorApiCallsCopy,
+    string NoBrowserDesktopAutomationCopy,
+    string NoRecordingPlaybackCaptureCopy,
+    string NoAutomaticWorkitemProcessingCopy,
+    string FinalSummary)
+{
+    public bool ProductFacing => true;
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+}
+
+public sealed record RecipeProductSurfaceDemoFlowCopySurface(
+    string SurfaceId,
+    RecipeProductSurfaceNavigationMessagingTaxonomy Taxonomy,
+    IReadOnlyList<RecipeProductSurfaceDemoFlowStepCopy> Steps,
+    RecipeProductSurfaceDemoFlowCopySet Microcopy,
+    string AllowedFinalClaim,
+    string ForbiddenFinalClaim,
+    bool ReadOnly = true,
+    bool PreviewSafe = true)
+{
+    public bool FixtureSafeOnly => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanCallNetwork => false;
+    public bool CanCreateSchedulerWatcherHookOrListener => false;
+    public bool CanCreateRecorderReplayOrCapture => false;
+    public bool CanWriteExportFile => false;
+    public bool CanApplyLocatorRepair => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
 public sealed record RecipeLabSectionViewModel(
     string SectionId,
     string Label,
@@ -845,6 +941,156 @@ public static class RecipeProductSurfaceCopyPolicy
 
 public static class RecipeProductSurfaceFactory
 {
+    public static RecipeProductSurfaceDemoFlowCopySurface CreateDemoFlowCopySurface()
+    {
+        var taxonomy = CreateNavigationMessagingTaxonomy();
+        var defaultBadges = new[]
+        {
+            RecipeProductSurfaceCapabilityBadgeKind.ReadOnly,
+            RecipeProductSurfaceCapabilityBadgeKind.PreviewSafe,
+            RecipeProductSurfaceCapabilityBadgeKind.FixtureSafe
+        };
+
+        var steps = new RecipeProductSurfaceDemoFlowStepCopy[]
+        {
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.CatalogOverview,
+                "demo-flow.catalog-overview",
+                "Browse Recipe Catalog",
+                "Start with template categories and safety badges.",
+                "The operator opens the Recipe Product Surface and browses fixture-safe catalog summaries.",
+                defaultBadges,
+                "Recipe execution is not enabled from this entrypoint.",
+                "Review the catalog categories and live-blocked badges.",
+                ["Recipe execution blocked", "Connector/API blocked", "Vault/secrets blocked"],
+                taxonomy.AllowedFinalClaim),
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.LabOverview,
+                "demo-flow.lab-overview",
+                "Review Recipe Lab",
+                "Inspect readiness and referenced evidence.",
+                "The operator reviews lab sections for readiness, evidence refs, approval refs, tool refs, trigger state, locator preview, and capture draft summary.",
+                [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.LiveRuntimeBlocked],
+                "Template cards cannot start recipes or process workitems.",
+                "Open template detail preview for one selected template.",
+                ["Workitem processing blocked", "Browser automation blocked", "Desktop automation blocked"],
+                "The catalog supports inspection only; live automation claims stay blocked."),
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.TemplateDetail,
+                "demo-flow.template-detail",
+                "Open Template Detail",
+                "Explain system, region, category, requirements, and blocked modes.",
+                "The operator reads what the selected template does, what requirements are missing, and what remains outside the current surface.",
+                [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.SecretsByReferenceOnly],
+                "The lab cannot change recipe contracts, open connectors, or reveal secret values.",
+                "Read the readiness explanation before discussing handoff.",
+                ["Vault/secrets blocked", "Recording/playback/capture-draft blocked"],
+                "Recipe Lab is read-only and fixture-safe."),
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.ReadinessExplanation,
+                "demo-flow.readiness-explanation",
+                "Read Readiness Explanation",
+                "Understand why preview is allowed and live modes are blocked.",
+                "The operator reviews missing requirements, blocking reasons, evidence expectations, approval path, and safe next action.",
+                [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.HumanApprovalPathRequired],
+                "Template detail cannot enable connector execution, browser automation, desktop automation, or external mutations.",
+                "Continue to operator preview for the review sequence.",
+                ["Connector/API blocked", "Fiscal/payment/marketplace/message/delete/write blocked"],
+                "Template detail is product explanation, not runtime authority."),
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.OperatorPreview,
+                "demo-flow.operator-preview",
+                "Review Operator Preview",
+                "Walk through what a human would review.",
+                "The operator sees required review sections, approvals, evidence, human intervention points, disabled actions, and not-automated summaries.",
+                [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.NotAutomated],
+                "Readiness explanation does not override policy or create a live path.",
+                "Review handoff/export preview metadata next.",
+                ["Recipe execution blocked", "Workitem processing blocked"],
+                "Readiness copy must preserve the fixture-safe claim only."),
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.HandoffExportPreview,
+                "demo-flow.handoff-export-preview",
+                "Review Handoff/Export Preview",
+                "Inspect handoff metadata without file generation.",
+                "The operator reviews readiness snapshot, blocked reasons, missing requirements, approval path, secret refs, evidence requirements, and not-included list.",
+                [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.ExportPreviewOnly],
+                "Operator preview cannot invoke disabled actions or grant live runtime.",
+                "Confirm live runtime remains blocked.",
+                ["Recipe execution blocked", "Export file generation blocked"],
+                "Operator preview is a review aid only."),
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.BlockedLiveRuntimeExplanation,
+                "demo-flow.blocked-live-runtime",
+                "Understand blocked live runtime",
+                "Confirm what is not available.",
+                "The operator verifies that live recipe execution, automation, connector/API, vault, recording/playback/capture-draft, workitem processing, external mutation, and real export remain unavailable.",
+                [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.LiveRuntimeBlocked],
+                "Handoff/export preview does not generate a real file and cannot call a filesystem, connector, or network path.",
+                "Move to safe closing summary.",
+                ["Export file generation blocked", "Connector/API blocked"],
+                "Handoff/export is preview metadata only."),
+            DemoStep(
+                RecipeProductSurfaceDemoFlowStepKind.SafeClosingSummary,
+                "demo-flow.safe-closing-summary",
+                "Understand safe next action",
+                "Close with the allowed product claim.",
+                "The operator leaves with the fixture-safe product claim and the explicit understanding that live automation is not available.",
+                [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.DemoSafe],
+                "No step in the demo enables live runtime, automation, connector/API, vault, recording/playback/capture-draft, workitem processing, external mutation, or real export.",
+                "Use the allowed claim and keep the forbidden claim out of product-facing copy.",
+                taxonomy.DisabledActionMessages.Select(a => a.Label).ToArray(),
+                taxonomy.AllowedFinalClaim)
+        };
+
+        var microcopy = new RecipeProductSurfaceDemoFlowCopySet(
+            "Preview-only demo flow for the closed Recipe Product Surface. It explains inspection surfaces, blocked live runtime, and safe handoff metadata.",
+            [
+                "Next: inspect the read-only catalog.",
+                "Next: review lab readiness without changing anything.",
+                "Next: open template detail for system-specific explanation.",
+                "Next: read why requirements are missing or blocked.",
+                "Next: review operator-facing evidence and approval paths.",
+                "Next: inspect handoff/export preview metadata only.",
+                "Next: confirm live runtime remains blocked.",
+                "Close: use the allowed fixture-safe product claim."
+            ],
+            [
+                new("empty.no-live-runtime", "No live runtime available", "Live runtime is not enabled in this read-only product surface.", "Review readiness and blocked-state copy."),
+                new("empty.no-connector", "No connector connected", "Connector/API calls are not enabled; connector refs remain preview metadata.", "Review connector eligibility refs."),
+                new("empty.no-credentials", "No credentials requested", "No credentials are read or requested; secrets stay by reference only.", "Review secret aliases or refs by reference only."),
+                new("empty.no-export-file", "No export file generated", "Export preview does not write a real file.", "Review the safe handoff summary."),
+                new("empty.no-workitems", "No workitems processed", "Automatic workitem processing is not enabled.", "Review workitem metadata only."),
+                new("empty.no-browser-desktop-automation", "No browser or desktop automation performed", "Browser and desktop automation are not enabled.", "Use preview-only explanations."),
+                new("empty.preview-data-only", "Preview data only", "Fixture-safe summaries and refs are shown without live system access.", "Continue the read-only demo flow.")
+            ],
+            [
+                "Disabled control: recipe execution is not enabled.",
+                "Disabled control: connector/API calls are not enabled.",
+                "Disabled control: secret reading is not enabled.",
+                "Disabled control: browser and desktop automation are not enabled.",
+                "Disabled control: recording/playback/capture-draft is not enabled.",
+                "Disabled control: real export file generation is not enabled.",
+                "Disabled control: automatic workitem processing is not enabled."
+            ],
+            "No live runtime available. Recipe execution and live automation are not enabled.",
+            "Export preview only. No real export file is generated.",
+            "No credentials are read. Secret refs are aliases only.",
+            "No connector/API calls are made. Connector execution remains disabled.",
+            "No browser or desktop automation is performed.",
+            "No recording, playback, or real capture is performed.",
+            "No automatic workitem processing is performed.",
+            taxonomy.AllowedFinalClaim);
+
+        return new(
+            "recipe.product.surface.demo.flow.copy.v1",
+            taxonomy,
+            steps,
+            microcopy,
+            taxonomy.AllowedFinalClaim,
+            taxonomy.ForbiddenFinalClaim);
+    }
+
     public static RecipeProductSurfaceNavigationMessagingTaxonomy CreateNavigationMessagingTaxonomy()
     {
         var labels = new RecipeProductSurfaceNavigationLabel[]
@@ -912,7 +1158,7 @@ public static class RecipeProductSurfaceFactory
             Disabled(RecipeProductSurfaceDisabledActionKind.RecipeExecution, "Recipe execution blocked", "Recipe execution is not enabled in this read-only product surface.", "Review readiness and prepare requirements."),
             Disabled(RecipeProductSurfaceDisabledActionKind.WorkitemProcessing, "Workitem processing blocked", "Automatic workitem processing is not enabled in this closed product surface.", "Review queue metadata and handoff notes."),
             Disabled(RecipeProductSurfaceDisabledActionKind.ConnectorApi, "Connector/API blocked", "Connector/API/network calls are not enabled.", "Review connector eligibility and tool trust refs."),
-            Disabled(RecipeProductSurfaceDisabledActionKind.VaultSecrets, "Vault/secrets blocked", "Vault access and secret reading are not enabled; secrets remain by reference only.", "Review required secret aliases or refs."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.VaultSecrets, "Vault/secrets blocked", "Vault access and secret reading are not enabled; secrets remain by reference only.", "Review required secret aliases or refs by reference only."),
             Disabled(RecipeProductSurfaceDisabledActionKind.BrowserAutomation, "Browser automation blocked", "Browser automation and CDP-driven runtime paths are not enabled.", "Use preview summaries and blocked runtime explanations."),
             Disabled(RecipeProductSurfaceDisabledActionKind.DesktopAutomation, "Desktop automation blocked", "Desktop/computer-use automation is not enabled.", "Use manual playbook and preview-only summaries."),
             Disabled(RecipeProductSurfaceDisabledActionKind.RecorderReplayCapture, "Recording/playback/capture-draft blocked", "Recording, playback, and real capture are not enabled.", "Review preview-only capture draft summaries."),
@@ -1649,6 +1895,29 @@ public static class RecipeProductSurfaceFactory
         string reason,
         string safeNextAction) =>
         new(kind, SafeProductCopy(label), SafeProductCopy(reason), SafeProductCopy(safeNextAction));
+
+    private static RecipeProductSurfaceDemoFlowStepCopy DemoStep(
+        RecipeProductSurfaceDemoFlowStepKind kind,
+        string stepId,
+        string title,
+        string subtitle,
+        string description,
+        IReadOnlyList<RecipeProductSurfaceCapabilityBadgeKind> badges,
+        string blockedActionNote,
+        string safeNextAction,
+        IReadOnlyList<string> unavailableActionLabels,
+        string claimGuardrailReminder) =>
+        new(
+            kind,
+            stepId,
+            SafeProductCopy(title),
+            SafeProductCopy(subtitle),
+            SafeProductCopy(description),
+            badges,
+            SafeProductCopy(blockedActionNote),
+            SafeProductCopy(safeNextAction),
+            unavailableActionLabels.Select(SafeProductCopy).ToArray(),
+            SafeProductCopy(claimGuardrailReminder));
 
     private static RecipeCatalogReadinessBadge ReadinessBadge(RecipeTemplateReadiness readiness)
     {
