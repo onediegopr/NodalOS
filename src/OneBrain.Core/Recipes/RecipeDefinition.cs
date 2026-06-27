@@ -22,8 +22,14 @@ public sealed record RecipeDefinition(
     public List<RecipeLifecycleStage> LifecycleStages { get; init; } = new();
     public List<RecipeBlock> Blocks { get; init; } = new();
     public string? LimitsRef { get; init; }
+    public RecipeRunLimits? RunLimits { get; init; }
     public string? CompleteCriteriaRef { get; init; }
+    public RecipeCompleteCriteria? CompleteCriteria { get; init; }
     public string? TerminateCriteriaRef { get; init; }
+    public RecipeTerminateCriteria? TerminateCriteria { get; init; }
+    public RecipeValidationPolicy? ValidationPolicy { get; init; }
+    public RecipeRiskProfile? RuntimeRiskProfile { get; init; }
+    public ActionResolutionPolicy? ActionResolutionPolicy { get; init; }
     public List<string> ApprovalCheckpointRefs { get; init; } = new();
     public List<string> EvidenceExpectationRefs { get; init; } = new();
     public string? CreatedBy { get; init; }

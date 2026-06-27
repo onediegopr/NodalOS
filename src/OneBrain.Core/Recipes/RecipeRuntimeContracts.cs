@@ -40,7 +40,8 @@ public enum RecipeRiskLevel
     Low,
     Medium,
     High,
-    Critical
+    Critical,
+    Blocked
 }
 
 public enum RecipeApprovalRequirement
@@ -91,15 +92,20 @@ public enum RecipeRunStepResult
 
 public enum RecipeReadinessStatus
 {
+    ReadyForCatalogPreview,
     ReadyForPreview,
     ReadyForDryRun,
     ReadyForFixtureRun,
     BlockedMissingLimits,
     BlockedMissingValidation,
+    BlockedMissingCompleteCriteria,
+    BlockedMissingTerminateCriteria,
     BlockedMissingEvidencePolicy,
     BlockedMissingApprovalPolicy,
     BlockedMissingToolTrust,
     BlockedMissingSecretReference,
+    BlockedRiskGate,
+    BlockedActionResolutionPolicy,
     BlockedLiveRuntimeDisabled,
     BlockedByProtectedScope
 }
