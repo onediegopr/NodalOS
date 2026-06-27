@@ -101,6 +101,44 @@ public enum RecipeProductSurfaceDemoStepKind
     ReadSafeHandoffSummary
 }
 
+public enum RecipeProductSurfaceNavigationEntryKind
+{
+    RecipeCatalog,
+    RecipeLab,
+    TemplateDetail,
+    ReadinessExplanation,
+    OperatorPreview,
+    HandoffExportPreview,
+    SafeDemo
+}
+
+public enum RecipeProductSurfaceCapabilityBadgeKind
+{
+    ReadOnly,
+    PreviewSafe,
+    FixtureSafe,
+    DemoSafe,
+    LiveRuntimeBlocked,
+    ConnectorExecutionDisabled,
+    SecretsByReferenceOnly,
+    ExportPreviewOnly,
+    HumanApprovalPathRequired,
+    NotAutomated
+}
+
+public enum RecipeProductSurfaceDisabledActionKind
+{
+    RecipeExecution,
+    WorkitemProcessing,
+    ConnectorApi,
+    VaultSecrets,
+    BrowserAutomation,
+    DesktopAutomation,
+    RecorderReplayCapture,
+    ExportFileGeneration,
+    FiscalPaymentMarketplaceMessageDeleteWrite
+}
+
 public sealed record RecipeCatalogSafetyBadge(
     RecipeCatalogSafetyBadgeKind Kind,
     string Label,
@@ -574,6 +612,78 @@ public sealed record RecipeProductSurfaceSafeDemoReadinessSurface(
     public bool CanRecordReplayOrCapture => false;
 }
 
+public sealed record RecipeProductSurfaceNavigationLabel(
+    RecipeProductSurfaceNavigationEntryKind Kind,
+    string Label,
+    string OperatorSummary,
+    string RouteHint,
+    RecipeProductSurfaceCapabilityBadgeKind PrimaryBadge)
+{
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+    public bool StartsRecipeRun => false;
+    public bool OpensConnector => false;
+    public bool RequestsSecrets => false;
+    public bool EnablesAutomation => false;
+    public bool CreatesCaptureReplay => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeProductSurfaceCapabilityStatusBadge(
+    RecipeProductSurfaceCapabilityBadgeKind Kind,
+    string Label,
+    string RedactedSummary)
+{
+    public bool GrantsCapability => false;
+    public bool GrantsLiveRuntime => false;
+    public bool GrantsConnectorExecution => false;
+    public bool GrantsSecretAccess => false;
+    public bool GrantsExternalMutation => false;
+}
+
+public sealed record RecipeProductSurfaceDisabledActionMessage(
+    RecipeProductSurfaceDisabledActionKind Kind,
+    string Label,
+    string BlockedReason,
+    string SafeNextAction)
+{
+    public bool Available => false;
+    public bool CanInvoke => false;
+    public bool GrantsLiveRuntime => false;
+    public bool CallsConnectorOrNetwork => false;
+    public bool ReadsSecrets => false;
+    public bool WritesExternalSystem => false;
+    public bool WritesFile => false;
+}
+
+public sealed record RecipeProductSurfaceNavigationMessagingTaxonomy(
+    string TaxonomyId,
+    string LineId,
+    string ClosedProductSurfaceStatus,
+    string FinalCloseCommit,
+    IReadOnlyList<RecipeProductSurfaceNavigationLabel> NavigationLabels,
+    IReadOnlyList<RecipeProductSurfaceCapabilityStatusBadge> CapabilityBadges,
+    IReadOnlyList<RecipeProductSurfaceDisabledActionMessage> DisabledActionMessages,
+    string AllowedFinalClaim,
+    string ForbiddenFinalClaim,
+    string NoLiveNoAutomationCopyPolicy)
+{
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+    public bool FixtureSafeOnly => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanCallNetwork => false;
+    public bool CanCreateSchedulerWatcherHookOrListener => false;
+    public bool CanCreateRecorderReplayOrCapture => false;
+    public bool CanWriteExportFile => false;
+    public bool CanApplyLocatorRepair => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
 public sealed record RecipeLabSectionViewModel(
     string SectionId,
     string Label,
@@ -735,6 +845,94 @@ public static class RecipeProductSurfaceCopyPolicy
 
 public static class RecipeProductSurfaceFactory
 {
+    public static RecipeProductSurfaceNavigationMessagingTaxonomy CreateNavigationMessagingTaxonomy()
+    {
+        var labels = new RecipeProductSurfaceNavigationLabel[]
+        {
+            new(
+                RecipeProductSurfaceNavigationEntryKind.RecipeCatalog,
+                "Recipe Catalog",
+                "Browse fixture-safe template cards and status badges.",
+                "recipes/catalog-preview",
+                RecipeProductSurfaceCapabilityBadgeKind.ReadOnly),
+            new(
+                RecipeProductSurfaceNavigationEntryKind.RecipeLab,
+                "Recipe Lab",
+                "Inspect readiness, evidence refs, tool refs, trigger refs, and blocked live modes.",
+                "recipes/lab-preview",
+                RecipeProductSurfaceCapabilityBadgeKind.PreviewSafe),
+            new(
+                RecipeProductSurfaceNavigationEntryKind.TemplateDetail,
+                "Template Detail",
+                "Review one template, its system boundary, missing requirements, and safe next action.",
+                "recipes/template-detail-preview",
+                RecipeProductSurfaceCapabilityBadgeKind.FixtureSafe),
+            new(
+                RecipeProductSurfaceNavigationEntryKind.ReadinessExplanation,
+                "Readiness Explanation",
+                "Explain why a template is previewable, fixture-ready, blocked, or future-gated.",
+                "recipes/readiness-explanation",
+                RecipeProductSurfaceCapabilityBadgeKind.LiveRuntimeBlocked),
+            new(
+                RecipeProductSurfaceNavigationEntryKind.OperatorPreview,
+                "Operator Preview",
+                "Show what an operator would review before any future governed runtime design.",
+                "recipes/operator-preview",
+                RecipeProductSurfaceCapabilityBadgeKind.HumanApprovalPathRequired),
+            new(
+                RecipeProductSurfaceNavigationEntryKind.HandoffExportPreview,
+                "Handoff/Export Preview",
+                "Review handoff metadata only; no real file is generated.",
+                "recipes/handoff-export-preview",
+                RecipeProductSurfaceCapabilityBadgeKind.ExportPreviewOnly),
+            new(
+                RecipeProductSurfaceNavigationEntryKind.SafeDemo,
+                "Safe Demo",
+                "Walk through the read-only product surface and blocked live boundaries.",
+                "recipes/safe-demo",
+                RecipeProductSurfaceCapabilityBadgeKind.DemoSafe)
+        };
+
+        var badges = new RecipeProductSurfaceCapabilityStatusBadge[]
+        {
+            new(RecipeProductSurfaceCapabilityBadgeKind.ReadOnly, "Read-only", "Inspection surface only; no product action is exposed."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.PreviewSafe, "Preview-safe", "Product copy and view models remain preview-only."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.FixtureSafe, "Fixture-safe", "Uses contracts, fixtures, refs, and summaries only."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.DemoSafe, "Demo-safe", "Safe for explaining the closed surface without live behavior."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.LiveRuntimeBlocked, "Live runtime blocked", "No live runtime is available from navigation or messaging."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.ConnectorExecutionDisabled, "Connector execution disabled", "Connector/API/network activity is not enabled."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.SecretsByReferenceOnly, "Secrets by reference only", "Secret values are never requested or shown."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.ExportPreviewOnly, "Export preview only", "Handoff/export remains metadata preview; no real file is generated."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.HumanApprovalPathRequired, "Human approval path required", "Sensitive templates remain review-gated and blocked for live mutation."),
+            new(RecipeProductSurfaceCapabilityBadgeKind.NotAutomated, "Not automated", "Browser, desktop, connector, vault, recorder, and external mutation paths are blocked.")
+        };
+
+        var disabled = new RecipeProductSurfaceDisabledActionMessage[]
+        {
+            Disabled(RecipeProductSurfaceDisabledActionKind.RecipeExecution, "Recipe execution blocked", "Recipe execution is not enabled in this read-only product surface.", "Review readiness and prepare requirements."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.WorkitemProcessing, "Workitem processing blocked", "Automatic workitem processing is not enabled in this closed product surface.", "Review queue metadata and handoff notes."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.ConnectorApi, "Connector/API blocked", "Connector/API/network calls are not enabled.", "Review connector eligibility and tool trust refs."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.VaultSecrets, "Vault/secrets blocked", "Vault access and secret reading are not enabled; secrets remain by reference only.", "Review required secret aliases or refs."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.BrowserAutomation, "Browser automation blocked", "Browser automation and CDP-driven runtime paths are not enabled.", "Use preview summaries and blocked runtime explanations."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.DesktopAutomation, "Desktop automation blocked", "Desktop/computer-use automation is not enabled.", "Use manual playbook and preview-only summaries."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.RecorderReplayCapture, "Recording/playback/capture-draft blocked", "Recording, playback, and real capture are not enabled.", "Review preview-only capture draft summaries."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.ExportFileGeneration, "Export file generation blocked", "Real export file generation is not enabled; handoff/export is preview metadata only.", "Review or copy the safe handoff summary text."),
+            Disabled(RecipeProductSurfaceDisabledActionKind.FiscalPaymentMarketplaceMessageDeleteWrite, "Fiscal/payment/marketplace/message/delete/write blocked", "Live fiscal, payment, marketplace, message, delete, and write actions are not enabled.", "Request human review path and keep the item blocked for live action.")
+        };
+
+        return new(
+            "recipe.product.surface.navigation.messaging.v1",
+            "NODAL_RECIPE_PRODUCT_SURFACE_NAVIGATION_MESSAGING_READ_ONLY",
+            "COMPLETE_READ_ONLY_PREVIEW_SAFE_FIXTURE_SAFE_PRODUCT_SURFACE_CLOSED",
+            "df92f6fb4c86f246e1d956ede9fd4876e1d0080d",
+            labels,
+            badges,
+            disabled,
+            "NODAL OS has a fixture-safe Recipe Runtime product surface with read-only catalog, lab, templates, readiness explanations, operator previews and handoff/export preview summaries.",
+            "NODAL OS can execute/live automate these recipes.",
+            "Use read-only, preview-safe, fixture-safe copy only; live runtime, live automation, connector/API, vault, recording/playback/capture-draft, external mutation, and real export claims stay blocked.");
+    }
+
     public static RecipeCatalogSurface CreateCatalogSurface(
         RecipeTemplateCatalog catalog,
         RecipeTemplateReadinessContext readinessContext,
@@ -1444,6 +1642,13 @@ public static class RecipeProductSurfaceFactory
 
     private static RecipeCatalogSafetyBadge Badge(RecipeCatalogSafetyBadgeKind kind, string label, string summary) =>
         new(kind, label, SafeProductCopy(summary));
+
+    private static RecipeProductSurfaceDisabledActionMessage Disabled(
+        RecipeProductSurfaceDisabledActionKind kind,
+        string label,
+        string reason,
+        string safeNextAction) =>
+        new(kind, SafeProductCopy(label), SafeProductCopy(reason), SafeProductCopy(safeNextAction));
 
     private static RecipeCatalogReadinessBadge ReadinessBadge(RecipeTemplateReadiness readiness)
     {
