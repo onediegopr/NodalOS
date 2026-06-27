@@ -148,6 +148,7 @@ public sealed record ReliableRecipeFixtureEvalReport(
     ReliableRecipeFlakinessReport Flakiness,
     IReadOnlyList<ReliableRecipeFixtureEvalFailureKind> FailureTaxonomy,
     IReadOnlyList<string> ProductFacingSummaries,
+    ReliableRecipeEvalSandboxReadinessSummary SandboxReadinessSummary,
     ReliableRecipeLabEvalPanel LabEvalPanel)
 {
     public bool FixtureOnly => true;
@@ -158,6 +159,21 @@ public sealed record ReliableRecipeFixtureEvalReport(
     public bool ProviderCallEnabled => false;
     public bool RecorderRuntimeEnabled => false;
     public bool OcrLiveActivationEnabled => false;
+}
+
+public sealed record ReliableRecipeEvalSandboxReadinessSummary(
+    string ReportId,
+    string DecisionLabel,
+    double ReadinessScore,
+    IReadOnlyList<string> BlockedCapabilities,
+    IReadOnlyList<string> MissingRequirements,
+    IReadOnlyList<string> FutureUnlockConditions,
+    string FixtureOnlyNotice)
+{
+    public bool ReadOnly => true;
+    public bool FixtureOnly => true;
+    public bool SandboxRuntimeEnabled => false;
+    public bool RuntimeActionExposed => false;
 }
 
 public static class ReliableRecipeFixtureEvalRunner
@@ -172,6 +188,7 @@ public static class ReliableRecipeFixtureEvalRunner
         var finalDecision = FinalDecision(scenario, results, metrics);
         var taxonomy = results.SelectMany(r => r.FailureKinds).Where(f => f != ReliableRecipeFixtureEvalFailureKind.None).Distinct().ToArray();
         var panel = ReliableRecipeFixtureEvalReportMapper.ToLabPanel(scenario, metrics, flakiness, taxonomy, finalDecision);
+        var sandbox = ComputerUseSandboxReadinessReportMapper.ToEvalSummary(ComputerUseSandboxReadinessEvaluator.EvaluateEvalPreview(scenario, finalDecision));
         var report = new ReliableRecipeFixtureEvalReport(
             $"report.{scenario.ScenarioId}",
             scenario.ScenarioId,
@@ -181,6 +198,7 @@ public static class ReliableRecipeFixtureEvalRunner
             flakiness,
             taxonomy,
             ProductSummaries(scenario, finalDecision, metrics, taxonomy),
+            sandbox,
             panel);
 
         return new ReliableRecipeFixtureEvalRun(

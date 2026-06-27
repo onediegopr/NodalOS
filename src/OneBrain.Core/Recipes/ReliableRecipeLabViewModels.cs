@@ -25,6 +25,7 @@ public sealed record ReliableRecipeLabViewModel(
     ReliableRecipeLabPanelViewModel RecorderDraftPanel,
     ReliableRecipeLabRecorderDraftReviewPanel RecorderDraftReview,
     ReliableRecipeLabEvalPanel EvalPanel,
+    ReliableRecipeLabSandboxReadinessPanel SandboxReadinessReportPanel,
     IReadOnlyList<ReliableRecipeLabTimelinePreviewItem> TimelinePreview,
     ReliableRecipeLabNoLiveRuntimeNotice NoLiveRuntimeNotice,
     IReadOnlyList<string> ReadOnlyActionLabels)
@@ -148,6 +149,27 @@ public sealed record ReliableRecipeLabEvalScenarioRow(
 
 public sealed record ReliableRecipeLabEvalNotice(string Message);
 
+public sealed record ReliableRecipeLabSandboxReadinessPanel(
+    string DecisionLabel,
+    double ReadinessScore,
+    string AllowedAssessmentModeLabel,
+    string RequiredIsolationModeLabel,
+    IReadOnlyList<string> BlockedCapabilities,
+    IReadOnlyList<string> MissingRequirements,
+    IReadOnlyList<string> FutureUnlockConditions,
+    string FixtureOnlyNotice,
+    IReadOnlyList<string> ReadOnlyActionLabels)
+{
+    public bool ReadOnly => true;
+    public bool FixtureOnly => true;
+    public bool CanRunInSandbox => false;
+    public bool CanLaunchSandbox => false;
+    public bool CanExecuteIsolated => false;
+    public bool CanStartBrowser => false;
+    public bool CanStartDesktop => false;
+    public bool SandboxRuntimeEnabled => false;
+}
+
 public sealed record ReliableRecipeLabFixture(
     string FixtureId,
     ReliableRecipeDefinition Recipe,
@@ -190,6 +212,7 @@ public static class ReliableRecipeLabViewModelMapper
             RecorderPanel(recipe, quality),
             EmptyRecorderDraftReview(recipe),
             EmptyEvalPanel(),
+            ComputerUseSandboxReadinessReportMapper.ToLabPanel(ComputerUseSandboxReadinessEvaluator.Evaluate(recipe, report)),
             TimelineItems(recipe),
             NoLiveNotice(report),
             ReadOnlyActions);

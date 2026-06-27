@@ -142,7 +142,7 @@ public sealed class ReliableRecipeEvalHarnessFixtureScenariosTests
     {
         var run = Run("ocr_only_sensitive_submit_blocked_eval");
 
-        Assert.AreEqual(run.Metrics.ExpectedBlockIterations, 1);
+        CollectionAssert.AreEqual(new[] { 1 }, new[] { run.Metrics.ExpectedBlockIterations });
         Assert.IsTrue(Math.Abs(run.Metrics.ExpectedOutcomeMatchRate - 1.0) < 0.001);
         Assert.IsTrue(run.IterationResults.Single().PassedExpectedOutcome);
     }
