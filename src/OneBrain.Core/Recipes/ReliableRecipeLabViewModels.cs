@@ -31,6 +31,7 @@ public sealed record ReliableRecipeLabViewModel(
     ReliableRecipeLabStructuredPrerequisitesPanel StructuredPrerequisitesPanel,
     ReliableRecipeLabStructuredPrerequisiteAuthoringPanel StructuredPrerequisiteAuthoringPanel,
     ReliableRecipeLabOperatorReviewPackPanel OperatorReviewPackPanel,
+    ReliableRecipeLabCloseoutPanel CloseoutPanel,
     IReadOnlyList<ReliableRecipeLabTimelinePreviewItem> TimelinePreview,
     ReliableRecipeLabNoLiveRuntimeNotice NoLiveRuntimeNotice,
     IReadOnlyList<string> ReadOnlyActionLabels)
@@ -223,6 +224,7 @@ public static class ReliableRecipeLabViewModelMapper
             ReliableRecipeStructuredPrerequisiteReportMapper.ToLabPanel(report.StructuredPrerequisites),
             StructuredPrerequisiteAuthoringReportMapper.ToLabPanel(StructuredPrerequisiteAuthoringEvaluator.Evaluate(report.StructuredPrerequisites)),
             ReliableRecipeOperatorReviewPackMapper.ToLabPanel(ReliableRecipeOperatorReviewPackGenerator.Generate(StructuredPrerequisiteAuthoringEvaluator.Evaluate(report.StructuredPrerequisites))),
+            ReliableRecipeNoRuntimeCloseoutReportMapper.ToLabPanel(ReliableRecipeNoRuntimeCloseoutReportGenerator.Generate()),
             TimelineItems(recipe),
             NoLiveNotice(report),
             ReadOnlyActions);
