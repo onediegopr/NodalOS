@@ -577,6 +577,20 @@ public static class RecipeApprovalDecisionPolicy
         RecipeApprovalDecisionOption option,
         string decidedByRef = "operator.ref")
     {
+        if (!narrative.DecisionOptions.Contains(option))
+        {
+            var fallbackOption = SafeFallbackOption(narrative.DecisionOptions);
+            return CreateDecision(
+                decisionId,
+                narrative,
+                fallbackOption,
+                fallbackOption == RecipeApprovalDecisionOption.KeepBlocked
+                    ? RecipeApprovalDecisionStatus.KeptBlocked
+                    : RecipeApprovalDecisionStatus.BlockedByPolicy,
+                decidedByRef,
+                $"Decision option {option} was not offered by narrative {narrative.NarrativeId}; blocked by policy.");
+        }
+
         var status = option switch
         {
             RecipeApprovalDecisionOption.ApprovePreviewOnly => RecipeApprovalDecisionStatus.ApprovedPreviewOnly,
@@ -599,13 +613,47 @@ public static class RecipeApprovalDecisionPolicy
             option = RecipeApprovalDecisionOption.RequestMoreEvidence;
         }
 
+        return CreateDecision(
+            decisionId,
+            narrative,
+            option,
+            status,
+            decidedByRef,
+            status == RecipeApprovalDecisionStatus.MoreEvidenceRequested ? "More evidence required." : "Decision recorded as reference-only.");
+    }
+
+    private static RecipeApprovalDecisionOption SafeFallbackOption(IReadOnlyList<RecipeApprovalDecisionOption> offeredOptions)
+    {
+        if (offeredOptions.Contains(RecipeApprovalDecisionOption.KeepBlocked))
+            return RecipeApprovalDecisionOption.KeepBlocked;
+
+        if (offeredOptions.Contains(RecipeApprovalDecisionOption.Reject))
+            return RecipeApprovalDecisionOption.Reject;
+
+        if (offeredOptions.Contains(RecipeApprovalDecisionOption.RequestMoreEvidence))
+            return RecipeApprovalDecisionOption.RequestMoreEvidence;
+
+        if (offeredOptions.Contains(RecipeApprovalDecisionOption.CancelRun))
+            return RecipeApprovalDecisionOption.CancelRun;
+
+        return RecipeApprovalDecisionOption.KeepBlocked;
+    }
+
+    private static RecipeApprovalDecision CreateDecision(
+        string decisionId,
+        RecipeApprovalNarrative narrative,
+        RecipeApprovalDecisionOption option,
+        RecipeApprovalDecisionStatus status,
+        string decidedByRef,
+        string reasonSummary)
+    {
         return new RecipeApprovalDecision(
             decisionId,
             narrative.NarrativeId,
             option,
             status,
             decidedByRef,
-            status == RecipeApprovalDecisionStatus.MoreEvidenceRequested ? "More evidence required." : "Decision recorded as reference-only.",
+            reasonSummary,
             DateTimeOffset.Parse("2026-06-27T00:00:00Z"),
             narrative.EvidenceSummary.EvidenceRefs,
             ["timeline.approval"]);

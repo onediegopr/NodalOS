@@ -186,6 +186,95 @@ public sealed class RecipeHumanInterventionApprovalNarrativeTests
     }
 
     [TestMethod]
+    public void TwoFactorNarrativeRejectsFixtureApprovalWhenOptionNotOffered()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.TwoFactorRequired);
+        var decision = RecipeApprovalDecisionPolicy.Decide("decision.2fa.fixture", narrative, RecipeApprovalDecisionOption.ApproveFixtureRunOnly);
+
+        AssertOptionNotOfferedBlocked(decision, RecipeApprovalDecisionOption.ApproveFixtureRunOnly);
+    }
+
+    [TestMethod]
+    public void TwoFactorNarrativeRejectsDryRunApprovalWhenOptionNotOffered()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.TwoFactorRequired);
+        var decision = RecipeApprovalDecisionPolicy.Decide("decision.2fa.dryrun", narrative, RecipeApprovalDecisionOption.ApproveDryRunOnly);
+
+        AssertOptionNotOfferedBlocked(decision, RecipeApprovalDecisionOption.ApproveDryRunOnly);
+    }
+
+    [TestMethod]
+    public void CaptchaNarrativeRejectsFixtureApprovalWhenOptionNotOffered()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.CaptchaOrChallengeDetected);
+        var decision = RecipeApprovalDecisionPolicy.Decide("decision.challenge.fixture", narrative, RecipeApprovalDecisionOption.ApproveFixtureRunOnly);
+
+        AssertOptionNotOfferedBlocked(decision, RecipeApprovalDecisionOption.ApproveFixtureRunOnly);
+    }
+
+    [TestMethod]
+    public void CaptchaNarrativeRejectsDryRunApprovalWhenOptionNotOffered()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.CaptchaOrChallengeDetected);
+        var decision = RecipeApprovalDecisionPolicy.Decide("decision.challenge.dryrun", narrative, RecipeApprovalDecisionOption.ApproveDryRunOnly);
+
+        AssertOptionNotOfferedBlocked(decision, RecipeApprovalDecisionOption.ApproveDryRunOnly);
+    }
+
+    [TestMethod]
+    public void OfferedKeepBlockedDecisionRemainsSafeBlockedStatus()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.CaptchaOrChallengeDetected);
+        var decision = RecipeApprovalDecisionPolicy.Decide("decision.keepblocked", narrative, RecipeApprovalDecisionOption.KeepBlocked);
+
+        Assert.AreEqual(RecipeApprovalDecisionOption.KeepBlocked, decision.Option);
+        Assert.AreEqual(RecipeApprovalDecisionStatus.KeptBlocked, decision.Status);
+        Assert.IsFalse(decision.LiveRuntimeEnabled);
+        Assert.IsFalse(decision.ActionAuthorityGranted);
+        Assert.IsFalse(decision.AllowsExternalMutation);
+    }
+
+    [TestMethod]
+    public void OfferedManualResolutionDecisionDoesNotImplyAutomationOrLiveExecution()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.TwoFactorRequired);
+        var decision = RecipeApprovalDecisionPolicy.Decide("decision.manual.offered", narrative, RecipeApprovalDecisionOption.MarkManuallyResolved);
+
+        Assert.IsTrue(narrative.DecisionOptions.Contains(RecipeApprovalDecisionOption.MarkManuallyResolved));
+        Assert.AreEqual(RecipeApprovalDecisionOption.MarkManuallyResolved, decision.Option);
+        Assert.AreEqual(RecipeApprovalDecisionStatus.ManuallyResolved, decision.Status);
+        Assert.IsFalse(decision.LiveRuntimeEnabled);
+        Assert.IsFalse(decision.ActionAuthorityGranted);
+        Assert.IsFalse(decision.AllowsExternalMutation);
+    }
+
+    [TestMethod]
+    public void GenericOptionNotOfferedReturnsBlockedRatherThanApproved()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.OperatorChoiceRequired);
+        var decision = RecipeApprovalDecisionPolicy.Decide("decision.generic.notoffered", narrative, RecipeApprovalDecisionOption.ApproveDryRunOnly);
+
+        AssertOptionNotOfferedBlocked(decision, RecipeApprovalDecisionOption.ApproveDryRunOnly);
+    }
+
+    [TestMethod]
+    public void ApprovalDecisionPolicyNeverApprovesAbsentNarrativeOption()
+    {
+        var narrative = Narrative(RecipeHumanInterventionKind.CaptchaOrChallengeDetected);
+        var absentOptions = Enum.GetValues<RecipeApprovalDecisionOption>()
+            .Where(option => !narrative.DecisionOptions.Contains(option));
+
+        foreach (var option in absentOptions)
+        {
+            var decision = RecipeApprovalDecisionPolicy.Decide($"decision.absent.{option}", narrative, option);
+            Assert.IsFalse(decision.Status.ToString().StartsWith("Approved", StringComparison.Ordinal), option.ToString());
+            Assert.IsFalse(decision.LiveRuntimeEnabled, option.ToString());
+            Assert.IsFalse(decision.ActionAuthorityGranted, option.ToString());
+            Assert.IsFalse(decision.AllowsExternalMutation, option.ToString());
+        }
+    }
+
+    [TestMethod]
     public void ApprovalDecisionRefsAreSafeForTimelineAndHandoff()
     {
         var decision = RecipeApprovalDecisionPolicy.Decide("decision.1", Narrative(RecipeHumanInterventionKind.PaymentConfirmationRequired), RecipeApprovalDecisionOption.ApproveDryRunOnly);
@@ -213,7 +302,7 @@ public sealed class RecipeHumanInterventionApprovalNarrativeTests
     [TestMethod]
     public void ManualResolutionMapsToTimelineEvent()
     {
-        var narrative = Narrative(RecipeHumanInterventionKind.ManualCheckpoint);
+        var narrative = Narrative(RecipeHumanInterventionKind.TwoFactorRequired);
         var decision = RecipeApprovalDecisionPolicy.Decide("decision.manual", narrative, RecipeApprovalDecisionOption.MarkManuallyResolved);
         var ev = RecipeApprovalTimelineProjector.FromApprovalDecision(decision, narrative.RunId, narrative.RecipeId);
 
@@ -310,6 +399,18 @@ public sealed class RecipeHumanInterventionApprovalNarrativeTests
         var names = options.Select(option => option.ToString()).ToArray();
         Assert.IsFalse(names.Any(name => name.Contains("Live", StringComparison.OrdinalIgnoreCase)));
         Assert.IsFalse(names.Any(name => name.Contains("Execution", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private static void AssertOptionNotOfferedBlocked(RecipeApprovalDecision decision, RecipeApprovalDecisionOption requestedOption)
+    {
+        Assert.AreNotEqual(requestedOption, decision.Option);
+        Assert.AreEqual(RecipeApprovalDecisionOption.KeepBlocked, decision.Option);
+        Assert.IsTrue(decision.Status is RecipeApprovalDecisionStatus.KeptBlocked or RecipeApprovalDecisionStatus.BlockedByPolicy);
+        Assert.IsFalse(decision.Status.ToString().StartsWith("Approved", StringComparison.Ordinal));
+        Assert.IsTrue(decision.ReasonSummary.Contains("not offered", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(decision.LiveRuntimeEnabled);
+        Assert.IsFalse(decision.ActionAuthorityGranted);
+        Assert.IsFalse(decision.AllowsExternalMutation);
     }
 
     private static RecipeHumanInterventionRequest Intervention(RecipeHumanInterventionKind kind) =>

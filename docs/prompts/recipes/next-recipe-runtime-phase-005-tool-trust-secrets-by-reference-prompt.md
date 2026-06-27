@@ -27,3 +27,11 @@ Expected phase:
 - Phase name: Tool Trust Registry + Secrets by Reference.
 
 Recommended pre-step: run a Claude deep audit of Phases 1-4 before implementing Phase 5.
+
+Audit cleanup carry-forward:
+
+- Approval decisions are narrative-bound; Phase 5 must preserve that no caller can approve an option that was not offered by the approval narrative.
+- `RecipePolicyPreflightEvaluator` remains the canonical readiness path for Phase 2+ policy checks; do not rely on foundation-only readiness alone.
+- Sensitive categories introduced or refined in Phase 5 must require approval/human paths unless explicitly blocked.
+- `FutureConnectorRuntime` remains descriptive and must be blocked or explicitly gated until Tool Trust + Secrets policy exists.
+- Failed blocking validation evidence must not be treated as complete evidence.
