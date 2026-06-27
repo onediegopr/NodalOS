@@ -1,0 +1,44 @@
+{
+  "block": "WCU-CONTAINMENT-PROPERTY-AUDIT-003",
+  "consistent": true,
+  "drift_found": false,
+  "blocked_claims": [
+    "live_prototype_authorized",
+    "live_read_permitted",
+    "action_authority_granted",
+    "product_automation_enabled",
+    "browser_live_cdp_enabled",
+    "safe_injection_live_enabled",
+    "public_release_unlock",
+    "paid_beta_unlock"
+  ],
+  "canonical_claims": {
+    "contained_artifact": true,
+    "live_prototype_authorized": false,
+    "live_remains_blocked": true,
+    "current_code_defect_found": false,
+    "wcu_037_044_status": "BLOCKED_PENDING_HUMAN_POLICY_DECISION_AND_EXTERNAL_GO",
+    "live_read_permitted": false,
+    "action_authority_granted": false,
+    "product_automation_enabled": false,
+    "browser_live_cdp_enabled": false,
+    "safe_injection_live_enabled": false,
+    "public_release_unlock": false,
+    "paid_beta_unlock": false
+  },
+  "artifacts_compared": [
+    "ComputerUseClaimConsistencyCatalog",
+    "wcu-containment-property-audit-003 report.json",
+    "wcu-containment-property-audit-003 report.md",
+    "nodal-os-wcu-containment-property-audit-003-handoff.md",
+    "next-wcu-containment-property-audit-004-prompt.md",
+    "windows-computer-use-containment-property-matrix-v1.md",
+    "windows-computer-use-bridge-handoff-idempotency-matrix-v1.md",
+    "wcu-037a-external-audit-nogo-reconciliation report.json"
+  ],
+  "stale_artifacts": [],
+  "historical_only_claims": [
+    "pre-containment WCU reports are historical and do not authorize live advancement"
+  ],
+  "failure_behavior": "fail_closed_keep_live_blocked"
+}
