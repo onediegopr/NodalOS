@@ -4,7 +4,7 @@ Line: `NODAL_RECIPE_PRODUCT_SURFACE_NAVIGATION_MESSAGING_READ_ONLY`
 
 Phase: 3/3 - Final Polish + Audit Readiness
 
-Final status before external audit: `COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_AUDIT_READY`
+Final status after micro-hardening close: `COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_CLOSED`
 
 This line is separate from the closed Recipe Runtime Product Surface line. It adds navigation labels, capability/status badges, disabled action messaging, read-only demo flow copy, final copy consistency checks, and final audit-readiness summaries.
 
@@ -18,7 +18,7 @@ This line is separate from the closed Recipe Runtime Product Surface line. It ad
 
 - Phase 1/3 - Navigation + Capability Label Taxonomy: `103e22fe32de79d10438328fcb221c9ee46e54cf`
 - Phase 2/3 - Demo Flow Copy: `18b430935d76038fcc59991763933172b1a27cbc`
-- Phase 3/3 - Final Polish + Audit Readiness: pending final commit at report generation time
+- Phase 3/3 - Final Polish + Audit Readiness: `0c70b64a60fe1465a7f8cbb1e9d8f4d613ef9431`
 
 ## Completed
 

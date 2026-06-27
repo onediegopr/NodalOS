@@ -180,7 +180,7 @@ public sealed class RecipeProductSurfaceDemoFlowCopyTests
             if (!riskyTerms.Any(term => text.Contains(term, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
-            Assert.IsTrue(IsBlockedOrNegated(text), $"Term must be safely negated or blocked: {text}");
+            Assert.IsTrue(IsApprovedSafeRiskCopy(text), $"Risk term must be inside an approved safe copy entry: {text}");
         }
     }
 
@@ -244,16 +244,65 @@ public sealed class RecipeProductSurfaceDemoFlowCopyTests
             .Concat(surface.Taxonomy.CapabilityBadges.SelectMany(b => new[] { b.Label, b.RedactedSummary }))
             .Concat(surface.Taxonomy.DisabledActionMessages.SelectMany(a => new[] { a.Label, a.BlockedReason, a.SafeNextAction }));
 
-    private static bool IsBlockedOrNegated(string text)
+    private static bool IsApprovedSafeRiskCopy(string text)
     {
-        var safeMarkers = new[]
+        var approvedExactCopy = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "blocked",
-            "not enabled",
-            "disabled",
+            "Connector execution disabled",
+            "Secrets by reference only",
+            "Export preview only",
+            "Review Handoff/Export Preview",
+            "Live runtime blocked",
+            "Not automated",
+            "Recipe execution blocked",
+            "Workitem processing blocked",
+            "Connector/API blocked",
+            "Vault/secrets blocked",
+            "Browser automation blocked",
+            "Desktop automation blocked",
+            "Recording/playback/capture-draft blocked",
+            "Export file generation blocked",
+            "Fiscal/payment/marketplace/message/delete/write blocked",
+            "Review connector eligibility and tool trust refs only.",
+            "Review required secret aliases or refs by reference only.",
+            "Review preview-only capture draft summaries.",
+            "Review handoff/export preview metadata next.",
+            "Review or copy the safe handoff summary text.",
+            "Request human review path and keep the item blocked for live action.",
+            "Secret values are never requested or shown.",
+            "Browser, desktop, connector, vault, recorder, and external mutation paths are blocked.",
+            "No live runtime available",
+            "No connector connected",
+            "No credentials requested",
+            "No export file generated",
+            "No workitems processed",
+            "No browser or desktop automation performed",
+            "Preview data only"
+        };
+
+        if (approvedExactCopy.Contains(text))
+            return true;
+
+        var approvedPhrasePatterns = new[]
+        {
+            "is not enabled",
+            "are not enabled",
             "not available",
-            "unavailable",
-            "never",
+            "does not write",
+            "remain unavailable",
+            "remains unavailable",
+            "remain not enabled",
+            "remains disabled",
+            "remains blocked",
+            "remain blocked",
+            "stay blocked",
+            "stays blocked",
+            "blocked live",
+            "blocked runtime",
+            "disabled control",
+            "blocked reasons",
+            "unavailable action",
+            "not automated",
             "no live",
             "no real",
             "no export",
@@ -264,17 +313,17 @@ public sealed class RecipeProductSurfaceDemoFlowCopyTests
             "no recording",
             "no automatic",
             "no workitems",
-            "preview",
             "read-only",
+            "preview-only",
+            "preview-safe",
             "fixture-safe",
             "by reference only",
             "metadata only",
             "aliases only",
-            "without live behavior",
             "cannot",
-            "remain"
+            "without live behavior"
         };
 
-        return safeMarkers.Any(marker => text.Contains(marker, StringComparison.OrdinalIgnoreCase));
+        return approvedPhrasePatterns.Any(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase));
     }
 }

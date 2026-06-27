@@ -4,12 +4,12 @@
   "phase": "3/3",
   "phaseName": "Final Polish + Audit Readiness",
   "status": "PASS",
-  "finalLineStatusBeforeExternalAudit": "COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_AUDIT_READY",
+  "finalLineStatusAfterMicroHardeningClose": "COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_CLOSED",
   "startHead": "18b430935d76038fcc59991763933172b1a27cbc",
   "phaseCommits": {
     "phase1": "103e22fe32de79d10438328fcb221c9ee46e54cf",
     "phase2": "18b430935d76038fcc59991763933172b1a27cbc",
-    "phase3": "pending-final-commit-at-report-generation"
+    "phase3": "0c70b64a60fe1465a7f8cbb1e9d8f4d613ef9431"
   },
   "closedProductSurface": {
     "line": "NODAL_RECIPE_RUNTIME_PRODUCT_SURFACE",
@@ -44,10 +44,10 @@
   "validation": {
     "dotnet restore .\\OneBrain.slnx": "PASS",
     "dotnet build .\\OneBrain.slnx --no-restore": "PASS - 32 existing warnings in OneBrain.Safety.Tests, 0 errors; SDK preview informational messages also shown",
-    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessagingFinalPolish": "PASS - 9/9",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessagingFinalPolish": "PASS - 10/10",
     "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceDemoFlowCopy": "PASS - 8/8",
     "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessaging": "PASS - 8/8",
-    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build": "PASS - 904/904",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build": "PASS - 905/905",
     "dotnet test .\\tests\\OneBrain.Safety.Tests\\OneBrain.Safety.Tests.csproj --no-build --filter FullyQualifiedName~Recipe": "PASS - 155 passed, 1 skipped",
     "jsonValidation": "PASS",
     "git diff --check": "PASS",

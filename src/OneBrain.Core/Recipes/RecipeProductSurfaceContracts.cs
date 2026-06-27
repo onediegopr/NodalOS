@@ -362,6 +362,7 @@ public sealed record RecipeTemplateSafeNextActionExplanation(
     bool AllowsLiveRuntime = false,
     bool AllowsExternalMutation = false)
 {
+    // Negative safety guard only. A safe next action is explanatory copy, not authority to execute or mutate anything.
     public bool ActionAuthorityGranted => false;
 }
 
@@ -583,6 +584,7 @@ public sealed record RecipeProductSurfaceFinalCompositionViewModel(
     public bool ReadOnly => true;
     public bool PreviewSafe => true;
     public bool FixtureSafeOnly => true;
+    // Negative safety guards only. These booleans document unavailable runtime capabilities and must not be interpreted as authorization flags.
     public bool CanStartRecipeRun => false;
     public bool CanProcessWorkitem => false;
     public bool CanEnableLiveRuntime => false;
@@ -704,6 +706,7 @@ public sealed record RecipeProductSurfaceNavigationMessagingTaxonomy(
     public bool ReadOnly => true;
     public bool PreviewSafe => true;
     public bool FixtureSafeOnly => true;
+    // Negative safety guards only. These booleans document unavailable runtime capabilities and must not be interpreted as authorization flags.
     public bool CanStartRecipeRun => false;
     public bool CanProcessWorkitem => false;
     public bool CanEnableLiveRuntime => false;
@@ -830,6 +833,7 @@ public sealed record RecipeProductSurfaceNavigationMessagingFinalComposition(
     public bool ReadOnly => true;
     public bool PreviewSafe => true;
     public bool FixtureSafeOnly => true;
+    // Negative safety guards only. These booleans document unavailable runtime capabilities and must not be interpreted as authorization flags.
     public bool CanStartRecipeRun => false;
     public bool CanProcessWorkitem => false;
     public bool CanEnableLiveRuntime => false;
@@ -853,6 +857,7 @@ public sealed record RecipeProductSurfaceNavigationMessagingFinalPolishSurface(
     bool PreviewSafe = true)
 {
     public bool FixtureSafeOnly => true;
+    // Negative safety guards only. These booleans document unavailable runtime capabilities and must not be interpreted as authorization flags.
     public bool CanStartRecipeRun => false;
     public bool CanProcessWorkitem => false;
     public bool CanEnableLiveRuntime => false;
@@ -906,6 +911,7 @@ public sealed record RecipeLabSafeNextActionViewModel(
     bool AllowsLiveRuntime = false,
     bool AllowsExternalMutation = false)
 {
+    // Negative safety guard only. A safe next action is explanatory copy, not authority to execute or mutate anything.
     public bool ActionAuthorityGranted => false;
 }
 
@@ -1017,11 +1023,32 @@ public static class RecipeProductSurfaceCopyPolicy
 
     private static bool ContainsForbiddenTerm(string text, string term)
     {
+        if (IsExplicitlyBlockedOrNegated(text))
+            return false;
+
         var escaped = Regex.Escape(term);
         var pattern = char.IsLetterOrDigit(term[0]) && char.IsLetterOrDigit(term[^1])
             ? $@"\b{escaped}\b"
             : escaped;
         return Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    }
+
+    private static bool IsExplicitlyBlockedOrNegated(string text)
+    {
+        var safePatterns = new[]
+        {
+            @"\bno\s+(real\s+)?[\w/, -]*(execution|automation|connector|api|vault|scheduler|replay|capture|runtime|file)\b",
+            @"\bnot\s+enabled\b",
+            @"\bblocked\b",
+            @"\bdisabled\b",
+            @"\bnot\s+available\b",
+            @"\bnot\s+automated\b",
+            @"\bpreview[- ]only\b",
+            @"\bread-only\b",
+            @"\bfixture-safe\b"
+        };
+
+        return safePatterns.Any(pattern => Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
     }
 }
 
@@ -1058,7 +1085,7 @@ public static class RecipeProductSurfaceFactory
             auditMatrix,
             taxonomy.AllowedFinalClaim,
             taxonomy.ForbiddenFinalClaim,
-            "COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_AUDIT_READY");
+            "COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_CLOSED");
 
         var finalCopy = new[]
         {
@@ -1112,7 +1139,7 @@ public static class RecipeProductSurfaceFactory
                 "demo-flow.lab-overview",
                 "Review Recipe Lab",
                 "Inspect readiness and referenced evidence.",
-                "The operator reviews lab sections for readiness, evidence refs, approval refs, tool refs, trigger state, locator preview, and capture draft summary.",
+                "The operator reviews lab sections for readiness, evidence refs, approval refs, tool refs, trigger state, locator preview, and preview-only capture draft summary.",
                 [.. defaultBadges, RecipeProductSurfaceCapabilityBadgeKind.LiveRuntimeBlocked],
                 "Template cards cannot start recipes or process workitems.",
                 "Open template detail preview for one selected template.",
@@ -1404,7 +1431,7 @@ public static class RecipeProductSurfaceFactory
             BuildCapabilitySummary(snapshot.CapabilitySummary),
             snapshot.TriggerObserveOnlySummary,
             snapshot.LocatorRepairSummary,
-            templateMapping is null ? "Draft-only capture summaries remain review-only." : "Draft-to-template mapping remains governed by composite readiness.",
+            templateMapping is null ? "Preview-only Draft capture summaries remain read-only and review-only." : "Preview-only Draft-to-template mapping remains read-only and governed by composite readiness.",
             templateReadiness?.BlockedRunModes ?? [RecipeRunMode.LiveRunBlocked],
             snapshot.RedactionSafetySummary);
 
@@ -1871,7 +1898,7 @@ public static class RecipeProductSurfaceFactory
         new(RecipeOperatorPreviewSectionKind.EvidenceValidation, "Evidence and validation", RecipeLabSectionStatus.ReferenceOnly, view.EvidenceValidationSummary, view.Requirements.EvidenceRequirementRefs.Concat(view.Requirements.ValidationRequirementRefs).ToArray()),
         new(RecipeOperatorPreviewSectionKind.ToolTrustSecrets, "Tool trust and secret refs", RecipeLabSectionStatus.ReferenceOnly, $"{ToolTrustSummary(view.Requirements.RequiredToolTrustRefs)} {SecretRefsSummary(view.Requirements.RequiredSecretRefs)}", view.Requirements.RequiredToolTrustRefs.Concat(view.Requirements.RequiredSecretRefs).ToArray()),
         new(RecipeOperatorPreviewSectionKind.TriggerObserveOnly, "Observe-only trigger", RecipeLabSectionStatus.ReferenceOnly, view.TriggerObserveOnlySummary, view.Requirements.TriggerRefs),
-        new(RecipeOperatorPreviewSectionKind.LocatorCapturePreview, "Locator and capture preview", RecipeLabSectionStatus.ReferenceOnly, view.LocatorCaptureImplicationsSummary, []),
+        new(RecipeOperatorPreviewSectionKind.LocatorCapturePreview, "Locator and capture preview", RecipeLabSectionStatus.ReferenceOnly, $"Preview-only locator/capture summary: {view.LocatorCaptureImplicationsSummary}", []),
         new(RecipeOperatorPreviewSectionKind.SafeNextAction, "Safe next action", RecipeLabSectionStatus.ReferenceOnly, view.ReadinessExplanation.SafeNextAction.RedactedSummary, []),
         new(RecipeOperatorPreviewSectionKind.NotAutomated, "Not automated", RecipeLabSectionStatus.LiveBlocked, view.SafetySummary.NotIncludedSummary, [])
     ];

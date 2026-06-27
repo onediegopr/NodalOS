@@ -6,7 +6,9 @@ Final phase: 3/3 - Final Polish + Audit Readiness
 
 Decision target: `GO_RECIPE_NAVIGATION_MESSAGING_FINAL_POLISH_AUDIT_READY`
 
-Final status before external audit: `COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_AUDIT_READY`
+Final status after micro-hardening close: `COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_CLOSED`
+
+Micro-hardening close addressed the final audit P2/P3 backlog: stale commit markers, final closed status, stricter risky-term tests, broader generated-surface forbidden-copy scanning, locator/capture preview copy coverage, and negative guard comments.
 
 ## Summary
 
@@ -16,7 +18,7 @@ This line adds read-only navigation labels, safe capability/status badges, disab
 
 - Phase 1/3 - Navigation + Capability Label Taxonomy: `103e22fe32de79d10438328fcb221c9ee46e54cf`
 - Phase 2/3 - Demo Flow Copy: `18b430935d76038fcc59991763933172b1a27cbc`
-- Phase 3/3 - Final Polish + Audit Readiness: pending final commit at handoff generation time
+- Phase 3/3 - Final Polish + Audit Readiness: `0c70b64a60fe1465a7f8cbb1e9d8f4d613ef9431`
 
 ## Closed Product Surface Reference
 

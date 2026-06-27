@@ -1,0 +1,49 @@
+{
+  "decisionTarget": "GO_RECIPE_NAVIGATION_MESSAGING_MICRO_HARDENING_CLOSED",
+  "line": "NODAL_RECIPE_PRODUCT_SURFACE_NAVIGATION_MESSAGING_READ_ONLY",
+  "status": "PASS",
+  "finalLineStatus": "COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_CLOSED",
+  "auditInputs": {
+    "gpt55XHigh": "FINAL_AUDIT_GO_WITH_P2_P3_FINDINGS",
+    "kimi27": "FINAL_AUDIT_GO_WITH_P2_P3_FINDINGS",
+    "p0": "none",
+    "p1": "none"
+  },
+  "headBeforeMicroHardening": "0c70b64a60fe1465a7f8cbb1e9d8f4d613ef9431",
+  "findingsAddressed": {
+    "p2NegativeContextTestHardening": "done",
+    "p2ForbiddenCopyScanCoverage": "done",
+    "p2BroadForbiddenCopyPolicyClarification": "done",
+    "p3StaleCommitDocs": "done",
+    "p3FinalStatusClosed": "done",
+    "p3LocatorCaptureScanCoverage": "done",
+    "p3NegativeGuardComments": "done"
+  },
+  "validation": {
+    "dotnet restore .\\OneBrain.slnx": "PASS",
+    "dotnet build .\\OneBrain.slnx --no-restore": "PASS - 0 errors",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessagingFinalPolish": "PASS - 10/10",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceDemoFlowCopy": "PASS - 8/8",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessaging": "PASS - 8/8",
+    "dotnet test .\\tests\\OneBrain.Recipes.Tests\\OneBrain.Recipes.Tests.csproj --no-build": "PASS - 905/905",
+    "dotnet test .\\tests\\OneBrain.Safety.Tests\\OneBrain.Safety.Tests.csproj --no-build --filter FullyQualifiedName~Recipe": "PASS - 155 passed, 1 skipped"
+  },
+  "safetyMatrix": {
+    "liveRecipeExecution": "NO",
+    "liveRuntime": "NO",
+    "browserAutomation": "NO",
+    "desktopAutomation": "NO",
+    "cdpPlaywrightSeleniumPuppeteer": "NO",
+    "connectorApiNetwork": "NO",
+    "vaultSecretsAccess": "NO",
+    "schedulerWatcherHookListener": "NO",
+    "recorderReplayCapture": "NO",
+    "automaticWorkitemProcessing": "NO",
+    "fiscalPaymentMarketplaceMessageDeleteWriteLiveActions": "NO",
+    "realExportFileGeneration": "NO",
+    "protectedBrowserLiveScopeTouched": "NO",
+    "dependenciesAdded": "NO"
+  },
+  "allowedClaim": "NODAL OS has a fixture-safe Recipe Runtime product surface with read-only catalog, lab, templates, readiness explanations, operator previews and handoff/export preview summaries.",
+  "forbiddenClaim": "NODAL OS can execute/live automate these recipes."
+}

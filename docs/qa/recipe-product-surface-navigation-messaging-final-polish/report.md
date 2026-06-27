@@ -8,7 +8,7 @@ Phase: 3/3 - Final Polish + Audit Readiness
 
 Status: PASS.
 
-Final line status before external audit: `COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_AUDIT_READY`
+Final line status after micro-hardening close: `COMPLETE_READ_ONLY_NAVIGATION_MESSAGING_CLOSED`
 
 ## Baseline
 
@@ -16,6 +16,7 @@ Final line status before external audit: `COMPLETE_READ_ONLY_NAVIGATION_MESSAGIN
 - Start HEAD: `18b430935d76038fcc59991763933172b1a27cbc`
 - Phase 1 commit: `103e22fe32de79d10438328fcb221c9ee46e54cf`
 - Phase 2 commit: `18b430935d76038fcc59991763933172b1a27cbc`
+- Phase 3 commit: `0c70b64a60fe1465a7f8cbb1e9d8f4d613ef9431`
 - Closed Product Surface status: `COMPLETE_READ_ONLY_PREVIEW_SAFE_FIXTURE_SAFE_PRODUCT_SURFACE_CLOSED`
 - Closed Product Surface commit: `df92f6fb4c86f246e1d956ede9fd4876e1d0080d`
 
@@ -41,10 +42,10 @@ Added final read-only composition contracts, final audit readiness matrix, final
 | --- | --- | --- |
 | `dotnet restore .\OneBrain.slnx` | PASS | All projects up to date. |
 | `dotnet build .\OneBrain.slnx --no-restore` | PASS | 32 existing warnings in `OneBrain.Safety.Tests`, 0 errors. SDK preview informational messages also shown. |
-| `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessagingFinalPolish` | PASS | 9/9 passed. |
+| `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessagingFinalPolish` | PASS | 10/10 passed. |
 | `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceDemoFlowCopy` | PASS | 8/8 passed. |
 | `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build --filter TestCategory=RecipeProductSurfaceNavigationMessaging` | PASS | 8/8 passed. |
-| `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build` | PASS | 904/904 passed. |
+| `dotnet test .\tests\OneBrain.Recipes.Tests\OneBrain.Recipes.Tests.csproj --no-build` | PASS | 905/905 passed. |
 | `dotnet test .\tests\OneBrain.Safety.Tests\OneBrain.Safety.Tests.csproj --no-build --filter FullyQualifiedName~Recipe` | PASS | 155 passed, 1 skipped. |
 | JSON validation | PASS | `report.json` parsed successfully. |
 | `git diff --check` | PASS | No whitespace errors. |

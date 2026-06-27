@@ -185,8 +185,8 @@ public sealed class RecipeProductSurfaceNavigationMessagingTests
                 continue;
 
             Assert.IsTrue(
-                IsBlockedOrNegated(text),
-                $"Live/action term must be blocked or negated: {text}");
+                IsApprovedSafeRiskCopy(text),
+                $"Risk term must be inside an approved safe copy entry: {text}");
         }
     }
 
@@ -267,22 +267,53 @@ public sealed class RecipeProductSurfaceNavigationMessagingTests
         yield return action.SafeNextAction;
     }
 
-    private static bool IsBlockedOrNegated(string text)
+    private static bool IsApprovedSafeRiskCopy(string text)
     {
-        var safeMarkers = new[]
+        var approvedExactCopy = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "blocked",
-            "not enabled",
-            "disabled",
+            "Connector execution disabled",
+            "Secrets by reference only",
+            "Export preview only",
+            "Live runtime blocked",
+            "Not automated",
+            "Recipe execution blocked",
+            "Workitem processing blocked",
+            "Connector/API blocked",
+            "Vault/secrets blocked",
+            "Browser automation blocked",
+            "Desktop automation blocked",
+            "Recording/playback/capture-draft blocked",
+            "Export file generation blocked",
+            "Fiscal/payment/marketplace/message/delete/write blocked",
+            "Review connector eligibility and tool trust refs only.",
+            "Review required secret aliases or refs by reference only.",
+            "Review preview-only capture draft summaries.",
+            "Review or copy the safe handoff summary text.",
+            "Request human review path and keep the item blocked for live action.",
+            "Browser, desktop, connector, vault, recorder, and external mutation paths are blocked."
+        };
+
+        if (approvedExactCopy.Contains(text))
+            return true;
+
+        var approvedPhrasePatterns = new[]
+        {
+            "is not enabled",
+            "are not enabled",
             "not available",
             "never requested",
             "never shown",
-            "preview",
-            "by reference only",
+            "remain blocked",
+            "stays blocked",
+            "disabled",
+            "not automated",
             "no real file",
-            "no live"
+            "no live",
+            "read-only",
+            "preview",
+            "by reference only"
         };
 
-        return safeMarkers.Any(marker => text.Contains(marker, StringComparison.OrdinalIgnoreCase));
+        return approvedPhrasePatterns.Any(pattern => text.Contains(pattern, StringComparison.OrdinalIgnoreCase));
     }
 }
