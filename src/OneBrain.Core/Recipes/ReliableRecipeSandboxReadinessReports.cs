@@ -14,6 +14,7 @@ public sealed record ComputerUseSandboxReadinessReport(
     IReadOnlyList<ComputerUseSandboxRequirementKind> MissingRequirements,
     IReadOnlyList<string> RiskReasons,
     IReadOnlyList<string> FutureUnlockConditions,
+    ReliableRecipeSandboxPerceptionSummary PerceptionSummary,
     string FixtureOnlyNotice)
 {
     public bool ReadOnly => true;
@@ -28,6 +29,8 @@ public sealed record ComputerUseSandboxReadinessReport(
     public bool FilesystemWriteEnabled => false;
     public bool OcrLiveActivationEnabled => false;
     public bool RecorderRuntimeEnabled => false;
+    public bool LivePerceptionEnabled => false;
+    public bool ScreenshotCaptureEnabled => false;
 }
 
 public enum ComputerUseSandboxSubjectKind
@@ -245,6 +248,8 @@ public static class ComputerUseSandboxReadinessEvaluator
         var decision = DecisionFor(preflightReport, finalDecision, draft, missing, riskReasons, requiredIsolation);
         var score = ScoreFor(decision, missing.Length, riskReasons.Length, quality.SandboxReadiness.Score);
         var surfaces = SurfaceReadiness(recipe, decision, requiredIsolation, missing, riskReasons).ToArray();
+        var perceptionSummary = ReliableRecipePerceptionIntegrationReportMapper.ToSandboxSummary(ReliableRecipePerceptionIntegrationEvaluator.Evaluate(recipe, preflightReport));
+        var futureUnlockConditions = FutureUnlockConditions(decision, missing, riskReasons, requiredIsolation, perceptionSummary).ToArray();
 
         return new ComputerUseSandboxReadinessReport(
             reportId,
@@ -259,7 +264,8 @@ public static class ComputerUseSandboxReadinessEvaluator
             AlwaysBlockedCapabilities,
             missing,
             riskReasons,
-            FutureUnlockConditions(decision, missing, riskReasons, requiredIsolation),
+            futureUnlockConditions,
+            perceptionSummary,
             "Design-only sandbox readiness report. Fixture-only assessment; runtime not enabled.");
     }
 
@@ -448,7 +454,8 @@ public static class ComputerUseSandboxReadinessEvaluator
         ComputerUseSandboxReadinessDecision decision,
         IReadOnlyList<ComputerUseSandboxRequirementKind> missing,
         IReadOnlyList<string> riskReasons,
-        ComputerUseRequiredIsolationMode requiredIsolation)
+        ComputerUseRequiredIsolationMode requiredIsolation,
+        ReliableRecipeSandboxPerceptionSummary? perceptionSummary = null)
     {
         var conditions = new List<string>
         {
@@ -462,6 +469,11 @@ public static class ComputerUseSandboxReadinessEvaluator
             conditions.Add("Future desktop profile isolation is required; desktop live remains blocked.");
         if (requiredIsolation == ComputerUseRequiredIsolationMode.NotAllowed)
             conditions.Add("Policy block must be resolved or kept permanently blocked before sandbox candidate review.");
+        if (perceptionSummary is not null)
+        {
+            conditions.AddRange(perceptionSummary.MissingSignals.Select(s => $"Add fixture perception signal before future sandbox review: {s}."));
+            conditions.AddRange(perceptionSummary.BlockedReasons.Select(r => $"Resolve perception blocker before future sandbox review: {r}."));
+        }
         conditions.AddRange(missing.Select(m => $"Resolve missing requirement: {m}."));
         conditions.AddRange(riskReasons.Select(r => $"Review risk reason: {r}."));
         return conditions.Distinct().ToArray();
