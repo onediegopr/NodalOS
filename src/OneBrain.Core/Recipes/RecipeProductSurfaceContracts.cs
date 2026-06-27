@@ -80,6 +80,27 @@ public enum RecipeHandoffExportAvailability
     NoRealFileWritten
 }
 
+public enum RecipeProductSurfaceDemoReadinessStatus
+{
+    ReadOnlyDemoReady,
+    MissingSurface,
+    BlockedByOverclaim,
+    BlockedLiveRuntimeLeak,
+    BlockedByPolicy
+}
+
+public enum RecipeProductSurfaceDemoStepKind
+{
+    BrowseCatalog,
+    OpenRecipeLabSummary,
+    OpenTemplateDetail,
+    ReviewReadinessExplanation,
+    ReviewOperatorPreview,
+    ReviewHandoffExportPreview,
+    UnderstandBlockedLiveRuntime,
+    ReadSafeHandoffSummary
+}
+
 public sealed record RecipeCatalogSafetyBadge(
     RecipeCatalogSafetyBadgeKind Kind,
     string Label,
@@ -463,6 +484,96 @@ public sealed record RecipeOperatorPreviewHandoffExportSurface(
     public bool CanWriteExportFile => false;
 }
 
+public sealed record RecipeProductSurfaceCapabilityMatrix(
+    IReadOnlyList<string> AllowedCapabilities,
+    IReadOnlyList<string> BlockedCapabilities)
+{
+    public bool LiveRuntimeAllowed => false;
+    public bool RealExportAllowed => false;
+    public bool ExternalMutationAllowed => false;
+}
+
+public sealed record RecipeProductSurfaceFinalCompositionViewModel(
+    string ViewModelId,
+    RecipeProductSurfaceDemoReadinessStatus DemoReadinessStatus,
+    string CatalogReadinessSummary,
+    string LabReadinessSummary,
+    string TemplateDetailReadinessSummary,
+    string OperatorPreviewReadinessSummary,
+    string HandoffExportPreviewReadinessSummary,
+    string BlockedLiveRuntimeState,
+    string DisabledActionStateSummary,
+    string SafeNextActionSummary,
+    string NotAutomatedSummary,
+    string InternalAllowedClaimSummary,
+    string BlockedForbiddenClaimSummary,
+    RecipeProductSurfaceCapabilityMatrix CapabilityMatrix)
+{
+    public bool ReadOnly => true;
+    public bool PreviewSafe => true;
+    public bool FixtureSafeOnly => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanWriteExportFile => false;
+    public bool CanCreateRecorderReplayOrCapture => false;
+    public bool CanCreateSchedulerWatcherHookOrListener => false;
+    public bool CanApplyLocatorRepair => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeProductSurfaceSafeDemoStep(
+    RecipeProductSurfaceDemoStepKind Kind,
+    string Label,
+    string RedactedSummary,
+    bool PreviewOnly = true)
+{
+    public bool StartsRecipeRun => false;
+    public bool ProcessesWorkitem => false;
+    public bool WritesFile => false;
+    public bool CallsNetwork => false;
+    public bool ReadsSecrets => false;
+    public bool EnablesAutomation => false;
+}
+
+public sealed record RecipeProductSurfaceSafeDemoScenario(
+    string ScenarioId,
+    string DisplayName,
+    IReadOnlyList<RecipeProductSurfaceSafeDemoStep> Steps,
+    string CorrectProductClaim,
+    string BlockedClaimSummary,
+    string SafeDemoReadinessSummary)
+{
+    public bool ReadOnly => true;
+    public bool PreviewOnly => true;
+    public bool CanStartRecipeRun => false;
+    public bool CanWriteExportFile => false;
+    public bool CanCallConnectorOrNetwork => false;
+    public bool CanReadSecrets => false;
+    public bool CanRecordReplayOrCapture => false;
+    public bool CanProcessWorkitem => false;
+    public bool LiveRuntimeEnabled => false;
+}
+
+public sealed record RecipeProductSurfaceSafeDemoReadinessSurface(
+    string SurfaceId,
+    RecipeProductSurfaceFinalCompositionViewModel FinalComposition,
+    RecipeProductSurfaceSafeDemoScenario DemoScenario,
+    IReadOnlyList<string> SafeUxCopy,
+    bool ReadOnly = true,
+    bool PreviewSafe = true)
+{
+    public bool CanStartRecipeRun => false;
+    public bool CanProcessWorkitem => false;
+    public bool CanEnableLiveRuntime => false;
+    public bool CanOpenConnector => false;
+    public bool CanRequestSecrets => false;
+    public bool CanWriteExportFile => false;
+    public bool CanRecordReplayOrCapture => false;
+}
+
 public sealed record RecipeLabSectionViewModel(
     string SectionId,
     string Label,
@@ -597,6 +708,9 @@ public static class RecipeProductSurfaceCopyPolicy
         "Record",
         "Replay",
         "Capture now",
+        "Execute now",
+        "Start worker",
+        "Trigger now",
         "Control browser",
         "Control desktop",
         "Live automation ready"
@@ -850,6 +964,84 @@ public static class RecipeProductSurfaceFactory
             ]);
     }
 
+    public static RecipeProductSurfaceSafeDemoReadinessSurface CreateSafeDemoReadinessSurface(
+        RecipeTemplateCatalog catalog,
+        RecipeTemplateReadinessContext readinessContext,
+        RecipeLabSnapshot labSnapshot,
+        string templateId = "excel.extract_rows_to_workitems")
+    {
+        var catalogSurface = CreateCatalogSurface(catalog, readinessContext);
+        var labSurface = CreateLabSurface(labSnapshot);
+        var detailSurface = CreateTemplateDetailSurface(catalog, templateId, readinessContext);
+        var operatorSurface = CreateOperatorPreviewHandoffExportSurface(catalog, templateId, readinessContext);
+
+        var capabilityMatrix = new RecipeProductSurfaceCapabilityMatrix(
+            [
+                "read-only catalog",
+                "read-only lab",
+                "template detail",
+                "readiness explanation",
+                "operator preview",
+                "handoff/export preview metadata",
+                "safe product/demo copy"
+            ],
+            [
+                "live execution",
+                "browser automation",
+                "desktop automation",
+                "live browser driver frameworks",
+                "connector/API/network",
+                "vault/secrets",
+                "scheduler/watcher/hook/listener",
+                "recorder/playback/capture",
+                "automatic workitem processing",
+                "fiscal/payment/marketplace/message/delete/write actions",
+                "real export file generation"
+            ]);
+
+        var finalComposition = new RecipeProductSurfaceFinalCompositionViewModel(
+            "recipe.product.surface.final.composition.v1",
+            RecipeProductSurfaceDemoReadinessStatus.ReadOnlyDemoReady,
+            $"{catalogSurface.ViewModel.TotalTemplates} templates are visible in read-only catalog preview.",
+            $"Lab summary uses {labSurface.ViewModel.ReadinessSummary.CanonicalEvaluatorName} and remains read-only.",
+            detailSurface.ViewModel.ReadinessExplanation.OperatorVisibleSummary,
+            operatorSurface.OperatorPreview.OperatorReviewSummary,
+            operatorSurface.HandoffExportPreview.ProductSafeCopy,
+            "No live runtime. Recipe execution is not enabled.",
+            "Unavailable actions are explicit and cannot be invoked.",
+            "Safe next action: review readiness and prepare requirements.",
+            "Not automated: live runtime, browser/desktop automation, connectors, vault access, recorder/playback/capture, real export, and external mutations.",
+            "NODAL OS has a fixture-safe Recipe Runtime product surface with read-only catalog, lab, templates, readiness explanations, operator previews and handoff/export preview summaries.",
+            "Blocked product claim: live recipe automation is not available from this surface.",
+            capabilityMatrix);
+
+        var demoScenario = new RecipeProductSurfaceSafeDemoScenario(
+            "recipe.product.surface.safe.demo.v1",
+            "Recipe Runtime Product Surface safe demo",
+            SafeDemoSteps(detailSurface, operatorSurface),
+            finalComposition.InternalAllowedClaimSummary,
+            finalComposition.BlockedForbiddenClaimSummary,
+            "Safe demo readiness is true only for read-only preview surfaces and does not authorize live automation.");
+
+        return new(
+            "recipe.product.surface.safe.demo.readiness.v1",
+            finalComposition,
+            demoScenario,
+            [
+                "Preview only",
+                "Read-only product surface",
+                "Fixture-safe",
+                "No live runtime",
+                "Recipe execution is not enabled",
+                "Automation is not available in this build",
+                "Handoff/export is preview-only",
+                "No credentials are read",
+                "No connector/API calls are made",
+                "No browser or desktop automation is performed",
+                "Safe next action: review readiness and prepare requirements"
+            ]);
+    }
+
     private static RecipeCatalogPackViewModel CreatePackViewModel(
         RecipeTemplatePack pack,
         RecipeTemplateReadinessContext readinessContext)
@@ -1095,6 +1287,20 @@ public static class RecipeProductSurfaceFactory
         new(RecipeOperatorPreviewSectionKind.LocatorCapturePreview, "Locator and capture preview", RecipeLabSectionStatus.ReferenceOnly, view.LocatorCaptureImplicationsSummary, []),
         new(RecipeOperatorPreviewSectionKind.SafeNextAction, "Safe next action", RecipeLabSectionStatus.ReferenceOnly, view.ReadinessExplanation.SafeNextAction.RedactedSummary, []),
         new(RecipeOperatorPreviewSectionKind.NotAutomated, "Not automated", RecipeLabSectionStatus.LiveBlocked, view.SafetySummary.NotIncludedSummary, [])
+    ];
+
+    private static IReadOnlyList<RecipeProductSurfaceSafeDemoStep> SafeDemoSteps(
+        RecipeTemplateDetailSurface detailSurface,
+        RecipeOperatorPreviewHandoffExportSurface operatorSurface) =>
+    [
+        new(RecipeProductSurfaceDemoStepKind.BrowseCatalog, "Browse recipe catalog", "Browse read-only template categories and readiness badges."),
+        new(RecipeProductSurfaceDemoStepKind.OpenRecipeLabSummary, "Open recipe lab summary", "Inspect lab readiness, evidence refs, tool refs, trigger refs, and blocked live modes."),
+        new(RecipeProductSurfaceDemoStepKind.OpenTemplateDetail, "Open template detail", detailSurface.ViewModel.OperatorVisibleSummary),
+        new(RecipeProductSurfaceDemoStepKind.ReviewReadinessExplanation, "Review readiness explanation", detailSurface.ViewModel.ReadinessExplanation.OperatorVisibleSummary),
+        new(RecipeProductSurfaceDemoStepKind.ReviewOperatorPreview, "Review operator preview", operatorSurface.OperatorPreview.OperatorReviewSummary),
+        new(RecipeProductSurfaceDemoStepKind.ReviewHandoffExportPreview, "Review handoff/export preview", operatorSurface.HandoffExportPreview.ProductSafeCopy),
+        new(RecipeProductSurfaceDemoStepKind.UnderstandBlockedLiveRuntime, "Understand blocked live runtime", detailSurface.ViewModel.SafetySummary.LiveBlockedExplanation),
+        new(RecipeProductSurfaceDemoStepKind.ReadSafeHandoffSummary, "Read safe handoff summary", "Handoff/export is preview-only metadata; no real file is written.")
     ];
 
     private static IReadOnlyList<RecipeOperatorPreviewDisabledActionState> DisabledActionStates(RecipeTemplateDetailViewModel view) =>
