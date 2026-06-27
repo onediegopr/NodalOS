@@ -148,6 +148,7 @@ public sealed record ReliableRecipeFixtureEvalReport(
     ReliableRecipeFlakinessReport Flakiness,
     IReadOnlyList<ReliableRecipeFixtureEvalFailureKind> FailureTaxonomy,
     IReadOnlyList<string> ProductFacingSummaries,
+    ReliableRecipeStructuredPrerequisiteSummary StructuredPrerequisiteSummary,
     ReliableRecipeEvalPerceptionSummary PerceptionSummary,
     ReliableRecipeEvalSandboxReadinessSummary SandboxReadinessSummary,
     ReliableRecipeLabEvalPanel LabEvalPanel)
@@ -191,6 +192,7 @@ public static class ReliableRecipeFixtureEvalRunner
         var finalDecision = FinalDecision(scenario, results, metrics);
         var taxonomy = results.SelectMany(r => r.FailureKinds).Where(f => f != ReliableRecipeFixtureEvalFailureKind.None).Distinct().ToArray();
         var panel = ReliableRecipeFixtureEvalReportMapper.ToLabPanel(scenario, metrics, flakiness, taxonomy, finalDecision);
+        var structured = ReliableRecipeStructuredPrerequisiteEvaluator.ToSummary(ReliableRecipeStructuredPrerequisiteEvaluator.Evaluate(fixture.Recipe, fixture.PreflightReport, fixture.Draft, subjectKind: ReliableRecipeStructuredPrerequisiteSubjectKind.EvalScenario, subjectId: scenario.ScenarioId));
         var perception = ReliableRecipePerceptionIntegrationReportMapper.ToEvalSummary(ReliableRecipePerceptionIntegrationEvaluator.EvaluateEvalPreview(scenario));
         var sandbox = ComputerUseSandboxReadinessReportMapper.ToEvalSummary(ComputerUseSandboxReadinessEvaluator.EvaluateEvalPreview(scenario, finalDecision));
         var report = new ReliableRecipeFixtureEvalReport(
@@ -202,6 +204,7 @@ public static class ReliableRecipeFixtureEvalRunner
             flakiness,
             taxonomy,
             ProductSummaries(scenario, finalDecision, metrics, taxonomy),
+            structured,
             perception,
             sandbox,
             panel);

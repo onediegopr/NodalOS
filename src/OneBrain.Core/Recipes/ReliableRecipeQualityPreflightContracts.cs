@@ -32,7 +32,8 @@ public sealed record ReliableRecipeQualityReport(
     RecipeRiskPostureReport RiskPosture,
     RecipeSandboxReadinessScore SandboxReadiness,
     ReliablePerceptionConfidence PerceptionSignalQuality,
-    HumanInterventionPlanQualityScore HumanInterventionPlanQuality)
+    HumanInterventionPlanQualityScore HumanInterventionPlanQuality,
+    ReliableRecipeStructuredPrerequisiteProfile StructuredPrerequisites)
 {
     public bool UsesAiScoring => false;
     public bool ExecutesRecipe => false;
@@ -94,6 +95,7 @@ public sealed record ReliableRecipePreflightReport(
     IReadOnlyList<ReliableHumanInterventionReason> RequiredHumanInterventions,
     IReadOnlyList<EvidenceRequirementKind> RequiredEvidence,
     IReadOnlyList<ReliableValidationCheckKind> RequiredValidations,
+    ReliableRecipeStructuredPrerequisiteProfile StructuredPrerequisites,
     bool CanProceedToDraftOnly,
     bool CanProceedToDryRun,
     bool CanProceedToAssistedRun,
@@ -244,6 +246,7 @@ public static class ReliableRecipePreflightComposer
             context.HumanInterventionRequests?.Select(r => r.Reason).Distinct().ToArray() ?? [],
             quality.EvidenceCompleteness.MissingEvidenceKinds,
             quality.ValidationCompleteness.MissingValidations,
+            quality.StructuredPrerequisites,
             CanProceedToDraftOnly: true,
             CanProceedToDryRun: modeAllowed == ReliableRecipeRunMode.DryRun,
             CanProceedToAssistedRun: false,
@@ -294,6 +297,7 @@ public static class ReliableRecipeQualityScorer
             ? new ReliablePerceptionConfidence(0.5, 0.5, [], recipe.RiskProfile.HasFlag(ReliableRecipeRiskProfile.SensitiveData))
             : ReliablePerceptionConfidenceEvaluator.Evaluate(context.PerceptionSnapshot, recipe.RiskProfile);
         var human = HumanInterventionQualityEvaluator.Score(context.HumanInterventionRequests ?? []);
+        var structured = ReliableRecipeStructuredPrerequisiteEvaluator.Evaluate(recipe);
 
         var findings = new List<ReliableRecipeQualityFinding>();
         var warnings = new List<ReliableRecipeQualityFinding>();
@@ -342,7 +346,8 @@ public static class ReliableRecipeQualityScorer
             risk,
             sandbox,
             perception,
-            human);
+            human,
+            structured);
     }
 
     private static IReadOnlyList<ReliableRecipeQualityCategoryScore> CategoryScores(

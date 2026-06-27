@@ -14,6 +14,7 @@ public sealed record ComputerUseSandboxReadinessReport(
     IReadOnlyList<ComputerUseSandboxRequirementKind> MissingRequirements,
     IReadOnlyList<string> RiskReasons,
     IReadOnlyList<string> FutureUnlockConditions,
+    ReliableRecipeStructuredPrerequisiteSummary StructuredPrerequisiteSummary,
     ReliableRecipeSandboxPerceptionSummary PerceptionSummary,
     string FixtureOnlyNotice)
 {
@@ -248,8 +249,9 @@ public static class ComputerUseSandboxReadinessEvaluator
         var decision = DecisionFor(preflightReport, finalDecision, draft, missing, riskReasons, requiredIsolation);
         var score = ScoreFor(decision, missing.Length, riskReasons.Length, quality.SandboxReadiness.Score);
         var surfaces = SurfaceReadiness(recipe, decision, requiredIsolation, missing, riskReasons).ToArray();
+        var structured = ReliableRecipeStructuredPrerequisiteEvaluator.ToSummary(ReliableRecipeStructuredPrerequisiteEvaluator.Evaluate(recipe, preflightReport, draft, evalRun, subjectKind: ComputerUseSubjectKind(subjectKind), subjectId: subjectId));
         var perceptionSummary = ReliableRecipePerceptionIntegrationReportMapper.ToSandboxSummary(ReliableRecipePerceptionIntegrationEvaluator.Evaluate(recipe, preflightReport));
-        var futureUnlockConditions = FutureUnlockConditions(decision, missing, riskReasons, requiredIsolation, perceptionSummary).ToArray();
+        var futureUnlockConditions = FutureUnlockConditions(decision, missing, riskReasons, requiredIsolation, perceptionSummary, structured).ToArray();
 
         return new ComputerUseSandboxReadinessReport(
             reportId,
@@ -265,6 +267,7 @@ public static class ComputerUseSandboxReadinessEvaluator
             missing,
             riskReasons,
             futureUnlockConditions,
+            structured,
             perceptionSummary,
             "Design-only sandbox readiness report. Fixture-only assessment; runtime not enabled.");
     }
@@ -455,7 +458,8 @@ public static class ComputerUseSandboxReadinessEvaluator
         IReadOnlyList<ComputerUseSandboxRequirementKind> missing,
         IReadOnlyList<string> riskReasons,
         ComputerUseRequiredIsolationMode requiredIsolation,
-        ReliableRecipeSandboxPerceptionSummary? perceptionSummary = null)
+        ReliableRecipeSandboxPerceptionSummary? perceptionSummary = null,
+        ReliableRecipeStructuredPrerequisiteSummary? structured = null)
     {
         var conditions = new List<string>
         {
@@ -473,6 +477,12 @@ public static class ComputerUseSandboxReadinessEvaluator
         {
             conditions.AddRange(perceptionSummary.MissingSignals.Select(s => $"Add fixture perception signal before future sandbox review: {s}."));
             conditions.AddRange(perceptionSummary.BlockedReasons.Select(r => $"Resolve perception blocker before future sandbox review: {r}."));
+        }
+        if (structured is not null)
+        {
+            conditions.AddRange(structured.MissingCriticalRequirements.Select(r => $"Add structured prerequisite before future sandbox review: {r}."));
+            if (structured.AdapterReadinessImpact is ReliableRecipeRequirementAdapterGateImpact.BlocksFutureAdapter or ReliableRecipeRequirementAdapterGateImpact.BlocksDryRunCandidate)
+                conditions.Add("Structured evidence and validation requirements must be explicit before future sandbox candidate review.");
         }
         conditions.AddRange(missing.Select(m => $"Resolve missing requirement: {m}."));
         conditions.AddRange(riskReasons.Select(r => $"Review risk reason: {r}."));
@@ -496,6 +506,14 @@ public static class ComputerUseSandboxReadinessEvaluator
             ReliableRecipeFixtureEvalSourceKind.RecorderDraft => ComputerUseSandboxSubjectKind.RecorderDraft,
             ReliableRecipeFixtureEvalSourceKind.PolicyRegressionFixture => ComputerUseSandboxSubjectKind.PolicyRegressionFixture,
             _ => ComputerUseSandboxSubjectKind.EvalScenario
+        };
+
+    private static ReliableRecipeStructuredPrerequisiteSubjectKind ComputerUseSubjectKind(ComputerUseSandboxSubjectKind subjectKind) =>
+        subjectKind switch
+        {
+            ComputerUseSandboxSubjectKind.RecorderDraft => ReliableRecipeStructuredPrerequisiteSubjectKind.RecorderDraft,
+            ComputerUseSandboxSubjectKind.EvalScenario or ComputerUseSandboxSubjectKind.PolicyRegressionFixture => ReliableRecipeStructuredPrerequisiteSubjectKind.EvalScenario,
+            _ => ReliableRecipeStructuredPrerequisiteSubjectKind.SandboxReadinessScenario
         };
 
     private static ComputerUseSandboxReadinessSource Resolve(ComputerUseSandboxReadinessScenario scenario) =>

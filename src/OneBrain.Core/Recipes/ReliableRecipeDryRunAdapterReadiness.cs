@@ -235,13 +235,14 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
             scenario.SubjectKind,
             source.Recipe,
             source.PreflightReport,
-            source.Draft,
-            source.EvalRun,
-            source.SandboxReport,
-            source.PerceptionReport,
-            scenario.ProtectedScopeAuditPassed,
-            scenario.RuntimeCapabilityRequested,
-            scenario.RequestedBlockedCapabilities);
+        source.Draft,
+        source.EvalRun,
+        source.SandboxReport,
+        source.PerceptionReport,
+        source.StructuredPrerequisiteProfile,
+        scenario.ProtectedScopeAuditPassed,
+        scenario.RuntimeCapabilityRequested,
+        scenario.RequestedBlockedCapabilities);
     }
 
     public static ReliableRecipeDryRunAdapterReadinessReport Evaluate(
@@ -250,7 +251,8 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
         RecorderToRecipeDraft? draft = null,
         ReliableRecipeFixtureEvalRun? evalRun = null,
         ComputerUseSandboxReadinessReport? sandboxReport = null,
-        ReliableRecipePerceptionIntegrationReport? perceptionReport = null) =>
+        ReliableRecipePerceptionIntegrationReport? perceptionReport = null,
+        ReliableRecipeStructuredPrerequisiteProfile? structuredPrerequisiteProfile = null) =>
         EvaluateSource(
             $"dryrun-adapter-readiness.{recipe.Id}",
             recipe.Id,
@@ -261,6 +263,7 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
             evalRun,
             sandboxReport,
             perceptionReport,
+            structuredPrerequisiteProfile,
             protectedScopeAuditPassed: true,
             runtimeCapabilityRequested: false,
             requestedBlockedCapabilities: []);
@@ -275,11 +278,13 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
         ReliableRecipeFixtureEvalRun? evalRun,
         ComputerUseSandboxReadinessReport? sandboxReport,
         ReliableRecipePerceptionIntegrationReport? perceptionReport,
+        ReliableRecipeStructuredPrerequisiteProfile? structuredPrerequisiteProfile,
         bool protectedScopeAuditPassed,
         bool runtimeCapabilityRequested,
         IReadOnlyList<ReliableRecipeDryRunAdapterBlockedCapability> requestedBlockedCapabilities)
     {
-        var satisfied = SatisfiedGates(recipe, preflightReport, draft, evalRun, sandboxReport, perceptionReport, protectedScopeAuditPassed, runtimeCapabilityRequested).Distinct().ToArray();
+        var structured = structuredPrerequisiteProfile ?? ReliableRecipeStructuredPrerequisiteEvaluator.Evaluate(recipe, preflightReport, draft, evalRun, sandboxReport, perceptionReport, ReliableRecipeStructuredPrerequisiteSubjectKind.DryRunAdapterReadinessScenario, subjectId);
+        var satisfied = SatisfiedGates(recipe, preflightReport, draft, evalRun, sandboxReport, perceptionReport, structured, protectedScopeAuditPassed, runtimeCapabilityRequested).Distinct().ToArray();
         var missing = RequiredGates.Except(satisfied).Select(g => $"Gate not satisfied: {g}.").ToArray();
         var blocked = AlwaysBlockedCapabilities.Concat(requestedBlockedCapabilities).Distinct().ToArray();
         var policyBlocked = IsPolicyBlocked(recipe, preflightReport, draft, evalRun, sandboxReport, perceptionReport);
@@ -308,6 +313,7 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
         ReliableRecipeFixtureEvalRun? evalRun,
         ComputerUseSandboxReadinessReport? sandboxReport,
         ReliableRecipePerceptionIntegrationReport? perceptionReport,
+        ReliableRecipeStructuredPrerequisiteProfile structuredPrerequisiteProfile,
         bool protectedScopeAuditPassed,
         bool runtimeCapabilityRequested)
     {
@@ -315,9 +321,9 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
             yield return ReliableRecipeDryRunAdapterGate.ReliableRecipePreflightPasses;
         if (preflightReport.QualityReport.OverallScore >= 0.72 && preflightReport.QualityReport.Decision != ReliableRecipeQualityDecision.Blocked)
             yield return ReliableRecipeDryRunAdapterGate.QualityScoreAboveThreshold;
-        if (preflightReport.RequiredValidations.Count == 0)
+        if (structuredPrerequisiteProfile.CompletenessReport.ValidationGateSatisfied)
             yield return ReliableRecipeDryRunAdapterGate.ValidationExpectationsStructured;
-        if (preflightReport.RequiredEvidence.Count == 0)
+        if (structuredPrerequisiteProfile.CompletenessReport.EvidenceGateSatisfied)
             yield return ReliableRecipeDryRunAdapterGate.EvidenceExpectationsStructured;
         if (draft is null || draft.ReviewState == RecorderDraftReviewState.DryRunCandidate)
             yield return ReliableRecipeDryRunAdapterGate.RecorderDraftReviewed;
@@ -420,7 +426,8 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
         var evalRun = scenario.IncludeEval ? ResolveEval(scenario, recipe, draft) : null;
         var sandbox = scenario.IncludeSandbox ? ResolveSandbox(scenario, recipe, preflight, draft, evalRun) : null;
         var perception = scenario.IncludePerception ? ResolvePerception(scenario, recipe, preflight) : null;
-        return new ReliableRecipeDryRunAdapterReadinessSource(recipe, preflight, draft, evalRun, sandbox, perception);
+        var structured = ReliableRecipeStructuredPrerequisiteEvaluator.Evaluate(recipe, preflight, draft, evalRun, sandbox, perception, ReliableRecipeStructuredPrerequisiteSubjectKind.DryRunAdapterReadinessScenario, scenario.ScenarioId);
+        return new ReliableRecipeDryRunAdapterReadinessSource(recipe, preflight, draft, evalRun, sandbox, perception, structured);
     }
 
     private static (ReliableRecipeDefinition Recipe, ReliableRecipePreflightReport Preflight, RecorderToRecipeDraft? Draft) ResolveSubject(ReliableRecipeDryRunAdapterReadinessScenario scenario)
@@ -514,7 +521,8 @@ public static class ReliableRecipeDryRunAdapterReadinessEvaluator
         RecorderToRecipeDraft? Draft,
         ReliableRecipeFixtureEvalRun? EvalRun,
         ComputerUseSandboxReadinessReport? SandboxReport,
-        ReliableRecipePerceptionIntegrationReport? PerceptionReport);
+        ReliableRecipePerceptionIntegrationReport? PerceptionReport,
+        ReliableRecipeStructuredPrerequisiteProfile StructuredPrerequisiteProfile);
 }
 
 public static class ReliableRecipeDryRunAdapterReadinessReportMapper

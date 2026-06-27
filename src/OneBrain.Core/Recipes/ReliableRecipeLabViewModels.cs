@@ -28,6 +28,7 @@ public sealed record ReliableRecipeLabViewModel(
     ReliableRecipeLabEvalPanel EvalPanel,
     ReliableRecipeLabSandboxReadinessPanel SandboxReadinessReportPanel,
     ReliableRecipeLabDryRunAdapterReadinessPanel DryRunAdapterReadinessPanel,
+    ReliableRecipeLabStructuredPrerequisitesPanel StructuredPrerequisitesPanel,
     IReadOnlyList<ReliableRecipeLabTimelinePreviewItem> TimelinePreview,
     ReliableRecipeLabNoLiveRuntimeNotice NoLiveRuntimeNotice,
     IReadOnlyList<string> ReadOnlyActionLabels)
@@ -217,6 +218,7 @@ public static class ReliableRecipeLabViewModelMapper
             EmptyEvalPanel(),
             ComputerUseSandboxReadinessReportMapper.ToLabPanel(ComputerUseSandboxReadinessEvaluator.Evaluate(recipe, report)),
             ReliableRecipeDryRunAdapterReadinessReportMapper.ToLabPanel(ReliableRecipeDryRunAdapterReadinessEvaluator.Evaluate(recipe, report)),
+            ReliableRecipeStructuredPrerequisiteReportMapper.ToLabPanel(report.StructuredPrerequisites),
             TimelineItems(recipe),
             NoLiveNotice(report),
             ReadOnlyActions);
