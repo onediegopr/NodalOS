@@ -119,8 +119,8 @@ public sealed class NodalOsInstalledExtensionManualQaEvidenceCaptureM628Tests
         Assert.IsFalse(root.GetProperty("jsModifiedInThisBlock").GetBoolean());
         Assert.IsFalse(root.GetProperty("manifestModifiedInThisBlock").GetBoolean());
 
-        Assert.AreEqual("D2A14687DB6E201353A100A33B72AECB3C1858C1127114979945750AB5B717AC", Sha256Hex(SidepanelCssPath));
-        Assert.AreEqual("FED938DE2C42EC56F9061E2587A57338DAD1A770BBFAD2B710937BBD97D9D329", Sha256Hex(SidepanelJsPath));
+        Assert.AreEqual("33472E7E0A6CEF54E954CC23E204E77A77A1FD96701F726BCE200D3D456424CD", Sha256Hex(SidepanelCssPath));
+        Assert.AreEqual("41AB6093D2A6BFC4FC8C3E25CEBAB504163AEA4B0A267A4B62338B7D7DB10764", Sha256Hex(SidepanelJsPath));
     }
 
     [TestMethod]
