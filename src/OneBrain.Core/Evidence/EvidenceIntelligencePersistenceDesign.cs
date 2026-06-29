@@ -258,14 +258,214 @@ public sealed record EvidenceIntelligencePersistencePlan(
             ]);
 }
 
+public enum EvidenceIntelligenceReadStoreQueryKind
+{
+    ByEvidenceId,
+    ByWorkspaceId,
+    ByClaimId,
+    ByActionScanId,
+    ByGraphNodeId,
+    ByGraphEdgeId,
+    LatestReadinessSnapshot,
+    SafeNextStepSnapshot
+}
+
+public enum EvidenceIntelligenceReadStoreResultStatus
+{
+    Disabled,
+    Unavailable,
+    NotConfigured,
+    DesignOnly,
+    FailClosed
+}
+
+public sealed record EvidenceIntelligenceReadStoreQuery(
+    EvidenceIntelligenceReadStoreQueryKind Kind,
+    string WorkspaceId,
+    string TargetId,
+    int MaxResults,
+    IReadOnlyDictionary<string, string> Metadata)
+{
+    public static EvidenceIntelligenceReadStoreQuery ByEvidenceId(
+        string evidenceId,
+        string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.ByEvidenceId, workspaceId, evidenceId);
+
+    public static EvidenceIntelligenceReadStoreQuery ByWorkspaceId(string workspaceId, int maxResults = 100) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.ByWorkspaceId, workspaceId, workspaceId, maxResults);
+
+    public static EvidenceIntelligenceReadStoreQuery ByClaimId(
+        string claimId,
+        string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.ByClaimId, workspaceId, claimId);
+
+    public static EvidenceIntelligenceReadStoreQuery ByActionScanId(
+        string actionScanId,
+        string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.ByActionScanId, workspaceId, actionScanId);
+
+    public static EvidenceIntelligenceReadStoreQuery ByGraphNodeId(
+        string nodeId,
+        string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.ByGraphNodeId, workspaceId, nodeId);
+
+    public static EvidenceIntelligenceReadStoreQuery ByGraphEdgeId(
+        string edgeId,
+        string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.ByGraphEdgeId, workspaceId, edgeId);
+
+    public static EvidenceIntelligenceReadStoreQuery LatestReadinessSnapshot(
+        string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.LatestReadinessSnapshot, workspaceId, "latest-readiness");
+
+    public static EvidenceIntelligenceReadStoreQuery SafeNextStepSnapshot(
+        string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
+        Create(EvidenceIntelligenceReadStoreQueryKind.SafeNextStepSnapshot, workspaceId, "safe-next-step");
+
+    private static EvidenceIntelligenceReadStoreQuery Create(
+        EvidenceIntelligenceReadStoreQueryKind kind,
+        string workspaceId,
+        string targetId,
+        int maxResults = 1) =>
+        new(
+            kind,
+            string.IsNullOrWhiteSpace(workspaceId) ? EvidenceItem.DefaultWorkspaceId : workspaceId,
+            string.IsNullOrWhiteSpace(targetId) ? "not-configured" : targetId,
+            Math.Max(0, maxResults),
+            new Dictionary<string, string>
+            {
+                ["mode"] = "design-only",
+                ["fallback"] = "disabled"
+            });
+}
+
+public sealed record EvidenceIntelligenceReadStoreScaffoldStatus(
+    bool IsEnabled,
+    bool DurableReadEnabled,
+    bool FilesystemReadEnabled,
+    bool DatabaseReadEnabled,
+    bool MigrationEnabled,
+    bool WriteEnabled,
+    bool RuntimeEnabled,
+    bool ProviderCloudEnabled,
+    bool SemanticVectorBackendEnabled,
+    bool RegistersProductService,
+    string Mode,
+    IReadOnlyList<string> DisabledReasons,
+    IReadOnlyList<string> UnlockRequirements)
+{
+    public bool FailClosed =>
+        !IsEnabled
+        && !DurableReadEnabled
+        && !FilesystemReadEnabled
+        && !DatabaseReadEnabled
+        && !MigrationEnabled
+        && !WriteEnabled
+        && !RuntimeEnabled
+        && !ProviderCloudEnabled
+        && !SemanticVectorBackendEnabled
+        && !RegistersProductService;
+
+    public static EvidenceIntelligenceReadStoreScaffoldStatus Disabled(EvidenceIntelligenceUnlockCriteria unlockCriteria) =>
+        new(
+            IsEnabled: false,
+            DurableReadEnabled: false,
+            FilesystemReadEnabled: false,
+            DatabaseReadEnabled: false,
+            MigrationEnabled: false,
+            WriteEnabled: false,
+            RuntimeEnabled: false,
+            ProviderCloudEnabled: false,
+            SemanticVectorBackendEnabled: false,
+            RegistersProductService: false,
+            Mode: "DISABLED_DESIGN_ONLY_FAIL_CLOSED",
+            DisabledReasons:
+            [
+                "Read store scaffold is present for contract coverage only.",
+                "Durable reads are disabled until a future explicit hito.",
+                "Queries return fail-closed results instead of falling back to a local store.",
+                "EIL UI remains on deterministic fixture snapshots."
+            ],
+            UnlockRequirements: unlockCriteria.RequiredEvidence);
+}
+
+public sealed record EvidenceIntelligenceReadStoreResult(
+    EvidenceIntelligenceReadStoreQuery Query,
+    EvidenceIntelligenceReadStoreResultStatus Status,
+    string Reason,
+    IReadOnlyList<string> EvidenceIds,
+    IReadOnlyList<string> Warnings,
+    bool FailClosed,
+    bool ReadsFilesystem,
+    bool ReadsDatabase,
+    bool WritesFilesystem,
+    bool RunsMigration,
+    bool CallsProviderCloud,
+    bool UsesSemanticVectorBackend,
+    bool UsesRuntime,
+    bool FallbackUsed)
+{
+    public static EvidenceIntelligenceReadStoreResult Disabled(
+        EvidenceIntelligenceReadStoreQuery query,
+        EvidenceIntelligenceReadStoreScaffoldStatus status) =>
+        new(
+            query,
+            EvidenceIntelligenceReadStoreResultStatus.FailClosed,
+            "Local persistence read store is disabled, design-only and fail-closed.",
+            EvidenceIds: [],
+            Warnings:
+            [
+                status.Mode,
+                "No durable read source is configured.",
+                "No fallback source is used."
+            ],
+            FailClosed: true,
+            ReadsFilesystem: false,
+            ReadsDatabase: false,
+            WritesFilesystem: false,
+            RunsMigration: false,
+            CallsProviderCloud: false,
+            UsesSemanticVectorBackend: false,
+            UsesRuntime: false,
+            FallbackUsed: false);
+}
+
 public interface IEvidenceIntelligenceReadStore
 {
     EvidenceIntelligencePersistenceCapabilityStatus CapabilityStatus { get; }
+
+    EvidenceIntelligenceReadStoreScaffoldStatus ScaffoldStatus { get; }
+
+    EvidenceIntelligenceReadStoreResult Query(EvidenceIntelligenceReadStoreQuery query);
 }
 
 public interface IEvidenceIntelligenceWriteStore
 {
     EvidenceIntelligencePersistenceCapabilityStatus CapabilityStatus { get; }
+}
+
+public sealed class DisabledEvidenceIntelligenceReadStore : IEvidenceIntelligenceReadStore
+{
+    public DisabledEvidenceIntelligenceReadStore()
+        : this(EvidenceIntelligencePersistencePlan.CreateDisabledLocalFirstDesign())
+    {
+    }
+
+    public DisabledEvidenceIntelligenceReadStore(EvidenceIntelligencePersistencePlan plan)
+    {
+        Plan = plan ?? throw new ArgumentNullException(nameof(plan));
+        CapabilityStatus = Plan.CapabilityStatus;
+        ScaffoldStatus = EvidenceIntelligenceReadStoreScaffoldStatus.Disabled(Plan.UnlockCriteria);
+    }
+
+    public EvidenceIntelligencePersistencePlan Plan { get; }
+
+    public EvidenceIntelligencePersistenceCapabilityStatus CapabilityStatus { get; }
+
+    public EvidenceIntelligenceReadStoreScaffoldStatus ScaffoldStatus { get; }
+
+    public EvidenceIntelligenceReadStoreResult Query(EvidenceIntelligenceReadStoreQuery query) =>
+        EvidenceIntelligenceReadStoreResult.Disabled(query, ScaffoldStatus);
 }
 
 public static class EvidenceIntelligencePersistenceSchemaCatalog

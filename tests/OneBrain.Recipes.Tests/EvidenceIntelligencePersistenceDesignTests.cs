@@ -108,13 +108,99 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
     public void ReadAndWriteStoreContractsExposeDisabledCapabilityOnly()
     {
         var status = EvidenceIntelligencePersistenceCapabilityStatus.DisabledDesign();
-        IEvidenceIntelligenceReadStore? readStore = null;
+        IEvidenceIntelligenceReadStore readStore = new DisabledEvidenceIntelligenceReadStore();
         IEvidenceIntelligenceWriteStore? writeStore = null;
 
-        Assert.IsNull(readStore);
+        Assert.IsTrue(readStore.CapabilityStatus.FailClosed);
+        Assert.IsTrue(readStore.ScaffoldStatus.FailClosed);
         Assert.IsNull(writeStore);
         Assert.IsTrue(status.FailClosed);
         Assert.IsFalse(status.DurableReadsEnabled);
         Assert.IsFalse(status.DurableWritesEnabled);
     }
+
+    [TestMethod]
+    public void ReadStoreScaffold_IsDisabledByDefault()
+    {
+        var store = new DisabledEvidenceIntelligenceReadStore();
+        var status = store.ScaffoldStatus;
+
+        Assert.IsFalse(status.IsEnabled);
+        Assert.IsTrue(status.FailClosed);
+        Assert.AreEqual("DISABLED_DESIGN_ONLY_FAIL_CLOSED", status.Mode);
+        Assert.IsFalse(status.DurableReadEnabled);
+        Assert.IsFalse(status.FilesystemReadEnabled);
+        Assert.IsFalse(status.DatabaseReadEnabled);
+        Assert.IsFalse(status.MigrationEnabled);
+        Assert.IsFalse(status.WriteEnabled);
+        Assert.IsFalse(status.RuntimeEnabled);
+        Assert.IsFalse(status.ProviderCloudEnabled);
+        Assert.IsFalse(status.SemanticVectorBackendEnabled);
+        Assert.IsFalse(status.RegistersProductService);
+        Assert.IsTrue(store.CapabilityStatus.FailClosed);
+    }
+
+    [TestMethod]
+    public void ReadStoreScaffold_ReturnsFailClosedForQueries()
+    {
+        var store = new DisabledEvidenceIntelligenceReadStore();
+        var queries = CreateReadStoreQueries();
+
+        foreach (var query in queries)
+        {
+            var result = store.Query(query);
+
+            Assert.AreEqual(EvidenceIntelligenceReadStoreResultStatus.FailClosed, result.Status);
+            Assert.IsTrue(result.FailClosed);
+            Assert.AreEqual(query, result.Query);
+            Assert.AreEqual(0, result.EvidenceIds.Count);
+            Assert.IsFalse(result.ReadsFilesystem);
+            Assert.IsFalse(result.ReadsDatabase);
+            Assert.IsFalse(result.WritesFilesystem);
+            Assert.IsFalse(result.RunsMigration);
+            Assert.IsFalse(result.CallsProviderCloud);
+            Assert.IsFalse(result.UsesSemanticVectorBackend);
+            Assert.IsFalse(result.UsesRuntime);
+            Assert.IsFalse(result.FallbackUsed);
+            StringAssert.Contains(result.Reason, "disabled");
+        }
+    }
+
+    [TestMethod]
+    public void ReadStoreScaffold_QueryModelCoversFutureReadShapes()
+    {
+        var queries = CreateReadStoreQueries();
+        var kinds = queries.Select(query => query.Kind).ToHashSet();
+
+        CollectionAssert.AreEquivalent(
+            Enum.GetValues<EvidenceIntelligenceReadStoreQueryKind>().ToList(),
+            kinds.ToList());
+        Assert.IsTrue(queries.All(query => query.Metadata["mode"] == "design-only"));
+        Assert.IsTrue(queries.All(query => query.Metadata["fallback"] == "disabled"));
+    }
+
+    [TestMethod]
+    public void ReadStoreScaffold_RequiresFutureExplicitUnlock()
+    {
+        var store = new DisabledEvidenceIntelligenceReadStore();
+
+        Assert.IsTrue(store.Plan.UnlockCriteria.RequiresFutureExplicitHito);
+        Assert.IsTrue(store.Plan.UnlockCriteria.RequiresRedactionAudit);
+        Assert.IsTrue(store.Plan.UnlockCriteria.RequiresFilesystemWriteAudit);
+        Assert.IsFalse(store.Plan.UnlockCriteria.AllowsRuntimeUnlock);
+        CollectionAssert.Contains(store.ScaffoldStatus.UnlockRequirements.ToList(), "Approved ADR update.");
+        CollectionAssert.Contains(store.ScaffoldStatus.DisabledReasons.ToList(), "Durable reads are disabled until a future explicit hito.");
+    }
+
+    private static IReadOnlyList<EvidenceIntelligenceReadStoreQuery> CreateReadStoreQueries() =>
+    [
+        EvidenceIntelligenceReadStoreQuery.ByEvidenceId("evidence.fixture.001"),
+        EvidenceIntelligenceReadStoreQuery.ByWorkspaceId("workspace.fixture"),
+        EvidenceIntelligenceReadStoreQuery.ByClaimId("claim.fixture.001"),
+        EvidenceIntelligenceReadStoreQuery.ByActionScanId("action-scan.fixture.001"),
+        EvidenceIntelligenceReadStoreQuery.ByGraphNodeId("graph-node.fixture.001"),
+        EvidenceIntelligenceReadStoreQuery.ByGraphEdgeId("graph-edge.fixture.001"),
+        EvidenceIntelligenceReadStoreQuery.LatestReadinessSnapshot(),
+        EvidenceIntelligenceReadStoreQuery.SafeNextStepSnapshot()
+    ];
 }

@@ -30,13 +30,16 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         var source = ReadRepoText(PersistenceDesignPath);
         var forbidden = new[]
         {
+            "File.Read",
             "File.Write",
             "FileStream",
+            "Directory.",
             "Directory.CreateDirectory",
             "Microsoft.Data.Sqlite",
             "SQLiteConnection",
             "SqlConnection",
             "DbContext",
+            "IDbConnection",
             "HttpClient",
             "WebSocket",
             "Process.Start",
@@ -53,6 +56,43 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         {
             Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
         }
+    }
+
+    [TestMethod]
+    public void ReadStoreScaffold_DoesNotReadFilesystemDatabaseWriteOrMigrate()
+    {
+        var store = new DisabledEvidenceIntelligenceReadStore();
+        var result = store.Query(EvidenceIntelligenceReadStoreQuery.ByWorkspaceId("workspace.fixture"));
+
+        Assert.IsFalse(store.ScaffoldStatus.FilesystemReadEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.DatabaseReadEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.WriteEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.MigrationEnabled);
+        Assert.IsFalse(result.ReadsFilesystem);
+        Assert.IsFalse(result.ReadsDatabase);
+        Assert.IsFalse(result.WritesFilesystem);
+        Assert.IsFalse(result.RunsMigration);
+        Assert.IsTrue(result.FailClosed);
+    }
+
+    [TestMethod]
+    public void ReadStoreScaffold_DoesNotEnableProviderCloudSemanticRuntimeOrServiceRegistration()
+    {
+        var store = new DisabledEvidenceIntelligenceReadStore();
+        var result = store.Query(EvidenceIntelligenceReadStoreQuery.SafeNextStepSnapshot());
+
+        Assert.IsFalse(store.ScaffoldStatus.ProviderCloudEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.SemanticVectorBackendEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.RuntimeEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.RegistersProductService);
+        Assert.IsFalse(store.CapabilityStatus.ProviderCloudEnabled);
+        Assert.IsFalse(store.CapabilityStatus.SemanticVectorBackendEnabled);
+        Assert.IsFalse(store.CapabilityStatus.RuntimeActionsEnabled);
+        Assert.IsFalse(store.CapabilityStatus.RegistersProductService);
+        Assert.IsFalse(result.CallsProviderCloud);
+        Assert.IsFalse(result.UsesSemanticVectorBackend);
+        Assert.IsFalse(result.UsesRuntime);
+        Assert.IsFalse(result.FallbackUsed);
     }
 
     [TestMethod]
@@ -89,12 +129,14 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
     {
         var source = ReadRepoText(UiMountPath);
         var mount = EvidenceIntelligenceReadOnlyUiMount.CreateFixture();
+        var store = new DisabledEvidenceIntelligenceReadStore();
 
         Assert.IsTrue(mount.UsesDeterministicFixture);
         Assert.IsFalse(mount.DurablePersistenceEnabled);
         Assert.IsFalse(mount.FilesystemWritesEnabled);
         Assert.IsFalse(mount.ProviderCloudEnabled);
         Assert.IsFalse(mount.RuntimeEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.DurableReadEnabled);
         StringAssert.Contains(source, "UsesDeterministicFixture: true");
         StringAssert.Contains(source, "DurablePersistenceEnabled: false");
         StringAssert.Contains(source, "FilesystemWritesEnabled: false");

@@ -192,3 +192,27 @@ Implementation can only start in a future explicit hito after:
 - full no-runtime/no-provider/no-live guards.
 
 Runtime/live unlock is not allowed by this ADR.
+
+## Addendum: Disabled Read Store Scaffold
+
+Decision target: `GO_EIL_LOCAL_PERSISTENCE_READ_STORE_SCAFFOLD_DISABLED_READY`
+
+The first implementation-facing artifact is a disabled read-store scaffold. It exists to make the future read API explicit while preserving the current no-store boundary.
+
+The scaffold defines:
+
+- query shapes for evidence id, workspace id, claim id, action scan id, graph node, graph edge, latest readiness snapshot and safe next step snapshot;
+- a scaffold status with durable read, filesystem read, database read, migration, write, runtime, provider/cloud and semantic/vector flags all disabled;
+- a query result that returns `FailClosed` and does not fall back to any local store;
+- unlock requirements inherited from the design-only persistence plan.
+
+The scaffold does not:
+
+- read evidence from a durable source;
+- write evidence;
+- create or use a database;
+- run migrations;
+- register an active product service;
+- replace the deterministic fixture source used by the EIL UI.
+
+Any future activation still requires a separate explicit hito, updated ADR, redaction-at-write hostile tests, schema compatibility report, migration dry-run audit and manual QA.
