@@ -216,3 +216,28 @@ The scaffold does not:
 - replace the deterministic fixture source used by the EIL UI.
 
 Any future activation still requires a separate explicit hito, updated ADR, redaction-at-write hostile tests, schema compatibility report, migration dry-run audit and manual QA.
+
+## Addendum: Disabled Write Store Scaffold
+
+Decision target: `GO_EIL_LOCAL_PERSISTENCE_WRITE_STORE_SCAFFOLD_DISABLED_READY`
+
+The complementary implementation-facing artifact is a disabled write-store scaffold. It exists to make the future write API explicit while preserving the current no-write boundary.
+
+The scaffold defines:
+
+- command shapes for evidence records, claim scan snapshots, action scan snapshots, contradiction records, graph nodes, graph edges, readiness snapshots, safe next steps, human action requirements, redaction metadata and integrity hash envelopes;
+- a scaffold status with durable write, filesystem write, database write, migration, runtime, provider/cloud, semantic/vector and service-registration flags all disabled;
+- a redaction-at-write requirement stating that redaction is mandatory, raw payloads are never persisted, secret fields are rejected, unknown sensitivity fails closed and integrity hashes are computed only after canonical redaction;
+- write results that return `FailClosed` for normal commands and `Rejected` for raw, secret, sensitive-never-persist or fixture-only data.
+
+The scaffold does not:
+
+- write evidence;
+- read evidence from a durable source;
+- create or use a database;
+- run migrations;
+- execute a redaction pipeline;
+- register an active product service;
+- replace the deterministic fixture source used by the EIL UI.
+
+Any future write activation still requires a separate explicit hito, hostile redaction-at-write fixtures, schema compatibility report, migration dry-run audit and manual QA.

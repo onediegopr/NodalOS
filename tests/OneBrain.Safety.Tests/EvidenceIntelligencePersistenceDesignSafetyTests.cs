@@ -96,6 +96,63 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
     }
 
     [TestMethod]
+    public void WriteStoreScaffold_DoesNotReadWriteDatabaseOrMigrate()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var result = store.Write(EvidenceIntelligenceWriteCommand.AppendEvidenceRecord("evidence.fixture.001"));
+
+        Assert.IsFalse(store.ScaffoldStatus.FilesystemWriteEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.DatabaseWriteEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.MigrationEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.DurableWriteEnabled);
+        Assert.IsFalse(result.WritesFilesystem);
+        Assert.IsFalse(result.ReadsFilesystem);
+        Assert.IsFalse(result.WritesDatabase);
+        Assert.IsFalse(result.RunsMigration);
+        Assert.IsTrue(result.FailClosed);
+    }
+
+    [TestMethod]
+    public void WriteStoreScaffold_DoesNotEnableProviderCloudSemanticRuntimeOrServiceRegistration()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var result = store.Write(EvidenceIntelligenceWriteCommand.AppendSafeNextStep("safe-next-step.fixture.001"));
+
+        Assert.IsFalse(store.ScaffoldStatus.ProviderCloudEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.SemanticVectorBackendEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.RuntimeEnabled);
+        Assert.IsFalse(store.ScaffoldStatus.ServiceRegistrationEnabled);
+        Assert.IsFalse(store.CapabilityStatus.ProviderCloudEnabled);
+        Assert.IsFalse(store.CapabilityStatus.SemanticVectorBackendEnabled);
+        Assert.IsFalse(store.CapabilityStatus.RuntimeActionsEnabled);
+        Assert.IsFalse(store.CapabilityStatus.RegistersProductService);
+        Assert.IsFalse(result.CallsProviderCloud);
+        Assert.IsFalse(result.UsesSemanticVectorBackend);
+        Assert.IsFalse(result.UsesRuntime);
+        Assert.IsFalse(result.FallbackUsed);
+    }
+
+    [TestMethod]
+    public void WriteStoreScaffold_RedactionGateIsRequiredButNotExecutable()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var requirement = store.ScaffoldStatus.RedactionRequirement;
+        var rawCommand = EvidenceIntelligenceWriteCommand.AppendEvidenceRecord("raw.fixture.001", containsRawPayload: true);
+        var rawResult = store.Write(rawCommand);
+
+        Assert.IsTrue(requirement.RedactionRequired);
+        Assert.IsTrue(requirement.RawPayloadNeverPersist);
+        Assert.IsTrue(requirement.SecretFieldsRejected);
+        Assert.IsTrue(requirement.UnknownSensitivityRejected);
+        Assert.IsTrue(requirement.IntegrityHashAfterCanonicalRedaction);
+        Assert.IsFalse(requirement.ExecutablePipelineEnabled);
+        Assert.AreEqual(EvidenceIntelligenceWriteResultStatus.Rejected, rawResult.Status);
+        Assert.IsFalse(rawResult.RedactionPipelineExecuted);
+        Assert.IsFalse(rawResult.WritesFilesystem);
+        Assert.IsFalse(rawResult.WritesDatabase);
+    }
+
+    [TestMethod]
     public void PersistenceDesign_DoesNotEnableMigrationSemanticProviderOrRuntime()
     {
         var plan = EvidenceIntelligencePersistencePlan.CreateDisabledLocalFirstDesign();
@@ -130,6 +187,7 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         var source = ReadRepoText(UiMountPath);
         var mount = EvidenceIntelligenceReadOnlyUiMount.CreateFixture();
         var store = new DisabledEvidenceIntelligenceReadStore();
+        var writeStore = new DisabledEvidenceIntelligenceWriteStore();
 
         Assert.IsTrue(mount.UsesDeterministicFixture);
         Assert.IsFalse(mount.DurablePersistenceEnabled);
@@ -137,6 +195,7 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         Assert.IsFalse(mount.ProviderCloudEnabled);
         Assert.IsFalse(mount.RuntimeEnabled);
         Assert.IsFalse(store.ScaffoldStatus.DurableReadEnabled);
+        Assert.IsFalse(writeStore.ScaffoldStatus.DurableWriteEnabled);
         StringAssert.Contains(source, "UsesDeterministicFixture: true");
         StringAssert.Contains(source, "DurablePersistenceEnabled: false");
         StringAssert.Contains(source, "FilesystemWritesEnabled: false");

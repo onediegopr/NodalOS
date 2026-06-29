@@ -109,11 +109,12 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
     {
         var status = EvidenceIntelligencePersistenceCapabilityStatus.DisabledDesign();
         IEvidenceIntelligenceReadStore readStore = new DisabledEvidenceIntelligenceReadStore();
-        IEvidenceIntelligenceWriteStore? writeStore = null;
+        IEvidenceIntelligenceWriteStore writeStore = new DisabledEvidenceIntelligenceWriteStore();
 
         Assert.IsTrue(readStore.CapabilityStatus.FailClosed);
         Assert.IsTrue(readStore.ScaffoldStatus.FailClosed);
-        Assert.IsNull(writeStore);
+        Assert.IsTrue(writeStore.CapabilityStatus.FailClosed);
+        Assert.IsTrue(writeStore.ScaffoldStatus.FailClosed);
         Assert.IsTrue(status.FailClosed);
         Assert.IsFalse(status.DurableReadsEnabled);
         Assert.IsFalse(status.DurableWritesEnabled);
@@ -192,6 +193,131 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
         CollectionAssert.Contains(store.ScaffoldStatus.DisabledReasons.ToList(), "Durable reads are disabled until a future explicit hito.");
     }
 
+    [TestMethod]
+    public void WriteStoreScaffold_IsDisabledByDefault()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var status = store.ScaffoldStatus;
+
+        Assert.IsFalse(status.IsEnabled);
+        Assert.IsTrue(status.FailClosed);
+        Assert.AreEqual("DISABLED_DESIGN_ONLY_FAIL_CLOSED", status.Mode);
+        Assert.IsFalse(status.DurableWriteEnabled);
+        Assert.IsFalse(status.FilesystemWriteEnabled);
+        Assert.IsFalse(status.DatabaseWriteEnabled);
+        Assert.IsFalse(status.MigrationEnabled);
+        Assert.IsFalse(status.RuntimeEnabled);
+        Assert.IsFalse(status.ProviderCloudEnabled);
+        Assert.IsFalse(status.SemanticVectorBackendEnabled);
+        Assert.IsFalse(status.RedactionAtWriteExecutable);
+        Assert.IsFalse(status.ServiceRegistrationEnabled);
+        Assert.IsTrue(store.CapabilityStatus.FailClosed);
+    }
+
+    [TestMethod]
+    public void WriteStoreScaffold_ReturnsFailClosedForAllCommands()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var commands = CreateWriteStoreCommands();
+
+        foreach (var command in commands)
+        {
+            var result = store.Write(command);
+
+            Assert.AreEqual(EvidenceIntelligenceWriteResultStatus.FailClosed, result.Status);
+            Assert.IsTrue(result.FailClosed);
+            Assert.AreEqual(command, result.Command);
+            Assert.IsFalse(result.WritesFilesystem);
+            Assert.IsFalse(result.ReadsFilesystem);
+            Assert.IsFalse(result.WritesDatabase);
+            Assert.IsFalse(result.RunsMigration);
+            Assert.IsFalse(result.CallsProviderCloud);
+            Assert.IsFalse(result.UsesSemanticVectorBackend);
+            Assert.IsFalse(result.UsesRuntime);
+            Assert.IsFalse(result.RedactionPipelineExecuted);
+            Assert.IsFalse(result.FallbackUsed);
+            StringAssert.Contains(result.Reason, "disabled");
+        }
+    }
+
+    [TestMethod]
+    public void WriteStoreScaffold_CommandModelCoversFutureWriteShapes()
+    {
+        var commands = CreateWriteStoreCommands();
+        var kinds = commands.Select(command => command.Kind).ToHashSet();
+
+        CollectionAssert.AreEquivalent(
+            Enum.GetValues<EvidenceIntelligenceWriteCommandKind>().ToList(),
+            kinds.ToList());
+        Assert.IsTrue(commands.All(command => command.Metadata["mode"] == "design-only"));
+        Assert.IsTrue(commands.All(command => command.Metadata["write"] == "disabled"));
+        Assert.IsTrue(commands.All(command => command.Metadata["fallback"] == "disabled"));
+    }
+
+    [TestMethod]
+    public void WriteStoreScaffold_RequiresRedactionBeforeFutureUnlock()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var requirement = store.ScaffoldStatus.RedactionRequirement;
+
+        Assert.IsTrue(requirement.RedactionRequired);
+        Assert.IsTrue(requirement.RawPayloadNeverPersist);
+        Assert.IsTrue(requirement.SecretFieldsRejected);
+        Assert.IsTrue(requirement.UnknownSensitivityRejected);
+        Assert.IsTrue(requirement.IntegrityHashAfterCanonicalRedaction);
+        Assert.IsFalse(requirement.ExecutablePipelineEnabled);
+        Assert.IsTrue(requirement.FailClosed);
+        CollectionAssert.Contains(requirement.RequiredBeforeUnlock.ToList(), "Hostile redaction-at-write fixtures must pass.");
+    }
+
+    [TestMethod]
+    public void WriteStoreScaffold_RejectsRawPayloadPersistenceByDesign()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var commands = new[]
+        {
+            EvidenceIntelligenceWriteCommand.AppendEvidenceRecord(
+                "raw.fixture.001",
+                containsRawPayload: true),
+            EvidenceIntelligenceWriteCommand.AppendEvidenceRecord(
+                "secret.fixture.001",
+                containsSecretField: true),
+            EvidenceIntelligenceWriteCommand.AppendEvidenceRecord(
+                "sensitive.fixture.001",
+                EvidenceIntelligencePersistenceFieldClassification.SensitiveNeverPersist),
+            EvidenceIntelligenceWriteCommand.AppendEvidenceRecord(
+                "fixture-only.fixture.001",
+                EvidenceIntelligencePersistenceFieldClassification.FixtureOnly)
+        };
+
+        foreach (var command in commands)
+        {
+            var result = store.Write(command);
+
+            Assert.IsTrue(command.RejectedByDesign);
+            Assert.AreEqual(EvidenceIntelligenceWriteResultStatus.Rejected, result.Status);
+            Assert.IsTrue(result.FailClosed);
+            Assert.IsFalse(result.WritesFilesystem);
+            Assert.IsFalse(result.WritesDatabase);
+            Assert.IsFalse(result.RedactionPipelineExecuted);
+            StringAssert.Contains(result.Reason, "rejected by design");
+        }
+    }
+
+    [TestMethod]
+    public void WriteStoreScaffold_RequiresFutureExplicitUnlock()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+
+        Assert.IsTrue(store.Plan.UnlockCriteria.RequiresFutureExplicitHito);
+        Assert.IsTrue(store.Plan.UnlockCriteria.RequiresRedactionAudit);
+        Assert.IsTrue(store.Plan.UnlockCriteria.RequiresFilesystemWriteAudit);
+        Assert.IsTrue(store.Plan.UnlockCriteria.RequiresMigrationDryRunAudit);
+        Assert.IsFalse(store.Plan.UnlockCriteria.AllowsRuntimeUnlock);
+        CollectionAssert.Contains(store.ScaffoldStatus.UnlockRequirements.ToList(), "Redaction-at-write tests with hostile fixtures.");
+        CollectionAssert.Contains(store.ScaffoldStatus.DisabledReasons.ToList(), "Durable writes are disabled until a future explicit hito.");
+    }
+
     private static IReadOnlyList<EvidenceIntelligenceReadStoreQuery> CreateReadStoreQueries() =>
     [
         EvidenceIntelligenceReadStoreQuery.ByEvidenceId("evidence.fixture.001"),
@@ -202,5 +328,20 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
         EvidenceIntelligenceReadStoreQuery.ByGraphEdgeId("graph-edge.fixture.001"),
         EvidenceIntelligenceReadStoreQuery.LatestReadinessSnapshot(),
         EvidenceIntelligenceReadStoreQuery.SafeNextStepSnapshot()
+    ];
+
+    private static IReadOnlyList<EvidenceIntelligenceWriteCommand> CreateWriteStoreCommands() =>
+    [
+        EvidenceIntelligenceWriteCommand.AppendEvidenceRecord("evidence.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendClaimScanSnapshot("claim-scan.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendActionScanSnapshot("action-scan.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendContradictionRecord("contradiction.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendGraphNode("graph-node.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendGraphEdge("graph-edge.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendReadinessSnapshot("readiness.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendSafeNextStep("safe-next-step.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendHumanActionRequirement("human-action.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendRedactionMetadata("redaction.fixture.001"),
+        EvidenceIntelligenceWriteCommand.AppendIntegrityHashEnvelope("integrity-hash.fixture.001")
     ];
 }
