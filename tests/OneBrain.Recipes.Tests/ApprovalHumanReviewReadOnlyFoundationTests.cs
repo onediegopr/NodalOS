@@ -301,6 +301,129 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
         }
     }
 
+    [TestMethod]
+    public void HumanReviewEvidenceContextLinkGuard_CoversExpectedFixtureCatalog()
+    {
+        var fixtures = HumanReviewEvidenceContextLinkReadOnlyGuard.CreateFixtureCatalog();
+        var results = HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog();
+
+        Assert.AreEqual(27, fixtures.Count);
+        Assert.AreEqual(fixtures.Count, results.Count);
+
+        foreach (var fixture in fixtures)
+        {
+            var result = results.Single(item => item.FixtureId == fixture.FixtureId);
+
+            Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixture.FixtureId);
+            if (fixture.ExpectedIssue == HumanReviewEvidenceContextLinkIssueKind.None)
+            {
+                Assert.AreEqual(0, result.Issues.Count, fixture.FixtureId);
+            }
+            else
+            {
+                Assert.IsTrue(result.HasIssue(fixture.ExpectedIssue), fixture.FixtureId);
+            }
+
+            Assert.IsTrue(result.PreviewOnly, fixture.FixtureId);
+            Assert.IsFalse(result.EvidenceLinkIsDurableEvidence, fixture.FixtureId);
+            Assert.IsFalse(result.ContextLinkTrustedByDefault, fixture.FixtureId);
+            Assert.IsFalse(result.ApprovalExecutionAllowed, fixture.FixtureId);
+            Assert.IsFalse(result.StateMutationAllowed, fixture.FixtureId);
+            Assert.IsFalse(result.ProductActionAllowed, fixture.FixtureId);
+            Assert.IsFalse(result.ServiceRegistrationAllowed, fixture.FixtureId);
+            Assert.IsTrue(result.NoSideEffectProof.Passes, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void HumanReviewEvidenceContextLinkGuard_AllowsOnlyPreviewForValidAndWarningLinks()
+    {
+        var results = HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog();
+
+        AssertLinkDecision(results, "link.valid-evidence-context", HumanReviewEvidenceContextLinkDecision.AllowedPreviewOnly, HumanReviewEvidenceContextLinkIssueKind.None);
+        AssertLinkDecision(results, "link.fixture-only-evidence", HumanReviewEvidenceContextLinkDecision.WarningPreviewOnly, HumanReviewEvidenceContextLinkIssueKind.FixtureOnlyEvidenceNotProductionTrusted);
+        AssertLinkDecision(results, "link.context-requires-human-review", HumanReviewEvidenceContextLinkDecision.NeedsHumanReview, HumanReviewEvidenceContextLinkIssueKind.ContextRequiresHumanReview);
+        Assert.IsTrue(results.Single(result => result.FixtureId == "link.valid-evidence-context").AllowsApprovalPreview);
+        Assert.IsTrue(results.Single(result => result.FixtureId == "link.fixture-only-evidence").AllowsApprovalPreview);
+        Assert.IsTrue(results.Single(result => result.FixtureId == "link.context-requires-human-review").AllowsApprovalPreview);
+    }
+
+    [TestMethod]
+    public void HumanReviewEvidenceContextLinkGuard_BlocksMissingStaleExcludedUnknownAndMismatchLinks()
+    {
+        var results = HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog();
+
+        AssertLinkDecision(results, "link.missing-evidence", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.MissingEvidenceLink);
+        AssertLinkDecision(results, "link.missing-context", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.MissingContextLink);
+        AssertLinkDecision(results, "link.stale-context", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.StaleContextLink);
+        AssertLinkDecision(results, "link.excluded-context", HumanReviewEvidenceContextLinkDecision.Excluded, HumanReviewEvidenceContextLinkIssueKind.ExcludedContextLink);
+        AssertLinkDecision(results, "link.locked-context-no-review", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.LockedContextWithoutReview);
+        AssertLinkDecision(results, "link.evidence-context-mismatch", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.EvidenceContextMismatch);
+        AssertLinkDecision(results, "link.missing-confidence", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.MissingEvidenceConfidence);
+        AssertLinkDecision(results, "link.unknown-context-authority", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.UnknownContextAuthority);
+        AssertLinkDecision(results, "link.missing-context-freshness", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.MissingContextFreshness);
+    }
+
+    [TestMethod]
+    public void HumanReviewEvidenceContextLinkGuard_BlocksRiskContradictionRawSecretAndDisabledSources()
+    {
+        var results = HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog();
+
+        AssertLinkDecision(results, "link.unresolved-contradiction", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.UnresolvedContradictionLink);
+        AssertLinkDecision(results, "link.critical-risk", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.CriticalRiskLink);
+        AssertLinkDecision(results, "link.raw-payload-evidence", HumanReviewEvidenceContextLinkDecision.Excluded, HumanReviewEvidenceContextLinkIssueKind.RawPayloadLink);
+        AssertLinkDecision(results, "link.secret-like", HumanReviewEvidenceContextLinkDecision.Excluded, HumanReviewEvidenceContextLinkIssueKind.SecretLikeLink);
+        AssertLinkDecision(results, "link.provider-cloud-evidence-disabled", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.ProviderCloudDerivedWhileDisabled);
+        AssertLinkDecision(results, "link.semantic-context-disabled", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.SemanticVectorDerivedWhileDisabled);
+        AssertLinkDecision(results, "link.llm-rationale-disabled", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.LlmDerivedWhileDisabled);
+        AssertLinkDecision(results, "link.disabled-persistence-store", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.DisabledPersistenceStoreLink);
+        AssertLinkDecision(results, "link.durable-memory-disabled", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.DurableMemoryWhileDisabled);
+    }
+
+    [TestMethod]
+    public void HumanReviewEvidenceContextLinkGuard_BlocksInvalidUsageAndActionCounts()
+    {
+        var results = HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog();
+
+        AssertLinkDecision(results, "link.invalid-decision-option", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.InvalidDecisionOptionLink);
+        AssertLinkDecision(results, "link.invalid-candidate-action", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.InvalidCandidateActionLink);
+        AssertLinkDecision(results, "link.invalid-safe-next-step", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.InvalidSafeNextStepLink);
+        AssertLinkDecision(results, "link.duplicate-conflicting-source", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.DuplicateConflictingSourceKind);
+        AssertLinkDecision(results, "link.product-action-count", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.ProductActionCountNonZero);
+        AssertLinkDecision(results, "link.state-mutation-count", HumanReviewEvidenceContextLinkDecision.Blocked, HumanReviewEvidenceContextLinkIssueKind.StateMutationCountNonZero);
+    }
+
+    [TestMethod]
+    public void HumanReviewEvidenceContextLinkGuard_HasNoEvidenceContextApprovalOrProductionOverclaim()
+    {
+        var text = string.Join(
+            "\n",
+            HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog()
+                .Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}"));
+
+        var forbidden = new[]
+        {
+            "production" + "-ready",
+            "durable evidence created",
+            "context trusted by default",
+            "approval executed",
+            "approval state mutated",
+            "state mutation completed",
+            "approved and applied",
+            "provider call enabled",
+            "semantic search enabled",
+            "vector backend enabled",
+            "llm live enabled",
+            "durable memory active",
+            "memory persisted"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
     private static void AssertRiskDecision(
         IReadOnlyList<ApprovalRiskDecisionReadOnlyResult> results,
         string fixtureId,
@@ -311,6 +434,25 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
 
         Assert.AreEqual(expectedDecision, result.Decision, fixtureId);
         if (expectedIssue == ApprovalRiskDecisionReadOnlyIssueKind.None)
+        {
+            Assert.AreEqual(0, result.Issues.Count, fixtureId);
+        }
+        else
+        {
+            Assert.IsTrue(result.HasIssue(expectedIssue), fixtureId);
+        }
+    }
+
+    private static void AssertLinkDecision(
+        IReadOnlyList<HumanReviewEvidenceContextLinkResult> results,
+        string fixtureId,
+        HumanReviewEvidenceContextLinkDecision expectedDecision,
+        HumanReviewEvidenceContextLinkIssueKind expectedIssue)
+    {
+        var result = results.Single(item => item.FixtureId == fixtureId);
+
+        Assert.AreEqual(expectedDecision, result.Decision, fixtureId);
+        if (expectedIssue == HumanReviewEvidenceContextLinkIssueKind.None)
         {
             Assert.AreEqual(0, result.Issues.Count, fixtureId);
         }
