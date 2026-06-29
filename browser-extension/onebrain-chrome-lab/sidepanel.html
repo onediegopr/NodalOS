@@ -42,6 +42,7 @@
             <a href="#demoRunHistory">Historial</a>
             <a href="#demoScriptPanel">Guion demo</a>
             <a href="#browserSkillsWorkspace">Browser Skills</a>
+            <a href="#evidenceIntelligenceSurface">Evidence Intelligence</a>
             <a href="#demoTimeline">Timeline</a>
             <a href="#demoEvidencePanel">Evidencia</a>
             <a href="#demoTechnicalReport">Resumen</a>
@@ -499,6 +500,116 @@
               </div>
               <p class="browser-cdp-note">Solo lectura. Sin credenciales, sin resolver verificaciones, sin navegación externa y sin acciones peligrosas desde la UI.</p>
             </article>
+          </section>
+
+          <section id="evidenceIntelligenceSurface" class="evidence-intelligence-surface" aria-labelledby="evidenceIntelligenceTitle" data-eil-mount="evidence-intelligence.ui.read-only.mount.v1">
+            <div class="section-head evidence-intelligence-head">
+              <div>
+                <span class="mission-kicker">Evidence Intelligence</span>
+                <h2 id="evidenceIntelligenceTitle">Evidence Intelligence</h2>
+                <p id="eilSurfaceSummary">Read-only local evidence audit surface. Local fixture / local evidence only.</p>
+              </div>
+              <div class="evidence-intelligence-actions" aria-label="Evidence Intelligence read-only actions">
+                <button id="copyEilReportPreviewBtn" type="button">Copy report preview</button>
+              </div>
+            </div>
+
+            <div id="eilStatusBadges" class="evidence-intelligence-badges" aria-label="Evidence Intelligence status badges">
+              <span>READ_ONLY</span>
+              <span>LOCAL_ONLY</span>
+              <span>NO_RUNTIME</span>
+            </div>
+
+            <div class="evidence-intelligence-notices" aria-label="Evidence Intelligence safety notices">
+              <span>Semantic backend disabled</span>
+              <span>No runtime actions</span>
+              <span>No browser/CDP automation</span>
+              <span>No WCU live</span>
+              <span>No OCR live</span>
+              <span>No filesystem writes</span>
+              <span>No provider/cloud calls</span>
+              <span>Human approval required for any real-world action</span>
+            </div>
+
+            <div class="evidence-intelligence-grid">
+              <article>
+                <span>Evidence Index Summary</span>
+                <strong id="eilTotalEvidence">6 evidence items</strong>
+                <small id="eilEvidenceHealth">fresh: 5 / stale or unknown: 1 / low confidence: 0</small>
+              </article>
+              <article>
+                <span>Lexical search results</span>
+                <strong id="eilSearchResultCount">4 results</strong>
+                <small id="eilSearchQuery">query: button invoice Pagar</small>
+              </article>
+              <article>
+                <span>Claim scan verdict</span>
+                <strong id="eilClaimVerdict">SUPPORTED</strong>
+                <small id="eilClaimEvidence">support: ev.dom.invoice</small>
+              </article>
+              <article>
+                <span>Action scan verdict</span>
+                <strong id="eilActionVerdict">BLOCKED_BY_POLICY</strong>
+                <small id="eilActionReadiness">readiness blocks runtime: true</small>
+              </article>
+            </div>
+
+            <div class="evidence-intelligence-layout">
+              <article class="evidence-intelligence-panel">
+                <div class="section-head">
+                  <h3>Contradictions first</h3>
+                  <span class="mission-chip">read-only</span>
+                </div>
+                <ul id="eilContradictions" class="evidence-intelligence-list">
+                  <li>ev.uia.delete contradicts requested target Pagar.</li>
+                  <li>ev.policy.block blocks destructive or externally ambiguous action.</li>
+                </ul>
+              </article>
+
+              <article class="evidence-intelligence-panel">
+                <div class="section-head">
+                  <h3>Missing / stale / low-confidence evidence</h3>
+                  <span class="mission-chip">fixture-safe</span>
+                </div>
+                <ul id="eilEvidenceGaps" class="evidence-intelligence-list">
+                  <li>stale: ev.validation.stale</li>
+                  <li>missing approval evidence for real-world action.</li>
+                  <li>low confidence count: 0</li>
+                </ul>
+              </article>
+
+              <article class="evidence-intelligence-panel">
+                <div class="section-head">
+                  <h3>Typed evidence graph</h3>
+                  <span class="mission-chip">local graph</span>
+                </div>
+                <p id="eilGraphSummary">Typed evidence graph summarizes support, contradiction, policy and approval relations for read-only audit.</p>
+                <ul id="eilGraphEdges" class="evidence-intelligence-list">
+                  <li>ev.uia.delete contradicts_action action.pay-or-delete</li>
+                  <li>ev.policy.block policy_blocks action.pay-or-delete</li>
+                </ul>
+              </article>
+
+              <article class="evidence-intelligence-panel">
+                <div class="section-head">
+                  <h3>Action readiness matrix</h3>
+                  <span class="mission-chip">NO_RUNTIME</span>
+                </div>
+                <p id="eilSafeNextStep">Safe next step: Stop and resolve blocking evidence before any next step.</p>
+                <ul id="eilHumanActions" class="evidence-intelligence-list">
+                  <li>Human approval required for any real-world action.</li>
+                  <li>Review local evidence before changing runtime state.</li>
+                </ul>
+              </article>
+            </div>
+
+            <pre id="eilReportPreview" class="evidence-intelligence-report" aria-label="Evidence Intelligence report preview">Evidence Intelligence - READ_ONLY / LOCAL_ONLY / NO_RUNTIME
+Semantic backend disabled.
+No runtime actions. No browser/CDP automation. No WCU live. No OCR live.
+No filesystem writes. No provider/cloud calls.
+Claim scan: SUPPORTED.
+Action scan: BLOCKED_BY_POLICY.
+Safe next step: Stop and resolve blocking evidence before any next step.</pre>
           </section>
 
           <div class="mission-layout">

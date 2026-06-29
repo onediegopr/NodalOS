@@ -1522,6 +1522,109 @@ main {
   gap: 12px;
 }
 
+.evidence-intelligence-surface {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(102, 227, 196, 0.18);
+  border-radius: var(--nos-radius-card);
+  padding: 14px;
+  background:
+    linear-gradient(135deg, rgba(102, 227, 196, 0.08), rgba(134, 167, 255, 0.05)),
+    rgba(6, 10, 15, 0.56);
+}
+
+.evidence-intelligence-head {
+  align-items: start;
+}
+
+.evidence-intelligence-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.evidence-intelligence-badges,
+.evidence-intelligence-notices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.evidence-intelligence-badges span,
+.evidence-intelligence-notices span {
+  border: 1px solid rgba(159, 181, 204, 0.16);
+  border-radius: var(--nos-radius-control);
+  padding: 6px 8px;
+  background: rgba(11, 18, 26, 0.64);
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+}
+
+.evidence-intelligence-badges span {
+  border-color: rgba(102, 227, 196, 0.24);
+  color: #B9FFF0;
+  font-family: var(--nos-font-mono);
+  font-weight: 800;
+}
+
+.evidence-intelligence-grid,
+.evidence-intelligence-layout {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.evidence-intelligence-grid article,
+.evidence-intelligence-panel {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(159, 181, 204, 0.12);
+  border-radius: var(--nos-radius-card);
+  padding: 11px;
+  background: rgba(6, 10, 15, 0.42);
+}
+
+.evidence-intelligence-grid span,
+.evidence-intelligence-panel h3 {
+  color: var(--nos-color-text-muted);
+}
+
+.evidence-intelligence-grid strong {
+  overflow-wrap: anywhere;
+  font-family: var(--nos-font-mono);
+  font-size: 13px;
+}
+
+.evidence-intelligence-grid small,
+.evidence-intelligence-panel p,
+.evidence-intelligence-list {
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+}
+
+.evidence-intelligence-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.evidence-intelligence-report {
+  max-height: 240px;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid rgba(102, 227, 196, 0.16);
+  border-radius: var(--nos-radius-card);
+  padding: 12px;
+  background: rgba(3, 7, 10, 0.64);
+  color: #B9FFF0;
+  font-family: var(--nos-font-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
 .demo-log-list {
   display: grid;
   gap: 8px;
@@ -1606,6 +1709,8 @@ main {
   .mission-workbench,
   .workspace-status-grid,
   .workspace-summary-grid,
+  .evidence-intelligence-grid,
+  .evidence-intelligence-layout,
   .candidate-detail-grid,
   .browser-skill-status-grid,
   .browser-cdp-status-grid,

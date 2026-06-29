@@ -44,6 +44,72 @@ const CDP_BROWSER_SKILLS_SURFACE = {
   runtimeLaunchedFromUi: false,
   cdpLiveExecutedFromUi: false
 };
+const EIL_READ_ONLY_SURFACE = {
+  mountId: 'evidence-intelligence.ui.read-only.mount.v1',
+  route: '#evidenceIntelligenceSurface',
+  source: 'EvidenceIntelligenceReadOnlyPresenter.CreateFixture',
+  surfaceId: 'evidence-intelligence.read-only-surface.v1',
+  title: 'Evidence Intelligence',
+  statusBadges: ['READ_ONLY', 'LOCAL_ONLY', 'NO_RUNTIME'],
+  dataSource: 'deterministic local fixture',
+  semanticBackendStatus: 'Disabled',
+  semanticSearchAvailable: false,
+  lexicalFallbackIsReal: true,
+  readOnly: true,
+  localOnly: true,
+  runtimeEnabled: false,
+  actionExecutionEnabled: false,
+  browserCdpAutomationEnabled: false,
+  wcuLiveEnabled: false,
+  ocrLiveEnabled: false,
+  providerCloudEnabled: false,
+  durablePersistenceEnabled: false,
+  semanticVectorBackendEnabled: false,
+  filesystemWritesEnabled: false,
+  evidenceIndex: {
+    totalEvidenceItems: 6,
+    freshCount: 5,
+    staleOrUnknownCount: 1,
+    lowConfidenceCount: 0,
+    redactedCount: 1
+  },
+  lexicalSearch: {
+    query: 'button invoice Pagar',
+    resultCount: 4,
+    results: ['ev.uia.delete', 'ev.policy.block', 'ev.dom.invoice', 'ev.ocr.pay']
+  },
+  claimScan: {
+    verdict: 'SUPPORTED',
+    supportingEvidenceIds: ['ev.dom.invoice'],
+    contradictingEvidenceIds: [],
+    missingRequiredSourceTypes: []
+  },
+  actionScan: {
+    verdict: 'BLOCKED_BY_POLICY',
+    supportingEvidenceIds: ['ev.ocr.pay'],
+    contradictingEvidenceIds: ['ev.uia.delete', 'ev.policy.block'],
+    blockingReasons: ['Policy blocks destructive or externally ambiguous action.'],
+    requiredHumanActions: ['Human approval required for any real-world action.'],
+    safeNextStep: 'Stop and resolve blocking evidence before any next step.',
+    actionExecutionEnabled: false
+  },
+  graphSummary: {
+    edgeCount: 4,
+    topEdges: ['ev.uia.delete contradicts_action action.pay-or-delete', 'ev.policy.block policy_blocks action.pay-or-delete']
+  },
+  notices: [
+    'Read-only.',
+    'Local fixture / local evidence only.',
+    'Semantic backend disabled.',
+    'No runtime actions.',
+    'No browser/CDP automation.',
+    'No WCU live.',
+    'No OCR live.',
+    'No filesystem writes.',
+    'No provider/cloud calls.',
+    'Human approval required for any real-world action.'
+  ]
+};
 const WORKSPACE_STORE_KEY = 'nodal-os.workspaceUnderstanding.v1';
 const WORKSPACE_SCAN_LIMITS = {
   maxDepth: 4,
@@ -390,6 +456,16 @@ const el = {
   cdpFilesModifiedState: document.getElementById('cdpFilesModifiedState'),
   refreshCdpStatusBtn: document.getElementById('refreshCdpStatusBtn'),
   copyCdpBrowserSkillSummaryBtn: document.getElementById('copyCdpBrowserSkillSummaryBtn'),
+  copyEilReportPreviewBtn: document.getElementById('copyEilReportPreviewBtn'),
+  eilTotalEvidence: document.getElementById('eilTotalEvidence'),
+  eilEvidenceHealth: document.getElementById('eilEvidenceHealth'),
+  eilSearchResultCount: document.getElementById('eilSearchResultCount'),
+  eilSearchQuery: document.getElementById('eilSearchQuery'),
+  eilClaimVerdict: document.getElementById('eilClaimVerdict'),
+  eilClaimEvidence: document.getElementById('eilClaimEvidence'),
+  eilActionVerdict: document.getElementById('eilActionVerdict'),
+  eilActionReadiness: document.getElementById('eilActionReadiness'),
+  eilReportPreview: document.getElementById('eilReportPreview'),
   browserIndexedElements: document.getElementById('browserIndexedElements'),
   browserEvidencePanel: document.getElementById('browserEvidencePanel'),
   browserSnapshotHistory: document.getElementById('browserSnapshotHistory'),
@@ -545,6 +621,7 @@ function bindEvents() {
   el.copyBrowserSkillSummaryBtn.addEventListener('click', copyBrowserSkillSummary);
   el.refreshCdpStatusBtn.addEventListener('click', refreshCdpStatus);
   el.copyCdpBrowserSkillSummaryBtn.addEventListener('click', copyCdpBrowserSkillSummary);
+  el.copyEilReportPreviewBtn.addEventListener('click', copyEilReportPreview);
   el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
   el.openWorkspaceBtn.addEventListener('click', openWorkspaceDirectory);
   el.openWorkspaceFallbackBtn.addEventListener('click', openWorkspaceDirectoryInput);
@@ -910,6 +987,7 @@ function renderOperate() {
   renderDemoMissionControl();
   renderWorkspaceUnderstanding();
   renderBrowserSkills();
+  renderEvidenceIntelligenceSurface();
   el.operatorGoal.textContent = state.operator.goal || '-';
   el.operatorPlan.textContent = state.operator.planPreview
     ? `Plan preview: ${state.operator.planPreview.status || 'PlanDrafted'}`
@@ -4208,6 +4286,52 @@ function renderBrowserSkills() {
   renderBrowserEvidence(snapshot);
   renderBrowserSnapshotHistory();
   renderCdpBrowserSkillsSurface();
+}
+
+function renderEvidenceIntelligenceSurface() {
+  const surface = EIL_READ_ONLY_SURFACE;
+  el.eilTotalEvidence.textContent = `${surface.evidenceIndex.totalEvidenceItems} evidence items`;
+  el.eilEvidenceHealth.textContent = `fresh: ${surface.evidenceIndex.freshCount} / stale or unknown: ${surface.evidenceIndex.staleOrUnknownCount} / low confidence: ${surface.evidenceIndex.lowConfidenceCount}`;
+  el.eilSearchResultCount.textContent = `${surface.lexicalSearch.resultCount} results`;
+  el.eilSearchQuery.textContent = `query: ${surface.lexicalSearch.query}`;
+  el.eilClaimVerdict.textContent = surface.claimScan.verdict;
+  el.eilClaimEvidence.textContent = `support: ${surface.claimScan.supportingEvidenceIds.join(', ') || 'none'}`;
+  el.eilActionVerdict.textContent = surface.actionScan.verdict;
+  el.eilActionReadiness.textContent = `readiness blocks runtime: ${surface.runtimeEnabled === false}`;
+  el.eilReportPreview.textContent = buildEilReportPreview(surface);
+}
+
+function buildEilReportPreview(surface = EIL_READ_ONLY_SURFACE) {
+  return [
+    'Evidence Intelligence - READ_ONLY / LOCAL_ONLY / NO_RUNTIME',
+    `mount: ${surface.mountId}`,
+    `source: ${surface.source}`,
+    `dataSource: ${surface.dataSource}`,
+    `semanticBackendStatus: ${surface.semanticBackendStatus}`,
+    `semanticSearchAvailable: ${surface.semanticSearchAvailable}`,
+    `runtimeEnabled: ${surface.runtimeEnabled}`,
+    `actionExecutionEnabled: ${surface.actionExecutionEnabled}`,
+    `browserCdpAutomationEnabled: ${surface.browserCdpAutomationEnabled}`,
+    `wcuLiveEnabled: ${surface.wcuLiveEnabled}`,
+    `ocrLiveEnabled: ${surface.ocrLiveEnabled}`,
+    `providerCloudEnabled: ${surface.providerCloudEnabled}`,
+    `durablePersistenceEnabled: ${surface.durablePersistenceEnabled}`,
+    `semanticVectorBackendEnabled: ${surface.semanticVectorBackendEnabled}`,
+    `filesystemWritesEnabled: ${surface.filesystemWritesEnabled}`,
+    `claimScan: ${surface.claimScan.verdict}`,
+    `actionScan: ${surface.actionScan.verdict}`,
+    `contradictions: ${surface.actionScan.contradictingEvidenceIds.join(', ') || 'none'}`,
+    `safeNextStep: ${surface.actionScan.safeNextStep}`,
+    ...surface.notices
+  ].join('\n');
+}
+
+async function copyEilReportPreview() {
+  try {
+    await navigator.clipboard.writeText(buildEilReportPreview());
+  } catch (error) {
+    addLog('local', { kind: 'EvidenceIntelligenceCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
 }
 
 function renderCdpBrowserSkillsSurface() {
