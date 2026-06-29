@@ -12,6 +12,7 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
     private const string UiMountPath = "src/OneBrain.Core/Evidence/EvidenceIntelligenceReadOnlyUiMount.cs";
     private const string RecipesPersistenceDesignTestsPath = "tests/OneBrain.Recipes.Tests/EvidenceIntelligencePersistenceDesignTests.cs";
     private const string TimelineExportPath = "src/OneBrain.Core/Evidence/EvidenceIntelligenceTimelineExportReadOnly.cs";
+    private const string AuditDashboardPath = "src/OneBrain.Core/Evidence/EvidenceIntelligenceAuditDashboardReadOnly.cs";
 
     [TestMethod]
     public void PersistenceDesign_FailsClosedAndDoesNotEnableWrites()
@@ -586,6 +587,108 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
             "ProviderCloudTouched:" + " true",
             "PhysicalExportEnabled:" + " true",
             "production" + "-ready"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
+    public void AuditDashboard_DoesNotReadWriteExportPersistMigrateOrRun()
+    {
+        var dashboard = EvidenceIntelligenceAuditDashboardReadOnlyPresenter.CreateFixture();
+        var proof = dashboard.NoSideEffectProof;
+
+        Assert.IsTrue(dashboard.ReadOnly);
+        Assert.IsTrue(dashboard.Deterministic);
+        Assert.IsTrue(dashboard.FixtureSafe);
+        Assert.IsTrue(proof.Passes);
+        Assert.IsFalse(proof.FilesystemReadAttempted);
+        Assert.IsFalse(proof.FilesystemWriteAttempted);
+        Assert.IsFalse(proof.ExportFileCreated);
+        Assert.IsFalse(proof.DatabaseTouched);
+        Assert.IsFalse(proof.DurablePersistenceActive);
+        Assert.IsFalse(proof.MigrationRunnerStarted);
+        Assert.IsFalse(proof.MigrationExecuted);
+        Assert.IsFalse(proof.ProviderCloudTouched);
+        Assert.IsFalse(proof.SemanticVectorBackendTouched);
+        Assert.IsFalse(proof.RuntimeTouched);
+        Assert.IsFalse(proof.BrowserCdpTouched);
+        Assert.IsFalse(proof.WcuTouched);
+        Assert.IsFalse(proof.OcrTouched);
+        Assert.IsFalse(proof.ProductWriteFallbackUsed);
+    }
+
+    [TestMethod]
+    public void AuditDashboard_ExposesNoProductActionsOrActionButtons()
+    {
+        var dashboard = EvidenceIntelligenceAuditDashboardReadOnlyPresenter.CreateFixture();
+
+        Assert.IsFalse(dashboard.HasProductActions);
+        Assert.IsTrue(dashboard.Cards.All(card => card.AllowedActionsCount == 0));
+        Assert.IsFalse(dashboard.NoSideEffectProof.ProductActionCommandExposed);
+        Assert.IsFalse(dashboard.NoSideEffectProof.ProductActionButtonExposed);
+        Assert.IsTrue(dashboard.Gates.All(gate => !gate.RuntimeAllowed));
+        Assert.IsTrue(dashboard.Gates.All(gate => !gate.ReleaseAllowed));
+        Assert.AreEqual("0%", dashboard.RuntimeLiveReadiness);
+        Assert.AreEqual("NO-GO", dashboard.ReleaseCommercialDecision);
+    }
+
+    [TestMethod]
+    public void AuditDashboard_HasNoSecretRawPayloadOrProductionClaim()
+    {
+        var dashboard = EvidenceIntelligenceAuditDashboardReadOnlyPresenter.CreateFixture();
+        var text = dashboard.ReadOnlySummary;
+
+        Assert.IsFalse(text.Contains("sk-", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("Bearer" + " ", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("ghp_", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("AKIA", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("PRIVATE KEY", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("raw payload", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("export " + "completed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("action command exposed: True", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("action button exposed: True", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void AuditDashboard_SourceHasNoFilesystemExportDependencyRuntimeOrActionImplementation()
+    {
+        var source = ReadRepoText(AuditDashboardPath);
+        var forbidden = new[]
+        {
+            "File." + "Write",
+            "File." + "Read",
+            "Directory." + "CreateDirectory",
+            "FileStream",
+            "StreamWriter",
+            "HttpClient",
+            "WebSocket",
+            "SQLiteConnection",
+            "SqlConnection",
+            "DbContext",
+            "IDbConnection",
+            "PackageReference",
+            "Process." + "Start",
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "ExportFileCreated:" + " true",
+            "FilesystemWriteAttempted:" + " true",
+            "FilesystemReadAttempted:" + " true",
+            "DatabaseTouched:" + " true",
+            "MigrationRunnerStarted:" + " true",
+            "MigrationExecuted:" + " true",
+            "RuntimeTouched:" + " true",
+            "ProviderCloudTouched:" + " true",
+            "ProductActionCommandExposed:" + " true",
+            "ProductActionButtonExposed:" + " true",
+            "AllowedActionsCount: 1",
+            "production" + "-ready",
+            "dashboard action " + "center"
         };
 
         foreach (var term in forbidden)

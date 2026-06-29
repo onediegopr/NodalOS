@@ -384,3 +384,23 @@ The preview does not:
 - enable runtime/live/browser/CDP/WCU/OCR.
 
 Any future physical export requires a separate explicit hito, manual QA, no-side-effect audit, redaction proof and a clear filesystem-write review before implementation.
+
+## Addendum: Read-Only Audit Dashboard Surface
+
+Decision target: `GO_READ_ONLY_AUDIT_DASHBOARD_SURFACE_READY`
+
+The read-only audit dashboard is a fixture-safe aggregation surface for Fase C / EIL status. It consumes the existing read-only timeline export preview and disabled persistence guard statuses, then presents cards for design status, read/write scaffolds, hostile redaction coverage, dry-run migration planning, schema compatibility, release/runtime gates, blockers, warnings, debt and no-side-effect proof.
+
+The dashboard is a core presenter/model only. It does not mount new product UI, add buttons, register services, create files, read product filesystem data, write filesystem data, use a database, execute migrations, call provider/cloud/network, or enable runtime/live/browser/CDP/WCU/OCR.
+
+Dashboard policy:
+
+- all cards are read-only;
+- allowed product actions count is always `0`;
+- runtime/live readiness remains `0%`;
+- release/commercial decision remains `NO-GO`;
+- provider/cloud, filesystem, database, durable persistence and migration runner gates remain disabled;
+- blocked states are represented as audit evidence, not as executable tasks;
+- next safe step is a closeout audit, not implementation.
+
+This dashboard is not a release surface and does not authorize durable persistence, migration execution, export to filesystem or runtime automation. Any future visible product dashboard mount still requires separate manual QA and action-affordance review.
