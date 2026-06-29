@@ -310,3 +310,32 @@ Deterministic fixtures cover:
 - unsafe integrity hash plan.
 
 Any future migration work still requires an explicit hito, schema compatibility guards, hostile redaction coverage, manual approval requirements, no-side-effect proof, and a separate audit before any runner or durable store can be considered.
+
+## Addendum: Schema Compatibility Guards
+
+Decision target: `GO_EIL_LOCAL_PERSISTENCE_SCHEMA_COMPATIBILITY_GUARDS_READY`
+
+The schema compatibility guard is a design-only, fixture-safe contract that evaluates in-memory compatibility checks before any future durable persistence or migration runner can be considered. It does not parse files, read persisted data, create a database, execute migrations or register product services.
+
+The guard defines:
+
+- artifact kinds for evidence records, evidence sources, references, claim/action scans, graph nodes, graph edges, readiness snapshots, safe next steps, redaction metadata, integrity hash envelopes and migration plans;
+- issue kinds for unknown schema, unsupported future schema, downgrade attempts, incompatible field shape, missing required fields, deprecated fields, unknown enum values, graph/evidence/claim/action/readiness incompatibilities, redaction metadata issues, integrity hash issues and migration target incompatibility;
+- decisions for `CompatibleDesignOnly`, `Rejected` and `Blocked`;
+- status flags proving durable persistence, filesystem read/write, database, migration runner, migration execution, provider/cloud, semantic/vector, runtime and service registration remain disabled.
+
+Compatibility policy:
+
+- `v1` known compatible artifacts may be considered compatible for design-only planning.
+- Unknown schema versions block.
+- Unsupported future schema versions block.
+- Downgrade attempts block.
+- Missing required fields block.
+- Unknown enum values block.
+- Deprecated fields block until a future migration policy exists.
+- Graph, evidence, claim/action and readiness shape incompatibilities block.
+- Missing redaction metadata or unknown sensitivity blocks.
+- Missing integrity hash or pre-redaction hash blocks.
+- Migration target incompatibility blocks.
+
+No compatibility result may enable durable persistence. Any future store implementation still requires schema compatibility audit evidence, hostile redaction coverage, dry-run migration audit and a separate explicit hito.

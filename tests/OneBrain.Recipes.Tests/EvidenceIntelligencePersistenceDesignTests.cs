@@ -538,6 +538,129 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
         Assert.IsFalse(status.ServiceRegistrationEnabled);
     }
 
+    [TestMethod]
+    public void SchemaCompatibilityGuard_V1KnownCompatibleReturnsDesignOnlyWithoutSideEffects()
+    {
+        var check = EvidenceIntelligenceSchemaCompatibilityCheck.V1KnownCompatible();
+        var result = EvidenceIntelligenceSchemaCompatibilityGuard.Evaluate(check);
+
+        Assert.AreEqual(EvidenceIntelligenceSchemaCompatibilityDecision.CompatibleDesignOnly, result.Decision);
+        Assert.AreEqual(0, result.Issues.Count);
+        Assert.IsTrue(result.FailClosed);
+        Assert.IsTrue(result.MigrationCouldBePlannedDesignOnly);
+        Assert.IsFalse(result.DurablePersistenceAllowed);
+        Assert.IsFalse(result.FilesystemReadAttempted);
+        Assert.IsFalse(result.FilesystemWriteAttempted);
+        Assert.IsFalse(result.DatabaseTouched);
+        Assert.IsFalse(result.MigrationRunnerStarted);
+        Assert.IsFalse(result.MigrationExecuted);
+        Assert.IsFalse(result.ProviderCloudTouched);
+        Assert.IsFalse(result.SemanticVectorBackendTouched);
+        Assert.IsFalse(result.RuntimeTouched);
+        Assert.IsFalse(result.ProductWriteFallbackUsed);
+        Assert.IsTrue(result.Status.FailClosed);
+    }
+
+    [TestMethod]
+    public void SchemaCompatibilityFixtures_IncompatibleArtifactsBlockFailClosed()
+    {
+        var fixtures = CreateSchemaCompatibilityFixtures();
+
+        Assert.AreEqual(20, fixtures.Count);
+
+        foreach (var fixture in fixtures.Where(fixture => fixture.ExpectedDecision != EvidenceIntelligenceSchemaCompatibilityDecision.CompatibleDesignOnly))
+        {
+            var result = EvidenceIntelligenceSchemaCompatibilityGuard.Evaluate(fixture.Check);
+
+            Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixture.FixtureId);
+            Assert.IsTrue(result.FailClosed, fixture.FixtureId);
+            Assert.IsTrue(result.Issues.Any(issue => issue.Kind == fixture.ExpectedIssue), fixture.FixtureId);
+            Assert.AreEqual(fixture.ExpectedMigrationCouldBePlanned, result.MigrationCouldBePlannedDesignOnly, fixture.FixtureId);
+            Assert.IsFalse(result.DurablePersistenceAllowed, fixture.FixtureId);
+            Assert.IsFalse(result.FilesystemReadAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.FilesystemWriteAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.DatabaseTouched, fixture.FixtureId);
+            Assert.IsFalse(result.MigrationRunnerStarted, fixture.FixtureId);
+            Assert.IsFalse(result.MigrationExecuted, fixture.FixtureId);
+            Assert.IsFalse(result.ProviderCloudTouched, fixture.FixtureId);
+            Assert.IsFalse(result.SemanticVectorBackendTouched, fixture.FixtureId);
+            Assert.IsFalse(result.RuntimeTouched, fixture.FixtureId);
+            Assert.IsFalse(result.ProductWriteFallbackUsed, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void SchemaCompatibilityFixtures_CoverExpectedArtifactKindsAndIssues()
+    {
+        var fixtures = CreateSchemaCompatibilityFixtures();
+        var artifactKinds = fixtures.Select(fixture => fixture.Check.ArtifactKind).ToHashSet();
+        var issueKinds = fixtures.Select(fixture => fixture.Check.IssueKind).ToHashSet();
+
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceRecord,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceSource,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.ClaimScanSnapshot,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.ActionScanSnapshot,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceGraphNode,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceGraphEdge,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.ReadinessMatrixSnapshot,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.SafeNextStep,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.RedactionMetadata,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.IntegrityHashEnvelope,
+                EvidenceIntelligenceSchemaCompatibilityArtifactKind.MigrationPlan
+            }.ToList(),
+            artifactKinds.ToList());
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.None,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.MissingRequiredField,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.UnknownEnumValue,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.DeprecatedFieldPresent,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.ExtraUnknownFieldPolicy,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.UnknownSchemaVersion,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.FutureUnsupportedSchemaVersion,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.SchemaDowngradeAttempt,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphNodeMissingId,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphEdgeUnknownRelation,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.EvidenceItemMissingSource,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.ClaimScanMissingConfidence,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.ActionScanMissingRequiredAction,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.ReadinessMatrixUnknownState,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.SafeNextStepMissingGuard,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataMissing,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataUnknownSensitivity,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashMissing,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashBeforeRedaction,
+                EvidenceIntelligenceSchemaCompatibilityIssueKind.MigrationPlanTargetIncompatible
+            }.ToList(),
+            issueKinds.ToList());
+    }
+
+    [TestMethod]
+    public void SchemaCompatibilityStatus_RemainsDisabledAndFailClosed()
+    {
+        var status = EvidenceIntelligenceSchemaCompatibilityStatus.DisabledDesignOnlyGuard();
+
+        Assert.IsTrue(status.DesignExists);
+        Assert.IsTrue(status.GuardExists);
+        Assert.IsTrue(status.DesignOnly);
+        Assert.IsTrue(status.FailClosed);
+        Assert.AreEqual("SCHEMA_COMPATIBILITY_DESIGN_ONLY_FAIL_CLOSED", status.Mode);
+        Assert.IsFalse(status.DurablePersistenceEnabled);
+        Assert.IsFalse(status.FilesystemReadEnabled);
+        Assert.IsFalse(status.FilesystemWriteEnabled);
+        Assert.IsFalse(status.DatabaseEnabled);
+        Assert.IsFalse(status.MigrationRunnerEnabled);
+        Assert.IsFalse(status.MigrationExecutionEnabled);
+        Assert.IsFalse(status.ProviderCloudEnabled);
+        Assert.IsFalse(status.SemanticVectorBackendEnabled);
+        Assert.IsFalse(status.RuntimeEnabled);
+        Assert.IsFalse(status.ServiceRegistrationEnabled);
+    }
+
     private static IReadOnlyList<EvidenceIntelligenceReadStoreQuery> CreateReadStoreQueries() =>
     [
         EvidenceIntelligenceReadStoreQuery.ByEvidenceId("evidence.fixture.001"),
@@ -852,6 +975,151 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
             HasUnsafeIntegrityHashPlan: hasUnsafeIntegrityHashPlan,
             ExpectedEvidenceKind: "dry-run-migration-plan-fixture");
 
+    private static IReadOnlyList<SchemaCompatibilityFixture> CreateSchemaCompatibilityFixtures() =>
+    [
+        SchemaFixture(
+            "v1_known_compatible",
+            EvidenceIntelligenceSchemaCompatibilityCheck.V1KnownCompatible(),
+            EvidenceIntelligenceSchemaCompatibilityDecision.CompatibleDesignOnly,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.None,
+            migrationCouldBePlanned: true),
+        SchemaFixture(
+            "v1_missing_required_field",
+            Check("v1_missing_required_field", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceRecord, EvidenceIntelligenceSchemaCompatibilityIssueKind.MissingRequiredField, requiredFieldsPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.MissingRequiredField),
+        SchemaFixture(
+            "v1_unknown_enum_value",
+            Check("v1_unknown_enum_value", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceSource, EvidenceIntelligenceSchemaCompatibilityIssueKind.UnknownEnumValue, enumValuesKnown: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.UnknownEnumValue),
+        SchemaFixture(
+            "v1_deprecated_field_present",
+            Check("v1_deprecated_field_present", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceRecord, EvidenceIntelligenceSchemaCompatibilityIssueKind.DeprecatedFieldPresent, deprecatedFieldPresent: true),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.DeprecatedFieldPresent),
+        SchemaFixture(
+            "v1_extra_unknown_field_policy",
+            Check("v1_extra_unknown_field_policy", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceRecord, EvidenceIntelligenceSchemaCompatibilityIssueKind.ExtraUnknownFieldPolicy, extraUnknownFieldPresent: true),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.ExtraUnknownFieldPolicy),
+        SchemaFixture(
+            "unknown_schema_version",
+            Check("unknown_schema_version", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceRecord, EvidenceIntelligenceSchemaCompatibilityIssueKind.UnknownSchemaVersion, current: EvidenceIntelligenceSchemaVersionDescriptor.Unknown()),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.UnknownSchemaVersion),
+        SchemaFixture(
+            "future_unsupported_schema_version",
+            Check("future_unsupported_schema_version", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceRecord, EvidenceIntelligenceSchemaCompatibilityIssueKind.FutureUnsupportedSchemaVersion, target: EvidenceIntelligenceSchemaVersionDescriptor.FutureUnsupported(2, 0)),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.FutureUnsupportedSchemaVersion),
+        SchemaFixture(
+            "schema_downgrade_attempt",
+            Check("schema_downgrade_attempt", EvidenceIntelligenceSchemaCompatibilityArtifactKind.MigrationPlan, EvidenceIntelligenceSchemaCompatibilityIssueKind.SchemaDowngradeAttempt, target: new EvidenceIntelligenceSchemaVersionDescriptor(0, 9, IsKnown: true, IsSupported: true, Label: "eil.local-evidence.schema.v0.9.downgrade-blocked")),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.SchemaDowngradeAttempt),
+        SchemaFixture(
+            "graph_node_missing_id",
+            Check("graph_node_missing_id", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceGraphNode, EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphNodeMissingId, requiredFieldsPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphNodeMissingId),
+        SchemaFixture(
+            "graph_edge_unknown_relation",
+            Check("graph_edge_unknown_relation", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceGraphEdge, EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphEdgeUnknownRelation, enumValuesKnown: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphEdgeUnknownRelation),
+        SchemaFixture(
+            "evidence_item_missing_source",
+            Check("evidence_item_missing_source", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceSource, EvidenceIntelligenceSchemaCompatibilityIssueKind.EvidenceItemMissingSource, requiredFieldsPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.EvidenceItemMissingSource),
+        SchemaFixture(
+            "claim_scan_missing_confidence",
+            Check("claim_scan_missing_confidence", EvidenceIntelligenceSchemaCompatibilityArtifactKind.ClaimScanSnapshot, EvidenceIntelligenceSchemaCompatibilityIssueKind.ClaimScanMissingConfidence, requiredFieldsPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.ClaimScanMissingConfidence),
+        SchemaFixture(
+            "action_scan_missing_required_action",
+            Check("action_scan_missing_required_action", EvidenceIntelligenceSchemaCompatibilityArtifactKind.ActionScanSnapshot, EvidenceIntelligenceSchemaCompatibilityIssueKind.ActionScanMissingRequiredAction, requiredFieldsPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.ActionScanMissingRequiredAction),
+        SchemaFixture(
+            "readiness_matrix_unknown_state",
+            Check("readiness_matrix_unknown_state", EvidenceIntelligenceSchemaCompatibilityArtifactKind.ReadinessMatrixSnapshot, EvidenceIntelligenceSchemaCompatibilityIssueKind.ReadinessMatrixUnknownState, enumValuesKnown: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.ReadinessMatrixUnknownState),
+        SchemaFixture(
+            "safe_next_step_missing_guard",
+            Check("safe_next_step_missing_guard", EvidenceIntelligenceSchemaCompatibilityArtifactKind.SafeNextStep, EvidenceIntelligenceSchemaCompatibilityIssueKind.SafeNextStepMissingGuard, requiredFieldsPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.SafeNextStepMissingGuard),
+        SchemaFixture(
+            "redaction_metadata_missing",
+            Check("redaction_metadata_missing", EvidenceIntelligenceSchemaCompatibilityArtifactKind.RedactionMetadata, EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataMissing, redactionMetadataPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataMissing),
+        SchemaFixture(
+            "redaction_metadata_unknown_sensitivity",
+            Check("redaction_metadata_unknown_sensitivity", EvidenceIntelligenceSchemaCompatibilityArtifactKind.RedactionMetadata, EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataUnknownSensitivity, redactionSensitivityKnown: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataUnknownSensitivity),
+        SchemaFixture(
+            "integrity_hash_missing",
+            Check("integrity_hash_missing", EvidenceIntelligenceSchemaCompatibilityArtifactKind.IntegrityHashEnvelope, EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashMissing, integrityHashPresent: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashMissing),
+        SchemaFixture(
+            "integrity_hash_before_redaction",
+            Check("integrity_hash_before_redaction", EvidenceIntelligenceSchemaCompatibilityArtifactKind.IntegrityHashEnvelope, EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashBeforeRedaction, integrityHashAfterRedaction: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashBeforeRedaction),
+        SchemaFixture(
+            "migration_plan_target_incompatible",
+            Check("migration_plan_target_incompatible", EvidenceIntelligenceSchemaCompatibilityArtifactKind.MigrationPlan, EvidenceIntelligenceSchemaCompatibilityIssueKind.MigrationPlanTargetIncompatible, migrationTargetCompatible: false),
+            EvidenceIntelligenceSchemaCompatibilityDecision.Blocked,
+            EvidenceIntelligenceSchemaCompatibilityIssueKind.MigrationPlanTargetIncompatible)
+    ];
+
+    private static SchemaCompatibilityFixture SchemaFixture(
+        string fixtureId,
+        EvidenceIntelligenceSchemaCompatibilityCheck check,
+        EvidenceIntelligenceSchemaCompatibilityDecision expectedDecision,
+        EvidenceIntelligenceSchemaCompatibilityIssueKind expectedIssue,
+        bool migrationCouldBePlanned = false) =>
+        new(fixtureId, check, expectedDecision, expectedIssue, migrationCouldBePlanned, DurablePersistenceAllowed: false);
+
+    private static EvidenceIntelligenceSchemaCompatibilityCheck Check(
+        string checkId,
+        EvidenceIntelligenceSchemaCompatibilityArtifactKind artifactKind,
+        EvidenceIntelligenceSchemaCompatibilityIssueKind issueKind,
+        EvidenceIntelligenceSchemaVersionDescriptor? current = null,
+        EvidenceIntelligenceSchemaVersionDescriptor? target = null,
+        bool requiredFieldsPresent = true,
+        bool enumValuesKnown = true,
+        bool deprecatedFieldPresent = false,
+        bool extraUnknownFieldPresent = false,
+        bool redactionMetadataPresent = true,
+        bool redactionSensitivityKnown = true,
+        bool integrityHashPresent = true,
+        bool integrityHashAfterRedaction = true,
+        bool migrationTargetCompatible = true) =>
+        new(
+            CheckId: checkId,
+            CurrentSchemaVersion: current ?? EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            TargetSchemaVersion: target ?? EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            ArtifactKind: artifactKind,
+            IssueKind: issueKind,
+            RequiredFieldsPresent: requiredFieldsPresent,
+            EnumValuesKnown: enumValuesKnown,
+            DeprecatedFieldPresent: deprecatedFieldPresent,
+            ExtraUnknownFieldPresent: extraUnknownFieldPresent,
+            RedactionMetadataPresent: redactionMetadataPresent,
+            RedactionSensitivityKnown: redactionSensitivityKnown,
+            IntegrityHashPresent: integrityHashPresent,
+            IntegrityHashAfterRedaction: integrityHashAfterRedaction,
+            MigrationTargetCompatible: migrationTargetCompatible,
+            DurablePersistenceAllowed: false);
+
     private sealed record HostileRedactionFixture(
         string FixtureId,
         string Category,
@@ -870,4 +1138,12 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
         EvidenceIntelligenceDryRunMigrationPlan Plan,
         EvidenceIntelligenceDryRunMigrationDecision ExpectedDecision,
         EvidenceIntelligenceDryRunMigrationBlockerCode? ExpectedBlocker);
+
+    private sealed record SchemaCompatibilityFixture(
+        string FixtureId,
+        EvidenceIntelligenceSchemaCompatibilityCheck Check,
+        EvidenceIntelligenceSchemaCompatibilityDecision ExpectedDecision,
+        EvidenceIntelligenceSchemaCompatibilityIssueKind ExpectedIssue,
+        bool ExpectedMigrationCouldBePlanned,
+        bool DurablePersistenceAllowed);
 }

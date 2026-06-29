@@ -410,6 +410,127 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         }
     }
 
+    [TestMethod]
+    public void SchemaCompatibilityGuard_DoesNotExecuteTouchFilesystemDatabaseOrRunner()
+    {
+        var check = new EvidenceIntelligenceSchemaCompatibilityCheck(
+            CheckId: "safety.schema-compatibility-dangerous-fixture",
+            CurrentSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.Unknown(),
+            TargetSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.FutureUnsupported(2, 0),
+            ArtifactKind: EvidenceIntelligenceSchemaCompatibilityArtifactKind.MigrationPlan,
+            IssueKind: EvidenceIntelligenceSchemaCompatibilityIssueKind.MigrationPlanTargetIncompatible,
+            RequiredFieldsPresent: false,
+            EnumValuesKnown: false,
+            DeprecatedFieldPresent: true,
+            ExtraUnknownFieldPresent: true,
+            RedactionMetadataPresent: false,
+            RedactionSensitivityKnown: false,
+            IntegrityHashPresent: false,
+            IntegrityHashAfterRedaction: false,
+            MigrationTargetCompatible: false,
+            DurablePersistenceAllowed: bool.Parse("True"));
+
+        var result = EvidenceIntelligenceSchemaCompatibilityGuard.Evaluate(check);
+
+        Assert.AreEqual(EvidenceIntelligenceSchemaCompatibilityDecision.Blocked, result.Decision);
+        Assert.IsTrue(result.FailClosed);
+        Assert.IsFalse(result.MigrationCouldBePlannedDesignOnly);
+        Assert.IsFalse(result.DurablePersistenceAllowed);
+        Assert.IsFalse(result.FilesystemReadAttempted);
+        Assert.IsFalse(result.FilesystemWriteAttempted);
+        Assert.IsFalse(result.DatabaseTouched);
+        Assert.IsFalse(result.MigrationRunnerStarted);
+        Assert.IsFalse(result.MigrationExecuted);
+        Assert.IsFalse(result.ProviderCloudTouched);
+        Assert.IsFalse(result.SemanticVectorBackendTouched);
+        Assert.IsFalse(result.RuntimeTouched);
+        Assert.IsFalse(result.ProductWriteFallbackUsed);
+        Assert.IsTrue(result.Issues.Any(issue => issue.Kind == EvidenceIntelligenceSchemaCompatibilityIssueKind.UnknownSchemaVersion));
+        Assert.IsTrue(result.Issues.Any(issue => issue.Kind == EvidenceIntelligenceSchemaCompatibilityIssueKind.FutureUnsupportedSchemaVersion));
+        Assert.IsTrue(result.Issues.Any(issue => issue.Kind == EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataMissing));
+        Assert.IsTrue(result.Issues.Any(issue => issue.Kind == EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashBeforeRedaction));
+    }
+
+    [TestMethod]
+    public void SchemaCompatibilityGuard_BlocksRedactionIntegrityGraphAndReadinessIncompatibilities()
+    {
+        var checks = new[]
+        {
+            Check("safety.graph-node-missing-id", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceGraphNode, EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphNodeMissingId),
+            Check("safety.graph-edge-unknown-relation", EvidenceIntelligenceSchemaCompatibilityArtifactKind.EvidenceGraphEdge, EvidenceIntelligenceSchemaCompatibilityIssueKind.GraphEdgeUnknownRelation),
+            Check("safety.readiness-unknown-state", EvidenceIntelligenceSchemaCompatibilityArtifactKind.ReadinessMatrixSnapshot, EvidenceIntelligenceSchemaCompatibilityIssueKind.ReadinessMatrixUnknownState),
+            Check("safety.redaction-unknown-sensitivity", EvidenceIntelligenceSchemaCompatibilityArtifactKind.RedactionMetadata, EvidenceIntelligenceSchemaCompatibilityIssueKind.RedactionMetadataUnknownSensitivity),
+            Check("safety.integrity-before-redaction", EvidenceIntelligenceSchemaCompatibilityArtifactKind.IntegrityHashEnvelope, EvidenceIntelligenceSchemaCompatibilityIssueKind.IntegrityHashBeforeRedaction)
+        };
+
+        foreach (var check in checks)
+        {
+            var result = EvidenceIntelligenceSchemaCompatibilityGuard.Evaluate(check);
+
+            Assert.AreEqual(EvidenceIntelligenceSchemaCompatibilityDecision.Blocked, result.Decision, check.CheckId);
+            Assert.IsTrue(result.FailClosed, check.CheckId);
+            Assert.IsFalse(result.MigrationCouldBePlannedDesignOnly, check.CheckId);
+            Assert.IsFalse(result.DurablePersistenceAllowed, check.CheckId);
+            Assert.IsFalse(result.MigrationExecuted, check.CheckId);
+            Assert.IsFalse(result.FilesystemReadAttempted, check.CheckId);
+            Assert.IsFalse(result.FilesystemWriteAttempted, check.CheckId);
+            Assert.IsFalse(result.DatabaseTouched, check.CheckId);
+            Assert.IsTrue(result.Issues.Any(issue => issue.Kind == check.IssueKind), check.CheckId);
+        }
+    }
+
+    [TestMethod]
+    public void SchemaCompatibilityGuard_SourceHasNoPersistenceRuntimeOrCompatibilityOverclaim()
+    {
+        var source = ReadRepoText(PersistenceDesignPath) + ReadRepoText(RecipesPersistenceDesignTestsPath);
+        var forbidden = new[]
+        {
+            "DurablePersistenceEnabled:" + " true",
+            "FilesystemReadEnabled:" + " true",
+            "FilesystemWriteEnabled:" + " true",
+            "DatabaseEnabled:" + " true",
+            "MigrationRunnerEnabled:" + " true",
+            "MigrationExecutionEnabled:" + " true",
+            "MigrationExecuted:" + " true",
+            "DurablePersistenceAllowed:" + " true",
+            "FilesystemReadAttempted:" + " true",
+            "FilesystemWriteAttempted:" + " true",
+            "DatabaseTouched:" + " true",
+            "ProviderCloudTouched:" + " true",
+            "SemanticVectorBackendTouched:" + " true",
+            "RuntimeTouched:" + " true",
+            "schema compatibility complete",
+            "compatible with durable persistence",
+            "production" + "-ready"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    private static EvidenceIntelligenceSchemaCompatibilityCheck Check(
+        string checkId,
+        EvidenceIntelligenceSchemaCompatibilityArtifactKind artifactKind,
+        EvidenceIntelligenceSchemaCompatibilityIssueKind issueKind) =>
+        new(
+            CheckId: checkId,
+            CurrentSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            TargetSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            ArtifactKind: artifactKind,
+            IssueKind: issueKind,
+            RequiredFieldsPresent: true,
+            EnumValuesKnown: true,
+            DeprecatedFieldPresent: false,
+            ExtraUnknownFieldPresent: false,
+            RedactionMetadataPresent: true,
+            RedactionSensitivityKnown: true,
+            IntegrityHashPresent: true,
+            IntegrityHashAfterRedaction: true,
+            MigrationTargetCompatible: true,
+            DurablePersistenceAllowed: false);
+
     private static string ReadRepoText(string relativePath) =>
         File.ReadAllText(Path.Combine(RepoRoot(), relativePath));
 
