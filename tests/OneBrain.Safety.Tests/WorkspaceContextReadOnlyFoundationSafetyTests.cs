@@ -586,6 +586,143 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         }
     }
 
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_SourceHasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
+    {
+        var source = ReadRepoText(FoundationPath);
+        var forbidden = new[]
+        {
+            "File.Read",
+            "File.Write",
+            "FileStream",
+            "Directory.",
+            "Directory.CreateDirectory",
+            "Path.",
+            "Microsoft.Data.Sqlite",
+            "SQLiteConnection",
+            "SqlConnection",
+            "DbContext",
+            "IDbConnection",
+            "HttpClient",
+            "WebSocket",
+            "Process.Start",
+            "ServiceCollection",
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "OpenAI",
+            "EmbeddingClient",
+            "VectorStore",
+            "KernelMemory"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_AllSectionsPreserveNoSideEffectProofAndNoActions()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+
+        Assert.IsTrue(surface.NoSideEffectProof.Passes);
+        Assert.AreEqual(0, surface.ProductActionsCount);
+        Assert.AreEqual(0, surface.ExportActionsCount);
+        foreach (var section in surface.Sections)
+        {
+            var proof = section.NoSideEffectProof;
+
+            Assert.IsTrue(proof.Passes, section.SectionId);
+            Assert.AreEqual(0, section.ProductActionsCount, section.SectionId);
+            Assert.AreEqual(0, section.ExportActionsCount, section.SectionId);
+            Assert.IsFalse(proof.WorkspaceFilesystemReadAttempted, section.SectionId);
+            Assert.IsFalse(proof.FilesystemWriteAttempted, section.SectionId);
+            Assert.IsFalse(proof.DatabaseTouched, section.SectionId);
+            Assert.IsFalse(proof.DurablePersistenceActive, section.SectionId);
+            Assert.IsFalse(proof.DurableMemoryActive, section.SectionId);
+            Assert.IsFalse(proof.VectorSemanticBackendTouched, section.SectionId);
+            Assert.IsFalse(proof.LlmProviderTouched, section.SectionId);
+            Assert.IsFalse(proof.ProviderCloudTouched, section.SectionId);
+            Assert.IsFalse(proof.MigrationRunnerStarted, section.SectionId);
+            Assert.IsFalse(proof.MigrationExecuted, section.SectionId);
+            Assert.IsFalse(proof.RuntimeTouched, section.SectionId);
+            Assert.IsFalse(proof.BrowserCdpTouched, section.SectionId);
+            Assert.IsFalse(proof.WcuTouched, section.SectionId);
+            Assert.IsFalse(proof.OcrTouched, section.SectionId);
+            Assert.IsFalse(proof.ProductActionExposed, section.SectionId);
+            Assert.IsFalse(proof.ProductServiceRegistered, section.SectionId);
+        }
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_DisablesRuntimeProviderSemanticDurableMemoryAndExport()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var proof = surface.NoSideEffectProof;
+
+        Assert.IsFalse(surface.HasDurableMemory);
+        Assert.IsFalse(proof.WorkspaceFilesystemReadAttempted);
+        Assert.IsFalse(proof.FilesystemWriteAttempted);
+        Assert.IsFalse(proof.DatabaseTouched);
+        Assert.IsFalse(proof.DurablePersistenceActive);
+        Assert.IsFalse(proof.DurableMemoryActive);
+        Assert.IsFalse(proof.VectorSemanticBackendTouched);
+        Assert.IsFalse(proof.LlmProviderTouched);
+        Assert.IsFalse(proof.ProviderCloudTouched);
+        Assert.IsFalse(proof.MigrationRunnerStarted);
+        Assert.IsFalse(proof.MigrationExecuted);
+        Assert.IsFalse(proof.RuntimeTouched);
+        Assert.IsFalse(proof.BrowserCdpTouched);
+        Assert.IsFalse(proof.WcuTouched);
+        Assert.IsFalse(proof.OcrTouched);
+        Assert.IsTrue(surface.DisabledNotices.Any(notice => notice.Contains("Provider/cloud", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.DisabledNotices.Any(notice => notice.Contains("Semantic/vector", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.DisabledNotices.Any(notice => notice.Contains("Durable memory", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.DisabledNotices.Any(notice => notice.Contains("Export actions disabled", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_HasNoSurfaceContextMemoryExportOrProductionOverclaim()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            surface.ReadOnlySummary,
+            string.Join("\n", surface.GuardSummaries),
+            string.Join("\n", surface.CandidateSummaries),
+            string.Join("\n", surface.DisabledNotices),
+            string.Join("\n", surface.Sections.Select(section => $"{section.SectionId} {section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")));
+
+        var forbidden = new[]
+        {
+            "production" + "-ready",
+            "candidate promoted",
+            "candidate persisted",
+            "durable memory enabled",
+            "durable memory active",
+            "memory persisted",
+            "risk is decision",
+            "semantic search enabled",
+            "vector backend enabled",
+            "provider call enabled",
+            "workspace scan completed",
+            "runtime action enabled",
+            "live automation enabled",
+            "filesystem indexed",
+            "action command exposed",
+            "product action exposed",
+            "export file created",
+            "export written"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
     private static void AssertBlocked(
         IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> results,
         string fixtureId,

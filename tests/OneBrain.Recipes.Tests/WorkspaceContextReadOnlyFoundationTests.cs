@@ -599,4 +599,114 @@ public sealed class WorkspaceContextReadOnlyFoundationTests
         Assert.IsFalse(firstText.Contains("risk is decision", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(firstText.Contains("contradiction resolved automatically", StringComparison.OrdinalIgnoreCase));
     }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_IsReadOnlyDeterministicFixtureSafeAndActionless()
+    {
+        var first = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var second = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+
+        Assert.IsTrue(first.ReadOnly);
+        Assert.IsTrue(first.Deterministic);
+        Assert.IsTrue(first.FixtureSafe);
+        Assert.IsTrue(first.NoSideEffectProof.Passes);
+        Assert.AreEqual("READ_ONLY_FIXTURE_SAFE_NO_ACTIONS_NO_EXPORT", first.Mode);
+        Assert.AreEqual(first.ReadOnlySummary, second.ReadOnlySummary);
+        Assert.AreEqual(0, first.ProductActionsCount);
+        Assert.AreEqual(0, first.ExportActionsCount);
+        Assert.IsFalse(first.HasDurableMemory);
+        Assert.IsTrue(first.Sections.All(section => section.NoSideEffectProof.Passes));
+        Assert.IsTrue(first.Sections.All(section => section.ProductActionsCount == 0));
+        Assert.IsTrue(first.Sections.All(section => section.ExportActionsCount == 0));
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_ContainsMinimumSections()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var ids = surface.Sections.Select(section => section.SectionId).ToHashSet(StringComparer.Ordinal);
+
+        Assert.AreEqual(24, surface.Sections.Count);
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                "context.packet.executive-summary",
+                "workspace.identity.fixture",
+                "selected.context",
+                "locked.context",
+                "excluded.context",
+                "authority.freshness.guard.summary",
+                "selection.lock.exclusion.guard.summary",
+                "memory.candidate.guard.summary",
+                "contradiction.candidates",
+                "risk.candidates",
+                "decision.candidates",
+                "claim.candidates",
+                "action.candidates",
+                "safe.next.step.status",
+                "human.review.requirements",
+                "missing.stale.context.warnings",
+                "blocked.context.candidate.list",
+                "provider.cloud.disabled",
+                "semantic.vector.disabled",
+                "durable.memory.disabled",
+                "runtime.live.disabled",
+                "no.side.effect.proof",
+                "documented.debt",
+                "next.recommended.block"
+            },
+            ids.ToArray());
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_ShowsContextGuardAndCandidateSummaries()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+
+        Assert.IsTrue(surface.Packet.SelectedContext.Count > 0);
+        Assert.IsTrue(surface.Packet.LockedContext.Count > 0);
+        Assert.IsTrue(surface.Packet.ExcludedContext.Count > 0);
+        Assert.IsTrue(surface.GuardSummaries.Any(summary => summary.Contains("Authority/freshness fixtures: 20", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.GuardSummaries.Any(summary => summary.Contains("Selection/lock/exclusion fixtures: 22", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.GuardSummaries.Any(summary => summary.Contains("Memory candidate fixtures: 24", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.CandidateSummaries.Any(summary => summary.Contains("Candidate is not memory", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.HumanReviewRequirements.Count > 0);
+        Assert.IsTrue(surface.Blockers.Count > 0);
+        Assert.IsTrue(surface.Warnings.Count > 0);
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_IncludesDisabledCapabilityNotices()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var text = string.Join("\n", surface.DisabledNotices.Concat(surface.Sections.SelectMany(section => section.Blockers)));
+
+        StringAssert.Contains(text, "Provider/cloud");
+        StringAssert.Contains(text, "Semantic/vector");
+        StringAssert.Contains(text, "Durable memory");
+        StringAssert.Contains(text, "Runtime/live");
+        Assert.IsTrue(surface.Sections.Any(section => section.SectionId == "provider.cloud.disabled" && section.Status == WorkspaceContextItemStatus.Disabled));
+        Assert.IsTrue(surface.Sections.Any(section => section.SectionId == "semantic.vector.disabled" && section.Status == WorkspaceContextItemStatus.Disabled));
+        Assert.IsTrue(surface.Sections.Any(section => section.SectionId == "durable.memory.disabled" && section.Status == WorkspaceContextItemStatus.Disabled));
+        Assert.IsTrue(surface.Sections.Any(section => section.SectionId == "runtime.live.disabled" && section.Status == WorkspaceContextItemStatus.Disabled));
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketSurface_DoesNotPromoteCandidatesOrClaimProductionReadiness()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            surface.ReadOnlySummary,
+            string.Join("\n", surface.GuardSummaries),
+            string.Join("\n", surface.CandidateSummaries),
+            string.Join("\n", surface.Sections.Select(section => $"{section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")));
+
+        Assert.IsFalse(text.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("candidate promoted", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("memory persisted", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("risk is decision", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("export file created", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("action command", StringComparison.OrdinalIgnoreCase));
+    }
 }

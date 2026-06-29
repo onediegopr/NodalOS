@@ -528,6 +528,53 @@ public sealed record WorkspaceContextPacketReadOnly(
     public bool HasProductActions => NoSideEffectProof.ProductActionExposed;
 }
 
+public enum WorkspaceContextPacketSurfaceSeverity
+{
+    Info,
+    Warning,
+    Blocked,
+    Disabled,
+    Deferred
+}
+
+public sealed record WorkspaceContextPacketSurfaceSection(
+    string SectionId,
+    string Title,
+    WorkspaceContextItemStatus Status,
+    WorkspaceContextPacketSurfaceSeverity Severity,
+    WorkspaceContextSourceKind Source,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> Blockers,
+    int ProductActionsCount,
+    int ExportActionsCount,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof);
+
+public sealed record WorkspaceContextPacketSurfaceReadOnly(
+    string SurfaceId,
+    string Title,
+    string Mode,
+    string SourceLabel,
+    WorkspaceContextPacketReadOnly Packet,
+    IReadOnlyList<WorkspaceContextPacketSurfaceSection> Sections,
+    IReadOnlyList<string> GuardSummaries,
+    IReadOnlyList<string> CandidateSummaries,
+    IReadOnlyList<string> HumanReviewRequirements,
+    IReadOnlyList<string> DisabledNotices,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> Blockers,
+    string NextRecommendedBlock,
+    string ReadOnlySummary,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof)
+{
+    public bool ReadOnly => NoSideEffectProof.ReadOnly;
+    public bool Deterministic => NoSideEffectProof.Deterministic;
+    public bool FixtureSafe => NoSideEffectProof.FixtureSafe;
+    public int ProductActionsCount => Sections.Sum(section => section.ProductActionsCount);
+    public int ExportActionsCount => Sections.Sum(section => section.ExportActionsCount);
+    public bool HasDurableMemory => Packet.HasDurableMemory || NoSideEffectProof.DurableMemoryActive;
+}
+
 public static class WorkspaceContextAuthorityFreshnessGuard
 {
     public static IReadOnlyList<WorkspaceContextAuthorityFreshnessFixture> CreateFixtureCatalog()
@@ -1270,6 +1317,175 @@ public static class WorkspaceContextReadOnlyPresenter
         lines.Select(Sanitize).ToList();
 
     private static string Sanitize(string value) =>
+        value
+            .Replace("\r", " ", StringComparison.Ordinal)
+            .Replace("\n", " ", StringComparison.Ordinal)
+            .Replace("raw payload", "excluded payload", StringComparison.OrdinalIgnoreCase)
+            .Replace("secret", "sensitive value", StringComparison.OrdinalIgnoreCase);
+}
+
+public static class WorkspaceContextPacketReadOnlySurfacePresenter
+{
+    public static WorkspaceContextPacketSurfaceReadOnly CreateFixture()
+    {
+        var packet = WorkspaceContextReadOnlyPresenter.CreateFixture();
+        var proof = WorkspaceContextNoSideEffectProof.FixtureReadOnly();
+        var authority = WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog();
+        var selection = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
+        var memory = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
+        var sections = Sections(packet, authority, selection, memory, proof);
+        var guardSummaries = GuardSummaries(authority, selection, memory);
+        var candidateSummaries = CandidateSummaries(packet, memory);
+        var humanReview = HumanReviewRequirements(authority, selection, memory, packet);
+        var disabled = DisabledNotices(packet);
+        var warnings = sections.SelectMany(section => section.Warnings).Concat(packet.Warnings).Distinct().ToList();
+        var blockers = sections.SelectMany(section => section.Blockers).Concat(packet.Blockers).Distinct().ToList();
+
+        return new WorkspaceContextPacketSurfaceReadOnly(
+            SurfaceId: "phase-d.workspace-context.packet.surface.read-only.fixture.v1",
+            Title: "Workspace Context Packet Read-Only Surface",
+            Mode: "READ_ONLY_FIXTURE_SAFE_NO_ACTIONS_NO_EXPORT",
+            SourceLabel: "WorkspaceContextReadOnlyPresenter.CreateFixture",
+            Packet: packet,
+            Sections: sections,
+            GuardSummaries: guardSummaries,
+            CandidateSummaries: candidateSummaries,
+            HumanReviewRequirements: humanReview,
+            DisabledNotices: disabled,
+            Warnings: warnings,
+            Blockers: blockers,
+            NextRecommendedBlock: "PHASE_D_CONTEXT_PACKET_READ_ONLY_EXPORT_PREVIEW",
+            ReadOnlySummary: Summary(packet, sections, guardSummaries, candidateSummaries),
+            NoSideEffectProof: proof);
+    }
+
+    private static IReadOnlyList<WorkspaceContextPacketSurfaceSection> Sections(
+        WorkspaceContextPacketReadOnly packet,
+        IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> authority,
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> selection,
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> memory,
+        WorkspaceContextNoSideEffectProof proof) =>
+    [
+        Section("context.packet.executive-summary", "Context packet executive summary", WorkspaceContextItemStatus.Ready, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.Fixture, [], packet.Warnings, [], proof),
+        Section("workspace.identity.fixture", "Workspace identity fixture", WorkspaceContextItemStatus.Ready, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.Fixture, [], [], [], proof),
+        Section("selected.context", "Selected context", WorkspaceContextItemStatus.Selected, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.HumanProvidedFixture, packet.SelectedContext.SelectMany(item => item.EvidenceRefs).Distinct().ToList(), [], [], proof),
+        Section("locked.context", "Locked context", WorkspaceContextItemStatus.Locked, WorkspaceContextPacketSurfaceSeverity.Blocked, WorkspaceContextSourceKind.CapabilityNotice, [], [], packet.LockedContext.SelectMany(item => item.Blockers).Distinct().ToList(), proof),
+        Section("excluded.context", "Excluded context", WorkspaceContextItemStatus.Excluded, WorkspaceContextPacketSurfaceSeverity.Blocked, WorkspaceContextSourceKind.CapabilityNotice, [], packet.ExcludedContext.SelectMany(item => item.Warnings).Distinct().ToList(), packet.ExcludedContext.SelectMany(item => item.Blockers).Distinct().ToList(), proof),
+        Section("authority.freshness.guard.summary", "Authority/freshness guard summary", WorkspaceContextItemStatus.Ready, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.Fixture, authority.SelectMany(result => result.Issues.Select(issue => result.FixtureId)).Take(8).ToList(), authority.SelectMany(result => result.Warnings).Distinct().ToList(), authority.SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("selection.lock.exclusion.guard.summary", "Selection/lock/exclusion guard summary", WorkspaceContextItemStatus.Ready, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.Fixture, selection.SelectMany(result => result.Issues.Select(issue => result.FixtureId)).Take(8).ToList(), selection.SelectMany(result => result.Warnings).Distinct().ToList(), selection.SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("memory.candidate.guard.summary", "Memory candidate contradiction/risk guard summary", WorkspaceContextItemStatus.Ready, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.Fixture, memory.SelectMany(result => result.Issues.Select(issue => result.FixtureId)).Take(8).ToList(), memory.SelectMany(result => result.Warnings).Distinct().ToList(), memory.SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("contradiction.candidates", "Contradiction candidates", WorkspaceContextItemStatus.Warning, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.EilReadOnlyEvidence, CandidateRefs(packet, WorkspaceContextItemKind.ContradictionMemoryPreview), [], memory.Where(result => result.FixtureId.Contains("contradiction", StringComparison.Ordinal)).SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("risk.candidates", "Risk candidates", WorkspaceContextItemStatus.Warning, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.EilReadOnlyEvidence, CandidateRefs(packet, WorkspaceContextItemKind.RiskMemoryPreview), memory.Where(result => result.FixtureId.Contains(".risk.", StringComparison.Ordinal)).SelectMany(result => result.Warnings).Distinct().ToList(), memory.Where(result => result.FixtureId.Contains(".risk.", StringComparison.Ordinal)).SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("decision.candidates", "Decision candidates", WorkspaceContextItemStatus.Blocked, WorkspaceContextPacketSurfaceSeverity.Blocked, WorkspaceContextSourceKind.EilReadOnlyEvidence, CandidateRefs(packet, WorkspaceContextItemKind.DecisionMemoryPreview), [], memory.Where(result => result.FixtureId.Contains(".decision.", StringComparison.Ordinal)).SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("claim.candidates", "Claim candidates", WorkspaceContextItemStatus.Warning, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.EilReadOnlyEvidence, CandidateRefs(packet, WorkspaceContextItemKind.ClaimMemoryPreview), [], memory.Where(result => result.FixtureId.Contains(".claim.", StringComparison.Ordinal)).SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("action.candidates", "Action candidates", WorkspaceContextItemStatus.Blocked, WorkspaceContextPacketSurfaceSeverity.Blocked, WorkspaceContextSourceKind.EilReadOnlyEvidence, CandidateRefs(packet, WorkspaceContextItemKind.ActionMemoryPreview), [], memory.Where(result => result.FixtureId.Contains(".action.", StringComparison.Ordinal)).SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("safe.next.step.status", "Safe next step status", WorkspaceContextItemStatus.Ready, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.NoSideEffectProof, [], ["Next step is read-only only."], memory.Where(result => result.FixtureId.Contains("safe-next", StringComparison.Ordinal)).SelectMany(result => result.Blockers).Distinct().ToList(), proof),
+        Section("human.review.requirements", "Human review requirements", WorkspaceContextItemStatus.Warning, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.DocumentedDebt, [], HumanReviewRequirements(authority, selection, memory, packet), [], proof),
+        Section("missing.stale.context.warnings", "Missing/stale context warnings", WorkspaceContextItemStatus.Warning, WorkspaceContextPacketSurfaceSeverity.Warning, WorkspaceContextSourceKind.DocumentedDebt, [], packet.Items.Where(item => item.Freshness is WorkspaceContextFreshnessStatus.Stale or WorkspaceContextFreshnessStatus.Missing).Select(item => item.Title).ToList(), [], proof),
+        Section("blocked.context.candidate.list", "Blocked context/candidate list", WorkspaceContextItemStatus.Blocked, WorkspaceContextPacketSurfaceSeverity.Blocked, WorkspaceContextSourceKind.CapabilityNotice, [], [], BlockedList(authority, selection, memory, packet), proof),
+        Section("provider.cloud.disabled", "Provider/cloud disabled notice", WorkspaceContextItemStatus.Disabled, WorkspaceContextPacketSurfaceSeverity.Disabled, WorkspaceContextSourceKind.CapabilityNotice, [], [], [packet.ProviderCloudNotice], proof),
+        Section("semantic.vector.disabled", "Semantic/vector disabled notice", WorkspaceContextItemStatus.Disabled, WorkspaceContextPacketSurfaceSeverity.Disabled, WorkspaceContextSourceKind.CapabilityNotice, [], [], [packet.SemanticVectorNotice], proof),
+        Section("durable.memory.disabled", "Durable memory disabled notice", WorkspaceContextItemStatus.Disabled, WorkspaceContextPacketSurfaceSeverity.Disabled, WorkspaceContextSourceKind.CapabilityNotice, [], [], ["Durable memory is disabled; packet and candidates are preview-only."], proof),
+        Section("runtime.live.disabled", "Runtime/live disabled notice", WorkspaceContextItemStatus.Disabled, WorkspaceContextPacketSurfaceSeverity.Disabled, WorkspaceContextSourceKind.CapabilityNotice, [], [], ["Runtime/live/browser/CDP/WCU/OCR remain disabled."], proof),
+        Section("no.side.effect.proof", "No-side-effect proof", WorkspaceContextItemStatus.Ready, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.NoSideEffectProof, [], [], [], proof),
+        Section("documented.debt", "Documented debt", WorkspaceContextItemStatus.Deferred, WorkspaceContextPacketSurfaceSeverity.Deferred, WorkspaceContextSourceKind.DocumentedDebt, [], packet.DocumentedDebt, [], proof),
+        Section("next.recommended.block", "Next recommended block", WorkspaceContextItemStatus.Deferred, WorkspaceContextPacketSurfaceSeverity.Deferred, WorkspaceContextSourceKind.DocumentedDebt, [], ["PHASE_D_CONTEXT_PACKET_READ_ONLY_EXPORT_PREVIEW"], [], proof)
+    ];
+
+    private static WorkspaceContextPacketSurfaceSection Section(
+        string id,
+        string title,
+        WorkspaceContextItemStatus status,
+        WorkspaceContextPacketSurfaceSeverity severity,
+        WorkspaceContextSourceKind source,
+        IReadOnlyList<string> evidenceRefs,
+        IReadOnlyList<string> warnings,
+        IReadOnlyList<string> blockers,
+        WorkspaceContextNoSideEffectProof proof) =>
+        new(id, title, status, severity, source, evidenceRefs, Clean(warnings), Clean(blockers), ProductActionsCount: 0, ExportActionsCount: 0, proof);
+
+    private static IReadOnlyList<string> GuardSummaries(
+        IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> authority,
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> selection,
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> memory) =>
+    [
+        $"Authority/freshness fixtures: {authority.Count}; blocked/excluded: {authority.Count(result => result.Blocked)}.",
+        $"Selection/lock/exclusion fixtures: {selection.Count}; blocked/excluded: {selection.Count(result => result.Blocked)}.",
+        $"Memory candidate fixtures: {memory.Count}; blocked/excluded: {memory.Count(result => result.Blocked)}."
+    ];
+
+    private static IReadOnlyList<string> CandidateSummaries(
+        WorkspaceContextPacketReadOnly packet,
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> memory) =>
+    [
+        $"Preview candidates: {packet.MemoryCandidates.Count}; durable memory capability disabled.",
+        $"Contradiction/risk guard warnings: {memory.Count(result => result.Warnings.Count > 0)}.",
+        $"Contradiction/risk guard blockers: {memory.Count(result => result.Blockers.Count > 0)}.",
+        "Candidate is not memory; risk is not decision."
+    ];
+
+    private static IReadOnlyList<string> HumanReviewRequirements(
+        IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> authority,
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> selection,
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> memory,
+        WorkspaceContextPacketReadOnly packet) =>
+        authority.Where(result => result.RequiresHumanReview).Select(result => $"Authority/freshness review: {result.FixtureId}.")
+            .Concat(selection.Where(result => result.RequiresHumanReview).Select(result => $"Selection/lock/exclusion review: {result.FixtureId}."))
+            .Concat(memory.Where(result => result.RequiresHumanReview).Select(result => $"Memory candidate review: {result.FixtureId}."))
+            .Concat(packet.Warnings.Select(warning => $"Packet warning review: {warning}"))
+            .Distinct()
+            .Take(16)
+            .ToList();
+
+    private static IReadOnlyList<string> DisabledNotices(WorkspaceContextPacketReadOnly packet) =>
+    [
+        packet.ProviderCloudNotice,
+        packet.SemanticVectorNotice,
+        "Durable memory disabled.",
+        "Runtime/live disabled.",
+        "Export actions disabled."
+    ];
+
+    private static IReadOnlyList<string> BlockedList(
+        IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> authority,
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> selection,
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> memory,
+        WorkspaceContextPacketReadOnly packet) =>
+        packet.Items.Where(item => item.Status is WorkspaceContextItemStatus.Blocked or WorkspaceContextItemStatus.Excluded).Select(item => item.ItemId)
+            .Concat(authority.Where(result => result.Blocked).Select(result => result.FixtureId))
+            .Concat(selection.Where(result => result.Blocked).Select(result => result.FixtureId))
+            .Concat(memory.Where(result => result.Blocked).Select(result => result.FixtureId))
+            .Distinct()
+            .Take(24)
+            .ToList();
+
+    private static IReadOnlyList<string> CandidateRefs(WorkspaceContextPacketReadOnly packet, WorkspaceContextItemKind kind) =>
+        packet.MemoryCandidates.Where(candidate => candidate.Kind == kind).SelectMany(candidate => candidate.EvidenceRefs).Distinct().ToList();
+
+    private static string Summary(
+        WorkspaceContextPacketReadOnly packet,
+        IReadOnlyList<WorkspaceContextPacketSurfaceSection> sections,
+        IReadOnlyList<string> guardSummaries,
+        IReadOnlyList<string> candidateSummaries) =>
+        string.Join(
+            "\n",
+            new[]
+            {
+                "# Workspace Context Packet Read-Only Surface",
+                "Mode: READ_ONLY_FIXTURE_SAFE_NO_ACTIONS_NO_EXPORT",
+                $"Workspace: {packet.WorkspaceId}.",
+                $"Sections: {sections.Count}.",
+                $"Product actions: {sections.Sum(section => section.ProductActionsCount)}.",
+                $"Export actions: {sections.Sum(section => section.ExportActionsCount)}.",
+                string.Join(" ", guardSummaries),
+                string.Join(" ", candidateSummaries),
+                "No workspace filesystem read, durable memory, provider/cloud, semantic/vector backend, export or runtime is enabled."
+            });
+
+    private static IReadOnlyList<string> Clean(IReadOnlyList<string> values) =>
+        values.Select(Clean).Distinct().ToList();
+
+    private static string Clean(string value) =>
         value
             .Replace("\r", " ", StringComparison.Ordinal)
             .Replace("\n", " ", StringComparison.Ordinal)
