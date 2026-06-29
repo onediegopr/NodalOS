@@ -709,4 +709,137 @@ public sealed class WorkspaceContextReadOnlyFoundationTests
         Assert.IsFalse(text.Contains("export file created", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(text.Contains("action command", StringComparison.OrdinalIgnoreCase));
     }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_IsReadOnlyDeterministicInMemoryAndActionless()
+    {
+        var first = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var second = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+
+        Assert.IsTrue(first.ReadOnly);
+        Assert.IsTrue(first.Deterministic);
+        Assert.IsTrue(first.FixtureSafe);
+        Assert.IsTrue(first.NoSideEffectProof.Passes);
+        Assert.AreEqual("READ_ONLY_IN_MEMORY_EXPORT_PREVIEW_NO_FILE_NO_CLIPBOARD_NO_DOWNLOAD", first.Mode);
+        Assert.AreEqual(first.PreviewText, second.PreviewText);
+        Assert.AreEqual(0, first.Manifest.ProductActionsCount);
+        Assert.AreEqual(0, first.Manifest.ExportActionsCount);
+        Assert.IsFalse(first.HasRealExport);
+        Assert.IsFalse(first.HasProductActions);
+        Assert.IsFalse(first.HasExportActions);
+        Assert.IsFalse(first.HasDurableMemory);
+        Assert.IsTrue(first.Sections.All(section => section.NoSideEffectProof.Passes));
+        Assert.IsTrue(first.Sections.All(section => section.IncludedInPreview));
+        Assert.IsTrue(first.Sections.All(section => !section.PhysicalExportOccurred));
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_ManifestDeclaresNoFileClipboardDownload()
+    {
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var manifest = preview.Manifest;
+
+        Assert.AreEqual(WorkspaceContextPacketExportPreviewKind.MarkdownLikeText, manifest.FormatPreviewKind);
+        Assert.AreEqual("WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture", manifest.SourceFixture);
+        Assert.IsFalse(manifest.PhysicalFileCreated);
+        Assert.IsFalse(manifest.ClipboardUsed);
+        Assert.IsFalse(manifest.DownloadStarted);
+        Assert.AreEqual(0, manifest.ProductActionsCount);
+        Assert.AreEqual(0, manifest.ExportActionsCount);
+        Assert.IsFalse(manifest.ContainsRawPayload);
+        Assert.IsFalse(manifest.ContainsSecretLikeContent);
+        Assert.IsFalse(manifest.ContainsDurableMemory);
+        Assert.IsTrue(manifest.NoSideEffectProof.Passes);
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_ContainsMinimumSections()
+    {
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var ids = preview.Sections.Select(section => section.SectionId).ToHashSet(StringComparer.Ordinal);
+
+        Assert.AreEqual(26, preview.Sections.Count);
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                "export.manifest",
+                "executive.summary",
+                "workspace.identity.fixture",
+                "context.packet.summary",
+                "selected.context",
+                "locked.context",
+                "excluded.context",
+                "authority.freshness.guard.summary",
+                "selection.lock.exclusion.guard.summary",
+                "memory.candidate.guard.summary",
+                "contradiction.candidates",
+                "risk.candidates",
+                "decision.candidates",
+                "claim.candidates",
+                "action.candidates",
+                "safe.next.step.status",
+                "human.review.requirements",
+                "missing.stale.context.warnings",
+                "blocked.context.candidate.list",
+                "provider.cloud.disabled",
+                "semantic.vector.disabled",
+                "durable.memory.disabled",
+                "runtime.live.disabled",
+                "no.side.effect.proof",
+                "documented.debt",
+                "next.recommended.block"
+            },
+            ids.ToArray());
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_IncludesGuardSummariesHumanReviewDisabledNoticesAndNextStep()
+    {
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            preview.PreviewText,
+            string.Join("\n", preview.DisabledNotices),
+            string.Join("\n", preview.SourceSurface.GuardSummaries),
+            string.Join("\n", preview.SourceSurface.CandidateSummaries),
+            string.Join("\n", preview.Sections.Select(section => section.SectionId)));
+
+        StringAssert.Contains(text, "Authority/freshness fixtures: 20");
+        StringAssert.Contains(text, "Selection/lock/exclusion fixtures: 22");
+        StringAssert.Contains(text, "Memory candidate fixtures: 24");
+        StringAssert.Contains(text, "HumanReviewRequirements:");
+        StringAssert.Contains(text, "Provider/cloud");
+        StringAssert.Contains(text, "Semantic/vector");
+        StringAssert.Contains(text, "Durable memory");
+        StringAssert.Contains(text, "Runtime/live");
+        Assert.AreEqual("PHASE_D_CONTEXT_MEMORY_CLOSEOUT_AUDIT_PREP", preview.NextSafeStep);
+        Assert.IsTrue(preview.Blockers.Count > 0);
+        Assert.IsTrue(preview.Warnings.Count > 0);
+        Assert.IsTrue(preview.Exclusions.Count >= 4);
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_DoesNotLeakRawSecretDurableMemoryOrProductionClaim()
+    {
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            preview.PreviewText,
+            string.Join("\n", preview.Warnings),
+            string.Join("\n", preview.Blockers),
+            string.Join("\n", preview.Exclusions),
+            string.Join("\n", preview.Sections.Select(section => $"{section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")));
+
+        Assert.IsFalse(text.Contains("sk-", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("Bearer ", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("PRIVATE KEY", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("AKIA", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("ghp_", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("memory persisted", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("export file created", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("clipboard used", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("download started", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("candidate promoted", StringComparison.OrdinalIgnoreCase));
+    }
 }

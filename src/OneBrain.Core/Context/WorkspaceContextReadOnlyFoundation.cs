@@ -537,6 +537,21 @@ public enum WorkspaceContextPacketSurfaceSeverity
     Deferred
 }
 
+public enum WorkspaceContextPacketExportPreviewKind
+{
+    MarkdownLikeText,
+    JsonLikeText
+}
+
+public enum WorkspaceContextPacketExportPreviewStatus
+{
+    Included,
+    Warning,
+    Blocked,
+    Disabled,
+    Deferred
+}
+
 public sealed record WorkspaceContextPacketSurfaceSection(
     string SectionId,
     string Title,
@@ -573,6 +588,57 @@ public sealed record WorkspaceContextPacketSurfaceReadOnly(
     public int ProductActionsCount => Sections.Sum(section => section.ProductActionsCount);
     public int ExportActionsCount => Sections.Sum(section => section.ExportActionsCount);
     public bool HasDurableMemory => Packet.HasDurableMemory || NoSideEffectProof.DurableMemoryActive;
+}
+
+public sealed record WorkspaceContextPacketExportManifest(
+    string PreviewId,
+    WorkspaceContextPacketExportPreviewKind FormatPreviewKind,
+    string SourceFixture,
+    bool PhysicalFileCreated,
+    bool ClipboardUsed,
+    bool DownloadStarted,
+    int ProductActionsCount,
+    int ExportActionsCount,
+    bool ContainsRawPayload,
+    bool ContainsSecretLikeContent,
+    bool ContainsDurableMemory,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof);
+
+public sealed record WorkspaceContextPacketExportSection(
+    string SectionId,
+    string Title,
+    WorkspaceContextPacketExportPreviewStatus Status,
+    WorkspaceContextPacketSurfaceSeverity Severity,
+    WorkspaceContextSourceKind Source,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> Blockers,
+    bool IncludedInPreview,
+    bool PhysicalExportOccurred,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof);
+
+public sealed record WorkspaceContextPacketExportReadOnlyPreview(
+    string PreviewId,
+    string Title,
+    string Mode,
+    WorkspaceContextPacketExportManifest Manifest,
+    WorkspaceContextPacketSurfaceReadOnly SourceSurface,
+    IReadOnlyList<WorkspaceContextPacketExportSection> Sections,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> Blockers,
+    IReadOnlyList<string> Exclusions,
+    IReadOnlyList<string> DisabledNotices,
+    string PreviewText,
+    string NextSafeStep,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof)
+{
+    public bool ReadOnly => NoSideEffectProof.ReadOnly;
+    public bool Deterministic => NoSideEffectProof.Deterministic;
+    public bool FixtureSafe => NoSideEffectProof.FixtureSafe;
+    public bool HasRealExport => Manifest.PhysicalFileCreated || Manifest.ClipboardUsed || Manifest.DownloadStarted || Sections.Any(section => section.PhysicalExportOccurred);
+    public bool HasProductActions => Manifest.ProductActionsCount > 0;
+    public bool HasExportActions => Manifest.ExportActionsCount > 0;
+    public bool HasDurableMemory => Manifest.ContainsDurableMemory || SourceSurface.HasDurableMemory || NoSideEffectProof.DurableMemoryActive;
 }
 
 public static class WorkspaceContextAuthorityFreshnessGuard
@@ -1481,6 +1547,174 @@ public static class WorkspaceContextPacketReadOnlySurfacePresenter
                 string.Join(" ", candidateSummaries),
                 "No workspace filesystem read, durable memory, provider/cloud, semantic/vector backend, export or runtime is enabled."
             });
+
+    private static IReadOnlyList<string> Clean(IReadOnlyList<string> values) =>
+        values.Select(Clean).Distinct().ToList();
+
+    private static string Clean(string value) =>
+        value
+            .Replace("\r", " ", StringComparison.Ordinal)
+            .Replace("\n", " ", StringComparison.Ordinal)
+            .Replace("raw payload", "excluded payload", StringComparison.OrdinalIgnoreCase)
+            .Replace("secret", "sensitive value", StringComparison.OrdinalIgnoreCase);
+}
+
+public static class WorkspaceContextPacketExportReadOnlyPresenter
+{
+    public static WorkspaceContextPacketExportReadOnlyPreview CreateFixture()
+    {
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var proof = WorkspaceContextNoSideEffectProof.FixtureReadOnly();
+        var manifest = new WorkspaceContextPacketExportManifest(
+            PreviewId: "phase-d.workspace-context.packet.export-preview.read-only.fixture.v1",
+            FormatPreviewKind: WorkspaceContextPacketExportPreviewKind.MarkdownLikeText,
+            SourceFixture: "WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture",
+            PhysicalFileCreated: false,
+            ClipboardUsed: false,
+            DownloadStarted: false,
+            ProductActionsCount: 0,
+            ExportActionsCount: 0,
+            ContainsRawPayload: false,
+            ContainsSecretLikeContent: false,
+            ContainsDurableMemory: false,
+            NoSideEffectProof: proof);
+        var sections = Sections(surface, manifest, proof);
+        var warnings = sections.SelectMany(section => section.Warnings).Concat(surface.Warnings).Distinct().ToList();
+        var blockers = sections.SelectMany(section => section.Blockers).Concat(surface.Blockers).Distinct().ToList();
+        var exclusions = Exclusions();
+        var disabled = surface.DisabledNotices
+            .Concat(
+            [
+                "Physical export disabled.",
+                "Clipboard disabled.",
+                "Browser download disabled."
+            ])
+            .Distinct()
+            .ToList();
+        var previewText = PreviewText(surface, manifest, sections, warnings, blockers, exclusions, disabled);
+
+        return new WorkspaceContextPacketExportReadOnlyPreview(
+            PreviewId: manifest.PreviewId,
+            Title: "Workspace Context Packet Export Preview Read-Only",
+            Mode: "READ_ONLY_IN_MEMORY_EXPORT_PREVIEW_NO_FILE_NO_CLIPBOARD_NO_DOWNLOAD",
+            Manifest: manifest,
+            SourceSurface: surface,
+            Sections: sections,
+            Warnings: warnings,
+            Blockers: blockers,
+            Exclusions: exclusions,
+            DisabledNotices: disabled,
+            PreviewText: previewText,
+            NextSafeStep: "PHASE_D_CONTEXT_MEMORY_CLOSEOUT_AUDIT_PREP",
+            NoSideEffectProof: proof);
+    }
+
+    private static IReadOnlyList<WorkspaceContextPacketExportSection> Sections(
+        WorkspaceContextPacketSurfaceReadOnly surface,
+        WorkspaceContextPacketExportManifest manifest,
+        WorkspaceContextNoSideEffectProof proof) =>
+    [
+        Section("export.manifest", "Export manifest", WorkspaceContextPacketExportPreviewStatus.Included, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.NoSideEffectProof, [], ["Preview is in-memory only."], ["Physical export, clipboard and browser download remain disabled."], proof),
+        Section("executive.summary", "Executive summary", WorkspaceContextPacketExportPreviewStatus.Included, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.Fixture, [], surface.Warnings.Take(4).ToList(), [], proof),
+        Section("workspace.identity.fixture", "Workspace identity fixture", WorkspaceContextPacketExportPreviewStatus.Included, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.Fixture, [], [], [], proof),
+        Section("context.packet.summary", "Context packet summary", WorkspaceContextPacketExportPreviewStatus.Included, WorkspaceContextPacketSurfaceSeverity.Info, WorkspaceContextSourceKind.Fixture, [], surface.Warnings.Take(4).ToList(), surface.Blockers.Take(4).ToList(), proof),
+        FromSurface(surface, "selected.context", "Selected context", WorkspaceContextPacketExportPreviewStatus.Included, proof),
+        FromSurface(surface, "locked.context", "Locked context", WorkspaceContextPacketExportPreviewStatus.Blocked, proof),
+        FromSurface(surface, "excluded.context", "Excluded context", WorkspaceContextPacketExportPreviewStatus.Blocked, proof),
+        FromSurface(surface, "authority.freshness.guard.summary", "Authority/freshness guard summary", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "selection.lock.exclusion.guard.summary", "Selection/lock/exclusion guard summary", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "memory.candidate.guard.summary", "Memory candidate contradiction/risk guard summary", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "contradiction.candidates", "Contradiction candidates", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "risk.candidates", "Risk candidates", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "decision.candidates", "Decision candidates", WorkspaceContextPacketExportPreviewStatus.Blocked, proof),
+        FromSurface(surface, "claim.candidates", "Claim candidates", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "action.candidates", "Action candidates", WorkspaceContextPacketExportPreviewStatus.Blocked, proof),
+        FromSurface(surface, "safe.next.step.status", "Safe next step status", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "human.review.requirements", "Human review requirements", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "missing.stale.context.warnings", "Missing/stale context warnings", WorkspaceContextPacketExportPreviewStatus.Warning, proof),
+        FromSurface(surface, "blocked.context.candidate.list", "Blocked context/candidate list", WorkspaceContextPacketExportPreviewStatus.Blocked, proof),
+        FromSurface(surface, "provider.cloud.disabled", "Provider/cloud disabled notice", WorkspaceContextPacketExportPreviewStatus.Disabled, proof),
+        FromSurface(surface, "semantic.vector.disabled", "Semantic/vector disabled notice", WorkspaceContextPacketExportPreviewStatus.Disabled, proof),
+        FromSurface(surface, "durable.memory.disabled", "Durable memory disabled notice", WorkspaceContextPacketExportPreviewStatus.Disabled, proof),
+        FromSurface(surface, "runtime.live.disabled", "Runtime/live disabled notice", WorkspaceContextPacketExportPreviewStatus.Disabled, proof),
+        FromSurface(surface, "no.side.effect.proof", "No-side-effect proof", WorkspaceContextPacketExportPreviewStatus.Included, proof),
+        FromSurface(surface, "documented.debt", "Documented debt", WorkspaceContextPacketExportPreviewStatus.Deferred, proof),
+        Section("next.recommended.block", "Next recommended block", WorkspaceContextPacketExportPreviewStatus.Deferred, WorkspaceContextPacketSurfaceSeverity.Deferred, WorkspaceContextSourceKind.DocumentedDebt, [], [surface.NextRecommendedBlock, "PHASE_D_CONTEXT_MEMORY_CLOSEOUT_AUDIT_PREP"], [], proof)
+    ];
+
+    private static WorkspaceContextPacketExportSection FromSurface(
+        WorkspaceContextPacketSurfaceReadOnly surface,
+        string sectionId,
+        string title,
+        WorkspaceContextPacketExportPreviewStatus status,
+        WorkspaceContextNoSideEffectProof proof)
+    {
+        var source = surface.Sections.Single(section => section.SectionId == sectionId);
+
+        return Section(sectionId, title, status, source.Severity, source.Source, source.EvidenceRefs, source.Warnings, source.Blockers, proof);
+    }
+
+    private static WorkspaceContextPacketExportSection Section(
+        string id,
+        string title,
+        WorkspaceContextPacketExportPreviewStatus status,
+        WorkspaceContextPacketSurfaceSeverity severity,
+        WorkspaceContextSourceKind source,
+        IReadOnlyList<string> evidenceRefs,
+        IReadOnlyList<string> warnings,
+        IReadOnlyList<string> blockers,
+        WorkspaceContextNoSideEffectProof proof) =>
+        new(id, title, status, severity, source, evidenceRefs, Clean(warnings), Clean(blockers), IncludedInPreview: true, PhysicalExportOccurred: false, proof);
+
+    private static IReadOnlyList<string> Exclusions() =>
+    [
+        "Excluded payload values are omitted from preview content.",
+        "Sensitive-value-like content is omitted from preview content.",
+        "Durable memory records are omitted because durable memory capability is disabled.",
+        "Physical export artifacts are omitted because this is an in-memory preview."
+    ];
+
+    private static string PreviewText(
+        WorkspaceContextPacketSurfaceReadOnly surface,
+        WorkspaceContextPacketExportManifest manifest,
+        IReadOnlyList<WorkspaceContextPacketExportSection> sections,
+        IReadOnlyList<string> warnings,
+        IReadOnlyList<string> blockers,
+        IReadOnlyList<string> exclusions,
+        IReadOnlyList<string> disabledNotices) =>
+        Clean(
+            string.Join(
+                "\n",
+                new[]
+                {
+                    "# Workspace Context Packet Export Preview Read-Only",
+                    $"PreviewId: {manifest.PreviewId}",
+                    $"FormatPreviewKind: {manifest.FormatPreviewKind}",
+                    $"SourceFixture: {manifest.SourceFixture}",
+                    $"PhysicalFileCreated: {manifest.PhysicalFileCreated}",
+                    $"ClipboardUsed: {manifest.ClipboardUsed}",
+                    $"DownloadStarted: {manifest.DownloadStarted}",
+                    $"ProductActionsCount: {manifest.ProductActionsCount}",
+                    $"ExportActionsCount: {manifest.ExportActionsCount}",
+                    $"ContainsRawPayload: {manifest.ContainsRawPayload}",
+                    $"ContainsSecretLikeContent: {manifest.ContainsSecretLikeContent}",
+                    $"ContainsDurableMemory: {manifest.ContainsDurableMemory}",
+                    $"Workspace: {surface.Packet.WorkspaceId}",
+                    $"Sections: {sections.Count}",
+                    $"SelectedContext: {surface.Packet.SelectedContext.Count}",
+                    $"LockedContext: {surface.Packet.LockedContext.Count}",
+                    $"ExcludedContext: {surface.Packet.ExcludedContext.Count}",
+                    $"GuardSummaries: {string.Join(" | ", surface.GuardSummaries)}",
+                    $"CandidateSummaries: {string.Join(" | ", surface.CandidateSummaries)}",
+                    $"HumanReviewRequirements: {surface.HumanReviewRequirements.Count}",
+                    $"DisabledNotices: {string.Join(" | ", disabledNotices)}",
+                    $"Warnings: {warnings.Count}",
+                    $"Blockers: {blockers.Count}",
+                    $"Exclusions: {string.Join(" | ", exclusions)}",
+                    "No-side-effect proof: read-only, deterministic, fixture-safe, no workspace scan, no durable memory, no provider/cloud, no semantic/vector, no runtime/live.",
+                    "Preview is not physical export. Packet is not durable memory. Candidate is not memory.",
+                    "NextSafeStep: PHASE_D_CONTEXT_MEMORY_CLOSEOUT_AUDIT_PREP"
+                }));
 
     private static IReadOnlyList<string> Clean(IReadOnlyList<string> values) =>
         values.Select(Clean).Distinct().ToList();

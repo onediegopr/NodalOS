@@ -723,6 +723,163 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         }
     }
 
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_SourceHasNoFilesystemClipboardDownloadDatabaseProviderVectorRuntimeOrServiceImplementation()
+    {
+        var source = ReadRepoText(FoundationPath);
+        var forbidden = new[]
+        {
+            "File.Read",
+            "File.Write",
+            "FileStream",
+            "Directory.",
+            "Directory.CreateDirectory",
+            "Path.",
+            "Microsoft.Data.Sqlite",
+            "SQLiteConnection",
+            "SqlConnection",
+            "DbContext",
+            "IDbConnection",
+            "HttpClient",
+            "WebSocket",
+            "Process.Start",
+            "ServiceCollection",
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "OpenAI",
+            "EmbeddingClient",
+            "VectorStore",
+            "KernelMemory",
+            "System.Windows.Clipboard",
+            "navigator.clipboard",
+            "DownloadFile"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_AllSectionsPreserveNoSideEffectProofAndNoExport()
+    {
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+
+        Assert.IsTrue(preview.NoSideEffectProof.Passes);
+        Assert.IsFalse(preview.Manifest.PhysicalFileCreated);
+        Assert.IsFalse(preview.Manifest.ClipboardUsed);
+        Assert.IsFalse(preview.Manifest.DownloadStarted);
+        Assert.AreEqual(0, preview.Manifest.ProductActionsCount);
+        Assert.AreEqual(0, preview.Manifest.ExportActionsCount);
+        Assert.IsFalse(preview.Manifest.ContainsRawPayload);
+        Assert.IsFalse(preview.Manifest.ContainsSecretLikeContent);
+        Assert.IsFalse(preview.Manifest.ContainsDurableMemory);
+        Assert.IsFalse(preview.HasRealExport);
+        Assert.IsFalse(preview.HasProductActions);
+        Assert.IsFalse(preview.HasExportActions);
+        Assert.IsFalse(preview.HasDurableMemory);
+
+        foreach (var section in preview.Sections)
+        {
+            var proof = section.NoSideEffectProof;
+
+            Assert.IsTrue(proof.Passes, section.SectionId);
+            Assert.IsTrue(section.IncludedInPreview, section.SectionId);
+            Assert.IsFalse(section.PhysicalExportOccurred, section.SectionId);
+            Assert.IsFalse(proof.WorkspaceFilesystemReadAttempted, section.SectionId);
+            Assert.IsFalse(proof.FilesystemWriteAttempted, section.SectionId);
+            Assert.IsFalse(proof.DatabaseTouched, section.SectionId);
+            Assert.IsFalse(proof.DurablePersistenceActive, section.SectionId);
+            Assert.IsFalse(proof.DurableMemoryActive, section.SectionId);
+            Assert.IsFalse(proof.VectorSemanticBackendTouched, section.SectionId);
+            Assert.IsFalse(proof.LlmProviderTouched, section.SectionId);
+            Assert.IsFalse(proof.ProviderCloudTouched, section.SectionId);
+            Assert.IsFalse(proof.MigrationRunnerStarted, section.SectionId);
+            Assert.IsFalse(proof.MigrationExecuted, section.SectionId);
+            Assert.IsFalse(proof.RuntimeTouched, section.SectionId);
+            Assert.IsFalse(proof.BrowserCdpTouched, section.SectionId);
+            Assert.IsFalse(proof.WcuTouched, section.SectionId);
+            Assert.IsFalse(proof.OcrTouched, section.SectionId);
+            Assert.IsFalse(proof.ProductActionExposed, section.SectionId);
+            Assert.IsFalse(proof.ProductServiceRegistered, section.SectionId);
+        }
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_DisablesFileClipboardDownloadProviderSemanticRuntimeAndMemory()
+    {
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var proof = preview.NoSideEffectProof;
+        var text = string.Join("\n", preview.DisabledNotices);
+
+        Assert.IsFalse(proof.WorkspaceFilesystemReadAttempted);
+        Assert.IsFalse(proof.FilesystemWriteAttempted);
+        Assert.IsFalse(proof.DatabaseTouched);
+        Assert.IsFalse(proof.DurablePersistenceActive);
+        Assert.IsFalse(proof.DurableMemoryActive);
+        Assert.IsFalse(proof.VectorSemanticBackendTouched);
+        Assert.IsFalse(proof.LlmProviderTouched);
+        Assert.IsFalse(proof.ProviderCloudTouched);
+        Assert.IsFalse(proof.MigrationRunnerStarted);
+        Assert.IsFalse(proof.MigrationExecuted);
+        Assert.IsFalse(proof.RuntimeTouched);
+        Assert.IsFalse(proof.BrowserCdpTouched);
+        Assert.IsFalse(proof.WcuTouched);
+        Assert.IsFalse(proof.OcrTouched);
+        Assert.IsTrue(text.Contains("Physical export disabled", StringComparison.Ordinal));
+        Assert.IsTrue(text.Contains("Clipboard disabled", StringComparison.Ordinal));
+        Assert.IsTrue(text.Contains("Browser download disabled", StringComparison.Ordinal));
+        Assert.IsTrue(text.Contains("Provider/cloud", StringComparison.Ordinal));
+        Assert.IsTrue(text.Contains("Semantic/vector", StringComparison.Ordinal));
+        Assert.IsTrue(text.Contains("Durable memory", StringComparison.Ordinal));
+        Assert.IsTrue(text.Contains("Runtime/live", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void WorkspaceContextPacketExportPreview_HasNoExportContextMemoryOrProductionOverclaim()
+    {
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            preview.PreviewText,
+            string.Join("\n", preview.DisabledNotices),
+            string.Join("\n", preview.Warnings),
+            string.Join("\n", preview.Blockers),
+            string.Join("\n", preview.Exclusions),
+            string.Join("\n", preview.Sections.Select(section => $"{section.SectionId} {section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")));
+
+        var forbidden = new[]
+        {
+            "production" + "-ready",
+            "candidate promoted",
+            "candidate persisted",
+            "durable memory enabled",
+            "durable memory active",
+            "memory persisted",
+            "risk is decision",
+            "semantic search enabled",
+            "vector backend enabled",
+            "provider call enabled",
+            "workspace scan completed",
+            "runtime action enabled",
+            "live automation enabled",
+            "filesystem indexed",
+            "action command exposed",
+            "product action exposed",
+            "export file created",
+            "export written",
+            "clipboard write completed",
+            "download started"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
     private static void AssertBlocked(
         IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> results,
         string fixtureId,
