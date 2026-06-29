@@ -151,7 +151,7 @@ public sealed class NativeBrowserSkillsProductM1269BTests
     private static string ExtractBrowserSkillsSection(string html)
     {
         const string startMarker = "id=\"browserSkillsWorkspace\"";
-        const string endMarker = "<div class=\"mission-layout\">";
+        const string endMarker = "<section id=\"recipeLabSurface\"";
         var start = html.IndexOf(startMarker, StringComparison.Ordinal);
         var end = html.IndexOf(endMarker, start >= 0 ? start : 0, StringComparison.Ordinal);
         Assert.IsTrue(start >= 0, "Browser Skills workspace is missing.");

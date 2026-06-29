@@ -1522,6 +1522,113 @@ main {
   gap: 12px;
 }
 
+.recipe-lab-surface {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(255, 199, 94, 0.18);
+  border-radius: var(--nos-radius-card);
+  padding: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 199, 94, 0.08), rgba(102, 227, 196, 0.05)),
+    rgba(6, 10, 15, 0.56);
+}
+
+.recipe-lab-head {
+  align-items: start;
+}
+
+.recipe-lab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.recipe-lab-badges,
+.recipe-lab-notices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recipe-lab-badges span,
+.recipe-lab-notices span {
+  border: 1px solid rgba(159, 181, 204, 0.16);
+  border-radius: var(--nos-radius-control);
+  padding: 6px 8px;
+  background: rgba(11, 18, 26, 0.64);
+  color: var(--nos-color-text-muted);
+  font-size: 11px;
+}
+
+.recipe-lab-badges span {
+  border-color: rgba(255, 199, 94, 0.26);
+  color: #FFE1A1;
+  font-family: var(--nos-font-mono);
+  font-weight: 800;
+}
+
+.recipe-lab-grid,
+.recipe-lab-layout {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.recipe-lab-layout {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.recipe-lab-grid article,
+.recipe-lab-panel {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid rgba(159, 181, 204, 0.12);
+  border-radius: var(--nos-radius-card);
+  padding: 11px;
+  background: rgba(6, 10, 15, 0.42);
+}
+
+.recipe-lab-grid span,
+.recipe-lab-panel h3 {
+  color: var(--nos-color-text-muted);
+}
+
+.recipe-lab-grid strong {
+  overflow-wrap: anywhere;
+  font-family: var(--nos-font-mono);
+  font-size: 13px;
+}
+
+.recipe-lab-grid small,
+.recipe-lab-panel p,
+.recipe-lab-list {
+  color: var(--nos-color-text-muted);
+  font-size: 12px;
+}
+
+.recipe-lab-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.recipe-lab-report {
+  max-height: 240px;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid rgba(255, 199, 94, 0.18);
+  border-radius: var(--nos-radius-card);
+  padding: 12px;
+  background: rgba(3, 7, 10, 0.64);
+  color: #FFE1A1;
+  font-family: var(--nos-font-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
 .evidence-intelligence-surface {
   display: grid;
   gap: 14px;
@@ -1709,6 +1816,8 @@ main {
   .mission-workbench,
   .workspace-status-grid,
   .workspace-summary-grid,
+  .recipe-lab-grid,
+  .recipe-lab-layout,
   .evidence-intelligence-grid,
   .evidence-intelligence-layout,
   .candidate-detail-grid,

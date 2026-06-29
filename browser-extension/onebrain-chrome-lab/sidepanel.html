@@ -42,6 +42,7 @@
             <a href="#demoRunHistory">Historial</a>
             <a href="#demoScriptPanel">Guion demo</a>
             <a href="#browserSkillsWorkspace">Browser Skills</a>
+            <a href="#recipeLabSurface">Recipe Lab</a>
             <a href="#evidenceIntelligenceSurface">Evidence Intelligence</a>
             <a href="#demoTimeline">Timeline</a>
             <a href="#demoEvidencePanel">Evidencia</a>
@@ -500,6 +501,146 @@
               </div>
               <p class="browser-cdp-note">Solo lectura. Sin credenciales, sin resolver verificaciones, sin navegación externa y sin acciones peligrosas desde la UI.</p>
             </article>
+          </section>
+
+          <section id="recipeLabSurface" class="recipe-lab-surface" aria-labelledby="recipeLabTitle" data-recipe-lab-mount="recipe-lab.ui.read-only.mount.v1">
+            <div class="section-head recipe-lab-head">
+              <div>
+                <span class="mission-kicker">Recipe Lab</span>
+                <h2 id="recipeLabTitle">Recipe Lab</h2>
+                <p id="recipeLabSurfaceSummary">Read-only fixture-safe Recipe Runtime product surface. Preview-only catalog, readiness and handoff metadata.</p>
+              </div>
+              <div class="recipe-lab-actions" aria-label="Recipe Lab read-only actions">
+                <button id="copyRecipeLabPreviewBtn" type="button">Copy preview</button>
+                <button id="copyRecipeLabHandoffBtn" type="button">Copy handoff preview</button>
+              </div>
+            </div>
+
+            <div id="recipeLabStatusBadges" class="recipe-lab-badges" aria-label="Recipe Lab status badges">
+              <span>READ_ONLY</span>
+              <span>FIXTURE_SAFE</span>
+              <span>NO_RUNTIME</span>
+              <span>NO_LIVE_AUTOMATION</span>
+            </div>
+
+            <div class="recipe-lab-notices" aria-label="Recipe Lab safety notices">
+              <span>No recipe execution</span>
+              <span>No runtime actions</span>
+              <span>No browser/CDP automation</span>
+              <span>No WCU live</span>
+              <span>No OCR live</span>
+              <span>No filesystem writes</span>
+              <span>No provider/cloud calls</span>
+              <span>No durable recipe persistence</span>
+              <span>Human approval required for any real action</span>
+            </div>
+
+            <div class="recipe-lab-grid">
+              <article>
+                <span>Recipe Catalog Summary</span>
+                <strong id="recipeLabCatalogCount">41 templates</strong>
+                <small id="recipeLabCatalogSafety">read-only catalog / fixture-safe packs</small>
+              </article>
+              <article>
+                <span>Selected recipe</span>
+                <strong id="recipeLabSelectedRecipe">Extract rows to workitems</strong>
+                <small id="recipeLabSelectedStatus">FixtureOnly / FixtureReady</small>
+              </article>
+              <article>
+                <span>Readiness matrix</span>
+                <strong id="recipeLabReadinessStatus">ReadyForFixtureRun</strong>
+                <small id="recipeLabRuntimeState">runtime enabled: false</small>
+              </article>
+              <article>
+                <span>Handoff/export preview</span>
+                <strong id="recipeLabExportStatus">PreviewOnly</strong>
+                <small id="recipeLabExportBoundary">metadata text only / no file write</small>
+              </article>
+            </div>
+
+            <div class="recipe-lab-layout">
+              <article class="recipe-lab-panel">
+                <div class="section-head">
+                  <h3>Catalog preview</h3>
+                  <span class="mission-chip">read-only catalog</span>
+                </div>
+                <ul id="recipeLabTemplates" class="recipe-lab-list">
+                  <li>Excel / Microsoft 365: fixture-ready previews.</li>
+                  <li>Browser portals: live runtime blocked.</li>
+                  <li>Fiscal/payment/marketplace templates: human review required.</li>
+                </ul>
+              </article>
+
+              <article class="recipe-lab-panel">
+                <div class="section-head">
+                  <h3>Recipe detail preview</h3>
+                  <span class="mission-chip">template detail</span>
+                </div>
+                <p id="recipeLabObjective">Inspect template objective, expected inputs, expected outputs, evidence refs and blocked runtime modes.</p>
+                <ul id="recipeLabDetailRows" class="recipe-lab-list">
+                  <li>Inputs: fixture refs and secret refs only.</li>
+                  <li>Outputs: preview summaries and evidence refs.</li>
+                  <li>Preconditions: validation, evidence and human review checks.</li>
+                </ul>
+              </article>
+
+              <article class="recipe-lab-panel">
+                <div class="section-head">
+                  <h3>Blocked reasons</h3>
+                  <span class="mission-chip">NO_RUNTIME</span>
+                </div>
+                <ul id="recipeLabBlockedReasons" class="recipe-lab-list">
+                  <li>Live runtime blocked.</li>
+                  <li>Connector execution not enabled.</li>
+                  <li>Real export file generation blocked.</li>
+                </ul>
+              </article>
+
+              <article class="recipe-lab-panel">
+                <div class="section-head">
+                  <h3>Required human actions</h3>
+                  <span class="mission-chip">human review</span>
+                </div>
+                <ul id="recipeLabHumanActions" class="recipe-lab-list">
+                  <li>Review readiness before future runtime planning.</li>
+                  <li>Keep secret values by reference only.</li>
+                  <li>Human approval required for any real action.</li>
+                </ul>
+              </article>
+
+              <article class="recipe-lab-panel">
+                <div class="section-head">
+                  <h3>Operator preview</h3>
+                  <span class="mission-chip">preview-safe</span>
+                </div>
+                <p id="recipeLabOperatorPreview">Operator reviews requirements, blocked states, evidence refs and handoff metadata only. Nothing is automated.</p>
+                <ul id="recipeLabOperatorRows" class="recipe-lab-list">
+                  <li>Review selected template and readiness explanation.</li>
+                  <li>Review evidence and approval paths.</li>
+                  <li>Confirm no recipe execution is enabled.</li>
+                </ul>
+              </article>
+
+              <article class="recipe-lab-panel">
+                <div class="section-head">
+                  <h3>Handoff/export preview</h3>
+                  <span class="mission-chip">metadata only</span>
+                </div>
+                <p id="recipeLabHandoffSummary">Export preview only. Handoff package is not generated as a real file.</p>
+                <ul id="recipeLabHandoffRows" class="recipe-lab-list">
+                  <li>Readiness snapshot is text metadata.</li>
+                  <li>No filesystem writes.</li>
+                  <li>No provider/cloud calls.</li>
+                </ul>
+              </article>
+            </div>
+
+            <pre id="recipeLabReportPreview" class="recipe-lab-report" aria-label="Recipe Lab report preview">Recipe Lab - READ_ONLY / FIXTURE_SAFE / NO_RUNTIME / NO_LIVE_AUTOMATION
+No recipe execution. No browser/CDP automation. No WCU live. No OCR live.
+No filesystem writes. No provider/cloud calls. No durable recipe persistence.
+Catalog preview: 41 templates.
+Selected recipe: excel.extract_rows_to_workitems.
+Safe next action: review readiness and prepare requirements.</pre>
           </section>
 
           <section id="evidenceIntelligenceSurface" class="evidence-intelligence-surface" aria-labelledby="evidenceIntelligenceTitle" data-eil-mount="evidence-intelligence.ui.read-only.mount.v1">

@@ -110,6 +110,88 @@ const EIL_READ_ONLY_SURFACE = {
     'Human approval required for any real-world action.'
   ]
 };
+const RECIPE_LAB_READ_ONLY_SURFACE = {
+  mountId: 'recipe-lab.ui.read-only.mount.v1',
+  route: '#recipeLabSurface',
+  source: 'RecipeLabReadOnlyUiMount.CreateFixture',
+  surfaceId: 'recipe.lab.readonly.ui.surface.v1',
+  title: 'Recipe Lab',
+  statusBadges: ['READ_ONLY', 'FIXTURE_SAFE', 'NO_RUNTIME', 'NO_LIVE_AUTOMATION'],
+  dataSource: 'deterministic local fixture catalog',
+  selectedTemplateId: 'excel.extract_rows_to_workitems',
+  readOnly: true,
+  fixtureSafe: true,
+  previewSafe: true,
+  runtimeEnabled: false,
+  recipeExecutionEnabled: false,
+  browserCdpAutomationEnabled: false,
+  wcuLiveEnabled: false,
+  ocrLiveEnabled: false,
+  providerCloudEnabled: false,
+  durablePersistenceEnabled: false,
+  filesystemWritesEnabled: false,
+  handoffExportWritesFile: false,
+  catalog: {
+    totalTemplates: 41,
+    packCount: 8,
+    categoryLabels: [
+      'Excel / Microsoft 365',
+      'Google Workspace',
+      'SAP',
+      'Mercado Libre / Mercado Pago',
+      'ARCA / Fiscal Argentina',
+      'ERP Local LATAM',
+      'Generic Browser Portals',
+      'Computer Use Legacy'
+    ],
+    safetyCopy: ['Read-only catalog', 'Fixture-safe templates', 'Secrets by reference only', 'Evidence by reference only']
+  },
+  selectedRecipe: {
+    name: 'Extract rows to workitems',
+    templateId: 'excel.extract_rows_to_workitems',
+    category: 'ExcelMicrosoft365',
+    risk: 'Low',
+    runtimeEligibility: 'FixtureOnly',
+    readiness: 'FixtureReady',
+    objective: 'Inspect spreadsheet rows, validation expectations and evidence refs without live connector or file sync.',
+    expectedInputs: ['workbook ref', 'sheet ref', 'row range ref'],
+    expectedOutputs: ['workitem preview summary', 'evidence refs', 'validation refs'],
+    preconditions: ['tool.excel.fixture', 'validation.evidence', 'evidence.ref']
+  },
+  readiness: {
+    status: 'ReadyForFixtureRun',
+    canonicalEvaluator: 'RecipePolicyPreflightEvaluator',
+    safeNextAction: 'Review readiness and prepare requirements.',
+    missingRequirements: ['human approval path for any real action', 'runtime external audit before future enablement'],
+    blockedReasons: ['Live runtime blocked.', 'Connector execution not enabled.', 'Real export file generation blocked.']
+  },
+  operatorPreview: {
+    summary: 'Operator reviews requirements, blocked states, evidence refs and handoff metadata only.',
+    reviewRows: ['Review selected template and readiness explanation.', 'Review evidence and approval paths.', 'Confirm no recipe execution is enabled.'],
+    notAutomated: 'Not automated: live runtime, browser/desktop automation, connectors, vault access, recorder/playback/capture, real export, and external mutations.'
+  },
+  handoffExportPreview: {
+    status: 'PreviewOnly',
+    title: 'Handoff preview - Extract rows to workitems',
+    summary: 'Export preview only. Handoff package is not generated as a real file.',
+    metadata: ['readiness snapshot text', 'blocked reasons', 'missing requirements', 'approval path', 'evidence requirements'],
+    writesRealFile: false,
+    callsNetwork: false
+  },
+  notices: [
+    'Read-only Recipe Lab UI mount.',
+    'Fixture-safe local catalog and previews only.',
+    'No recipe execution.',
+    'No runtime actions.',
+    'No browser/CDP automation.',
+    'No WCU live.',
+    'No OCR live.',
+    'No filesystem writes.',
+    'No provider/cloud calls.',
+    'No durable recipe persistence.',
+    'Human approval required for any real action.'
+  ]
+};
 const WORKSPACE_STORE_KEY = 'nodal-os.workspaceUnderstanding.v1';
 const WORKSPACE_SCAN_LIMITS = {
   maxDepth: 4,
@@ -457,6 +539,20 @@ const el = {
   refreshCdpStatusBtn: document.getElementById('refreshCdpStatusBtn'),
   copyCdpBrowserSkillSummaryBtn: document.getElementById('copyCdpBrowserSkillSummaryBtn'),
   copyEilReportPreviewBtn: document.getElementById('copyEilReportPreviewBtn'),
+  copyRecipeLabPreviewBtn: document.getElementById('copyRecipeLabPreviewBtn'),
+  copyRecipeLabHandoffBtn: document.getElementById('copyRecipeLabHandoffBtn'),
+  recipeLabCatalogCount: document.getElementById('recipeLabCatalogCount'),
+  recipeLabCatalogSafety: document.getElementById('recipeLabCatalogSafety'),
+  recipeLabSelectedRecipe: document.getElementById('recipeLabSelectedRecipe'),
+  recipeLabSelectedStatus: document.getElementById('recipeLabSelectedStatus'),
+  recipeLabReadinessStatus: document.getElementById('recipeLabReadinessStatus'),
+  recipeLabRuntimeState: document.getElementById('recipeLabRuntimeState'),
+  recipeLabExportStatus: document.getElementById('recipeLabExportStatus'),
+  recipeLabExportBoundary: document.getElementById('recipeLabExportBoundary'),
+  recipeLabObjective: document.getElementById('recipeLabObjective'),
+  recipeLabOperatorPreview: document.getElementById('recipeLabOperatorPreview'),
+  recipeLabHandoffSummary: document.getElementById('recipeLabHandoffSummary'),
+  recipeLabReportPreview: document.getElementById('recipeLabReportPreview'),
   eilTotalEvidence: document.getElementById('eilTotalEvidence'),
   eilEvidenceHealth: document.getElementById('eilEvidenceHealth'),
   eilSearchResultCount: document.getElementById('eilSearchResultCount'),
@@ -622,6 +718,8 @@ function bindEvents() {
   el.refreshCdpStatusBtn.addEventListener('click', refreshCdpStatus);
   el.copyCdpBrowserSkillSummaryBtn.addEventListener('click', copyCdpBrowserSkillSummary);
   el.copyEilReportPreviewBtn.addEventListener('click', copyEilReportPreview);
+  el.copyRecipeLabPreviewBtn.addEventListener('click', copyRecipeLabPreview);
+  el.copyRecipeLabHandoffBtn.addEventListener('click', copyRecipeLabHandoffPreview);
   el.clearBrowserSnapshotsBtn.addEventListener('click', clearBrowserSnapshotHistory);
   el.openWorkspaceBtn.addEventListener('click', openWorkspaceDirectory);
   el.openWorkspaceFallbackBtn.addEventListener('click', openWorkspaceDirectoryInput);
@@ -987,6 +1085,7 @@ function renderOperate() {
   renderDemoMissionControl();
   renderWorkspaceUnderstanding();
   renderBrowserSkills();
+  renderRecipeLabSurface();
   renderEvidenceIntelligenceSurface();
   el.operatorGoal.textContent = state.operator.goal || '-';
   el.operatorPlan.textContent = state.operator.planPreview
@@ -4286,6 +4385,83 @@ function renderBrowserSkills() {
   renderBrowserEvidence(snapshot);
   renderBrowserSnapshotHistory();
   renderCdpBrowserSkillsSurface();
+}
+
+function renderRecipeLabSurface() {
+  const surface = RECIPE_LAB_READ_ONLY_SURFACE;
+  el.recipeLabCatalogCount.textContent = `${surface.catalog.totalTemplates} templates`;
+  el.recipeLabCatalogSafety.textContent = `${surface.catalog.packCount} packs / ${surface.catalog.safetyCopy.join(' / ')}`;
+  el.recipeLabSelectedRecipe.textContent = surface.selectedRecipe.name;
+  el.recipeLabSelectedStatus.textContent = `${surface.selectedRecipe.runtimeEligibility} / ${surface.selectedRecipe.readiness}`;
+  el.recipeLabReadinessStatus.textContent = surface.readiness.status;
+  el.recipeLabRuntimeState.textContent = `runtime enabled: ${surface.runtimeEnabled}`;
+  el.recipeLabExportStatus.textContent = surface.handoffExportPreview.status;
+  el.recipeLabExportBoundary.textContent = `metadata text only / writes file: ${surface.handoffExportPreview.writesRealFile}`;
+  el.recipeLabObjective.textContent = surface.selectedRecipe.objective;
+  el.recipeLabOperatorPreview.textContent = surface.operatorPreview.summary;
+  el.recipeLabHandoffSummary.textContent = surface.handoffExportPreview.summary;
+  el.recipeLabReportPreview.textContent = buildRecipeLabReportPreview(surface);
+}
+
+function buildRecipeLabReportPreview(surface = RECIPE_LAB_READ_ONLY_SURFACE) {
+  return [
+    'Recipe Lab - READ_ONLY / FIXTURE_SAFE / NO_RUNTIME / NO_LIVE_AUTOMATION',
+    `mount: ${surface.mountId}`,
+    `source: ${surface.source}`,
+    `dataSource: ${surface.dataSource}`,
+    `selectedTemplateId: ${surface.selectedTemplateId}`,
+    `catalogTemplates: ${surface.catalog.totalTemplates}`,
+    `readOnly: ${surface.readOnly}`,
+    `fixtureSafe: ${surface.fixtureSafe}`,
+    `previewSafe: ${surface.previewSafe}`,
+    `runtimeEnabled: ${surface.runtimeEnabled}`,
+    `recipeExecutionEnabled: ${surface.recipeExecutionEnabled}`,
+    `browserCdpAutomationEnabled: ${surface.browserCdpAutomationEnabled}`,
+    `wcuLiveEnabled: ${surface.wcuLiveEnabled}`,
+    `ocrLiveEnabled: ${surface.ocrLiveEnabled}`,
+    `providerCloudEnabled: ${surface.providerCloudEnabled}`,
+    `durablePersistenceEnabled: ${surface.durablePersistenceEnabled}`,
+    `filesystemWritesEnabled: ${surface.filesystemWritesEnabled}`,
+    `handoffExportWritesFile: ${surface.handoffExportWritesFile}`,
+    `readiness: ${surface.readiness.status}`,
+    `safeNextAction: ${surface.readiness.safeNextAction}`,
+    `blockedReasons: ${surface.readiness.blockedReasons.join(' ')}`,
+    `requiredHumanActions: ${surface.readiness.missingRequirements.join(' ')}`,
+    `operatorPreview: ${surface.operatorPreview.summary}`,
+    `handoffExportPreview: ${surface.handoffExportPreview.summary}`,
+    ...surface.notices
+  ].join('\n');
+}
+
+function buildRecipeLabHandoffPreview(surface = RECIPE_LAB_READ_ONLY_SURFACE) {
+  return [
+    surface.handoffExportPreview.title,
+    surface.handoffExportPreview.summary,
+    `status: ${surface.handoffExportPreview.status}`,
+    `metadata: ${surface.handoffExportPreview.metadata.join(', ')}`,
+    `writesRealFile: ${surface.handoffExportPreview.writesRealFile}`,
+    `callsNetwork: ${surface.handoffExportPreview.callsNetwork}`,
+    `safeNextAction: ${surface.readiness.safeNextAction}`,
+    'No filesystem writes.',
+    'No provider/cloud calls.',
+    'Human approval required for any real action.'
+  ].join('\n');
+}
+
+async function copyRecipeLabPreview() {
+  try {
+    await navigator.clipboard.writeText(buildRecipeLabReportPreview());
+  } catch (error) {
+    addLog('local', { kind: 'RecipeLabCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
+}
+
+async function copyRecipeLabHandoffPreview() {
+  try {
+    await navigator.clipboard.writeText(buildRecipeLabHandoffPreview());
+  } catch (error) {
+    addLog('local', { kind: 'RecipeLabHandoffCopyFallback', reason: error && error.message ? error.message : 'clipboard unavailable' });
+  }
 }
 
 function renderEvidenceIntelligenceSurface() {
