@@ -1,0 +1,73 @@
+{
+  "generatedAt": "2026-06-29T10:38:05.676Z",
+  "method": "local-file static Chromium render via existing stealth-engine Playwright dependency and existing local Chromium executable",
+  "executable": "<local-ms-playwright-chromium-1223>\\chrome-win64\\chrome.exe",
+  "fileUrl": "file:///C:/DESARROLLO/NodalOS/Codigo-m12-audit/browser-extension/onebrain-chrome-lab/sidepanel.html",
+  "screenshots": [
+    {
+      "name": "mission-control",
+      "selector": ".mission-control-shell",
+      "file": "docs/qa/product-surfaces-manual-qa-packet/screenshots/mission-control.png",
+      "present": true,
+      "visible": true,
+      "text": "MISSION CONTROL NODAL OS Misiones Workspace Historial Guion demo READ-ONLY SURFACES Surface summary Browser Skills Recipe Lab Evidence Intelligence Timeline Evidencia Resumen MODO Demo segura no-op local / in-memory LISTO PARA PROBAR Local Operator Demo Ejecutar un no-op visible, generar evidencia demo y proyectar el run en timeline. Run demo Copiar resumen GUÍA RÁPIDA Grabá una demo en 60-90 segundos Minimizar 01 Creá una misión Usá una frase corta para contar qué vas a mostrar. 02 Ejecutá una demo Run demo genera timeline, logs e historial local. 03 Revisá timeline e historial Mostrá que el run queda guardado y reabrible. 04 Copiá el resumen Cerrá el video con un reporte corto y compartible. PASO 1 Crear misión Nombre y objetivo visibles. PASO 2 Run demo Timeline y evidencia aparecen. PASO 3 Copiar resumen Listo para cerrar la grabación. PREPARÁ UN RUN PARA GRABAR La demo queda lista cuando hay misión, run, timeline y resumen. READ-ONLY PRODUCT SURFACES Surface map EIL, Recipe Lab an"
+    },
+    {
+      "name": "read-only-summary",
+      "selector": "#readOnlySurfacesSummary",
+      "file": "docs/qa/product-surfaces-manual-qa-packet/screenshots/read-only-surfaces-summary.png",
+      "present": true,
+      "visible": true,
+      "text": "READ-ONLY PRODUCT SURFACES Surface map EIL, Recipe Lab and CDP status are visible as local preview surfaces. They do not enable runtime actions, recipe execution, live automation, provider/cloud calls or filesystem writes. View Recipe Lab View Evidence Intelligence READ_ONLY NO_RUNTIME NO_LIVE_AUTOMATION HUMAN_REVIEW_REQUIRED Recipe Lab Fixture-safe previews Catalog, readiness, operator preview and handoff metadata only. Evidence Intelligence Local evidence audit Lexical search, claim/action scan and graph summary. Semantic backend disabled. Browser Skills CDP Metadata status only No extension fallback, no system-browser fallback and no live CDP action from UI. Shared boundary No writes / no provider Copy previews are clipboard-only text. Human review is required for any real action."
+    },
+    {
+      "name": "recipe-lab",
+      "selector": "#recipeLabSurface",
+      "file": "docs/qa/product-surfaces-manual-qa-packet/screenshots/recipe-lab.png",
+      "present": true,
+      "visible": true,
+      "text": "RECIPE LAB Recipe Lab Read-only fixture-safe Recipe Lab surface. Preview-only catalog, readiness and handoff metadata. Recipe execution remains disabled. Copy read-only preview Copy read-only handoff preview READ_ONLY FIXTURE_SAFE NO_RUNTIME NO_LIVE_AUTOMATION No recipe execution No runtime actions No live automation No browser/CDP automation No WCU live No OCR live No filesystem writes No provider/cloud calls No durable recipe persistence Human approval required for any real action Recipe Catalog Summary 41 templates 8 packs / Read-only catalog / Fixture-safe templates / Secrets by reference only / Evidence by reference only Selected recipe Extract rows to workitems FixtureOnly / FixtureReady Readiness matrix ReadyForFixtureRun runtime enabled: false Handoff/export preview PreviewOnly metadata text only / writes file: false Catalog preview READ-ONLY CATALOG Excel / Microsoft 365: fixture-ready previews. Browser portals: live runtime blocked. Fiscal/payment/marketplace templates: human"
+    },
+    {
+      "name": "evidence-intelligence",
+      "selector": "#evidenceIntelligenceSurface",
+      "file": "docs/qa/product-surfaces-manual-qa-packet/screenshots/evidence-intelligence.png",
+      "present": true,
+      "visible": true,
+      "text": "EVIDENCE INTELLIGENCE Evidence Intelligence Read-only local evidence audit surface. Local fixture / local evidence only. Semantic backend disabled. Copy read-only report preview READ_ONLY LOCAL_ONLY NO_RUNTIME NO_LIVE_AUTOMATION Semantic backend disabled No runtime actions No live automation No browser/CDP automation No WCU live No OCR live No filesystem writes No provider/cloud calls Human approval required for any real-world action Evidence Index Summary 6 evidence items fresh: 5 / stale or unknown: 1 / low confidence: 0 Lexical search results 4 results query: button invoice Pagar Claim scan verdict SUPPORTED support: ev.dom.invoice Action scan verdict BLOCKED_BY_POLICY readiness blocks runtime: true Contradictions first READ-ONLY ev.uia.delete contradicts requested target Pagar. ev.policy.block blocks destructive or externally ambiguous action. Missing / stale / low-confidence evidence FIXTURE-SAFE stale: ev.validation.stale missing approval evidence for real-world action. low confi"
+    }
+  ],
+  "checks": {
+    "title": "NODAL OS",
+    "bodyTextLength": 15610,
+    "missionControlShell": true,
+    "readOnlySummary": true,
+    "recipeLab": true,
+    "evidenceIntelligence": true,
+    "navReadOnlySurfaceLabels": [
+      "Surface summary",
+      "Recipe Lab",
+      "Evidence Intelligence"
+    ],
+    "requiredNotices": {
+      "readOnly": true,
+      "localOnly": true,
+      "fixtureSafe": true,
+      "noRuntime": true,
+      "noLiveAutomation": true,
+      "semanticDisabled": true,
+      "recipeExecutionDisabled": true,
+      "noProviderCloud": true,
+      "noFilesystemWrites": true,
+      "humanReview": true
+    },
+    "copyButtons": [
+      "Copy read-only preview",
+      "Copy read-only handoff preview",
+      "Copy read-only report preview"
+    ],
+    "forbiddenButtons": []
+  },
+  "consoleMessages": [],
+  "pageErrors": []
+}

@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-06-29T10:40:29.154Z",
+  "method": "local-file static click check; no extension loaded; no bridge configured; request URLs recorded",
+  "fileUrl": "file:///C:/DESARROLLO/NodalOS/Codigo-m12-audit/browser-extension/onebrain-chrome-lab/sidepanel.html",
+  "requests": [
+    "file:///C:/DESARROLLO/NodalOS/Codigo-m12-audit/browser-extension/onebrain-chrome-lab/sidepanel.html",
+    "file:///C:/DESARROLLO/NodalOS/Codigo-m12-audit/browser-extension/onebrain-chrome-lab/sidepanel.css",
+    "file:///C:/DESARROLLO/NodalOS/Codigo-m12-audit/browser-extension/onebrain-chrome-lab/sidepanel.js"
+  ],
+  "externalRequests": [],
+  "consoleMessages": [],
+  "pageErrors": [],
+  "copyResults": [
+    {
+      "name": "recipe-preview",
+      "button": "#copyRecipeLabPreviewBtn",
+      "preview": "#recipeLabReportPreview",
+      "buttonPresent": true,
+      "clickOk": true,
+      "clickError": "",
+      "previewHasReadOnly": true,
+      "previewHasNoRuntime": true,
+      "previewHasClipboardOnly": true,
+      "clipboardReadStatus": "READ_OK",
+      "clipboardHasReadOnly": true,
+      "clipboardHasNoRuntime": true,
+      "clipboardHasClipboardOnly": true,
+      "clipboardSample": "Recipe Lab - READ_ONLY / FIXTURE_SAFE / NO_RUNTIME / NO_LIVE_AUTOMATION\r\ncopyMode: clipboard-only text preview\r\nmount: recipe-lab.ui.read-only.mount.v1\r\nsource: RecipeLabReadOnlyUiMount.CreateFixture\r\ndataSource: deterministic local fixture"
+    },
+    {
+      "name": "recipe-handoff",
+      "button": "#copyRecipeLabHandoffBtn",
+      "preview": "#recipeLabHandoffPreview",
+      "buttonPresent": true,
+      "clickOk": true,
+      "clickError": "",
+      "previewHasReadOnly": false,
+      "previewHasNoRuntime": false,
+      "previewHasClipboardOnly": false,
+      "clipboardReadStatus": "READ_OK",
+      "clipboardHasReadOnly": true,
+      "clipboardHasNoRuntime": true,
+      "clipboardHasClipboardOnly": true,
+      "clipboardSample": "Handoff preview - Extract rows to workitems\r\nREAD_ONLY / FIXTURE_SAFE / NO_RUNTIME / NO_LIVE_AUTOMATION\r\ncopyMode: clipboard-only text preview\r\nExport preview only. Handoff package is not generated as a real file.\r\nstatus: PreviewOnly\r\nmeta"
+    },
+    {
+      "name": "eil-report",
+      "button": "#copyEilReportPreviewBtn",
+      "preview": "#eilReportPreview",
+      "buttonPresent": true,
+      "clickOk": true,
+      "clickError": "",
+      "previewHasReadOnly": true,
+      "previewHasNoRuntime": true,
+      "previewHasClipboardOnly": true,
+      "clipboardReadStatus": "READ_OK",
+      "clipboardHasReadOnly": true,
+      "clipboardHasNoRuntime": true,
+      "clipboardHasClipboardOnly": true,
+      "clipboardSample": "Evidence Intelligence - READ_ONLY / LOCAL_ONLY / NO_RUNTIME / NO_LIVE_AUTOMATION\r\ncopyMode: clipboard-only text preview\r\nmount: evidence-intelligence.ui.read-only.mount.v1\r\nsource: EvidenceIntelligenceReadOnlyPresenter.CreateFixture\r\ndataSo"
+    }
+  ]
+}
