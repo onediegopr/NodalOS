@@ -9,11 +9,12 @@ namespace OneBrain.Safety.Tests;
 public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
 {
     private const string FoundationPath = "src/OneBrain.Core/Approval/ApprovalHumanReviewReadOnlyFoundation.cs";
+    private const string RiskDecisionGuardPath = "src/OneBrain.Core/Approval/ApprovalRiskDecisionReadOnlyGuard.cs";
 
     [TestMethod]
     public void FoundationSource_HasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
     {
-        var source = ReadRepoText(FoundationPath);
+        var source = string.Join("\n", ReadOnlyPhaseEPaths().Select(ReadRepoText));
         var forbidden = new[]
         {
             "File.Read",
@@ -52,7 +53,7 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     [TestMethod]
     public void FoundationDoesNotReuseExistingApprovalExecutionOrArtifactWriter()
     {
-        var source = ReadRepoText(FoundationPath);
+        var source = string.Join("\n", ReadOnlyPhaseEPaths().Select(ReadRepoText));
         var forbidden = new[]
         {
             "ApprovalArtifactWriter",
@@ -102,6 +103,55 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
         Assert.IsFalse(proof.ApprovalStateMutationAttempted);
         Assert.IsFalse(proof.ProductActionExposed);
         Assert.IsFalse(proof.ProductServiceRegistered);
+    }
+
+    [TestMethod]
+    public void RiskDecisionGuardProof_DisablesAllSideEffectsRuntimeApprovalMutationAndProductActions()
+    {
+        foreach (var result in ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog())
+        {
+            var proof = result.NoSideEffectProof;
+
+            Assert.IsTrue(proof.Passes, result.FixtureId);
+            Assert.IsTrue(result.PreviewOnly, result.FixtureId);
+            Assert.IsFalse(result.ApprovalExecutionAllowed, result.FixtureId);
+            Assert.IsFalse(result.StateMutationAllowed, result.FixtureId);
+            Assert.IsFalse(result.ProductActionAllowed, result.FixtureId);
+            Assert.IsFalse(proof.FilesystemReadAttempted, result.FixtureId);
+            Assert.IsFalse(proof.FilesystemWriteAttempted, result.FixtureId);
+            Assert.IsFalse(proof.DatabaseTouched, result.FixtureId);
+            Assert.IsFalse(proof.DurablePersistenceActive, result.FixtureId);
+            Assert.IsFalse(proof.DurableMemoryActive, result.FixtureId);
+            Assert.IsFalse(proof.VectorSemanticBackendTouched, result.FixtureId);
+            Assert.IsFalse(proof.LlmProviderTouched, result.FixtureId);
+            Assert.IsFalse(proof.ProviderCloudTouched, result.FixtureId);
+            Assert.IsFalse(proof.MigrationRunnerStarted, result.FixtureId);
+            Assert.IsFalse(proof.MigrationExecuted, result.FixtureId);
+            Assert.IsFalse(proof.RuntimeTouched, result.FixtureId);
+            Assert.IsFalse(proof.BrowserCdpTouched, result.FixtureId);
+            Assert.IsFalse(proof.WcuTouched, result.FixtureId);
+            Assert.IsFalse(proof.OcrTouched, result.FixtureId);
+            Assert.IsFalse(proof.RecipeExecutionStarted, result.FixtureId);
+            Assert.IsFalse(proof.ApprovalExecutionStarted, result.FixtureId);
+            Assert.IsFalse(proof.ApprovalStateMutationAttempted, result.FixtureId);
+            Assert.IsFalse(proof.ProductActionExposed, result.FixtureId);
+            Assert.IsFalse(proof.ProductServiceRegistered, result.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void ReadOnlyPresenterAndRiskDecisionGuard_DoNotCreateApprovalArtifactFiles()
+    {
+        var root = FindRepoRoot();
+        var approvalArtifacts = System.IO.Path.Combine(root, "artifacts", "approvals");
+        var before = SnapshotFiles(approvalArtifacts);
+
+        _ = ApprovalHumanReviewReadOnlyPresenter.CreateFixture();
+        _ = ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog();
+
+        var after = SnapshotFiles(approvalArtifacts);
+
+        CollectionAssert.AreEqual(before, after);
     }
 
     [TestMethod]
@@ -155,13 +205,18 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     public void FoundationText_HasNoApprovalHumanReviewOrProductionOverclaim()
     {
         var packet = ApprovalHumanReviewReadOnlyPresenter.CreateFixture();
+        var guardText = string.Join(
+            "\n",
+            ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog()
+                .Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}"));
         var text = string.Join(
             "\n",
             packet.ReadOnlySummary,
             packet.Summary,
             string.Join("\n", packet.Items.Select(item => $"{item.ItemId} {item.Title} {item.Summary} {string.Join(" ", item.Warnings)} {string.Join(" ", item.Blockers)}")),
             string.Join("\n", packet.CandidateActions.Select(action => $"{action.Title} {action.Summary}")),
-            string.Join("\n", packet.DecisionOptions.Select(option => $"{option.Label} {option.Summary}")));
+            string.Join("\n", packet.DecisionOptions.Select(option => $"{option.Label} {option.Summary}")),
+            guardText);
 
         var forbidden = new[]
         {
@@ -202,7 +257,8 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
             packet.Summary,
             string.Join("\n", packet.Items.Select(item => item.Summary)),
             string.Join("\n", packet.CandidateActions.Select(action => action.Summary)),
-            string.Join("\n", packet.DecisionOptions.Select(option => option.Summary)));
+            string.Join("\n", packet.DecisionOptions.Select(option => option.Summary)),
+            string.Join("\n", ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog().Select(result => $"{string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}")));
 
         Assert.IsFalse(text.Contains("sk-", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(text.Contains("Bearer ", StringComparison.OrdinalIgnoreCase));
@@ -210,6 +266,12 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
         Assert.IsFalse(text.Contains("AKIA", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(text.Contains("ghp_", StringComparison.OrdinalIgnoreCase));
     }
+
+    private static IReadOnlyList<string> ReadOnlyPhaseEPaths() =>
+    [
+        FoundationPath,
+        RiskDecisionGuardPath
+    ];
 
     private static string ReadRepoText(string relativePath)
     {
@@ -225,5 +287,31 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
 
         Assert.Fail($"Could not locate {relativePath}");
         return "";
+    }
+
+    private static string FindRepoRoot()
+    {
+        var current = AppContext.BaseDirectory;
+        while (!string.IsNullOrWhiteSpace(current))
+        {
+            if (System.IO.File.Exists(System.IO.Path.Combine(current, "OneBrain.slnx")))
+                return current;
+
+            current = System.IO.Directory.GetParent(current)?.FullName;
+        }
+
+        Assert.Fail("Could not locate repo root.");
+        return "";
+    }
+
+    private static string[] SnapshotFiles(string directory)
+    {
+        if (!System.IO.Directory.Exists(directory))
+            return [];
+
+        return System.IO.Directory.GetFiles(directory, "*", System.IO.SearchOption.AllDirectories)
+            .Select(path => System.IO.Path.GetRelativePath(directory, path))
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
     }
 }

@@ -190,4 +190,133 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
         Assert.IsFalse(text.Contains("durable memory active", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(text.Contains("provider call enabled", StringComparison.OrdinalIgnoreCase));
     }
+
+    [TestMethod]
+    public void ApprovalRiskDecisionGuard_CoversExpectedFixtureCatalog()
+    {
+        var fixtures = ApprovalRiskDecisionReadOnlyGuard.CreateFixtureCatalog();
+        var results = ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog();
+
+        Assert.AreEqual(26, fixtures.Count);
+        Assert.AreEqual(fixtures.Count, results.Count);
+
+        foreach (var fixture in fixtures)
+        {
+            var result = results.Single(item => item.FixtureId == fixture.FixtureId);
+
+            Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixture.FixtureId);
+            if (fixture.ExpectedIssue == ApprovalRiskDecisionReadOnlyIssueKind.None)
+            {
+                Assert.AreEqual(0, result.Issues.Count, fixture.FixtureId);
+            }
+            else
+            {
+                Assert.IsTrue(result.HasIssue(fixture.ExpectedIssue), fixture.FixtureId);
+            }
+
+            Assert.IsTrue(result.PreviewOnly, fixture.FixtureId);
+            Assert.IsFalse(result.ApprovalExecutionAllowed, fixture.FixtureId);
+            Assert.IsFalse(result.StateMutationAllowed, fixture.FixtureId);
+            Assert.IsFalse(result.ProductActionAllowed, fixture.FixtureId);
+            Assert.IsTrue(result.NoSideEffectProof.Passes, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void ApprovalRiskDecisionGuard_AllowsOnlySafePreviewLabels()
+    {
+        var results = ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog();
+
+        AssertRiskDecision(results, "approval.low-risk.evidence-context", ApprovalRiskDecisionReadOnlyDecision.AllowedPreviewOnly, ApprovalRiskDecisionReadOnlyIssueKind.None);
+        AssertRiskDecision(results, "approval.reject-preview", ApprovalRiskDecisionReadOnlyDecision.AllowedPreviewOnly, ApprovalRiskDecisionReadOnlyIssueKind.None);
+        AssertRiskDecision(results, "approval.request-more-evidence", ApprovalRiskDecisionReadOnlyDecision.AllowedPreviewOnly, ApprovalRiskDecisionReadOnlyIssueKind.None);
+        AssertRiskDecision(results, "approval.request-context-refresh", ApprovalRiskDecisionReadOnlyDecision.AllowedPreviewOnly, ApprovalRiskDecisionReadOnlyIssueKind.None);
+        AssertRiskDecision(results, "approval.defer-decision", ApprovalRiskDecisionReadOnlyDecision.AllowedPreviewOnly, ApprovalRiskDecisionReadOnlyIssueKind.None);
+        AssertRiskDecision(results, "approval.medium-risk.human-review", ApprovalRiskDecisionReadOnlyDecision.NeedsHumanReview, ApprovalRiskDecisionReadOnlyIssueKind.HumanReviewRequired);
+        AssertRiskDecision(results, "approval.fixture-only", ApprovalRiskDecisionReadOnlyDecision.WarningPreviewOnly, ApprovalRiskDecisionReadOnlyIssueKind.FixtureOnlyNotProductionTrusted);
+    }
+
+    [TestMethod]
+    public void ApprovalRiskDecisionGuard_BlocksUnsafeRiskEvidenceContextAndContradictions()
+    {
+        var results = ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog();
+
+        AssertRiskDecision(results, "approval.critical-risk", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.CriticalRisk);
+        AssertRiskDecision(results, "approval.missing-evidence", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.MissingEvidence);
+        AssertRiskDecision(results, "approval.missing-context", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.MissingContext);
+        AssertRiskDecision(results, "approval.stale-context", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.StaleContext);
+        AssertRiskDecision(results, "approval.excluded-context", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.ExcludedContext);
+        AssertRiskDecision(results, "approval.unresolved-contradiction", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.UnresolvedContradiction);
+        AssertRiskDecision(results, "approval.approve-critical-risk", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.ApproveWithCriticalRisk);
+        AssertRiskDecision(results, "approval.approve-without-evidence", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.ApproveWithoutEvidence);
+        AssertRiskDecision(results, "approval.conflicting-risk-summaries", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.ConflictingRiskSummaries);
+        AssertRiskDecision(results, "approval.human-review-missing", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.HumanReviewMissing);
+    }
+
+    [TestMethod]
+    public void ApprovalRiskDecisionGuard_BlocksActionRuntimeProviderSemanticLlmAndMutationImplications()
+    {
+        var results = ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog();
+
+        AssertRiskDecision(results, "approval.provider-derived-disabled", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.ProviderCloudDerivedWhileDisabled);
+        AssertRiskDecision(results, "approval.semantic-derived-disabled", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.SemanticVectorDerivedWhileDisabled);
+        AssertRiskDecision(results, "approval.llm-derived-disabled", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.LlmDerivedWhileDisabled);
+        AssertRiskDecision(results, "approval.action-filesystem-write", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.FilesystemWriteImplication);
+        AssertRiskDecision(results, "approval.action-runtime-live", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.RuntimeLiveImplication);
+        AssertRiskDecision(results, "approval.action-state-mutation", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.ApprovalStateMutationImplication);
+        AssertRiskDecision(results, "approval.option-product-action-count", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.ProductActionCountNonZero);
+        AssertRiskDecision(results, "approval.option-state-mutation-count", ApprovalRiskDecisionReadOnlyDecision.Blocked, ApprovalRiskDecisionReadOnlyIssueKind.StateMutationCountNonZero);
+        AssertRiskDecision(results, "approval.raw-sensitive-payload", ApprovalRiskDecisionReadOnlyDecision.Excluded, ApprovalRiskDecisionReadOnlyIssueKind.RawSensitivePayload);
+    }
+
+    [TestMethod]
+    public void ApprovalRiskDecisionGuard_HasNoApprovalHumanReviewOrProductionOverclaim()
+    {
+        var text = string.Join(
+            "\n",
+            ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog()
+                .Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}"));
+
+        var forbidden = new[]
+        {
+            "production" + "-ready",
+            "approval executed",
+            "approval execution completed",
+            "approval state mutated",
+            "state mutation completed",
+            "approved and applied",
+            "recipe executed",
+            "runtime action enabled",
+            "live automation enabled",
+            "provider call enabled",
+            "semantic search enabled",
+            "vector backend enabled",
+            "durable memory active",
+            "memory persisted"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    private static void AssertRiskDecision(
+        IReadOnlyList<ApprovalRiskDecisionReadOnlyResult> results,
+        string fixtureId,
+        ApprovalRiskDecisionReadOnlyDecision expectedDecision,
+        ApprovalRiskDecisionReadOnlyIssueKind expectedIssue)
+    {
+        var result = results.Single(item => item.FixtureId == fixtureId);
+
+        Assert.AreEqual(expectedDecision, result.Decision, fixtureId);
+        if (expectedIssue == ApprovalRiskDecisionReadOnlyIssueKind.None)
+        {
+            Assert.AreEqual(0, result.Issues.Count, fixtureId);
+        }
+        else
+        {
+            Assert.IsTrue(result.HasIssue(expectedIssue), fixtureId);
+        }
+    }
 }

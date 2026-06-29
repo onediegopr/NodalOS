@@ -396,7 +396,6 @@ public enum EvidenceIntelligenceSchemaCompatibilityIssueKind
 public enum EvidenceIntelligenceSchemaCompatibilityDecision
 {
     CompatibleDesignOnly,
-    Rejected,
     Blocked
 }
 
@@ -1278,9 +1277,7 @@ public static class EvidenceIntelligenceSchemaCompatibilityGuard
 
         var decision = issues.Count == 0
             ? EvidenceIntelligenceSchemaCompatibilityDecision.CompatibleDesignOnly
-            : issues.Any(issue => IsBlockingIssue(issue.Kind))
-                ? EvidenceIntelligenceSchemaCompatibilityDecision.Blocked
-                : EvidenceIntelligenceSchemaCompatibilityDecision.Rejected;
+            : EvidenceIntelligenceSchemaCompatibilityDecision.Blocked;
 
         return new(
             Check: check,
@@ -1385,9 +1382,6 @@ public static class EvidenceIntelligenceSchemaCompatibilityGuard
             issues.Add(Issue(EvidenceIntelligenceSchemaCompatibilityIssueKind.MigrationPlanTargetIncompatible, check.ArtifactKind, "Durable persistence remains disabled for schema compatibility guards."));
         }
     }
-
-    private static bool IsBlockingIssue(EvidenceIntelligenceSchemaCompatibilityIssueKind kind) =>
-        kind != EvidenceIntelligenceSchemaCompatibilityIssueKind.None;
 
     private static EvidenceIntelligenceSchemaCompatibilityIssue Issue(
         EvidenceIntelligenceSchemaCompatibilityIssueKind kind,

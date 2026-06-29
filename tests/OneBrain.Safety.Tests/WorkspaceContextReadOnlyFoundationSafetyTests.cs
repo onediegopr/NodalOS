@@ -242,26 +242,50 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
     [TestMethod]
     public void AuthorityFreshnessGuard_BlocksProviderSemanticRawSensitiveLegacyAndContradictorySources()
     {
+        var fixtures = WorkspaceContextAuthorityFreshnessGuard.CreateFixtureCatalog();
         var results = WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog();
 
-        AssertBlocked(results, "ctx.provider-derived-disabled", WorkspaceContextAuthorityFreshnessIssueKind.ProviderDerivedWhileDisabled);
-        AssertBlocked(results, "ctx.semantic-derived-disabled", WorkspaceContextAuthorityFreshnessIssueKind.SemanticDerivedWhileDisabled);
-        AssertBlocked(results, "ctx.raw-payload", WorkspaceContextAuthorityFreshnessIssueKind.RawPayloadContext);
-        AssertBlocked(results, "ctx.sensitive-without-clearance", WorkspaceContextAuthorityFreshnessIssueKind.SensitiveContextWithoutClearance);
-        AssertBlocked(results, "ctx.legacy-no-provenance", WorkspaceContextAuthorityFreshnessIssueKind.LegacyWithoutProvenance);
-        AssertBlocked(results, "ctx.contradictory", WorkspaceContextAuthorityFreshnessIssueKind.ContradictoryContext);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.provider-derived-disabled", WorkspaceContextAuthorityFreshnessIssueKind.ProviderDerivedWhileDisabled);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.semantic-derived-disabled", WorkspaceContextAuthorityFreshnessIssueKind.SemanticDerivedWhileDisabled);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.raw-payload", WorkspaceContextAuthorityFreshnessIssueKind.RawPayloadContext);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.sensitive-without-clearance", WorkspaceContextAuthorityFreshnessIssueKind.SensitiveContextWithoutClearance);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.legacy-no-provenance", WorkspaceContextAuthorityFreshnessIssueKind.LegacyWithoutProvenance);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.contradictory", WorkspaceContextAuthorityFreshnessIssueKind.ContradictoryContext);
     }
 
     [TestMethod]
     public void AuthorityFreshnessGuard_BlocksStaleMissingUnknownAndDecisionMemoryWithoutHumanReview()
     {
+        var fixtures = WorkspaceContextAuthorityFreshnessGuard.CreateFixtureCatalog();
         var results = WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog();
 
-        AssertBlocked(results, "ctx.stale-context", WorkspaceContextAuthorityFreshnessIssueKind.StaleContext);
-        AssertBlocked(results, "ctx.missing-freshness", WorkspaceContextAuthorityFreshnessIssueKind.MissingFreshness);
-        AssertBlocked(results, "ctx.unknown-authority", WorkspaceContextAuthorityFreshnessIssueKind.UnknownAuthority);
-        AssertBlocked(results, "safe-next-step.stale", WorkspaceContextAuthorityFreshnessIssueKind.SafeNextStepReliesOnStaleContext);
-        AssertBlocked(results, "memory.decision-missing-human-review", WorkspaceContextAuthorityFreshnessIssueKind.DecisionMemoryMissingHumanReview);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.stale-context", WorkspaceContextAuthorityFreshnessIssueKind.StaleContext);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.missing-freshness", WorkspaceContextAuthorityFreshnessIssueKind.MissingFreshness);
+        AssertBlockedOrExcluded(fixtures, results, "ctx.unknown-authority", WorkspaceContextAuthorityFreshnessIssueKind.UnknownAuthority);
+        AssertBlockedOrExcluded(fixtures, results, "safe-next-step.stale", WorkspaceContextAuthorityFreshnessIssueKind.SafeNextStepReliesOnStaleContext);
+        AssertBlockedOrExcluded(fixtures, results, "memory.decision-missing-human-review", WorkspaceContextAuthorityFreshnessIssueKind.DecisionMemoryMissingHumanReview);
+    }
+
+    [TestMethod]
+    public void AuthorityFreshnessGuard_FixturesMatchExpectedDecisionAndIssue()
+    {
+        var fixtures = WorkspaceContextAuthorityFreshnessGuard.CreateFixtureCatalog();
+        var results = WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog();
+
+        foreach (var fixture in fixtures)
+        {
+            var result = results.Single(item => item.FixtureId == fixture.FixtureId);
+
+            Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixture.FixtureId);
+            if (fixture.ExpectedIssue == WorkspaceContextAuthorityFreshnessIssueKind.None)
+            {
+                Assert.AreEqual(0, result.Issues.Count, fixture.FixtureId);
+            }
+            else
+            {
+                Assert.IsTrue(result.HasIssue(fixture.ExpectedIssue), fixture.FixtureId);
+            }
+        }
     }
 
     [TestMethod]
@@ -374,34 +398,46 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
     [TestMethod]
     public void SelectionLockExclusionGuard_BlocksExcludedDependenciesAndUnsafeSelection()
     {
+        var fixtures = WorkspaceContextSelectionLockExclusionGuard.CreateFixtureCatalog();
         var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
 
-        AssertSelectionBlocked(results, "ctx.selected-excluded", WorkspaceContextSelectionLockExclusionIssueKind.SelectedExcluded);
-        AssertSelectionBlocked(results, "memory.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByMemory);
-        AssertSelectionBlocked(results, "safe-next-step.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedBySafeNextStep);
-        AssertSelectionBlocked(results, "claim-action.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByClaimActionPreview);
-        AssertSelectionBlocked(results, "graph.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByGraph);
-        AssertSelectionBlocked(results, "ctx.selected-raw-sensitive", WorkspaceContextSelectionLockExclusionIssueKind.UnsafeSelectedContent);
-        AssertSelectionBlocked(results, "dashboard.excluded-candidate", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedAppearsInExportDashboardCandidate);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-excluded", WorkspaceContextSelectionLockExclusionIssueKind.SelectedExcluded);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "memory.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByMemory);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "safe-next-step.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedBySafeNextStep);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "claim-action.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByClaimActionPreview);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "graph.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByGraph);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-raw-sensitive", WorkspaceContextSelectionLockExclusionIssueKind.UnsafeSelectedContent);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "dashboard.excluded-candidate", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedAppearsInExportDashboardCandidate);
     }
 
     [TestMethod]
     public void SelectionLockExclusionGuard_BlocksLockedStaleUnknownProviderSemanticLegacyAndDuplicateCases()
     {
+        var fixtures = WorkspaceContextSelectionLockExclusionGuard.CreateFixtureCatalog();
         var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
 
-        AssertSelectionBlocked(results, "ctx.selected-stale", WorkspaceContextSelectionLockExclusionIssueKind.SelectedStale);
-        AssertSelectionBlocked(results, "ctx.selected-unknown-authority", WorkspaceContextSelectionLockExclusionIssueKind.SelectedUnknownAuthority);
-        AssertSelectionBlocked(results, "ctx.selected-missing-freshness", WorkspaceContextSelectionLockExclusionIssueKind.SelectedMissingFreshness);
-        AssertSelectionBlocked(results, "ctx.selected-contradictory", WorkspaceContextSelectionLockExclusionIssueKind.SelectedContradictory);
-        AssertSelectionBlocked(results, "ctx.locked-missing-evidence", WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingEvidence);
-        AssertSelectionBlocked(results, "memory.locked-promote", WorkspaceContextSelectionLockExclusionIssueKind.LockedMemoryPromotion);
-        AssertSelectionBlocked(results, "ctx.selected-provider-disabled", WorkspaceContextSelectionLockExclusionIssueKind.ProviderDerivedWhileDisabled);
-        AssertSelectionBlocked(results, "ctx.selected-semantic-disabled", WorkspaceContextSelectionLockExclusionIssueKind.SemanticDerivedWhileDisabled);
-        AssertSelectionBlocked(results, "ctx.selected-legacy-no-provenance", WorkspaceContextSelectionLockExclusionIssueKind.LegacyWithoutProvenance);
-        AssertSelectionBlocked(results, "ctx.duplicate-conflicting-lock", WorkspaceContextSelectionLockExclusionIssueKind.DuplicateConflictingLockState);
-        AssertSelectionBlocked(results, "ctx.empty-selected-safe-next-step", WorkspaceContextSelectionLockExclusionIssueKind.EmptySelectionWithDependentSafeNextStep);
-        AssertSelectionBlocked(results, "ctx.locked-review-missing", WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingHumanReview);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-stale", WorkspaceContextSelectionLockExclusionIssueKind.SelectedStale);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-unknown-authority", WorkspaceContextSelectionLockExclusionIssueKind.SelectedUnknownAuthority);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-missing-freshness", WorkspaceContextSelectionLockExclusionIssueKind.SelectedMissingFreshness);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-contradictory", WorkspaceContextSelectionLockExclusionIssueKind.SelectedContradictory);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.locked-missing-evidence", WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingEvidence);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "memory.locked-promote", WorkspaceContextSelectionLockExclusionIssueKind.LockedMemoryPromotion);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-provider-disabled", WorkspaceContextSelectionLockExclusionIssueKind.ProviderDerivedWhileDisabled);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-semantic-disabled", WorkspaceContextSelectionLockExclusionIssueKind.SemanticDerivedWhileDisabled);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.selected-legacy-no-provenance", WorkspaceContextSelectionLockExclusionIssueKind.LegacyWithoutProvenance);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.duplicate-conflicting-lock", WorkspaceContextSelectionLockExclusionIssueKind.DuplicateConflictingLockState);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.empty-selected-safe-next-step", WorkspaceContextSelectionLockExclusionIssueKind.EmptySelectionWithDependentSafeNextStep);
+        AssertSelectionBlockedOrExcluded(fixtures, results, "ctx.locked-review-missing", WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingHumanReview);
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_DistinguishesBlockedAndExcludedExpectedDecisions()
+    {
+        var fixtures = WorkspaceContextSelectionLockExclusionGuard.CreateFixtureCatalog();
+        var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
+
+        AssertSelectionExpectedDecision(fixtures, results, "ctx.selected-excluded", WorkspaceContextSelectionLockExclusionDecision.Excluded);
+        AssertSelectionExpectedDecision(fixtures, results, "ctx.selected-stale", WorkspaceContextSelectionLockExclusionDecision.Blocked);
     }
 
     [TestMethod]
@@ -522,32 +558,44 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
     [TestMethod]
     public void MemoryCandidateContradictionRiskGuard_BlocksUnsafeSourcesAndDependencies()
     {
+        var fixtures = WorkspaceMemoryCandidateContradictionRiskGuard.CreateFixtureCatalog();
         var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
 
-        AssertMemoryBlocked(results, "memory.contradiction.no-evidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateWithoutEvidence);
-        AssertMemoryBlocked(results, "memory.contradiction.stale-context", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesStaleContext);
-        AssertMemoryBlocked(results, "memory.contradiction.excluded-context", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesExcludedContext);
-        AssertMemoryBlocked(results, "memory.contradiction.locked-unsafe", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesLockedUnsafeContext);
-        AssertMemoryBlocked(results, "memory.provider-derived-disabled", WorkspaceMemoryCandidateContradictionRiskIssueKind.ProviderDerivedWhileDisabled);
-        AssertMemoryBlocked(results, "memory.semantic-derived-disabled", WorkspaceMemoryCandidateContradictionRiskIssueKind.SemanticDerivedWhileDisabled);
-        AssertMemoryBlocked(results, "memory.legacy-no-provenance", WorkspaceMemoryCandidateContradictionRiskIssueKind.LegacyWithoutProvenance);
-        AssertMemoryBlocked(results, "memory.raw-sensitive-payload", WorkspaceMemoryCandidateContradictionRiskIssueKind.RawSensitivePayload);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.contradiction.no-evidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateWithoutEvidence);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.contradiction.stale-context", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesStaleContext);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.contradiction.excluded-context", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesExcludedContext);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.contradiction.locked-unsafe", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesLockedUnsafeContext);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.provider-derived-disabled", WorkspaceMemoryCandidateContradictionRiskIssueKind.ProviderDerivedWhileDisabled);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.semantic-derived-disabled", WorkspaceMemoryCandidateContradictionRiskIssueKind.SemanticDerivedWhileDisabled);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.legacy-no-provenance", WorkspaceMemoryCandidateContradictionRiskIssueKind.LegacyWithoutProvenance);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.raw-sensitive-payload", WorkspaceMemoryCandidateContradictionRiskIssueKind.RawSensitivePayload);
     }
 
     [TestMethod]
     public void MemoryCandidateContradictionRiskGuard_BlocksContradictionRiskClaimActionSafeNextAndDuplicateOverreach()
     {
+        var fixtures = WorkspaceMemoryCandidateContradictionRiskGuard.CreateFixtureCatalog();
         var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
 
-        AssertMemoryBlocked(results, "memory.risk.missing-severity", WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskMissingSeverity);
-        AssertMemoryBlocked(results, "memory.risk.promotes-decision", WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskCannotBecomeDecisionMemory);
-        AssertMemoryBlocked(results, "memory.decision.no-human-review", WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionMissingHumanReview);
-        AssertMemoryBlocked(results, "memory.decision.contradictory-evidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionWithContradictoryEvidence);
-        AssertMemoryBlocked(results, "memory.claim.missing-confidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.ClaimMissingConfidence);
-        AssertMemoryBlocked(results, "memory.action.missing-human-action", WorkspaceMemoryCandidateContradictionRiskIssueKind.ActionMissingRequiredHumanAction);
-        AssertMemoryBlocked(results, "memory.safe-next.critical-risk", WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnCriticalRisk);
-        AssertMemoryBlocked(results, "memory.safe-next.unresolved-contradiction", WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnUnresolvedContradiction);
-        AssertMemoryBlocked(results, "memory.duplicate-conflicting", WorkspaceMemoryCandidateContradictionRiskIssueKind.DuplicateConflictingCandidates);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.risk.missing-severity", WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskMissingSeverity);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.risk.promotes-decision", WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskCannotBecomeDecisionMemory);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.decision.no-human-review", WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionMissingHumanReview);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.decision.contradictory-evidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionWithContradictoryEvidence);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.claim.missing-confidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.ClaimMissingConfidence);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.action.missing-human-action", WorkspaceMemoryCandidateContradictionRiskIssueKind.ActionMissingRequiredHumanAction);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.safe-next.critical-risk", WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnCriticalRisk);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.safe-next.unresolved-contradiction", WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnUnresolvedContradiction);
+        AssertMemoryBlockedOrExcluded(fixtures, results, "memory.duplicate-conflicting", WorkspaceMemoryCandidateContradictionRiskIssueKind.DuplicateConflictingCandidates);
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_DistinguishesBlockedAndExcludedExpectedDecisions()
+    {
+        var fixtures = WorkspaceMemoryCandidateContradictionRiskGuard.CreateFixtureCatalog();
+        var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
+
+        AssertMemoryExpectedDecision(fixtures, results, "memory.contradiction.excluded-context", WorkspaceMemoryCandidateInfluenceDecision.Excluded);
+        AssertMemoryExpectedDecision(fixtures, results, "memory.contradiction.no-evidence", WorkspaceMemoryCandidateInfluenceDecision.Blocked);
     }
 
     [TestMethod]
@@ -880,26 +928,32 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         }
     }
 
-    private static void AssertBlocked(
+    private static void AssertBlockedOrExcluded(
+        IReadOnlyList<WorkspaceContextAuthorityFreshnessFixture> fixtures,
         IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> results,
         string fixtureId,
         WorkspaceContextAuthorityFreshnessIssueKind issueKind)
     {
+        var fixture = fixtures.Single(item => item.FixtureId == fixtureId);
         var result = results.Single(item => item.FixtureId == fixtureId);
 
+        Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixtureId);
         Assert.IsTrue(result.Blocked, fixtureId);
         Assert.IsTrue(result.HasIssue(issueKind), fixtureId);
         Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
         Assert.IsFalse(result.AllowsSafeNextStepUse, fixtureId);
     }
 
-    private static void AssertSelectionBlocked(
+    private static void AssertSelectionBlockedOrExcluded(
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionFixture> fixtures,
         IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> results,
         string fixtureId,
         WorkspaceContextSelectionLockExclusionIssueKind issueKind)
     {
+        var fixture = fixtures.Single(item => item.FixtureId == fixtureId);
         var result = results.Single(item => item.FixtureId == fixtureId);
 
+        Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixtureId);
         Assert.IsTrue(result.Blocked, fixtureId);
         Assert.IsTrue(result.HasIssue(issueKind), fixtureId);
         Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
@@ -907,19 +961,50 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         Assert.IsFalse(result.AllowsMemoryInfluence, fixtureId);
     }
 
-    private static void AssertMemoryBlocked(
+    private static void AssertMemoryBlockedOrExcluded(
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskFixture> fixtures,
         IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> results,
         string fixtureId,
         WorkspaceMemoryCandidateContradictionRiskIssueKind issueKind)
     {
+        var fixture = fixtures.Single(item => item.FixtureId == fixtureId);
         var result = results.Single(item => item.FixtureId == fixtureId);
 
+        Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixtureId);
         Assert.IsTrue(result.Blocked, fixtureId);
         Assert.IsTrue(result.HasIssue(issueKind), fixtureId);
         Assert.IsFalse(result.DurableMemoryEnabled, fixtureId);
         Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
         Assert.IsFalse(result.AllowsSafeNextStepUse, fixtureId);
         Assert.IsFalse(result.AllowsCandidateInfluence, fixtureId);
+    }
+
+    private static void AssertSelectionExpectedDecision(
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionFixture> fixtures,
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> results,
+        string fixtureId,
+        WorkspaceContextSelectionLockExclusionDecision expectedDecision)
+    {
+        var fixture = fixtures.Single(item => item.FixtureId == fixtureId);
+        var result = results.Single(item => item.FixtureId == fixtureId);
+        var actualFixtureDecision = fixture.ExpectedDecision;
+
+        Assert.AreEqual(expectedDecision, actualFixtureDecision, fixtureId);
+        Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixtureId);
+    }
+
+    private static void AssertMemoryExpectedDecision(
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskFixture> fixtures,
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> results,
+        string fixtureId,
+        WorkspaceMemoryCandidateInfluenceDecision expectedDecision)
+    {
+        var fixture = fixtures.Single(item => item.FixtureId == fixtureId);
+        var result = results.Single(item => item.FixtureId == fixtureId);
+        var actualFixtureDecision = fixture.ExpectedDecision;
+
+        Assert.AreEqual(expectedDecision, actualFixtureDecision, fixtureId);
+        Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixtureId);
     }
 
     private static string ReadRepoText(string relativePath)

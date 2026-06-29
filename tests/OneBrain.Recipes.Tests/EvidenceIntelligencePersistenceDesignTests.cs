@@ -590,6 +590,20 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
     }
 
     [TestMethod]
+    public void SchemaCompatibilityDecisionModel_CollapsesUnsafeIssuesToBlocked()
+    {
+        Assert.IsFalse(Enum.GetNames<EvidenceIntelligenceSchemaCompatibilityDecision>().Contains("Rejected", StringComparer.Ordinal));
+
+        foreach (var fixture in CreateSchemaCompatibilityFixtures().Where(fixture => fixture.ExpectedIssue != EvidenceIntelligenceSchemaCompatibilityIssueKind.None))
+        {
+            var result = EvidenceIntelligenceSchemaCompatibilityGuard.Evaluate(fixture.Check);
+
+            Assert.AreEqual(EvidenceIntelligenceSchemaCompatibilityDecision.Blocked, result.Decision, fixture.FixtureId);
+            Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
     public void SchemaCompatibilityFixtures_CoverExpectedArtifactKindsAndIssues()
     {
         var fixtures = CreateSchemaCompatibilityFixtures();
