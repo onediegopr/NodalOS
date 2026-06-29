@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TextStore = System.IO.File;
 
@@ -20,9 +21,12 @@ public sealed class NodalOsSidepanelTokenPatch4M618Tests
         "Cook" + "ie:",
         "api" + "_key",
         "access" + "_token",
-        "refresh" + "_token",
-        "s" + "k-"
+        "refresh" + "_token"
     ];
+
+    private static readonly Regex ApiKeyPattern = new(
+        @"\bsk-[A-Za-z0-9_-]{8,}\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly string[] NosTokensFromM615 =
     [
@@ -77,6 +81,18 @@ public sealed class NodalOsSidepanelTokenPatch4M618Tests
             Assert.IsFalse(content.Contains(marker, System.StringComparison.OrdinalIgnoreCase),
                 string.Concat("Sensitive marker found: ", marker));
         }
+        Assert.IsFalse(ApiKeyPattern.IsMatch(content),
+            "API key pattern (sk-...) found in content.");
+    }
+
+    [TestMethod]
+    public void ApiKeyPattern_DetectsRealKeysWithoutFlaggingMissionTaskIds()
+    {
+        var realApiKey = string.Concat("s", "k-", "abcdefghijklmnopqrstuvwxyz123456");
+
+        Assert.IsFalse(ApiKeyPattern.IsMatch("mission-task-alpha"));
+        Assert.IsFalse(ApiKeyPattern.IsMatch("task-alpha"));
+        Assert.IsTrue(ApiKeyPattern.IsMatch(realApiKey));
     }
 
     // ---- Action button assertions ----
