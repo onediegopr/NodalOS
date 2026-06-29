@@ -295,6 +295,151 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         }
     }
 
+    [TestMethod]
+    public void SelectionLockExclusionGuard_SourceHasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
+    {
+        var source = ReadRepoText(FoundationPath);
+        var forbidden = new[]
+        {
+            "File.Read",
+            "File.Write",
+            "FileStream",
+            "Directory.",
+            "Directory.CreateDirectory",
+            "Path.",
+            "Microsoft.Data.Sqlite",
+            "SQLiteConnection",
+            "SqlConnection",
+            "DbContext",
+            "IDbConnection",
+            "HttpClient",
+            "WebSocket",
+            "Process.Start",
+            "ServiceCollection",
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "OpenAI",
+            "EmbeddingClient",
+            "VectorStore",
+            "KernelMemory"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_AllFixturesPreserveNoSideEffectProof()
+    {
+        foreach (var result in WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog())
+        {
+            var proof = result.NoSideEffectProof;
+
+            Assert.IsTrue(proof.Passes, result.FixtureId);
+            Assert.IsFalse(proof.WorkspaceFilesystemReadAttempted, result.FixtureId);
+            Assert.IsFalse(proof.FilesystemWriteAttempted, result.FixtureId);
+            Assert.IsFalse(proof.DatabaseTouched, result.FixtureId);
+            Assert.IsFalse(proof.DurablePersistenceActive, result.FixtureId);
+            Assert.IsFalse(proof.DurableMemoryActive, result.FixtureId);
+            Assert.IsFalse(proof.VectorSemanticBackendTouched, result.FixtureId);
+            Assert.IsFalse(proof.LlmProviderTouched, result.FixtureId);
+            Assert.IsFalse(proof.ProviderCloudTouched, result.FixtureId);
+            Assert.IsFalse(proof.MigrationRunnerStarted, result.FixtureId);
+            Assert.IsFalse(proof.MigrationExecuted, result.FixtureId);
+            Assert.IsFalse(proof.RuntimeTouched, result.FixtureId);
+            Assert.IsFalse(proof.BrowserCdpTouched, result.FixtureId);
+            Assert.IsFalse(proof.WcuTouched, result.FixtureId);
+            Assert.IsFalse(proof.OcrTouched, result.FixtureId);
+            Assert.IsFalse(proof.ProductActionExposed, result.FixtureId);
+            Assert.IsFalse(proof.ProductServiceRegistered, result.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_NoTrustByDefaultForUnsafeFixtures()
+    {
+        var unsafeResults = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog()
+            .Where(result => result.Decision != WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly)
+            .ToList();
+
+        Assert.IsTrue(unsafeResults.Count >= 21);
+        Assert.IsTrue(unsafeResults.All(result => !result.AllowsDecisionUse), string.Join(", ", unsafeResults.Where(result => result.AllowsDecisionUse).Select(result => result.FixtureId)));
+        Assert.IsTrue(unsafeResults.All(result => !result.AllowsSafeNextStepUse), string.Join(", ", unsafeResults.Where(result => result.AllowsSafeNextStepUse).Select(result => result.FixtureId)));
+        Assert.IsTrue(unsafeResults.All(result => !result.AllowsMemoryInfluence), string.Join(", ", unsafeResults.Where(result => result.AllowsMemoryInfluence).Select(result => result.FixtureId)));
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_BlocksExcludedDependenciesAndUnsafeSelection()
+    {
+        var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
+
+        AssertSelectionBlocked(results, "ctx.selected-excluded", WorkspaceContextSelectionLockExclusionIssueKind.SelectedExcluded);
+        AssertSelectionBlocked(results, "memory.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByMemory);
+        AssertSelectionBlocked(results, "safe-next-step.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedBySafeNextStep);
+        AssertSelectionBlocked(results, "claim-action.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByClaimActionPreview);
+        AssertSelectionBlocked(results, "graph.excluded-reference", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByGraph);
+        AssertSelectionBlocked(results, "ctx.selected-raw-sensitive", WorkspaceContextSelectionLockExclusionIssueKind.UnsafeSelectedContent);
+        AssertSelectionBlocked(results, "dashboard.excluded-candidate", WorkspaceContextSelectionLockExclusionIssueKind.ExcludedAppearsInExportDashboardCandidate);
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_BlocksLockedStaleUnknownProviderSemanticLegacyAndDuplicateCases()
+    {
+        var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
+
+        AssertSelectionBlocked(results, "ctx.selected-stale", WorkspaceContextSelectionLockExclusionIssueKind.SelectedStale);
+        AssertSelectionBlocked(results, "ctx.selected-unknown-authority", WorkspaceContextSelectionLockExclusionIssueKind.SelectedUnknownAuthority);
+        AssertSelectionBlocked(results, "ctx.selected-missing-freshness", WorkspaceContextSelectionLockExclusionIssueKind.SelectedMissingFreshness);
+        AssertSelectionBlocked(results, "ctx.selected-contradictory", WorkspaceContextSelectionLockExclusionIssueKind.SelectedContradictory);
+        AssertSelectionBlocked(results, "ctx.locked-missing-evidence", WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingEvidence);
+        AssertSelectionBlocked(results, "memory.locked-promote", WorkspaceContextSelectionLockExclusionIssueKind.LockedMemoryPromotion);
+        AssertSelectionBlocked(results, "ctx.selected-provider-disabled", WorkspaceContextSelectionLockExclusionIssueKind.ProviderDerivedWhileDisabled);
+        AssertSelectionBlocked(results, "ctx.selected-semantic-disabled", WorkspaceContextSelectionLockExclusionIssueKind.SemanticDerivedWhileDisabled);
+        AssertSelectionBlocked(results, "ctx.selected-legacy-no-provenance", WorkspaceContextSelectionLockExclusionIssueKind.LegacyWithoutProvenance);
+        AssertSelectionBlocked(results, "ctx.duplicate-conflicting-lock", WorkspaceContextSelectionLockExclusionIssueKind.DuplicateConflictingLockState);
+        AssertSelectionBlocked(results, "ctx.empty-selected-safe-next-step", WorkspaceContextSelectionLockExclusionIssueKind.EmptySelectionWithDependentSafeNextStep);
+        AssertSelectionBlocked(results, "ctx.locked-review-missing", WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingHumanReview);
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_HasNoSelectionLockExclusionAuthorityFreshnessContextMemoryOrProductionOverclaim()
+    {
+        var text = string.Join(
+            "\n",
+            WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog()
+                .Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}"));
+
+        var forbidden = new[]
+        {
+            "production" + "-ready",
+            "selection is trusted",
+            "selected by default",
+            "lock bypassed",
+            "lock override enabled",
+            "exclusion bypassed",
+            "excluded context trusted",
+            "authority granted",
+            "freshness guaranteed",
+            "memory persisted",
+            "durable memory active",
+            "semantic search enabled",
+            "vector backend enabled",
+            "provider call enabled",
+            "workspace scan completed",
+            "runtime action enabled",
+            "live automation enabled",
+            "filesystem indexed"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
     private static void AssertBlocked(
         IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> results,
         string fixtureId,
@@ -306,6 +451,20 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         Assert.IsTrue(result.HasIssue(issueKind), fixtureId);
         Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
         Assert.IsFalse(result.AllowsSafeNextStepUse, fixtureId);
+    }
+
+    private static void AssertSelectionBlocked(
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> results,
+        string fixtureId,
+        WorkspaceContextSelectionLockExclusionIssueKind issueKind)
+    {
+        var result = results.Single(item => item.FixtureId == fixtureId);
+
+        Assert.IsTrue(result.Blocked, fixtureId);
+        Assert.IsTrue(result.HasIssue(issueKind), fixtureId);
+        Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
+        Assert.IsFalse(result.AllowsSafeNextStepUse, fixtureId);
+        Assert.IsFalse(result.AllowsMemoryInfluence, fixtureId);
     }
 
     private static string ReadRepoText(string relativePath)

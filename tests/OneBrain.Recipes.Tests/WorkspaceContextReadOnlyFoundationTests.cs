@@ -289,4 +289,155 @@ public sealed class WorkspaceContextReadOnlyFoundationTests
         Assert.IsFalse(firstText.Contains("semantic search enabled", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(firstText.Contains("memory persisted", StringComparison.OrdinalIgnoreCase));
     }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_CatalogCoversExpectedAdversarialFixtures()
+    {
+        var fixtures = WorkspaceContextSelectionLockExclusionGuard.CreateFixtureCatalog();
+
+        Assert.AreEqual(22, fixtures.Count);
+        Assert.IsTrue(fixtures.All(fixture => fixture.NoSideEffectProof.Passes));
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "ctx.selected-evidence-fresh",
+                "ctx.selected-excluded",
+                "ctx.selected-locked-by-safety",
+                "ctx.selected-stale",
+                "ctx.selected-unknown-authority",
+                "ctx.selected-missing-freshness",
+                "ctx.selected-contradictory",
+                "ctx.locked-stale",
+                "ctx.locked-missing-evidence",
+                "memory.locked-promote",
+                "memory.excluded-reference",
+                "safe-next-step.excluded-reference",
+                "claim-action.excluded-reference",
+                "graph.excluded-reference",
+                "ctx.selected-raw-sensitive",
+                "ctx.selected-provider-disabled",
+                "ctx.selected-semantic-disabled",
+                "ctx.selected-legacy-no-provenance",
+                "ctx.duplicate-conflicting-lock",
+                "ctx.empty-selected-safe-next-step",
+                "ctx.locked-review-missing",
+                "dashboard.excluded-candidate"
+            },
+            fixtures.Select(fixture => fixture.FixtureId).ToArray());
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_ExpectedDecisionsAndIssuesMatchFixtures()
+    {
+        foreach (var fixture in WorkspaceContextSelectionLockExclusionGuard.CreateFixtureCatalog())
+        {
+            var result = WorkspaceContextSelectionLockExclusionGuard.Evaluate(fixture);
+
+            Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixture.FixtureId);
+            if (fixture.ExpectedIssue == WorkspaceContextSelectionLockExclusionIssueKind.None)
+            {
+                Assert.AreEqual(0, result.Issues.Count, fixture.FixtureId);
+            }
+            else
+            {
+                Assert.IsTrue(result.HasIssue(fixture.ExpectedIssue), fixture.FixtureId);
+                Assert.IsTrue(result.Issues.Any(issue => !string.IsNullOrWhiteSpace(issue.Message)), fixture.FixtureId);
+            }
+
+            Assert.IsTrue(result.NoSideEffectProof.Passes, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_AllowsOnlySelectedEvidenceLinkedFreshContext()
+    {
+        var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
+        var allowed = results.Where(result => result.Decision == WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly).ToList();
+
+        CollectionAssert.AreEquivalent(
+            new[] { "ctx.selected-evidence-fresh" },
+            allowed.Select(result => result.FixtureId).ToArray());
+        Assert.IsTrue(allowed.All(result => result.AllowsReadOnlySummary));
+        Assert.IsTrue(allowed.All(result => result.AllowsDecisionUse));
+        Assert.IsTrue(allowed.All(result => result.AllowsSafeNextStepUse));
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_ExcludedWinsOverSelectedAndDependentRefs()
+    {
+        var excludedIds = new[]
+        {
+            "ctx.selected-excluded",
+            "memory.excluded-reference",
+            "safe-next-step.excluded-reference",
+            "claim-action.excluded-reference",
+            "graph.excluded-reference",
+            "ctx.selected-raw-sensitive",
+            "dashboard.excluded-candidate"
+        };
+        var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog()
+            .Where(result => excludedIds.Contains(result.FixtureId, StringComparer.Ordinal))
+            .ToList();
+
+        Assert.AreEqual(excludedIds.Length, results.Count);
+        Assert.IsTrue(results.All(result => result.Decision == WorkspaceContextSelectionLockExclusionDecision.Excluded), string.Join(", ", results.Where(result => result.Decision != WorkspaceContextSelectionLockExclusionDecision.Excluded).Select(result => result.FixtureId)));
+        Assert.IsTrue(results.All(result => !result.AllowsDecisionUse));
+        Assert.IsTrue(results.All(result => !result.AllowsSafeNextStepUse));
+        Assert.IsTrue(results.All(result => !result.AllowsMemoryInfluence));
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_LockedContextRequiresHumanReviewBeforeInfluence()
+    {
+        var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog()
+            .Where(result => result.FixtureId is "ctx.selected-locked-by-safety" or "ctx.locked-stale" or "ctx.locked-missing-evidence" or "memory.locked-promote" or "ctx.locked-review-missing")
+            .ToList();
+
+        Assert.AreEqual(5, results.Count);
+        Assert.IsTrue(results.All(result => result.RequiresHumanReview), string.Join(", ", results.Where(result => !result.RequiresHumanReview).Select(result => result.FixtureId)));
+        Assert.IsTrue(results.All(result => !result.AllowsDecisionUse));
+        Assert.IsTrue(results.All(result => !result.AllowsSafeNextStepUse));
+        Assert.IsTrue(results.All(result => !result.AllowsMemoryInfluence));
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_StaleUnknownMissingContradictoryProviderSemanticLegacyAndDuplicateCasesBlock()
+    {
+        var blockedIds = new[]
+        {
+            "ctx.selected-stale",
+            "ctx.selected-unknown-authority",
+            "ctx.selected-missing-freshness",
+            "ctx.selected-contradictory",
+            "ctx.selected-provider-disabled",
+            "ctx.selected-semantic-disabled",
+            "ctx.selected-legacy-no-provenance",
+            "ctx.duplicate-conflicting-lock",
+            "ctx.empty-selected-safe-next-step"
+        };
+        var results = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog()
+            .Where(result => blockedIds.Contains(result.FixtureId, StringComparer.Ordinal))
+            .ToList();
+
+        Assert.AreEqual(blockedIds.Length, results.Count);
+        Assert.IsTrue(results.All(result => result.Blocked), string.Join(", ", results.Where(result => !result.Blocked).Select(result => result.FixtureId)));
+        Assert.IsTrue(results.All(result => !result.AllowsDecisionUse));
+        Assert.IsTrue(results.All(result => !result.AllowsSafeNextStepUse));
+    }
+
+    [TestMethod]
+    public void SelectionLockExclusionGuard_OutputIsDeterministicAndHasNoProductionClaim()
+    {
+        var first = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
+        var second = WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog();
+        var firstText = string.Join("\n", first.Select(result => $"{result.FixtureId}:{result.Decision}:{string.Join(",", result.Issues.Select(issue => issue.IssueKind))}"));
+        var secondText = string.Join("\n", second.Select(result => $"{result.FixtureId}:{result.Decision}:{string.Join(",", result.Issues.Select(issue => issue.IssueKind))}"));
+
+        Assert.AreEqual(firstText, secondText);
+        Assert.IsFalse(firstText.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("selection is trusted", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("lock bypassed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("exclusion bypassed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("memory persisted", StringComparison.OrdinalIgnoreCase));
+    }
 }

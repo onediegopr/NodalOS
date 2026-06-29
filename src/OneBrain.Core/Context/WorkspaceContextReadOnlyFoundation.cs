@@ -113,6 +113,64 @@ public enum WorkspaceContextAuthorityFreshnessIssueKind
     DecisionMemoryMissingHumanReview
 }
 
+public enum WorkspaceContextSelectionState
+{
+    NotSelected,
+    Selected,
+    Empty
+}
+
+public enum WorkspaceContextLockState
+{
+    Unlocked,
+    LockedBySafety,
+    LockedRequiresHumanReview,
+    Conflicting
+}
+
+public enum WorkspaceContextExclusionState
+{
+    NotExcluded,
+    Excluded,
+    Conflicting
+}
+
+public enum WorkspaceContextSelectionLockExclusionDecision
+{
+    AllowedReadOnly,
+    WarningReadOnlyOnly,
+    NeedsHumanReview,
+    Blocked,
+    Excluded
+}
+
+public enum WorkspaceContextSelectionLockExclusionIssueKind
+{
+    None,
+    SelectedExcluded,
+    SelectedLockedBySafety,
+    SelectedStale,
+    SelectedUnknownAuthority,
+    SelectedMissingFreshness,
+    SelectedContradictory,
+    LockedStale,
+    LockedMissingEvidence,
+    LockedMemoryPromotion,
+    ExcludedReferencedByMemory,
+    ExcludedReferencedBySafeNextStep,
+    ExcludedReferencedByClaimActionPreview,
+    ExcludedReferencedByGraph,
+    UnsafeSelectedContent,
+    ProviderDerivedWhileDisabled,
+    SemanticDerivedWhileDisabled,
+    LegacyWithoutProvenance,
+    DuplicateConflictingLockState,
+    EmptySelectionWithDependentSafeNextStep,
+    LockedMissingHumanReview,
+    ExcludedAppearsInExportDashboardCandidate,
+    AuthorityFreshnessBlocked
+}
+
 public sealed record WorkspaceContextNoSideEffectProof(
     bool ReadOnly,
     bool Deterministic,
@@ -271,6 +329,58 @@ public sealed record WorkspaceContextAuthorityFreshnessResult(
 {
     public bool Blocked => Decision is WorkspaceContextAuthorityFreshnessDecision.Blocked or WorkspaceContextAuthorityFreshnessDecision.Excluded;
     public bool HasIssue(WorkspaceContextAuthorityFreshnessIssueKind issueKind) => Issues.Any(issue => issue.IssueKind == issueKind);
+}
+
+public sealed record WorkspaceContextSelectionLockExclusionFixture(
+    string FixtureId,
+    WorkspaceContextSelectionState SelectionState,
+    WorkspaceContextLockState LockState,
+    WorkspaceContextExclusionState ExclusionState,
+    WorkspaceContextSourceKind SourceKind,
+    WorkspaceContextAuthorityLevel Authority,
+    WorkspaceContextFreshnessStatus Freshness,
+    WorkspaceContextSensitivityLevel Sensitivity,
+    IReadOnlyList<string> EvidenceRefs,
+    IReadOnlyList<string> DependentMemoryRefs,
+    IReadOnlyList<string> DependentSafeNextStepRefs,
+    IReadOnlyList<string> DependentClaimActionPreviewRefs,
+    IReadOnlyList<string> DependentGraphRefs,
+    bool Contradictory,
+    bool MemoryCandidate,
+    bool MemoryPromotionAttempted,
+    bool DuplicateConflictingLockStates,
+    bool HumanReviewed,
+    bool AppearsInExportDashboardCandidateList,
+    WorkspaceContextSelectionLockExclusionDecision ExpectedDecision,
+    WorkspaceContextSelectionLockExclusionIssueKind ExpectedIssue,
+    string ExpectedMessage,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof);
+
+public sealed record WorkspaceContextSelectionLockExclusionIssue(
+    WorkspaceContextSelectionLockExclusionIssueKind IssueKind,
+    string Message,
+    bool BlocksDecision,
+    bool BlocksSafeNextStep,
+    bool BlocksMemoryInfluence,
+    bool BlocksExportDashboardAppearance,
+    bool RequiresHumanReview);
+
+public sealed record WorkspaceContextSelectionLockExclusionResult(
+    string FixtureId,
+    WorkspaceContextSelectionLockExclusionDecision Decision,
+    IReadOnlyList<WorkspaceContextSelectionLockExclusionIssue> Issues,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> Blockers,
+    bool AllowsReadOnlySummary,
+    bool AllowsDecisionUse,
+    bool AllowsSafeNextStepUse,
+    bool AllowsMemoryInfluence,
+    bool AllowsExportDashboardAppearance,
+    bool RequiresHumanReview,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof)
+{
+    public bool Blocked => Decision is WorkspaceContextSelectionLockExclusionDecision.Blocked or WorkspaceContextSelectionLockExclusionDecision.Excluded;
+    public bool HasIssue(WorkspaceContextSelectionLockExclusionIssueKind issueKind) => Issues.Any(issue => issue.IssueKind == issueKind);
 }
 
 public sealed record WorkspaceContextPacketReadOnly(
@@ -466,6 +576,189 @@ public static class WorkspaceContextAuthorityFreshnessGuard
         string expectedMessage,
         WorkspaceContextNoSideEffectProof proof) =>
         new(fixtureId, sourceKind, authority, freshness, sensitivity, evidenceRefs, selected, locked, excluded, contradictory, memory, safeNext, decision, human, expectedDecision, expectedIssue, expectedMessage, proof);
+}
+
+public static class WorkspaceContextSelectionLockExclusionGuard
+{
+    public static IReadOnlyList<WorkspaceContextSelectionLockExclusionFixture> CreateFixtureCatalog()
+    {
+        var proof = WorkspaceContextNoSideEffectProof.FixtureReadOnly();
+
+        return
+        [
+            Fixture("ctx.selected-evidence-fresh", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.FixtureCurrent, WorkspaceContextSensitivityLevel.Safe, ["ev.context.current"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly, WorkspaceContextSelectionLockExclusionIssueKind.None, "Selected evidence-linked fresh context is allowed read-only.", proof),
+            Fixture("ctx.selected-excluded", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, [], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Excluded, WorkspaceContextSelectionLockExclusionIssueKind.SelectedExcluded, "Excluded context wins over selected context.", proof),
+            Fixture("ctx.selected-locked-by-safety", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.LockedBySafety, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.LockedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.Safe, ["ev.context.locked"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.NeedsHumanReview, WorkspaceContextSelectionLockExclusionIssueKind.SelectedLockedBySafety, "Selected locked context requires human review.", proof),
+            Fixture("ctx.selected-stale", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, ["ev.context.stale"], [], ["safe.step.stale"], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.SelectedStale, "Selected stale context cannot feed decisions or safe next steps.", proof),
+            Fixture("ctx.selected-unknown-authority", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Unknown, ["ev.context.unknown"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.SelectedUnknownAuthority, "Selected unknown authority is blocked.", proof),
+            Fixture("ctx.selected-missing-freshness", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Missing, WorkspaceContextSensitivityLevel.Safe, ["ev.context.missing"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.SelectedMissingFreshness, "Selected context with missing freshness is blocked.", proof),
+            Fixture("ctx.selected-contradictory", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.contradiction"], [], [], ["claim.preview.contradiction"], [], contradictory: true, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.SelectedContradictory, "Selected contradictory context is blocked.", proof),
+            Fixture("ctx.locked-stale", WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.LockedRequiresHumanReview, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.LockedBySafety, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, ["ev.context.locked-stale"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.LockedStale, "Locked stale context requires human review and cannot feed decisions.", proof),
+            Fixture("ctx.locked-missing-evidence", WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.LockedBySafety, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.LockedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.Safe, [], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingEvidence, "Locked context requires evidence refs.", proof),
+            Fixture("memory.locked-promote", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.LockedBySafety, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.LockedBySafety, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.memory.locked"], ["memory.promote.locked"], [], [], [], contradictory: false, memory: true, memoryPromotion: true, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.LockedMemoryPromotion, "Memory candidate cannot promote locked context.", proof),
+            Fixture("memory.excluded-reference", WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, [], ["memory.ref.excluded"], [], [], [], contradictory: false, memory: true, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Excluded, WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByMemory, "Memory candidate cannot reference excluded context.", proof),
+            Fixture("safe-next-step.excluded-reference", WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, [], [], ["safe.step.excluded"], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Excluded, WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedBySafeNextStep, "Safe next step cannot reference excluded context.", proof),
+            Fixture("claim-action.excluded-reference", WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, [], [], [], ["claim.preview.excluded", "action.preview.excluded"], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Excluded, WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByClaimActionPreview, "Claim/action previews cannot reference excluded context.", proof),
+            Fixture("graph.excluded-reference", WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, [], [], [], [], ["graph.edge.excluded"], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Excluded, WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByGraph, "Graph refs cannot reference excluded context.", proof),
+            Fixture("ctx.selected-raw-sensitive", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.LockedBySafety, WorkspaceContextExclusionState.Excluded, WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.RawPayload, [], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Excluded, WorkspaceContextSelectionLockExclusionIssueKind.UnsafeSelectedContent, "Selected raw or sensitive unsafe context is excluded.", proof),
+            Fixture("ctx.selected-provider-disabled", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.ProviderCloudDerived, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.provider"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.ProviderDerivedWhileDisabled, "Provider-derived selected context is blocked while provider/cloud is disabled.", proof),
+            Fixture("ctx.selected-semantic-disabled", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.SemanticVectorDerived, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.semantic"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.SemanticDerivedWhileDisabled, "Semantic-derived selected context is blocked while semantic/vector is disabled.", proof),
+            Fixture("ctx.selected-legacy-no-provenance", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.LegacyWithoutProvenance, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Missing, WorkspaceContextSensitivityLevel.Unknown, [], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.LegacyWithoutProvenance, "Selected legacy context without provenance is blocked.", proof),
+            Fixture("ctx.duplicate-conflicting-lock", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Conflicting, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.duplicate"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: true, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.DuplicateConflictingLockState, "Duplicate selected context has conflicting lock states.", proof),
+            Fixture("ctx.empty-selected-safe-next-step", WorkspaceContextSelectionState.Empty, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.NoSideEffectProof, WorkspaceContextAuthorityLevel.HumanReviewRequired, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.Safe, [], [], ["safe.step.requires.context"], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.EmptySelectionWithDependentSafeNextStep, "Safe next step requiring context cannot run with empty selection.", proof),
+            Fixture("ctx.locked-review-missing", WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.LockedRequiresHumanReview, WorkspaceContextExclusionState.NotExcluded, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.HumanReviewRequired, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.locked-review"], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: false, WorkspaceContextSelectionLockExclusionDecision.Blocked, WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingHumanReview, "Locked context requires missing human review.", proof),
+            Fixture("dashboard.excluded-candidate", WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceContextSourceKind.EilTimelineExportPreview, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, [], [], [], [], [], contradictory: false, memory: false, memoryPromotion: false, duplicateLock: false, human: false, exportDashboard: true, WorkspaceContextSelectionLockExclusionDecision.Excluded, WorkspaceContextSelectionLockExclusionIssueKind.ExcludedAppearsInExportDashboardCandidate, "Excluded context cannot appear as export/dashboard candidate.", proof)
+        ];
+    }
+
+    public static WorkspaceContextSelectionLockExclusionResult Evaluate(WorkspaceContextSelectionLockExclusionFixture fixture)
+    {
+        var issues = new List<WorkspaceContextSelectionLockExclusionIssue>();
+
+        AddIssues(fixture, issues);
+
+        var decision = Decide(fixture, issues);
+        var blockers = issues.Where(issue => issue.BlocksDecision || issue.BlocksSafeNextStep || issue.BlocksMemoryInfluence || issue.BlocksExportDashboardAppearance).Select(issue => issue.Message).ToList();
+        var warnings = issues.Where(issue => !issue.BlocksDecision && !issue.BlocksSafeNextStep && !issue.BlocksMemoryInfluence && !issue.BlocksExportDashboardAppearance).Select(issue => issue.Message).ToList();
+        var requiresHumanReview = issues.Any(issue => issue.RequiresHumanReview) || fixture.LockState is WorkspaceContextLockState.LockedBySafety or WorkspaceContextLockState.LockedRequiresHumanReview;
+
+        return new WorkspaceContextSelectionLockExclusionResult(
+            fixture.FixtureId,
+            decision,
+            issues,
+            warnings,
+            blockers,
+            AllowsReadOnlySummary: decision is WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly or WorkspaceContextSelectionLockExclusionDecision.WarningReadOnlyOnly or WorkspaceContextSelectionLockExclusionDecision.NeedsHumanReview,
+            AllowsDecisionUse: decision == WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly && !requiresHumanReview && issues.All(issue => !issue.BlocksDecision),
+            AllowsSafeNextStepUse: decision == WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly && !requiresHumanReview && issues.All(issue => !issue.BlocksSafeNextStep),
+            AllowsMemoryInfluence: fixture.MemoryCandidate && decision == WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly && !requiresHumanReview && issues.All(issue => !issue.BlocksMemoryInfluence),
+            AllowsExportDashboardAppearance: decision != WorkspaceContextSelectionLockExclusionDecision.Excluded && issues.All(issue => !issue.BlocksExportDashboardAppearance),
+            RequiresHumanReview: requiresHumanReview || decision == WorkspaceContextSelectionLockExclusionDecision.NeedsHumanReview,
+            NoSideEffectProof: fixture.NoSideEffectProof);
+    }
+
+    public static IReadOnlyList<WorkspaceContextSelectionLockExclusionResult> EvaluateCatalog() =>
+        CreateFixtureCatalog().Select(Evaluate).ToList();
+
+    private static void AddIssues(WorkspaceContextSelectionLockExclusionFixture fixture, List<WorkspaceContextSelectionLockExclusionIssue> issues)
+    {
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.SelectedExcluded, "Excluded context wins over selected context.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded && fixture.DependentMemoryRefs.Count > 0)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByMemory, "Memory candidate cannot reference excluded context.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded && fixture.DependentSafeNextStepRefs.Count > 0)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedBySafeNextStep, "Safe next step cannot reference excluded context.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded && fixture.DependentClaimActionPreviewRefs.Count > 0)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByClaimActionPreview, "Claim/action previews cannot reference excluded context.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded && fixture.DependentGraphRefs.Count > 0)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.ExcludedReferencedByGraph, "Graph refs cannot reference excluded context.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.AppearsInExportDashboardCandidateList && fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.ExcludedAppearsInExportDashboardCandidate, "Excluded context cannot appear as export/dashboard candidate.", blockDecision: false, blockSafeNext: false, blockMemory: false, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.LockState == WorkspaceContextLockState.LockedBySafety)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.SelectedLockedBySafety, "Selected locked context requires human review.", blockDecision: false, blockSafeNext: false, blockMemory: true, blockExportDashboard: false, human: true));
+
+        if (fixture.LockState == WorkspaceContextLockState.LockedRequiresHumanReview && !fixture.HumanReviewed)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingHumanReview, "Locked context requires missing human review.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: false, human: true));
+
+        if (fixture.LockState == WorkspaceContextLockState.LockedBySafety && fixture.EvidenceRefs.Count == 0 && fixture.ExclusionState == WorkspaceContextExclusionState.NotExcluded)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.LockedMissingEvidence, "Locked context requires evidence refs.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: false, human: true));
+
+        if (fixture.Freshness == WorkspaceContextFreshnessStatus.Stale && fixture.LockState is WorkspaceContextLockState.LockedBySafety or WorkspaceContextLockState.LockedRequiresHumanReview && !fixture.HumanReviewed)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.LockedStale, "Locked stale context requires human review and cannot feed decisions.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: false, human: true));
+        else if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.Freshness == WorkspaceContextFreshnessStatus.Stale)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.SelectedStale, "Selected stale context cannot feed decisions or safe next steps.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: false, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.Sensitivity == WorkspaceContextSensitivityLevel.Unknown)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.SelectedUnknownAuthority, "Selected unknown authority is blocked.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.Freshness == WorkspaceContextFreshnessStatus.Missing)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.SelectedMissingFreshness, "Selected context with missing freshness is blocked.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.Contradictory)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.SelectedContradictory, "Selected contradictory context is blocked.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.Sensitivity is WorkspaceContextSensitivityLevel.RawPayload or WorkspaceContextSensitivityLevel.Sensitive or WorkspaceContextSensitivityLevel.SensitiveNeverUse)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.UnsafeSelectedContent, "Selected raw or sensitive unsafe context is excluded.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.SourceKind == WorkspaceContextSourceKind.ProviderCloudDerived)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.ProviderDerivedWhileDisabled, "Provider-derived selected context is blocked while provider/cloud is disabled.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.SourceKind == WorkspaceContextSourceKind.SemanticVectorDerived)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.SemanticDerivedWhileDisabled, "Semantic-derived selected context is blocked while semantic/vector is disabled.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Selected && fixture.SourceKind == WorkspaceContextSourceKind.LegacyWithoutProvenance)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.LegacyWithoutProvenance, "Selected legacy context without provenance is blocked.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.DuplicateConflictingLockStates || fixture.LockState == WorkspaceContextLockState.Conflicting)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.DuplicateConflictingLockState, "Duplicate selected context has conflicting lock states.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+
+        if (fixture.SelectionState == WorkspaceContextSelectionState.Empty && fixture.DependentSafeNextStepRefs.Count > 0)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.EmptySelectionWithDependentSafeNextStep, "Safe next step requiring context cannot run with empty selection.", blockDecision: true, blockSafeNext: true, blockMemory: false, blockExportDashboard: false, human: true));
+
+        if (fixture.MemoryPromotionAttempted && fixture.LockState != WorkspaceContextLockState.Unlocked)
+            issues.Add(Issue(WorkspaceContextSelectionLockExclusionIssueKind.LockedMemoryPromotion, "Memory candidate cannot promote locked context.", blockDecision: true, blockSafeNext: true, blockMemory: true, blockExportDashboard: true, human: true));
+    }
+
+    private static WorkspaceContextSelectionLockExclusionDecision Decide(
+        WorkspaceContextSelectionLockExclusionFixture fixture,
+        IReadOnlyList<WorkspaceContextSelectionLockExclusionIssue> issues)
+    {
+        if (fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded || issues.Any(issue => issue.IssueKind is WorkspaceContextSelectionLockExclusionIssueKind.SelectedExcluded or WorkspaceContextSelectionLockExclusionIssueKind.UnsafeSelectedContent))
+            return WorkspaceContextSelectionLockExclusionDecision.Excluded;
+
+        if (issues.Any(issue => issue.BlocksDecision || issue.BlocksSafeNextStep))
+            return WorkspaceContextSelectionLockExclusionDecision.Blocked;
+
+        if (issues.Any(issue => issue.RequiresHumanReview))
+            return WorkspaceContextSelectionLockExclusionDecision.NeedsHumanReview;
+
+        if (issues.Count > 0)
+            return WorkspaceContextSelectionLockExclusionDecision.WarningReadOnlyOnly;
+
+        return WorkspaceContextSelectionLockExclusionDecision.AllowedReadOnly;
+    }
+
+    private static WorkspaceContextSelectionLockExclusionIssue Issue(
+        WorkspaceContextSelectionLockExclusionIssueKind issueKind,
+        string message,
+        bool blockDecision,
+        bool blockSafeNext,
+        bool blockMemory,
+        bool blockExportDashboard,
+        bool human) =>
+        new(issueKind, message, blockDecision, blockSafeNext, blockMemory, blockExportDashboard, human);
+
+    private static WorkspaceContextSelectionLockExclusionFixture Fixture(
+        string fixtureId,
+        WorkspaceContextSelectionState selection,
+        WorkspaceContextLockState locked,
+        WorkspaceContextExclusionState exclusion,
+        WorkspaceContextSourceKind sourceKind,
+        WorkspaceContextAuthorityLevel authority,
+        WorkspaceContextFreshnessStatus freshness,
+        WorkspaceContextSensitivityLevel sensitivity,
+        IReadOnlyList<string> evidenceRefs,
+        IReadOnlyList<string> memoryRefs,
+        IReadOnlyList<string> safeNextRefs,
+        IReadOnlyList<string> claimActionRefs,
+        IReadOnlyList<string> graphRefs,
+        bool contradictory,
+        bool memory,
+        bool memoryPromotion,
+        bool duplicateLock,
+        bool human,
+        bool exportDashboard,
+        WorkspaceContextSelectionLockExclusionDecision expectedDecision,
+        WorkspaceContextSelectionLockExclusionIssueKind expectedIssue,
+        string expectedMessage,
+        WorkspaceContextNoSideEffectProof proof) =>
+        new(fixtureId, selection, locked, exclusion, sourceKind, authority, freshness, sensitivity, evidenceRefs, memoryRefs, safeNextRefs, claimActionRefs, graphRefs, contradictory, memory, memoryPromotion, duplicateLock, human, exportDashboard, expectedDecision, expectedIssue, expectedMessage, proof);
 }
 
 public static class WorkspaceContextReadOnlyPresenter
