@@ -24,6 +24,7 @@ public sealed class EvidenceIntelligenceReadOnlyUiMountProductSurfaceTests
         StringAssert.Contains(section, "READ_ONLY");
         StringAssert.Contains(section, "LOCAL_ONLY");
         StringAssert.Contains(section, "NO_RUNTIME");
+        StringAssert.Contains(section, "NO_LIVE_AUTOMATION");
         StringAssert.Contains(section, "Evidence Index Summary");
         StringAssert.Contains(section, "Lexical search results");
         StringAssert.Contains(section, "Claim scan verdict");
@@ -43,6 +44,7 @@ public sealed class EvidenceIntelligenceReadOnlyUiMountProductSurfaceTests
             "Local fixture / local evidence only",
             "Semantic backend disabled",
             "No runtime actions",
+            "No live automation",
             "No browser/CDP automation",
             "No WCU live",
             "No OCR live",
@@ -101,7 +103,8 @@ public sealed class EvidenceIntelligenceReadOnlyUiMountProductSurfaceTests
 
         foreach (var expected in new[]
         {
-            "READ_ONLY / LOCAL_ONLY / NO_RUNTIME",
+            "READ_ONLY / LOCAL_ONLY / NO_RUNTIME / NO_LIVE_AUTOMATION",
+            "copyMode: clipboard-only text preview",
             "semanticBackendStatus:",
             "semanticSearchAvailable:",
             "runtimeEnabled:",
@@ -146,7 +149,7 @@ public sealed class EvidenceIntelligenceReadOnlyUiMountProductSurfaceTests
             Assert.IsFalse(Regex.IsMatch(section, $@"\b{Regex.Escape(term)}\b", RegexOptions.IgnoreCase), term);
         }
 
-        StringAssert.Contains(section, "Copy report preview");
+        StringAssert.Contains(section, "Copy read-only report preview");
     }
 
     [TestMethod]

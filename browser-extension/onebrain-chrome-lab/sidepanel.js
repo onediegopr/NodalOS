@@ -50,7 +50,7 @@ const EIL_READ_ONLY_SURFACE = {
   source: 'EvidenceIntelligenceReadOnlyPresenter.CreateFixture',
   surfaceId: 'evidence-intelligence.read-only-surface.v1',
   title: 'Evidence Intelligence',
-  statusBadges: ['READ_ONLY', 'LOCAL_ONLY', 'NO_RUNTIME'],
+  statusBadges: ['READ_ONLY', 'LOCAL_ONLY', 'NO_RUNTIME', 'NO_LIVE_AUTOMATION'],
   dataSource: 'deterministic local fixture',
   semanticBackendStatus: 'Disabled',
   semanticSearchAvailable: false,
@@ -102,6 +102,7 @@ const EIL_READ_ONLY_SURFACE = {
     'Local fixture / local evidence only.',
     'Semantic backend disabled.',
     'No runtime actions.',
+    'No live automation.',
     'No browser/CDP automation.',
     'No WCU live.',
     'No OCR live.',
@@ -162,7 +163,7 @@ const RECIPE_LAB_READ_ONLY_SURFACE = {
     status: 'ReadyForFixtureRun',
     canonicalEvaluator: 'RecipePolicyPreflightEvaluator',
     safeNextAction: 'Review readiness and prepare requirements.',
-    missingRequirements: ['human approval path for any real action', 'runtime external audit before future enablement'],
+    missingRequirements: ['human approval path for any real action', 'runtime external audit before enablement design'],
     blockedReasons: ['Live runtime blocked.', 'Connector execution not enabled.', 'Real export file generation blocked.']
   },
   operatorPreview: {
@@ -4406,6 +4407,7 @@ function renderRecipeLabSurface() {
 function buildRecipeLabReportPreview(surface = RECIPE_LAB_READ_ONLY_SURFACE) {
   return [
     'Recipe Lab - READ_ONLY / FIXTURE_SAFE / NO_RUNTIME / NO_LIVE_AUTOMATION',
+    'copyMode: clipboard-only text preview',
     `mount: ${surface.mountId}`,
     `source: ${surface.source}`,
     `dataSource: ${surface.dataSource}`,
@@ -4436,6 +4438,8 @@ function buildRecipeLabReportPreview(surface = RECIPE_LAB_READ_ONLY_SURFACE) {
 function buildRecipeLabHandoffPreview(surface = RECIPE_LAB_READ_ONLY_SURFACE) {
   return [
     surface.handoffExportPreview.title,
+    'READ_ONLY / FIXTURE_SAFE / NO_RUNTIME / NO_LIVE_AUTOMATION',
+    'copyMode: clipboard-only text preview',
     surface.handoffExportPreview.summary,
     `status: ${surface.handoffExportPreview.status}`,
     `metadata: ${surface.handoffExportPreview.metadata.join(', ')}`,
@@ -4479,7 +4483,8 @@ function renderEvidenceIntelligenceSurface() {
 
 function buildEilReportPreview(surface = EIL_READ_ONLY_SURFACE) {
   return [
-    'Evidence Intelligence - READ_ONLY / LOCAL_ONLY / NO_RUNTIME',
+    'Evidence Intelligence - READ_ONLY / LOCAL_ONLY / NO_RUNTIME / NO_LIVE_AUTOMATION',
+    'copyMode: clipboard-only text preview',
     `mount: ${surface.mountId}`,
     `source: ${surface.source}`,
     `dataSource: ${surface.dataSource}`,

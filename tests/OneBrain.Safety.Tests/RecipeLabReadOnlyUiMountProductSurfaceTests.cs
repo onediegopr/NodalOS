@@ -41,6 +41,7 @@ public sealed class RecipeLabReadOnlyUiMountProductSurfaceTests
         {
             "No recipe execution",
             "No runtime actions",
+            "No live automation",
             "No browser/CDP automation",
             "No WCU live",
             "No OCR live",
@@ -103,6 +104,7 @@ public sealed class RecipeLabReadOnlyUiMountProductSurfaceTests
         foreach (var expected in new[]
         {
             "READ_ONLY / FIXTURE_SAFE / NO_RUNTIME / NO_LIVE_AUTOMATION",
+            "copyMode: clipboard-only text preview",
             "runtimeEnabled:",
             "recipeExecutionEnabled:",
             "browserCdpAutomationEnabled:",
@@ -155,8 +157,8 @@ public sealed class RecipeLabReadOnlyUiMountProductSurfaceTests
             Assert.IsFalse(section.Contains(forbiddenClaim, StringComparison.OrdinalIgnoreCase), forbiddenClaim);
         }
 
-        StringAssert.Contains(section, "Copy preview");
-        StringAssert.Contains(section, "Copy handoff preview");
+        StringAssert.Contains(section, "Copy read-only preview");
+        StringAssert.Contains(section, "Copy read-only handoff preview");
     }
 
     [TestMethod]

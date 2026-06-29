@@ -41,9 +41,11 @@
             <a href="#workspaceUnderstanding">Workspace</a>
             <a href="#demoRunHistory">Historial</a>
             <a href="#demoScriptPanel">Guion demo</a>
+            <span class="mission-side-nav-label">Read-only surfaces</span>
+            <a href="#readOnlySurfacesSummary" data-surface-kind="read-only-summary">Surface summary</a>
             <a href="#browserSkillsWorkspace">Browser Skills</a>
-            <a href="#recipeLabSurface">Recipe Lab</a>
-            <a href="#evidenceIntelligenceSurface">Evidence Intelligence</a>
+            <a href="#recipeLabSurface" data-surface-kind="read-only-product" data-surface-id="recipe-lab">Recipe Lab</a>
+            <a href="#evidenceIntelligenceSurface" data-surface-kind="read-only-product" data-surface-id="evidence-intelligence">Evidence Intelligence</a>
             <a href="#demoTimeline">Timeline</a>
             <a href="#demoEvidencePanel">Evidencia</a>
             <a href="#demoTechnicalReport">Resumen</a>
@@ -120,6 +122,50 @@
                 <span id="demoReadyLabel">Prepará un run para grabar</span>
                 <strong id="demoReadyText">La demo queda lista cuando hay misión, run, timeline y resumen.</strong>
               </div>
+            </div>
+          </section>
+
+          <section id="readOnlySurfacesSummary" class="read-only-surfaces-summary" aria-labelledby="readOnlySurfacesTitle" data-read-only-surfaces-summary="phase-b.read-only-surfaces.v1">
+            <div class="section-head read-only-surfaces-head">
+              <div>
+                <span class="mission-kicker">Read-only product surfaces</span>
+                <h2 id="readOnlySurfacesTitle">Surface map</h2>
+                <p>EIL, Recipe Lab and CDP status are visible as local preview surfaces. They do not enable runtime actions, recipe execution, live automation, provider/cloud calls or filesystem writes.</p>
+              </div>
+              <div class="read-only-surfaces-actions" aria-label="Read-only surface shortcuts">
+                <a href="#recipeLabSurface">View Recipe Lab</a>
+                <a href="#evidenceIntelligenceSurface">View Evidence Intelligence</a>
+              </div>
+            </div>
+
+            <div class="read-only-surface-badges" aria-label="Read-only surface shared status badges">
+              <span>READ_ONLY</span>
+              <span>NO_RUNTIME</span>
+              <span>NO_LIVE_AUTOMATION</span>
+              <span>HUMAN_REVIEW_REQUIRED</span>
+            </div>
+
+            <div class="read-only-surfaces-grid" aria-label="Read-only product surface summary">
+              <article>
+                <span>Recipe Lab</span>
+                <strong>Fixture-safe previews</strong>
+                <small>Catalog, readiness, operator preview and handoff metadata only.</small>
+              </article>
+              <article>
+                <span>Evidence Intelligence</span>
+                <strong>Local evidence audit</strong>
+                <small>Lexical search, claim/action scan and graph summary. Semantic backend disabled.</small>
+              </article>
+              <article>
+                <span>Browser Skills CDP</span>
+                <strong>Metadata status only</strong>
+                <small>No extension fallback, no system-browser fallback and no live CDP action from UI.</small>
+              </article>
+              <article>
+                <span>Shared boundary</span>
+                <strong>No writes / no provider</strong>
+                <small>Copy previews are clipboard-only text. Human review is required for any real action.</small>
+              </article>
             </div>
           </section>
 
@@ -503,29 +549,30 @@
             </article>
           </section>
 
-          <section id="recipeLabSurface" class="recipe-lab-surface" aria-labelledby="recipeLabTitle" data-recipe-lab-mount="recipe-lab.ui.read-only.mount.v1">
-            <div class="section-head recipe-lab-head">
+          <section id="recipeLabSurface" class="recipe-lab-surface read-only-product-surface" aria-labelledby="recipeLabTitle" data-recipe-lab-mount="recipe-lab.ui.read-only.mount.v1">
+            <div class="section-head recipe-lab-head read-only-surface-head">
               <div>
                 <span class="mission-kicker">Recipe Lab</span>
                 <h2 id="recipeLabTitle">Recipe Lab</h2>
-                <p id="recipeLabSurfaceSummary">Read-only fixture-safe Recipe Runtime product surface. Preview-only catalog, readiness and handoff metadata.</p>
+                <p id="recipeLabSurfaceSummary">Read-only fixture-safe Recipe Lab surface. Preview-only catalog, readiness and handoff metadata. Recipe execution remains disabled.</p>
               </div>
-              <div class="recipe-lab-actions" aria-label="Recipe Lab read-only actions">
-                <button id="copyRecipeLabPreviewBtn" type="button">Copy preview</button>
-                <button id="copyRecipeLabHandoffBtn" type="button">Copy handoff preview</button>
+              <div class="recipe-lab-actions read-only-surface-actions" aria-label="Recipe Lab read-only actions">
+                <button id="copyRecipeLabPreviewBtn" type="button">Copy read-only preview</button>
+                <button id="copyRecipeLabHandoffBtn" type="button">Copy read-only handoff preview</button>
               </div>
             </div>
 
-            <div id="recipeLabStatusBadges" class="recipe-lab-badges" aria-label="Recipe Lab status badges">
+            <div id="recipeLabStatusBadges" class="recipe-lab-badges read-only-surface-badges" aria-label="Recipe Lab status badges">
               <span>READ_ONLY</span>
               <span>FIXTURE_SAFE</span>
               <span>NO_RUNTIME</span>
               <span>NO_LIVE_AUTOMATION</span>
             </div>
 
-            <div class="recipe-lab-notices" aria-label="Recipe Lab safety notices">
+            <div class="recipe-lab-notices read-only-surface-notices" aria-label="Recipe Lab safety notices">
               <span>No recipe execution</span>
               <span>No runtime actions</span>
+              <span>No live automation</span>
               <span>No browser/CDP automation</span>
               <span>No WCU live</span>
               <span>No OCR live</span>
@@ -535,7 +582,7 @@
               <span>Human approval required for any real action</span>
             </div>
 
-            <div class="recipe-lab-grid">
+            <div class="recipe-lab-grid read-only-surface-grid">
               <article>
                 <span>Recipe Catalog Summary</span>
                 <strong id="recipeLabCatalogCount">41 templates</strong>
@@ -558,8 +605,8 @@
               </article>
             </div>
 
-            <div class="recipe-lab-layout">
-              <article class="recipe-lab-panel">
+            <div class="recipe-lab-layout read-only-surface-layout">
+              <article class="recipe-lab-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Catalog preview</h3>
                   <span class="mission-chip">read-only catalog</span>
@@ -571,7 +618,7 @@
                 </ul>
               </article>
 
-              <article class="recipe-lab-panel">
+              <article class="recipe-lab-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Recipe detail preview</h3>
                   <span class="mission-chip">template detail</span>
@@ -584,7 +631,7 @@
                 </ul>
               </article>
 
-              <article class="recipe-lab-panel">
+              <article class="recipe-lab-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Blocked reasons</h3>
                   <span class="mission-chip">NO_RUNTIME</span>
@@ -596,19 +643,19 @@
                 </ul>
               </article>
 
-              <article class="recipe-lab-panel">
+              <article class="recipe-lab-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Required human actions</h3>
                   <span class="mission-chip">human review</span>
                 </div>
                 <ul id="recipeLabHumanActions" class="recipe-lab-list">
-                  <li>Review readiness before future runtime planning.</li>
+                  <li>Review readiness before any runtime design work.</li>
                   <li>Keep secret values by reference only.</li>
                   <li>Human approval required for any real action.</li>
                 </ul>
               </article>
 
-              <article class="recipe-lab-panel">
+              <article class="recipe-lab-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Operator preview</h3>
                   <span class="mission-chip">preview-safe</span>
@@ -621,7 +668,7 @@
                 </ul>
               </article>
 
-              <article class="recipe-lab-panel">
+              <article class="recipe-lab-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Handoff/export preview</h3>
                   <span class="mission-chip">metadata only</span>
@@ -643,27 +690,29 @@ Selected recipe: excel.extract_rows_to_workitems.
 Safe next action: review readiness and prepare requirements.</pre>
           </section>
 
-          <section id="evidenceIntelligenceSurface" class="evidence-intelligence-surface" aria-labelledby="evidenceIntelligenceTitle" data-eil-mount="evidence-intelligence.ui.read-only.mount.v1">
-            <div class="section-head evidence-intelligence-head">
+          <section id="evidenceIntelligenceSurface" class="evidence-intelligence-surface read-only-product-surface" aria-labelledby="evidenceIntelligenceTitle" data-eil-mount="evidence-intelligence.ui.read-only.mount.v1">
+            <div class="section-head evidence-intelligence-head read-only-surface-head">
               <div>
                 <span class="mission-kicker">Evidence Intelligence</span>
                 <h2 id="evidenceIntelligenceTitle">Evidence Intelligence</h2>
-                <p id="eilSurfaceSummary">Read-only local evidence audit surface. Local fixture / local evidence only.</p>
+                <p id="eilSurfaceSummary">Read-only local evidence audit surface. Local fixture / local evidence only. Semantic backend disabled.</p>
               </div>
-              <div class="evidence-intelligence-actions" aria-label="Evidence Intelligence read-only actions">
-                <button id="copyEilReportPreviewBtn" type="button">Copy report preview</button>
+              <div class="evidence-intelligence-actions read-only-surface-actions" aria-label="Evidence Intelligence read-only actions">
+                <button id="copyEilReportPreviewBtn" type="button">Copy read-only report preview</button>
               </div>
             </div>
 
-            <div id="eilStatusBadges" class="evidence-intelligence-badges" aria-label="Evidence Intelligence status badges">
+            <div id="eilStatusBadges" class="evidence-intelligence-badges read-only-surface-badges" aria-label="Evidence Intelligence status badges">
               <span>READ_ONLY</span>
               <span>LOCAL_ONLY</span>
               <span>NO_RUNTIME</span>
+              <span>NO_LIVE_AUTOMATION</span>
             </div>
 
-            <div class="evidence-intelligence-notices" aria-label="Evidence Intelligence safety notices">
+            <div class="evidence-intelligence-notices read-only-surface-notices" aria-label="Evidence Intelligence safety notices">
               <span>Semantic backend disabled</span>
               <span>No runtime actions</span>
+              <span>No live automation</span>
               <span>No browser/CDP automation</span>
               <span>No WCU live</span>
               <span>No OCR live</span>
@@ -672,7 +721,7 @@ Safe next action: review readiness and prepare requirements.</pre>
               <span>Human approval required for any real-world action</span>
             </div>
 
-            <div class="evidence-intelligence-grid">
+            <div class="evidence-intelligence-grid read-only-surface-grid">
               <article>
                 <span>Evidence Index Summary</span>
                 <strong id="eilTotalEvidence">6 evidence items</strong>
@@ -695,8 +744,8 @@ Safe next action: review readiness and prepare requirements.</pre>
               </article>
             </div>
 
-            <div class="evidence-intelligence-layout">
-              <article class="evidence-intelligence-panel">
+            <div class="evidence-intelligence-layout read-only-surface-layout">
+              <article class="evidence-intelligence-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Contradictions first</h3>
                   <span class="mission-chip">read-only</span>
@@ -707,7 +756,7 @@ Safe next action: review readiness and prepare requirements.</pre>
                 </ul>
               </article>
 
-              <article class="evidence-intelligence-panel">
+              <article class="evidence-intelligence-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Missing / stale / low-confidence evidence</h3>
                   <span class="mission-chip">fixture-safe</span>
@@ -719,7 +768,7 @@ Safe next action: review readiness and prepare requirements.</pre>
                 </ul>
               </article>
 
-              <article class="evidence-intelligence-panel">
+              <article class="evidence-intelligence-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Typed evidence graph</h3>
                   <span class="mission-chip">local graph</span>
@@ -731,7 +780,7 @@ Safe next action: review readiness and prepare requirements.</pre>
                 </ul>
               </article>
 
-              <article class="evidence-intelligence-panel">
+              <article class="evidence-intelligence-panel read-only-surface-panel">
                 <div class="section-head">
                   <h3>Action readiness matrix</h3>
                   <span class="mission-chip">NO_RUNTIME</span>
@@ -744,7 +793,7 @@ Safe next action: review readiness and prepare requirements.</pre>
               </article>
             </div>
 
-            <pre id="eilReportPreview" class="evidence-intelligence-report" aria-label="Evidence Intelligence report preview">Evidence Intelligence - READ_ONLY / LOCAL_ONLY / NO_RUNTIME
+            <pre id="eilReportPreview" class="evidence-intelligence-report" aria-label="Evidence Intelligence report preview">Evidence Intelligence - READ_ONLY / LOCAL_ONLY / NO_RUNTIME / NO_LIVE_AUTOMATION
 Semantic backend disabled.
 No runtime actions. No browser/CDP automation. No WCU live. No OCR live.
 No filesystem writes. No provider/cloud calls.
