@@ -47,6 +47,9 @@ public enum WorkspaceContextSourceKind
     EilTimelineExportPreview,
     HumanProvidedFixture,
     CapabilityNotice,
+    ProviderCloudDerived,
+    SemanticVectorDerived,
+    LegacyWithoutProvenance,
     NoSideEffectProof,
     DocumentedDebt
 }
@@ -67,6 +70,47 @@ public enum WorkspaceContextFreshnessStatus
     Stale,
     Missing,
     NotApplicable
+}
+
+public enum WorkspaceContextSensitivityLevel
+{
+    Safe,
+    Sensitive,
+    Unknown,
+    RawPayload,
+    SensitiveNeverUse
+}
+
+public enum WorkspaceContextAuthorityFreshnessDecision
+{
+    AllowedReadOnly,
+    WarningReadOnlyOnly,
+    NeedsHumanReview,
+    Blocked,
+    Excluded
+}
+
+public enum WorkspaceContextAuthorityFreshnessIssueKind
+{
+    None,
+    FixtureOnlyNotRealWorldTrusted,
+    StaleContext,
+    MissingFreshness,
+    UnknownAuthority,
+    LowAuthority,
+    ContradictoryContext,
+    MemoryCandidateWithoutEvidence,
+    MemoryCandidateWithStaleEvidence,
+    SelectedUnknownAuthority,
+    LockedContextStale,
+    ExcludedContextSelected,
+    SensitiveContextWithoutClearance,
+    RawPayloadContext,
+    ProviderDerivedWhileDisabled,
+    SemanticDerivedWhileDisabled,
+    LegacyWithoutProvenance,
+    SafeNextStepReliesOnStaleContext,
+    DecisionMemoryMissingHumanReview
 }
 
 public sealed record WorkspaceContextNoSideEffectProof(
@@ -183,6 +227,52 @@ public sealed record WorkspaceContextMemoryCandidate(
     bool Excluded,
     WorkspaceContextNoSideEffectProof NoSideEffectProof);
 
+public sealed record WorkspaceContextAuthorityFreshnessFixture(
+    string FixtureId,
+    WorkspaceContextSourceKind SourceKind,
+    WorkspaceContextAuthorityLevel Authority,
+    WorkspaceContextFreshnessStatus Freshness,
+    WorkspaceContextSensitivityLevel Sensitivity,
+    IReadOnlyList<string> EvidenceRefs,
+    bool Selected,
+    bool Locked,
+    bool Excluded,
+    bool Contradictory,
+    bool MemoryCandidate,
+    bool SafeNextStep,
+    bool DecisionMemory,
+    bool HumanReviewed,
+    WorkspaceContextAuthorityFreshnessDecision ExpectedDecision,
+    WorkspaceContextAuthorityFreshnessIssueKind ExpectedIssue,
+    string ExpectedMessage,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof);
+
+public sealed record WorkspaceContextAuthorityFreshnessIssue(
+    WorkspaceContextAuthorityFreshnessIssueKind IssueKind,
+    string Message,
+    bool BlocksDecision,
+    bool BlocksSafeNextStep,
+    bool RequiresHumanReview);
+
+public sealed record WorkspaceContextAuthorityFreshnessResult(
+    string FixtureId,
+    WorkspaceContextAuthorityFreshnessDecision Decision,
+    IReadOnlyList<WorkspaceContextAuthorityFreshnessIssue> Issues,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> Blockers,
+    bool AllowsReadOnlySummary,
+    bool AllowsDecisionUse,
+    bool AllowsSafeNextStepUse,
+    bool AllowsMemoryCandidateUse,
+    bool RequiresHumanReview,
+    bool ProviderCloudDisabled,
+    bool SemanticVectorDisabled,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof)
+{
+    public bool Blocked => Decision is WorkspaceContextAuthorityFreshnessDecision.Blocked or WorkspaceContextAuthorityFreshnessDecision.Excluded;
+    public bool HasIssue(WorkspaceContextAuthorityFreshnessIssueKind issueKind) => Issues.Any(issue => issue.IssueKind == issueKind);
+}
+
 public sealed record WorkspaceContextPacketReadOnly(
     string PacketId,
     string WorkspaceId,
@@ -211,6 +301,171 @@ public sealed record WorkspaceContextPacketReadOnly(
     public bool HasDurableMemory => MemoryCandidates.Any(candidate => candidate.DurableMemoryEnabled)
         || NoSideEffectProof.DurableMemoryActive;
     public bool HasProductActions => NoSideEffectProof.ProductActionExposed;
+}
+
+public static class WorkspaceContextAuthorityFreshnessGuard
+{
+    public static IReadOnlyList<WorkspaceContextAuthorityFreshnessFixture> CreateFixtureCatalog()
+    {
+        var proof = WorkspaceContextNoSideEffectProof.FixtureReadOnly();
+
+        return
+        [
+            Fixture("ctx.evidence-linked-current", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.FixtureCurrent, WorkspaceContextSensitivityLevel.Safe, ["ev.context.current"], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly, WorkspaceContextAuthorityFreshnessIssueKind.None, "Evidence-linked current context can be summarized read-only.", proof),
+            Fixture("ctx.human-reviewed-current", WorkspaceContextSourceKind.HumanProvidedFixture, WorkspaceContextAuthorityLevel.HumanReviewRequired, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.human"], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: true, WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly, WorkspaceContextAuthorityFreshnessIssueKind.None, "Human-reviewed current context can be summarized read-only.", proof),
+            Fixture("ctx.fixture-only-warning", WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.FixtureCurrent, WorkspaceContextSensitivityLevel.Safe, [], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.WarningReadOnlyOnly, WorkspaceContextAuthorityFreshnessIssueKind.FixtureOnlyNotRealWorldTrusted, "Fixture-only context is preview-only.", proof),
+            Fixture("ctx.stale-context", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, ["ev.context.stale"], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: true, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.StaleContext, "Stale context cannot feed decision use.", proof),
+            Fixture("ctx.missing-freshness", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Missing, WorkspaceContextSensitivityLevel.Safe, ["ev.context.missing-freshness"], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.MissingFreshness, "Missing freshness blocks context use.", proof),
+            Fixture("ctx.unknown-authority", WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Unknown, ["ev.context.unknown-authority"], selected: false, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.UnknownAuthority, "Unknown authority blocks context use.", proof),
+            Fixture("ctx.low-authority-source", WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, [], selected: false, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.WarningReadOnlyOnly, WorkspaceContextAuthorityFreshnessIssueKind.LowAuthority, "Low-authority context stays preview-only.", proof),
+            Fixture("ctx.contradictory", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.contradiction"], selected: true, locked: false, excluded: false, contradictory: true, memory: false, safeNext: false, decision: true, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.ContradictoryContext, "Contradictory context blocks decision use.", proof),
+            Fixture("memory.no-evidence", WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, [], selected: true, locked: false, excluded: false, contradictory: false, memory: true, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.MemoryCandidateWithoutEvidence, "Memory candidates require evidence refs.", proof),
+            Fixture("memory.stale-evidence", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, ["ev.memory.stale"], selected: true, locked: false, excluded: false, contradictory: false, memory: true, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.MemoryCandidateWithStaleEvidence, "Memory candidates with stale evidence are blocked.", proof),
+            Fixture("ctx.selected-unknown-authority", WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Unknown, ["ev.context.selected-unknown"], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.SelectedUnknownAuthority, "Selected context with unknown authority is blocked.", proof),
+            Fixture("ctx.locked-stale", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.LockedBySafety, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, ["ev.context.locked-stale"], selected: false, locked: true, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.NeedsHumanReview, WorkspaceContextAuthorityFreshnessIssueKind.LockedContextStale, "Locked stale context requires human review.", proof),
+            Fixture("ctx.excluded-selected", WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, [], selected: true, locked: false, excluded: true, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Excluded, WorkspaceContextAuthorityFreshnessIssueKind.ExcludedContextSelected, "Excluded context cannot be selected.", proof),
+            Fixture("ctx.sensitive-without-clearance", WorkspaceContextSourceKind.HumanProvidedFixture, WorkspaceContextAuthorityLevel.HumanReviewRequired, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Sensitive, ["ev.context.sensitive"], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.SensitiveContextWithoutClearance, "Sensitive context requires human clearance.", proof),
+            Fixture("ctx.raw-payload", WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.RawPayload, [], selected: false, locked: true, excluded: true, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Excluded, WorkspaceContextAuthorityFreshnessIssueKind.RawPayloadContext, "Excluded payload context is blocked.", proof),
+            Fixture("ctx.provider-derived-disabled", WorkspaceContextSourceKind.ProviderCloudDerived, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.provider"], selected: false, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.ProviderDerivedWhileDisabled, "Provider-derived context is blocked while provider/cloud is disabled.", proof),
+            Fixture("ctx.semantic-derived-disabled", WorkspaceContextSourceKind.SemanticVectorDerived, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.context.semantic"], selected: false, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.SemanticDerivedWhileDisabled, "Semantic-derived context is blocked while semantic/vector is disabled.", proof),
+            Fixture("ctx.legacy-no-provenance", WorkspaceContextSourceKind.LegacyWithoutProvenance, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Missing, WorkspaceContextSensitivityLevel.Unknown, [], selected: false, locked: false, excluded: false, contradictory: false, memory: false, safeNext: false, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.LegacyWithoutProvenance, "Legacy context without provenance is blocked.", proof),
+            Fixture("safe-next-step.stale", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, ["ev.safe-next-step.stale"], selected: true, locked: false, excluded: false, contradictory: false, memory: false, safeNext: true, decision: false, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.SafeNextStepReliesOnStaleContext, "Safe next step cannot rely on stale context.", proof),
+            Fixture("memory.decision-missing-human-review", WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.HumanReviewRequired, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, ["ev.memory.decision"], selected: true, locked: false, excluded: false, contradictory: false, memory: true, safeNext: false, decision: true, human: false, WorkspaceContextAuthorityFreshnessDecision.Blocked, WorkspaceContextAuthorityFreshnessIssueKind.DecisionMemoryMissingHumanReview, "Decision memory requires human review.", proof)
+        ];
+    }
+
+    public static WorkspaceContextAuthorityFreshnessResult Evaluate(WorkspaceContextAuthorityFreshnessFixture fixture)
+    {
+        var issues = new List<WorkspaceContextAuthorityFreshnessIssue>();
+
+        AddIssues(fixture, issues);
+
+        var decision = Decide(fixture, issues);
+        var blockers = issues.Where(issue => issue.BlocksDecision || issue.BlocksSafeNextStep).Select(issue => issue.Message).ToList();
+        var warnings = issues.Where(issue => !issue.BlocksDecision && !issue.BlocksSafeNextStep).Select(issue => issue.Message).ToList();
+        var blocksDecision = issues.Any(issue => issue.BlocksDecision);
+        var blocksSafeNextStep = issues.Any(issue => issue.BlocksSafeNextStep);
+        var requiresHumanReview = issues.Any(issue => issue.RequiresHumanReview) || fixture.Authority == WorkspaceContextAuthorityLevel.HumanReviewRequired && !fixture.HumanReviewed;
+
+        return new WorkspaceContextAuthorityFreshnessResult(
+            fixture.FixtureId,
+            decision,
+            issues,
+            warnings,
+            blockers,
+            AllowsReadOnlySummary: decision is WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly or WorkspaceContextAuthorityFreshnessDecision.WarningReadOnlyOnly or WorkspaceContextAuthorityFreshnessDecision.NeedsHumanReview,
+            AllowsDecisionUse: !blocksDecision && decision == WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly && !requiresHumanReview,
+            AllowsSafeNextStepUse: !blocksSafeNextStep && decision == WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly && !requiresHumanReview,
+            AllowsMemoryCandidateUse: fixture.MemoryCandidate && decision == WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly && fixture.EvidenceRefs.Count > 0 && !requiresHumanReview,
+            RequiresHumanReview: requiresHumanReview || decision == WorkspaceContextAuthorityFreshnessDecision.NeedsHumanReview,
+            ProviderCloudDisabled: true,
+            SemanticVectorDisabled: true,
+            NoSideEffectProof: fixture.NoSideEffectProof);
+    }
+
+    public static IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> EvaluateCatalog() =>
+        CreateFixtureCatalog().Select(Evaluate).ToList();
+
+    private static void AddIssues(WorkspaceContextAuthorityFreshnessFixture fixture, List<WorkspaceContextAuthorityFreshnessIssue> issues)
+    {
+        if (fixture.Excluded && fixture.Selected)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.ExcludedContextSelected, "Excluded context cannot be selected.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.Sensitivity == WorkspaceContextSensitivityLevel.RawPayload)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.RawPayloadContext, "Excluded payload context is blocked.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.Sensitivity == WorkspaceContextSensitivityLevel.SensitiveNeverUse)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.SensitiveContextWithoutClearance, "Sensitive-never-use context is blocked.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.Sensitivity == WorkspaceContextSensitivityLevel.Sensitive && !fixture.HumanReviewed)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.SensitiveContextWithoutClearance, "Sensitive context requires human clearance.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.Sensitivity == WorkspaceContextSensitivityLevel.Unknown)
+            issues.Add(Issue(fixture.Selected ? WorkspaceContextAuthorityFreshnessIssueKind.SelectedUnknownAuthority : WorkspaceContextAuthorityFreshnessIssueKind.UnknownAuthority, "Unknown authority or sensitivity blocks context use.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.Freshness == WorkspaceContextFreshnessStatus.Missing)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.MissingFreshness, "Missing freshness blocks context use.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.Freshness == WorkspaceContextFreshnessStatus.Stale && fixture.Locked && !fixture.DecisionMemory && !fixture.SafeNextStep && !fixture.MemoryCandidate)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.LockedContextStale, "Locked stale context requires human review.", blockDecision: false, blockSafeNext: false, human: true));
+        else if (fixture.Freshness == WorkspaceContextFreshnessStatus.Stale)
+            issues.Add(Issue(fixture.MemoryCandidate ? WorkspaceContextAuthorityFreshnessIssueKind.MemoryCandidateWithStaleEvidence : fixture.SafeNextStep ? WorkspaceContextAuthorityFreshnessIssueKind.SafeNextStepReliesOnStaleContext : fixture.Locked ? WorkspaceContextAuthorityFreshnessIssueKind.LockedContextStale : WorkspaceContextAuthorityFreshnessIssueKind.StaleContext, "Stale context cannot feed decisions or safe next steps.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.SourceKind == WorkspaceContextSourceKind.Fixture && fixture.Authority == WorkspaceContextAuthorityLevel.Informational && fixture.EvidenceRefs.Count == 0)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.FixtureOnlyNotRealWorldTrusted, "Fixture-only context is read-only preview only.", blockDecision: false, blockSafeNext: false, human: true));
+
+        if (fixture.Authority == WorkspaceContextAuthorityLevel.Informational && fixture.EvidenceRefs.Count == 0 && fixture.Sensitivity == WorkspaceContextSensitivityLevel.Safe)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.LowAuthority, "Low-authority context cannot be elevated by default.", blockDecision: false, blockSafeNext: false, human: true));
+
+        if (fixture.Contradictory)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.ContradictoryContext, "Contradictory context is blocked.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.MemoryCandidate && fixture.EvidenceRefs.Count == 0)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.MemoryCandidateWithoutEvidence, "Memory candidates require evidence refs.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.DecisionMemory && fixture.Authority == WorkspaceContextAuthorityLevel.HumanReviewRequired && !fixture.HumanReviewed)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.DecisionMemoryMissingHumanReview, "Decision memory requires human review.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.SourceKind == WorkspaceContextSourceKind.ProviderCloudDerived)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.ProviderDerivedWhileDisabled, "Provider-derived context is blocked while provider/cloud is disabled.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.SourceKind == WorkspaceContextSourceKind.SemanticVectorDerived)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.SemanticDerivedWhileDisabled, "Semantic-derived context is blocked while semantic/vector is disabled.", blockDecision: true, blockSafeNext: true, human: true));
+
+        if (fixture.SourceKind == WorkspaceContextSourceKind.LegacyWithoutProvenance)
+            issues.Add(Issue(WorkspaceContextAuthorityFreshnessIssueKind.LegacyWithoutProvenance, "Legacy context without provenance is blocked.", blockDecision: true, blockSafeNext: true, human: true));
+    }
+
+    private static WorkspaceContextAuthorityFreshnessDecision Decide(
+        WorkspaceContextAuthorityFreshnessFixture fixture,
+        IReadOnlyList<WorkspaceContextAuthorityFreshnessIssue> issues)
+    {
+        if (fixture.Excluded || issues.Any(issue => issue.IssueKind is WorkspaceContextAuthorityFreshnessIssueKind.ExcludedContextSelected or WorkspaceContextAuthorityFreshnessIssueKind.RawPayloadContext))
+            return WorkspaceContextAuthorityFreshnessDecision.Excluded;
+
+        if (issues.Any(issue => issue.BlocksDecision || issue.BlocksSafeNextStep))
+            return WorkspaceContextAuthorityFreshnessDecision.Blocked;
+
+        if (issues.Any(issue => issue.IssueKind == WorkspaceContextAuthorityFreshnessIssueKind.LockedContextStale))
+            return WorkspaceContextAuthorityFreshnessDecision.NeedsHumanReview;
+
+        if (issues.Count > 0)
+            return WorkspaceContextAuthorityFreshnessDecision.WarningReadOnlyOnly;
+
+        if (fixture.Authority == WorkspaceContextAuthorityLevel.HumanReviewRequired && !fixture.HumanReviewed)
+            return WorkspaceContextAuthorityFreshnessDecision.NeedsHumanReview;
+
+        return WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly;
+    }
+
+    private static WorkspaceContextAuthorityFreshnessIssue Issue(
+        WorkspaceContextAuthorityFreshnessIssueKind issueKind,
+        string message,
+        bool blockDecision,
+        bool blockSafeNext,
+        bool human) =>
+        new(issueKind, message, blockDecision, blockSafeNext, human);
+
+    private static WorkspaceContextAuthorityFreshnessFixture Fixture(
+        string fixtureId,
+        WorkspaceContextSourceKind sourceKind,
+        WorkspaceContextAuthorityLevel authority,
+        WorkspaceContextFreshnessStatus freshness,
+        WorkspaceContextSensitivityLevel sensitivity,
+        IReadOnlyList<string> evidenceRefs,
+        bool selected,
+        bool locked,
+        bool excluded,
+        bool contradictory,
+        bool memory,
+        bool safeNext,
+        bool decision,
+        bool human,
+        WorkspaceContextAuthorityFreshnessDecision expectedDecision,
+        WorkspaceContextAuthorityFreshnessIssueKind expectedIssue,
+        string expectedMessage,
+        WorkspaceContextNoSideEffectProof proof) =>
+        new(fixtureId, sourceKind, authority, freshness, sensitivity, evidenceRefs, selected, locked, excluded, contradictory, memory, safeNext, decision, human, expectedDecision, expectedIssue, expectedMessage, proof);
 }
 
 public static class WorkspaceContextReadOnlyPresenter

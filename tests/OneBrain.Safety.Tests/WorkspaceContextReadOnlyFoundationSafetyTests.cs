@@ -163,6 +163,151 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         Assert.IsFalse(text.Contains("ghp_", StringComparison.OrdinalIgnoreCase));
     }
 
+    [TestMethod]
+    public void AuthorityFreshnessGuard_SourceHasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
+    {
+        var source = ReadRepoText(FoundationPath);
+        var forbidden = new[]
+        {
+            "File.Read",
+            "File.Write",
+            "FileStream",
+            "Directory.",
+            "Directory.CreateDirectory",
+            "Path.",
+            "Microsoft.Data.Sqlite",
+            "SQLiteConnection",
+            "SqlConnection",
+            "DbContext",
+            "IDbConnection",
+            "HttpClient",
+            "WebSocket",
+            "Process.Start",
+            "ServiceCollection",
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "OpenAI",
+            "EmbeddingClient",
+            "VectorStore",
+            "KernelMemory"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
+    public void AuthorityFreshnessGuard_AllFixturesPreserveNoSideEffectProof()
+    {
+        foreach (var result in WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog())
+        {
+            var proof = result.NoSideEffectProof;
+
+            Assert.IsTrue(proof.Passes, result.FixtureId);
+            Assert.IsFalse(proof.WorkspaceFilesystemReadAttempted, result.FixtureId);
+            Assert.IsFalse(proof.FilesystemWriteAttempted, result.FixtureId);
+            Assert.IsFalse(proof.DatabaseTouched, result.FixtureId);
+            Assert.IsFalse(proof.DurablePersistenceActive, result.FixtureId);
+            Assert.IsFalse(proof.DurableMemoryActive, result.FixtureId);
+            Assert.IsFalse(proof.VectorSemanticBackendTouched, result.FixtureId);
+            Assert.IsFalse(proof.LlmProviderTouched, result.FixtureId);
+            Assert.IsFalse(proof.ProviderCloudTouched, result.FixtureId);
+            Assert.IsFalse(proof.MigrationRunnerStarted, result.FixtureId);
+            Assert.IsFalse(proof.MigrationExecuted, result.FixtureId);
+            Assert.IsFalse(proof.RuntimeTouched, result.FixtureId);
+            Assert.IsFalse(proof.BrowserCdpTouched, result.FixtureId);
+            Assert.IsFalse(proof.WcuTouched, result.FixtureId);
+            Assert.IsFalse(proof.OcrTouched, result.FixtureId);
+            Assert.IsFalse(proof.ProductActionExposed, result.FixtureId);
+            Assert.IsFalse(proof.ProductServiceRegistered, result.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void AuthorityFreshnessGuard_NoTrustByDefaultForUnsafeFixtures()
+    {
+        var unsafeResults = WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog()
+            .Where(result => result.Decision != WorkspaceContextAuthorityFreshnessDecision.AllowedReadOnly)
+            .ToList();
+
+        Assert.IsTrue(unsafeResults.Count >= 18);
+        Assert.IsTrue(unsafeResults.All(result => !result.AllowsDecisionUse), string.Join(", ", unsafeResults.Where(result => result.AllowsDecisionUse).Select(result => result.FixtureId)));
+        Assert.IsTrue(unsafeResults.All(result => !result.AllowsSafeNextStepUse), string.Join(", ", unsafeResults.Where(result => result.AllowsSafeNextStepUse).Select(result => result.FixtureId)));
+        Assert.IsTrue(unsafeResults.All(result => !result.AllowsMemoryCandidateUse), string.Join(", ", unsafeResults.Where(result => result.AllowsMemoryCandidateUse).Select(result => result.FixtureId)));
+    }
+
+    [TestMethod]
+    public void AuthorityFreshnessGuard_BlocksProviderSemanticRawSensitiveLegacyAndContradictorySources()
+    {
+        var results = WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog();
+
+        AssertBlocked(results, "ctx.provider-derived-disabled", WorkspaceContextAuthorityFreshnessIssueKind.ProviderDerivedWhileDisabled);
+        AssertBlocked(results, "ctx.semantic-derived-disabled", WorkspaceContextAuthorityFreshnessIssueKind.SemanticDerivedWhileDisabled);
+        AssertBlocked(results, "ctx.raw-payload", WorkspaceContextAuthorityFreshnessIssueKind.RawPayloadContext);
+        AssertBlocked(results, "ctx.sensitive-without-clearance", WorkspaceContextAuthorityFreshnessIssueKind.SensitiveContextWithoutClearance);
+        AssertBlocked(results, "ctx.legacy-no-provenance", WorkspaceContextAuthorityFreshnessIssueKind.LegacyWithoutProvenance);
+        AssertBlocked(results, "ctx.contradictory", WorkspaceContextAuthorityFreshnessIssueKind.ContradictoryContext);
+    }
+
+    [TestMethod]
+    public void AuthorityFreshnessGuard_BlocksStaleMissingUnknownAndDecisionMemoryWithoutHumanReview()
+    {
+        var results = WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog();
+
+        AssertBlocked(results, "ctx.stale-context", WorkspaceContextAuthorityFreshnessIssueKind.StaleContext);
+        AssertBlocked(results, "ctx.missing-freshness", WorkspaceContextAuthorityFreshnessIssueKind.MissingFreshness);
+        AssertBlocked(results, "ctx.unknown-authority", WorkspaceContextAuthorityFreshnessIssueKind.UnknownAuthority);
+        AssertBlocked(results, "safe-next-step.stale", WorkspaceContextAuthorityFreshnessIssueKind.SafeNextStepReliesOnStaleContext);
+        AssertBlocked(results, "memory.decision-missing-human-review", WorkspaceContextAuthorityFreshnessIssueKind.DecisionMemoryMissingHumanReview);
+    }
+
+    [TestMethod]
+    public void AuthorityFreshnessGuard_HasNoAuthorityFreshnessContextMemoryOrProductionOverclaim()
+    {
+        var text = string.Join(
+            "\n",
+            WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog()
+                .Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}"));
+
+        var forbidden = new[]
+        {
+            "production" + "-ready",
+            "memory persisted",
+            "durable memory active",
+            "semantic search enabled",
+            "vector backend enabled",
+            "provider call enabled",
+            "workspace scan completed",
+            "runtime action enabled",
+            "live automation enabled",
+            "filesystem indexed",
+            "trusted automatically",
+            "freshness guaranteed",
+            "authority granted"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    private static void AssertBlocked(
+        IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> results,
+        string fixtureId,
+        WorkspaceContextAuthorityFreshnessIssueKind issueKind)
+    {
+        var result = results.Single(item => item.FixtureId == fixtureId);
+
+        Assert.IsTrue(result.Blocked, fixtureId);
+        Assert.IsTrue(result.HasIssue(issueKind), fixtureId);
+        Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
+        Assert.IsFalse(result.AllowsSafeNextStepUse, fixtureId);
+    }
+
     private static string ReadRepoText(string relativePath)
     {
         var current = AppContext.BaseDirectory;
