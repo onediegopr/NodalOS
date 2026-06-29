@@ -440,4 +440,163 @@ public sealed class WorkspaceContextReadOnlyFoundationTests
         Assert.IsFalse(firstText.Contains("exclusion bypassed", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(firstText.Contains("memory persisted", StringComparison.OrdinalIgnoreCase));
     }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_CatalogCoversExpectedAdversarialFixtures()
+    {
+        var fixtures = WorkspaceMemoryCandidateContradictionRiskGuard.CreateFixtureCatalog();
+
+        Assert.AreEqual(24, fixtures.Count);
+        Assert.IsTrue(fixtures.All(fixture => fixture.NoSideEffectProof.Passes));
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                "memory.contradiction.evidence-linked",
+                "memory.contradiction.no-evidence",
+                "memory.contradiction.stale-context",
+                "memory.contradiction.excluded-context",
+                "memory.contradiction.locked-unsafe",
+                "memory.risk.evidence-fresh",
+                "memory.risk.missing-severity",
+                "memory.risk.promotes-decision",
+                "memory.decision.no-human-review",
+                "memory.decision.contradictory-evidence",
+                "memory.claim.missing-confidence",
+                "memory.claim.stale-evidence",
+                "memory.action.missing-human-action",
+                "memory.action.excluded-context",
+                "memory.safe-next.critical-risk",
+                "memory.safe-next.unresolved-contradiction",
+                "memory.provider-derived-disabled",
+                "memory.semantic-derived-disabled",
+                "memory.legacy-no-provenance",
+                "memory.fixture-only",
+                "memory.duplicate-conflicting",
+                "memory.raw-sensitive-payload",
+                "memory.unknown-authority",
+                "memory.missing-freshness"
+            },
+            fixtures.Select(fixture => fixture.FixtureId).ToArray());
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_ExpectedDecisionsAndIssuesMatchFixtures()
+    {
+        foreach (var fixture in WorkspaceMemoryCandidateContradictionRiskGuard.CreateFixtureCatalog())
+        {
+            var result = WorkspaceMemoryCandidateContradictionRiskGuard.Evaluate(fixture);
+
+            Assert.AreEqual(fixture.ExpectedDecision, result.Decision, fixture.FixtureId);
+            if (fixture.ExpectedIssue == WorkspaceMemoryCandidateContradictionRiskIssueKind.None)
+            {
+                Assert.AreEqual(0, result.Issues.Count, fixture.FixtureId);
+            }
+            else
+            {
+                Assert.IsTrue(result.HasIssue(fixture.ExpectedIssue), fixture.FixtureId);
+                Assert.IsTrue(result.Issues.Any(issue => !string.IsNullOrWhiteSpace(issue.Message)), fixture.FixtureId);
+            }
+
+            Assert.IsTrue(result.NoSideEffectProof.Passes, fixture.FixtureId);
+            Assert.IsFalse(result.DurableMemoryEnabled, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_KeepsContradictionAndRiskReadOnly()
+    {
+        var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
+        var contradiction = results.Single(result => result.FixtureId == "memory.contradiction.evidence-linked");
+        var risk = results.Single(result => result.FixtureId == "memory.risk.evidence-fresh");
+        var fixtureOnly = results.Single(result => result.FixtureId == "memory.fixture-only");
+
+        Assert.AreEqual(WorkspaceMemoryCandidateInfluenceDecision.NeedsHumanReview, contradiction.Decision);
+        Assert.IsTrue(contradiction.RequiresHumanReview);
+        Assert.IsTrue(contradiction.AllowsReadOnlyPreview);
+        Assert.IsFalse(contradiction.AllowsDecisionUse);
+        Assert.IsFalse(contradiction.AllowsSafeNextStepUse);
+        Assert.IsFalse(contradiction.DurableMemoryEnabled);
+
+        Assert.AreEqual(WorkspaceMemoryCandidateInfluenceDecision.AllowedReadOnlyWarning, risk.Decision);
+        Assert.IsTrue(risk.AllowsReadOnlyPreview);
+        Assert.IsFalse(risk.AllowsDecisionUse);
+        Assert.IsFalse(risk.AllowsSafeNextStepUse);
+        Assert.IsFalse(risk.DurableMemoryEnabled);
+
+        Assert.AreEqual(WorkspaceMemoryCandidateInfluenceDecision.WarningReadOnlyOnly, fixtureOnly.Decision);
+        Assert.IsTrue(fixtureOnly.AllowsReadOnlyPreview);
+        Assert.IsFalse(fixtureOnly.AllowsCandidateInfluence);
+        Assert.IsFalse(fixtureOnly.DurableMemoryEnabled);
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_BlocksMissingEvidenceStaleExcludedLockedAndUnsafeDependencies()
+    {
+        var blockedIds = new[]
+        {
+            "memory.contradiction.no-evidence",
+            "memory.contradiction.stale-context",
+            "memory.contradiction.excluded-context",
+            "memory.contradiction.locked-unsafe",
+            "memory.action.excluded-context",
+            "memory.raw-sensitive-payload",
+            "memory.unknown-authority",
+            "memory.missing-freshness"
+        };
+        var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog()
+            .Where(result => blockedIds.Contains(result.FixtureId, StringComparer.Ordinal))
+            .ToList();
+
+        Assert.AreEqual(blockedIds.Length, results.Count);
+        Assert.IsTrue(results.All(result => result.Blocked), string.Join(", ", results.Where(result => !result.Blocked).Select(result => result.FixtureId)));
+        Assert.IsTrue(results.All(result => !result.AllowsDecisionUse));
+        Assert.IsTrue(results.All(result => !result.AllowsSafeNextStepUse));
+        Assert.IsTrue(results.All(result => !result.AllowsCandidateInfluence));
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_BlocksRiskDecisionClaimActionSafeNextProviderSemanticLegacyAndDuplicates()
+    {
+        var blockedIds = new[]
+        {
+            "memory.risk.missing-severity",
+            "memory.risk.promotes-decision",
+            "memory.decision.no-human-review",
+            "memory.decision.contradictory-evidence",
+            "memory.claim.missing-confidence",
+            "memory.claim.stale-evidence",
+            "memory.action.missing-human-action",
+            "memory.safe-next.critical-risk",
+            "memory.safe-next.unresolved-contradiction",
+            "memory.provider-derived-disabled",
+            "memory.semantic-derived-disabled",
+            "memory.legacy-no-provenance",
+            "memory.duplicate-conflicting"
+        };
+        var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog()
+            .Where(result => blockedIds.Contains(result.FixtureId, StringComparer.Ordinal))
+            .ToList();
+
+        Assert.AreEqual(blockedIds.Length, results.Count);
+        Assert.IsTrue(results.All(result => result.Blocked), string.Join(", ", results.Where(result => !result.Blocked).Select(result => result.FixtureId)));
+        Assert.IsTrue(results.All(result => !result.AllowsDecisionUse));
+        Assert.IsTrue(results.All(result => !result.AllowsSafeNextStepUse));
+        Assert.IsTrue(results.All(result => !result.AllowsCandidateInfluence));
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_OutputIsDeterministicAndHasNoProductionClaim()
+    {
+        var first = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
+        var second = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
+        var firstText = string.Join("\n", first.Select(result => $"{result.FixtureId}:{result.Decision}:{string.Join(",", result.Issues.Select(issue => issue.IssueKind))}"));
+        var secondText = string.Join("\n", second.Select(result => $"{result.FixtureId}:{result.Decision}:{string.Join(",", result.Issues.Select(issue => issue.IssueKind))}"));
+
+        Assert.AreEqual(firstText, secondText);
+        Assert.IsFalse(firstText.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("candidate promoted", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("durable memory", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("risk is decision", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(firstText.Contains("contradiction resolved automatically", StringComparison.OrdinalIgnoreCase));
+    }
 }

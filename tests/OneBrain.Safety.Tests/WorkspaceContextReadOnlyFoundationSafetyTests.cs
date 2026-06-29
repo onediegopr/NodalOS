@@ -440,6 +440,152 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         }
     }
 
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_SourceHasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
+    {
+        var source = ReadRepoText(FoundationPath);
+        var forbidden = new[]
+        {
+            "File.Read",
+            "File.Write",
+            "FileStream",
+            "Directory.",
+            "Directory.CreateDirectory",
+            "Path.",
+            "Microsoft.Data.Sqlite",
+            "SQLiteConnection",
+            "SqlConnection",
+            "DbContext",
+            "IDbConnection",
+            "HttpClient",
+            "WebSocket",
+            "Process.Start",
+            "ServiceCollection",
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "OpenAI",
+            "EmbeddingClient",
+            "VectorStore",
+            "KernelMemory"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_AllFixturesPreserveNoSideEffectProof()
+    {
+        foreach (var result in WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog())
+        {
+            var proof = result.NoSideEffectProof;
+
+            Assert.IsTrue(proof.Passes, result.FixtureId);
+            Assert.IsFalse(proof.WorkspaceFilesystemReadAttempted, result.FixtureId);
+            Assert.IsFalse(proof.FilesystemWriteAttempted, result.FixtureId);
+            Assert.IsFalse(proof.DatabaseTouched, result.FixtureId);
+            Assert.IsFalse(proof.DurablePersistenceActive, result.FixtureId);
+            Assert.IsFalse(proof.DurableMemoryActive, result.FixtureId);
+            Assert.IsFalse(proof.VectorSemanticBackendTouched, result.FixtureId);
+            Assert.IsFalse(proof.LlmProviderTouched, result.FixtureId);
+            Assert.IsFalse(proof.ProviderCloudTouched, result.FixtureId);
+            Assert.IsFalse(proof.MigrationRunnerStarted, result.FixtureId);
+            Assert.IsFalse(proof.MigrationExecuted, result.FixtureId);
+            Assert.IsFalse(proof.RuntimeTouched, result.FixtureId);
+            Assert.IsFalse(proof.BrowserCdpTouched, result.FixtureId);
+            Assert.IsFalse(proof.WcuTouched, result.FixtureId);
+            Assert.IsFalse(proof.OcrTouched, result.FixtureId);
+            Assert.IsFalse(proof.ProductActionExposed, result.FixtureId);
+            Assert.IsFalse(proof.ProductServiceRegistered, result.FixtureId);
+            Assert.IsFalse(result.DurableMemoryEnabled, result.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_NoCandidatePromotesToDurableMemoryOrDecisionByDefault()
+    {
+        foreach (var result in WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog())
+        {
+            Assert.IsFalse(result.DurableMemoryEnabled, result.FixtureId);
+            Assert.IsFalse(result.AllowsDecisionUse, result.FixtureId);
+            Assert.IsFalse(result.AllowsSafeNextStepUse, result.FixtureId);
+            if (result.Decision != WorkspaceMemoryCandidateInfluenceDecision.AllowedReadOnlyWarning)
+            {
+                Assert.IsFalse(result.AllowsCandidateInfluence, result.FixtureId);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_BlocksUnsafeSourcesAndDependencies()
+    {
+        var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
+
+        AssertMemoryBlocked(results, "memory.contradiction.no-evidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateWithoutEvidence);
+        AssertMemoryBlocked(results, "memory.contradiction.stale-context", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesStaleContext);
+        AssertMemoryBlocked(results, "memory.contradiction.excluded-context", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesExcludedContext);
+        AssertMemoryBlocked(results, "memory.contradiction.locked-unsafe", WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesLockedUnsafeContext);
+        AssertMemoryBlocked(results, "memory.provider-derived-disabled", WorkspaceMemoryCandidateContradictionRiskIssueKind.ProviderDerivedWhileDisabled);
+        AssertMemoryBlocked(results, "memory.semantic-derived-disabled", WorkspaceMemoryCandidateContradictionRiskIssueKind.SemanticDerivedWhileDisabled);
+        AssertMemoryBlocked(results, "memory.legacy-no-provenance", WorkspaceMemoryCandidateContradictionRiskIssueKind.LegacyWithoutProvenance);
+        AssertMemoryBlocked(results, "memory.raw-sensitive-payload", WorkspaceMemoryCandidateContradictionRiskIssueKind.RawSensitivePayload);
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_BlocksContradictionRiskClaimActionSafeNextAndDuplicateOverreach()
+    {
+        var results = WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog();
+
+        AssertMemoryBlocked(results, "memory.risk.missing-severity", WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskMissingSeverity);
+        AssertMemoryBlocked(results, "memory.risk.promotes-decision", WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskCannotBecomeDecisionMemory);
+        AssertMemoryBlocked(results, "memory.decision.no-human-review", WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionMissingHumanReview);
+        AssertMemoryBlocked(results, "memory.decision.contradictory-evidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionWithContradictoryEvidence);
+        AssertMemoryBlocked(results, "memory.claim.missing-confidence", WorkspaceMemoryCandidateContradictionRiskIssueKind.ClaimMissingConfidence);
+        AssertMemoryBlocked(results, "memory.action.missing-human-action", WorkspaceMemoryCandidateContradictionRiskIssueKind.ActionMissingRequiredHumanAction);
+        AssertMemoryBlocked(results, "memory.safe-next.critical-risk", WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnCriticalRisk);
+        AssertMemoryBlocked(results, "memory.safe-next.unresolved-contradiction", WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnUnresolvedContradiction);
+        AssertMemoryBlocked(results, "memory.duplicate-conflicting", WorkspaceMemoryCandidateContradictionRiskIssueKind.DuplicateConflictingCandidates);
+    }
+
+    [TestMethod]
+    public void MemoryCandidateContradictionRiskGuard_HasNoCandidateContradictionRiskContextMemoryOrProductionOverclaim()
+    {
+        var text = string.Join(
+            "\n",
+            WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog()
+                .Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}"));
+
+        var forbidden = new[]
+        {
+            "production" + "-ready",
+            "candidate promoted",
+            "candidate persisted",
+            "durable memory enabled",
+            "durable memory active",
+            "memory persisted",
+            "risk is decision",
+            "risk promoted to decision",
+            "contradiction resolved automatically",
+            "contradiction hidden",
+            "safe next step approved",
+            "semantic search enabled",
+            "vector backend enabled",
+            "provider call enabled",
+            "workspace scan completed",
+            "runtime action enabled",
+            "live automation enabled",
+            "filesystem indexed"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
     private static void AssertBlocked(
         IReadOnlyList<WorkspaceContextAuthorityFreshnessResult> results,
         string fixtureId,
@@ -465,6 +611,21 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
         Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
         Assert.IsFalse(result.AllowsSafeNextStepUse, fixtureId);
         Assert.IsFalse(result.AllowsMemoryInfluence, fixtureId);
+    }
+
+    private static void AssertMemoryBlocked(
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> results,
+        string fixtureId,
+        WorkspaceMemoryCandidateContradictionRiskIssueKind issueKind)
+    {
+        var result = results.Single(item => item.FixtureId == fixtureId);
+
+        Assert.IsTrue(result.Blocked, fixtureId);
+        Assert.IsTrue(result.HasIssue(issueKind), fixtureId);
+        Assert.IsFalse(result.DurableMemoryEnabled, fixtureId);
+        Assert.IsFalse(result.AllowsDecisionUse, fixtureId);
+        Assert.IsFalse(result.AllowsSafeNextStepUse, fixtureId);
+        Assert.IsFalse(result.AllowsCandidateInfluence, fixtureId);
     }
 
     private static string ReadRepoText(string relativePath)

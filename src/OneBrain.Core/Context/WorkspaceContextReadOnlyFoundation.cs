@@ -171,6 +171,68 @@ public enum WorkspaceContextSelectionLockExclusionIssueKind
     AuthorityFreshnessBlocked
 }
 
+public enum WorkspaceMemoryCandidateRiskSeverity
+{
+    None,
+    Low,
+    Medium,
+    Critical,
+    Missing
+}
+
+public enum WorkspaceMemoryCandidateContradictionStatus
+{
+    None,
+    EvidenceLinked,
+    Unresolved,
+    ContradictoryEvidence,
+    MissingEvidence
+}
+
+public enum WorkspaceMemoryCandidateConfidenceStatus
+{
+    Present,
+    Missing,
+    Unknown
+}
+
+public enum WorkspaceMemoryCandidateInfluenceDecision
+{
+    AllowedReadOnlyWarning,
+    WarningReadOnlyOnly,
+    NeedsHumanReview,
+    Blocked,
+    Excluded
+}
+
+public enum WorkspaceMemoryCandidateContradictionRiskIssueKind
+{
+    None,
+    CandidateWithoutEvidence,
+    CandidateUsesStaleContext,
+    CandidateUsesExcludedContext,
+    CandidateUsesLockedUnsafeContext,
+    ContradictionRequiresHumanReview,
+    RiskMissingSeverity,
+    RiskCannotBecomeDecisionMemory,
+    DecisionMissingHumanReview,
+    DecisionWithContradictoryEvidence,
+    ClaimMissingConfidence,
+    ClaimStaleEvidence,
+    ActionMissingRequiredHumanAction,
+    ActionReferencesExcludedContext,
+    SafeNextStepReliesOnCriticalRisk,
+    SafeNextStepReliesOnUnresolvedContradiction,
+    ProviderDerivedWhileDisabled,
+    SemanticDerivedWhileDisabled,
+    LegacyWithoutProvenance,
+    FixtureOnlyNotDurableTrusted,
+    DuplicateConflictingCandidates,
+    RawSensitivePayload,
+    UnknownAuthority,
+    MissingFreshness
+}
+
 public sealed record WorkspaceContextNoSideEffectProof(
     bool ReadOnly,
     bool Deterministic,
@@ -381,6 +443,59 @@ public sealed record WorkspaceContextSelectionLockExclusionResult(
 {
     public bool Blocked => Decision is WorkspaceContextSelectionLockExclusionDecision.Blocked or WorkspaceContextSelectionLockExclusionDecision.Excluded;
     public bool HasIssue(WorkspaceContextSelectionLockExclusionIssueKind issueKind) => Issues.Any(issue => issue.IssueKind == issueKind);
+}
+
+public sealed record WorkspaceMemoryCandidateContradictionRiskFixture(
+    string FixtureId,
+    WorkspaceContextItemKind CandidateKind,
+    WorkspaceContextSourceKind SourceKind,
+    WorkspaceContextAuthorityLevel Authority,
+    WorkspaceContextFreshnessStatus Freshness,
+    WorkspaceContextSensitivityLevel Sensitivity,
+    WorkspaceContextSelectionState SelectionState,
+    WorkspaceContextLockState LockState,
+    WorkspaceContextExclusionState ExclusionState,
+    WorkspaceMemoryCandidateRiskSeverity RiskSeverity,
+    WorkspaceMemoryCandidateContradictionStatus ContradictionStatus,
+    WorkspaceMemoryCandidateConfidenceStatus ConfidenceStatus,
+    IReadOnlyList<string> EvidenceRefs,
+    bool HumanReviewed,
+    bool RequiredHumanActionPresent,
+    bool AttemptsDecisionMemory,
+    bool SafeNextStepCandidate,
+    bool FixtureOnly,
+    bool DuplicateConflictingCandidate,
+    WorkspaceMemoryCandidateInfluenceDecision ExpectedDecision,
+    WorkspaceMemoryCandidateContradictionRiskIssueKind ExpectedIssue,
+    string ExpectedMessage,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof);
+
+public sealed record WorkspaceMemoryCandidateContradictionRiskIssue(
+    WorkspaceMemoryCandidateContradictionRiskIssueKind IssueKind,
+    string Message,
+    bool BlocksDecision,
+    bool BlocksSafeNextStep,
+    bool BlocksCandidateInfluence,
+    bool BlocksDashboardExport,
+    bool RequiresHumanReview);
+
+public sealed record WorkspaceMemoryCandidateContradictionRiskResult(
+    string FixtureId,
+    WorkspaceMemoryCandidateInfluenceDecision Decision,
+    IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskIssue> Issues,
+    IReadOnlyList<string> Warnings,
+    IReadOnlyList<string> Blockers,
+    bool AllowsReadOnlyPreview,
+    bool AllowsDecisionUse,
+    bool AllowsSafeNextStepUse,
+    bool AllowsCandidateInfluence,
+    bool AllowsDashboardExportAppearance,
+    bool DurableMemoryEnabled,
+    bool RequiresHumanReview,
+    WorkspaceContextNoSideEffectProof NoSideEffectProof)
+{
+    public bool Blocked => Decision is WorkspaceMemoryCandidateInfluenceDecision.Blocked or WorkspaceMemoryCandidateInfluenceDecision.Excluded;
+    public bool HasIssue(WorkspaceMemoryCandidateContradictionRiskIssueKind issueKind) => Issues.Any(issue => issue.IssueKind == issueKind);
 }
 
 public sealed record WorkspaceContextPacketReadOnly(
@@ -759,6 +874,196 @@ public static class WorkspaceContextSelectionLockExclusionGuard
         string expectedMessage,
         WorkspaceContextNoSideEffectProof proof) =>
         new(fixtureId, selection, locked, exclusion, sourceKind, authority, freshness, sensitivity, evidenceRefs, memoryRefs, safeNextRefs, claimActionRefs, graphRefs, contradictory, memory, memoryPromotion, duplicateLock, human, exportDashboard, expectedDecision, expectedIssue, expectedMessage, proof);
+}
+
+public static class WorkspaceMemoryCandidateContradictionRiskGuard
+{
+    public static IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskFixture> CreateFixtureCatalog()
+    {
+        var proof = WorkspaceContextNoSideEffectProof.FixtureReadOnly();
+
+        return
+        [
+            Fixture("memory.contradiction.evidence-linked", WorkspaceContextItemKind.ContradictionMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.FixtureCurrent, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.EvidenceLinked, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.contradiction.current"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.NeedsHumanReview, WorkspaceMemoryCandidateContradictionRiskIssueKind.ContradictionRequiresHumanReview, "Evidence-linked contradiction remains read-only and requires human review.", proof),
+            Fixture("memory.contradiction.no-evidence", WorkspaceContextItemKind.ContradictionMemoryPreview, WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.MissingEvidence, WorkspaceMemoryCandidateConfidenceStatus.Present, [], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateWithoutEvidence, "Memory candidate without evidence is blocked.", proof),
+            Fixture("memory.contradiction.stale-context", WorkspaceContextItemKind.ContradictionMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.EvidenceLinked, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.contradiction.stale"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesStaleContext, "Memory candidate using stale context is blocked.", proof),
+            Fixture("memory.contradiction.excluded-context", WorkspaceContextItemKind.ContradictionMemoryPreview, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.EvidenceLinked, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.contradiction.excluded"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Excluded, WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesExcludedContext, "Memory candidate using excluded context is excluded.", proof),
+            Fixture("memory.contradiction.locked-unsafe", WorkspaceContextItemKind.ContradictionMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.LockedBySafety, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.LockedRequiresHumanReview, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.EvidenceLinked, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.contradiction.locked"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesLockedUnsafeContext, "Memory candidate using locked unsafe context is blocked.", proof),
+            Fixture("memory.risk.evidence-fresh", WorkspaceContextItemKind.RiskMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.FixtureCurrent, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.Medium, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.risk.current"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.AllowedReadOnlyWarning, WorkspaceMemoryCandidateContradictionRiskIssueKind.None, "Risk candidate with evidence is read-only warning only.", proof),
+            Fixture("memory.risk.missing-severity", WorkspaceContextItemKind.RiskMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.Missing, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.risk.missing-severity"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskMissingSeverity, "Risk candidate without severity is blocked.", proof),
+            Fixture("memory.risk.promotes-decision", WorkspaceContextItemKind.RiskMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.Medium, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.risk.decision"], human: false, humanAction: true, decision: true, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskCannotBecomeDecisionMemory, "Risk candidate cannot become decision memory.", proof),
+            Fixture("memory.decision.no-human-review", WorkspaceContextItemKind.DecisionMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.HumanReviewRequired, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.decision.review"], human: false, humanAction: true, decision: true, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionMissingHumanReview, "Decision candidate requires human review.", proof),
+            Fixture("memory.decision.contradictory-evidence", WorkspaceContextItemKind.DecisionMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.ContradictoryEvidence, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.decision.contradiction"], human: true, humanAction: true, decision: true, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionWithContradictoryEvidence, "Decision candidate with contradictory evidence is blocked.", proof),
+            Fixture("memory.claim.missing-confidence", WorkspaceContextItemKind.ClaimMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Missing, ["ev.claim.confidence"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.ClaimMissingConfidence, "Claim candidate missing confidence is blocked.", proof),
+            Fixture("memory.claim.stale-evidence", WorkspaceContextItemKind.ClaimMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Stale, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.claim.stale"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.ClaimStaleEvidence, "Claim candidate with stale evidence is blocked.", proof),
+            Fixture("memory.action.missing-human-action", WorkspaceContextItemKind.ActionMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.HumanReviewRequired, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.action.human"], human: false, humanAction: false, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.ActionMissingRequiredHumanAction, "Action candidate requires required human action.", proof),
+            Fixture("memory.action.excluded-context", WorkspaceContextItemKind.ActionMemoryPreview, WorkspaceContextSourceKind.CapabilityNotice, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.SensitiveNeverUse, WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.Excluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.action.excluded"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Excluded, WorkspaceMemoryCandidateContradictionRiskIssueKind.ActionReferencesExcludedContext, "Action candidate referencing excluded context is excluded.", proof),
+            Fixture("memory.safe-next.critical-risk", WorkspaceContextItemKind.SafeNextStep, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.Critical, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.safe.risk"], human: false, humanAction: true, decision: false, safeNext: true, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnCriticalRisk, "Safe next step is blocked by critical risk.", proof),
+            Fixture("memory.safe-next.unresolved-contradiction", WorkspaceContextItemKind.SafeNextStep, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.Unresolved, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.safe.contradiction"], human: false, humanAction: true, decision: false, safeNext: true, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnUnresolvedContradiction, "Safe next step is blocked by unresolved contradiction.", proof),
+            Fixture("memory.provider-derived-disabled", WorkspaceContextItemKind.RiskMemoryPreview, WorkspaceContextSourceKind.ProviderCloudDerived, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.Low, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.memory.provider"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.ProviderDerivedWhileDisabled, "Provider-derived memory candidate is blocked while provider/cloud is disabled.", proof),
+            Fixture("memory.semantic-derived-disabled", WorkspaceContextItemKind.ClaimMemoryPreview, WorkspaceContextSourceKind.SemanticVectorDerived, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.memory.semantic"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.SemanticDerivedWhileDisabled, "Semantic-derived memory candidate is blocked while semantic/vector is disabled.", proof),
+            Fixture("memory.legacy-no-provenance", WorkspaceContextItemKind.DecisionMemoryPreview, WorkspaceContextSourceKind.LegacyWithoutProvenance, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Missing, WorkspaceContextSensitivityLevel.Unknown, WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Unknown, [], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.LegacyWithoutProvenance, "Legacy memory candidate without provenance is blocked.", proof),
+            Fixture("memory.fixture-only", WorkspaceContextItemKind.ClaimMemoryPreview, WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.FixtureCurrent, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.memory.fixture"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: true, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.WarningReadOnlyOnly, WorkspaceMemoryCandidateContradictionRiskIssueKind.FixtureOnlyNotDurableTrusted, "Fixture-only memory candidate is read-only and not durable/trusted.", proof),
+            Fixture("memory.duplicate-conflicting", WorkspaceContextItemKind.DecisionMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.ContradictoryEvidence, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.memory.duplicate"], human: true, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: true, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.DuplicateConflictingCandidates, "Duplicate memory candidates with conflicting conclusions are blocked.", proof),
+            Fixture("memory.raw-sensitive-payload", WorkspaceContextItemKind.RiskMemoryPreview, WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.ExcludedBySafety, WorkspaceContextFreshnessStatus.NotApplicable, WorkspaceContextSensitivityLevel.RawPayload, WorkspaceContextSelectionState.NotSelected, WorkspaceContextLockState.LockedBySafety, WorkspaceContextExclusionState.Excluded, WorkspaceMemoryCandidateRiskSeverity.Critical, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Unknown, [], human: false, humanAction: false, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Excluded, WorkspaceMemoryCandidateContradictionRiskIssueKind.RawSensitivePayload, "Memory candidate containing raw or sensitive payload is excluded.", proof),
+            Fixture("memory.unknown-authority", WorkspaceContextItemKind.ClaimMemoryPreview, WorkspaceContextSourceKind.Fixture, WorkspaceContextAuthorityLevel.Informational, WorkspaceContextFreshnessStatus.Fresh, WorkspaceContextSensitivityLevel.Unknown, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.memory.unknown"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.UnknownAuthority, "Memory candidate with unknown authority is blocked.", proof),
+            Fixture("memory.missing-freshness", WorkspaceContextItemKind.ClaimMemoryPreview, WorkspaceContextSourceKind.EilReadOnlyEvidence, WorkspaceContextAuthorityLevel.EvidenceLinked, WorkspaceContextFreshnessStatus.Missing, WorkspaceContextSensitivityLevel.Safe, WorkspaceContextSelectionState.Selected, WorkspaceContextLockState.Unlocked, WorkspaceContextExclusionState.NotExcluded, WorkspaceMemoryCandidateRiskSeverity.None, WorkspaceMemoryCandidateContradictionStatus.None, WorkspaceMemoryCandidateConfidenceStatus.Present, ["ev.memory.missing-freshness"], human: false, humanAction: true, decision: false, safeNext: false, fixtureOnly: false, duplicate: false, WorkspaceMemoryCandidateInfluenceDecision.Blocked, WorkspaceMemoryCandidateContradictionRiskIssueKind.MissingFreshness, "Memory candidate with missing freshness is blocked.", proof)
+        ];
+    }
+
+    public static WorkspaceMemoryCandidateContradictionRiskResult Evaluate(WorkspaceMemoryCandidateContradictionRiskFixture fixture)
+    {
+        var issues = new List<WorkspaceMemoryCandidateContradictionRiskIssue>();
+
+        AddIssues(fixture, issues);
+
+        var decision = Decide(fixture, issues);
+        var blockers = issues.Where(issue => issue.BlocksDecision || issue.BlocksSafeNextStep || issue.BlocksCandidateInfluence || issue.BlocksDashboardExport).Select(issue => issue.Message).ToList();
+        var warnings = issues.Where(issue => !issue.BlocksDecision && !issue.BlocksSafeNextStep && !issue.BlocksCandidateInfluence && !issue.BlocksDashboardExport).Select(issue => issue.Message).ToList();
+        var requiresHumanReview = issues.Any(issue => issue.RequiresHumanReview)
+            || decision == WorkspaceMemoryCandidateInfluenceDecision.NeedsHumanReview;
+
+        return new WorkspaceMemoryCandidateContradictionRiskResult(
+            fixture.FixtureId,
+            decision,
+            issues,
+            warnings,
+            blockers,
+            AllowsReadOnlyPreview: decision is WorkspaceMemoryCandidateInfluenceDecision.AllowedReadOnlyWarning or WorkspaceMemoryCandidateInfluenceDecision.WarningReadOnlyOnly or WorkspaceMemoryCandidateInfluenceDecision.NeedsHumanReview,
+            AllowsDecisionUse: false,
+            AllowsSafeNextStepUse: false,
+            AllowsCandidateInfluence: decision == WorkspaceMemoryCandidateInfluenceDecision.AllowedReadOnlyWarning && !requiresHumanReview && issues.All(issue => !issue.BlocksCandidateInfluence),
+            AllowsDashboardExportAppearance: decision != WorkspaceMemoryCandidateInfluenceDecision.Excluded && issues.All(issue => !issue.BlocksDashboardExport),
+            DurableMemoryEnabled: false,
+            RequiresHumanReview: requiresHumanReview,
+            NoSideEffectProof: fixture.NoSideEffectProof);
+    }
+
+    public static IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskResult> EvaluateCatalog() =>
+        CreateFixtureCatalog().Select(Evaluate).ToList();
+
+    private static void AddIssues(WorkspaceMemoryCandidateContradictionRiskFixture fixture, List<WorkspaceMemoryCandidateContradictionRiskIssue> issues)
+    {
+        if (fixture.EvidenceRefs.Count == 0)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateWithoutEvidence, "Memory candidate without evidence is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.Freshness == WorkspaceContextFreshnessStatus.Stale)
+            issues.Add(Issue(fixture.CandidateKind == WorkspaceContextItemKind.ClaimMemoryPreview ? WorkspaceMemoryCandidateContradictionRiskIssueKind.ClaimStaleEvidence : WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesStaleContext, "Memory candidate using stale context is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: false, human: true));
+
+        if (fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded)
+            issues.Add(Issue(fixture.CandidateKind == WorkspaceContextItemKind.ActionMemoryPreview ? WorkspaceMemoryCandidateContradictionRiskIssueKind.ActionReferencesExcludedContext : WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesExcludedContext, "Memory candidate using excluded context is excluded.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.LockState is WorkspaceContextLockState.LockedBySafety or WorkspaceContextLockState.LockedRequiresHumanReview && !fixture.HumanReviewed)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.CandidateUsesLockedUnsafeContext, "Memory candidate using locked unsafe context is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: false, human: true));
+
+        if (fixture.ContradictionStatus == WorkspaceMemoryCandidateContradictionStatus.EvidenceLinked && !fixture.HumanReviewed)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.ContradictionRequiresHumanReview, "Evidence-linked contradiction remains read-only and requires human review.", blockDecision: true, blockSafeNext: true, blockInfluence: false, blockDashboard: false, human: true));
+
+        if (fixture.RiskSeverity == WorkspaceMemoryCandidateRiskSeverity.Missing)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskMissingSeverity, "Risk candidate without severity is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.CandidateKind == WorkspaceContextItemKind.RiskMemoryPreview && fixture.AttemptsDecisionMemory)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.RiskCannotBecomeDecisionMemory, "Risk candidate cannot become decision memory.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.CandidateKind == WorkspaceContextItemKind.DecisionMemoryPreview && !fixture.HumanReviewed)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionMissingHumanReview, "Decision candidate requires human review.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: false, human: true));
+
+        if (fixture.CandidateKind == WorkspaceContextItemKind.DecisionMemoryPreview && fixture.ContradictionStatus == WorkspaceMemoryCandidateContradictionStatus.ContradictoryEvidence)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.DecisionWithContradictoryEvidence, "Decision candidate with contradictory evidence is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.CandidateKind == WorkspaceContextItemKind.ClaimMemoryPreview && fixture.ConfidenceStatus != WorkspaceMemoryCandidateConfidenceStatus.Present)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.ClaimMissingConfidence, "Claim candidate missing confidence is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.CandidateKind == WorkspaceContextItemKind.ActionMemoryPreview && !fixture.RequiredHumanActionPresent)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.ActionMissingRequiredHumanAction, "Action candidate requires required human action.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.SafeNextStepCandidate && fixture.RiskSeverity == WorkspaceMemoryCandidateRiskSeverity.Critical)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnCriticalRisk, "Safe next step is blocked by critical risk.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: false, human: true));
+
+        if (fixture.SafeNextStepCandidate && fixture.ContradictionStatus == WorkspaceMemoryCandidateContradictionStatus.Unresolved)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.SafeNextStepReliesOnUnresolvedContradiction, "Safe next step is blocked by unresolved contradiction.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: false, human: true));
+
+        if (fixture.SourceKind == WorkspaceContextSourceKind.ProviderCloudDerived)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.ProviderDerivedWhileDisabled, "Provider-derived memory candidate is blocked while provider/cloud is disabled.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.SourceKind == WorkspaceContextSourceKind.SemanticVectorDerived)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.SemanticDerivedWhileDisabled, "Semantic-derived memory candidate is blocked while semantic/vector is disabled.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.SourceKind == WorkspaceContextSourceKind.LegacyWithoutProvenance)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.LegacyWithoutProvenance, "Legacy memory candidate without provenance is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.FixtureOnly)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.FixtureOnlyNotDurableTrusted, "Fixture-only memory candidate is read-only and not durable/trusted.", blockDecision: false, blockSafeNext: false, blockInfluence: true, blockDashboard: false, human: false));
+
+        if (fixture.DuplicateConflictingCandidate)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.DuplicateConflictingCandidates, "Duplicate memory candidates with conflicting conclusions are blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.Sensitivity is WorkspaceContextSensitivityLevel.RawPayload or WorkspaceContextSensitivityLevel.Sensitive or WorkspaceContextSensitivityLevel.SensitiveNeverUse)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.RawSensitivePayload, "Memory candidate containing raw or sensitive payload is excluded.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.Sensitivity == WorkspaceContextSensitivityLevel.Unknown)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.UnknownAuthority, "Memory candidate with unknown authority is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+
+        if (fixture.Freshness == WorkspaceContextFreshnessStatus.Missing)
+            issues.Add(Issue(WorkspaceMemoryCandidateContradictionRiskIssueKind.MissingFreshness, "Memory candidate with missing freshness is blocked.", blockDecision: true, blockSafeNext: true, blockInfluence: true, blockDashboard: true, human: true));
+    }
+
+    private static WorkspaceMemoryCandidateInfluenceDecision Decide(
+        WorkspaceMemoryCandidateContradictionRiskFixture fixture,
+        IReadOnlyList<WorkspaceMemoryCandidateContradictionRiskIssue> issues)
+    {
+        if (fixture.ExclusionState != WorkspaceContextExclusionState.NotExcluded
+            || fixture.Sensitivity is WorkspaceContextSensitivityLevel.RawPayload or WorkspaceContextSensitivityLevel.SensitiveNeverUse)
+            return WorkspaceMemoryCandidateInfluenceDecision.Excluded;
+
+        if (issues.Any(issue => issue.BlocksDecision || issue.BlocksSafeNextStep || issue.BlocksCandidateInfluence)
+            && !issues.All(issue => issue.IssueKind is WorkspaceMemoryCandidateContradictionRiskIssueKind.ContradictionRequiresHumanReview or WorkspaceMemoryCandidateContradictionRiskIssueKind.FixtureOnlyNotDurableTrusted))
+            return WorkspaceMemoryCandidateInfluenceDecision.Blocked;
+
+        if (issues.Any(issue => issue.RequiresHumanReview))
+            return WorkspaceMemoryCandidateInfluenceDecision.NeedsHumanReview;
+
+        if (issues.Count > 0)
+            return WorkspaceMemoryCandidateInfluenceDecision.WarningReadOnlyOnly;
+
+        return WorkspaceMemoryCandidateInfluenceDecision.AllowedReadOnlyWarning;
+    }
+
+    private static WorkspaceMemoryCandidateContradictionRiskIssue Issue(
+        WorkspaceMemoryCandidateContradictionRiskIssueKind issueKind,
+        string message,
+        bool blockDecision,
+        bool blockSafeNext,
+        bool blockInfluence,
+        bool blockDashboard,
+        bool human) =>
+        new(issueKind, message, blockDecision, blockSafeNext, blockInfluence, blockDashboard, human);
+
+    private static WorkspaceMemoryCandidateContradictionRiskFixture Fixture(
+        string fixtureId,
+        WorkspaceContextItemKind kind,
+        WorkspaceContextSourceKind sourceKind,
+        WorkspaceContextAuthorityLevel authority,
+        WorkspaceContextFreshnessStatus freshness,
+        WorkspaceContextSensitivityLevel sensitivity,
+        WorkspaceContextSelectionState selection,
+        WorkspaceContextLockState locked,
+        WorkspaceContextExclusionState exclusion,
+        WorkspaceMemoryCandidateRiskSeverity risk,
+        WorkspaceMemoryCandidateContradictionStatus contradiction,
+        WorkspaceMemoryCandidateConfidenceStatus confidence,
+        IReadOnlyList<string> evidenceRefs,
+        bool human,
+        bool humanAction,
+        bool decision,
+        bool safeNext,
+        bool fixtureOnly,
+        bool duplicate,
+        WorkspaceMemoryCandidateInfluenceDecision expectedDecision,
+        WorkspaceMemoryCandidateContradictionRiskIssueKind expectedIssue,
+        string expectedMessage,
+        WorkspaceContextNoSideEffectProof proof) =>
+        new(fixtureId, kind, sourceKind, authority, freshness, sensitivity, selection, locked, exclusion, risk, contradiction, confidence, evidenceRefs, human, humanAction, decision, safeNext, fixtureOnly, duplicate, expectedDecision, expectedIssue, expectedMessage, proof);
 }
 
 public static class WorkspaceContextReadOnlyPresenter
