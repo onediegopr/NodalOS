@@ -583,6 +583,145 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
         Assert.IsFalse(text.Contains("provider call enabled", StringComparison.OrdinalIgnoreCase));
     }
 
+    [TestMethod]
+    public void HumanReviewPacketExportPreview_IsReadOnlyDeterministicInMemoryAndActionless()
+    {
+        var first = HumanReviewPacketExportReadOnlyPresenter.CreateFixture();
+        var second = HumanReviewPacketExportReadOnlyPresenter.CreateFixture();
+
+        Assert.IsTrue(first.ReadOnly);
+        Assert.IsTrue(first.Deterministic);
+        Assert.IsTrue(first.FixtureSafe);
+        Assert.IsTrue(first.NoSideEffectProof.Passes);
+        Assert.AreEqual("READ_ONLY_IN_MEMORY_EXPORT_PREVIEW_NO_FILE_NO_CLIPBOARD_NO_DOWNLOAD_NO_APPROVAL_EXECUTION", first.Mode);
+        Assert.AreEqual(first.PreviewText, second.PreviewText);
+        Assert.AreEqual(0, first.Manifest.ProductActionsCount);
+        Assert.AreEqual(0, first.Manifest.StateMutationCount);
+        Assert.AreEqual(0, first.Manifest.ExportActionsCount);
+        Assert.IsFalse(first.HasRealExport);
+        Assert.IsFalse(first.HasApprovalExecution);
+        Assert.IsFalse(first.HasApprovalStateMutation);
+        Assert.IsFalse(first.HasProductActions);
+        Assert.IsFalse(first.HasStateMutations);
+        Assert.IsFalse(first.HasExportActions);
+        Assert.IsFalse(first.HasDurableMemory);
+        Assert.IsTrue(first.Sections.All(section => section.NoSideEffectProof.Passes));
+        Assert.IsTrue(first.Sections.All(section => section.PhysicalExportOccurred == false));
+    }
+
+    [TestMethod]
+    public void HumanReviewPacketExportPreview_ManifestDeclaresNoFileClipboardDownloadApprovalOrMutation()
+    {
+        var preview = HumanReviewPacketExportReadOnlyPresenter.CreateFixture();
+        var manifest = preview.Manifest;
+
+        Assert.AreEqual("phase-e.human-review.packet.export-preview.read-only.fixture.v1", manifest.PreviewId);
+        Assert.AreEqual(HumanReviewPacketExportPreviewKind.MarkdownLikeText, manifest.FormatPreviewKind);
+        Assert.AreEqual("ApprovalPacketReadOnlySurfacePresenter.CreateFixture", manifest.SourceFixture);
+        Assert.IsFalse(manifest.PhysicalFileCreated);
+        Assert.IsFalse(manifest.ClipboardUsed);
+        Assert.IsFalse(manifest.DownloadStarted);
+        Assert.AreEqual(0, manifest.ProductActionsCount);
+        Assert.AreEqual(0, manifest.StateMutationCount);
+        Assert.AreEqual(0, manifest.ExportActionsCount);
+        Assert.IsFalse(manifest.ApprovalExecutionOccurred);
+        Assert.IsFalse(manifest.ApprovalStateMutationOccurred);
+        Assert.IsFalse(manifest.ContainsRawPayload);
+        Assert.IsFalse(manifest.ContainsSecretLikeContent);
+        Assert.IsFalse(manifest.ContainsDurableMemory);
+        Assert.IsTrue(manifest.NoSideEffectProof.Passes);
+    }
+
+    [TestMethod]
+    public void HumanReviewPacketExportPreview_ContainsMinimumSections()
+    {
+        var preview = HumanReviewPacketExportReadOnlyPresenter.CreateFixture();
+        var ids = preview.Sections.Select(section => section.SectionId).ToHashSet(StringComparer.Ordinal);
+
+        Assert.AreEqual(32, preview.Sections.Count);
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                "export.manifest",
+                "executive.summary",
+                "human.review.packet.identity",
+                "approval.packet.summary",
+                "candidate.action.previews",
+                "candidate.action.risk.summary",
+                "risk.decision.guard.summary",
+                "evidence.context.link.guard.summary",
+                "evidence.links",
+                "context.links",
+                "missing.evidence.blockers",
+                "missing.stale.excluded.context.blockers",
+                "unresolved.contradiction.blockers",
+                "critical.risk.blockers",
+                "decision.options.preview",
+                "approve.preview.label",
+                "reject.preview.label",
+                "request.evidence.preview.label",
+                "request.context.refresh.preview.label",
+                "defer.decision.preview.label",
+                "human.review.requirements",
+                "runtime.live.disabled",
+                "filesystem.db.disabled",
+                "provider.cloud.disabled",
+                "semantic.vector.disabled",
+                "llm.live.disabled",
+                "durable.memory.disabled",
+                "approval.execution.disabled",
+                "approval.state.mutation.disabled",
+                "no.side.effect.proof",
+                "documented.debt",
+                "next.recommended.block"
+            },
+            ids.ToArray());
+    }
+
+    [TestMethod]
+    public void HumanReviewPacketExportPreview_IncludesSurfaceGuardDecisionAndDisabledContent()
+    {
+        var preview = HumanReviewPacketExportReadOnlyPresenter.CreateFixture();
+
+        Assert.AreEqual("phase-e.approval.packet.surface.read-only.fixture.v1", preview.SourceSurface.SurfaceId);
+        Assert.IsTrue(preview.PreviewText.Contains("Risk/decision fixtures: 26", StringComparison.Ordinal));
+        Assert.IsTrue(preview.PreviewText.Contains("Evidence/context link fixtures: 27", StringComparison.Ordinal));
+        Assert.IsTrue(preview.PreviewText.Contains("Decision labels are preview-only", StringComparison.Ordinal));
+        Assert.IsTrue(preview.PreviewText.Contains("Human review packet export preview is not physical export.", StringComparison.Ordinal));
+        Assert.IsTrue(preview.PreviewText.Contains("Human review packet export preview is not approval execution.", StringComparison.Ordinal));
+        Assert.IsTrue(preview.PreviewText.Contains("Human review packet export preview is not approval state mutation.", StringComparison.Ordinal));
+        Assert.IsTrue(preview.DisabledNotices.Any(notice => notice.Contains("Runtime/live", StringComparison.Ordinal)));
+        Assert.IsTrue(preview.DisabledNotices.Any(notice => notice.Contains("Filesystem", StringComparison.Ordinal)));
+        Assert.IsTrue(preview.DisabledNotices.Any(notice => notice.Contains("Approval execution", StringComparison.Ordinal)));
+        Assert.AreEqual("PHASE_E_APPROVAL_CLOSEOUT_AUDIT_PREP", preview.NextSafeStep);
+    }
+
+    [TestMethod]
+    public void HumanReviewPacketExportPreview_DoesNotLeakRawSecretDurableMemoryOrProductionClaim()
+    {
+        var preview = HumanReviewPacketExportReadOnlyPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            preview.PreviewText,
+            string.Join("\n", preview.Sections.Select(section => $"{section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")),
+            string.Join("\n", preview.Exclusions));
+
+        Assert.IsFalse(text.Contains("sk-", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("Bearer ", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("PRIVATE KEY", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("AKIA", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("ghp_", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("approval executed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("approval state mutated", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("state mutation completed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("approved and applied", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("export file created", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("clipboard used", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("durable memory active", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("provider call enabled", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static void AssertRiskDecision(
         IReadOnlyList<ApprovalRiskDecisionReadOnlyResult> results,
         string fixtureId,
