@@ -241,3 +241,30 @@ The scaffold does not:
 - replace the deterministic fixture source used by the EIL UI.
 
 Any future write activation still requires a separate explicit hito, hostile redaction-at-write fixtures, schema compatibility report, migration dry-run audit and manual QA.
+
+## Addendum: Redaction-At-Write Hostile Fixtures
+
+Decision target: `GO_EIL_REDACTION_AT_WRITE_HOSTILE_FIXTURES_READY`
+
+The disabled write-store scaffold is now covered by deterministic hostile fixtures. The fixtures exercise synthetic secret-like payloads, raw payload classes, unknown sensitivity, sensitive-never-persist fields, integrity envelopes before canonical redaction, graph payloads and safe-next-step payloads that accidentally embed secret-like content.
+
+The fixture strategy proves:
+
+- raw payload commands are rejected before any durable persistence boundary;
+- synthetic secret-like payload commands are rejected fail-closed;
+- unknown sensitivity fails closed;
+- sensitive-never-persist and fixture-only payloads are rejected by design;
+- integrity hash envelopes before canonical redaction are rejected;
+- graph/readiness/safe-next-step write commands keep the same no-side-effect guarantees.
+
+The fixture strategy does not:
+
+- execute a redaction pipeline;
+- write evidence;
+- read evidence from a durable source;
+- create or use a database;
+- run migrations;
+- register an active product service;
+- change the EIL UI fixture source.
+
+All hostile values are synthetic and intentionally marked as fixture/not-real. Any future write activation still requires additional adversarial redaction coverage, schema compatibility report, migration dry-run audit and manual QA.

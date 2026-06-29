@@ -10,6 +10,7 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
 {
     private const string PersistenceDesignPath = "src/OneBrain.Core/Evidence/EvidenceIntelligencePersistenceDesign.cs";
     private const string UiMountPath = "src/OneBrain.Core/Evidence/EvidenceIntelligenceReadOnlyUiMount.cs";
+    private const string RecipesPersistenceDesignTestsPath = "tests/OneBrain.Recipes.Tests/EvidenceIntelligencePersistenceDesignTests.cs";
 
     [TestMethod]
     public void PersistenceDesign_FailsClosedAndDoesNotEnableWrites()
@@ -150,6 +151,75 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         Assert.IsFalse(rawResult.RedactionPipelineExecuted);
         Assert.IsFalse(rawResult.WritesFilesystem);
         Assert.IsFalse(rawResult.WritesDatabase);
+    }
+
+    [TestMethod]
+    public void RedactionAtWriteHostileCommands_DoNotWriteReadMigrateOrFallback()
+    {
+        var store = new DisabledEvidenceIntelligenceWriteStore();
+        var commands = new[]
+        {
+            EvidenceIntelligenceWriteCommand.AppendEvidenceRecord("hostile.api-key.synthetic", EvidenceIntelligencePersistenceFieldClassification.SafeToDisplay, containsSecretField: true),
+            EvidenceIntelligenceWriteCommand.AppendEvidenceRecord("hostile.raw-browser-cdp", EvidenceIntelligencePersistenceFieldClassification.RedactedBeforeWrite, containsRawPayload: true),
+            EvidenceIntelligenceWriteCommand.AppendEvidenceRecord("hostile.unknown-sensitivity", sensitivityKnown: false),
+            EvidenceIntelligenceWriteCommand.AppendIntegrityHashEnvelope("hostile.integrity-before-redaction", integrityHashBeforeCanonicalRedaction: true),
+            EvidenceIntelligenceWriteCommand.AppendGraphNode("hostile.graph-node", containsSecretField: true),
+            EvidenceIntelligenceWriteCommand.AppendSafeNextStep("hostile.safe-next-step", containsSecretField: true)
+        };
+
+        foreach (var command in commands)
+        {
+            var result = store.Write(command);
+
+            Assert.AreEqual(EvidenceIntelligenceWriteResultStatus.Rejected, result.Status, command.TargetId);
+            Assert.IsTrue(result.FailClosed, command.TargetId);
+            Assert.IsFalse(result.WritesFilesystem, command.TargetId);
+            Assert.IsFalse(result.ReadsFilesystem, command.TargetId);
+            Assert.IsFalse(result.WritesDatabase, command.TargetId);
+            Assert.IsFalse(result.RunsMigration, command.TargetId);
+            Assert.IsFalse(result.CallsProviderCloud, command.TargetId);
+            Assert.IsFalse(result.UsesSemanticVectorBackend, command.TargetId);
+            Assert.IsFalse(result.UsesRuntime, command.TargetId);
+            Assert.IsFalse(result.RedactionPipelineExecuted, command.TargetId);
+            Assert.IsFalse(result.FallbackUsed, command.TargetId);
+        }
+    }
+
+    [TestMethod]
+    public void RedactionAtWriteHostileFixtureSource_UsesSyntheticSecretLikeValuesOnly()
+    {
+        var source = ReadRepoText(RecipesPersistenceDesignTestsPath);
+
+        StringAssert.Contains(source, "sk-fixture-not-real");
+        StringAssert.Contains(source, "Bearer SYNTHETIC-fixture-token-not-real");
+        StringAssert.Contains(source, "ghp_fixture SYNTHETIC not-real");
+        StringAssert.Contains(source, "AKIA-FIXTURE-NOT-REAL-SYNTHETIC");
+        StringAssert.Contains(source, "BEGIN SYNTHETIC PRIVATE KEY");
+        Assert.IsFalse(System.Text.RegularExpressions.Regex.IsMatch(source, @"(?<![A-Za-z0-9_-])sk-[A-Za-z0-9]{16,}"));
+        Assert.IsFalse(System.Text.RegularExpressions.Regex.IsMatch(source, @"ghp_[A-Za-z0-9_]{20,}"));
+        Assert.IsFalse(System.Text.RegularExpressions.Regex.IsMatch(source, @"AKIA[0-9A-Z]{16}"));
+    }
+
+    [TestMethod]
+    public void RedactionAtWriteHostileFixtureSource_HasNoRedactionOrPersistenceOverclaim()
+    {
+        var source = ReadRepoText(PersistenceDesignPath) + ReadRepoText(RecipesPersistenceDesignTestsPath);
+        var forbidden = new[]
+        {
+            "ExecutablePipelineEnabled: true",
+            "RedactionPipelineExecuted: true",
+            "WritesFilesystem: true",
+            "WritesDatabase: true",
+            "DurableWritesEnabled: true",
+            "FilesystemProductWritesEnabled: true",
+            "production-ready",
+            "semantic search enabled"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
     }
 
     [TestMethod]

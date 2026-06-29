@@ -493,25 +493,39 @@ public sealed record EvidenceIntelligenceWriteCommand(
     string WorkspaceId,
     string TargetId,
     EvidenceIntelligencePersistenceFieldClassification PayloadClassification,
+    bool SensitivityKnown,
     bool ContainsRawPayload,
     bool ContainsSecretField,
     bool RedactionMetadataPresent,
     bool IntegrityHashPresent,
+    bool IntegrityHashBeforeCanonicalRedaction,
     IReadOnlyDictionary<string, string> Metadata)
 {
     public bool RejectedByDesign =>
-        ContainsRawPayload
+        !SensitivityKnown
+        || ContainsRawPayload
         || ContainsSecretField
         || PayloadClassification == EvidenceIntelligencePersistenceFieldClassification.SensitiveNeverPersist
-        || PayloadClassification == EvidenceIntelligencePersistenceFieldClassification.FixtureOnly;
+        || PayloadClassification == EvidenceIntelligencePersistenceFieldClassification.FixtureOnly
+        || IntegrityHashBeforeCanonicalRedaction;
 
     public static EvidenceIntelligenceWriteCommand AppendEvidenceRecord(
         string evidenceId,
         EvidenceIntelligencePersistenceFieldClassification classification = EvidenceIntelligencePersistenceFieldClassification.RedactedBeforeWrite,
+        bool sensitivityKnown = true,
         bool containsRawPayload = false,
         bool containsSecretField = false,
+        bool integrityHashBeforeCanonicalRedaction = false,
         string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
-        Create(EvidenceIntelligenceWriteCommandKind.AppendEvidenceRecord, workspaceId, evidenceId, classification, containsRawPayload, containsSecretField);
+        Create(
+            EvidenceIntelligenceWriteCommandKind.AppendEvidenceRecord,
+            workspaceId,
+            evidenceId,
+            classification,
+            sensitivityKnown,
+            containsRawPayload,
+            containsSecretField,
+            integrityHashBeforeCanonicalRedaction: integrityHashBeforeCanonicalRedaction);
 
     public static EvidenceIntelligenceWriteCommand AppendClaimScanSnapshot(
         string claimScanId,
@@ -530,23 +544,35 @@ public sealed record EvidenceIntelligenceWriteCommand(
 
     public static EvidenceIntelligenceWriteCommand AppendGraphNode(
         string nodeId,
+        EvidenceIntelligencePersistenceFieldClassification classification = EvidenceIntelligencePersistenceFieldClassification.FuturePersisted,
+        bool containsRawPayload = false,
+        bool containsSecretField = false,
         string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
-        Create(EvidenceIntelligenceWriteCommandKind.AppendGraphNode, workspaceId, nodeId, EvidenceIntelligencePersistenceFieldClassification.FuturePersisted);
+        Create(EvidenceIntelligenceWriteCommandKind.AppendGraphNode, workspaceId, nodeId, classification, containsRawPayload: containsRawPayload, containsSecretField: containsSecretField);
 
     public static EvidenceIntelligenceWriteCommand AppendGraphEdge(
         string edgeId,
+        EvidenceIntelligencePersistenceFieldClassification classification = EvidenceIntelligencePersistenceFieldClassification.FuturePersisted,
+        bool containsRawPayload = false,
+        bool containsSecretField = false,
         string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
-        Create(EvidenceIntelligenceWriteCommandKind.AppendGraphEdge, workspaceId, edgeId, EvidenceIntelligencePersistenceFieldClassification.FuturePersisted);
+        Create(EvidenceIntelligenceWriteCommandKind.AppendGraphEdge, workspaceId, edgeId, classification, containsRawPayload: containsRawPayload, containsSecretField: containsSecretField);
 
     public static EvidenceIntelligenceWriteCommand AppendReadinessSnapshot(
         string readinessId,
+        EvidenceIntelligencePersistenceFieldClassification classification = EvidenceIntelligencePersistenceFieldClassification.Derived,
+        bool containsRawPayload = false,
+        bool containsSecretField = false,
         string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
-        Create(EvidenceIntelligenceWriteCommandKind.AppendReadinessSnapshot, workspaceId, readinessId, EvidenceIntelligencePersistenceFieldClassification.Derived);
+        Create(EvidenceIntelligenceWriteCommandKind.AppendReadinessSnapshot, workspaceId, readinessId, classification, containsRawPayload: containsRawPayload, containsSecretField: containsSecretField);
 
     public static EvidenceIntelligenceWriteCommand AppendSafeNextStep(
         string stepId,
+        EvidenceIntelligencePersistenceFieldClassification classification = EvidenceIntelligencePersistenceFieldClassification.SafeToDisplay,
+        bool containsRawPayload = false,
+        bool containsSecretField = false,
         string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
-        Create(EvidenceIntelligenceWriteCommandKind.AppendSafeNextStep, workspaceId, stepId, EvidenceIntelligencePersistenceFieldClassification.SafeToDisplay);
+        Create(EvidenceIntelligenceWriteCommandKind.AppendSafeNextStep, workspaceId, stepId, classification, containsRawPayload: containsRawPayload, containsSecretField: containsSecretField);
 
     public static EvidenceIntelligenceWriteCommand AppendHumanActionRequirement(
         string requirementId,
@@ -560,27 +586,38 @@ public sealed record EvidenceIntelligenceWriteCommand(
 
     public static EvidenceIntelligenceWriteCommand AppendIntegrityHashEnvelope(
         string integrityHashId,
+        bool integrityHashBeforeCanonicalRedaction = false,
         string workspaceId = EvidenceItem.DefaultWorkspaceId) =>
-        Create(EvidenceIntelligenceWriteCommandKind.AppendIntegrityHashEnvelope, workspaceId, integrityHashId, EvidenceIntelligencePersistenceFieldClassification.Derived, integrityHashPresent: true);
+        Create(
+            EvidenceIntelligenceWriteCommandKind.AppendIntegrityHashEnvelope,
+            workspaceId,
+            integrityHashId,
+            EvidenceIntelligencePersistenceFieldClassification.Derived,
+            integrityHashPresent: true,
+            integrityHashBeforeCanonicalRedaction: integrityHashBeforeCanonicalRedaction);
 
     private static EvidenceIntelligenceWriteCommand Create(
         EvidenceIntelligenceWriteCommandKind kind,
         string workspaceId,
         string targetId,
         EvidenceIntelligencePersistenceFieldClassification classification,
+        bool sensitivityKnown = true,
         bool containsRawPayload = false,
         bool containsSecretField = false,
         bool redactionMetadataPresent = false,
-        bool integrityHashPresent = false) =>
+        bool integrityHashPresent = false,
+        bool integrityHashBeforeCanonicalRedaction = false) =>
         new(
             kind,
             string.IsNullOrWhiteSpace(workspaceId) ? EvidenceItem.DefaultWorkspaceId : workspaceId,
             string.IsNullOrWhiteSpace(targetId) ? "not-configured" : targetId,
             classification,
+            sensitivityKnown,
             containsRawPayload,
             containsSecretField,
             redactionMetadataPresent,
             integrityHashPresent,
+            integrityHashBeforeCanonicalRedaction,
             new Dictionary<string, string>
             {
                 ["mode"] = "design-only",
