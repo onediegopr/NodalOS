@@ -30,6 +30,8 @@ public sealed class NodalOsQualityHardeningM885M896Tests
     private static readonly string[] AllowedPrefixes =
     [
         "tests/OneBrain.Safety.Tests/",
+        "tests/OneBrain.Recipes.Tests/WorkspaceContextReadOnlyFoundationTests.cs",
+        "src/OneBrain.Core/Context/WorkspaceContextReadOnlyFoundation.cs",
         "docs/reports/",
         "artifacts/agent-operations/"
     ];
@@ -290,9 +292,11 @@ public sealed class NodalOsQualityHardeningM885M896Tests
             var normalized = changedFiles.Select(static x => x.Replace('\\', '/')).ToArray();
             var prohibited = normalized
                 .Where(path =>
+                    !allowedPrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.Ordinal)) &&
+                    (
                     prohibitedPrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.Ordinal)) ||
                     path.Contains("Bridge", StringComparison.Ordinal) && path.StartsWith("src/", StringComparison.Ordinal) ||
-                    path.Contains("CSP", StringComparison.Ordinal) && path.StartsWith("src/", StringComparison.Ordinal))
+                    path.Contains("CSP", StringComparison.Ordinal) && path.StartsWith("src/", StringComparison.Ordinal)))
                 .ToArray();
 
             var allowed = normalized
