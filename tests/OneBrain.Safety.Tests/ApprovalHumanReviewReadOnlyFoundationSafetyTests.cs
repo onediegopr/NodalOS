@@ -11,6 +11,7 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     private const string FoundationPath = "src/OneBrain.Core/Approval/ApprovalHumanReviewReadOnlyFoundation.cs";
     private const string RiskDecisionGuardPath = "src/OneBrain.Core/Approval/ApprovalRiskDecisionReadOnlyGuard.cs";
     private const string EvidenceContextLinkGuardPath = "src/OneBrain.Core/Approval/HumanReviewEvidenceContextLinkReadOnlyGuard.cs";
+    private const string ApprovalPacketSurfacePath = "src/OneBrain.Core/Approval/ApprovalPacketReadOnlySurface.cs";
 
     [TestMethod]
     public void FoundationSource_HasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
@@ -178,6 +179,49 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     }
 
     [TestMethod]
+    public void ApprovalPacketSurfaceProof_DisablesAllSideEffectsRuntimeApprovalMutationProductAndExportActions()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var proof = surface.NoSideEffectProof;
+
+        Assert.IsTrue(proof.Passes);
+        Assert.IsTrue(surface.ReadOnly);
+        Assert.IsTrue(surface.Deterministic);
+        Assert.IsTrue(surface.FixtureSafe);
+        Assert.AreEqual(0, surface.ProductActionsCount);
+        Assert.AreEqual(0, surface.StateMutationsCount);
+        Assert.AreEqual(0, surface.ExportActionsCount);
+        Assert.IsFalse(surface.HasApprovalExecution);
+        Assert.IsFalse(surface.HasApprovalStateMutation);
+        Assert.IsFalse(surface.HasProductActions);
+        Assert.IsFalse(surface.HasExportActions);
+        Assert.IsFalse(surface.HasDurableMemory);
+        Assert.IsTrue(surface.Sections.All(section => section.NoSideEffectProof.Passes));
+        Assert.IsTrue(surface.Sections.All(section => section.ProductActionsCount == 0));
+        Assert.IsTrue(surface.Sections.All(section => section.StateMutationsCount == 0));
+        Assert.IsTrue(surface.Sections.All(section => section.ExportActionsCount == 0));
+        Assert.IsFalse(proof.FilesystemReadAttempted);
+        Assert.IsFalse(proof.FilesystemWriteAttempted);
+        Assert.IsFalse(proof.DatabaseTouched);
+        Assert.IsFalse(proof.DurablePersistenceActive);
+        Assert.IsFalse(proof.DurableMemoryActive);
+        Assert.IsFalse(proof.VectorSemanticBackendTouched);
+        Assert.IsFalse(proof.LlmProviderTouched);
+        Assert.IsFalse(proof.ProviderCloudTouched);
+        Assert.IsFalse(proof.MigrationRunnerStarted);
+        Assert.IsFalse(proof.MigrationExecuted);
+        Assert.IsFalse(proof.RuntimeTouched);
+        Assert.IsFalse(proof.BrowserCdpTouched);
+        Assert.IsFalse(proof.WcuTouched);
+        Assert.IsFalse(proof.OcrTouched);
+        Assert.IsFalse(proof.RecipeExecutionStarted);
+        Assert.IsFalse(proof.ApprovalExecutionStarted);
+        Assert.IsFalse(proof.ApprovalStateMutationAttempted);
+        Assert.IsFalse(proof.ProductActionExposed);
+        Assert.IsFalse(proof.ProductServiceRegistered);
+    }
+
+    [TestMethod]
     public void ReadOnlyPresenterAndRiskDecisionGuard_DoNotCreateApprovalArtifactFiles()
     {
         var root = FindRepoRoot();
@@ -187,6 +231,7 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
         _ = ApprovalHumanReviewReadOnlyPresenter.CreateFixture();
         _ = ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog();
         _ = HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog();
+        _ = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
 
         var after = SnapshotFiles(approvalArtifacts);
 
@@ -252,6 +297,7 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
             "\n",
             HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog()
                 .Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}"));
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
         var text = string.Join(
             "\n",
             packet.ReadOnlySummary,
@@ -260,7 +306,9 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
             string.Join("\n", packet.CandidateActions.Select(action => $"{action.Title} {action.Summary}")),
             string.Join("\n", packet.DecisionOptions.Select(option => $"{option.Label} {option.Summary}")),
             guardText,
-            linkGuardText);
+            linkGuardText,
+            surface.ReadOnlySummary,
+            string.Join("\n", surface.Sections.Select(section => $"{section.SectionId} {section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")));
 
         var forbidden = new[]
         {
@@ -303,7 +351,8 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
             string.Join("\n", packet.CandidateActions.Select(action => action.Summary)),
             string.Join("\n", packet.DecisionOptions.Select(option => option.Summary)),
             string.Join("\n", ApprovalRiskDecisionReadOnlyGuard.EvaluateCatalog().Select(result => $"{string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}")),
-            string.Join("\n", HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog().Select(result => $"{string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}")));
+            string.Join("\n", HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog().Select(result => $"{string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}")),
+            string.Join("\n", ApprovalPacketReadOnlySurfacePresenter.CreateFixture().Sections.Select(section => $"{string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")));
 
         Assert.IsFalse(text.Contains("sk-", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(text.Contains("Bearer ", StringComparison.OrdinalIgnoreCase));
@@ -316,7 +365,8 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     [
         FoundationPath,
         RiskDecisionGuardPath,
-        EvidenceContextLinkGuardPath
+        EvidenceContextLinkGuardPath,
+        ApprovalPacketSurfacePath
     ];
 
     private static string ReadRepoText(string relativePath)

@@ -424,6 +424,165 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
         }
     }
 
+    [TestMethod]
+    public void ApprovalPacketSurface_IsReadOnlyDeterministicFixtureSafeAndActionless()
+    {
+        var first = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var second = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+
+        Assert.IsTrue(first.ReadOnly);
+        Assert.IsTrue(first.Deterministic);
+        Assert.IsTrue(first.FixtureSafe);
+        Assert.IsTrue(first.NoSideEffectProof.Passes);
+        Assert.AreEqual("READ_ONLY_FIXTURE_SAFE_NO_APPROVAL_EXECUTION_NO_ACTIONS_NO_EXPORT", first.Mode);
+        Assert.AreEqual(first.ReadOnlySummary, second.ReadOnlySummary);
+        Assert.AreEqual(0, first.ProductActionsCount);
+        Assert.AreEqual(0, first.StateMutationsCount);
+        Assert.AreEqual(0, first.ExportActionsCount);
+        Assert.IsFalse(first.HasApprovalExecution);
+        Assert.IsFalse(first.HasApprovalStateMutation);
+        Assert.IsFalse(first.HasProductActions);
+        Assert.IsFalse(first.HasExportActions);
+        Assert.IsFalse(first.HasDurableMemory);
+        Assert.IsTrue(first.Sections.All(section => section.NoSideEffectProof.Passes));
+        Assert.IsTrue(first.Sections.All(section => section.ProductActionsCount == 0));
+        Assert.IsTrue(first.Sections.All(section => section.StateMutationsCount == 0));
+        Assert.IsTrue(first.Sections.All(section => section.ExportActionsCount == 0));
+    }
+
+    [TestMethod]
+    public void ApprovalPacketSurface_ContainsMinimumSections()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var ids = surface.Sections.Select(section => section.SectionId).ToHashSet(StringComparer.Ordinal);
+
+        Assert.AreEqual(30, surface.Sections.Count);
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                "approval.packet.executive-summary",
+                "human.review.packet.identity",
+                "candidate.action.previews",
+                "candidate.action.risk.summary",
+                "risk.decision.guard.summary",
+                "evidence.context.link.guard.summary",
+                "evidence.links",
+                "context.links",
+                "missing.evidence.blockers",
+                "missing.stale.excluded.context.blockers",
+                "unresolved.contradiction.blockers",
+                "critical.risk.blockers",
+                "decision.options.preview",
+                "approve.preview.label",
+                "reject.preview.label",
+                "request.evidence.preview.label",
+                "request.context.refresh.preview.label",
+                "defer.decision.preview.label",
+                "human.review.requirements",
+                "runtime.live.disabled",
+                "filesystem.db.disabled",
+                "provider.cloud.disabled",
+                "semantic.vector.disabled",
+                "llm.live.disabled",
+                "durable.memory.disabled",
+                "approval.execution.disabled",
+                "approval.state.mutation.disabled",
+                "no.side.effect.proof",
+                "documented.debt",
+                "next.recommended.block"
+            },
+            ids.ToArray());
+    }
+
+    [TestMethod]
+    public void ApprovalPacketSurface_ShowsFoundationRiskAndEvidenceContextSummaries()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+
+        Assert.IsTrue(surface.Packet.EvidenceLinks.Count > 0);
+        Assert.IsTrue(surface.Packet.ContextLinks.Count > 0);
+        Assert.IsTrue(surface.CandidateActionPreviews.Count >= 3);
+        Assert.IsTrue(surface.RiskDecisionSummaries.Any(summary => summary.Contains("Risk/decision fixtures: 26", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.EvidenceContextLinkSummaries.Any(summary => summary.Contains("Evidence/context link fixtures: 27", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.DecisionOptionPreviews.Count == 5);
+        Assert.IsTrue(surface.HumanReviewRequirements.Count > 0);
+        Assert.IsTrue(surface.Warnings.Count > 0);
+        Assert.IsTrue(surface.Blockers.Count > 0);
+    }
+
+    [TestMethod]
+    public void ApprovalPacketSurface_DecisionOptionsArePreviewLabelsOnly()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var decisionSectionIds = new[]
+        {
+            "approve.preview.label",
+            "reject.preview.label",
+            "request.evidence.preview.label",
+            "request.context.refresh.preview.label",
+            "defer.decision.preview.label"
+        };
+
+        Assert.IsTrue(surface.Packet.DecisionOptions.All(option => option.PreviewOnly));
+        Assert.IsTrue(surface.Packet.DecisionOptions.All(option => !option.ExecutesAction));
+        Assert.IsTrue(surface.Packet.DecisionOptions.All(option => !option.MutatesState));
+
+        foreach (var sectionId in decisionSectionIds)
+        {
+            var section = surface.Sections.Single(item => item.SectionId == sectionId);
+
+            Assert.AreEqual(ApprovalHumanReviewItemStatus.PreviewOnly, section.Status);
+            Assert.AreEqual(0, section.ProductActionsCount);
+            Assert.AreEqual(0, section.StateMutationsCount);
+            Assert.AreEqual(0, section.ExportActionsCount);
+            Assert.IsTrue(section.Warnings.Any(warning => warning.Contains("preview label", StringComparison.OrdinalIgnoreCase)));
+        }
+    }
+
+    [TestMethod]
+    public void ApprovalPacketSurface_IncludesDisabledCapabilityNotices()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var text = string.Join("\n", surface.DisabledNotices.Concat(surface.Sections.SelectMany(section => section.Blockers)));
+
+        StringAssert.Contains(text, "Runtime/live");
+        StringAssert.Contains(text, "Filesystem");
+        StringAssert.Contains(text, "Provider/cloud");
+        StringAssert.Contains(text, "Semantic/vector");
+        StringAssert.Contains(text, "LLM live");
+        StringAssert.Contains(text, "Durable memory");
+        StringAssert.Contains(text, "Approval execution");
+        StringAssert.Contains(text, "Approval state mutation");
+        Assert.IsTrue(surface.Sections.Any(section => section.SectionId == "approval.execution.disabled" && section.Status == ApprovalHumanReviewItemStatus.Disabled));
+        Assert.IsTrue(surface.Sections.Any(section => section.SectionId == "approval.state.mutation.disabled" && section.Status == ApprovalHumanReviewItemStatus.Disabled));
+    }
+
+    [TestMethod]
+    public void ApprovalPacketSurface_HasNoActionButtonExportOrProductionOverclaim()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            surface.ReadOnlySummary,
+            string.Join("\n", surface.CandidateActionPreviews),
+            string.Join("\n", surface.RiskDecisionSummaries),
+            string.Join("\n", surface.EvidenceContextLinkSummaries),
+            string.Join("\n", surface.DecisionOptionPreviews),
+            string.Join("\n", surface.Sections.Select(section => $"{section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")));
+
+        Assert.IsFalse(text.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("approval executed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("approval state mutated", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("state mutation completed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("approved and applied", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("action button", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("action command", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("export file created", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("clipboard used", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("durable memory active", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("provider call enabled", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static void AssertRiskDecision(
         IReadOnlyList<ApprovalRiskDecisionReadOnlyResult> results,
         string fixtureId,
