@@ -11,6 +11,7 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
     private const string PersistenceDesignPath = "src/OneBrain.Core/Evidence/EvidenceIntelligencePersistenceDesign.cs";
     private const string UiMountPath = "src/OneBrain.Core/Evidence/EvidenceIntelligenceReadOnlyUiMount.cs";
     private const string RecipesPersistenceDesignTestsPath = "tests/OneBrain.Recipes.Tests/EvidenceIntelligencePersistenceDesignTests.cs";
+    private const string TimelineExportPath = "src/OneBrain.Core/Evidence/EvidenceIntelligenceTimelineExportReadOnly.cs";
 
     [TestMethod]
     public void PersistenceDesign_FailsClosedAndDoesNotEnableWrites()
@@ -191,7 +192,7 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         var source = ReadRepoText(RecipesPersistenceDesignTestsPath);
 
         StringAssert.Contains(source, "sk-fixture-not-real");
-        StringAssert.Contains(source, "Bearer SYNTHETIC-fixture-token-not-real");
+        StringAssert.Contains(source, "Bearer " + "SYNTHETIC-fixture-token-not-real");
         StringAssert.Contains(source, "ghp_fixture SYNTHETIC not-real");
         StringAssert.Contains(source, "AKIA-FIXTURE-NOT-REAL-SYNTHETIC");
         StringAssert.Contains(source, "BEGIN SYNTHETIC PRIVATE KEY");
@@ -212,8 +213,8 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
             "WritesDatabase: true",
             "DurableWritesEnabled: true",
             "FilesystemProductWritesEnabled: true",
-            "production-ready",
-            "semantic search enabled"
+            "production" + "-ready",
+            "semantic search " + "enabled"
         };
 
         foreach (var term in forbidden)
@@ -398,7 +399,7 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
             "SemanticVectorBackendTouched: true",
             "RuntimeTouched: true",
             "ProductWriteFallbackUsed: true",
-            "production-ready",
+            "production" + "-ready",
             "migration executed",
             "dry-run migration completed",
             "durable persistence active"
@@ -501,6 +502,89 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
             "RuntimeTouched:" + " true",
             "schema compatibility complete",
             "compatible with durable persistence",
+            "production" + "-ready"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
+    public void TimelineExportPreview_DoesNotReadWritePersistMigrateOrRun()
+    {
+        var export = EvidenceIntelligenceTimelineExportReadOnlyPresenter.CreateFixture();
+        var proof = export.NoSideEffectProof;
+
+        Assert.IsTrue(export.ReadOnly);
+        Assert.IsTrue(export.Deterministic);
+        Assert.IsTrue(proof.Passes);
+        Assert.IsFalse(export.PhysicalExportEnabled);
+        Assert.IsFalse(proof.FilesystemReadAttempted);
+        Assert.IsFalse(proof.FilesystemWriteAttempted);
+        Assert.IsFalse(proof.ExportFileCreated);
+        Assert.IsFalse(proof.DatabaseTouched);
+        Assert.IsFalse(proof.DurablePersistenceActive);
+        Assert.IsFalse(proof.MigrationRunnerStarted);
+        Assert.IsFalse(proof.MigrationExecuted);
+        Assert.IsFalse(proof.ProviderCloudTouched);
+        Assert.IsFalse(proof.SemanticVectorBackendTouched);
+        Assert.IsFalse(proof.RuntimeTouched);
+        Assert.IsFalse(proof.BrowserCdpTouched);
+        Assert.IsFalse(proof.WcuTouched);
+        Assert.IsFalse(proof.OcrTouched);
+        Assert.IsFalse(proof.ProductWriteFallbackUsed);
+    }
+
+    [TestMethod]
+    public void TimelineExportPreview_HasNoSecretRawPayloadOrProductionClaim()
+    {
+        var export = EvidenceIntelligenceTimelineExportReadOnlyPresenter.CreateFixture();
+        var text = export.CopyReadyPreview;
+
+        Assert.IsFalse(text.Contains("sk-", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("Bearer" + " ", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("ghp_", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("AKIA", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("PRIVATE KEY", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("raw payload", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("export " + "completed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(export.Manifest.ExcludedContentClasses.Contains("secret-like content", StringComparer.Ordinal));
+        Assert.IsTrue(export.Manifest.ExcludedContentClasses.Contains("sensitive-never-persist fields", StringComparer.Ordinal));
+    }
+
+    [TestMethod]
+    public void TimelineExportPreview_SourceHasNoFilesystemExportDependencyOrRuntimeImplementation()
+    {
+        var source = ReadRepoText(TimelineExportPath);
+        var forbidden = new[]
+        {
+            "File." + "Write",
+            "File." + "Read",
+            "Directory." + "CreateDirectory",
+            "FileStream",
+            "StreamWriter",
+            "HttpClient",
+            "WebSocket",
+            "SQLiteConnection",
+            "SqlConnection",
+            "DbContext",
+            "IDbConnection",
+            "PackageReference",
+            "Process." + "Start",
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "ExportFileCreated:" + " true",
+            "FilesystemWriteAttempted:" + " true",
+            "FilesystemReadAttempted:" + " true",
+            "DatabaseTouched:" + " true",
+            "MigrationExecuted:" + " true",
+            "RuntimeTouched:" + " true",
+            "ProviderCloudTouched:" + " true",
+            "PhysicalExportEnabled:" + " true",
             "production" + "-ready"
         };
 

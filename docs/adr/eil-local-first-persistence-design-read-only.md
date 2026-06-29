@@ -339,3 +339,48 @@ Compatibility policy:
 - Migration target incompatibility blocks.
 
 No compatibility result may enable durable persistence. Any future store implementation still requires schema compatibility audit evidence, hostile redaction coverage, dry-run migration audit and a separate explicit hito.
+
+## Addendum: Evidence Timeline Export Read-Only Preview
+
+Decision target: `GO_EIL_EVIDENCE_TIMELINE_EXPORT_READ_ONLY_READY`
+
+The Evidence Timeline Export is a read-only, fixture-safe preview model for sharing EIL state without creating files or enabling persistence. It converts the existing EIL read-only fixture surface plus disabled persistence guards into deterministic copy-ready text and structured sections.
+
+The preview includes:
+
+- executive summary;
+- evidence index summary;
+- timeline events;
+- claims and evidence links;
+- action scan results;
+- contradictions and risks;
+- typed evidence graph summary;
+- readiness matrix;
+- safe next step;
+- human actions required;
+- persistence capability status;
+- read/write scaffold status;
+- redaction-at-write hostile coverage;
+- dry-run migration plan status;
+- schema compatibility guard status;
+- export blockers and warnings;
+- no-side-effect proof;
+- deferred capabilities and documented debt.
+
+The preview explicitly excludes raw payloads, secret-like content, sensitive-never-persist fields, browser/CDP payloads, OCR raw payloads and provider/cloud payloads.
+
+The preview does not:
+
+- create a file;
+- read filesystem data;
+- write filesystem data;
+- create PDF/DOCX/JSON/ZIP artifacts;
+- call clipboard APIs;
+- use a database;
+- enable durable persistence;
+- execute migrations;
+- register a service;
+- call provider/cloud/network;
+- enable runtime/live/browser/CDP/WCU/OCR.
+
+Any future physical export requires a separate explicit hito, manual QA, no-side-effect audit, redaction proof and a clear filesystem-write review before implementation.
