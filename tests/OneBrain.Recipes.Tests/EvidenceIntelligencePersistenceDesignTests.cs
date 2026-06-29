@@ -411,6 +411,133 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
         CollectionAssert.Contains(store.ScaffoldStatus.DisabledReasons.ToList(), "Durable writes are disabled until a future explicit hito.");
     }
 
+    [TestMethod]
+    public void DryRunMigrationPlanContract_SameSchemaNoOpDoesNotExecute()
+    {
+        var plan = EvidenceIntelligenceDryRunMigrationPlan.SameSchemaNoOp();
+        var result = EvidenceIntelligenceDryRunMigrationPlanner.Evaluate(plan);
+
+        Assert.AreEqual(EvidenceIntelligenceDryRunMigrationDecision.NoOp, result.Decision);
+        Assert.AreEqual(0, result.Blockers.Count);
+        Assert.IsTrue(result.FailClosed);
+        Assert.IsTrue(result.DryRunOnly);
+        Assert.IsFalse(result.ExecutionAttempted);
+        Assert.IsFalse(result.MigrationExecuted);
+        Assert.IsFalse(result.DurablePersistenceActive);
+        Assert.IsFalse(result.FilesystemReadAttempted);
+        Assert.IsFalse(result.FilesystemWriteAttempted);
+        Assert.IsFalse(result.DatabaseTouched);
+        Assert.IsFalse(result.MigrationRunnerStarted);
+        Assert.IsFalse(result.ProviderCloudTouched);
+        Assert.IsFalse(result.SemanticVectorBackendTouched);
+        Assert.IsFalse(result.RuntimeTouched);
+        Assert.IsFalse(result.ProductWriteFallbackUsed);
+        Assert.IsTrue(result.CapabilityStatus.FailClosed);
+        Assert.IsFalse(result.CapabilityStatus.MigrationRunnerEnabled);
+        Assert.IsFalse(result.CapabilityStatus.MigrationExecutionEnabled);
+        Assert.IsFalse(result.CapabilityStatus.DurableStoreEnabled);
+    }
+
+    [TestMethod]
+    public void DryRunMigrationPlanFixtures_BlockDangerousPlansFailClosed()
+    {
+        var fixtures = CreateDryRunMigrationPlanFixtures();
+
+        Assert.AreEqual(15, fixtures.Count);
+
+        foreach (var fixture in fixtures.Where(fixture => fixture.ExpectedDecision == EvidenceIntelligenceDryRunMigrationDecision.Blocked))
+        {
+            var result = EvidenceIntelligenceDryRunMigrationPlanner.Evaluate(fixture.Plan);
+
+            Assert.AreEqual(EvidenceIntelligenceDryRunMigrationDecision.Blocked, result.Decision, fixture.FixtureId);
+            Assert.IsTrue(result.FailClosed, fixture.FixtureId);
+            Assert.IsTrue(result.Blockers.Any(blocker => blocker.Code == fixture.ExpectedBlocker), fixture.FixtureId);
+            Assert.IsFalse(result.ExecutionAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.MigrationExecuted, fixture.FixtureId);
+            Assert.IsFalse(result.DurablePersistenceActive, fixture.FixtureId);
+            Assert.IsFalse(result.FilesystemReadAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.FilesystemWriteAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.DatabaseTouched, fixture.FixtureId);
+            Assert.IsFalse(result.MigrationRunnerStarted, fixture.FixtureId);
+            Assert.IsFalse(result.ProviderCloudTouched, fixture.FixtureId);
+            Assert.IsFalse(result.SemanticVectorBackendTouched, fixture.FixtureId);
+            Assert.IsFalse(result.RuntimeTouched, fixture.FixtureId);
+            Assert.IsFalse(result.ProductWriteFallbackUsed, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void DryRunMigrationPlanFixtures_CoverExpectedBlockers()
+    {
+        var blockers = CreateDryRunMigrationPlanFixtures()
+            .Where(fixture => fixture.ExpectedDecision == EvidenceIntelligenceDryRunMigrationDecision.Blocked)
+            .Select(fixture => fixture.ExpectedBlocker)
+            .ToHashSet();
+
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                EvidenceIntelligenceDryRunMigrationBlockerCode.UnknownSchemaVersion,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.FutureSchemaUnsupported,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemWrite,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemRead,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresDatabase,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresMigrationRunner,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RedactionGateMissing,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RawPayloadRisk,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RollbackUnavailable,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.HumanApprovalRequired,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.SchemaDowngrade,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.IncompatibleGraphEdgeShape,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.StaleEvidenceVersion,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.UnsafeIntegrityHashPlan
+            }.ToList(),
+            blockers.ToList());
+    }
+
+    [TestMethod]
+    public void DryRunMigrationPlanResults_NeverDeclareMigrationExecutedOrDurablePersistence()
+    {
+        foreach (var fixture in CreateDryRunMigrationPlanFixtures())
+        {
+            var result = EvidenceIntelligenceDryRunMigrationPlanner.Evaluate(fixture.Plan);
+
+            Assert.IsFalse(result.ExecutionAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.MigrationExecuted, fixture.FixtureId);
+            Assert.IsFalse(result.DurablePersistenceActive, fixture.FixtureId);
+            Assert.IsFalse(result.FilesystemReadAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.FilesystemWriteAttempted, fixture.FixtureId);
+            Assert.IsFalse(result.DatabaseTouched, fixture.FixtureId);
+            Assert.IsFalse(result.MigrationRunnerStarted, fixture.FixtureId);
+            Assert.IsFalse(result.ProviderCloudTouched, fixture.FixtureId);
+            Assert.IsFalse(result.SemanticVectorBackendTouched, fixture.FixtureId);
+            Assert.IsFalse(result.RuntimeTouched, fixture.FixtureId);
+            Assert.IsFalse(result.ProductWriteFallbackUsed, fixture.FixtureId);
+        }
+    }
+
+    [TestMethod]
+    public void DryRunMigrationPlanCapabilityStatus_IsDisabledFailClosed()
+    {
+        var status = EvidenceIntelligenceMigrationCapabilityStatus.DisabledDryRunPlan();
+
+        Assert.IsTrue(status.DesignExists);
+        Assert.IsTrue(status.DryRunPlanExists);
+        Assert.IsTrue(status.DryRunOnly);
+        Assert.IsTrue(status.FailClosed);
+        Assert.AreEqual("DRY_RUN_PLAN_ONLY_DISABLED_FAIL_CLOSED", status.Mode);
+        Assert.IsFalse(status.MigrationRunnerEnabled);
+        Assert.IsFalse(status.MigrationExecutionEnabled);
+        Assert.IsFalse(status.DurableStoreEnabled);
+        Assert.IsFalse(status.FilesystemReadEnabled);
+        Assert.IsFalse(status.FilesystemWriteEnabled);
+        Assert.IsFalse(status.DatabaseEnabled);
+        Assert.IsFalse(status.ProviderCloudEnabled);
+        Assert.IsFalse(status.SemanticVectorBackendEnabled);
+        Assert.IsFalse(status.RuntimeEnabled);
+        Assert.IsFalse(status.ServiceRegistrationEnabled);
+    }
+
     private static IReadOnlyList<EvidenceIntelligenceReadStoreQuery> CreateReadStoreQueries() =>
     [
         EvidenceIntelligenceReadStoreQuery.ByEvidenceId("evidence.fixture.001"),
@@ -585,6 +712,146 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
             IntegrityHashBeforeRedaction: integrityHashBeforeRedaction,
             PersistAllowed: false);
 
+    private static IReadOnlyList<DryRunMigrationPlanFixture> CreateDryRunMigrationPlanFixtures() =>
+    [
+        DryRunFixture(
+            "dry-run.same-schema.no-op",
+            EvidenceIntelligenceDryRunMigrationPlan.SameSchemaNoOp(),
+            EvidenceIntelligenceDryRunMigrationDecision.NoOp,
+            null),
+        DryRunFixture(
+            "dry-run.future-schema-unsupported",
+            Plan("dry-run.future-schema-unsupported", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.FutureUnsupported(2, 0), Step("future-schema-check")),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.FutureSchemaUnsupported),
+        DryRunFixture(
+            "dry-run.unknown-schema",
+            Plan("dry-run.unknown-schema", EvidenceIntelligenceSchemaVersionDescriptor.Unknown(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("unknown-schema-check")),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.UnknownSchemaVersion),
+        DryRunFixture(
+            "dry-run.write-required",
+            Plan("dry-run.write-required", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("write-required", requiresFilesystemWrite: true, requiresDurableWrite: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemWrite),
+        DryRunFixture(
+            "dry-run.read-required",
+            Plan("dry-run.read-required", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("read-required", requiresFilesystemRead: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemRead),
+        DryRunFixture(
+            "dry-run.database-required",
+            Plan("dry-run.database-required", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("database-required", requiresDatabase: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresDatabase),
+        DryRunFixture(
+            "dry-run.runner-required",
+            Plan("dry-run.runner-required", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("runner-required", requiresMigrationRunner: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresMigrationRunner),
+        DryRunFixture(
+            "dry-run.redaction-gate-missing",
+            Plan("dry-run.redaction-gate-missing", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("redaction-gate-missing", redactionGateSatisfied: false)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.RedactionGateMissing),
+        DryRunFixture(
+            "dry-run.raw-payload-risk",
+            Plan("dry-run.raw-payload-risk", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("raw-payload-risk", hasRawPayloadRisk: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.RawPayloadRisk),
+        DryRunFixture(
+            "dry-run.rollback-unavailable",
+            Plan("dry-run.rollback-unavailable", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("rollback-unavailable", canRollback: false)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.RollbackUnavailable),
+        DryRunFixture(
+            "dry-run.human-approval-required",
+            Plan("dry-run.human-approval-required", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("human-approval-required", requiresHumanApproval: true, humanApprovalPresent: false)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.HumanApprovalRequired),
+        DryRunFixture(
+            "dry-run.schema-downgrade",
+            Plan("dry-run.schema-downgrade", EvidenceIntelligenceSchemaVersionDescriptor.V1(), new EvidenceIntelligenceSchemaVersionDescriptor(0, 9, IsKnown: true, IsSupported: true, Label: "eil.local-evidence.schema.v0.9.downgrade-blocked"), Step("schema-downgrade")),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.SchemaDowngrade),
+        DryRunFixture(
+            "dry-run.incompatible-graph-edge",
+            Plan("dry-run.incompatible-graph-edge", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("incompatible-graph-edge", hasIncompatibleGraphShape: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.IncompatibleGraphEdgeShape),
+        DryRunFixture(
+            "dry-run.stale-evidence-version",
+            Plan("dry-run.stale-evidence-version", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("stale-evidence-version", hasStaleEvidenceVersion: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.StaleEvidenceVersion),
+        DryRunFixture(
+            "dry-run.unsafe-integrity-hash",
+            Plan("dry-run.unsafe-integrity-hash", EvidenceIntelligenceSchemaVersionDescriptor.V1(), EvidenceIntelligenceSchemaVersionDescriptor.V1(), Step("unsafe-integrity-hash", hasUnsafeIntegrityHashPlan: true)),
+            EvidenceIntelligenceDryRunMigrationDecision.Blocked,
+            EvidenceIntelligenceDryRunMigrationBlockerCode.UnsafeIntegrityHashPlan)
+    ];
+
+    private static DryRunMigrationPlanFixture DryRunFixture(
+        string fixtureId,
+        EvidenceIntelligenceDryRunMigrationPlan plan,
+        EvidenceIntelligenceDryRunMigrationDecision expectedDecision,
+        EvidenceIntelligenceDryRunMigrationBlockerCode? expectedBlocker) =>
+        new(fixtureId, plan, expectedDecision, expectedBlocker);
+
+    private static EvidenceIntelligenceDryRunMigrationPlan Plan(
+        string planId,
+        EvidenceIntelligenceSchemaVersionDescriptor current,
+        EvidenceIntelligenceSchemaVersionDescriptor target,
+        EvidenceIntelligenceDryRunMigrationStep step) =>
+        new(
+            PlanId: planId,
+            CurrentSchemaVersion: current,
+            TargetSchemaVersion: target,
+            DryRunOnly: true,
+            RequiresHumanApproval: false,
+            HumanApprovalPresent: false,
+            Steps: [step],
+            ExpectedAuditEvidence:
+            [
+                "Schema compatibility comparison.",
+                "No-side-effect flag proof.",
+                "Future human approval before activation."
+            ]);
+
+    private static EvidenceIntelligenceDryRunMigrationStep Step(
+        string stepId,
+        bool requiresFilesystemRead = false,
+        bool requiresFilesystemWrite = false,
+        bool requiresDatabase = false,
+        bool requiresMigrationRunner = false,
+        bool requiresDurableWrite = false,
+        bool redactionGateSatisfied = true,
+        bool requiresHumanApproval = false,
+        bool humanApprovalPresent = true,
+        bool canRollback = true,
+        bool hasRawPayloadRisk = false,
+        bool hasIncompatibleGraphShape = false,
+        bool hasStaleEvidenceVersion = false,
+        bool hasUnsafeIntegrityHashPlan = false) =>
+        new(
+            StepId: stepId,
+            Kind: EvidenceIntelligenceDryRunMigrationStepKind.SchemaVersionCheck,
+            RequiresFilesystemRead: requiresFilesystemRead,
+            RequiresFilesystemWrite: requiresFilesystemWrite,
+            RequiresDatabase: requiresDatabase,
+            RequiresMigrationRunner: requiresMigrationRunner,
+            RequiresDurableWrite: requiresDurableWrite,
+            RequiresRedactionAtWrite: true,
+            RedactionGateSatisfied: redactionGateSatisfied,
+            RequiresHumanApproval: requiresHumanApproval,
+            HumanApprovalPresent: humanApprovalPresent,
+            CanRollback: canRollback,
+            HasRawPayloadRisk: hasRawPayloadRisk,
+            HasIncompatibleGraphShape: hasIncompatibleGraphShape,
+            HasStaleEvidenceVersion: hasStaleEvidenceVersion,
+            HasUnsafeIntegrityHashPlan: hasUnsafeIntegrityHashPlan,
+            ExpectedEvidenceKind: "dry-run-migration-plan-fixture");
+
     private sealed record HostileRedactionFixture(
         string FixtureId,
         string Category,
@@ -597,4 +864,10 @@ public sealed class EvidenceIntelligencePersistenceDesignTests
         bool ContainsSecretLikeContent,
         bool IntegrityHashBeforeRedaction,
         bool PersistAllowed);
+
+    private sealed record DryRunMigrationPlanFixture(
+        string FixtureId,
+        EvidenceIntelligenceDryRunMigrationPlan Plan,
+        EvidenceIntelligenceDryRunMigrationDecision ExpectedDecision,
+        EvidenceIntelligenceDryRunMigrationBlockerCode? ExpectedBlocker);
 }

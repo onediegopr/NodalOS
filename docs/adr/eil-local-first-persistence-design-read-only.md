@@ -268,3 +268,45 @@ The fixture strategy does not:
 - change the EIL UI fixture source.
 
 All hostile values are synthetic and intentionally marked as fixture/not-real. Any future write activation still requires additional adversarial redaction coverage, schema compatibility report, migration dry-run audit and manual QA.
+
+## Addendum: Dry-Run Migration Plan Contract
+
+Decision target: `GO_EIL_LOCAL_PERSISTENCE_DRY_RUN_MIGRATION_PLAN_READY`
+
+The migration planning artifact is a design-only contract for future local persistence schema movement. It models migration plans, steps, blockers, schema descriptors and dry-run results without introducing a migration runner, durable store, filesystem access, database access or service registration.
+
+The dry-run migration contract defines:
+
+- schema version descriptors for current, unknown and future-unsupported schema states;
+- migration step metadata for future schema checks, redaction gate checks, evidence shape checks, graph shape checks, readiness checks, integrity hash checks, rollback planning and human approval;
+- blocker codes for unknown schema, unsupported future schema, filesystem read/write requirements, database requirements, migration runner requirements, durable-write requirements, missing redaction gate, raw payload risk, unavailable rollback, missing human approval, schema downgrade, incompatible graph shape, stale evidence and unsafe integrity hash plans;
+- capability status with migration runner, migration execution, durable store, filesystem read/write, database, provider/cloud, semantic/vector, runtime and service registration all disabled;
+- result flags that assert no execution attempt, no migration execution, no durable persistence, no filesystem touch, no database touch, no provider/cloud touch, no semantic/vector touch, no runtime touch and no product-write fallback.
+
+The dry-run migration contract does not:
+
+- execute migrations;
+- create a migration runner;
+- read or write filesystem data;
+- create or use a database;
+- enable durable persistence;
+- register product services;
+- change the EIL UI fixture source;
+- enable runtime/live/browser/CDP/WCU/OCR/provider/cloud behavior.
+
+Deterministic fixtures cover:
+
+- no-op same schema version;
+- unknown schema;
+- unsupported future schema;
+- schema downgrade;
+- steps requiring filesystem read, filesystem write, database, migration runner or durable write;
+- missing redaction-at-write gate;
+- raw payload risk;
+- rollback unavailable;
+- human approval required;
+- incompatible graph edge shape;
+- stale evidence version;
+- unsafe integrity hash plan.
+
+Any future migration work still requires an explicit hito, schema compatibility guards, hostile redaction coverage, manual approval requirements, no-side-effect proof, and a separate audit before any runner or durable store can be considered.

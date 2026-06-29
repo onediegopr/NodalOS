@@ -303,6 +303,55 @@ public enum EvidenceIntelligenceWriteResultStatus
     RequiresFutureUnlock
 }
 
+public enum EvidenceIntelligenceDryRunMigrationStepKind
+{
+    NoOp,
+    SchemaVersionCheck,
+    RedactionGateCheck,
+    EvidenceRecordShapeCheck,
+    GraphShapeCheck,
+    ReadinessSnapshotCheck,
+    IntegrityHashCheck,
+    RollbackPlanCheck,
+    HumanApprovalCheck,
+    FutureWritePlanCheck
+}
+
+public enum EvidenceIntelligenceDryRunMigrationDecision
+{
+    NoOp,
+    Blocked,
+    DesignOnly
+}
+
+public enum EvidenceIntelligenceDryRunMigrationBlockerSeverity
+{
+    Info,
+    P3,
+    P2,
+    P1
+}
+
+public enum EvidenceIntelligenceDryRunMigrationBlockerCode
+{
+    UnknownSchemaVersion,
+    FutureSchemaUnsupported,
+    RequiresFilesystemRead,
+    RequiresFilesystemWrite,
+    RequiresDatabase,
+    RequiresMigrationRunner,
+    RequiresDurableWrite,
+    RedactionGateMissing,
+    RawPayloadRisk,
+    RollbackUnavailable,
+    HumanApprovalRequired,
+    SchemaDowngrade,
+    IncompatibleGraphEdgeShape,
+    StaleEvidenceVersion,
+    UnsafeIntegrityHashPlan,
+    DryRunOnlyRequired
+}
+
 public sealed record EvidenceIntelligenceReadStoreQuery(
     EvidenceIntelligenceReadStoreQueryKind Kind,
     string WorkspaceId,
@@ -724,6 +773,326 @@ public sealed record EvidenceIntelligenceWriteResult(
             UsesRuntime: false,
             RedactionPipelineExecuted: false,
             FallbackUsed: false);
+}
+
+public sealed record EvidenceIntelligenceSchemaVersionDescriptor(
+    int Major,
+    int Minor,
+    bool IsKnown,
+    bool IsSupported,
+    string Label)
+{
+    public bool IsV1 => Major == 1 && Minor == 0 && IsKnown && IsSupported;
+
+    public static EvidenceIntelligenceSchemaVersionDescriptor V1() =>
+        new(1, 0, IsKnown: true, IsSupported: true, Label: "eil.local-evidence.schema.v1.design-only");
+
+    public static EvidenceIntelligenceSchemaVersionDescriptor Unknown(string label = "unknown-schema") =>
+        new(0, 0, IsKnown: false, IsSupported: false, Label: label);
+
+    public static EvidenceIntelligenceSchemaVersionDescriptor FutureUnsupported(int major, int minor) =>
+        new(major, minor, IsKnown: true, IsSupported: false, Label: $"eil.local-evidence.schema.v{major}.{minor}.future-unsupported");
+}
+
+public sealed record EvidenceIntelligenceMigrationCapabilityStatus(
+    bool DesignExists,
+    bool DryRunPlanExists,
+    bool DryRunOnly,
+    bool MigrationRunnerEnabled,
+    bool MigrationExecutionEnabled,
+    bool DurableStoreEnabled,
+    bool FilesystemReadEnabled,
+    bool FilesystemWriteEnabled,
+    bool DatabaseEnabled,
+    bool ProviderCloudEnabled,
+    bool SemanticVectorBackendEnabled,
+    bool RuntimeEnabled,
+    bool ServiceRegistrationEnabled,
+    string Mode)
+{
+    public bool FailClosed =>
+        DesignExists
+        && DryRunPlanExists
+        && DryRunOnly
+        && !MigrationRunnerEnabled
+        && !MigrationExecutionEnabled
+        && !DurableStoreEnabled
+        && !FilesystemReadEnabled
+        && !FilesystemWriteEnabled
+        && !DatabaseEnabled
+        && !ProviderCloudEnabled
+        && !SemanticVectorBackendEnabled
+        && !RuntimeEnabled
+        && !ServiceRegistrationEnabled;
+
+    public static EvidenceIntelligenceMigrationCapabilityStatus DisabledDryRunPlan() =>
+        new(
+            DesignExists: true,
+            DryRunPlanExists: true,
+            DryRunOnly: true,
+            MigrationRunnerEnabled: false,
+            MigrationExecutionEnabled: false,
+            DurableStoreEnabled: false,
+            FilesystemReadEnabled: false,
+            FilesystemWriteEnabled: false,
+            DatabaseEnabled: false,
+            ProviderCloudEnabled: false,
+            SemanticVectorBackendEnabled: false,
+            RuntimeEnabled: false,
+            ServiceRegistrationEnabled: false,
+            Mode: "DRY_RUN_PLAN_ONLY_DISABLED_FAIL_CLOSED");
+}
+
+public sealed record EvidenceIntelligenceDryRunMigrationStep(
+    string StepId,
+    EvidenceIntelligenceDryRunMigrationStepKind Kind,
+    bool RequiresFilesystemRead,
+    bool RequiresFilesystemWrite,
+    bool RequiresDatabase,
+    bool RequiresMigrationRunner,
+    bool RequiresDurableWrite,
+    bool RequiresRedactionAtWrite,
+    bool RedactionGateSatisfied,
+    bool RequiresHumanApproval,
+    bool HumanApprovalPresent,
+    bool CanRollback,
+    bool HasRawPayloadRisk,
+    bool HasIncompatibleGraphShape,
+    bool HasStaleEvidenceVersion,
+    bool HasUnsafeIntegrityHashPlan,
+    string ExpectedEvidenceKind)
+{
+    public static EvidenceIntelligenceDryRunMigrationStep NoOp(string stepId = "dry-run.no-op.same-schema") =>
+        new(
+            stepId,
+            EvidenceIntelligenceDryRunMigrationStepKind.NoOp,
+            RequiresFilesystemRead: false,
+            RequiresFilesystemWrite: false,
+            RequiresDatabase: false,
+            RequiresMigrationRunner: false,
+            RequiresDurableWrite: false,
+            RequiresRedactionAtWrite: true,
+            RedactionGateSatisfied: true,
+            RequiresHumanApproval: false,
+            HumanApprovalPresent: false,
+            CanRollback: true,
+            HasRawPayloadRisk: false,
+            HasIncompatibleGraphShape: false,
+            HasStaleEvidenceVersion: false,
+            HasUnsafeIntegrityHashPlan: false,
+            ExpectedEvidenceKind: "schema-version-check");
+}
+
+public sealed record EvidenceIntelligenceDryRunMigrationPlan(
+    string PlanId,
+    EvidenceIntelligenceSchemaVersionDescriptor CurrentSchemaVersion,
+    EvidenceIntelligenceSchemaVersionDescriptor TargetSchemaVersion,
+    bool DryRunOnly,
+    bool RequiresHumanApproval,
+    bool HumanApprovalPresent,
+    IReadOnlyList<EvidenceIntelligenceDryRunMigrationStep> Steps,
+    IReadOnlyList<string> ExpectedAuditEvidence)
+{
+    public static EvidenceIntelligenceDryRunMigrationPlan SameSchemaNoOp() =>
+        new(
+            PlanId: "eil.migration.dry-run.same-schema.no-op.v1",
+            CurrentSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            TargetSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            DryRunOnly: true,
+            RequiresHumanApproval: false,
+            HumanApprovalPresent: false,
+            Steps: [EvidenceIntelligenceDryRunMigrationStep.NoOp()],
+            ExpectedAuditEvidence:
+            [
+                "Schema version comparison.",
+                "No-side-effect flag proof.",
+                "Human review of blockers before future activation."
+            ]);
+}
+
+public sealed record EvidenceIntelligenceDryRunMigrationBlocker(
+    EvidenceIntelligenceDryRunMigrationBlockerCode Code,
+    EvidenceIntelligenceDryRunMigrationBlockerSeverity Severity,
+    string StepId,
+    string Reason);
+
+public sealed record EvidenceIntelligenceDryRunMigrationResult(
+    EvidenceIntelligenceDryRunMigrationPlan Plan,
+    EvidenceIntelligenceDryRunMigrationDecision Decision,
+    IReadOnlyList<EvidenceIntelligenceDryRunMigrationBlocker> Blockers,
+    EvidenceIntelligenceMigrationCapabilityStatus CapabilityStatus,
+    bool DryRunOnly,
+    bool ExecutionAttempted,
+    bool MigrationExecuted,
+    bool DurablePersistenceActive,
+    bool FilesystemReadAttempted,
+    bool FilesystemWriteAttempted,
+    bool DatabaseTouched,
+    bool MigrationRunnerStarted,
+    bool ProviderCloudTouched,
+    bool SemanticVectorBackendTouched,
+    bool RuntimeTouched,
+    bool ProductWriteFallbackUsed)
+{
+    public bool FailClosed =>
+        CapabilityStatus.FailClosed
+        && DryRunOnly
+        && !ExecutionAttempted
+        && !MigrationExecuted
+        && !DurablePersistenceActive
+        && !FilesystemReadAttempted
+        && !FilesystemWriteAttempted
+        && !DatabaseTouched
+        && !MigrationRunnerStarted
+        && !ProviderCloudTouched
+        && !SemanticVectorBackendTouched
+        && !RuntimeTouched
+        && !ProductWriteFallbackUsed;
+}
+
+public static class EvidenceIntelligenceDryRunMigrationPlanner
+{
+    public static EvidenceIntelligenceDryRunMigrationResult Evaluate(EvidenceIntelligenceDryRunMigrationPlan plan)
+    {
+        var blockers = new List<EvidenceIntelligenceDryRunMigrationBlocker>();
+
+        AddSchemaBlockers(plan, blockers);
+        AddPlanBlockers(plan, blockers);
+
+        foreach (var step in plan.Steps)
+        {
+            AddStepBlockers(step, blockers);
+        }
+
+        var decision = blockers.Count == 0
+            ? EvidenceIntelligenceDryRunMigrationDecision.NoOp
+            : EvidenceIntelligenceDryRunMigrationDecision.Blocked;
+
+        return new(
+            plan,
+            decision,
+            blockers,
+            EvidenceIntelligenceMigrationCapabilityStatus.DisabledDryRunPlan(),
+            DryRunOnly: true,
+            ExecutionAttempted: false,
+            MigrationExecuted: false,
+            DurablePersistenceActive: false,
+            FilesystemReadAttempted: false,
+            FilesystemWriteAttempted: false,
+            DatabaseTouched: false,
+            MigrationRunnerStarted: false,
+            ProviderCloudTouched: false,
+            SemanticVectorBackendTouched: false,
+            RuntimeTouched: false,
+            ProductWriteFallbackUsed: false);
+    }
+
+    private static void AddSchemaBlockers(
+        EvidenceIntelligenceDryRunMigrationPlan plan,
+        List<EvidenceIntelligenceDryRunMigrationBlocker> blockers)
+    {
+        if (!plan.CurrentSchemaVersion.IsKnown || !plan.TargetSchemaVersion.IsKnown)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.UnknownSchemaVersion, "schema", "Unknown schema version blocks migration planning."));
+        }
+
+        if (!plan.TargetSchemaVersion.IsSupported)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.FutureSchemaUnsupported, "schema", "Target schema version is not supported by this design-only plan."));
+        }
+
+        if (plan.TargetSchemaVersion.Major < plan.CurrentSchemaVersion.Major
+            || (plan.TargetSchemaVersion.Major == plan.CurrentSchemaVersion.Major && plan.TargetSchemaVersion.Minor < plan.CurrentSchemaVersion.Minor))
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.SchemaDowngrade, "schema", "Schema downgrade is blocked."));
+        }
+    }
+
+    private static void AddPlanBlockers(
+        EvidenceIntelligenceDryRunMigrationPlan plan,
+        List<EvidenceIntelligenceDryRunMigrationBlocker> blockers)
+    {
+        if (!plan.DryRunOnly)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.DryRunOnlyRequired, plan.PlanId, "Migration planning must remain dry-run only."));
+        }
+
+        if (plan.RequiresHumanApproval && !plan.HumanApprovalPresent)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.HumanApprovalRequired, plan.PlanId, "Human approval is required before future migration planning can proceed."));
+        }
+    }
+
+    private static void AddStepBlockers(
+        EvidenceIntelligenceDryRunMigrationStep step,
+        List<EvidenceIntelligenceDryRunMigrationBlocker> blockers)
+    {
+        if (step.RequiresFilesystemRead)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemRead, step.StepId, "Step requires filesystem read capability."));
+        }
+
+        if (step.RequiresFilesystemWrite)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemWrite, step.StepId, "Step requires filesystem write capability."));
+        }
+
+        if (step.RequiresDatabase)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresDatabase, step.StepId, "Step requires database capability."));
+        }
+
+        if (step.RequiresMigrationRunner)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresMigrationRunner, step.StepId, "Step requires migration runner capability."));
+        }
+
+        if (step.RequiresDurableWrite)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresDurableWrite, step.StepId, "Step requires durable write capability."));
+        }
+
+        if (step.RequiresRedactionAtWrite && !step.RedactionGateSatisfied)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RedactionGateMissing, step.StepId, "Redaction-at-write gate is missing."));
+        }
+
+        if (step.HasRawPayloadRisk)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RawPayloadRisk, step.StepId, "Raw payload risk blocks migration planning."));
+        }
+
+        if (!step.CanRollback)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.RollbackUnavailable, step.StepId, "Rollback or restore strategy is unavailable."));
+        }
+
+        if (step.RequiresHumanApproval && !step.HumanApprovalPresent)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.HumanApprovalRequired, step.StepId, "Human approval is required for this step."));
+        }
+
+        if (step.HasIncompatibleGraphShape)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.IncompatibleGraphEdgeShape, step.StepId, "Graph edge shape is incompatible."));
+        }
+
+        if (step.HasStaleEvidenceVersion)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.StaleEvidenceVersion, step.StepId, "Evidence version is stale."));
+        }
+
+        if (step.HasUnsafeIntegrityHashPlan)
+        {
+            blockers.Add(Blocker(EvidenceIntelligenceDryRunMigrationBlockerCode.UnsafeIntegrityHashPlan, step.StepId, "Integrity hash plan is unsafe."));
+        }
+    }
+
+    private static EvidenceIntelligenceDryRunMigrationBlocker Blocker(
+        EvidenceIntelligenceDryRunMigrationBlockerCode code,
+        string stepId,
+        string reason) =>
+        new(code, EvidenceIntelligenceDryRunMigrationBlockerSeverity.P2, stepId, reason);
 }
 
 public interface IEvidenceIntelligenceReadStore

@@ -271,6 +271,145 @@ public sealed class EvidenceIntelligencePersistenceDesignSafetyTests
         StringAssert.Contains(source, "FilesystemWritesEnabled: false");
     }
 
+    [TestMethod]
+    public void DryRunMigrationPlan_DoesNotExecuteTouchFilesystemDatabaseOrRunner()
+    {
+        var step = new EvidenceIntelligenceDryRunMigrationStep(
+            StepId: "safety.dangerous-step",
+            Kind: EvidenceIntelligenceDryRunMigrationStepKind.FutureWritePlanCheck,
+            RequiresFilesystemRead: true,
+            RequiresFilesystemWrite: true,
+            RequiresDatabase: true,
+            RequiresMigrationRunner: true,
+            RequiresDurableWrite: true,
+            RequiresRedactionAtWrite: true,
+            RedactionGateSatisfied: false,
+            RequiresHumanApproval: true,
+            HumanApprovalPresent: false,
+            CanRollback: false,
+            HasRawPayloadRisk: true,
+            HasIncompatibleGraphShape: true,
+            HasStaleEvidenceVersion: true,
+            HasUnsafeIntegrityHashPlan: true,
+            ExpectedEvidenceKind: "safety-fixture-only");
+        var plan = new EvidenceIntelligenceDryRunMigrationPlan(
+            PlanId: "safety.dangerous-dry-run-plan",
+            CurrentSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            TargetSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.V1(),
+            DryRunOnly: true,
+            RequiresHumanApproval: true,
+            HumanApprovalPresent: false,
+            Steps: [step],
+            ExpectedAuditEvidence: ["No-side-effect proof."]);
+
+        var result = EvidenceIntelligenceDryRunMigrationPlanner.Evaluate(plan);
+
+        Assert.AreEqual(EvidenceIntelligenceDryRunMigrationDecision.Blocked, result.Decision);
+        Assert.IsTrue(result.FailClosed);
+        Assert.IsFalse(result.ExecutionAttempted);
+        Assert.IsFalse(result.MigrationExecuted);
+        Assert.IsFalse(result.DurablePersistenceActive);
+        Assert.IsFalse(result.FilesystemReadAttempted);
+        Assert.IsFalse(result.FilesystemWriteAttempted);
+        Assert.IsFalse(result.DatabaseTouched);
+        Assert.IsFalse(result.MigrationRunnerStarted);
+        Assert.IsFalse(result.ProviderCloudTouched);
+        Assert.IsFalse(result.SemanticVectorBackendTouched);
+        Assert.IsFalse(result.RuntimeTouched);
+        Assert.IsFalse(result.ProductWriteFallbackUsed);
+        Assert.IsTrue(result.Blockers.Any(blocker => blocker.Code == EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemRead));
+        Assert.IsTrue(result.Blockers.Any(blocker => blocker.Code == EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresFilesystemWrite));
+        Assert.IsTrue(result.Blockers.Any(blocker => blocker.Code == EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresDatabase));
+        Assert.IsTrue(result.Blockers.Any(blocker => blocker.Code == EvidenceIntelligenceDryRunMigrationBlockerCode.RequiresMigrationRunner));
+    }
+
+    [TestMethod]
+    public void DryRunMigrationPlan_BlocksRawPayloadUnknownSchemaRedactionAndUnsafeIntegrity()
+    {
+        var plan = new EvidenceIntelligenceDryRunMigrationPlan(
+            PlanId: "safety.redaction-schema-integrity-blockers",
+            CurrentSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.Unknown(),
+            TargetSchemaVersion: EvidenceIntelligenceSchemaVersionDescriptor.FutureUnsupported(2, 0),
+            DryRunOnly: true,
+            RequiresHumanApproval: false,
+            HumanApprovalPresent: false,
+            Steps:
+            [
+                new EvidenceIntelligenceDryRunMigrationStep(
+                    StepId: "safety.raw-redaction-integrity",
+                    Kind: EvidenceIntelligenceDryRunMigrationStepKind.IntegrityHashCheck,
+                    RequiresFilesystemRead: false,
+                    RequiresFilesystemWrite: false,
+                    RequiresDatabase: false,
+                    RequiresMigrationRunner: false,
+                    RequiresDurableWrite: false,
+                    RequiresRedactionAtWrite: true,
+                    RedactionGateSatisfied: false,
+                    RequiresHumanApproval: false,
+                    HumanApprovalPresent: false,
+                    CanRollback: true,
+                    HasRawPayloadRisk: true,
+                    HasIncompatibleGraphShape: false,
+                    HasStaleEvidenceVersion: false,
+                    HasUnsafeIntegrityHashPlan: true,
+                    ExpectedEvidenceKind: "safety-fixture-only")
+            ],
+            ExpectedAuditEvidence: ["No-side-effect proof."]);
+
+        var result = EvidenceIntelligenceDryRunMigrationPlanner.Evaluate(plan);
+        var blockerCodes = result.Blockers.Select(blocker => blocker.Code).ToHashSet();
+
+        Assert.AreEqual(EvidenceIntelligenceDryRunMigrationDecision.Blocked, result.Decision);
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                EvidenceIntelligenceDryRunMigrationBlockerCode.UnknownSchemaVersion,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.FutureSchemaUnsupported,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RedactionGateMissing,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.RawPayloadRisk,
+                EvidenceIntelligenceDryRunMigrationBlockerCode.UnsafeIntegrityHashPlan
+            }.ToList(),
+            blockerCodes.ToList());
+        Assert.IsTrue(result.FailClosed);
+        Assert.IsFalse(result.MigrationExecuted);
+        Assert.IsFalse(result.DurablePersistenceActive);
+    }
+
+    [TestMethod]
+    public void DryRunMigrationPlan_SourceHasNoExecutionPersistenceOrMigrationOverclaim()
+    {
+        var source = ReadRepoText(PersistenceDesignPath) + ReadRepoText(RecipesPersistenceDesignTestsPath);
+        var forbidden = new[]
+        {
+            "MigrationExecutionEnabled: true",
+            "MigrationRunnerEnabled: true",
+            "DurableStoreEnabled: true",
+            "FilesystemReadEnabled: true",
+            "FilesystemWriteEnabled: true",
+            "DatabaseEnabled: true",
+            "ExecutionAttempted: true",
+            "MigrationExecuted: true",
+            "DurablePersistenceActive: true",
+            "FilesystemReadAttempted: true",
+            "FilesystemWriteAttempted: true",
+            "DatabaseTouched: true",
+            "MigrationRunnerStarted: true",
+            "ProviderCloudTouched: true",
+            "SemanticVectorBackendTouched: true",
+            "RuntimeTouched: true",
+            "ProductWriteFallbackUsed: true",
+            "production-ready",
+            "migration executed",
+            "dry-run migration completed",
+            "durable persistence active"
+        };
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(source.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
     private static string ReadRepoText(string relativePath) =>
         File.ReadAllText(Path.Combine(RepoRoot(), relativePath));
 
