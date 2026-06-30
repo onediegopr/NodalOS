@@ -18,3 +18,13 @@
 - Recommendation after index: `MIGRATION_READ_ONLY_FINAL_AUDIT_PACK`, or `PAUSE_NODAL_OS_AND_RETURN_TO_OTHER_PROJECT` if project focus changes.
 - Reason: Phase C, Phase D and Phase E are closed as read-only/no-runtime tracks; the index preserves traceability before any later audit pack, UI polish or protected design-only planning.
 - Non-goals: no execution, mutation, runtime, physical export, clipboard, download, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
+
+## MIGRATION_READ_ONLY_FINAL_AUDIT_PACK
+
+- Decision target: `GO_MIGRATION_READ_ONLY_FINAL_AUDIT_PACK_READY`
+- Status: accepted as documentation-only final audit pack if validation passes.
+- Input: cross-phase closeout index at `14e0084a50539c330d1bce58e395db3bc1feed67`.
+- Source of truth: `docs/roadmap/read-only-cross-phase-closeout-index.md`.
+- Scope: final internal migration/read-only audit pack with phase status, migration boundary, exclusions, capability matrix, audit evidence map, validation plan, pause-ready handoff and next prompt options.
+- Recommendation after pack: `MIGRATION_READ_ONLY_FINAL_EXTERNAL_AUDIT` if continuing NODAL OS, or `PAUSE_NODAL_OS_AND_RETURN_TO_NODRIX` if switching project line.
+- Non-goals: no execution, mutation, runtime, physical export, clipboard, download, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
