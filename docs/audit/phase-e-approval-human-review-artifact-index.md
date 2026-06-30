@@ -9,7 +9,7 @@
 | `GO_PHASE_E_HUMAN_REVIEW_EVIDENCE_CONTEXT_LINKS_READ_ONLY_READY` | `329d489c` | Evidence/context link guards |
 | `GO_PHASE_E_APPROVAL_PACKET_SURFACE_READ_ONLY_READY` | `fec1ef44` | Approval packet surface |
 | `GO_PHASE_E_HUMAN_REVIEW_PACKET_EXPORT_PREVIEW_READ_ONLY_READY` | `b9cd3a17` | Human review packet export preview |
-| `GO_PHASE_E_APPROVAL_CLOSEOUT_AUDIT_PREP_READY` | pending | Closeout audit prep |
+| `GO_PHASE_E_APPROVAL_CLOSEOUT_AUDIT_PREP_READY` | `d48b79b2` | Closeout audit prep |
 
 ## Source Artifacts
 

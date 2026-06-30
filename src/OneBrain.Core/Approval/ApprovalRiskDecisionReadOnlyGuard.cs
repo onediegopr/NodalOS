@@ -287,6 +287,7 @@ public static class ApprovalRiskDecisionReadOnlyGuard
 
         if (fixture.ContextState == ApprovalRiskDecisionContextState.Excluded)
         {
+            // Phase E treats excluded context as a structural blocker, not as payload exclusion.
             issues.Add(Block(ApprovalRiskDecisionReadOnlyIssueKind.ExcludedContext, "Excluded context blocks approval decision use."));
         }
     }

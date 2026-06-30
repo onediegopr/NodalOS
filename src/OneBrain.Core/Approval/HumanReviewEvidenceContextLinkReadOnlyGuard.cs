@@ -421,6 +421,7 @@ public static class HumanReviewEvidenceContextLinkReadOnlyGuard
                 _ => ""
             };
 
+            // P3 closeout debt: this collapse preserves the usage-specific issue but hides the original blocker chain.
             issues.Clear();
             issues.Add(Block(usageIssue, reason));
         }
