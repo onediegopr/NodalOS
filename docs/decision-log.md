@@ -8,3 +8,13 @@
 - Recommendation: `READ_ONLY_CROSS_PHASE_CLOSEOUT_INDEX`.
 - Reason: Phase C, Phase D and Phase E have closed as read-only/no-runtime tracks; a global index should preserve traceability before any UI polish or design-only execution planning.
 - Non-goals: no execution, mutation, runtime, physical export, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
+
+## READ_ONLY_CROSS_PHASE_CLOSEOUT_INDEX
+
+- Decision target: `GO_READ_ONLY_CROSS_PHASE_CLOSEOUT_INDEX_READY`
+- Status: accepted as documentation-only cross-phase index if validation passes.
+- Input: post-Phase-E roadmap decision at `2b91f5e623c3280568039a750a2ebedeef2292aa`.
+- Scope: consolidate Phase A/B/C/D/E milestones, commits, artifacts, capability status, no-side-effect proof, protected scope proof and open debt.
+- Recommendation after index: `MIGRATION_READ_ONLY_FINAL_AUDIT_PACK`, or `PAUSE_NODAL_OS_AND_RETURN_TO_OTHER_PROJECT` if project focus changes.
+- Reason: Phase C, Phase D and Phase E are closed as read-only/no-runtime tracks; the index preserves traceability before any later audit pack, UI polish or protected design-only planning.
+- Non-goals: no execution, mutation, runtime, physical export, clipboard, download, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
