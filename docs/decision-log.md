@@ -28,3 +28,14 @@
 - Scope: final internal migration/read-only audit pack with phase status, migration boundary, exclusions, capability matrix, audit evidence map, validation plan, pause-ready handoff and next prompt options.
 - Recommendation after pack: `MIGRATION_READ_ONLY_FINAL_EXTERNAL_AUDIT` if continuing NODAL OS, or `PAUSE_NODAL_OS_AND_RETURN_TO_NODRIX` if switching project line.
 - Non-goals: no execution, mutation, runtime, physical export, clipboard, download, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
+
+## PAUSE_NODAL_OS_AND_RETURN_TO_NODRIX
+
+- Decision target: `GO_PAUSE_NODAL_OS_AND_RETURN_TO_NODRIX_READY`
+- Status: accepted as docs-only pause handoff if validation passes.
+- Input: migration/read-only final audit pack at `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- External audit: `CLAUDE_MIGRATION_READ_ONLY_FINAL_AUDIT_GO` on HEAD `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Pause status: `PAUSED_SAFE_READ_ONLY_NO_RUNTIME`.
+- Scope: final NODAL OS pause handoff, QA report and NODRIX return prompt.
+- Next project recommendation: return to NODRIX from its own repo/branch/roadmap without mixing NODAL OS state.
+- Non-goals: no execution, mutation, runtime, physical export, clipboard, download, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
