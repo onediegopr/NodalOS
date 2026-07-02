@@ -122,3 +122,12 @@
 - Scope: deterministic read-only physical export policy fixture, future-only format previews, redaction/consent/destination/evidence/audit/retention-deletion requirements, blocked reasons, anti-capability proof, Safety and Recipes tests, ADR, QA and handoff.
 - Non-goals: no physical export, file read/write, clipboard/download, stream writer, PDF/DOCX generation, JSON/Markdown physical output, redaction runtime, durable audit trail real, approval execution, approval mutation, runtime/live, writer/policy productive integration, service registration, command handlers, product actions, DB/migration, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_PHYSICAL_EXPORT_POLICY_EXTERNAL_AUDIT`, audit-only/read-only.
+
+## NODAL_OS_FINAL_CONTROLLED_EXECUTION_AND_EXPORT_DESIGN_CLOSEOUT
+
+- Decision target: `GO_NODAL_OS_FINAL_CONTROLLED_EXECUTION_AND_EXPORT_DESIGN_CLOSEOUT_READY`
+- Status: accepted as final controlled execution and physical export design closeout if validation passes.
+- Input: physical export policy external audit at `124790b69207b39450656282e67059ca6f95df58`.
+- Scope: documentation-first final pause anchor, track inventory, consolidated readiness percentages, safety proof, no-side-effect proof, protected future debt and safe resume prompt.
+- Non-goals: no approval execution, approval mutation, controlled execution real, runtime/live, writer/policy productive integration, service registration, command handler, product action, filesystem IO, file read/write/hash, DB, migration runner, repository/store real, mutation store real, durable audit trail real, append-only ledger real, physical export, PDF/DOCX generation, JSON/Markdown physical output, clipboard/download, redaction runtime, retention/deletion workflow, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
+- Next safe option: `PAUSE_AGAIN_NO_CHANGES`.
