@@ -104,3 +104,12 @@
 - Scope: explicit negative flags and assertions for policy preview writes, writer candidate execution, approval policy bypass, service registration and command handler registration.
 - Non-goals: no productive writer/policy integration, approval execution, approval mutation, runtime/live, command handler, service registration, product action, filesystem product IO, DB, provider/cloud, LLM, durable memory, browser/CDP, WCU/OCR, recipe execution, physical export or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_CONTROLLED_EXECUTION_DESIGN_CLOSEOUT_AND_PAUSE`.
+
+## NODAL_OS_CONTROLLED_EXECUTION_DESIGN_CLOSEOUT_AND_PAUSE
+
+- Decision target: `GO_NODAL_OS_CONTROLLED_EXECUTION_DESIGN_CLOSEOUT_AND_PAUSE_READY`
+- Status: accepted as controlled execution design closeout and pause anchor if validation passes.
+- Input: writer/policy boundary micro-hardening at `f3c63d3aae23a91882477dc374a2ab8ac6fc80db`.
+- Scope: documentation-first closeout handoff, QA report, consolidated readiness percentages, safety proof, protected future debt and safe resume prompt.
+- Non-goals: no approval execution, approval mutation, controlled execution real, runtime/live, writer/policy productive integration, command handler, service registration, product action, filesystem IO, file read/write/hash, DB, migration runner, repository/store real, durable audit trail real, append-only ledger real, physical export, clipboard/download, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_RESUME_FROM_CONTROLLED_EXECUTION_DESIGN_PAUSE`.
