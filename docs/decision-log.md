@@ -113,3 +113,12 @@
 - Scope: documentation-first closeout handoff, QA report, consolidated readiness percentages, safety proof, protected future debt and safe resume prompt.
 - Non-goals: no approval execution, approval mutation, controlled execution real, runtime/live, writer/policy productive integration, command handler, service registration, product action, filesystem IO, file read/write/hash, DB, migration runner, repository/store real, durable audit trail real, append-only ledger real, physical export, clipboard/download, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_RESUME_FROM_CONTROLLED_EXECUTION_DESIGN_PAUSE`.
+
+## NODAL_OS_PHYSICAL_EXPORT_POLICY_DEEPENING_DESIGN_ONLY_PROTECTED
+
+- Decision target: `GO_NODAL_OS_PHYSICAL_EXPORT_POLICY_DEEPENING_DESIGN_ONLY_PROTECTED_READY`
+- Status: accepted as protected design-only physical export policy deepening if validation passes.
+- Input: controlled execution design closeout and pause at `31d15146ff22b6c9f9c979884b88a82646b4b975`.
+- Scope: deterministic read-only physical export policy fixture, future-only format previews, redaction/consent/destination/evidence/audit/retention-deletion requirements, blocked reasons, anti-capability proof, Safety and Recipes tests, ADR, QA and handoff.
+- Non-goals: no physical export, file read/write, clipboard/download, stream writer, PDF/DOCX generation, JSON/Markdown physical output, redaction runtime, durable audit trail real, approval execution, approval mutation, runtime/live, writer/policy productive integration, service registration, command handlers, product actions, DB/migration, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_PHYSICAL_EXPORT_POLICY_EXTERNAL_AUDIT`, audit-only/read-only.
