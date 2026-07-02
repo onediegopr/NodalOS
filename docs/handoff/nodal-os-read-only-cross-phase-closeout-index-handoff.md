@@ -30,7 +30,7 @@ The index is documentation-only and does not open any real capability.
 - Phase D Context/Workspace/Memory: 85-92%.
 - Phase E Approval/Human Review: 75-85%.
 - Cross-phase read-only closeout indexing: 100%.
-- NODAL OS read-only/no-runtime roadmap readiness: 99%.
+- NODAL OS read-only/no-runtime roadmap readiness: 99-100%.
 - Runtime/live readiness: 0%.
 - Release/commercial readiness: NO-GO.
 

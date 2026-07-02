@@ -34,6 +34,8 @@
 - Decision target: `GO_PAUSE_NODAL_OS_AND_RETURN_TO_NODRIX_READY`
 - Status: accepted as docs-only pause handoff if validation passes.
 - Input: migration/read-only final audit pack at `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Final pause/resume HEAD: `16cb752a3bda4e3e71090d7299f68a0d6e0462cb`.
+- Cross-phase source-index commit: `14e0084a50539c330d1bce58e395db3bc1feed67`.
 - External audit: `CLAUDE_MIGRATION_READ_ONLY_FINAL_AUDIT_GO` on HEAD `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
 - Pause status: `PAUSED_SAFE_READ_ONLY_NO_RUNTIME`.
 - Scope: final NODAL OS pause handoff, QA report and NODRIX return prompt.

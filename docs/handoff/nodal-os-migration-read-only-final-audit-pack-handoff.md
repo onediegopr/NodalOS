@@ -11,7 +11,9 @@ The pack is documentation-only. It is intended to support external audit, projec
 ## Source Of Truth
 
 - Cross-phase index: `docs/roadmap/read-only-cross-phase-closeout-index.md`.
-- Source commit: `14e0084a50539c330d1bce58e395db3bc1feed67`.
+- Cross-phase source-index commit: `14e0084a50539c330d1bce58e395db3bc1feed67`.
+- Migration/read-only final audit pack HEAD: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Final pause/resume HEAD after pause handoff: `16cb752a3bda4e3e71090d7299f68a0d6e0462cb`.
 - Source decision: `GO_READ_ONLY_CROSS_PHASE_CLOSEOUT_INDEX_READY`.
 
 ## Current Phase Status
@@ -73,6 +75,7 @@ Disabled or future protected:
 To pause NODAL OS:
 
 - keep this handoff plus `docs/roadmap/migration-read-only-final-audit-pack.md` as the resume anchor;
+- use `16cb752a3bda4e3e71090d7299f68a0d6e0462cb` as the final pause/resume HEAD after the pause handoff;
 - do not start execution or mutation work during pause;
 - resume with branch, HEAD, worktree and origin sync preflight;
 - run required docs/read-only validations before any new hito.

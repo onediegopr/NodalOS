@@ -12,13 +12,14 @@ This handoff closes the current NODAL OS work line and prepares return to NODRIX
 
 ## Pause Anchor
 
-- Final pause HEAD: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Final pause/resume HEAD: `16cb752a3bda4e3e71090d7299f68a0d6e0462cb`.
 - Branch: `chrome-lab-001-extension-local-ai-bridge`.
 - Expected worktree: clean.
 - Expected origin sync: `0 0`.
 - Last internal decision: `GO_MIGRATION_READ_ONLY_FINAL_AUDIT_PACK_READY`.
-- Last internal commit: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
-- Last internal commit message: `docs(roadmap): add migration read-only final audit pack`.
+- Migration/read-only final audit pack HEAD: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Migration/read-only final audit pack commit message: `docs(roadmap): add migration read-only final audit pack`.
+- Cross-phase source-index commit: `14e0084a50539c330d1bce58e395db3bc1feed67`.
 - External audit decision: `CLAUDE_MIGRATION_READ_ONLY_FINAL_AUDIT_GO`.
 - External audited HEAD: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
 
@@ -37,6 +38,8 @@ Claude confirmed:
 - no forbidden capability was claimed as enabled;
 - no P0/P1 findings;
 - safe to pause at this HEAD.
+
+The final pause handoff commit `16cb752a3bda4e3e71090d7299f68a0d6e0462cb` is the resume anchor for future NODAL OS work. The externally audited migration/read-only audit pack remains `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`; this distinction does not change runtime/live, approval execution, state mutation or release readiness.
 
 ## Current Readiness
 
@@ -84,6 +87,13 @@ git rev-list --left-right --count HEAD...'@{u}'
 
 5. Do not open runtime/live without a protected design-only hito first.
 
+## Final Pause Polish Closed Items
+
+- P2/P3 anchor clarification: `16cb752a3bda4e3e71090d7299f68a0d6e0462cb` is the final pause/resume HEAD.
+- P3 source labeling: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5` is the externally audited migration/read-only final audit pack HEAD, and `14e0084a50539c330d1bce58e395db3bc1feed67` is the cross-phase source-index commit.
+- P3 readiness wording: NODAL OS read-only/no-runtime roadmap readiness is normalized to `99-100%`.
+- P2 BrowserRuntime smoke qualification: `BrowserRuntimeSmokeIdempotencyGateReportsDuplicateReplay` is a known non-deterministic BrowserRuntime smoke flake requiring retry when it appears; it is not runtime/live readiness.
+
 ## Remaining Non-Blocking Debt
 
 ### P2
@@ -96,12 +106,9 @@ git rev-list --left-right --count HEAD...'@{u}'
 - Semantic/vector policy.
 - Durable memory.
 - Release/commercial audit.
-- Qualify upstream full Safety PASS due BrowserRuntime smoke flake.
 
 ### P3
 
-- Add `1b0c797d` as explicit resume anchor and relabel `14e0084a` as source-index commit in any future consolidated index refresh.
-- Normalize `99%` vs `99-100%` roadmap readiness wording.
 - Legacy Phase A/B artifact naming is less normalized than newer phases.
 - Visual QA/polish.
 - Wording cleanup.
@@ -152,7 +159,7 @@ Preparar un handoff de retorno a NODRIX usando el estado mas reciente del proyec
 
 No mezclar con NODAL OS.
 
-NODAL OS queda pausado en HEAD 1b0c797d6f8059bb40a2ccf6fd10555116a17ad5, branch chrome-lab-001-extension-local-ai-bridge, con CLAUDE_MIGRATION_READ_ONLY_FINAL_AUDIT_GO.
+NODAL OS queda pausado en HEAD 16cb752a3bda4e3e71090d7299f68a0d6e0462cb, branch chrome-lab-001-extension-local-ai-bridge. El audit pack externo aprobado por CLAUDE_MIGRATION_READ_ONLY_FINAL_AUDIT_GO permanece anclado en 1b0c797d6f8059bb40a2ccf6fd10555116a17ad5.
 
 Retomar NODRIX desde su repo/branch correspondiente:
 - verificar branch actual;

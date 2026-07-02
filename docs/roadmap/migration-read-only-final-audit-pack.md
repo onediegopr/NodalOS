@@ -25,7 +25,7 @@ Primary source:
 
 - `docs/roadmap/read-only-cross-phase-closeout-index.md`
 
-Source commit:
+Cross-phase source-index commit:
 
 - `14e0084a50539c330d1bce58e395db3bc1feed67`
 
@@ -182,8 +182,12 @@ Additional external gates:
 Pause/resume anchor:
 
 - Branch: `chrome-lab-001-extension-local-ai-bridge`.
-- Source HEAD for this pack: `14e0084a50539c330d1bce58e395db3bc1feed67`.
+- Final pause/resume HEAD: `16cb752a3bda4e3e71090d7299f68a0d6e0462cb`.
+- Migration/read-only final audit pack HEAD: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Cross-phase source-index commit: `14e0084a50539c330d1bce58e395db3bc1feed67`.
 - Expected final hito after this pack: `GO_MIGRATION_READ_ONLY_FINAL_AUDIT_PACK_READY`.
+
+Full Safety suite qualification: clean runs can pass, but `BrowserRuntimeSmokeIdempotencyGateReportsDuplicateReplay` is a known non-deterministic BrowserRuntime smoke flake requiring retry when it appears. This does not change runtime/live readiness, which remains 0%.
 
 Resume safely by checking:
 

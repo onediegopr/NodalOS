@@ -11,7 +11,9 @@ It is docs-only. It does not add features, runtime/live behavior, approval execu
 ## Inputs
 
 - Previous internal decision: `GO_MIGRATION_READ_ONLY_FINAL_AUDIT_PACK_READY`.
-- Previous internal commit: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Migration/read-only final audit pack HEAD: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
+- Final pause/resume HEAD: `16cb752a3bda4e3e71090d7299f68a0d6e0462cb`.
+- Cross-phase source-index commit: `14e0084a50539c330d1bce58e395db3bc1feed67`.
 - External audit decision: `CLAUDE_MIGRATION_READ_ONLY_FINAL_AUDIT_GO`.
 - External audited HEAD: `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5`.
 - External audit result: no P0/P1, overclaim scan zero hits, safe to pause at this HEAD.
@@ -35,10 +37,19 @@ Expected final state:
 
 - worktree clean;
 - origin sync `0 0`;
+- final pause/resume HEAD `16cb752a3bda4e3e71090d7299f68a0d6e0462cb`;
 - runtime/live readiness 0%;
 - approval execution readiness 0%;
 - approval state mutation readiness 0%;
 - release/commercial readiness NO-GO.
+
+## Anchor Clarification
+
+- `16cb752a3bda4e3e71090d7299f68a0d6e0462cb` is the final pause/resume HEAD.
+- `1b0c797d6f8059bb40a2ccf6fd10555116a17ad5` is the externally audited migration/read-only final audit pack HEAD.
+- `14e0084a50539c330d1bce58e395db3bc1feed67` is the cross-phase source-index commit.
+- NODAL OS read-only/no-runtime roadmap readiness is normalized to `99-100%`.
+- Full Safety suite qualification: clean runs can pass, but `BrowserRuntimeSmokeIdempotencyGateReportsDuplicateReplay` is a known non-deterministic BrowserRuntime smoke flake requiring retry when it appears. It is unrelated to read-only Phase C/D/E capabilities and is not runtime/live readiness.
 
 ## Validation Matrix
 
@@ -53,6 +64,8 @@ Executed validations:
 - `git diff --check` - PASS. Git reported a line-ending normalization warning for `docs/decision-log.md`; no whitespace errors.
 - `git diff --cached --check` - PASS.
 - Changed-doc overclaim scan - PASS, no hits for forbidden readiness/capability wording.
+
+Anchor polish after resume confirmed the final pause commit as `16cb752a3bda4e3e71090d7299f68a0d6e0462cb`; the validation line above records the original pause-handoff build point and is retained as historical QA context.
 
 Optional validations:
 

@@ -14,7 +14,7 @@ Canonical status:
 - Phase D Context/Workspace/Memory: 85-92%, closed read-only/no-runtime/no-durable-memory.
 - Phase E Approval/Human Review: 75-85%, formally closed as `CLOSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION`.
 - Cross-phase read-only closeout indexing: 100%.
-- NODAL OS read-only/no-runtime roadmap readiness: 99%.
+- NODAL OS read-only/no-runtime roadmap readiness: 99-100%.
 - Runtime/live readiness: 0%.
 - Release/commercial readiness: NO-GO.
 
