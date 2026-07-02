@@ -50,3 +50,12 @@
 - Scope: improve Approval Packet and Human Review Packet preview wording, grouping, disabled notices, label-only decision copy and no-side-effect handoff wording.
 - Non-goals: no execution, mutation, runtime, physical export, clipboard, download, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
 - Next safe options: protected design-only approval execution planning, or pause again after the visible polish.
+
+## NODAL_OS_APPROVAL_EXECUTION_DESIGN_ONLY_PROTECTED
+
+- Decision target: `GO_NODAL_OS_APPROVAL_EXECUTION_DESIGN_ONLY_PROTECTED_READY`
+- Status: accepted as protected design-only Approval Execution modeling if validation passes.
+- Input: visible Approval/Human Review polish at `e2fff29b5068ecb6c335e3e33e5667eac0b62469`.
+- Scope: deterministic read-only execution design spec, readiness model, blocked gates, preview-only approval action labels, anti-capability proof and tests.
+- Non-goals: no execution, mutation, runtime, physical export, clipboard, download, filesystem product IO, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions, service registration or release/commercial readiness claim.
+- Next safe options: external audit of the design-only contract, or pause again.

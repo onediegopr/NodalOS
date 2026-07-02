@@ -754,6 +754,96 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
         Assert.IsFalse(text.Contains("provider call enabled", StringComparison.OrdinalIgnoreCase));
     }
 
+    [TestMethod]
+    public void ApprovalExecutionDesignOnlyProtectedSpec_IsDeterministicPreviewOnlyAndBlocked()
+    {
+        var first = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+        var second = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+
+        Assert.AreEqual("nodal-os.approval.execution.design-only.protected.fixture.v1", first.SpecId);
+        Assert.AreEqual(ApprovalExecutionDesignStatus.DesignOnly, first.Status);
+        Assert.AreEqual(first.SpecId, second.SpecId);
+        Assert.AreEqual(first.Mode, second.Mode);
+        CollectionAssert.AreEqual(first.Gates.Select(gate => gate.GateId).ToArray(), second.Gates.Select(gate => gate.GateId).ToArray());
+        CollectionAssert.AreEqual(first.Previews.Select(preview => preview.PreviewId).ToArray(), second.Previews.Select(preview => preview.PreviewId).ToArray());
+        Assert.IsTrue(first.ReadOnly);
+        Assert.IsTrue(first.DesignOnly);
+        Assert.IsTrue(first.PreviewOnly);
+        Assert.IsTrue(first.AntiCapabilityProof.Passes);
+        Assert.AreEqual(0, first.Readiness.ApprovalExecutionReadinessPercent);
+        Assert.AreEqual(0, first.Readiness.ApprovalStateMutationReadinessPercent);
+        Assert.AreEqual(0, first.Readiness.RuntimeLiveReadinessPercent);
+        Assert.AreEqual(0, first.Readiness.PhysicalExportReadinessPercent);
+        Assert.IsFalse(first.Readiness.ProductiveWriterPolicyPathAvailable);
+        Assert.IsFalse(first.Readiness.CommandHandlerAvailable);
+        Assert.IsFalse(first.Readiness.ProductServiceRegistered);
+        Assert.IsFalse(first.Readiness.ReleaseCommercialReady);
+        Assert.AreEqual(12, first.Gates.Count);
+        Assert.AreEqual(5, first.Previews.Count);
+        Assert.AreEqual(12, first.Previews.Single(preview => preview.DecisionOption == ApprovalDecisionOptionKind.ApprovePreviewOnly).RequiredGateIds.Count);
+        Assert.IsTrue(first.Gates.All(gate => gate.Status == ApprovalExecutionDesignStatus.Blocked));
+        Assert.IsTrue(first.Previews.All(preview => preview.Status == ApprovalExecutionDesignStatus.PreviewOnly));
+    }
+
+    [TestMethod]
+    public void ApprovalExecutionDesignOnlyProtectedSpec_ModelsFutureRequirementsWithoutEnablingCapabilities()
+    {
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            spec.Mode,
+            string.Join("\n", spec.AntiCapabilities),
+            string.Join("\n", spec.FutureProtectedRequirements),
+            string.Join("\n", spec.Warnings),
+            string.Join("\n", spec.Blockers),
+            string.Join("\n", spec.Previews.Select(preview => $"{preview.Label} {string.Join(" ", preview.BlockedReasons)}")));
+
+        StringAssert.Contains(text, "DESIGN_ONLY_READ_ONLY_PREVIEW_NO_EXECUTION_NO_MUTATION_NO_RUNTIME");
+        StringAssert.Contains(text, "No real approval execution.");
+        StringAssert.Contains(text, "No approval state mutation.");
+        StringAssert.Contains(text, "No runtime/live.");
+        StringAssert.Contains(text, "No physical export.");
+        StringAssert.Contains(text, "No provider/cloud/network.");
+        StringAssert.Contains(text, "No LLM live.");
+        StringAssert.Contains(text, "No product service registration.");
+        StringAssert.Contains(text, "future protected design");
+        Assert.IsFalse(spec.HasRealExecution);
+        Assert.IsFalse(spec.HasStateMutation);
+        Assert.IsFalse(spec.HasRuntimeLive);
+        Assert.IsFalse(spec.HasPhysicalExport);
+        Assert.IsFalse(spec.HasProductActions);
+        Assert.IsTrue(spec.Previews.All(preview => !preview.ExecutesApproval));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.MutatesState));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.ExposesProductAction));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.StartsRuntime));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.CreatesPhysicalExport));
+    }
+
+    [TestMethod]
+    public void ApprovalExecutionDesignOnlyProtectedSpec_HasNoExecutionMutationRuntimeOrReleaseOverclaim()
+    {
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            spec.Title,
+            spec.Mode,
+            string.Join("\n", spec.AntiCapabilities),
+            string.Join("\n", spec.FutureProtectedRequirements),
+            string.Join("\n", spec.Warnings),
+            string.Join("\n", spec.Blockers),
+            string.Join("\n", spec.Previews.Select(preview => $"{preview.Label} {preview.Status}")));
+
+        Assert.IsFalse(text.Contains("production" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("release" + "-ready", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("approval executed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("state mutation completed", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("physical export enabled", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("runtime enabled", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("provider enabled", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("LLM live enabled", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(text.Contains("durable memory active", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static void AssertRiskDecision(
         IReadOnlyList<ApprovalRiskDecisionReadOnlyResult> results,
         string fixtureId,

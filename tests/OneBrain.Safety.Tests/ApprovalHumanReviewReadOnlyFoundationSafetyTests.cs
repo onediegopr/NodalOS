@@ -13,6 +13,7 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     private const string EvidenceContextLinkGuardPath = "src/OneBrain.Core/Approval/HumanReviewEvidenceContextLinkReadOnlyGuard.cs";
     private const string ApprovalPacketSurfacePath = "src/OneBrain.Core/Approval/ApprovalPacketReadOnlySurface.cs";
     private const string HumanReviewPacketExportPreviewPath = "src/OneBrain.Core/Approval/HumanReviewPacketExportReadOnlyPreview.cs";
+    private const string ApprovalExecutionDesignOnlyProtectedPath = "src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs";
 
     [TestMethod]
     public void FoundationSource_HasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
@@ -274,6 +275,45 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     }
 
     [TestMethod]
+    public void ApprovalExecutionDesignOnlyProtectedProof_DisablesExecutionMutationRuntimeExportAndServiceRegistration()
+    {
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+        var proof = spec.AntiCapabilityProof;
+
+        Assert.IsTrue(proof.Passes);
+        Assert.IsTrue(spec.ReadOnly);
+        Assert.IsTrue(spec.DesignOnly);
+        Assert.IsTrue(spec.PreviewOnly);
+        Assert.AreEqual(0, spec.Readiness.ApprovalExecutionReadinessPercent);
+        Assert.AreEqual(0, spec.Readiness.ApprovalStateMutationReadinessPercent);
+        Assert.AreEqual(0, spec.Readiness.RuntimeLiveReadinessPercent);
+        Assert.AreEqual(0, spec.Readiness.PhysicalExportReadinessPercent);
+        Assert.IsTrue(spec.Readiness.BlocksRealExecution);
+        Assert.IsFalse(spec.HasRealExecution);
+        Assert.IsFalse(spec.HasStateMutation);
+        Assert.IsFalse(spec.HasRuntimeLive);
+        Assert.IsFalse(spec.HasPhysicalExport);
+        Assert.IsFalse(spec.HasProductActions);
+        Assert.IsTrue(spec.Gates.All(gate => gate.Status == ApprovalExecutionDesignStatus.Blocked));
+        Assert.IsTrue(spec.Gates.All(gate => !gate.AllowsRealExecution));
+        Assert.IsTrue(spec.Gates.All(gate => !gate.AllowsStateMutation));
+        Assert.IsTrue(spec.Gates.All(gate => !gate.AllowsRuntimeLive));
+        Assert.IsTrue(spec.Gates.All(gate => !gate.AllowsPhysicalExport));
+        Assert.IsTrue(spec.Gates.All(gate => !gate.AllowsProductAction));
+        Assert.IsTrue(spec.Previews.All(preview => preview.PreviewOnly));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.ExecutesApproval));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.MutatesState));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.ExposesProductAction));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.StartsRuntime));
+        Assert.IsTrue(spec.Previews.All(preview => !preview.CreatesPhysicalExport));
+        Assert.IsFalse(proof.NoSideEffectProof.ApprovalExecutionStarted);
+        Assert.IsFalse(proof.NoSideEffectProof.ApprovalStateMutationAttempted);
+        Assert.IsFalse(proof.NoSideEffectProof.RuntimeTouched);
+        Assert.IsFalse(proof.NoSideEffectProof.ProductActionExposed);
+        Assert.IsFalse(proof.NoSideEffectProof.ProductServiceRegistered);
+    }
+
+    [TestMethod]
     public void ReadOnlyPresenterAndRiskDecisionGuard_DoNotCreateApprovalArtifactFiles()
     {
         var root = FindRepoRoot();
@@ -424,7 +464,8 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
         RiskDecisionGuardPath,
         EvidenceContextLinkGuardPath,
         ApprovalPacketSurfacePath,
-        HumanReviewPacketExportPreviewPath
+        HumanReviewPacketExportPreviewPath,
+        ApprovalExecutionDesignOnlyProtectedPath
     ];
 
     private static string ReadRepoText(string relativePath)
