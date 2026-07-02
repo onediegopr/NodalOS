@@ -85,12 +85,20 @@ public sealed class ControlledExecutionReadinessDesignTrackTests
         StringAssert.Contains(text, "Approval preview -> Human review -> Policy gate -> Writer candidate -> Execution future");
         StringAssert.Contains(text, "Approval never equals execution.");
         StringAssert.Contains(text, "Approval never skips policy.");
+        StringAssert.Contains(text, "Policy preview cannot dispatch commands or write state.");
+        StringAssert.Contains(text, "Writer candidate cannot register services or bind command handlers.");
+        StringAssert.Contains(text, "Approval cannot bypass policy or runtime gates.");
         StringAssert.Contains(text, "approval laundering");
         StringAssert.Contains(text, "stale approval");
         StringAssert.Contains(text, "policy mismatch");
         Assert.IsFalse(boundary.ApprovalImpliesExecution);
+        Assert.IsFalse(boundary.PolicyPreviewCanWrite);
+        Assert.IsFalse(boundary.WriterCandidateCanRun);
+        Assert.IsFalse(boundary.ApprovalCanBypassPolicy);
         Assert.IsFalse(boundary.ProductivePolicyPathAvailable);
         Assert.IsFalse(boundary.WriterInvoked);
+        Assert.IsFalse(boundary.ServiceRegistered);
+        Assert.IsFalse(boundary.CommandHandlerRegistered);
         Assert.IsTrue(boundary.ExecutionBlocked);
     }
 

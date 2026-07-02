@@ -140,6 +140,11 @@ public sealed record ApprovalWriterPolicyIntegrationBoundaryDesignOnly(
     bool ApprovalImpliesExecution,
     bool ProductivePolicyPathAvailable,
     bool WriterInvoked,
+    bool PolicyPreviewCanWrite,
+    bool WriterCandidateCanRun,
+    bool ApprovalCanBypassPolicy,
+    bool ServiceRegistered,
+    bool CommandHandlerRegistered,
     bool ExecutionBlocked);
 
 public sealed record ApprovalDurableAuditTrailDesignOnly(
@@ -419,7 +424,10 @@ public static class ControlledExecutionReadinessDesignTrackPresenter
                 "Approval never skips policy.",
                 "Policy preview never writes.",
                 "Writer candidate never runs without approval, policy and runtime gates.",
-                "Writer real path is not connected in this track."
+                "Writer real path is not connected in this track.",
+                "Policy preview cannot dispatch commands or write state.",
+                "Writer candidate cannot register services or bind command handlers.",
+                "Approval cannot bypass policy or runtime gates."
             ],
             Risks:
             [
@@ -435,6 +443,11 @@ public static class ControlledExecutionReadinessDesignTrackPresenter
             ApprovalImpliesExecution: false,
             ProductivePolicyPathAvailable: false,
             WriterInvoked: false,
+            PolicyPreviewCanWrite: false,
+            WriterCandidateCanRun: false,
+            ApprovalCanBypassPolicy: false,
+            ServiceRegistered: false,
+            CommandHandlerRegistered: false,
             ExecutionBlocked: true);
 
     private static ApprovalDurableAuditTrailDesignOnly DurableAuditTrail() =>

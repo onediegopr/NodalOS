@@ -95,3 +95,12 @@
 - Scope: deterministic read-only durable audit trail design fixture, audit event previews, event field requirements, redaction/retention/deletion requirements, hash-chain and replay protection future design, external audit requirements, anti-capability proof, tests, ADR, QA and handoff.
 - Non-goals: no durable audit trail real, append-only ledger real, audit repository, DB, migration runner, filesystem product IO, file read/hash real, event persistence, approval mutation, approval execution, mutation store real, runtime/live, productive writer/policy integration, command handler, service registration, product action, physical export, provider/cloud, LLM, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_DURABLE_APPROVAL_AUDIT_TRAIL_DESIGN_EXTERNAL_AUDIT`, audit-only/read-only.
+
+## NODAL_OS_WRITER_POLICY_BOUNDARY_MICRO_HARDENING_DESIGN_ONLY
+
+- Decision target: `GO_NODAL_OS_WRITER_POLICY_BOUNDARY_MICRO_HARDENING_DESIGN_ONLY_READY`
+- Status: accepted as protected design-only writer/policy boundary hardening if validation passes.
+- Input: durable approval audit trail design external audit at `64a49d6584d2b82bd6f2a909496a3a14af0f49c0`.
+- Scope: explicit negative flags and assertions for policy preview writes, writer candidate execution, approval policy bypass, service registration and command handler registration.
+- Non-goals: no productive writer/policy integration, approval execution, approval mutation, runtime/live, command handler, service registration, product action, filesystem product IO, DB, provider/cloud, LLM, durable memory, browser/CDP, WCU/OCR, recipe execution, physical export or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_CONTROLLED_EXECUTION_DESIGN_CLOSEOUT_AND_PAUSE`.

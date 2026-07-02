@@ -87,6 +87,11 @@ public sealed class ControlledExecutionReadinessDesignTrackSafetyTests
         Assert.IsFalse(track.WriterPolicyBoundary.ApprovalImpliesExecution);
         Assert.IsFalse(track.WriterPolicyBoundary.ProductivePolicyPathAvailable);
         Assert.IsFalse(track.WriterPolicyBoundary.WriterInvoked);
+        Assert.IsFalse(track.WriterPolicyBoundary.PolicyPreviewCanWrite);
+        Assert.IsFalse(track.WriterPolicyBoundary.WriterCandidateCanRun);
+        Assert.IsFalse(track.WriterPolicyBoundary.ApprovalCanBypassPolicy);
+        Assert.IsFalse(track.WriterPolicyBoundary.ServiceRegistered);
+        Assert.IsFalse(track.WriterPolicyBoundary.CommandHandlerRegistered);
         Assert.IsTrue(track.WriterPolicyBoundary.ExecutionBlocked);
         Assert.IsFalse(track.DurableAuditTrail.DurableTrailImplemented);
         Assert.IsFalse(track.DurableAuditTrail.DatabaseUsed);
