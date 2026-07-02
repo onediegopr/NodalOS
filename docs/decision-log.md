@@ -68,3 +68,12 @@
 - Scope: documentation-only pause anchor, QA report, percentages, safety proof and next macro-track recommendation.
 - Non-goals: no execution, mutation, runtime, physical export, clipboard, download, filesystem product IO, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions, service registration or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_CONTROLLED_EXECUTION_READINESS_DESIGN_TRACK`, design-only/protected.
+
+## NODAL_OS_CONTROLLED_EXECUTION_READINESS_DESIGN_TRACK
+
+- Decision target: `GO_NODAL_OS_CONTROLLED_EXECUTION_READINESS_DESIGN_TRACK_READY`
+- Status: accepted as protected design-only macro-track if validation passes.
+- Input: pause anchor after Approval Execution design audit at `531a3bc35857fc7ae68d013cb32bd46b6f0a89b9`.
+- Scope: controlled execution readiness design fixture, state machine design, mutation boundary design, writer/policy boundary design, durable audit trail design, physical export policy design, disabled product control design, cross-phase runtime gate, negative capability contracts, tests, ADR, QA and handoff.
+- Non-goals: no execution, mutation, runtime, physical export, clipboard, download, filesystem product IO, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions, service registration or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_CONTROLLED_EXECUTION_READINESS_DESIGN_EXTERNAL_AUDIT`, audit-only/read-only.
