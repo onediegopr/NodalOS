@@ -77,3 +77,12 @@
 - Scope: controlled execution readiness design fixture, state machine design, mutation boundary design, writer/policy boundary design, durable audit trail design, physical export policy design, disabled product control design, cross-phase runtime gate, negative capability contracts, tests, ADR, QA and handoff.
 - Non-goals: no execution, mutation, runtime, physical export, clipboard, download, filesystem product IO, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions, service registration or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_CONTROLLED_EXECUTION_READINESS_DESIGN_EXTERNAL_AUDIT`, audit-only/read-only.
+
+## NODAL_OS_APPROVAL_MUTATION_STORE_DESIGN_ONLY_PROTECTED
+
+- Decision target: `GO_NODAL_OS_APPROVAL_MUTATION_STORE_DESIGN_ONLY_PROTECTED_READY`
+- Status: accepted as protected design-only Approval Mutation Store specification if validation passes.
+- Input: controlled execution readiness design track at `a083b810561ce0d77d446363c39141e624252fbf`.
+- Scope: deterministic read-only mutation store design fixture, mutation attempt previews, mutation record previews, actor/identity boundary, stale/invalidation/superseding model, replay/concurrency/idempotency model, evidence/audit requirements, anti-capability proof, tests, ADR, QA and handoff.
+- Non-goals: no approval mutation, approval execution, real store, repository, DB, migration runner, filesystem product IO, durable audit trail implementation, productive writer/policy integration, command handler, service registration, product action, runtime/live, physical export, provider/cloud, LLM, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_APPROVAL_MUTATION_STORE_DESIGN_EXTERNAL_AUDIT`, audit-only/read-only.
