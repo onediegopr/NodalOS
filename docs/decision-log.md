@@ -59,3 +59,12 @@
 - Scope: deterministic read-only execution design spec, readiness model, blocked gates, preview-only approval action labels, anti-capability proof and tests.
 - Non-goals: no execution, mutation, runtime, physical export, clipboard, download, filesystem product IO, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions, service registration or release/commercial readiness claim.
 - Next safe options: external audit of the design-only contract, or pause again.
+
+## NODAL_OS_PAUSE_AFTER_APPROVAL_EXECUTION_DESIGN_AUDIT
+
+- Decision target: `GO_NODAL_OS_PAUSE_AFTER_APPROVAL_EXECUTION_DESIGN_AUDIT_READY`
+- Status: accepted as pause anchor after Approval Execution design audit if validation passes.
+- Input: protected Approval Execution design audit on `0da5f8777009c1786cd4ce645ac7339f4636ba4e`.
+- Scope: documentation-only pause anchor, QA report, percentages, safety proof and next macro-track recommendation.
+- Non-goals: no execution, mutation, runtime, physical export, clipboard, download, filesystem product IO, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions, service registration or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_CONTROLLED_EXECUTION_READINESS_DESIGN_TRACK`, design-only/protected.
