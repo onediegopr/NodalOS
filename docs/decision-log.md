@@ -140,3 +140,12 @@
 - Scope: deterministic read-only redaction/retention/deletion policy fixture, policy previews, secret/PII scan requirements, retention/deletion/tombstone/legal hold previews, evidence/export/audit linkage requirements, blocked reasons, anti-capability proof, Safety and Recipes tests, ADR, QA and handoff.
 - Non-goals: no redaction runtime, secret/PII scan, retention store/workflow, deletion workflow, tombstone write, legal hold store, filesystem IO, DB, durable audit trail real, physical export, approval execution/mutation, runtime/live, writer/policy productive integration, service registration, command handlers, product actions, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_REDACTION_RETENTION_DELETION_EXTERNAL_AUDIT`, audit-only/read-only.
+
+## NODAL_OS_FINAL_PRIVACY_EXPORT_CONTROLLED_EXECUTION_CLOSEOUT
+
+- Decision target: `GO_NODAL_OS_FINAL_PRIVACY_EXPORT_CONTROLLED_EXECUTION_CLOSEOUT_READY`
+- Status: accepted as final privacy, export and controlled execution design closeout if validation passes.
+- Input: redaction/retention/deletion external audit at `d5c2c01bcef6a3015c3ef27f37b618d8ef015d4a`.
+- Scope: documentation-first final pause anchor, complete hito and commit inventory, consolidated readiness percentages, safety proof, no-side-effect proof, protected future debt, safe resume prompt and optional Claude global audit prompt.
+- Non-goals: no approval execution, approval mutation, controlled execution real, runtime/live, writer/policy productive integration, service registration, command handler, product action, filesystem IO, file read/write/hash, patch/apply real, DB, migration runner, repository/store real, mutation store real, durable audit trail real, append-only ledger real, physical export, PDF/DOCX generation, JSON/Markdown physical output, clipboard/download, redaction runtime, secret/PII/regex scan, retention store/workflow, deletion workflow, tombstone write, legal hold store, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
+- Next safe option: `PAUSE_AGAIN_NO_CHANGES`.
