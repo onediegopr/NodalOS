@@ -68,7 +68,7 @@ public static class ApprovalPacketReadOnlySurfacePresenter
 
         return new ApprovalPacketReadOnlySurface(
             SurfaceId: "phase-e.approval.packet.surface.read-only.fixture.v1",
-            Title: "Approval Packet Read-Only Surface",
+            Title: "Approval Packet Read-Only Human Review Surface",
             Mode: "READ_ONLY_FIXTURE_SAFE_NO_APPROVAL_EXECUTION_NO_ACTIONS_NO_EXPORT",
             SourceLabel: "ApprovalHumanReviewReadOnlyPresenter.CreateFixture + ApprovalRiskDecisionReadOnlyGuard + HumanReviewEvidenceContextLinkReadOnlyGuard",
             Packet: packet,
@@ -92,25 +92,25 @@ public static class ApprovalPacketReadOnlySurfacePresenter
         IReadOnlyList<HumanReviewEvidenceContextLinkResult> links,
         ApprovalReviewNoSideEffectProof proof) =>
     [
-        Section("approval.packet.executive-summary", "Approval packet executive summary", ApprovalHumanReviewItemStatus.Ready, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet), ContextRefs(packet), packet.Warnings, [], false, proof),
-        Section("human.review.packet.identity", "Human review packet identity", ApprovalHumanReviewItemStatus.Ready, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.Fixture, [], [], [], [], false, proof),
-        Section("candidate.action.previews", "Candidate action previews", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet), ContextRefs(packet), packet.CandidateActions.SelectMany(action => action.Warnings).ToList(), packet.CandidateActions.SelectMany(action => action.Blockers).ToList(), true, proof),
-        Section("candidate.action.risk.summary", "Candidate action risk summary", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet), ContextRefs(packet), packet.RiskSummaries.SelectMany(item => item.Warnings).ToList(), packet.RiskSummaries.SelectMany(item => item.Blockers).ToList(), true, proof),
-        Section("risk.decision.guard.summary", "Risk/decision guard summary", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, RiskRefs(risk), [], risk.SelectMany(result => result.Warnings).ToList(), risk.SelectMany(result => result.Blockers).ToList(), true, proof),
-        Section("evidence.context.link.guard.summary", "Evidence/context link guard summary", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, LinkRefs(links), [], links.SelectMany(result => result.Warnings).ToList(), links.SelectMany(result => result.Blockers).ToList(), true, proof),
-        Section("evidence.links", "Evidence links", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.PhaseCEvidence, EvidenceRefs(packet), [], packet.EvidenceLinks.SelectMany(link => link.Warnings).ToList(), packet.EvidenceLinks.SelectMany(link => link.Blockers).ToList(), true, proof),
-        Section("context.links", "Context links", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.PhaseDContext, [], ContextRefs(packet), packet.ContextLinks.SelectMany(link => link.Warnings).ToList(), packet.ContextLinks.SelectMany(link => link.Blockers).ToList(), true, proof),
+        Section("approval.packet.executive-summary", "Approval packet review summary", ApprovalHumanReviewItemStatus.Ready, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet), ContextRefs(packet), packet.Warnings, [], false, proof),
+        Section("human.review.packet.identity", "Human review packet fixture identity", ApprovalHumanReviewItemStatus.Ready, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.Fixture, [], [], [], [], false, proof),
+        Section("candidate.action.previews", "Candidate action preview labels", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet), ContextRefs(packet), packet.CandidateActions.SelectMany(action => action.Warnings).ToList(), packet.CandidateActions.SelectMany(action => action.Blockers).ToList(), true, proof),
+        Section("candidate.action.risk.summary", "Candidate action risk preview", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet), ContextRefs(packet), packet.RiskSummaries.SelectMany(item => item.Warnings).ToList(), packet.RiskSummaries.SelectMany(item => item.Blockers).ToList(), true, proof),
+        Section("risk.decision.guard.summary", "Risk and decision guard preview", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, RiskRefs(risk), [], risk.SelectMany(result => result.Warnings).ToList(), risk.SelectMany(result => result.Blockers).ToList(), true, proof),
+        Section("evidence.context.link.guard.summary", "Evidence and context link guard preview", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.Fixture, LinkRefs(links), [], links.SelectMany(result => result.Warnings).ToList(), links.SelectMany(result => result.Blockers).ToList(), true, proof),
+        Section("evidence.links", "Evidence links audit preview", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.PhaseCEvidence, EvidenceRefs(packet), [], packet.EvidenceLinks.SelectMany(link => link.Warnings).ToList(), packet.EvidenceLinks.SelectMany(link => link.Blockers).ToList(), true, proof),
+        Section("context.links", "Context links audit preview", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.PhaseDContext, [], ContextRefs(packet), packet.ContextLinks.SelectMany(link => link.Warnings).ToList(), packet.ContextLinks.SelectMany(link => link.Blockers).ToList(), true, proof),
         Section("missing.evidence.blockers", "Missing evidence blockers", ApprovalHumanReviewItemStatus.Blocked, ApprovalHumanReviewSeverity.Blocked, ApprovalHumanReviewSourceKind.PhaseCEvidence, [], ContextRefs(packet).Take(2).ToList(), [], BlockersFor(packet, ApprovalHumanReviewItemKind.MissingEvidenceBlocker).Concat(risk.Where(result => result.HasIssue(ApprovalRiskDecisionReadOnlyIssueKind.MissingEvidence)).SelectMany(result => result.Blockers)).Concat(links.Where(result => result.HasIssue(HumanReviewEvidenceContextLinkIssueKind.MissingEvidenceLink)).SelectMany(result => result.Blockers)).ToList(), true, proof),
         Section("missing.stale.excluded.context.blockers", "Missing/stale/excluded context blockers", ApprovalHumanReviewItemStatus.Blocked, ApprovalHumanReviewSeverity.Blocked, ApprovalHumanReviewSourceKind.PhaseDContext, EvidenceRefs(packet).Take(2).ToList(), ContextRefs(packet), [], ContextBlockers(packet, risk, links), true, proof),
         Section("unresolved.contradiction.blockers", "Unresolved contradiction blockers", ApprovalHumanReviewItemStatus.Blocked, ApprovalHumanReviewSeverity.Blocked, ApprovalHumanReviewSourceKind.PhaseCEvidence, EvidenceRefs(packet), ContextRefs(packet).Take(2).ToList(), [], BlockersFor(packet, ApprovalHumanReviewItemKind.UnresolvedContradictionBlocker).Concat(risk.Where(result => result.HasIssue(ApprovalRiskDecisionReadOnlyIssueKind.UnresolvedContradiction)).SelectMany(result => result.Blockers)).Concat(links.Where(result => result.HasIssue(HumanReviewEvidenceContextLinkIssueKind.UnresolvedContradictionLink)).SelectMany(result => result.Blockers)).ToList(), true, proof),
         Section("critical.risk.blockers", "Critical risk blockers", ApprovalHumanReviewItemStatus.Blocked, ApprovalHumanReviewSeverity.Blocked, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet), ContextRefs(packet), [], BlockersFor(packet, ApprovalHumanReviewItemKind.CriticalRiskBlocker).Concat(risk.Where(result => result.RiskLevel == ApprovalRiskLevel.Critical).SelectMany(result => result.Blockers)).Concat(links.Where(result => result.HasIssue(HumanReviewEvidenceContextLinkIssueKind.CriticalRiskLink)).SelectMany(result => result.Blockers)).ToList(), true, proof),
-        Section("decision.options.preview", "Decision options preview", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet).Take(2).ToList(), ContextRefs(packet).Take(2).ToList(), packet.DecisionOptions.SelectMany(option => option.Warnings).ToList(), packet.DecisionOptions.SelectMany(option => option.Blockers).ToList(), false, proof),
+        Section("decision.options.preview", "Decision option preview labels", ApprovalHumanReviewItemStatus.PreviewOnly, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet).Take(2).ToList(), ContextRefs(packet).Take(2).ToList(), packet.DecisionOptions.SelectMany(option => option.Warnings).Concat(["Decision labels are preview-only and copy-safe for audit review."]).ToList(), packet.DecisionOptions.SelectMany(option => option.Blockers).ToList(), false, proof),
         DecisionSection("approve.preview.label", "Approve preview label", ApprovalDecisionOptionKind.ApprovePreviewOnly, packet, risk, proof),
         DecisionSection("reject.preview.label", "Reject preview label", ApprovalDecisionOptionKind.RejectPreviewOnly, packet, risk, proof),
         DecisionSection("request.evidence.preview.label", "Request evidence preview label", ApprovalDecisionOptionKind.RequestMoreEvidence, packet, risk, proof),
         DecisionSection("request.context.refresh.preview.label", "Request context refresh preview label", ApprovalDecisionOptionKind.RequestContextRefresh, packet, risk, proof),
         DecisionSection("defer.decision.preview.label", "Defer decision preview label", ApprovalDecisionOptionKind.Defer, packet, risk, proof),
-        Section("human.review.requirements", "Human review requirements", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.DocumentedDebt, EvidenceRefs(packet), ContextRefs(packet), HumanReviewRequirements(packet, risk, links), [], true, proof),
+        Section("human.review.requirements", "Human review requirements and blockers", ApprovalHumanReviewItemStatus.Warning, ApprovalHumanReviewSeverity.Warning, ApprovalHumanReviewSourceKind.DocumentedDebt, EvidenceRefs(packet), ContextRefs(packet), HumanReviewRequirements(packet, risk, links), [], true, proof),
         DisabledSection("runtime.live.disabled", "Runtime/live disabled notice", ["Runtime/live/browser/CDP/WCU/OCR remain disabled."], proof),
         DisabledSection("filesystem.db.disabled", "Filesystem/DB disabled notice", ["Filesystem product IO and DB remain disabled."], proof),
         DisabledSection("provider.cloud.disabled", "Provider/cloud disabled notice", ["Provider/cloud/network remains disabled."], proof),
@@ -119,7 +119,7 @@ public static class ApprovalPacketReadOnlySurfacePresenter
         DisabledSection("durable.memory.disabled", "Durable memory disabled notice", ["Durable memory remains disabled."], proof),
         DisabledSection("approval.execution.disabled", "Approval execution disabled notice", ["Approval execution remains disabled."], proof),
         DisabledSection("approval.state.mutation.disabled", "Approval state mutation disabled notice", ["Approval state mutation remains disabled."], proof),
-        Section("no.side.effect.proof", "No-side-effect proof", ApprovalHumanReviewItemStatus.Ready, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.NoSideEffectProof, [], [], [], [], false, proof),
+        Section("no.side.effect.proof", "No-side-effect proof summary", ApprovalHumanReviewItemStatus.Ready, ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.NoSideEffectProof, [], [], ["Proof is declarative, deterministic and fixture-safe."], [], false, proof),
         Section("documented.debt", "Documented debt", ApprovalHumanReviewItemStatus.Deferred, ApprovalHumanReviewSeverity.Deferred, ApprovalHumanReviewSourceKind.DocumentedDebt, [], [], packet.DocumentedDebt, [], true, proof),
         Section("next.recommended.block", "Next recommended block", ApprovalHumanReviewItemStatus.Deferred, ApprovalHumanReviewSeverity.Deferred, ApprovalHumanReviewSourceKind.DocumentedDebt, [], [], ["PHASE_E_HUMAN_REVIEW_PACKET_EXPORT_PREVIEW_READ_ONLY"], [], false, proof)
     ];
@@ -156,14 +156,14 @@ public static class ApprovalPacketReadOnlySurfacePresenter
         var decision = packet.DecisionOptions.First(item => item.OptionKind == option);
         var relatedRisk = risk.Where(result => result.DecisionOptionKind == option).ToList();
         var blockers = decision.Blockers.Concat(relatedRisk.SelectMany(result => result.Blockers)).Distinct().ToList();
-        var warnings = decision.Warnings.Concat(relatedRisk.SelectMany(result => result.Warnings)).Concat(["Decision option is a preview label, not a command."]).Distinct().ToList();
+        var warnings = decision.Warnings.Concat(relatedRisk.SelectMany(result => result.Warnings)).Concat(["Decision option is a preview label, not a command.", "Label is safe for copy review and cannot change state."]).Distinct().ToList();
 
         return Section(id, title, ApprovalHumanReviewItemStatus.PreviewOnly, blockers.Count > 0 ? ApprovalHumanReviewSeverity.Blocked : ApprovalHumanReviewSeverity.Info, ApprovalHumanReviewSourceKind.Fixture, EvidenceRefs(packet).Take(2).ToList(), ContextRefs(packet).Take(2).ToList(), warnings, blockers, relatedRisk.Any(result => result.RequiresHumanReview), proof);
     }
 
     private static IReadOnlyList<string> CandidateActionPreviews(ApprovalHumanReviewPacketReadOnly packet) =>
         packet.CandidateActions
-            .Select(action => $"{action.CandidateActionId}: {action.Title}; risk={action.RiskLevel}; preview-only; productActions={action.ProductActionCount}; stateMutations={action.StateMutationCount}.")
+            .Select(action => $"{action.CandidateActionId}: {action.Title}; risk={action.RiskLevel}; preview-only label; productActions={action.ProductActionCount}; stateMutations={action.StateMutationCount}; safeNextStep=human review only.")
             .ToList();
 
     private static IReadOnlyList<string> RiskDecisionSummaries(IReadOnlyList<ApprovalRiskDecisionReadOnlyResult> risk) =>
@@ -171,7 +171,7 @@ public static class ApprovalPacketReadOnlySurfacePresenter
         $"Risk/decision fixtures: {risk.Count}; blocked/excluded: {risk.Count(result => result.Blocked)}.",
         $"Approve preview blockers: {risk.Count(result => result.DecisionOptionKind == ApprovalDecisionOptionKind.ApprovePreviewOnly && result.Blocked)}.",
         $"Preview-only labels allowed: {risk.Count(result => result.AllowsDecisionOptionPreview)}.",
-        "Risk is not approval; decision option is not execution."
+        "Risk is not approval; decision option is a label-only preview, not execution."
     ];
 
     private static IReadOnlyList<string> EvidenceContextLinkSummaries(IReadOnlyList<HumanReviewEvidenceContextLinkResult> links) =>
@@ -179,12 +179,12 @@ public static class ApprovalPacketReadOnlySurfacePresenter
         $"Evidence/context link fixtures: {links.Count}; blocked/excluded: {links.Count(result => result.Blocked)}.",
         $"Human-review link warnings: {links.Count(result => result.Warnings.Count > 0)}.",
         $"Invalid safe-next-step links blocked: {links.Count(result => result.HasIssue(HumanReviewEvidenceContextLinkIssueKind.InvalidSafeNextStepLink))}.",
-        "Evidence link is not durable evidence; context link is not trusted context."
+        "Evidence link is not durable evidence; context link is not trusted context; both remain review references only."
     ];
 
     private static IReadOnlyList<string> DecisionOptionPreviews(ApprovalHumanReviewPacketReadOnly packet) =>
         packet.DecisionOptions
-            .Select(option => $"{option.OptionKind}: {option.Label}; previewOnly={option.PreviewOnly}; executesAction={option.ExecutesAction}; mutatesState={option.MutatesState}.")
+            .Select(option => $"{option.OptionKind}: {option.Label}; labelOnly={option.PreviewOnly}; executesAction={option.ExecutesAction}; mutatesState={option.MutatesState}; safeForCopyReview=True.")
             .ToList();
 
     private static IReadOnlyList<string> HumanReviewRequirements(
@@ -201,15 +201,15 @@ public static class ApprovalPacketReadOnlySurfacePresenter
 
     private static IReadOnlyList<string> DisabledNotices() =>
     [
-        "Runtime/live disabled.",
-        "Filesystem product IO and DB disabled.",
-        "Provider/cloud disabled.",
-        "Semantic/vector disabled.",
-        "LLM live disabled.",
-        "Durable memory disabled.",
-        "Approval execution disabled.",
-        "Approval state mutation disabled.",
-        "Export actions disabled."
+        "Runtime/live disabled; visible surface is fixture-only.",
+        "Filesystem product IO and DB disabled; no product persistence is attached.",
+        "Provider/cloud disabled; no external provider call is available.",
+        "Semantic/vector disabled; no semantic backend is attached.",
+        "LLM live disabled; no live model call is available.",
+        "Durable memory disabled; no memory write is available.",
+        "Approval execution disabled; decision labels stay non-command previews.",
+        "Approval state mutation disabled; packet review cannot change approval state.",
+        "Export actions disabled; preview text stays in memory."
     ];
 
     private static IReadOnlyList<string> ContextBlockers(
@@ -254,8 +254,9 @@ public static class ApprovalPacketReadOnlySurfacePresenter
             "\n",
             new[]
             {
-                "# Approval Packet Read-Only Surface",
+                "# Approval Packet Read-Only Human Review Surface",
                 "Mode: READ_ONLY_FIXTURE_SAFE_NO_APPROVAL_EXECUTION_NO_ACTIONS_NO_EXPORT",
+                "Visible polish: grouped read-only sections, disabled capability notices, blocker copy and label-only decision previews.",
                 $"Packet: {packet.PacketId}.",
                 $"Sections: {sections.Count}.",
                 $"Product actions: {sections.Sum(section => section.ProductActionsCount) + packet.ProductActionCount}.",
@@ -264,7 +265,7 @@ public static class ApprovalPacketReadOnlySurfacePresenter
                 string.Join(" ", riskDecision),
                 string.Join(" ", linkSummaries),
                 string.Join(" ", decisionOptions),
-                "No approval execution, state mutation, product UI control, filesystem product IO, DB, provider/cloud, semantic/vector, LLM live, durable memory, export or runtime is enabled."
+                "All execution, mutation, product control, filesystem product IO, DB, provider/cloud, semantic/vector, LLM live, durable memory, export and runtime capabilities remain unavailable."
             });
 
     private static IReadOnlyList<string> Clean(IReadOnlyList<string> values) =>

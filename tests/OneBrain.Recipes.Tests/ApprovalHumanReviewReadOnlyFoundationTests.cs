@@ -558,6 +558,38 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
     }
 
     [TestMethod]
+    public void ApprovalPacketSurface_PolishCopyKeepsVisibleSurfaceReadOnlyAndAuditSafe()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var preview = HumanReviewPacketExportReadOnlyPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            surface.Title,
+            surface.ReadOnlySummary,
+            string.Join("\n", surface.CandidateActionPreviews),
+            string.Join("\n", surface.DecisionOptionPreviews),
+            string.Join("\n", surface.DisabledNotices),
+            preview.Title,
+            preview.PreviewText);
+
+        StringAssert.Contains(surface.Title, "Human Review Surface");
+        StringAssert.Contains(surface.ReadOnlySummary, "Visible polish: grouped read-only sections");
+        StringAssert.Contains(text, "preview-only label");
+        StringAssert.Contains(text, "labelOnly=True");
+        StringAssert.Contains(text, "safeForCopyReview=True");
+        StringAssert.Contains(text, "copy-ready");
+        StringAssert.Contains(text, "preview remains in memory");
+        StringAssert.Contains(text, "remain unavailable");
+        Assert.AreEqual(0, surface.ProductActionsCount);
+        Assert.AreEqual(0, surface.StateMutationsCount);
+        Assert.AreEqual(0, surface.ExportActionsCount);
+        Assert.IsFalse(surface.HasProductActions);
+        Assert.IsFalse(surface.HasApprovalExecution);
+        Assert.IsFalse(surface.HasApprovalStateMutation);
+        Assert.IsFalse(preview.HasRealExport);
+    }
+
+    [TestMethod]
     public void ApprovalPacketSurface_HasNoActionButtonExportOrProductionOverclaim()
     {
         var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();

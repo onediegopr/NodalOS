@@ -103,11 +103,11 @@ public static class HumanReviewPacketExportReadOnlyPresenter
             surface.DisabledNotices
                 .Concat(
                 [
-                    "Physical export disabled.",
-                    "Clipboard disabled.",
-                    "Browser download disabled.",
-                    "Approval execution disabled.",
-                    "Approval state mutation disabled."
+                    "Physical export disabled; preview remains in memory.",
+                    "Clipboard disabled; copy-ready text is returned as DTO content only.",
+                    "Browser download disabled; no download flow is exposed.",
+                    "Approval execution disabled; preview labels do not run approval.",
+                    "Approval state mutation disabled; preview cannot change approval state."
                 ])
                 .Distinct()
                 .ToList());
@@ -115,7 +115,7 @@ public static class HumanReviewPacketExportReadOnlyPresenter
 
         return new HumanReviewPacketExportReadOnlyPreview(
             PreviewId: manifest.PreviewId,
-            Title: "Human Review Packet Export Preview Read-Only",
+            Title: "Human Review Packet Export Preview Read-Only Copy Surface",
             Mode: "READ_ONLY_IN_MEMORY_EXPORT_PREVIEW_NO_FILE_NO_CLIPBOARD_NO_DOWNLOAD_NO_APPROVAL_EXECUTION",
             Manifest: manifest,
             SourceSurface: surface,
@@ -199,7 +199,8 @@ public static class HumanReviewPacketExportReadOnlyPresenter
         "Sensitive-value-like content is omitted from preview content.",
         "Durable memory records are omitted because durable memory capability is disabled.",
         "Approval execution output is omitted because approval execution capability is disabled.",
-        "Physical export artifacts are omitted because this is an in-memory preview."
+        "Physical export artifacts are omitted because this is an in-memory preview.",
+        "Action-oriented controls are omitted because the preview is copy-ready text only."
     ];
 
     private static string PreviewText(
@@ -215,7 +216,8 @@ public static class HumanReviewPacketExportReadOnlyPresenter
                 "\n",
                 new[]
                 {
-                    "# Human Review Packet Export Preview Read-Only",
+                    "# Human Review Packet Export Preview Read-Only Copy Surface",
+                    "Visible polish: grouped manifest, disabled notices, exclusions, blockers and label-only decision previews.",
                     $"PreviewId: {manifest.PreviewId}",
                     $"FormatPreviewKind: {manifest.FormatPreviewKind}",
                     $"SourceFixture: {manifest.SourceFixture}",
@@ -242,11 +244,11 @@ public static class HumanReviewPacketExportReadOnlyPresenter
                     $"Warnings: {warnings.Count}",
                     $"Blockers: {blockers.Count}",
                     $"Exclusions: {string.Join(" | ", exclusions)}",
-                    "Decision labels are preview-only and expose zero product actions.",
+                    "Decision labels are preview-only, copy-ready and expose zero product actions.",
                     "Human review packet export preview is not physical export.",
                     "Human review packet export preview is not approval execution.",
                     "Human review packet export preview is not approval state mutation.",
-                    "No filesystem product IO, DB, provider/cloud, semantic/vector, LLM live, durable memory, runtime/live, service registration or approval execution is enabled."
+                    "Filesystem product IO, DB, provider/cloud, semantic/vector, LLM live, durable memory, runtime/live, service registration and approval execution remain unavailable."
                 }));
 
     private static IReadOnlyList<string> Clean(IReadOnlyList<string> values) =>

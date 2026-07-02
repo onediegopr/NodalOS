@@ -41,3 +41,12 @@
 - Scope: final NODAL OS pause handoff, QA report and NODRIX return prompt.
 - Next project recommendation: return to NODRIX from its own repo/branch/roadmap without mixing NODAL OS state.
 - Non-goals: no execution, mutation, runtime, physical export, clipboard, download, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
+
+## NODAL_OS_VISIBLE_APPROVAL_SURFACE_POLISH_AUDIT_SAFE
+
+- Decision target: `GO_NODAL_OS_VISIBLE_APPROVAL_SURFACE_POLISH_AUDIT_SAFE_READY`
+- Status: accepted as visible read-only Approval/Human Review polish if validation passes.
+- Input: polished pause baseline at `141e2c217b09c82e718bd0d16ac60a156f2dcbf2`.
+- Scope: improve Approval Packet and Human Review Packet preview wording, grouping, disabled notices, label-only decision copy and no-side-effect handoff wording.
+- Non-goals: no execution, mutation, runtime, physical export, clipboard, download, workspace scan, provider/cloud, DB, semantic/vector, LLM, durable memory, product UI actions or release/commercial readiness claim.
+- Next safe options: protected design-only approval execution planning, or pause again after the visible polish.
