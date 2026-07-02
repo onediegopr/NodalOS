@@ -86,3 +86,12 @@
 - Scope: deterministic read-only mutation store design fixture, mutation attempt previews, mutation record previews, actor/identity boundary, stale/invalidation/superseding model, replay/concurrency/idempotency model, evidence/audit requirements, anti-capability proof, tests, ADR, QA and handoff.
 - Non-goals: no approval mutation, approval execution, real store, repository, DB, migration runner, filesystem product IO, durable audit trail implementation, productive writer/policy integration, command handler, service registration, product action, runtime/live, physical export, provider/cloud, LLM, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_APPROVAL_MUTATION_STORE_DESIGN_EXTERNAL_AUDIT`, audit-only/read-only.
+
+## NODAL_OS_DURABLE_APPROVAL_AUDIT_TRAIL_DESIGN_ONLY_PROTECTED
+
+- Decision target: `GO_NODAL_OS_DURABLE_APPROVAL_AUDIT_TRAIL_DESIGN_ONLY_PROTECTED_READY`
+- Status: accepted as protected design-only Durable Approval Audit Trail specification if validation passes.
+- Input: mutation store design external audit at `3e28600c281f2ec8e8feb3522d94de79093c52fc`.
+- Scope: deterministic read-only durable audit trail design fixture, audit event previews, event field requirements, redaction/retention/deletion requirements, hash-chain and replay protection future design, external audit requirements, anti-capability proof, tests, ADR, QA and handoff.
+- Non-goals: no durable audit trail real, append-only ledger real, audit repository, DB, migration runner, filesystem product IO, file read/hash real, event persistence, approval mutation, approval execution, mutation store real, runtime/live, productive writer/policy integration, command handler, service registration, product action, physical export, provider/cloud, LLM, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_DURABLE_APPROVAL_AUDIT_TRAIL_DESIGN_EXTERNAL_AUDIT`, audit-only/read-only.
