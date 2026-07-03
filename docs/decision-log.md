@@ -224,3 +224,14 @@
 - Candidate status: `BLOCKED_PENDING_USER_GO_FOR_IMPLEMENTATION`; maximum allowed state is `IMPLEMENTATION_CANDIDATE_PREPARED_BUT_BLOCKED_PENDING_USER_GO`.
 - Non-goals: no durable audit trail real, append/write real, append-only store real, runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
 - Next safe option: `PAUSE_FOR_USER_EXPLICIT_GO_BEFORE_IMPLEMENTATION`.
+
+## NODAL_OS_DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_IMPLEMENTATION_CANDIDATE
+
+- Decision target: `GO_NODAL_OS_DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_IMPLEMENTATION_CANDIDATE_READY`
+- Status: accepted as minimal isolated implementation candidate if validation passes; not enabled and not release/commercial ready.
+- Input: explicit user GO after implementation candidate prep at `f7b3a6b1399a2d76157c5b1cbaa803aea864b9c4`.
+- Scope: deterministic in-memory durable audit trail append-only candidate evaluator for `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`, locked to `approval.audit-trail.append-only.minimal.v1`, fail-closed gates, non-persisted envelope preview, counts at `0`, Safety and Recipes negative tests, QA report and decision log.
+- Candidate decision when gates pass: `CandidateAcceptedNoWrite`.
+- Enablement status: `POST_IMPLEMENTATION_EXTERNAL_AUDIT_REQUIRED_BEFORE_ENABLEMENT`; safe to enable now is `NO`.
+- Non-goals: no durable audit trail real enablement, append/write real, persisted event real, append-only store real, runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_EXTERNAL_AUDIT_READ_ONLY`.
