@@ -7,6 +7,17 @@
 - Current source of truth: final privacy/export/controlled-execution closeout and its post-audit pause confirmations.
 - Historical entries below remain traceability records. They do not override the current NO-GO state for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial readiness.
 
+## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
+
+- Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`
+- Status: accepted as docs-only global roadmap/code alignment audit if final validation and push pass.
+- Input HEAD: `9e1840783f7a736066aa829d455c33d079d7edd0`.
+- Canonical source: `docs/decision-log.md` plus latest QA/handoff chain; older roadmap files remain historical/superseded unless explicitly revalidated.
+- Findings: P0 0, P1 0, P2 2 (distributed roadmap authority; Browser/CDP/WCU/runtime footprints need dedicated reconciliation), P3 2, P4 1.
+- Scope: classify roadmap-to-code alignment for Durable Audit Trail, Approval/Human Review, EIL, Recipes, Browser/CDP, WCU/OCR, Redaction/Retention/Deletion/Privacy Export, runtime/service/handlers and release/commercial readiness.
+- Non-goals: no code changes, test changes, runtime/live, product enablement, service registration, command handlers, product actions, DB/migration, provider/cloud/network, Browser/CDP/WCU/OCR/Recipes live paths, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
