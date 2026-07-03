@@ -6,6 +6,18 @@
 - Latest canonical closeout commit before docs hardening: `a92ebc18b3ddfc88cf02a2d8abe3642045f6db74`.
 - Current source of truth: final privacy/export/controlled-execution closeout and its post-audit pause confirmations.
 - Historical entries below remain traceability records. They do not override the current NO-GO state for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial readiness.
+- Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
+
+## NODAL_OS_AUTONOMOUS_SAFE_SCOPE_POLICY_AND_STAGE2_RUNTIME_FEATURE_FLAG_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_AUTONOMOUS_SAFE_SCOPE_POLICY_AND_STAGE2_RUNTIME_FEATURE_FLAG_TEST_ONLY_READY`
+- Status: accepted as policy docs-only plus Stage 2 runtime feature flag test-only hardening if final validation and push pass.
+- Input HEAD: `b92455c168db4ea24302bcfbb293be589b6c2bb0`.
+- Scope: update autonomous safe-scope continuation policy and materialize Stage 2 runtime feature flag fail-closed evaluation as an isolated test-only Core service.
+- Corrections: added `DurableAuditTrailStage2RuntimeFeatureFlag`; `AppendStage2TestOnly` delegates flag evaluation; tests cover missing, casing, whitespace, product, runtime, live, release and commercial values.
+- Findings: P0 0, P1 0, P2 0, P3 2 (test-only flag service is not a product rollout system; runtime/product adoption still requires separate manual GO and scope), P4 1 (older pause wording remains historical and superseded).
+- Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EVIDENCE_TEST_ONLY`.
 
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 

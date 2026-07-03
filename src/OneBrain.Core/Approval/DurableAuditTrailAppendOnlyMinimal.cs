@@ -308,16 +308,17 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
             return reasons;
         }
 
-        if (!gate.ExplicitTestFixture || string.IsNullOrWhiteSpace(gate.FeatureFlagValue))
+        var featureFlag = new DurableAuditTrailStage2RuntimeFeatureFlag().Evaluate(
+            gate.ExplicitTestFixture,
+            gate.FeatureFlagValue);
+        if (featureFlag.Decision != DurableAuditTrailStage2RuntimeFeatureFlagDecision.Allowed)
         {
-            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2FeatureFlagDisabled);
-        }
-        else if (gate.FeatureFlagValue.Contains("product", StringComparison.OrdinalIgnoreCase))
-        {
-            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2ProductFeatureFlagRejected);
-        }
-        else if (!string.Equals(gate.FeatureFlagValue, "enabled:test-only", StringComparison.Ordinal))
-        {
+            if (featureFlag.RejectReasons.Contains(
+                    DurableAuditTrailStage2RuntimeFeatureFlagRejectReason.ProductRuntimeScopeRejected))
+            {
+                reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2ProductFeatureFlagRejected);
+            }
+
             reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2FeatureFlagDisabled);
         }
 

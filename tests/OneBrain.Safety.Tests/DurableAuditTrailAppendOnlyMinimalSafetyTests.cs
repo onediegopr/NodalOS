@@ -356,7 +356,14 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
             new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, string.Empty, RedactionProof(), RedactionResult(Request())),
             new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "true", RedactionProof(), RedactionResult(Request())),
             new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled", RedactionProof(), RedactionResult(Request())),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:product", RedactionProof(), RedactionResult(Request()))
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:product", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:runtime", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:live", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:release", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:commercial", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "Enabled:test-only", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, " enabled:test-only", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only ", RedactionProof(), RedactionResult(Request()))
         };
 
         foreach (var gate in gates)
@@ -364,10 +371,63 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
             var result = ledger.AppendStage2TestOnly(Policy(temp.Path), Request(), gate);
 
             Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision, gate?.FeatureFlagValue);
+            CollectionAssert.Contains(
+                result.RejectReasons.ToArray(),
+                gate is null
+                    ? DurableAuditTrailAppendOnlyMinimalRejectReason.MissingStage2TestOnlyGate
+                    : DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2FeatureFlagDisabled);
             AssertNoSideEffects(result);
         }
 
         Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
+    public void Stage2RuntimeFeatureFlag_IsolatedServiceAllowsOnlyExactTestOnlyValue()
+    {
+        var featureFlag = new DurableAuditTrailStage2RuntimeFeatureFlag();
+
+        var allowed = featureFlag.Evaluate(explicitTestFixture: true, DurableAuditTrailStage2RuntimeFeatureFlag.TestOnlyEnabledValue);
+        var deniedValues = new[]
+        {
+            null,
+            string.Empty,
+            "enabled",
+            "Enabled:test-only",
+            " enabled:test-only",
+            "enabled:test-only ",
+            "enabled:product",
+            "enabled:runtime",
+            "enabled:live",
+            "enabled:release",
+            "enabled:commercial"
+        };
+
+        Assert.AreEqual(DurableAuditTrailStage2RuntimeFeatureFlagDecision.Allowed, allowed.Decision);
+        Assert.IsFalse(allowed.RuntimeProductEnabled);
+        Assert.IsFalse(allowed.ServiceRegistrationAllowed);
+        Assert.IsFalse(allowed.CommandHandlersAllowed);
+        Assert.IsFalse(allowed.UiProductActionsAllowed);
+        Assert.IsFalse(allowed.ReleaseCommercialReady);
+
+        foreach (var value in deniedValues)
+        {
+            var denied = featureFlag.Evaluate(explicitTestFixture: true, value);
+            var message = value ?? "<null>";
+
+            Assert.AreEqual(DurableAuditTrailStage2RuntimeFeatureFlagDecision.Rejected, denied.Decision, message);
+            Assert.IsFalse(denied.RuntimeProductEnabled, message);
+            Assert.IsFalse(denied.ServiceRegistrationAllowed, message);
+            Assert.IsFalse(denied.CommandHandlersAllowed, message);
+            Assert.IsFalse(denied.UiProductActionsAllowed, message);
+            Assert.IsFalse(denied.ReleaseCommercialReady, message);
+        }
+
+        var missingFixture = featureFlag.Evaluate(explicitTestFixture: false, DurableAuditTrailStage2RuntimeFeatureFlag.TestOnlyEnabledValue);
+        Assert.AreEqual(DurableAuditTrailStage2RuntimeFeatureFlagDecision.Rejected, missingFixture.Decision);
+        CollectionAssert.Contains(
+            missingFixture.RejectReasons.ToArray(),
+            DurableAuditTrailStage2RuntimeFeatureFlagRejectReason.MissingExplicitTestFixture);
     }
 
     [TestMethod]
