@@ -20,7 +20,7 @@ Baseline HEAD: `87e8b66dd251c7af24127d7e4b926063ec2008dc`
 
 Stage 2 planning is more specific and can be externally audited. Stage 2 implementation is still prohibited.
 
-Automatic continuation to Stage 2 test-only implementation is blocked because external audit and explicit manual GO are required first.
+Automatic continuation to read-only audits, docs-only hardening, readiness gates and audit packs is allowed when repo guard and validations pass. Stage 2 test-only implementation remains blocked because external audit and explicit manual GO are required first.
 
 ## What Remains Blocked
 
@@ -71,4 +71,4 @@ Automatic continuation to Stage 2 test-only implementation is blocked because ex
 
 `NODAL_OS_DURABLE_STAGE2_PLANNING_EXTERNAL_AUDIT_READ_ONLY`
 
-Run this as a read-only external audit of the Stage 2 planning gate before any implementation macro-block. Do not start `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_SAFETY_MACROBLOCK` until external audit and explicit manual GO are both recorded.
+Run this as a read-only external audit of the Stage 2 planning gate before any implementation macro-block. Continue with docs-only/read-only readiness work if it passes. Do not start `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_SAFETY_MACROBLOCK` until external audit and explicit manual GO are both recorded.

@@ -38,7 +38,7 @@ Define a concrete Durable Stage 2 planning gate from the current canon without i
 | 10. Update decision-log | PASS |
 | 11. Validations docs-only | PASS |
 | 12. Commit/push | PASS |
-| 13. Decide continuation | STOP_REQUIRED because implementation remains prohibited and external audit/manual GO are required before Stage 2 implementation. |
+| 13. Decide continuation | CONTINUE_TO_READ_ONLY_AUDIT; implementation remains blocked until external audit/manual GO. |
 
 ## Evidence Read
 
@@ -196,4 +196,4 @@ No source, tests, runtime, endpoints, service registrations, command handlers, U
 
 Recommended next macro-block: `NODAL_OS_DURABLE_STAGE2_PLANNING_EXTERNAL_AUDIT_READ_ONLY`
 
-Automatic continuation to `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_SAFETY_MACROBLOCK` is not allowed from this block because Stage 2 implementation remains prohibited and external audit plus manual GO are required before any implementation.
+Automatic continuation to read-only audits, docs-only hardening, readiness gates and audit packs is allowed when repo guard and validations pass. Automatic continuation to `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_SAFETY_MACROBLOCK` is not allowed because Stage 2 implementation remains prohibited until external audit plus manual GO are recorded.

@@ -88,8 +88,19 @@
 - Findings: P0 0, P1 0, P2 3 (redaction-before-persistence unresolved; runtime feature flag unresolved; negative tests must precede any Stage 2 code), P3 2, P4 1.
 - Corrections: added Durable Stage 2 planning ADR, QA report MD/JSON and handoff; no source/tests/runtime files changed.
 - Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
-- Stop condition: automatic continuation to Stage 2 test-only implementation is blocked; external audit and explicit manual GO are required first.
+- Continuation policy: read-only audits, docs-only hardening, readiness gates and audit packs may continue automatically; Stage 2 test-only implementation remains blocked until external audit and explicit manual GO are recorded.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_PLANNING_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_DURABLE_STAGE2_PLANNING_EXTERNAL_AUDIT_AND_PRE_IMPLEMENTATION_FIXES
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_PLANNING_EXTERNAL_AUDIT_READY`
+- Status: accepted as docs-only/read-only external audit of the Durable Stage 2 planning gate if final validation and push pass.
+- Input baseline HEAD: `32ab7ff83debf8c6f5408cb7fa2a448b1556127c`.
+- Scope: audit Stage 2 planning against Stage 1, claim freeze, authority boundaries and decision-log canon; apply docs-only pre-implementation wording fixes.
+- Findings: P0 0, P1 0, P2 3 (redaction-before-persistence unresolved; runtime feature flag fail-closed unresolved; pre-implementation negative-test inventory requires hardening before code), P3 3, P4 1.
+- Corrections: added Stage 2 planning external audit ADR, QA report MD/JSON and handoff; corrected previous continuation wording so docs-only/read-only macro-blocks may continue automatically while implementation remains blocked.
+- Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_DESIGN_ONLY`.
 
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 

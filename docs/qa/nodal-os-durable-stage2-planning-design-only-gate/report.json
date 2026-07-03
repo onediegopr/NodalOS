@@ -25,7 +25,7 @@
     "update_decision_log": "PASS",
     "validations_docs_only": "PASS",
     "commit_push": "PASS",
-    "continuation_decision": "STOP_REQUIRED_STAGE2_IMPLEMENTATION_STILL_PROHIBITED"
+    "continuation_decision": "CONTINUE_TO_READ_ONLY_AUDIT_STOP_BEFORE_IMPLEMENTATION"
   },
   "evidence_read": [
     "docs/adr/stage-2-readiness-gate-design-only.md",
@@ -254,5 +254,5 @@
     "proyecto_usable_end_to_end": "20-30%"
   },
   "next_macro_block": "NODAL_OS_DURABLE_STAGE2_PLANNING_EXTERNAL_AUDIT_READ_ONLY",
-  "automatic_continuation": "STOP_REQUIRED_EXTERNAL_AUDIT_AND_MANUAL_GO_BEFORE_STAGE2_IMPLEMENTATION"
+  "automatic_continuation": "READ_ONLY_DOCS_ONLY_CONTINUATION_ALLOWED_STOP_BEFORE_STAGE2_IMPLEMENTATION"
 }
