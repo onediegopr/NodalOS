@@ -1,0 +1,187 @@
+{
+  "decision": "GO_WITH_FINDINGS_BROWSER_CDP_CHROMELAB_BOUNDARY_HARDENING_READY",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "inputHead": "588457d65fc883dc4c215d9ad99098d1d8db80f5",
+  "inputCommit": "588457d6 docs(audit): reconcile stage 1 and runtime claims",
+  "mode": "DOCS_ONLY_BOUNDARY_HARDENING_DESIGN_ONLY",
+  "originSyncInitial": "0 0",
+  "worktreeInitial": "clean",
+  "stash": "listed_only_not_touched",
+  "boundaryDecision": {
+    "chromeLabClassification": "LAB_RUNTIME_ONLY_SEPARATE_BOUNDARY",
+    "browserCdpClassification": "BROWSER_RUNTIME_CAPABILITY_FOOTPRINT_NOT_PRODUCT_AUTHORITY",
+    "productRuntimeAuthorityGranted": false,
+    "productBrowserCdpAutomationAuthorized": false,
+    "releaseCommercialReady": false
+  },
+  "runtimeFootprintInventory": [
+    {
+      "file": "src/OneBrain.ChromeLab.Bridge/Program.cs",
+      "evidence": [
+        "AddSingleton",
+        "AddHttpClient",
+        "UseWebSockets",
+        "MapGet",
+        "MapPost",
+        "/ws/extension",
+        "/ws/stealth"
+      ],
+      "classification": "LAB_RUNTIME_ONLY_SEPARATE_BOUNDARY",
+      "risk": "P2"
+    },
+    {
+      "file": "src/OneBrain.ChromeLab.Bridge/Sessions/ExtensionMessageHandler.cs",
+      "evidence": [
+        "IMessageHandler",
+        "extension.hello",
+        "extension.ping",
+        "tool.result",
+        "tool.request",
+        "run.pause"
+      ],
+      "classification": "LAB_HANDLER_NOT_PRODUCT_COMMAND_HANDLER",
+      "risk": "P2"
+    },
+    {
+      "file": "src/OneBrain.ChromeLab.Bridge/Sessions/WebSocketSession.cs",
+      "evidence": [
+        "WebSocket transport",
+        "IMessageHandler dispatch"
+      ],
+      "classification": "LAB_TRANSPORT",
+      "risk": "P3"
+    },
+    {
+      "file": "src/OneBrain.ChromeLab.Bridge/Stealth/*",
+      "evidence": [
+        "stealth runner registry",
+        "stealth task protocol",
+        "handoff gateway"
+      ],
+      "classification": "HISTORICAL_LAB_STEALTH_BOUNDARY",
+      "risk": "P2"
+    },
+    {
+      "file": "src/OneBrain.BrowserRuntime/CloakBrowserRuntimeProvider.cs",
+      "evidence": [
+        "RunLiveHealthcheckAsync",
+        "READY_CDP_DIRECT",
+        "runtime artifact guard"
+      ],
+      "classification": "BROWSER_RUNTIME_CAPABILITY_FOOTPRINT_NOT_PRODUCT_AUTHORITY",
+      "risk": "P2"
+    },
+    {
+      "file": "src/OneBrain.BrowserRuntime/CloakBrowserCdpHealthcheck.cs",
+      "evidence": [
+        "CDP healthcheck",
+        "WebSocket",
+        "local verification evidence paths"
+      ],
+      "classification": "CONTROLLED_RUNTIME_PROOF_NOT_PRODUCT_AUTHORITY",
+      "risk": "P2"
+    }
+  ],
+  "serviceRegistrationFindings": {
+    "chromeLabRegistrationsExist": true,
+    "chromeLabRegistrationsClassification": "LAB_RUNTIME_ONLY_SEPARATE_BOUNDARY",
+    "durableAuditTrailRegisteredByThisBlock": false,
+    "productNodalOsRuntimeRegistrationAuthorized": false,
+    "newRegistrationAdded": false
+  },
+  "endpointFindings": {
+    "chromeLabEndpointsExist": true,
+    "endpoints": [
+      "/health",
+      "/metrics",
+      "/config/public",
+      "/pairing/local-token",
+      "/runtime",
+      "/clients",
+      "/last-events",
+      "/debug",
+      "/api/runs",
+      "/api/runs/{runId}/stop",
+      "/api/runs/{runId}/pause",
+      "/api/runs/{runId}/resume",
+      "/ws/extension",
+      "/ws/stealth"
+    ],
+    "classification": "REAL_LAB_RUNTIME_FOOTPRINT_NOT_PRODUCT_AUTHORITY",
+    "newEndpointAdded": false
+  },
+  "claimsFindings": {
+    "currentCanonNoGo": true,
+    "roadmapLegacyWarningPresent": true,
+    "historicalRuntimeReferencesPresent": true,
+    "productRuntimeOverclaimInChangedDocs": false
+  },
+  "overclaimScan": {
+    "trueRisk": 0,
+    "negativeAssertions": "present",
+    "designOnlyMentions": "present",
+    "prohibitedBoundaries": "present",
+    "labRuntimeClaims": "present_and_classified",
+    "historicalReferences": "present",
+    "acceptedFixtureSafeWording": "present"
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      "ChromeLab has real lab service registrations and endpoints.",
+      "BrowserRuntime has live CDP healthcheck capability behind guard/artifact checks.",
+      "Historical Browser/CDP runtime wording remains broad and must be read through the boundary ADR."
+    ],
+    "p3": [
+      "Older reports use release/manual-QA/runtime language.",
+      "Test names and static assertions can be misread unless classified as test guard or historical evidence."
+    ],
+    "p4": [
+      "The lab footprint is useful traceability but requires ongoing latest-canon discipline."
+    ]
+  },
+  "correctionsApplied": [
+    "docs/adr/browser-cdp-chromelab-runtime-boundary-design-only.md",
+    "docs/qa/nodal-os-browser-cdp-chromelab-runtime-boundary-hardening-design-only/report.md",
+    "docs/qa/nodal-os-browser-cdp-chromelab-runtime-boundary-hardening-design-only/report.json",
+    "docs/handoff/nodal-os-browser-cdp-chromelab-runtime-boundary-hardening-design-only-handoff.md",
+    "docs/decision-log.md"
+  ],
+  "blocked": [
+    "product Browser/CDP automation authority",
+    "ChromeLab as current NODAL OS product runtime authority",
+    "CDP live product automation",
+    "service registration for product runtime",
+    "command handlers",
+    "product actions or UI live buttons",
+    "cross-enable with Durable Audit Trail, WCU/OCR or Recipes",
+    "product ledger path",
+    "DB/migration",
+    "cloud/provider/network",
+    "release/commercial readiness"
+  ],
+  "validations": {
+    "repoGuard": "PASS",
+    "runtimeFootprintScan": "PASS_WITH_FINDINGS",
+    "claimsScan": "PASS_WITH_FINDINGS",
+    "jsonValidation": "PASS",
+    "diffCheck": "PASS",
+    "staticScanChangedFiles": "PASS_NO_TRUE_RISK",
+    "testsBuild": "NOT_RUN_BY_DESIGN_DOCS_ONLY"
+  },
+  "percentages": {
+    "durableAuditTrailLocalTestSafeAppendWriteCandidate": "92-95%",
+    "durableAuditTrailStage1TestOnlyEnablementSafety": "88-92%",
+    "browserCdpChromeLabBoundaryHardening": "80-85%",
+    "browserCdpCurrentNodalOsProductAuthority": "0%",
+    "runtimeLiveProductEnablement": "0%",
+    "executionMutationBroad": "0%",
+    "wcuOcrProductAuthority": "0%",
+    "recipesLiveAuthority": "0%",
+    "releaseCommercialReadiness": "0% / NO-GO",
+    "projectUsableEndToEndEstimate": "20-30%"
+  },
+  "nextRecommendedBlock": "NODAL_OS_BROWSER_CDP_CHROMELAB_RUNTIME_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY"
+}

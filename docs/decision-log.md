@@ -29,6 +29,17 @@
 - Non-goals: no code changes, test changes, Stage 2, runtime/live product enablement, service registration, command handlers, product actions, product ledger path, DB/migration, provider/cloud/network, Browser/CDP/WCU/OCR/Recipes live writes, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_BROWSER_CDP_CHROMELAB_RUNTIME_BOUNDARY_HARDENING_DESIGN_ONLY`.
 
+## NODAL_OS_BROWSER_CDP_CHROMELAB_RUNTIME_BOUNDARY_HARDENING_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_BROWSER_CDP_CHROMELAB_BOUNDARY_HARDENING_READY`
+- Status: accepted as docs-only Browser/CDP/ChromeLab runtime-boundary hardening if final validation and push pass.
+- Input baseline HEAD: `588457d65fc883dc4c215d9ad99098d1d8db80f5`.
+- Scope: classify ChromeLab bridge registrations/endpoints/WebSockets and BrowserRuntime/CDP healthcheck capability as lab/separate/historical/test boundary footprints, not current NODAL OS product runtime authority.
+- Findings: P0 0, P1 0, P2 3 (ChromeLab real lab runtime service/endpoint footprint; BrowserRuntime live CDP healthcheck capability behind guard/artifact checks; broad historical Browser/CDP runtime wording), P3 2, P4 1.
+- Corrections: added Browser/CDP/ChromeLab boundary ADR, QA report MD/JSON and handoff.
+- Non-goals: no source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, Browser automation, DB/migration, provider/cloud/network, WCU/OCR live, Recipes live, Durable Audit Trail Stage 2, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_BROWSER_CDP_CHROMELAB_RUNTIME_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
