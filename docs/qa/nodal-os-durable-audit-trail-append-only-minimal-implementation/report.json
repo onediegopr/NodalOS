@@ -1,0 +1,41 @@
+{
+  "decision": "GO_IMPLEMENTED_LOCAL_TEST_SAFE",
+  "capability": "DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL",
+  "implemented": true,
+  "scope": "isolated local/test-safe append-only JSONL ledger",
+  "files": {
+    "core": "src/OneBrain.Core/Approval/DurableAuditTrailAppendOnlyMinimal.cs",
+    "recipesTests": "tests/OneBrain.Recipes.Tests/DurableAuditTrailAppendOnlyMinimalTests.cs",
+    "safetyTests": "tests/OneBrain.Safety.Tests/DurableAuditTrailAppendOnlyMinimalSafetyTests.cs"
+  },
+  "features": {
+    "jsonlAppendOnly": true,
+    "sequenceNumbers": true,
+    "hashChain": true,
+    "verifyBeforeAppend": true,
+    "localTempBoundaryByDefault": true,
+    "tamperDetection": true,
+    "rawPayloadRejected": true,
+    "secretLikeContentRejected": true
+  },
+  "nonGoalsPreserved": {
+    "externalRuntime": false,
+    "productActions": false,
+    "approvalMutationStore": false,
+    "serviceRegistration": false,
+    "commandHandlers": false,
+    "dbMigration": false,
+    "networkProvider": false,
+    "releaseCommercialReady": false
+  },
+  "tests": {
+    "recipesMinimal": "2 passed",
+    "safetyMinimal": "5 passed",
+    "recipesDurableAuditTrailAppendOnly": "7 passed",
+    "safetyDurableAuditTrailAppendOnly": "9 passed"
+  },
+  "remainingGates": [
+    "post-implementation external audit before non-test enablement",
+    "separate approval before product/runtime integration"
+  ]
+}

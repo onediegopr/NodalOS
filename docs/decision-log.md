@@ -234,4 +234,14 @@
 - Candidate decision when gates pass: `CandidateAcceptedNoWrite`.
 - Enablement status: `POST_IMPLEMENTATION_EXTERNAL_AUDIT_REQUIRED_BEFORE_ENABLEMENT`; safe to enable now is `NO`.
 - Non-goals: no durable audit trail real enablement, append/write real, persisted event real, append-only store real, runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+
+## NODAL_OS_DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_IMPLEMENTATION
+
+- Decision: `GO_IMPLEMENTED_LOCAL_TEST_SAFE`
+- Capability: `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`
+- Scope: isolated local/test-safe append-only JSONL ledger for `approval.reviewed` audit events.
+- Implemented: explicit policy-gated local storage root, default local-temp storage boundary, sequence numbers, SHA-256 hash chain, existing-ledger verification before append, tamper detection, raw payload rejection and secret-like content rejection.
+- Tests: focused Recipes and Safety tests for append, persistence, fail-closed gates, tamper detection and no product/runtime registration.
+- Non-goals preserved: no product runtime, approval mutation store, service registration, command handler, DB/migration, network/provider call, product action or release/commercial readiness.
+- Remaining gate: post-implementation external audit required before any product/runtime integration or non-test enablement.
 - Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_EXTERNAL_AUDIT_READ_ONLY`.
