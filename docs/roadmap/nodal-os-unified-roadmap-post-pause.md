@@ -1,5 +1,23 @@
 # NODAL OS Unified Roadmap Post-Pause
 
+## Canonical Status Hardening Note
+
+This roadmap is a historical planning artifact. It may contain legacy percentages such as `Core Runtime: 76%`; those values describe roadmap/foundation progress only and are not current runtime/live implementation readiness.
+
+Current canonical status after the final privacy/export/controlled-execution closeout is:
+
+- `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`.
+- Runtime/live real readiness: 0%.
+- Execution real readiness: 0%.
+- Mutation real readiness: 0%.
+- Physical export real readiness: 0%.
+- Redaction runtime readiness: 0%.
+- Secret/PII scan real readiness: 0%.
+- Retention/deletion runtime readiness: 0%.
+- Release/commercial readiness: NO-GO.
+
+No historical percentage in this file grants execution, mutation, export, redaction, retention/deletion, service registration, command handler, browser/CDP live or release/commercial authority.
+
 ## Scope
 
 This roadmap converts new planning inputs into a NODAL OS post-pause implementation order.

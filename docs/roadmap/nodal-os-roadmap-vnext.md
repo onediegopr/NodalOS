@@ -1,5 +1,23 @@
 # NODAL OS Roadmap vNext
 
+## Canonical Status Hardening Note
+
+This roadmap contains historical percentages and legacy runtime/browser planning notes. Those values are not current implementation readiness for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial use.
+
+Current canonical status after the final privacy/export/controlled-execution closeout is:
+
+- `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`.
+- Runtime/live real readiness: 0%.
+- Execution real readiness: 0%.
+- Mutation real readiness: 0%.
+- Physical export real readiness: 0%.
+- Redaction runtime readiness: 0%.
+- Secret/PII scan real readiness: 0%.
+- Retention/deletion runtime readiness: 0%.
+- Release/commercial readiness: NO-GO.
+
+Any historical `Core Runtime` percentage in this document is roadmap/foundation context only and must not be read as live runtime authority or implementation readiness.
+
 ## Current State
 
 - Product name: NODAL OS.

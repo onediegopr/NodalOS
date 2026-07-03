@@ -4,6 +4,8 @@
 
 Accepted for M26.
 
+Canonical status hardening note (2026-07-03): this ADR is historical and does not authorize current physical export, browser download, file output, runtime/live execution, product action, external download flow or release/commercial readiness. Current NODAL OS status remains `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`; physical export implementation readiness remains 0%.
+
 ## Context
 
 M16 modeled download policy and M18 proved CDP live read-only wiring. M26 enables safe document download under strict policy, quarantine, hash verification, and audit. It does not enable arbitrary downloads or sensitive document handling.

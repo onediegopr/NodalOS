@@ -1,5 +1,12 @@
 # NODAL OS Decision Log
 
+## CANONICAL_STATUS_DOCS_HARDENING_NOTE
+
+- Latest canonical state: `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`.
+- Latest canonical closeout commit before docs hardening: `a92ebc18b3ddfc88cf02a2d8abe3642045f6db74`.
+- Current source of truth: final privacy/export/controlled-execution closeout and its post-audit pause confirmations.
+- Historical entries below remain traceability records. They do not override the current NO-GO state for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial readiness.
+
 ## POST_PHASE_E_NEXT_ROADMAP_DECISION_READ_ONLY
 
 - Decision target: `GO_POST_PHASE_E_NEXT_ROADMAP_DECISION_READ_ONLY_READY`

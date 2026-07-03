@@ -3,6 +3,8 @@
 > **Fecha:** 2026-06-25  
 > **Tipo:** Verificación post-corrección (8 correcciones aplicadas) + re-evaluación de módulos + priorización de problemas restantes
 
+> **Canonical status hardening note (2026-07-03):** this report is historical analysis only. It is not the current NODAL OS readiness source of truth and does not grant production, release, commercial, runtime/live, execution, mutation, physical export, redaction runtime, retention/deletion runtime, secret/PII scan or browser/CDP authority. Current canonical status remains `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`, with release/commercial readiness `NO-GO`.
+
 ---
 
 ## PARTE 1 — VERIFICACIÓN DE LAS 8 CORRECCIONES
@@ -190,7 +192,7 @@ De los 17 problemas no-críticos de la primera auditoría:
 
 ## VEREDICTO FINAL
 
-**El sistema está listo para producción en entornos controlados con las siguientes condiciones:**
+**Veredicto histórico superseded:** este reporte previo evaluó condiciones controladas, pero no constituye readiness canónica actual ni autorización de producción/release/comercial. Las condiciones listadas abajo quedan como contexto histórico de auditoría, no como GO operativo actual:
 
 - Usar solo contra sitios que no empleen Akamai, Kasada, Imperva o GeeTest como protección principal.
 - Asegurar que el proxy tenga el campo `country` correctamente configurado **y** que el bug de `ensureCoherence` (retorno descartado) se corrija antes de producción.

@@ -1,5 +1,11 @@
 # Read-Only Cross-Phase Closeout Index
 
+## Supersession / Canonical Status Note
+
+This index remains useful as historical traceability for earlier read-only phases. It is superseded for current operational status by the final privacy/export/controlled-execution closeout at `a92ebc18`.
+
+Current canonical status is `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`; runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime and release/commercial readiness remain 0%/NO-GO.
+
 Decision target: `GO_READ_ONLY_CROSS_PHASE_CLOSEOUT_INDEX_READY`
 
 ## Executive Status

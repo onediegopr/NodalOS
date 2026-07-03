@@ -4,6 +4,8 @@
 
 Accepted for local sandbox proof only.
 
+Canonical status hardening note (2026-07-03): this ADR is a historical local sandbox proof. It does not authorize current browser/CDP live work, external authenticated flows, real credentials, runtime/live execution, product actions, export, mutation or release/commercial readiness. Current NODAL OS status remains `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`.
+
 ## Context
 
 M18 proved CDP live read-only against a local fixture. M21/M22 added visible consent and controlled profile activation. M23 adds a sandbox vault boundary. M24 connects these pieces in a local authenticated flow without enabling real sites or real credentials.
