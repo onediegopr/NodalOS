@@ -32,6 +32,17 @@
 - Non-goals: no Stage 2 implementation beyond current test-only scope, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, product redaction service activation, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_EXTERNAL_AUDIT_READY`
+- Status: accepted as docs-only/read-only external audit of the redaction-before-persistence service design if final validation and push pass.
+- Input HEAD: `2f0eb3de237b6a6b10eaf8badc19b2d976b993b4`.
+- Scope: audit the design ADR, QA report/JSON, handoff and decision-log entry against Stage 2 closeout, post-Stage 2 audit, code/tests and current authority boundaries.
+- Findings: P0 0, P1 0, P2 0, P3 3 (pre-implementation test-plan design must add candidate hash binding/stale-evidence/nested-metadata/log-error assertions; corpus versioning/ownership/cadence missing; product/runtime adoption still requires external audit plus manual GO after implementation), P4 1 (percentages are planning estimates).
+- Corrections: added external-audit ADR, QA report MD/JSON and handoff; no source/test/runtime behavior changed.
+- Non-goals: no implementation, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_PLAN_DESIGN_ONLY`.
+
 ## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`
