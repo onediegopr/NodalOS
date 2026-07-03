@@ -40,6 +40,19 @@
 - Non-goals: no source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, Browser automation, DB/migration, provider/cloud/network, WCU/OCR live, Recipes live, Durable Audit Trail Stage 2, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_BROWSER_CDP_CHROMELAB_RUNTIME_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_RUNTIME_BROWSER_WCU_AUTHORITY_EXTERNAL_AUDIT_AND_CLAIM_FREEZE
+
+- Decision target: `GO_WITH_FINDINGS_RUNTIME_BROWSER_WCU_AUTHORITY_CLAIM_FREEZE_READY`
+- Status: accepted as docs-only external-audit claim freeze if final validation and push pass.
+- Input baseline HEAD: `08254288934e69252330f7b52fddc90ca2bfc7d6`.
+- Scope: consolidate Browser/CDP/ChromeLab boundary, runtime/service/handler global authority, WCU/OCR product authority, cross-boundary risks and allowed/prohibited claims before any Stage 2 or runtime work.
+- Findings: P0 0, P1 0, P2 4 (ChromeLab lab runtime footprint; BrowserRuntime live CDP healthcheck capability behind guards; WCU/OCR mixed technical footprint; runtime/service/handler claim freeze needed across historical footprints), P3 3, P4 1.
+- Claim freeze: Durable is Stage 1 local/test-safe only; Browser/CDP is lab/separate/historical only; WCU/OCR is fixture-safe/read-only/design-only with product authority `0%`; Recipes live authority `0%`; release/commercial `NO-GO`.
+- Information insufficient for authority upgrade: `OneBrain.Pilot`, Nexa admin handlers and broad OCR authority all require dedicated future audits before any product claim.
+- Corrections: added runtime/browser/WCU claim-freeze ADR, QA report MD/JSON and handoff.
+- Non-goals: no source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, browser automation, WCU/OCR live action, Recipes live execution, Durable Audit Trail Stage 2, product ledger path, DB/migration, provider/cloud/network, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_RUNTIME_BROWSER_WCU_AUTHORITY_CLAIM_FREEZE_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`

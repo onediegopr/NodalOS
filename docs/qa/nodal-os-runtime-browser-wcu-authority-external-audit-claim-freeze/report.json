@@ -1,0 +1,147 @@
+{
+  "decision": "GO_WITH_FINDINGS_RUNTIME_BROWSER_WCU_AUTHORITY_CLAIM_FREEZE_READY",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "inputHead": "08254288934e69252330f7b52fddc90ca2bfc7d6",
+  "inputCommit": "08254288 docs(audit): harden browser cdp chromelab runtime boundary",
+  "mode": "DOCS_ONLY_EXTERNAL_AUDIT_CLAIM_FREEZE",
+  "originSyncInitial": "0 0",
+  "worktreeInitial": "clean",
+  "stash": "listed_only_not_touched",
+  "browserCdpResult": {
+    "chromeLabBoundary": "LAB_RUNTIME_ONLY_SEPARATE_BOUNDARY",
+    "browserRuntimeCdpHealthcheck": "CAPABILITY_FOOTPRINT_NOT_PRODUCT_AUTHORITY",
+    "productBrowserAutomationAuthority": false,
+    "releaseCommercialReady": false
+  },
+  "runtimeServiceHandlerResult": {
+    "chromeLabRegistrations": "LAB_RUNTIME_FOOTPRINT",
+    "pilotEndpoints": "PILOT_OR_HISTORICAL_RUNTIME_FOOTPRINT_REQUIRES_DEDICATED_AUDIT",
+    "nexaAdminHandlers": "HISTORICAL_OR_SEPARATE_ADMIN_HANDLER_FOOTPRINT_REQUIRES_DEDICATED_AUDIT",
+    "durableAuditTrailProductRegistration": false,
+    "durableAuditTrailCommandHandler": false,
+    "globalRuntimeLiveAuthority": false
+  },
+  "wcuOcrResult": {
+    "wcuCollector": "READ_ONLY_DESIGN_BOUNDARY",
+    "wcuEventStream": "READ_ONLY_OR_FIXTURE_SAFE_BOUNDARY",
+    "wcuControlPlane": "FIXTURE_SAFE_CONTROL_PLANE",
+    "ocrFootprint": "OCR_TECHNICAL_FOOTPRINT_NO_PRODUCT_AUTHORITY",
+    "wcuOcrProductAuthority": false
+  },
+  "crossBoundaryResult": {
+    "durableToProductLedger": "NO_CONNECTION_AUTHORIZED",
+    "browserCdpToDurable": "NO_CONNECTION_AUTHORIZED",
+    "browserCdpToWcuOcr": "NO_CONNECTION_AUTHORIZED",
+    "wcuOcrToRecipesLive": "NO_CONNECTION_AUTHORIZED",
+    "recipesToProductExecution": "NO_LIVE_RUNNER_AUTHORITY",
+    "chromeLabEndpointsToProductAuthority": "LAB_ONLY_BRIDGE"
+  },
+  "claimFreezeMatrix": [
+    {
+      "area": "Durable Audit Trail",
+      "allowedClaim": "Stage 1 local/test-safe append/write candidate exists.",
+      "prohibitedClaim": "Product audit trail enabled; product ledger path; Stage 2 enabled.",
+      "currentAuthority": "LOCAL_TEST_SAFE_ONLY",
+      "evidenceRequiredBeforeUpgrade": "Stage 2 scope, redaction-before-persistence, runtime flag, manual GO.",
+      "requiredAudit": "Durable Stage 2 external audit."
+    },
+    {
+      "area": "Browser/CDP/ChromeLab",
+      "allowedClaim": "Lab/separate/historical runtime footprint exists.",
+      "prohibitedClaim": "Product browser automation ready/enabled.",
+      "currentAuthority": "LAB_RUNTIME_ONLY",
+      "evidenceRequiredBeforeUpgrade": "Browser/CDP scope proposal, no-cross-enable proof, negative tests.",
+      "requiredAudit": "Browser/CDP authority audit."
+    },
+    {
+      "area": "Runtime/service/handlers",
+      "allowedClaim": "Separate/historical footprints exist and require classification.",
+      "prohibitedClaim": "Global runtime/live product enablement or command authority.",
+      "currentAuthority": "FROZEN_NO_GLOBAL_PRODUCT_AUTHORITY",
+      "evidenceRequiredBeforeUpgrade": "Full inventory of registrations, handlers, endpoints, UI actions.",
+      "requiredAudit": "Runtime authority audit."
+    },
+    {
+      "area": "WCU/OCR",
+      "allowedClaim": "Fixture-safe/read-only/design-only evidence exists.",
+      "prohibitedClaim": "WCU/OCR product action authority.",
+      "currentAuthority": "PRODUCT_AUTHORITY_0",
+      "evidenceRequiredBeforeUpgrade": "WCU/OCR scope proposal, live-action exclusion proof.",
+      "requiredAudit": "WCU/OCR authority audit."
+    },
+    {
+      "area": "Recipes",
+      "allowedClaim": "Design/test/readiness artifacts exist.",
+      "prohibitedClaim": "Recipe live runner/scheduler/trigger execution.",
+      "currentAuthority": "LIVE_AUTHORITY_0",
+      "evidenceRequiredBeforeUpgrade": "Recipes live scope proposal and negative tests.",
+      "requiredAudit": "Recipes execution audit."
+    },
+    {
+      "area": "Release/commercial",
+      "allowedClaim": "Release/commercial remains NO-GO.",
+      "prohibitedClaim": "Production/release/commercial/paid-beta/MVP ready.",
+      "currentAuthority": "NO-GO",
+      "evidenceRequiredBeforeUpgrade": "Full product authority and release evidence.",
+      "requiredAudit": "Release external audit."
+    }
+  ],
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      "ChromeLab lab runtime footprint.",
+      "BrowserRuntime live CDP healthcheck capability behind guards.",
+      "WCU/OCR mixed technical footprint.",
+      "Runtime/service/handler claim freeze needed across historical footprints."
+    ],
+    "p3": [
+      "OneBrain.Pilot endpoints require future dedicated authority audit.",
+      "Nexa admin handler names require future dedicated authority audit.",
+      "OCR model/runtime wording requires dedicated OCR audit before broad claims."
+    ],
+    "p4": [
+      "Historical reports remain useful traceability but require latest-canon discipline."
+    ]
+  },
+  "informationInsufficient": [
+    "OneBrain.Pilot current product authority cannot be upgraded without dedicated audit.",
+    "Nexa admin handler current authority cannot be upgraded without dedicated audit.",
+    "OCR broad authority cannot be upgraded without dedicated audit."
+  ],
+  "overclaimScan": {
+    "trueRisk": 0,
+    "negativeAssertions": "present",
+    "prohibitedBoundaries": "present",
+    "designOnlyMentions": "present",
+    "historicalReferences": "present",
+    "acceptedLocalTestSafeWording": "present",
+    "labRuntimeWording": "present_and_classified",
+    "fixtureSafeWording": "present"
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "browserCdpBoundaryAudit": "PASS_WITH_FINDINGS",
+    "runtimeServiceHandlerAudit": "PASS_WITH_FINDINGS",
+    "wcuOcrAuthorityAudit": "PASS_WITH_FINDINGS",
+    "crossBoundaryAudit": "PASS",
+    "jsonValidation": "PASS",
+    "diffCheck": "PASS",
+    "staticScanChangedFiles": "PASS_NO_TRUE_RISK",
+    "testsBuild": "NOT_RUN_BY_DESIGN_DOCS_ONLY"
+  },
+  "percentages": {
+    "durableAuditTrailLocalTestSafeAppendWriteCandidate": "92-95%",
+    "durableStage1TestOnlyEnablementSafety": "88-92%",
+    "browserCdpChromeLabBoundaryHardening": "85-90%",
+    "runtimeBrowserWcuAuthorityClaimFreeze": "80-85%",
+    "browserCdpCurrentProductAuthority": "0%",
+    "wcuOcrProductAuthority": "0%",
+    "runtimeLiveProductEnablement": "0%",
+    "executionMutationBroad": "0%",
+    "releaseCommercialReadiness": "0% / NO-GO",
+    "projectUsableEndToEndEstimate": "20-30%"
+  },
+  "nextRecommendedBlock": "NODAL_OS_RUNTIME_BROWSER_WCU_AUTHORITY_CLAIM_FREEZE_EXTERNAL_AUDIT_READ_ONLY"
+}
