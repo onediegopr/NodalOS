@@ -53,6 +53,18 @@
 - Non-goals: no source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, browser automation, WCU/OCR live action, Recipes live execution, Durable Audit Trail Stage 2, product ledger path, DB/migration, provider/cloud/network, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_RUNTIME_BROWSER_WCU_AUTHORITY_CLAIM_FREEZE_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_RUNTIME_BROWSER_WCU_PILOT_OCR_AUTHORITY_MEGA_AUDIT_AND_CLAIM_HARDENING
+
+- Decision target: `GO_WITH_FINDINGS_PILOT_NEXA_OCR_AUTHORITY_BOUNDARY_READY`
+- Status: accepted as docs-only mega audit and claim hardening if final validation and push pass.
+- Input baseline HEAD: `7f7ddf64bbd564ecb4f02c90d5b3fa7398e6cbc8`.
+- Scope: externally re-audit the runtime/browser/WCU claim freeze, then audit and harden `OneBrain.Pilot`, Nexa admin handlers, OCR authority and cross-boundary claims.
+- Findings: P0 0, P1 0, P2 4 (Pilot real local runtime/local IO/supervised harness boundary; Nexa handler/admin mutation boundary; OCR mixed technical footprint; cross-boundary claim hardening required), P3 4, P4 1.
+- Claim boundary: Pilot, Nexa admin and OCR/WCU technical footprints remain separate authority boundaries; current product authority remains `0%` for Pilot, Nexa command authority, OCR/WCU action authority, Browser/CDP product authority, runtime/live and release/commercial readiness.
+- Corrections: added Pilot/Nexa/OCR authority boundary ADR, QA report MD/JSON and handoff.
+- Non-goals: no source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, browser automation, WCU/OCR live action, Recipes live execution, Durable Audit Trail Stage 2, product ledger path, DB/migration, provider/cloud/network, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_RUNTIME_BROWSER_WCU_PILOT_OCR_AUTHORITY_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`

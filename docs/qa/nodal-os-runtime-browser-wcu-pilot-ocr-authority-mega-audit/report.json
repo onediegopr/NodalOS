@@ -1,0 +1,157 @@
+{
+  "decision": "GO_WITH_FINDINGS_PILOT_NEXA_OCR_AUTHORITY_BOUNDARY_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "input_head": "7f7ddf64bbd564ecb4f02c90d5b3fa7398e6cbc8",
+  "input_commit": "7f7ddf64 docs(audit): freeze runtime browser wcu authority claims",
+  "scope": "Docs-only mega audit and claim hardening for runtime/browser/WCU/Pilot/OCR authority boundaries.",
+  "non_goals": [
+    "no source code changes",
+    "no test changes",
+    "no Program.cs changes",
+    "no endpoint changes",
+    "no service registration changes",
+    "no command handlers",
+    "no product actions",
+    "no CDP live activation",
+    "no browser automation",
+    "no WCU/OCR live action",
+    "no Recipes live execution",
+    "no Durable Stage 2",
+    "no product ledger path",
+    "no DB/migration",
+    "no provider/cloud/network",
+    "no release/commercial readiness",
+    "no stash modification"
+  ],
+  "repo_guard": {
+    "worktree_initial": "clean",
+    "origin_sync_initial": "0 0",
+    "stash": "listed only, not touched: stash@{0}: On chrome-lab-001-extension-local-ai-bridge: pre-m11-legacy-state"
+  },
+  "claim_freeze_external_audit": {
+    "result": "PASS_WITH_FINDINGS",
+    "matrix_complete": true,
+    "product_runtime_authority_claim_introduced": false,
+    "browser_cdp_product_claim_introduced": false,
+    "wcu_ocr_product_claim_introduced": false,
+    "durable_stage_2_claim_introduced": false,
+    "release_commercial_claim_introduced": false
+  },
+  "pilot_authority_result": {
+    "classification": "PILOT_SEPARATE_LOCAL_RUNTIME_FOOTPRINT_REQUIRES_DEDICATED_AUTHORITY_AUDIT",
+    "current_product_authority_percent": 0,
+    "evidence": [
+      "src/OneBrain.Pilot/Program.cs maps local ASP.NET endpoints",
+      "Pilot local stores and file reads/writes are present",
+      "/executor-harness/click uses supervised harness evidence",
+      "PilotRecipeExecutor is wired by the pilot app"
+    ],
+    "authority_upgrade_allowed": false
+  },
+  "nexa_authority_result": {
+    "classification": "SEPARATE_ADMIN_HANDLER_FOOTPRINT_REQUIRES_DEDICATED_AUTHORITY_AUDIT",
+    "current_product_command_authority_percent": 0,
+    "evidence": [
+      "NexaAdminCommandHandler exists",
+      "NexaAdminQueryHandler exists",
+      "NexaAdminConsoleService mutates admin state in its own boundary",
+      "productive recorder/replay flags are denied",
+      "sensitive/productive paths require compliance or entitlement gates"
+    ],
+    "authority_upgrade_allowed": false
+  },
+  "ocr_authority_result": {
+    "classification": "OCR_TECHNICAL_FOOTPRINT_NO_PRODUCT_AUTHORITY",
+    "current_product_authority_percent": 0,
+    "evidence": [
+      "WCU collectors and event streams keep ActionAuthority false",
+      "Win32 and WCU tests assert no action authority",
+      "OCR/ONNX/PaddleOCR readiness and worker footprints exist",
+      "OCR real or broad authority remains blocked, obsolete or policy-gated"
+    ],
+    "authority_upgrade_allowed": false
+  },
+  "cross_boundary_result": {
+    "pilot_to_browser_cdp": "INFORMATION_INSUFFICIENT_FOR_AUTHORITY_UPGRADE",
+    "pilot_to_wcu_ocr": "PILOT_SUPERVISED_HARNESS_BOUNDARY_NO_PRODUCT_AUTHORITY",
+    "pilot_to_durable": "NO_PRODUCT_LEDGER_AUTHORITY",
+    "nexa_to_current_runtime": "SEPARATE_ADMIN_BOUNDARY",
+    "ocr_to_wcu_actions": "NO_ACTION_AUTHORITY",
+    "browser_cdp_to_wcu_ocr": "NO_CROSS_ENABLE_AUTHORIZED",
+    "recipes_to_browser_wcu_ocr": "NO_LIVE_RUNNER_AUTHORITY",
+    "durable_to_product_ledger": "LOCAL_TEST_SAFE_ONLY"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [
+      "Pilot real local runtime/local IO/supervised harness footprint must not be read as current product authority.",
+      "Nexa handler-style/admin mutation footprint must not be read as current NODAL OS command authority.",
+      "OCR mixed technical runtime/model footprint requires boundary language.",
+      "Cross-boundary claim hardening is required for Pilot/Nexa/OCR with Browser/WCU/Recipes/Durable."
+    ],
+    "P3": [
+      "Pilot recipe execution needs dedicated audit.",
+      "Nexa command-bus integration remains information insufficient.",
+      "Broad OCR authority needs dedicated audit.",
+      "Historical/obsolete OCR and legacy admin wording must stay bounded."
+    ],
+    "P4": [
+      "Historical docs remain traceability records under latest decision-log canon."
+    ]
+  },
+  "corrections_applied": [
+    "added docs/adr/pilot-nexa-ocr-authority-boundary-design-only.md",
+    "added docs/qa/nodal-os-runtime-browser-wcu-pilot-ocr-authority-mega-audit/report.md",
+    "added docs/qa/nodal-os-runtime-browser-wcu-pilot-ocr-authority-mega-audit/report.json",
+    "added docs/handoff/nodal-os-runtime-browser-wcu-pilot-ocr-authority-mega-audit-handoff.md",
+    "updated docs/decision-log.md"
+  ],
+  "information_insufficient": [
+    "OneBrain.Pilot current product authority",
+    "PilotRecipeExecutor and recipe bridge authority",
+    "Nexa admin handler integration into current product command bus",
+    "OCR broad authority"
+  ],
+  "overclaim_scan": {
+    "true_risk": 0,
+    "negative_assertion": "present",
+    "prohibited_boundary": "present",
+    "design_only_mention": "present",
+    "historical_reference": "present",
+    "accepted_local_test_safe_wording": "present",
+    "lab_runtime_wording": "present",
+    "fixture_safe_wording": "present",
+    "information_insufficient": "present"
+  },
+  "validations": {
+    "repo_guard": "PASS",
+    "claim_freeze_external_audit": "PASS_WITH_FINDINGS",
+    "pilot_dedicated_authority_audit": "PASS_WITH_FINDINGS",
+    "nexa_admin_handlers_audit": "PASS_WITH_FINDINGS",
+    "ocr_authority_audit": "PASS_WITH_FINDINGS",
+    "cross_boundary_audit": "PASS_WITH_FINDINGS",
+    "json_validation": "PASS",
+    "git_diff_check": "PASS",
+    "static_scan_changed_files": "PASS_NO_TRUE_RISK",
+    "tests_build": "NOT_RUN_BY_DESIGN"
+  },
+  "percentages": {
+    "durable_audit_trail_local_test_safe_append_write_candidate": "92-95%",
+    "durable_stage_1_test_only_enablement_safety": "88-92%",
+    "browser_cdp_chromelab_boundary_hardening": "85-90%",
+    "runtime_browser_wcu_authority_claim_freeze": "85-90%",
+    "pilot_nexa_ocr_authority_boundary_hardening": "75-85%",
+    "browser_cdp_current_product_authority": "0%",
+    "onebrain_pilot_current_product_authority": "0%",
+    "nexa_current_product_command_authority": "0%",
+    "wcu_ocr_product_authority": "0%",
+    "runtime_live_product_enablement": "0%",
+    "execution_mutation_broad": "0%",
+    "release_commercial_readiness": "0% / NO-GO",
+    "proyecto_usable_end_to_end": "20-30%"
+  },
+  "next_recommended_block": "NODAL_OS_RUNTIME_BROWSER_WCU_PILOT_OCR_AUTHORITY_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY"
+}
