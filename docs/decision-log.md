@@ -65,6 +65,19 @@
 - Non-goals: no source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, browser automation, WCU/OCR live action, Recipes live execution, Durable Audit Trail Stage 2, product ledger path, DB/migration, provider/cloud/network, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_RUNTIME_BROWSER_WCU_PILOT_OCR_AUTHORITY_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_AUTHORITY_BOUNDARY_EXTERNAL_AUDIT_AND_STAGE2_READINESS_GATE
+
+- Decision target: `GO_WITH_FINDINGS_AUTHORITY_BOUNDARY_STAGE2_READINESS_GATE_READY`
+- Stage 2 outcome: `STAGE2_PLANNING_ALLOWED_DESIGN_ONLY`.
+- Status: accepted as docs-only external authority boundary audit and Stage 2 readiness gate if final validation and push pass.
+- Input baseline HEAD: `e802cd6fccce60c75471b416f961e3f7770ea65f`.
+- Scope: externally audit Pilot/Nexa/OCR boundary docs against source footprints, classify cross-boundary risk with Durable Stage 1, Browser/CDP/ChromeLab, WCU/OCR and Recipes, and produce a Stage 2 readiness gate.
+- Findings: P0 0, P1 0, P2 6 (Pilot local runtime/local IO/harness boundary; Nexa admin handler/admin mutation boundary; OCR/WCU mixed technical footprint; cross-boundary hardening must remain; redaction-before-persistence unresolved; runtime feature flag unresolved), P3 4, P4 1.
+- Stage 2 gate: planning may continue only as design-only; implementation, runtime/live product enablement, product ledger path, service registration, command handler activation and release/commercial readiness remain blocked.
+- Corrections: added Stage 2 readiness gate ADR, QA report MD/JSON and handoff; no existing source/tests/runtime files changed.
+- Non-goals: no Stage 2 implementation, source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, browser automation, WCU/OCR live action, Recipes live execution, product ledger path, DB/migration, provider/cloud/network, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_PLANNING_DESIGN_ONLY_GATE`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`

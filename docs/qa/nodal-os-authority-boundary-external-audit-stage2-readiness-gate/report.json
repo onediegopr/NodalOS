@@ -1,0 +1,302 @@
+{
+  "decision": "GO_WITH_FINDINGS_AUTHORITY_BOUNDARY_STAGE2_READINESS_GATE_READY",
+  "stage2_outcome": "STAGE2_PLANNING_ALLOWED_DESIGN_ONLY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "input_head": "e802cd6fccce60c75471b416f961e3f7770ea65f",
+  "input_commit": "e802cd6f docs(audit): harden pilot nexa ocr authority boundaries",
+  "scope": "External/read-only consolidated authority boundary audit for Pilot/Nexa/OCR plus Durable, Browser/CDP/ChromeLab, WCU/OCR and Recipes boundaries; create Stage 2 readiness gate.",
+  "non_goals": [
+    "no Stage 2 implementation",
+    "no runtime/live product enablement",
+    "no source code changes",
+    "no test changes",
+    "no Program.cs changes",
+    "no endpoint changes",
+    "no service registration changes",
+    "no command handlers",
+    "no UI product actions",
+    "no CDP live activation",
+    "no browser automation",
+    "no WCU/OCR live action",
+    "no Recipes live execution",
+    "no product ledger path",
+    "no DB/migration",
+    "no provider/cloud/network",
+    "no release/commercial readiness",
+    "no stash modification"
+  ],
+  "repo_guard": {
+    "worktree_initial": "clean",
+    "origin_sync_initial": "0 0",
+    "stash": "listed only, not touched: stash@{0}: On chrome-lab-001-extension-local-ai-bridge: pre-m11-legacy-state"
+  },
+  "external_audit_result": {
+    "boundary_documented_without_overclaim": "PASS_WITH_FINDINGS",
+    "pilot_separate_local_runtime_no_product_authority": "PASS",
+    "nexa_separate_admin_boundary_no_current_product_command_authority": "PASS",
+    "ocr_wcu_technical_mixed_no_product_action_authority": "PASS",
+    "no_cross_enable_authorized": "PASS_WITH_FINDINGS",
+    "release_commercial_claim_introduced": false,
+    "p0_count": 0,
+    "p1_count": 0
+  },
+  "source_footprint_verification": {
+    "pilot": {
+      "classification": "separate runtime footprint",
+      "evidence": [
+        "src/OneBrain.Pilot/Program.cs maps local ASP.NET endpoints and app.Run()",
+        "Pilot local IO and local harness evidence exist",
+        "PilotRecipeExecutor can run allowlisted recipe files from Pilot boundary"
+      ],
+      "current_product_authority_percent": 0,
+      "upgrade_allowed": false
+    },
+    "nexa": {
+      "classification": "historical/separate admin handler",
+      "evidence": [
+        "NexaAdminCommandHandler exists",
+        "NexaAdminQueryHandler exists",
+        "NexaAdminConsoleService.Execute mutates admin state in its own boundary",
+        "productive/sensitive flags are denied or gated"
+      ],
+      "current_product_command_authority_percent": 0,
+      "upgrade_allowed": false
+    },
+    "ocr_wcu": {
+      "classification": "technical mixed footprint / fixture-safe read-only",
+      "evidence": [
+        "WindowsUiAutomationReadOnlyCollector blocks screenshots/invoke/click/keyboard/mouse/clipboard paths",
+        "WindowsUiAutomationEventStream keeps live subscription/action callbacks disabled and ActionAuthority false",
+        "OCR/ONNX/PaddleOCR readiness and worker footprints exist"
+      ],
+      "current_product_action_authority_percent": 0,
+      "upgrade_allowed": false
+    },
+    "browser_cdp_chromelab": {
+      "classification": "lab-only",
+      "evidence": [
+        "ChromeLab bridge and BrowserRuntime/CDP footprints exist",
+        "prior docs classify them as lab/separate/historical, not product authority"
+      ],
+      "current_product_authority_percent": 0,
+      "upgrade_allowed": false
+    },
+    "durable_stage1": {
+      "classification": "local/test-safe",
+      "evidence": [
+        "DurableAuditTrailAppendOnlyMinimal local/temp boundary",
+        "ProductActionAllowed false",
+        "Stage 2/product ledger path remains blocked"
+      ],
+      "stage2_implemented": false,
+      "product_ledger_path_authorized": false
+    }
+  },
+  "cross_boundary_result": {
+    "durable_stage1_to_product_runtime": "no connection",
+    "durable_stage1_to_browser_cdp": "no connection",
+    "durable_stage1_to_pilot": "docs-only mention",
+    "durable_stage1_to_nexa_handlers": "no connection",
+    "browser_cdp_to_wcu_ocr_action_authority": "no cross-enable",
+    "pilot_to_recipes_live_execution": "lab/test bridge / INFORMATION_INSUFFICIENT",
+    "ocr_to_product_action_authority": "no connection",
+    "nexa_handlers_to_current_product_command_bus": "historical/separate reference"
+  },
+  "stage2_readiness_gate": [
+    {
+      "gate_id": "S2-G0",
+      "area": "Repo/baseline clean",
+      "required_condition": "Expected HEAD, clean worktree, upstream 0 0, stash listed only.",
+      "current_evidence": "Guard PASS at e802cd6fccce60c75471b416f961e3f7770ea65f.",
+      "current_status": "PASS",
+      "blocker_severity": "None",
+      "allowed_next_action": "Continue docs-only audit."
+    },
+    {
+      "gate_id": "S2-G1",
+      "area": "Durable Stage 1 external audit accepted",
+      "required_condition": "Stage 1 local/test-safe evidence remains accepted.",
+      "current_evidence": "Stage 1 docs/source keep local/temp boundary and product action false.",
+      "current_status": "PASS_WITH_FINDINGS",
+      "blocker_severity": "P2/P3 future hardening",
+      "allowed_next_action": "Use only as local/test-safe evidence."
+    },
+    {
+      "gate_id": "S2-G2",
+      "area": "No product runtime authority",
+      "required_condition": "Runtime/live product enablement remains 0%.",
+      "current_evidence": "Claim-freeze and boundary docs preserve 0% product authority.",
+      "current_status": "PASS",
+      "blocker_severity": "P0 if violated",
+      "allowed_next_action": "Design-only planning only."
+    },
+    {
+      "gate_id": "S2-G3",
+      "area": "No service registration/handlers",
+      "required_condition": "No product service registration or handler activation.",
+      "current_evidence": "This block is docs-only; Nexa handlers remain separate admin boundary.",
+      "current_status": "PASS_WITH_FINDINGS",
+      "blocker_severity": "P2",
+      "allowed_next_action": "Dedicated Nexa audit before upgrade."
+    },
+    {
+      "gate_id": "S2-G4",
+      "area": "No product ledger path",
+      "required_condition": "No product ledger path authorized.",
+      "current_evidence": "Durable minimal ledger remains local/test-safe only.",
+      "current_status": "PASS",
+      "blocker_severity": "P0/P1 if violated",
+      "allowed_next_action": "Future design-only ledger proposal only."
+    },
+    {
+      "gate_id": "S2-G5",
+      "area": "Redaction-before-persistence unresolved",
+      "required_condition": "Must be solved before product persistence.",
+      "current_evidence": "Redaction runtime/persistence gate remains unresolved/design-only.",
+      "current_status": "BLOCKED_FOR_IMPLEMENTATION",
+      "blocker_severity": "P2 blocker",
+      "allowed_next_action": "Design-only redaction gate planning."
+    },
+    {
+      "gate_id": "S2-G6",
+      "area": "Runtime feature flag design-only",
+      "required_condition": "Fail-closed runtime feature flag required before enablement.",
+      "current_evidence": "Runtime flag plan remains design-only/missing for enablement.",
+      "current_status": "BLOCKED_FOR_IMPLEMENTATION",
+      "blocker_severity": "P2 blocker",
+      "allowed_next_action": "Design-only feature flag plan."
+    },
+    {
+      "gate_id": "S2-G7",
+      "area": "Browser/CDP boundary frozen",
+      "required_condition": "Browser/CDP/ChromeLab not product authority.",
+      "current_evidence": "Prior ADR/report freeze lab/separate/historical boundary.",
+      "current_status": "PASS_WITH_FINDINGS",
+      "blocker_severity": "P2/P3",
+      "allowed_next_action": "Dedicated Browser/CDP audit before upgrade."
+    },
+    {
+      "gate_id": "S2-G8",
+      "area": "WCU/OCR product authority 0%",
+      "required_condition": "No WCU/OCR product action authority.",
+      "current_evidence": "WCU false flags and OCR technical footprint evidence.",
+      "current_status": "PASS_WITH_FINDINGS",
+      "blocker_severity": "P2/P3",
+      "allowed_next_action": "Dedicated OCR/WCU audit before upgrade."
+    },
+    {
+      "gate_id": "S2-G9",
+      "area": "Pilot/Nexa separate boundary frozen",
+      "required_condition": "Pilot and Nexa not product/runtime authority.",
+      "current_evidence": "Pilot local runtime and Nexa admin handlers classified separately.",
+      "current_status": "PASS_WITH_FINDINGS",
+      "blocker_severity": "P2/P3",
+      "allowed_next_action": "Dedicated Pilot/Nexa audits before upgrade."
+    },
+    {
+      "gate_id": "S2-G10",
+      "area": "No cross-enable",
+      "required_condition": "No active or authorized cross-boundary connection.",
+      "current_evidence": "Cross-boundary audit found no authorized active connection.",
+      "current_status": "PASS_WITH_FINDINGS",
+      "blocker_severity": "P2 drift / P0 active leak",
+      "allowed_next_action": "Maintain boundary language."
+    },
+    {
+      "gate_id": "S2-G11",
+      "area": "Release/commercial NO-GO",
+      "required_condition": "No release/commercial readiness claim.",
+      "current_evidence": "Release/commercial remains 0% / NO-GO.",
+      "current_status": "PASS",
+      "blocker_severity": "P0 if violated",
+      "allowed_next_action": "No release/commercial work."
+    },
+    {
+      "gate_id": "S2-G12",
+      "area": "Manual GO before implementation",
+      "required_condition": "Stage 2 implementation requires explicit future macro-block and manual GO.",
+      "current_evidence": "This report is a gate, not implementation.",
+      "current_status": "PASS",
+      "blocker_severity": "P1/P0 if bypassed",
+      "allowed_next_action": "Next block may plan design-only Stage 2."
+    }
+  ],
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [
+      "Pilot local runtime/local IO/harness boundary.",
+      "Nexa admin handler/admin mutation boundary.",
+      "OCR/WCU mixed technical footprint.",
+      "Cross-boundary hardening must remain.",
+      "Redaction-before-persistence unresolved.",
+      "Runtime feature flag unresolved."
+    ],
+    "P3": [
+      "Pilot recipe execution dedicated audit required.",
+      "Nexa command-bus integration dedicated audit required.",
+      "Broad OCR authority dedicated audit required.",
+      "Browser/CDP product authority dedicated audit required before upgrade."
+    ],
+    "P4": [
+      "Historical docs remain traceability records under latest decision-log canon."
+    ]
+  },
+  "corrections_applied": [
+    "added docs/adr/stage-2-readiness-gate-design-only.md",
+    "added docs/qa/nodal-os-authority-boundary-external-audit-stage2-readiness-gate/report.md",
+    "added docs/qa/nodal-os-authority-boundary-external-audit-stage2-readiness-gate/report.json",
+    "added docs/handoff/nodal-os-authority-boundary-external-audit-stage2-readiness-gate-handoff.md",
+    "updated docs/decision-log.md"
+  ],
+  "existing_overclaim_corrections": [],
+  "information_insufficient": [
+    "Pilot recipe execution authority",
+    "Nexa admin handler integration into current command bus",
+    "Broad OCR authority",
+    "Runtime feature flag plan",
+    "Redaction-before-persistence"
+  ],
+  "overclaim_scan": {
+    "true_risk_changed_docs": 0,
+    "negative_assertion": "present",
+    "prohibited_boundary": "present",
+    "design_only_mention": "present",
+    "historical_reference": "present",
+    "accepted_local_test_safe_wording": "present",
+    "lab_runtime_wording": "present",
+    "fixture_safe_wording": "present",
+    "information_insufficient": "present"
+  },
+  "validations": {
+    "repo_guard": "PASS",
+    "external_authority_boundary_audit": "PASS_WITH_FINDINGS",
+    "source_footprint_verification": "PASS_WITH_FINDINGS",
+    "cross_boundary_audit": "PASS_WITH_FINDINGS",
+    "stage2_readiness_gate": "STAGE2_PLANNING_ALLOWED_DESIGN_ONLY",
+    "overclaim_scan": "PASS_NO_TRUE_RISK_IN_CHANGED_DOCS",
+    "json_validation": "PASS",
+    "git_diff_check": "PASS",
+    "tests_build": "NOT_RUN_BY_DESIGN_DOCS_ONLY"
+  },
+  "percentages": {
+    "durable_audit_trail_local_test_safe_append_write_candidate": "92-95%",
+    "durable_stage_1_test_only_enablement_safety": "88-92%",
+    "browser_cdp_chromelab_boundary_hardening": "85-90%",
+    "runtime_browser_wcu_authority_claim_freeze": "85-90%",
+    "pilot_nexa_ocr_authority_boundary_hardening": "80-88%",
+    "authority_boundary_external_audit_and_stage2_readiness_gate": "80-85%",
+    "stage2_planning_readiness": "65-75% design-only",
+    "browser_cdp_current_product_authority": "0%",
+    "onebrain_pilot_current_product_authority": "0%",
+    "nexa_current_product_command_authority": "0%",
+    "wcu_ocr_product_authority": "0%",
+    "runtime_live_product_enablement": "0%",
+    "durable_stage2_implementation": "0%",
+    "release_commercial_readiness": "0% / NO-GO",
+    "proyecto_usable_end_to_end": "20-30%"
+  },
+  "next_recommended_block": "NODAL_OS_DURABLE_STAGE2_PLANNING_DESIGN_ONLY_GATE"
+}
