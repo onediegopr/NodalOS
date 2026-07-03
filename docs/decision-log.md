@@ -266,3 +266,14 @@
 - Deferred: external head checkpoint, valid tail deletion detection, rollback-to-older-valid-ledger detection, crash-safe transactional append, and cross-process/distributed writer coordination.
 - Non-goals preserved: no product runtime, approval mutation store, service registration, command handler, DB/migration, network/provider call, product action, WORM/compliance-grade claim or release/commercial readiness.
 - Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_TRUNCATION_EVIDENCE_DESIGN_ONLY`.
+
+## NODAL_OS_DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_TRUNCATION_EVIDENCE_DESIGN_ONLY
+
+- Decision: `GO_HEAD_CHECKPOINT_TRUNCATION_EVIDENCE_DESIGN_ONLY`
+- Related existing capability: `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`
+- New design-only capability: `DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_TRUNCATION_EVIDENCE_DESIGN_ONLY`
+- Scope: formal design for local/test-safe head checkpoint and truncation/rollback evidence, including threat model, checkpoint model, verification model, trust boundary levels, reason codes, future approval gates, and anti-capabilities.
+- Designed: distinction between internal hash-chain tamper detection and checkpoint-assisted evidence for valid tail deletion, rollback to older valid ledger, replacement with older valid ledger, and ledger-head divergence from an expected checkpoint.
+- Not implemented: active checkpoint writer, active checkpoint verifier, runtime integration, service registration, command handler, product action, approval execution, approval mutation store, DB/migration, network/provider/cloud/KMS, WORM/compliance-grade boundary, production audit trail, release/commercial readiness.
+- Remaining risk: replacing both ledger and checkpoint inside the same trust boundary is not solved by local checkpoint design; external trust boundary remains future design only.
+- Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_LOCAL_TEST_SAFE_IMPLEMENTATION`.

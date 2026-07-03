@@ -1,0 +1,108 @@
+{
+  "decision": "GO_HEAD_CHECKPOINT_TRUNCATION_EVIDENCE_DESIGN_ONLY",
+  "existing_capability": "DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL",
+  "design_only_capability": "DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_TRUNCATION_EVIDENCE_DESIGN_ONLY",
+  "scope": "head_checkpoint_truncation_rollback_evidence_design_only",
+  "initial_head": "5f6e6b3feb5d3f052a0d3033f06f2fca6b6fb240",
+  "implemented_runtime_behavior": false,
+  "implemented_checkpoint_writer": false,
+  "implemented_checkpoint_verifier": false,
+  "non_goals_preserved": {
+    "runtime": false,
+    "service_registration": false,
+    "command_handlers": false,
+    "product_actions": false,
+    "approval_execution": false,
+    "approval_mutation_store": false,
+    "db_or_migration": false,
+    "network_or_provider_calls": false,
+    "kms_or_signature": false,
+    "worm_or_compliance_grade": false,
+    "production_audit_trail": false,
+    "release_or_commercial_readiness": false,
+    "stash_mutated": false
+  },
+  "current_ledger_detects": [
+    "malformed_json",
+    "invalid_entry_shape",
+    "empty_or_whitespace_ledger_line",
+    "sequence_gap",
+    "duplicate_sequence",
+    "reordered_records",
+    "previous_hash_mismatch",
+    "event_hash_mismatch",
+    "semantic_event_mutation_via_hash_mismatch",
+    "append_after_corrupted_ledger"
+  ],
+  "checkpoint_needed_for": [
+    "valid_tail_deletion_evidence",
+    "rollback_to_older_valid_ledger_evidence",
+    "replacement_with_older_valid_ledger_evidence",
+    "ledger_head_divergence_from_expected_checkpoint"
+  ],
+  "out_of_scope": [
+    "attacker_replaces_ledger_and_checkpoint_together_in_same_trust_boundary",
+    "full_directory_rollback",
+    "clock_tampering",
+    "process_compromise",
+    "local_admin_or_malware_control",
+    "distributed_adversary",
+    "compliance_or_worm_guarantee"
+  ],
+  "future_checkpoint_fields": [
+    "CapabilityId",
+    "LedgerId",
+    "LedgerPathFingerprint",
+    "LedgerFileName",
+    "HeadSequence",
+    "HeadEventHash",
+    "HeadPreviousHash",
+    "PreviousCheckpointHash",
+    "HeadCheckpointHash",
+    "CreatedAtUtc",
+    "CheckpointReason",
+    "CheckpointMode",
+    "CheckpointVersion",
+    "SafeSummaryOnly",
+    "IsLocalTestSafeOnly",
+    "IsProductionReady",
+    "IsWormBacked",
+    "IsComplianceGrade"
+  ],
+  "future_reason_codes": [
+    "HeadCheckpointMissing",
+    "HeadCheckpointMismatch",
+    "LedgerBehindCheckpoint",
+    "LedgerRollbackSuspected",
+    "LedgerTailDeletionSuspected",
+    "CheckpointChainMismatch",
+    "CheckpointUnsupportedVersion",
+    "CheckpointUnsafeShape",
+    "CheckpointNotProductionTrustBoundary",
+    "CheckpointVerificationNotImplemented"
+  ],
+  "trust_boundary_levels": {
+    "level_0": "no_checkpoint_current_state",
+    "level_1": "local_checkpoint_file_local_test_safe_only",
+    "level_2": "local_checkpoint_chain_local_test_safe_only",
+    "level_3": "external_checkpoint_boundary_future_design_only",
+    "level_4": "kms_worm_compliance_out_of_scope"
+  },
+  "anti_overclaim": {
+    "worm_claim": false,
+    "immutable_guarantee": false,
+    "tamper_proof_claim": false,
+    "compliance_grade_audit": false,
+    "production_audit_trail": false,
+    "runtime_readiness": false,
+    "release_readiness": false
+  },
+  "validation": {
+    "new_executable_tests_added": false,
+    "clean_closure_guard_required": true,
+    "json_validation_required": true,
+    "git_diff_check_required": true,
+    "anti_overclaim_scan_required": true
+  },
+  "next_safe_step": "NODAL_OS_DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_LOCAL_TEST_SAFE_IMPLEMENTATION"
+}
