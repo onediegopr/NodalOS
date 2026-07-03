@@ -451,6 +451,61 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_AppendsWithoutOverwritingDeletingOrTruncatingExistingEvents()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var first = ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-001" }, Stage2Gate());
+        var firstLine = File.ReadAllLines(first.LedgerFile!).Single();
+        var firstLength = new FileInfo(first.LedgerFile!).Length;
+        var second = ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-002" }, Stage2Gate());
+        var lines = File.ReadAllLines(first.LedgerFile!);
+        var secondLength = new FileInfo(first.LedgerFile!).Length;
+        var verification = ledger.VerifyFile(first.LedgerFile!);
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Appended, second.Decision);
+        Assert.AreEqual(2, lines.Length);
+        Assert.AreEqual(firstLine, lines[0]);
+        Assert.IsTrue(secondLength > firstLength);
+        Assert.IsTrue(lines[1].Contains("approval-stage2-002", StringComparison.Ordinal));
+        Assert.IsTrue(verification.Valid);
+        Assert.AreEqual(2, verification.EntryCount);
+        Assert.AreEqual(2, verification.LastSequenceNumber);
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_ConcurrentLocalTempAppendsRemainAppendOnlyAndValid()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var appendTasks = Enumerable.Range(1, 32)
+            .Select(i => Task.Run(() => ledger.AppendStage2TestOnly(
+                Policy(temp.Path),
+                Request() with { ApprovalReference = $"approval-stage2-{i:000}" },
+                Stage2Gate())))
+            .ToArray();
+
+        Task.WaitAll(appendTasks);
+        var results = appendTasks.Select(task => task.Result).ToArray();
+        var verification = ledger.VerifyFile(LedgerFile(temp.Path));
+        var lines = File.ReadAllLines(LedgerFile(temp.Path));
+        var entries = lines
+            .Select(line => System.Text.Json.JsonSerializer.Deserialize<DurableAuditTrailAppendOnlyMinimalEntry>(
+                line,
+                new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!)
+            .ToArray();
+
+        Assert.IsTrue(results.All(result => result.Decision == DurableAuditTrailAppendOnlyMinimalDecision.Appended));
+        Assert.IsTrue(results.All(result => result.AppendWriteCount == 1));
+        Assert.IsTrue(results.All(result => result.PersistedEventCount == 1));
+        Assert.IsTrue(verification.Valid);
+        Assert.AreEqual(32, verification.EntryCount);
+        CollectionAssert.AreEqual(Enumerable.Range(1, 32).Select(i => (long)i).ToArray(), entries.Select(entry => entry.SequenceNumber).ToArray());
+        Assert.AreEqual(32, entries.Select(entry => entry.EventId).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [TestMethod]
     public void MinimalLedger_PublicSurfaceDoesNotRegisterCommandsOrRuntimeExecution()
     {
         var forbiddenNames = new[]
