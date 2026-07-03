@@ -1,0 +1,58 @@
+{
+  "decision": "GO_WITH_FINDINGS_DURABLE_STAGE2_REPLAY_READ_MODEL_CHECKPOINT_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "input_head": "57547075fe5e167b76f6e75eae8a5444616e5980",
+  "scope": "Durable Stage 2 replay/read-model and checkpoint boundary test-only evidence.",
+  "repo_guard": {
+    "worktree_initial": "clean",
+    "origin_sync_initial": "0 0",
+    "stash": "listed only, not touched: stash@{0}: On chrome-lab-001-extension-local-ai-bridge: pre-m11-legacy-state"
+  },
+  "implementation": {
+    "source_code_changed": false,
+    "tests_added": [
+      "Stage2TestOnly_VerifyFileRepeatedReadsDoNotMutateLedger",
+      "Stage2TestOnly_LocalHashChainDoesNotOverclaimTailDeletionEvidenceWithoutCheckpoint"
+    ],
+    "runtime_product_enablement": "PASS_NONE",
+    "service_registration": "PASS_NONE",
+    "command_handlers": "PASS_NONE",
+    "ui_product_actions": "PASS_NONE",
+    "db_migration_provider_cloud_network": "PASS_NONE",
+    "browser_cdp_wcu_ocr_recipes_live": "PASS_NONE",
+    "release_commercial": "PASS_NO_GO",
+    "external_checkpoint_worm_kms_cloud": "PASS_NONE_PROHIBITED"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "External checkpoint, WORM, KMS, cloud or compliance-grade trust remains unimplemented and prohibited."
+    ],
+    "P4": [
+      "Historical docs remain traceability records under latest decision-log canon."
+    ]
+  },
+  "validations": {
+    "dotnet_build_onebrain_slnx": "PASS_0_WARNINGS_0_ERRORS",
+    "safety_durable_filter": "PASS_25_OF_25",
+    "recipes_durable_filter": "PASS_6_OF_6",
+    "git_diff_check": "PASS",
+    "json_validation": "PASS",
+    "static_scan_changed_files": "PASS_POSITIVE_HITS_ARE_GUARD_STRING_FIXTURES_INSIDE_TESTS_ONLY"
+  },
+  "percentages": {
+    "durable_audit_trail_local_test_safe_append_write_candidate": "95-97%",
+    "durable_stage2_test_only_gates": "87-92%",
+    "durable_stage2_test_only_implementation": "85-90%",
+    "runtime_live_product_enablement": "0%",
+    "product_enablement": "0%",
+    "release_commercial_readiness": "0% / NO-GO",
+    "proyecto_usable_end_to_end": "24-34%"
+  },
+  "next_macro_block": "NODAL_OS_DURABLE_STAGE2_REDACTION_HARDENING_TEST_ONLY",
+  "automatic_continuation": "ALLOWED_AFTER_COMMIT_PUSH_IF_VALIDATIONS_PASS"
+}

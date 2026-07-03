@@ -506,6 +506,51 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_VerifyFileRepeatedReadsDoNotMutateLedger()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-001" }, Stage2Gate());
+        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-002" }, Stage2Gate());
+        var ledgerFile = LedgerFile(temp.Path);
+        var beforeText = File.ReadAllText(ledgerFile);
+        var beforeLength = new FileInfo(ledgerFile).Length;
+
+        var firstRead = ledger.VerifyFile(ledgerFile);
+        var secondRead = ledger.VerifyFile(ledgerFile);
+        var afterText = File.ReadAllText(ledgerFile);
+        var afterLength = new FileInfo(ledgerFile).Length;
+
+        Assert.IsTrue(firstRead.Valid);
+        Assert.IsTrue(secondRead.Valid);
+        Assert.AreEqual(firstRead.EntryCount, secondRead.EntryCount);
+        Assert.AreEqual(firstRead.LastHash, secondRead.LastHash);
+        Assert.AreEqual(beforeLength, afterLength);
+        Assert.AreEqual(beforeText, afterText);
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_LocalHashChainDoesNotOverclaimTailDeletionEvidenceWithoutCheckpoint()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-001" }, Stage2Gate());
+        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-002" }, Stage2Gate());
+        var ledgerFile = LedgerFile(temp.Path);
+        var originalVerification = ledger.VerifyFile(ledgerFile);
+        var originalLines = File.ReadAllLines(ledgerFile);
+
+        File.WriteAllLines(ledgerFile, originalLines.Take(1));
+        var afterTailDeletion = ledger.VerifyFile(ledgerFile);
+
+        Assert.IsTrue(originalVerification.Valid);
+        Assert.AreEqual(2, originalVerification.EntryCount);
+        Assert.IsTrue(afterTailDeletion.Valid);
+        Assert.AreEqual(1, afterTailDeletion.EntryCount);
+        Assert.AreNotEqual(originalVerification.LastHash, afterTailDeletion.LastHash);
+    }
+
+    [TestMethod]
     public void MinimalLedger_PublicSurfaceDoesNotRegisterCommandsOrRuntimeExecution()
     {
         var forbiddenNames = new[]

@@ -157,6 +157,17 @@
 - Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_REPLAY_READ_MODEL_CHECKPOINT_TEST_ONLY`.
 
+## NODAL_OS_DURABLE_STAGE2_REPLAY_READ_MODEL_CHECKPOINT_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_REPLAY_READ_MODEL_CHECKPOINT_READY`
+- Status: accepted as Stage 2 test-only replay/read-model and checkpoint-boundary evidence expansion if final validation and push pass.
+- Input baseline HEAD: `57547075fe5e167b76f6e75eae8a5444616e5980`.
+- Scope: add Safety tests proving repeated `VerifyFile` reads are non-mutating and local hash-chain verification does not overclaim valid tail-deletion evidence without trusted checkpoint/head evidence.
+- Findings: P0 0, P1 0, P2 0, P3 1 (external checkpoint/WORM/KMS/cloud/compliance-grade trust remains unimplemented and prohibited), P4 1.
+- Tests: full solution build PASS 0 warnings/0 errors; Safety Durable filter PASS 25/25; Recipes Durable filter PASS 6/6; `git diff --check` PASS; static scan PASS with positive hits only as guard strings inside tests.
+- Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, external checkpoint/WORM/KMS/cloud trust, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_REDACTION_HARDENING_TEST_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
