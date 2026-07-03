@@ -20,6 +20,18 @@
 - Continuation: `PAUSE_FOR_MANUAL_GO_BEFORE_RUNTIME_PRODUCT_ENABLEMENT_OR_NEW_SCOPE` — not automatic; every high-value option opens a new scope requiring a fresh manual GO.
 - Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, product redaction service, external checkpoint/WORM/KMS/cloud trust, Stage 3 implementation, release/commercial readiness or stash modification.
 
+## NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_ONLY_READY`
+- Status: accepted as docs-only design for a future redaction-before-persistence service if final validation and push pass.
+- Input HEAD: `9f57da54f9a0975c7fdaf6fdfdccbf0e2ad2d3f7`.
+- Scope: define future service inputs, outputs, reject/redact policy, metadata/reference/nested handling, ordering, failure modes, anti-capabilities and required future test matrix without implementation.
+- Evidence reconciled: post-Stage 2 global audit selected this design scope; Stage 2 closeout confirms current redaction is caller-attested test-only proof plus deterministic pre-persistence rejection, not a product service.
+- Findings: P0 0, P1 0, P2 0, P3 3 (service remains design-only; classifier/redactor corpus expansion required before implementation; ordering/evidence/error leakage are future implementation risks), P4 1 (historical privacy/redaction docs remain traceability records).
+- Corrections: added redaction-before-persistence service design ADR, QA report MD/JSON and handoff; no source/test/runtime behavior changed.
+- Non-goals: no Stage 2 implementation beyond current test-only scope, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, product redaction service activation, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`
