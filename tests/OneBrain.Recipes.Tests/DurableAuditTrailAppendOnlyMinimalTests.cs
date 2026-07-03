@@ -114,7 +114,8 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
 
-        var result = ledger.AppendStage2TestOnly(Policy(temp.Path), Request("approval-stage2-001"), Stage2Gate());
+        var request = Request("approval-stage2-001");
+        var result = ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
         var persisted = File.ReadAllText(result.LedgerFile!);
         var verification = ledger.VerifyFile(result.LedgerFile!);
 
@@ -149,7 +150,8 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
                 ["decision"] = "approved-for-minimal-append-only-test"
             });
 
-    private static DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate Stage2Gate() =>
+    private static DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate Stage2Gate(
+        DurableAuditTrailAppendOnlyMinimalRequest request) =>
         new(
             ExplicitTestFixture: true,
             FeatureFlagValue: "enabled:test-only",
@@ -158,7 +160,10 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
                 FieldClassificationCompleted: true,
                 RedactionCompleted: true,
                 CompletedBeforePersistence: true,
-                Succeeded: true));
+                Succeeded: true),
+            RedactionResult: new RedactionBeforePersistenceService().Evaluate(
+                RedactionBeforePersistencePolicy.TestOnly,
+                request));
 
     private static string LedgerFile(string root) =>
         System.IO.Path.Combine(root, "durable-audit-trail.append-only.jsonl");

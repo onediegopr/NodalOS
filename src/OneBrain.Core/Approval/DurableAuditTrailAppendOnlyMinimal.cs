@@ -29,6 +29,8 @@ public enum DurableAuditTrailAppendOnlyMinimalRejectReason
     Stage2FeatureFlagDisabled,
     Stage2ProductFeatureFlagRejected,
     MissingRedactionBeforePersistenceProof,
+    RedactionBeforePersistenceRejected,
+    RedactionEvidenceMismatch,
     ProductLedgerPathRejected
 }
 
@@ -55,7 +57,8 @@ public sealed record DurableAuditTrailAppendOnlyMinimalRedactionProof(
 public sealed record DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(
     bool ExplicitTestFixture,
     string? FeatureFlagValue,
-    DurableAuditTrailAppendOnlyMinimalRedactionProof? RedactionProof);
+    DurableAuditTrailAppendOnlyMinimalRedactionProof? RedactionProof,
+    RedactionBeforePersistenceResult? RedactionResult = null);
 
 public sealed record DurableAuditTrailAppendOnlyMinimalEntry(
     long SequenceNumber,
@@ -178,19 +181,20 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         DurableAuditTrailAppendOnlyMinimalRequest request,
         DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate? gate)
     {
-        var rejection = ValidateStage2TestOnlyGate(policy, gate);
+        var rejection = ValidateStage2TestOnlyGate(policy, request, gate);
         if (rejection.Count > 0)
         {
             return Rejected(rejection, LedgerPathOrNull(policy));
         }
 
-        var dataRejection = ValidateStage2SensitiveData(request);
+        var safeRequest = gate!.RedactionResult!.SafeRequest!;
+        var dataRejection = ValidateStage2SensitiveData(safeRequest);
         if (dataRejection.Count > 0)
         {
             return Rejected(dataRejection, LedgerPathOrNull(policy));
         }
 
-        return Append(policy, request);
+        return Append(policy, safeRequest);
     }
 
     public DurableAuditTrailAppendOnlyMinimalVerification VerifyFile(string ledgerFile)
@@ -294,6 +298,7 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
 
     private static List<DurableAuditTrailAppendOnlyMinimalRejectReason> ValidateStage2TestOnlyGate(
         DurableAuditTrailAppendOnlyMinimalPolicy policy,
+        DurableAuditTrailAppendOnlyMinimalRequest request,
         DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate? gate)
     {
         var reasons = new List<DurableAuditTrailAppendOnlyMinimalRejectReason>();
@@ -326,6 +331,8 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
             reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.MissingRedactionBeforePersistenceProof);
         }
 
+        reasons.AddRange(ValidateRedactionBeforePersistenceResult(request, gate.RedactionResult));
+
         return reasons;
     }
 
@@ -336,6 +343,41 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         && proof.RedactionCompleted
         && proof.CompletedBeforePersistence
         && proof.Succeeded;
+
+    private static IReadOnlyList<DurableAuditTrailAppendOnlyMinimalRejectReason> ValidateRedactionBeforePersistenceResult(
+        DurableAuditTrailAppendOnlyMinimalRequest request,
+        RedactionBeforePersistenceResult? result)
+    {
+        if (result is null
+            || result.Decision != RedactionBeforePersistenceDecision.Allowed
+            || !result.Succeeded
+            || result.SafeRequest is null
+            || !result.Evidence.CompletedBeforePersistence
+            || result.Evidence.ContainsRawValues)
+        {
+            var reasons = new List<DurableAuditTrailAppendOnlyMinimalRejectReason>
+            {
+                DurableAuditTrailAppendOnlyMinimalRejectReason.RedactionBeforePersistenceRejected
+            };
+            if (result?.Reasons.Any(reason =>
+                    reason is RedactionBeforePersistenceReason.SecretLikeContentRejected
+                        or RedactionBeforePersistenceReason.PiiLikeContentRejected
+                        or RedactionBeforePersistenceReason.PathLikeContentRejected) == true)
+            {
+                reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
+            }
+
+            return reasons;
+        }
+
+        var expectedHash = RedactionBeforePersistenceService.ComputeCandidateHash(request);
+        if (!FixedTimeEquals(result.Evidence.CandidateHash, expectedHash))
+        {
+            return [DurableAuditTrailAppendOnlyMinimalRejectReason.RedactionEvidenceMismatch];
+        }
+
+        return [];
+    }
 
     private static List<DurableAuditTrailAppendOnlyMinimalRejectReason> ValidateStage2SensitiveData(
         DurableAuditTrailAppendOnlyMinimalRequest request)

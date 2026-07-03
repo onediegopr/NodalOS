@@ -54,6 +54,18 @@
 - Non-goals: no tests added, implementation, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Stop point: `PAUSE_FOR_MANUAL_GO_REDACTION_BEFORE_PERSISTENCE_SERVICE_IMPLEMENTATION_OR_TESTS`.
 
+## NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_ONLY_IMPLEMENTATION
+
+- Decision target: `GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_TEST_ONLY_SERVICE_READY`
+- Status: accepted as test-only/local-safe redaction-before-persistence service implementation if final validation and push pass.
+- Input HEAD: `7ba1e9fe3cf3d7e4c4819f5d02e994dbd052f639`.
+- Scope: implement isolated Core redaction-before-persistence service, result/evidence model, Stage 2 test-only integration and Safety/Recipes tests without runtime/product enablement.
+- Implemented: deterministic fail-closed service for missing/unknown policy, missing candidate, malformed metadata/references, raw payload, secret-like, PII-like and path-like content; evidence-safe summary; candidate-hash-bound Stage 2 append gate.
+- Validations: full solution build PASS 0 warnings/0 errors on final successful run; Core build PASS 0 warnings/0 errors; Safety focused tests PASS 32/32; Recipes focused tests PASS 6/6; `git diff --check` PASS; JSON validation PASS; static scan changed files PASS no TRUE_RISK.
+- Findings: P0 0, P1 0, P2 0, P3 3 (focused corpus should expand before broader claims; nested metadata remains future because durable request metadata is flat; product/runtime adoption remains blocked by external audit and manual GO), P4 1 (historical docs remain traceability records).
+- Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_ONLY_EXTERNAL_AUDIT_AND_FIXES`.
+
 ## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`

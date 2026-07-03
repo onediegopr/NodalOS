@@ -351,12 +351,12 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         var gates = new[]
         {
             null,
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(false, null, RedactionProof()),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, null, RedactionProof()),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, string.Empty, RedactionProof()),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "true", RedactionProof()),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled", RedactionProof()),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:product", RedactionProof())
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(false, null, RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, null, RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, string.Empty, RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "true", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled", RedactionProof(), RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:product", RedactionProof(), RedactionResult(Request()))
         };
 
         foreach (var gate in gates)
@@ -378,12 +378,12 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         var flag = "enabled:test-only";
         var gates = new[]
         {
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, null),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { PolicyReference = "" }),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { FieldClassificationCompleted = false }),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { RedactionCompleted = false }),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { CompletedBeforePersistence = false }),
-            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { Succeeded = false })
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, null, RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { PolicyReference = "" }, RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { FieldClassificationCompleted = false }, RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { RedactionCompleted = false }, RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { CompletedBeforePersistence = false }, RedactionResult(Request())),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { Succeeded = false }, RedactionResult(Request()))
         };
 
         foreach (var gate in gates)
@@ -392,6 +392,34 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
 
             Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
             CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MissingRedactionBeforePersistenceProof);
+            AssertNoSideEffects(result);
+        }
+
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_FailsClosedWithoutSuccessfulRedactionServiceResult()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var request = Request();
+        var otherRequest = request with { ApprovalReference = "approval-other" };
+        var failedRedaction = new RedactionBeforePersistenceService().Evaluate(
+            RedactionBeforePersistencePolicy.TestOnly,
+            request with { Metadata = new Dictionary<string, string> { ["reviewer"] = "person@example.com" } });
+        var gates = new[]
+        {
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only", RedactionProof(), null),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only", RedactionProof(), failedRedaction),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only", RedactionProof(), RedactionResult(otherRequest))
+        };
+
+        foreach (var gate in gates)
+        {
+            var result = ledger.AppendStage2TestOnly(Policy(temp.Path), request, gate);
+
+            Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
             AssertNoSideEffects(result);
         }
 
@@ -433,16 +461,15 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
 
-        var result = ledger.AppendStage2TestOnly(
-            Policy(temp.Path),
-            Request() with
+        var request = Request() with
+        {
+            Metadata = new Dictionary<string, string>
             {
-                Metadata = new Dictionary<string, string>
-                {
-                    ["browser-cdp-payload"] = "Authorization: Bearer live-token"
-                }
-            },
-            Stage2Gate());
+                ["browser-cdp-payload"] = "Authorization: Bearer live-token"
+            }
+        };
+
+        var result = ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
 
         Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
         CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
@@ -456,16 +483,15 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
 
-        var result = ledger.AppendStage2TestOnly(
-            Policy(temp.Path),
-            Request() with
-            {
-                EvidenceReferences =
-                [
-                    @"C:\Users\person\Documents\private-approval.txt"
-                ]
-            },
-            Stage2Gate());
+        var request = Request() with
+        {
+            EvidenceReferences =
+            [
+                @"C:\Users\person\Documents\private-approval.txt"
+            ]
+        };
+
+        var result = ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
 
         Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
         CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
@@ -479,16 +505,15 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
 
-        var result = ledger.AppendStage2TestOnly(
-            Policy(temp.Path),
-            Request() with
+        var request = Request() with
+        {
+            Metadata = new Dictionary<string, string>
             {
-                Metadata = new Dictionary<string, string>
-                {
-                    ["reviewer-email"] = "person@example.com"
-                }
-            },
-            Stage2Gate());
+                ["reviewer-email"] = "person@example.com"
+            }
+        };
+
+        var result = ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
 
         Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
         CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
@@ -502,10 +527,12 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
 
-        var first = ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-001" }, Stage2Gate());
+        var firstRequest = Request() with { ApprovalReference = "approval-stage2-001" };
+        var secondRequest = Request() with { ApprovalReference = "approval-stage2-002" };
+        var first = ledger.AppendStage2TestOnly(Policy(temp.Path), firstRequest, Stage2Gate(firstRequest));
         var firstLine = File.ReadAllLines(first.LedgerFile!).Single();
         var firstLength = new FileInfo(first.LedgerFile!).Length;
-        var second = ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-002" }, Stage2Gate());
+        var second = ledger.AppendStage2TestOnly(Policy(temp.Path), secondRequest, Stage2Gate(secondRequest));
         var lines = File.ReadAllLines(first.LedgerFile!);
         var secondLength = new FileInfo(first.LedgerFile!).Length;
         var verification = ledger.VerifyFile(first.LedgerFile!);
@@ -526,10 +553,11 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
         var appendTasks = Enumerable.Range(1, 32)
-            .Select(i => Task.Run(() => ledger.AppendStage2TestOnly(
-                Policy(temp.Path),
-                Request() with { ApprovalReference = $"approval-stage2-{i:000}" },
-                Stage2Gate())))
+            .Select(i => Task.Run(() =>
+            {
+                var request = Request() with { ApprovalReference = $"approval-stage2-{i:000}" };
+                return ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
+            }))
             .ToArray();
 
         Task.WaitAll(appendTasks);
@@ -556,8 +584,10 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     {
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
-        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-001" }, Stage2Gate());
-        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-002" }, Stage2Gate());
+        var firstRequest = Request() with { ApprovalReference = "approval-stage2-001" };
+        var secondRequest = Request() with { ApprovalReference = "approval-stage2-002" };
+        ledger.AppendStage2TestOnly(Policy(temp.Path), firstRequest, Stage2Gate(firstRequest));
+        ledger.AppendStage2TestOnly(Policy(temp.Path), secondRequest, Stage2Gate(secondRequest));
         var ledgerFile = LedgerFile(temp.Path);
         var beforeText = File.ReadAllText(ledgerFile);
         var beforeLength = new FileInfo(ledgerFile).Length;
@@ -580,8 +610,10 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     {
         using var temp = new TempDirectory();
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
-        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-001" }, Stage2Gate());
-        ledger.AppendStage2TestOnly(Policy(temp.Path), Request() with { ApprovalReference = "approval-stage2-002" }, Stage2Gate());
+        var firstRequest = Request() with { ApprovalReference = "approval-stage2-001" };
+        var secondRequest = Request() with { ApprovalReference = "approval-stage2-002" };
+        ledger.AppendStage2TestOnly(Policy(temp.Path), firstRequest, Stage2Gate(firstRequest));
+        ledger.AppendStage2TestOnly(Policy(temp.Path), secondRequest, Stage2Gate(secondRequest));
         var ledgerFile = LedgerFile(temp.Path);
         var originalVerification = ledger.VerifyFile(ledgerFile);
         var originalLines = File.ReadAllLines(ledgerFile);
@@ -677,10 +709,19 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
             EvidenceReferences:
             [
                 "docs/qa/durable-audit-trail-fixture/report.md"
-            ]);
+            ],
+            Metadata: new Dictionary<string, string>
+            {
+                ["decision"] = "approved-for-minimal-append-only-test"
+            });
 
-    private static DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate Stage2Gate() =>
-        new(true, "enabled:test-only", RedactionProof());
+    private static DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate Stage2Gate(
+        DurableAuditTrailAppendOnlyMinimalRequest? request = null) =>
+        new(true, "enabled:test-only", RedactionProof(), RedactionResult(request ?? Request()));
+
+    private static RedactionBeforePersistenceResult RedactionResult(
+        DurableAuditTrailAppendOnlyMinimalRequest request) =>
+        new RedactionBeforePersistenceService().Evaluate(RedactionBeforePersistencePolicy.TestOnly, request);
 
     private static DurableAuditTrailAppendOnlyMinimalRedactionProof RedactionProof() =>
         new(
