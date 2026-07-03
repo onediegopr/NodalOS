@@ -287,3 +287,12 @@
 - Gate state: G0-G5, G7-G9, G15-G16 and G20 pass; G6, G10, G12-G14 are partial; G11 redaction-before-persistence and G19 runtime feature flag plan are missing; G17 external audit and G18 manual GO are required.
 - Anti-capabilities: no product audit trail enablement, service registration, command handler activation, UI action button, product ledger path, DB-backed audit trail, cloud/network persistence, provider/LLM call, browser/CDP/WCU/OCR/recipes live write, production, WORM, compliance-grade, release-ready or commercial-ready claim.
 - Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_ENABLEMENT_GATE_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_DURABLE_AUDIT_TRAIL_PRE_ENABLEMENT_CONTROL_PLANE_DESIGN_ONLY
+
+- Decision: `GO_DURABLE_AUDIT_TRAIL_PRE_ENABLEMENT_CONTROL_PLANE_DESIGN_ONLY_READY`
+- Baseline: `1d3a68bfd4e86d405634bbd87a1725a670e13d17`
+- Scope: docs-only pre-enablement control plane for `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`, including scope lock, redaction-before-persistence design gate, runtime feature flag fail-closed design, append-only/property/concurrency test plan, replay/read model/checkpoint/truncation evidence plan, failure/rollback/non-rollback policy, external audit pack prep, QA, ADR and handoff.
+- Non-goals: no source or test behavior changes, runtime enablement, service registration, command handler, command bus wiring, UI product action, product ledger path, DB/migration, provider/cloud/network, browser/CDP, WCU/OCR, recipes live write, release/commercial readiness, production, WORM or compliance-grade claim.
+- Remaining blockers: redaction-before-persistence and runtime feature flag are design-only; append-only property tests, concurrency stress tests, schema compatibility tests, replay/read model tests, failure/rollback tests, external audit and manual GO remain required before any enablement.
+- Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_PRE_ENABLEMENT_CONTROL_PLANE_EXTERNAL_AUDIT_READ_ONLY`.
