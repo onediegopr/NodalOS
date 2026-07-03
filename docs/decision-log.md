@@ -78,6 +78,19 @@
 - Non-goals: no Stage 2 implementation, source/test/runtime changes, `Program.cs` changes, endpoint changes, service registration changes, command handlers, command bus wiring, product actions, UI live button, CDP live activation, browser automation, WCU/OCR live action, Recipes live execution, product ledger path, DB/migration, provider/cloud/network, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_PLANNING_DESIGN_ONLY_GATE`.
 
+## NODAL_OS_DURABLE_STAGE2_PLANNING_DESIGN_ONLY_GATE
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_PLANNING_DESIGN_ONLY_GATE_READY`
+- Stage 2 implementation status: `STAGE2_IMPLEMENTATION_STILL_PROHIBITED`.
+- Status: accepted as docs-only Durable Stage 2 planning gate if final validation and push pass.
+- Input baseline HEAD: `87e8b66dd251c7af24127d7e4b926063ec2008dc`.
+- Scope: define Stage 2 test-only/dev-sandbox planning gates, blockers, future negative tests, anti-capabilities and required external audit/manual GO without implementing Stage 2.
+- Findings: P0 0, P1 0, P2 3 (redaction-before-persistence unresolved; runtime feature flag unresolved; negative tests must precede any Stage 2 code), P3 2, P4 1.
+- Corrections: added Durable Stage 2 planning ADR, QA report MD/JSON and handoff; no source/tests/runtime files changed.
+- Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop condition: automatic continuation to Stage 2 test-only implementation is blocked; external audit and explicit manual GO are required first.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_PLANNING_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
