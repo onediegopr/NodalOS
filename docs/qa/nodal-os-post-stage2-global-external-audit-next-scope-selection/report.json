@@ -1,0 +1,97 @@
+{
+  "decision": "GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "ec2ecfcbe02b3f5611543c736694808a5fb3dfd8",
+  "mode": "POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_READ_ONLY_AND_NEXT_SCOPE_SELECTION",
+  "originSyncInitial": "0 0",
+  "worktreeInitial": "clean",
+  "stash": "listed_only_not_touched",
+  "scopeLeak": false,
+  "stage2DeltaBase": "7c8f9fa6b9d2648955baebe06ed7d1b91ea3eb44",
+  "stage2AuditResult": "STAGE_2_TEST_ONLY_CONFIRMED_ALIGNED",
+  "changedFileClassification": {
+    "coreCodeTestOnly": ["src/OneBrain.Core/Approval/DurableAuditTrailAppendOnlyMinimal.cs"],
+    "testsSafety": ["tests/OneBrain.Safety.Tests/DurableAuditTrailAppendOnlyMinimalSafetyTests.cs"],
+    "testsRecipes": ["tests/OneBrain.Recipes.Tests/DurableAuditTrailAppendOnlyMinimalTests.cs"],
+    "docs": "6 ADRs, 6 QA report pairs, 6 handoffs, decision-log",
+    "runtimeProductRisk": "none",
+    "programCsOrBrowserCdpOrServiceRegistration": "none"
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "fullSolutionBuild": {
+      "command": "dotnet build OneBrain.slnx",
+      "result": "PASS",
+      "exitCode": 0,
+      "warningsIncrementalRun": 0,
+      "warningsCleanBuildPreExistingUnrelated": 33,
+      "warningsFromStage2Files": 0
+    },
+    "safetyDurableFilter": { "result": "PASS", "passed": 27 },
+    "recipesDurableFilter": { "result": "PASS", "passed": 6 },
+    "worktreeAfterTests": "clean",
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticOverclaimScan": "PASS_NO_TRUE_RISK"
+  },
+  "crossBoundary": {
+    "browserCdpChromeLab": "NO_CONNECTION",
+    "wcuOcrUiaWin32": "NO_CONNECTION",
+    "pilot": "NO_CONNECTION",
+    "nexa": "NO_CONNECTION",
+    "recipesLive": "NO_CONNECTION",
+    "productRuntimeCommandBusUi": "NO_CONNECTION",
+    "dbCloudProviderNetwork": "NO_CONNECTION",
+    "releaseCommercial": "NO_CONNECTION_NO_GO"
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 3,
+    "p4": 1
+  },
+  "findingDetails": [
+    { "severity": "P3", "id": "redaction_is_deterministic_test_only_gate_not_service", "status": "documented" },
+    { "severity": "P3", "id": "external_checkpoint_worm_kms_cloud_unimplemented_tail_deletion_local_limitation", "status": "documented" },
+    { "severity": "P3", "id": "inherited_allowlocalteststorageonly_false_seam_and_isproductledgerpath_is_name_heuristic", "status": "documented" },
+    { "severity": "P4", "id": "build_zero_warnings_phrasing_precision_incremental_vs_clean", "status": "reconciled_in_this_report" }
+  ],
+  "correctionsApplied": [
+    "added_post_stage2_qa_report_md_and_json",
+    "added_post_stage2_handoff",
+    "added_next_scope_selection_adr_design_only",
+    "updated_decision_log",
+    "reconciled_build_warning_phrasing_canonically"
+  ],
+  "percentages": {
+    "durableAuditTrailLocalTestSafeAppendWriteCandidate": "95-97%",
+    "durableStage1TestOnlyEnablementSafety": "88-92%",
+    "durableStage2TestOnlyGates": "90-94%",
+    "durableStage2TestOnlyImplementation": "88-92%",
+    "redactionBeforePersistenceProductService": "0% / NO-GO (test-only deterministic gate only)",
+    "runtimeFeatureFlagProductManager": "0% / NO-GO (test-only gate only)",
+    "replayReadModelReadOnlyEvidence": "test-only evidence present",
+    "checkpointExternalWormKmsCloud": "0% / NO-GO (local limitation documented)",
+    "browserCdpProductAuthority": "0%",
+    "wcuOcrProductAuthority": "0%",
+    "pilotNexaCurrentProductAuthority": "0%",
+    "runtimeLiveProductEnablement": "0% / NO-GO",
+    "releaseCommercialReadiness": "0% / NO-GO",
+    "projectUsableEndToEnd": "24-34%"
+  },
+  "nextScopeMatrix": {
+    "A": "stage2_external_hardening_continuation_test_only",
+    "B": "redaction_before_persistence_service_design_only",
+    "C": "runtime_feature_flag_architecture_design_only",
+    "D": "checkpoint_worm_kms_cloud_external_limitation_audit",
+    "E": "browser_cdp_wcu_ocr_recipes_next_boundary_audit",
+    "F": "roadmap_release_blockers_global_audit"
+  },
+  "selectedNextMacroBlock": "NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_ONLY",
+  "zeroNewScopeFallback": "Option A (Stage 2 test-only hardening continuation)",
+  "continuation": "PAUSE_FOR_MANUAL_GO_BEFORE_RUNTIME_PRODUCT_ENABLEMENT_OR_NEW_SCOPE",
+  "automaticContinuation": false
+}

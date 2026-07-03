@@ -7,6 +7,19 @@
 - Current source of truth: final privacy/export/controlled-execution closeout and its post-audit pause confirmations.
 - Historical entries below remain traceability records. They do not override the current NO-GO state for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial readiness.
 
+## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
+
+- Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
+- Status: accepted as docs-only/read-only post-Stage 2 global external audit and next-scope selection if final validation and push pass.
+- Input HEAD: `ec2ecfcbe02b3f5611543c736694808a5fb3dfd8`.
+- Scope: re-audit the Stage 2 test-only delta (`7c8f9fa6..ec2ecfcb`), re-run safe validations, confirm cross-boundary no-connection and no overclaim, select the next safe scope.
+- Stage 2 audit result: `STAGE_2_TEST_ONLY_CONFIRMED_ALIGNED` — additive `AppendStage2TestOnly` gate only; `Append`/Stage 1 unchanged; test-only/local-temp; fail-closed feature flag; redaction/sensitive-data gate before persistence; product-ledger-path rejection; no service registration/handlers/UI/DB/cloud/Browser/CDP/WCU/OCR/Recipes wiring.
+- Validations: full solution build PASS exit 0 (incremental 0 warnings; clean build 33 pre-existing unrelated legacy warnings, 0 from Stage 2 files); Safety Durable 27/27; Recipes Durable 6/6; worktree clean after tests; `git diff --check` PASS; 6 Stage 2 JSON reports valid; static/overclaim scan no TRUE_RISK.
+- Findings: P0 0, P1 0, P2 0, P3 3 (redaction deterministic caller-attested test-only gate not a service; external checkpoint/WORM/KMS/cloud unimplemented with documented tail-deletion local limitation; inherited `AllowLocalTestStorageOnly=false` seam plus name-heuristic `IsProductLedgerPath`), P4 1 (build "0 warnings" phrasing precise only for incremental/`--no-restore`; reconciled canonically).
+- Next macro-block: primary `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_DESIGN_ONLY` (Option B, design-only); zero-new-scope fallback Option A (Stage 2 test-only hardening continuation).
+- Continuation: `PAUSE_FOR_MANUAL_GO_BEFORE_RUNTIME_PRODUCT_ENABLEMENT_OR_NEW_SCOPE` — not automatic; every high-value option opens a new scope requiring a fresh manual GO.
+- Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, product redaction service, external checkpoint/WORM/KMS/cloud trust, Stage 3 implementation, release/commercial readiness or stash modification.
+
 ## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`
