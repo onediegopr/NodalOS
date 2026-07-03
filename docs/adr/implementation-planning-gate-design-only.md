@@ -56,3 +56,23 @@ This ADR does not implement runtime/live, execution, mutation, physical export, 
 - All enabled counts remain `0`.
 - All real capability readiness remains `0%`.
 - Release/commercial remains `NO-GO`.
+
+## Hardening Addendum: Browser/CDP, WCU/OCR and Recipes
+
+The pre-runtime external audit found a P2 non-blocking gap: Browser/CDP live, WCU/OCR live and recipes real execution were blocked in the candidate matrix, but did not have dedicated negative requirement rows.
+
+This addendum hardens those future candidates as design-only requirements:
+
+- Browser/CDP remains `FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO`; no system browser, user Chrome/Edge, real navigation, credential entry, login automation, challenge bypass, stealth/proxy evasion, cookie/session reuse, CDP live connection, WebSocket live connection, DOM mutation, click/type/submit, download/export, filesystem output, service registration or command handler is allowed.
+- WCU/OCR remains `FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO`; no real screen capture, OCR over real data, UIA live access, keyboard/mouse action, click/type/hotkey, window focus manipulation, clipboard access, filesystem output, screenshot/OCR retention, secret/PII scan disguised as OCR, external app automation, service registration or command handler is allowed.
+- Recipes remain `FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO`; no recipe action runner, scheduler, background execution, retry loop, detector/trigger, browser action, desktop action, filesystem output, network call, credential use, data extraction, export, mutation, service registration or command handler is allowed.
+
+Each hardened candidate requires:
+
+- explicit user GO for that exact scope;
+- a scope-specific external audit before implementation;
+- fail-closed behavior;
+- no-side-effect proof;
+- negative tests before implementation.
+
+The hardening does not approve implementation. Runtime/live, execution, mutation, physical export, redaction runtime, retention/deletion runtime, Browser/CDP live, WCU/OCR live, recipes execution real and release/commercial readiness remain unavailable.

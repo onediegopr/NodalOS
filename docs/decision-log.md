@@ -184,3 +184,12 @@
 - Finding: P2 non-blocking; browser/CDP live, WCU/OCR live and recipes real execution are blocked in the candidate matrix but should receive dedicated negative test requirement rows before any first real capability scope proposal.
 - Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_IMPLEMENTATION_PLANNING_GATE_HARDENING_DESIGN_ONLY`, design-only hardening only.
+
+## NODAL_OS_IMPLEMENTATION_PLANNING_GATE_HARDENING_DESIGN_ONLY
+
+- Decision target: `GO_NODAL_OS_IMPLEMENTATION_PLANNING_GATE_HARDENING_DESIGN_ONLY_READY`
+- Status: accepted as design-only hardening if validation passes.
+- Input: pre-runtime external audit at `2834b6fbf11e9a51daf3b01a14a35c5b42827ce1`.
+- Scope: resolve the P2 by adding dedicated Browser/CDP, WCU/OCR and Recipes negative requirements, no-go flags, enabled counts at `0`, Safety/Recipes assertions, ADR addendum and QA hardening report.
+- Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_FIRST_REAL_CAPABILITY_CANDIDATE_SCOPE_PROPOSAL_READ_ONLY`, read-only scope proposal only.

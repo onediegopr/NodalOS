@@ -1,0 +1,83 @@
+{
+  "decision": "GO_NODAL_OS_IMPLEMENTATION_PLANNING_GATE_HARDENING_DESIGN_ONLY_READY",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "2834b6fbf11e9a51daf3b01a14a35c5b42827ce1",
+  "canonicalState": "PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME",
+  "inputDecision": "GO_WITH_FINDINGS_NODAL_OS_EXTERNAL_AUDIT_PRE_RUNTIME_GATE_READ_ONLY",
+  "p2Finding": {
+    "statusBefore": "Browser/CDP live, WCU/OCR live and recipes real execution were blocked in the candidate matrix but did not have dedicated negative requirement rows.",
+    "resolution": "Dedicated design-only negative requirements, counts, no-go flags and tests were added.",
+    "statusAfter": "RESOLVED_DESIGN_ONLY"
+  },
+  "hardening": {
+    "browserCdp": {
+      "status": "FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO",
+      "requiresExternalAudit": true,
+      "requiresExplicitUserGo": true,
+      "allowsRealCapabilityNow": false
+    },
+    "wcuOcr": {
+      "status": "FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO",
+      "requiresExternalAudit": true,
+      "requiresExplicitUserGo": true,
+      "allowsRealCapabilityNow": false
+    },
+    "recipes": {
+      "status": "FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO",
+      "requiresExternalAudit": true,
+      "requiresExplicitUserGo": true,
+      "allowsRealCapabilityNow": false
+    }
+  },
+  "counts": {
+    "runtimeEnabledCount": 0,
+    "executionEnabledCount": 0,
+    "mutationEnabledCount": 0,
+    "exportEnabledCount": 0,
+    "browserCdpLiveEnabledCount": 0,
+    "wcuOcrLiveEnabledCount": 0,
+    "recipesExecutionEnabledCount": 0,
+    "serviceRegistrationCount": 0,
+    "commandHandlerCount": 0,
+    "productActionCount": 0,
+    "filesystemOutputCount": 0,
+    "networkProviderCallCount": 0
+  },
+  "findingsBySeverity": {
+    "p0": [],
+    "p1": [],
+    "p2": [],
+    "p3": [],
+    "p4": []
+  },
+  "validations": {
+    "dotnetBuild": "PASS_WITH_PRE_EXISTING_WARNINGS",
+    "focusedSafetyTests": "PASS_9_TESTS",
+    "focusedRecipesTests": "PASS_9_TESTS",
+    "phaseESafety": "PASS_68_TESTS",
+    "phaseERecipes": "PASS_81_TESTS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "overclaimScans": "PASS_NO_TRUE_RISK"
+  },
+  "noGoCapabilities": [
+    "runtime/live",
+    "execution real",
+    "mutation real",
+    "physical export real",
+    "redaction runtime real",
+    "secret/PII scan real",
+    "retention/deletion runtime real",
+    "service registration",
+    "command handlers",
+    "product actions",
+    "filesystem product IO",
+    "provider/cloud/network",
+    "browser/CDP live",
+    "WCU/OCR live",
+    "recipes execution real",
+    "release/commercial readiness"
+  ],
+  "nextRecommendedBlock": "NODAL_OS_FIRST_REAL_CAPABILITY_CANDIDATE_SCOPE_PROPOSAL_READ_ONLY"
+}

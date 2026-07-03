@@ -59,6 +59,18 @@ public sealed record ImplementationNegativeTestRequirement(
     bool ImplementedNow,
     string Assertion);
 
+public sealed record ImplementationCapabilityHardeningRequirement(
+    string RequirementId,
+    string Capability,
+    string RequiredExternalAuditScope,
+    string RequiredUserGoScope,
+    string CandidateBlockedReason,
+    bool RequiredFailClosedBehavior,
+    bool RequiredNoSideEffectProof,
+    bool RequiredNegativeTestsBeforeImplementation,
+    bool AllowsRealCapabilityNow,
+    IReadOnlyList<string> ForbiddenUntilApproved);
+
 public sealed record ImplementationNoGoCapabilityStatus(
     bool CanOpenRuntimeNow,
     bool CanExecuteNow,
@@ -71,6 +83,9 @@ public sealed record ImplementationNoGoCapabilityStatus(
     bool CanCreateCommandHandlerNow,
     bool CanUseProductIoNow,
     bool CanUseProviderNetworkNow,
+    bool CanUseBrowserCdpLiveNow,
+    bool CanUseWcuOcrLiveNow,
+    bool CanExecuteRecipesNow,
     string ReleaseCommercialReadiness)
 {
     public bool AllNoGo =>
@@ -85,6 +100,9 @@ public sealed record ImplementationNoGoCapabilityStatus(
         && !CanCreateCommandHandlerNow
         && !CanUseProductIoNow
         && !CanUseProviderNetworkNow
+        && !CanUseBrowserCdpLiveNow
+        && !CanUseWcuOcrLiveNow
+        && !CanExecuteRecipesNow
         && ReleaseCommercialReadiness == "NO-GO";
 }
 
@@ -95,6 +113,9 @@ public sealed record ImplementationPlanningGateCounts(
     int ExportEnabledCount,
     int RedactionRuntimeEnabledCount,
     int RetentionDeletionEnabledCount,
+    int BrowserCdpLiveEnabledCount,
+    int WcuOcrLiveEnabledCount,
+    int RecipesExecutionEnabledCount,
     int ServiceRegistrationCount,
     int CommandHandlerCount,
     int ProductActionCount,
@@ -108,6 +129,9 @@ public sealed record ImplementationPlanningGateCounts(
         && ExportEnabledCount == 0
         && RedactionRuntimeEnabledCount == 0
         && RetentionDeletionEnabledCount == 0
+        && BrowserCdpLiveEnabledCount == 0
+        && WcuOcrLiveEnabledCount == 0
+        && RecipesExecutionEnabledCount == 0
         && ServiceRegistrationCount == 0
         && CommandHandlerCount == 0
         && ProductActionCount == 0
@@ -127,6 +151,9 @@ public sealed record ImplementationPlanningGateDesignOnly(
     string RecommendedFutureCandidateStatus,
     IReadOnlyList<ImplementationGateRequirement> GateMatrix,
     IReadOnlyList<ImplementationNegativeTestRequirement> NegativeTestRequirements,
+    IReadOnlyList<ImplementationCapabilityHardeningRequirement> BrowserCdpNegativeRequirements,
+    IReadOnlyList<ImplementationCapabilityHardeningRequirement> WcuOcrNegativeRequirements,
+    IReadOnlyList<ImplementationCapabilityHardeningRequirement> RecipesNegativeRequirements,
     ImplementationNoGoCapabilityStatus NoGoCapabilityStatus,
     ImplementationPlanningGateCounts Counts,
     IReadOnlyList<string> Blockers,
@@ -151,9 +178,23 @@ public sealed record ImplementationPlanningGateDesignOnly(
         && GateMatrix.Count >= 16
         && GateMatrix.All(gate => gate.RequiredBeforeImplementation && !gate.SatisfiedNow && gate.BlocksImplementation)
         && NegativeTestRequirements.All(test => test.RequiredBeforeImplementation && !test.ImplementedNow)
+        && BrowserCdpNegativeRequirements.Count > 0
+        && BrowserCdpNegativeRequirements.All(IsBlockedHardeningRequirement)
+        && WcuOcrNegativeRequirements.Count > 0
+        && WcuOcrNegativeRequirements.All(IsBlockedHardeningRequirement)
+        && RecipesNegativeRequirements.Count > 0
+        && RecipesNegativeRequirements.All(IsBlockedHardeningRequirement)
         && NoGoCapabilityStatus.AllNoGo
         && Counts.AllZero
         && EvidenceLinks.All(link => link.StartsWith("docs/", StringComparison.Ordinal));
+
+    private static bool IsBlockedHardeningRequirement(ImplementationCapabilityHardeningRequirement requirement) =>
+        requirement.RequiredFailClosedBehavior
+        && requirement.RequiredNoSideEffectProof
+        && requirement.RequiredNegativeTestsBeforeImplementation
+        && !requirement.AllowsRealCapabilityNow
+        && requirement.CandidateBlockedReason == "FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO"
+        && requirement.ForbiddenUntilApproved.Count > 0;
 }
 
 public static class ImplementationPlanningGateDesignOnlyPresenter
@@ -171,6 +212,9 @@ public static class ImplementationPlanningGateDesignOnlyPresenter
             RecommendedFutureCandidateStatus: "FUTURE_CANDIDATE_BLOCKED_BY_AUDIT",
             GateMatrix: Gates(),
             NegativeTestRequirements: NegativeTests(),
+            BrowserCdpNegativeRequirements: BrowserCdpNegativeRequirements(),
+            WcuOcrNegativeRequirements: WcuOcrNegativeRequirements(),
+            RecipesNegativeRequirements: RecipesNegativeRequirements(),
             NoGoCapabilityStatus: NoGoStatus(),
             Counts: Counts(),
             Blockers: Blockers(),
@@ -368,6 +412,9 @@ public static class ImplementationPlanningGateDesignOnlyPresenter
         Negative("physical-export", "physical export", "export count and filesystem output count remain 0"),
         Negative("redaction-runtime", "redaction runtime", "redaction runtime count remains 0 and no scan is performed"),
         Negative("retention-deletion", "retention/deletion runtime", "retention/deletion counts remain 0 and no tombstone is written"),
+        Negative("browser-cdp-live", "browser/CDP live", "browser/CDP live connection count remains 0 and no navigation, click, type, submit, download, DOM mutation or live WebSocket path is allowed"),
+        Negative("wcu-ocr-live", "WCU/OCR live", "WCU/OCR live action count remains 0 and no screen capture, OCR over real data, UIA live, keyboard, mouse, hotkey, window focus or clipboard path is allowed"),
+        Negative("recipes-real-execution", "recipes real execution", "recipes execution count remains 0 and no action runner, scheduler, trigger, retry loop, browser action, desktop action, credential use, data extraction, export or mutation path is allowed"),
         Negative("service-registration", "service registration", "service registration count remains 0"),
         Negative("command-handler", "command handler", "command handler count remains 0"),
         Negative("provider-network", "provider/network", "provider network call count remains 0"),
@@ -382,6 +429,108 @@ public static class ImplementationPlanningGateDesignOnlyPresenter
             ImplementedNow: false,
             Assertion: assertion);
 
+    private static IReadOnlyList<ImplementationCapabilityHardeningRequirement> BrowserCdpNegativeRequirements() =>
+    [
+        Hardening(
+            id: "browser-cdp-specific-user-go",
+            capability: "Browser/CDP",
+            auditScope: "external audit scoped to browser/CDP runtime, navigation, session and download boundaries",
+            userGoScope: "explicit human GO for browser/CDP only",
+            forbidden:
+            [
+                "system browser",
+                "user Chrome or Edge installation",
+                "real navigation without gate",
+                "credential entry",
+                "login automation",
+                "captcha, 2FA or challenge bypass",
+                "stealth or proxy evasion",
+                "cookies or session reuse without explicit authorization",
+                "CDP live connection",
+                "WebSocket live connection",
+                "DOM mutation",
+                "click, type or submit real action",
+                "download or physical export",
+                "filesystem output",
+                "network provider calls outside the approved scope",
+                "service registration",
+                "command handler",
+                "release/commercial readiness"
+            ])
+    ];
+
+    private static IReadOnlyList<ImplementationCapabilityHardeningRequirement> WcuOcrNegativeRequirements() =>
+    [
+        Hardening(
+            id: "wcu-ocr-specific-user-go",
+            capability: "WCU/OCR",
+            auditScope: "external audit scoped to desktop capture, OCR, UIA, input and clipboard boundaries",
+            userGoScope: "explicit human GO for WCU/OCR only",
+            forbidden:
+            [
+                "real screen capture without gate",
+                "OCR over real data",
+                "UIA live access",
+                "keyboard or mouse action",
+                "click, type or hotkey real action",
+                "window focus manipulation",
+                "clipboard access",
+                "filesystem output",
+                "retention of screenshots or OCR text",
+                "PII or secret scan disguised as OCR",
+                "automation over external apps",
+                "service registration",
+                "command handler",
+                "release/commercial readiness"
+            ])
+    ];
+
+    private static IReadOnlyList<ImplementationCapabilityHardeningRequirement> RecipesNegativeRequirements() =>
+    [
+        Hardening(
+            id: "recipes-specific-user-go",
+            capability: "Recipes",
+            auditScope: "external audit scoped to recipe runner, scheduler, triggers, retries and action boundaries",
+            userGoScope: "explicit human GO for recipes execution only",
+            forbidden:
+            [
+                "recipe action runner",
+                "scheduler",
+                "background execution",
+                "retry loop",
+                "detector or trigger real path",
+                "browser action",
+                "desktop action",
+                "filesystem output",
+                "network call",
+                "credential use",
+                "data extraction",
+                "export",
+                "mutation",
+                "service registration",
+                "command handler",
+                "release/commercial readiness"
+            ])
+    ];
+
+    private static ImplementationCapabilityHardeningRequirement Hardening(
+        string id,
+        string capability,
+        string auditScope,
+        string userGoScope,
+        IReadOnlyList<string> forbidden) =>
+        new(
+            RequirementId: id,
+            Capability: capability,
+            RequiredExternalAuditScope: auditScope,
+            RequiredUserGoScope: userGoScope,
+            CandidateBlockedReason: "FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO",
+            RequiredFailClosedBehavior: true,
+            RequiredNoSideEffectProof: true,
+            RequiredNegativeTestsBeforeImplementation: true,
+            AllowsRealCapabilityNow: false,
+            ForbiddenUntilApproved: forbidden);
+
     private static ImplementationNoGoCapabilityStatus NoGoStatus() =>
         new(
             CanOpenRuntimeNow: false,
@@ -395,6 +544,9 @@ public static class ImplementationPlanningGateDesignOnlyPresenter
             CanCreateCommandHandlerNow: false,
             CanUseProductIoNow: false,
             CanUseProviderNetworkNow: false,
+            CanUseBrowserCdpLiveNow: false,
+            CanUseWcuOcrLiveNow: false,
+            CanExecuteRecipesNow: false,
             ReleaseCommercialReadiness: "NO-GO");
 
     private static ImplementationPlanningGateCounts Counts() =>
@@ -405,6 +557,9 @@ public static class ImplementationPlanningGateDesignOnlyPresenter
             ExportEnabledCount: 0,
             RedactionRuntimeEnabledCount: 0,
             RetentionDeletionEnabledCount: 0,
+            BrowserCdpLiveEnabledCount: 0,
+            WcuOcrLiveEnabledCount: 0,
+            RecipesExecutionEnabledCount: 0,
             ServiceRegistrationCount: 0,
             CommandHandlerCount: 0,
             ProductActionCount: 0,

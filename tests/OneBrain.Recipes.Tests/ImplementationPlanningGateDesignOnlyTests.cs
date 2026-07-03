@@ -86,6 +86,36 @@ public sealed class ImplementationPlanningGateDesignOnlyTests
     }
 
     [TestMethod]
+    public void PlanningGate_HardeningRequirementsKeepBrowserWcuAndRecipesFutureOnly()
+    {
+        var packet = ImplementationPlanningGateDesignOnlyPresenter.CreateFixture();
+
+        AssertFutureOnlyHardening(packet.BrowserCdpNegativeRequirements, "Browser/CDP", "system browser", "CDP live connection");
+        AssertFutureOnlyHardening(packet.WcuOcrNegativeRequirements, "WCU/OCR", "real screen capture without gate", "OCR over real data");
+        AssertFutureOnlyHardening(packet.RecipesNegativeRequirements, "Recipes", "recipe action runner", "background execution");
+    }
+
+    [TestMethod]
+    public void PlanningGate_NegativeTestsCoverBrowserWcuAndRecipesNoSideEffects()
+    {
+        var packet = ImplementationPlanningGateDesignOnlyPresenter.CreateFixture();
+        var negativeTestIds = packet.NegativeTestRequirements.Select(test => test.TestId).ToList();
+
+        CollectionAssert.Contains(negativeTestIds, "browser-cdp-live");
+        CollectionAssert.Contains(negativeTestIds, "wcu-ocr-live");
+        CollectionAssert.Contains(negativeTestIds, "recipes-real-execution");
+        Assert.IsTrue(packet.NegativeTestRequirements
+            .Where(test => test.TestId is "browser-cdp-live" or "wcu-ocr-live" or "recipes-real-execution")
+            .All(test => test.RequiredBeforeImplementation && !test.ImplementedNow));
+        Assert.AreEqual(0, packet.Counts.BrowserCdpLiveEnabledCount);
+        Assert.AreEqual(0, packet.Counts.WcuOcrLiveEnabledCount);
+        Assert.AreEqual(0, packet.Counts.RecipesExecutionEnabledCount);
+        Assert.IsFalse(packet.NoGoCapabilityStatus.CanUseBrowserCdpLiveNow);
+        Assert.IsFalse(packet.NoGoCapabilityStatus.CanUseWcuOcrLiveNow);
+        Assert.IsFalse(packet.NoGoCapabilityStatus.CanExecuteRecipesNow);
+    }
+
+    [TestMethod]
     public void PlanningGate_EvidenceLinksAreDocumentationOnly()
     {
         var packet = ImplementationPlanningGateDesignOnlyPresenter.CreateFixture();
@@ -107,7 +137,10 @@ public sealed class ImplementationPlanningGateDesignOnlyTests
             packet.HumanOperatorRecommendation,
             string.Join("\n", packet.Blockers),
             string.Join("\n", packet.Warnings),
-            string.Join("\n", packet.CandidateMatrix.Select(candidate => $"{candidate.CandidateName} {candidate.WhyNotNow} {candidate.Decision}")));
+            string.Join("\n", packet.CandidateMatrix.Select(candidate => $"{candidate.CandidateName} {candidate.WhyNotNow} {candidate.Decision}")),
+            string.Join("\n", packet.BrowserCdpNegativeRequirements.Select(requirement => $"{requirement.Capability} {requirement.CandidateBlockedReason}")),
+            string.Join("\n", packet.WcuOcrNegativeRequirements.Select(requirement => $"{requirement.Capability} {requirement.CandidateBlockedReason}")),
+            string.Join("\n", packet.RecipesNegativeRequirements.Select(requirement => $"{requirement.Capability} {requirement.CandidateBlockedReason}")));
 
         var forbidden = new[]
         {
@@ -129,5 +162,24 @@ public sealed class ImplementationPlanningGateDesignOnlyTests
         {
             Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
         }
+    }
+
+    private static void AssertFutureOnlyHardening(
+        IReadOnlyList<ImplementationCapabilityHardeningRequirement> requirements,
+        string capability,
+        string firstForbidden,
+        string secondForbidden)
+    {
+        Assert.IsTrue(requirements.Count > 0);
+        Assert.IsTrue(requirements.All(requirement => requirement.Capability == capability));
+        Assert.IsTrue(requirements.All(requirement => requirement.CandidateBlockedReason == "FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO"));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredFailClosedBehavior));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredNoSideEffectProof));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredNegativeTestsBeforeImplementation));
+        Assert.IsTrue(requirements.All(requirement => !requirement.AllowsRealCapabilityNow));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains(firstForbidden)));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains(secondForbidden)));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains("service registration")));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains("command handler")));
     }
 }

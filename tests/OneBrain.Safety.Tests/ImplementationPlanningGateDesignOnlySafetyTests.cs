@@ -75,6 +75,9 @@ public sealed class ImplementationPlanningGateDesignOnlySafetyTests
         Assert.AreEqual(0, counts.ExportEnabledCount);
         Assert.AreEqual(0, counts.RedactionRuntimeEnabledCount);
         Assert.AreEqual(0, counts.RetentionDeletionEnabledCount);
+        Assert.AreEqual(0, counts.BrowserCdpLiveEnabledCount);
+        Assert.AreEqual(0, counts.WcuOcrLiveEnabledCount);
+        Assert.AreEqual(0, counts.RecipesExecutionEnabledCount);
         Assert.AreEqual(0, counts.ServiceRegistrationCount);
         Assert.AreEqual(0, counts.CommandHandlerCount);
         Assert.AreEqual(0, counts.ProductActionCount);
@@ -99,7 +102,52 @@ public sealed class ImplementationPlanningGateDesignOnlySafetyTests
         Assert.IsFalse(status.CanCreateCommandHandlerNow);
         Assert.IsFalse(status.CanUseProductIoNow);
         Assert.IsFalse(status.CanUseProviderNetworkNow);
+        Assert.IsFalse(status.CanUseBrowserCdpLiveNow);
+        Assert.IsFalse(status.CanUseWcuOcrLiveNow);
+        Assert.IsFalse(status.CanExecuteRecipesNow);
         Assert.AreEqual("NO-GO", status.ReleaseCommercialReadiness);
+    }
+
+    [TestMethod]
+    public void PlanningGate_HardensBrowserCdpWcuOcrAndRecipesNegativeRequirements()
+    {
+        var packet = ImplementationPlanningGateDesignOnlyPresenter.CreateFixture();
+        var negativeCapabilities = packet.NegativeTestRequirements.Select(test => test.Capability).ToList();
+
+        CollectionAssert.Contains(negativeCapabilities, "browser/CDP live");
+        CollectionAssert.Contains(negativeCapabilities, "WCU/OCR live");
+        CollectionAssert.Contains(negativeCapabilities, "recipes real execution");
+        Assert.IsTrue(packet.NegativeTestRequirements
+            .Where(test => test.Capability is "browser/CDP live" or "WCU/OCR live" or "recipes real execution")
+            .All(test => test.RequiredBeforeImplementation && !test.ImplementedNow));
+
+        AssertBlockedHardening(packet.BrowserCdpNegativeRequirements, "Browser/CDP", "CDP live connection", "click, type or submit real action");
+        AssertBlockedHardening(packet.WcuOcrNegativeRequirements, "WCU/OCR", "OCR over real data", "clipboard access");
+        AssertBlockedHardening(packet.RecipesNegativeRequirements, "Recipes", "recipe action runner", "scheduler");
+    }
+
+    [TestMethod]
+    public void PlanningGate_KeepsBrowserCdpWcuOcrAndRecipesCandidatesBlocked()
+    {
+        var packet = ImplementationPlanningGateDesignOnlyPresenter.CreateFixture();
+        var sensitiveCandidateIds = new[]
+        {
+            "BROWSER_CDP_SAFE_RUNTIME_PLANNING_DESIGN_ONLY",
+            "WCU_OCR_SAFE_RUNTIME_PLANNING_DESIGN_ONLY",
+            "RECIPES_EXECUTION_SAFE_RUNTIME_PLANNING_DESIGN_ONLY"
+        };
+
+        foreach (var candidateId in sensitiveCandidateIds)
+        {
+            var candidate = packet.CandidateMatrix.Single(item => item.CandidateId == candidateId);
+
+            Assert.AreEqual(ImplementationCapabilityCandidateDecision.Blocked, candidate.Decision);
+            Assert.IsFalse(candidate.ApprovedForImplementation);
+            Assert.IsTrue(candidate.IsStillBlocked);
+            Assert.IsTrue(candidate.RequiredExternalAudits.Count >= 2);
+            Assert.IsTrue(candidate.RequiredPreconditions.Any(item => item.Contains("explicit user GO", StringComparison.Ordinal)));
+            Assert.IsTrue(candidate.RequiredPreconditions.Any(item => item.Contains("external audit", StringComparison.Ordinal)));
+        }
     }
 
     [TestMethod]
@@ -139,5 +187,27 @@ public sealed class ImplementationPlanningGateDesignOnlySafetyTests
         {
             Assert.IsFalse(forbiddenPrefixes.Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal)), name);
         }
+    }
+
+    private static void AssertBlockedHardening(
+        IReadOnlyList<ImplementationCapabilityHardeningRequirement> requirements,
+        string capability,
+        string firstForbidden,
+        string secondForbidden)
+    {
+        Assert.IsTrue(requirements.Count > 0);
+        Assert.IsTrue(requirements.All(requirement => requirement.Capability == capability));
+        Assert.IsTrue(requirements.All(requirement => requirement.CandidateBlockedReason == "FUTURE_CANDIDATE_BLOCKED_BY_EXTERNAL_AUDIT_AND_USER_GO"));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredFailClosedBehavior));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredNoSideEffectProof));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredNegativeTestsBeforeImplementation));
+        Assert.IsTrue(requirements.All(requirement => !requirement.AllowsRealCapabilityNow));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredExternalAuditScope.Contains("external audit", StringComparison.Ordinal)));
+        Assert.IsTrue(requirements.All(requirement => requirement.RequiredUserGoScope.Contains("explicit human GO", StringComparison.Ordinal)));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains(firstForbidden)));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains(secondForbidden)));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains("service registration")));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains("command handler")));
+        Assert.IsTrue(requirements.Any(requirement => requirement.ForbiddenUntilApproved.Contains("release/commercial readiness")));
     }
 }
