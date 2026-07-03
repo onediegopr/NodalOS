@@ -156,3 +156,12 @@
 - Scope: documentation-first final pause anchor, complete hito and commit inventory, consolidated readiness percentages, safety proof, no-side-effect proof, protected future debt, safe resume prompt and optional Claude global audit prompt.
 - Non-goals: no approval execution, approval mutation, controlled execution real, runtime/live, writer/policy productive integration, service registration, command handler, product action, filesystem IO, file read/write/hash, patch/apply real, DB, migration runner, repository/store real, mutation store real, durable audit trail real, append-only ledger real, physical export, PDF/DOCX generation, JSON/Markdown physical output, clipboard/download, redaction runtime, secret/PII/regex scan, retention store/workflow, deletion workflow, tombstone write, legal hold store, provider/cloud, LLM, vector, durable memory, browser/CDP, WCU/OCR, recipe execution or release/commercial readiness claim.
 - Next safe option: `PAUSE_AGAIN_NO_CHANGES`.
+
+## NODAL_OS_READ_ONLY_REENTRY_PRODUCT_SURFACE_AND_DECISION_PACKET
+
+- Decision target: `GO_NODAL_OS_READ_ONLY_REENTRY_PRODUCT_SURFACE_AND_DECISION_PACKET_READY`
+- Status: accepted as read-only reentry decision packet if validation passes.
+- Input: canonical status docs hardening at `82a3f1a1d670d7d6842f20a7830a8f9808e5e1c0`.
+- Scope: deterministic in-memory read-only reentry packet, canonical state summary, capability readiness summary, counts-zero no-side-effect proof, required external audit gates, next safe options, blocked real capability options, Safety and Recipes tests, QA report and decision log.
+- Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_IMPLEMENTATION_PLANNING_GATE_DESIGN_ONLY`, design-only/planning only.
