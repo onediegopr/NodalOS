@@ -19,6 +19,17 @@
 - Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EVIDENCE_TEST_ONLY`.
 
+## NODAL_OS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EVIDENCE_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EVIDENCE_TEST_ONLY_READY`
+- Status: accepted as local-temp/test-only checkpoint read-model evidence if final validation and push pass.
+- Input HEAD: `6be62512324f03a66a40f0d0021f0696635add4d`.
+- Scope: add in-memory local-temp head checkpoint capture and current-head comparison for Durable Stage 2 evidence without external trust, runtime/product enablement or WORM/KMS/cloud claims.
+- Corrections: added `DurableAuditTrailLocalTempCheckpointEvidence`; Safety tests prove tail deletion is suspected only with a caller-held checkpoint, missing checkpoint fails closed and outside-temp paths are rejected; Recipes test proves matched read model head.
+- Findings: P0 0, P1 0, P2 0, P3 2 (checkpoint is local-temp/caller-held only; external WORM/KMS/cloud/compliance-grade trust remains unimplemented and prohibited), P4 1 (overclaim risk handled with explicit flags and docs wording).
+- Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`

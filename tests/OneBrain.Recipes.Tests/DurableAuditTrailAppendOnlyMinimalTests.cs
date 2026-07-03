@@ -133,6 +133,30 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
         Assert.IsFalse(persisted.Contains("stage2-test-only-redaction-policy.v1", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void Stage2TestOnly_LocalTempCheckpointReadModelMatchesCurrentHead()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var checkpointEvidence = new DurableAuditTrailLocalTempCheckpointEvidence();
+        var firstRequest = Request("approval-stage2-001");
+        var secondRequest = Request("approval-stage2-002");
+        ledger.AppendStage2TestOnly(Policy(temp.Path), firstRequest, Stage2Gate(firstRequest));
+        ledger.AppendStage2TestOnly(Policy(temp.Path), secondRequest, Stage2Gate(secondRequest));
+
+        var checkpoint = checkpointEvidence.CaptureHeadCheckpoint(LedgerFile(temp.Path));
+        var compared = checkpointEvidence.CompareHeadCheckpoint(LedgerFile(temp.Path), checkpoint.Checkpoint);
+
+        Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Captured, checkpoint.Decision);
+        Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Matched, compared.Decision);
+        Assert.AreEqual(2, checkpoint.Checkpoint!.EntryCount);
+        Assert.AreEqual(2, compared.CurrentVerification!.EntryCount);
+        Assert.AreEqual(checkpoint.Checkpoint.LastHash, compared.CurrentVerification.LastHash);
+        Assert.IsFalse(compared.ExternalTrustAvailable);
+        Assert.IsFalse(compared.ProductRuntimeEnabled);
+        Assert.IsFalse(compared.ReleaseCommercialReady);
+    }
+
     private static DurableAuditTrailAppendOnlyMinimalPolicy Policy(string root) =>
         new(Enabled: true, StorageRoot: root);
 

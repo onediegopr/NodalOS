@@ -731,6 +731,77 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_LocalTempCheckpointEvidenceDetectsTailDeletionWithoutExternalTrustClaim()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var checkpointEvidence = new DurableAuditTrailLocalTempCheckpointEvidence();
+        var firstRequest = Request() with { ApprovalReference = "approval-stage2-001" };
+        var secondRequest = Request() with { ApprovalReference = "approval-stage2-002" };
+        ledger.AppendStage2TestOnly(Policy(temp.Path), firstRequest, Stage2Gate(firstRequest));
+        ledger.AppendStage2TestOnly(Policy(temp.Path), secondRequest, Stage2Gate(secondRequest));
+        var ledgerFile = LedgerFile(temp.Path);
+        var checkpoint = checkpointEvidence.CaptureHeadCheckpoint(ledgerFile);
+        var originalLines = File.ReadAllLines(ledgerFile);
+
+        File.WriteAllLines(ledgerFile, originalLines.Take(1));
+        var compared = checkpointEvidence.CompareHeadCheckpoint(ledgerFile, checkpoint.Checkpoint);
+
+        Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Captured, checkpoint.Decision);
+        Assert.IsNotNull(checkpoint.Checkpoint);
+        Assert.AreEqual(2, checkpoint.Checkpoint.EntryCount);
+        Assert.IsFalse(checkpoint.ExternalTrustAvailable);
+        Assert.IsFalse(checkpoint.Checkpoint.ExternalTrust);
+        Assert.IsFalse(checkpoint.Checkpoint.WormOrKmsBacked);
+        Assert.IsFalse(checkpoint.Checkpoint.CloudBacked);
+        Assert.IsFalse(checkpoint.Checkpoint.ReleaseCommercialReady);
+        Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.TailDeletionSuspected, compared.Decision);
+        Assert.IsTrue(compared.TailDeletionEvidenceAvailable);
+        Assert.IsFalse(compared.ExternalTrustAvailable);
+        Assert.IsFalse(compared.ProductRuntimeEnabled);
+        Assert.IsFalse(compared.ReleaseCommercialReady);
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_LocalTempCheckpointEvidenceFailsClosedWithoutCheckpoint()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var checkpointEvidence = new DurableAuditTrailLocalTempCheckpointEvidence();
+        var request = Request() with { ApprovalReference = "approval-stage2-001" };
+        ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
+
+        var result = checkpointEvidence.CompareHeadCheckpoint(LedgerFile(temp.Path), checkpoint: null);
+
+        Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailLocalTempCheckpointRejectReason.MissingCheckpoint);
+        Assert.IsFalse(result.TailDeletionEvidenceAvailable);
+        Assert.IsFalse(result.ExternalTrustAvailable);
+        Assert.IsFalse(result.ProductRuntimeEnabled);
+        Assert.IsFalse(result.ReleaseCommercialReady);
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_LocalTempCheckpointEvidenceRejectsOutsideLocalTempBoundary()
+    {
+        var checkpointEvidence = new DurableAuditTrailLocalTempCheckpointEvidence();
+        var outsideTempLedger = System.IO.Path.Combine(
+            Directory.GetCurrentDirectory(),
+            $"durable-checkpoint-product-path-{Guid.NewGuid():N}",
+            "durable-audit-trail.append-only.jsonl");
+
+        var result = checkpointEvidence.CaptureHeadCheckpoint(outsideTempLedger);
+
+        Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailLocalTempCheckpointRejectReason.LedgerOutsideLocalTempBoundary);
+        Assert.IsFalse(result.TailDeletionEvidenceAvailable);
+        Assert.IsFalse(result.ExternalTrustAvailable);
+        Assert.IsFalse(result.ProductRuntimeEnabled);
+        Assert.IsFalse(result.ReleaseCommercialReady);
+        Assert.IsFalse(Directory.Exists(System.IO.Path.GetDirectoryName(outsideTempLedger)!));
+    }
+
+    [TestMethod]
     public void MinimalLedger_PublicSurfaceDoesNotRegisterCommandsOrRuntimeExecution()
     {
         var forbiddenNames = new[]
