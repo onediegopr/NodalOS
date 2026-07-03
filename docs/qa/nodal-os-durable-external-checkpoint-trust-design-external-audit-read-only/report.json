@@ -1,0 +1,54 @@
+{
+  "decision": "GO_WITH_FINDINGS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_EXTERNAL_AUDIT_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "ad0f77ad10233bf8b9daebabca790d5ae8bb6884",
+  "mode": "EXTERNAL_AUDIT_READ_ONLY_NO_RUNTIME_PRODUCT",
+  "scope": "Read-only audit of the Durable external checkpoint trust design.",
+  "repoGuard": {
+    "worktreeInitial": "clean",
+    "originSyncInitial": "0 0",
+    "stash": "listed only, not touched"
+  },
+  "auditMatrix": {
+    "t0ToT4Taxonomy": "PASS",
+    "currentAuthority": "PASS",
+    "futureGates": "PASS",
+    "antiCapabilities": "PASS"
+  },
+  "boundaryConfirmation": {
+    "sourceChanged": false,
+    "testsChanged": false,
+    "runtimeProductEnabled": false,
+    "productiveServiceRegistrationAdded": false,
+    "commandHandlersAdded": false,
+    "uiProductActionsAdded": false,
+    "productLedgerPathAdded": false,
+    "dbMigrationProviderCloudNetworkAdded": false,
+    "browserCdpWcuOcrRecipesLiveAdded": false,
+    "wormKmsCloudCheckpointingAdded": false,
+    "releaseCommercialReady": false,
+    "stashTouched": false
+  },
+  "validations": {
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticScanChangedFiles": "PASS_NO_TRUE_RISK"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Key custody remains unassigned.",
+      "Provider/cloud choices require product/security decision.",
+      "Implementation requires new explicit manual GO."
+    ],
+    "P4": [
+      "T-level taxonomy should be reused consistently in future docs."
+    ]
+  },
+  "stopPoint": "PAUSE_FOR_PRODUCT_SECURITY_DECISION_EXTERNAL_CHECKPOINT_TRUST_BOUNDARY",
+  "automaticContinuation": "BLOCKED_PRODUCT_SECURITY_DECISION_REQUIRED"
+}

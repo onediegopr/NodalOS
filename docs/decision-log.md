@@ -62,6 +62,16 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing implementation, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the external checkpoint trust design if final validation and push pass.
+- Input HEAD: `ad0f77ad10233bf8b9daebabca790d5ae8bb6884`.
+- Scope: audit T0-T4 trust taxonomy, current T1 authority, future gates and anti-capabilities without source/test/runtime behavior changes.
+- Findings: P0 0, P1 0, P2 0, P3 3 (key custody remains unassigned; provider/cloud choices require product/security decision; implementation requires new explicit manual GO), P4 1 (reuse T-level taxonomy consistently).
+- Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing implementation, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_PRODUCT_SECURITY_DECISION_EXTERNAL_CHECKPOINT_TRUST_BOUNDARY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
