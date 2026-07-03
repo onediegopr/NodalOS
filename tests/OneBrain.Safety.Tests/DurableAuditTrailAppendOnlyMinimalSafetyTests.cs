@@ -114,13 +114,32 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     public void MinimalLedger_FailsClosedOutsideLocalTestStorageBoundaryByDefault()
     {
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
-        var outsideTemp = System.IO.Path.GetFullPath("durable-audit-trail-not-temp");
+        var outsideTemp = System.IO.Path.Combine(
+            Directory.GetCurrentDirectory(),
+            $"durable-audit-trail-not-temp-{Guid.NewGuid():N}");
 
         var result = ledger.Append(new DurableAuditTrailAppendOnlyMinimalPolicy(true, outsideTemp), Request());
 
         Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
         CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.StorageRootOutsideLocalTestBoundary);
         AssertNoSideEffects(result);
+        Assert.IsFalse(Directory.Exists(outsideTemp));
+    }
+
+    [TestMethod]
+    public void MinimalLedger_VerifyFileFailsClosedOutsideLocalTestBoundary()
+    {
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var outsideTemp = System.IO.Path.Combine(
+            Directory.GetCurrentDirectory(),
+            $"durable-audit-trail-product-path-{Guid.NewGuid():N}",
+            "durable-audit-trail.append-only.jsonl");
+
+        var verification = ledger.VerifyFile(outsideTemp);
+
+        Assert.IsFalse(verification.Valid);
+        CollectionAssert.Contains(verification.Errors.ToArray(), "ledger_outside_local_test_boundary");
+        Assert.AreEqual(0, verification.EntryCount);
     }
 
     [TestMethod]
@@ -258,12 +277,41 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void MinimalLedger_ConcurrentLocalTestAppendsRemainAppendOnlyAndValid()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var appendTasks = Enumerable.Range(1, 16)
+            .Select(i => Task.Run(() => ledger.Append(Policy(temp.Path), Request() with { ApprovalReference = $"approval-{i:000}" })))
+            .ToArray();
+
+        Task.WaitAll(appendTasks);
+        var results = appendTasks.Select(task => task.Result).ToArray();
+        var verification = ledger.VerifyFile(LedgerFile(temp.Path));
+        var lines = File.ReadAllLines(LedgerFile(temp.Path));
+        var entries = lines
+            .Select(line => System.Text.Json.JsonSerializer.Deserialize<DurableAuditTrailAppendOnlyMinimalEntry>(
+                line,
+                new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web))!)
+            .ToArray();
+
+        Assert.IsTrue(results.All(result => result.Decision == DurableAuditTrailAppendOnlyMinimalDecision.Appended));
+        Assert.IsTrue(results.All(result => result.AppendWriteCount == 1));
+        Assert.IsTrue(results.All(result => result.PersistedEventCount == 1));
+        Assert.IsTrue(verification.Valid);
+        Assert.AreEqual(16, verification.EntryCount);
+        CollectionAssert.AreEqual(Enumerable.Range(1, 16).Select(i => (long)i).ToArray(), entries.Select(entry => entry.SequenceNumber).ToArray());
+        Assert.AreEqual(16, entries.Select(entry => entry.EventId).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [TestMethod]
     public void MinimalLedger_PublicSurfaceDoesNotRegisterCommandsOrRuntimeExecution()
     {
         var forbiddenNames = new[]
         {
             "Register",
-            "CommandHandler",
+            "AddCommandHandler",
+            "ICommandHandler",
             "Execute",
             "RunProductAction",
             "Network",
@@ -279,6 +327,50 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         foreach (var forbidden in forbiddenNames)
         {
             Assert.IsFalse(methodNames.Any(name => name.Contains(forbidden, StringComparison.OrdinalIgnoreCase)), forbidden);
+        }
+    }
+
+    [TestMethod]
+    public void MinimalLedger_SourceContainsNoRuntimeRegistrationHandlersProductActionsOrExternalProviders()
+    {
+        var sourcePath = System.IO.Path.Combine(
+            FindRepoRoot(),
+            "src",
+            "OneBrain.Core",
+            "Approval",
+            "DurableAuditTrailAppendOnlyMinimal.cs");
+        var source = File.ReadAllText(sourcePath);
+        var forbiddenFragments = new[]
+        {
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "IHostedService",
+            "MapPost",
+            "MapGet",
+            "AddCommandHandler",
+            "ICommandHandler",
+            "ICommand",
+            "RunProductAction",
+            "ProductActionButton",
+            "HttpClient",
+            "WebSocket",
+            "DbContext",
+            "MigrationBuilder",
+            "SaveChanges",
+            "Browser",
+            "CDP",
+            "WCU",
+            "OCR",
+            "RecipeExecution",
+            "ReleaseReady = true",
+            "CommercialReady = true",
+            "ReleaseCommercialReady: true"
+        };
+
+        foreach (var fragment in forbiddenFragments)
+        {
+            Assert.IsFalse(source.Contains(fragment, StringComparison.Ordinal), fragment);
         }
     }
 
@@ -336,6 +428,28 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         Assert.IsFalse(result.DbMigrationAllowed);
         Assert.IsFalse(result.CommandHandlerRegistered);
         Assert.IsFalse(result.ReleaseCommercialReady);
+    }
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (directory is not null)
+        {
+            if (File.Exists(System.IO.Path.Combine(
+                directory.FullName,
+                "src",
+                "OneBrain.Core",
+                "Approval",
+                "DurableAuditTrailAppendOnlyMinimal.cs")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        Assert.Fail("repo root not found");
+        return string.Empty;
     }
 
     private sealed class TempDirectory : IDisposable

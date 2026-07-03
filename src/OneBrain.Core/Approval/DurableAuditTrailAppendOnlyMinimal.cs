@@ -151,6 +151,16 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
 
     public DurableAuditTrailAppendOnlyMinimalVerification VerifyFile(string ledgerFile)
     {
+        if (!IsUnderTempPath(ledgerFile))
+        {
+            return new DurableAuditTrailAppendOnlyMinimalVerification(
+                Valid: false,
+                EntryCount: 0,
+                LastSequenceNumber: 0,
+                LastHash: "genesis",
+                Errors: ["ledger_outside_local_test_boundary"]);
+        }
+
         if (!File.Exists(ledgerFile))
         {
             return new DurableAuditTrailAppendOnlyMinimalVerification(
@@ -254,9 +264,15 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
     private static bool IsUnderTempPath(string path)
     {
         var fullPath = Path.GetFullPath(path);
-        var tempPath = Path.GetFullPath(Path.GetTempPath());
+        var tempPath = EnsureTrailingDirectorySeparator(Path.GetFullPath(Path.GetTempPath()));
         return fullPath.StartsWith(tempPath, StringComparison.OrdinalIgnoreCase);
     }
+
+    private static string EnsureTrailingDirectorySeparator(string path) =>
+        path.EndsWith(Path.DirectorySeparatorChar)
+            || path.EndsWith(Path.AltDirectorySeparatorChar)
+                ? path
+                : path + Path.DirectorySeparatorChar;
 
     private sealed record LedgerReadResult(
         IReadOnlyList<DurableAuditTrailAppendOnlyMinimalEntry> Entries,

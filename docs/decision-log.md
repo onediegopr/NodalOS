@@ -7,6 +7,15 @@
 - Current source of truth: final privacy/export/controlled-execution closeout and its post-audit pause confirmations.
 - Historical entries below remain traceability records. They do not override the current NO-GO state for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial readiness.
 
+## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
+
+- Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
+- Status: accepted as Stage 1 test-only/local-temp hardening if final validation and push pass.
+- Input baseline: `b5327bbddbd75010ec7ec61546cb8d64e3ecc963`.
+- Scope: explicit fixture-only temp/local-test JSONL ledger hardening, append-only invariant checks, concurrency/local lock tests, boundary fail-closed behavior, static no-enable source guard and QA/ADR/handoff documentation.
+- Non-goals: no product runtime enablement, service registration, command handlers, UI product actions, product ledger path, DB/migration, provider/cloud/network, Browser/CDP, WCU/OCR, recipes live writes, Stage 2 dev sandbox, release readiness or commercial readiness.
+- Next recommended block: `NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## POST_PHASE_E_NEXT_ROADMAP_DECISION_READ_ONLY
 
 - Decision target: `GO_POST_PHASE_E_NEXT_ROADMAP_DECISION_READ_ONLY_READY`

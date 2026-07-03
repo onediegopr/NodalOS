@@ -50,6 +50,64 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
         Assert.IsTrue(persisted.Contains("approval-001", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void MinimalLedger_Stage1FixtureUsesOnlyTempLocalTestLedger()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var result = ledger.Append(Policy(temp.Path), Request("approval-001"));
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Appended, result.Decision);
+        Assert.IsNotNull(result.LedgerFile);
+        Assert.IsTrue(
+            System.IO.Path.GetFullPath(result.LedgerFile!)
+                .StartsWith(System.IO.Path.GetFullPath(System.IO.Path.GetTempPath()), StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(result.LedgerFile!.Contains($"{System.IO.Path.DirectorySeparatorChar}.git{System.IO.Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void MinimalLedger_AppendsWithoutOverwritingDeletingOrSilentlyTruncatingExistingEvents()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var first = ledger.Append(Policy(temp.Path), Request("approval-001"));
+        var firstLine = File.ReadAllLines(first.LedgerFile!).Single();
+        var firstLength = new FileInfo(first.LedgerFile!).Length;
+        var second = ledger.Append(Policy(temp.Path), Request("approval-002"));
+        var lines = File.ReadAllLines(first.LedgerFile!);
+        var secondLength = new FileInfo(first.LedgerFile!).Length;
+        var verification = ledger.VerifyFile(first.LedgerFile!);
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Appended, second.Decision);
+        Assert.AreEqual(2, lines.Length);
+        Assert.AreEqual(firstLine, lines[0]);
+        Assert.IsTrue(secondLength > firstLength);
+        Assert.IsTrue(lines[1].Contains("approval-002", StringComparison.Ordinal));
+        Assert.IsTrue(verification.Valid);
+        Assert.AreEqual(2, verification.EntryCount);
+        Assert.AreEqual(2, verification.LastSequenceNumber);
+    }
+
+    [TestMethod]
+    public void MinimalLedger_RepeatedReadAfterAppendReturnsDeterministicHead()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        ledger.Append(Policy(temp.Path), Request("approval-001"));
+        ledger.Append(Policy(temp.Path), Request("approval-002"));
+        var firstRead = ledger.VerifyFile(LedgerFile(temp.Path));
+        var secondRead = ledger.VerifyFile(LedgerFile(temp.Path));
+
+        Assert.IsTrue(firstRead.Valid);
+        Assert.IsTrue(secondRead.Valid);
+        Assert.AreEqual(firstRead.EntryCount, secondRead.EntryCount);
+        Assert.AreEqual(firstRead.LastSequenceNumber, secondRead.LastSequenceNumber);
+        Assert.AreEqual(firstRead.LastHash, secondRead.LastHash);
+    }
+
     private static DurableAuditTrailAppendOnlyMinimalPolicy Policy(string root) =>
         new(Enabled: true, StorageRoot: root);
 
@@ -66,6 +124,9 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
             {
                 ["decision"] = "approved-for-minimal-append-only-test"
             });
+
+    private static string LedgerFile(string root) =>
+        System.IO.Path.Combine(root, "durable-audit-trail.append-only.jsonl");
 
     private sealed class TempDirectory : IDisposable
     {
