@@ -351,7 +351,12 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         if (result is null
             || result.Decision != RedactionBeforePersistenceDecision.Allowed
             || !result.Succeeded
+            || result.Reasons is null
             || result.SafeRequest is null
+            || result.Evidence is null
+            || result.Evidence.Decision != RedactionBeforePersistenceDecision.Allowed
+            || !string.Equals(result.Evidence.PolicyId, RedactionBeforePersistencePolicy.TestOnlyPolicyId, StringComparison.Ordinal)
+            || !string.Equals(result.Evidence.PolicyVersion, RedactionBeforePersistencePolicy.TestOnlyPolicyVersion, StringComparison.Ordinal)
             || !result.Evidence.CompletedBeforePersistence
             || result.Evidence.ContainsRawValues)
         {
@@ -359,7 +364,7 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
             {
                 DurableAuditTrailAppendOnlyMinimalRejectReason.RedactionBeforePersistenceRejected
             };
-            if (result?.Reasons.Any(reason =>
+            if (result?.Reasons?.Any(reason =>
                     reason is RedactionBeforePersistenceReason.SecretLikeContentRejected
                         or RedactionBeforePersistenceReason.PiiLikeContentRejected
                         or RedactionBeforePersistenceReason.PathLikeContentRejected) == true)
@@ -371,7 +376,9 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         }
 
         var expectedHash = RedactionBeforePersistenceService.ComputeCandidateHash(request);
-        if (!FixedTimeEquals(result.Evidence.CandidateHash, expectedHash))
+        if (string.IsNullOrWhiteSpace(result.Evidence.CandidateHash)
+            || !FixedTimeEquals(result.Evidence.CandidateHash, expectedHash)
+            || !FixedTimeEquals(RedactionBeforePersistenceService.ComputeCandidateHash(result.SafeRequest), expectedHash))
         {
             return [DurableAuditTrailAppendOnlyMinimalRejectReason.RedactionEvidenceMismatch];
         }

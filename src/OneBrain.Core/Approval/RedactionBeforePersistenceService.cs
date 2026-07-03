@@ -68,6 +68,9 @@ public sealed class RedactionBeforePersistenceService
     private static readonly Regex OpenAiKeyLikePattern = new(
         @"\bsk-(proj-)?[A-Za-z0-9_-]{8,}\b",
         RegexOptions.Compiled);
+    private static readonly Regex SecretAssignmentLikePattern = new(
+        @"\b(password|token|secret|api[\s_-]?key)\s*[:=]",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex EmailLikePattern = new(
         @"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
         RegexOptions.Compiled);
@@ -257,7 +260,7 @@ public sealed class RedactionBeforePersistenceService
     private static bool ContainsPathLikeContent(string? value) =>
         !string.IsNullOrWhiteSpace(value)
         && (WindowsAbsolutePathPattern.IsMatch(value)
-            || value.StartsWith(@"\\", StringComparison.Ordinal));
+            || value.TrimStart().StartsWith(@"\\", StringComparison.Ordinal));
 
     private static bool ContainsSecretLikeContent(string? value)
     {
@@ -267,7 +270,8 @@ public sealed class RedactionBeforePersistenceService
         }
 
         var lowered = value.ToLowerInvariant();
-        return lowered.Contains("password=", StringComparison.Ordinal)
+        return SecretAssignmentLikePattern.IsMatch(value)
+            || lowered.Contains("password=", StringComparison.Ordinal)
             || lowered.Contains("token=", StringComparison.Ordinal)
             || lowered.Contains("secret=", StringComparison.Ordinal)
             || lowered.Contains("api_key", StringComparison.Ordinal)

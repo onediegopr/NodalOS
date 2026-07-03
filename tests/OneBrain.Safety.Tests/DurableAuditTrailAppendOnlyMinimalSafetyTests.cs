@@ -427,6 +427,48 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_FailsClosedForMalformedOrTamperedRedactionServiceResult()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var request = Request();
+        var allowed = RedactionResult(request);
+        var tamperedSafeRequest = allowed with
+        {
+            SafeRequest = request with { ApprovalReference = "approval-tampered" }
+        };
+        var missingHash = allowed with
+        {
+            Evidence = allowed.Evidence with { CandidateHash = "" }
+        };
+        var nullReasons = allowed with
+        {
+            Reasons = null!
+        };
+        var nullEvidence = allowed with
+        {
+            Evidence = null!
+        };
+        var gates = new[]
+        {
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only", RedactionProof(), tamperedSafeRequest),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only", RedactionProof(), missingHash),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only", RedactionProof(), nullReasons),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:test-only", RedactionProof(), nullEvidence)
+        };
+
+        foreach (var gate in gates)
+        {
+            var result = ledger.AppendStage2TestOnly(Policy(temp.Path), request, gate);
+
+            Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+            AssertNoSideEffects(result);
+        }
+
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
     public void Stage2TestOnly_RejectsProductLedgerPathEvenWhenUnderTemp()
     {
         var productLikeRoot = System.IO.Path.Combine(

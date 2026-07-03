@@ -15,9 +15,13 @@ public sealed class RedactionBeforePersistenceServiceSafetyTests
         var sensitiveCases = new Dictionary<string, DurableAuditTrailAppendOnlyMinimalRequest>
         {
             ["secret"] = Request() with { Metadata = new Dictionary<string, string> { ["note"] = "Authorization: Bearer live-token" } },
+            ["secret-whitespace"] = Request() with { Metadata = new Dictionary<string, string> { ["note"] = "PASSWORD : spaced-secret" } },
+            ["api-key-whitespace"] = Request() with { Metadata = new Dictionary<string, string> { ["note"] = "api key = spaced-secret" } },
             ["email"] = Request() with { Metadata = new Dictionary<string, string> { ["reviewer"] = "person@example.com" } },
+            ["email-uppercase"] = Request() with { Metadata = new Dictionary<string, string> { ["reviewer"] = "PERSON+ALIAS@EXAMPLE.COM" } },
             ["windows-path"] = Request() with { EvidenceReferences = [@"C:\Users\person\Documents\private.txt"] },
             ["unc-path"] = Request() with { EvidenceReferences = [@"\\server\share\private.txt"] },
+            ["unc-path-leading-space"] = Request() with { EvidenceReferences = [@"  \\server\share\private.txt"] },
             ["raw-payload"] = Request() with { RawPayload = "{\"token\":\"raw-secret\"}" }
         };
 
@@ -32,9 +36,11 @@ public sealed class RedactionBeforePersistenceServiceSafetyTests
             Assert.IsTrue(result.Reasons.Count > 0, testCase.Key);
             Assert.IsFalse(rendered.Contains("live-token", StringComparison.Ordinal), testCase.Key);
             Assert.IsFalse(rendered.Contains("person@example.com", StringComparison.Ordinal), testCase.Key);
+            Assert.IsFalse(rendered.Contains("PERSON+ALIAS@EXAMPLE.COM", StringComparison.Ordinal), testCase.Key);
             Assert.IsFalse(rendered.Contains(@"C:\Users\person", StringComparison.Ordinal), testCase.Key);
             Assert.IsFalse(rendered.Contains(@"\\server\share", StringComparison.Ordinal), testCase.Key);
             Assert.IsFalse(rendered.Contains("raw-secret", StringComparison.Ordinal), testCase.Key);
+            Assert.IsFalse(rendered.Contains("spaced-secret", StringComparison.Ordinal), testCase.Key);
             Assert.IsTrue(result.Evidence.CompletedBeforePersistence, testCase.Key);
             Assert.IsFalse(result.Evidence.ContainsRawValues, testCase.Key);
         }

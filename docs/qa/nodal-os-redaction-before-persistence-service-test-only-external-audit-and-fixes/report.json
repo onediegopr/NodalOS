@@ -1,0 +1,65 @@
+{
+  "decision": "GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_TEST_ONLY_EXTERNAL_AUDIT_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "ce27d6775dad77a1bd93a47bcb76ec6dc8b64b3f",
+  "mode": "TEST_ONLY_EXTERNAL_AUDIT_AND_FIXES_NO_RUNTIME_PRODUCT",
+  "scope": "External-audit style review and test-only hardening fixes for RedactionBeforePersistenceService.",
+  "repoGuard": {
+    "worktreeInitial": "clean",
+    "originSyncInitial": "0 0",
+    "stash": "listed only, not touched: stash@{0}: On chrome-lab-001-extension-local-ai-bridge: pre-m11-legacy-state"
+  },
+  "fixes": [
+    "Stage 2 rejects null reasons/evidence, mismatched evidence decision, wrong policy id/version, blank candidate hash and safe-request hash mismatch.",
+    "Service detects whitespace/casing secret assignment variants.",
+    "Service detects leading-space UNC path variants.",
+    "Safety tests cover tampered safe request, missing hash, null reasons and null evidence.",
+    "Safety corpus includes uppercase email and leading-space UNC path variants."
+  ],
+  "boundaryConfirmation": {
+    "runtimeProductEnabled": false,
+    "productiveServiceRegistrationAdded": false,
+    "commandHandlersAdded": false,
+    "uiProductActionsAdded": false,
+    "productLedgerPathAdded": false,
+    "dbMigrationProviderCloudNetworkAdded": false,
+    "browserCdpWcuOcrRecipesLiveAdded": false,
+    "releaseCommercialReady": false,
+    "stashTouched": false
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "coreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "safetyFocusedTests": "PASS_33_OF_33",
+    "recipesFocusedTests": "PASS_6_OF_6",
+    "fullSolutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticScanChangedFiles": "PASS_NO_TRUE_RISK"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Corpus remains focused and should continue expanding.",
+      "Nested metadata remains future work because current durable request metadata is flat.",
+      "Product/runtime adoption remains blocked by external audit and explicit manual GO."
+    ],
+    "P4": [
+      "Historical design/implementation docs remain traceability records."
+    ]
+  },
+  "percentages": {
+    "redactionBeforePersistenceTestOnlyService": "86-91%",
+    "redactionBeforePersistenceProductService": "0% / NO-GO",
+    "durableStage2TestOnlyImplementation": "91-95%",
+    "runtimeLiveProductEnablement": "0% / NO-GO",
+    "releaseCommercialReadiness": "0% / NO-GO",
+    "proyectoUsableEndToEnd": "24-34%"
+  },
+  "nextMacroBlock": "NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_PROPERTY_CORPUS_EXPANSION_TEST_ONLY",
+  "runtimeProductManualGoRequired": true
+}
