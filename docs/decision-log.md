@@ -30,6 +30,17 @@
 - Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_LOCAL_TEMP_CHECKPOINT_READ_MODEL_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of local-temp checkpoint read-model evidence if final validation and push pass.
+- Input HEAD: `3d1517ff1d5fa0114f1b63c1f1f89acce463e5f1`.
+- Scope: audit `DurableAuditTrailLocalTempCheckpointEvidence`, Safety/Recipes coverage and QA/handoff/decision-log claims without source/test behavior changes.
+- Findings: P0 0, P1 0, P2 0, P3 2 (checkpoint remains caller-held and not durable external trust; dedicated external WORM/KMS/cloud checkpoint design remains future/prohibited), P4 1 (verbose naming avoids overclaiming).
+- Inherited validations: Safety focused tests PASS 33/33; Recipes focused tests PASS 7/7; Core build PASS 0 warnings/0 errors; full solution build PASS 0 warnings/0 errors.
+- Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_POST_HARDENING_CLOSEOUT_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
