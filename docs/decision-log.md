@@ -135,6 +135,17 @@
 - Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_EXTERNAL_AUDIT_AND_FIXES`.
 
+## NODAL_OS_DURABLE_STAGE2_TEST_ONLY_EXTERNAL_AUDIT_AND_FIXES
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_TEST_ONLY_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only audit with targeted Stage 2 test-only fix if final validation and push pass.
+- Input baseline HEAD: `c3506479f91dfb611a83b110d974dcc30d77e673`.
+- Scope: audit the Stage 2 test-only gates and apply a safe P3 fix preserving base `EmptyStorageRoot` rejection instead of product-ledger classification for empty storage roots.
+- Findings: P0 0, P1 0, P2 0, P3 2 remaining (redaction proof is caller-attested; property/replay/checkpoint hardening remains future work), P4 1.
+- Tests: full solution build PASS 0 warnings/0 errors; Safety Durable filter PASS 21/21; Recipes Durable filter PASS 6/6; `git diff --check` PASS; static scan PASS with positive hits only as guard strings inside tests.
+- Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_PROPERTY_CONCURRENCY_EXPANSION_TEST_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`

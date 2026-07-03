@@ -415,6 +415,19 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_PreservesBaseEmptyStorageRootRejection()
+    {
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var result = ledger.AppendStage2TestOnly(new DurableAuditTrailAppendOnlyMinimalPolicy(true, string.Empty), Request(), Stage2Gate());
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.EmptyStorageRoot);
+        CollectionAssert.DoesNotContain(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.ProductLedgerPathRejected);
+        AssertNoSideEffects(result);
+    }
+
+    [TestMethod]
     public void Stage2TestOnly_RejectsSecretLikeDataBeforeAnyPersistence()
     {
         using var temp = new TempDirectory();

@@ -1,0 +1,58 @@
+{
+  "decision": "GO_WITH_FINDINGS_DURABLE_STAGE2_TEST_ONLY_EXTERNAL_AUDIT_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "input_head": "c3506479f91dfb611a83b110d974dcc30d77e673",
+  "scope": "Read-only audit of Durable Stage 2 test-only implementation with targeted safe fix.",
+  "repo_guard": {
+    "worktree_initial": "clean",
+    "origin_sync_initial": "0 0",
+    "stash": "listed only, not touched: stash@{0}: On chrome-lab-001-extension-local-ai-bridge: pre-m11-legacy-state"
+  },
+  "fixes": [
+    "Empty Stage 2 StorageRoot now preserves EmptyStorageRoot rejection instead of ProductLedgerPathRejected.",
+    "Added Safety coverage for Stage 2 empty storage root rejection."
+  ],
+  "files_changed": [
+    "src/OneBrain.Core/Approval/DurableAuditTrailAppendOnlyMinimal.cs",
+    "tests/OneBrain.Safety.Tests/DurableAuditTrailAppendOnlyMinimalSafetyTests.cs",
+    "docs/adr/durable-stage2-test-only-external-audit-and-fixes.md",
+    "docs/qa/nodal-os-durable-stage2-test-only-external-audit-and-fixes/report.md",
+    "docs/qa/nodal-os-durable-stage2-test-only-external-audit-and-fixes/report.json",
+    "docs/handoff/nodal-os-durable-stage2-test-only-external-audit-and-fixes-handoff.md",
+    "docs/decision-log.md"
+  ],
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Redaction proof remains caller-attested test-only evidence.",
+      "Property/concurrency expansion, replay/read-model and checkpoint/truncation Stage 2 hardening remain future safe macro-blocks."
+    ],
+    "P4": [
+      "Historical docs remain traceability records under latest decision-log canon."
+    ]
+  },
+  "validations": {
+    "dotnet_build_onebrain_slnx": "PASS_0_WARNINGS_0_ERRORS",
+    "safety_durable_filter": "PASS_21_OF_21",
+    "recipes_durable_filter": "PASS_6_OF_6",
+    "git_diff_check": "PASS",
+    "json_validation": "PASS",
+    "static_scan_changed_files": "PASS_POSITIVE_HITS_ARE_GUARD_STRING_FIXTURES_INSIDE_TESTS_ONLY",
+    "tests_build_note": "Parallel validation attempt produced file locks; authoritative sequential validation passed."
+  },
+  "percentages": {
+    "durable_audit_trail_local_test_safe_append_write_candidate": "94-96%",
+    "durable_stage2_test_only_gates": "84-90%",
+    "durable_stage2_test_only_implementation": "80-86%",
+    "runtime_live_product_enablement": "0%",
+    "product_enablement": "0%",
+    "release_commercial_readiness": "0% / NO-GO",
+    "proyecto_usable_end_to_end": "22-32%"
+  },
+  "next_macro_block": "NODAL_OS_DURABLE_STAGE2_PROPERTY_CONCURRENCY_EXPANSION_TEST_ONLY",
+  "automatic_continuation": "ALLOWED_AFTER_COMMIT_PUSH_IF_VALIDATIONS_PASS"
+}

@@ -304,7 +304,7 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
             reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2FeatureFlagDisabled);
         }
 
-        if (string.IsNullOrWhiteSpace(policy.StorageRoot) || IsProductLedgerPath(policy.StorageRoot))
+        if (!string.IsNullOrWhiteSpace(policy.StorageRoot) && IsProductLedgerPath(policy.StorageRoot))
         {
             reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.ProductLedgerPathRejected);
         }
