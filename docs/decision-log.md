@@ -256,3 +256,13 @@
 - Non-goals preserved: no product runtime, approval mutation store, service registration, command handler, DB/migration, network/provider call, product action or release/commercial readiness.
 - Remaining gate: post-implementation external audit required before any product/runtime integration or non-test enablement.
 - Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_DURABLE_AUDIT_TRAIL_LOCAL_HARDENING_ROUND_2
+
+- Decision: `GO_LOCAL_TEST_SAFE_HARDENED_ROUND_2`
+- Capability: `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`
+- Scope: second local/test-safe hardening pass after read-only audit findings.
+- Implemented: semantic entry-shape validation, structured fail-closed handling for JSON-valid invalid ledger entries, empty/whitespace JSONL line rejection, explicit sequence gap/duplicate/reorder/hash mismatch tests, expanded secret-like marker rejection, and local in-process read/verify/append lock.
+- Deferred: external head checkpoint, valid tail deletion detection, rollback-to-older-valid-ledger detection, crash-safe transactional append, and cross-process/distributed writer coordination.
+- Non-goals preserved: no product runtime, approval mutation store, service registration, command handler, DB/migration, network/provider call, product action, WORM/compliance-grade claim or release/commercial readiness.
+- Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_TRUNCATION_EVIDENCE_DESIGN_ONLY`.

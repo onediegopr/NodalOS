@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace OneBrain.Core.Approval;
 
@@ -74,6 +76,13 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
     public const string SupportedEventKind = "approval.reviewed";
     private const string LedgerFileName = "durable-audit-trail.append-only.jsonl";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly ConcurrentDictionary<string, object> LedgerLocks = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Regex JwtLikePattern = new(
+        @"\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b",
+        RegexOptions.Compiled);
+    private static readonly Regex OpenAiKeyLikePattern = new(
+        @"\bsk-(proj-)?[A-Za-z0-9_-]{8,}\b",
+        RegexOptions.Compiled);
 
     public DurableAuditTrailAppendOnlyMinimalResult Append(
         DurableAuditTrailAppendOnlyMinimalPolicy policy,
@@ -87,54 +96,57 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
 
         Directory.CreateDirectory(policy.StorageRoot);
         var ledgerFile = Path.Combine(policy.StorageRoot, LedgerFileName);
-        var existing = ReadEntries(ledgerFile);
-        if (existing.Errors.Count > 0)
+        lock (GetLedgerLock(ledgerFile))
         {
-            return Rejected(
-                [DurableAuditTrailAppendOnlyMinimalRejectReason.ExistingLedgerIntegrityFailed],
-                ledgerFile);
+            var existing = ReadEntries(ledgerFile);
+            if (existing.Errors.Count > 0)
+            {
+                return Rejected(
+                    [DurableAuditTrailAppendOnlyMinimalRejectReason.ExistingLedgerIntegrityFailed],
+                    ledgerFile);
+            }
+
+            var verification = Verify(existing.Entries);
+            if (!verification.Valid)
+            {
+                return Rejected(
+                    [DurableAuditTrailAppendOnlyMinimalRejectReason.ExistingLedgerIntegrityFailed],
+                    ledgerFile);
+            }
+
+            var sequence = existing.Entries.Count + 1;
+            var previousHash = existing.Entries.LastOrDefault()?.EventHash ?? "genesis";
+            var entryWithoutHash = new DurableAuditTrailAppendOnlyMinimalEntry(
+                SequenceNumber: sequence,
+                EventId: $"audit-trail-{Guid.NewGuid():N}",
+                EventKind: request.EventKind,
+                CreatedAtUtc: DateTimeOffset.UtcNow,
+                ActorReference: Redact(request.ActorReference),
+                ApprovalReference: Redact(request.ApprovalReference),
+                EvidenceReferences: request.EvidenceReferences.Select(Redact).ToArray(),
+                Metadata: RedactMetadata(request.Metadata ?? new Dictionary<string, string>()),
+                PreviousHash: previousHash,
+                EventHash: string.Empty);
+            var entry = entryWithoutHash with
+            {
+                EventHash = ComputeHash(entryWithoutHash)
+            };
+
+            File.AppendAllText(ledgerFile, JsonSerializer.Serialize(entry, JsonOptions) + Environment.NewLine);
+
+            return new DurableAuditTrailAppendOnlyMinimalResult(
+                Decision: DurableAuditTrailAppendOnlyMinimalDecision.Appended,
+                RejectReasons: [],
+                Entry: entry,
+                LedgerFile: ledgerFile,
+                AppendWriteCount: 1,
+                PersistedEventCount: 1,
+                ProductActionAllowed: false,
+                NetworkAllowed: false,
+                DbMigrationAllowed: false,
+                CommandHandlerRegistered: false,
+                ReleaseCommercialReady: false);
         }
-
-        var verification = Verify(existing.Entries);
-        if (!verification.Valid)
-        {
-            return Rejected(
-                [DurableAuditTrailAppendOnlyMinimalRejectReason.ExistingLedgerIntegrityFailed],
-                ledgerFile);
-        }
-
-        var sequence = existing.Entries.Count + 1;
-        var previousHash = existing.Entries.LastOrDefault()?.EventHash ?? "genesis";
-        var entryWithoutHash = new DurableAuditTrailAppendOnlyMinimalEntry(
-            SequenceNumber: sequence,
-            EventId: $"audit-trail-{Guid.NewGuid():N}",
-            EventKind: request.EventKind,
-            CreatedAtUtc: DateTimeOffset.UtcNow,
-            ActorReference: Redact(request.ActorReference),
-            ApprovalReference: Redact(request.ApprovalReference),
-            EvidenceReferences: request.EvidenceReferences.Select(Redact).ToArray(),
-            Metadata: RedactMetadata(request.Metadata ?? new Dictionary<string, string>()),
-            PreviousHash: previousHash,
-            EventHash: string.Empty);
-        var entry = entryWithoutHash with
-        {
-            EventHash = ComputeHash(entryWithoutHash)
-        };
-
-        File.AppendAllText(ledgerFile, JsonSerializer.Serialize(entry, JsonOptions) + Environment.NewLine);
-
-        return new DurableAuditTrailAppendOnlyMinimalResult(
-            Decision: DurableAuditTrailAppendOnlyMinimalDecision.Appended,
-            RejectReasons: [],
-            Entry: entry,
-            LedgerFile: ledgerFile,
-            AppendWriteCount: 1,
-            PersistedEventCount: 1,
-            ProductActionAllowed: false,
-            NetworkAllowed: false,
-            DbMigrationAllowed: false,
-            CommandHandlerRegistered: false,
-            ReleaseCommercialReady: false);
     }
 
     public DurableAuditTrailAppendOnlyMinimalVerification VerifyFile(string ledgerFile)
@@ -263,8 +275,15 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         foreach (var line in File.ReadLines(ledgerFile))
         {
             lineNumber++;
+            if (line.Length == 0)
+            {
+                errors.Add($"empty_line:{lineNumber}");
+                continue;
+            }
+
             if (string.IsNullOrWhiteSpace(line))
             {
+                errors.Add($"whitespace_line:{lineNumber}");
                 continue;
             }
 
@@ -276,6 +295,8 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
                     errors.Add($"malformed_json_line:{lineNumber}");
                     continue;
                 }
+
+                errors.AddRange(ValidateEntryShape(entry, lineNumber));
 
                 entries.Add(entry);
             }
@@ -290,6 +311,73 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         }
 
         return new LedgerReadResult(entries, errors);
+    }
+
+    private static IReadOnlyList<string> ValidateEntryShape(
+        DurableAuditTrailAppendOnlyMinimalEntry entry,
+        int lineNumber)
+    {
+        var errors = new List<string>();
+        if (entry.SequenceNumber <= 0)
+        {
+            errors.Add($"invalid_sequence_line:{lineNumber}");
+        }
+
+        AddRequiredStringErrors(errors, entry.EventId, "event_id", lineNumber);
+        AddRequiredStringErrors(errors, entry.EventKind, "event_kind", lineNumber);
+        AddRequiredStringErrors(errors, entry.ActorReference, "actor_reference", lineNumber);
+        AddRequiredStringErrors(errors, entry.ApprovalReference, "approval_reference", lineNumber);
+        AddRequiredStringErrors(errors, entry.PreviousHash, "previous_hash", lineNumber);
+        AddRequiredStringErrors(errors, entry.EventHash, "event_hash", lineNumber);
+        if (!string.IsNullOrWhiteSpace(entry.EventKind)
+            && !string.Equals(entry.EventKind, SupportedEventKind, StringComparison.Ordinal))
+        {
+            errors.Add($"unexpected_event_kind_line:{lineNumber}");
+        }
+
+        if (entry.CreatedAtUtc == default)
+        {
+            errors.Add($"missing_created_at_line:{lineNumber}");
+        }
+
+        if (entry.EvidenceReferences is null || entry.EvidenceReferences.Count == 0)
+        {
+            errors.Add($"missing_evidence_references_line:{lineNumber}");
+        }
+        else if (entry.EvidenceReferences.Any(string.IsNullOrWhiteSpace))
+        {
+            errors.Add($"invalid_evidence_reference_line:{lineNumber}");
+        }
+
+        if (entry.Metadata is null)
+        {
+            errors.Add($"missing_metadata_line:{lineNumber}");
+        }
+        else if (entry.Metadata.Any(pair => string.IsNullOrWhiteSpace(pair.Key) || pair.Value is null))
+        {
+            errors.Add($"invalid_metadata_line:{lineNumber}");
+        }
+
+        if (errors.Count > 0)
+        {
+            errors.Insert(0, $"invalid_entry_shape_line:{lineNumber}");
+        }
+
+        return errors;
+    }
+
+    private static void AddRequiredStringErrors(List<string> errors, string? value, string fieldName, int lineNumber)
+    {
+        if (value is null)
+        {
+            errors.Add($"missing_{fieldName}_line:{lineNumber}");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            errors.Add($"empty_{fieldName}_line:{lineNumber}");
+        }
     }
 
     private static DurableAuditTrailAppendOnlyMinimalVerification Verify(
@@ -344,6 +432,9 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
             && CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
     }
 
+    private static object GetLedgerLock(string ledgerFile) =>
+        LedgerLocks.GetOrAdd(Path.GetFullPath(ledgerFile), _ => new object());
+
     private static IReadOnlyDictionary<string, string> RedactMetadata(IReadOnlyDictionary<string, string> metadata)
     {
         var redacted = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -364,8 +455,22 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         return lowered.Contains("password=", StringComparison.Ordinal)
             || lowered.Contains("token=", StringComparison.Ordinal)
             || lowered.Contains("secret=", StringComparison.Ordinal)
+            || lowered.Contains("api_key", StringComparison.Ordinal)
+            || lowered.Contains("apikey", StringComparison.Ordinal)
+            || lowered.Contains("api-key", StringComparison.Ordinal)
+            || lowered.Contains("bearer ", StringComparison.Ordinal)
+            || lowered.Contains("ghp_", StringComparison.Ordinal)
+            || lowered.Contains("github_pat_", StringComparison.Ordinal)
+            || lowered.Contains("user id=", StringComparison.Ordinal)
+            || lowered.Contains("accountkey=", StringComparison.Ordinal)
+            || lowered.Contains("sharedaccesskey=", StringComparison.Ordinal)
+            || lowered.Contains("defaultendpointsprotocol=", StringComparison.Ordinal)
             || lowered.Contains("authorization:", StringComparison.Ordinal)
             || lowered.Contains("cookie:", StringComparison.Ordinal)
-            || lowered.Contains("begin private key", StringComparison.Ordinal);
+            || lowered.Contains("begin private key", StringComparison.Ordinal)
+            || lowered.Contains("begin rsa private key", StringComparison.Ordinal)
+            || lowered.Contains("begin openssh private key", StringComparison.Ordinal)
+            || JwtLikePattern.IsMatch(value)
+            || OpenAiKeyLikePattern.IsMatch(value);
     }
 }
