@@ -111,6 +111,45 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void MinimalLedger_FailsClosedForNullReferenceFieldsAndMalformedMetadataWithoutThrowing()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var nullActor = ledger.Append(Policy(temp.Path), Request() with { ActorReference = null! });
+        var nullApproval = ledger.Append(Policy(temp.Path), Request() with { ApprovalReference = null! });
+        var nullEvidenceElement = ledger.Append(Policy(temp.Path), Request() with { EvidenceReferences = [null!] });
+        var nullEvidenceList = ledger.Append(Policy(temp.Path), Request() with { EvidenceReferences = null! });
+        var nullMetadataValue = ledger.Append(
+            Policy(temp.Path),
+            Request() with { Metadata = new Dictionary<string, string> { ["note"] = null! } });
+        var blankMetadataKey = ledger.Append(
+            Policy(temp.Path),
+            Request() with { Metadata = new Dictionary<string, string> { ["   "] = "value" } });
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, nullActor.Decision);
+        CollectionAssert.Contains(nullActor.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MissingActorReference);
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, nullApproval.Decision);
+        CollectionAssert.Contains(nullApproval.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MissingApprovalReference);
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, nullEvidenceElement.Decision);
+        CollectionAssert.Contains(nullEvidenceElement.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MissingEvidenceReference);
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, nullEvidenceList.Decision);
+        CollectionAssert.Contains(nullEvidenceList.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MissingEvidenceReference);
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, nullMetadataValue.Decision);
+        CollectionAssert.Contains(nullMetadataValue.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MalformedMetadata);
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, blankMetadataKey.Decision);
+        CollectionAssert.Contains(blankMetadataKey.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MalformedMetadata);
+
+        AssertNoSideEffects(nullActor);
+        AssertNoSideEffects(nullApproval);
+        AssertNoSideEffects(nullEvidenceElement);
+        AssertNoSideEffects(nullEvidenceList);
+        AssertNoSideEffects(nullMetadataValue);
+        AssertNoSideEffects(blankMetadataKey);
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
     public void MinimalLedger_FailsClosedOutsideLocalTestStorageBoundaryByDefault()
     {
         var ledger = new DurableAuditTrailAppendOnlyMinimal();

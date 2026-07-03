@@ -35,7 +35,9 @@
       "command": "dotnet build OneBrain.slnx",
       "result": "PASS",
       "errors": 0,
-      "warnings": 0
+      "warningsFromStage1Files": 0,
+      "preExistingUnrelatedWarnings": 33,
+      "note": "corrected_by_mega_audit_earlier_zero_warnings_wording_was_inaccurate_for_full_solution_build"
     },
     "focusedSafety": {
       "command": "dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --filter \"FullyQualifiedName~DurableAuditTrailAppendOnlyMinimal\" --no-restore",

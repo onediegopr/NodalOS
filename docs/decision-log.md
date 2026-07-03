@@ -16,6 +16,18 @@
 - Non-goals: no product runtime enablement, service registration, command handlers, UI product actions, product ledger path, DB/migration, provider/cloud/network, Browser/CDP, WCU/OCR, recipes live writes, Stage 2 dev sandbox, release readiness or commercial readiness.
 - Next recommended block: `NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_CLAUDE_MEGA_AUDIT_AND_CONTROLLED_FIXES
+
+- Decision target: `GO_CLAUDE_MEGA_AUDIT_DURABLE_AUDIT_TRAIL_STAGE_1_FIXES_READY`
+- Status: accepted as Stage 1 test-only mega-audit with controlled local/test-safe fixes if final validation and push pass.
+- Input baseline HEAD: `f557b574ccf5850a92b9202b338cc10f9ad4f164`.
+- Scope: full-line audit of `DurableAuditTrailAppendOnlyMinimal`, its Safety/Recipes tests and Stage 1 docs; controlled fixes limited to Stage 1 test-only behavior.
+- Findings: P0 0, P1 0, P2 1 (fixed), P3 1 (documented seam), P4 2 (one fixed-in-docs, one documented remnant).
+- P2 fix: null-total write-side validation, `MalformedMetadata` reject reason and null-safe secret scan close a fail-closed gap where null request fields threw `NullReferenceException` and a null metadata value could poison the ledger.
+- Tests: solution build PASS (0 errors, 0 Stage 1 warnings); focused Safety 16 passed (+1 new null-safety test); focused Recipes 5 passed; static enablement scan no TRUE_RISK.
+- Non-goals (unchanged): no product runtime enablement, service registration, command handlers, UI product actions, product ledger path, DB/migration, provider/cloud/network, Browser/CDP, WCU/OCR, recipes live writes, Stage 2 dev sandbox, release readiness or commercial readiness; stash not modified.
+- Next recommended block: `NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## POST_PHASE_E_NEXT_ROADMAP_DECISION_READ_ONLY
 
 - Decision target: `GO_POST_PHASE_E_NEXT_ROADMAP_DECISION_READ_ONLY_READY`

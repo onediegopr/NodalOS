@@ -34,6 +34,10 @@ Stage 1 is test-only/local-temp hardening. Product enablement is not authorized.
 - Focused Recipes tests: PASS, 5 passed.
 - Tests write only under temp/local-test fixtures.
 - Full final validation and push are recorded in the closing response for this block.
+- Mega-audit follow-up (baseline HEAD `f557b574`): focused Safety now 16 passed (+1
+  null-safety fail-closed test), focused Recipes 5 passed; solution build PASS with 0
+  errors and 0 Stage 1 warnings (pre-existing legacy warnings are unrelated). See
+  `docs/qa/nodal-os-durable-audit-trail-stage-1-mega-audit/report.md`.
 
 ## Percentages
 

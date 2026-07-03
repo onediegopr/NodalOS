@@ -92,6 +92,31 @@ These items still block any product enablement:
 - Release/commercial readiness: `0% / NO-GO`
 - Project usable end-to-end estimate: `20-30%`
 
+## Mega-Audit Addendum (Stage 1 Controlled Fixes)
+
+A subsequent Claude mega-audit of the full Durable Audit Trail Stage 1 line applied
+controlled test-only/local-safe fixes without changing scope:
+
+- Added a `MalformedMetadata` reject reason and null-total write-side validation so a null
+  reference field, a null evidence element, a null evidence list, a null metadata value or
+  a blank metadata key now fail closed cleanly instead of throwing
+  `NullReferenceException`. This also prevents a null metadata value from being persisted
+  and later poisoning the ledger through the read-side shape check.
+- `ContainsSecretLikeContent` and the secret scan over collections are now null-safe.
+- Added a Safety test proving these malformed inputs fail closed with no side effects and
+  no ledger file creation (focused Safety count 15 → 16).
+
+Known remnant risks recorded for the external audit / Stage 2 planning, not changed here:
+
+- `AllowLocalTestStorageOnly = false` lets `Append` write outside the temp boundary while
+  `VerifyFile` always enforces it. This flag is an intentional future-approved-caller seam
+  and defaults to `true` (temp-only). A future caller could create a ledger it cannot later
+  verify with `VerifyFile`.
+- `LedgerLocks` is a process-static map keyed by full path and does not evict entries;
+  negligible in Stage 1 test-only use.
+
+This addendum does not enable product runtime behavior.
+
 ## Decision
 
 `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`

@@ -23,7 +23,8 @@ public enum DurableAuditTrailAppendOnlyMinimalRejectReason
     MissingEvidenceReference,
     RawPayloadRejected,
     SecretLikeContentRejected,
-    ExistingLedgerIntegrityFailed
+    ExistingLedgerIntegrityFailed,
+    MalformedMetadata
 }
 
 public sealed record DurableAuditTrailAppendOnlyMinimalPolicy(
@@ -219,9 +220,17 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
             reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.MissingApprovalReference);
         }
 
-        if (request.EvidenceReferences.Count == 0 || request.EvidenceReferences.Any(string.IsNullOrWhiteSpace))
+        if (request.EvidenceReferences is null
+            || request.EvidenceReferences.Count == 0
+            || request.EvidenceReferences.Any(string.IsNullOrWhiteSpace))
         {
             reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.MissingEvidenceReference);
+        }
+
+        if (request.Metadata is not null
+            && request.Metadata.Any(pair => string.IsNullOrWhiteSpace(pair.Key) || pair.Value is null))
+        {
+            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.MalformedMetadata);
         }
 
         if (!string.IsNullOrWhiteSpace(request.RawPayload))
@@ -231,7 +240,7 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
 
         if (ContainsSecretLikeContent(request.ActorReference)
             || ContainsSecretLikeContent(request.ApprovalReference)
-            || request.EvidenceReferences.Any(ContainsSecretLikeContent)
+            || (request.EvidenceReferences?.Any(ContainsSecretLikeContent) ?? false)
             || (request.Metadata?.Any(pair => ContainsSecretLikeContent(pair.Key) || ContainsSecretLikeContent(pair.Value)) ?? false))
         {
             reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
@@ -465,8 +474,13 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
     private static string Redact(string value) =>
         ContainsSecretLikeContent(value) ? "[REDACTED]" : value;
 
-    private static bool ContainsSecretLikeContent(string value)
+    private static bool ContainsSecretLikeContent(string? value)
     {
+        if (string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+
         var lowered = value.ToLowerInvariant();
         return lowered.Contains("password=", StringComparison.Ordinal)
             || lowered.Contains("token=", StringComparison.Ordinal)

@@ -52,7 +52,10 @@ Close Durable Audit Trail Stage 1 as test-only/local-temp safety hardening. This
 
 - `dotnet build OneBrain.slnx`
   - Result: PASS
-  - Summary: 0 errors, 0 warnings
+  - Summary: 0 errors; pre-existing unrelated warnings from referenced legacy files
+    (historical OCR/ONNX diagnostics + MSTEST analyzer suggestions), 0 warnings from
+    Stage 1 files. (Corrected by mega-audit: the earlier "0 warnings" wording was
+    inaccurate for the full solution build and contradicted the note below.)
 - `dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --filter "FullyQualifiedName~DurableAuditTrailAppendOnlyMinimal" --no-restore`
   - Result: PASS
   - Count: 15 passed
