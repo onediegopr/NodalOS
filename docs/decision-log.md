@@ -102,6 +102,17 @@
 - Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_DESIGN_ONLY`.
 
+## NODAL_OS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_READY`
+- Status: accepted as docs-only Durable Stage 2 pre-implementation evidence pack if final validation and push pass.
+- Input baseline HEAD: `21b47e592b01bcb49c4c0702312222ff38f55ffd`.
+- Scope: convert redaction-before-persistence, runtime feature flag fail-closed, negative no-enable scans, replay/read-model, checkpoint/truncation and failure/non-rollback blockers into required evidence and future negative-test inventory.
+- Findings: P0 0, P1 0, P2 3 (redaction-before-persistence unresolved for implementation; runtime feature flag fail-closed unresolved for implementation; negative tests must be materialized before code), P3 3, P4 1.
+- Corrections: added Durable Stage 2 pre-implementation evidence pack ADR, QA report MD/JSON and handoff; no source/tests/runtime files changed.
+- Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
