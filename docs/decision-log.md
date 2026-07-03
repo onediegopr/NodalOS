@@ -214,3 +214,13 @@
 - Finding: no P0/P1/P2 blocking if validations pass.
 - Non-goals: no durable audit trail real, append/write real, append-only store real, runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_SELECTED_CAPABILITY_IMPLEMENTATION_CANDIDATE_PREP_READ_ONLY`, preparation only after explicit user GO and without implementing real capability.
+
+## NODAL_OS_SELECTED_CAPABILITY_IMPLEMENTATION_CANDIDATE_PREP_READ_ONLY
+
+- Decision target: `GO_NODAL_OS_SELECTED_CAPABILITY_IMPLEMENTATION_CANDIDATE_PREP_READ_ONLY_READY`
+- Status: accepted as read-only/design-prep implementation candidate package if validation passes.
+- Input: selected capability scope external audit at `9bb7a6b3bd3786920556a97e8224efb5b6c44966`.
+- Scope: deterministic in-memory prep packet for `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`, candidate module/file map, required gates, required negative tests before code, future positive test plan, fail-closed plan, no-side-effect proof plan, blocked future implementation prompt, post-implementation external audit prompt, Safety/Recipes tests, ADR, QA report and decision log.
+- Candidate status: `BLOCKED_PENDING_USER_GO_FOR_IMPLEMENTATION`; maximum allowed state is `IMPLEMENTATION_CANDIDATE_PREPARED_BUT_BLOCKED_PENDING_USER_GO`.
+- Non-goals: no durable audit trail real, append/write real, append-only store real, runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `PAUSE_FOR_USER_EXPLICIT_GO_BEFORE_IMPLEMENTATION`.

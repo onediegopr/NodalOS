@@ -1,0 +1,130 @@
+{
+  "decision": "GO_NODAL_OS_SELECTED_CAPABILITY_IMPLEMENTATION_CANDIDATE_PREP_READ_ONLY_READY",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "9bb7a6b3bd3786920556a97e8224efb5b6c44966",
+  "canonicalState": "PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME",
+  "selectedCapability": "DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL",
+  "candidateStatus": "BLOCKED_PENDING_USER_GO_FOR_IMPLEMENTATION",
+  "maximumDecisionAllowed": "IMPLEMENTATION_CANDIDATE_PREPARED_BUT_BLOCKED_PENDING_USER_GO",
+  "futureImplementationPromptStatus": "BLOCKED_NOT_EXECUTABLE",
+  "safeToImplementNow": false,
+  "enablementAllowedNow": false,
+  "releaseCommercialReadiness": "NO-GO",
+  "counts": {
+    "durableAuditTrailRealEnabledCount": 0,
+    "appendWriteEnabledCount": 0,
+    "runtimeEnabledCount": 0,
+    "executionEnabledCount": 0,
+    "mutationEnabledCount": 0,
+    "exportEnabledCount": 0,
+    "serviceRegistrationCount": 0,
+    "commandHandlerCount": 0,
+    "productActionCount": 0,
+    "filesystemOutputCount": 0,
+    "dbMigrationCount": 0,
+    "networkProviderCallCount": 0,
+    "releaseCommercialReadyCount": 0
+  },
+  "moduleFileCandidateMap": [
+    {
+      "path": "src/OneBrain.Core/Approval/DurableAuditTrailAppendOnlyCandidate.cs",
+      "kind": "FUTURE_CANDIDATE_FILE",
+      "status": "BLOCKED_PENDING_USER_GO"
+    },
+    {
+      "path": "tests/OneBrain.Safety.Tests/DurableAuditTrailAppendOnlyCandidateSafetyTests.cs",
+      "kind": "FUTURE_TEST_FILE",
+      "status": "NEGATIVE_TESTS_FIRST"
+    },
+    {
+      "path": "tests/OneBrain.Recipes.Tests/DurableAuditTrailAppendOnlyCandidateTests.cs",
+      "kind": "FUTURE_TEST_FILE",
+      "status": "NEGATIVE_TESTS_FIRST"
+    },
+    {
+      "path": "src/**/ServiceCollection*.cs",
+      "kind": "PROHIBITED_FOR_FIRST_IMPLEMENTATION",
+      "status": "BLOCKED"
+    },
+    {
+      "path": "src/**/CommandHandler*.cs",
+      "kind": "PROHIBITED_FOR_FIRST_IMPLEMENTATION",
+      "status": "BLOCKED"
+    },
+    {
+      "path": "src/**/Migrations/**",
+      "kind": "PROHIBITED_FOR_FIRST_IMPLEMENTATION",
+      "status": "BLOCKED"
+    }
+  ],
+  "requiredGates": [
+    "explicit user GO",
+    "clean repo guard",
+    "locked selected capability scope",
+    "external audit GO recorded",
+    "negative tests before real code",
+    "no unresolved P0/P1/P2",
+    "isolated audit trail boundary",
+    "no broad filesystem or DB access",
+    "no service registration unless separately approved",
+    "no command handler unless separately approved",
+    "fail-closed behavior",
+    "post-implementation external audit before enablement",
+    "release/commercial remains NO-GO"
+  ],
+  "requiredNegativeTests": [
+    "no append without explicit user GO",
+    "no append without pre-implementation external audit GO",
+    "no append without scope lock",
+    "no write outside isolated future audit path",
+    "no service registration",
+    "no command handlers",
+    "no product actions",
+    "no runtime/live",
+    "no domain state mutation",
+    "no physical export",
+    "no redaction runtime",
+    "no retention/deletion runtime",
+    "no provider/cloud/network",
+    "no browser/CDP",
+    "no WCU/OCR",
+    "no recipes execution",
+    "fail closed on missing gate",
+    "fail closed on missing audit",
+    "fail closed on missing user GO",
+    "fail closed on unexpected target/path",
+    "blocked until explicit GO",
+    "release/commercial NO-GO",
+    "runtime/live readiness remains 0",
+    "service registration count remains 0",
+    "command handler count remains 0",
+    "no DB/migration",
+    "no append-only store in prep"
+  ],
+  "blockedFutureImplementationPrompt": "NODAL_OS_DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_IMPLEMENTATION_CANDIDATE_BLOCKED",
+  "postImplementationExternalAuditPrompt": "NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_EXTERNAL_AUDIT_READ_ONLY",
+  "noGoCapabilities": [
+    "durable audit trail real",
+    "append/write real",
+    "runtime/live",
+    "execution real",
+    "mutation real",
+    "physical export real",
+    "redaction runtime real",
+    "secret/PII scan real",
+    "retention/deletion runtime real",
+    "service registration",
+    "command handlers",
+    "product actions",
+    "filesystem product IO",
+    "DB/migration",
+    "provider/cloud/network",
+    "LLM live",
+    "Browser/CDP live",
+    "WCU/OCR live",
+    "Recipes execution real",
+    "release/commercial readiness"
+  ],
+  "nextRecommendedBlock": "PAUSE_FOR_USER_EXPLICIT_GO_BEFORE_IMPLEMENTATION"
+}
