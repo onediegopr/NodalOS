@@ -43,6 +43,40 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void MinimalLedger_RejectsSecretLikeContentVariants()
+    {
+        var variants = new[]
+        {
+            "password=value",
+            "token=value",
+            "secret=value",
+            "Authorization: Bearer value",
+            "Cookie: session=value",
+            "-----BEGIN PRIVATE KEY-----"
+        };
+
+        foreach (var secretLikeContent in variants)
+        {
+            using var temp = new TempDirectory();
+            var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+            var result = ledger.Append(
+                Policy(temp.Path),
+                Request() with
+                {
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["audit-note"] = secretLikeContent
+                    }
+                });
+
+            Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision, secretLikeContent);
+            CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
+            AssertNoSideEffects(result);
+        }
+    }
+
+    [TestMethod]
     public void MinimalLedger_FailsClosedOutsideLocalTestStorageBoundaryByDefault()
     {
         var ledger = new DurableAuditTrailAppendOnlyMinimal();
@@ -72,6 +106,24 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, second.Decision);
         CollectionAssert.Contains(second.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.ExistingLedgerIntegrityFailed);
         AssertNoSideEffects(second);
+    }
+
+    [TestMethod]
+    public void MinimalLedger_DetectsMalformedLedgerJsonAndRefusesFurtherAppend()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var ledgerFile = System.IO.Path.Combine(temp.Path, "durable-audit-trail.append-only.jsonl");
+        File.WriteAllText(ledgerFile, "{not-json");
+
+        var verification = ledger.VerifyFile(ledgerFile);
+        var result = ledger.Append(Policy(temp.Path), Request());
+
+        Assert.IsFalse(verification.Valid);
+        CollectionAssert.Contains(verification.Errors.ToArray(), "malformed_json_line:1");
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.ExistingLedgerIntegrityFailed);
+        AssertNoSideEffects(result);
     }
 
     [TestMethod]

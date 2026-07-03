@@ -88,7 +88,14 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         Directory.CreateDirectory(policy.StorageRoot);
         var ledgerFile = Path.Combine(policy.StorageRoot, LedgerFileName);
         var existing = ReadEntries(ledgerFile);
-        var verification = Verify(existing);
+        if (existing.Errors.Count > 0)
+        {
+            return Rejected(
+                [DurableAuditTrailAppendOnlyMinimalRejectReason.ExistingLedgerIntegrityFailed],
+                ledgerFile);
+        }
+
+        var verification = Verify(existing.Entries);
         if (!verification.Valid)
         {
             return Rejected(
@@ -96,8 +103,8 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
                 ledgerFile);
         }
 
-        var sequence = existing.Count + 1;
-        var previousHash = existing.LastOrDefault()?.EventHash ?? "genesis";
+        var sequence = existing.Entries.Count + 1;
+        var previousHash = existing.Entries.LastOrDefault()?.EventHash ?? "genesis";
         var entryWithoutHash = new DurableAuditTrailAppendOnlyMinimalEntry(
             SequenceNumber: sequence,
             EventId: $"audit-trail-{Guid.NewGuid():N}",
@@ -142,7 +149,18 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
                 Errors: []);
         }
 
-        return Verify(ReadEntries(ledgerFile));
+        var existing = ReadEntries(ledgerFile);
+        if (existing.Errors.Count > 0)
+        {
+            return new DurableAuditTrailAppendOnlyMinimalVerification(
+                Valid: false,
+                EntryCount: existing.Entries.Count,
+                LastSequenceNumber: existing.Entries.LastOrDefault()?.SequenceNumber ?? 0,
+                LastHash: existing.Entries.LastOrDefault()?.EventHash ?? "genesis",
+                Errors: existing.Errors);
+        }
+
+        return Verify(existing.Entries);
     }
 
     private static List<DurableAuditTrailAppendOnlyMinimalRejectReason> ValidateRequest(
@@ -228,29 +246,50 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         return fullPath.StartsWith(tempPath, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static IReadOnlyList<DurableAuditTrailAppendOnlyMinimalEntry> ReadEntries(string ledgerFile)
+    private sealed record LedgerReadResult(
+        IReadOnlyList<DurableAuditTrailAppendOnlyMinimalEntry> Entries,
+        IReadOnlyList<string> Errors);
+
+    private static LedgerReadResult ReadEntries(string ledgerFile)
     {
         if (!File.Exists(ledgerFile))
         {
-            return [];
+            return new LedgerReadResult([], []);
         }
 
         var entries = new List<DurableAuditTrailAppendOnlyMinimalEntry>();
+        var errors = new List<string>();
+        var lineNumber = 0;
         foreach (var line in File.ReadLines(ledgerFile))
         {
+            lineNumber++;
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
 
-            var entry = JsonSerializer.Deserialize<DurableAuditTrailAppendOnlyMinimalEntry>(line, JsonOptions);
-            if (entry is not null)
+            try
             {
+                var entry = JsonSerializer.Deserialize<DurableAuditTrailAppendOnlyMinimalEntry>(line, JsonOptions);
+                if (entry is null)
+                {
+                    errors.Add($"malformed_json_line:{lineNumber}");
+                    continue;
+                }
+
                 entries.Add(entry);
+            }
+            catch (JsonException)
+            {
+                errors.Add($"malformed_json_line:{lineNumber}");
+            }
+            catch (NotSupportedException)
+            {
+                errors.Add($"unsupported_json_line:{lineNumber}");
             }
         }
 
-        return entries;
+        return new LedgerReadResult(entries, errors);
     }
 
     private static DurableAuditTrailAppendOnlyMinimalVerification Verify(

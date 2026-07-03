@@ -1,0 +1,50 @@
+{
+  "decision": "GO_LOCAL_TEST_SAFE_HARDENED",
+  "capability": "DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initial_head": "d80ea683c58a4a69c0ecca2545558b0a16971fad",
+  "baseline_matched": true,
+  "scope": "post_implementation_hardening_local_test_safe",
+  "implemented": [
+    "malformed_jsonl_read_fail_closed",
+    "append_refuses_existing_ledger_read_errors",
+    "verify_file_reports_parse_errors",
+    "expanded_secret_marker_safety_tests",
+    "malformed_ledger_append_refusal_test"
+  ],
+  "non_goals_preserved": {
+    "runtime_enabled": false,
+    "service_registration": false,
+    "command_handlers": false,
+    "product_actions": false,
+    "approval_mutation_store": false,
+    "db_or_migration": false,
+    "network_or_provider_calls": false,
+    "release_or_commercial_readiness": false,
+    "stash_mutated": false
+  },
+  "validation": {
+    "safety_filter": {
+      "command": "dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --filter DurableAuditTrailAppendOnly --no-restore",
+      "passed": true,
+      "tests_passed": 11
+    },
+    "recipes_filter": {
+      "command": "dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --filter DurableAuditTrailAppendOnly --no-restore",
+      "passed": true,
+      "tests_passed": 7
+    }
+  },
+  "security": {
+    "secrets_added": false,
+    "raw_payload_storage_enabled": false,
+    "malformed_existing_ledger_blocks_append": true,
+    "local_temp_storage_boundary_default": true
+  },
+  "residual_risks": [
+    "no_external_head_seal_for_latest-line removal detection",
+    "external_audit_required_before_product_runtime_integration"
+  ],
+  "next_safe_step": "NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_EXTERNAL_AUDIT_READ_ONLY"
+}
+

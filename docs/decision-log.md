@@ -245,3 +245,14 @@
 - Non-goals preserved: no product runtime, approval mutation store, service registration, command handler, DB/migration, network/provider call, product action or release/commercial readiness.
 - Remaining gate: post-implementation external audit required before any product/runtime integration or non-test enablement.
 - Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_HARDENING
+
+- Decision: `GO_LOCAL_TEST_SAFE_HARDENED`
+- Capability: `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`
+- Scope: post-implementation hardening of the isolated local/test-safe JSONL ledger.
+- Implemented: fail-closed existing-ledger JSONL parse handling, append refusal on ledger read errors, `VerifyFile` parse error reporting, expanded secret-like marker coverage and malformed ledger tests.
+- Tests: focused Safety durable audit trail filter passed with 11 tests; focused Recipes durable audit trail filter passed with 7 tests.
+- Non-goals preserved: no product runtime, approval mutation store, service registration, command handler, DB/migration, network/provider call, product action or release/commercial readiness.
+- Remaining gate: post-implementation external audit required before any product/runtime integration or non-test enablement.
+- Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_POST_IMPLEMENTATION_EXTERNAL_AUDIT_READ_ONLY`.
