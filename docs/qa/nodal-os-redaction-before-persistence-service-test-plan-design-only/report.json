@@ -1,0 +1,86 @@
+{
+  "decision": "GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_PLAN_DESIGN_ONLY_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "1cd0188927fc7b8167c3245b98f0671b82673fe6",
+  "mode": "TEST_PLAN_DESIGN_ONLY_NO_CODE_NO_RUNTIME",
+  "scope": "Pre-implementation test-plan design for a future redaction-before-persistence service.",
+  "repoGuard": {
+    "worktreeInitial": "clean",
+    "originSyncInitial": "0 0",
+    "stash": "listed only, not touched"
+  },
+  "artifacts": [
+    "docs/adr/redaction-before-persistence-service-test-plan-design-only.md",
+    "docs/qa/nodal-os-redaction-before-persistence-service-test-plan-design-only/report.md",
+    "docs/qa/nodal-os-redaction-before-persistence-service-test-plan-design-only/report.json",
+    "docs/handoff/nodal-os-redaction-before-persistence-service-test-plan-design-only-handoff.md",
+    "docs/decision-log.md"
+  ],
+  "testPlanGates": [
+    "RBP-T0 missing policy",
+    "RBP-T1 unknown policy version",
+    "RBP-T2 secret-like content",
+    "RBP-T3 PII-like content",
+    "RBP-T4 path-like data",
+    "RBP-T5 unsupported nested metadata",
+    "RBP-T6 classified nested metadata",
+    "RBP-T7 missing redaction evidence",
+    "RBP-T8 failed redaction evidence",
+    "RBP-T9 stale or after-the-fact evidence",
+    "RBP-T10 candidate hash mismatch",
+    "RBP-T11 evidence leak rejection",
+    "RBP-T12 safe redacted envelope append",
+    "RBP-T13 safe logs/errors",
+    "RBP-T14 replay/read-model redacted-only",
+    "RBP-T15 concurrency evidence isolation",
+    "RBP-T16 static no-registration scan",
+    "RBP-T17 static no-external-side-effect scan",
+    "RBP-T18 product ledger path rejection",
+    "RBP-T19 release/commercial NO-GO"
+  ],
+  "boundaryConfirmation": {
+    "sourceCodeChanged": false,
+    "testsAdded": false,
+    "runtimeProductEnabled": false,
+    "serviceRegistrationAdded": false,
+    "commandHandlersAdded": false,
+    "uiProductActionsAdded": false,
+    "productLedgerPathAdded": false,
+    "dbMigrationProviderCloudNetworkAdded": false,
+    "browserCdpWcuOcrRecipesLiveAdded": false,
+    "releaseCommercialReady": false,
+    "stashTouched": false
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Plan is not executable until tests and implementation are explicitly authorized.",
+      "Corpus ownership and cadence are future assignments.",
+      "Product/runtime adoption remains blocked after any implementation until audit plus manual GO."
+    ],
+    "P4": [
+      "Percentages are planning estimates only."
+    ]
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticScanChangedFiles": "PASS_DESIGN_ONLY_TEST_PLAN_AND_PROHIBITED_BOUNDARY_HITS_ONLY",
+    "buildTests": "NOT_RUN_BY_DESIGN_DOCS_ONLY",
+    "finalGitStatus": "CLEAN_AFTER_COMMIT_EXPECTED"
+  },
+  "percentages": {
+    "redactionBeforePersistenceServiceDesign": "76-82% design-only with test-plan packet",
+    "preImplementationTestPlanDesign": "70-76% design-only",
+    "productRedactionServiceImplementation": "0% / NO-GO",
+    "runtimeLiveProductEnablement": "0% / NO-GO",
+    "releaseCommercialReadiness": "0% / NO-GO",
+    "proyectoUsableEndToEnd": "24-34%"
+  },
+  "stopPoint": "PAUSE_FOR_MANUAL_GO_REDACTION_BEFORE_PERSISTENCE_SERVICE_IMPLEMENTATION_OR_TESTS"
+}

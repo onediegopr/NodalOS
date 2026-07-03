@@ -43,6 +43,17 @@
 - Non-goals: no implementation, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_PLAN_DESIGN_ONLY`.
 
+## NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_PLAN_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_PLAN_DESIGN_ONLY_READY`
+- Status: accepted as docs-only pre-implementation test-plan design if final validation and push pass.
+- Input HEAD: `1cd0188927fc7b8167c3245b98f0671b82673fe6`.
+- Scope: define future redaction-before-persistence fixture corpus, required tests RBP-T0 through RBP-T19, evidence schema, forbidden evidence content and static scan requirements without adding tests or implementation.
+- Findings: P0 0, P1 0, P2 0, P3 3 (plan not executable until tests/implementation are authorized; corpus ownership/cadence are future assignments; product/runtime adoption remains blocked after implementation until audit plus manual GO), P4 1 (percentages are planning estimates).
+- Corrections: added test-plan ADR, QA report MD/JSON and handoff; no source/test/runtime behavior changed.
+- Non-goals: no tests added, implementation, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_MANUAL_GO_REDACTION_BEFORE_PERSISTENCE_SERVICE_IMPLEMENTATION_OR_TESTS`.
+
 ## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`
