@@ -179,6 +179,17 @@
 - Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, product redaction service, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_DURABLE_STAGE2_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_TEST_ONLY_CLOSEOUT_READY`
+- Status: accepted as docs-only/read-only closeout external audit if final validation and push pass.
+- Input baseline HEAD: `169ac557cf86cfb02e6cf3b674bd4055fac56251`.
+- Scope: consolidate Durable Stage 2 test-only implementation, audit/fix, property/concurrency, replay/checkpoint boundary and redaction hardening results; confirm runtime/product/release remains NO-GO.
+- Findings: P0 0, P1 0, P2 0, P3 2 (redaction remains deterministic rejection/test-only evidence; external checkpoint/WORM/KMS/cloud trust remains future/prohibited), P4 1.
+- Latest validations: full solution build with `--no-restore` PASS 0 warnings/0 errors; Core build PASS 0 warnings/0 errors; Safety Durable filter PASS 27/27; Recipes Durable filter PASS 6/6.
+- Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, product redaction service, external checkpoint/WORM/KMS/cloud trust, release/commercial readiness or stash modification.
+- Next required state: `PAUSE_FOR_MANUAL_GO_BEFORE_RUNTIME_PRODUCT_ENABLEMENT_OR_NEW_SCOPE`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
