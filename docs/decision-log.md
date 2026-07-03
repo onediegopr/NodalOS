@@ -90,6 +90,17 @@
 - Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READY`
+- Status: accepted as docs-only/read-only closeout of the redaction-before-persistence test-only service chain if final validation and push pass.
+- Input HEAD: `568c154f7b977d1d7796364fa9ab0a539731d51d`.
+- Scope: close out the test-only chain after implementation, external-audit fixes and property/corpus expansion; reconcile service/model boundary, Stage 2 test-only gate, QA, handoff and decision-log claims.
+- Findings: P0 0, P1 0, P2 0, P3 3 (deterministic detection remains finite and test-only; nested metadata remains future because current durable request metadata is flat; runtime/product adoption requires separate manual GO and scope), P4 1 (historical docs remain traceability records).
+- Validations: Safety focused tests PASS 35/35; Recipes focused tests PASS 6/6; Core build PASS 0 warnings/0 errors; full solution build PASS 0 warnings/0 errors; `git diff --check` PASS; JSON validation PASS; static scan changed files PASS no TRUE_RISK.
+- Non-goals: no source/test runtime behavior changes, runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_MANUAL_GO_BEFORE_REDACTION_RUNTIME_PRODUCT_ENABLEMENT_OR_NEW_SCOPE`.
+
 ## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`
