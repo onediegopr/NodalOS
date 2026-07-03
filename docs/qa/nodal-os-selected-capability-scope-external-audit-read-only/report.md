@@ -152,4 +152,3 @@ This recommendation does not authorize implementation. The maximum allowed concl
 `SAFE_TO_PREPARE_IMPLEMENTATION_CANDIDATE_PROMPT_AFTER_USER_GO`
 
 Any real implementation still requires explicit user GO, repo guard, locked scope, negative tests before code, external audit before implementation and final external audit before enablement.
-
