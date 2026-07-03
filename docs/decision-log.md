@@ -203,3 +203,14 @@
 - Selected candidate: `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_SCOPE_PROPOSAL_READ_ONLY`, selected only for external audit preparation.
 - Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_SELECTED_CAPABILITY_SCOPE_EXTERNAL_AUDIT_READ_ONLY`, read-only audit only.
+
+## NODAL_OS_SELECTED_CAPABILITY_SCOPE_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_NODAL_OS_SELECTED_CAPABILITY_SCOPE_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Status: accepted as read-only selected capability scope audit if validation passes.
+- Input: first capability scope proposal at `6d7a0febae51350eb66ed3c9225fe856a8efe144`.
+- Scope: docs-only external audit of the selected durable audit trail append-only minimal scope, no-side-effect audit, rejected/deferred candidate audit, negative test coverage audit, overclaim scan, QA report and decision log.
+- Selected capability: `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`, still `BLOCKED_NOT_EXECUTABLE` and not safe to implement now.
+- Finding: no P0/P1/P2 blocking if validations pass.
+- Non-goals: no durable audit trail real, append/write real, append-only store real, runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_SELECTED_CAPABILITY_IMPLEMENTATION_CANDIDATE_PREP_READ_ONLY`, preparation only after explicit user GO and without implementing real capability.
