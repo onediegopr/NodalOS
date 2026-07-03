@@ -1,5 +1,11 @@
 # NODAL OS — Roadmap
 
+## Legacy / Non-Authoritative Notice
+
+This file is retained as legacy traceability only. It is not the current operational roadmap authority for NODAL OS.
+
+Current decisions must start from `docs/decision-log.md` plus the latest QA reports and handoffs. The stealth, proxy, CAPTCHA, remote handoff, browser runtime and deployment language below does not authorize current runtime/live, Browser/CDP product automation, WCU/OCR product authority, service registration, command handlers, product actions, provider/cloud/network behavior, release readiness or commercial readiness.
+
 ## Implemented (Fases 0-4)
 
 | Phase | Feature | Status |

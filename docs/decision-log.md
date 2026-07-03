@@ -18,6 +18,17 @@
 - Non-goals: no code changes, test changes, runtime/live, product enablement, service registration, command handlers, product actions, DB/migration, provider/cloud/network, Browser/CDP/WCU/OCR/Recipes live paths, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_GLOBAL_STAGE1_AND_RUNTIME_CLAIM_RECONCILIATION_EXTERNAL_AUDIT
+
+- Decision target: `GO_WITH_FINDINGS_GLOBAL_STAGE1_RUNTIME_CLAIM_RECONCILIATION_READY`
+- Status: accepted as docs-only external-audit reconciliation if final validation and push pass.
+- Input HEAD: `db52eb6030a96fc7f4605e3167d75d4f0b1cf937`.
+- Scope: reconcile Durable Audit Trail Stage 1, Browser/CDP/ChromeLab runtime claims, runtime/service-registration/command-handler footprints, WCU/OCR product authority and roadmap canon/legacy authority.
+- Corrections: added a legacy/non-authoritative notice to `docs/ROADMAP.md`; added QA report, JSON report and handoff.
+- Findings: P0 0, P1 0, P2 3 (ChromeLab bridge real runtime footprint boundary; broad Browser/CDP live/runtime historical naming; distributed roadmap canon), P3 3, P4 2.
+- Non-goals: no code changes, test changes, Stage 2, runtime/live product enablement, service registration, command handlers, product actions, product ledger path, DB/migration, provider/cloud/network, Browser/CDP/WCU/OCR/Recipes live writes, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_BROWSER_CDP_CHROMELAB_RUNTIME_BOUNDARY_HARDENING_DESIGN_ONLY`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`

@@ -1,0 +1,139 @@
+{
+  "decision": "GO_WITH_FINDINGS_GLOBAL_STAGE1_RUNTIME_CLAIM_RECONCILIATION_READY",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "inputHead": "db52eb6030a96fc7f4605e3167d75d4f0b1cf937",
+  "inputCommit": "db52eb6 docs(audit): add global roadmap to code alignment report",
+  "originSyncInitial": "0 0",
+  "worktreeInitial": "clean",
+  "stash": "listed_only_not_touched",
+  "mode": "DOCS_ONLY_EXTERNAL_AUDIT_RECONCILIATION",
+  "canon": {
+    "operationalAuthority": [
+      "docs/decision-log.md",
+      "latest QA reports",
+      "latest handoffs",
+      "current external/read-only audit outputs"
+    ],
+    "legacyNonAuthority": [
+      "docs/ROADMAP.md"
+    ]
+  },
+  "results": {
+    "durableStage1": {
+      "decision": "STAGE_1_TEST_ONLY_EXTERNAL_AUDIT_READY_WITH_FINDINGS",
+      "stage1TestOnly": true,
+      "tempLocalTestLedgerOnly": true,
+      "productLedgerPath": false,
+      "nullFailClosedHardening": true,
+      "malformedMetadata": true,
+      "appendOnlyCovered": true,
+      "concurrencyLocalLockCovered": true,
+      "serviceRegistration": false,
+      "commandHandlers": false,
+      "uiProductActions": false,
+      "runtimeLive": false,
+      "releaseCommercial": false,
+      "remainingFindings": [
+        "P3 Append/VerifyFile boundary asymmetry seam",
+        "P4 LedgerLocks static map growth",
+        "redaction-before-persistence and runtime feature flag remain blockers"
+      ]
+    },
+    "browserCdp": {
+      "decision": "BROWSER_CDP_CLAIMS_RECONCILED_WITH_P2_BOUNDARY_RISK",
+      "productAuthorityCurrentNodalOs": false,
+      "liveProductRuntimeApproved": false,
+      "realSeparateRuntimeFootprintPresent": true,
+      "evidence": [
+        "ChromeLab bridge service registrations and endpoints exist",
+        "Browser/CDP/CloakBrowser source and tests exist",
+        "recent canon keeps Browser/CDP product authority blocked"
+      ],
+      "risk": "ChromeLab/Browser runtime footprint must not be cited as current NODAL OS product runtime readiness"
+    },
+    "runtimeServiceHandlers": {
+      "decision": "RUNTIME_REGISTRATION_HANDLERS_RECONCILED_WITH_P2_BOUNDARY_RISK",
+      "durableAuditTrailRegisteredAsService": false,
+      "durableAuditTrailCommandHandler": false,
+      "durableAuditTrailProductAction": false,
+      "separateRuntimeFootprintsPresent": [
+        "ChromeLab bridge",
+        "Nexa admin command handler classes"
+      ],
+      "currentNodalOsRuntimeLiveApproved": false
+    },
+    "wcuOcr": {
+      "decision": "WCU_OCR_AUTHORITY_RECONCILED_WITH_NO_PRODUCT_AUTHORITY",
+      "wcuProductActionAuthority": false,
+      "ocrProductActionAuthority": false,
+      "liveActionApproved": false,
+      "fixtureSafeAndReadOnlyEvidence": true,
+      "remainingRisk": "OCR model/test/design wording should receive dedicated authority audit before any enablement claim"
+    },
+    "roadmapCanon": {
+      "decision": "ROADMAP_LEGACY_AUTHORITY_CLARIFIED",
+      "roadmapLegacyNoteAdded": true,
+      "roadmapInvented": false,
+      "roadmapsMerged": false
+    }
+  },
+  "findings": {
+    "p0": [],
+    "p1": [],
+    "p2": [
+      "ChromeLab bridge contains real service/endpoint runtime footprint and must remain outside current NODAL OS product-runtime claims.",
+      "Browser/CDP live/runtime naming remains historically broad and needs boundary hardening.",
+      "Roadmap canon remains distributed and requires latest-source discipline despite legacy note."
+    ],
+    "p3": [
+      "Durable Append/VerifyFile boundary asymmetry seam remains.",
+      "OCR authority has mixed fixture/model/test wording that needs dedicated audit before enablement claims.",
+      "Historical percentages still require current-source anchoring."
+    ],
+    "p4": [
+      "LedgerLocks static map growth remains negligible in Stage 1.",
+      "Legacy roadmap remains present for traceability."
+    ]
+  },
+  "correctionsApplied": [
+    "docs/ROADMAP.md legacy/non-authoritative warning",
+    "QA report MD/JSON",
+    "handoff",
+    "decision-log update"
+  ],
+  "validations": {
+    "repoGuard": "PASS",
+    "staticSourceDocsScans": "PASS_WITH_FINDINGS",
+    "jsonValidation": "PASS",
+    "diffCheck": "PASS",
+    "staticScanChangedFiles": "PASS_NO_TRUE_RISK",
+    "testsBuild": "NOT_RUN_BY_DESIGN_DOCS_ONLY"
+  },
+  "blocked": [
+    "Stage 2 Durable Audit Trail",
+    "product Durable Audit Trail enablement",
+    "runtime/live product enablement",
+    "service registration for Durable/product audit trail",
+    "command handlers for audit append",
+    "UI product action buttons",
+    "product ledger path",
+    "DB/migration",
+    "provider/cloud/network",
+    "Browser/CDP live product automation",
+    "WCU/OCR live product authority",
+    "Recipe live writes",
+    "release/commercial readiness"
+  ],
+  "percentages": {
+    "durableAuditTrailLocalTestSafeAppendWriteCandidate": "92-95%",
+    "durableAuditTrailStage1TestOnlyEnablementSafety": "88-92%",
+    "browserCdpProductAuthority": "0%",
+    "wcuOcrProductAuthority": "0%",
+    "runtimeLiveProductEnablement": "0%",
+    "executionMutationBroad": "0%",
+    "releaseCommercialReadiness": "0% / NO-GO",
+    "projectUsableEndToEndEstimate": "20-30%"
+  },
+  "nextRecommendedBlock": "NODAL_OS_BROWSER_CDP_CHROMELAB_RUNTIME_BOUNDARY_HARDENING_DESIGN_ONLY"
+}
