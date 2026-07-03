@@ -277,3 +277,13 @@
 - Not implemented: active checkpoint writer, active checkpoint verifier, runtime integration, service registration, command handler, product action, approval execution, approval mutation store, DB/migration, network/provider/cloud/KMS, WORM/compliance-grade boundary, production audit trail, release/commercial readiness.
 - Remaining risk: replacing both ledger and checkpoint inside the same trust boundary is not solved by local checkpoint design; external trust boundary remains future design only.
 - Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_HEAD_CHECKPOINT_LOCAL_TEST_SAFE_IMPLEMENTATION`.
+
+## NODAL_OS_DURABLE_AUDIT_TRAIL_ENABLEMENT_GATE_DOCS_HARDENING_DESIGN_ONLY
+
+- Decision: `GO_DURABLE_AUDIT_TRAIL_ENABLEMENT_GATE_DOCS_HARDENING_DESIGN_ONLY_READY`
+- Baseline: `2c6b6f59cdc45217f3b426c7d2f539e45d23c922`
+- Scope: docs-only enablement gate planning for `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL`; no source, tests, runtime, service registration, command handler, product action, DB/migration, provider/cloud/network, browser/CDP, WCU/OCR, recipes live, or release/commercial change.
+- Canon: local/test-safe append/write candidate is implemented-not-enabled; no-write/no-persistence preview is historical.
+- Gate state: G0-G5, G7-G9, G15-G16 and G20 pass; G6, G10, G12-G14 are partial; G11 redaction-before-persistence and G19 runtime feature flag plan are missing; G17 external audit and G18 manual GO are required.
+- Anti-capabilities: no product audit trail enablement, service registration, command handler activation, UI action button, product ledger path, DB-backed audit trail, cloud/network persistence, provider/LLM call, browser/CDP/WCU/OCR/recipes live write, production, WORM, compliance-grade, release-ready or commercial-ready claim.
+- Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_ENABLEMENT_GATE_EXTERNAL_AUDIT_READ_ONLY`.
