@@ -174,3 +174,13 @@
 - Scope: deterministic in-memory planning gate packet, future candidate matrix, recommended future candidate blocked by audit, mandatory gate matrix, negative test requirements, no-go capability status, enabled counts at `0`, Safety and Recipes tests, ADR, QA report and decision log.
 - Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_EXTERNAL_AUDIT_PRE_RUNTIME_GATE_READ_ONLY`, audit-only/read-only before any implementation.
+
+## NODAL_OS_EXTERNAL_AUDIT_PRE_RUNTIME_GATE_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_NODAL_OS_EXTERNAL_AUDIT_PRE_RUNTIME_GATE_READ_ONLY`
+- Status: accepted as read-only external/pre-runtime audit with non-blocking finding if validation passes.
+- Input: implementation planning gate design packet at `537d06848aa51f409e8dba20c8e8b70a43ed193f`.
+- Scope: repo guard, planning gate audit, no-side-effect audit, candidate matrix audit, gate matrix audit, negative test requirement audit, overclaim scan, validations and QA report.
+- Finding: P2 non-blocking; browser/CDP live, WCU/OCR live and recipes real execution are blocked in the candidate matrix but should receive dedicated negative test requirement rows before any first real capability scope proposal.
+- Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_IMPLEMENTATION_PLANNING_GATE_HARDENING_DESIGN_ONLY`, design-only hardening only.
