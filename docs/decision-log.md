@@ -52,6 +52,16 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_ONLY`.
 
+## NODAL_OS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_ONLY_READY`
+- Status: accepted as docs-only external checkpoint trust design if final validation and push pass.
+- Input HEAD: `25e2b80b3be52929c82264f948c967bd66c5b6a9`.
+- Scope: design future trust levels T0-T4 for Durable checkpoint evidence; current implementation remains T1 local-temp/caller-held only.
+- Findings: P0 0, P1 0, P2 0, P3 3 (T2-T4 remain design-only; key custody remains unassigned; future provider/cloud choices require product/security decisions), P4 1 (percentages remain planning estimates).
+- Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing implementation, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_EXTERNAL_CHECKPOINT_TRUST_DESIGN_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
