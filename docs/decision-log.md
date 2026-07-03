@@ -113,6 +113,17 @@
 - Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_PRE_IMPLEMENTATION_EVIDENCE_PACK_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the Durable Stage 2 pre-implementation evidence pack if final validation and push pass.
+- Input baseline HEAD: `61aad8a34b42a47bce97e05a5e08d563b34bc5b3`.
+- Scope: audit the evidence pack against Stage 1 source/tests, authority boundaries, claim freeze, roadmap canon and Stage 2 planning artifacts.
+- Findings: P0 0, P1 0, P2 3 (redaction-before-persistence unresolved and required before implementation; runtime feature flag fail-closed unresolved and required before implementation; negative tests must be materialized before any Stage 2 code), P3 3, P4 1.
+- Corrections: added read-only external audit ADR, QA report MD/JSON and handoff; no source/tests/runtime files changed.
+- Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next required state: `PAUSE_FOR_MANUAL_GO_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_SCOPE`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
