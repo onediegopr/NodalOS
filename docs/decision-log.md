@@ -193,3 +193,13 @@
 - Scope: resolve the P2 by adding dedicated Browser/CDP, WCU/OCR and Recipes negative requirements, no-go flags, enabled counts at `0`, Safety/Recipes assertions, ADR addendum and QA hardening report.
 - Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_FIRST_REAL_CAPABILITY_CANDIDATE_SCOPE_PROPOSAL_READ_ONLY`, read-only scope proposal only.
+
+## NODAL_OS_FIRST_REAL_CAPABILITY_CANDIDATE_SCOPE_PROPOSAL_READ_ONLY
+
+- Decision target: `GO_NODAL_OS_FIRST_REAL_CAPABILITY_CANDIDATE_SCOPE_PROPOSAL_READ_ONLY_READY`
+- Status: accepted as read-only selected capability scope proposal if validation passes.
+- Input: planning gate hardening at `9ac5a82074c1d90b0837ad5c93d0409fff09f89d`.
+- Scope: deterministic in-memory scope proposal packet, candidate matrix, selected durable audit trail append-only candidate, explicit non-goals, mandatory gates, negative test plan, external audit prompt, blocked future implementation prompt, Safety/Recipes tests, ADR and QA report.
+- Selected candidate: `DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_SCOPE_PROPOSAL_READ_ONLY`, selected only for external audit preparation.
+- Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_SELECTED_CAPABILITY_SCOPE_EXTERNAL_AUDIT_READ_ONLY`, read-only audit only.

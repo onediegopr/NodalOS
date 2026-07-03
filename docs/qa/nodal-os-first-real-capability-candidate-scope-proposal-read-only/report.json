@@ -1,0 +1,98 @@
+{
+  "decision": "GO_NODAL_OS_FIRST_REAL_CAPABILITY_CANDIDATE_SCOPE_PROPOSAL_READ_ONLY_READY",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "9ac5a82074c1d90b0837ad5c93d0409fff09f89d",
+  "canonicalState": "PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME",
+  "selectedCandidate": "DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_SCOPE_PROPOSAL_READ_ONLY",
+  "decisionMaximum": "SAFE_TO_PREPARE_EXTERNAL_AUDIT_FOR_SELECTED_CANDIDATE",
+  "implementationStatus": "BLOCKED_NOT_EXECUTABLE",
+  "safeToImplementNow": false,
+  "candidateMatrix": {
+    "selected": [
+      "DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL_SCOPE_PROPOSAL_READ_ONLY"
+    ],
+    "notFirstCandidate": [
+      "APPROVAL_EXECUTION_MINIMAL_BRIDGE_SCOPE_PROPOSAL_READ_ONLY",
+      "PHYSICAL_EXPORT_CONTROLLED_SCOPE_PROPOSAL_READ_ONLY",
+      "REDACTION_RUNTIME_MINIMAL_SCOPE_PROPOSAL_READ_ONLY"
+    ],
+    "noGoHighRisk": [
+      "RETENTION_DELETION_RUNTIME_SCOPE_PROPOSAL_READ_ONLY",
+      "BROWSER_CDP_SAFE_RUNTIME_SCOPE_PROPOSAL_READ_ONLY",
+      "WCU_OCR_SAFE_RUNTIME_SCOPE_PROPOSAL_READ_ONLY",
+      "RECIPES_EXECUTION_SAFE_RUNTIME_SCOPE_PROPOSAL_READ_ONLY"
+    ],
+    "futureCandidateBlocked": [
+      "MUTATION_STORE_MINIMAL_SCOPE_PROPOSAL_READ_ONLY"
+    ]
+  },
+  "requiredGates": [
+    "explicit user GO",
+    "repo guard clean",
+    "branch confirmation",
+    "external audit before implementation",
+    "negative tests before implementation",
+    "scope isolation",
+    "overclaim scan before and after",
+    "no service registration unless explicitly scoped",
+    "no command handler unless explicitly scoped",
+    "no product UI action unless explicitly scoped",
+    "no broad IO",
+    "no secrets, PII or real data",
+    "fail-closed behavior",
+    "rollback and no-side-effect proof",
+    "QA report MD/JSON",
+    "final audit before enablement",
+    "release/commercial NO-GO"
+  ],
+  "counts": {
+    "runtimeEnabledCount": 0,
+    "executionEnabledCount": 0,
+    "mutationEnabledCount": 0,
+    "exportEnabledCount": 0,
+    "browserCdpLiveEnabledCount": 0,
+    "wcuOcrLiveEnabledCount": 0,
+    "recipesExecutionEnabledCount": 0,
+    "serviceRegistrationCount": 0,
+    "commandHandlerCount": 0,
+    "productActionCount": 0,
+    "filesystemOutputCount": 0,
+    "networkProviderCallCount": 0,
+    "releaseCommercialReadyCount": 0
+  },
+  "validations": {
+    "dotnetBuild": "PASS_WITH_PRE_EXISTING_WARNINGS",
+    "dotnetBuildNoRestore": "PASS",
+    "focusedSafetyTests": "PASS_5_TESTS",
+    "focusedRecipesTests": "PASS_5_TESTS",
+    "phaseESafety": "PASS_73_TESTS",
+    "phaseERecipes": "PASS_86_TESTS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "overclaimScan": "PASS_NO_TRUE_RISK"
+  },
+  "externalAuditPrompt": "NODAL_OS_SELECTED_CAPABILITY_SCOPE_EXTERNAL_AUDIT_READ_ONLY",
+  "blockedFutureImplementationPrompt": "BLOCKED_DO_NOT_EXECUTE_NODAL_OS_SELECTED_FIRST_CAPABILITY_IMPLEMENTATION_CANDIDATE",
+  "noGoCapabilities": [
+    "runtime/live",
+    "execution real",
+    "mutation real",
+    "physical export real",
+    "redaction runtime real",
+    "secret/PII scan real",
+    "retention/deletion runtime real",
+    "durable audit trail real",
+    "service registration",
+    "command handlers",
+    "product actions",
+    "filesystem product IO",
+    "DB/migration",
+    "provider/cloud/network",
+    "browser/CDP live",
+    "WCU/OCR live",
+    "recipes execution real",
+    "release/commercial readiness"
+  ],
+  "nextRecommendedBlock": "NODAL_OS_SELECTED_CAPABILITY_SCOPE_EXTERNAL_AUDIT_READ_ONLY"
+}
