@@ -101,6 +101,82 @@ public sealed class RedactionBeforePersistenceServiceSafetyTests
     }
 
     [TestMethod]
+    public void RedactionService_PropertyCorpusRejectsSensitiveVariantsInEveryCandidateField()
+    {
+        var service = new RedactionBeforePersistenceService();
+        var sensitiveSamples = new[]
+        {
+            "Token : variant-secret",
+            "SECRET=variant-secret",
+            "api-key = variant-secret",
+            "Authorization: Bearer variant-secret",
+            "fixture.person+alias@example.com",
+            @"d:\Users\person\Secrets\approval.txt",
+            @"\\server\share\Secrets\approval.txt"
+        };
+
+        foreach (var sample in sensitiveSamples)
+        {
+            var candidates = new Dictionary<string, DurableAuditTrailAppendOnlyMinimalRequest>
+            {
+                ["actor"] = Request() with { ActorReference = sample },
+                ["approval"] = Request() with { ApprovalReference = sample },
+                ["evidence"] = Request() with { EvidenceReferences = [sample] },
+                ["metadata-key"] = Request() with { Metadata = new Dictionary<string, string> { [sample] = "safe" } },
+                ["metadata-value"] = Request() with { Metadata = new Dictionary<string, string> { ["note"] = sample } }
+            };
+
+            foreach (var candidate in candidates)
+            {
+                var result = service.Evaluate(RedactionBeforePersistencePolicy.TestOnly, candidate.Value);
+                var rendered = result.ToString();
+
+                Assert.AreEqual(RedactionBeforePersistenceDecision.Rejected, result.Decision, $"{sample}:{candidate.Key}");
+                Assert.IsFalse(result.Succeeded, $"{sample}:{candidate.Key}");
+                Assert.IsNull(result.SafeRequest, $"{sample}:{candidate.Key}");
+                Assert.IsTrue(result.Reasons.Count > 0, $"{sample}:{candidate.Key}");
+                Assert.IsFalse(rendered.Contains("variant-secret", StringComparison.Ordinal), $"{sample}:{candidate.Key}");
+                Assert.IsFalse(rendered.Contains("fixture.person+alias@example.com", StringComparison.Ordinal), $"{sample}:{candidate.Key}");
+                Assert.IsFalse(rendered.Contains("Secrets", StringComparison.Ordinal), $"{sample}:{candidate.Key}");
+                Assert.IsFalse(result.Evidence.ContainsRawValues, $"{sample}:{candidate.Key}");
+            }
+        }
+    }
+
+    [TestMethod]
+    public void RedactionService_PropertyCorpusAllowsBenignControlText()
+    {
+        var service = new RedactionBeforePersistenceService();
+        var safeControls = new[]
+        {
+            "approval-tokenization-note",
+            "api key rotation planned without value",
+            "person at example dot com",
+            "docs/qa/redaction-before-persistence/report.md",
+            "operator reviewed fixture"
+        };
+
+        foreach (var sample in safeControls)
+        {
+            var result = service.Evaluate(
+                RedactionBeforePersistencePolicy.TestOnly,
+                Request() with
+                {
+                    EvidenceReferences = ["docs/qa/redaction-before-persistence/report.md"],
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["note"] = sample
+                    }
+                });
+
+            Assert.AreEqual(RedactionBeforePersistenceDecision.Allowed, result.Decision, sample);
+            Assert.IsTrue(result.Succeeded, sample);
+            Assert.IsNotNull(result.SafeRequest, sample);
+            Assert.IsFalse(result.Evidence.ContainsRawValues, sample);
+        }
+    }
+
+    [TestMethod]
     public void RedactionService_SourceContainsNoRuntimeRegistrationHandlersOrExternalProviders()
     {
         var sourcePath = System.IO.Path.Combine(

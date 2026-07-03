@@ -78,6 +78,18 @@
 - Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_PROPERTY_CORPUS_EXPANSION_TEST_ONLY`.
 
+## NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_PROPERTY_CORPUS_EXPANSION_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_PROPERTY_CORPUS_EXPANSION_READY`
+- Status: accepted as test-only corpus/property expansion if final validation and push pass.
+- Input HEAD: `af9ebdae4ba8e040beddd58c940bd238e63a42c9`.
+- Scope: expand Safety coverage across sensitive field placements, secret variants, email-like PII, path samples and safe controls without runtime/product enablement.
+- Coverage: sensitive placement matrix across actor/approval/evidence/metadata key/metadata value; token/secret/API-key/bearer variants; email-like sample; Windows/UNC path samples; benign safe controls.
+- Validations: Safety focused tests PASS 35/35; Recipes focused tests PASS 6/6; Core build PASS 0 warnings/0 errors; full solution build PASS 0 warnings/0 errors; `git diff --check` PASS; JSON validation PASS; static scan changed files PASS no TRUE_RISK.
+- Findings: P0 0, P1 0, P2 0, P3 3 (corpus broader but finite; nested metadata remains future because durable request metadata is flat; product/runtime adoption remains blocked by external audit and manual GO), P4 1 (historical docs remain traceability records).
+- Non-goals: no runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_GLOBAL_ROADMAP_TO_CODE_ALIGNMENT_AND_DRIFT_AUDIT
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_CODE_ALIGNMENT_AUDIT_READY`

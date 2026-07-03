@@ -1,0 +1,65 @@
+{
+  "decision": "GO_WITH_FINDINGS_REDACTION_BEFORE_PERSISTENCE_PROPERTY_CORPUS_EXPANSION_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "af9ebdae4ba8e040beddd58c940bd238e63a42c9",
+  "mode": "TEST_ONLY_PROPERTY_CORPUS_EXPANSION_NO_RUNTIME_PRODUCT",
+  "scope": "Expand redaction-before-persistence Safety corpus/property coverage in test-only scope.",
+  "repoGuard": {
+    "worktreeInitial": "clean",
+    "originSyncInitial": "0 0",
+    "stash": "listed only, not touched"
+  },
+  "coverageAdded": [
+    "Sensitive placement matrix across actor, approval, evidence, metadata key and metadata value.",
+    "Secret variants for token, secret, API-key assignment and authorization bearer.",
+    "PII email-like sample.",
+    "Windows path and UNC path samples.",
+    "Safe controls that remain allowed."
+  ],
+  "boundaryConfirmation": {
+    "runtimeProductEnabled": false,
+    "productiveServiceRegistrationAdded": false,
+    "commandHandlersAdded": false,
+    "uiProductActionsAdded": false,
+    "productLedgerPathAdded": false,
+    "dbMigrationProviderCloudNetworkAdded": false,
+    "browserCdpWcuOcrRecipesLiveAdded": false,
+    "releaseCommercialReady": false,
+    "stashTouched": false
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "safetyFocusedTests": "PASS_35_OF_35",
+    "recipesFocusedTests": "PASS_6_OF_6",
+    "coreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "fullSolutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticScanChangedFiles": "PASS_NO_TRUE_RISK"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Corpus is broader but still deterministic and finite.",
+      "Nested metadata remains future because current durable request metadata is flat.",
+      "Product/runtime adoption remains blocked by external audit and explicit manual GO."
+    ],
+    "P4": [
+      "Historical docs remain traceability records."
+    ]
+  },
+  "percentages": {
+    "redactionBeforePersistenceTestOnlyService": "88-92%",
+    "redactionBeforePersistenceProductService": "0% / NO-GO",
+    "durableStage2TestOnlyImplementation": "92-95%",
+    "runtimeLiveProductEnablement": "0% / NO-GO",
+    "releaseCommercialReadiness": "0% / NO-GO",
+    "proyectoUsableEndToEnd": "24-34%"
+  },
+  "nextMacroBlock": "NODAL_OS_REDACTION_BEFORE_PERSISTENCE_SERVICE_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READ_ONLY",
+  "runtimeProductManualGoRequired": true
+}
