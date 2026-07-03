@@ -344,6 +344,100 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_FailsClosedWithoutExplicitTestFeatureFlag()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var gates = new[]
+        {
+            null,
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(false, null, RedactionProof()),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, null, RedactionProof()),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, string.Empty, RedactionProof()),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "true", RedactionProof()),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled", RedactionProof()),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, "enabled:product", RedactionProof())
+        };
+
+        foreach (var gate in gates)
+        {
+            var result = ledger.AppendStage2TestOnly(Policy(temp.Path), Request(), gate);
+
+            Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision, gate?.FeatureFlagValue);
+            AssertNoSideEffects(result);
+        }
+
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_FailsClosedWithoutRedactionBeforePersistenceProof()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var flag = "enabled:test-only";
+        var gates = new[]
+        {
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, null),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { PolicyReference = "" }),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { FieldClassificationCompleted = false }),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { RedactionCompleted = false }),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { CompletedBeforePersistence = false }),
+            new DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(true, flag, RedactionProof() with { Succeeded = false })
+        };
+
+        foreach (var gate in gates)
+        {
+            var result = ledger.AppendStage2TestOnly(Policy(temp.Path), Request(), gate);
+
+            Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+            CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.MissingRedactionBeforePersistenceProof);
+            AssertNoSideEffects(result);
+        }
+
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_RejectsProductLedgerPathEvenWhenUnderTemp()
+    {
+        var productLikeRoot = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(),
+            $"nodal-product-ledger-{Guid.NewGuid():N}");
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var result = ledger.AppendStage2TestOnly(Policy(productLikeRoot), Request(), Stage2Gate());
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.ProductLedgerPathRejected);
+        AssertNoSideEffects(result);
+        Assert.IsFalse(Directory.Exists(productLikeRoot));
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_RejectsSecretLikeDataBeforeAnyPersistence()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var result = ledger.AppendStage2TestOnly(
+            Policy(temp.Path),
+            Request() with
+            {
+                Metadata = new Dictionary<string, string>
+                {
+                    ["browser-cdp-payload"] = "Authorization: Bearer live-token"
+                }
+            },
+            Stage2Gate());
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
+        AssertNoSideEffects(result);
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
     public void MinimalLedger_PublicSurfaceDoesNotRegisterCommandsOrRuntimeExecution()
     {
         var forbiddenNames = new[]
@@ -425,6 +519,17 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
             [
                 "docs/qa/durable-audit-trail-fixture/report.md"
             ]);
+
+    private static DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate Stage2Gate() =>
+        new(true, "enabled:test-only", RedactionProof());
+
+    private static DurableAuditTrailAppendOnlyMinimalRedactionProof RedactionProof() =>
+        new(
+            PolicyReference: "stage2-test-only-redaction-policy.v1",
+            FieldClassificationCompleted: true,
+            RedactionCompleted: true,
+            CompletedBeforePersistence: true,
+            Succeeded: true);
 
     private static string LedgerFile(string root) =>
         System.IO.Path.Combine(root, "durable-audit-trail.append-only.jsonl");

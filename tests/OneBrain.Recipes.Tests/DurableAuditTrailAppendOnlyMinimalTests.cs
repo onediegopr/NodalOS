@@ -108,6 +108,30 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
         Assert.AreEqual(firstRead.LastHash, secondRead.LastHash);
     }
 
+    [TestMethod]
+    public void Stage2TestOnly_AppendsOnlyWithExplicitFeatureFlagAndRedactionProof()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var result = ledger.AppendStage2TestOnly(Policy(temp.Path), Request("approval-stage2-001"), Stage2Gate());
+        var persisted = File.ReadAllText(result.LedgerFile!);
+        var verification = ledger.VerifyFile(result.LedgerFile!);
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Appended, result.Decision);
+        Assert.AreEqual(1, result.AppendWriteCount);
+        Assert.AreEqual(1, result.PersistedEventCount);
+        Assert.IsFalse(result.ProductActionAllowed);
+        Assert.IsFalse(result.NetworkAllowed);
+        Assert.IsFalse(result.DbMigrationAllowed);
+        Assert.IsFalse(result.CommandHandlerRegistered);
+        Assert.IsFalse(result.ReleaseCommercialReady);
+        Assert.IsTrue(verification.Valid);
+        Assert.IsTrue(persisted.Contains("approval-stage2-001", StringComparison.Ordinal));
+        Assert.IsFalse(persisted.Contains("enabled:test-only", StringComparison.Ordinal));
+        Assert.IsFalse(persisted.Contains("stage2-test-only-redaction-policy.v1", StringComparison.Ordinal));
+    }
+
     private static DurableAuditTrailAppendOnlyMinimalPolicy Policy(string root) =>
         new(Enabled: true, StorageRoot: root);
 
@@ -124,6 +148,17 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
             {
                 ["decision"] = "approved-for-minimal-append-only-test"
             });
+
+    private static DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate Stage2Gate() =>
+        new(
+            ExplicitTestFixture: true,
+            FeatureFlagValue: "enabled:test-only",
+            RedactionProof: new DurableAuditTrailAppendOnlyMinimalRedactionProof(
+                PolicyReference: "stage2-test-only-redaction-policy.v1",
+                FieldClassificationCompleted: true,
+                RedactionCompleted: true,
+                CompletedBeforePersistence: true,
+                Succeeded: true));
 
     private static string LedgerFile(string root) =>
         System.IO.Path.Combine(root, "durable-audit-trail.append-only.jsonl");

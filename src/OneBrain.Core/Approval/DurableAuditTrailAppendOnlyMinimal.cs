@@ -24,7 +24,12 @@ public enum DurableAuditTrailAppendOnlyMinimalRejectReason
     RawPayloadRejected,
     SecretLikeContentRejected,
     ExistingLedgerIntegrityFailed,
-    MalformedMetadata
+    MalformedMetadata,
+    MissingStage2TestOnlyGate,
+    Stage2FeatureFlagDisabled,
+    Stage2ProductFeatureFlagRejected,
+    MissingRedactionBeforePersistenceProof,
+    ProductLedgerPathRejected
 }
 
 public sealed record DurableAuditTrailAppendOnlyMinimalPolicy(
@@ -39,6 +44,18 @@ public sealed record DurableAuditTrailAppendOnlyMinimalRequest(
     IReadOnlyList<string> EvidenceReferences,
     IReadOnlyDictionary<string, string>? Metadata = null,
     string? RawPayload = null);
+
+public sealed record DurableAuditTrailAppendOnlyMinimalRedactionProof(
+    string PolicyReference,
+    bool FieldClassificationCompleted,
+    bool RedactionCompleted,
+    bool CompletedBeforePersistence,
+    bool Succeeded);
+
+public sealed record DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate(
+    bool ExplicitTestFixture,
+    string? FeatureFlagValue,
+    DurableAuditTrailAppendOnlyMinimalRedactionProof? RedactionProof);
 
 public sealed record DurableAuditTrailAppendOnlyMinimalEntry(
     long SequenceNumber,
@@ -150,6 +167,20 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         }
     }
 
+    public DurableAuditTrailAppendOnlyMinimalResult AppendStage2TestOnly(
+        DurableAuditTrailAppendOnlyMinimalPolicy policy,
+        DurableAuditTrailAppendOnlyMinimalRequest request,
+        DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate? gate)
+    {
+        var rejection = ValidateStage2TestOnlyGate(policy, gate);
+        if (rejection.Count > 0)
+        {
+            return Rejected(rejection, LedgerPathOrNull(policy));
+        }
+
+        return Append(policy, request);
+    }
+
     public DurableAuditTrailAppendOnlyMinimalVerification VerifyFile(string ledgerFile)
     {
         if (!IsUnderTempPath(ledgerFile))
@@ -249,6 +280,51 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         return reasons;
     }
 
+    private static List<DurableAuditTrailAppendOnlyMinimalRejectReason> ValidateStage2TestOnlyGate(
+        DurableAuditTrailAppendOnlyMinimalPolicy policy,
+        DurableAuditTrailAppendOnlyMinimalStage2TestOnlyGate? gate)
+    {
+        var reasons = new List<DurableAuditTrailAppendOnlyMinimalRejectReason>();
+        if (gate is null)
+        {
+            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.MissingStage2TestOnlyGate);
+            return reasons;
+        }
+
+        if (!gate.ExplicitTestFixture || string.IsNullOrWhiteSpace(gate.FeatureFlagValue))
+        {
+            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2FeatureFlagDisabled);
+        }
+        else if (gate.FeatureFlagValue.Contains("product", StringComparison.OrdinalIgnoreCase))
+        {
+            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2ProductFeatureFlagRejected);
+        }
+        else if (!string.Equals(gate.FeatureFlagValue, "enabled:test-only", StringComparison.Ordinal))
+        {
+            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.Stage2FeatureFlagDisabled);
+        }
+
+        if (string.IsNullOrWhiteSpace(policy.StorageRoot) || IsProductLedgerPath(policy.StorageRoot))
+        {
+            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.ProductLedgerPathRejected);
+        }
+
+        if (!HasRedactionBeforePersistenceProof(gate.RedactionProof))
+        {
+            reasons.Add(DurableAuditTrailAppendOnlyMinimalRejectReason.MissingRedactionBeforePersistenceProof);
+        }
+
+        return reasons;
+    }
+
+    private static bool HasRedactionBeforePersistenceProof(DurableAuditTrailAppendOnlyMinimalRedactionProof? proof) =>
+        proof is not null
+        && !string.IsNullOrWhiteSpace(proof.PolicyReference)
+        && proof.FieldClassificationCompleted
+        && proof.RedactionCompleted
+        && proof.CompletedBeforePersistence
+        && proof.Succeeded;
+
     private static DurableAuditTrailAppendOnlyMinimalResult Rejected(
         IReadOnlyList<DurableAuditTrailAppendOnlyMinimalRejectReason> reasons,
         string? ledgerFile) =>
@@ -275,6 +351,21 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         var fullPath = Path.GetFullPath(path);
         var tempPath = EnsureTrailingDirectorySeparator(Path.GetFullPath(Path.GetTempPath()));
         return fullPath.StartsWith(tempPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsProductLedgerPath(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var fragments = new[]
+        {
+            "product-ledger",
+            "product_ledger",
+            "prod-ledger",
+            "production-ledger",
+            "commercial-ledger"
+        };
+
+        return fragments.Any(fragment => fullPath.Contains(fragment, StringComparison.OrdinalIgnoreCase));
     }
 
     private static string EnsureTrailingDirectorySeparator(string path) =>

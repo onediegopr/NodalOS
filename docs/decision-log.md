@@ -124,6 +124,17 @@
 - Non-goals: no Stage 2 implementation, source/test/runtime behavior changes, runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next required state: `PAUSE_FOR_MANUAL_GO_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_SCOPE`.
 
+## NODAL_OS_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_WITH_NEGATIVE_GATES
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_TEST_ONLY_IMPLEMENTATION_READY`
+- Status: accepted as Durable Stage 2 test-only/local-temp implementation if final validation and push pass.
+- Input baseline HEAD: `7c8f9fa6b9d2648955baebe06ed7d1b91ea3eb44`.
+- Scope: implement explicit test-only Stage 2 append gate with fail-closed feature flag, redaction-before-persistence proof gate, product-ledger path rejection, Safety negative tests, Recipes positive test and static no-enable guard preservation.
+- Findings: P0 0, P1 0, P2 0 for authorized test-only scope, P3 3 (redaction proof is caller-attested; feature flag is test-only gate object; property/replay/checkpoint hardening remains future work), P4 1.
+- Tests: full solution build PASS 0 warnings/0 errors; Safety Durable filter PASS 20/20; Recipes Durable filter PASS 6/6; `git diff --check` PASS; static scan PASS with positive hits only as guard strings inside tests.
+- Non-goals: no runtime/live product enablement, product ledger path, service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live product automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_TEST_ONLY_EXTERNAL_AUDIT_AND_FIXES`.
+
 ## NODAL_OS_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY
 
 - Decision target: `GO_DURABLE_AUDIT_TRAIL_STAGE_1_TEST_ONLY_ENABLEMENT_SAFETY_READY`
