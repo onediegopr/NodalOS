@@ -165,3 +165,12 @@
 - Scope: deterministic in-memory read-only reentry packet, canonical state summary, capability readiness summary, counts-zero no-side-effect proof, required external audit gates, next safe options, blocked real capability options, Safety and Recipes tests, QA report and decision log.
 - Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
 - Next safe option: `NODAL_OS_IMPLEMENTATION_PLANNING_GATE_DESIGN_ONLY`, design-only/planning only.
+
+## NODAL_OS_IMPLEMENTATION_PLANNING_GATE_DESIGN_ONLY
+
+- Decision target: `GO_NODAL_OS_IMPLEMENTATION_PLANNING_GATE_DESIGN_ONLY_READY`
+- Status: accepted as design-only implementation planning gate if validation passes.
+- Input: read-only reentry decision packet at `e82fb7742f1991c21b6f0a94236dca19f783a6f2`.
+- Scope: deterministic in-memory planning gate packet, future candidate matrix, recommended future candidate blocked by audit, mandatory gate matrix, negative test requirements, no-go capability status, enabled counts at `0`, Safety and Recipes tests, ADR, QA report and decision log.
+- Non-goals: no runtime/live, approval execution, approval mutation, controlled execution real, physical export, redaction runtime, secret/PII scan, retention/deletion runtime, durable audit trail real, mutation store real, writer/policy productive integration, service registration, command handler, product action, filesystem product IO, DB/migration, provider/cloud/network, LLM live, browser/CDP live, WCU/OCR live, recipes execution real or release/commercial readiness claim.
+- Next safe option: `NODAL_OS_EXTERNAL_AUDIT_PRE_RUNTIME_GATE_READ_ONLY`, audit-only/read-only before any implementation.
