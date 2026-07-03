@@ -451,6 +451,52 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_RejectsSensitiveAbsolutePathsBeforeAnyPersistence()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var result = ledger.AppendStage2TestOnly(
+            Policy(temp.Path),
+            Request() with
+            {
+                EvidenceReferences =
+                [
+                    @"C:\Users\person\Documents\private-approval.txt"
+                ]
+            },
+            Stage2Gate());
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
+        AssertNoSideEffects(result);
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_RejectsUnreviewedPiiLikeEmailBeforeAnyPersistence()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+
+        var result = ledger.AppendStage2TestOnly(
+            Policy(temp.Path),
+            Request() with
+            {
+                Metadata = new Dictionary<string, string>
+                {
+                    ["reviewer-email"] = "person@example.com"
+                }
+            },
+            Stage2Gate());
+
+        Assert.AreEqual(DurableAuditTrailAppendOnlyMinimalDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected);
+        AssertNoSideEffects(result);
+        Assert.IsFalse(File.Exists(LedgerFile(temp.Path)));
+    }
+
+    [TestMethod]
     public void Stage2TestOnly_AppendsWithoutOverwritingDeletingOrTruncatingExistingEvents()
     {
         using var temp = new TempDirectory();

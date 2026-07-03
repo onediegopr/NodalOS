@@ -1,0 +1,58 @@
+{
+  "decision": "GO_WITH_FINDINGS_DURABLE_STAGE2_REDACTION_HARDENING_READY",
+  "date": "2026-07-03",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "input_head": "cb6fc9ca326bdf9a93ee8e08c75e7525370a5668",
+  "scope": "Durable Stage 2 redaction/sensitive-data hardening, test-only.",
+  "repo_guard": {
+    "worktree_initial": "clean",
+    "origin_sync_initial": "0 0",
+    "stash": "listed only, not touched: stash@{0}: On chrome-lab-001-extension-local-ai-bridge: pre-m11-legacy-state"
+  },
+  "implementation": {
+    "stage2_sensitive_data_gate": "HARDENED_TEST_ONLY",
+    "email_like_pii_rejected_before_persistence": true,
+    "windows_absolute_path_rejected_before_persistence": true,
+    "unc_like_path_rejected_before_persistence": true,
+    "runtime_product_enablement": "PASS_NONE",
+    "service_registration": "PASS_NONE",
+    "command_handlers": "PASS_NONE",
+    "ui_product_actions": "PASS_NONE",
+    "db_migration_provider_cloud_network": "PASS_NONE",
+    "browser_cdp_wcu_ocr_recipes_live": "PASS_NONE",
+    "release_commercial": "PASS_NO_GO"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Redaction remains deterministic rejection, not a product redaction service."
+    ],
+    "P4": [
+      "Historical docs remain traceability records under latest decision-log canon."
+    ]
+  },
+  "validations": {
+    "dotnet_build_onebrain_slnx": "PASS_0_WARNINGS_0_ERRORS_NO_RESTORE",
+    "dotnet_build_core": "PASS_0_WARNINGS_0_ERRORS",
+    "safety_durable_filter": "PASS_27_OF_27",
+    "recipes_durable_filter": "PASS_6_OF_6",
+    "git_diff_check": "PASS",
+    "json_validation": "PASS",
+    "static_scan_changed_files": "PASS_POSITIVE_HITS_ARE_GUARD_STRING_FIXTURES_INSIDE_TESTS_ONLY",
+    "tests_build_note": "One full build attempt without --no-restore exceeded timeout; authoritative --no-restore build passed."
+  },
+  "percentages": {
+    "durable_audit_trail_local_test_safe_append_write_candidate": "95-97%",
+    "durable_stage2_test_only_gates": "89-93%",
+    "durable_stage2_test_only_implementation": "87-91%",
+    "runtime_live_product_enablement": "0%",
+    "product_enablement": "0%",
+    "release_commercial_readiness": "0% / NO-GO",
+    "proyecto_usable_end_to_end": "24-34%"
+  },
+  "next_macro_block": "NODAL_OS_DURABLE_STAGE2_TEST_ONLY_CLOSEOUT_EXTERNAL_AUDIT_READ_ONLY",
+  "automatic_continuation": "ALLOWED_AFTER_COMMIT_PUSH_IF_VALIDATIONS_PASS"
+}

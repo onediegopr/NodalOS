@@ -101,6 +101,12 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
     private static readonly Regex OpenAiKeyLikePattern = new(
         @"\bsk-(proj-)?[A-Za-z0-9_-]{8,}\b",
         RegexOptions.Compiled);
+    private static readonly Regex EmailLikePattern = new(
+        @"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
+        RegexOptions.Compiled);
+    private static readonly Regex WindowsAbsolutePathPattern = new(
+        @"\b[A-Za-z]:\\[^:*?""<>|\r\n]+",
+        RegexOptions.Compiled);
 
     public DurableAuditTrailAppendOnlyMinimalResult Append(
         DurableAuditTrailAppendOnlyMinimalPolicy policy,
@@ -176,6 +182,12 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         if (rejection.Count > 0)
         {
             return Rejected(rejection, LedgerPathOrNull(policy));
+        }
+
+        var dataRejection = ValidateStage2SensitiveData(request);
+        if (dataRejection.Count > 0)
+        {
+            return Rejected(dataRejection, LedgerPathOrNull(policy));
         }
 
         return Append(policy, request);
@@ -324,6 +336,24 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
         && proof.RedactionCompleted
         && proof.CompletedBeforePersistence
         && proof.Succeeded;
+
+    private static List<DurableAuditTrailAppendOnlyMinimalRejectReason> ValidateStage2SensitiveData(
+        DurableAuditTrailAppendOnlyMinimalRequest request)
+    {
+        var values = new[]
+            {
+                request.ActorReference,
+                request.ApprovalReference,
+                request.RawPayload
+            }
+            .Concat(request.EvidenceReferences ?? [])
+            .Concat(request.Metadata?.Keys ?? [])
+            .Concat(request.Metadata?.Values ?? []);
+
+        return values.Any(ContainsStage2SensitiveContent)
+            ? [DurableAuditTrailAppendOnlyMinimalRejectReason.SecretLikeContentRejected]
+            : [];
+    }
 
     private static DurableAuditTrailAppendOnlyMinimalResult Rejected(
         IReadOnlyList<DurableAuditTrailAppendOnlyMinimalRejectReason> reasons,
@@ -594,4 +624,11 @@ public sealed class DurableAuditTrailAppendOnlyMinimal
             || JwtLikePattern.IsMatch(value)
             || OpenAiKeyLikePattern.IsMatch(value);
     }
+
+    private static bool ContainsStage2SensitiveContent(string? value) =>
+        ContainsSecretLikeContent(value)
+        || (!string.IsNullOrWhiteSpace(value)
+            && (EmailLikePattern.IsMatch(value)
+                || WindowsAbsolutePathPattern.IsMatch(value)
+                || value.StartsWith(@"\\", StringComparison.Ordinal)));
 }
