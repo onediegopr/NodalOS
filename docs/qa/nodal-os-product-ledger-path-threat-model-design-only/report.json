@@ -1,0 +1,96 @@
+{
+  "decision": "GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_THREAT_MODEL_DESIGN_ONLY_READY",
+  "date": "2026-07-04",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "49c2772de425396d7cf11e63de4d28deea2f4824",
+  "mode": "DESIGN_ONLY_NO_CODE_NO_RUNTIME_PRODUCT",
+  "scope": "Docs-only threat model for a future Durable Audit Trail product ledger path.",
+  "repoGuard": {
+    "worktreeInitial": "clean",
+    "originSyncInitial": "0 0",
+    "stash": "listed only, not touched"
+  },
+  "currentState": {
+    "productLedgerImplementation": "ABSENT_PROHIBITED",
+    "stage2Storage": "TEST_ONLY_LOCAL_TEMP",
+    "isProductLedgerPath": "TEST_ONLY_FRAGMENT_GUARD_NOT_PRODUCT_POLICY",
+    "productRootPolicy": "MISSING_BLOCKER",
+    "canonicalizationContainmentPolicy": "MISSING_BLOCKER",
+    "redactionProductWiring": "MISSING_BLOCKER",
+    "productRuntimeFlagPolicy": "MISSING_BLOCKER"
+  },
+  "threats": [
+    "temp fallback",
+    "repo/workspace writes",
+    "user-profile leakage",
+    "network/cloud-sync ambiguity",
+    "symlink/junction/reparse escape",
+    "path normalization bypass",
+    "raw path disclosure",
+    "concurrent writers",
+    "crash recovery gaps",
+    "tail deletion",
+    "unauthorized runtime/handler writes"
+  ],
+  "requiredFutureNegativeTests": [
+    "empty/whitespace path rejection",
+    "temp root rejection for product mode",
+    "repo/workspace path rejection",
+    "user documents/downloads/desktop rejection",
+    "symlink/junction/reparse escape rejection",
+    "network share and UNC path rejection",
+    "cloud-sync-looking root rejection",
+    "relative traversal rejection",
+    "mixed casing/separator rejection",
+    "missing redaction proof rejection",
+    "live Browser/CDP/WCU/OCR/Recipes metadata rejection",
+    "release/commercial flag rejection",
+    "missing manual GO rejection"
+  ],
+  "boundaryConfirmation": {
+    "sourceChangedByThisBlock": false,
+    "testsChangedByThisBlock": false,
+    "runtimeProductEnabled": false,
+    "productLedgerPathAdded": false,
+    "productiveServiceRegistrationAdded": false,
+    "commandHandlersAdded": false,
+    "uiProductActionsAdded": false,
+    "dbMigrationProviderCloudNetworkAdded": false,
+    "browserCdpWcuOcrRecipesLiveAdded": false,
+    "kmsWormCloudExternalTrustAdded": false,
+    "releaseCommercialReady": false,
+    "stashTouched": false
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticScanChangedFiles": "PASS_NO_TRUE_RISK",
+    "buildTests": "NOT_RUN_DOCS_ONLY"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Product ledger root policy remains missing.",
+      "Product path canonicalization and containment remain missing.",
+      "Crash/concurrency behavior remains undesigned for product.",
+      "Product redaction wiring remains missing."
+    ],
+    "P4": [
+      "Current IsProductLedgerPath remains a useful test-only guard but not a product policy."
+    ]
+  },
+  "percentages": {
+    "productLedgerPathThreatModel": "65-75%",
+    "productLedgerImplementation": "0% / NO-GO",
+    "productPathCanonicalizationContainment": "0% / NO-GO",
+    "productRedactionWiring": "0% / NO-GO",
+    "productRuntimeEnablement": "0% / NO-GO",
+    "releaseCommercialReadiness": "0% / NO-GO"
+  },
+  "nextMacroBlock": "NODAL_OS_RUNTIME_FEATURE_FLAG_PRODUCT_READINESS_DESIGN_ONLY",
+  "automaticContinuation": "ALLOWED_IF_DESIGN_ONLY_NO_CODE_NO_RUNTIME_PRODUCT"
+}
