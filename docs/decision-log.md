@@ -257,6 +257,17 @@
 - Non-goals: no source/test behavior changes, product ledger implementation, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_IMPLEMENTATION_SCAFFOLD_DISABLED_TEST_ONLY`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_IMPLEMENTATION_SCAFFOLD_DISABLED_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_IMPLEMENTATION_SCAFFOLD_DISABLED_TEST_ONLY_READY`
+- Status: accepted as disabled/test-only/no-product-write scaffold if final validation and push pass.
+- Input HEAD: `f2835d1fd9f2e95e348f5ce1f84d97dc33f7dbc7`.
+- Scope: add isolated Core readiness scaffold and focused Safety/Recipes tests for product ledger path canonicalization, reparse/symlink/junction risk and authority evidence without enabling writes or runtime/product behavior.
+- Implemented: `ProductLedgerPathReadinessScaffold`, request/result models, typed blockers, canonicalization preview, reparse preview, authority preview, Safety fail-closed tests and Recipes no-write preview test.
+- Findings: P0 0, P1 0, P2 0, P3 4 (real canonicalization, real reparse enforcement, real product authority and product write integration remain future work), P4 2 (string-level path checks are conservative previews; platform-specific Unicode/ADS/hardlink fixtures remain future hardening).
+- Non-goals: no active product ledger path, real writer, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_READINESS_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
