@@ -17,6 +17,7 @@ public enum ProductLedgerInternalCommandKind
     RequestExternalAuditPreview,
     StaticScanPreview,
     PropertyCorpusHardeningPreview,
+    LocalReportPreviewInMemory,
     EnablePublicUi,
     ExecuteAction,
     DestructiveWrite,
@@ -133,7 +134,8 @@ public sealed class ProductLedgerInternalCommandPreviewRouter
         ProductLedgerInternalCommandKind.ExportDisabledLocalReportPreview,
         ProductLedgerInternalCommandKind.RequestExternalAuditPreview,
         ProductLedgerInternalCommandKind.StaticScanPreview,
-        ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview
+        ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview,
+        ProductLedgerInternalCommandKind.LocalReportPreviewInMemory
     ];
 
     public ProductLedgerInternalCommandPreviewResult Preview(ProductLedgerInternalCommandPreviewRequest? request)
@@ -401,6 +403,7 @@ public sealed class ProductLedgerInternalCommandPreviewRouter
             ProductLedgerInternalCommandKind.RequestExternalAuditPreview => ["external audit read-only packet"],
             ProductLedgerInternalCommandKind.StaticScanPreview => ["static no-public-command scan"],
             ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview => ["property/corpus hardening plan"],
+            ProductLedgerInternalCommandKind.LocalReportPreviewInMemory => ["in-memory report preview policy", "no physical export"],
             _ => ["new explicit GO", "boundary audit", "safety tests"]
         };
 
@@ -416,6 +419,7 @@ public sealed class ProductLedgerInternalCommandPreviewRouter
             ProductLedgerInternalCommandKind.RequestExternalAuditPreview => "Request external audit preview",
             ProductLedgerInternalCommandKind.StaticScanPreview => "Static scan preview",
             ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview => "Property/corpus hardening preview",
+            ProductLedgerInternalCommandKind.LocalReportPreviewInMemory => "Local report preview in memory",
             _ => $"{command} blocked"
         };
 

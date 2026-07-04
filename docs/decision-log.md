@@ -1114,3 +1114,15 @@
 - Non-goals preserved: no public UI action, destructive user-facing action, command handler productivo, executable callback real, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial, external telemetry/sync or billing/licensing cloud.
 - Findings: P0=0, P1=0, P2=0; P3 future-gated productive command handling/public/external surfaces; P4 command ids are preview-only and disabled local report preview does not create a physical export.
 - Stop frontier: `PUBLIC_UI_OR_PRODUCT_COMMAND_HANDLER_EXECUTION_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_INTERNAL_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_INTERNAL_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_FINAL_PACKET_READY`
+- Baseline: `f53bdd5594f33e9a83700fa812cd98f3694594d2`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_INTERNAL_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_INTERNAL_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_EXTERNAL_AUDIT`.
+- Scope: Core-only internal-only/local-only/non-destructive command handler that consumes allowed router previews and returns diagnostics/readiness results in memory only.
+- Implemented: `ProductLedgerInternalCommandHandler`, request/result/execution preview models, fail-closed blockers, the `LocalReportPreviewInMemory` router command and Safety/Recipes coverage.
+- Safety posture: allowed commands are diagnostics, ledger readiness, runtime gate status, checkpoint/head status, evidence gates, static scan preview, external audit request preview and local report preview in memory only.
+- Non-goals preserved: no public UI action, destructive user-facing action, public/product command handler exposure, executable external callback, physical export/write file, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial, external telemetry/sync or billing/licensing cloud.
+- Findings: P0=0, P1=0, P2=0; P3 future-gated public/product command exposure, physical write/export and external/provider/DB/KMS/WORM surfaces; P4 handler output is in-memory preview evidence, not durable evidence.
+- Stop frontier: `PUBLIC_UI_OR_PRODUCT_COMMAND_HANDLER_PUBLIC_EXPOSURE_OR_PHYSICAL_WRITE_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_REQUIRES_NEW_EXPLICIT_GO`.

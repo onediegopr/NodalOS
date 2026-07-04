@@ -16,8 +16,8 @@ public sealed class ProductLedgerInternalCommandPreviewRouterTests
         var mapped = new ProductLedgerInternalOperatorUiPresenter().Render(ReadyUiRequest() with { CommandPreviews = previews });
 
         Assert.AreEqual(ProductLedgerInternalOperatorUiPreviewDecision.RenderedPreview, mapped.Decision);
-        Assert.AreEqual(9, previews.Count);
-        Assert.AreEqual(9, mapped.ViewModel.ActionPreviews.Count);
+        Assert.AreEqual(10, previews.Count);
+        Assert.AreEqual(10, mapped.ViewModel.ActionPreviews.Count);
         Assert.IsTrue(previews.All(result => result.Decision == ProductLedgerInternalCommandPreviewDecision.PreviewedNoOpReadOnly));
         Assert.IsTrue(previews.All(result => result.Preview.Disabled));
         Assert.IsTrue(previews.All(result => !result.Preview.Executable));
