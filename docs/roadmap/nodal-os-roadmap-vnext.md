@@ -3667,3 +3667,40 @@ Updated progress estimate after closeout:
 - Operator acceptance: 82%
 - External/cloud readiness: 0%
 - Release/commercial: 0%
+
+## Product Ledger Browser Local-Only Screenshot Evidence Test-Only
+
+Status: implemented, documented and fixture-tested in branch, pending final block validation at close.
+
+Adds:
+
+- Real local browser screenshot from the committed static fixture.
+- Deterministic screenshot artifact path under `docs/qa`.
+- SHA-256 evidence.
+- Safety and Recipes tests for artifact locality and no-overclaim report flags.
+- External audit read-only packet.
+
+Boundaries:
+
+- No public deploy.
+- No public internet exposure.
+- No external network/provider/cloud.
+- No telemetry/sync/billing cloud.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No product Browser/CDP.
+- No live automation productiva.
+- No WCU/OCR/Recipes live.
+- No destructive user-facing action.
+- No unbounded export/write.
+- No release/commercial.
+
+Updated progress estimate after closeout:
+
+- Browser local-only screenshot evidence: 100%
+- Visual QA evidence: 100%
+- Local dev route: 100%
+- Product Ledger public local-only actions: 76%
+- Operator acceptance: 82%
+- External/cloud readiness: 0%
+- Release/commercial: 0%
