@@ -139,6 +139,17 @@
 - Non-goals: no code/test behavior changes, product flag service, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path implementation, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_REDACTION_PRODUCT_WIRING_DESIGN_ONLY`.
 
+## NODAL_OS_REDACTION_PRODUCT_WIRING_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_REDACTION_PRODUCT_WIRING_DESIGN_ONLY_READY`
+- Status: accepted as docs-only redaction product wiring design if final validation and push pass.
+- Input HEAD: `0195c13feda41bdd4466591290fda9afefefdb47`.
+- Scope: design future product redaction wiring requirements, forbidden wiring and negative tests without source/test/runtime behavior changes.
+- Canon: current `RedactionBeforePersistenceService` remains isolated Core/test-only and not a productive runtime service.
+- Findings: P0 0, P1 0, P2 0, P3 4 (product policy versioning, corpus governance, product evidence schema and no-raw logging policy remain future work), P4 1 (current test-only service remains finite deterministic detection, not full product redaction).
+- Non-goals: no code/test behavior changes, productive redaction service, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path implementation, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_RUNTIME_ENABLEMENT_DESIGN_ONLY_NO_CODE`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
