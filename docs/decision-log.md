@@ -225,6 +225,17 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Stop condition: next step requires explicit manual GO for durable runtime product enablement.
 
+## NODAL_OS_DURABLE_RUNTIME_PRODUCT_ENABLEMENT_PREMORTEM_AND_DECISION_PACKET_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_RUNTIME_PRODUCT_ENABLEMENT_PREMORTEM_AND_DECISION_PACKET_READ_ONLY_READY`
+- Status: accepted as read-only/design-only premortem and decision packet if final validation and push pass.
+- Input HEAD: `70e8eec3e534e9def5079636af68e5d27770e00b`.
+- Scope: document product enablement failure modes, decision options, readiness matrix, future implementation map, audit questions and stop conditions without source/test/runtime behavior changes.
+- Recommendation: Option B, another safety-hardening test-plan block before any disabled product implementation scaffold or limited product enablement.
+- Findings: P0 0, P1 0, P2 0, P3 6 (product ledger path, redaction product wiring, runtime flag ownership, product authority, read-model/replay/rollback and provider/external trust remain blockers), P4 2 (percentages remain conservative; historical docs still contain no-go vocabulary by design).
+- Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AND_AUTHORITY_TEST_PLAN_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
