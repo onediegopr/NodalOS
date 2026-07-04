@@ -1236,3 +1236,15 @@
 - Non-goals preserved: no public deploy, public internet exposure, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, product Browser/CDP, live automation productiva, WCU/OCR/Recipes live, destructive action, unbounded export/write, external/cloud export or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future pixel-level diff can remain safe if local-only fixture evidence; P4 screenshot was generated from static fixture, not running product route and DOM/snapshot checks are deterministic contract evidence.
 - Real frontier: public deploy, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, product Browser/CDP/live automation, WCU/OCR/Recipes live, destructive action, unbounded export/write or release/commercial.
+
+## NODAL_OS_PRODUCT_LEDGER_OPERATOR_ACCEPTANCE_LOCAL_ONLY_RECONCILIATION
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_ACCEPTANCE_LOCAL_ONLY_RECONCILIATION_READY`
+- Baseline: `840eb777e1c39f34a7daa519246ceebb1a243b46`.
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_ACCEPTANCE_LOCAL_ONLY_RECONCILIATION_AND_PUBLIC_ACTIONS_HARDENING_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_OPERATOR_ACCEPTANCE_LOCAL_ONLY_RECONCILIATION_EXTERNAL_AUDIT_READ_ONLY`.
+- Scope: Core-only/test-only/local-only operator acceptance matrix and public local-only action contract reconciliation.
+- Implemented/documented: `ProductLedgerOperatorAcceptanceLocalOnlyMatrix`, 15 scenario matrix, screenshot/bounded-export/router/handler/runtime/action evidence links, fail-closed forbidden-claim blockers, Safety/Recipes tests, QA report, ADR and handoff.
+- Non-goals preserved: no public deploy, public internet exposure, external network/provider/cloud, telemetry/sync/billing, DB/migration, KMS/WORM/external trust, product Browser/CDP/WCU/OCR/Recipes live, destructive user-facing action, unbounded export/write, external/cloud export, release/commercial or compliance-grade custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 future rendered UI acceptance can add screenshot/DOM interaction evidence if local-only; P4 acceptance evidence is Core/test fixture evidence, not live user telemetry or compliance custody.
+- Readiness changes: public local-only actions 76% -> 84%; operator acceptance 82% -> 92%; external/cloud, DB, KMS/WORM/external trust, live automation and release/commercial remain 0%.
+- Real frontier: public internet exposure, destructive action, unbounded export/write, external/provider/cloud, DB/migration, KMS/WORM/external trust, live automation or release/commercial.

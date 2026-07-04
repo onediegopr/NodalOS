@@ -3706,3 +3706,52 @@ Updated progress estimate after closeout:
 - Operator acceptance: 82%
 - External/cloud readiness: 0%
 - Release/commercial: 0%
+
+## Product Ledger Operator Acceptance Local-Only Reconciliation
+
+Status: implemented, documented and fixture-tested in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only/test-only operator acceptance matrix.
+- 15 explicit local-only scenarios.
+- Evidence links for screenshot metadata, bounded export, command router, command handler, runtime gate and public local-only action availability.
+- Fail-closed blockers for public deploy, external/provider/cloud, telemetry/sync/billing, DB, KMS/WORM/external trust, live automation, destructive action, unbounded export/write, release/commercial and custody overclaims.
+- Safety and Recipes tests.
+- External audit read-only packet.
+
+Boundaries:
+
+- No public deploy.
+- No public internet exposure.
+- No external network/provider/cloud.
+- No telemetry/sync/billing cloud.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No product Browser/CDP/WCU/OCR/Recipes live.
+- No destructive user-facing action.
+- No unbounded export/write.
+- No release/commercial.
+- No compliance-grade custody claim.
+
+Updated progress estimate after closeout:
+
+- Local dev route/internal endpoint preview: 100%
+- Renderable snapshot: 100%
+- DOM contract: 100%
+- Visual QA evidence fixture: 100%
+- Screenshot real local-only/test-only: 100%
+- Product Ledger local-only writer: 100%
+- Runtime local-only gate: 100%
+- Operator diagnostics Core-only surface: 100%
+- Internal operator UI read-only preview: 100%
+- Internal command router no-op/read-only: 100%
+- Internal command handler non-destructive: 100%
+- Bounded local report export: 100%
+- Product Ledger public local-only actions: 84%
+- Operator acceptance: 92%
+- External/cloud readiness: 0%
+- DB readiness: 0%
+- KMS/WORM/external trust: 0%
+- Browser/CDP/WCU/OCR/Recipes live: 0%
+- Release/commercial: 0%
