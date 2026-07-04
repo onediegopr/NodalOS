@@ -128,6 +128,17 @@
 - Non-goals: no code/test behavior changes, product ledger implementation, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, KMS/WORM/cloud/external trust provider, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_RUNTIME_FEATURE_FLAG_PRODUCT_READINESS_DESIGN_ONLY`.
 
+## NODAL_OS_RUNTIME_FEATURE_FLAG_PRODUCT_READINESS_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_RUNTIME_FEATURE_FLAG_PRODUCT_READINESS_DESIGN_ONLY_READY`
+- Status: accepted as docs-only runtime feature flag product-readiness design if final validation and push pass.
+- Input HEAD: `85f85c94209b6131f07cbffb7ab523d86730157c`.
+- Scope: design future product runtime feature flag requirements, dependencies, forbidden shortcuts and negative tests without source/test/runtime behavior changes.
+- Canon: current `DurableAuditTrailStage2RuntimeFeatureFlag` remains exact test-only (`enabled:test-only`) and is not a product rollout system.
+- Findings: P0 0, P1 0, P2 0, P3 4 (product flag ownership, environment taxonomy, kill-switch behavior and dependency gates remain future work), P4 1 (current exact test-only flag remains valid and intentionally narrow).
+- Non-goals: no code/test behavior changes, product flag service, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path implementation, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_REDACTION_PRODUCT_WIRING_DESIGN_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
