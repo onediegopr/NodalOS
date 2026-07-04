@@ -58,11 +58,40 @@ Future runtime/product enablement requires all gates below before any implementa
 - Browser/CDP/WCU/OCR/Recipes live metadata remains blocked unless separately authorized.
 - Rollback emits compensating evidence and never mutates prior entries.
 
+## Test-Only Scaffold Implemented
+
+Follow-up implementation block `NODAL_OS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_TEST_ONLY_MACROBLOCK` added `DurableRuntimeEnablementSafetyScaffold` as an isolated Core evaluator.
+
+Implemented scope:
+
+- test-only readiness preview models and typed blockers;
+- fail-closed top-level runtime/product/release guard;
+- product ledger path readiness scaffold with local boundary checks and provider/cloud/WORM/KMS overclaim blockers;
+- redaction product wiring scaffold requiring redaction result, exact candidate hash, explicit policy id, evidence and no raw secret markers;
+- runtime feature flag product-readiness scaffold that remains blocked by default and requires ledger, redaction, authority, replay/failure and human GO evidence;
+- authority wiring scaffold that blocks missing human approval, local/test operator identity, reason, evidence, scope overrun, live automation and provider/cloud/KMS/WORM attempts;
+- replay/failure evidence scaffold that blocks missing replay/failure evidence, missing limitation acknowledgments and durable recovery overclaims;
+- status text `NO_PRODUCT_RUNTIME_ENABLEMENT`.
+
+Still not implemented:
+
+- runtime/product enablement;
+- active product ledger path;
+- productive service registration;
+- command handlers;
+- UI product actions;
+- DB/migration/provider/cloud/network;
+- Browser/CDP/WCU/OCR/Recipes live behavior;
+- KMS/WORM/cloud/external trust;
+- release/commercial readiness.
+
 ## Stop Point
 
 The next high-value step after this plan would introduce implementation/runtime/product enablement authority. That requires explicit manual GO.
 
-Stop point: `PAUSE_FOR_MANUAL_GO_BEFORE_DURABLE_RUNTIME_PRODUCT_IMPLEMENTATION_OR_ENABLEMENT`.
+Stop point after the scaffold: `NODAL_OS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY`.
+
+Product/runtime enablement remains blocked after that audit until a separate explicit manual GO.
 
 ## Findings
 
@@ -82,6 +111,7 @@ Stop point: `PAUSE_FOR_MANUAL_GO_BEFORE_DURABLE_RUNTIME_PRODUCT_IMPLEMENTATION_O
 | Product ledger path design | 60-70% |
 | Redaction product wiring design | 55-65% |
 | Runtime feature flag product-readiness design | 55-65% |
-| Durable runtime enablement design | 65-75% |
+| Durable runtime enablement design | 70-78% |
+| Durable runtime test-only scaffold | 35-45% |
 | Runtime/product implementation | 0% / NO-GO |
 | Release/commercial readiness | 0% / NO-GO |

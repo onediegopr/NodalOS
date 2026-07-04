@@ -161,6 +161,17 @@
 - Non-goals: no code/test behavior changes, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path implementation, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Stop point: `PAUSE_FOR_MANUAL_GO_BEFORE_DURABLE_RUNTIME_PRODUCT_IMPLEMENTATION_OR_ENABLEMENT`.
 
+## NODAL_OS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_TEST_ONLY_READY`
+- Status: accepted as test-only/local-only fail-closed safety scaffold if final validation and push pass.
+- Input HEAD: `d3706d427959df279580e5558a17fb4a10bc8577`.
+- Scope: add isolated Core readiness scaffold and tests for product ledger path readiness, redaction product wiring, runtime feature flag product-readiness, authority wiring and replay/failure evidence without enabling runtime/product behavior.
+- Implemented: `DurableRuntimeEnablementSafetyScaffold`, typed blockers, `NO_PRODUCT_RUNTIME_ENABLEMENT` status, Safety tests and Recipes preview test.
+- Findings: P0 0, P1 0, P2 0, P3 4 (scaffold is not production policy; external audit, broader property/corpus expansion, symlink/junction canonicalization design and product ownership decisions remain future work), P4 2 (initial parallel test attempt caused build lock and was retried sequentially; one Recipes warning is pre-existing outside touched files).
+- Non-goals: no runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/cloud/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
