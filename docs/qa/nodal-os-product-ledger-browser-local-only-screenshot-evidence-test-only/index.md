@@ -22,3 +22,10 @@ Mode:
 - no external trust;
 - no WORM/KMS/cloud;
 - not compliance-grade custody.
+
+DOM/snapshot contract:
+
+- PNG viewport and required chunks are asserted by Safety tests.
+- Source fixture required sections are asserted by Safety and Recipes tests.
+- Dangerous action affordances must remain disabled and non-executable.
+- Script, external source, link, click handler and form action affordances remain absent.

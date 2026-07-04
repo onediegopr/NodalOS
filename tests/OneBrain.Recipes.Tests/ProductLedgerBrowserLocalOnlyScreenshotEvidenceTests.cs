@@ -23,6 +23,27 @@ public sealed class ProductLedgerBrowserLocalOnlyScreenshotEvidenceTests
         StringAssert.Contains(report, "\"productiveBrowserCdpUsed\": false");
     }
 
+    [TestMethod]
+    public void DomSnapshotFixture_RecipeKeepsVisualEvidenceNonExecutable()
+    {
+        var html = File.ReadAllText(Path.Combine(
+            RepoRoot(),
+            "docs",
+            "qa",
+            "nodal-os-product-ledger-local-dev-visual-qa-screenshot-evidence",
+            "visual-snapshot.html"));
+
+        StringAssert.Contains(html, "Product Ledger Operator Surface Snapshot");
+        StringAssert.Contains(html, "data-testid=\"runtime-gate\"");
+        StringAssert.Contains(html, "data-testid=\"bounded-export\"");
+        StringAssert.Contains(html, "data-testid=\"evidence-gates\"");
+        StringAssert.Contains(html, "data-testid=\"disabled-dangerous-actions\"");
+        StringAssert.Contains(html, "STATIC_HTML_FIXTURE_NO_BROWSER_CDP");
+        Assert.IsFalse(html.Contains("<" + "script", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("onclick" + "=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("formaction" + "=", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string RepoRoot()
     {
         var directory = new DirectoryInfo(Directory.GetCurrentDirectory());

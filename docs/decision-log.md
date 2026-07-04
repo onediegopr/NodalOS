@@ -1230,9 +1230,9 @@
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_TEST_ONLY_FINAL_PACKET_READY`
 - Baseline: `1010d001db719b12e9fdc623b7ebc82e3f99e9c5`
-- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_TEST_ONLY_WINDOW`, `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_EXTERNAL_AUDIT_READ_ONLY` and `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_STATIC_SCAN_HARDENING`.
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_TEST_ONLY_WINDOW`, `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_EXTERNAL_AUDIT_READ_ONLY`, `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_STATIC_SCAN_HARDENING` and `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_DOM_SNAPSHOT_VISUAL_DIFF_TEST_ONLY`.
 - Scope: browser local-only screenshot evidence test-only from the committed static fixture.
-- Implemented/documented: real local screenshot artifact, SHA-256 evidence, Safety/Recipes artifact tests, external audit read-only packet, QA report and handoff.
+- Implemented/documented: real local screenshot artifact, SHA-256 evidence, Safety/Recipes artifact tests, DOM/snapshot visual-diff contract tests, external audit read-only packet, QA report and handoff.
 - Non-goals preserved: no public deploy, public internet exposure, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, product Browser/CDP, live automation productiva, WCU/OCR/Recipes live, destructive action, unbounded export/write, external/cloud export or release/commercial readiness.
-- Findings: P0=0, P1=0, P2=0; P3 future visual diff can remain safe if local-only fixture evidence; P4 screenshot was generated from static fixture, not running product route.
+- Findings: P0=0, P1=0, P2=0; P3 future pixel-level diff can remain safe if local-only fixture evidence; P4 screenshot was generated from static fixture, not running product route and DOM/snapshot checks are deterministic contract evidence.
 - Real frontier: public deploy, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, product Browser/CDP/live automation, WCU/OCR/Recipes live, destructive action, unbounded export/write or release/commercial.

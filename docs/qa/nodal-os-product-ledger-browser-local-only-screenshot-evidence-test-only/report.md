@@ -9,6 +9,7 @@ Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENC
 - `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_TEST_ONLY_WINDOW`
 - `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_EXTERNAL_AUDIT_READ_ONLY`
 - `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_STATIC_SCAN_HARDENING`
+- `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_DOM_SNAPSHOT_VISUAL_DIFF_TEST_ONLY`
 
 ## Screenshot Evidence
 
@@ -32,21 +33,22 @@ P2: 0
 
 P3:
 
-- Future visual diff can remain safe if it uses local-only fixture evidence.
+- Future pixel-level diff can remain safe if it uses local-only fixture evidence.
 
 P4:
 
 - Screenshot was generated from the static fixture, not a running product route.
+- DOM/snapshot checks are deterministic contract evidence, not human visual approval.
 - Screenshot evidence is not WORM/compliance-grade custody.
 
 ## Validations
 
-- New Safety screenshot evidence tests: PASS, 3/3.
-- New Recipes screenshot evidence tests: PASS, 1/1.
+- New Safety screenshot evidence tests: PASS, 5/5.
+- New Recipes screenshot evidence tests: PASS, 2/2.
 - Core build: PASS, 0 warnings, 0 errors.
 - Solution build: PASS, 0 warnings, 0 errors.
-- Required Safety focused pack: PASS, 128/128.
-- Required Recipes focused pack: PASS, 25/25.
+- Required Safety focused pack: PASS, 130/130.
+- Required Recipes focused pack: PASS, 26/26.
 - `git diff --check`: PASS.
 - QA JSON validation: PASS.
 - Static no-public-deploy/no-telemetry/no-external/no-release scan: PASS.

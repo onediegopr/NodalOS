@@ -9,6 +9,7 @@ Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENC
 - `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_TEST_ONLY_WINDOW`
 - `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENCE_EXTERNAL_AUDIT_READ_ONLY`
 - `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_STATIC_SCAN_HARDENING`
+- `NODAL_OS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_DOM_SNAPSHOT_VISUAL_DIFF_TEST_ONLY`
 
 ## Scope Completed
 
@@ -16,6 +17,7 @@ Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_BROWSER_LOCAL_ONLY_SCREENSHOT_EVIDENC
 - Stored screenshot under docs/qa with deterministic file name.
 - Recorded SHA-256 and size.
 - Added Safety and Recipes tests for artifact locality and no-overclaim report flags.
+- Added DOM/snapshot visual-diff contract tests for PNG viewport/chunks, required fixture sections, disabled dangerous actions and no executable script/link/form affordances.
 - Added ADR, external audit read-only, QA report/JSON, roadmap and decision-log updates.
 
 ## Boundary Confirmation

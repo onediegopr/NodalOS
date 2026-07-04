@@ -3679,6 +3679,7 @@ Adds:
 - SHA-256 evidence.
 - Safety and Recipes tests for artifact locality and no-overclaim report flags.
 - External audit read-only packet.
+- DOM/snapshot visual-diff contract tests for PNG viewport/chunks, required fixture sections, disabled dangerous actions and no executable script/link/form affordances.
 
 Boundaries:
 
@@ -3698,6 +3699,7 @@ Boundaries:
 Updated progress estimate after closeout:
 
 - Browser local-only screenshot evidence: 100%
+- DOM/snapshot visual-diff contract evidence: 100%
 - Visual QA evidence: 100%
 - Local dev route: 100%
 - Product Ledger public local-only actions: 76%
