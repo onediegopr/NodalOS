@@ -35,6 +35,7 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Product ledger path disabled writer scaffold readiness: 30-40% / disabled test-only no-write.
 - Product ledger path local-temp writer test-only readiness: 40-50% / local-temp only, local head checkpoint, not product ledger path.
 - Product ledger path local-only active writer readiness: 55-65% / active local-only bounded writer, runtime default-off.
+- Product ledger runtime local-only internal readiness: 65-75% / default-off internal gate, diagnostics, bounded writer adapter and corpus/static hardening.
 - Redaction product wiring readiness: 22-32%.
 - Runtime feature flag product readiness: 18-28%.
 - Authority wiring readiness: 18-28%.
@@ -69,8 +70,12 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Latest product ledger path local-only active writer external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_EXTERNAL_AUDIT_READY`.
 - Latest product ledger path local-only property/corpus/static scan hardening: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_READY`.
 - Latest product ledger path local-only final readiness packet: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_FINAL_READINESS_PACKET_READY`.
-- Current stop frontier: `RUNTIME_PRODUCT_ENABLEMENT_OR_EXTERNAL_PRODUCT_SURFACE_REQUIRES_NEW_EXPLICIT_GO`.
-- Durable runtime product enablement still requires explicit manual GO; autonomous safe continuation may only proceed through docs/design/audit/test-plan/test-only blocks.
+- Latest product ledger runtime local-only internal enablement: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT_READY`.
+- Latest product ledger runtime local-only internal external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT_EXTERNAL_AUDIT_READY`.
+- Latest product ledger runtime local-only internal property/corpus/static scan hardening: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_READY`.
+- Latest product ledger runtime local-only internal final readiness packet: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_FINAL_READINESS_PACKET_READY`.
+- Current stop frontier: `PUBLIC_UI_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_OR_DESTRUCTIVE_USER_FACING_ACTION_REQUIRES_NEW_EXPLICIT_GO`.
+- Runtime local-only/internal/default-off is authorized for autonomous safe continuation when it remains fail-closed, internal-only, no public UI, no provider/cloud/network, no DB/migration, no KMS/WORM/external trust, no Browser/CDP/WCU/OCR/Recipes live and no release/commercial.
 
 ## Current State
 

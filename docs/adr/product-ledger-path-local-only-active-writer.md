@@ -22,6 +22,7 @@ The implementation remains Core-only and local filesystem only. It activates a p
 - Local-only activation with authority, redaction, retention and failure/replay/rollback evidence gates.
 - Bounded local JSONL writer under the activated candidate path.
 - Local read verification, safe payload/metadata revalidation, hash-chain verification and local head checkpoint.
+- Invalid ledger/checkpoint JSON deserialization normalizes to fail-closed invalid local-only ledger evidence.
 - Runtime flag remains default-off and product runtime remains disabled.
 - Safety tests and Recipes tests for activation, append/read verification, failure rollback evidence and no-enable boundaries.
 

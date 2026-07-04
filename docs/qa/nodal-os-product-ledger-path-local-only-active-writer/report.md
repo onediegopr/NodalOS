@@ -6,7 +6,7 @@ Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_READY`
 
 ## Summary
 
-Implemented local-only active Product Ledger Path authority and bounded writer. The writer appends only hash-safe entries under the activated candidate path, revalidates existing ledger entry hash/metadata safety during verified reads/appends and keeps runtime/product enablement disabled.
+Implemented local-only active Product Ledger Path authority and bounded writer. The writer appends only hash-safe entries under the activated candidate path, revalidates existing ledger entry hash/metadata safety during verified reads/appends, normalizes invalid JSON to fail-closed ledger evidence and keeps runtime/product enablement disabled.
 
 ## Findings
 

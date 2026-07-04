@@ -554,8 +554,17 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
                 throw new InvalidDataException("invalid local-only ledger");
             }
 
-            var entry = JsonSerializer.Deserialize<ProductLedgerPathLocalOnlyEntry>(line, JsonOptions)
-                ?? throw new InvalidDataException("invalid local-only ledger");
+            ProductLedgerPathLocalOnlyEntry entry;
+            try
+            {
+                entry = JsonSerializer.Deserialize<ProductLedgerPathLocalOnlyEntry>(line, JsonOptions)
+                    ?? throw new InvalidDataException("invalid local-only ledger");
+            }
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException("invalid local-only ledger", ex);
+            }
+
             if (string.IsNullOrWhiteSpace(entry.CandidateId)
                 || string.IsNullOrWhiteSpace(entry.SafePayloadHash)
                 || entry.EvidenceMetadata is null
@@ -597,9 +606,18 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
             return;
         }
 
-        var checkpoint = JsonSerializer.Deserialize<ProductLedgerPathLocalOnlyCheckpoint>(
-            File.ReadAllText(checkpointPath, Encoding.UTF8),
-            JsonOptions) ?? throw new InvalidDataException("invalid local-only ledger");
+        ProductLedgerPathLocalOnlyCheckpoint checkpoint;
+        try
+        {
+            checkpoint = JsonSerializer.Deserialize<ProductLedgerPathLocalOnlyCheckpoint>(
+                File.ReadAllText(checkpointPath, Encoding.UTF8),
+                JsonOptions) ?? throw new InvalidDataException("invalid local-only ledger");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException("invalid local-only ledger", ex);
+        }
+
         var expectedHeadHash = entries.Count == 0 ? GenesisHash : entries[^1].EntryHash;
         var expectedLedgerHash = HashLedger(entries);
         if (checkpoint.HeadSequence != entries.Count

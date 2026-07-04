@@ -14,7 +14,8 @@
     "ProductLedgerPathLocalOnlyCheckpoint",
     "Safety focused local-only active writer tests",
     "Recipes focused local-only active writer tests",
-    "Read verification revalidates safe payload hashes and safe metadata for existing ledger entries"
+    "Read verification revalidates safe payload hashes and safe metadata for existing ledger entries",
+    "Invalid existing ledger or checkpoint JSON normalizes to fail-closed invalid local-only ledger evidence"
   ],
   "validations": {
     "coreBuild": "PASS_0_WARNINGS_0_ERRORS",

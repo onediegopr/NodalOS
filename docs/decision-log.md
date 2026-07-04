@@ -1047,3 +1047,35 @@
 - Non-goals: no source or test behavior changes, runtime enablement, service registration, command handler, command bus wiring, UI product action, product ledger path, DB/migration, provider/cloud/network, browser/CDP, WCU/OCR, recipes live write, release/commercial readiness, production, WORM or compliance-grade claim.
 - Remaining blockers: redaction-before-persistence and runtime feature flag are design-only; append-only property tests, concurrency stress tests, schema compatibility tests, replay/read model tests, failure/rollback tests, external audit and manual GO remain required before any enablement.
 - Next safe option: `NODAL_OS_DURABLE_AUDIT_TRAIL_PRE_ENABLEMENT_CONTROL_PLANE_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT_READY`
+- Baseline: `d7719faf25f499b81a7a4e4a6c09a4bf1b0a06e9`
+- Scope: Core-only Product Ledger runtime local-only internal gate with default-off feature flag, fail-closed boundary checks, internal service wiring readiness, internal command adapter test-only/local-only, diagnostics/readiness read-only surface and bounded writer-only append/read delegation.
+- Implemented: `ProductLedgerRuntimeLocalOnlyInternalEnablement`, Safety tests and Recipes tests.
+- Non-goals: no public UI action, user-exposed command handler, runtime enabled by default, destructive action outside bounded writer, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future-gated public/product/external surfaces; P4 same-boundary local diagnostics/checkpoint limitations.
+- Next safe option: `NODAL_OS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT_EXTERNAL_AUDIT_READY`
+- Scope: read-only simulated external audit of the runtime local-only internal gate.
+- Corrections: unsupported command kinds fail closed; forged feature flag results require diagnostics/read-only permissions; invalid existing ledger JSON maps to bounded writer fail-closed behavior.
+- Non-goals preserved: no public UI, user-exposed command handler, default-on runtime, destructive action outside bounded writer, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live or release/commercial readiness.
+- Next safe option: `NODAL_OS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_PROPERTY_CORPUS_STATIC_SCAN_HARDENING`.
+
+## NODAL_OS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_PROPERTY_CORPUS_STATIC_SCAN_HARDENING
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_READY`
+- Scope: property/corpus/static scan hardening for feature flag variants, unsupported command kinds, forged flag permissions, invalid existing ledger JSON and no-public-runtime/no-external-surface assertions.
+- Non-goals preserved: no public/product/external/live/release surfaces.
+- Next safe option: `NODAL_OS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_FINAL_READINESS_PACKET`.
+
+## NODAL_OS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_FINAL_READINESS_PACKET
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_FINAL_READINESS_PACKET_READY`
+- Scope: final readiness packet for the authorized runtime local-only internal window.
+- Ready state: default-off local-only feature flag, fail-closed internal gate, local-only service readiness without productive DI, test-only internal command adapter, diagnostics/readiness read-only surface and bounded writer integration.
+- Stop frontier: `PUBLIC_UI_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_OR_DESTRUCTIVE_USER_FACING_ACTION_REQUIRES_NEW_EXPLICIT_GO`.

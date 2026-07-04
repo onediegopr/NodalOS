@@ -8,7 +8,7 @@ Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_READY`
 
 Added a Core-only local Product Ledger Path activation and bounded writer. It accepts a persisted local-only candidate, requires local authority and safety evidence, keeps runtime flag default-off and writes hash-only JSONL entries under the activated local path.
 
-The writer verifies existing ledger entries and a local head checkpoint before append/read. It revalidates safe payload hashes and metadata on existing entries, then fails closed on malformed/tampered state.
+The writer verifies existing ledger entries and a local head checkpoint before append/read. It revalidates safe payload hashes and metadata on existing entries, normalizes invalid JSON to invalid local-only ledger evidence, then fails closed on malformed/tampered state.
 
 ## Files
 
