@@ -3072,3 +3072,42 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## Product Ledger Local-Only Operator Diagnostics Read-Only Surface
+
+Status: implemented in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only `ProductLedgerLocalOnlyOperatorDiagnosticsPresenter`.
+- Local-only/internal-only/read-only operator diagnostics projection for runtime flag, active path policy, bounded writer, checkpoint/head and evidence gates.
+- Disabled action previews with no productive command id, handler or callback.
+- Simulated external audit read-only packet and QA handoff.
+
+Boundaries:
+
+- No public UI action.
+- No destructive user-facing action.
+- No productive command handler.
+- No productive DI registration.
+- No provider/cloud/network.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live execution.
+- No release/commercial readiness.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76.5%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95.4%
+- Product Ledger local-only readiness: 82%
+- Redaction/Safety foundation: 98%
+- Productization foundation: 99.6%
+- Mission Control UX: 99.6%
+- Workspace Local: 84%
+- Project Understanding foundation: 93%
+- LLM/Assignment: 75%
+- Cloud optional: 10%

@@ -1079,3 +1079,14 @@
 - Scope: final readiness packet for the authorized runtime local-only internal window.
 - Ready state: default-off local-only feature flag, fail-closed internal gate, local-only service readiness without productive DI, test-only internal command adapter, diagnostics/readiness read-only surface and bounded writer integration.
 - Stop frontier: `PUBLIC_UI_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_OR_DESTRUCTIVE_USER_FACING_ACTION_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_LOCAL_ONLY_OPERATOR_DIAGNOSTICS_READ_ONLY_SURFACE
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_ONLY_OPERATOR_DIAGNOSTICS_READ_ONLY_SURFACE_FINAL_PACKET_READY`
+- Baseline: `2a013a37e9e7d53e802a86ae626f676b56da7d25`
+- Scope: Core-only local-only/internal-only/read-only Product Ledger operator diagnostics presenter, plus simulated external audit read-only packet.
+- Implemented: required sections for runtime local-only gate, Product Ledger path policy, bounded writer status, checkpoint/head status, evidence gates, disabled actions and safe next step.
+- Safety posture: fail-closed for missing/unsafe runtime flag, activation result, diagnostics result, evidence gaps, stale/malformed evidence references and public/product/external/release claims.
+- Non-goals preserved: no public UI action, destructive user-facing action, productive command handler, productive DI registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future-gated public/product/external surfaces; P4 same-boundary checkpoint/head diagnostics limitation and disabled action previews only.
+- Stop frontier: `PUBLIC_UI_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_OR_DESTRUCTIVE_USER_FACING_ACTION_REQUIRES_NEW_EXPLICIT_GO`.
