@@ -106,6 +106,17 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, external provider/KMS/WORM trust, release/commercial readiness or stash modification.
 - Stop point: `PAUSE_FOR_MANUAL_GO_BEFORE_STAGE2_RUNTIME_PRODUCT_ENABLEMENT_OR_EXTERNAL_TRUST_PROVIDER`.
 
+## NODAL_OS_GLOBAL_SAFE_RUNTIME_PRE_ENABLEMENT_READINESS
+
+- Decision target: `GO_WITH_FINDINGS_GLOBAL_SAFE_RUNTIME_PRE_ENABLEMENT_READINESS_READY`
+- Status: accepted as docs-only/read-only global readiness consolidation, blocker audit and backlog prioritization if final validation and push pass.
+- Input HEAD: `6de0d3d6bd75d6b1d893036b2f6fce24256a5993`.
+- Scope: consolidate current pre-runtime/pre-product canon, global state matrix, runtime/product blockers, external trust decision pack, safe backlog ranking and overclaim scan without source/test/runtime behavior changes.
+- Canon: decision-log plus latest QA/handoff chain are authoritative; older roadmap docs remain legacy traceability. Durable Stage 2 is test-only/local-temp; redaction-before-persistence is isolated Core/test-only; feature flag is exact test-only only; checkpoint trust is local-only/no-provider/test-only; runtime/product/release/commercial and provider/cloud/KMS/WORM remain `0% / NO-GO`.
+- Findings: P0 0, P1 0, P2 0, P3 5 (product ledger path, runtime registration/command/UI authority, redaction product wiring, external trust provider and live Browser/CDP/WCU/OCR/Recipes remain blockers), P4 2 (historical docs noisy; inherited full solution warnings pre-existing).
+- Non-goals: no code/test behavior changes, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path implementation, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, KMS/WORM/cloud/external trust provider, release/commercial readiness or stash modification.
+- Selected next macro-block: `NODAL_OS_PRODUCT_LEDGER_PATH_THREAT_MODEL_DESIGN_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
