@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace OneBrain.Core.Approval;
@@ -29,6 +30,7 @@ public enum ProductLedgerPathBlocker
     LongPathPrefixAmbiguity,
     CasingNormalizationMismatch,
     UnicodeNormalizationMismatch,
+    UnicodeConfusablePathSegmentRisk,
     TrailingDotOrSpaceRisk,
     AlternateDataStreamRisk,
     LocalTempClaimedAsProductLedgerPath,
@@ -41,7 +43,10 @@ public enum ProductLedgerPathBlocker
     SymlinkRiskUnresolved,
     JunctionRiskUnresolved,
     ReparsePointRiskUnresolved,
+    ReparsePointEvidenceStale,
+    ReparsePointEvidenceConflicting,
     HardlinkOrMountAliasRiskUnresolved,
+    PathStringNormalizationBoundaryConfusion,
     MissingRedactionPolicyEvidence,
     MissingRetentionPolicyEvidence,
     MissingReplayFailureEvidence,
@@ -58,6 +63,14 @@ public enum ProductLedgerPathBlocker
     ApprovalReplayOrTamperRisk,
     ApprovalAfterRiskChanges,
     ApprovalMissingEvidenceRefs,
+    ApprovalMalformedEvidenceRefs,
+    ApprovalDuplicateEvidenceRefs,
+    ApprovalStaleEvidenceRefs,
+    ApprovalEvidenceRefsForWrongRequest,
+    ApprovalEvidenceRefsForWrongRiskVersion,
+    ApprovalInconsistentEvidenceRefs,
+    ApprovalEvidenceRefsContainLiveProductWording,
+    ApprovalEvidenceRefsContainRawPayloadOrSecretMarker,
     ApprovalAttemptsProviderCloudKmsWormExternalTrust,
     ApprovalAttemptsLiveAutomation,
     ApprovalAttemptsReleaseCommercial
@@ -85,13 +98,17 @@ public sealed record CanonicalizationRiskPreview(
     bool HasJailBoundaryEvidence,
     bool CanonicalPathInsideJail,
     bool HasTocTouMitigationEvidence,
+    bool TocTouEvidenceStale,
     bool CasingNormalizationMismatch,
     bool UnicodeNormalizationMismatch,
+    bool PathAppearsOutsideButStringNormalizedInside,
     bool ClaimsLocalTempAsProductLedgerPath,
     bool ClaimsProductLedgerReadyWithoutProductPolicy);
 
 public sealed record ReparsePointRiskPreview(
     bool HasSymlinkJunctionReparseEvidence,
+    bool ReparseEvidenceStale,
+    bool ReparseEvidenceConflicting,
     bool SymlinkRiskUnresolved,
     bool JunctionRiskUnresolved,
     bool ReparsePointRiskUnresolved,
@@ -109,6 +126,10 @@ public sealed record AuthorityReadinessPreview(
     bool ApprovalForDifferentRuntimeFlag,
     bool ApprovalReplayOrTamperRisk,
     bool ApprovalAfterRiskChanges,
+    bool EvidenceReferencesAreStale,
+    bool EvidenceReferencesForWrongRequestId,
+    bool EvidenceReferencesForWrongRiskVersion,
+    bool EvidenceReferencesInconsistent,
     bool ApprovalAttemptsProviderCloudKmsWormExternalTrust,
     bool ApprovalAttemptsLiveAutomation,
     bool ApprovalAttemptsReleaseCommercial);
@@ -145,6 +166,45 @@ public sealed class ProductLedgerPathReadinessScaffold
     private static readonly Regex DriveRelativePathPattern = new(
         @"^[A-Za-z]:(?![\\/])",
         RegexOptions.Compiled);
+
+    private static readonly Regex ConfusableScriptPathPattern = new(
+        @"[\p{IsCyrillic}\p{IsGreek}]",
+        RegexOptions.Compiled);
+
+    private static readonly Regex EvidenceReferencePattern = new(
+        @"^[a-z0-9][a-z0-9._/\-:]*$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly string[] LiveProductEvidenceTerms =
+    [
+        "product-enabled",
+        "ledger-active",
+        "writer-active",
+        "runtime-enabled",
+        "release-ready",
+        "commercial-ready",
+        "external-trust",
+        "worm",
+        "kms",
+        "cloud",
+        "provider-backed",
+        "browser/cdp live",
+        "wcu live",
+        "ocr live",
+        "recipes live"
+    ];
+
+    private static readonly string[] RawPayloadOrSecretEvidenceTerms =
+    [
+        "raw-payload",
+        "raw_payload",
+        "secret=",
+        "password=",
+        "api_key",
+        "apikey",
+        "token=",
+        "bearer "
+    ];
 
     public ProductLedgerPathReadinessResult Evaluate(ProductLedgerPathReadinessRequest? request)
     {
@@ -231,6 +291,11 @@ public sealed class ProductLedgerPathReadinessScaffold
             blockers.Add(ProductLedgerPathBlocker.TocTouMitigationMissing);
         }
 
+        if (preview.TocTouEvidenceStale)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ReparsePointEvidenceStale);
+        }
+
         if (preview.CasingNormalizationMismatch)
         {
             blockers.Add(ProductLedgerPathBlocker.CasingNormalizationMismatch);
@@ -239,6 +304,11 @@ public sealed class ProductLedgerPathReadinessScaffold
         if (preview.UnicodeNormalizationMismatch)
         {
             blockers.Add(ProductLedgerPathBlocker.UnicodeNormalizationMismatch);
+        }
+
+        if (preview.PathAppearsOutsideButStringNormalizedInside)
+        {
+            blockers.Add(ProductLedgerPathBlocker.PathStringNormalizationBoundaryConfusion);
         }
 
         if (preview.ClaimsLocalTempAsProductLedgerPath)
@@ -312,6 +382,12 @@ public sealed class ProductLedgerPathReadinessScaffold
             blockers.Add(ProductLedgerPathBlocker.TrailingDotOrSpaceRisk);
         }
 
+        if (!path.Equals(path.Normalize(NormalizationForm.FormC), StringComparison.Ordinal)
+            || ConfusableScriptPathPattern.IsMatch(path))
+        {
+            blockers.Add(ProductLedgerPathBlocker.UnicodeConfusablePathSegmentRisk);
+        }
+
         if (ContainsAlternateDataStreamSyntax(path))
         {
             blockers.Add(ProductLedgerPathBlocker.AlternateDataStreamRisk);
@@ -333,6 +409,16 @@ public sealed class ProductLedgerPathReadinessScaffold
             blockers.Add(ProductLedgerPathBlocker.SymlinkRiskUnresolved);
             blockers.Add(ProductLedgerPathBlocker.JunctionRiskUnresolved);
             blockers.Add(ProductLedgerPathBlocker.ReparsePointRiskUnresolved);
+        }
+
+        if (preview.ReparseEvidenceStale)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ReparsePointEvidenceStale);
+        }
+
+        if (preview.ReparseEvidenceConflicting)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ReparsePointEvidenceConflicting);
         }
 
         if (preview.SymlinkRiskUnresolved)
@@ -447,6 +533,30 @@ public sealed class ProductLedgerPathReadinessScaffold
         {
             blockers.Add(ProductLedgerPathBlocker.ApprovalMissingEvidenceRefs);
         }
+        else
+        {
+            AddEvidenceReferenceBlockers(preview.EvidenceReferences, blockers);
+        }
+
+        if (preview.EvidenceReferencesAreStale)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ApprovalStaleEvidenceRefs);
+        }
+
+        if (preview.EvidenceReferencesForWrongRequestId)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ApprovalEvidenceRefsForWrongRequest);
+        }
+
+        if (preview.EvidenceReferencesForWrongRiskVersion)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ApprovalEvidenceRefsForWrongRiskVersion);
+        }
+
+        if (preview.EvidenceReferencesInconsistent)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ApprovalInconsistentEvidenceRefs);
+        }
 
         if (preview.ApprovalAttemptsProviderCloudKmsWormExternalTrust)
         {
@@ -485,6 +595,36 @@ public sealed class ProductLedgerPathReadinessScaffold
             LiveAutomationAllowed: false,
             ReleaseCommercialReady: false,
             StatusText: ReadinessPreviewOnlyStatus);
+    }
+
+    private static void AddEvidenceReferenceBlockers(
+        IReadOnlyList<string> evidenceReferences,
+        List<ProductLedgerPathBlocker> blockers)
+    {
+        if (evidenceReferences.Distinct(StringComparer.OrdinalIgnoreCase).Count() != evidenceReferences.Count)
+        {
+            blockers.Add(ProductLedgerPathBlocker.ApprovalDuplicateEvidenceRefs);
+        }
+
+        foreach (var evidenceReference in evidenceReferences)
+        {
+            if (!EvidenceReferencePattern.IsMatch(evidenceReference)
+                || evidenceReference.Contains("..", StringComparison.Ordinal)
+                || evidenceReference.Contains('\\', StringComparison.Ordinal))
+            {
+                blockers.Add(ProductLedgerPathBlocker.ApprovalMalformedEvidenceRefs);
+            }
+
+            if (LiveProductEvidenceTerms.Any(term => evidenceReference.Contains(term, StringComparison.OrdinalIgnoreCase)))
+            {
+                blockers.Add(ProductLedgerPathBlocker.ApprovalEvidenceRefsContainLiveProductWording);
+            }
+
+            if (RawPayloadOrSecretEvidenceTerms.Any(term => evidenceReference.Contains(term, StringComparison.OrdinalIgnoreCase)))
+            {
+                blockers.Add(ProductLedgerPathBlocker.ApprovalEvidenceRefsContainRawPayloadOrSecretMarker);
+            }
+        }
     }
 
     private static bool ContainsTrailingDotOrSpace(string path) =>

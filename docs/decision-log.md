@@ -279,6 +279,17 @@
 - Non-goals: no source/test behavior changes, active product ledger path, real writer, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_TEST_ONLY`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_TEST_ONLY_READY`
+- Status: accepted as test-only corpus expansion for the disabled/no-product-write scaffold if final validation and push pass.
+- Input HEAD: `8ef19cb73277724877ded495a80677a64f881b96`.
+- Scope: expand `ProductLedgerPathReadinessScaffold` blockers and Safety/Recipes tests for Unicode, ADS, reparse evidence, boundary confusion, authority evidence refs and no-enable wording without enabling product behavior.
+- Implemented: string-level Unicode/confusable and ADS blockers, stale/conflicting reparse blockers, boundary confusion and stale TOCTOU blockers, evidence-ref malformed/duplicate/stale/wrong-scope/raw-payload/live-product blockers, Safety 8/8 and Recipes 2/2 scaffold-focused coverage.
+- Findings: P0 0, P1 0, P2 0, P3 4 (real canonicalization enforcement, real reparse enforcement, real product authority and product write integration remain future work), P4 2 (string-level Unicode/confusable detection is conservative; platform-specific hardlink/mount fixtures remain preview-only).
+- Non-goals: no active product ledger path, real writer, real filesystem canonicalization, real symlink/junction/reparse enforcement, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`

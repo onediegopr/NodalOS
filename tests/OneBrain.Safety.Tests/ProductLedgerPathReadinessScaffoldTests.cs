@@ -89,12 +89,18 @@ public sealed class ProductLedgerPathReadinessScaffoldTests
             [ready.Canonicalization! with { CandidatePath = @"\\?\C:\safe\ledger" }] = ProductLedgerPathBlocker.LongPathPrefixAmbiguity,
             [ready.Canonicalization! with { CandidatePath = @"C:\safe\ledger. " }] = ProductLedgerPathBlocker.TrailingDotOrSpaceRisk,
             [ready.Canonicalization! with { CandidatePath = @"C:\safe\ledger:stream" }] = ProductLedgerPathBlocker.AlternateDataStreamRisk,
+            [ready.Canonicalization! with { CandidatePath = @"C:\safe\file.txt:stream" }] = ProductLedgerPathBlocker.AlternateDataStreamRisk,
+            [ready.Canonicalization! with { CandidatePath = @"C:\safe\ledger::$DATA" }] = ProductLedgerPathBlocker.AlternateDataStreamRisk,
+            [ready.Canonicalization! with { CandidatePath = "C:\\safe\\cafe\u0301" }] = ProductLedgerPathBlocker.UnicodeConfusablePathSegmentRisk,
+            [ready.Canonicalization! with { CandidatePath = "C:\\safe\\ledg\u0435r" }] = ProductLedgerPathBlocker.UnicodeConfusablePathSegmentRisk,
             [ready.Canonicalization! with { HasCanonicalPathEvidence = false }] = ProductLedgerPathBlocker.CanonicalPathEvidenceMissing,
             [ready.Canonicalization! with { HasJailBoundaryEvidence = false }] = ProductLedgerPathBlocker.JailBoundaryEvidenceMissing,
             [ready.Canonicalization! with { CanonicalPathInsideJail = false }] = ProductLedgerPathBlocker.PathAppearsInsideButCanonicalOutside,
             [ready.Canonicalization! with { HasTocTouMitigationEvidence = false }] = ProductLedgerPathBlocker.TocTouMitigationMissing,
+            [ready.Canonicalization! with { TocTouEvidenceStale = true }] = ProductLedgerPathBlocker.ReparsePointEvidenceStale,
             [ready.Canonicalization! with { CasingNormalizationMismatch = true }] = ProductLedgerPathBlocker.CasingNormalizationMismatch,
             [ready.Canonicalization! with { UnicodeNormalizationMismatch = true }] = ProductLedgerPathBlocker.UnicodeNormalizationMismatch,
+            [ready.Canonicalization! with { PathAppearsOutsideButStringNormalizedInside = true }] = ProductLedgerPathBlocker.PathStringNormalizationBoundaryConfusion,
             [ready.Canonicalization! with { ClaimsLocalTempAsProductLedgerPath = true }] = ProductLedgerPathBlocker.LocalTempClaimedAsProductLedgerPath,
             [ready.Canonicalization! with { ClaimsProductLedgerReadyWithoutProductPolicy = true }] = ProductLedgerPathBlocker.ProductLedgerReadyClaimWithoutProductPolicy
         };
@@ -116,6 +122,8 @@ public sealed class ProductLedgerPathReadinessScaffoldTests
         var cases = new Dictionary<ReparsePointRiskPreview, ProductLedgerPathBlocker>
         {
             [ready.ReparsePointRisk! with { HasSymlinkJunctionReparseEvidence = false }] = ProductLedgerPathBlocker.SymlinkRiskUnresolved,
+            [ready.ReparsePointRisk! with { ReparseEvidenceStale = true }] = ProductLedgerPathBlocker.ReparsePointEvidenceStale,
+            [ready.ReparsePointRisk! with { ReparseEvidenceConflicting = true }] = ProductLedgerPathBlocker.ReparsePointEvidenceConflicting,
             [ready.ReparsePointRisk! with { SymlinkRiskUnresolved = true }] = ProductLedgerPathBlocker.SymlinkRiskUnresolved,
             [ready.ReparsePointRisk! with { JunctionRiskUnresolved = true }] = ProductLedgerPathBlocker.JunctionRiskUnresolved,
             [ready.ReparsePointRisk! with { ReparsePointRiskUnresolved = true }] = ProductLedgerPathBlocker.ReparsePointRiskUnresolved,
@@ -149,6 +157,14 @@ public sealed class ProductLedgerPathReadinessScaffoldTests
             [ready.Authority! with { ApprovalReplayOrTamperRisk = true }] = ProductLedgerPathBlocker.ApprovalReplayOrTamperRisk,
             [ready.Authority! with { ApprovalAfterRiskChanges = true }] = ProductLedgerPathBlocker.ApprovalAfterRiskChanges,
             [ready.Authority! with { EvidenceReferences = [] }] = ProductLedgerPathBlocker.ApprovalMissingEvidenceRefs,
+            [ready.Authority! with { EvidenceReferences = ["../escape"] }] = ProductLedgerPathBlocker.ApprovalMalformedEvidenceRefs,
+            [ready.Authority! with { EvidenceReferences = ["docs/qa/ref", "DOCS/QA/REF"] }] = ProductLedgerPathBlocker.ApprovalDuplicateEvidenceRefs,
+            [ready.Authority! with { EvidenceReferencesAreStale = true }] = ProductLedgerPathBlocker.ApprovalStaleEvidenceRefs,
+            [ready.Authority! with { EvidenceReferencesForWrongRequestId = true }] = ProductLedgerPathBlocker.ApprovalEvidenceRefsForWrongRequest,
+            [ready.Authority! with { EvidenceReferencesForWrongRiskVersion = true }] = ProductLedgerPathBlocker.ApprovalEvidenceRefsForWrongRiskVersion,
+            [ready.Authority! with { EvidenceReferencesInconsistent = true }] = ProductLedgerPathBlocker.ApprovalInconsistentEvidenceRefs,
+            [ready.Authority! with { EvidenceReferences = ["docs/qa/product-enabled"] }] = ProductLedgerPathBlocker.ApprovalEvidenceRefsContainLiveProductWording,
+            [ready.Authority! with { EvidenceReferences = ["docs/qa/raw-payload-secret=abc"] }] = ProductLedgerPathBlocker.ApprovalEvidenceRefsContainRawPayloadOrSecretMarker,
             [ready.Authority! with { ApprovalAttemptsProviderCloudKmsWormExternalTrust = true }] = ProductLedgerPathBlocker.ApprovalAttemptsProviderCloudKmsWormExternalTrust,
             [ready.Authority! with { ApprovalAttemptsLiveAutomation = true }] = ProductLedgerPathBlocker.ApprovalAttemptsLiveAutomation,
             [ready.Authority! with { ApprovalAttemptsReleaseCommercial = true }] = ProductLedgerPathBlocker.ApprovalAttemptsReleaseCommercial
@@ -180,6 +196,35 @@ public sealed class ProductLedgerPathReadinessScaffoldTests
         StringAssert.Contains(result.StatusText, "NO_RELEASE_COMMERCIAL");
         StringAssert.Contains(result.StatusText, "NO_EXTERNAL_TRUST");
         StringAssert.Contains(result.StatusText, "NO_WORM_KMS_CLOUD");
+    }
+
+    [TestMethod]
+    public void ProductLedgerPathScaffold_BlocksNoEnableCorpusClaims()
+    {
+        var ready = ReadyRequest();
+        var cases = new[]
+        {
+            ready with { NoProductWriteAssertion = false },
+            ready with { NoRuntimeEnablementAssertion = false },
+            ready with { NoReleaseCommercialAssertion = false },
+            ready with { ClaimsExternalTrust = true },
+            ready with { ClaimsWormKmsCloud = true },
+            ready with
+            {
+                Authority = ready.Authority! with
+                {
+                    EvidenceReferences = ["docs/qa/ledger-active-writer-active-runtime-enabled-release-ready-commercial-ready-provider-backed"]
+                }
+            }
+        };
+
+        foreach (var request in cases)
+        {
+            var result = new ProductLedgerPathReadinessScaffold().Evaluate(request);
+
+            Assert.AreEqual(ProductLedgerPathReadinessDecision.Rejected, result.Decision);
+            AssertNoProductEnablement(result);
+        }
     }
 
     [TestMethod]
@@ -237,12 +282,16 @@ public sealed class ProductLedgerPathReadinessScaffoldTests
                 HasJailBoundaryEvidence: true,
                 CanonicalPathInsideJail: true,
                 HasTocTouMitigationEvidence: true,
+                TocTouEvidenceStale: false,
                 CasingNormalizationMismatch: false,
                 UnicodeNormalizationMismatch: false,
+                PathAppearsOutsideButStringNormalizedInside: false,
                 ClaimsLocalTempAsProductLedgerPath: false,
                 ClaimsProductLedgerReadyWithoutProductPolicy: false),
             ReparsePointRisk: new ReparsePointRiskPreview(
                 HasSymlinkJunctionReparseEvidence: true,
+                ReparseEvidenceStale: false,
+                ReparseEvidenceConflicting: false,
                 SymlinkRiskUnresolved: false,
                 JunctionRiskUnresolved: false,
                 ReparsePointRiskUnresolved: false,
@@ -259,6 +308,10 @@ public sealed class ProductLedgerPathReadinessScaffoldTests
                 ApprovalForDifferentRuntimeFlag: false,
                 ApprovalReplayOrTamperRisk: false,
                 ApprovalAfterRiskChanges: false,
+                EvidenceReferencesAreStale: false,
+                EvidenceReferencesForWrongRequestId: false,
+                EvidenceReferencesForWrongRiskVersion: false,
+                EvidenceReferencesInconsistent: false,
                 ApprovalAttemptsProviderCloudKmsWormExternalTrust: false,
                 ApprovalAttemptsLiveAutomation: false,
                 ApprovalAttemptsReleaseCommercial: false),

@@ -26,8 +26,9 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Durable runtime test-only scaffold: 50-60%.
 - Property/corpus hardening: 38-48%.
 - Symlink/junction readiness: 15-25%.
-- Product ledger path policy readiness: 18-25% / NO-GO.
-- Product ledger path disabled scaffold readiness: 25-35% / disabled-test-only no-write preview.
+- Product ledger path policy readiness: 20-28% / NO-GO.
+- Product ledger path disabled scaffold readiness: 32-42% / disabled-test-only no-write preview.
+- Product ledger path property/corpus coverage: 45-55% / test-only only.
 - Redaction product wiring readiness: 22-32%.
 - Runtime feature flag product readiness: 18-28%.
 - Authority wiring readiness: 18-28%.
@@ -44,7 +45,8 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Latest product ledger path test-plan external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_TEST_PLAN_EXTERNAL_AUDIT_READY`.
 - Latest product ledger path disabled scaffold: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_IMPLEMENTATION_SCAFFOLD_DISABLED_TEST_ONLY_READY`.
 - Latest product ledger path disabled scaffold external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_READINESS_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READY`.
-- Recommended next safe macro-block before any product enablement: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_TEST_ONLY`.
+- Latest product ledger path property/corpus expansion: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_TEST_ONLY_READY`.
+- Recommended next safe macro-block before any product enablement: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_EXTERNAL_AUDIT_READ_ONLY`.
 - Durable runtime product enablement still requires explicit manual GO; autonomous safe continuation may only proceed through docs/design/audit/test-plan/test-only blocks.
 
 ## Current State
