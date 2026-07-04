@@ -3584,3 +3584,49 @@ Updated progress estimate after closeout:
 - KMS/WORM/external trust: 0%
 - Browser/CDP/WCU/OCR/Recipes live: 0%
 - Release/commercial: 0%
+
+## Product Ledger Local Dev Route Internal Endpoint Preview
+
+Status: implemented, documented and fixture-tested in branch, pending final block validation at close.
+
+Adds:
+
+- Core local-dev/internal-only endpoint preview contract.
+- Development-only `OneBrain.Pilot` route mapping.
+- Fail-closed local/dev guard.
+- Route template preview for `/__internal/local-dev/product-ledger/operator-snapshot`.
+- HTML snapshot output from the existing renderable operator surface.
+- Local-dev/internal-only, not publicly deployed, no telemetry, no external network, no release/commercial, no external trust and no WORM/KMS/cloud notices.
+- Safety and Recipes tests.
+- External audit read-only packet.
+
+Boundaries:
+
+- No route mapping outside Development.
+- No controller.
+- No public deploy.
+- No public internet exposure.
+- No external network.
+- No telemetry/sync/billing cloud.
+- No provider/cloud.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live.
+- No destructive user-facing action.
+- No unbounded export/write.
+- No release/commercial.
+
+Updated progress estimate after closeout:
+
+- Local dev route/internal endpoint preview: 100%
+- Renderable operator snapshot: 100%
+- DOM contract: 100%
+- Product Ledger public local-only actions: 76%
+- Operator acceptance: 82%
+- Bounded local report export: 100%
+- External/cloud readiness: 0%
+- Provider/cloud/network: 0%
+- DB/migration: 0%
+- KMS/WORM/external trust: 0%
+- Browser/CDP/WCU/OCR/Recipes live: 0%
+- Release/commercial: 0%

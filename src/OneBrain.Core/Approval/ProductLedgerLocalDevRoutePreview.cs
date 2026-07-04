@@ -1,0 +1,443 @@
+namespace OneBrain.Core.Approval;
+
+public enum ProductLedgerLocalDevRoutePreviewDecision
+{
+    Rejected,
+    RenderedLocalDevInternalPreview
+}
+
+public enum ProductLedgerLocalDevRoutePreviewBlocker
+{
+    MissingRequest,
+    MissingExplicitLocalDevInternalPreviewScope,
+    NonLocalMode,
+    MissingDevMode,
+    ProductionModeClaimed,
+    ReleaseModeClaimed,
+    CommercialModeClaimed,
+    ExternalHostOrPublicOriginClaimed,
+    PublicDeployClaimed,
+    TelemetryOrSyncClaimed,
+    ProviderCloudNetworkClaimed,
+    DbMigrationClaimed,
+    KmsWormExternalTrustClaimed,
+    BrowserCdpWcuOcrRecipesLiveClaimed,
+    DestructiveActionRequested,
+    UnboundedPhysicalExportClaimed,
+    ExternalCloudExportClaimed,
+    RawPayloadOrSecretClaimed,
+    MissingRenderableSnapshotRequest,
+    RenderableSnapshotRejected,
+    UnsafeRenderableSnapshot
+}
+
+public sealed record ProductLedgerLocalDevRoutePreviewRequest(
+    bool ExplicitLocalDevInternalPreviewScope,
+    bool LocalMode,
+    bool DevMode,
+    bool ClaimsProductionMode,
+    bool ClaimsReleaseMode,
+    bool ClaimsCommercialMode,
+    bool ClaimsExternalHostOrPublicOrigin,
+    bool ClaimsPublicDeploy,
+    bool ClaimsTelemetryOrSync,
+    bool ClaimsProviderCloudNetwork,
+    bool ClaimsDbMigration,
+    bool ClaimsKmsWormExternalTrust,
+    bool ClaimsBrowserCdpWcuOcrRecipesLive,
+    bool RequestsDestructiveAction,
+    bool ClaimsUnboundedPhysicalExport,
+    bool ClaimsExternalCloudExport,
+    bool ClaimsRawPayloadOrSecret,
+    ProductLedgerRenderableOperatorSurfaceRequest? RenderableSnapshotRequest);
+
+public sealed record ProductLedgerLocalDevRoutePreviewResult(
+    ProductLedgerLocalDevRoutePreviewDecision Decision,
+    IReadOnlyList<ProductLedgerLocalDevRoutePreviewBlocker> Blockers,
+    ProductLedgerRenderableOperatorSurfaceResult RenderableSnapshot,
+    string RouteTemplatePreview,
+    string ContentType,
+    string HtmlSnapshot,
+    IReadOnlyList<string> Notices,
+    bool LocalOnly,
+    bool DevOnly,
+    bool InternalOnly,
+    bool ReadOnly,
+    bool NonDestructive,
+    bool FailClosed,
+    bool PublicDeployAvailable,
+    bool ExternalNetworkAvailable,
+    bool TelemetryOrSyncAvailable,
+    bool ProviderCloudNetworkAvailable,
+    bool DbMigrationAvailable,
+    bool KmsWormExternalTrustAvailable,
+    bool BrowserCdpWcuOcrRecipesLiveAvailable,
+    bool DestructiveActionAvailable,
+    bool UnboundedPhysicalExportAvailable,
+    bool ExternalCloudExportAvailable,
+    bool ReleaseCommercialReady,
+    string StatusText);
+
+public sealed class ProductLedgerLocalDevRoutePreview
+{
+    public const string RouteTemplatePreview =
+        "/__internal/local-dev/product-ledger/operator-snapshot";
+
+    public const string ReadyStatus =
+        "PRODUCT_LEDGER_LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW_READY LOCAL_DEV_INTERNAL_ONLY READ_ONLY NON_DESTRUCTIVE FAIL_CLOSED NOT_PUBLICLY_DEPLOYED NO_EXTERNAL_NETWORK NO_TELEMETRY NO_PROVIDER_CLOUD_NETWORK NO_DB_MIGRATION NO_KMS_WORM_EXTERNAL_TRUST NO_LIVE_AUTOMATION NO_RELEASE_COMMERCIAL";
+
+    public const string RejectedStatus =
+        "PRODUCT_LEDGER_LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW_REJECTED FAIL_CLOSED NOT_PUBLICLY_DEPLOYED NO_EXTERNAL_NETWORK NO_TELEMETRY NO_PROVIDER_CLOUD_NETWORK NO_DB_MIGRATION NO_KMS_WORM_EXTERNAL_TRUST NO_LIVE_AUTOMATION NO_RELEASE_COMMERCIAL";
+
+    public static ProductLedgerLocalDevRoutePreviewRequest CreateDefaultLocalDevRequest() =>
+        new(
+            ExplicitLocalDevInternalPreviewScope: true,
+            LocalMode: true,
+            DevMode: true,
+            ClaimsProductionMode: false,
+            ClaimsReleaseMode: false,
+            ClaimsCommercialMode: false,
+            ClaimsExternalHostOrPublicOrigin: false,
+            ClaimsPublicDeploy: false,
+            ClaimsTelemetryOrSync: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            RequestsDestructiveAction: false,
+            ClaimsUnboundedPhysicalExport: false,
+            ClaimsExternalCloudExport: false,
+            ClaimsRawPayloadOrSecret: false,
+            RenderableSnapshotRequest: CreateDefaultRenderableSnapshotRequest());
+
+    public ProductLedgerLocalDevRoutePreviewResult Render(ProductLedgerLocalDevRoutePreviewRequest? request)
+    {
+        var blockers = new List<ProductLedgerLocalDevRoutePreviewBlocker>();
+        if (request is null)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingRequest);
+            return Result(blockers, null);
+        }
+
+        AddGuardBlockers(request, blockers);
+
+        ProductLedgerRenderableOperatorSurfaceResult? renderable = null;
+        if (request.RenderableSnapshotRequest is null)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingRenderableSnapshotRequest);
+        }
+        else
+        {
+            renderable = new ProductLedgerRenderableOperatorSurfaceRenderer().Render(request.RenderableSnapshotRequest);
+            AddRenderableBlockers(renderable, blockers);
+        }
+
+        return Result(blockers, renderable);
+    }
+
+    private static void AddGuardBlockers(
+        ProductLedgerLocalDevRoutePreviewRequest request,
+        List<ProductLedgerLocalDevRoutePreviewBlocker> blockers)
+    {
+        if (!request.ExplicitLocalDevInternalPreviewScope)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingExplicitLocalDevInternalPreviewScope);
+        }
+
+        if (!request.LocalMode)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.NonLocalMode);
+        }
+
+        if (!request.DevMode)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingDevMode);
+        }
+
+        if (request.ClaimsProductionMode)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.ProductionModeClaimed);
+        }
+
+        if (request.ClaimsReleaseMode)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.ReleaseModeClaimed);
+        }
+
+        if (request.ClaimsCommercialMode)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.CommercialModeClaimed);
+        }
+
+        if (request.ClaimsExternalHostOrPublicOrigin)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.ExternalHostOrPublicOriginClaimed);
+        }
+
+        if (request.ClaimsPublicDeploy)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.PublicDeployClaimed);
+        }
+
+        if (request.ClaimsTelemetryOrSync)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.TelemetryOrSyncClaimed);
+        }
+
+        if (request.ClaimsProviderCloudNetwork)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.ProviderCloudNetworkClaimed);
+        }
+
+        if (request.ClaimsDbMigration)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.DbMigrationClaimed);
+        }
+
+        if (request.ClaimsKmsWormExternalTrust)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.KmsWormExternalTrustClaimed);
+        }
+
+        if (request.ClaimsBrowserCdpWcuOcrRecipesLive)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.BrowserCdpWcuOcrRecipesLiveClaimed);
+        }
+
+        if (request.RequestsDestructiveAction)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.DestructiveActionRequested);
+        }
+
+        if (request.ClaimsUnboundedPhysicalExport)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.UnboundedPhysicalExportClaimed);
+        }
+
+        if (request.ClaimsExternalCloudExport)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.ExternalCloudExportClaimed);
+        }
+
+        if (request.ClaimsRawPayloadOrSecret)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.RawPayloadOrSecretClaimed);
+        }
+    }
+
+    private static void AddRenderableBlockers(
+        ProductLedgerRenderableOperatorSurfaceResult renderable,
+        List<ProductLedgerLocalDevRoutePreviewBlocker> blockers)
+    {
+        if (renderable.Decision != ProductLedgerRenderableOperatorSurfaceDecision.RenderedSnapshot
+            || renderable.Blockers.Count > 0)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.RenderableSnapshotRejected);
+        }
+
+        if (!renderable.Model.LocalOnly
+            || !renderable.Model.InternalOnly
+            || !renderable.Model.SnapshotOnly
+            || !renderable.Model.Deterministic
+            || !renderable.Model.FailClosed
+            || renderable.Model.EndpointRouteControllerAvailable
+            || renderable.Model.ExternalScriptAvailable
+            || renderable.Model.TelemetryOrSyncAvailable
+            || renderable.Model.ProviderCloudNetworkAvailable
+            || renderable.Model.DbMigrationAvailable
+            || renderable.Model.KmsWormExternalTrustAvailable
+            || renderable.Model.BrowserCdpWcuOcrRecipesLiveAvailable
+            || renderable.Model.ReleaseCommercialReady
+            || renderable.Model.RawPayloadOrSecretAvailable)
+        {
+            blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.UnsafeRenderableSnapshot);
+        }
+    }
+
+    private static ProductLedgerLocalDevRoutePreviewResult Result(
+        IReadOnlyList<ProductLedgerLocalDevRoutePreviewBlocker> blockers,
+        ProductLedgerRenderableOperatorSurfaceResult? renderable)
+    {
+        var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
+        var rendered = distinct.Length == 0 && renderable is not null;
+        var safeRenderable = renderable ?? new ProductLedgerRenderableOperatorSurfaceRenderer().Render(null);
+        var html = rendered ? AddLocalDevShell(safeRenderable.HtmlSnapshot) : string.Empty;
+        return new ProductLedgerLocalDevRoutePreviewResult(
+            Decision: rendered
+                ? ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
+                : ProductLedgerLocalDevRoutePreviewDecision.Rejected,
+            Blockers: distinct,
+            RenderableSnapshot: safeRenderable,
+            RouteTemplatePreview: RouteTemplatePreview,
+            ContentType: "text/html; charset=utf-8",
+            HtmlSnapshot: html,
+            Notices: Notices(),
+            LocalOnly: true,
+            DevOnly: true,
+            InternalOnly: true,
+            ReadOnly: true,
+            NonDestructive: true,
+            FailClosed: true,
+            PublicDeployAvailable: false,
+            ExternalNetworkAvailable: false,
+            TelemetryOrSyncAvailable: false,
+            ProviderCloudNetworkAvailable: false,
+            DbMigrationAvailable: false,
+            KmsWormExternalTrustAvailable: false,
+            BrowserCdpWcuOcrRecipesLiveAvailable: false,
+            DestructiveActionAvailable: false,
+            UnboundedPhysicalExportAvailable: false,
+            ExternalCloudExportAvailable: false,
+            ReleaseCommercialReady: false,
+            StatusText: rendered ? ReadyStatus : RejectedStatus);
+    }
+
+    private static IReadOnlyList<string> Notices() =>
+    [
+        "local-dev/internal-only",
+        "not publicly deployed",
+        "read-only",
+        "non-destructive",
+        "no telemetry",
+        "no external network",
+        "no release/commercial",
+        "no external trust",
+        "no WORM/KMS/cloud",
+        "not compliance-grade custody"
+    ];
+
+    private static string AddLocalDevShell(string htmlSnapshot)
+    {
+        const string body = "<body>";
+        var banner =
+            "  <section data-testid=\"local-dev-route-preview\" data-local-dev=\"true\" data-internal-only=\"true\" data-read-only=\"true\" data-public-deploy=\"false\" data-external-network=\"false\" data-telemetry=\"false\">\n" +
+            $"    <p data-testid=\"local-dev-route-template\">{RouteTemplatePreview}</p>\n" +
+            "    <p>local-dev/internal-only</p>\n" +
+            "    <p>not publicly deployed</p>\n" +
+            "    <p>no telemetry</p>\n" +
+            "    <p>no external network</p>\n" +
+            "    <p>no release/commercial</p>\n" +
+            "    <p>no external trust</p>\n" +
+            "    <p>no WORM/KMS/cloud</p>\n" +
+            "    <p>not compliance-grade custody</p>\n" +
+            "  </section>";
+
+        return htmlSnapshot.Replace(body, body + "\n" + banner, StringComparison.Ordinal);
+    }
+
+    private static ProductLedgerRenderableOperatorSurfaceRequest CreateDefaultRenderableSnapshotRequest() =>
+        new(
+            ExplicitLocalOnlySnapshotScope: true,
+            PublicActionSurface: new ProductLedgerPublicUiActionSurface().Execute(CreateDefaultActionRequest()),
+            ClaimsEndpointRouteController: false,
+            ClaimsExternalScript: false,
+            ClaimsTelemetryOrSync: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsReleaseCommercial: false,
+            ClaimsRawPayloadOrSecret: false);
+
+    private static ProductLedgerPublicUiActionRequest CreateDefaultActionRequest() =>
+        new(
+            ExplicitPublicLocalOnlyNonDestructiveScope: true,
+            PublicReadOnlyDisabledPreview: CreateDefaultPublicPreview(),
+            ActionKind: ProductLedgerPublicUiActionKind.ViewDiagnostics,
+            RawActionName: ProductLedgerPublicUiActionKind.ViewDiagnostics.ToString(),
+            LocalReportExportRequest: null,
+            ClaimsRawPayloadOrSecret: false,
+            RequestsDestructiveAction: false,
+            RequestsGenericExecuteAction: false,
+            RequestsProductiveServiceRegistration: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsReleaseCommercial: false,
+            ClaimsExternalTelemetryOrSync: false,
+            ClaimsBillingLicensingCloud: false,
+            ClaimsUnboundedPhysicalExport: false,
+            ClaimsExternalCloudExport: false,
+            RequestsDeleteOrUnsafeOverwrite: false);
+
+    private static ProductLedgerPublicUiReadOnlyDisabledPreviewResult CreateDefaultPublicPreview() =>
+        new ProductLedgerPublicUiReadOnlyDisabledPreviewPresenter().Render(
+            new ProductLedgerPublicUiReadOnlyDisabledPreviewRequest(
+                ExplicitReadOnlyDisabledMockScope: true,
+                InternalPreview: CreateDefaultInternalPreview(),
+                HasPublicSurfaceReadinessPacket: true,
+                ReadinessPacketFreshAndConsistent: true,
+                RequestsPublicUiAction: false,
+                RequestsDestructiveAction: false,
+                RequestsProductCommandHandler: false,
+                RequestsProductiveServiceRegistration: false,
+                ClaimsProviderCloudNetwork: false,
+                ClaimsDbMigration: false,
+                ClaimsKmsWormExternalTrust: false,
+                ClaimsBrowserCdpWcuOcrRecipesLive: false,
+                ClaimsReleaseCommercial: false,
+                ClaimsExternalTelemetryOrSync: false,
+                ClaimsBillingLicensingCloud: false,
+                ClaimsExternalCloudExport: false,
+                ClaimsUnboundedPhysicalExport: false,
+                ClaimsRawPayloadOrSecret: false));
+
+    private static ProductLedgerInternalOperatorUiPreviewResult CreateDefaultInternalPreview() =>
+        new ProductLedgerInternalOperatorUiPresenter().Render(
+            new ProductLedgerInternalOperatorUiPreviewRequest(
+                ExplicitInternalLocalOnlyReadOnlyPreviewScope: true,
+                Diagnostics: CreateDefaultDiagnostics(),
+                RequestsPublicUiAction: false,
+                RequestsDestructiveUserFacingAction: false,
+                RequestsProductCommandHandler: false,
+                RequestsProductiveServiceRegistration: false,
+                ClaimsProviderCloudNetwork: false,
+                ClaimsDbMigration: false,
+                ClaimsKmsWormExternalTrust: false,
+                ClaimsBrowserCdpWcuOcrRecipesLive: false,
+                ClaimsReleaseCommercial: false,
+                ClaimsExternalTelemetryOrSync: false,
+                ClaimsBillingLicensingCloud: false));
+
+    private static ProductLedgerLocalOnlyOperatorDiagnosticsResult CreateDefaultDiagnostics() =>
+        new(
+            Decision: ProductLedgerLocalOnlyOperatorDiagnosticsDecision.RenderedReadOnly,
+            Blockers: [],
+            Sections:
+            [
+                Section("Runtime Local-Only Gate", "ENABLED_LOCAL_ONLY_INTERNAL", ["feature_flag=enabled:local-only-internal"]),
+                Section("Product Ledger Path Policy", "ACTIVE_LOCAL_ONLY_POLICY_BOUND", ["candidate_id=ledger-local-dev-route-default"]),
+                Section("Bounded Writer Status", "WRITER_BOUNDED_LOCAL_ONLY_SURFACE_READ_ONLY", ["operator_surface_write_allowed=false"]),
+                Section("Checkpoint / Head Status", "VERIFIED_HEAD_PRESENT", ["same_boundary_trust=true"]),
+                Section("Evidence Gates", "EVIDENCE_REFERENCES_FRESH_AND_WELL_FORMED", ["redaction_before_persistence=True", "authority=True"]),
+                Section("Disabled Actions", "ALL_ACTIONS_DISABLED", ["destructive action", "unbounded export", "external/cloud export"]),
+                Section("Safe Next Step", "LOCAL_DEV_ROUTE_EXTERNAL_AUDIT_READ_ONLY", ["snapshot fixture"])
+            ],
+            ActionPreviews:
+            [
+                new("View local-only diagnostics snapshot", "read-only preview only", "operator visibility without execution authority", ["runtime gate"], Disabled: true, ProductiveCommandId: null, HandlerName: null, CallbackName: null)
+            ],
+            DisabledActions: ["destructive user-facing action", "provider/cloud/network", "release/commercial"],
+            SafeNextStep: "LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW",
+            ReadOnly: true,
+            LocalOnly: true,
+            InternalOnly: true,
+            FailClosed: true,
+            PublicUiActionAvailable: false,
+            DestructiveUserFacingActionAvailable: false,
+            ProductCommandHandlerAvailable: false,
+            ProductiveServiceRegistrationAvailable: false,
+            ProviderCloudNetworkAvailable: false,
+            DbMigrationAvailable: false,
+            KmsWormExternalTrustAvailable: false,
+            BrowserCdpWcuOcrRecipesLiveAvailable: false,
+            ReleaseCommercialReady: false,
+            StatusText: ProductLedgerLocalOnlyOperatorDiagnosticsPresenter.ReadyStatus);
+
+    private static ProductLedgerLocalOnlyOperatorDiagnosticsSection Section(
+        string title,
+        string status,
+        IReadOnlyList<string> lines) =>
+        new(title, status, lines, ProductLedgerLocalOnlyOperatorDiagnosticsSeverity.Info);
+}

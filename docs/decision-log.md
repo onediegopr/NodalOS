@@ -1203,3 +1203,14 @@
 - Non-goals preserved: no public route, endpoint/controller, deployed product UI, external script, telemetry/sync, destructive action, unbounded export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future screenshot/visual diff evidence when a real local UI host exists and CSS/accessibility polish; P4 snapshot is HTML string evidence, not deployed UI or WORM/compliance-grade custody.
 - Real frontier: public route/deployed UI, endpoint/controller, live browser/CDP, destructive action, unbounded export/write, external/cloud/provider/DB/KMS or release/commercial.
+
+## NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW_FINAL_PACKET_READY`
+- Baseline: `de13c5f5d4e3283fec5eac4c0f40f44ee9f2a5c9`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW_WINDOW`, `NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW_EXTERNAL_AUDIT` and `NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW_STATIC_SCAN_HARDENING`.
+- Scope: local-dev/internal-only endpoint preview for the Product Ledger renderable operator snapshot, mapped by `OneBrain.Pilot` only in Development.
+- Implemented/documented: fail-closed local/dev guard, Development-only route mapping, route template preview, HTML snapshot output, local-dev/internal-only notices, Safety/Recipes tests, external audit read-only packet, QA report and handoff.
+- Non-goals preserved: no public deploy, route mapping outside Development, controller, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, destructive user-facing action, unbounded export/write, external/cloud export or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future non-Development/public host-layer route safety review and screenshot/visual diff; P4 route preview is Development-only and not publicly deployed.
+- Real frontier: public deploy, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, live Browser/CDP/WCU/OCR/Recipes, destructive action, unbounded export/write or release/commercial.
