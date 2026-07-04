@@ -3154,3 +3154,44 @@ Updated progress estimate after closeout:
 - Public UI readiness: 0%
 - External provider/cloud readiness: 0%
 - Release/commercial: 0%
+
+## Product Ledger Internal Command Router No-Op Read-Only
+
+Status: implemented in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only `ProductLedgerInternalCommandPreviewRouter`.
+- Internal-only/local-only/no-op/read-only command preview model.
+- Allowed preview-only commands for diagnostics, readiness, runtime gate, checkpoint/head, evidence gates, disabled local report preview, external audit preview, static scan preview and property/corpus hardening preview.
+- Explicit blockers for public UI, destructive action, product command handler, product DI, provider/cloud, DB migration, KMS/WORM/external trust, live automation, release/commercial, telemetry/sync and billing/licensing.
+- Passive mapping into the internal operator UI preview with all actions disabled.
+
+Boundaries:
+
+- No public UI action.
+- No destructive user-facing action.
+- No command handler productivo.
+- No executable callback real.
+- No productive DI/service registration.
+- No provider/cloud/network.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live execution.
+- No release/commercial.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76.7%
+- Approval foundation: 95.8%
+- Product Ledger local-only writer: 82%
+- Runtime local-only gate: 78%
+- Operator diagnostics Core-only surface: 100%
+- Internal operator UI read-only preview: 100%
+- Internal command router no-op/read-only: 100%
+- Command handler readiness: 0%
+- Public UI readiness: 0%
+- External provider/cloud readiness: 0%
+- Release/commercial: 0%

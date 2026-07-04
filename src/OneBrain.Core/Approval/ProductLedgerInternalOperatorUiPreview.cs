@@ -20,6 +20,7 @@ public enum ProductLedgerInternalOperatorUiPreviewBlocker
     MissingDiagnosticsSurface,
     UnsafeDiagnosticsSurface,
     MissingRequiredDiagnosticsSection,
+    UnsafeCommandPreviewRouter,
     PublicUiActionRequested,
     DestructiveUserFacingActionRequested,
     ProductCommandHandlerRequested,
@@ -46,7 +47,8 @@ public sealed record ProductLedgerInternalOperatorUiPreviewRequest(
     bool ClaimsBrowserCdpWcuOcrRecipesLive,
     bool ClaimsReleaseCommercial,
     bool ClaimsExternalTelemetryOrSync,
-    bool ClaimsBillingLicensingCloud);
+    bool ClaimsBillingLicensingCloud,
+    IReadOnlyList<ProductLedgerInternalCommandPreviewResult>? CommandPreviews = null);
 
 public sealed record ProductLedgerInternalOperatorUiPreviewHeader(
     string Title,
@@ -132,6 +134,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
 
         AddRequestBlockers(request, blockers);
         AddDiagnosticsBlockers(request.Diagnostics, blockers);
+        AddCommandPreviewBlockers(request.CommandPreviews, blockers);
         return Result(blockers, request);
     }
 
@@ -240,13 +243,52 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
         }
     }
 
+    private static void AddCommandPreviewBlockers(
+        IReadOnlyList<ProductLedgerInternalCommandPreviewResult>? previews,
+        List<ProductLedgerInternalOperatorUiPreviewBlocker> blockers)
+    {
+        if (previews is null)
+        {
+            return;
+        }
+
+        if (previews.Count == 0
+            || previews.Any(result => result.Decision != ProductLedgerInternalCommandPreviewDecision.PreviewedNoOpReadOnly
+                || result.Blockers.Count > 0
+                || !result.LocalOnly
+                || !result.InternalOnly
+                || !result.NoOp
+                || !result.ReadOnly
+                || !result.NonDestructive
+                || !result.FailClosed
+                || result.PublicUiActionAvailable
+                || result.DestructiveActionAvailable
+                || result.ProductCommandHandlerAvailable
+                || result.ProductiveServiceRegistrationAvailable
+                || result.ProviderCloudNetworkAvailable
+                || result.DbMigrationAvailable
+                || result.KmsWormExternalTrustAvailable
+                || result.BrowserCdpWcuOcrRecipesLiveAvailable
+                || result.ExternalTelemetryOrSyncAvailable
+                || result.BillingLicensingCloudAvailable
+                || result.ReleaseCommercialReady
+                || !result.Preview.Disabled
+                || result.Preview.Executable
+                || result.Preview.ProductiveCommandId is not null
+                || result.Preview.HandlerId is not null
+                || result.Preview.CallbackName is not null))
+        {
+            blockers.Add(ProductLedgerInternalOperatorUiPreviewBlocker.UnsafeCommandPreviewRouter);
+        }
+    }
+
     private static ProductLedgerInternalOperatorUiPreviewResult Result(
         IReadOnlyList<ProductLedgerInternalOperatorUiPreviewBlocker> blockers,
         ProductLedgerInternalOperatorUiPreviewRequest? request)
     {
         var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
         var rendered = distinct.Length == 0 && request?.Diagnostics is not null;
-        var viewModel = rendered ? ReadyViewModel(request!.Diagnostics!) : BlockedViewModel(distinct);
+        var viewModel = rendered ? ReadyViewModel(request!.Diagnostics!, request.CommandPreviews) : BlockedViewModel(distinct);
 
         return new ProductLedgerInternalOperatorUiPreviewResult(
             Decision: rendered
@@ -257,7 +299,8 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
     }
 
     private static ProductLedgerInternalOperatorUiPreviewViewModel ReadyViewModel(
-        ProductLedgerLocalOnlyOperatorDiagnosticsResult diagnostics)
+        ProductLedgerLocalOnlyOperatorDiagnosticsResult diagnostics,
+        IReadOnlyList<ProductLedgerInternalCommandPreviewResult>? commandPreviews)
     {
         var sections = RequiredDiagnosticsSections
             .Select(title => FromDiagnosticsSection(diagnostics.Sections.Single(section => section.Title == title)))
@@ -267,6 +310,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
             headerStatus: "LOCAL_ONLY_INTERNAL_READ_ONLY_PREVIEW",
             readinessPercentage: 82,
             sections: sections,
+            actionPreviews: commandPreviews is null ? ActionPreviews() : FromCommandPreviews(commandPreviews),
             blockers: [],
             warnings:
             [
@@ -282,7 +326,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
             rendered: false,
             headerStatus: "FAIL_CLOSED",
             readinessPercentage: 0,
-            sections:
+        sections:
             [
                 new(
                     "header",
@@ -309,6 +353,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                     SafeNextStepLabels(),
                     ProductLedgerInternalOperatorUiPreviewSeverity.Blocker)
             ],
+            actionPreviews: ActionPreviews(),
             blockers: blockers.Select(blocker => blocker.ToString()).ToArray(),
             warnings: ["Fail-closed preview hides execution authority."]);
 
@@ -331,6 +376,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
         string headerStatus,
         int readinessPercentage,
         IReadOnlyList<ProductLedgerInternalOperatorUiPreviewSection> sections,
+        IReadOnlyList<ProductLedgerInternalOperatorUiPreviewActionPreview> actionPreviews,
         IReadOnlyList<string> blockers,
         IReadOnlyList<string> warnings) =>
         new(
@@ -350,7 +396,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                     "no release/commercial"
                 ]),
             Sections: sections,
-            ActionPreviews: ActionPreviews(),
+            ActionPreviews: actionPreviews,
             Blockers: blockers,
             Warnings: warnings,
             SafeNextStep: rendered
@@ -381,6 +427,21 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                 RiskLabel: "disabled-preview-only",
                 BlockedReason: "Internal operator UI preview is read-only and exposes no executable handler.",
                 RequiredEvidence: ["explicit human GO", "boundary audit", "safety tests"],
+                Disabled: true,
+                ProductiveCommandId: null,
+                HandlerId: null,
+                CallbackName: null))
+            .ToArray();
+
+    private static IReadOnlyList<ProductLedgerInternalOperatorUiPreviewActionPreview> FromCommandPreviews(
+        IReadOnlyList<ProductLedgerInternalCommandPreviewResult> commandPreviews) =>
+        commandPreviews
+            .Select(result => new ProductLedgerInternalOperatorUiPreviewActionPreview(
+                ActionId: result.Preview.CommandId,
+                Label: result.Preview.Label,
+                RiskLabel: result.Preview.RiskLevel,
+                BlockedReason: result.Preview.BlockedReason,
+                RequiredEvidence: result.Preview.RequiredEvidence,
                 Disabled: true,
                 ProductiveCommandId: null,
                 HandlerId: null,

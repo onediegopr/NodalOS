@@ -1102,3 +1102,15 @@
 - Non-goals preserved: no public UI action, destructive user-facing action, command handler productivo, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial, external telemetry/sync or billing/licensing cloud.
 - Findings: P0=0, P1=0, P2=0; P3 future-gated public/product/external surfaces; P4 preview readiness is operator-local status only and checkpoint/head notice remains same-boundary local trust.
 - Stop frontier: `PUBLIC_UI_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_OR_DESTRUCTIVE_USER_FACING_ACTION_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_INTERNAL_COMMAND_ROUTER_NOOP_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_INTERNAL_COMMAND_ROUTER_NOOP_READ_ONLY_FINAL_PACKET_READY`
+- Baseline: `e6ca5fd6906b1d2bad7ea0c495a515a49cff95f1`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_INTERNAL_COMMAND_ROUTER_NOOP_READ_ONLY_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_INTERNAL_COMMAND_ROUTER_NOOP_READ_ONLY_EXTERNAL_AUDIT`.
+- Scope: Core-only internal-only/local-only/no-op/read-only command preview router for Product Ledger operator surfaces.
+- Implemented: allowed preview-only command catalog, explicit prohibited command blockers, unknown/corrupt command fail-closed behavior, disabled/non-executable command previews and passive mapping into the internal operator UI preview.
+- Safety posture: all previews remain disabled, non-executable and without productive command id, handler id or callback.
+- Non-goals preserved: no public UI action, destructive user-facing action, command handler productivo, executable callback real, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial, external telemetry/sync or billing/licensing cloud.
+- Findings: P0=0, P1=0, P2=0; P3 future-gated productive command handling/public/external surfaces; P4 command ids are preview-only and disabled local report preview does not create a physical export.
+- Stop frontier: `PUBLIC_UI_OR_PRODUCT_COMMAND_HANDLER_EXECUTION_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_REQUIRES_NEW_EXPLICIT_GO`.
