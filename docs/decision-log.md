@@ -4,6 +4,7 @@
 
 - Latest canonical state: `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`.
 - Latest canonical closeout commit before docs hardening: `a92ebc18b3ddfc88cf02a2d8abe3642045f6db74`.
+- Latest Durable Stage 2 safe-chain state: `PAUSE_FOR_MANUAL_GO_BEFORE_STAGE2_RUNTIME_PRODUCT_ENABLEMENT_OR_EXTERNAL_TRUST_PROVIDER`.
 - Current source of truth: final privacy/export/controlled-execution closeout and its post-audit pause confirmations.
 - Historical entries below remain traceability records. They do not override the current NO-GO state for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial readiness.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
@@ -93,6 +94,17 @@
 - Inherited validations: Safety focused tests PASS 36/36; Recipes focused tests PASS 8/8; Core build PASS 0 warnings/0 errors; full solution build PASS 33 pre-existing warnings/0 errors.
 - Non-goals: no source/test behavior changes, cloud, KMS, provider, network, external key custody, WORM real storage, product checkpoint writer, product ledger path, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, DB/migration, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_STAGE2_FINAL_EXTERNAL_AUDIT_AND_ROADMAP_CLAIM_RECONCILIATION_READ_ONLY`.
+
+## NODAL_OS_DURABLE_STAGE2_FINAL_EXTERNAL_AUDIT_AND_ROADMAP_CLAIM_RECONCILIATION_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_STAGE2_FINAL_EXTERNAL_AUDIT_ROADMAP_CLAIM_RECONCILIATION_READY`
+- Status: accepted as docs-only/read-only final external audit and roadmap claim reconciliation if final validation and push pass.
+- Input HEAD: `f26bde75ec29d71198855b066b32e14eaf913b64`.
+- Scope: reconcile the safe Stage 2 test-only chain, redaction-before-persistence, runtime feature flag, local-temp checkpoint evidence and local-only checkpoint trust boundary against roadmap and claim canon without source/test/runtime behavior changes.
+- Claim canon: Durable Stage 2 remains test-only/local-temp; redaction-before-persistence remains isolated Core/test-only; runtime feature flag allows exact test-only only; checkpoint trust remains local-only/no-provider/test-only; runtime/product/release/commercial and provider/cloud/KMS/WORM remain `0% / NO-GO`.
+- Findings: P0 0, P1 0, P2 0, P3 3 (product/runtime adoption requires manual GO and dedicated scope; external independent checkpoint trust remains blocked by no-provider policy; historical roadmap docs remain traceability records), P4 1 (full solution build warnings are unrelated/pre-existing).
+- Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, external provider/KMS/WORM trust, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_MANUAL_GO_BEFORE_STAGE2_RUNTIME_PRODUCT_ENABLEMENT_OR_EXTERNAL_TRUST_PROVIDER`.
 
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
