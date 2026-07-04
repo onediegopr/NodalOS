@@ -1159,3 +1159,13 @@
 - Non-goals preserved: no public UI action, public/product command handler exposure, destructive user-facing action, endpoint/controller/route mapping, productive DI/service registration, physical writer/export authority, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial readiness, telemetry/sync/billing/licensing cloud or stash modification.
 - Findings: P0=0, P1=0, P2=0; P3 future public command/action exposure test plan and static scan corpus remain safe blocks; P4 mock is Core-only and not rendered product UI.
 - Stop frontier: `PUBLIC_UI_ACTION_OR_PRODUCT_COMMAND_HANDLER_EXPOSURE_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_PUBLIC_COMMAND_ACTION_EXPOSURE_TEST_PLAN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PUBLIC_COMMAND_ACTION_EXPOSURE_TEST_PLAN_ONLY_FINAL_PACKET_READY`
+- Baseline: `497de43b485f0ac7ffc5e904923649a2b0ad395e`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_PUBLIC_COMMAND_ACTION_EXPOSURE_TEST_PLAN_ONLY` and `NODAL_OS_PRODUCT_LEDGER_PUBLIC_COMMAND_ACTION_EXPOSURE_TEST_PLAN_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
+- Scope: docs-only/test-plan-only/read-only prerequisites, negative command/action matrix, static scans, launch blockers and stop packet before public action or product command handler implementation.
+- Non-goals preserved: no code, runtime enablement, public UI action, public/product command handler exposure, destructive action, endpoint/controller/route mapping, productive DI/service registration, physical writer/export authority, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial readiness, telemetry/sync/billing/licensing cloud or stash modification.
+- Findings: P0=0, P1=0, P2=0; P3 future implementation needs executable negative tests, manual UX review and separate business/release decision if user-facing; P4 test plan is not runtime evidence.
+- Stop frontier: `PUBLIC_UI_ACTION_OR_PRODUCT_COMMAND_HANDLER_IMPLEMENTATION_REQUIRES_NEW_EXPLICIT_GO`.
