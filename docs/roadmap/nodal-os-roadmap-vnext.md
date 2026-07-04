@@ -3541,3 +3541,46 @@ Updated progress estimate after closeout:
 - KMS/WORM/external trust: 0%
 - Browser/CDP/WCU/OCR/Recipes live: 0%
 - Release/commercial: 0%
+
+## Product Ledger Renderable Operator Surface Snapshot Fixture
+
+Status: implemented, documented and fixture-tested in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only deterministic render model for the Product Ledger operator surface.
+- HTML snapshot fixture with stable DOM anchors.
+- Disabled dangerous action affordances with no executable handlers.
+- Fail-closed blockers for endpoint/controller, external script, telemetry/sync, provider/cloud/network, DB/migration, KMS/WORM/external trust, live automation, release/commercial and raw payload/secret claims.
+- Safety and Recipes DOM contract coverage.
+- External audit read-only packet.
+
+Boundaries:
+
+- Snapshot-only.
+- Internal-only.
+- Not deployed.
+- No public route.
+- No endpoint/controller.
+- No external script.
+- No telemetry/sync.
+- No provider/cloud/network.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live.
+- No release/commercial.
+
+Updated progress estimate after closeout:
+
+- Renderable operator snapshot: 100%
+- DOM contract: 100%
+- UX safety: 86%
+- Product Ledger public local-only actions: 76%
+- Operator acceptance: 82%
+- Bounded local report export: 100%
+- External/cloud readiness: 0%
+- Provider/cloud/network: 0%
+- DB/migration: 0%
+- KMS/WORM/external trust: 0%
+- Browser/CDP/WCU/OCR/Recipes live: 0%
+- Release/commercial: 0%

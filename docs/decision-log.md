@@ -1192,3 +1192,14 @@
 - Non-goals preserved: no destructive user-facing action, unbounded physical export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, live Browser/CDP/WCU/OCR/Recipes execution, release/commercial readiness, external telemetry/sync, billing/licensing cloud, credentials or stash modification.
 - Findings: P0=0, P1=0, P2=0; P3 repeat acceptance with screenshots/DOM if rendered UI exists; P4 fixture-only/Core-only acceptance is not live telemetry and bounded local export is not WORM/compliance-grade custody.
 - Real frontier: destructive action, unbounded export/write, external/cloud/provider/DB/KMS/live automation or release/commercial.
+
+## NODAL_OS_PRODUCT_LEDGER_RENDERABLE_OPERATOR_SURFACE_SNAPSHOT_FIXTURE
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RENDERABLE_OPERATOR_SURFACE_SNAPSHOT_FIXTURE_FINAL_PACKET_READY`
+- Baseline: `a80699d99a4fc1b847a0e4b8a2b388d799eb7be0`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_RENDERABLE_OPERATOR_SURFACE_SNAPSHOT_FIXTURE_WINDOW`, `NODAL_OS_PRODUCT_LEDGER_RENDERABLE_OPERATOR_SURFACE_SNAPSHOT_FIXTURE_EXTERNAL_AUDIT` and `NODAL_OS_PRODUCT_LEDGER_RENDERABLE_OPERATOR_SURFACE_DOM_CONTRACT_HARDENING`.
+- Scope: Core-only deterministic render model and HTML snapshot fixture for the Product Ledger operator surface.
+- Implemented/documented: render model, required DOM anchors, disabled dangerous action buttons, fail-closed blockers, Safety/Recipes DOM contract tests, external audit read-only packet, QA report and handoff.
+- Non-goals preserved: no public route, endpoint/controller, deployed product UI, external script, telemetry/sync, destructive action, unbounded export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future screenshot/visual diff evidence when a real local UI host exists and CSS/accessibility polish; P4 snapshot is HTML string evidence, not deployed UI or WORM/compliance-grade custody.
+- Real frontier: public route/deployed UI, endpoint/controller, live browser/CDP, destructive action, unbounded export/write, external/cloud/provider/DB/KMS or release/commercial.
