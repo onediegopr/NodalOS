@@ -215,6 +215,16 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_RELEASE_STOP_AND_MANUAL_GO_PACKET_DESIGN_ONLY`.
 
+## NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_RELEASE_STOP_AND_MANUAL_GO_PACKET_DESIGN_ONLY
+
+- Decision target: `PAUSE_FOR_MANUAL_GO_BEFORE_DURABLE_RUNTIME_PRODUCT_ENABLEMENT`
+- Status: accepted as design-only stop/manual-GO packet if final validation and push pass.
+- Input HEAD: `7c298a6b737189374753c02597d0507cc199b1e0`.
+- Scope: document the durable runtime scaffold safe-chain closeout and the exact next-step stop condition without source/test/runtime behavior changes.
+- Findings: P0 0, P1 0, P2 0, P3 4 (product ledger path, product authority, product replay/read model and provider/external trust remain future decisions), P4 1 (percentages remain conservative readiness estimates).
+- Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop condition: next step requires explicit manual GO for durable runtime product enablement.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`

@@ -37,7 +37,8 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Latest property-corpus block: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFOLD_PROPERTY_CORPUS_EXPANSION_TEST_ONLY_READY`.
 - Latest read-model/evidence-pack block: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFOLD_READ_MODEL_EVIDENCE_PACK_TEST_ONLY_READY`.
 - Latest external audit block: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFOLD_EXTERNAL_AUDIT_AFTER_READ_MODEL_EVIDENCE_PACK_READY`.
-- Next safe macro-block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_RELEASE_STOP_AND_MANUAL_GO_PACKET_DESIGN_ONLY`.
+- Latest stop packet: `PAUSE_FOR_MANUAL_GO_BEFORE_DURABLE_RUNTIME_PRODUCT_ENABLEMENT`.
+- Next step requires manual GO for durable runtime product enablement; autonomous safe continuation stops here.
 
 ## Current State
 
