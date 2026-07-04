@@ -1169,3 +1169,15 @@
 - Non-goals preserved: no code, runtime enablement, public UI action, public/product command handler exposure, destructive action, endpoint/controller/route mapping, productive DI/service registration, physical writer/export authority, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial readiness, telemetry/sync/billing/licensing cloud or stash modification.
 - Findings: P0=0, P1=0, P2=0; P3 future implementation needs executable negative tests, manual UX review and separate business/release decision if user-facing; P4 test plan is not runtime evidence.
 - Stop frontier: `PUBLIC_UI_ACTION_OR_PRODUCT_COMMAND_HANDLER_IMPLEMENTATION_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_PUBLIC_UI_ACTIONS_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PUBLIC_UI_ACTIONS_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_FINAL_PACKET_READY`
+- Baseline: `f377d476a0c8a557b484f868b6706288f06c0794`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_PUBLIC_UI_ACTIONS_AND_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_PUBLIC_UI_ACTIONS_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_EXTERNAL_AUDIT`.
+- Scope: Core-only public local-only/non-destructive Product Ledger action surface mediated by the existing internal command preview router and internal command handler.
+- Implemented: allowed public local-only read actions, bounded local export action through the existing export service, dangerous action disabled/blocked button model, Safety/Recipes tests and external audit read-only packet.
+- Hardening chained: action casing/whitespace corpus, dangerous raw action text rejection and unsafe export content/metadata rejection through the existing bounded export service.
+- Non-goals preserved: no destructive user-facing action, unbounded physical export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, live Browser/CDP/WCU/OCR/Recipes execution, endpoint/controller/route mapping, productive DI/service registration, release/commercial readiness, external telemetry/sync, billing/licensing cloud or stash modification.
+- Findings: P0=0, P1=0, P2=0; P3 future UX/action affordance review, property/corpus expansion and reusable static scan helper remain safe blocks; P4 Core-only surface is not a web endpoint and bounded export remains local evidence.
+- Safe next step: static scan helper refactor or docs/read-only audit only; real frontier remains destructive action, unbounded export/write, external/cloud/provider/DB/KMS/live automation or release/commercial.

@@ -3443,3 +3443,59 @@ Updated progress estimate after closeout:
 - KMS/WORM/external trust: 0%
 - Browser/CDP/WCU/OCR/Recipes live: 0%
 - Release/commercial: 0%
+
+## Product Ledger Public UI Actions Command Handler Local-Only Non-Destructive
+
+Status: implemented in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only public local-only/non-destructive Product Ledger action surface.
+- Action request/result/decision/blocker model.
+- Allowed actions mediated through existing internal command preview router.
+- Allowed actions completed through existing internal command handler.
+- Bounded local export action through existing bounded export service and hash verification.
+- Dangerous actions rendered disabled/blocked with risk labels and evidence requirements.
+- Safety and Recipes tests.
+- External audit read-only packet.
+- Negative guard/property corpus hardening for action casing/whitespace and unsafe export content/metadata.
+
+Boundaries:
+
+- No destructive user-facing action.
+- No unbounded physical export/write.
+- No external/cloud export.
+- No provider/cloud/network.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live.
+- No endpoint/controller/route mapping.
+- No productive DI/service registration.
+- No telemetry/sync/billing/licensing cloud.
+- No release/commercial.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76.9%
+- Approval foundation: 96.6%
+- Product Ledger local-only writer: 82%
+- Runtime local-only gate: 78%
+- Operator diagnostics Core-only surface: 100%
+- Internal operator UI read-only preview: 100%
+- Internal command router no-op/read-only: 100%
+- Internal command handler non-destructive: 100%
+- Bounded local report export: 100%
+- Public UI read-only disabled mock preview: 100%
+- Product Ledger public local-only actions: 72%
+- Product command handler local-only/non-destructive mediation: 72%
+- Public UI safety: 78%
+- Destructive action readiness: 0%
+- Unbounded physical export/write: 0%
+- External/cloud export: 0%
+- External provider/cloud readiness: 0%
+- DB/migration: 0%
+- KMS/WORM/external trust: 0%
+- Browser/CDP/WCU/OCR/Recipes live: 0%
+- Release/commercial: 0%
