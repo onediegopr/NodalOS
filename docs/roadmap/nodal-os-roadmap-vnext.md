@@ -43,7 +43,8 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Latest product ledger path test plan: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AND_AUTHORITY_TEST_PLAN_ONLY_READY`.
 - Latest product ledger path test-plan external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_TEST_PLAN_EXTERNAL_AUDIT_READY`.
 - Latest product ledger path disabled scaffold: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_IMPLEMENTATION_SCAFFOLD_DISABLED_TEST_ONLY_READY`.
-- Recommended next safe macro-block before any product enablement: `NODAL_OS_PRODUCT_LEDGER_PATH_READINESS_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READ_ONLY`.
+- Latest product ledger path disabled scaffold external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_READINESS_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READY`.
+- Recommended next safe macro-block before any product enablement: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_TEST_ONLY`.
 - Durable runtime product enablement still requires explicit manual GO; autonomous safe continuation may only proceed through docs/design/audit/test-plan/test-only blocks.
 
 ## Current State

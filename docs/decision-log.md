@@ -268,6 +268,17 @@
 - Non-goals: no active product ledger path, real writer, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_READINESS_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_READINESS_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_READINESS_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the disabled/test-only/no-product-write scaffold if final validation and push pass.
+- Input HEAD: `e72e940e6eefb087048b330f86a973d454047232`.
+- Scope: audit `ProductLedgerPathReadinessScaffold`, Safety/Recipes tests, ADR, QA, handoff, roadmap and decision-log without source/test/runtime behavior changes.
+- Verdict: OPTION 3, GO to property/corpus expansion test-only. OPTION 4 product implementation remains NO-GO.
+- Findings: P0 0, P1 0, P2 0, P3 4 (real canonicalization enforcement, real reparse enforcement, real product authority and product write integration remain future work), P4 3 (path checks remain string-level readiness previews; fixture evidence refs are illustrative; broad scans include historical no-go wording).
+- Non-goals: no source/test behavior changes, active product ledger path, real writer, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_TEST_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
