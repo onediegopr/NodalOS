@@ -172,6 +172,16 @@
 - Non-goals: no runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/cloud/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit simulation of the test-only scaffold if final validation and push pass.
+- Input HEAD: `51884283526f2fb9db8856d6a6e729895c33a1c1`.
+- Scope: audit scaffold source, Safety/Recipes tests, QA report, handoff, ADR, decision-log and roadmap without source/test/runtime behavior changes.
+- Findings: P0 0, P1 0, P2 0, P3 4 (scaffold remains preview-only; path containment does not claim symlink/junction hardening; human GO is a test-only evidence flag; broader property/corpus expansion remains future work), P4 2 (provider/cloud/path detection is heuristic; docs contain forbidden terms only in no-go/blocker context).
+- Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/cloud/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_PROPERTY_CORPUS_EXPANSION_TEST_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
