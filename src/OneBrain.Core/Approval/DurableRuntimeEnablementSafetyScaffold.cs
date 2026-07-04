@@ -24,6 +24,12 @@ public enum DurableRuntimeEnablementScaffoldBlocker
     LedgerPathMissingRetentionPolicy,
     LedgerPathMissingFailureReplayEvidence,
     LedgerPathClaimsWormKmsCloud,
+    LedgerPathTraversalRejected,
+    LedgerPathEnvironmentVariableRejected,
+    LedgerPathReservedDeviceNameRejected,
+    LedgerPathMixedSeparatorRejected,
+    LedgerPathSymlinkJunctionReparsePointRiskUnresolved,
+    LedgerPathCanonicalizationMismatchRiskUnresolved,
     MissingRedactionProductWiring,
     RedactionResultMissing,
     RedactionResultRejected,
@@ -33,6 +39,10 @@ public enum DurableRuntimeEnablementScaffoldBlocker
     RedactionEvidenceContainsRawValues,
     RedactionEvidenceMissingBeforePersistence,
     RedactionEvidenceSecretMarkerRejected,
+    RedactionEvidenceReferenceMalformed,
+    RedactionEvidenceReferenceDuplicate,
+    RedactionEvidenceReferenceStale,
+    RedactionEvidenceReferenceInconsistent,
     MissingRuntimeFeatureFlagReadiness,
     RuntimeFeatureFlagNotBlockedByDefault,
     RuntimeFeatureFlagMissingLedgerDependency,
@@ -49,6 +59,10 @@ public enum DurableRuntimeEnablementScaffoldBlocker
     AuthorityScopeExceeded,
     AuthorityAttemptsLiveAutomation,
     AuthorityAttemptsProviderCloudKmsWorm,
+    AuthorityClaimsRealHumanAuthorization,
+    AuthorityClaimsProductionOperatorApproval,
+    AuthorityClaimsProductAuthority,
+    AuthorityClaimsReleaseApproval,
     MissingReplayFailureEvidence,
     ReplayEvidenceMissing,
     FailureEvidenceMissing,
@@ -76,7 +90,9 @@ public sealed record DurableRuntimeProductLedgerPathReadiness(
     bool HasRetentionPolicy,
     bool HasFailureReplayEvidence,
     bool ClaimsProviderCloudNetwork,
-    bool ClaimsWormKmsCloud);
+    bool ClaimsWormKmsCloud,
+    bool HasNoSymlinkJunctionReparsePointEvidence,
+    bool HasCanonicalRealPathEvidence);
 
 public sealed record DurableRuntimeRedactionProductWiringReadiness(
     DurableAuditTrailAppendOnlyMinimalRequest? CandidateAppendRequest,
@@ -101,7 +117,11 @@ public sealed record DurableRuntimeAuthorityWiringReadiness(
     IReadOnlyList<string>? EvidenceReferences,
     string? Scope,
     bool AttemptsLiveAutomationAuthority,
-    bool AttemptsProviderCloudKmsWorm);
+    bool AttemptsProviderCloudKmsWorm,
+    bool ClaimsRealHumanAuthorization,
+    bool ClaimsProductionOperatorApproval,
+    bool ClaimsProductAuthority,
+    bool ClaimsReleaseApproval);
 
 public sealed record DurableRuntimeReplayFailureEvidenceReadiness(
     bool HasReplayEvidence,
@@ -135,8 +155,32 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
     private static readonly Regex ProviderCloudNetworkPathPattern = new(
         @"^(https?|s3|gs|az|ftp)://|\\\\|(^|[\\/])(cloud|provider|network|bucket|blob|s3|gcs|azure)([\\/]|$)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex EnvironmentVariablePathPattern = new(
+        @"%[A-Za-z_][A-Za-z0-9_]*%|\$[A-Za-z_][A-Za-z0-9_]*|\$\{[A-Za-z_][A-Za-z0-9_]*\}",
+        RegexOptions.Compiled);
+    private static readonly Regex ReservedWindowsDevicePathPattern = new(
+        @"(^|[\\/])(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|[\\/]|$)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex SecretMarkerPattern = new(
         @"\b(password|token|secret|api[\s_-]?key)\s*[:=]|authorization:|cookie:|bearer\s+|sk-(proj-)?[a-z0-9_-]{8,}|ghp_|github_pat_",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex StaleEvidenceReferencePattern = new(
+        @"(^|[\/\\._-])(stale|expired|old|superseded)([\/\\._-]|$)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex InconsistentEvidenceReferencePattern = new(
+        @"(^|[\/\\._-])(inconsistent|mismatch|conflict)([\/\\._-]|$)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex LiveAutomationClaimPattern = new(
+        @"browser/cdp\s+live|cdp\s+live|wcu\s*/\s*ocr\s+live|ocr\s+live|recipes?\s+live|live\s+automation|live\s+execution",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex RealHumanAuthorityClaimPattern = new(
+        @"real\s+human\s+(authorization|approval)|production\s+operator\s+approval|operator\s+authority|auth\s+approved",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex ProductAuthorityClaimPattern = new(
+        @"product\s+authority|runtime\s+approval\s+real|runtime\s+enabled|enablement\s+approved|product\s+policy",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex ReleaseApprovalClaimPattern = new(
+        @"release\s+approval|commercial\s+approval|release-ready|commercial-ready|production-ready",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public DurableRuntimeEnablementScaffoldResult Evaluate(DurableRuntimeEnablementScaffoldRequest? request)
@@ -212,6 +256,18 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
         {
             blockers.Add(DurableRuntimeEnablementScaffoldBlocker.LedgerPathClaimsWormKmsCloud);
         }
+
+        if (!readiness.HasNoSymlinkJunctionReparsePointEvidence)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.LedgerPathSymlinkJunctionReparsePointRiskUnresolved);
+        }
+
+        if (!readiness.HasCanonicalRealPathEvidence)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.LedgerPathCanonicalizationMismatchRiskUnresolved);
+        }
+
+        AddPathLexemeBlockers(readiness.ProposedLedgerPath, blockers);
 
         if (!readiness.HasRedactionPolicy)
         {
@@ -294,6 +350,9 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
         {
             blockers.Add(DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceSecretMarkerRejected);
         }
+
+        AddEvidenceReferenceBlockers(readiness.CandidateAppendRequest?.EvidenceReferences, blockers);
+        AddEvidenceReferenceBlockers(redaction.SafeRequest?.EvidenceReferences, blockers);
 
         var expectedHash = !string.IsNullOrWhiteSpace(readiness.ExpectedCandidateHash)
             ? readiness.ExpectedCandidateHash
@@ -401,6 +460,31 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
         {
             blockers.Add(DurableRuntimeEnablementScaffoldBlocker.AuthorityAttemptsProviderCloudKmsWorm);
         }
+
+        if (readiness.ClaimsRealHumanAuthorization || ContainsRealHumanAuthorityClaim(readiness))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsRealHumanAuthorization);
+        }
+
+        if (readiness.ClaimsProductionOperatorApproval)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsProductionOperatorApproval);
+        }
+
+        if (readiness.ClaimsProductAuthority || ContainsProductAuthorityClaim(readiness))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsProductAuthority);
+        }
+
+        if (readiness.ClaimsReleaseApproval || ContainsReleaseApprovalClaim(readiness))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsReleaseApproval);
+        }
+
+        if (ContainsLiveAutomationClaim(readiness))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.AuthorityAttemptsLiveAutomation);
+        }
     }
 
     private static void AddReplayFailureEvidenceBlockers(
@@ -486,6 +570,70 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
     private static bool ContainsProviderCloudNetworkPath(string? path) =>
         !string.IsNullOrWhiteSpace(path) && ProviderCloudNetworkPathPattern.IsMatch(path);
 
+    private static void AddPathLexemeBlockers(
+        string? path,
+        List<DurableRuntimeEnablementScaffoldBlocker> blockers)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        if (path.Contains("..", StringComparison.Ordinal))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.LedgerPathTraversalRejected);
+        }
+
+        if (EnvironmentVariablePathPattern.IsMatch(path))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.LedgerPathEnvironmentVariableRejected);
+        }
+
+        if (ReservedWindowsDevicePathPattern.IsMatch(path))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.LedgerPathReservedDeviceNameRejected);
+        }
+
+        if (path.Contains('\\', StringComparison.Ordinal) && path.Contains('/', StringComparison.Ordinal))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.LedgerPathMixedSeparatorRejected);
+        }
+    }
+
+    private static void AddEvidenceReferenceBlockers(
+        IReadOnlyList<string>? evidenceReferences,
+        List<DurableRuntimeEnablementScaffoldBlocker> blockers)
+    {
+        if (evidenceReferences is null || evidenceReferences.Count == 0)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceMalformed);
+            return;
+        }
+
+        if (evidenceReferences.Any(reference => string.IsNullOrWhiteSpace(reference) || Uri.TryCreate(reference, UriKind.Absolute, out _)))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceMalformed);
+        }
+
+        if (evidenceReferences
+            .Where(reference => !string.IsNullOrWhiteSpace(reference))
+            .GroupBy(reference => reference, StringComparer.OrdinalIgnoreCase)
+            .Any(group => group.Count() > 1))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceDuplicate);
+        }
+
+        if (evidenceReferences.Any(reference => !string.IsNullOrWhiteSpace(reference) && StaleEvidenceReferencePattern.IsMatch(reference)))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceStale);
+        }
+
+        if (evidenceReferences.Any(reference => !string.IsNullOrWhiteSpace(reference) && InconsistentEvidenceReferencePattern.IsMatch(reference)))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceInconsistent);
+        }
+    }
+
     private static bool ContainsSecretMarker(DurableAuditTrailAppendOnlyMinimalRequest? request)
     {
         if (request is null)
@@ -500,4 +648,21 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Any(value => SecretMarkerPattern.IsMatch(value!));
     }
+
+    private static bool ContainsLiveAutomationClaim(DurableRuntimeAuthorityWiringReadiness readiness) =>
+        AuthorityText(readiness).Any(value => LiveAutomationClaimPattern.IsMatch(value));
+
+    private static bool ContainsRealHumanAuthorityClaim(DurableRuntimeAuthorityWiringReadiness readiness) =>
+        AuthorityText(readiness).Any(value => RealHumanAuthorityClaimPattern.IsMatch(value));
+
+    private static bool ContainsProductAuthorityClaim(DurableRuntimeAuthorityWiringReadiness readiness) =>
+        AuthorityText(readiness).Any(value => ProductAuthorityClaimPattern.IsMatch(value));
+
+    private static bool ContainsReleaseApprovalClaim(DurableRuntimeAuthorityWiringReadiness readiness) =>
+        AuthorityText(readiness).Any(value => ReleaseApprovalClaimPattern.IsMatch(value));
+
+    private static IEnumerable<string> AuthorityText(DurableRuntimeAuthorityWiringReadiness readiness) =>
+        new[] { readiness.LocalTestOperatorIdentity, readiness.Reason, readiness.Scope }
+            .Concat(readiness.EvidenceReferences ?? [])
+            .Where(value => !string.IsNullOrWhiteSpace(value))!;
 }

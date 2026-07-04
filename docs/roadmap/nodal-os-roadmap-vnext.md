@@ -22,17 +22,20 @@ Any historical `Core Runtime` percentage in this document is roadmap/foundation 
 
 Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_TEST_ONLY_READY`.
 
-- Durable runtime design readiness: 70-78%.
-- Durable runtime test-only scaffold: 35-45%.
+- Durable runtime design readiness: 72-80%.
+- Durable runtime test-only scaffold: 45-55%.
+- Property/corpus hardening: 35-45%.
+- Symlink/junction readiness: 15-25%.
 - Product ledger path product readiness: 10-15%.
-- Redaction product wiring readiness: 20-30%.
-- Runtime feature flag product readiness: 15-25%.
-- Authority wiring readiness: 15-25%.
-- Replay/failure evidence readiness: 20-30%.
+- Redaction product wiring readiness: 22-32%.
+- Runtime feature flag product readiness: 18-28%.
+- Authority wiring readiness: 18-28%.
+- Replay/failure evidence readiness: 22-32%.
 - Runtime/live product enablement: 0% / NO-GO.
 - Release/commercial readiness: 0% / NO-GO.
 - Proyecto usable end-to-end for runtime product use: 0%.
-- Next safe macro-block: `NODAL_OS_DURABLE_RUNTIME_IMPLEMENTATION_SAFETY_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY`.
+- Latest property-corpus block: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFOLD_PROPERTY_CORPUS_EXPANSION_TEST_ONLY_READY`.
+- Next safe macro-block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_READ_MODEL_AND_EVIDENCE_PACK_TEST_ONLY`.
 
 ## Current State
 

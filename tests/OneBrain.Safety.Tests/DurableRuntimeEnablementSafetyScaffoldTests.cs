@@ -84,7 +84,9 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
             [ready.ProductLedgerPath! with { HasRedactionPolicy = false }] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathMissingRedactionPolicy,
             [ready.ProductLedgerPath! with { HasRetentionPolicy = false }] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathMissingRetentionPolicy,
             [ready.ProductLedgerPath! with { HasFailureReplayEvidence = false }] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathMissingFailureReplayEvidence,
-            [ready.ProductLedgerPath! with { ClaimsWormKmsCloud = true }] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathClaimsWormKmsCloud
+            [ready.ProductLedgerPath! with { ClaimsWormKmsCloud = true }] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathClaimsWormKmsCloud,
+            [ready.ProductLedgerPath! with { HasNoSymlinkJunctionReparsePointEvidence = false }] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathSymlinkJunctionReparsePointRiskUnresolved,
+            [ready.ProductLedgerPath! with { HasCanonicalRealPathEvidence = false }] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathCanonicalizationMismatchRiskUnresolved
         };
 
         foreach (var testCase in cases)
@@ -97,6 +99,35 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
         }
 
         Assert.IsFalse(Directory.Exists(outside));
+    }
+
+    [TestMethod]
+    public void RuntimeScaffold_BlocksPathCorpusAndReparseThreatModelRisks()
+    {
+        using var temp = new TempDirectory();
+        var scaffold = new DurableRuntimeEnablementSafetyScaffold();
+        var ready = ReadyRequest(temp.Path);
+        var cases = new Dictionary<string, DurableRuntimeEnablementScaffoldBlocker>
+        {
+            [System.IO.Path.Combine(temp.Path, "..", "escape")] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathTraversalRejected,
+            ["%TEMP%\\durable-runtime"] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathEnvironmentVariableRejected,
+            ["${TEMP}/durable-runtime"] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathEnvironmentVariableRejected,
+            [System.IO.Path.Combine(temp.Path, "CON")] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathReservedDeviceNameRejected,
+            [temp.Path + "\\mixed/separators"] = DurableRuntimeEnablementScaffoldBlocker.LedgerPathMixedSeparatorRejected
+        };
+
+        foreach (var testCase in cases)
+        {
+            var result = scaffold.Evaluate(
+                ready with
+                {
+                    ProductLedgerPath = ready.ProductLedgerPath! with { ProposedLedgerPath = testCase.Key }
+                });
+
+            Assert.AreEqual(DurableRuntimeEnablementScaffoldDecision.Rejected, result.Decision, testCase.Value.ToString());
+            CollectionAssert.Contains(result.Blockers.ToArray(), testCase.Value, testCase.Value.ToString());
+            AssertNoProductRuntime(result);
+        }
     }
 
     [TestMethod]
@@ -125,6 +156,43 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
         foreach (var testCase in cases)
         {
             var result = scaffold.Evaluate(ready with { RedactionProductWiring = testCase.Key });
+
+            Assert.AreEqual(DurableRuntimeEnablementScaffoldDecision.Rejected, result.Decision, testCase.Value.ToString());
+            CollectionAssert.Contains(result.Blockers.ToArray(), testCase.Value, testCase.Value.ToString());
+            AssertNoProductRuntime(result);
+        }
+    }
+
+    [TestMethod]
+    public void RuntimeScaffold_BlocksMalformedDuplicateStaleAndInconsistentEvidenceReferences()
+    {
+        using var temp = new TempDirectory();
+        var scaffold = new DurableRuntimeEnablementSafetyScaffold();
+        var ready = ReadyRequest(temp.Path);
+        var cases = new Dictionary<IReadOnlyList<string>, DurableRuntimeEnablementScaffoldBlocker>
+        {
+            [[]] = DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceMalformed,
+            [[""]] = DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceMalformed,
+            [["https://example.invalid/evidence"]] = DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceMalformed,
+            [["docs/qa/durable-runtime-readiness/report.md", "DOCS/QA/DURABLE-RUNTIME-READINESS/REPORT.MD"]] = DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceDuplicate,
+            [["docs/qa/stale-durable-runtime-readiness/report.md"]] = DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceStale,
+            [["docs/qa/inconsistent-durable-runtime-readiness/report.md"]] = DurableRuntimeEnablementScaffoldBlocker.RedactionEvidenceReferenceInconsistent
+        };
+
+        foreach (var testCase in cases)
+        {
+            var request = Request() with { EvidenceReferences = testCase.Key };
+            var redaction = new RedactionBeforePersistenceService().Evaluate(RedactionBeforePersistencePolicy.TestOnly, request);
+            var result = scaffold.Evaluate(
+                ready with
+                {
+                    RedactionProductWiring = ready.RedactionProductWiring! with
+                    {
+                        CandidateAppendRequest = request,
+                        RedactionResult = redaction,
+                        ExpectedCandidateHash = RedactionBeforePersistenceService.ComputeCandidateHash(request)
+                    }
+                });
 
             Assert.AreEqual(DurableRuntimeEnablementScaffoldDecision.Rejected, result.Decision, testCase.Value.ToString());
             CollectionAssert.Contains(result.Blockers.ToArray(), testCase.Value, testCase.Value.ToString());
@@ -173,7 +241,15 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
             [ready.AuthorityWiring! with { EvidenceReferences = [] }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityMissingEvidence,
             [ready.AuthorityWiring! with { Scope = "durable-runtime-product" }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityScopeExceeded,
             [ready.AuthorityWiring! with { AttemptsLiveAutomationAuthority = true }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityAttemptsLiveAutomation,
-            [ready.AuthorityWiring! with { AttemptsProviderCloudKmsWorm = true }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityAttemptsProviderCloudKmsWorm
+            [ready.AuthorityWiring! with { AttemptsProviderCloudKmsWorm = true }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityAttemptsProviderCloudKmsWorm,
+            [ready.AuthorityWiring! with { ClaimsRealHumanAuthorization = true }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsRealHumanAuthorization,
+            [ready.AuthorityWiring! with { ClaimsProductionOperatorApproval = true }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsProductionOperatorApproval,
+            [ready.AuthorityWiring! with { ClaimsProductAuthority = true }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsProductAuthority,
+            [ready.AuthorityWiring! with { ClaimsReleaseApproval = true }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsReleaseApproval,
+            [ready.AuthorityWiring! with { Reason = "real human authorization granted" }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsRealHumanAuthorization,
+            [ready.AuthorityWiring! with { Reason = "runtime approval real" }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsProductAuthority,
+            [ready.AuthorityWiring! with { Reason = "release-ready approval" }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityClaimsReleaseApproval,
+            [ready.AuthorityWiring! with { Reason = "Browser/CDP live execution allowed" }] = DurableRuntimeEnablementScaffoldBlocker.AuthorityAttemptsLiveAutomation
         };
 
         foreach (var testCase in cases)
@@ -280,7 +356,9 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
                 HasRetentionPolicy: true,
                 HasFailureReplayEvidence: true,
                 ClaimsProviderCloudNetwork: false,
-                ClaimsWormKmsCloud: false),
+                ClaimsWormKmsCloud: false,
+                HasNoSymlinkJunctionReparsePointEvidence: true,
+                HasCanonicalRealPathEvidence: true),
             RedactionProductWiring: new DurableRuntimeRedactionProductWiringReadiness(
                 CandidateAppendRequest: request,
                 RedactionResult: redaction,
@@ -302,7 +380,11 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
                 EvidenceReferences: ["docs/qa/durable-runtime-readiness/report.md"],
                 Scope: DurableRuntimeEnablementSafetyScaffold.RequiredScope,
                 AttemptsLiveAutomationAuthority: false,
-                AttemptsProviderCloudKmsWorm: false),
+                AttemptsProviderCloudKmsWorm: false,
+                ClaimsRealHumanAuthorization: false,
+                ClaimsProductionOperatorApproval: false,
+                ClaimsProductAuthority: false,
+                ClaimsReleaseApproval: false),
             ReplayFailureEvidence: new DurableRuntimeReplayFailureEvidenceReadiness(
                 HasReplayEvidence: true,
                 HasFailureEvidence: true,

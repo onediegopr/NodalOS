@@ -27,7 +27,9 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
                     HasRetentionPolicy: true,
                     HasFailureReplayEvidence: true,
                     ClaimsProviderCloudNetwork: false,
-                    ClaimsWormKmsCloud: false),
+                    ClaimsWormKmsCloud: false,
+                    HasNoSymlinkJunctionReparsePointEvidence: true,
+                    HasCanonicalRealPathEvidence: true),
                 RedactionProductWiring: new DurableRuntimeRedactionProductWiringReadiness(
                     CandidateAppendRequest: request,
                     RedactionResult: redaction,
@@ -49,7 +51,11 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
                     EvidenceReferences: ["docs/qa/durable-runtime-readiness/report.md"],
                     Scope: DurableRuntimeEnablementSafetyScaffold.RequiredScope,
                     AttemptsLiveAutomationAuthority: false,
-                    AttemptsProviderCloudKmsWorm: false),
+                    AttemptsProviderCloudKmsWorm: false,
+                    ClaimsRealHumanAuthorization: false,
+                    ClaimsProductionOperatorApproval: false,
+                    ClaimsProductAuthority: false,
+                    ClaimsReleaseApproval: false),
                 ReplayFailureEvidence: new DurableRuntimeReplayFailureEvidenceReadiness(
                     HasReplayEvidence: true,
                     HasFailureEvidence: true,

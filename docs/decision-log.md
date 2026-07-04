@@ -182,6 +182,17 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/cloud/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_PROPERTY_CORPUS_EXPANSION_TEST_ONLY`.
 
+## NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_PROPERTY_CORPUS_EXPANSION_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFOLD_PROPERTY_CORPUS_EXPANSION_TEST_ONLY_READY`
+- Status: accepted as test-only property/corpus scaffold hardening if final validation and push pass.
+- Input HEAD: `062a9186647ed5968ba3ccd09c0d297fbddd1e45`.
+- Scope: expand `DurableRuntimeEnablementSafetyScaffold` blockers and tests for path corpus, symlink/junction/reparse threat modeling, evidence refs and product-authority overclaim prevention without runtime/product enablement.
+- Implemented: typed blockers for traversal/env-var/reserved-device/mixed-separator paths, symlink/junction/reparse and canonical realpath evidence gaps, malformed/duplicate/stale/inconsistent evidence refs, real human authorization, production operator approval, product authority and release approval claims.
+- Findings: P0 0, P1 0, P2 0, P3 3 (real symlink/junction protection, real human authorization and product policy ownership remain future product work), P4 2 (path/provider detection remains heuristic; historical docs still contain no-go vocabulary by design).
+- Non-goals: no runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_READ_MODEL_AND_EVIDENCE_PACK_TEST_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
