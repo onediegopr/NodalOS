@@ -204,6 +204,17 @@
 - Non-goals: no runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY_AFTER_READ_MODEL_EVIDENCE_PACK`.
 
+## NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY_AFTER_READ_MODEL_EVIDENCE_PACK
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFOLD_EXTERNAL_AUDIT_AFTER_READ_MODEL_EVIDENCE_PACK_READY`
+- Status: accepted as read-only/docs-only external audit of the durable runtime scaffold read-model/evidence-pack hardening if final validation and push pass.
+- Input HEAD: `7dfbefa9ec105004f5b2614789de8da24bb903ee`.
+- Scope: audit commit `7dfbefa9ec105004f5b2614789de8da24bb903ee`, scaffold source, Safety/Recipes tests and QA/handoff/roadmap claims without source/test behavior changes.
+- Findings: P0 0, P1 0, P2 0, P3 3 (product read model, real replay service and real rollback/non-rollback execution policy remain future product work), P4 2 (evidence reference validation remains syntactic; historical docs still contain no-go vocabulary by design).
+- Inherited validations: Core build PASS 0 warnings/0 errors; solution build PASS 0 warnings/0 errors; Safety Durable PASS 47/47; Recipes Durable PASS 9/9.
+- Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_RELEASE_STOP_AND_MANUAL_GO_PACKET_DESIGN_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
