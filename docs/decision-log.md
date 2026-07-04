@@ -312,6 +312,28 @@
 - Non-goals: no source/test/runtime behavior changes, active product ledger path, real writer, real filesystem canonicalization, real symlink/junction/reparse enforcement, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Stop point: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_REAL_IMPLEMENTATION`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_LOCAL_ONLY_NO_WRITE
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_LOCAL_ONLY_NO_WRITE_READY`
+- Status: accepted as real local-only/no-write canonicalization validator if final validation and push pass.
+- Input HEAD: `38283dadba7f90101c3b6818e578bdecf7191566`.
+- Scope: implement bounded candidate path canonicalization and boundary checks with local filesystem evidence, without active ledger path, writer, runtime/product enablement or productive registration.
+- Implemented: `ProductLedgerPathCanonicalizationValidator`, request/result/blocker models, post-canonicalization allowed-boundary check, fail-closed reparse evidence handling, Safety validator tests and Recipes validator tests.
+- Findings: P0 0, P1 0, P2 0, P3 4 (active product ledger path policy, real writer integration, productive authority/registration and release/commercial readiness remain future gated work), P4 2 (platform-specific symlink/junction fixtures remain conservative; hardlink/mount alias handling is blocker/evidence based).
+- Non-goals: no active product ledger path, real writer, append-only ledger creation, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the real local-only/no-write canonicalization validator if final validation and push pass.
+- Input: validator implementation block at initial HEAD `38283dadba7f90101c3b6818e578bdecf7191566`.
+- Scope: audit validator source, focused Safety/Recipes tests, ADR, QA report, handoff, roadmap and decision-log without source/test behavior changes.
+- Verdict: implementation stays local-only/no-write and returns candidate readiness only; product capability flags remain hard-false.
+- Findings: P0 0, P1 0, P2 0, P3 4 (active product ledger path policy, real writer integration, productive authority/registration and release/commercial readiness remain future gated work), P4 2 (platform symlink/junction fixtures remain conservative; hardlink/mount alias handling is blocker/evidence based).
+- Non-goals: no source/test behavior changes, active product ledger path, real writer, append-only ledger creation, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_ACTIVE_WRITER_OR_RUNTIME_ENABLEMENT`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
