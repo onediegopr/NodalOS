@@ -64,12 +64,25 @@
     "stashTouched": false
   },
   "readiness": {
+    "localDevRouteInternalEndpointPreview": "100%",
+    "renderableSnapshot": "100%",
+    "domContract": "100%",
+    "visualQaEvidenceFixture": "100%",
     "browserLocalOnlyScreenshotEvidence": "100%",
-    "visualQaEvidence": "100%",
     "localDevRoute": "100%",
+    "productLedgerLocalOnlyWriter": "100%",
+    "runtimeLocalOnlyGate": "100%",
+    "operatorDiagnosticsCoreOnlySurface": "100%",
+    "internalOperatorUiReadOnlyPreview": "100%",
+    "internalCommandRouterNoOpReadOnly": "100%",
+    "internalCommandHandlerNonDestructive": "100%",
+    "boundedLocalReportExport": "100%",
     "productLedgerPublicLocalOnlyActions": "76%",
     "operatorAcceptance": "82%",
     "externalCloudReadiness": "0%",
+    "dbReadiness": "0%",
+    "kmsWormExternalTrust": "0%",
+    "browserCdpWcuOcrRecipesLive": "0%",
     "releaseCommercial": "0%"
   }
 }

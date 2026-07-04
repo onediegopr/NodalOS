@@ -66,3 +66,25 @@ P4:
 - no unbounded export/write;
 - no external/cloud export;
 - no release/commercial.
+
+## Readiness
+
+- Local dev route/internal endpoint preview: 100%.
+- Renderable snapshot: 100%.
+- DOM contract: 100%.
+- Visual QA evidence fixture: 100%.
+- Screenshot real local-only/test-only: 100%.
+- Product Ledger local-only writer: 100%.
+- Runtime local-only gate: 100%.
+- Operator diagnostics Core-only surface: 100%.
+- Internal operator UI read-only preview: 100%.
+- Internal command router no-op/read-only: 100%.
+- Internal command handler non-destructive: 100%.
+- Bounded local report export: 100%.
+- Public local-only actions: 76%.
+- Operator acceptance: 82%.
+- External/cloud readiness: 0%.
+- DB readiness: 0%.
+- KMS/WORM/external trust: 0%.
+- Browser/CDP/WCU/OCR/Recipes live: 0%.
+- Release/commercial: 0%.
