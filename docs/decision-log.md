@@ -1181,3 +1181,14 @@
 - Non-goals preserved: no destructive user-facing action, unbounded physical export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, live Browser/CDP/WCU/OCR/Recipes execution, endpoint/controller/route mapping, productive DI/service registration, release/commercial readiness, external telemetry/sync, billing/licensing cloud or stash modification.
 - Findings: P0=0, P1=0, P2=0; P3 future UX/action affordance review, property/corpus expansion and reusable static scan helper remain safe blocks; P4 Core-only surface is not a web endpoint and bounded export remains local evidence.
 - Safe next step: static scan helper refactor or docs/read-only audit only; real frontier remains destructive action, unbounded export/write, external/cloud/provider/DB/KMS/live automation or release/commercial.
+
+## NODAL_OS_PRODUCT_LEDGER_PUBLIC_LOCAL_ONLY_MANUAL_QA_OPERATOR_ACCEPTANCE
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PUBLIC_LOCAL_ONLY_MANUAL_QA_OPERATOR_ACCEPTANCE_FINAL_PACKET_READY`
+- Baseline: `23ce9b98c5a7443060573e0c777ba19a8f0fcb1c`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_PUBLIC_LOCAL_ONLY_MANUAL_QA_OPERATOR_ACCEPTANCE_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_PUBLIC_LOCAL_ONLY_MANUAL_QA_OPERATOR_ACCEPTANCE_EXTERNAL_AUDIT`.
+- Scope: Manual QA, fixture-only operator acceptance, UX safety review, negative action walkthrough and operator acceptance packet for Product Ledger public local-only/non-destructive actions.
+- Implemented/documented: acceptance matrix, fixture-only Safety walkthrough, disabled dangerous action evidence, bounded export local hash evidence, no-overclaim operator packet and external audit read-only packet.
+- Non-goals preserved: no destructive user-facing action, unbounded physical export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, live Browser/CDP/WCU/OCR/Recipes execution, release/commercial readiness, external telemetry/sync, billing/licensing cloud, credentials or stash modification.
+- Findings: P0=0, P1=0, P2=0; P3 repeat acceptance with screenshots/DOM if rendered UI exists; P4 fixture-only/Core-only acceptance is not live telemetry and bounded local export is not WORM/compliance-grade custody.
+- Real frontier: destructive action, unbounded export/write, external/cloud/provider/DB/KMS/live automation or release/commercial.

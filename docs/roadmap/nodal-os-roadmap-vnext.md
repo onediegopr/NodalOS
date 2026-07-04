@@ -3499,3 +3499,45 @@ Updated progress estimate after closeout:
 - KMS/WORM/external trust: 0%
 - Browser/CDP/WCU/OCR/Recipes live: 0%
 - Release/commercial: 0%
+
+## Product Ledger Public Local-Only Manual QA Operator Acceptance
+
+Status: documented and fixture-tested in branch, pending final block validation at close.
+
+Adds:
+
+- Manual QA acceptance matrix for public local-only/non-destructive actions.
+- Fixture-only operator acceptance tests.
+- UX safety review.
+- Negative action walkthrough.
+- Operator acceptance packet.
+- External audit read-only packet.
+
+Boundaries:
+
+- Local-only.
+- Non-destructive.
+- Not release-ready.
+- Not commercial-ready.
+- Not WORM/KMS/cloud.
+- Not external trust.
+- Not compliance-grade custody.
+- No destructive user-facing action.
+- No unbounded physical export/write.
+- No external/cloud export.
+- No provider/cloud/network.
+- No DB/migration.
+- No Browser/CDP/WCU/OCR/Recipes live.
+
+Updated progress estimate after closeout:
+
+- Product Ledger public local-only actions: 76%
+- Operator acceptance: 82%
+- UX safety: 82%
+- Bounded local report export: 100%
+- External/cloud readiness: 0%
+- Provider/cloud/network: 0%
+- DB/migration: 0%
+- KMS/WORM/external trust: 0%
+- Browser/CDP/WCU/OCR/Recipes live: 0%
+- Release/commercial: 0%
