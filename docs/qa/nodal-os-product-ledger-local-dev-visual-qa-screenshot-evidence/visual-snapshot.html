@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-testid="product-ledger-visual-qa-evidence" data-local-only="true" data-development-only="true" data-fixture-only="true">
+<head>
+  <meta charset="utf-8">
+  <title>Product Ledger Local Dev Visual QA Evidence</title>
+</head>
+<body>
+  <section data-testid="visual-qa-summary">
+    <h1>Product Ledger Local Dev Visual QA Evidence</h1>
+    <p>local-only</p>
+    <p>Development-only or fixture-only</p>
+    <p>not deployed</p>
+    <p>no telemetry</p>
+    <p>no external network</p>
+    <p>no release/commercial</p>
+    <p>no external trust</p>
+    <p>no WORM/KMS/cloud</p>
+    <p>not compliance-grade custody</p>
+    <p data-testid="screenshot-mode">STATIC_HTML_FIXTURE_NO_BROWSER_CDP</p>
+  </section>
+  <main data-testid="operator-surface">
+    <header data-testid="header-local-only"><h1>Product Ledger Operator Surface Snapshot</h1><p>local-dev/internal-only</p></header>
+    <section data-testid="runtime-gate"><h2>Runtime Gate</h2><p>local-only internal default-off evidence visible.</p></section>
+    <section data-testid="writer"><h2>Product Ledger Writer</h2><p>bounded local-only writer evidence visible.</p></section>
+    <section data-testid="bounded-export"><h2>Bounded Export</h2><p>local fixture only.</p></section>
+    <section data-testid="evidence-gates"><h2>Evidence Gates</h2><p>redaction, retention, authority, failure/replay and rollback required.</p></section>
+    <section data-testid="disabled-dangerous-actions"><h2>Disabled Dangerous Actions</h2><p>destructive, external/cloud, DB, KMS/WORM, live automation and release/commercial are blocked.</p></section>
+    <section data-testid="safe-next-step"><h2>Safe Next Step</h2><p>external audit read-only or static scan hardening.</p></section>
+    <section data-testid="actions">
+      <button type="button" data-testid="action-destructive-write" data-action-id="destructive-write" data-risk="blocked dangerous action" data-executable="false" data-handler-id="" data-callback="" disabled aria-disabled="true">DestructiveWrite blocked</button>
+      <button type="button" data-testid="action-unbounded-export" data-action-id="unbounded-export" data-risk="blocked dangerous action" data-executable="false" data-handler-id="" data-callback="" disabled aria-disabled="true">UnboundedExport blocked</button>
+      <button type="button" data-testid="action-external-export" data-action-id="external-export" data-risk="blocked dangerous action" data-executable="false" data-handler-id="" data-callback="" disabled aria-disabled="true">ExternalExport blocked</button>
+    </section>
+  </main>
+</body>
+</html>

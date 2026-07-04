@@ -1214,3 +1214,14 @@
 - Non-goals preserved: no public deploy, route mapping outside Development, controller, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, destructive user-facing action, unbounded export/write, external/cloud export or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future non-Development/public host-layer route safety review and screenshot/visual diff; P4 route preview is Development-only and not publicly deployed.
 - Real frontier: public deploy, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, live Browser/CDP/WCU/OCR/Recipes, destructive action, unbounded export/write or release/commercial.
+
+## NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_VISUAL_QA_SCREENSHOT_EVIDENCE
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_VISUAL_QA_SCREENSHOT_EVIDENCE_FINAL_PACKET_READY`
+- Baseline: `c68d039519fb77f2ddb4166ca037ee92a22452f6`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_VISUAL_QA_SCREENSHOT_EVIDENCE_WINDOW`, `NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_VISUAL_QA_SCREENSHOT_EVIDENCE_EXTERNAL_AUDIT` and `NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_VISUAL_QA_STATIC_SCAN_HARDENING`.
+- Scope: local-only Development-only/fixture-only visual QA evidence for the Product Ledger route.
+- Implemented/documented: fixture-only visual QA evidence model, static HTML visual artifact, positive/negative visual assertions, Safety/Recipes tests, external audit read-only packet, QA report and handoff.
+- Non-goals preserved: no public deploy, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, productive Browser/CDP, WCU/OCR/Recipes live, destructive action, unbounded export/write, external/cloud export or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 real screenshot evidence requires future local-only non-productive browser safety review; P4 evidence is static HTML fixture, not a pixel screenshot.
+- Real frontier: public deploy, external network/provider/cloud, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, productive Browser/CDP, WCU/OCR/Recipes live, destructive action, unbounded export/write or release/commercial.
