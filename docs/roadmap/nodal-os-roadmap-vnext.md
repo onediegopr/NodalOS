@@ -31,6 +31,9 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Product ledger path property/corpus coverage: 45-55% / test-only only.
 - Product ledger path real canonicalization validator readiness: 48-58% / local-only no-write candidate readiness.
 - Product ledger path active policy candidate readiness: 40-50% / local-only no-write policy accepted candidate.
+- Product ledger path persisted candidate registry readiness: 35-45% / in-memory local-only no-write.
+- Product ledger path disabled writer scaffold readiness: 30-40% / disabled test-only no-write.
+- Product ledger path local-temp writer test-only readiness: 40-50% / local-temp only, local head checkpoint, not product ledger path.
 - Redaction product wiring readiness: 22-32%.
 - Runtime feature flag product readiness: 18-28%.
 - Authority wiring readiness: 18-28%.
@@ -54,7 +57,14 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Latest product ledger path real canonicalization validator external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_EXTERNAL_AUDIT_READY`.
 - Latest product ledger path active policy candidate: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_LOCAL_ONLY_NO_WRITE_READY`.
 - Latest product ledger path active policy external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_EXTERNAL_AUDIT_READY`.
-- Recommended next step before any writer/product enablement: explicit manual GO for persisted active path, writer behavior or runtime/product enablement.
+- Latest product ledger path persisted candidate registry: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PERSISTED_CANDIDATE_LOCAL_ONLY_NO_WRITE_READY`.
+- Latest product ledger path persisted candidate registry external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PERSISTED_CANDIDATE_EXTERNAL_AUDIT_READY`.
+- Latest product ledger path disabled writer scaffold: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_TEST_ONLY_READY`.
+- Latest product ledger path disabled writer scaffold external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READY`.
+- Latest product ledger path local-temp writer test-only: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_TEMP_WRITER_TEST_ONLY_READY`.
+- Latest product ledger path failure/replay/rollback evidence hardening: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_FAILURE_REPLAY_ROLLBACK_EVIDENCE_HARDENING_TEST_ONLY_READY`.
+- Latest product ledger path property/corpus/static scan hardening: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_TEST_ONLY_READY`.
+- Current stop frontier before any writer/product enablement: `PRODUCT_RUNTIME_ENABLEMENT_OR_PRODUCTIVE_WRITER_PATH_AUTHORITY_REQUIRES_NEW_EXPLICIT_MANUAL_GO`.
 - Durable runtime product enablement still requires explicit manual GO; autonomous safe continuation may only proceed through docs/design/audit/test-plan/test-only blocks.
 
 ## Current State

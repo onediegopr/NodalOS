@@ -356,6 +356,75 @@
 - Non-goals: no source/test behavior changes, active product ledger path, real writer, append-only ledger creation, active path persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Stop point: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_PERSISTED_ACTIVE_PATH_WRITER_OR_RUNTIME_ENABLEMENT`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_PERSISTED_CANDIDATE_LOCAL_ONLY_NO_WRITE
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PERSISTED_CANDIDATE_LOCAL_ONLY_NO_WRITE_READY`
+- Status: accepted as in-memory local-only/no-write persisted candidate registry if final validation and push pass.
+- Input HEAD: `5991c3df1398b6ec9cc0d1f5347a77c967e16ce5`.
+- Scope: implement an in-memory Core registry for policy accepted product ledger path candidates without filesystem ledger persistence, active path activation, writer behavior or runtime/product enablement.
+- Implemented: `ProductLedgerPathPersistedCandidateRegistry`, request/result/record/decision/blocker models, deterministic candidate fingerprint, in-memory snapshot/find, Safety tests and Recipes tests.
+- Findings: P0 0, P1 0, P2 0, P3 4 (filesystem active path persistence, real writer integration, productive authority/registration and release/commercial readiness remain future gated work), P4 2 (candidate registry is process-memory only; evidence refs remain syntactic/local).
+- Non-goals: no active product ledger path, real writer, append-only ledger creation, filesystem ledger persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_PERSISTED_CANDIDATE_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_PERSISTED_CANDIDATE_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PERSISTED_CANDIDATE_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the in-memory local-only/no-write persisted candidate registry if final validation and push pass.
+- Scope: audit persisted candidate registry source, focused Safety/Recipes tests, ADR, QA report, handoff, roadmap and decision-log without source/test behavior changes.
+- Verdict: implementation stays in-memory/local-only/no-write; no filesystem ledger persistence, product writer, active path activation or runtime/product enablement.
+- Findings: P0 0, P1 0, P2 0, P3 4 (filesystem active path persistence, real writer integration, productive authority/registration and release/commercial readiness remain future gated work), P4 2 (candidate registry is process-memory only; evidence refs remain syntactic/local).
+- Non-goals: no source/test behavior changes, active product ledger path, real writer, append-only ledger creation, filesystem ledger persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_TEST_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_TEST_ONLY_READY`
+- Status: accepted as Core-only disabled/test-only writer scaffold evaluator if final validation and push pass.
+- Scope: implement an in-memory evaluator that consumes the local-only persisted candidate result and requires disabled/test-only mode, no-product writer assertions, redaction-before-persistence evidence and failure/replay/rollback evidence.
+- Implemented: `ProductLedgerPathWriterScaffoldDisabled`, request/result/decision/blocker models, hard-false product capability flags, Safety tests and Recipes tests.
+- Findings: P0 0, P1 0, P2 0 in focused tests. P3/P4 remain around local-temp writer test-only, product writer activation, active product ledger path/runtime connection, productive registration/handlers/UI, DB/cloud/KMS/WORM/external trust and release/commercial readiness.
+- Non-goals: no active product ledger path, product ledger write, writer activation, append-only product ledger, filesystem product ledger persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_WRITER_SCAFFOLD_DISABLED_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the disabled/test-only writer scaffold if final validation and push pass.
+- Scope: audit the scaffold source, focused Safety/Recipes tests, ADR, QA report, handoff, roadmap and decision-log without source/test behavior changes.
+- Verdict: implementation stays in-memory disabled/test-only/no-write; no filesystem writer, product writer activation, active path activation or runtime/product enablement.
+- Findings: P0 0, P1 0, P2 0. P3/P4 remain around local-temp writer test-only, product writer activation, active product ledger path/runtime connection, productive registration/handlers/UI, DB/cloud/KMS/WORM/external trust and release/commercial readiness.
+- Non-goals: no source/test behavior changes, active product ledger path, product ledger write, writer activation, append-only product ledger, filesystem product ledger persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_TEMP_WRITER_TEST_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_TEMP_WRITER_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_TEMP_WRITER_TEST_ONLY_READY`
+- Status: accepted as isolated local-temp writer test-only if final validation and push pass.
+- Scope: append sanitized JSONL test entries under system temp only, after disabled/test-only scaffold readiness; verify existing local-temp ledger state before append and fail closed on tamper/malformed state.
+- Implemented: `ProductLedgerPathLocalTempWriterTestOnly`, request/result/entry/checkpoint/decision/blocker models, sequence/hash-chain local-temp entries, local head checkpoint, Safety tests and Recipes tests.
+- Findings: P0 0, P1 0, P2 0 in focused tests. P3/P4 remain around external-trust truncation evidence, product writer activation, active product ledger path/runtime connection, productive registration/handlers/UI, DB/cloud/KMS/WORM/external trust and release/commercial readiness.
+- Non-goals: no active product ledger path, product ledger write, product writer activation outside local-temp test-only, append-only product ledger, filesystem product ledger persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_FAILURE_REPLAY_ROLLBACK_EVIDENCE_HARDENING_TEST_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_FAILURE_REPLAY_ROLLBACK_EVIDENCE_HARDENING_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_FAILURE_REPLAY_ROLLBACK_EVIDENCE_HARDENING_TEST_ONLY_READY`
+- Status: accepted as local-temp evidence hardening if final validation and push pass.
+- Scope: add local head checkpoint verification/write to the local-temp writer and focused tests for tail deletion with checkpoint retained and missing checkpoint after write.
+- Findings: P0 0, P1 0, P2 0 in focused tests. P3/P4 remain around external trust for truncation/replay/rollback evidence, product writer activation, active product ledger path/runtime connection, DB/cloud/KMS/WORM/external trust and release/commercial readiness.
+- Non-goals: no external trust, WORM, KMS, active product ledger path, product ledger write, product writer activation, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_TEST_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_TEST_ONLY_READY`
+- Status: accepted as test-only property/corpus/static scan hardening if final validation and push pass.
+- Scope: expand unsafe hash/evidence metadata corpus and broaden static scan across all Core `ProductLedgerPath*.cs` approval files.
+- Findings: P0 0, P1 0, P2 0 in focused tests. P3/P4 remain around external trust, product writer activation, active product ledger path/runtime connection and release/commercial readiness.
+- Non-goals: no active product ledger path, product ledger write, product writer activation, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop frontier: `PRODUCT_RUNTIME_ENABLEMENT_OR_PRODUCTIVE_WRITER_PATH_AUTHORITY_REQUIRES_NEW_EXPLICIT_MANUAL_GO`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`

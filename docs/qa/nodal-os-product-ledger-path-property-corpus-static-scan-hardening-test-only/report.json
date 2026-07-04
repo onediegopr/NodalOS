@@ -1,0 +1,53 @@
+{
+  "decision": "GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_TEST_ONLY_READY",
+  "date": "2026-07-04",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "mode": "PROPERTY_CORPUS_STATIC_SCAN_HARDENING_TEST_ONLY_NO_PRODUCT_ENABLEMENT",
+  "implemented": [
+    "Expanded unsafe safe-payload hash corpus",
+    "Expanded unsafe evidence metadata corpus",
+    "Static scan over Core ProductLedgerPath approval files",
+    "Positive temp-only not-product-ledger-path static assertions"
+  ],
+  "validations": {
+    "safetyLocalTempWriterPropertyStaticFocused": "PASS_9_OF_9",
+    "recipesLocalTempWriterFocused": "PASS_2_OF_2",
+    "coreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "solutionBuild": "PASS_0_ERRORS_32_PRE_EXISTING_WARNINGS_OUTSIDE_PRODUCT_LEDGER_PATH_FILES",
+    "safetyDurableFocused": "PASS_63_OF_63",
+    "recipesDurableFocused": "PASS_32_OF_32",
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticNoEnableOverclaimScan": "PASS"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "External trust for truncation/replay/rollback evidence remains future gated.",
+      "Product writer activation remains future gated.",
+      "Active product ledger path connected to runtime remains future gated."
+    ],
+    "P4": [
+      "Static scan is literal-fragment based and complements, rather than replaces, code review.",
+      "Local-temp checkpoint remains in the same trust boundary as the test ledger."
+    ]
+  },
+  "boundaryConfirmation": {
+    "runtimeProductEnabled": false,
+    "productLedgerPathActive": false,
+    "productLedgerWriterActivated": false,
+    "productiveDiRegistrationAdded": false,
+    "productiveServiceRegistrationAdded": false,
+    "productiveCommandHandlersAdded": false,
+    "uiProductActionsAdded": false,
+    "dbMigrationProviderCloudNetworkAdded": false,
+    "kmsWormExternalTrustAdded": false,
+    "browserCdpWcuOcrRecipesLiveAdded": false,
+    "releaseCommercialReady": false,
+    "stashTouched": false
+  },
+  "stopFrontier": "PRODUCT_RUNTIME_ENABLEMENT_OR_PRODUCTIVE_WRITER_PATH_AUTHORITY_REQUIRES_NEW_EXPLICIT_MANUAL_GO"
+}
