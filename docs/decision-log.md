@@ -236,6 +236,16 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AND_AUTHORITY_TEST_PLAN_ONLY`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AND_AUTHORITY_TEST_PLAN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AND_AUTHORITY_TEST_PLAN_ONLY_READY`
+- Status: accepted as docs/test-plan-only if final validation and push pass.
+- Input HEAD: `004aeccbe529fe308907e54f9077947f3265f8cf`.
+- Scope: create a future product ledger path canonicalization/reparse threat model, product authority test plan, acceptance criteria, disabled implementation scaffold map and external audit checklist without source/test/runtime behavior changes.
+- Findings: P0 0, P1 0, P2 0, P3 5 (real canonicalization, reparse enforcement, product authority, rollback policy and disabled implementation scaffold remain future work), P4 2 (Unicode/hardlink/ADS coverage may need platform-specific refinement; percentages remain conservative).
+- Non-goals: no source/test behavior changes, product ledger implementation, runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_CANONICALIZATION_REPARSE_AUTHORITY_TEST_PLAN_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
