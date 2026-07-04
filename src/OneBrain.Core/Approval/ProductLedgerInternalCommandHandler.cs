@@ -3,7 +3,8 @@ namespace OneBrain.Core.Approval;
 public enum ProductLedgerInternalCommandDecision
 {
     Rejected,
-    CompletedReadOnlyInMemory
+    CompletedReadOnlyInMemory,
+    CompletedBoundedLocalPhysicalExport
 }
 
 public enum ProductLedgerInternalCommandBlocker
@@ -30,7 +31,9 @@ public enum ProductLedgerInternalCommandBlocker
     BillingLicensingCloudClaimed,
     PhysicalExportRequested,
     FileWriteRequested,
-    AppendOutsideBoundedWriterClaimed
+    AppendOutsideBoundedWriterClaimed,
+    MissingBoundedLocalReportExportRequest,
+    BoundedLocalReportExportRejected
 }
 
 public sealed record ProductLedgerInternalCommandRequest(
@@ -49,7 +52,8 @@ public sealed record ProductLedgerInternalCommandRequest(
     bool ClaimsBillingLicensingCloud,
     bool RequestsPhysicalExport,
     bool RequestsFileWrite,
-    bool ClaimsAppendOutsideBoundedWriter);
+    bool ClaimsAppendOutsideBoundedWriter,
+    ProductLedgerLocalReportExportRequest? LocalReportExportRequest = null);
 
 public sealed record ProductLedgerInternalCommandExecutionPreview(
     ProductLedgerInternalCommandKind CommandKind,
@@ -60,7 +64,9 @@ public sealed record ProductLedgerInternalCommandExecutionPreview(
     bool InMemoryOnly,
     bool PhysicalExportCreated,
     bool FileWritePerformed,
-    bool ExecutableCallbackInvoked);
+    bool ExecutableCallbackInvoked,
+    string? ExportedFilePath = null,
+    string? PostWriteHash = null);
 
 public sealed record ProductLedgerInternalCommandResult(
     ProductLedgerInternalCommandDecision Decision,
@@ -85,6 +91,7 @@ public sealed record ProductLedgerInternalCommandResult(
     bool ReleaseCommercialReady,
     bool PhysicalExportCreated,
     bool FileWritePerformed,
+    ProductLedgerLocalReportExportResult? LocalReportExportResult,
     string StatusText);
 
 public sealed class ProductLedgerInternalCommandHandler
@@ -104,7 +111,8 @@ public sealed class ProductLedgerInternalCommandHandler
         ProductLedgerInternalCommandKind.ViewEvidenceGates,
         ProductLedgerInternalCommandKind.StaticScanPreview,
         ProductLedgerInternalCommandKind.RequestExternalAuditPreview,
-        ProductLedgerInternalCommandKind.LocalReportPreviewInMemory
+        ProductLedgerInternalCommandKind.LocalReportPreviewInMemory,
+        ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal
     ];
 
     public ProductLedgerInternalCommandResult Execute(ProductLedgerInternalCommandRequest? request)
@@ -113,12 +121,13 @@ public sealed class ProductLedgerInternalCommandHandler
         if (request is null)
         {
             blockers.Add(ProductLedgerInternalCommandBlocker.MissingRequest);
-            return Result(blockers, null);
+            return Result(blockers, null, null);
         }
 
         AddRequestBlockers(request, blockers);
         AddRouterPreviewBlockers(request.RouterPreview, blockers);
-        return Result(blockers, request.RouterPreview);
+        var exportResult = AddBoundedLocalReportExportBlockers(request, blockers);
+        return Result(blockers, request.RouterPreview, exportResult);
     }
 
     private static void AddRequestBlockers(
@@ -185,12 +194,15 @@ public sealed class ProductLedgerInternalCommandHandler
             blockers.Add(ProductLedgerInternalCommandBlocker.BillingLicensingCloudClaimed);
         }
 
-        if (request.RequestsPhysicalExport)
+        var boundedExportCommand =
+            request.RouterPreview?.Preview.CommandKind == ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal;
+
+        if (request.RequestsPhysicalExport && !boundedExportCommand)
         {
             blockers.Add(ProductLedgerInternalCommandBlocker.PhysicalExportRequested);
         }
 
-        if (request.RequestsFileWrite)
+        if (request.RequestsFileWrite && !boundedExportCommand)
         {
             blockers.Add(ProductLedgerInternalCommandBlocker.FileWriteRequested);
         }
@@ -199,6 +211,50 @@ public sealed class ProductLedgerInternalCommandHandler
         {
             blockers.Add(ProductLedgerInternalCommandBlocker.AppendOutsideBoundedWriterClaimed);
         }
+    }
+
+    private static ProductLedgerLocalReportExportResult? AddBoundedLocalReportExportBlockers(
+        ProductLedgerInternalCommandRequest request,
+        List<ProductLedgerInternalCommandBlocker> blockers)
+    {
+        if (request.RouterPreview?.Preview.CommandKind != ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal)
+        {
+            return null;
+        }
+
+        if (request.LocalReportExportRequest is null || !request.RequestsPhysicalExport || !request.RequestsFileWrite)
+        {
+            blockers.Add(ProductLedgerInternalCommandBlocker.MissingBoundedLocalReportExportRequest);
+            return null;
+        }
+
+        var exportResult = new ProductLedgerLocalReportExportService().Export(request.LocalReportExportRequest);
+        if (exportResult.Decision != ProductLedgerLocalReportExportDecision.ExportedBoundedLocal
+            || exportResult.Blockers.Count > 0
+            || !exportResult.InternalOnly
+            || !exportResult.LocalOnly
+            || !exportResult.Bounded
+            || !exportResult.NonDestructive
+            || !exportResult.FailClosed
+            || !exportResult.PhysicalExportCreated
+            || !exportResult.FileWritePerformed
+            || !exportResult.PostWriteHashVerified
+            || exportResult.PublicUiActionAvailable
+            || exportResult.DestructiveActionAvailable
+            || exportResult.ProductCommandHandlerAvailable
+            || exportResult.ProductiveServiceRegistrationAvailable
+            || exportResult.ProviderCloudNetworkAvailable
+            || exportResult.DbMigrationAvailable
+            || exportResult.KmsWormExternalTrustAvailable
+            || exportResult.BrowserCdpWcuOcrRecipesLiveAvailable
+            || exportResult.ExternalTelemetryOrSyncAvailable
+            || exportResult.BillingLicensingCloudAvailable
+            || exportResult.ReleaseCommercialReady)
+        {
+            blockers.Add(ProductLedgerInternalCommandBlocker.BoundedLocalReportExportRejected);
+        }
+
+        return exportResult;
     }
 
     private static void AddRouterPreviewBlockers(
@@ -215,8 +271,6 @@ public sealed class ProductLedgerInternalCommandHandler
             || routerPreview.Blockers.Count > 0
             || !routerPreview.LocalOnly
             || !routerPreview.InternalOnly
-            || !routerPreview.NoOp
-            || !routerPreview.ReadOnly
             || !routerPreview.NonDestructive
             || routerPreview.PublicUiActionAvailable
             || routerPreview.DestructiveActionAvailable
@@ -261,20 +315,26 @@ public sealed class ProductLedgerInternalCommandHandler
 
     private static ProductLedgerInternalCommandResult Result(
         IReadOnlyList<ProductLedgerInternalCommandBlocker> blockers,
-        ProductLedgerInternalCommandPreviewResult? routerPreview)
+        ProductLedgerInternalCommandPreviewResult? routerPreview,
+        ProductLedgerLocalReportExportResult? exportResult)
     {
         var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
         var completed = distinct.Length == 0 && routerPreview is not null;
+        var exported = routerPreview is not null
+            && completed
+            && routerPreview.Preview.CommandKind == ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal;
         return new ProductLedgerInternalCommandResult(
             Decision: completed
-                ? ProductLedgerInternalCommandDecision.CompletedReadOnlyInMemory
+                ? (exported
+                    ? ProductLedgerInternalCommandDecision.CompletedBoundedLocalPhysicalExport
+                    : ProductLedgerInternalCommandDecision.CompletedReadOnlyInMemory)
                 : ProductLedgerInternalCommandDecision.Rejected,
             Blockers: distinct,
-            ExecutionPreview: CreateExecutionPreview(routerPreview, completed),
+            ExecutionPreview: CreateExecutionPreview(routerPreview, completed, exportResult),
             InternalOnly: true,
             LocalOnly: true,
             NonDestructive: true,
-            ReadOnlyOrInMemory: true,
+            ReadOnlyOrInMemory: !exported,
             FailClosed: true,
             PublicCommandExposureAvailable: false,
             PublicUiActionAvailable: false,
@@ -288,26 +348,33 @@ public sealed class ProductLedgerInternalCommandHandler
             ExternalTelemetryOrSyncAvailable: false,
             BillingLicensingCloudAvailable: false,
             ReleaseCommercialReady: false,
-            PhysicalExportCreated: false,
-            FileWritePerformed: false,
-            StatusText: completed ? ReadyStatus : RejectedStatus);
+            PhysicalExportCreated: exported,
+            FileWritePerformed: exported,
+            LocalReportExportResult: exported ? exportResult : null,
+            StatusText: completed
+                ? (exported ? ProductLedgerLocalReportExportService.ReadyStatus : ReadyStatus)
+                : RejectedStatus);
     }
 
     private static ProductLedgerInternalCommandExecutionPreview CreateExecutionPreview(
         ProductLedgerInternalCommandPreviewResult? routerPreview,
-        bool completed)
+        bool completed,
+        ProductLedgerLocalReportExportResult? exportResult)
     {
         var command = routerPreview?.Preview.CommandKind ?? ProductLedgerInternalCommandKind.ViewDiagnostics;
+        var exported = completed && command == ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal;
         return new ProductLedgerInternalCommandExecutionPreview(
             CommandKind: command,
             CommandId: routerPreview?.Preview.CommandId ?? "preview-only.product-ledger.rejected",
             ResultKind: completed ? ResultKind(command) : "BLOCKED_FAIL_CLOSED",
             Lines: completed ? Lines(command) : ["Command rejected before execution authority."],
             RequiredEvidence: routerPreview?.Preview.RequiredEvidence ?? ["router preview", "safety tests"],
-            InMemoryOnly: true,
-            PhysicalExportCreated: false,
-            FileWritePerformed: false,
-            ExecutableCallbackInvoked: false);
+            InMemoryOnly: !exported,
+            PhysicalExportCreated: exported,
+            FileWritePerformed: exported,
+            ExecutableCallbackInvoked: false,
+            ExportedFilePath: exported ? exportResult?.Evidence?.CanonicalReportFilePath : null,
+            PostWriteHash: exported ? exportResult?.Evidence?.ReportHash : null);
     }
 
     private static string ResultKind(ProductLedgerInternalCommandKind command) =>
@@ -321,6 +388,7 @@ public sealed class ProductLedgerInternalCommandHandler
             ProductLedgerInternalCommandKind.StaticScanPreview => "STATIC_SCAN_PREVIEW_IN_MEMORY",
             ProductLedgerInternalCommandKind.RequestExternalAuditPreview => "EXTERNAL_AUDIT_REQUEST_PREVIEW_IN_MEMORY",
             ProductLedgerInternalCommandKind.LocalReportPreviewInMemory => "LOCAL_REPORT_PREVIEW_IN_MEMORY_NO_FILE",
+            ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal => "LOCAL_REPORT_PHYSICAL_EXPORT_BOUNDED_INTERNAL_HASH_VERIFIED",
             _ => "BLOCKED_FAIL_CLOSED"
         };
 
@@ -335,6 +403,7 @@ public sealed class ProductLedgerInternalCommandHandler
             ProductLedgerInternalCommandKind.StaticScanPreview => ["Static scan preview.", "No scan process is launched by this handler."],
             ProductLedgerInternalCommandKind.RequestExternalAuditPreview => ["External audit request preview.", "No external model or service is contacted."],
             ProductLedgerInternalCommandKind.LocalReportPreviewInMemory => ["Local report preview in memory.", "No physical export or file write occurs."],
+            ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal => ["Bounded local diagnostic report export completed.", "Post-write hash verification completed."],
             _ => ["Command rejected before execution authority."]
         };
 }

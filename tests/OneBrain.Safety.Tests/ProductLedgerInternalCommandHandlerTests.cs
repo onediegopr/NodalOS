@@ -147,6 +147,54 @@ public sealed class ProductLedgerInternalCommandHandlerTests
     }
 
     [TestMethod]
+    public void InternalCommandHandler_AllowsOnlyBoundedLocalPhysicalReportExport()
+    {
+        using var fixture = ExportFixture.Create();
+        var reportPath = Path.Combine(fixture.AllowedRoot, "reports", "product-ledger-diagnostics.json");
+        var request = ReadyRequest(RouterPreview(ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal)) with
+        {
+            RequestsPhysicalExport = true,
+            RequestsFileWrite = true,
+            LocalReportExportRequest = ReadyExportRequest(fixture.AllowedRoot, reportPath)
+        };
+
+        var result = new ProductLedgerInternalCommandHandler().Execute(request);
+
+        Assert.AreEqual(ProductLedgerInternalCommandDecision.CompletedBoundedLocalPhysicalExport, result.Decision);
+        Assert.AreEqual("LOCAL_REPORT_PHYSICAL_EXPORT_BOUNDED_INTERNAL_HASH_VERIFIED", result.ExecutionPreview.ResultKind);
+        Assert.IsFalse(result.ExecutionPreview.InMemoryOnly);
+        Assert.IsTrue(result.PhysicalExportCreated);
+        Assert.IsTrue(result.FileWritePerformed);
+        Assert.IsTrue(File.Exists(reportPath));
+        Assert.AreEqual(result.LocalReportExportResult!.Evidence!.ReportHash, result.ExecutionPreview.PostWriteHash);
+        Assert.IsTrue(result.ExecutionPreview.ExportedFilePath!.StartsWith(fixture.AllowedRoot, StringComparison.OrdinalIgnoreCase));
+        AssertNoProductExternalRelease(result);
+    }
+
+    [TestMethod]
+    public void InternalCommandHandler_RejectsPhysicalExportOutsideBoundary()
+    {
+        using var fixture = ExportFixture.Create();
+        using var outside = ExportFixture.Create();
+        var outsidePath = Path.Combine(outside.AllowedRoot, "product-ledger-diagnostics.json");
+        var request = ReadyRequest(RouterPreview(ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal)) with
+        {
+            RequestsPhysicalExport = true,
+            RequestsFileWrite = true,
+            LocalReportExportRequest = ReadyExportRequest(fixture.AllowedRoot, outsidePath)
+        };
+
+        var result = new ProductLedgerInternalCommandHandler().Execute(request);
+
+        Assert.AreEqual(ProductLedgerInternalCommandDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(result.Blockers.ToArray(), ProductLedgerInternalCommandBlocker.BoundedLocalReportExportRejected);
+        Assert.IsFalse(result.PhysicalExportCreated);
+        Assert.IsFalse(result.FileWritePerformed);
+        Assert.IsFalse(File.Exists(outsidePath));
+        AssertNoProductExternalWrite(result);
+    }
+
+    [TestMethod]
     public void InternalCommandHandler_SourceHasNoPublicCommandExposurePhysicalWriteNetworkDbKmsLiveOrRelease()
     {
         var source = File.ReadAllText(Path.Combine(
@@ -276,6 +324,85 @@ public sealed class ProductLedgerInternalCommandHandlerTests
         Assert.IsFalse(result.ReleaseCommercialReady);
         Assert.IsFalse(result.PhysicalExportCreated);
         Assert.IsFalse(result.FileWritePerformed);
+    }
+
+    private static void AssertNoProductExternalRelease(ProductLedgerInternalCommandResult result)
+    {
+        Assert.IsTrue(result.InternalOnly);
+        Assert.IsTrue(result.LocalOnly);
+        Assert.IsTrue(result.NonDestructive);
+        Assert.IsTrue(result.FailClosed);
+        Assert.IsFalse(result.PublicCommandExposureAvailable);
+        Assert.IsFalse(result.PublicUiActionAvailable);
+        Assert.IsFalse(result.DestructiveActionAvailable);
+        Assert.IsFalse(result.ProductCommandHandlerAvailable);
+        Assert.IsFalse(result.ProductiveServiceRegistrationAvailable);
+        Assert.IsFalse(result.ProviderCloudNetworkAvailable);
+        Assert.IsFalse(result.DbMigrationAvailable);
+        Assert.IsFalse(result.KmsWormExternalTrustAvailable);
+        Assert.IsFalse(result.BrowserCdpWcuOcrRecipesLiveAvailable);
+        Assert.IsFalse(result.ExternalTelemetryOrSyncAvailable);
+        Assert.IsFalse(result.BillingLicensingCloudAvailable);
+        Assert.IsFalse(result.ReleaseCommercialReady);
+    }
+
+    private static ProductLedgerLocalReportExportRequest ReadyExportRequest(string root, string reportPath) =>
+        new(
+            AllowedRootPath: root,
+            ReportFilePath: reportPath,
+            ReportContent: "{\"kind\":\"product-ledger-diagnostic-report\",\"content\":\"redacted diagnostics\",\"scope\":\"internal local bounded\"}",
+            EvidenceMetadata: new Dictionary<string, string>
+            {
+                ["operator"] = "internal-local-only",
+                ["redaction"] = "redacted-before-export",
+                ["boundary"] = "canonicalized"
+            },
+            ExplicitInternalLocalOnlyBoundedExportScope: true,
+            HasOperatorInternalEvidence: true,
+            HasRedactionBeforePersistenceEvidence: true,
+            HasSafeContentEvidence: true,
+            HasResolvedReparsePointEvidence: true,
+            HasTocTouMitigationEvidence: true,
+            HardlinkOrMountAliasRiskUnresolved: false,
+            AllowOverwriteExisting: false,
+            RequestsPublicUiAction: false,
+            RequestsDestructiveAction: false,
+            RequestsProductCommandHandler: false,
+            RequestsProductiveServiceRegistration: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsReleaseCommercial: false,
+            ClaimsExternalTelemetryOrSync: false,
+            ClaimsBillingLicensingCloud: false,
+            ClaimsExternalExport: false,
+            ClaimsUnboundedPhysicalExport: false);
+
+    private sealed class ExportFixture : IDisposable
+    {
+        private ExportFixture(string allowedRoot)
+        {
+            AllowedRoot = allowedRoot;
+        }
+
+        public string AllowedRoot { get; }
+
+        public static ExportFixture Create()
+        {
+            var root = Path.Combine(RepoRoot(), ".tmp-product-ledger-export-tests", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+            return new ExportFixture(root);
+        }
+
+        public void Dispose()
+        {
+            var baseRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-export-tests");
+            if (AllowedRoot.StartsWith(baseRoot, StringComparison.OrdinalIgnoreCase) && Directory.Exists(AllowedRoot))
+            {
+                Directory.Delete(AllowedRoot, recursive: true);
+            }
+        }
     }
 
     private static string RepoRoot()

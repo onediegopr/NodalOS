@@ -3240,3 +3240,51 @@ Updated progress estimate after closeout:
 - Public UI readiness: 0%
 - External provider/cloud readiness: 0%
 - Release/commercial: 0%
+
+## Product Ledger Local Report Export Bounded Internal
+
+Status: implemented in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only `ProductLedgerLocalReportExportService`.
+- Local-only/internal-only bounded diagnostic report export.
+- Canonical local boundary checks for allowed root and report path.
+- Safe filename and report extension checks.
+- Redacted/safe-content and safe metadata gates.
+- Explicit operator/internal, reparse, TOCTOU and redaction evidence gates.
+- No silent overwrite without explicit safe overwrite policy.
+- Post-write hash verification.
+- `LocalReportPhysicalExportBoundedInternal` internal command path behind the existing router/handler.
+- External audit read-only packet and QA handoff.
+
+Boundaries:
+
+- No public UI action.
+- No destructive user-facing action.
+- No public/product command handler exposure.
+- No unbounded physical export/write.
+- No external/cloud export.
+- No productive DI/service registration.
+- No provider/cloud/network.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live execution.
+- No release/commercial.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76.9%
+- Approval foundation: 96.2%
+- Product Ledger local-only writer: 82%
+- Runtime local-only gate: 78%
+- Operator diagnostics Core-only surface: 100%
+- Internal operator UI read-only preview: 100%
+- Internal command router no-op/read-only: 100%
+- Internal command handler non-destructive: 100%
+- Bounded local report export: 100%
+- Public UI readiness: 0%
+- External provider/cloud readiness: 0%
+- Release/commercial: 0%

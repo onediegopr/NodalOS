@@ -1126,3 +1126,15 @@
 - Non-goals preserved: no public UI action, destructive user-facing action, public/product command handler exposure, executable external callback, physical export/write file, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial, external telemetry/sync or billing/licensing cloud.
 - Findings: P0=0, P1=0, P2=0; P3 future-gated public/product command exposure, physical write/export and external/provider/DB/KMS/WORM surfaces; P4 handler output is in-memory preview evidence, not durable evidence.
 - Stop frontier: `PUBLIC_UI_OR_PRODUCT_COMMAND_HANDLER_PUBLIC_EXPOSURE_OR_PHYSICAL_WRITE_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_LOCAL_REPORT_EXPORT_BOUNDED_INTERNAL
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_REPORT_EXPORT_BOUNDED_INTERNAL_FINAL_PACKET_READY`
+- Baseline: `1f2b8927ff20666bb0fb4ae39917f28a6d26cb87`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_LOCAL_REPORT_EXPORT_BOUNDED_INTERNAL_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_LOCAL_REPORT_EXPORT_BOUNDED_INTERNAL_EXTERNAL_AUDIT`.
+- Scope: Core-only local-only/internal-only bounded diagnostic report export with canonical boundary checks, redacted/safe content, safe metadata, explicit operator/internal evidence, no silent overwrite and post-write hash verification.
+- Implemented: `ProductLedgerLocalReportExportService`, request/result/evidence models, `LocalReportPhysicalExportBoundedInternal` router command, internal command handler integration and Safety/Recipes coverage.
+- Safety posture: physical write authority is isolated to the bounded export service; handler completion requires eligible router preview and successful bounded local export result.
+- Non-goals preserved: no public UI action, destructive user-facing action, public/product command handler exposure, unbounded physical export/write, external/cloud export, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future-gated public/product UI/command exposure, external/cloud export, provider/cloud/network, DB/KMS/WORM/external trust; P4 local same-machine evidence is not WORM/compliance-grade custody.
+- Stop frontier: `PUBLIC_UI_OR_PUBLIC_PRODUCT_COMMAND_HANDLER_OR_UNBOUNDED_WRITE_OR_EXTERNAL_CLOUD_EXPORT_OR_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_REQUIRES_NEW_EXPLICIT_GO`.

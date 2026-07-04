@@ -205,7 +205,8 @@ public sealed class ProductLedgerInternalCommandPreviewRouterTests
         ProductLedgerInternalCommandKind.RequestExternalAuditPreview,
         ProductLedgerInternalCommandKind.StaticScanPreview,
         ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview,
-        ProductLedgerInternalCommandKind.LocalReportPreviewInMemory
+        ProductLedgerInternalCommandKind.LocalReportPreviewInMemory,
+        ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal
     ];
 
     private static ProductLedgerInternalCommandPreviewRequest ReadyRequest(ProductLedgerInternalCommandKind command) =>

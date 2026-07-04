@@ -18,6 +18,7 @@ public enum ProductLedgerInternalCommandKind
     StaticScanPreview,
     PropertyCorpusHardeningPreview,
     LocalReportPreviewInMemory,
+    LocalReportPhysicalExportBoundedInternal,
     EnablePublicUi,
     ExecuteAction,
     DestructiveWrite,
@@ -135,7 +136,8 @@ public sealed class ProductLedgerInternalCommandPreviewRouter
         ProductLedgerInternalCommandKind.RequestExternalAuditPreview,
         ProductLedgerInternalCommandKind.StaticScanPreview,
         ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview,
-        ProductLedgerInternalCommandKind.LocalReportPreviewInMemory
+        ProductLedgerInternalCommandKind.LocalReportPreviewInMemory,
+        ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal
     ];
 
     public ProductLedgerInternalCommandPreviewResult Preview(ProductLedgerInternalCommandPreviewRequest? request)
@@ -404,6 +406,7 @@ public sealed class ProductLedgerInternalCommandPreviewRouter
             ProductLedgerInternalCommandKind.StaticScanPreview => ["static no-public-command scan"],
             ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview => ["property/corpus hardening plan"],
             ProductLedgerInternalCommandKind.LocalReportPreviewInMemory => ["in-memory report preview policy", "no physical export"],
+            ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal => ["bounded local export policy", "redacted safe content", "post-write hash verification"],
             _ => ["new explicit GO", "boundary audit", "safety tests"]
         };
 
@@ -420,6 +423,7 @@ public sealed class ProductLedgerInternalCommandPreviewRouter
             ProductLedgerInternalCommandKind.StaticScanPreview => "Static scan preview",
             ProductLedgerInternalCommandKind.PropertyCorpusHardeningPreview => "Property/corpus hardening preview",
             ProductLedgerInternalCommandKind.LocalReportPreviewInMemory => "Local report preview in memory",
+            ProductLedgerInternalCommandKind.LocalReportPhysicalExportBoundedInternal => "Local report physical export bounded internal",
             _ => $"{command} blocked"
         };
 
