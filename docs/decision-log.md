@@ -334,6 +334,28 @@
 - Non-goals: no source/test behavior changes, active product ledger path, real writer, append-only ledger creation, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Stop point: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_ACTIVE_WRITER_OR_RUNTIME_ENABLEMENT`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_LOCAL_ONLY_NO_WRITE
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_LOCAL_ONLY_NO_WRITE_READY`
+- Status: accepted as local-only/no-write policy accepted candidate implementation if final validation and push pass.
+- Input HEAD: `9f3f75a2092ce2318417c7b86b5a8f2491711ed4`.
+- Scope: implement a policy evaluator that consumes canonicalization validator output plus safety/evidence/authority/no-overclaim assertions and returns only rejected, blocked or candidate accepted no-write.
+- Implemented: `ProductLedgerPathActivePolicy`, request/result/decision/blocker models, no-write status, Safety active policy tests and Recipes active policy tests.
+- Findings: P0 0, P1 0, P2 0, P3 4 (active ledger path persistence, real writer integration, productive authority/registration and release/commercial readiness remain future gated work), P4 2 (evidence refs remain syntactic/local; authority evidence remains non-product).
+- Non-goals: no active product ledger path, real writer, append-only ledger creation, active path persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the local-only/no-write active policy candidate evaluator if final validation and push pass.
+- Input: active policy implementation block at initial HEAD `9f3f75a2092ce2318417c7b86b5a8f2491711ed4`.
+- Scope: audit policy source, focused Safety/Recipes tests, ADR, QA report, handoff, roadmap and decision-log without source/test behavior changes.
+- Verdict: implementation stays local-only/no-write and returns only rejected, blocked or candidate accepted no-write; product capability flags remain hard-false.
+- Findings: P0 0, P1 0, P2 0, P3 4 (persisted active ledger path, real writer integration, productive authority/registration and release/commercial readiness remain future gated work), P4 2 (evidence refs remain syntactic/local; non-product authority evidence is not a product authority model).
+- Non-goals: no source/test behavior changes, active product ledger path, real writer, append-only ledger creation, active path persistence, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_PERSISTED_ACTIVE_PATH_WRITER_OR_RUNTIME_ENABLEMENT`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`

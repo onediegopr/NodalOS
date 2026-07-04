@@ -30,6 +30,7 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Product ledger path disabled scaffold readiness: 32-42% / disabled-test-only no-write preview.
 - Product ledger path property/corpus coverage: 45-55% / test-only only.
 - Product ledger path real canonicalization validator readiness: 48-58% / local-only no-write candidate readiness.
+- Product ledger path active policy candidate readiness: 40-50% / local-only no-write policy accepted candidate.
 - Redaction product wiring readiness: 22-32%.
 - Runtime feature flag product readiness: 18-28%.
 - Authority wiring readiness: 18-28%.
@@ -51,7 +52,9 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Latest product ledger path stop packet: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_REAL_IMPLEMENTATION`.
 - Latest product ledger path real canonicalization validator: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_LOCAL_ONLY_NO_WRITE_READY`.
 - Latest product ledger path real canonicalization validator external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_REAL_CANONICALIZATION_VALIDATOR_EXTERNAL_AUDIT_READY`.
-- Recommended next step before any writer/product enablement: explicit manual GO for active product ledger path policy, writer behavior or runtime/product enablement.
+- Latest product ledger path active policy candidate: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_LOCAL_ONLY_NO_WRITE_READY`.
+- Latest product ledger path active policy external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_ACTIVE_POLICY_EXTERNAL_AUDIT_READY`.
+- Recommended next step before any writer/product enablement: explicit manual GO for persisted active path, writer behavior or runtime/product enablement.
 - Durable runtime product enablement still requires explicit manual GO; autonomous safe continuation may only proceed through docs/design/audit/test-plan/test-only blocks.
 
 ## Current State
