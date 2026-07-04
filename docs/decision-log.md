@@ -1248,3 +1248,15 @@
 - Findings: P0=0, P1=0, P2=0; P3 future rendered UI acceptance can add screenshot/DOM interaction evidence if local-only; P4 acceptance evidence is Core/test fixture evidence, not live user telemetry or compliance custody.
 - Readiness changes: public local-only actions 76% -> 84%; operator acceptance 82% -> 92%; external/cloud, DB, KMS/WORM/external trust, live automation and release/commercial remain 0%.
 - Real frontier: public internet exposure, destructive action, unbounded export/write, external/provider/cloud, DB/migration, KMS/WORM/external trust, live automation or release/commercial.
+
+## NODAL_OS_PRODUCT_LEDGER_LOCAL_ONLY_GLOBAL_COHERENCE_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_ONLY_GLOBAL_COHERENCE_AUDIT_READY`
+- Baseline: `a52c0925bd72a1a0556706fa0bf6ad0c46c08431`.
+- Scope: audit-only/read-only/docs-only/test-only global coherence packet for the Product Ledger local-only line.
+- Implemented/documented: 26 claim matrix rows, 20 capability matrix rows, contradiction audit, evidence index, test command index, known limitations, blocked frontiers, external reviewer prompt/template, Safety/Recipes tests, QA report, ADR and handoff.
+- Claims: supported=14, limited=2, blocked=10, not_supported=0.
+- Capabilities: local-only/read-only/test-only/fixture-safe=13; blocked/NO-GO=7.
+- Findings: P0=0, P1=0, P2=0; P3 rendered UI DOM interaction and local/internal action surface completion remain future safe blocks; P4 local evidence is not live route, compliance custody or human business signoff.
+- Readiness unchanged: public local-only actions 84%, operator acceptance 92%, external/cloud/DB/KMS/live/release 0%.
+- Safe next step: `PAUSE_SAFE_LOCAL_ONLY_LINE_READY_FOR_EXTERNAL_REVIEW`.
