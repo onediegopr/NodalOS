@@ -193,6 +193,17 @@
 - Non-goals: no runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_READ_MODEL_AND_EVIDENCE_PACK_TEST_ONLY`.
 
+## NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_READ_MODEL_AND_EVIDENCE_PACK_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFOLD_READ_MODEL_EVIDENCE_PACK_TEST_ONLY_READY`
+- Status: accepted as test-only read-model/evidence-pack scaffold hardening if final validation and push pass.
+- Input HEAD: `86a27b4b0fe0ae16415d04388f85e52705b6bcac`.
+- Scope: harden `DurableRuntimeEnablementSafetyScaffold` replay/failure readiness with local evidence refs, read-model snapshot evidence, replay/read-model consistency, failure catalog, rollback/non-rollback classification and no live replay/raw payload claims without runtime/product enablement.
+- Implemented: typed blockers for replay/failure evidence refs, malformed/duplicate refs, missing read-model snapshot, missing replay/read-model consistency, missing failure-mode catalog, missing rollback/non-rollback classification, live replay execution claims and raw payload evidence; live automation claim detection now handles separator variants such as `live-execution`.
+- Findings: P0 0, P1 0, P2 0, P3 3 (product read model, real replay service and real rollback/non-rollback execution policy remain future product work), P4 2 (evidence reference validation remains syntactic; historical docs still contain no-go vocabulary by design).
+- Non-goals: no runtime/live product enablement, active product ledger path, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_RUNTIME_SCAFFOLD_EXTERNAL_AUDIT_READ_ONLY_AFTER_READ_MODEL_EVIDENCE_PACK`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`

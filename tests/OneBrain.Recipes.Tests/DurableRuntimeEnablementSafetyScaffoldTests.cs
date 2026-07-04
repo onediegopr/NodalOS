@@ -59,6 +59,13 @@ public sealed class DurableRuntimeEnablementSafetyScaffoldTests
                 ReplayFailureEvidence: new DurableRuntimeReplayFailureEvidenceReadiness(
                     HasReplayEvidence: true,
                     HasFailureEvidence: true,
+                    EvidenceReferences: ["docs/qa/durable-runtime-readiness/report.md"],
+                    HasReadModelSnapshot: true,
+                    HasReplayReadModelConsistencyCheck: true,
+                    HasFailureModeCatalog: true,
+                    HasRollbackAndNonRollbackClassification: true,
+                    ClaimsLiveReplayExecution: false,
+                    ContainsRawPayloadEvidence: false,
                     AcknowledgesTailDeletionLimitation: true,
                     AcknowledgesCheckpointLimitation: true,
                     HasNoWormKmsCloudDisclaimer: true,

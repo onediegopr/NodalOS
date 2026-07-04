@@ -66,6 +66,15 @@ public enum DurableRuntimeEnablementScaffoldBlocker
     MissingReplayFailureEvidence,
     ReplayEvidenceMissing,
     FailureEvidenceMissing,
+    ReplayFailureEvidenceReferenceMissing,
+    ReplayFailureEvidenceReferenceMalformed,
+    ReplayFailureEvidenceReferenceDuplicate,
+    ReadModelSnapshotMissing,
+    ReplayReadModelConsistencyMissing,
+    FailureModeCatalogMissing,
+    RollbackNonRollbackClassificationMissing,
+    ReplayEvidenceClaimsLiveExecution,
+    ReplayEvidenceContainsRawPayload,
     TailDeletionLimitationNotAcknowledged,
     CheckpointLimitationNotAcknowledged,
     NoWormKmsCloudDisclaimerMissing,
@@ -126,6 +135,13 @@ public sealed record DurableRuntimeAuthorityWiringReadiness(
 public sealed record DurableRuntimeReplayFailureEvidenceReadiness(
     bool HasReplayEvidence,
     bool HasFailureEvidence,
+    IReadOnlyList<string>? EvidenceReferences,
+    bool HasReadModelSnapshot,
+    bool HasReplayReadModelConsistencyCheck,
+    bool HasFailureModeCatalog,
+    bool HasRollbackAndNonRollbackClassification,
+    bool ClaimsLiveReplayExecution,
+    bool ContainsRawPayloadEvidence,
     bool AcknowledgesTailDeletionLimitation,
     bool AcknowledgesCheckpointLimitation,
     bool HasNoWormKmsCloudDisclaimer,
@@ -171,7 +187,7 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
         @"(^|[\/\\._-])(inconsistent|mismatch|conflict)([\/\\._-]|$)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex LiveAutomationClaimPattern = new(
-        @"browser/cdp\s+live|cdp\s+live|wcu\s*/\s*ocr\s+live|ocr\s+live|recipes?\s+live|live\s+automation|live\s+execution",
+        @"browser/cdp[\s._-]+live|cdp[\s._-]+live|wcu\s*/\s*ocr[\s._-]+live|ocr[\s._-]+live|recipes?[\s._-]+live|live[\s._-]+automation|live[\s._-]+execution",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex RealHumanAuthorityClaimPattern = new(
         @"real\s+human\s+(authorization|approval)|production\s+operator\s+approval|operator\s+authority|auth\s+approved",
@@ -507,6 +523,38 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
             blockers.Add(DurableRuntimeEnablementScaffoldBlocker.FailureEvidenceMissing);
         }
 
+        AddReplayFailureEvidenceReferenceBlockers(readiness.EvidenceReferences, blockers);
+
+        if (!readiness.HasReadModelSnapshot)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReadModelSnapshotMissing);
+        }
+
+        if (!readiness.HasReplayReadModelConsistencyCheck)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReplayReadModelConsistencyMissing);
+        }
+
+        if (!readiness.HasFailureModeCatalog)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.FailureModeCatalogMissing);
+        }
+
+        if (!readiness.HasRollbackAndNonRollbackClassification)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.RollbackNonRollbackClassificationMissing);
+        }
+
+        if (readiness.ClaimsLiveReplayExecution)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReplayEvidenceClaimsLiveExecution);
+        }
+
+        if (readiness.ContainsRawPayloadEvidence)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReplayEvidenceContainsRawPayload);
+        }
+
         if (!readiness.AcknowledgesTailDeletionLimitation)
         {
             blockers.Add(DurableRuntimeEnablementScaffoldBlocker.TailDeletionLimitationNotAcknowledged);
@@ -525,6 +573,35 @@ public sealed class DurableRuntimeEnablementSafetyScaffold
         if (readiness.ClaimsDurableProductRecovery)
         {
             blockers.Add(DurableRuntimeEnablementScaffoldBlocker.DurableProductRecoveryClaimed);
+        }
+    }
+
+    private static void AddReplayFailureEvidenceReferenceBlockers(
+        IReadOnlyList<string>? evidenceReferences,
+        List<DurableRuntimeEnablementScaffoldBlocker> blockers)
+    {
+        if (evidenceReferences is null || evidenceReferences.Count == 0)
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReplayFailureEvidenceReferenceMissing);
+            return;
+        }
+
+        if (evidenceReferences.Any(reference => string.IsNullOrWhiteSpace(reference) || Uri.TryCreate(reference, UriKind.Absolute, out _)))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReplayFailureEvidenceReferenceMalformed);
+        }
+
+        if (evidenceReferences
+            .Where(reference => !string.IsNullOrWhiteSpace(reference))
+            .GroupBy(reference => reference, StringComparer.OrdinalIgnoreCase)
+            .Any(group => group.Count() > 1))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReplayFailureEvidenceReferenceDuplicate);
+        }
+
+        if (evidenceReferences.Any(reference => !string.IsNullOrWhiteSpace(reference) && LiveAutomationClaimPattern.IsMatch(reference)))
+        {
+            blockers.Add(DurableRuntimeEnablementScaffoldBlocker.ReplayEvidenceClaimsLiveExecution);
         }
     }
 
