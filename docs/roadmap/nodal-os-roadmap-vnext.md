@@ -3111,3 +3111,46 @@ Updated progress estimate after closeout:
 - Project Understanding foundation: 93%
 - LLM/Assignment: 75%
 - Cloud optional: 10%
+
+## Product Ledger Internal Operator UI Read-Only Preview
+
+Status: implemented in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only `ProductLedgerInternalOperatorUiPresenter`.
+- Internal-only/local-only/read-only cockpit view-model bound to the Product Ledger diagnostics surface.
+- Header with readiness percentage and local-only/internal/no-release notices.
+- Sections for runtime gate, Product Ledger path policy, bounded writer, checkpoint/head, evidence gates, disabled actions and safe next step.
+- Disabled action previews without handler, command id or callback.
+- External audit read-only packet and QA handoff.
+
+Boundaries:
+
+- No public UI action.
+- No destructive user-facing action.
+- No command handler productivo.
+- No productive DI/service registration.
+- No provider/cloud/network.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live execution.
+- No release/commercial.
+- No external telemetry/sync.
+- No billing/licensing cloud.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76.6%
+- Evidence/Timeline foundation: 96%
+- Approval foundation: 95.6%
+- Product Ledger local-only writer: 82%
+- Runtime local-only gate: 78%
+- Operator diagnostics Core-only surface: 100%
+- Internal operator UI read-only preview: 100%
+- Command handler readiness: 0%
+- Public UI readiness: 0%
+- External provider/cloud readiness: 0%
+- Release/commercial: 0%

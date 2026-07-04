@@ -1090,3 +1090,15 @@
 - Non-goals preserved: no public UI action, destructive user-facing action, productive command handler, productive DI registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future-gated public/product/external surfaces; P4 same-boundary checkpoint/head diagnostics limitation and disabled action previews only.
 - Stop frontier: `PUBLIC_UI_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_OR_DESTRUCTIVE_USER_FACING_ACTION_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_INTERNAL_OPERATOR_UI_READ_ONLY_PREVIEW
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_INTERNAL_OPERATOR_UI_READ_ONLY_PREVIEW_FINAL_PACKET_READY`
+- Baseline: `621d373cd5e65e7dfebb78c3695b9df88aa607ce`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_INTERNAL_OPERATOR_UI_READ_ONLY_PREVIEW_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_INTERNAL_OPERATOR_UI_READ_ONLY_PREVIEW_EXTERNAL_AUDIT`.
+- Scope: Core-only internal-only/local-only/read-only Product Ledger operator UI preview view-model bound to the diagnostics/readiness surface.
+- Implemented: cockpit header, readiness percentage, runtime gate section, Product Ledger path policy section, bounded writer section, checkpoint/head section, evidence gates section, disabled actions section and safe next step section.
+- Safety posture: fail-closed for missing/unsafe diagnostics, missing required sections, executable action previews and public/product/external/release/telemetry/billing claims.
+- Non-goals preserved: no public UI action, destructive user-facing action, command handler productivo, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial, external telemetry/sync or billing/licensing cloud.
+- Findings: P0=0, P1=0, P2=0; P3 future-gated public/product/external surfaces; P4 preview readiness is operator-local status only and checkpoint/head notice remains same-boundary local trust.
+- Stop frontier: `PUBLIC_UI_OR_EXTERNAL_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_OR_DESTRUCTIVE_USER_FACING_ACTION_REQUIRES_NEW_EXPLICIT_GO`.
