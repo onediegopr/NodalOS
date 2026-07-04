@@ -1148,3 +1148,14 @@
 - Non-goals preserved: no public UI action, public/product command handler exposure, destructive user-facing action, unbounded physical export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial readiness, telemetry/sync/billing/licensing cloud or stash modification.
 - Findings: P0=0, P1=0, P2=0; P3 public read-only mock/preview fixtures, public static scan pack and manual QA prompt pack remain future safe blocks; P4 local-only evidence is not WORM/compliance-grade custody.
 - Stop frontier: `PUBLIC_UI_OR_PRODUCT_COMMAND_HANDLER_EXPOSURE_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_PUBLIC_UI_READ_ONLY_DISABLED_MOCK_PREVIEW
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PUBLIC_UI_READ_ONLY_DISABLED_MOCK_PREVIEW_FINAL_PACKET_READY`
+- Baseline: `7820cf9bdeac73a92d3eb9221d0b31f7b0acc740`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_PUBLIC_UI_READ_ONLY_DISABLED_MOCK_PREVIEW_SAFE_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_PUBLIC_UI_READ_ONLY_DISABLED_MOCK_PREVIEW_EXTERNAL_AUDIT_READ_ONLY`.
+- Scope: Core-only public UI read-only disabled mock preview bound to the internal operator UI preview and fresh public surface readiness packet.
+- Implemented: fail-closed request/result/view-model contract, disabled action mapping, blockers for public/product/external/release/raw claims and Safety/Recipes coverage.
+- Non-goals preserved: no public UI action, public/product command handler exposure, destructive user-facing action, endpoint/controller/route mapping, productive DI/service registration, physical writer/export authority, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial readiness, telemetry/sync/billing/licensing cloud or stash modification.
+- Findings: P0=0, P1=0, P2=0; P3 future public command/action exposure test plan and static scan corpus remain safe blocks; P4 mock is Core-only and not rendered product UI.
+- Stop frontier: `PUBLIC_UI_ACTION_OR_PRODUCT_COMMAND_HANDLER_EXPOSURE_REQUIRES_NEW_EXPLICIT_GO`.

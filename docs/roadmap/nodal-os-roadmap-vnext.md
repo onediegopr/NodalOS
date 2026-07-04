@@ -3334,3 +3334,57 @@ Updated progress estimate after closeout:
 - KMS/WORM/external trust: 0%
 - Browser/CDP/WCU/OCR/Recipes live: 0%
 - Release/commercial: 0%
+
+## Product Ledger Public UI Read-Only Disabled Mock Preview
+
+Status: implemented in branch, pending final block validation at close.
+
+Adds:
+
+- Core-only public UI read-only disabled mock preview presenter.
+- Fail-closed request/result/view-model contract.
+- Dependency on safe internal operator UI preview.
+- Fresh public surface readiness packet requirement.
+- Disabled mock actions with no productive command id, handler id or callback.
+- Safety and Recipes coverage.
+- External audit read-only packet and QA handoff.
+
+Boundaries:
+
+- Read-only disabled mock only.
+- Public UI action readiness remains 0%.
+- Public/product command handler exposure remains 0%.
+- Destructive action readiness remains 0%.
+- No endpoint/controller/route mapping.
+- No productive DI/service registration.
+- No physical writer/export authority.
+- No external/cloud export.
+- No provider/cloud/network.
+- No DB/migration.
+- No KMS/WORM/external trust.
+- No Browser/CDP/WCU/OCR/Recipes live.
+- No release/commercial.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76.9%
+- Approval foundation: 96.4%
+- Product Ledger local-only writer: 82%
+- Runtime local-only gate: 78%
+- Operator diagnostics Core-only surface: 100%
+- Internal operator UI read-only preview: 100%
+- Internal command router no-op/read-only: 100%
+- Internal command handler non-destructive: 100%
+- Bounded local report export: 100%
+- Public UI read-only disabled mock preview: 100%
+- Public UI action readiness: 0%
+- Public/product command handler exposure: 0%
+- Destructive action readiness: 0%
+- External/cloud export: 0%
+- External provider/cloud readiness: 0%
+- DB/migration: 0%
+- KMS/WORM/external trust: 0%
+- Browser/CDP/WCU/OCR/Recipes live: 0%
+- Release/commercial: 0%
