@@ -83,6 +83,17 @@
 - Non-goals: no cloud, KMS, provider, network, external key custody, WORM real storage, product checkpoint writer, product ledger path, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, DB/migration, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_LOCAL_ONLY_CHECKPOINT_TRUST_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_LOCAL_ONLY_CHECKPOINT_TRUST_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_LOCAL_ONLY_CHECKPOINT_TRUST_BOUNDARY_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the local-only/no-provider/test-only checkpoint trust boundary if final validation and push pass.
+- Input HEAD: `e51d1a1def9717a0e2c66e8e2b9ec39fc451e3a3`.
+- Scope: audit the local-only checkpoint trust boundary hardening, ADR, QA JSON, handoff, code and tests without source/test behavior changes.
+- Findings: P0 0, P1 0, P2 0, P3 2 (local-temp/caller-held checkpoint evidence still cannot provide independent external trust; future external trust remains blocked by policy), P4 1 (keep T0-T4 taxonomy explicit to avoid overclaiming).
+- Inherited validations: Safety focused tests PASS 36/36; Recipes focused tests PASS 8/8; Core build PASS 0 warnings/0 errors; full solution build PASS 33 pre-existing warnings/0 errors.
+- Non-goals: no source/test behavior changes, cloud, KMS, provider, network, external key custody, WORM real storage, product checkpoint writer, product ledger path, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, DB/migration, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_DURABLE_STAGE2_FINAL_EXTERNAL_AUDIT_AND_ROADMAP_CLAIM_RECONCILIATION_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
