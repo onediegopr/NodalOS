@@ -290,6 +290,28 @@
 - Non-goals: no active product ledger path, real writer, real filesystem canonicalization, real symlink/junction/reparse enforcement, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_EXTERNAL_AUDIT_READ_ONLY`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_EXPANSION_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only external audit of the product ledger path corpus expansion if final validation and push pass.
+- Input HEAD: `a3ff395162b0266ddf18b76d1d049f269a2b3656`.
+- Scope: audit corpus expansion source/tests/docs without source/test/runtime behavior changes.
+- Verdict: OPTION 3, GO to read-only product implementation stop packet. OPTION 4 product implementation remains NO-GO.
+- Findings: P0 0, P1 0, P2 0, P3 4 (real canonicalization enforcement, real reparse enforcement, real product authority and product write integration remain future work), P4 2 (string-level Unicode/confusable detection is conservative; hardlink/mount handling remains preview-only).
+- Non-goals: no source/test behavior changes, active product ledger path, real writer, real filesystem canonicalization, real symlink/junction/reparse enforcement, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_PRODUCT_IMPLEMENTATION_STOP_PACKET_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_PRODUCT_IMPLEMENTATION_STOP_PACKET_READ_ONLY
+
+- Decision target: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_REAL_IMPLEMENTATION`
+- Status: accepted as docs-only/read-only stop packet if final validation and push pass.
+- Input: product ledger path corpus external audit.
+- Scope: mark the real product boundary after safe product ledger path design, audit, disabled scaffold and corpus work.
+- Stop reason: the next meaningful step requires product ledger path activation, real writer, real filesystem canonicalization/reparse enforcement, product authority, runtime/product enablement or release/commercial decisions.
+- Findings: P0 0, P1 0, P2 0, P3 4 (real canonicalization, real reparse enforcement, real product authority and product write integration remain future implementation work), P4 1 (future implementation prompt must be tightly scoped).
+- Non-goals: no source/test/runtime behavior changes, active product ledger path, real writer, real filesystem canonicalization, real symlink/junction/reparse enforcement, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_MANUAL_GO_PRODUCT_LEDGER_PATH_REAL_IMPLEMENTATION`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
