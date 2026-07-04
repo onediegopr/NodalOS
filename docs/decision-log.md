@@ -1138,3 +1138,13 @@
 - Non-goals preserved: no public UI action, destructive user-facing action, public/product command handler exposure, unbounded physical export/write, external/cloud export, productive DI/service registration, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future-gated public/product UI/command exposure, external/cloud export, provider/cloud/network, DB/KMS/WORM/external trust; P4 local same-machine evidence is not WORM/compliance-grade custody.
 - Stop frontier: `PUBLIC_UI_OR_PUBLIC_PRODUCT_COMMAND_HANDLER_OR_UNBOUNDED_WRITE_OR_EXTERNAL_CLOUD_EXPORT_OR_PROVIDER_DB_KMS_LIVE_AUTOMATION_RELEASE_REQUIRES_NEW_EXPLICIT_GO`.
+
+## NODAL_OS_PRODUCT_LEDGER_PUBLIC_SURFACE_READINESS_AND_LAUNCH_BLOCKER_MAP
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PUBLIC_SURFACE_READINESS_AND_LAUNCH_BLOCKER_MAP_FINAL_PACKET_READY`
+- Baseline: `8f849f4ef43c444557d92820f5daec4c16112bff`
+- Safe blocks chained: `NODAL_OS_PRODUCT_LEDGER_PUBLIC_SURFACE_READINESS_AND_LAUNCH_BLOCKER_MAP_DESIGN_ONLY_WINDOW` and `NODAL_OS_PRODUCT_LEDGER_PUBLIC_SURFACE_READINESS_AND_LAUNCH_BLOCKER_MAP_EXTERNAL_AUDIT_READ_ONLY`.
+- Scope: docs-only/design-only/read-only public surface readiness matrix, public UI threat model, future safe exposure contract, public command handler test plan, launch blocker map, manual QA/external audit checklist and stop packet.
+- Non-goals preserved: no public UI action, public/product command handler exposure, destructive user-facing action, unbounded physical export/write, external/cloud export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live execution, release/commercial readiness, telemetry/sync/billing/licensing cloud or stash modification.
+- Findings: P0=0, P1=0, P2=0; P3 public read-only mock/preview fixtures, public static scan pack and manual QA prompt pack remain future safe blocks; P4 local-only evidence is not WORM/compliance-grade custody.
+- Stop frontier: `PUBLIC_UI_OR_PRODUCT_COMMAND_HANDLER_EXPOSURE_REQUIRES_NEW_EXPLICIT_GO`.

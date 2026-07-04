@@ -3288,3 +3288,49 @@ Updated progress estimate after closeout:
 - Public UI readiness: 0%
 - External provider/cloud readiness: 0%
 - Release/commercial: 0%
+
+## Product Ledger Public Surface Readiness And Launch Blocker Map
+
+Status: documented in branch, pending final block validation at close.
+
+Adds:
+
+- Public surface readiness matrix.
+- Public UI threat model.
+- Safe exposure contract design-only.
+- Future public command handler test plan.
+- Launch blocker map.
+- Manual QA and external audit checklist.
+- Stop packet: `PUBLIC_UI_OR_PRODUCT_COMMAND_HANDLER_EXPOSURE_REQUIRES_NEW_EXPLICIT_GO`.
+
+Boundaries:
+
+- Design-only/read-only.
+- Public UI readiness remains 0%.
+- Product command handler exposure remains 0%.
+- Release/commercial remains 0%.
+- No provider/cloud/KMS/WORM/external trust.
+- Local-only evidence is not WORM/compliance-grade custody.
+
+Updated progress estimate after closeout:
+
+- NODAL OS global: 99.98%
+- Agent Operations / Automation Layer: 99.45%
+- Core Runtime: 76.9%
+- Approval foundation: 96.3%
+- Product Ledger local-only writer: 82%
+- Runtime local-only gate: 78%
+- Operator diagnostics Core-only surface: 100%
+- Internal operator UI read-only preview: 100%
+- Internal command router no-op/read-only: 100%
+- Internal command handler non-destructive: 100%
+- Bounded local report export: 100%
+- Public UI readiness: 0%
+- Public/product command handler exposure: 0%
+- Destructive action readiness: 0%
+- External/cloud export: 0%
+- External provider/cloud readiness: 0%
+- DB/migration: 0%
+- KMS/WORM/external trust: 0%
+- Browser/CDP/WCU/OCR/Recipes live: 0%
+- Release/commercial: 0%
