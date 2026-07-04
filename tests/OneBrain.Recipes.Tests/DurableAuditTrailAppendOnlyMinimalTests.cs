@@ -157,6 +157,45 @@ public sealed class DurableAuditTrailAppendOnlyMinimalTests
         Assert.IsFalse(compared.ReleaseCommercialReady);
     }
 
+    [TestMethod]
+    public void Stage2TestOnly_LocalOnlyCheckpointTrustBoundaryRejectsStrongerClaims()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var checkpointEvidence = new DurableAuditTrailLocalTempCheckpointEvidence();
+        var request = Request("approval-stage2-001");
+        ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
+        var ledgerFile = LedgerFile(temp.Path);
+        var checkpoint = checkpointEvidence.CaptureHeadCheckpoint(ledgerFile).Checkpoint!;
+
+        var overclaimed = checkpoint with
+        {
+            TrustBoundary = "cloud-kms-worm-product",
+            ExternalTrust = true,
+            WormOrKmsBacked = true,
+            CloudBacked = true,
+            ReleaseCommercialReady = true
+        };
+        var result = checkpointEvidence.CompareHeadCheckpoint(ledgerFile, overclaimed);
+
+        Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Rejected, result.Decision);
+        CollectionAssert.Contains(
+            result.RejectReasons.ToArray(),
+            DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointTrustBoundaryMismatch);
+        CollectionAssert.Contains(
+            result.RejectReasons.ToArray(),
+            DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsExternalTrust);
+        CollectionAssert.Contains(
+            result.RejectReasons.ToArray(),
+            DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsWormKmsCloud);
+        CollectionAssert.Contains(
+            result.RejectReasons.ToArray(),
+            DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsReleaseCommercialReady);
+        Assert.IsFalse(result.ExternalTrustAvailable);
+        Assert.IsFalse(result.ProductRuntimeEnabled);
+        Assert.IsFalse(result.ReleaseCommercialReady);
+    }
+
     private static DurableAuditTrailAppendOnlyMinimalPolicy Policy(string root) =>
         new(Enabled: true, StorageRoot: root);
 

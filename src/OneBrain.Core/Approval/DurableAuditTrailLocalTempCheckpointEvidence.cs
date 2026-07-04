@@ -14,7 +14,12 @@ public enum DurableAuditTrailLocalTempCheckpointRejectReason
     LedgerOutsideLocalTempBoundary,
     LedgerVerificationFailed,
     MissingCheckpoint,
-    CheckpointLedgerPathMismatch
+    MalformedCheckpoint,
+    CheckpointLedgerPathMismatch,
+    CheckpointTrustBoundaryMismatch,
+    CheckpointClaimsExternalTrust,
+    CheckpointClaimsWormKmsCloud,
+    CheckpointClaimsReleaseCommercialReady
 }
 
 public sealed record DurableAuditTrailLocalTempCheckpoint(
@@ -85,7 +90,8 @@ public sealed class DurableAuditTrailLocalTempCheckpointEvidence
         string ledgerFile,
         DurableAuditTrailLocalTempCheckpoint? checkpoint)
     {
-        if (!IsUnderTempPath(ledgerFile))
+        if (!TryGetFullPath(ledgerFile, out var ledgerFullPath)
+            || !IsUnderTempPath(ledgerFullPath))
         {
             return Rejected([DurableAuditTrailLocalTempCheckpointRejectReason.LedgerOutsideLocalTempBoundary]);
         }
@@ -95,7 +101,14 @@ public sealed class DurableAuditTrailLocalTempCheckpointEvidence
             return Rejected([DurableAuditTrailLocalTempCheckpointRejectReason.MissingCheckpoint]);
         }
 
-        if (!string.Equals(Path.GetFullPath(ledgerFile), Path.GetFullPath(checkpoint.LedgerFile), StringComparison.OrdinalIgnoreCase))
+        var checkpointRejections = ValidateCheckpoint(checkpoint);
+        if (checkpointRejections.Count > 0)
+        {
+            return Rejected(checkpointRejections, checkpoint);
+        }
+
+        if (!TryGetFullPath(checkpoint.LedgerFile, out var checkpointLedgerFullPath)
+            || !string.Equals(ledgerFullPath, checkpointLedgerFullPath, StringComparison.OrdinalIgnoreCase))
         {
             return Rejected([DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointLedgerPathMismatch]);
         }
@@ -147,11 +160,91 @@ public sealed class DurableAuditTrailLocalTempCheckpointEvidence
             ProductRuntimeEnabled: false,
             ReleaseCommercialReady: false);
 
+    private static IReadOnlyList<DurableAuditTrailLocalTempCheckpointRejectReason> ValidateCheckpoint(
+        DurableAuditTrailLocalTempCheckpoint checkpoint)
+    {
+        var reasons = new List<DurableAuditTrailLocalTempCheckpointRejectReason>();
+        if (!TryGetFullPath(checkpoint.LedgerFile, out var checkpointLedgerFullPath)
+            || !IsUnderTempPath(checkpointLedgerFullPath)
+            || checkpoint.EntryCount < 0
+            || checkpoint.LastSequenceNumber < 0
+            || string.IsNullOrWhiteSpace(checkpoint.LastHash)
+            || checkpoint.CapturedAtUtc == default)
+        {
+            reasons.Add(DurableAuditTrailLocalTempCheckpointRejectReason.MalformedCheckpoint);
+        }
+
+        if (checkpoint.EntryCount == 0
+            && (checkpoint.LastSequenceNumber != 0
+                || !string.Equals(checkpoint.LastHash, "genesis", StringComparison.Ordinal)))
+        {
+            reasons.Add(DurableAuditTrailLocalTempCheckpointRejectReason.MalformedCheckpoint);
+        }
+
+        if (checkpoint.EntryCount > 0 && checkpoint.LastSequenceNumber <= 0)
+        {
+            reasons.Add(DurableAuditTrailLocalTempCheckpointRejectReason.MalformedCheckpoint);
+        }
+
+        if (!string.Equals(checkpoint.TrustBoundary, LocalTempTrustBoundary, StringComparison.Ordinal))
+        {
+            reasons.Add(DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointTrustBoundaryMismatch);
+        }
+
+        if (checkpoint.ExternalTrust)
+        {
+            reasons.Add(DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsExternalTrust);
+        }
+
+        if (checkpoint.WormOrKmsBacked || checkpoint.CloudBacked)
+        {
+            reasons.Add(DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsWormKmsCloud);
+        }
+
+        if (checkpoint.ReleaseCommercialReady)
+        {
+            reasons.Add(DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsReleaseCommercialReady);
+        }
+
+        return reasons.Distinct().ToArray();
+    }
+
     private static bool IsUnderTempPath(string path)
     {
-        var fullPath = Path.GetFullPath(path);
+        if (!TryGetFullPath(path, out var fullPath))
+        {
+            return false;
+        }
+
         var tempPath = EnsureTrailingDirectorySeparator(Path.GetFullPath(Path.GetTempPath()));
         return fullPath.StartsWith(tempPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetFullPath(string? path, out string fullPath)
+    {
+        fullPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        try
+        {
+            fullPath = Path.GetFullPath(path);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+        catch (PathTooLongException)
+        {
+            return false;
+        }
     }
 
     private static string EnsureTrailingDirectorySeparator(string path) =>

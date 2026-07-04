@@ -802,6 +802,118 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
     }
 
     [TestMethod]
+    public void Stage2TestOnly_LocalTempCheckpointEvidenceRejectsMalformedCheckpointEvidence()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var checkpointEvidence = new DurableAuditTrailLocalTempCheckpointEvidence();
+        var request = Request() with { ApprovalReference = "approval-stage2-001" };
+        ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
+        var ledgerFile = LedgerFile(temp.Path);
+        var captured = checkpointEvidence.CaptureHeadCheckpoint(ledgerFile).Checkpoint!;
+
+        var malformedCases = new[]
+        {
+            captured with { LedgerFile = string.Empty },
+            captured with { EntryCount = -1 },
+            captured with { LastSequenceNumber = -1 },
+            captured with { LastHash = string.Empty },
+            captured with { CapturedAtUtc = default },
+            captured with { EntryCount = 0, LastSequenceNumber = 1 },
+            captured with { EntryCount = 0, LastHash = captured.LastHash }
+        };
+
+        foreach (var checkpoint in malformedCases)
+        {
+            var result = checkpointEvidence.CompareHeadCheckpoint(ledgerFile, checkpoint);
+
+            Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Rejected, result.Decision);
+            CollectionAssert.Contains(result.RejectReasons.ToArray(), DurableAuditTrailLocalTempCheckpointRejectReason.MalformedCheckpoint);
+            AssertNoCheckpointSideEffects(result);
+        }
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_LocalTempCheckpointEvidenceRejectsOverclaimedExternalTrust()
+    {
+        using var temp = new TempDirectory();
+        var ledger = new DurableAuditTrailAppendOnlyMinimal();
+        var checkpointEvidence = new DurableAuditTrailLocalTempCheckpointEvidence();
+        var request = Request() with { ApprovalReference = "approval-stage2-001" };
+        ledger.AppendStage2TestOnly(Policy(temp.Path), request, Stage2Gate(request));
+        var ledgerFile = LedgerFile(temp.Path);
+        var captured = checkpointEvidence.CaptureHeadCheckpoint(ledgerFile).Checkpoint!;
+        var cases = new Dictionary<DurableAuditTrailLocalTempCheckpoint, DurableAuditTrailLocalTempCheckpointRejectReason>
+        {
+            [captured with { TrustBoundary = "external-worm-kms-cloud" }] =
+                DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointTrustBoundaryMismatch,
+            [captured with { ExternalTrust = true }] =
+                DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsExternalTrust,
+            [captured with { WormOrKmsBacked = true }] =
+                DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsWormKmsCloud,
+            [captured with { CloudBacked = true }] =
+                DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsWormKmsCloud,
+            [captured with { ReleaseCommercialReady = true }] =
+                DurableAuditTrailLocalTempCheckpointRejectReason.CheckpointClaimsReleaseCommercialReady
+        };
+
+        foreach (var testCase in cases)
+        {
+            var result = checkpointEvidence.CompareHeadCheckpoint(ledgerFile, testCase.Key);
+
+            Assert.AreEqual(DurableAuditTrailLocalTempCheckpointDecision.Rejected, result.Decision, testCase.Value.ToString());
+            CollectionAssert.Contains(result.RejectReasons.ToArray(), testCase.Value);
+            AssertNoCheckpointSideEffects(result);
+        }
+    }
+
+    [TestMethod]
+    public void Stage2TestOnly_LocalTempCheckpointEvidenceSourceContainsNoExternalProviderOrProductWiring()
+    {
+        var sourcePath = System.IO.Path.Combine(
+            FindRepoRoot(),
+            "src",
+            "OneBrain.Core",
+            "Approval",
+            "DurableAuditTrailLocalTempCheckpointEvidence.cs");
+        var source = File.ReadAllText(sourcePath);
+        var forbiddenFragments = new[]
+        {
+            "AddSingleton",
+            "AddScoped",
+            "AddTransient",
+            "IHostedService",
+            "MapPost",
+            "MapGet",
+            "AddCommandHandler",
+            "ICommandHandler",
+            "RunProductAction",
+            "ProductActionButton",
+            "HttpClient",
+            "WebSocket",
+            "DbContext",
+            "MigrationBuilder",
+            "SaveChanges",
+            "Amazon",
+            "AWSSDK",
+            "Azure.",
+            "KeyVault",
+            "Google.Cloud",
+            "KmsClient",
+            "BlobServiceClient",
+            "S3Client",
+            "ReleaseReady = true",
+            "CommercialReady = true",
+            "ReleaseCommercialReady: true"
+        };
+
+        foreach (var fragment in forbiddenFragments)
+        {
+            Assert.IsFalse(source.Contains(fragment, StringComparison.Ordinal), fragment);
+        }
+    }
+
+    [TestMethod]
     public void MinimalLedger_PublicSurfaceDoesNotRegisterCommandsOrRuntimeExecution()
     {
         var forbiddenNames = new[]
@@ -944,6 +1056,14 @@ public sealed class DurableAuditTrailAppendOnlyMinimalSafetyTests
         Assert.IsFalse(result.NetworkAllowed);
         Assert.IsFalse(result.DbMigrationAllowed);
         Assert.IsFalse(result.CommandHandlerRegistered);
+        Assert.IsFalse(result.ReleaseCommercialReady);
+    }
+
+    private static void AssertNoCheckpointSideEffects(DurableAuditTrailLocalTempCheckpointEvidenceResult result)
+    {
+        Assert.IsFalse(result.TailDeletionEvidenceAvailable);
+        Assert.IsFalse(result.ExternalTrustAvailable);
+        Assert.IsFalse(result.ProductRuntimeEnabled);
         Assert.IsFalse(result.ReleaseCommercialReady);
     }
 

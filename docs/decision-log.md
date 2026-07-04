@@ -72,6 +72,17 @@
 - Non-goals: no source/test behavior changes, runtime/live product enablement, productive service registration, product ledger path, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, WORM/KMS/cloud checkpointing implementation, release/commercial readiness or stash modification.
 - Stop point: `PAUSE_FOR_PRODUCT_SECURITY_DECISION_EXTERNAL_CHECKPOINT_TRUST_BOUNDARY`.
 
+## NODAL_OS_EXTERNAL_CHECKPOINT_TRUST_BOUNDARY_LOCAL_ONLY_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_LOCAL_ONLY_CHECKPOINT_TRUST_BOUNDARY_TEST_ONLY_READY`
+- Status: accepted as local-only/no-provider/test-only checkpoint trust boundary hardening if final validation and push pass.
+- Input HEAD: `a811c9960cab3cefbc50be870a043e71ff529aaf`.
+- Scope: close the product/security decision as local-only/no-provider/test-only and harden local-temp checkpoint evidence validation without enabling runtime/product behavior.
+- Corrections: `DurableAuditTrailLocalTempCheckpointEvidence.CompareHeadCheckpoint` now rejects malformed caller-provided checkpoints and rejects any checkpoint that claims external trust, WORM/KMS, cloud backing, mismatched trust boundary or release/commercial readiness before head comparison.
+- Findings: P0 0, P1 0, P2 0, P3 2 (checkpoint trust remains local-temp/caller-held only; external independent trust remains blocked by policy), P4 1 (T2-T4 taxonomy remains blocked roadmap context).
+- Non-goals: no cloud, KMS, provider, network, external key custody, WORM real storage, product checkpoint writer, product ledger path, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, DB/migration, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended block: `NODAL_OS_LOCAL_ONLY_CHECKPOINT_TRUST_BOUNDARY_EXTERNAL_AUDIT_READ_ONLY`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
