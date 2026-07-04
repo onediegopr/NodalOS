@@ -150,6 +150,17 @@
 - Non-goals: no code/test behavior changes, productive redaction service, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path implementation, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Next recommended block: `NODAL_OS_DURABLE_RUNTIME_ENABLEMENT_DESIGN_ONLY_NO_CODE`.
 
+## NODAL_OS_DURABLE_RUNTIME_ENABLEMENT_DESIGN_ONLY_NO_CODE
+
+- Decision target: `GO_WITH_FINDINGS_DURABLE_RUNTIME_ENABLEMENT_DESIGN_ONLY_NO_CODE_READY`
+- Status: accepted as docs-only/no-code durable runtime enablement plan if final validation and push pass.
+- Input HEAD: `3fb5278be8119831d9d759186ad6b7091106de92`.
+- Scope: consolidate future runtime/product enablement gates, ordering, negative tests and stop condition without source/test/runtime behavior changes.
+- Canon: Durable Stage 2 remains test-only/local-temp; redaction remains isolated Core/test-only; runtime feature flag is exact test-only only; product ledger path remains `0% / NO-GO`; checkpoint trust remains local-only/no-provider/test-only; runtime/product/release/commercial readiness remains `0% / NO-GO`.
+- Findings: P0 0, P1 0, P2 0, P3 5 (product ledger policy, redaction product wiring, product runtime flag, authority wiring and replay/failure evidence remain future implementation work), P4 1 (percentages remain conservative planning estimates).
+- Non-goals: no code/test behavior changes, runtime/live product enablement, productive service registration, command handlers, command bus wiring, UI product actions, product ledger path implementation, DB/migration, provider/cloud/network, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Stop point: `PAUSE_FOR_MANUAL_GO_BEFORE_DURABLE_RUNTIME_PRODUCT_IMPLEMENTATION_OR_ENABLEMENT`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`
