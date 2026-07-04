@@ -204,7 +204,10 @@ public sealed class ProductLedgerPathLocalTempWriterTestOnlyTests
             "Db" + "Context",
             "Http" + "Client",
             "Kms" + "Client",
-            "Worm" + "Store",
+            "Worm" + "Store"
+        };
+        var noWriteLegacyFragments = new[]
+        {
             "ProductLedgerPathActive:" + " true",
             "ProductLedgerWriteAllowed:" + " true",
             "ProductRuntimeEnabled:" + " true"
@@ -215,6 +218,14 @@ public sealed class ProductLedgerPathLocalTempWriterTestOnlyTests
             foreach (var fragment in forbiddenFragments)
             {
                 Assert.IsFalse(source.Value.Contains(fragment, StringComparison.Ordinal), $"{source.Key}: {fragment}");
+            }
+
+            if (!Path.GetFileName(source.Key).Equals("ProductLedgerPathLocalOnlyActiveWriter.cs", StringComparison.OrdinalIgnoreCase))
+            {
+                foreach (var fragment in noWriteLegacyFragments)
+                {
+                    Assert.IsFalse(source.Value.Contains(fragment, StringComparison.Ordinal), $"{source.Key}: {fragment}");
+                }
             }
         }
 

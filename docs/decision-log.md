@@ -425,6 +425,41 @@
 - Non-goals: no active product ledger path, product ledger write, product writer activation, runtime/live product enablement, productive DI/service registration, command handlers, command bus wiring, UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
 - Stop frontier: `PRODUCT_RUNTIME_ENABLEMENT_OR_PRODUCTIVE_WRITER_PATH_AUTHORITY_REQUIRES_NEW_EXPLICIT_MANUAL_GO`.
 
+## NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_READY`
+- Status: accepted as active local-only Product Ledger Path with bounded local writer if final validation and push pass.
+- Scope: local-only activation behind persisted candidate policy, local authority evidence, redaction/retention/failure evidence gates, runtime flag default-off, bounded JSONL writer, local read/append verification and checkpoint.
+- Findings: P0 0, P1 0, P2 0 in focused tests. P3/P4 remain around runtime enablement, product DI/service registration, command handlers, public UI actions, DB/cloud/KMS/WORM/external trust and release/commercial readiness.
+- Non-goals: no runtime product enablement, productive DI/service registration, command handlers, public UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_EXTERNAL_AUDIT_READY`
+- Status: accepted as read-only audit of the local-only active writer if final validation and push pass.
+- Scope: audit activation, writer, verification, runtime default-off, authority evidence and no-cloud/no-DB/no-KMS/no-UI/no-release boundary.
+- Findings: P0 0, P1 0, P2 0. P3/P4 remain around runtime enablement, service registration, command handlers, external trust/WORM/KMS and DB-backed persistence.
+- Non-goals: no source/test behavior changes, runtime product enablement, productive DI/service registration, command handlers, public UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_PROPERTY_CORPUS_STATIC_SCAN_HARDENING`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_PROPERTY_CORPUS_STATIC_SCAN_HARDENING
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_READY`
+- Status: accepted as local-only property/corpus/static scan hardening if final validation and push pass.
+- Scope: expand unsafe hash/evidence metadata corpus and add static assertions against local temp as product path plus runtime/registration/cloud/DB/KMS/UI/release surfaces.
+- Findings: P0 0, P1 0, P2 0 in focused tests. P3/P4 remain around runtime enablement, service registration, command handlers, external trust/WORM/KMS and DB-backed persistence.
+- Non-goals: no runtime product enablement, productive DI/service registration, command handlers, public UI product actions, DB/migration, provider/cloud/network, KMS/WORM/external trust, Browser/CDP live automation, WCU/OCR live action, Recipes live execution, release/commercial readiness or stash modification.
+- Next recommended safe block: `NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_FINAL_READINESS_PACKET`.
+
+## NODAL_OS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_FINAL_READINESS_PACKET
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_FINAL_READINESS_PACKET_READY`
+- Status: accepted as final local-only readiness packet if final validation and push pass.
+- Scope: consolidate active local-only path, bounded local writer, append/read verification, local checkpoint, runtime default-off gate, authority evidence, audits, corpus/static hardening and remaining frontier.
+- Findings: P0 0, P1 0, P2 0. P3/P4 remain around runtime/product enablement, productive DI/service registration, command handlers, public UI actions, DB/cloud/KMS/WORM/external trust and release/commercial readiness.
+- Stop frontier: `RUNTIME_PRODUCT_ENABLEMENT_OR_EXTERNAL_PRODUCT_SURFACE_REQUIRES_NEW_EXPLICIT_GO`.
+
 ## NODAL_OS_POST_STAGE2_GLOBAL_EXTERNAL_AUDIT_AND_NEXT_SCOPE_SELECTION
 
 - Decision target: `GO_WITH_FINDINGS_POST_STAGE2_GLOBAL_AUDIT_NEXT_SCOPE_READY`

@@ -34,6 +34,7 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Product ledger path persisted candidate registry readiness: 35-45% / in-memory local-only no-write.
 - Product ledger path disabled writer scaffold readiness: 30-40% / disabled test-only no-write.
 - Product ledger path local-temp writer test-only readiness: 40-50% / local-temp only, local head checkpoint, not product ledger path.
+- Product ledger path local-only active writer readiness: 55-65% / active local-only bounded writer, runtime default-off.
 - Redaction product wiring readiness: 22-32%.
 - Runtime feature flag product readiness: 18-28%.
 - Authority wiring readiness: 18-28%.
@@ -64,7 +65,11 @@ Latest Durable Runtime scaffold status: `GO_WITH_FINDINGS_DURABLE_RUNTIME_SCAFFO
 - Latest product ledger path local-temp writer test-only: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_TEMP_WRITER_TEST_ONLY_READY`.
 - Latest product ledger path failure/replay/rollback evidence hardening: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_FAILURE_REPLAY_ROLLBACK_EVIDENCE_HARDENING_TEST_ONLY_READY`.
 - Latest product ledger path property/corpus/static scan hardening: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_TEST_ONLY_READY`.
-- Current stop frontier before any writer/product enablement: `PRODUCT_RUNTIME_ENABLEMENT_OR_PRODUCTIVE_WRITER_PATH_AUTHORITY_REQUIRES_NEW_EXPLICIT_MANUAL_GO`.
+- Latest product ledger path local-only active writer: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_READY`.
+- Latest product ledger path local-only active writer external audit: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_EXTERNAL_AUDIT_READY`.
+- Latest product ledger path local-only property/corpus/static scan hardening: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_PROPERTY_CORPUS_STATIC_SCAN_HARDENING_READY`.
+- Latest product ledger path local-only final readiness packet: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_FINAL_READINESS_PACKET_READY`.
+- Current stop frontier: `RUNTIME_PRODUCT_ENABLEMENT_OR_EXTERNAL_PRODUCT_SURFACE_REQUIRES_NEW_EXPLICIT_GO`.
 - Durable runtime product enablement still requires explicit manual GO; autonomous safe continuation may only proceed through docs/design/audit/test-plan/test-only blocks.
 
 ## Current State
