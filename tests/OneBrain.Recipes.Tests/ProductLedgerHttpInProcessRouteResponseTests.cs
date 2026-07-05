@@ -129,6 +129,148 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     }
 
     [TestMethod]
+    public async Task ProductLedgerApprovalExecutionRoute_DevelopmentHostExecutesApprovedNoOpAndSurfaceShowsState()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        using var approval = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionRoute,
+            JsonContent(ReadyApprovalDecisionBody("Approve")),
+            TestContext.CancellationTokenSource.Token);
+        using var execution = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        var executionJson = await execution.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var stateResponse = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionStateRoute,
+            TestContext.CancellationTokenSource.Token);
+        var stateJson = await stateResponse.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var surface = await client.GetAsync(
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            TestContext.CancellationTokenSource.Token);
+        var html = await surface.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, approval.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, execution.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, stateResponse.StatusCode);
+        StringAssert.Contains(executionJson, "noOpExecutionCompletedLocalOnly");
+        StringAssert.Contains(stateJson, "noOpExecutionCompletedLocalOnly");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-approved-action-execution-state\"");
+        StringAssert.Contains(html, "data-state=\"NoOpExecutionCompletedLocalOnly\"");
+        StringAssert.Contains(html, "data-no-op-only=\"true\"");
+        StringAssert.Contains(html, "data-bounded-action-executed=\"false\"");
+        StringAssert.Contains(html, "data-product-command-executed=\"false\"");
+        StringAssert.Contains(html, "data-public-ui-action=\"false\"");
+        StringAssert.Contains(html, "data-product-command-handler=\"false\"");
+        StringAssert.Contains(html, "data-productive-service-registration=\"false\"");
+        StringAssert.Contains(html, "data-file-write-outside-execution-store=\"false\"");
+        StringAssert.Contains(html, "data-provider-cloud-network=\"false\"");
+        StringAssert.Contains(html, "data-db-migration=\"false\"");
+        StringAssert.Contains(html, "data-live-automation=\"false\"");
+        StringAssert.Contains(html, "data-pilot-run=\"false\"");
+        StringAssert.Contains(html, "no shell no subprocess no Pilot run no product command execution no public UI");
+        Assert.IsTrue(File.Exists(executionState.StateFilePath));
+        Assert.IsFalse(html.Contains("data-executable=\"true\"", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("onclick=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("formaction=", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public async Task ProductLedgerApprovalExecutionRoute_ReplaysSameNoOpAndRejectsConflictingExecution()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        using var approval = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionRoute,
+            JsonContent(ReadyApprovalDecisionBody("Approve")),
+            TestContext.CancellationTokenSource.Token);
+        using var first = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var replay = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var conflict = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody() with { ExecutionId = "approval-route-no-op-execution-002" }),
+            TestContext.CancellationTokenSource.Token);
+        var replayJson = await replay.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        var conflictJson = await conflict.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, approval.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, first.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, replay.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, conflict.StatusCode);
+        StringAssert.Contains(replayJson, "idempotentReplay");
+        StringAssert.Contains(conflictJson, "existingExecutionConflict");
+    }
+
+    [TestMethod]
+    public async Task ProductLedgerApprovalExecutionRoute_FailsClosedForMissingApprovalMalformedUnsafeOrMismatchedInput()
+    {
+        var cases = new (bool PersistApproval, StringContent Content, bool ExpectStateFile)[]
+        {
+            (false, JsonContent(ReadyApprovalExecutionBody()), false),
+            (true, new StringContent("{not-json", Encoding.UTF8, "application/json"), false),
+            (true, JsonContent(ReadyApprovalExecutionBody() with { CurrentEvidenceHash = new string('b', 64) }), false),
+            (true, JsonContent(ReadyApprovalExecutionBody() with { RequestsBoundedAction = true }), false),
+            (true, JsonContent(ReadyApprovalExecutionBody() with { RequestsProductCommandExecution = true }), false),
+            (true, JsonContent(ReadyApprovalExecutionBody() with { RequestsPublicUiAction = true }), false)
+        };
+
+        foreach (var testCase in cases)
+        {
+            using var approvalState = ApprovalStateFixture.Create();
+            using var executionState = ApprovalExecutionFixture.Create();
+            await using var app = BuildLocalOnlyApp(
+                Environments.Development,
+                ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalState.Store,
+                executionState.Executor);
+            await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+            using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+            if (testCase.PersistApproval)
+            {
+                using var approval = await client.PostAsync(
+                    ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionRoute,
+                    JsonContent(ReadyApprovalDecisionBody("Approve")),
+                    TestContext.CancellationTokenSource.Token);
+                Assert.AreEqual(System.Net.HttpStatusCode.OK, approval.StatusCode);
+            }
+
+            using var execution = await client.PostAsync(
+                ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+                testCase.Content,
+                TestContext.CancellationTokenSource.Token);
+
+            Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, execution.StatusCode);
+            Assert.AreEqual(testCase.ExpectStateFile, File.Exists(executionState.StateFilePath));
+        }
+    }
+
+    [TestMethod]
     public async Task ProductLedgerApprovalDecisionRoute_FailsClosedForMalformedUnsafeOrMismatchedInput()
     {
         using var approvalState = ApprovalStateFixture.Create();
@@ -229,10 +371,12 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     public async Task ProductLedgerApprovalDecisionRoute_NonDevelopmentHostDoesNotMapPostOrStateRead()
     {
         using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
         await using var app = BuildLocalOnlyApp(
             Environments.Production,
             ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
-            approvalState.Store);
+            approvalState.Store,
+            executionState.Executor);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
 
         using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
@@ -243,10 +387,20 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var state = await client.GetAsync(
             ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionStateRoute,
             TestContext.CancellationTokenSource.Token);
+        using var execution = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var executionStateRead = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionStateRoute,
+            TestContext.CancellationTokenSource.Token);
 
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, post.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, state.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, execution.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, executionStateRead.StatusCode);
         Assert.IsFalse(File.Exists(approvalState.StateFilePath));
+        Assert.IsFalse(File.Exists(executionState.StateFilePath));
     }
 
     public TestContext TestContext { get; set; } = null!;
@@ -254,7 +408,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     private static WebApplication BuildLocalOnlyApp(
         string environmentName,
         ProductLedgerOperatorSurfaceReadModelSource? readModelSource = null,
-        ProductLedgerLocalApprovalDecisionStateStore? approvalDecisionStateStore = null)
+        ProductLedgerLocalApprovalDecisionStateStore? approvalDecisionStateStore = null,
+        ProductLedgerLocalApprovedActionNoOpExecutor? noOpExecutor = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -268,6 +423,14 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             app.MapProductLedgerLocalDevRoutePreview(
                 app.Environment,
                 readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+        }
+        else if (noOpExecutor is not null)
+        {
+            app.MapProductLedgerLocalDevRoutePreview(
+                app.Environment,
+                readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalDecisionStateStore,
+                noOpExecutor);
         }
         else
         {
@@ -305,6 +468,37 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             RequestsPhysicalExport: false,
             RequestsFileWriteOutsideApprovalStateStore: false,
             ClaimsArbitraryPathInput: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsPilotRun: false,
+            ClaimsReleaseCommercial: false);
+
+    private static ProductLedgerApprovalExecutionRouteBody ReadyApprovalExecutionBody() =>
+        new(
+            ExplicitLocalOnlyNoOpExecutionScope: true,
+            DevelopmentMode: true,
+            LocalMode: true,
+            InternalMode: true,
+            ExecutionId: "approval-route-no-op-execution-001",
+            CandidateActionKind: ProductLedgerInternalCommandKind.ViewLedgerReadiness.ToString(),
+            CandidateEvidenceHash: new string('a', 64),
+            CurrentEvidenceHash: new string('a', 64),
+            EvidenceReferences:
+            [
+                "docs/qa/nodal-os-local-approval-execution-final-local-only-readiness-packet/report.md",
+                "docs/qa/nodal-os-local-route-live-ledger-read-model-test-safe/report.md"
+            ],
+            RequestsBoundedAction: false,
+            RequestsPublicUiAction: false,
+            RequestsProductCommandExecution: false,
+            RequestsProductCommandHandler: false,
+            RequestsProductiveServiceRegistration: false,
+            RequestsPhysicalExport: false,
+            RequestsFileWriteOutsideExecutionStore: false,
+            ClaimsArbitraryPathInput: false,
+            ClaimsFilesystemScan: false,
             ClaimsProviderCloudNetwork: false,
             ClaimsDbMigration: false,
             ClaimsKmsWormExternalTrust: false,
@@ -493,6 +687,72 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         bool ClaimsBrowserCdpWcuOcrRecipesLive,
         bool ClaimsPilotRun,
         bool ClaimsReleaseCommercial);
+
+    private sealed record ProductLedgerApprovalExecutionRouteBody(
+        bool ExplicitLocalOnlyNoOpExecutionScope,
+        bool DevelopmentMode,
+        bool LocalMode,
+        bool InternalMode,
+        string ExecutionId,
+        string CandidateActionKind,
+        string CandidateEvidenceHash,
+        string CurrentEvidenceHash,
+        IReadOnlyList<string> EvidenceReferences,
+        bool RequestsBoundedAction,
+        bool RequestsPublicUiAction,
+        bool RequestsProductCommandExecution,
+        bool RequestsProductCommandHandler,
+        bool RequestsProductiveServiceRegistration,
+        bool RequestsPhysicalExport,
+        bool RequestsFileWriteOutsideExecutionStore,
+        bool ClaimsArbitraryPathInput,
+        bool ClaimsFilesystemScan,
+        bool ClaimsProviderCloudNetwork,
+        bool ClaimsDbMigration,
+        bool ClaimsKmsWormExternalTrust,
+        bool ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool ClaimsPilotRun,
+        bool ClaimsReleaseCommercial);
+
+    private sealed class ApprovalExecutionFixture : IDisposable
+    {
+        private const string StateFileName = "product-ledger-local-approved-no-op-execution.json";
+
+        private ApprovalExecutionFixture(string root)
+        {
+            Root = root;
+            Executor = new ProductLedgerLocalApprovedActionNoOpExecutor(new ProductLedgerLocalApprovedActionExecutionStoreOptions(
+                StoreRootPath: root,
+                ExplicitLocalOnlyExecutionStore: true,
+                AllowsArbitraryPathInput: false,
+                AllowsFilesystemScan: false,
+                AllowsExport: false,
+                AllowsNetwork: false,
+                AllowsDb: false,
+                AllowsReleaseCommercial: false));
+        }
+
+        public string Root { get; }
+
+        public string StateFilePath => Path.Combine(Root, StateFileName);
+
+        public ProductLedgerLocalApprovedActionNoOpExecutor Executor { get; }
+
+        public static ApprovalExecutionFixture Create()
+        {
+            var root = Path.Combine(RepoRoot(), ".tmp-product-ledger-approval-execution-route-tests", Guid.NewGuid().ToString("N"));
+            return new ApprovalExecutionFixture(root);
+        }
+
+        public void Dispose()
+        {
+            var tempRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-approval-execution-route-tests");
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
 
     private sealed class ApprovalStateFixture : IDisposable
     {

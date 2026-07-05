@@ -114,6 +114,7 @@ public sealed record ProductLedgerLocalApprovalDecisionSnapshot(
     IReadOnlyList<ProductLedgerLocalApprovalDecisionBlocker> Blockers,
     string ApprovalId,
     string CandidateActionKind,
+    string CandidateEvidenceHash,
     string CandidateEvidenceHashPrefix,
     string DecisionHashPrefix,
     string OperatorDecision,
@@ -145,6 +146,7 @@ public sealed record ProductLedgerLocalApprovalDecisionSnapshot(
             Blockers: [],
             ApprovalId: "approval-state.pending-preview-only",
             CandidateActionKind: ProductLedgerInternalCommandKind.ViewLedgerReadiness.ToString(),
+            CandidateEvidenceHash: string.Empty,
             CandidateEvidenceHashPrefix: "none",
             DecisionHashPrefix: "none",
             OperatorDecision: "PendingOperatorDecision",
@@ -561,7 +563,7 @@ public sealed class ProductLedgerLocalApprovalDecisionStateStore
         ProductLedgerLocalApprovalDecisionEnvelope envelope) =>
         string.Equals(existing.ApprovalId, envelope.ApprovalId, StringComparison.Ordinal)
         && string.Equals(existing.CandidateActionKind, envelope.CandidateActionKind, StringComparison.Ordinal)
-        && string.Equals(existing.CandidateEvidenceHashPrefix, Prefix(envelope.CandidateEvidenceHash), StringComparison.Ordinal)
+        && string.Equals(existing.CandidateEvidenceHash, envelope.CandidateEvidenceHash, StringComparison.Ordinal)
         && string.Equals(existing.OperatorDecision, envelope.OperatorDecision, StringComparison.Ordinal)
         && string.Equals(existing.DecisionHashPrefix, Prefix(envelope.DecisionHash), StringComparison.Ordinal);
 
@@ -575,6 +577,7 @@ public sealed class ProductLedgerLocalApprovalDecisionStateStore
             Blockers: blockers.OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray(),
             ApprovalId: envelope.ApprovalId,
             CandidateActionKind: envelope.CandidateActionKind,
+            CandidateEvidenceHash: envelope.CandidateEvidenceHash,
             CandidateEvidenceHashPrefix: Prefix(envelope.CandidateEvidenceHash),
             DecisionHashPrefix: Prefix(envelope.DecisionHash),
             OperatorDecision: envelope.OperatorDecision,

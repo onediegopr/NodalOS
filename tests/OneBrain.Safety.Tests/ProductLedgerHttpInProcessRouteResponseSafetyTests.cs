@@ -21,6 +21,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         StringAssert.Contains(mapper, "ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
         StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
         StringAssert.Contains(mapper, "LocalApprovalDecisionStateRoute");
+        StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
+        StringAssert.Contains(mapper, "LocalApprovalExecutionStateRoute");
         StringAssert.Contains(mapper, "Results.Content(result.HtmlSnapshot, result.ContentType)");
         StringAssert.Contains(mapper, "Results.NotFound()");
         StringAssert.Contains(mapper, "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION");
@@ -59,12 +61,16 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
             Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
         }
 
-        Assert.AreEqual(1, Count(source, "endpoints.MapPost("));
+        Assert.AreEqual(2, Count(source, "endpoints.MapPost("));
         StringAssert.Contains(source, "LocalApprovalDecisionRoute");
+        StringAssert.Contains(source, "LocalApprovalExecutionRoute");
         StringAssert.Contains(source, "/internal/product-ledger/approval/decision");
+        StringAssert.Contains(source, "/internal/product-ledger/approval/execute");
         StringAssert.Contains(source, "environment.IsDevelopment()");
         StringAssert.Contains(source, "ProductLedgerLocalApprovalDecisionStateStore");
+        StringAssert.Contains(source, "ProductLedgerLocalApprovedActionNoOpExecutor");
         StringAssert.Contains(source, "RequestsProductCommandExecution: body.RequestsProductCommandExecution == true");
+        StringAssert.Contains(source, "RequestsBoundedAction: body.RequestsBoundedAction == true");
     }
 
     [TestMethod]

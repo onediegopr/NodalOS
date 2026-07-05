@@ -150,8 +150,10 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
         StringAssert.Contains(mapper, "environment.IsDevelopment()");
         StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
+        StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
-        Assert.AreEqual(1, Count(mapper, "endpoints.MapPost("));
+        StringAssert.Contains(mapper, "ProductLedgerLocalApprovedActionNoOpExecutor");
+        Assert.AreEqual(2, Count(mapper, "endpoints.MapPost("));
         foreach (var fragment in new[]
         {
             "ProductLedgerInternalCommandHandler",

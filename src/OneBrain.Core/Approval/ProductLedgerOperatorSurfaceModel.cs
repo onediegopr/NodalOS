@@ -62,6 +62,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     ProductLedgerLocalApprovalPreviewLoop ApprovalPreviewLoop,
     ProductLedgerLocalApprovalExecutionResult ApprovalExecutionCandidatePreview,
     ProductLedgerLocalApprovalDecisionSnapshot ApprovalDecisionState,
+    ProductLedgerLocalApprovedActionExecutionSnapshot ApprovedActionExecutionState,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -88,7 +89,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
     public static ProductLedgerOperatorSurfaceModel Build(
         ProductLedgerRenderableOperatorSurfaceResult renderable,
         ProductLedgerOperatorSurfaceReadModelSource? readModelSource = null,
-        ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState = null)
+        ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState = null,
+        ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
         var actions = renderable.Model.Actions
@@ -142,12 +144,14 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             ApprovalPreviewLoop: approvalPreviewLoop,
             ApprovalExecutionCandidatePreview: approvalExecutionCandidatePreview,
             ApprovalDecisionState: approvalDecisionState ?? ProductLedgerLocalApprovalDecisionSnapshot.PendingPreviewOnly,
+            ApprovedActionExecutionState: approvedActionExecutionState ?? ProductLedgerLocalApprovedActionExecutionSnapshot.Pending,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",
                 "LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP",
                 "LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY",
                 "LOCAL_APPROVAL_REAL_OPERATOR_INPUT_AND_STATE_PERSISTENCE_WINDOW",
+                "APPROVED_ACTION_EXECUTION_LOCAL_ONLY_NO_OP_TO_BOUNDED_ACTION_WINDOW",
                 "DELETION_LIFECYCLE_DESIGN_ONLY"
             ],
             IsLocalOnly: true,
