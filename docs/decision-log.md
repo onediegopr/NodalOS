@@ -1398,3 +1398,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 approval execution and persisted approval token/state remain future work, and implementation needs a concrete narrow adapter; P4 negative guards are test evidence and route-specific fragment scans do not claim global Pilot behavior.
 - Readiness changes: Approval/Human Review 91-95% -> 92-95%; Runtime/Command/Execution 48-56% -> 50-58%; local-only internal product 65-73% -> 66-74%; Product Ledger local-only core, Evidence/Timeline/Audit Trail, UI/Operator Surface, usable end-to-end local product, external/cloud and release/commercial unchanged.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_READ_ONLY_IN_MEMORY_CANDIDATE`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_READ_ONLY_IN_MEMORY_CANDIDATE
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_READ_ONLY_IN_MEMORY_CANDIDATE_READY`
+- Baseline: `d8bb5324e6c6bf85e1e9888992ce652f01f8cbcb`.
+- Scope: Core-only local-only/internal-only/default-off approval execution candidate limited to read-only/in-memory internal commands.
+- Implemented: request/result/decision/blocker model, narrow command allowlist, fresh approval validation, action/evidence binding, post-approval policy recheck, verified read-model gate, authority blockers and Safety/Recipes coverage.
+- Non-goals preserved: no route wiring, public UI action, productive command handler, productive DI/service registration, approval state persistence, append/write/export, bounded export, arbitrary path input, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 candidate is Core-only and not rendered on the route, approval token/state is caller-provided and not persisted, route preview evidence and audit remain future safe blocks; P4 in-memory results are local evidence and inherit existing internal router/handler preview semantics.
+- Readiness changes: Approval/Human Review 92-95% -> 93-96%; Runtime/Command/Execution 50-58% -> 54-62%; local-only internal product 66-74% -> 68-76%; usable end-to-end local product 40-50% -> 42-52%; Product Ledger local-only core, Evidence/Timeline/Audit Trail, UI/Operator Surface, external/cloud and release/commercial unchanged.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY`.
