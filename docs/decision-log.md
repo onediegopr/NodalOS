@@ -1365,3 +1365,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 live read-model remains test-safe/injected, local approval execution remains future design-only and browser pixel evidence remains separate; P4 hashes are prefixes and `HttpClient` appears only in Recipes loopback test-only code.
 - Readiness changes: Evidence/Timeline/Audit Trail 82-88% -> 84-90%; UI/Operator Surface 50-60% -> 55-65%; usable end-to-end local product 36-46% -> 40-50%; local-only internal product 62-70% -> 65-73%; Runtime/Command/Execution 46-54% -> 46-55%; Product Ledger local-only core remains 94-96%; Approval/Human Review remains 90-94%; external/cloud and release/commercial remain 0%.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_BOUNDARY`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_BOUNDARY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_BOUNDARY_READY`
+- Baseline: `1d75701ab7ce7074469035b999b87f24e5ed65ae`.
+- Scope: docs-only/design-only local approval execution boundary for the Product Ledger operator route.
+- Designed: future local-only/internal-only/default-off approval execution gates, read-only/non-destructive action allowlist, policy recheck, verified read model requirement, no arbitrary path input and fail-closed state machine.
+- Non-goals preserved: no code implementation, approval state mutation, append/write/export, public UI action, productive command handler, productive DI/service registration, provider/cloud/network, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 approval execution remains unimplemented, persisted approval state and durable approval evidence append remain future work; P4 design evidence is not runtime evidence and local approval is not compliance custody.
+- Readiness changes: Approval/Human Review 90-94% -> 91-95%; Runtime/Command/Execution 46-55% -> 48-56%; Product Ledger local-only core, Evidence/Timeline/Audit Trail, UI/Operator Surface, local-only internal product, usable end-to-end local product, external/cloud and release/commercial unchanged.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_EXTERNAL_AUDIT_READ_ONLY`.

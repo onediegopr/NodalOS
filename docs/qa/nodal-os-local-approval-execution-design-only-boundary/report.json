@@ -1,0 +1,64 @@
+{
+  "macroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_BOUNDARY",
+  "date": "2026-07-05",
+  "decision": "GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_BOUNDARY_READY",
+  "scope": [
+    "docs-only",
+    "design-only",
+    "local-only",
+    "internal-only",
+    "no-runtime-enable",
+    "no-product-enable",
+    "no-release",
+    "no-commercial"
+  ],
+  "findings": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": [
+      "Approval execution remains unimplemented.",
+      "Persisted approval state remains future work.",
+      "Durable approval evidence append remains future work."
+    ],
+    "P4": [
+      "Design evidence is not runtime evidence.",
+      "Local-only approval does not imply compliance-grade custody."
+    ],
+    "TRUE_RISK": 0
+  },
+  "boundary": {
+    "implementationAdded": false,
+    "runtimeEnabled": false,
+    "productEnabled": false,
+    "publicUiActionEnabled": false,
+    "productiveCommandHandlerEnabled": false,
+    "productiveDiRegistrationAdded": false,
+    "appendWriteExportEnabled": false,
+    "arbitraryPathInputAllowed": false,
+    "providerCloudNetworkEnabled": false,
+    "dbMigrationEnabled": false,
+    "kmsWormExternalTrustEnabled": false,
+    "browserCdpWcuOcrRecipesLiveEnabled": false,
+    "releaseCommercialReady": false
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "changedFileStaticScan": "PASS_DOCS_ONLY_NO_CODE_RUNTIME_PRODUCT_FILES_CHANGED"
+  },
+  "percentages": {
+    "productLedgerLocalOnlyCore": "94-96%",
+    "approvalHumanReview": "91-95%",
+    "evidenceTimelineAuditTrail": "84-90%",
+    "runtimeCommandExecution": "48-56%",
+    "uiOperatorSurface": "55-65%",
+    "localOnlyInternalProduct": "65-73%",
+    "usableEndToEndLocalProduct": "40-50%",
+    "externalCloud": "0%",
+    "releaseCommercial": "0%"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_EXTERNAL_AUDIT_READ_ONLY"
+}
+
