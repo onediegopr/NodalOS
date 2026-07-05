@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -487,11 +486,7 @@ public sealed class ProductLedgerPathLocalTempWriterTestOnly
         Path.Combine(Path.GetFullPath(root), CheckpointFileName);
 
     private static string HashLedger(IReadOnlyList<ProductLedgerPathLocalTempWriterEntry> entries)
-    {
-        var material = string.Join("\n", entries.Select(entry => $"{entry.Sequence}:{entry.EntryHash}"));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(material));
-        return Convert.ToHexString(hash).ToLowerInvariant();
-    }
+        => ProductLedgerLocalAppendOnlyHashing.ComputeLedgerHash(entries.Select(entry => (entry.Sequence, entry.EntryHash)));
 
     private static string HashEntry(
         int sequence,
@@ -499,13 +494,10 @@ public sealed class ProductLedgerPathLocalTempWriterTestOnly
         string safePayloadHash,
         IReadOnlyDictionary<string, string> metadata,
         string previousHash)
-    {
-        var metadataText = string.Join(
-            "\n",
-            metadata.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(pair => $"{pair.Key}={pair.Value}"));
-        var material = $"{sequence}\n{candidateId}\n{safePayloadHash.ToLowerInvariant()}\n{metadataText}\n{previousHash}";
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(material));
-        return Convert.ToHexString(hash).ToLowerInvariant();
-    }
+        => ProductLedgerLocalAppendOnlyHashing.ComputeEntryHash(
+            sequence,
+            candidateId,
+            safePayloadHash,
+            metadata,
+            previousHash);
 }

@@ -1,0 +1,60 @@
+{
+  "macroBlock": "NODAL_OS_LEDGER_EVIDENCE_CONSOLIDATION_AND_WRITER_DETRIPLICATION_MACROBLOCK",
+  "decision": "GO_WITH_FINDINGS_LEDGER_EVIDENCE_CONSOLIDATION_WRITER_DETRIPLICATION_READY",
+  "initialHead": "534954b7167d031e9ddce314aae6ddad88d42f1b",
+  "scope": {
+    "refactorHardeningConsolidationOnly": true,
+    "ledgerFormatChanged": false,
+    "publicDeploy": false,
+    "externalNetworkProviderCloud": false,
+    "dbMigration": false,
+    "kmsWormExternalTrust": false,
+    "liveBrowserCdpWcuOcrRecipes": false,
+    "destructiveAction": false,
+    "unboundedExportWrite": false,
+    "releaseCommercial": false
+  },
+  "changes": {
+    "sharedHashing": "ProductLedgerLocalAppendOnlyHashing",
+    "taxonomy": "ProductLedgerLocalLedgerTaxonomy",
+    "activeAuthority": "ProductLedgerPathLocalOnlyActiveWriter",
+    "testOnlyWriter": "ProductLedgerPathLocalTempWriterTestOnly",
+    "historicalScaffold": "ProductLedgerPathWriterScaffoldDisabled",
+    "commandPreviewGuarantees": true
+  },
+  "validations": {
+    "coreBuildNoRestore": "PASS_0_WARNINGS_0_ERRORS",
+    "consolidationSafetyPack": "PASS_6_OF_6_WITH_PREEXISTING_TEST_PROJECT_WARNINGS_ON_BUILD",
+    "safetyProductLedgerFocused": "PASS_156_OF_156",
+    "recipesProductLedgerFocused": "PASS_44_OF_44",
+    "commandRouterHandlerFocused": "PASS_15_OF_15",
+    "safetyDurableFocused": "PASS_36_OF_36",
+    "recipesDurableFocused": "PASS_8_OF_8",
+    "solutionBuildNoRestore": "PASS_1_PREEXISTING_RECIPES_MSTEST0037_WARNING_0_ERRORS",
+    "recipesFullNoBuild": "PASS_1552_OF_1552",
+    "safetyFullNoBuild": "TIMEOUT_300S_NOT_USED_AS_RELEASE_GATE_PROCESSES_STOPPED_BUILD_SERVER_SHUTDOWN",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "staticForbiddenPositiveClaimScan": "PASS_FALSE_POSITIVES_CLASSIFIED_AS_TAXONOMY_TERMS_PREVIEW_NOOP_GUARANTEES_STATUS_STRINGS_BLOCKED_NOGO_REASONS_DOCS_LIMITATIONS_OR_HISTORICAL_TRACEABILITY"
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 3,
+    "p4": 2,
+    "trueRisk": 0
+  },
+  "readiness": {
+    "productLedgerLocalOnlyCore": "94-96%",
+    "approvalHumanReview": "line-scoped local-only evidence unchanged",
+    "evidenceTimelineAuditTrail": "improved taxonomy coherence; Product Ledger remains canonical active local ledger",
+    "runtimeCommandExecution": "preview-only/no public product command execution; Pilot default-blocked explicit opt-in",
+    "uiOperatorSurface": "15-25%",
+    "localOnlyInternalProduct": "52-61%",
+    "usableEndToEndLocalProduct": "22-34%",
+    "externalCloud": "0%",
+    "releaseCommercial": "0%"
+  },
+  "nextRecommendedMacroBlock": "A_MB5_SINGLE_REAL_LOCAL_OPERATOR_ROUTE_SURFACE_CONSOLIDATION"
+}

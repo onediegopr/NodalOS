@@ -66,7 +66,16 @@ public sealed record ProductLedgerInternalCommandExecutionPreview(
     bool FileWritePerformed,
     bool ExecutableCallbackInvoked,
     string? ExportedFilePath = null,
-    string? PostWriteHash = null);
+    string? PostWriteHash = null)
+{
+    public bool PreviewOnly => true;
+
+    public bool PublicExecutionAllowed => false;
+
+    public bool ProductCommandExecutionAllowed => false;
+
+    public bool NoOp => InMemoryOnly && !PhysicalExportCreated && !FileWritePerformed && !ExecutableCallbackInvoked;
+}
 
 public sealed record ProductLedgerInternalCommandResult(
     ProductLedgerInternalCommandDecision Decision,
@@ -92,15 +101,22 @@ public sealed record ProductLedgerInternalCommandResult(
     bool PhysicalExportCreated,
     bool FileWritePerformed,
     ProductLedgerLocalReportExportResult? LocalReportExportResult,
-    string StatusText);
+    string StatusText)
+{
+    public bool PreviewOnly => true;
+
+    public bool PublicExecutionAllowed => false;
+
+    public bool ProductCommandExecutionAllowed => false;
+}
 
 public sealed class ProductLedgerInternalCommandHandler
 {
     public const string ReadyStatus =
-        "PRODUCT_LEDGER_INTERNAL_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_READY INTERNAL_LOCAL_ONLY NON_DESTRUCTIVE READ_ONLY_OR_IN_MEMORY NO_PUBLIC_UI_ACTION NO_PRODUCT_COMMAND_HANDLER_EXPOSURE NO_PROVIDER_CLOUD_NETWORK NO_DB_MIGRATION NO_KMS_WORM_EXTERNAL_TRUST NO_LIVE_AUTOMATION NO_RELEASE_COMMERCIAL";
+        "PRODUCT_LEDGER_INTERNAL_COMMAND_PREVIEW_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_READY PREVIEW_ONLY INTERNAL_LOCAL_ONLY NON_DESTRUCTIVE READ_ONLY_OR_IN_MEMORY NO_PUBLIC_UI_ACTION NO_PRODUCT_COMMAND_HANDLER_EXPOSURE NO_PROVIDER_CLOUD_NETWORK NO_DB_MIGRATION NO_KMS_WORM_EXTERNAL_TRUST NO_LIVE_AUTOMATION NO_RELEASE_COMMERCIAL";
 
     public const string RejectedStatus =
-        "PRODUCT_LEDGER_INTERNAL_COMMAND_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_REJECTED FAIL_CLOSED NO_PUBLIC_UI_ACTION NO_PRODUCT_COMMAND_HANDLER_EXPOSURE NO_PROVIDER_CLOUD_NETWORK NO_DB_MIGRATION NO_KMS_WORM_EXTERNAL_TRUST NO_LIVE_AUTOMATION NO_RELEASE_COMMERCIAL";
+        "PRODUCT_LEDGER_INTERNAL_COMMAND_PREVIEW_HANDLER_LOCAL_ONLY_NON_DESTRUCTIVE_REJECTED PREVIEW_ONLY FAIL_CLOSED NO_PUBLIC_UI_ACTION NO_PRODUCT_COMMAND_HANDLER_EXPOSURE NO_PROVIDER_CLOUD_NETWORK NO_DB_MIGRATION NO_KMS_WORM_EXTERNAL_TRUST NO_LIVE_AUTOMATION NO_RELEASE_COMMERCIAL";
 
     private static readonly ProductLedgerInternalCommandKind[] AllowedCommands =
     [
