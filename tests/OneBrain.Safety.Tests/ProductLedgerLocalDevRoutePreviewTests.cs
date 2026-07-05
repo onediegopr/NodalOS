@@ -101,15 +101,17 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
     public void LocalDevRoutePreview_PilotRouteMappingIsDevelopmentOnlyAndReadOnly()
     {
         var program = File.ReadAllText(Path.Combine(RepoRoot(), "src", "OneBrain.Pilot", "Program.cs"));
-        var guardIndex = program.IndexOf("app.Environment.IsDevelopment()", StringComparison.Ordinal);
-        var routeIndex = program.IndexOf("ProductLedgerLocalDevRoutePreview.RouteTemplatePreview", StringComparison.Ordinal);
+        var mapper = File.ReadAllText(Path.Combine(RepoRoot(), "src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs"));
+        var guardIndex = mapper.IndexOf("environment.IsDevelopment()", StringComparison.Ordinal);
+        var routeIndex = mapper.IndexOf("ProductLedgerLocalDevRoutePreview.RouteTemplatePreview", StringComparison.Ordinal);
 
         Assert.IsTrue(guardIndex >= 0, "Development guard missing.");
         Assert.IsTrue(routeIndex > guardIndex, "Route preview must be registered only after the development guard.");
-        Assert.IsFalse(program.Contains("Map" + "Post(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview", StringComparison.Ordinal));
-        Assert.IsFalse(program.Contains("Results.Json(new ProductLedgerLocalDevRoutePreview", StringComparison.Ordinal));
-        StringAssert.Contains(program, "Results.Content(result.HtmlSnapshot, result.ContentType)");
-        StringAssert.Contains(program, "Results.NotFound()");
+        StringAssert.Contains(program, "app.MapProductLedgerLocalDevRoutePreview(app.Environment)");
+        Assert.IsFalse(mapper.Contains("Map" + "Post(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview", StringComparison.Ordinal));
+        Assert.IsFalse(mapper.Contains("Results.Json(new ProductLedgerLocalDevRoutePreview", StringComparison.Ordinal));
+        StringAssert.Contains(mapper, "Results.Content(result.HtmlSnapshot, result.ContentType)");
+        StringAssert.Contains(mapper, "Results.NotFound()");
     }
 
     [TestMethod]

@@ -64,17 +64,7 @@ app.MapGet("/api/intent", (string? task) =>
 
 app.MapGet("/api/safety", () => Results.Json(PilotRecipeExecutionGate.Evaluate()));
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapGet(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, () =>
-    {
-        var result = new ProductLedgerLocalDevRoutePreview().Render(
-            ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest());
-        return result.Decision == ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
-            ? Results.Content(result.HtmlSnapshot, result.ContentType)
-            : Results.NotFound();
-    });
-}
+app.MapProductLedgerLocalDevRoutePreview(app.Environment);
 
 app.MapGet("/recording/demo", () =>
 {

@@ -1343,3 +1343,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 HTTP in-process route response testing remains future, route remains fixture-safe canonical read model and real approval execution remains future; P4 no-op evidence is preview-only and evidence refs are readiness links.
 - Readiness changes: Approval/Human Review 87-92% -> 90-94%; Runtime/Command/Execution 42-50% -> 45-53%; UI/Operator Surface 42-52% -> 48-58%; local-only internal product 58-66% -> 61-69%; usable end-to-end local product 30-40% -> 34-44%; Product Ledger local-only core remains 94-96%; external/cloud and release/commercial remain 0%.
 - Safe next step: `NODAL_OS_HTTP_IN_PROCESS_ROUTE_RESPONSE_TEST_INFRASTRUCTURE_LOCAL_ONLY`.
+
+## NODAL_OS_HTTP_IN_PROCESS_ROUTE_RESPONSE_TEST_INFRASTRUCTURE_LOCAL_ONLY
+
+- Decision: `GO_WITH_FINDINGS_HTTP_IN_PROCESS_ROUTE_RESPONSE_TEST_INFRASTRUCTURE_LOCAL_ONLY_READY`
+- Baseline: `df660eeb951fbc5c63815a2b7568cb37b77dce75`.
+- Scope: local-only/test-only HTTP route response evidence for `/internal/product-ledger/operator-surface`.
+- Implemented/documented: centralized Development-only mapper, local ephemeral loopback Kestrel route response test, Production not-mapped test, Safety mapper guard tests, ADR, QA report/JSON, roadmap note and handoff.
+- Non-goals preserved: no public deploy, public internet, external/provider/cloud, telemetry/sync/billing, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, product command execution, append/write/export from route, destructive action, Pilot `/run`, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 browser pixel/screenshot verification, live local ledger read model and real approval execution remain future scopes; P4 local route response evidence uses loopback Kestrel and `HttpClient` only in Recipes test-only code.
+- Readiness changes: Evidence/Timeline/Audit Trail 80-86% -> 82-88%; Runtime/Command/Execution 45-53% -> 46-54%; UI/Operator Surface 48-58% -> 50-60%; local-only internal product 61-69% -> 62-70%; usable end-to-end local product 34-44% -> 36-46%; Product Ledger local-only core remains 94-96%; Approval/Human Review remains 90-94%; external/cloud and release/commercial remain 0%.
+- Safe next step: `NODAL_OS_LOCAL_ROUTE_LIVE_LEDGER_READ_MODEL_TEST_SAFE`.
