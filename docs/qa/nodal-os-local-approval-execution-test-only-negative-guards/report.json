@@ -1,0 +1,70 @@
+{
+  "macroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_TEST_ONLY_NEGATIVE_GUARDS",
+  "date": "2026-07-05",
+  "decision": "GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_TEST_ONLY_NEGATIVE_GUARDS_READY",
+  "scope": [
+    "test-only",
+    "local-only",
+    "internal-only",
+    "fail-closed",
+    "no-runtime-enable",
+    "no-product-enable",
+    "no-release",
+    "no-commercial"
+  ],
+  "testsAdded": [
+    "tests/OneBrain.Safety.Tests/ProductLedgerLocalApprovalExecutionNegativeGuardTests.cs",
+    "tests/OneBrain.Recipes.Tests/ProductLedgerLocalApprovalExecutionNegativeGuardRecipeTests.cs"
+  ],
+  "findings": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": [
+      "Approval execution remains unimplemented.",
+      "Persisted approval token/state remains future work.",
+      "Future implementation needs a concrete narrow approval execution adapter."
+    ],
+    "P4": [
+      "Negative guards are test evidence, not runtime/product enablement.",
+      "Fragment scans are route-specific and intentionally do not claim global Pilot route behavior."
+    ],
+    "TRUE_RISK": 0
+  },
+  "validations": {
+    "safetyFocused": "PASS_6_OF_6",
+    "recipesFocused": "PASS_2_OF_2",
+    "productLedgerSafetyFocused": "PASS_176_OF_176",
+    "productLedgerRecipesFocused": "PASS_51_OF_51",
+    "solutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "changedFileStaticScan": "PASS_CHANGED_CODE_LIMITED_TO_SAFETY_RECIPES_TESTS_PLUS_DOCS"
+  },
+  "boundary": {
+    "approvalExecutionImplemented": false,
+    "approvalStateMutationEnabled": false,
+    "appendWriteExportEnabled": false,
+    "publicUiActionEnabled": false,
+    "productiveCommandHandlerEnabled": false,
+    "productiveDiRegistrationAdded": false,
+    "runtimeEnabledByDefault": false,
+    "providerCloudNetworkEnabled": false,
+    "dbMigrationEnabled": false,
+    "kmsWormExternalTrustEnabled": false,
+    "browserCdpWcuOcrRecipesLiveEnabled": false,
+    "releaseCommercialReady": false
+  },
+  "percentages": {
+    "productLedgerLocalOnlyCore": "94-96%",
+    "approvalHumanReview": "92-95%",
+    "evidenceTimelineAuditTrail": "84-90%",
+    "runtimeCommandExecution": "50-58%",
+    "uiOperatorSurface": "55-65%",
+    "localOnlyInternalProduct": "66-74%",
+    "usableEndToEndLocalProduct": "40-50%",
+    "externalCloud": "0%",
+    "releaseCommercial": "0%"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_READ_ONLY_IN_MEMORY_CANDIDATE"
+}

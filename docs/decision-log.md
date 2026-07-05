@@ -1387,3 +1387,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 future implementation needs a dedicated narrow approval-execution allowlist/adapter, Product Ledger route-specific scans are required because unrelated Pilot routes include `MapPost`, and approval freshness/action binding remain design-only; P4 static scan hits outside the Product Ledger route path are unrelated and this is not a human external review.
 - Readiness unchanged from the design boundary.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_TEST_ONLY_NEGATIVE_GUARDS`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_TEST_ONLY_NEGATIVE_GUARDS
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_TEST_ONLY_NEGATIVE_GUARDS_READY`
+- Baseline: `db81fce50dd7e42d5f2cb17ac608e3e359b10644`.
+- Scope: test-only/local-only/internal-only negative guards for the local approval execution boundary.
+- Implemented: Safety negative guard tests, Recipes smoke tests, narrow read-only/in-memory approval candidate allowlist checks, bounded export exclusion checks, route/preview static source scans for handler/POST/query path/append/write/export/DB/cloud/live automation/release fragments.
+- Non-goals preserved: no approval execution implementation, approval state mutation, append/write/export, public UI action, productive command handler, productive DI/service registration, default-on runtime, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 approval execution and persisted approval token/state remain future work, and implementation needs a concrete narrow adapter; P4 negative guards are test evidence and route-specific fragment scans do not claim global Pilot behavior.
+- Readiness changes: Approval/Human Review 91-95% -> 92-95%; Runtime/Command/Execution 48-56% -> 50-58%; local-only internal product 65-73% -> 66-74%; Product Ledger local-only core, Evidence/Timeline/Audit Trail, UI/Operator Surface, usable end-to-end local product, external/cloud and release/commercial unchanged.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_READ_ONLY_IN_MEMORY_CANDIDATE`.
