@@ -345,16 +345,27 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine(
             $"  <section data-testid=\"canonical-surface-model\" data-surface-id=\"{Encode(model.SurfaceId)}\" data-route-path=\"{Encode(model.RoutePath)}\" data-scope=\"{Encode(model.Scope)}\" data-read-model-mode=\"{Encode(model.ReadModelMode.ToString())}\" data-local-only=\"{Lower(model.IsLocalOnly)}\" data-development-only=\"{Lower(model.IsDevelopmentOnly)}\" data-read-only=\"{Lower(model.IsReadOnly)}\" data-product-command-execution=\"{Lower(model.AllowsProductCommandExecution)}\" data-public-internet=\"{Lower(model.AllowsPublicInternetExposure)}\" data-external-network=\"{Lower(model.AllowsExternalNetwork)}\" data-db-migration=\"{Lower(model.AllowsDbMigration)}\" data-kms-worm-external-trust=\"{Lower(model.AllowsKmsWormExternalTrust)}\" data-release-commercial=\"{Lower(model.AllowsReleaseCommercial)}\">");
         html.AppendLine("    <h2>Canonical Product Ledger operator surface</h2>");
+        html.AppendLine($"    <div data-testid=\"product-ledger-surface-root\">{Encode(model.SurfaceId)} / {Encode(model.Scope)} / local-only development-only read-only</div>");
         html.AppendLine($"    <p data-testid=\"surface-ledger-authority\">{Encode(model.LedgerAuthority)} / {Encode(model.LedgerAuthorityBoundaryStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-authority\">{Encode(model.LedgerAuthority)} / {Encode(model.LedgerAuthorityBoundaryStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-ledger-verification\">{Encode(model.LedgerVerificationStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-verification-status\">{Encode(model.LedgerVerificationStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-checkpoint\">{Encode(model.CheckpointStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-checkpoint-status\">{Encode(model.CheckpointStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-redaction-retention\">{Encode(model.RedactionRetentionGuardStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-redaction-retention-status\">{Encode(model.RedactionRetentionGuardStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-concurrency\">{Encode(model.ConcurrencyGuardStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-concurrency-status\">{Encode(model.ConcurrencyGuardStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-bounded-export\">{Encode(model.BoundedExportStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-bounded-export-status\">{Encode(model.BoundedExportStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-operator-acceptance\">{Encode(model.OperatorAcceptanceStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-operator-acceptance-status\">{Encode(model.OperatorAcceptanceStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-public-action-contract\">{Encode(model.PublicLocalOnlyActionContractStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-public-local-only-action-contract-status\">{Encode(model.PublicLocalOnlyActionContractStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-visual-evidence\">{Encode(model.VisualEvidenceStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-visual-evidence-status\">{Encode(model.VisualEvidenceStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-screenshot-evidence\">{Encode(model.ScreenshotEvidenceStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-screenshot-evidence-status\">{Encode(model.ScreenshotEvidenceStatus)}</p>");
         html.AppendLine("    <div data-testid=\"surface-statuses\">");
         foreach (var status in model.Statuses.OrderBy(status => status.StatusId, StringComparer.Ordinal))
         {
@@ -369,6 +380,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         }
 
         html.AppendLine("    </div>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-blocked-frontiers\">{model.BlockedFrontiers.Count} blocked frontiers visible</p>");
         html.AppendLine("    <div data-testid=\"surface-blocked-frontiers\">");
         foreach (var frontier in model.BlockedFrontiers.OrderBy(frontier => frontier.FrontierId, StringComparer.Ordinal))
         {
@@ -376,6 +388,15 @@ public sealed class ProductLedgerLocalDevRoutePreview
         }
 
         html.AppendLine("    </div>");
+        html.AppendLine("    <div data-testid=\"product-ledger-action-previews\">");
+        foreach (var action in model.ActionPreviews.OrderBy(action => action.ActionId, StringComparer.Ordinal))
+        {
+            html.AppendLine($"      <button type=\"button\" data-testid=\"product-ledger-action-preview-{Encode(action.ActionId)}\" data-action-id=\"{Encode(action.ActionId)}\" data-read-only=\"{Lower(action.ReadOnly)}\" data-local-only=\"{Lower(action.LocalOnly)}\" data-non-destructive=\"{Lower(action.NonDestructive)}\" data-executable=\"false\" data-handler-id=\"\" data-callback=\"\" disabled aria-disabled=\"true\">{Encode(action.Label)}</button>");
+            html.AppendLine($"      <p data-testid=\"product-ledger-action-preview-{Encode(action.ActionId)}-blocked-reason\">{Encode(action.DisabledReason)}</p>");
+        }
+
+        html.AppendLine("    </div>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-safe-next-steps\">{Encode(string.Join("; ", model.SafeNextSteps))}</p>");
         html.AppendLine("    <div data-testid=\"surface-safe-next-steps\">");
         foreach (var step in model.SafeNextSteps)
         {

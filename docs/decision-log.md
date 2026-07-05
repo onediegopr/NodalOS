@@ -1320,3 +1320,15 @@
 - Findings: P0=0, P1=0, P2=0; P3 in-process HTTP response testing remains future local-only pack, route read model is fixture-safe not arbitrary ledger path read, old surfaces remain compatibility wrappers; P4 legacy route retained for traceability.
 - Readiness changes: UI/Operator Surface 15-25% -> 35-45%; local-only internal product 52-61% -> 56-64%; usable end-to-end local product 22-34% -> 28-38%; Product Ledger local-only core remains 94-96%; external/cloud and release/commercial remain 0%.
 - Safe next step: `NODAL_OS_RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK`.
+
+## NODAL_OS_RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK_READY`
+- Baseline: `5d9d3925f1c4cc44a6dcb3951fb72e448817f9dc`.
+- Scope: local-only/test-only rendered DOM and interaction coverage for `/internal/product-ledger/operator-surface`.
+- Implemented/documented: canonical DOM anchor aliases, disabled/read-only/no-op action preview controls, Safety rendered DOM/interaction tests, Recipes smoke test, ADR, QA report/JSON and handoff.
+- Coverage note: HTTP in-process route response was not tested because current test projects do not include `WebApplicationFactory`, ASP.NET `TestServer` or equivalent local test-host infrastructure; fallback render-function DOM evidence is used and not overclaimed.
+- Non-goals preserved: no public deploy, public internet, product command execution, append/write/export from route, destructive action, unbounded export/write, external/cloud export, provider/cloud/network, telemetry/sync/billing, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run` default enablement, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 HTTP in-process response tests, browser pixel evidence and live local ledger read-model tests remain future scoped work; P4 evidence is rendered DOM level.
+- Readiness changes: UI/Operator Surface 35-45% -> 42-52%; local-only internal product 56-64% -> 58-66%; usable end-to-end local product 28-38% -> 30-40%; Product Ledger local-only core remains 94-96%; external/cloud and release/commercial remain 0%.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP`.
