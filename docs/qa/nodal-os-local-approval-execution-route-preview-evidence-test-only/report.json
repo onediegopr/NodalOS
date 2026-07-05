@@ -1,0 +1,75 @@
+{
+  "macroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY",
+  "date": "2026-07-05",
+  "decision": "GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY_READY",
+  "scope": [
+    "test-only",
+    "local-only",
+    "internal-only",
+    "development-only",
+    "default-off",
+    "read-only-route-evidence",
+    "no-public-ui",
+    "no-write-export",
+    "no-release",
+    "no-commercial"
+  ],
+  "implemented": [
+    "src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs",
+    "src/OneBrain.Core/Approval/ProductLedgerLocalDevRoutePreview.cs",
+    "tests/OneBrain.Safety.Tests/ProductLedgerLocalApprovalPreviewLoopTests.cs",
+    "tests/OneBrain.Recipes.Tests/ProductLedgerLocalApprovalPreviewLoopTests.cs"
+  ],
+  "findings": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": [
+      "Candidate evidence is deterministic preview evidence, not persisted human approval state.",
+      "Future real operator approval input remains separate.",
+      "Audit read-only and static scan hardening remain future safe blocks."
+    ],
+    "P4": [
+      "Route evidence is local operator evidence, not compliance custody.",
+      "In-memory command handler invocation remains internal and does not expose product commands."
+    ],
+    "TRUE_RISK": 0
+  },
+  "validations": {
+    "safetyFocused": "PASS_16_OF_16",
+    "recipesFocused": "PASS_4_OF_4",
+    "productLedgerSafetyFocused": "PASS_182_OF_182",
+    "productLedgerRecipesFocused": "PASS_53_OF_53",
+    "solutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "changedFileStaticScan": "PASS_CHANGED_CODE_LIMITED_TO_CORE_ROUTE_MODEL_EVIDENCE_RENDERING_AND_SAFETY_RECIPES_TESTS_PLUS_DOCS"
+  },
+  "boundary": {
+    "mapPostAdded": false,
+    "publicUiActionEnabled": false,
+    "productiveCommandHandlerEnabled": false,
+    "productiveDiRegistrationAdded": false,
+    "approvalStatePersistenceEnabled": false,
+    "appendWriteExportEnabled": false,
+    "boundedExportEnabled": false,
+    "arbitraryPathInputAllowed": false,
+    "providerCloudNetworkEnabled": false,
+    "dbMigrationEnabled": false,
+    "kmsWormExternalTrustEnabled": false,
+    "browserCdpWcuOcrRecipesLiveEnabled": false,
+    "releaseCommercialReady": false
+  },
+  "percentages": {
+    "productLedgerLocalOnlyCore": "94-96%",
+    "approvalHumanReview": "94-97%",
+    "evidenceTimelineAuditTrail": "85-91%",
+    "runtimeCommandExecution": "56-64%",
+    "uiOperatorSurface": "58-68%",
+    "localOnlyInternalProduct": "70-78%",
+    "usableEndToEndLocalProduct": "45-55%",
+    "externalCloud": "0%",
+    "releaseCommercial": "0%"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_EXTERNAL_AUDIT_READ_ONLY"
+}

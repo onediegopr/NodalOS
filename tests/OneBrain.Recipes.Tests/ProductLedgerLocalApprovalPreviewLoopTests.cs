@@ -33,6 +33,11 @@ public sealed class ProductLedgerLocalApprovalPreviewLoopTests
         StringAssert.Contains(html, "data-testid=\"product-ledger-noop-execution-preview\"");
         StringAssert.Contains(html, "data-testid=\"product-ledger-preview-evidence-refs\"");
         StringAssert.Contains(html, "data-testid=\"product-ledger-approval-safe-next-step\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-approval-execution-candidate-preview\"");
+        StringAssert.Contains(html, "data-read-only-in-memory=\"true\"");
+        StringAssert.Contains(html, "data-physical-export-created=\"false\"");
+        StringAssert.Contains(html, "data-file-write-performed=\"false\"");
+        StringAssert.Contains(html, "PRODUCT_LEDGER_LOCAL_APPROVAL_EXECUTION_CANDIDATE_READY");
         StringAssert.Contains(html, "no product command execution");
         StringAssert.Contains(html, "no write/export");
         Assert.IsFalse(html.Contains("data-executable=\"true\"", StringComparison.OrdinalIgnoreCase));

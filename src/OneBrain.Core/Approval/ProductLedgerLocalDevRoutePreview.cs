@@ -408,6 +408,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
         html.AppendLine("    </div>");
         html.AppendLine(ToApprovalPreviewLoopHtml(model.ApprovalPreviewLoop));
+        html.AppendLine(ToApprovalExecutionCandidatePreviewHtml(model.ApprovalExecutionCandidatePreview));
         html.AppendLine($"    <p data-testid=\"product-ledger-safe-next-steps\">{Encode(string.Join("; ", model.SafeNextSteps))}</p>");
         html.AppendLine("    <div data-testid=\"surface-safe-next-steps\">");
         foreach (var step in model.SafeNextSteps)
@@ -450,6 +451,32 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
         html.AppendLine("    </section>");
         html.AppendLine($"    <p data-testid=\"product-ledger-approval-safe-next-step\">{Encode(loop.SafeNextStep)} read-only preview-only no product command execution no write/export no release/commercial</p>");
+        return html.ToString();
+    }
+
+    private static string ToApprovalExecutionCandidatePreviewHtml(ProductLedgerLocalApprovalExecutionResult result)
+    {
+        var html = new StringBuilder();
+        html.AppendLine($"    <section data-testid=\"product-ledger-approval-execution-candidate-preview\" data-decision=\"{Encode(result.Decision.ToString())}\" data-command-kind=\"{Encode(result.CandidateActionKind.ToString())}\" data-local-only=\"{Lower(result.LocalOnly)}\" data-internal-only=\"{Lower(result.InternalOnly)}\" data-default-off=\"{Lower(result.DefaultOff)}\" data-fail-closed=\"{Lower(result.FailClosed)}\" data-read-only-in-memory=\"{Lower(result.ReadOnlyOrInMemory)}\" data-public-ui-action=\"{Lower(result.PublicUiActionAvailable)}\" data-product-command-handler=\"{Lower(result.ProductCommandHandlerAvailable)}\" data-productive-service-registration=\"{Lower(result.ProductiveServiceRegistrationAvailable)}\" data-physical-export-created=\"{Lower(result.PhysicalExportCreated)}\" data-file-write-performed=\"{Lower(result.FileWritePerformed)}\" data-provider-cloud-network=\"{Lower(result.ProviderCloudNetworkAvailable)}\" data-db-migration=\"{Lower(result.DbMigrationAvailable)}\" data-kms-worm-external-trust=\"{Lower(result.KmsWormExternalTrustAvailable)}\" data-live-automation=\"{Lower(result.BrowserCdpWcuOcrRecipesLiveAvailable)}\" data-release-commercial=\"{Lower(result.ReleaseCommercialReady)}\">");
+        html.AppendLine("      <h2>Approval execution candidate preview</h2>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-approval-execution-candidate-status\">{Encode(result.StatusText)} read-only in-memory default-off no public UI no write/export no release/commercial</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-approval-execution-candidate-result-kind\">{Encode(result.CommandResult?.ExecutionPreview.ResultKind ?? "REJECTED_NO_EXECUTION")}</p>");
+        html.AppendLine("      <button type=\"button\" data-testid=\"product-ledger-approval-execution-candidate-control\" data-executable=\"false\" data-handler-id=\"\" data-callback=\"\" disabled aria-disabled=\"true\">approval execution candidate evidence</button>");
+        html.AppendLine("    </section>");
+        html.AppendLine("    <section data-testid=\"product-ledger-approval-execution-candidate-blockers\">");
+        if (result.Blockers.Count == 0)
+        {
+            html.AppendLine("      <p>none</p>");
+        }
+        else
+        {
+            foreach (var blocker in result.Blockers.OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal))
+            {
+                html.AppendLine($"      <p>{Encode(blocker.ToString())}</p>");
+            }
+        }
+
+        html.AppendLine("    </section>");
         return html.ToString();
     }
 

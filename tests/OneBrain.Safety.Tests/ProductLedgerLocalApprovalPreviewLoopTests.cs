@@ -16,7 +16,11 @@ public sealed class ProductLedgerLocalApprovalPreviewLoopTests
         "product-ledger-policy-gate-preview",
         "product-ledger-noop-execution-preview",
         "product-ledger-preview-evidence-refs",
-        "product-ledger-approval-safe-next-step"
+        "product-ledger-approval-safe-next-step",
+        "product-ledger-approval-execution-candidate-preview",
+        "product-ledger-approval-execution-candidate-status",
+        "product-ledger-approval-execution-candidate-result-kind",
+        "product-ledger-approval-execution-candidate-blockers"
     ];
 
     [TestMethod]
@@ -125,6 +129,40 @@ public sealed class ProductLedgerLocalApprovalPreviewLoopTests
     }
 
     [TestMethod]
+    public void LocalApprovalExecutionCandidatePreview_RendersReadOnlyInMemoryEvidenceWithoutExecutableControls()
+    {
+        var result = Render();
+        var candidate = result.CanonicalSurface.ApprovalExecutionCandidatePreview;
+        var html = result.HtmlSnapshot;
+
+        Assert.AreEqual(ProductLedgerLocalApprovalExecutionDecision.CompletedReadOnlyInMemory, candidate.Decision);
+        Assert.AreEqual(ProductLedgerInternalCommandKind.ViewLedgerReadiness, candidate.CandidateActionKind);
+        Assert.IsTrue(candidate.LocalOnly);
+        Assert.IsTrue(candidate.InternalOnly);
+        Assert.IsTrue(candidate.DefaultOff);
+        Assert.IsTrue(candidate.FailClosed);
+        Assert.IsTrue(candidate.ReadOnlyOrInMemory);
+        Assert.IsFalse(candidate.PublicUiActionAvailable);
+        Assert.IsFalse(candidate.ProductCommandHandlerAvailable);
+        Assert.IsFalse(candidate.ProductiveServiceRegistrationAvailable);
+        Assert.IsFalse(candidate.PhysicalExportCreated);
+        Assert.IsFalse(candidate.FileWritePerformed);
+        Assert.IsFalse(candidate.ProviderCloudNetworkAvailable);
+        Assert.IsFalse(candidate.DbMigrationAvailable);
+        Assert.IsFalse(candidate.KmsWormExternalTrustAvailable);
+        Assert.IsFalse(candidate.BrowserCdpWcuOcrRecipesLiveAvailable);
+        Assert.IsFalse(candidate.ReleaseCommercialReady);
+        StringAssert.Contains(html, "data-testid=\"product-ledger-approval-execution-candidate-preview\"");
+        StringAssert.Contains(html, "data-default-off=\"true\"");
+        StringAssert.Contains(html, "data-read-only-in-memory=\"true\"");
+        StringAssert.Contains(html, "data-public-ui-action=\"false\"");
+        StringAssert.Contains(html, "data-product-command-handler=\"false\"");
+        StringAssert.Contains(html, "data-physical-export-created=\"false\"");
+        StringAssert.Contains(html, "data-file-write-performed=\"false\"");
+        StringAssert.Contains(html, "data-executable=\"false\"");
+    }
+
+    [TestMethod]
     public void LocalApprovalPreviewLoop_SourceHasNoExecutionWriteExportNetworkDbOrPilotRun()
     {
         var source = string.Join(
@@ -150,7 +188,9 @@ public sealed class ProductLedgerLocalApprovalPreviewLoopTests
             "ProductLedgerLocalReportExportService().Export",
             "PilotRecipeExecutor",
             "PilotRecipeExecutionGate.Evaluate(",
-            "NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION"
+            "NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION",
+            "Request.Query",
+            "QueryString"
         };
 
         foreach (var fragment in forbiddenFragments)

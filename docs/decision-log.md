@@ -1409,3 +1409,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 candidate is Core-only and not rendered on the route, approval token/state is caller-provided and not persisted, route preview evidence and audit remain future safe blocks; P4 in-memory results are local evidence and inherit existing internal router/handler preview semantics.
 - Readiness changes: Approval/Human Review 92-95% -> 93-96%; Runtime/Command/Execution 50-58% -> 54-62%; local-only internal product 66-74% -> 68-76%; usable end-to-end local product 40-50% -> 42-52%; Product Ledger local-only core, Evidence/Timeline/Audit Trail, UI/Operator Surface, external/cloud and release/commercial unchanged.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY_READY`
+- Baseline: `e2f5aad499c4c94133ece8323e018d5a403357ff`.
+- Scope: local-only/internal-only/Development-only route preview evidence for the Core approval execution candidate.
+- Implemented: canonical surface model candidate evidence, route DOM anchors, disabled candidate evidence control, Safety/Recipes assertions for no public UI action, no product command handler, no write/export and no release/commercial.
+- Non-goals preserved: no route execution endpoint, `MapPost`, public UI action, productive command handler, productive DI/service registration, approval state persistence, append/write/export, bounded export, arbitrary path input, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 candidate evidence is deterministic preview evidence rather than persisted approval state, future real operator approval input remains separate, audit/static hardening remain future safe blocks; P4 route evidence is local operator evidence and internal handler invocation does not expose product commands.
+- Readiness changes: Approval/Human Review 93-96% -> 94-97%; Evidence/Timeline/Audit Trail 84-90% -> 85-91%; Runtime/Command/Execution 54-62% -> 56-64%; UI/Operator Surface 55-65% -> 58-68%; local-only internal product 68-76% -> 70-78%; usable end-to-end local product 42-52% -> 45-55%; Product Ledger local-only core, external/cloud and release/commercial unchanged.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_EXTERNAL_AUDIT_READ_ONLY`.

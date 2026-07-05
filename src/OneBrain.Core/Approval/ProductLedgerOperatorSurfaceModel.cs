@@ -60,6 +60,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     IReadOnlyList<ProductLedgerOperatorSurfaceBlockedFrontier> BlockedFrontiers,
     IReadOnlyList<ProductLedgerOperatorSurfaceActionPreview> ActionPreviews,
     ProductLedgerLocalApprovalPreviewLoop ApprovalPreviewLoop,
+    ProductLedgerLocalApprovalExecutionResult ApprovalExecutionCandidatePreview,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -108,6 +109,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             CanonicalSurfaceId,
             ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
             evidenceRefs);
+        var approvalExecutionCandidatePreview = new ProductLedgerLocalApprovalExecutionCandidate().Execute(
+            CreateApprovalExecutionCandidatePreviewRequest());
         return new ProductLedgerOperatorSurfaceModel(
             SurfaceId: CanonicalSurfaceId,
             GeneratedAtStrategy: DeterministicGeneratedAtStrategy,
@@ -135,10 +138,12 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             BlockedFrontiers: BlockedFrontiers(),
             ActionPreviews: actions,
             ApprovalPreviewLoop: approvalPreviewLoop,
+            ApprovalExecutionCandidatePreview: approvalExecutionCandidatePreview,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",
                 "LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP",
+                "LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY",
                 "DELETION_LIFECYCLE_DESIGN_ONLY"
             ],
             IsLocalOnly: true,
@@ -184,6 +189,39 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         new("operator-acceptance", nameof(ProductLedgerOperatorAcceptanceLocalOnlyMatrix), "fixture-safe acceptance matrix"),
         new("visual-qa", nameof(ProductLedgerLocalDevVisualQaEvidence), "static HTML visual evidence")
     ];
+
+    private static ProductLedgerLocalApprovalExecutionRequest CreateApprovalExecutionCandidatePreviewRequest()
+    {
+        var now = new DateTimeOffset(2026, 7, 5, 12, 0, 0, TimeSpan.Zero);
+        return new ProductLedgerLocalApprovalExecutionRequest(
+            ExplicitLocalOnlyInternalApprovalExecutionScope: true,
+            ApprovalId: "approval-route-preview.product-ledger.view-ledger-readiness",
+            ApprovedAtUtc: now.AddMinutes(-1),
+            NowUtc: now,
+            MaxApprovalAge: TimeSpan.FromMinutes(5),
+            CandidateActionKind: ProductLedgerInternalCommandKind.ViewLedgerReadiness,
+            ApprovedActionName: ProductLedgerInternalCommandKind.ViewLedgerReadiness.ToString(),
+            ApprovedEvidenceHash: "route-preview-evidence-hash",
+            CurrentEvidenceHash: "route-preview-evidence-hash",
+            PolicyRecheckPassed: true,
+            ReadModelVerified: true,
+            RequestsPublicUiAction: false,
+            RequestsDestructiveAction: false,
+            RequestsProductCommandHandler: false,
+            RequestsProductiveServiceRegistration: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsReleaseCommercial: false,
+            ClaimsExternalTelemetryOrSync: false,
+            ClaimsBillingLicensingCloud: false,
+            RequestsPhysicalExport: false,
+            RequestsFileWrite: false,
+            ClaimsAppendOutsideBoundedWriter: false,
+            ClaimsArbitraryPathInput: false,
+            ClaimsRawPayloadOrSecret: false);
+    }
 
     private static IReadOnlyList<ProductLedgerOperatorSurfaceBlockedFrontier> BlockedFrontiers() =>
     [
