@@ -1441,3 +1441,13 @@
 - Non-goals preserved: no product code changes, route POST execution, public UI action, product command handler exposure, write/export, external/cloud, DB/KMS/live automation or release/commercial.
 - Findings: P0=0, P1=0, P2=0; P3 static scan remains fragment-based and approval persistence remains future work; P4 unrelated Pilot routes are intentionally out of scope.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_OPERATOR_ACCEPTANCE_TEST_ONLY`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_OPERATOR_ACCEPTANCE_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_OPERATOR_ACCEPTANCE_TEST_ONLY_READY`
+- Baseline: `cfeaae4435fc4b76a267f9cdd30e8e5a830ba31a`.
+- Scope: test-only local operator acceptance coverage for Product Ledger local approval execution route evidence.
+- Implemented: safe route evidence story test, no executable affordance test, and unsafe operator expectation rejection test for bounded export, public UI action and arbitrary path input.
+- Non-goals preserved: no product code changes, public UI action, POST execution, write/export, product command exposure, persisted approval state, external/cloud, DB/KMS/live automation or release/commercial.
+- Findings: P0=0, P1=0, P2=0; P3 acceptance is automated local test evidence and approval persistence remains future; P4 route evidence remains local/dev and non-public.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_FINAL_LOCAL_ONLY_READINESS_PACKET`.

@@ -1,0 +1,40 @@
+{
+  "macroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_OPERATOR_ACCEPTANCE_TEST_ONLY",
+  "date": "2026-07-05",
+  "decision": "GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_OPERATOR_ACCEPTANCE_TEST_ONLY_READY",
+  "scope": [
+    "test-only",
+    "operator-acceptance",
+    "local-only",
+    "internal-only",
+    "no-public-ui",
+    "no-write-export",
+    "no-release",
+    "no-commercial"
+  ],
+  "implemented": [
+    "tests/OneBrain.Safety.Tests/ProductLedgerLocalApprovalExecutionOperatorAcceptanceTests.cs"
+  ],
+  "findings": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": [
+      "Acceptance is automated local test evidence, not human business signoff.",
+      "Persisted approval state remains future work."
+    ],
+    "P4": [
+      "Route evidence remains local/dev and non-public."
+    ],
+    "TRUE_RISK": 0
+  },
+  "validations": {
+    "safetyFocused": "PASS_3_OF_3",
+    "productLedgerSafetyFocused": "PASS_185_OF_185",
+    "productLedgerRecipesFocused": "PASS_53_OF_53",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "changedFileStaticScan": "PASS_CHANGED_CODE_LIMITED_TO_SAFETY_ACCEPTANCE_TESTS_PLUS_DOCS"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_FINAL_LOCAL_ONLY_READINESS_PACKET"
+}
