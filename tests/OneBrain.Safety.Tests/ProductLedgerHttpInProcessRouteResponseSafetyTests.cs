@@ -17,14 +17,17 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         Assert.IsFalse(program.Contains("app.MapGet(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview", StringComparison.Ordinal));
         StringAssert.Contains(mapper, "environment.IsDevelopment()");
         StringAssert.Contains(mapper, "endpoints.MapGet(");
+        StringAssert.Contains(mapper, "endpoints.MapPost(");
         StringAssert.Contains(mapper, "ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
+        StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
+        StringAssert.Contains(mapper, "LocalApprovalDecisionStateRoute");
         StringAssert.Contains(mapper, "Results.Content(result.HtmlSnapshot, result.ContentType)");
         StringAssert.Contains(mapper, "Results.NotFound()");
         StringAssert.Contains(mapper, "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION");
     }
 
     [TestMethod]
-    public void ProductLedgerHttpRouteMapper_SourceHasNoWriteExportCommandHandlerNetworkDbPilotRunOrPost()
+    public void ProductLedgerHttpRouteMapper_SourceAllowsOnlyLocalApprovalPostAndHasNoExecutionExportNetworkDbOrPilotRun()
     {
         var source = File.ReadAllText(Path.Combine(
             RepoRoot(),
@@ -33,7 +36,6 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
             "ProductLedgerLocalDevRouteEndpointMapper.cs"));
         var forbiddenFragments = new[]
         {
-            "MapPost",
             "Process.Start",
             "HttpClient",
             "WebSocket",
@@ -56,6 +58,13 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         {
             Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
         }
+
+        Assert.AreEqual(1, Count(source, "endpoints.MapPost("));
+        StringAssert.Contains(source, "LocalApprovalDecisionRoute");
+        StringAssert.Contains(source, "/internal/product-ledger/approval/decision");
+        StringAssert.Contains(source, "environment.IsDevelopment()");
+        StringAssert.Contains(source, "ProductLedgerLocalApprovalDecisionStateStore");
+        StringAssert.Contains(source, "RequestsProductCommandExecution: body.RequestsProductCommandExecution == true");
     }
 
     [TestMethod]
@@ -122,5 +131,18 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
 
         Assert.Fail("repo root not found");
         return string.Empty;
+    }
+
+    private static int Count(string source, string value)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
     }
 }

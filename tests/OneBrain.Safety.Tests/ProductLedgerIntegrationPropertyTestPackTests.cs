@@ -221,6 +221,7 @@ public sealed class ProductLedgerIntegrationPropertyTestPackTests
         {
             "ApprovalArtifactWriter.cs",
             "DurableAuditTrailAppendOnlyMinimal.cs",
+            "ProductLedgerLocalApprovalDecisionStateStore.cs",
             "ProductLedgerLocalReportExportService.cs",
             "ProductLedgerPathLocalOnlyActiveWriter.cs",
             "ProductLedgerPathLocalTempWriterTestOnly.cs"

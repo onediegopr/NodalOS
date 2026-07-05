@@ -114,7 +114,6 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
     {
         var source = string.Join(
             Environment.NewLine,
-            ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalDevRoutePreview.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalApprovalPreviewLoop.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerOperatorSurfaceModel.cs"));
@@ -146,6 +145,32 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         foreach (var fragment in forbidden)
         {
             Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
+        }
+
+        var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
+        StringAssert.Contains(mapper, "environment.IsDevelopment()");
+        StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
+        StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
+        Assert.AreEqual(1, Count(mapper, "endpoints.MapPost("));
+        foreach (var fragment in new[]
+        {
+            "ProductLedgerInternalCommandHandler",
+            "ProductLedgerLocalReportExportService().Export",
+            ".Append(",
+            ".Export(",
+            "Process.Start",
+            "HttpClient",
+            "WebSocket",
+            "DbContext",
+            "MigrationBuilder",
+            "PilotRecipeExecutor",
+            "PilotRecipeExecutionGate.Evaluate(",
+            "NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION",
+            "Request.Query",
+            "QueryString"
+        })
+        {
+            Assert.IsFalse(mapper.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
         }
     }
 
@@ -202,6 +227,19 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
     private static string ReadRepoFile(params string[] segments) =>
         File.ReadAllText(Path.Combine(new[] { RepoRoot() }.Concat(segments).ToArray()));
 
+    private static int Count(string source, string value)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
+    }
+
     private static string RepoRoot()
     {
         var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
@@ -224,4 +262,3 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         return string.Empty;
     }
 }
-

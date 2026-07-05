@@ -16,8 +16,12 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         StringAssert.Contains(program, "MapPost");
         StringAssert.Contains(mapper, "environment.IsDevelopment()");
         StringAssert.Contains(mapper, "endpoints.MapGet(");
+        StringAssert.Contains(mapper, "endpoints.MapPost(");
         StringAssert.Contains(mapper, "ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
-        Assert.IsFalse(mapper.Contains("MapPost", StringComparison.Ordinal), "Product Ledger mapper must remain GET-only.");
+        Assert.AreEqual(1, Count(mapper, "endpoints.MapPost("), "Product Ledger mapper may expose only the local approval decision POST.");
+        StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
+        StringAssert.Contains(mapper, "/internal/product-ledger/approval/decision");
+        StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
         Assert.IsFalse(mapper.Contains("Request.Query", StringComparison.Ordinal), "Product Ledger mapper must not accept arbitrary path query input.");
         Assert.IsFalse(mapper.Contains("QueryString", StringComparison.Ordinal), "Product Ledger mapper must not inspect query strings.");
     }
@@ -27,7 +31,6 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
     {
         var approvalPathSource = string.Join(
             Environment.NewLine,
-            ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalDevRoutePreview.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerOperatorSurfaceModel.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalApprovalExecutionCandidate.cs"));
@@ -72,6 +75,30 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         {
             Assert.IsFalse(approvalPathSource.Contains(fragment, StringComparison.Ordinal), fragment);
         }
+
+        var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
+        var mapperForbidden = new[]
+        {
+            "Process.Start",
+            "HttpClient",
+            "WebSocket",
+            "DbContext",
+            "MigrationBuilder",
+            "KmsClient",
+            "WormStore",
+            "ProductLedgerInternalCommandHandler",
+            "ProductLedgerLocalReportExportService().Export",
+            ".Export(",
+            ".Append(",
+            "PilotRecipeExecutor",
+            "PilotRecipeExecutionGate.Evaluate(",
+            "NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION"
+        };
+
+        foreach (var fragment in mapperForbidden)
+        {
+            Assert.IsFalse(mapper.Contains(fragment, StringComparison.Ordinal), fragment);
+        }
     }
 
     [TestMethod]
@@ -92,6 +119,19 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
 
     private static string ReadRepoFile(params string[] segments) =>
         File.ReadAllText(Path.Combine(new[] { RepoRoot() }.Concat(segments).ToArray()));
+
+    private static int Count(string source, string value)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
+    }
 
     private static string RepoRoot()
     {
@@ -114,4 +154,3 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         return string.Empty;
     }
 }
-

@@ -1463,3 +1463,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 approval state is not persisted, operator approval input is deterministic preview evidence and future route POST/operator input requires protected scope; P4 local evidence is not compliance custody and automated acceptance is not human business signoff.
 - Readiness changes: Approval/Human Review 94-97% -> 95-97%; Evidence/Timeline/Audit Trail 85-91% -> 86-92%; Runtime/Command/Execution 56-64% -> 58-66%; UI/Operator Surface 58-68% -> 60-70%; local-only internal product 70-78% -> 72-80%; usable end-to-end local product 45-55% -> 48-58%; Product Ledger local-only core, external/cloud and release/commercial unchanged.
 - Pause frontier: `NODAL_OS_LOCAL_APPROVAL_REAL_OPERATOR_INPUT_AND_STATE_PERSISTENCE_WINDOW`.
+
+## NODAL_OS_LOCAL_APPROVAL_REAL_OPERATOR_INPUT_AND_STATE_PERSISTENCE_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_REAL_OPERATOR_INPUT_AND_STATE_PERSISTENCE_READY`
+- Baseline: `9af6ca31f1d8103198fb0bc978ba9c5d71127535`.
+- Scope: local-only/internal-only Development route and Core store for real operator approval decision input/state persistence.
+- Implemented: `ProductLedgerLocalApprovalDecisionStateStore`, Development-only POST `/internal/product-ledger/approval/decision`, Development-only GET `/internal/product-ledger/approval/state`, canonical operator surface decision-state rendering, idempotent replay, conflict rejection, unsafe note rejection/redaction, tamper/corrupt store fail-closed behavior, route/source static scan hardening and in-process route coverage.
+- Non-goals preserved: no approved action execution, public UI action, productive command handler, productive DI/service registration, approval-execution append/write/export, arbitrary path input, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 local state file is same-boundary and not compliance-grade custody, route remains Development-only/internal, approved action execution remains future protected scope; P4 scans are path-specific and operator-note redaction is conservative local hardening.
+- Readiness changes: Approval/Human Review 95-97% -> 96-98%; Evidence/Timeline/Audit Trail 86-92% -> 88-93%; Runtime/Command/Execution 58-66% -> 60-68%; UI/Operator Surface 60-70% -> 63-73%; local-only internal product 72-80% -> 75-82%; usable end-to-end local product 48-58% -> 52-62%; external/cloud and release/commercial unchanged at 0%.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_DECISION_STATE_EXTERNAL_AUDIT_READ_ONLY`.

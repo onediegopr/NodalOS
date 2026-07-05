@@ -122,12 +122,18 @@ public sealed class ProductLedgerLocalDevRoutePreview
     public ProductLedgerLocalDevRoutePreviewResult Render(
         ProductLedgerLocalDevRoutePreviewRequest? request,
         ProductLedgerOperatorSurfaceReadModelSource? readModelSource)
+        => Render(request, readModelSource, null);
+
+    public ProductLedgerLocalDevRoutePreviewResult Render(
+        ProductLedgerLocalDevRoutePreviewRequest? request,
+        ProductLedgerOperatorSurfaceReadModelSource? readModelSource,
+        ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState)
     {
         var blockers = new List<ProductLedgerLocalDevRoutePreviewBlocker>();
         if (request is null)
         {
             blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingRequest);
-            return Result(blockers, null, readModelSource);
+            return Result(blockers, null, readModelSource, approvalDecisionState);
         }
 
         AddGuardBlockers(request, blockers);
@@ -143,7 +149,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
             AddRenderableBlockers(renderable, blockers);
         }
 
-        return Result(blockers, renderable, readModelSource);
+        return Result(blockers, renderable, readModelSource, approvalDecisionState);
     }
 
     private static void AddGuardBlockers(
@@ -268,12 +274,13 @@ public sealed class ProductLedgerLocalDevRoutePreview
     private static ProductLedgerLocalDevRoutePreviewResult Result(
         IReadOnlyList<ProductLedgerLocalDevRoutePreviewBlocker> blockers,
         ProductLedgerRenderableOperatorSurfaceResult? renderable,
-        ProductLedgerOperatorSurfaceReadModelSource? readModelSource)
+        ProductLedgerOperatorSurfaceReadModelSource? readModelSource,
+        ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState)
     {
         var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
         var rendered = distinct.Length == 0 && renderable is not null;
         var safeRenderable = renderable ?? new ProductLedgerRenderableOperatorSurfaceRenderer().Render(null);
-        var canonicalSurface = ProductLedgerOperatorSurfaceModelFactory.Build(safeRenderable, readModelSource);
+        var canonicalSurface = ProductLedgerOperatorSurfaceModelFactory.Build(safeRenderable, readModelSource, approvalDecisionState);
         var html = rendered ? AddLocalDevShell(safeRenderable.HtmlSnapshot, canonicalSurface) : string.Empty;
         return new ProductLedgerLocalDevRoutePreviewResult(
             Decision: rendered
@@ -409,6 +416,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine("    </div>");
         html.AppendLine(ToApprovalPreviewLoopHtml(model.ApprovalPreviewLoop));
         html.AppendLine(ToApprovalExecutionCandidatePreviewHtml(model.ApprovalExecutionCandidatePreview));
+        html.AppendLine(ToApprovalDecisionStateHtml(model.ApprovalDecisionState));
         html.AppendLine($"    <p data-testid=\"product-ledger-safe-next-steps\">{Encode(string.Join("; ", model.SafeNextSteps))}</p>");
         html.AppendLine("    <div data-testid=\"surface-safe-next-steps\">");
         foreach (var step in model.SafeNextSteps)
@@ -418,6 +426,42 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
         html.AppendLine("    </div>");
         html.AppendLine("  </section>");
+        return html.ToString();
+    }
+
+    private static string ToApprovalDecisionStateHtml(ProductLedgerLocalApprovalDecisionSnapshot state)
+    {
+        var html = new StringBuilder();
+        html.AppendLine($"    <section data-testid=\"product-ledger-approval-decision-state\" data-state=\"{Encode(state.State.ToString())}\" data-decision=\"{Encode(state.Decision.ToString())}\" data-local-only=\"{Lower(state.LocalOnly)}\" data-internal-only=\"{Lower(state.InternalOnly)}\" data-default-off=\"{Lower(state.DefaultOff)}\" data-fail-closed=\"{Lower(state.FailClosed)}\" data-product-command-executed=\"{Lower(state.ProductCommandExecuted)}\" data-public-ui-action=\"{Lower(state.PublicUiActionAvailable)}\" data-product-command-handler=\"{Lower(state.ProductCommandHandlerAvailable)}\" data-productive-service-registration=\"{Lower(state.ProductiveServiceRegistrationAvailable)}\" data-physical-export-created=\"{Lower(state.PhysicalExportCreated)}\" data-file-write-outside-state-store=\"{Lower(state.FileWriteOutsideApprovalStateStorePerformed)}\" data-provider-cloud-network=\"{Lower(state.ProviderCloudNetworkAvailable)}\" data-db-migration=\"{Lower(state.DbMigrationAvailable)}\" data-kms-worm-external-trust=\"{Lower(state.KmsWormExternalTrustAvailable)}\" data-live-automation=\"{Lower(state.BrowserCdpWcuOcrRecipesLiveAvailable)}\" data-pilot-run=\"{Lower(state.PilotRunAvailable)}\" data-release-commercial=\"{Lower(state.ReleaseCommercialReady)}\">");
+        html.AppendLine("      <h2>Approval decision state</h2>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-approval-decision-status\">{Encode(state.StatusText)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-approval-decision-kind\">{Encode(state.OperatorDecision)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-approval-decision-approval-id\">{Encode(state.ApprovalId)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-approval-decision-candidate\">{Encode(state.CandidateActionKind)} / evidence={Encode(state.CandidateEvidenceHashPrefix)} / decision_hash={Encode(state.DecisionHashPrefix)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-approval-decision-note\">{Encode(state.RedactedOperatorNote)}</p>");
+        html.AppendLine("      <p data-testid=\"product-ledger-approval-decision-execution-disabled\">no product command execution no public UI action no product command handler no write/export no release/commercial</p>");
+        html.AppendLine("      <div data-testid=\"product-ledger-approval-decision-evidence-refs\">");
+        foreach (var evidence in state.EvidenceReferences.OrderBy(evidence => evidence, StringComparer.Ordinal))
+        {
+            html.AppendLine($"        <p>{Encode(evidence)}</p>");
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("      <div data-testid=\"product-ledger-approval-decision-blockers\">");
+        if (state.Blockers.Count == 0)
+        {
+            html.AppendLine("        <p>none</p>");
+        }
+        else
+        {
+            foreach (var blocker in state.Blockers.OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal))
+            {
+                html.AppendLine($"        <p>{Encode(blocker.ToString())}</p>");
+            }
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("    </section>");
         return html.ToString();
     }
 
