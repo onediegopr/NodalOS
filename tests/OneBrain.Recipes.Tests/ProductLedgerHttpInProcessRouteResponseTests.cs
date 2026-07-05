@@ -271,6 +271,180 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     }
 
     [TestMethod]
+    public async Task ProductLedgerBoundedApprovalExecutionRoute_DevelopmentHostRecordsCompletionMarkerAndSurfaceShowsState()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        using var boundedState = BoundedApprovalExecutionFixture.Create();
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor,
+            boundedState.Executor);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        using var approval = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionRoute,
+            JsonContent(ReadyApprovalDecisionBody("Approve")),
+            TestContext.CancellationTokenSource.Token);
+        using var noOp = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var bounded = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionRoute,
+            JsonContent(ReadyBoundedApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        var boundedJson = await bounded.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var stateResponse = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionStateRoute,
+            TestContext.CancellationTokenSource.Token);
+        var stateJson = await stateResponse.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var surface = await client.GetAsync(
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            TestContext.CancellationTokenSource.Token);
+        var html = await surface.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, approval.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, noOp.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, bounded.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, stateResponse.StatusCode);
+        StringAssert.Contains(boundedJson, "boundedLocalCompletionRecorded");
+        StringAssert.Contains(stateJson, "boundedExecutionCompletedLocalOnly");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-bounded-approved-action-state\"");
+        StringAssert.Contains(html, "data-state=\"BoundedExecutionCompletedLocalOnly\"");
+        StringAssert.Contains(html, "data-non-destructive=\"true\"");
+        StringAssert.Contains(html, "data-completion-marker=\"true\"");
+        StringAssert.Contains(html, "data-touches-user-files=\"false\"");
+        StringAssert.Contains(html, "data-shell-subprocess-allowed=\"false\"");
+        StringAssert.Contains(html, "data-command-execution-allowed=\"false\"");
+        StringAssert.Contains(html, "data-product-command-executed=\"false\"");
+        StringAssert.Contains(html, "data-public-ui-action=\"false\"");
+        StringAssert.Contains(html, "data-file-write-outside-execution-store=\"false\"");
+        StringAssert.Contains(html, "data-provider-cloud-network=\"false\"");
+        StringAssert.Contains(html, "data-db-migration=\"false\"");
+        StringAssert.Contains(html, "data-live-automation=\"false\"");
+        StringAssert.Contains(html, "data-pilot-run=\"false\"");
+        StringAssert.Contains(html, "BoundedInternalCompletionMarker");
+        StringAssert.Contains(html, "no user file write no shell no subprocess no command execution no Pilot run");
+        Assert.IsTrue(File.Exists(boundedState.StateFilePath));
+        Assert.IsFalse(html.Contains("data-executable=\"true\"", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("onclick=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("formaction=", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public async Task ProductLedgerBoundedApprovalExecutionRoute_ReplaysSameMarkerAndRejectsConflict()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        using var boundedState = BoundedApprovalExecutionFixture.Create();
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor,
+            boundedState.Executor);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        using var approval = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionRoute,
+            JsonContent(ReadyApprovalDecisionBody("Approve")),
+            TestContext.CancellationTokenSource.Token);
+        using var noOp = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var first = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionRoute,
+            JsonContent(ReadyBoundedApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var replay = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionRoute,
+            JsonContent(ReadyBoundedApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var conflict = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionRoute,
+            JsonContent(ReadyBoundedApprovalExecutionBody() with { ExecutionId = "bounded-route-execution-002" }),
+            TestContext.CancellationTokenSource.Token);
+        var replayJson = await replay.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        var conflictJson = await conflict.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, approval.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, noOp.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, first.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, replay.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, conflict.StatusCode);
+        StringAssert.Contains(replayJson, "idempotentReplay");
+        StringAssert.Contains(conflictJson, "existingBoundedActionConflict");
+    }
+
+    [TestMethod]
+    public async Task ProductLedgerBoundedApprovalExecutionRoute_FailsClosedForMissingNoOpMalformedPayloadOrAuthorityClaims()
+    {
+        var cases = new (bool PersistApproval, bool ExecuteNoOp, StringContent Content, bool ExpectStateFile)[]
+        {
+            (true, false, JsonContent(ReadyBoundedApprovalExecutionBody()), false),
+            (true, true, new StringContent("{not-json", Encoding.UTF8, "application/json"), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { ActionKind = "UnknownBoundedAction" }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { CurrentEvidenceHash = new string('b', 64) }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { ProposedPath = @"C:\Users\fixture\unsafe.txt" }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { ProposedCommand = "cmd /c whoami" }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { ProposedUrl = "https://local.invalid/action" }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { RequestsUserFileWrite = true }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { RequestsShellOrSubprocess = true }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { RequestsProductCommandExecution = true }), false),
+            (true, true, JsonContent(ReadyBoundedApprovalExecutionBody() with { RequestsPublicUiAction = true }), false)
+        };
+
+        foreach (var testCase in cases)
+        {
+            using var approvalState = ApprovalStateFixture.Create();
+            using var executionState = ApprovalExecutionFixture.Create();
+            using var boundedState = BoundedApprovalExecutionFixture.Create();
+            await using var app = BuildLocalOnlyApp(
+                Environments.Development,
+                ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalState.Store,
+                executionState.Executor,
+                boundedState.Executor);
+            await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+            using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+            if (testCase.PersistApproval)
+            {
+                using var approval = await client.PostAsync(
+                    ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionRoute,
+                    JsonContent(ReadyApprovalDecisionBody("Approve")),
+                    TestContext.CancellationTokenSource.Token);
+                Assert.AreEqual(System.Net.HttpStatusCode.OK, approval.StatusCode);
+            }
+
+            if (testCase.ExecuteNoOp)
+            {
+                using var noOp = await client.PostAsync(
+                    ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+                    JsonContent(ReadyApprovalExecutionBody()),
+                    TestContext.CancellationTokenSource.Token);
+                Assert.AreEqual(System.Net.HttpStatusCode.OK, noOp.StatusCode);
+            }
+
+            using var bounded = await client.PostAsync(
+                ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionRoute,
+                testCase.Content,
+                TestContext.CancellationTokenSource.Token);
+
+            Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, bounded.StatusCode);
+            Assert.AreEqual(testCase.ExpectStateFile, File.Exists(boundedState.StateFilePath));
+        }
+    }
+
+    [TestMethod]
     public async Task ProductLedgerApprovalDecisionRoute_FailsClosedForMalformedUnsafeOrMismatchedInput()
     {
         using var approvalState = ApprovalStateFixture.Create();
@@ -372,11 +546,13 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     {
         using var approvalState = ApprovalStateFixture.Create();
         using var executionState = ApprovalExecutionFixture.Create();
+        using var boundedState = BoundedApprovalExecutionFixture.Create();
         await using var app = BuildLocalOnlyApp(
             Environments.Production,
             ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
             approvalState.Store,
-            executionState.Executor);
+            executionState.Executor,
+            boundedState.Executor);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
 
         using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
@@ -394,13 +570,23 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var executionStateRead = await client.GetAsync(
             ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionStateRoute,
             TestContext.CancellationTokenSource.Token);
+        using var bounded = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionRoute,
+            JsonContent(ReadyBoundedApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var boundedStateRead = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionStateRoute,
+            TestContext.CancellationTokenSource.Token);
 
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, post.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, state.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, execution.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, executionStateRead.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, bounded.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, boundedStateRead.StatusCode);
         Assert.IsFalse(File.Exists(approvalState.StateFilePath));
         Assert.IsFalse(File.Exists(executionState.StateFilePath));
+        Assert.IsFalse(File.Exists(boundedState.StateFilePath));
     }
 
     public TestContext TestContext { get; set; } = null!;
@@ -409,7 +595,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         string environmentName,
         ProductLedgerOperatorSurfaceReadModelSource? readModelSource = null,
         ProductLedgerLocalApprovalDecisionStateStore? approvalDecisionStateStore = null,
-        ProductLedgerLocalApprovedActionNoOpExecutor? noOpExecutor = null)
+        ProductLedgerLocalApprovedActionNoOpExecutor? noOpExecutor = null,
+        ProductLedgerLocalBoundedApprovedActionExecutor? boundedActionExecutor = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -423,6 +610,15 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             app.MapProductLedgerLocalDevRoutePreview(
                 app.Environment,
                 readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+        }
+        else if (noOpExecutor is not null && boundedActionExecutor is not null)
+        {
+            app.MapProductLedgerLocalDevRoutePreview(
+                app.Environment,
+                readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalDecisionStateStore,
+                noOpExecutor,
+                boundedActionExecutor);
         }
         else if (noOpExecutor is not null)
         {
@@ -497,6 +693,44 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             RequestsProductiveServiceRegistration: false,
             RequestsPhysicalExport: false,
             RequestsFileWriteOutsideExecutionStore: false,
+            ClaimsArbitraryPathInput: false,
+            ClaimsFilesystemScan: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsPilotRun: false,
+            ClaimsReleaseCommercial: false);
+
+    private static ProductLedgerBoundedApprovalExecutionRouteBody ReadyBoundedApprovalExecutionBody() =>
+        new(
+            ExplicitLocalBoundedActionScope: true,
+            DevelopmentMode: true,
+            LocalMode: true,
+            InternalMode: true,
+            ExecutionId: "bounded-route-execution-001",
+            ActionId: "bounded-internal-completion-marker-route-001",
+            ActionKind: ProductLedgerLocalBoundedApprovedActionKind.BoundedInternalCompletionMarker.ToString(),
+            CandidateActionKind: ProductLedgerInternalCommandKind.ViewLedgerReadiness.ToString(),
+            CandidateEvidenceHash: new string('a', 64),
+            CurrentEvidenceHash: new string('a', 64),
+            EvidenceReferences:
+            [
+                "docs/qa/nodal-os-approved-action-execution-local-only-no-op-to-bounded-action/report.md",
+                "docs/qa/nodal-os-local-approval-real-operator-input-state-persistence/report.md"
+            ],
+            ProposedPath: null,
+            ProposedCommand: null,
+            ProposedUrl: null,
+            RequestsPublicUiAction: false,
+            RequestsProductCommandExecution: false,
+            RequestsProductCommandHandler: false,
+            RequestsProductiveServiceRegistration: false,
+            RequestsPhysicalExport: false,
+            RequestsFileWriteOutsideExecutionStore: false,
+            RequestsUserFileWrite: false,
+            RequestsShellOrSubprocess: false,
+            ClaimsArbitraryCommandExecution: false,
             ClaimsArbitraryPathInput: false,
             ClaimsFilesystemScan: false,
             ClaimsProviderCloudNetwork: false,
@@ -713,6 +947,79 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         bool ClaimsBrowserCdpWcuOcrRecipesLive,
         bool ClaimsPilotRun,
         bool ClaimsReleaseCommercial);
+
+    private sealed record ProductLedgerBoundedApprovalExecutionRouteBody(
+        bool ExplicitLocalBoundedActionScope,
+        bool DevelopmentMode,
+        bool LocalMode,
+        bool InternalMode,
+        string ExecutionId,
+        string ActionId,
+        string ActionKind,
+        string CandidateActionKind,
+        string CandidateEvidenceHash,
+        string CurrentEvidenceHash,
+        IReadOnlyList<string> EvidenceReferences,
+        string? ProposedPath,
+        string? ProposedCommand,
+        string? ProposedUrl,
+        bool RequestsPublicUiAction,
+        bool RequestsProductCommandExecution,
+        bool RequestsProductCommandHandler,
+        bool RequestsProductiveServiceRegistration,
+        bool RequestsPhysicalExport,
+        bool RequestsFileWriteOutsideExecutionStore,
+        bool RequestsUserFileWrite,
+        bool RequestsShellOrSubprocess,
+        bool ClaimsArbitraryCommandExecution,
+        bool ClaimsArbitraryPathInput,
+        bool ClaimsFilesystemScan,
+        bool ClaimsProviderCloudNetwork,
+        bool ClaimsDbMigration,
+        bool ClaimsKmsWormExternalTrust,
+        bool ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool ClaimsPilotRun,
+        bool ClaimsReleaseCommercial);
+
+    private sealed class BoundedApprovalExecutionFixture : IDisposable
+    {
+        private const string StateFileName = "product-ledger-local-bounded-approved-action.json";
+
+        private BoundedApprovalExecutionFixture(string root)
+        {
+            Root = root;
+            Executor = new ProductLedgerLocalBoundedApprovedActionExecutor(new ProductLedgerLocalApprovedActionExecutionStoreOptions(
+                StoreRootPath: root,
+                ExplicitLocalOnlyExecutionStore: true,
+                AllowsArbitraryPathInput: false,
+                AllowsFilesystemScan: false,
+                AllowsExport: false,
+                AllowsNetwork: false,
+                AllowsDb: false,
+                AllowsReleaseCommercial: false));
+        }
+
+        public string Root { get; }
+
+        public string StateFilePath => Path.Combine(Root, StateFileName);
+
+        public ProductLedgerLocalBoundedApprovedActionExecutor Executor { get; }
+
+        public static BoundedApprovalExecutionFixture Create()
+        {
+            var root = Path.Combine(RepoRoot(), ".tmp-product-ledger-bounded-approval-execution-route-tests", Guid.NewGuid().ToString("N"));
+            return new BoundedApprovalExecutionFixture(root);
+        }
+
+        public void Dispose()
+        {
+            var tempRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-bounded-approval-execution-route-tests");
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
 
     private sealed class ApprovalExecutionFixture : IDisposable
     {

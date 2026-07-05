@@ -21,6 +21,12 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     public const string LocalApprovalExecutionStateRoute =
         "/internal/product-ledger/approval/execution-state";
 
+    public const string LocalBoundedApprovalExecutionRoute =
+        "/internal/product-ledger/approval/execute-bounded";
+
+    public const string LocalBoundedApprovalExecutionStateRoute =
+        "/internal/product-ledger/approval/bounded-state";
+
     public const string LocalOnlyRouteResponseEvidenceMode =
         "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION";
 
@@ -39,7 +45,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             environment,
             readModelSource,
             CreateDefaultDecisionStateStore(),
-            CreateDefaultNoOpExecutor());
+            CreateDefaultNoOpExecutor(),
+            CreateDefaultBoundedActionExecutor());
 
     public static IEndpointRouteBuilder MapProductLedgerLocalDevRoutePreview(
         this IEndpointRouteBuilder endpoints,
@@ -50,7 +57,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             environment,
             readModelSource,
             decisionStateStore,
-            CreateDefaultNoOpExecutor());
+            CreateDefaultNoOpExecutor(),
+            CreateDefaultBoundedActionExecutor());
 
     public static IEndpointRouteBuilder MapProductLedgerLocalDevRoutePreview(
         this IEndpointRouteBuilder endpoints,
@@ -58,6 +66,20 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerOperatorSurfaceReadModelSource readModelSource,
         ProductLedgerLocalApprovalDecisionStateStore decisionStateStore,
         ProductLedgerLocalApprovedActionNoOpExecutor noOpExecutor)
+        => endpoints.MapProductLedgerLocalDevRoutePreview(
+            environment,
+            readModelSource,
+            decisionStateStore,
+            noOpExecutor,
+            CreateDefaultBoundedActionExecutor());
+
+    public static IEndpointRouteBuilder MapProductLedgerLocalDevRoutePreview(
+        this IEndpointRouteBuilder endpoints,
+        IHostEnvironment environment,
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource,
+        ProductLedgerLocalApprovalDecisionStateStore decisionStateStore,
+        ProductLedgerLocalApprovedActionNoOpExecutor noOpExecutor,
+        ProductLedgerLocalBoundedApprovedActionExecutor boundedActionExecutor)
     {
         if (!environment.IsDevelopment())
         {
@@ -66,13 +88,16 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
 
         endpoints.MapGet(
             ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
-            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read()));
+            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read()));
         endpoints.MapGet(
             LocalApprovalDecisionStateRoute,
             () => Results.Json(decisionStateStore.Read(), RouteJsonOptions));
         endpoints.MapGet(
             LocalApprovalExecutionStateRoute,
             () => Results.Json(noOpExecutor.Read(), RouteJsonOptions));
+        endpoints.MapGet(
+            LocalBoundedApprovalExecutionStateRoute,
+            () => Results.Json(boundedActionExecutor.Read(), RouteJsonOptions));
         Func<HttpContext, Task<IResult>> persistDecisionHandler =
             context => PersistProductLedgerLocalApprovalDecisionAsync(
                 context,
@@ -86,6 +111,14 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
                 decisionStateStore,
                 noOpExecutor);
         endpoints.MapPost(LocalApprovalExecutionRoute, executeNoOpHandler);
+        Func<HttpContext, Task<IResult>> executeBoundedHandler =
+            context => ExecuteProductLedgerLocalBoundedApprovalActionAsync(
+                context,
+                readModelSource,
+                decisionStateStore,
+                noOpExecutor,
+                boundedActionExecutor);
+        endpoints.MapPost(LocalBoundedApprovalExecutionRoute, executeBoundedHandler);
         return endpoints;
     }
 
@@ -110,12 +143,24 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerOperatorSurfaceReadModelSource readModelSource,
         ProductLedgerLocalApprovalDecisionSnapshot approvalDecisionState,
         ProductLedgerLocalApprovedActionExecutionSnapshot approvedActionExecutionState)
+        => RenderProductLedgerLocalDevRoutePreview(
+            readModelSource,
+            approvalDecisionState,
+            approvedActionExecutionState,
+            ProductLedgerLocalBoundedApprovedActionSnapshot.Pending);
+
+    public static IResult RenderProductLedgerLocalDevRoutePreview(
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource,
+        ProductLedgerLocalApprovalDecisionSnapshot approvalDecisionState,
+        ProductLedgerLocalApprovedActionExecutionSnapshot approvedActionExecutionState,
+        ProductLedgerLocalBoundedApprovedActionSnapshot boundedApprovedActionState)
     {
         var result = new ProductLedgerLocalDevRoutePreview().Render(
             ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
             readModelSource,
             approvalDecisionState,
-            approvedActionExecutionState);
+            approvedActionExecutionState,
+            boundedApprovedActionState);
 
         return result.Decision == ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
             ? Results.Content(result.HtmlSnapshot, result.ContentType)
@@ -220,6 +265,59 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         return Results.Json(snapshot, RouteJsonOptions, statusCode: statusCode);
     }
 
+    private static async Task<IResult> ExecuteProductLedgerLocalBoundedApprovalActionAsync(
+        HttpContext context,
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource,
+        ProductLedgerLocalApprovalDecisionStateStore decisionStateStore,
+        ProductLedgerLocalApprovedActionNoOpExecutor noOpExecutor,
+        ProductLedgerLocalBoundedApprovedActionExecutor boundedActionExecutor)
+    {
+        if (context.Request.ContentLength is null or <= 0 or > 8192)
+        {
+            return Results.Json(ProductLedgerLocalBoundedApprovedActionSnapshot.Pending with
+            {
+                Blockers = [ProductLedgerLocalBoundedApprovedActionBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalBoundedApprovedActionExecutor.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
+            && context.Request.ContentType?.StartsWith("application/json;", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            return Results.Json(ProductLedgerLocalBoundedApprovedActionSnapshot.Pending with
+            {
+                Blockers = [ProductLedgerLocalBoundedApprovedActionBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalBoundedApprovedActionExecutor.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        ProductLedgerLocalBoundedApprovalExecutionBody? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<ProductLedgerLocalBoundedApprovalExecutionBody>(
+                context.Request.Body,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web),
+                context.RequestAborted);
+        }
+        catch (JsonException)
+        {
+            body = null;
+        }
+
+        var snapshot = boundedActionExecutor.ExecuteBoundedCompletionMarker(ToBoundedActionRequest(
+            body,
+            decisionStateStore.Read(),
+            noOpExecutor.Read(),
+            CurrentCandidate(readModelSource).CandidateActionKind));
+        var statusCode = snapshot.Decision switch
+        {
+            ProductLedgerLocalBoundedApprovedActionDecision.BoundedLocalCompletionRecorded => StatusCodes.Status200OK,
+            ProductLedgerLocalBoundedApprovedActionDecision.IdempotentReplay => StatusCodes.Status200OK,
+            _ => StatusCodes.Status400BadRequest
+        };
+        return Results.Json(snapshot, RouteJsonOptions, statusCode: statusCode);
+    }
+
     private static ProductLedgerLocalApprovalDecisionStateRequest? ToStoreRequest(
         ProductLedgerLocalApprovalDecisionBody? body,
         ProductLedgerLocalApprovalExecutionResult candidate)
@@ -295,6 +393,55 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             ClaimsReleaseCommercial: body.ClaimsReleaseCommercial == true);
     }
 
+    private static ProductLedgerLocalBoundedApprovedActionRequest? ToBoundedActionRequest(
+        ProductLedgerLocalBoundedApprovalExecutionBody? body,
+        ProductLedgerLocalApprovalDecisionSnapshot approval,
+        ProductLedgerLocalApprovedActionExecutionSnapshot noOpExecution,
+        ProductLedgerInternalCommandKind currentCandidateActionKind)
+    {
+        if (body is null)
+        {
+            return null;
+        }
+
+        return new ProductLedgerLocalBoundedApprovedActionRequest(
+            ExplicitLocalBoundedActionScope: body.ExplicitLocalBoundedActionScope == true,
+            DevelopmentMode: body.DevelopmentMode == true,
+            LocalMode: body.LocalMode == true,
+            InternalMode: body.InternalMode == true,
+            ExecutionId: body.ExecutionId,
+            ActionId: body.ActionId,
+            ActionKind: ParseBoundedActionKind(body.ActionKind),
+            ApprovalDecision: approval,
+            NoOpExecution: noOpExecution,
+            CandidateActionKind: body.CandidateActionKind is null
+                ? currentCandidateActionKind
+                : ParseCommandKind(body.CandidateActionKind),
+            CandidateEvidenceHash: body.CandidateEvidenceHash,
+            CurrentEvidenceHash: body.CurrentEvidenceHash,
+            EvidenceReferences: body.EvidenceReferences ?? [],
+            ProposedPath: body.ProposedPath,
+            ProposedCommand: body.ProposedCommand,
+            ProposedUrl: body.ProposedUrl,
+            RequestsPublicUiAction: body.RequestsPublicUiAction == true,
+            RequestsProductCommandExecution: body.RequestsProductCommandExecution == true,
+            RequestsProductCommandHandler: body.RequestsProductCommandHandler == true,
+            RequestsProductiveServiceRegistration: body.RequestsProductiveServiceRegistration == true,
+            RequestsPhysicalExport: body.RequestsPhysicalExport == true,
+            RequestsFileWriteOutsideExecutionStore: body.RequestsFileWriteOutsideExecutionStore == true,
+            RequestsUserFileWrite: body.RequestsUserFileWrite == true,
+            RequestsShellOrSubprocess: body.RequestsShellOrSubprocess == true,
+            ClaimsArbitraryCommandExecution: body.ClaimsArbitraryCommandExecution == true,
+            ClaimsArbitraryPathInput: body.ClaimsArbitraryPathInput == true,
+            ClaimsFilesystemScan: body.ClaimsFilesystemScan == true,
+            ClaimsProviderCloudNetwork: body.ClaimsProviderCloudNetwork == true,
+            ClaimsDbMigration: body.ClaimsDbMigration == true,
+            ClaimsKmsWormExternalTrust: body.ClaimsKmsWormExternalTrust == true,
+            ClaimsBrowserCdpWcuOcrRecipesLive: body.ClaimsBrowserCdpWcuOcrRecipesLive == true,
+            ClaimsPilotRun: body.ClaimsPilotRun == true,
+            ClaimsReleaseCommercial: body.ClaimsReleaseCommercial == true);
+    }
+
     private static ProductLedgerLocalApprovalExecutionResult CurrentCandidate(
         ProductLedgerOperatorSurfaceReadModelSource readModelSource) =>
         new ProductLedgerLocalDevRoutePreview()
@@ -330,6 +477,19 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         return null;
     }
 
+    private static ProductLedgerLocalBoundedApprovedActionKind? ParseBoundedActionKind(string? value)
+    {
+        if (Enum.TryParse<ProductLedgerLocalBoundedApprovedActionKind>(
+            value,
+            ignoreCase: true,
+            out var action))
+        {
+            return action;
+        }
+
+        return null;
+    }
+
     private static ProductLedgerLocalApprovalDecisionStateStore CreateDefaultDecisionStateStore() =>
         new(new ProductLedgerLocalApprovalDecisionStateStoreOptions(
             StoreRootPath: Path.Combine(Path.GetTempPath(), "nodal-os-product-ledger-local-approval-state"),
@@ -343,6 +503,17 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     private static ProductLedgerLocalApprovedActionNoOpExecutor CreateDefaultNoOpExecutor() =>
         new(new ProductLedgerLocalApprovedActionExecutionStoreOptions(
             StoreRootPath: Path.Combine(Path.GetTempPath(), "nodal-os-product-ledger-local-approved-no-op-execution"),
+            ExplicitLocalOnlyExecutionStore: true,
+            AllowsArbitraryPathInput: false,
+            AllowsFilesystemScan: false,
+            AllowsExport: false,
+            AllowsNetwork: false,
+            AllowsDb: false,
+            AllowsReleaseCommercial: false));
+
+    private static ProductLedgerLocalBoundedApprovedActionExecutor CreateDefaultBoundedActionExecutor() =>
+        new(new ProductLedgerLocalApprovedActionExecutionStoreOptions(
+            StoreRootPath: Path.Combine(Path.GetTempPath(), "nodal-os-product-ledger-local-bounded-approved-action"),
             ExplicitLocalOnlyExecutionStore: true,
             AllowsArbitraryPathInput: false,
             AllowsFilesystemScan: false,
@@ -399,6 +570,39 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         bool? RequestsProductiveServiceRegistration,
         bool? RequestsPhysicalExport,
         bool? RequestsFileWriteOutsideExecutionStore,
+        bool? ClaimsArbitraryPathInput,
+        bool? ClaimsFilesystemScan,
+        bool? ClaimsProviderCloudNetwork,
+        bool? ClaimsDbMigration,
+        bool? ClaimsKmsWormExternalTrust,
+        bool? ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool? ClaimsPilotRun,
+        bool? ClaimsReleaseCommercial);
+
+    private sealed record ProductLedgerLocalBoundedApprovalExecutionBody(
+        bool? ExplicitLocalBoundedActionScope,
+        bool? DevelopmentMode,
+        bool? LocalMode,
+        bool? InternalMode,
+        string? ExecutionId,
+        string? ActionId,
+        string? ActionKind,
+        string? CandidateActionKind,
+        string? CandidateEvidenceHash,
+        string? CurrentEvidenceHash,
+        IReadOnlyList<string>? EvidenceReferences,
+        string? ProposedPath,
+        string? ProposedCommand,
+        string? ProposedUrl,
+        bool? RequestsPublicUiAction,
+        bool? RequestsProductCommandExecution,
+        bool? RequestsProductCommandHandler,
+        bool? RequestsProductiveServiceRegistration,
+        bool? RequestsPhysicalExport,
+        bool? RequestsFileWriteOutsideExecutionStore,
+        bool? RequestsUserFileWrite,
+        bool? RequestsShellOrSubprocess,
+        bool? ClaimsArbitraryCommandExecution,
         bool? ClaimsArbitraryPathInput,
         bool? ClaimsFilesystemScan,
         bool? ClaimsProviderCloudNetwork,

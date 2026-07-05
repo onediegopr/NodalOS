@@ -1495,3 +1495,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 local execution state is same-boundary evidence only, bounded action remains a future gate and public/product operator action remains blocked; P4 static scans are path-specific and the external audit is simulated/read-only inside Codex.
 - Readiness changes: Approval/Human Review 96-98% -> 97-98%; Evidence/Timeline/Audit Trail 88-93% -> 89-94%; Runtime/Command/Execution 60-68% -> 62-70%; UI/Operator Surface 63-73% -> 65-75%; local-only internal product 75-82% -> 78-84%; usable end-to-end local product 52-62% -> 55-65%; external/cloud and release/commercial unchanged at 0%.
 - Next recommended macro-block: `NODAL_OS_APPROVED_ACTION_EXECUTION_BOUNDED_LOCAL_NON_DESTRUCTIVE_ACTION_DESIGN_TEST_WINDOW`.
+
+## NODAL_OS_APPROVED_ACTION_EXECUTION_BOUNDED_LOCAL_NON_DESTRUCTIVE_ACTION_DESIGN_TEST_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_BOUNDED_APPROVED_ACTION_READY`
+- Baseline: `a8a209b93e956956aee63925df9b663485e63273`.
+- Scope: local-only/internal-only/Development-only bounded approved action, limited to `BoundedInternalCompletionMarker`.
+- Implemented: `ProductLedgerLocalBoundedApprovedActionExecutor`, Development-only POST `/internal/product-ledger/approval/execute-bounded`, Development-only GET `/internal/product-ledger/approval/bounded-state`, canonical operator surface bounded action state, exact action-kind allowlist, approved decision plus completed no-op precondition, exact hash binding, idempotent replay, conflict rejection, tamper/corrupt store fail-closed behavior, Safety/Recipes/static coverage.
+- Non-goals preserved: no first real user-facing action, public UI/product action path, product command execution, product command handler, productive DI/service registration, user file write, arbitrary path input/filesystem scan, shell/subprocess/arbitrary command execution, product ledger append/write/export from bounded approval execution, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 local bounded action state is same-boundary evidence only, the bounded marker is not a real user-facing local action and public/product action remains blocked; P4 static scans are path-specific and the external audit is simulated/read-only inside Codex.
+- Readiness changes: Approval/Human Review 97-98% -> 98%; Evidence/Timeline/Audit Trail 89-94% -> 90-95%; Runtime/Command/Execution 62-70% -> 65-73%; UI/Operator Surface 65-75% -> 68-78%; local-only internal product 78-84% -> 80-86%; usable end-to-end local product 55-65% -> 58-68%; external/cloud and release/commercial unchanged at 0%.
+- Next recommended macro-block: `NODAL_OS_FIRST_REAL_USER_FACING_LOCAL_ACTION_PATH_READINESS_AND_BOUNDARY_DESIGN_ONLY`.

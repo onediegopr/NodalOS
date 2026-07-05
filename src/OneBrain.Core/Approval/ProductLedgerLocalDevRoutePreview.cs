@@ -135,12 +135,20 @@ public sealed class ProductLedgerLocalDevRoutePreview
         ProductLedgerOperatorSurfaceReadModelSource? readModelSource,
         ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState,
         ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState)
+        => Render(request, readModelSource, approvalDecisionState, approvedActionExecutionState, null);
+
+    public ProductLedgerLocalDevRoutePreviewResult Render(
+        ProductLedgerLocalDevRoutePreviewRequest? request,
+        ProductLedgerOperatorSurfaceReadModelSource? readModelSource,
+        ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState,
+        ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState,
+        ProductLedgerLocalBoundedApprovedActionSnapshot? boundedApprovedActionState)
     {
         var blockers = new List<ProductLedgerLocalDevRoutePreviewBlocker>();
         if (request is null)
         {
             blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingRequest);
-            return Result(blockers, null, readModelSource, approvalDecisionState, approvedActionExecutionState);
+            return Result(blockers, null, readModelSource, approvalDecisionState, approvedActionExecutionState, boundedApprovedActionState);
         }
 
         AddGuardBlockers(request, blockers);
@@ -156,7 +164,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
             AddRenderableBlockers(renderable, blockers);
         }
 
-        return Result(blockers, renderable, readModelSource, approvalDecisionState, approvedActionExecutionState);
+        return Result(blockers, renderable, readModelSource, approvalDecisionState, approvedActionExecutionState, boundedApprovedActionState);
     }
 
     private static void AddGuardBlockers(
@@ -283,7 +291,8 @@ public sealed class ProductLedgerLocalDevRoutePreview
         ProductLedgerRenderableOperatorSurfaceResult? renderable,
         ProductLedgerOperatorSurfaceReadModelSource? readModelSource,
         ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState,
-        ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState)
+        ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState,
+        ProductLedgerLocalBoundedApprovedActionSnapshot? boundedApprovedActionState)
     {
         var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
         var rendered = distinct.Length == 0 && renderable is not null;
@@ -292,7 +301,8 @@ public sealed class ProductLedgerLocalDevRoutePreview
             safeRenderable,
             readModelSource,
             approvalDecisionState,
-            approvedActionExecutionState);
+            approvedActionExecutionState,
+            boundedApprovedActionState);
         var html = rendered ? AddLocalDevShell(safeRenderable.HtmlSnapshot, canonicalSurface) : string.Empty;
         return new ProductLedgerLocalDevRoutePreviewResult(
             Decision: rendered
@@ -430,6 +440,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine(ToApprovalExecutionCandidatePreviewHtml(model.ApprovalExecutionCandidatePreview));
         html.AppendLine(ToApprovalDecisionStateHtml(model.ApprovalDecisionState));
         html.AppendLine(ToApprovedActionExecutionStateHtml(model.ApprovedActionExecutionState));
+        html.AppendLine(ToBoundedApprovedActionStateHtml(model.BoundedApprovedActionState));
         html.AppendLine($"    <p data-testid=\"product-ledger-safe-next-steps\">{Encode(string.Join("; ", model.SafeNextSteps))}</p>");
         html.AppendLine("    <div data-testid=\"surface-safe-next-steps\">");
         foreach (var step in model.SafeNextSteps)
@@ -460,6 +471,42 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
         html.AppendLine("      </div>");
         html.AppendLine("      <div data-testid=\"product-ledger-approved-action-execution-blockers\">");
+        if (state.Blockers.Count == 0)
+        {
+            html.AppendLine("        <p>none</p>");
+        }
+        else
+        {
+            foreach (var blocker in state.Blockers.OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal))
+            {
+                html.AppendLine($"        <p>{Encode(blocker.ToString())}</p>");
+            }
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("    </section>");
+        return html.ToString();
+    }
+
+    private static string ToBoundedApprovedActionStateHtml(ProductLedgerLocalBoundedApprovedActionSnapshot state)
+    {
+        var html = new StringBuilder();
+        html.AppendLine($"    <section data-testid=\"product-ledger-bounded-approved-action-state\" data-state=\"{Encode(state.State.ToString())}\" data-decision=\"{Encode(state.Decision.ToString())}\" data-local-only=\"{Lower(state.LocalOnly)}\" data-internal-only=\"{Lower(state.InternalOnly)}\" data-development-only=\"{Lower(state.DevelopmentOnly)}\" data-default-off=\"{Lower(state.DefaultOff)}\" data-fail-closed=\"{Lower(state.FailClosed)}\" data-non-destructive=\"{Lower(state.NonDestructive)}\" data-completion-marker=\"{Lower(state.BoundedInternalCompletionMarker)}\" data-touches-user-files=\"{Lower(state.TouchesUserFiles)}\" data-shell-subprocess-allowed=\"{Lower(state.ShellOrSubprocessAllowed)}\" data-command-execution-allowed=\"{Lower(state.ArbitraryCommandExecutionAllowed)}\" data-product-command-executed=\"{Lower(state.ProductCommandExecuted)}\" data-public-ui-action=\"{Lower(state.PublicUiActionAvailable)}\" data-product-command-handler=\"{Lower(state.ProductCommandHandlerAvailable)}\" data-productive-service-registration=\"{Lower(state.ProductiveServiceRegistrationAvailable)}\" data-physical-export-created=\"{Lower(state.PhysicalExportCreated)}\" data-file-write-outside-execution-store=\"{Lower(state.FileWriteOutsideExecutionStorePerformed)}\" data-provider-cloud-network=\"{Lower(state.ProviderCloudNetworkAvailable)}\" data-db-migration=\"{Lower(state.DbMigrationAvailable)}\" data-kms-worm-external-trust=\"{Lower(state.KmsWormExternalTrustAvailable)}\" data-live-automation=\"{Lower(state.BrowserCdpWcuOcrRecipesLiveAvailable)}\" data-pilot-run=\"{Lower(state.PilotRunAvailable)}\" data-release-commercial=\"{Lower(state.ReleaseCommercialReady)}\">");
+        html.AppendLine("      <h2>Bounded approved action state</h2>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-bounded-approved-action-status\">{Encode(state.StatusText)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-bounded-approved-action-result-kind\">{Encode(state.State.ToString())}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-bounded-approved-action-ids\">execution={Encode(state.ExecutionId)} / action={Encode(state.ActionId)} / approval={Encode(state.ApprovalId)} / noop={Encode(state.NoOpExecutionId)} / candidate={Encode(state.CandidateActionKind)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-bounded-approved-action-kind\">{Encode(state.ActionKind)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-bounded-approved-action-hashes\">candidate_hash={Encode(state.CandidateEvidenceHashPrefix)} / result_hash={Encode(state.ResultHashPrefix)}</p>");
+        html.AppendLine("      <p data-testid=\"product-ledger-bounded-approved-action-protection\">local/internal/development-only bounded internal completion marker non-destructive no user file write no shell no subprocess no command execution no Pilot run no product command execution no public UI no export no network no DB no WORM/KMS no release/commercial no compliance custody no business signoff</p>");
+        html.AppendLine("      <div data-testid=\"product-ledger-bounded-approved-action-evidence-refs\">");
+        foreach (var evidence in state.EvidenceReferences.OrderBy(evidence => evidence, StringComparer.Ordinal))
+        {
+            html.AppendLine($"        <p>{Encode(evidence)}</p>");
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("      <div data-testid=\"product-ledger-bounded-approved-action-blockers\">");
         if (state.Blockers.Count == 0)
         {
             html.AppendLine("        <p>none</p>");

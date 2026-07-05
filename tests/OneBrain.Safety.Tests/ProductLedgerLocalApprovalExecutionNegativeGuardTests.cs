@@ -151,9 +151,11 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         StringAssert.Contains(mapper, "environment.IsDevelopment()");
         StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
         StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
+        StringAssert.Contains(mapper, "LocalBoundedApprovalExecutionRoute");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedActionNoOpExecutor");
-        Assert.AreEqual(2, Count(mapper, "endpoints.MapPost("));
+        StringAssert.Contains(mapper, "ProductLedgerLocalBoundedApprovedActionExecutor");
+        Assert.AreEqual(3, Count(mapper, "endpoints.MapPost("));
         foreach (var fragment in new[]
         {
             "ProductLedgerInternalCommandHandler",

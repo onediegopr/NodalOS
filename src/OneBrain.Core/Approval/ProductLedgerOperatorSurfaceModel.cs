@@ -63,6 +63,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     ProductLedgerLocalApprovalExecutionResult ApprovalExecutionCandidatePreview,
     ProductLedgerLocalApprovalDecisionSnapshot ApprovalDecisionState,
     ProductLedgerLocalApprovedActionExecutionSnapshot ApprovedActionExecutionState,
+    ProductLedgerLocalBoundedApprovedActionSnapshot BoundedApprovedActionState,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -90,7 +91,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         ProductLedgerRenderableOperatorSurfaceResult renderable,
         ProductLedgerOperatorSurfaceReadModelSource? readModelSource = null,
         ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState = null,
-        ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState = null)
+        ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState = null,
+        ProductLedgerLocalBoundedApprovedActionSnapshot? boundedApprovedActionState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
         var actions = renderable.Model.Actions
@@ -145,6 +147,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             ApprovalExecutionCandidatePreview: approvalExecutionCandidatePreview,
             ApprovalDecisionState: approvalDecisionState ?? ProductLedgerLocalApprovalDecisionSnapshot.PendingPreviewOnly,
             ApprovedActionExecutionState: approvedActionExecutionState ?? ProductLedgerLocalApprovedActionExecutionSnapshot.Pending,
+            BoundedApprovedActionState: boundedApprovedActionState ?? ProductLedgerLocalBoundedApprovedActionSnapshot.Pending,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",
@@ -152,6 +155,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
                 "LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY",
                 "LOCAL_APPROVAL_REAL_OPERATOR_INPUT_AND_STATE_PERSISTENCE_WINDOW",
                 "APPROVED_ACTION_EXECUTION_LOCAL_ONLY_NO_OP_TO_BOUNDED_ACTION_WINDOW",
+                "APPROVED_ACTION_EXECUTION_BOUNDED_LOCAL_NON_DESTRUCTIVE_ACTION_DESIGN_TEST_WINDOW",
                 "DELETION_LIFECYCLE_DESIGN_ONLY"
             ],
             IsLocalOnly: true,
