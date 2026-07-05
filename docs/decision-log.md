@@ -1376,3 +1376,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 approval execution remains unimplemented, persisted approval state and durable approval evidence append remain future work; P4 design evidence is not runtime evidence and local approval is not compliance custody.
 - Readiness changes: Approval/Human Review 90-94% -> 91-95%; Runtime/Command/Execution 46-55% -> 48-56%; Product Ledger local-only core, Evidence/Timeline/Audit Trail, UI/Operator Surface, local-only internal product, usable end-to-end local product, external/cloud and release/commercial unchanged.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Baseline: `22dc2868924fd6b819f61f2d767a4860873f642a`.
+- Scope: docs-only/audit-only/read-only internal external-audit simulation of the local approval execution design boundary.
+- Audited: design ADR, QA report/json, handoff, roadmap, decision-log, Product Ledger route/preview loop, internal command router/handler and public action surface references.
+- Non-goals preserved: no implementation, approval state mutation, append/write/export, public UI action, productive command handler, productive DI/service registration, default-on runtime, provider/cloud/network, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 future implementation needs a dedicated narrow approval-execution allowlist/adapter, Product Ledger route-specific scans are required because unrelated Pilot routes include `MapPost`, and approval freshness/action binding remain design-only; P4 static scan hits outside the Product Ledger route path are unrelated and this is not a human external review.
+- Readiness unchanged from the design boundary.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_TEST_ONLY_NEGATIVE_GUARDS`.
