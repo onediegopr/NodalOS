@@ -1506,3 +1506,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 local bounded action state is same-boundary evidence only, the bounded marker is not a real user-facing local action and public/product action remains blocked; P4 static scans are path-specific and the external audit is simulated/read-only inside Codex.
 - Readiness changes: Approval/Human Review 97-98% -> 98%; Evidence/Timeline/Audit Trail 89-94% -> 90-95%; Runtime/Command/Execution 62-70% -> 65-73%; UI/Operator Surface 65-75% -> 68-78%; local-only internal product 78-84% -> 80-86%; usable end-to-end local product 55-65% -> 58-68%; external/cloud and release/commercial unchanged at 0%.
 - Next recommended macro-block: `NODAL_OS_FIRST_REAL_USER_FACING_LOCAL_ACTION_PATH_READINESS_AND_BOUNDARY_DESIGN_ONLY`.
+
+## NODAL_OS_FIRST_REAL_USER_FACING_LOCAL_ACTION_PATH_READINESS_AND_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_FIRST_REAL_USER_FACING_LOCAL_ACTION_READINESS_DESIGN_ONLY_READY`
+- Baseline: `c0b27ceeee4d2bef1b9423ed72d52b41023b59d4`.
+- Scope: design-only/readiness-only/test-only boundary packet for the first real user-facing local action path.
+- Recommended first action: `LocalApprovedHandoffReportDraft`, future route `POST /internal/product-ledger/approval/create-local-handoff-draft`, future output boundary `docs/test-output/product-ledger/approved-local-handoff-drafts/`.
+- Non-goals preserved: no real user-facing action implementation, user file write, real action route, public/product path, Production execution, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 recommended next action introduces a controlled user-visible write and therefore needs separate implementation GO, future output path must be allowlisted/create-only/no-overwrite and redaction-before-write is mandatory; P4 this is readiness/design evidence and scans are path-specific.
+- Readiness changes: UI/Operator Surface 68-78% -> 70-80%; local-only internal product 80-86% -> 81-87%; usable end-to-end local product 58-68% -> 60-70%; Approval/Human Review, Evidence/Timeline/Audit Trail, Runtime/Command/Execution, external/cloud and release/commercial unchanged.
+- Required next GO: `NODAL_OS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_IMPLEMENTATION_WINDOW`.
