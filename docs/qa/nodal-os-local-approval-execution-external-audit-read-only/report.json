@@ -1,0 +1,40 @@
+{
+  "macroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_EXTERNAL_AUDIT_READ_ONLY",
+  "date": "2026-07-05",
+  "decision": "GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_EXTERNAL_AUDIT_READ_ONLY_READY",
+  "scope": [
+    "docs-only",
+    "audit-only",
+    "read-only",
+    "external-audit-read-only",
+    "local-only",
+    "no-runtime-enable",
+    "no-product-enable",
+    "no-release",
+    "no-commercial"
+  ],
+  "findings": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": [
+      "Broad scans show unrelated MapPost and Request.Query in OneBrain.Pilot.Program; Product Ledger route-specific mapper remains GET-only.",
+      "Existing writer/export services contain file writes by design; approval execution candidate and route evidence do not call writer/export APIs.",
+      "Candidate route evidence is deterministic preview evidence, not persisted approval state."
+    ],
+    "P4": [
+      "In-memory handler invocation remains internal evidence, not product command exposure.",
+      "Audit is internal Codex read-only, not human external review."
+    ],
+    "TRUE_RISK": 0
+  },
+  "validations": {
+    "repoGuard": "PASS",
+    "readOnlySourceReview": "PASS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "changedFileStaticScan": "PASS_DOCS_ONLY_NO_CODE_RUNTIME_PRODUCT_FILES_CHANGED"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_NEGATIVE_STATIC_SCAN_HARDENING"
+}
+

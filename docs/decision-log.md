@@ -1420,3 +1420,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 candidate evidence is deterministic preview evidence rather than persisted approval state, future real operator approval input remains separate, audit/static hardening remain future safe blocks; P4 route evidence is local operator evidence and internal handler invocation does not expose product commands.
 - Readiness changes: Approval/Human Review 93-96% -> 94-97%; Evidence/Timeline/Audit Trail 84-90% -> 85-91%; Runtime/Command/Execution 54-62% -> 56-64%; UI/Operator Surface 55-65% -> 58-68%; local-only internal product 68-76% -> 70-78%; usable end-to-end local product 42-52% -> 45-55%; Product Ledger local-only core, external/cloud and release/commercial unchanged.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Baseline: `d454bbc4286b11a0d6b49d26f38a13bfc2a6f6d2`.
+- Scope: docs-only/audit-only/read-only internal external audit of the local approval execution chain.
+- Audited: design boundary, external audit, negative guards, Core read-only/in-memory candidate and route preview evidence.
+- Non-goals preserved: no implementation changes, public UI action, product command handler exposure, route POST execution, default-on runtime, approval persistence, append/write/export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 broad `Program.cs` scans show unrelated route/query hits, existing writer/export writes are scoped elsewhere and not invoked by approval execution, persisted approval state remains future work; P4 in-memory evidence is not compliance custody and this is an internal Codex read-only audit.
+- Readiness unchanged from route preview evidence block.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_NEGATIVE_STATIC_SCAN_HARDENING`.
