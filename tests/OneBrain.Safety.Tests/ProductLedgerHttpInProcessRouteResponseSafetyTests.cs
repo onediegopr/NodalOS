@@ -16,7 +16,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         StringAssert.Contains(program, "app.MapProductLedgerLocalDevRoutePreview(app.Environment)");
         Assert.IsFalse(program.Contains("app.MapGet(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview", StringComparison.Ordinal));
         StringAssert.Contains(mapper, "environment.IsDevelopment()");
-        StringAssert.Contains(mapper, "endpoints.MapGet(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
+        StringAssert.Contains(mapper, "endpoints.MapGet(");
+        StringAssert.Contains(mapper, "ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
         StringAssert.Contains(mapper, "Results.Content(result.HtmlSnapshot, result.ContentType)");
         StringAssert.Contains(mapper, "Results.NotFound()");
         StringAssert.Contains(mapper, "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION");
@@ -55,6 +56,55 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         {
             Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
         }
+    }
+
+    [TestMethod]
+    public void ProductLedgerLiveReadModelProvider_SourceHasNoArbitraryPathInputScanWriteExportNetworkDbOrPilotRun()
+    {
+        var source = File.ReadAllText(Path.Combine(
+            RepoRoot(),
+            "src",
+            "OneBrain.Core",
+            "Approval",
+            "ProductLedgerOperatorSurfaceReadModelProvider.cs"));
+        var forbiddenFragments = new[]
+        {
+            "HttpContext",
+            "Request.Query",
+            "QueryString",
+            "Directory.GetFiles",
+            "Directory.EnumerateFiles",
+            "File.AppendAllText",
+            "File.WriteAllText",
+            "File.WriteAllBytes",
+            "File.Delete",
+            "Process.Start",
+            "HttpClient",
+            "WebSocket",
+            "MapPost",
+            ".Append(",
+            ".Export(",
+            "ProductLedgerInternalCommandHandler",
+            "ProductLedgerLocalReportExportService().Export",
+            "PilotRecipeExecutor",
+            "PilotRecipeExecutionGate.Evaluate(",
+            "NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION",
+            "DbContext",
+            "MigrationBuilder"
+        };
+
+        foreach (var fragment in forbiddenFragments)
+        {
+            Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
+        }
+
+        StringAssert.Contains(source, "ReadVerified");
+        StringAssert.Contains(source, "LOCAL_ONLY_BOUNDARY_PATH_REDACTED_NO_ARBITRARY_PATH_INPUT");
+        StringAssert.Contains(source, "AllowsArbitraryPathInput: false");
+        StringAssert.Contains(source, "AllowsFilesystemScan: false");
+        StringAssert.Contains(source, "AllowsWrite: false");
+        StringAssert.Contains(source, "AllowsExport: false");
+        StringAssert.Contains(source, "AllowsCommandExecution: false");
     }
 
     private static string RepoRoot()

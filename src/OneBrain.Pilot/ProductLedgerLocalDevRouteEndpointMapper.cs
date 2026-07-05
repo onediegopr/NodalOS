@@ -13,20 +13,33 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     public static IEndpointRouteBuilder MapProductLedgerLocalDevRoutePreview(
         this IEndpointRouteBuilder endpoints,
         IHostEnvironment environment)
+        => endpoints.MapProductLedgerLocalDevRoutePreview(environment, ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+
+    public static IEndpointRouteBuilder MapProductLedgerLocalDevRoutePreview(
+        this IEndpointRouteBuilder endpoints,
+        IHostEnvironment environment,
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource)
     {
         if (!environment.IsDevelopment())
         {
             return endpoints;
         }
 
-        endpoints.MapGet(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, RenderProductLedgerLocalDevRoutePreview);
+        endpoints.MapGet(
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            () => RenderProductLedgerLocalDevRoutePreview(readModelSource));
         return endpoints;
     }
 
     public static IResult RenderProductLedgerLocalDevRoutePreview()
+        => RenderProductLedgerLocalDevRoutePreview(ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+
+    public static IResult RenderProductLedgerLocalDevRoutePreview(
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource)
     {
         var result = new ProductLedgerLocalDevRoutePreview().Render(
-            ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest());
+            ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
+            readModelSource);
 
         return result.Decision == ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
             ? Results.Content(result.HtmlSnapshot, result.ContentType)

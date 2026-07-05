@@ -1354,3 +1354,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 browser pixel/screenshot verification, live local ledger read model and real approval execution remain future scopes; P4 local route response evidence uses loopback Kestrel and `HttpClient` only in Recipes test-only code.
 - Readiness changes: Evidence/Timeline/Audit Trail 80-86% -> 82-88%; Runtime/Command/Execution 45-53% -> 46-54%; UI/Operator Surface 48-58% -> 50-60%; local-only internal product 61-69% -> 62-70%; usable end-to-end local product 34-44% -> 36-46%; Product Ledger local-only core remains 94-96%; Approval/Human Review remains 90-94%; external/cloud and release/commercial remain 0%.
 - Safe next step: `NODAL_OS_LOCAL_ROUTE_LIVE_LEDGER_READ_MODEL_TEST_SAFE`.
+
+## NODAL_OS_LOCAL_ROUTE_LIVE_LEDGER_READ_MODEL_TEST_SAFE
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_ROUTE_LIVE_LEDGER_READ_MODEL_TEST_SAFE_READY`
+- Baseline: `421de992662135fdc7c92bea958323cb1aad48ae`.
+- Scope: local-only/test-safe/read-only live ledger read-model evidence for `/internal/product-ledger/operator-surface`.
+- Implemented/documented: explicit FixtureSafe and TestSafeLiveLedger read-model sources, provider, route DOM evidence for entry count/checkpoint/head/hash prefixes, HTTP loopback live read-model tests, Production 404, arbitrary path query ignored/not leaked, route no-mutation checks, Safety static scans, ADR, QA report/JSON, roadmap note and handoff.
+- Non-goals preserved: no arbitrary path input, filesystem scan, route append/write/export, product command execution, Pilot `/run`, public deploy, public internet, external/provider/cloud, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 live read-model remains test-safe/injected, local approval execution remains future design-only and browser pixel evidence remains separate; P4 hashes are prefixes and `HttpClient` appears only in Recipes loopback test-only code.
+- Readiness changes: Evidence/Timeline/Audit Trail 82-88% -> 84-90%; UI/Operator Surface 50-60% -> 55-65%; usable end-to-end local product 36-46% -> 40-50%; local-only internal product 62-70% -> 65-73%; Runtime/Command/Execution 46-54% -> 46-55%; Product Ledger local-only core remains 94-96%; Approval/Human Review remains 90-94%; external/cloud and release/commercial remain 0%.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_DESIGN_ONLY_BOUNDARY`.

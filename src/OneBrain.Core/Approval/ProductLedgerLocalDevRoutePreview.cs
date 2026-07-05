@@ -117,12 +117,17 @@ public sealed class ProductLedgerLocalDevRoutePreview
             RenderableSnapshotRequest: CreateDefaultRenderableSnapshotRequest());
 
     public ProductLedgerLocalDevRoutePreviewResult Render(ProductLedgerLocalDevRoutePreviewRequest? request)
+        => Render(request, ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+
+    public ProductLedgerLocalDevRoutePreviewResult Render(
+        ProductLedgerLocalDevRoutePreviewRequest? request,
+        ProductLedgerOperatorSurfaceReadModelSource? readModelSource)
     {
         var blockers = new List<ProductLedgerLocalDevRoutePreviewBlocker>();
         if (request is null)
         {
             blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingRequest);
-            return Result(blockers, null);
+            return Result(blockers, null, readModelSource);
         }
 
         AddGuardBlockers(request, blockers);
@@ -138,7 +143,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
             AddRenderableBlockers(renderable, blockers);
         }
 
-        return Result(blockers, renderable);
+        return Result(blockers, renderable, readModelSource);
     }
 
     private static void AddGuardBlockers(
@@ -262,12 +267,13 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
     private static ProductLedgerLocalDevRoutePreviewResult Result(
         IReadOnlyList<ProductLedgerLocalDevRoutePreviewBlocker> blockers,
-        ProductLedgerRenderableOperatorSurfaceResult? renderable)
+        ProductLedgerRenderableOperatorSurfaceResult? renderable,
+        ProductLedgerOperatorSurfaceReadModelSource? readModelSource)
     {
         var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
         var rendered = distinct.Length == 0 && renderable is not null;
         var safeRenderable = renderable ?? new ProductLedgerRenderableOperatorSurfaceRenderer().Render(null);
-        var canonicalSurface = ProductLedgerOperatorSurfaceModelFactory.Build(safeRenderable);
+        var canonicalSurface = ProductLedgerOperatorSurfaceModelFactory.Build(safeRenderable, readModelSource);
         var html = rendered ? AddLocalDevShell(safeRenderable.HtmlSnapshot, canonicalSurface) : string.Empty;
         return new ProductLedgerLocalDevRoutePreviewResult(
             Decision: rendered
@@ -348,10 +354,15 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine($"    <div data-testid=\"product-ledger-surface-root\">{Encode(model.SurfaceId)} / {Encode(model.Scope)} / local-only development-only read-only</div>");
         html.AppendLine($"    <p data-testid=\"surface-ledger-authority\">{Encode(model.LedgerAuthority)} / {Encode(model.LedgerAuthorityBoundaryStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"product-ledger-authority\">{Encode(model.LedgerAuthority)} / {Encode(model.LedgerAuthorityBoundaryStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-read-model-source\">{Encode(model.ReadModelMode.ToString())} / {Encode(model.LedgerPathClassification)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-ledger-verification\">{Encode(model.LedgerVerificationStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"product-ledger-verification-status\">{Encode(model.LedgerVerificationStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-checkpoint\">{Encode(model.CheckpointStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"product-ledger-checkpoint-status\">{Encode(model.CheckpointStatus)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-entry-count\">entry_count={model.LedgerEntryCount}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-head-sequence\">head_sequence={Encode(model.LedgerHeadSequence)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-head-hash-prefix\">head_hash_prefix={Encode(model.LedgerHeadHashPrefix)}</p>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-ledger-hash-prefix\">ledger_hash_prefix={Encode(model.LedgerHashPrefix)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-redaction-retention\">{Encode(model.RedactionRetentionGuardStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"product-ledger-redaction-retention-status\">{Encode(model.RedactionRetentionGuardStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-concurrency\">{Encode(model.ConcurrencyGuardStatus)}</p>");

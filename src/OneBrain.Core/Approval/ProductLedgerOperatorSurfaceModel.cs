@@ -3,7 +3,8 @@ namespace OneBrain.Core.Approval;
 public enum ProductLedgerOperatorSurfaceReadModelMode
 {
     FixtureSafeReadModel,
-    ExistingLocalLedgerReadModel
+    ExistingLocalLedgerReadModel,
+    TestSafeLiveLedgerReadModel
 }
 
 public sealed record ProductLedgerOperatorSurfaceStatus(
@@ -42,6 +43,11 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     string LedgerAuthorityBoundaryStatus,
     string LedgerVerificationStatus,
     string CheckpointStatus,
+    string LedgerPathClassification,
+    int LedgerEntryCount,
+    string LedgerHeadSequence,
+    string LedgerHeadHashPrefix,
+    string LedgerHashPrefix,
     string RedactionRetentionGuardStatus,
     string ConcurrencyGuardStatus,
     string BoundedExportStatus,
@@ -68,7 +74,8 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     bool AllowsDestructiveAction,
     bool AllowsUnboundedExport,
     bool AllowsExternalCloudExport,
-    bool UsesFixtureReadModel);
+    bool UsesFixtureReadModel,
+    bool UsesTestSafeLiveLedgerReadModel);
 
 public static class ProductLedgerOperatorSurfaceModelFactory
 {
@@ -77,9 +84,10 @@ public static class ProductLedgerOperatorSurfaceModelFactory
     public const string Scope = "ProductLedgerLocalOnlyLineScoped";
 
     public static ProductLedgerOperatorSurfaceModel Build(
-        ProductLedgerRenderableOperatorSurfaceResult renderable)
+        ProductLedgerRenderableOperatorSurfaceResult renderable,
+        ProductLedgerOperatorSurfaceReadModelSource? readModelSource = null)
     {
-        var authority = ProductLedgerLocalLedgerTaxonomy.ForComponent(nameof(ProductLedgerPathLocalOnlyActiveWriter));
+        var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
         var actions = renderable.Model.Actions
             .Select(action => new ProductLedgerOperatorSurfaceActionPreview(
                 ActionId: action.ActionId,
@@ -94,7 +102,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             .OrderBy(action => action.ActionId, StringComparer.Ordinal)
             .ToArray();
 
-        var statuses = Statuses(authority.BoundaryStatus);
+        var statuses = Statuses(readModel);
         var evidenceRefs = EvidenceRefs();
         var approvalPreviewLoop = ProductLedgerLocalApprovalPreviewLoopFactory.Build(
             CanonicalSurfaceId,
@@ -105,18 +113,23 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             GeneratedAtStrategy: DeterministicGeneratedAtStrategy,
             RoutePath: ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
             Scope: Scope,
-            ReadModelMode: ProductLedgerOperatorSurfaceReadModelMode.FixtureSafeReadModel,
-            LedgerAuthority: nameof(ProductLedgerPathLocalOnlyActiveWriter),
-            LedgerAuthorityBoundaryStatus: authority.BoundaryStatus,
-            LedgerVerificationStatus: "FIXTURE_SAFE_READ_MODEL_VERIFIED_NO_LEDGER_FILE_READ",
-            CheckpointStatus: "FIXTURE_SAFE_CHECKPOINT_HEAD_VISIBLE",
-            RedactionRetentionGuardStatus: "REDACTION_RETENTION_GUARDS_REQUIRED_AND_VISIBLE",
-            ConcurrencyGuardStatus: "ACTIVE_WRITER_CONCURRENCY_LOCK_REQUIRED_AND_VISIBLE",
-            BoundedExportStatus: "BOUNDED_LOCAL_EXPORT_STATUS_VISIBLE_NO_EXPORT_CALL",
-            OperatorAcceptanceStatus: "OPERATOR_ACCEPTANCE_MATRIX_LINKABLE",
-            PublicLocalOnlyActionContractStatus: "PUBLIC_LOCAL_ONLY_ACTION_CONTRACT_LINKABLE_ACTIONS_DISABLED",
-            VisualEvidenceStatus: "LOCAL_DEV_VISUAL_QA_EVIDENCE_LINKABLE_STATIC_HTML_ONLY",
-            ScreenshotEvidenceStatus: "SCREENSHOT_EVIDENCE_FIXTURE_LINKABLE_NO_LIVE_BROWSER",
+            ReadModelMode: readModel.Mode,
+            LedgerAuthority: readModel.LedgerAuthority,
+            LedgerAuthorityBoundaryStatus: readModel.LedgerAuthorityBoundaryStatus,
+            LedgerVerificationStatus: readModel.LedgerVerificationStatus,
+            CheckpointStatus: readModel.CheckpointStatus,
+            LedgerPathClassification: readModel.LedgerPathClassification,
+            LedgerEntryCount: readModel.EntryCount,
+            LedgerHeadSequence: readModel.HeadSequence,
+            LedgerHeadHashPrefix: readModel.HeadHashPrefix,
+            LedgerHashPrefix: readModel.LedgerHashPrefix,
+            RedactionRetentionGuardStatus: readModel.RedactionRetentionGuardStatus,
+            ConcurrencyGuardStatus: readModel.ConcurrencyGuardStatus,
+            BoundedExportStatus: readModel.BoundedExportStatus,
+            OperatorAcceptanceStatus: readModel.OperatorAcceptanceStatus,
+            PublicLocalOnlyActionContractStatus: readModel.PublicLocalOnlyActionContractStatus,
+            VisualEvidenceStatus: readModel.VisualEvidenceStatus,
+            ScreenshotEvidenceStatus: readModel.ScreenshotEvidenceStatus,
             Statuses: statuses,
             EvidenceRefs: evidenceRefs,
             BlockedFrontiers: BlockedFrontiers(),
@@ -141,21 +154,26 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             AllowsDestructiveAction: false,
             AllowsUnboundedExport: false,
             AllowsExternalCloudExport: false,
-            UsesFixtureReadModel: true);
+            UsesFixtureReadModel: readModel.UsesFixtureReadModel,
+            UsesTestSafeLiveLedgerReadModel: readModel.UsesTestSafeLiveLedger);
     }
 
-    private static IReadOnlyList<ProductLedgerOperatorSurfaceStatus> Statuses(string authorityBoundaryStatus) =>
+    private static IReadOnlyList<ProductLedgerOperatorSurfaceStatus> Statuses(
+        ProductLedgerOperatorSurfaceReadModelSnapshot readModel) =>
     [
-        new("ledger-authority", "Ledger authority", authorityBoundaryStatus, nameof(ProductLedgerLocalLedgerTaxonomy), 96),
-        new("ledger-verification", "Ledger verification", "FIXTURE_SAFE_READ_MODEL_VERIFIED_NO_LEDGER_FILE_READ", nameof(ProductLedgerPathLocalOnlyActiveWriter), 72),
-        new("checkpoint", "Checkpoint/head", "FIXTURE_SAFE_CHECKPOINT_HEAD_VISIBLE", nameof(ProductLedgerPathLocalOnlyActiveWriter), 72),
-        new("redaction-retention", "Redaction/retention", "REDACTION_RETENTION_GUARDS_REQUIRED_AND_VISIBLE", "redaction-retention-behavioral-gates", 84),
-        new("concurrency", "Concurrency", "ACTIVE_WRITER_CONCURRENCY_LOCK_REQUIRED_AND_VISIBLE", "writer-concurrency-lock", 88),
-        new("bounded-export", "Bounded export", "BOUNDED_LOCAL_EXPORT_STATUS_VISIBLE_NO_EXPORT_CALL", nameof(ProductLedgerLocalReportExportService), 70),
-        new("operator-acceptance", "Operator acceptance", "OPERATOR_ACCEPTANCE_MATRIX_LINKABLE", nameof(ProductLedgerOperatorAcceptanceLocalOnlyMatrix), 76),
-        new("public-action-contract", "Public local-only action contract", "PUBLIC_LOCAL_ONLY_ACTION_CONTRACT_LINKABLE_ACTIONS_DISABLED", nameof(ProductLedgerPublicUiActionSurface), 70),
-        new("visual-evidence", "Visual evidence", "LOCAL_DEV_VISUAL_QA_EVIDENCE_LINKABLE_STATIC_HTML_ONLY", nameof(ProductLedgerLocalDevVisualQaEvidence), 64),
-        new("screenshot-evidence", "Screenshot evidence", "SCREENSHOT_EVIDENCE_FIXTURE_LINKABLE_NO_LIVE_BROWSER", "ProductLedgerBrowserLocalOnlyScreenshotEvidence", 58)
+        new("ledger-authority", "Ledger authority", readModel.LedgerAuthorityBoundaryStatus, nameof(ProductLedgerLocalLedgerTaxonomy), 96),
+        new("ledger-verification", "Ledger verification", readModel.LedgerVerificationStatus, nameof(ProductLedgerPathLocalOnlyActiveWriter), readModel.UsesTestSafeLiveLedger ? 88 : 72),
+        new("checkpoint", "Checkpoint/head", readModel.CheckpointStatus, nameof(ProductLedgerPathLocalOnlyActiveWriter), readModel.UsesTestSafeLiveLedger ? 88 : 72),
+        new("ledger-entry-count", "Ledger entry count", readModel.EntryCount.ToString(System.Globalization.CultureInfo.InvariantCulture), readModel.SourceId, readModel.UsesTestSafeLiveLedger ? 86 : 60),
+        new("ledger-head-prefix", "Ledger head hash prefix", readModel.HeadHashPrefix, readModel.SourceId, readModel.UsesTestSafeLiveLedger ? 86 : 60),
+        new("ledger-hash-prefix", "Ledger hash prefix", readModel.LedgerHashPrefix, readModel.SourceId, readModel.UsesTestSafeLiveLedger ? 86 : 60),
+        new("redaction-retention", "Redaction/retention", readModel.RedactionRetentionGuardStatus, "redaction-retention-behavioral-gates", 84),
+        new("concurrency", "Concurrency", readModel.ConcurrencyGuardStatus, "writer-concurrency-lock", 88),
+        new("bounded-export", "Bounded export", readModel.BoundedExportStatus, nameof(ProductLedgerLocalReportExportService), 70),
+        new("operator-acceptance", "Operator acceptance", readModel.OperatorAcceptanceStatus, nameof(ProductLedgerOperatorAcceptanceLocalOnlyMatrix), 76),
+        new("public-action-contract", "Public local-only action contract", readModel.PublicLocalOnlyActionContractStatus, nameof(ProductLedgerPublicUiActionSurface), 70),
+        new("visual-evidence", "Visual evidence", readModel.VisualEvidenceStatus, nameof(ProductLedgerLocalDevVisualQaEvidence), 64),
+        new("screenshot-evidence", "Screenshot evidence", readModel.ScreenshotEvidenceStatus, "ProductLedgerBrowserLocalOnlyScreenshotEvidence", 58)
     ];
 
     private static IReadOnlyList<ProductLedgerOperatorSurfaceEvidenceRef> EvidenceRefs() =>
