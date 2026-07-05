@@ -1431,3 +1431,13 @@
 - Findings: P0=0, P1=0, P2=0; P3 broad `Program.cs` scans show unrelated route/query hits, existing writer/export writes are scoped elsewhere and not invoked by approval execution, persisted approval state remains future work; P4 in-memory evidence is not compliance custody and this is an internal Codex read-only audit.
 - Readiness unchanged from route preview evidence block.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_NEGATIVE_STATIC_SCAN_HARDENING`.
+
+## NODAL_OS_LOCAL_APPROVAL_EXECUTION_ROUTE_NEGATIVE_STATIC_SCAN_HARDENING
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_EXECUTION_ROUTE_NEGATIVE_STATIC_SCAN_HARDENING_READY`
+- Baseline: `d8379049aa2b64a7a312df09fd337b527ebeb716`.
+- Scope: test-only/static-scan hardening for the Product Ledger local approval execution route evidence path.
+- Implemented: route-specific Safety scan separating unrelated `Program.cs` `MapPost` hits from the Product Ledger mapper, source-fragment scan across mapper/route/model/candidate, and disabled DOM evidence control scan.
+- Non-goals preserved: no product code changes, route POST execution, public UI action, product command handler exposure, write/export, external/cloud, DB/KMS/live automation or release/commercial.
+- Findings: P0=0, P1=0, P2=0; P3 static scan remains fragment-based and approval persistence remains future work; P4 unrelated Pilot routes are intentionally out of scope.
+- Safe next step: `NODAL_OS_LOCAL_APPROVAL_EXECUTION_OPERATOR_ACCEPTANCE_TEST_ONLY`.
