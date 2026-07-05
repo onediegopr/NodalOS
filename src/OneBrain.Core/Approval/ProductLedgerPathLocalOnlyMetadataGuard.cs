@@ -83,6 +83,10 @@ public static class ProductLedgerPathLocalOnlyMetadataGuard
         {
             blockers.Add(ProductLedgerPathLocalOnlyBlocker.RetentionLimitExceeded);
         }
+        else if (metadata.Keys.GroupBy(key => key, StringComparer.OrdinalIgnoreCase).Any(group => group.Count() > 1))
+        {
+            blockers.Add(ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata);
+        }
 
         if (existingEntryCount >= MaxLedgerEntries || existingLedgerBytes >= MaxLedgerBytes)
         {
@@ -99,7 +103,7 @@ public static class ProductLedgerPathLocalOnlyMetadataGuard
                     continue;
                 }
 
-                if (IsRawPayloadClaim(pair.Key) || ContainsPathLikeContent(pair.Value))
+                if (IsRawPayloadClaim(pair.Key) || ContainsRawPayloadContent(pair.Value) || ContainsPathLikeContent(pair.Value))
                 {
                     blockers.Add(ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata);
                     continue;
@@ -158,12 +162,20 @@ public static class ProductLedgerPathLocalOnlyMetadataGuard
         string.IsNullOrWhiteSpace(key)
         || string.IsNullOrWhiteSpace(value)
         || !MetadataKeyPattern.IsMatch(key)
-        || value.Contains("..", StringComparison.Ordinal);
+        || value.Contains("..", StringComparison.Ordinal)
+        || value.Any(char.IsControl);
 
     private static bool IsRawPayloadClaim(string key) =>
         key.Contains("raw", StringComparison.OrdinalIgnoreCase)
         || key.Contains("payload", StringComparison.OrdinalIgnoreCase)
         || key.Contains("content", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ContainsRawPayloadContent(string value) =>
+        value.Contains("raw payload", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("raw_payload", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("raw-payload", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("raw content", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("unredacted", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsSensitiveKey(string key) =>
         SensitiveKeyMarkers.Any(marker => key.Contains(marker, StringComparison.OrdinalIgnoreCase));
@@ -212,7 +224,11 @@ public static class ProductLedgerPathLocalOnlyMetadataGuard
     private static bool ContainsPathLikeContent(string value) =>
         WindowsAbsolutePathPattern.IsMatch(value)
         || value.TrimStart().StartsWith(@"\\", StringComparison.Ordinal)
-        || value.Contains('\\', StringComparison.Ordinal);
+        || value.Contains('\\', StringComparison.Ordinal)
+        || value.Contains("http://", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("https://", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("provider://", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("file://", StringComparison.OrdinalIgnoreCase);
 
     private static bool ContainsRetentionOverclaim(string value) =>
         RetentionOverclaimMarkers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));

@@ -34,6 +34,18 @@
 - Non-goals: no compliance-grade custody, legal deletion lifecycle, cloud retention, KMS/WORM/external trust, DB/migration, provider/cloud/network, live automation, unbounded export/write, public deploy or release/commercial readiness.
 - Next recommended macro-block: `MB6 Integration + property test pack`.
 
+## NODAL_OS_PRODUCT_LEDGER_INTEGRATION_AND_PROPERTY_TEST_PACK
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_INTEGRATION_PROPERTY_TEST_PACK_READY`
+- Input HEAD: `ee91fcb569247aa3bf74eb5c0a395e3dce419dd5`.
+- Scope: add local-only/test-only integration, property/corpus, tamper/adversarial and static write-surface coverage for Product Ledger before further local operator route consolidation.
+- Corrections: added `ProductLedgerIntegrationPropertyTestPackTests`; hardened metadata guard for raw values, URL-like values, control characters and duplicate logical keys; hardened read verification so persisted metadata must already be safe and rehashed unsafe metadata fails closed.
+- Coverage canon: append/checkpoint/read-verify/export linkage, operator acceptance/visual evidence linkage, deterministic redaction/retention corpus, no raw fake secret artifacts, tamper detection and Core/Approval write-surface allowlist.
+- Readiness update: Product Ledger local-only core `94-96%`; local-only internal product `51-60%`; usable end-to-end local product `22-34%`; UI/operator surface unchanged `15-25%`; external/cloud `0%`; release/commercial `0%`.
+- Findings after fixes: P0 0, P1 0, P2 0, P3 3, P4 2. TRUE_RISK 0.
+- Non-goals: no productization claim, public deploy, external network/provider/cloud, telemetry/sync/billing, DB/migration, KMS/WORM/external trust, live Browser/CDP/WCU/OCR/Recipes automation, destructive action, unbounded export/write, external/cloud export, compliance custody or release/commercial readiness.
+- Next recommended macro-block: `A) MB4 Ledger/evidence consolidation & writer de-triplication`.
+
 ## NODAL_OS_AUTONOMOUS_SAFE_SCOPE_POLICY_AND_STAGE2_RUNTIME_FEATURE_FLAG_TEST_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_AUTONOMOUS_SAFE_SCOPE_POLICY_AND_STAGE2_RUNTIME_FEATURE_FLAG_TEST_ONLY_READY`

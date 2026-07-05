@@ -161,10 +161,26 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
         "password",
         "api_key",
         "apikey",
+        "api-key",
         "token",
         "bearer",
         "client_secret",
-        "private_key"
+        "private_key",
+        "email"
+    ];
+
+    private static readonly string[] RetentionOverclaimMarkers =
+    [
+        "unbounded",
+        "infinite",
+        "forever",
+        "compliance",
+        "custody",
+        "worm",
+        "kms",
+        "external trust",
+        "cloud retention",
+        "legal deletion"
     ];
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -704,16 +720,24 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
             return false;
         }
 
+        if (metadata.Keys.GroupBy(key => key, StringComparer.OrdinalIgnoreCase).Any(group => group.Count() > 1))
+        {
+            return false;
+        }
+
         foreach (var pair in metadata)
         {
             if (!MetadataKeyPattern.IsMatch(pair.Key)
                 || string.IsNullOrWhiteSpace(pair.Value)
                 || pair.Value.Length > 128
                 || pair.Value.Contains("..", StringComparison.Ordinal)
-                || pair.Value.Contains('\\', StringComparison.Ordinal)
-                || UnsafeMetadataMarkers.Any(marker =>
-                    pair.Key.Contains(marker, StringComparison.OrdinalIgnoreCase)
-                    || pair.Value.Contains(marker, StringComparison.OrdinalIgnoreCase)))
+                || pair.Value.Any(char.IsControl)
+                || ContainsPathLikeContent(pair.Value)
+                || ContainsRawPayloadContent(pair.Value)
+                || ContainsRetentionOverclaim(pair.Key)
+                || ContainsRetentionOverclaim(pair.Value)
+                || IsUnsafePersistedMetadataKey(pair.Key)
+                || IsUnsafePersistedMetadataValue(pair.Value))
             {
                 return false;
             }
@@ -721,6 +745,30 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
 
         return true;
     }
+
+    private static bool IsUnsafePersistedMetadataKey(string key) =>
+        UnsafeMetadataMarkers.Any(marker => key.Contains(marker, StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsUnsafePersistedMetadataValue(string value) =>
+        !value.Equals("redacted-sensitive", StringComparison.OrdinalIgnoreCase)
+        && UnsafeMetadataMarkers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));
+
+    private static bool ContainsRawPayloadContent(string value) =>
+        value.Contains("raw payload", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("raw_payload", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("raw-payload", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("raw content", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("unredacted", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ContainsPathLikeContent(string value) =>
+        value.Contains('\\', StringComparison.Ordinal)
+        || value.Contains("http://", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("https://", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("provider://", StringComparison.OrdinalIgnoreCase)
+        || value.Contains("file://", StringComparison.OrdinalIgnoreCase);
+
+    private static bool ContainsRetentionOverclaim(string value) =>
+        RetentionOverclaimMarkers.Any(marker => value.Contains(marker, StringComparison.OrdinalIgnoreCase));
 
     private static bool IsUnderLocalTemp(string path)
     {

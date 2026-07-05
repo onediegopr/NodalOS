@@ -1,0 +1,80 @@
+{
+  "macroBlock": "NODAL_OS_PRODUCT_LEDGER_INTEGRATION_AND_PROPERTY_TEST_PACK_MACROBLOCK",
+  "decision": "GO_WITH_FINDINGS_PRODUCT_LEDGER_INTEGRATION_PROPERTY_TEST_PACK_READY",
+  "initialHead": "ee91fcb569247aa3bf74eb5c0a395e3dce419dd5",
+  "scope": {
+    "localOnly": true,
+    "testOnly": true,
+    "productizationClaim": false,
+    "releaseCommercialClaim": false,
+    "externalCloudProviderNetwork": false,
+    "dbMigration": false,
+    "kmsWormExternalTrust": false,
+    "liveBrowserCdpWcuOcrRecipes": false,
+    "destructiveAction": false,
+    "unboundedExportWrite": false
+  },
+  "coverage": {
+    "integration": [
+      "append_checkpoint_read_verify",
+      "multiple_append_hash_chain",
+      "sensitive_metadata_redaction",
+      "bounded_local_report_export",
+      "operator_acceptance_and_visual_evidence_linkage"
+    ],
+    "propertyCorpus": [
+      "unicode_values",
+      "markdown_like_values",
+      "json_like_values",
+      "fake_bearer_api_key_password_connection_string_email_high_entropy",
+      "duplicate_logical_keys",
+      "windows_paths_unc_urls_raw_payload_values_control_chars",
+      "oversized_metadata_and_retention_overclaims"
+    ],
+    "tamper": [
+      "entry_body",
+      "checkpoint",
+      "tail_deletion",
+      "duplicate_sequence",
+      "previous_hash_mismatch",
+      "metadata",
+      "redacted_value",
+      "checkpoint_ahead_behind",
+      "partial_line",
+      "malformed_jsonl"
+    ],
+    "staticWriteSurface": "CORE_APPROVAL_ALLOWLISTED_WRITERS_ONLY"
+  },
+  "validations": {
+    "coreBuildNoRestore": "PASS_0_WARNINGS_0_ERRORS",
+    "newSafetyPack": "PASS_5_OF_5_WITH_PREEXISTING_TEST_PROJECT_WARNINGS_ON_BUILD",
+    "safetyProductLedgerFocused": "PASS_150_OF_150",
+    "recipesProductLedgerFocused": "PASS_44_OF_44",
+    "solutionBuildNoRestore": "PASS_1_PREEXISTING_RECIPES_MSTEST0037_WARNING_0_ERRORS",
+    "recipesFullNoBuild": "PASS_1552_OF_1552",
+    "safetyFullNoBuild": "TIMEOUT_300S_NOT_USED_AS_RELEASE_GATE_PROCESSES_STOPPED_BUILD_SERVER_SHUTDOWN",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "staticForbiddenPositiveClaimScan": "PASS_FALSE_POSITIVES_CLASSIFIED_AS_DETECTOR_MARKERS_SYNTHETIC_TEST_CORPUS_NEGATIVE_ASSERTIONS_BLOCKED_REASONS_DOCS_LIMITATIONS_OR_HISTORICAL_TRACEABILITY"
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": 3,
+    "p4": 2,
+    "trueRisk": 0
+  },
+  "readiness": {
+    "productLedgerLocalOnlyCore": "94-96%",
+    "approvalHumanReview": "line-scoped local-only evidence unchanged",
+    "evidenceTimelineAuditTrail": "local append/checkpoint/export/evidence linkage tested",
+    "runtimeCommandExecution": "unchanged, Pilot default-blocked explicit opt-in",
+    "uiOperatorSurface": "15-25%",
+    "localOnlyInternalProduct": "51-60%",
+    "usableEndToEndLocalProduct": "22-34%",
+    "externalCloud": "0%",
+    "releaseCommercial": "0%"
+  },
+  "nextRecommendedMacroBlock": "A_MB4_LEDGER_EVIDENCE_CONSOLIDATION_AND_WRITER_DE_TRIPLICATION"
+}
