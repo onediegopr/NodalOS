@@ -40,3 +40,8 @@ The persisted state is local-only, internal-only, default-off and fail-closed. I
 
 Scope: audit-only/read-only/docs-only review of the new local approval decision state route/store, route scans, QA evidence and roadmap/claim alignment.
 
+Status: completed by `docs/adr/product-ledger-local-approval-decision-state-external-audit-read-only.md`.
+
+## Next Real Frontier
+
+Approved action execution or a public/product action path now requires a separate GO.

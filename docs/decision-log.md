@@ -1474,3 +1474,13 @@
 - Findings: P0=0, P1=0, P2=0; P3 local state file is same-boundary and not compliance-grade custody, route remains Development-only/internal, approved action execution remains future protected scope; P4 scans are path-specific and operator-note redaction is conservative local hardening.
 - Readiness changes: Approval/Human Review 95-97% -> 96-98%; Evidence/Timeline/Audit Trail 86-92% -> 88-93%; Runtime/Command/Execution 58-66% -> 60-68%; UI/Operator Surface 60-70% -> 63-73%; local-only internal product 72-80% -> 75-82%; usable end-to-end local product 48-58% -> 52-62%; external/cloud and release/commercial unchanged at 0%.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_DECISION_STATE_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_LOCAL_APPROVAL_DECISION_STATE_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_DECISION_STATE_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Baseline audited: `d14b8c7b300e445c41b7479901b3cd59aab07c8c`.
+- Scope: read-only/docs-only internal external-audit style review of the local approval decision state route/store and evidence pack.
+- Audited: state store, Development-only POST/GET mapper, canonical operator surface state rendering, Safety/Recipes tests, static scans, QA report, handoff and roadmap.
+- Non-goals preserved: no code changes, approved action execution, public UI action, productive command handler, productive DI/service registration, approval-execution append/write/export, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 local state file is same-boundary and not compliance-grade custody, approved action execution remains blocked, public/product exposure remains blocked; P4 audit is internal/read-only and scans are path-specific.
+- Stop frontier: approved action execution or public/product action path requires a separate GO.
