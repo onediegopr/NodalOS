@@ -46,6 +46,7 @@ public enum ProductLedgerPathLocalOnlyBlocker
     MissingSafePayloadHash,
     UnsafePayloadHash,
     UnsafeEvidenceMetadata,
+    RetentionLimitExceeded,
     ExistingLedgerInvalid
 }
 
@@ -215,6 +216,11 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
             catch (InvalidDataException)
             {
                 blockers.Add(ProductLedgerPathLocalOnlyBlocker.ExistingLedgerInvalid);
+                entry = null;
+            }
+            catch (ProductLedgerPathLocalOnlyMetadataGuardException ex)
+            {
+                blockers.AddRange(ex.Blockers);
                 entry = null;
             }
         }
@@ -452,9 +458,10 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
             blockers.Add(ProductLedgerPathLocalOnlyBlocker.UnsafePayloadHash);
         }
 
-        if (!IsSafeMetadata(request.EvidenceMetadata))
+        var metadataGuard = ProductLedgerPathLocalOnlyMetadataGuard.Evaluate(request.EvidenceMetadata);
+        if (!metadataGuard.Allowed)
         {
-            blockers.Add(ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata);
+            blockers.AddRange(metadataGuard.Blockers);
         }
     }
 
@@ -467,9 +474,21 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
             ? ReadAndVerifyEntries(activation.ActiveLedgerFilePath!)
             : [];
         VerifyExistingCheckpoint(activation.ActiveLedgerRootPath!, existing);
+        var ledgerBytes = File.Exists(activation.ActiveLedgerFilePath!)
+            ? new FileInfo(activation.ActiveLedgerFilePath!).Length
+            : 0;
+        var metadataGuard = ProductLedgerPathLocalOnlyMetadataGuard.Evaluate(
+            request.EvidenceMetadata,
+            existing.Count,
+            ledgerBytes);
+        if (!metadataGuard.Allowed)
+        {
+            throw new ProductLedgerPathLocalOnlyMetadataGuardException(metadataGuard.Blockers);
+        }
+
         var sequence = existing.Count + 1;
         var previousHash = existing.Count == 0 ? GenesisHash : existing[^1].EntryHash;
-        var metadata = request.EvidenceMetadata!
+        var metadata = metadataGuard.SafeMetadata
             .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         var entryHash = HashEntry(sequence, activation.CandidateId!, request.SafePayloadHash!, metadata, previousHash);
@@ -708,5 +727,11 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
         var candidate = Path.GetFullPath(path);
         var tempRoot = Path.GetFullPath(Path.GetTempPath());
         return candidate.StartsWith(tempRoot, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class ProductLedgerPathLocalOnlyMetadataGuardException(
+        IReadOnlyList<ProductLedgerPathLocalOnlyBlocker> blockers) : Exception("unsafe local-only metadata")
+    {
+        public IReadOnlyList<ProductLedgerPathLocalOnlyBlocker> Blockers { get; } = blockers;
     }
 }

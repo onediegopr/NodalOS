@@ -141,11 +141,11 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
             [ready with { SafePayloadHash = "" }] = ProductLedgerPathLocalOnlyBlocker.MissingSafePayloadHash,
             [ready with { SafePayloadHash = "raw-secret" }] = ProductLedgerPathLocalOnlyBlocker.UnsafePayloadHash,
             [ready with { SafePayloadHash = new string('G', 64) }] = ProductLedgerPathLocalOnlyBlocker.UnsafePayloadHash,
-            [ready with { EvidenceMetadata = new Dictionary<string, string> { ["token"] = "redacted" } }] = ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata,
             [ready with { EvidenceMetadata = new Dictionary<string, string> { ["payload"] = "bearer redacted" } }] = ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata,
-            [ready with { EvidenceMetadata = new Dictionary<string, string> { ["client"] = "client_secret_redacted" } }] = ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata,
             [ready with { EvidenceMetadata = new Dictionary<string, string> { ["path"] = "C:\\Users\\synthetic" } }] = ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata,
-            [ready with { EvidenceMetadata = new Dictionary<string, string> { ["ref"] = new string('x', 129) } }] = ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata,
+            [ready with { EvidenceMetadata = new Dictionary<string, string> { ["ref"] = new string('x', 129) } }] = ProductLedgerPathLocalOnlyBlocker.RetentionLimitExceeded,
+            [ready with { EvidenceMetadata = Enumerable.Range(0, 13).ToDictionary(index => $"field{index:00}", index => "safe") }] = ProductLedgerPathLocalOnlyBlocker.RetentionLimitExceeded,
+            [ready with { EvidenceMetadata = new Dictionary<string, string> { ["retention"] = "keep forever with compliance custody" } }] = ProductLedgerPathLocalOnlyBlocker.RetentionLimitExceeded,
             [ready with { RequestsRuntimeEnablement = true }] = ProductLedgerPathLocalOnlyBlocker.RuntimeEnablementRequested,
             [ready with { RequestsProductServiceRegistration = true }] = ProductLedgerPathLocalOnlyBlocker.ProductServiceRegistrationRequested,
             [ready with { RequestsProductCommandHandler = true }] = ProductLedgerPathLocalOnlyBlocker.ProductCommandHandlerRequested,
@@ -165,6 +165,71 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
             CollectionAssert.Contains(result.Blockers.ToArray(), testCase.Value, testCase.Value.ToString());
             AssertNoRuntimeOrExternal(result);
         }
+    }
+
+    [TestMethod]
+    public void LocalOnlyWriter_RedactsSensitiveMetadataBeforePersistence()
+    {
+        using var fixture = LedgerFixture.Create();
+        var writer = new ProductLedgerPathLocalOnlyActiveWriter();
+        var activation = writer.Activate(ReadyActivationRequest(fixture));
+        const string bearerValue = "Bearer SYNTHETIC-fixture-token-not-real";
+        const string emailValue = "operator@example.test";
+        const string highEntropyValue = "AbCDefGhIjKLmnopQRStuvWXyz1234567890+/=";
+        var append = writer.Append(
+            ReadyAppendRequest(activation) with
+            {
+                EvidenceMetadata = new Dictionary<string, string>
+                {
+                    ["authority"] = "local-only-policy-bound",
+                    ["api_key"] = "api_key=SYNTHETIC-not-real",
+                    ["authorization"] = bearerValue,
+                    ["operator.email"] = emailValue,
+                    ["client"] = "client_secret_redacted",
+                    ["fingerprint"] = highEntropyValue
+                }
+            });
+
+        Assert.AreEqual(ProductLedgerPathLocalOnlyWriterDecision.AppendedLocalOnly, append.Decision);
+        var serializedLedger = File.ReadAllText(append.ActiveLedgerFilePath!);
+        Assert.IsFalse(serializedLedger.Contains("api_key", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(serializedLedger.Contains(bearerValue, StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(serializedLedger.Contains(emailValue, StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(serializedLedger.Contains(highEntropyValue, StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(serializedLedger.Contains("client_secret", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(append.Entry!.EvidenceMetadata.ContainsKey("redaction.applied"));
+        Assert.AreEqual("true", append.Entry.EvidenceMetadata["redaction.applied"]);
+        Assert.AreEqual("bounded-local", append.Entry.EvidenceMetadata["retention.mode"]);
+        Assert.IsTrue(append.Entry.EvidenceMetadata.Values.Any(value => value == "redacted-sensitive"));
+
+        var entries = writer.ReadVerified(activation);
+        Assert.AreEqual(1, entries.Count);
+        Assert.AreEqual(append.Entry.EntryHash, entries[0].EntryHash);
+    }
+
+    [TestMethod]
+    public void LocalOnlyWriter_RedactionRetentionFailureDoesNotPersistOrCorruptLedger()
+    {
+        using var fixture = LedgerFixture.Create();
+        var writer = new ProductLedgerPathLocalOnlyActiveWriter();
+        var activation = writer.Activate(ReadyActivationRequest(fixture));
+        var first = writer.Append(ReadyAppendRequest(activation));
+        var blocked = writer.Append(
+            ReadyAppendRequest(activation) with
+            {
+                SafePayloadHash = new string('b', 64),
+                EvidenceMetadata = new Dictionary<string, string> { ["raw.payload"] = "must-not-persist" }
+            });
+
+        Assert.AreEqual(ProductLedgerPathLocalOnlyWriterDecision.AppendedLocalOnly, first.Decision);
+        Assert.AreEqual(ProductLedgerPathLocalOnlyWriterDecision.Blocked, blocked.Decision);
+        CollectionAssert.Contains(blocked.Blockers.ToArray(), ProductLedgerPathLocalOnlyBlocker.UnsafeEvidenceMetadata);
+        var serializedLedger = File.ReadAllText(first.ActiveLedgerFilePath!);
+        Assert.IsFalse(serializedLedger.Contains("must-not-persist", StringComparison.OrdinalIgnoreCase));
+
+        var entries = writer.ReadVerified(activation);
+        Assert.AreEqual(1, entries.Count);
+        Assert.AreEqual(first.Entry!.EntryHash, entries[0].EntryHash);
     }
 
     [TestMethod]
@@ -296,7 +361,7 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
                     }
                 };
                 return index % 3 == 0
-                    ? writer.Append(request with { EvidenceMetadata = new Dictionary<string, string> { ["token"] = "redacted" } })
+                    ? writer.Append(request with { EvidenceMetadata = new Dictionary<string, string> { ["raw.payload"] = $"must-not-persist-{index:00}" } })
                     : writer.Append(request);
             })));
 
@@ -360,6 +425,7 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
         StringAssert.Contains(source, "File.WriteAllText");
         StringAssert.Contains(source, "ConcurrentDictionary<string, object>");
         StringAssert.Contains(source, "GetLedgerLock");
+        StringAssert.Contains(source, "ProductLedgerPathLocalOnlyMetadataGuard");
     }
 
     private static ProductLedgerPathLocalOnlyActivationRequest ReadyActivationRequest(LedgerFixture fixture) =>

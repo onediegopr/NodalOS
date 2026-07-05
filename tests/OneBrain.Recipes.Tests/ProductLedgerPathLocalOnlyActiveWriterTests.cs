@@ -70,6 +70,34 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
         Assert.IsFalse(append.UiProductActionsAllowed);
     }
 
+    [TestMethod]
+    public void LocalOnlyActiveWriter_RedactsAndBoundsRecipeMetadataBeforeAppend()
+    {
+        using var fixture = LedgerFixture.Create();
+        var writer = new ProductLedgerPathLocalOnlyActiveWriter();
+        var activation = writer.Activate(ReadyActivationRequest(fixture));
+        var append = writer.Append(
+            ReadyAppendRequest(activation) with
+            {
+                EvidenceMetadata = new Dictionary<string, string>
+                {
+                    ["authority"] = "local-only-policy-bound",
+                    ["authorization"] = "Bearer SYNTHETIC-fixture-token-not-real",
+                    ["operator.email"] = "operator@example.test"
+                }
+            });
+
+        Assert.AreEqual(ProductLedgerPathLocalOnlyWriterDecision.AppendedLocalOnly, append.Decision);
+        Assert.AreEqual("true", append.Entry!.EvidenceMetadata["redaction.applied"]);
+        Assert.AreEqual("bounded-local", append.Entry.EvidenceMetadata["retention.mode"]);
+        Assert.IsTrue(append.Entry.EvidenceMetadata.Values.Any(value => value == "redacted-sensitive"));
+
+        var ledgerText = File.ReadAllText(append.ActiveLedgerFilePath!);
+        Assert.IsFalse(ledgerText.Contains("Bearer SYNTHETIC", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(ledgerText.Contains("operator@example.test", StringComparison.OrdinalIgnoreCase));
+        Assert.AreEqual(1, writer.ReadVerified(activation).Count);
+    }
+
     private static ProductLedgerPathLocalOnlyActivationRequest ReadyActivationRequest(LedgerFixture fixture) =>
         new(
             PersistedCandidateResult: ReadyPersistedCandidate(fixture),

@@ -23,10 +23,12 @@ The implementation remains Core-only and local filesystem only. It activates a p
 - Bounded local JSONL writer under the activated candidate path.
 - Local read verification, safe payload/metadata revalidation, hash-chain verification and local head checkpoint.
 - Per-canonical-ledger-file append lock covering read existing, checkpoint verification, sequence/previous-hash calculation, append and checkpoint write.
+- Minimal local-only behavioral metadata guard for redaction-before-persistence and retention/bounded persistence before append.
 - Invalid ledger/checkpoint JSON deserialization normalizes to fail-closed invalid local-only ledger evidence.
 - Runtime flag remains default-off and product runtime remains disabled.
 - Safety tests and Recipes tests for activation, append/read verification, failure rollback evidence and no-enable boundaries.
 - Concurrency tests for sequential unique appends, hash-chain preservation and blocked interleave no-corruption behavior.
+- Redaction/retention tests for sensitive metadata sanitization, raw payload blocking, bounded metadata and no-corruption failure behavior.
 
 ## Boundary
 
@@ -61,6 +63,7 @@ P2: 0
 P2 after 2026-07-05 hardening:
 
 - External MA-02 concurrency finding is fixed with per-path append locking and focused concurrency tests.
+- External MA-03 caller-attested redaction/retention finding is fixed for persisted Product Ledger metadata with a minimal local-only behavioral guard.
 
 P3:
 

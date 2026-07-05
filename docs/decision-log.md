@@ -22,6 +22,18 @@
 - Non-goals: no public deploy, public internet exposure, provider/cloud/network, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, productive Browser/CDP/WCU/OCR/Recipes live automation, destructive user-facing action, unbounded export/write or release/commercial readiness.
 - Next recommended macro-block: `MB3 Real minimal redaction+retention behavioral gates`.
 
+## NODAL_OS_PRODUCT_LEDGER_REAL_MINIMAL_REDACTION_RETENTION_BEHAVIORAL_GATES
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_REAL_MINIMAL_REDACTION_RETENTION_BEHAVIORAL_GATES_READY`
+- Input HEAD: `466471f3d2f52a085d741b8e79142b61875cce6e`.
+- Scope: fix MA-03 by adding minimal local-only behavioral redaction/retention guards to the Product Ledger active writer.
+- Corrections: added `ProductLedgerPathLocalOnlyMetadataGuard`; writer now sanitizes/redacts metadata before append, adds safe redaction/retention markers, enforces bounded metadata fields/value sizes and local ledger entry/byte limits, and blocks raw payload/path/unbounded/compliance/custody overclaims.
+- Claim canon: caller attestation still exists for authority and failure/replay/rollback evidence, but redaction/retention is no longer caller-attested only for persisted Product Ledger metadata.
+- Readiness update: Product Ledger local-only core `92-95%`; local-only internal product `50-59%`; usable end-to-end local product `20-32%`; UI/operator surface unchanged `15-25%`; external/cloud `0%`; release/commercial `0%`.
+- Findings after fixes: P0 0, P1 0, P2 0, P3 2, P4 2. TRUE_RISK 0.
+- Non-goals: no compliance-grade custody, legal deletion lifecycle, cloud retention, KMS/WORM/external trust, DB/migration, provider/cloud/network, live automation, unbounded export/write, public deploy or release/commercial readiness.
+- Next recommended macro-block: `MB6 Integration + property test pack`.
+
 ## NODAL_OS_AUTONOMOUS_SAFE_SCOPE_POLICY_AND_STAGE2_RUNTIME_FEATURE_FLAG_TEST_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_AUTONOMOUS_SAFE_SCOPE_POLICY_AND_STAGE2_RUNTIME_FEATURE_FLAG_TEST_ONLY_READY`
