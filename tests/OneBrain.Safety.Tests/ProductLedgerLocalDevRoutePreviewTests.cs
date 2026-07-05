@@ -55,10 +55,14 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, defaultResult.Decision);
         Assert.AreEqual("text/html; charset=utf-8", result.ContentType);
         Assert.AreEqual(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, result.RouteTemplatePreview);
+        AssertCanonicalSurface(result);
         AssertNoForbiddenSurface(result);
 
         var html = result.HtmlSnapshot;
         StringAssert.Contains(html, "data-testid=\"local-dev-route-preview\"");
+        StringAssert.Contains(html, "data-testid=\"canonical-surface-model\"");
+        StringAssert.Contains(html, "data-route-path=\"/internal/product-ledger/operator-surface\"");
+        StringAssert.Contains(html, "data-read-model-mode=\"FixtureSafeReadModel\"");
         StringAssert.Contains(html, "local-dev/internal-only");
         StringAssert.Contains(html, "not publicly deployed");
         StringAssert.Contains(html, "no telemetry");
@@ -70,6 +74,21 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         StringAssert.Contains(html, "data-testid=\"runtime-gate\"");
         StringAssert.Contains(html, "data-testid=\"writer\"");
         StringAssert.Contains(html, "data-testid=\"bounded-export\"");
+        StringAssert.Contains(html, "data-testid=\"surface-ledger-authority\"");
+        StringAssert.Contains(html, nameof(ProductLedgerPathLocalOnlyActiveWriter));
+        StringAssert.Contains(html, "data-testid=\"surface-ledger-verification\"");
+        StringAssert.Contains(html, "data-testid=\"surface-checkpoint\"");
+        StringAssert.Contains(html, "data-testid=\"surface-redaction-retention\"");
+        StringAssert.Contains(html, "data-testid=\"surface-concurrency\"");
+        StringAssert.Contains(html, "data-testid=\"surface-bounded-export\"");
+        StringAssert.Contains(html, "data-testid=\"surface-operator-acceptance\"");
+        StringAssert.Contains(html, "data-testid=\"surface-public-action-contract\"");
+        StringAssert.Contains(html, "data-testid=\"surface-visual-evidence\"");
+        StringAssert.Contains(html, "data-testid=\"surface-screenshot-evidence\"");
+        StringAssert.Contains(html, "data-testid=\"surface-blocked-frontiers\"");
+        StringAssert.Contains(html, "data-testid=\"surface-blocked-product-command-execution\"");
+        StringAssert.Contains(html, "data-testid=\"surface-blocked-public-internet\"");
+        StringAssert.Contains(html, "data-testid=\"surface-blocked-release-commercial\"");
         StringAssert.Contains(html, "data-testid=\"disabled-dangerous-actions\"");
         StringAssert.Contains(html, "data-testid=\"action-destructive-write\"");
         StringAssert.Contains(html, "disabled aria-disabled=\"true\"");
@@ -171,6 +190,47 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         StringAssert.Contains(source, "NOT_PUBLICLY_DEPLOYED");
         StringAssert.Contains(source, "NO_EXTERNAL_NETWORK");
         StringAssert.Contains(source, "NO_TELEMETRY");
+    }
+
+    [TestMethod]
+    public void LocalDevRoutePreview_CanonicalSurfaceIsSingleRouteReadOnlyModel()
+    {
+        var result = new ProductLedgerLocalDevRoutePreview().Render(ReadyRequest());
+        var model = result.CanonicalSurface;
+
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, result.Decision);
+        Assert.AreEqual(ProductLedgerOperatorSurfaceModelFactory.CanonicalSurfaceId, model.SurfaceId);
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, model.RoutePath);
+        Assert.AreEqual(ProductLedgerOperatorSurfaceModelFactory.Scope, model.Scope);
+        Assert.AreEqual(ProductLedgerOperatorSurfaceReadModelMode.FixtureSafeReadModel, model.ReadModelMode);
+        Assert.AreEqual(nameof(ProductLedgerPathLocalOnlyActiveWriter), model.LedgerAuthority);
+        Assert.AreEqual("ACTIVE_PRODUCT_LEDGER_PATH_LOCAL_ONLY", model.LedgerAuthorityBoundaryStatus);
+        Assert.IsTrue(model.UsesFixtureReadModel);
+        Assert.IsTrue(model.IsLocalOnly);
+        Assert.IsTrue(model.IsDevelopmentOnly);
+        Assert.IsTrue(model.IsReadOnly);
+        Assert.IsFalse(model.AllowsProductCommandExecution);
+        Assert.IsFalse(model.AllowsPublicInternetExposure);
+        Assert.IsFalse(model.AllowsExternalNetwork);
+        Assert.IsFalse(model.AllowsDbMigration);
+        Assert.IsFalse(model.AllowsKmsWormExternalTrust);
+        Assert.IsFalse(model.AllowsReleaseCommercial);
+        Assert.IsFalse(model.AllowsBrowserCdpWcuOcrRecipesLive);
+        Assert.IsFalse(model.AllowsDestructiveAction);
+        Assert.IsFalse(model.AllowsUnboundedExport);
+        Assert.IsFalse(model.AllowsExternalCloudExport);
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "ledger-verification"));
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "checkpoint"));
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "redaction-retention"));
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "concurrency"));
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "bounded-export"));
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "operator-acceptance"));
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "public-action-contract"));
+        Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "product-command-execution"));
+        Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "public-internet"));
+        Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "release-commercial"));
+        Assert.IsTrue(model.ActionPreviews.Count > 0);
+        Assert.IsTrue(model.ActionPreviews.All(action => action.Disabled && action.ReadOnly));
     }
 
     private static ProductLedgerLocalDevRoutePreviewRequest ReadyRequest() =>
@@ -342,6 +402,13 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsFalse(result.UnboundedPhysicalExportAvailable);
         Assert.IsFalse(result.ExternalCloudExportAvailable);
         Assert.IsFalse(result.ReleaseCommercialReady);
+    }
+
+    private static void AssertCanonicalSurface(ProductLedgerLocalDevRoutePreviewResult result)
+    {
+        Assert.IsNotNull(result.CanonicalSurface);
+        Assert.AreEqual(ProductLedgerOperatorSurfaceModelFactory.CanonicalSurfaceId, result.CanonicalSurface.SurfaceId);
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, result.CanonicalSurface.RoutePath);
     }
 
     private static string RepoRoot()

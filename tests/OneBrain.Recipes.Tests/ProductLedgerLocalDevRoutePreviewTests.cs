@@ -14,7 +14,17 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         var result = new ProductLedgerLocalDevRoutePreview().Render(ReadyRequest());
 
         Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, result.Decision);
+        Assert.AreEqual(ProductLedgerOperatorSurfaceModelFactory.CanonicalSurfaceId, result.CanonicalSurface.SurfaceId);
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, result.CanonicalSurface.RoutePath);
+        Assert.AreEqual(nameof(ProductLedgerPathLocalOnlyActiveWriter), result.CanonicalSurface.LedgerAuthority);
+        Assert.IsTrue(result.CanonicalSurface.IsLocalOnly);
+        Assert.IsTrue(result.CanonicalSurface.IsDevelopmentOnly);
+        Assert.IsTrue(result.CanonicalSurface.IsReadOnly);
+        Assert.IsFalse(result.CanonicalSurface.AllowsProductCommandExecution);
         StringAssert.Contains(result.HtmlSnapshot, "data-testid=\"local-dev-route-preview\"");
+        StringAssert.Contains(result.HtmlSnapshot, "data-testid=\"canonical-surface-model\"");
+        StringAssert.Contains(result.HtmlSnapshot, "data-testid=\"surface-ledger-authority\"");
+        StringAssert.Contains(result.HtmlSnapshot, "data-testid=\"surface-blocked-product-command-execution\"");
         StringAssert.Contains(result.HtmlSnapshot, "local-dev/internal-only");
         StringAssert.Contains(result.HtmlSnapshot, "not publicly deployed");
         StringAssert.Contains(result.HtmlSnapshot, "no telemetry");

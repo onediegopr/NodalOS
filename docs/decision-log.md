@@ -1309,3 +1309,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 rendered UI DOM interaction and local/internal action surface completion remain future safe blocks; P4 local evidence is not live route, compliance custody or human business signoff.
 - Readiness unchanged: public local-only actions 84%, operator acceptance 92%, external/cloud/DB/KMS/live/release 0%.
 - Safe next step: `PAUSE_SAFE_LOCAL_ONLY_LINE_READY_FOR_EXTERNAL_REVIEW`.
+
+## NODAL_OS_SINGLE_REAL_LOCAL_OPERATOR_ROUTE_AND_SURFACE_CONSOLIDATION
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_SINGLE_REAL_LOCAL_OPERATOR_ROUTE_AND_SURFACE_CONSOLIDATION_READY`
+- Baseline: `c75df253866dd7813a064ce0c3d696d88c1fc5e2`.
+- Scope: local-only/dev-only/read-only Product Ledger route/surface consolidation.
+- Implemented/documented: canonical `ProductLedgerOperatorSurfaceModel`, canonical route path `/internal/product-ledger/operator-surface`, route result `CanonicalSurface`, stable canonical DOM anchors, blocked-frontier model, legacy route trace, Safety/Recipes tests, ADR, QA report/JSON and handoff.
+- Non-goals preserved: no public deploy, public internet, product command execution, destructive action, append/write/export from route, unbounded export/write, external/cloud export, provider/cloud/network, telemetry/sync/billing, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 in-process HTTP response testing remains future local-only pack, route read model is fixture-safe not arbitrary ledger path read, old surfaces remain compatibility wrappers; P4 legacy route retained for traceability.
+- Readiness changes: UI/Operator Surface 15-25% -> 35-45%; local-only internal product 52-61% -> 56-64%; usable end-to-end local product 22-34% -> 28-38%; Product Ledger local-only core remains 94-96%; external/cloud and release/commercial remain 0%.
+- Safe next step: `NODAL_OS_RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK`.
