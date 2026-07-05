@@ -1332,3 +1332,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 HTTP in-process response tests, browser pixel evidence and live local ledger read-model tests remain future scoped work; P4 evidence is rendered DOM level.
 - Readiness changes: UI/Operator Surface 35-45% -> 42-52%; local-only internal product 56-64% -> 58-66%; usable end-to-end local product 28-38% -> 30-40%; Product Ledger local-only core remains 94-96%; external/cloud and release/commercial remain 0%.
 - Safe next step: `NODAL_OS_LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP`.
+
+## NODAL_OS_LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP_READY`
+- Baseline: `68d58bb3fe700f913334317dd0ed0ef533bdac24`.
+- Scope: local-only/read-only/preview-only approval-to-action loop for the Product Ledger operator surface.
+- Implemented/documented: canonical approval preview loop model, candidate action preview, policy/gate preview, no-op execution preview, evidence refs, safe next step, route DOM anchors, disabled preview control, Safety/Recipes tests, ADR, QA report/JSON, roadmap note and handoff.
+- Non-goals preserved: no real approval execution, product command execution, append/write/export from route or loop, destructive action, public deploy, public internet, external/provider/cloud, telemetry/sync/billing, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 HTTP in-process route response testing remains future, route remains fixture-safe canonical read model and real approval execution remains future; P4 no-op evidence is preview-only and evidence refs are readiness links.
+- Readiness changes: Approval/Human Review 87-92% -> 90-94%; Runtime/Command/Execution 42-50% -> 45-53%; UI/Operator Surface 42-52% -> 48-58%; local-only internal product 58-66% -> 61-69%; usable end-to-end local product 30-40% -> 34-44%; Product Ledger local-only core remains 94-96%; external/cloud and release/commercial remain 0%.
+- Safe next step: `NODAL_OS_HTTP_IN_PROCESS_ROUTE_RESPONSE_TEST_INFRASTRUCTURE_LOCAL_ONLY`.

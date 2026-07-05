@@ -53,6 +53,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     IReadOnlyList<ProductLedgerOperatorSurfaceEvidenceRef> EvidenceRefs,
     IReadOnlyList<ProductLedgerOperatorSurfaceBlockedFrontier> BlockedFrontiers,
     IReadOnlyList<ProductLedgerOperatorSurfaceActionPreview> ActionPreviews,
+    ProductLedgerLocalApprovalPreviewLoop ApprovalPreviewLoop,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -94,6 +95,11 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             .ToArray();
 
         var statuses = Statuses(authority.BoundaryStatus);
+        var evidenceRefs = EvidenceRefs();
+        var approvalPreviewLoop = ProductLedgerLocalApprovalPreviewLoopFactory.Build(
+            CanonicalSurfaceId,
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            evidenceRefs);
         return new ProductLedgerOperatorSurfaceModel(
             SurfaceId: CanonicalSurfaceId,
             GeneratedAtStrategy: DeterministicGeneratedAtStrategy,
@@ -112,9 +118,10 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             VisualEvidenceStatus: "LOCAL_DEV_VISUAL_QA_EVIDENCE_LINKABLE_STATIC_HTML_ONLY",
             ScreenshotEvidenceStatus: "SCREENSHOT_EVIDENCE_FIXTURE_LINKABLE_NO_LIVE_BROWSER",
             Statuses: statuses,
-            EvidenceRefs: EvidenceRefs(),
+            EvidenceRefs: evidenceRefs,
             BlockedFrontiers: BlockedFrontiers(),
             ActionPreviews: actions,
+            ApprovalPreviewLoop: approvalPreviewLoop,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",

@@ -396,6 +396,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         }
 
         html.AppendLine("    </div>");
+        html.AppendLine(ToApprovalPreviewLoopHtml(model.ApprovalPreviewLoop));
         html.AppendLine($"    <p data-testid=\"product-ledger-safe-next-steps\">{Encode(string.Join("; ", model.SafeNextSteps))}</p>");
         html.AppendLine("    <div data-testid=\"surface-safe-next-steps\">");
         foreach (var step in model.SafeNextSteps)
@@ -405,6 +406,39 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
         html.AppendLine("    </div>");
         html.AppendLine("  </section>");
+        return html.ToString();
+    }
+
+    private static string ToApprovalPreviewLoopHtml(ProductLedgerLocalApprovalPreviewLoop loop)
+    {
+        var html = new StringBuilder();
+        html.AppendLine($"    <section data-testid=\"product-ledger-approval-preview\" data-loop-id=\"{Encode(loop.LoopId)}\" data-local-only=\"{Lower(loop.IsLocalOnly)}\" data-read-only=\"{Lower(loop.IsReadOnly)}\" data-preview-only=\"{Lower(loop.IsPreviewOnly)}\" data-allows-execution=\"{Lower(loop.AllowsExecution)}\" data-allows-write=\"{Lower(loop.AllowsWrite)}\" data-allows-export=\"{Lower(loop.AllowsExport)}\" data-allows-network=\"{Lower(loop.AllowsNetwork)}\" data-allows-db=\"{Lower(loop.AllowsDb)}\" data-release-commercial=\"{Lower(loop.AllowsReleaseCommercial)}\">");
+        html.AppendLine("      <h2>Approval/action preview loop</h2>");
+        html.AppendLine($"      <p>{Encode(loop.ApprovalPreview.ApprovalRequiredLabel)} read-only preview-only no product command execution no write/export no release/commercial</p>");
+        html.AppendLine($"      <p>{Encode(loop.OperatorMessage)}</p>");
+        html.AppendLine($"      <button type=\"button\" data-testid=\"product-ledger-approval-preview-control\" data-executable=\"false\" data-handler-id=\"\" data-callback=\"\" disabled aria-disabled=\"true\">{Encode(loop.ApprovalPreview.ApprovalId)}</button>");
+        html.AppendLine("    </section>");
+        html.AppendLine($"    <section data-testid=\"product-ledger-candidate-action-preview\" data-command-kind=\"{Encode(loop.ActionPreview.CandidateActionKind.ToString())}\" data-command-id=\"{Encode(loop.ActionPreview.CommandId)}\" data-disabled=\"{Lower(loop.ActionPreview.Disabled)}\" data-no-op=\"{Lower(loop.ActionPreview.NoOp)}\" data-executable=\"{Lower(loop.ActionPreview.Executable)}\" data-product-command-execution=\"{Lower(loop.ActionPreview.AllowsProductCommandExecution)}\">");
+        html.AppendLine($"      <p>{Encode(loop.ActionPreview.CandidateActionDescription)} read-only preview-only no product command execution no write/export no release/commercial</p>");
+        html.AppendLine("    </section>");
+        html.AppendLine($"    <section data-testid=\"product-ledger-policy-gate-preview\" data-policy-decision=\"{Encode(loop.PolicyGatePreview.PolicyDecision.ToString())}\" data-allows-execution=\"{Lower(loop.PolicyGatePreview.AllowsExecution)}\" data-allows-write=\"{Lower(loop.PolicyGatePreview.AllowsWrite)}\" data-allows-export=\"{Lower(loop.PolicyGatePreview.AllowsExport)}\" data-allows-network=\"{Lower(loop.PolicyGatePreview.AllowsNetwork)}\" data-allows-db=\"{Lower(loop.PolicyGatePreview.AllowsDb)}\" data-release-commercial=\"{Lower(loop.PolicyGatePreview.AllowsReleaseCommercial)}\">");
+        foreach (var reason in loop.PolicyGatePreview.BlockedReasons)
+        {
+            html.AppendLine($"      <p>{Encode(reason)}</p>");
+        }
+
+        html.AppendLine("    </section>");
+        html.AppendLine($"    <section data-testid=\"product-ledger-noop-execution-preview\" data-result-id=\"{Encode(loop.NoOpExecutionPreview.ResultId)}\" data-handler-invoked=\"{Lower(loop.NoOpExecutionPreview.HandlerInvoked)}\" data-callback-invoked=\"{Lower(loop.NoOpExecutionPreview.CallbackInvoked)}\" data-append-invoked=\"{Lower(loop.NoOpExecutionPreview.AppendInvoked)}\" data-write-invoked=\"{Lower(loop.NoOpExecutionPreview.WriteInvoked)}\" data-export-invoked=\"{Lower(loop.NoOpExecutionPreview.ExportInvoked)}\" data-pilot-run-invoked=\"{Lower(loop.NoOpExecutionPreview.PilotRunInvoked)}\">");
+        html.AppendLine($"      <p>{Encode(loop.NoOpExecutionPreview.NoOpResult)} read-only preview-only no product command execution no write/export no release/commercial</p>");
+        html.AppendLine("    </section>");
+        html.AppendLine("    <section data-testid=\"product-ledger-preview-evidence-refs\">");
+        foreach (var evidence in loop.EvidenceRefs.OrderBy(evidence => evidence.EvidenceId, StringComparer.Ordinal))
+        {
+            html.AppendLine($"      <p data-testid=\"product-ledger-preview-evidence-{Encode(evidence.EvidenceId)}\">{Encode(evidence.Source)} / {Encode(evidence.Status)}</p>");
+        }
+
+        html.AppendLine("    </section>");
+        html.AppendLine($"    <p data-testid=\"product-ledger-approval-safe-next-step\">{Encode(loop.SafeNextStep)} read-only preview-only no product command execution no write/export no release/commercial</p>");
         return html.ToString();
     }
 
