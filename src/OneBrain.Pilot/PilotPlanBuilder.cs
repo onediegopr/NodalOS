@@ -26,8 +26,8 @@ public sealed class PilotPlanBuilder
             {
                 "Resolve task with rules-based intent router.",
                 "Verify selected recipe is present in the hard allowlist.",
-                $"Prepare read-only recipe run: {intent.Recipe!.RecipePath}.",
-                "Execute through OneBrain.Cli recipe runner only.",
+                $"Prepare lab/dev recipe run candidate: {intent.Recipe!.RecipePath}.",
+                "Require explicit local opt-in before OneBrain.Cli recipe runner execution.",
                 "Scan local artifacts folders for latest Markdown/HTML paths.",
                 "Return execution status and safety summary."
             }
@@ -38,6 +38,6 @@ public sealed class PilotPlanBuilder
                 "Do not execute anything."
             };
 
-        return new PilotPlan(intent, steps, BlockedCapabilities, PilotSafetySummary.ZeroReadOnly);
+        return new PilotPlan(intent, steps, BlockedCapabilities, PilotSafetySummary.LabDevRuntimeFootprintDefaultBlocked);
     }
 }

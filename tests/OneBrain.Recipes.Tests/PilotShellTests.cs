@@ -83,7 +83,7 @@ public sealed class PilotShellTests
             ArtifactsFolder: @"C:\repo\artifacts",
             StandardOutput: "success",
             StandardError: "",
-            Safety: PilotSafetySummary.ZeroReadOnly);
+            Safety: PilotSafetySummary.LabDevRuntimeFootprintDefaultBlocked);
 
         var html = PilotHomePageRenderer.Render(plan, result);
 
@@ -126,6 +126,40 @@ public sealed class PilotShellTests
         CollectionAssert.Contains(startInfo.ArgumentList.ToArray(), "recipe");
         CollectionAssert.Contains(startInfo.ArgumentList.ToArray(), "run");
         CollectionAssert.Contains(startInfo.ArgumentList.ToArray(), "tools/recipes/demo-product-evidence-report.json");
+    }
+
+    [TestMethod]
+    public void Pilot_Recipe_Execution_Gate_Blocks_By_Default_And_Requires_Explicit_Opt_In()
+    {
+        var defaultGate = PilotRecipeExecutionGate.Evaluate(null);
+        var enabledGate = PilotRecipeExecutionGate.Evaluate("1");
+        var wrongValueGate = PilotRecipeExecutionGate.Evaluate("true");
+
+        Assert.IsFalse(defaultGate.Enabled);
+        Assert.IsFalse(wrongValueGate.Enabled);
+        Assert.IsTrue(enabledGate.Enabled);
+        Assert.AreEqual("NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION", defaultGate.EnvironmentVariableName);
+        StringAssert.Contains(defaultGate.Status, "disabled by default");
+        StringAssert.Contains(defaultGate.Safety.ScopeLabel, "LAB_DEV_RUNTIME_FOOTPRINT");
+        Assert.IsFalse(defaultGate.Safety.RecipeExecutionEnabledByDefault);
+        Assert.IsFalse(defaultGate.Safety.PublicDeployClaimed);
+        Assert.IsFalse(defaultGate.Safety.ReleaseCommercialReady);
+    }
+
+    [TestMethod]
+    public void Recipe_Executor_Blocked_Result_Does_Not_Execute_Or_Claim_Product_Readiness()
+    {
+        var plan = new PilotPlanBuilder().Build(new PilotIntentRouter().Route("mostrame la demo"));
+        var result = new PilotRecipeExecutor(@"C:\repo").BlockedByDefault(plan);
+
+        Assert.IsFalse(result.Executed);
+        Assert.IsFalse(result.Success);
+        Assert.IsNull(result.ExitCode);
+        StringAssert.Contains(result.Status, "blocked");
+        StringAssert.Contains(result.Safety.ScopeLabel, "LAB_DEV_RUNTIME_FOOTPRINT");
+        Assert.IsFalse(result.Safety.RecipeExecutionEnabledByDefault);
+        Assert.IsFalse(result.Safety.PublicDeployClaimed);
+        Assert.IsFalse(result.Safety.ReleaseCommercialReady);
     }
 
     [TestMethod]

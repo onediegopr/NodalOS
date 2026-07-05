@@ -76,6 +76,24 @@ public sealed class PilotRecipeExecutor
             Safety: plan.Safety);
     }
 
+    public PilotExecutionResult BlockedByDefault(PilotPlan plan)
+    {
+        var gate = PilotRecipeExecutionGate.Evaluate();
+        return new PilotExecutionResult(
+            Plan: plan,
+            Executed: false,
+            Success: false,
+            ExitCode: null,
+            Status: gate.Status,
+            RecipePath: plan.Intent.Recipe?.RecipePath,
+            LatestMarkdownPath: PilotArtifactLocator.FindLatestMarkdown(_root),
+            LatestHtmlPath: PilotArtifactLocator.FindLatestHtml(_root),
+            ArtifactsFolder: Path.Combine(_root, "artifacts"),
+            StandardOutput: "",
+            StandardError: "",
+            Safety: gate.Safety);
+    }
+
     public static ProcessStartInfo CreateRecipeRunStartInfo(string root, string dotnetPath, string recipePath)
     {
         if (!PilotRecipeCatalog.IsAllowlistedPath(recipePath))

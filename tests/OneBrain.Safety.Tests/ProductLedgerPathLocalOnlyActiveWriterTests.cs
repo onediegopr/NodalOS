@@ -238,6 +238,80 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
     }
 
     [TestMethod]
+    public async Task LocalOnlyWriter_ConcurrentAppendsSameLedgerProduceSequentialVerifiedChain()
+    {
+        using var fixture = LedgerFixture.Create();
+        var writer = new ProductLedgerPathLocalOnlyActiveWriter();
+        var activation = writer.Activate(ReadyActivationRequest(fixture));
+        var appendCount = 24;
+
+        var results = await Task.WhenAll(Enumerable.Range(0, appendCount).Select(index =>
+            Task.Run(() => writer.Append(
+                ReadyAppendRequest(activation) with
+                {
+                    SafePayloadHash = HashForIndex(index),
+                    EvidenceMetadata = new Dictionary<string, string>
+                    {
+                        ["authority"] = "local-only-policy-bound",
+                        ["redaction"] = "redacted-before-persistence",
+                        ["failure"] = $"replay-rollback-evidence-{index:00}"
+                    }
+                }))));
+
+        Assert.IsTrue(results.All(result => result.Decision == ProductLedgerPathLocalOnlyWriterDecision.AppendedLocalOnly));
+        var entries = writer.ReadVerified(activation);
+        Assert.AreEqual(appendCount, entries.Count);
+        CollectionAssert.AreEqual(Enumerable.Range(1, appendCount).ToArray(), entries.Select(entry => entry.Sequence).ToArray());
+        Assert.AreEqual(1, entries.Count(entry => entry.PreviousEntryHash == "GENESIS"));
+        Assert.AreEqual(entries.Count, entries.Select(entry => entry.EntryHash).Distinct(StringComparer.Ordinal).Count());
+        Assert.AreEqual(entries.Count - 1, entries.Skip(1).Select(entry => entry.PreviousEntryHash).Distinct(StringComparer.Ordinal).Count());
+
+        for (var i = 1; i < entries.Count; i++)
+        {
+            Assert.AreEqual(entries[i - 1].EntryHash, entries[i].PreviousEntryHash);
+        }
+
+        Assert.IsTrue(File.Exists(activation.ActiveCheckpointFilePath));
+        AssertNoRuntimeOrExternal(results.Last());
+    }
+
+    [TestMethod]
+    public async Task LocalOnlyWriter_ConcurrentBlockedAppendsDoNotCorruptSuccessfulChain()
+    {
+        using var fixture = LedgerFixture.Create();
+        var writer = new ProductLedgerPathLocalOnlyActiveWriter();
+        var activation = writer.Activate(ReadyActivationRequest(fixture));
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 18).Select(index =>
+            Task.Run(() =>
+            {
+                var request = ReadyAppendRequest(activation) with
+                {
+                    SafePayloadHash = HashForIndex(index),
+                    EvidenceMetadata = new Dictionary<string, string>
+                    {
+                        ["authority"] = "local-only-policy-bound",
+                        ["redaction"] = "redacted-before-persistence",
+                        ["failure"] = $"replay-rollback-evidence-{index:00}"
+                    }
+                };
+                return index % 3 == 0
+                    ? writer.Append(request with { EvidenceMetadata = new Dictionary<string, string> { ["token"] = "redacted" } })
+                    : writer.Append(request);
+            })));
+
+        Assert.AreEqual(6, results.Count(result => result.Decision == ProductLedgerPathLocalOnlyWriterDecision.Blocked));
+        Assert.AreEqual(12, results.Count(result => result.Decision == ProductLedgerPathLocalOnlyWriterDecision.AppendedLocalOnly));
+        var entries = writer.ReadVerified(activation);
+        Assert.AreEqual(12, entries.Count);
+        CollectionAssert.AreEqual(Enumerable.Range(1, 12).ToArray(), entries.Select(entry => entry.Sequence).ToArray());
+        for (var i = 1; i < entries.Count; i++)
+        {
+            Assert.AreEqual(entries[i - 1].EntryHash, entries[i].PreviousEntryHash);
+        }
+    }
+
+    [TestMethod]
     public void LocalOnlyActiveWriter_SourceHasNoRuntimeRegistrationDbCloudKmsOrUiActions()
     {
         var source = File.ReadAllText(Path.Combine(
@@ -284,6 +358,8 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
         StringAssert.Contains(source, "FailedPersistedCandidateResult");
         StringAssert.Contains(source, "File.AppendAllText");
         StringAssert.Contains(source, "File.WriteAllText");
+        StringAssert.Contains(source, "ConcurrentDictionary<string, object>");
+        StringAssert.Contains(source, "GetLedgerLock");
     }
 
     private static ProductLedgerPathLocalOnlyActivationRequest ReadyActivationRequest(LedgerFixture fixture) =>
@@ -471,6 +547,12 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriterTests
                 .Select(pair => $"{pair.Key}={pair.Value}"));
         var material = $"{sequence}\n{candidateId}\n{safePayloadHash.ToLowerInvariant()}\n{metadataText}\n{previousHash}";
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(material));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static string HashForIndex(int index)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"safe-payload-{index}"));
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 

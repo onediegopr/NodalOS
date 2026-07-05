@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -166,6 +167,7 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
     ];
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly ConcurrentDictionary<string, object> LedgerLocks = new(StringComparer.OrdinalIgnoreCase);
 
     public ProductLedgerPathLocalOnlyActivationResult Activate(ProductLedgerPathLocalOnlyActivationRequest? request)
     {
@@ -204,7 +206,11 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
         {
             try
             {
-                entry = AppendEntry(request, request.ActivationResult!);
+                var lockObject = GetLedgerLock(request.ActivationResult!.ActiveLedgerFilePath!);
+                lock (lockObject)
+                {
+                    entry = AppendEntry(request, request.ActivationResult!);
+                }
             }
             catch (InvalidDataException)
             {
@@ -479,6 +485,13 @@ public sealed class ProductLedgerPathLocalOnlyActiveWriter
         File.AppendAllText(activation.ActiveLedgerFilePath!, JsonSerializer.Serialize(entry, JsonOptions) + Environment.NewLine, Encoding.UTF8);
         WriteCheckpoint(activation.ActiveLedgerRootPath!, existing.Concat([entry]).ToArray());
         return entry;
+    }
+
+    private static object GetLedgerLock(string ledgerPath)
+    {
+        var canonicalPath = Path.GetFullPath(ledgerPath)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        return LedgerLocks.GetOrAdd(canonicalPath, _ => new object());
     }
 
     private static ProductLedgerPathLocalOnlyActivationResult ActivationResult(

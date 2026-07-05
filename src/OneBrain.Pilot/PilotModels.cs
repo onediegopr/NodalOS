@@ -23,6 +23,7 @@ public sealed record PilotIntentResult(
 }
 
 public sealed record PilotSafetySummary(
+    string ScopeLabel,
     int Clicks,
     int CookiesAccepted,
     int LoginAttempts,
@@ -30,9 +31,13 @@ public sealed record PilotSafetySummary(
     int PurchaseActions,
     int PaymentActions,
     bool BrowserOpenAllowed,
-    bool ArbitraryCommandAllowed)
+    bool ArbitraryCommandAllowed,
+    bool RecipeExecutionEnabledByDefault,
+    bool PublicDeployClaimed,
+    bool ReleaseCommercialReady)
 {
-    public static PilotSafetySummary ZeroReadOnly { get; } = new(
+    public static PilotSafetySummary LabDevRuntimeFootprintDefaultBlocked { get; } = new(
+        ScopeLabel: "LAB_DEV_RUNTIME_FOOTPRINT_RECIPE_EXECUTION_DEFAULT_BLOCKED_NOT_PRODUCT_LEDGER_LOCAL_ONLY_AUTHORITY",
         Clicks: 0,
         CookiesAccepted: 0,
         LoginAttempts: 0,
@@ -40,7 +45,10 @@ public sealed record PilotSafetySummary(
         PurchaseActions: 0,
         PaymentActions: 0,
         BrowserOpenAllowed: false,
-        ArbitraryCommandAllowed: false);
+        ArbitraryCommandAllowed: false,
+        RecipeExecutionEnabledByDefault: false,
+        PublicDeployClaimed: false,
+        ReleaseCommercialReady: false);
 }
 
 public sealed record PilotPlan(

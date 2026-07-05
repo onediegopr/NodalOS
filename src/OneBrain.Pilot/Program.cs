@@ -45,6 +45,13 @@ app.MapPost("/run", async (HttpContext context) =>
 {
     var task = await ReadTaskAsync(context);
     var plan = planner.Build(router.Route(task));
+    var gate = PilotRecipeExecutionGate.Evaluate();
+    if (!gate.Enabled)
+    {
+        var blocked = executor.BlockedByDefault(plan);
+        return Results.Content(PilotHomePageRenderer.Render(plan, blocked), "text/html");
+    }
+
     var result = await executor.ExecuteAsync(plan, context.RequestAborted);
     return Results.Content(PilotHomePageRenderer.Render(plan, result), "text/html");
 });
@@ -55,7 +62,7 @@ app.MapGet("/api/intent", (string? task) =>
     return Results.Json(plan);
 });
 
-app.MapGet("/api/safety", () => Results.Json(PilotSafetySummary.ZeroReadOnly));
+app.MapGet("/api/safety", () => Results.Json(PilotRecipeExecutionGate.Evaluate()));
 
 if (app.Environment.IsDevelopment())
 {

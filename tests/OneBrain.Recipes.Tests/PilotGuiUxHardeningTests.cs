@@ -111,7 +111,7 @@ public sealed class PilotGuiUxHardeningTests
             ArtifactsFolder: "artifacts",
             StandardOutput: "success",
             StandardError: "",
-            Safety: PilotSafetySummary.ZeroReadOnly);
+            Safety: PilotSafetySummary.LabDevRuntimeFootprintDefaultBlocked);
 
         var html = PilotHomePageRenderer.Render(plan, result);
 

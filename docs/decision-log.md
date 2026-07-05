@@ -2,12 +2,25 @@
 
 ## CANONICAL_STATUS_DOCS_HARDENING_NOTE
 
-- Latest canonical state: `PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME`.
+- Latest canonical state: Product Ledger local-only line scoped evidence is bounded/local-only and not release/commercial; repo-wide runtime language must account for separate Pilot, ChromeLab and CDP lab/dev runtime footprints.
 - Latest canonical closeout commit before docs hardening: `a92ebc18b3ddfc88cf02a2d8abe3642045f6db74`.
 - Latest Durable Stage 2 safe-chain state: `PAUSE_FOR_MANUAL_GO_BEFORE_STAGE2_RUNTIME_PRODUCT_ENABLEMENT_OR_EXTERNAL_TRUST_PROVIDER`.
-- Current source of truth: final privacy/export/controlled-execution closeout and its post-audit pause confirmations.
-- Historical entries below remain traceability records. They do not override the current NO-GO state for runtime/live, execution, mutation, physical export, redaction runtime, secret/PII scan, retention/deletion runtime or release/commercial readiness.
+- Current source of truth: final privacy/export/controlled-execution closeout, Product Ledger local-only line packets and this safety-claim reconciliation note.
+- Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
+
+## NODAL_OS_GLOBAL_SAFETY_CLAIM_RECONCILIATION_AND_PRODUCT_LEDGER_WRITER_CONCURRENCY_HARDENING
+
+- Decision target: `GO_WITH_FINDINGS_GLOBAL_SAFETY_CLAIM_RECONCILIATION_AND_PRODUCT_LEDGER_WRITER_CONCURRENCY_HARDENING_READY`
+- Input HEAD: `e131bd4fc713eef57e1cd930d81fcebdd5c3c6aa`.
+- External audit intake: `GO_WITH_FINDINGS_FIX_BEFORE_PRODUCTIZATION`.
+- Scope: fix MA-01 P1 global claim incoherence and MA-02 P2 Product Ledger local-only writer concurrency before productization. MA-03 evidence gate behavior is carried forward for a future redaction/retention behavioral gate block.
+- Corrections: `/run` is blocked by default behind explicit `NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION=1`; Pilot safety summary is relabeled as separate lab/dev runtime footprint default-blocked; Product Ledger writer append is serialized by canonical ledger-file lock across read/verify/sequence/hash/append/checkpoint.
+- Claim canon: Product Ledger percentages are line-scoped, not repo-wide. Pilot, ChromeLab and CDP are separate lab/dev runtime footprints, not Product Ledger local-only authority and not release/commercial.
+- Readiness update: Product Ledger local-only core `88-92%`; local-only internal product `48-57%`; usable end-to-end local product `20-30%`; UI/operator surface `15-25%`; external/cloud `0%`; release/commercial `0%`.
+- Findings after fixes: P0 0, P1 0, P2 0, P3 2, P4 2. TRUE_RISK 0.
+- Non-goals: no public deploy, public internet exposure, provider/cloud/network, telemetry/sync/billing cloud, DB/migration, KMS/WORM/external trust, productive Browser/CDP/WCU/OCR/Recipes live automation, destructive user-facing action, unbounded export/write or release/commercial readiness.
+- Next recommended macro-block: `MB3 Real minimal redaction+retention behavioral gates`.
 
 ## NODAL_OS_AUTONOMOUS_SAFE_SCOPE_POLICY_AND_STAGE2_RUNTIME_FEATURE_FLAG_TEST_ONLY
 
