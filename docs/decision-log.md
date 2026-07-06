@@ -1680,3 +1680,13 @@
 - Findings: P0=0, P1=0, P2=0; P3 bounded local snapshot write remains deliberate test-output evidence; P4 stale snapshots remain historical evidence only.
 - Readiness changes: none; this block strengthens test evidence without changing product/runtime capability percentages.
 - Stop frontier: durable/latest-state promotion or public/product exposure requires explicit authorization before implementation.
+
+## NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_PROPERTY_CORPUS_STATIC_GUARD_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_PROPERTY_CORPUS_STATIC_GUARD_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Audited HEAD: `9383e5fa02ccd0c26d0eadb9e907dae825692363`.
+- Scope: read-only/docs-only external-audit-style review of the latest-state snapshot property corpus and static guard hardening.
+- Audited: Safety corpus changes, hardening QA report/json, handoff and decision-log.
+- Non-goals preserved: no source/test/runtime behavior changes in this audit, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, release/commercial or business signoff.
+- Findings: P0=0, P1=0, P2=0; P3 bounded local snapshot write remains deliberate test-output evidence; P4 stale snapshots remain historical evidence only.
+- Stop frontier: durable/latest-state promotion or public/product exposure requires explicit authorization before implementation.
