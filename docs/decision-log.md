@@ -1623,3 +1623,15 @@
 - Non-goals preserved: no source/test/runtime behavior changes in audit, workspace-free write, user-selected path, public/product path, Production route, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
 - Findings: P0=0, P1=0, P2=0; P3 real local write outside test-jail remains bounded to `docs/nodal-os/handoffs/` and reparse/symlink/junction evidence is platform-metadata-bound fail-closed; P4 audit is internal Codex read-only and latest state is in-process surface evidence.
 - Stop frontier: broader user-workspace action or public/product exposure requires a separate authorization window.
+
+## NODAL_OS_BROADER_USER_WORKSPACE_ACTION_OR_PUBLIC_PRODUCT_EXPOSURE_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_BROADER_USER_WORKSPACE_OR_PUBLIC_PRODUCT_EXPOSURE_BOUNDARY_DESIGN_ONLY_READY`
+- Baseline: `d1f877daa91485d843d61f33edeacd96f162d707`.
+- Scope: design-only/readiness-only/audit-only/test-only/guard-only matrix after the user workspace allowlisted handoff draft implementation and audit.
+- Compared: broader user-workspace create-only action, controlled edit/update, public/product exposure, durable/latest-state persistence hardening and additional static/property hardening.
+- Recommendation: do not open public/product, broader workspace or edit/update/delete yet; next safe frontier should be durable/latest-state snapshot boundary design-only with future action `LocalOperatorSurfaceLatestStateSnapshotCreateOnly`.
+- Non-goals preserved: no broader workspace action implementation, public/product exposure, Production route, user-selected path, overwrite/edit/delete, destructive cleanup, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 public/product remains blocked by auth/UX/release/commercial risk and current in-process latest-state evidence, edit/update/delete remains blocked by overwrite/rollback/tamper risk, broader workspace action remains useful later but durable/latest-state hardening is safer first; P4 this is planning evidence only and percentages are readiness estimates.
+- Readiness changes: usable end-to-end local product 78-84% -> 79-85%; Approval/Human Review, Evidence/Timeline/Audit Trail, Runtime/Command/Execution, UI/Operator Surface, local-only internal product, external/cloud and release/commercial unchanged.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_BOUNDARY_DESIGN_ONLY`.
