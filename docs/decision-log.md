@@ -1635,3 +1635,15 @@
 - Findings: P0=0, P1=0, P2=0; P3 public/product remains blocked by auth/UX/release/commercial risk and current in-process latest-state evidence, edit/update/delete remains blocked by overwrite/rollback/tamper risk, broader workspace action remains useful later but durable/latest-state hardening is safer first; P4 this is planning evidence only and percentages are readiness estimates.
 - Readiness changes: usable end-to-end local product 78-84% -> 79-85%; Approval/Human Review, Evidence/Timeline/Audit Trail, Runtime/Command/Execution, UI/Operator Surface, local-only internal product, external/cloud and release/commercial unchanged.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_BOUNDARY_DESIGN_ONLY`.
+
+## NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_BOUNDARY_DESIGN_ONLY_READY`
+- Baseline: `ef4946713de396dacf72da6ea3602a149bd113b7`.
+- Scope: design-only/readiness-only/test-only/guard-only boundary specification for future `LocalOperatorSurfaceLatestStateSnapshotCreateOnly`.
+- Recommendation: use `docs/test-output/product-ledger/operator-surface-latest-state-snapshots/` as the first immutable versioned create-only `.json` snapshot boundary.
+- Supersedes earlier shorthand path `docs/test-output/product-ledger/operator-surface-latest-state/snapshots/` for the next implementation window; older references remain historical planning text only.
+- Non-goals preserved: no active snapshot writer, active route, public/product exposure, Production route, broader workspace action, user-selected path, overwrite/edit/delete, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 latest state still has an in-process component, first persistence boundary should remain under `docs/test-output/`, and stale snapshots must be historical evidence not live/product authority; P4 this is planning evidence only and percentages are readiness estimates.
+- Readiness changes: Evidence/Timeline/Audit Trail 95-98% -> 96-98%; UI/Operator Surface 77-87% -> 78-88%; usable end-to-end local product 79-85% -> 80-86%; Approval/Human Review, Runtime/Command/Execution, local-only internal product, external/cloud and release/commercial unchanged.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_IMPLEMENTATION_WINDOW`.
