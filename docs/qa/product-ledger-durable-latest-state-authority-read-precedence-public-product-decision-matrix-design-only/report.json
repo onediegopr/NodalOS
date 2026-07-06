@@ -1,0 +1,66 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_DURABLE_LATEST_STATE_AUTHORITY_READ_PRECEDENCE_PUBLIC_PRODUCT_DECISION_MATRIX_DESIGN_ONLY_READY",
+  "baselineHead": "3923a87dedd64426d5511eca5953755d858eea15",
+  "scope": "design-only-readiness-only-audit-only-test-only-guard-only",
+  "currentChain": [
+    "LocalOperatorSurfaceLatestStateSnapshotCreateOnly",
+    "LocalOperatorSurfaceLatestStateManifestCreateOnly",
+    "LocalDurableLatestStateReaderCandidateNotAuthority"
+  ],
+  "recommendedOption": "A",
+  "recommendedFutureCapability": "LocalDurableLatestStateAuxiliaryEvidenceNotPrecedenceNotAuthority",
+  "recommendedClassification": "LOCAL_INTERNAL_DEV_ONLY_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY",
+  "exactNextGoRequired": "AUTHORIZE_NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_IMPLEMENTATION_WINDOW",
+  "implementedThisBlock": {
+    "durableAuthority": false,
+    "liveProductAuthority": false,
+    "activeReadPrecedence": false,
+    "latestPointer": false,
+    "latestPointerOverwrite": false,
+    "publicProductExposure": false,
+    "productionRoute": false,
+    "broaderWorkspaceAction": false,
+    "editUpdateDelete": false,
+    "shellSubprocess": false,
+    "commandExecution": false,
+    "browserCdpWcuOcrRecipesLive": false,
+    "pilotRun": false,
+    "providerCloudNetwork": false,
+    "dbMigration": false,
+    "kmsWormExternalTrust": false,
+    "complianceCustody": false,
+    "releaseCommercial": false
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": [
+      "Read precedence and latest pointer are plausible future steps but change trust semantics and remain blocked.",
+      "Public/product exposure remains blocked by auth, privacy, release and authority interpretation risks."
+    ],
+    "p4": [
+      "Auxiliary evidence can be stale and must remain visibly non-authoritative."
+    ]
+  },
+  "validation": {
+    "focusedGuardReadinessSafety": "2/2 PASS",
+    "productLedgerSafety": "264/264 PASS",
+    "productLedgerRecipes": "71/71 PASS",
+    "coreBuild": "PASS 0 warnings 0 errors",
+    "pilotBuild": "PASS 0 warnings 0 errors",
+    "solutionBuild": "PASS 0 errors 1 inherited Recipes analyzer warning outside scope",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS line-ending warning only",
+    "productLedgerSourceStaticScan": "PASS no forbidden implementation hits"
+  },
+  "nextFrontierRequiresSeparateAuthorization": [
+    "implementing auxiliary evidence integration",
+    "active read precedence",
+    "durable authority",
+    "latest pointer",
+    "public/product exposure",
+    "Production route"
+  ]
+}

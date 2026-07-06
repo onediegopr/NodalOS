@@ -1760,3 +1760,15 @@
 - Evidence: focused Safety reader candidate 5/5 pass, focused Recipes reader candidate route 1/1 pass, Product Ledger Safety 262/262 pass, Product Ledger Recipes 71/71 pass, Core/Pilot/Solution builds pass with 0 warnings/0 errors, `git diff --check` pass with line-ending warnings only, JSON validation pass, static scan pass with false-positive hits only.
 - Findings: P0=0, P1=0, P2=0; P3 durable local reads exist over fixed test-output evidence but remain candidate-only/no-authority/no-read-precedence; P4 candidate evidence can become stale and is surfaced as stale-aware evidence only.
 - Stop frontier: active durable read precedence, latest pointer behavior, product read-model authority, public/product exposure, Production route or broader workspace action requires separate explicit authorization.
+
+## NODAL_OS_DURABLE_LATEST_STATE_AUTHORITY_READ_PRECEDENCE_PUBLIC_PRODUCT_DECISION_MATRIX_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_AUTHORITY_READ_PRECEDENCE_PUBLIC_PRODUCT_DECISION_MATRIX_DESIGN_ONLY_READY`
+- Baseline: `3923a87dedd64426d5511eca5953755d858eea15`.
+- Scope: design-only/readiness-only/audit-only/test-only/guard-only decision matrix after snapshot create-only, manifest create-only and reader candidate not-authority.
+- Compared: A auxiliary evidence integration, B Development-only read precedence, C versioned/latest manifest-index pointer, D durable local authority, E public/product exposure, F more local/internal hardening.
+- Recommendation: option A, future `LocalDurableLatestStateAuxiliaryEvidenceNotPrecedenceNotAuthority`, classification `LOCAL_INTERNAL_DEV_ONLY_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY`.
+- Non-goals preserved: no durable authority, live/product authority, active read precedence, latest pointer, latest pointer overwrite, public/product exposure, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody or release/commercial.
+- Findings: P0=0, P1=0, P2=0; P3 read precedence/latest pointer/public-product are plausible later but remain blocked by trust semantics; P4 auxiliary evidence can still be stale and must remain non-authoritative.
+- Readiness changes: none; design-only.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_IMPLEMENTATION_WINDOW`.
