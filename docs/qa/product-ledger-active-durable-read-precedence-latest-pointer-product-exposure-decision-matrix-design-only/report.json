@@ -1,0 +1,77 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_ACTIVE_DURABLE_READ_PRECEDENCE_LATEST_POINTER_PRODUCT_EXPOSURE_DECISION_MATRIX_DESIGN_ONLY_READY",
+  "baselineHead": "5a185ae69a53954fd7e9fc6e2bd115ca724fe6a2",
+  "scope": "design-only-readiness-only-audit-only-test-only-guard-only",
+  "currentChain": [
+    "LocalOperatorSurfaceLatestStateSnapshotCreateOnly",
+    "LocalOperatorSurfaceLatestStateManifestCreateOnly",
+    "LocalDurableLatestStateReaderCandidateNotAuthority",
+    "LocalDurableLatestStateAuxiliaryEvidenceNotPrecedenceNotAuthority"
+  ],
+  "recommendedOption": "A",
+  "recommendedFutureCapability": "LocalDurableLatestStateReadPrecedenceCandidateNotProductAuthority",
+  "recommendedClassification": "LOCAL_INTERNAL_DEV_ONLY_ACTIVE_READ_PRECEDENCE_CANDIDATE_NOT_PRODUCT_AUTHORITY",
+  "exactNextGoRequired": "AUTHORIZE_NODAL_OS_ACTIVE_DURABLE_READ_PRECEDENCE_CANDIDATE_NOT_PRODUCT_AUTHORITY_DEVELOPMENT_ONLY_IMPLEMENTATION_WINDOW",
+  "implementedThisBlock": {
+    "activeDurableReadPrecedence": false,
+    "latestPointer": false,
+    "latestPointerOverwrite": false,
+    "productReadModelAuthority": false,
+    "durableAuthority": false,
+    "liveProductAuthority": false,
+    "publicProductExposure": false,
+    "productionRoute": false,
+    "broaderWorkspaceAction": false,
+    "editUpdateDelete": false,
+    "userSelectedPath": false,
+    "shellSubprocess": false,
+    "commandExecution": false,
+    "browserCdpWcuOcrRecipesLive": false,
+    "pilotRun": false,
+    "providerCloudNetwork": false,
+    "dbMigration": false,
+    "kmsWormExternalTrust": false,
+    "complianceCustody": false,
+    "releaseCommercial": false
+  },
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": [
+      "Development-only read precedence candidate is the smallest useful next frontier but must stay not-product-authority and no-latest-pointer.",
+      "Latest pointer and product/public authority remain blocked because they change trust semantics more sharply."
+    ],
+    "p4": [
+      "Stale evidence remains expected and must be visible/non-authoritative."
+    ]
+  },
+  "validation": {
+    "focusedGuardReadinessSafety": "2/2 PASS",
+    "productLedgerSafety": "271/271 PASS",
+    "productLedgerRecipes": "72/72 PASS",
+    "coreBuild": "PASS 0 warnings 0 errors",
+    "pilotBuild": "PASS 0 warnings 0 errors",
+    "solutionBuild": "PASS 0 errors 1 inherited Recipes analyzer warning outside scope",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS line-ending warning only",
+    "productLedgerSourceStaticScan": "PASS no forbidden implementation hits"
+  },
+  "nextFrontierRequiresSeparateAuthorization": [
+    "active durable read precedence candidate implementation",
+    "latest pointer",
+    "latest pointer overwrite",
+    "product read-model authority",
+    "durable authority",
+    "public/product exposure",
+    "Production route",
+    "broader workspace action",
+    "provider/cloud/network",
+    "DB/migration",
+    "KMS/WORM/external trust",
+    "Browser/CDP/WCU/OCR/Recipes live",
+    "release/commercial",
+    "compliance custody"
+  ]
+}

@@ -1795,3 +1795,16 @@
 - Evidence: focused Safety auxiliary evidence 5/5 pass, focused Recipes auxiliary route 1/1 pass, focused Safety reader candidate + auxiliary evidence 10/10 pass, focused Recipes reader candidate + auxiliary evidence + Production guard 3/3 pass, Product Ledger Safety 269/269 pass, Product Ledger Recipes 72/72 pass, solution build pass with 0 warnings/0 errors, `git diff --check` pass with line-ending warnings only, JSON validation pass, static scan pass with false-positive/negative-claim hits only.
 - Findings: P0=0, P1=0, P2=0; P3 auxiliary evidence is local/internal/Development-only and remains no-authority/no-precedence/no-pointer; P4 stale-aware non-authoritative evidence remains possible.
 - Stop frontier: active durable read precedence, latest pointer behavior, product read-model authority, public/product exposure, Production route or broader workspace action requires separate explicit authorization.
+
+## NODAL_OS_ACTIVE_DURABLE_READ_PRECEDENCE_LATEST_POINTER_PRODUCT_EXPOSURE_DECISION_MATRIX_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_ACTIVE_DURABLE_READ_PRECEDENCE_LATEST_POINTER_PRODUCT_EXPOSURE_DECISION_MATRIX_DESIGN_ONLY_READY`
+- Baseline: `5a185ae69a53954fd7e9fc6e2bd115ca724fe6a2`.
+- Scope: design-only/readiness-only/audit-only/test-only/guard-only decision matrix after snapshot create-only, manifest create-only, reader candidate not-authority and auxiliary evidence not-precedence/not-authority.
+- Compared: A active durable read precedence Development-only/not product authority, B latest pointer versioned/no-overwrite, C product read-model authority local/internal, D public/product exposure, E more local/internal hardening, F repo-detected safer option.
+- Recommendation: option A, future `LocalDurableLatestStateReadPrecedenceCandidateNotProductAuthority`, classification `LOCAL_INTERNAL_DEV_ONLY_ACTIVE_READ_PRECEDENCE_CANDIDATE_NOT_PRODUCT_AUTHORITY`.
+- Non-goals preserved: no active durable read precedence implementation, latest pointer, latest pointer overwrite, product read-model authority, durable authority, live/product authority, public/product exposure, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody or release/commercial.
+- Validation: focused guard/readiness Safety 2/2 pass, Product Ledger Safety 271/271 pass, Product Ledger Recipes 72/72 pass, Core build pass 0 warnings/errors, Pilot build pass 0 warnings/errors, solution build pass with 1 inherited Recipes analyzer warning outside scope and 0 errors, JSON validation pass, static source scan pass.
+- Findings: P0=0, P1=0, P2=0; P3 read precedence candidate is useful but risks authority overclaim unless kept Development-only/not-product-authority/no-latest-pointer; P4 stale evidence remains expected and must stay visible/non-authoritative.
+- Readiness changes: none; design-only/test-only/guard-only.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_ACTIVE_DURABLE_READ_PRECEDENCE_CANDIDATE_NOT_PRODUCT_AUTHORITY_DEVELOPMENT_ONLY_IMPLEMENTATION_WINDOW`.
