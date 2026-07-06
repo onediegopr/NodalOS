@@ -1737,3 +1737,15 @@
 - Findings: P0=0, P1=0, P2=0; P3 future candidate reads need strict diagnostic-only no-authority/no-precedence guards; P4 candidate evidence can be stale.
 - Readiness changes: none; design/test-plan only.
 - Stop frontier: reader candidate implementation requires explicit GO.
+
+## NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_IMPLEMENTATION_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_IMPLEMENTATION_READY`
+- Baseline: `7cbc9538e42b24dbfe6f5b1b2a7ae624ef4b2e36`.
+- Scope: local-only/internal-only/Development-only implementation of `LocalDurableLatestStateReaderCandidateNotAuthority`.
+- Implemented: Core reader candidate validator/result model, Development-only GET `/internal/product-ledger/operator-surface/durable-latest-state-reader-candidate`, operator surface candidate state, fixed-boundary manifest/snapshot reads, hash/checkpoint/schema validation, query/header override rejection, stale/tamper/corruption labels and static no-enable guards.
+- Non-goals preserved: no active durable read precedence, latest pointer, latest pointer overwrite, product read-model authority, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, cloud-backed durability, release/commercial or business signoff.
+- Validation: focused Safety reader candidate 5/5 pass, focused Recipes reader candidate route 1/1 pass, Product Ledger Safety 262/262 pass, Product Ledger Recipes 71/71 pass, Core/Pilot/Solution builds pass with 0 warnings/0 errors.
+- Findings: P0=0, P1=0, P2=0; P3 durable local reads now exist over fixed test-output evidence but remain candidate-only/no-authority/no-precedence; P4 candidate evidence can become stale and is surfaced as stale-aware evidence only.
+- Readiness changes: Evidence/Timeline/Audit Trail unchanged at 98-99%; Runtime/Command/Execution 74-82% -> 75-83%; UI/Operator Surface 81-90% -> 82-91%; local-only internal product 94-95% -> 95-96%; usable end-to-end local product 84-90% -> 85-91%; external/cloud and release/commercial unchanged at 0%.
+- Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY`.

@@ -829,6 +829,114 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     }
 
     [TestMethod]
+    public async Task ProductLedgerDurableLatestStateReaderCandidateRoute_DevelopmentHostValidatesCandidateAndSurfaceShowsState()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        using var boundedState = BoundedApprovalExecutionFixture.Create();
+        using var handoffDraftState = HandoffReportDraftFixture.Create();
+        using var workspaceDraftState = WorkspaceTestJailHandoffDraftFixture.Create();
+        using var userWorkspaceDraftState = UserWorkspaceAllowlistedHandoffDraftFixture.Create();
+        using var latestStateSnapshotState = LatestStateSnapshotFixture.Create();
+        using var latestStateManifestState = LatestStateManifestFixture.Create(latestStateSnapshotState.WorkspaceRoot);
+        using var durableReaderCandidateState = DurableLatestStateReaderCandidateFixture.Create(latestStateSnapshotState.WorkspaceRoot);
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor,
+            boundedState.Executor,
+            handoffDraftState.Executor,
+            workspaceDraftState.Executor,
+            userWorkspaceDraftState.Executor,
+            latestStateSnapshotState.Executor,
+            latestStateManifestState.Writer,
+            durableReaderCandidateState.Validator);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        await CreateFullUserWorkspaceAllowlistedChainAsync(
+            client,
+            handoffDraftState,
+            workspaceDraftState,
+            TestContext.CancellationTokenSource.Token);
+        var surfaceModel = new ProductLedgerLocalDevRoutePreview()
+            .Render(
+                ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
+                ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalState.Store.Read(),
+                executionState.Executor.Read(),
+                boundedState.Executor.Read(),
+                handoffDraftState.Executor.Read(),
+                workspaceDraftState.Executor.Read(),
+                userWorkspaceDraftState.Executor.Read(),
+                latestStateSnapshotState.Executor.Read(),
+                latestStateManifestState.Writer.Read(),
+                durableReaderCandidateState.Validator.Read())
+            .CanonicalSurface;
+        var surfaceHash = ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.ComputeOperatorSurfaceModelHash(surfaceModel);
+
+        using var snapshot = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateSnapshotRoute,
+            JsonContent(ReadyLatestStateSnapshotBody(surfaceHash)),
+            TestContext.CancellationTokenSource.Token);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, snapshot.StatusCode);
+        var snapshotState = latestStateSnapshotState.Executor.Read();
+
+        using var manifest = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateManifestRoute,
+            JsonContent(ReadyLatestStateManifestBody(snapshotState.SnapshotContentHash, snapshotState.CheckpointHash)),
+            TestContext.CancellationTokenSource.Token);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, manifest.StatusCode);
+
+        using var candidate = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateReaderCandidateRoute,
+            TestContext.CancellationTokenSource.Token);
+        var candidateJson = await candidate.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var surface = await client.GetAsync(
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            TestContext.CancellationTokenSource.Token);
+        var html = await surface.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var queryOverride = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateReaderCandidateRoute + "?path=C%3A%5CUsers%5Cfixture%5Cunsafe.json",
+            TestContext.CancellationTokenSource.Token);
+        var queryOverrideJson = await queryOverride.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var headerOverrideRequest = new HttpRequestMessage(HttpMethod.Get, ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateReaderCandidateRoute);
+        headerOverrideRequest.Headers.Add("x-product-ledger-path-override", @"C:\Users\fixture\unsafe.json");
+        using var headerOverride = await client.SendAsync(headerOverrideRequest, TestContext.CancellationTokenSource.Token);
+        var headerOverrideJson = await headerOverride.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, candidate.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, queryOverride.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, headerOverride.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, surface.StatusCode);
+        StringAssert.Contains(candidateJson, "validatedCandidateNotAuthority");
+        StringAssert.Contains(candidateJson, ProductLedgerLocalDurableLatestStateReaderCandidateValidator.Classification);
+        StringAssert.Contains(candidateJson, "\"authority\":false");
+        StringAssert.Contains(candidateJson, "\"liveAuthority\":false");
+        StringAssert.Contains(candidateJson, "\"productAuthority\":false");
+        StringAssert.Contains(candidateJson, "\"readPrecedence\":false");
+        StringAssert.Contains(candidateJson, "\"latestPointer\":false");
+        StringAssert.Contains(candidateJson, "\"candidateEvidenceOnly\":true");
+        StringAssert.Contains(candidateJson, "\"readOnly\":true");
+        StringAssert.Contains(queryOverrideJson, "queryOverrideRejected");
+        StringAssert.Contains(headerOverrideJson, "headerOverrideRejected");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-durable-latest-state-reader-candidate-state\"");
+        StringAssert.Contains(html, "data-state=\"CandidateValidatedNotAuthority\"");
+        StringAssert.Contains(html, "data-authority=\"false\"");
+        StringAssert.Contains(html, "data-product-authority=\"false\"");
+        StringAssert.Contains(html, "data-read-precedence=\"false\"");
+        StringAssert.Contains(html, "data-latest-pointer=\"false\"");
+        StringAssert.Contains(html, "data-stale-aware=\"true\"");
+        StringAssert.Contains(html, "not authority not live/product candidate evidence only");
+        StringAssert.Contains(html, "no latest pointer no read precedence");
+        Assert.IsFalse(html.Contains(@"C:\Users\", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("password=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public async Task ProductLedgerApprovedHandoffReportDraftRoute_FailsClosedForMissingBoundedMalformedUnsafeOrMismatchedInput()
     {
         var cases = new (bool PersistApproval, bool ExecuteNoOp, bool ExecuteBounded, StringContent Content, bool ExpectDraftFile)[]
@@ -1164,6 +1272,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var userWorkspaceDraftState = UserWorkspaceAllowlistedHandoffDraftFixture.Create();
         using var latestStateSnapshotState = LatestStateSnapshotFixture.Create();
         using var latestStateManifestState = LatestStateManifestFixture.Create();
+        using var durableReaderCandidateState = DurableLatestStateReaderCandidateFixture.Create(latestStateManifestState.WorkspaceRoot);
         await using var app = BuildLocalOnlyApp(
             Environments.Production,
             ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
@@ -1174,7 +1283,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             workspaceDraftState.Executor,
             userWorkspaceDraftState.Executor,
             latestStateSnapshotState.Executor,
-            latestStateManifestState.Writer);
+            latestStateManifestState.Writer,
+            durableReaderCandidateState.Validator);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
 
         using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
@@ -1234,6 +1344,9 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var latestStateManifestStateRead = await client.GetAsync(
             ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateManifestStateRoute,
             TestContext.CancellationTokenSource.Token);
+        using var durableReaderCandidate = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateReaderCandidateRoute,
+            TestContext.CancellationTokenSource.Token);
 
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, post.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, state.StatusCode);
@@ -1251,6 +1364,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateSnapshotStateRead.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateManifest.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateManifestStateRead.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, durableReaderCandidate.StatusCode);
         Assert.IsFalse(File.Exists(approvalState.StateFilePath));
         Assert.IsFalse(File.Exists(executionState.StateFilePath));
         Assert.IsFalse(File.Exists(boundedState.StateFilePath));
@@ -1272,7 +1386,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor? workspaceTestJailHandoffDraftExecutor = null,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null,
         ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor? latestStateSnapshotExecutor = null,
-        ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter? latestStateManifestWriter = null)
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter? latestStateManifestWriter = null,
+        ProductLedgerLocalDurableLatestStateReaderCandidateValidator? durableLatestStateReaderCandidateValidator = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1286,6 +1401,28 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             app.MapProductLedgerLocalDevRoutePreview(
                 app.Environment,
                 readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+        }
+        else if (noOpExecutor is not null
+            && boundedActionExecutor is not null
+            && handoffReportDraftExecutor is not null
+            && workspaceTestJailHandoffDraftExecutor is not null
+            && userWorkspaceAllowlistedHandoffDraftExecutor is not null
+            && latestStateSnapshotExecutor is not null
+            && latestStateManifestWriter is not null
+            && durableLatestStateReaderCandidateValidator is not null)
+        {
+            app.MapProductLedgerLocalDevRoutePreview(
+                app.Environment,
+                readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalDecisionStateStore,
+                noOpExecutor,
+                boundedActionExecutor,
+                handoffReportDraftExecutor,
+                workspaceTestJailHandoffDraftExecutor,
+                userWorkspaceAllowlistedHandoffDraftExecutor,
+                latestStateSnapshotExecutor,
+                latestStateManifestWriter,
+                durableLatestStateReaderCandidateValidator);
         }
         else if (noOpExecutor is not null
             && boundedActionExecutor is not null
@@ -2454,6 +2591,9 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             return new LatestStateManifestFixture(root);
         }
 
+        public static LatestStateManifestFixture Create(string workspaceRoot) =>
+            new(workspaceRoot);
+
         public void Dispose()
         {
             var tempRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-latest-state-manifest-route-tests");
@@ -2461,6 +2601,43 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             {
                 Directory.Delete(tempRoot, recursive: true);
             }
+        }
+    }
+
+    private sealed class DurableLatestStateReaderCandidateFixture : IDisposable
+    {
+        private DurableLatestStateReaderCandidateFixture(string workspaceRoot)
+        {
+            WorkspaceRoot = workspaceRoot;
+            Validator = new ProductLedgerLocalDurableLatestStateReaderCandidateValidator(new ProductLedgerLocalDurableLatestStateReaderCandidateOptions(
+                WorkspaceRootPath: workspaceRoot,
+                ExplicitReaderCandidateBoundary: true,
+                AllowsArbitraryPathInput: false,
+                AllowsFilesystemScan: false,
+                AllowsLatestPointer: false,
+                AllowsLatestPointerOverwrite: false,
+                AllowsReadPrecedence: false,
+                AllowsAuthority: false,
+                AllowsProductAuthority: false,
+                AllowsPublicProduct: false,
+                AllowsProductionRoute: false,
+                AllowsShellOrSubprocess: false,
+                AllowsCommandExecution: false,
+                AllowsNetwork: false,
+                AllowsDb: false,
+                AllowsKmsWormExternalTrust: false,
+                AllowsReleaseCommercial: false));
+        }
+
+        public string WorkspaceRoot { get; }
+
+        public ProductLedgerLocalDurableLatestStateReaderCandidateValidator Validator { get; }
+
+        public static DurableLatestStateReaderCandidateFixture Create(string workspaceRoot) =>
+            new(workspaceRoot);
+
+        public void Dispose()
+        {
         }
     }
 

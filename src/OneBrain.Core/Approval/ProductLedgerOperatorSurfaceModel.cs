@@ -69,6 +69,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot UserWorkspaceAllowlistedHandoffDraftState,
     ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult LatestStateSnapshotState,
     ProductLedgerLocalOperatorSurfaceLatestStateManifestResult LatestStateManifestState,
+    ProductLedgerLocalDurableLatestStateReaderCandidateResult DurableLatestStateReaderCandidateState,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -102,7 +103,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot? workspaceTestJailHandoffDraftState = null,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null,
         ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null,
-        ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState = null)
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState = null,
+        ProductLedgerLocalDurableLatestStateReaderCandidateResult? durableLatestStateReaderCandidateState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
         var actions = renderable.Model.Actions
@@ -163,6 +165,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             UserWorkspaceAllowlistedHandoffDraftState: userWorkspaceAllowlistedHandoffDraftState ?? ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot.Pending,
             LatestStateSnapshotState: latestStateSnapshotState ?? ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult.Pending,
             LatestStateManifestState: latestStateManifestState ?? ProductLedgerLocalOperatorSurfaceLatestStateManifestResult.Pending,
+            DurableLatestStateReaderCandidateState: durableLatestStateReaderCandidateState ?? ProductLedgerLocalDurableLatestStateReaderCandidateResult.Pending,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",

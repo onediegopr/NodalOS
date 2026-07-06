@@ -1,0 +1,79 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_IMPLEMENTATION_READY",
+  "baselineHead": "7cbc9538e42b24dbfe6f5b1b2a7ae624ef4b2e36",
+  "scope": "local-only-internal-only-development-only-read-only-candidate-implementation",
+  "actionName": "LocalDurableLatestStateReaderCandidateNotAuthority",
+  "classification": "LOCAL_INTERNAL_DEV_ONLY_READER_CANDIDATE_NOT_AUTHORITY",
+  "sourceManifestBoundary": "docs/test-output/product-ledger/operator-surface-latest-state-manifests/",
+  "sourceSnapshotBoundary": "docs/test-output/product-ledger/operator-surface-latest-state-snapshots/",
+  "developmentRoute": "/internal/product-ledger/operator-surface/durable-latest-state-reader-candidate",
+  "readOnly": true,
+  "candidateEvidenceOnly": true,
+  "staleAware": true,
+  "authority": false,
+  "liveAuthority": false,
+  "productAuthority": false,
+  "readPrecedence": false,
+  "latestPointer": false,
+  "latestPointerOverwrite": false,
+  "productionRouteEnabled": false,
+  "publicProductPathEnabled": false,
+  "broaderWorkspaceActionEnabled": false,
+  "editUpdateDeleteEnabled": false,
+  "userSelectedPathEnabled": false,
+  "shellSubprocessEnabled": false,
+  "commandExecutionEnabled": false,
+  "pilotRunEnabled": false,
+  "browserCdpWcuOcrRecipesLiveEnabled": false,
+  "providerCloudNetworkEnabled": false,
+  "dbMigrationEnabled": false,
+  "kmsWormExternalTrustEnabled": false,
+  "releaseCommercialReady": false,
+  "complianceCustodyClaim": false,
+  "cloudBackedDurabilityClaim": false,
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": [
+      "Durable local reads now exist over fixed test-output manifest/snapshot evidence but remain candidate-only, read-only, not-authority and no-read-precedence."
+    ],
+    "p4": [
+      "Candidate evidence can become stale and is displayed as stale-aware evidence only."
+    ]
+  },
+  "corrections": [
+    "Added Development-only reader candidate route and operator surface state.",
+    "Added fail-closed manifest/snapshot hash, checkpoint, schema, authority and unsafe metadata checks.",
+    "Added query/header override rejection.",
+    "Expanded Safety and Recipes route/static/DOM coverage."
+  ],
+  "tests": {
+    "focusedSafetyReaderCandidate": "5/5 PASS",
+    "focusedRecipesReaderCandidateRoute": "1/1 PASS",
+    "productLedgerSafety": "262/262 PASS",
+    "productLedgerRecipes": "71/71 PASS",
+    "coreBuild": "PASS 0 warnings 0 errors",
+    "pilotBuild": "PASS 0 warnings 0 errors",
+    "solutionBuild": "PASS 0 warnings 0 errors"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY",
+  "frontiersStillRequiringSeparateAuthorization": [
+    "active durable read precedence",
+    "mutable latest pointer",
+    "latest pointer overwrite",
+    "public/product exposure",
+    "Production route",
+    "broader workspace action",
+    "edit/update/delete",
+    "shell/subprocess",
+    "command execution",
+    "provider/cloud/network",
+    "DB/migration",
+    "KMS/WORM/external trust",
+    "Browser/CDP/WCU/OCR/Recipes live",
+    "release/commercial",
+    "compliance custody"
+  ]
+}
