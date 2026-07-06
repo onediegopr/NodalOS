@@ -51,6 +51,12 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     public const string LocalOperatorSurfaceLatestStateSnapshotStateRoute =
         "/internal/product-ledger/operator-surface/latest-state-snapshot-state";
 
+    public const string LocalOperatorSurfaceLatestStateManifestRoute =
+        "/internal/product-ledger/operator-surface/create-latest-state-manifest";
+
+    public const string LocalOperatorSurfaceLatestStateManifestStateRoute =
+        "/internal/product-ledger/operator-surface/latest-state-manifest-state";
+
     public const string LocalOnlyRouteResponseEvidenceMode =
         "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION";
 
@@ -146,10 +152,12 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalApprovedHandoffReportDraftExecutor handoffReportDraftExecutor,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor workspaceTestJailHandoffDraftExecutor,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null,
-        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor? latestStateSnapshotExecutor = null)
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor? latestStateSnapshotExecutor = null,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter? latestStateManifestWriter = null)
     {
         userWorkspaceAllowlistedHandoffDraftExecutor ??= CreateDefaultUserWorkspaceAllowlistedHandoffDraftExecutor();
         latestStateSnapshotExecutor ??= CreateDefaultLatestStateSnapshotExecutor();
+        latestStateManifestWriter ??= CreateDefaultLatestStateManifestWriter();
         if (!environment.IsDevelopment())
         {
             return endpoints;
@@ -157,7 +165,7 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
 
         endpoints.MapGet(
             ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
-            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read(), userWorkspaceAllowlistedHandoffDraftExecutor.Read(), latestStateSnapshotExecutor.Read()));
+            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read(), userWorkspaceAllowlistedHandoffDraftExecutor.Read(), latestStateSnapshotExecutor.Read(), latestStateManifestWriter.Read()));
         endpoints.MapGet(
             LocalApprovalDecisionStateRoute,
             () => Results.Json(decisionStateStore.Read(), RouteJsonOptions));
@@ -179,6 +187,9 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         endpoints.MapGet(
             LocalOperatorSurfaceLatestStateSnapshotStateRoute,
             () => Results.Json(latestStateSnapshotExecutor.Read(), RouteJsonOptions));
+        endpoints.MapGet(
+            LocalOperatorSurfaceLatestStateManifestStateRoute,
+            () => Results.Json(latestStateManifestWriter.Read(), RouteJsonOptions));
         Func<HttpContext, Task<IResult>> persistDecisionHandler =
             context => PersistProductLedgerLocalApprovalDecisionAsync(
                 context,
@@ -242,6 +253,12 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
                 userWorkspaceAllowlistedHandoffDraftExecutor,
                 latestStateSnapshotExecutor);
         endpoints.MapPost(LocalOperatorSurfaceLatestStateSnapshotRoute, createLatestStateSnapshotHandler);
+        Func<HttpContext, Task<IResult>> createLatestStateManifestHandler =
+            context => CreateProductLedgerLocalOperatorSurfaceLatestStateManifestAsync(
+                context,
+                latestStateSnapshotExecutor,
+                latestStateManifestWriter);
+        endpoints.MapPost(LocalOperatorSurfaceLatestStateManifestRoute, createLatestStateManifestHandler);
         return endpoints;
     }
 
@@ -306,7 +323,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalApprovedHandoffReportDraftSnapshot handoffReportDraftState,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot workspaceTestJailHandoffDraftState,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null,
-        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null)
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState = null)
     {
         var result = new ProductLedgerLocalDevRoutePreview().Render(
             ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
@@ -317,7 +335,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             handoffReportDraftState,
             workspaceTestJailHandoffDraftState,
             userWorkspaceAllowlistedHandoffDraftState,
-            latestStateSnapshotState);
+            latestStateSnapshotState,
+            latestStateManifestState);
 
         return result.Decision == ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
             ? Results.Content(result.HtmlSnapshot, result.ContentType)
@@ -431,6 +450,53 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             _ => StatusCodes.Status400BadRequest
         };
         return Results.Json(snapshot, RouteJsonOptions, statusCode: statusCode);
+    }
+
+    private static async Task<IResult> CreateProductLedgerLocalOperatorSurfaceLatestStateManifestAsync(
+        HttpContext context,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor latestStateSnapshotExecutor,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter latestStateManifestWriter)
+    {
+        if (context.Request.ContentLength is null or <= 0 or > 8192)
+        {
+            return Results.Json(ProductLedgerLocalOperatorSurfaceLatestStateManifestResult.Pending with
+            {
+                Blockers = [ProductLedgerLocalOperatorSurfaceLatestStateManifestBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
+            && context.Request.ContentType?.StartsWith("application/json;", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            return Results.Json(ProductLedgerLocalOperatorSurfaceLatestStateManifestResult.Pending with
+            {
+                Blockers = [ProductLedgerLocalOperatorSurfaceLatestStateManifestBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestBody? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<ProductLedgerLocalOperatorSurfaceLatestStateManifestBody>(
+                context.Request.Body,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web),
+                context.RequestAborted);
+        }
+        catch (JsonException)
+        {
+            body = null;
+        }
+
+        var manifest = latestStateManifestWriter.CreateManifest(ToLatestStateManifestRequest(body, latestStateSnapshotExecutor.Read()));
+        var statusCode = manifest.Decision switch
+        {
+            ProductLedgerLocalOperatorSurfaceLatestStateManifestDecision.ManifestCreatedLocalOnly => StatusCodes.Status200OK,
+            ProductLedgerLocalOperatorSurfaceLatestStateManifestDecision.IdempotentReplay => StatusCodes.Status200OK,
+            _ => StatusCodes.Status400BadRequest
+        };
+        return Results.Json(manifest, RouteJsonOptions, statusCode: statusCode);
     }
 
     private static async Task<IResult> ExecuteProductLedgerLocalApprovalNoOpAsync(
@@ -1084,6 +1150,59 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             ClaimsReleaseCommercial: body.ClaimsReleaseCommercial == true);
     }
 
+    private static ProductLedgerLocalOperatorSurfaceLatestStateManifestRequest? ToLatestStateManifestRequest(
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestBody? body,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult sourceSnapshot)
+    {
+        if (body is null)
+        {
+            return null;
+        }
+
+        return new ProductLedgerLocalOperatorSurfaceLatestStateManifestRequest(
+            ExplicitLatestStateManifestScope: body.ExplicitLatestStateManifestScope == true,
+            DevelopmentMode: body.DevelopmentMode == true,
+            LocalMode: body.LocalMode == true,
+            InternalMode: body.InternalMode == true,
+            ManifestId: body.ManifestId,
+            ActionId: body.ActionId,
+            ActionKind: ParseLatestStateManifestActionKind(body.ActionKind),
+            SourceSnapshot: sourceSnapshot,
+            ExpectedSourceSnapshotContentHash: body.ExpectedSourceSnapshotContentHash,
+            ExpectedSourceSnapshotCheckpointHash: body.ExpectedSourceSnapshotCheckpointHash,
+            EvidenceReferences: body.EvidenceReferences ?? [],
+            ProposedPath: body.ProposedPath,
+            ProposedRoot: body.ProposedRoot,
+            ProposedFilename: body.ProposedFilename,
+            ProposedCommand: body.ProposedCommand,
+            ProposedUrl: body.ProposedUrl,
+            ProposedProvider: body.ProposedProvider,
+            ProposedDbMigration: body.ProposedDbMigration,
+            ClaimsArbitraryPathInput: body.ClaimsArbitraryPathInput == true,
+            ClaimsFilesystemScan: body.ClaimsFilesystemScan == true,
+            RequestsOverwrite: body.RequestsOverwrite == true,
+            RequestsLatestPointer: body.RequestsLatestPointer == true,
+            RequestsLatestPointerOverwrite: body.RequestsLatestPointerOverwrite == true,
+            RequestsReadPrecedence: body.RequestsReadPrecedence == true,
+            RequestsUserSelectedPath: body.RequestsUserSelectedPath == true,
+            RequestsPublicUiAction: body.RequestsPublicUiAction == true,
+            RequestsProductCommandExecution: body.RequestsProductCommandExecution == true,
+            RequestsProductCommandHandler: body.RequestsProductCommandHandler == true,
+            RequestsProductiveServiceRegistration: body.RequestsProductiveServiceRegistration == true,
+            RequestsShellOrSubprocess: body.RequestsShellOrSubprocess == true,
+            ClaimsArbitraryCommandExecution: body.ClaimsArbitraryCommandExecution == true,
+            ClaimsProviderCloudNetwork: body.ClaimsProviderCloudNetwork == true,
+            ClaimsDbMigration: body.ClaimsDbMigration == true,
+            ClaimsKmsWormExternalTrust: body.ClaimsKmsWormExternalTrust == true,
+            ClaimsBrowserCdpWcuOcrRecipesLive: body.ClaimsBrowserCdpWcuOcrRecipesLive == true,
+            ClaimsPilotRun: body.ClaimsPilotRun == true,
+            ClaimsReleaseCommercial: body.ClaimsReleaseCommercial == true,
+            ClaimsLiveAuthority: body.ClaimsLiveAuthority == true,
+            ClaimsProductAuthority: body.ClaimsProductAuthority == true,
+            ClaimsComplianceCustody: body.ClaimsComplianceCustody == true,
+            ClaimsCloudBackedDurability: body.ClaimsCloudBackedDurability == true);
+    }
+
     private static ProductLedgerLocalApprovalOperatorDecisionKind? ParseDecision(string? value)
     {
         if (Enum.TryParse<ProductLedgerLocalApprovalOperatorDecisionKind>(
@@ -1165,6 +1284,19 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     private static ProductLedgerLocalOperatorSurfaceLatestStateSnapshotActionKind? ParseLatestStateSnapshotActionKind(string? value)
     {
         if (Enum.TryParse<ProductLedgerLocalOperatorSurfaceLatestStateSnapshotActionKind>(
+            value,
+            ignoreCase: true,
+            out var action))
+        {
+            return action;
+        }
+
+        return null;
+    }
+
+    private static ProductLedgerLocalOperatorSurfaceLatestStateManifestActionKind? ParseLatestStateManifestActionKind(string? value)
+    {
+        if (Enum.TryParse<ProductLedgerLocalOperatorSurfaceLatestStateManifestActionKind>(
             value,
             ignoreCase: true,
             out var action))
@@ -1261,6 +1393,24 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             AllowsFilesystemScan: false,
             AllowsOverwrite: false,
             AllowsLatestPointerOverwrite: false,
+            AllowsUserSelectedPath: false,
+            AllowsShellOrSubprocess: false,
+            AllowsCommandExecution: false,
+            AllowsNetwork: false,
+            AllowsDb: false,
+            AllowsKmsWormExternalTrust: false,
+            AllowsReleaseCommercial: false));
+
+    private static ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter CreateDefaultLatestStateManifestWriter() =>
+        new(new ProductLedgerLocalOperatorSurfaceLatestStateManifestOptions(
+            WorkspaceRootPath: FindRepoRoot(),
+            ExplicitLatestStateManifestBoundary: true,
+            AllowsArbitraryPathInput: false,
+            AllowsFilesystemScan: false,
+            AllowsOverwrite: false,
+            AllowsLatestPointer: false,
+            AllowsLatestPointerOverwrite: false,
+            AllowsReadPrecedence: false,
             AllowsUserSelectedPath: false,
             AllowsShellOrSubprocess: false,
             AllowsCommandExecution: false,
@@ -1526,4 +1676,46 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         bool? ClaimsBrowserCdpWcuOcrRecipesLive,
         bool? ClaimsPilotRun,
         bool? ClaimsReleaseCommercial);
+
+    private sealed record ProductLedgerLocalOperatorSurfaceLatestStateManifestBody(
+        bool? ExplicitLatestStateManifestScope,
+        bool? DevelopmentMode,
+        bool? LocalMode,
+        bool? InternalMode,
+        string? ManifestId,
+        string? ActionId,
+        string? ActionKind,
+        string? ExpectedSourceSnapshotContentHash,
+        string? ExpectedSourceSnapshotCheckpointHash,
+        IReadOnlyList<string>? EvidenceReferences,
+        string? ProposedPath,
+        string? ProposedRoot,
+        string? ProposedFilename,
+        string? ProposedCommand,
+        string? ProposedUrl,
+        string? ProposedProvider,
+        string? ProposedDbMigration,
+        bool? ClaimsArbitraryPathInput,
+        bool? ClaimsFilesystemScan,
+        bool? RequestsOverwrite,
+        bool? RequestsLatestPointer,
+        bool? RequestsLatestPointerOverwrite,
+        bool? RequestsReadPrecedence,
+        bool? RequestsUserSelectedPath,
+        bool? RequestsPublicUiAction,
+        bool? RequestsProductCommandExecution,
+        bool? RequestsProductCommandHandler,
+        bool? RequestsProductiveServiceRegistration,
+        bool? RequestsShellOrSubprocess,
+        bool? ClaimsArbitraryCommandExecution,
+        bool? ClaimsProviderCloudNetwork,
+        bool? ClaimsDbMigration,
+        bool? ClaimsKmsWormExternalTrust,
+        bool? ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool? ClaimsPilotRun,
+        bool? ClaimsReleaseCommercial,
+        bool? ClaimsLiveAuthority,
+        bool? ClaimsProductAuthority,
+        bool? ClaimsComplianceCustody,
+        bool? ClaimsCloudBackedDurability);
 }

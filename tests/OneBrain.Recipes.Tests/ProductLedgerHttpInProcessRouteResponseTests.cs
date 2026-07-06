@@ -726,6 +726,109 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     }
 
     [TestMethod]
+    public async Task ProductLedgerLatestStateManifestRoute_DevelopmentHostCreatesJsonManifestAndSurfaceShowsState()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        using var boundedState = BoundedApprovalExecutionFixture.Create();
+        using var handoffDraftState = HandoffReportDraftFixture.Create();
+        using var workspaceDraftState = WorkspaceTestJailHandoffDraftFixture.Create();
+        using var userWorkspaceDraftState = UserWorkspaceAllowlistedHandoffDraftFixture.Create();
+        using var latestStateSnapshotState = LatestStateSnapshotFixture.Create();
+        using var latestStateManifestState = LatestStateManifestFixture.Create();
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor,
+            boundedState.Executor,
+            handoffDraftState.Executor,
+            workspaceDraftState.Executor,
+            userWorkspaceDraftState.Executor,
+            latestStateSnapshotState.Executor,
+            latestStateManifestState.Writer);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        await CreateFullUserWorkspaceAllowlistedChainAsync(
+            client,
+            handoffDraftState,
+            workspaceDraftState,
+            TestContext.CancellationTokenSource.Token);
+        var surfaceModel = new ProductLedgerLocalDevRoutePreview()
+            .Render(
+                ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
+                ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalState.Store.Read(),
+                executionState.Executor.Read(),
+                boundedState.Executor.Read(),
+                handoffDraftState.Executor.Read(),
+                workspaceDraftState.Executor.Read(),
+                userWorkspaceDraftState.Executor.Read(),
+                latestStateSnapshotState.Executor.Read(),
+                latestStateManifestState.Writer.Read())
+            .CanonicalSurface;
+        var surfaceHash = ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.ComputeOperatorSurfaceModelHash(surfaceModel);
+
+        using var snapshot = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateSnapshotRoute,
+            JsonContent(ReadyLatestStateSnapshotBody(surfaceHash)),
+            TestContext.CancellationTokenSource.Token);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, snapshot.StatusCode);
+        var snapshotState = latestStateSnapshotState.Executor.Read();
+
+        using var manifest = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateManifestRoute,
+            JsonContent(ReadyLatestStateManifestBody(snapshotState.SnapshotContentHash, snapshotState.CheckpointHash)),
+            TestContext.CancellationTokenSource.Token);
+        var manifestJson = await manifest.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var manifestState = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateManifestStateRoute,
+            TestContext.CancellationTokenSource.Token);
+        var manifestStateJson = await manifestState.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var surface = await client.GetAsync(
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            TestContext.CancellationTokenSource.Token);
+        var html = await surface.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, manifest.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, manifestState.StatusCode);
+        StringAssert.Contains(manifestJson, "manifestCreatedLocalOnly");
+        StringAssert.Contains(manifestJson, ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter.AllowedRelativeOutputBoundary);
+        StringAssert.Contains(manifestJson, "historicalIndexEvidenceOnly");
+        StringAssert.Contains(manifestJson, "latestPointerAvailable\":false");
+        StringAssert.Contains(manifestJson, "readPrecedenceAllowed\":false");
+        StringAssert.Contains(manifestStateJson, "manifestCreatedLocalOnly");
+        Assert.IsTrue(Directory.Exists(latestStateManifestState.AllowedBoundaryRoot));
+        var files = Directory.GetFiles(latestStateManifestState.AllowedBoundaryRoot, "*.json");
+        Assert.AreEqual(1, files.Length);
+        var content = File.ReadAllText(files[0]);
+        StringAssert.Contains(content, "\"classification\": \"LOCAL_INTERNAL_DEV_ONLY_VERSIONED_MANIFEST_NOT_AUTHORITY\"");
+        StringAssert.Contains(content, "\"historicalIndexEvidenceOnly\": true");
+        StringAssert.Contains(content, "\"authorityLiveProduct\": false");
+        StringAssert.Contains(content, "\"productAuthority\": false");
+        StringAssert.Contains(content, "\"latestPointer\": false");
+        StringAssert.Contains(content, "\"latestPointerOverwrite\": false");
+        StringAssert.Contains(content, "\"readPrecedence\": false");
+        StringAssert.Contains(content, "\"releaseCommercial\": false");
+        Assert.IsFalse(File.Exists(Path.Combine(latestStateManifestState.AllowedBoundaryRoot, "latest.json")));
+        Assert.IsFalse(content.Contains("password=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(content.Contains(@"C:\Users\", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(content.Contains(latestStateManifestState.WorkspaceRoot, StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(html, "data-testid=\"product-ledger-latest-state-manifest-state\"");
+        StringAssert.Contains(html, "data-state=\"ManifestCreatedLocalOnly\"");
+        StringAssert.Contains(html, "data-historical-index-evidence-only=\"true\"");
+        StringAssert.Contains(html, "data-authority-live-product=\"false\"");
+        StringAssert.Contains(html, "data-product-authority=\"false\"");
+        StringAssert.Contains(html, "data-latest-pointer=\"false\"");
+        StringAssert.Contains(html, "data-read-precedence=\"false\"");
+        StringAssert.Contains(html, "json-only immutable versioned create-only no-overwrite no latest pointer no read precedence");
+        Assert.IsFalse(html.Contains("data-executable=\"true\"", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public async Task ProductLedgerApprovedHandoffReportDraftRoute_FailsClosedForMissingBoundedMalformedUnsafeOrMismatchedInput()
     {
         var cases = new (bool PersistApproval, bool ExecuteNoOp, bool ExecuteBounded, StringContent Content, bool ExpectDraftFile)[]
@@ -1060,6 +1163,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var workspaceDraftState = WorkspaceTestJailHandoffDraftFixture.Create();
         using var userWorkspaceDraftState = UserWorkspaceAllowlistedHandoffDraftFixture.Create();
         using var latestStateSnapshotState = LatestStateSnapshotFixture.Create();
+        using var latestStateManifestState = LatestStateManifestFixture.Create();
         await using var app = BuildLocalOnlyApp(
             Environments.Production,
             ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
@@ -1069,7 +1173,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             handoffDraftState.Executor,
             workspaceDraftState.Executor,
             userWorkspaceDraftState.Executor,
-            latestStateSnapshotState.Executor);
+            latestStateSnapshotState.Executor,
+            latestStateManifestState.Writer);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
 
         using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
@@ -1122,6 +1227,13 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var latestStateSnapshotStateRead = await client.GetAsync(
             ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateSnapshotStateRoute,
             TestContext.CancellationTokenSource.Token);
+        using var latestStateManifest = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateManifestRoute,
+            JsonContent(ReadyLatestStateManifestBody(new string('b', 64), new string('c', 64))),
+            TestContext.CancellationTokenSource.Token);
+        using var latestStateManifestStateRead = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateManifestStateRoute,
+            TestContext.CancellationTokenSource.Token);
 
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, post.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, state.StatusCode);
@@ -1137,12 +1249,15 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, userWorkspaceDraftStateRead.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateSnapshot.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateSnapshotStateRead.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateManifest.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateManifestStateRead.StatusCode);
         Assert.IsFalse(File.Exists(approvalState.StateFilePath));
         Assert.IsFalse(File.Exists(executionState.StateFilePath));
         Assert.IsFalse(File.Exists(boundedState.StateFilePath));
         Assert.IsFalse(File.Exists(handoffDraftState.ExpectedReadyPath));
         Assert.IsFalse(File.Exists(userWorkspaceDraftState.ExpectedReadyPath));
         Assert.IsFalse(Directory.Exists(latestStateSnapshotState.AllowedBoundaryRoot));
+        Assert.IsFalse(Directory.Exists(latestStateManifestState.AllowedBoundaryRoot));
     }
 
     public TestContext TestContext { get; set; } = null!;
@@ -1156,7 +1271,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         ProductLedgerLocalApprovedHandoffReportDraftExecutor? handoffReportDraftExecutor = null,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor? workspaceTestJailHandoffDraftExecutor = null,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null,
-        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor? latestStateSnapshotExecutor = null)
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor? latestStateSnapshotExecutor = null,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter? latestStateManifestWriter = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1170,6 +1286,26 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             app.MapProductLedgerLocalDevRoutePreview(
                 app.Environment,
                 readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+        }
+        else if (noOpExecutor is not null
+            && boundedActionExecutor is not null
+            && handoffReportDraftExecutor is not null
+            && workspaceTestJailHandoffDraftExecutor is not null
+            && userWorkspaceAllowlistedHandoffDraftExecutor is not null
+            && latestStateSnapshotExecutor is not null
+            && latestStateManifestWriter is not null)
+        {
+            app.MapProductLedgerLocalDevRoutePreview(
+                app.Environment,
+                readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalDecisionStateStore,
+                noOpExecutor,
+                boundedActionExecutor,
+                handoffReportDraftExecutor,
+                workspaceTestJailHandoffDraftExecutor,
+                userWorkspaceAllowlistedHandoffDraftExecutor,
+                latestStateSnapshotExecutor,
+                latestStateManifestWriter);
         }
         else if (noOpExecutor is not null
             && boundedActionExecutor is not null
@@ -1503,6 +1639,55 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             ClaimsBrowserCdpWcuOcrRecipesLive: false,
             ClaimsPilotRun: false,
             ClaimsReleaseCommercial: false);
+
+    private static ProductLedgerLatestStateManifestRouteBody ReadyLatestStateManifestBody(
+        string sourceSnapshotContentHash,
+        string sourceSnapshotCheckpointHash) =>
+        new(
+            ExplicitLatestStateManifestScope: true,
+            DevelopmentMode: true,
+            LocalMode: true,
+            InternalMode: true,
+            ManifestId: "latest-state-manifest-route-001",
+            ActionId: "latest-state-manifest-route-action-001",
+            ActionKind: ProductLedgerLocalOperatorSurfaceLatestStateManifestActionKind.LocalOperatorSurfaceLatestStateManifestCreateOnly.ToString(),
+            ExpectedSourceSnapshotContentHash: sourceSnapshotContentHash,
+            ExpectedSourceSnapshotCheckpointHash: sourceSnapshotCheckpointHash,
+            EvidenceReferences:
+            [
+                "docs/qa/product-ledger-durable-latest-state-manifest-create-only-implementation/report.md",
+                "docs/qa/product-ledger-local-operator-surface-latest-state-snapshot-implementation/report.md"
+            ],
+            ProposedPath: null,
+            ProposedRoot: null,
+            ProposedFilename: null,
+            ProposedCommand: null,
+            ProposedUrl: null,
+            ProposedProvider: null,
+            ProposedDbMigration: null,
+            ClaimsArbitraryPathInput: false,
+            ClaimsFilesystemScan: false,
+            RequestsOverwrite: false,
+            RequestsLatestPointer: false,
+            RequestsLatestPointerOverwrite: false,
+            RequestsReadPrecedence: false,
+            RequestsUserSelectedPath: false,
+            RequestsPublicUiAction: false,
+            RequestsProductCommandExecution: false,
+            RequestsProductCommandHandler: false,
+            RequestsProductiveServiceRegistration: false,
+            RequestsShellOrSubprocess: false,
+            ClaimsArbitraryCommandExecution: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsPilotRun: false,
+            ClaimsReleaseCommercial: false,
+            ClaimsLiveAuthority: false,
+            ClaimsProductAuthority: false,
+            ClaimsComplianceCustody: false,
+            ClaimsCloudBackedDurability: false);
 
     private static ProductLedgerApprovalExecutionRouteBody ReadyApprovalExecutionBody() =>
         new(
@@ -1966,6 +2151,48 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         bool ClaimsPilotRun,
         bool ClaimsReleaseCommercial);
 
+    private sealed record ProductLedgerLatestStateManifestRouteBody(
+        bool ExplicitLatestStateManifestScope,
+        bool DevelopmentMode,
+        bool LocalMode,
+        bool InternalMode,
+        string ManifestId,
+        string ActionId,
+        string ActionKind,
+        string ExpectedSourceSnapshotContentHash,
+        string ExpectedSourceSnapshotCheckpointHash,
+        IReadOnlyList<string> EvidenceReferences,
+        string? ProposedPath,
+        string? ProposedRoot,
+        string? ProposedFilename,
+        string? ProposedCommand,
+        string? ProposedUrl,
+        string? ProposedProvider,
+        string? ProposedDbMigration,
+        bool ClaimsArbitraryPathInput,
+        bool ClaimsFilesystemScan,
+        bool RequestsOverwrite,
+        bool RequestsLatestPointer,
+        bool RequestsLatestPointerOverwrite,
+        bool RequestsReadPrecedence,
+        bool RequestsUserSelectedPath,
+        bool RequestsPublicUiAction,
+        bool RequestsProductCommandExecution,
+        bool RequestsProductCommandHandler,
+        bool RequestsProductiveServiceRegistration,
+        bool RequestsShellOrSubprocess,
+        bool ClaimsArbitraryCommandExecution,
+        bool ClaimsProviderCloudNetwork,
+        bool ClaimsDbMigration,
+        bool ClaimsKmsWormExternalTrust,
+        bool ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool ClaimsPilotRun,
+        bool ClaimsReleaseCommercial,
+        bool ClaimsLiveAuthority,
+        bool ClaimsProductAuthority,
+        bool ClaimsComplianceCustody,
+        bool ClaimsCloudBackedDurability);
+
     private sealed class BoundedApprovalExecutionFixture : IDisposable
     {
         private const string StateFileName = "product-ledger-local-bounded-approved-action.json";
@@ -2184,6 +2411,52 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         public void Dispose()
         {
             var tempRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-latest-state-snapshot-route-tests");
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    private sealed class LatestStateManifestFixture : IDisposable
+    {
+        private LatestStateManifestFixture(string workspaceRoot)
+        {
+            WorkspaceRoot = workspaceRoot;
+            Writer = new ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter(new ProductLedgerLocalOperatorSurfaceLatestStateManifestOptions(
+                WorkspaceRootPath: workspaceRoot,
+                ExplicitLatestStateManifestBoundary: true,
+                AllowsArbitraryPathInput: false,
+                AllowsFilesystemScan: false,
+                AllowsOverwrite: false,
+                AllowsLatestPointer: false,
+                AllowsLatestPointerOverwrite: false,
+                AllowsReadPrecedence: false,
+                AllowsUserSelectedPath: false,
+                AllowsShellOrSubprocess: false,
+                AllowsCommandExecution: false,
+                AllowsNetwork: false,
+                AllowsDb: false,
+                AllowsKmsWormExternalTrust: false,
+                AllowsReleaseCommercial: false));
+        }
+
+        public string WorkspaceRoot { get; }
+
+        public string AllowedBoundaryRoot =>
+            Path.Combine(WorkspaceRoot, "docs", "test-output", "product-ledger", "operator-surface-latest-state-manifests");
+
+        public ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter Writer { get; }
+
+        public static LatestStateManifestFixture Create()
+        {
+            var root = Path.Combine(RepoRoot(), ".tmp-product-ledger-latest-state-manifest-route-tests", Guid.NewGuid().ToString("N"));
+            return new LatestStateManifestFixture(root);
+        }
+
+        public void Dispose()
+        {
+            var tempRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-latest-state-manifest-route-tests");
             if (Directory.Exists(tempRoot))
             {
                 Directory.Delete(tempRoot, recursive: true);

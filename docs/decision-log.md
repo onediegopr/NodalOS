@@ -1702,3 +1702,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 future manifest implementation would add a bounded local test-output write and must remain create-only/no-overwrite/no-pointer; P4 candidate manifests may become stale and must remain not-authority evidence.
 - Readiness changes: Evidence/Timeline/Audit Trail 97-99% -> 98-99%; local-only internal product 92-94% -> 93-95%; usable end-to-end local product 82-88% -> 83-89%; Approval/Human Review, Runtime/Command/Execution, UI/Operator Surface, external/cloud and release/commercial unchanged.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_IMPLEMENTATION_WINDOW`.
+
+## NODAL_OS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_IMPLEMENTATION_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_IMPLEMENTATION_READY`
+- Baseline: `931f40fbc283958733afb0c163716b9456fd6008`.
+- Scope: local-only/internal-only/Development-only implementation of `LocalOperatorSurfaceLatestStateManifestCreateOnly`.
+- Implemented: Core manifest writer, Development-only POST `/internal/product-ledger/operator-surface/create-latest-state-manifest`, Development-only GET `/internal/product-ledger/operator-surface/latest-state-manifest-state`, operator surface manifest state, immutable versioned `.json` create-only write under `docs/test-output/product-ledger/operator-surface-latest-state-manifests/`, source snapshot hash/checkpoint checks, redaction-before-persistence, content hash/checkpoint, idempotent replay for matching safe payloads and corrupt/conflict blocking.
+- Corrections: semideserialized existing manifest payloads with missing collections now fail as `ExistingManifestCorrupt`; static route guards now allow exactly eight local Development Product Ledger POST routes including the manifest create-only route; Production route coverage now asserts manifest POST/state GET remain 404.
+- Non-goals preserved: no active durable reader, read precedence, latest pointer, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, cloud-backed durability, release/commercial or business signoff.
+- Validation: focused Safety latest-state manifest 6/6 pass, focused Recipes latest-state manifest route 1/1 pass, Product Ledger Safety 257/257 pass, Product Ledger Recipes 70/70 pass, solution build pass with 0 warnings/0 errors.
+- Findings: P0=0, P1=0, P2=0 after hardening; P3 bounded local manifest write exists only under fixed test-output boundary with create-only/redaction/hash/checkpoint/reparse fail-closed checks; P4 manifests remain historical index/evidence only and can become stale.
+- Readiness changes: Evidence/Timeline/Audit Trail unchanged at 98-99%; Runtime/Command/Execution 73-81% -> 74-82%; UI/Operator Surface 80-89% -> 81-90%; local-only internal product 93-95% -> 94-95%; usable end-to-end local product 83-89% -> 84-90%; external/cloud and release/commercial unchanged at 0%.
+- Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_EXTERNAL_AUDIT_READ_ONLY`.

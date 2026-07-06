@@ -156,6 +156,7 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         StringAssert.Contains(mapper, "LocalWorkspaceTestJailHandoffDraftRoute");
         StringAssert.Contains(mapper, "LocalUserWorkspaceAllowlistedHandoffDraftRoute");
         StringAssert.Contains(mapper, "LocalOperatorSurfaceLatestStateSnapshotRoute");
+        StringAssert.Contains(mapper, "LocalOperatorSurfaceLatestStateManifestRoute");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedActionNoOpExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalBoundedApprovedActionExecutor");
@@ -163,11 +164,13 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         StringAssert.Contains(mapper, "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor");
+        StringAssert.Contains(mapper, "ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-workspace-test-jail-handoff-draft");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft");
         StringAssert.Contains(mapper, "/internal/product-ledger/operator-surface/create-latest-state-snapshot");
-        Assert.AreEqual(7, Count(mapper, "endpoints.MapPost("));
+        StringAssert.Contains(mapper, "/internal/product-ledger/operator-surface/create-latest-state-manifest");
+        Assert.AreEqual(8, Count(mapper, "endpoints.MapPost("));
         foreach (var fragment in new[]
         {
             "ProductLedgerInternalCommandHandler",

@@ -13,6 +13,8 @@ public sealed class ProductLedgerDurableLatestStatePromotionBoundaryTests
     private const string FutureWriter = "ProductLedgerLocalDurableLatestStateManifestWriter";
     private const string FutureValidator = "ProductLedgerLocalDurableLatestStateManifestValidator";
     private const string FutureReader = "ProductLedgerLocalDurableLatestStateCandidateReader";
+    private const string ImplementedManifestWriter = "ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter";
+    private const string ImplementedManifestCreateRoute = "/internal/product-ledger/operator-surface/create-latest-state-manifest";
     private const string InputSnapshotBoundary = "docs/test-output/product-ledger/operator-surface-latest-state-snapshots/";
     private const string OutputManifestBoundary = "docs/test-output/product-ledger/operator-surface-latest-state-manifests/";
     private const string Classification = "LOCAL_INTERNAL_DEV_ONLY_VERSIONED_MANIFEST_NOT_AUTHORITY";
@@ -66,25 +68,25 @@ public sealed class ProductLedgerDurableLatestStatePromotionBoundaryTests
     }
 
     [TestMethod]
-    public void DurableLatestStatePromotionBoundary_SourceHasNoPromotionImplementationOrRoutesYet()
+    public void DurableLatestStatePromotionBoundary_SourceHasManifestCreateOnlyButNoReaderPromotionOrProductRoute()
     {
         var source = SourceText();
 
         foreach (var forbidden in new[]
         {
-            FutureActionKind,
             FutureReadKind,
             FutureWriter,
             FutureValidator,
             FutureReader,
             FutureCreateRoute,
             FutureStateRoute,
-            OutputManifestBoundary,
             "LOCAL_INTERNAL_DEV_ONLY_DURABLE_READ_CANDIDATE",
-            Classification,
             "latest.json",
             "LatestPointerOverwriteAllowed: true",
+            "LatestPointerAvailable: true",
+            "ReadPrecedenceAllowed: true",
             "AuthorityLiveProduct: true",
+            "ProductAuthority: true",
             "PublicProductAllowed: true",
             "ProductionAllowed: true",
             "/public/product-ledger",
@@ -107,6 +109,12 @@ public sealed class ProductLedgerDurableLatestStatePromotionBoundaryTests
         StringAssert.Contains(source, "LOCAL_INTERNAL_DEV_ONLY_HISTORICAL_SNAPSHOT");
         StringAssert.Contains(source, "HISTORICAL_EVIDENCE_ONLY");
         StringAssert.Contains(source, "NO_LATEST_POINTER_OVERWRITE");
+        StringAssert.Contains(source, ImplementedManifestWriter);
+        StringAssert.Contains(source, ImplementedManifestCreateRoute);
+        StringAssert.Contains(source, OutputManifestBoundary);
+        StringAssert.Contains(source, Classification);
+        StringAssert.Contains(source, "NO_LATEST_POINTER");
+        StringAssert.Contains(source, "NO_READ_PRECEDENCE");
     }
 
     private static string SourceText()

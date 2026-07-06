@@ -175,12 +175,25 @@ public sealed class ProductLedgerLocalDevRoutePreview
         ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot? workspaceTestJailHandoffDraftState,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState,
         ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState)
+        => Render(request, readModelSource, approvalDecisionState, approvedActionExecutionState, boundedApprovedActionState, handoffReportDraftState, workspaceTestJailHandoffDraftState, userWorkspaceAllowlistedHandoffDraftState, latestStateSnapshotState, null);
+
+    public ProductLedgerLocalDevRoutePreviewResult Render(
+        ProductLedgerLocalDevRoutePreviewRequest? request,
+        ProductLedgerOperatorSurfaceReadModelSource? readModelSource,
+        ProductLedgerLocalApprovalDecisionSnapshot? approvalDecisionState,
+        ProductLedgerLocalApprovedActionExecutionSnapshot? approvedActionExecutionState,
+        ProductLedgerLocalBoundedApprovedActionSnapshot? boundedApprovedActionState,
+        ProductLedgerLocalApprovedHandoffReportDraftSnapshot? handoffReportDraftState,
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot? workspaceTestJailHandoffDraftState,
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState)
     {
         var blockers = new List<ProductLedgerLocalDevRoutePreviewBlocker>();
         if (request is null)
         {
             blockers.Add(ProductLedgerLocalDevRoutePreviewBlocker.MissingRequest);
-            return Result(blockers, null, readModelSource, approvalDecisionState, approvedActionExecutionState, boundedApprovedActionState, handoffReportDraftState, workspaceTestJailHandoffDraftState, userWorkspaceAllowlistedHandoffDraftState, latestStateSnapshotState);
+            return Result(blockers, null, readModelSource, approvalDecisionState, approvedActionExecutionState, boundedApprovedActionState, handoffReportDraftState, workspaceTestJailHandoffDraftState, userWorkspaceAllowlistedHandoffDraftState, latestStateSnapshotState, latestStateManifestState);
         }
 
         AddGuardBlockers(request, blockers);
@@ -196,7 +209,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
             AddRenderableBlockers(renderable, blockers);
         }
 
-        return Result(blockers, renderable, readModelSource, approvalDecisionState, approvedActionExecutionState, boundedApprovedActionState, handoffReportDraftState, workspaceTestJailHandoffDraftState, userWorkspaceAllowlistedHandoffDraftState, latestStateSnapshotState);
+        return Result(blockers, renderable, readModelSource, approvalDecisionState, approvedActionExecutionState, boundedApprovedActionState, handoffReportDraftState, workspaceTestJailHandoffDraftState, userWorkspaceAllowlistedHandoffDraftState, latestStateSnapshotState, latestStateManifestState);
     }
 
     private static void AddGuardBlockers(
@@ -328,7 +341,8 @@ public sealed class ProductLedgerLocalDevRoutePreview
         ProductLedgerLocalApprovedHandoffReportDraftSnapshot? handoffReportDraftState,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot? workspaceTestJailHandoffDraftState,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState,
-        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState)
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState)
     {
         var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
         var rendered = distinct.Length == 0 && renderable is not null;
@@ -342,7 +356,8 @@ public sealed class ProductLedgerLocalDevRoutePreview
             handoffReportDraftState,
             workspaceTestJailHandoffDraftState,
             userWorkspaceAllowlistedHandoffDraftState,
-            latestStateSnapshotState);
+            latestStateSnapshotState,
+            latestStateManifestState);
         var html = rendered ? AddLocalDevShell(safeRenderable.HtmlSnapshot, canonicalSurface) : string.Empty;
         return new ProductLedgerLocalDevRoutePreviewResult(
             Decision: rendered
@@ -485,6 +500,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine(ToWorkspaceTestJailHandoffDraftStateHtml(model.WorkspaceTestJailHandoffDraftState));
         html.AppendLine(ToUserWorkspaceAllowlistedHandoffDraftStateHtml(model.UserWorkspaceAllowlistedHandoffDraftState));
         html.AppendLine(ToLatestStateSnapshotStateHtml(model.LatestStateSnapshotState));
+        html.AppendLine(ToLatestStateManifestStateHtml(model.LatestStateManifestState));
         html.AppendLine($"    <p data-testid=\"product-ledger-safe-next-steps\">{Encode(string.Join("; ", model.SafeNextSteps))}</p>");
         html.AppendLine("    <div data-testid=\"surface-safe-next-steps\">");
         foreach (var step in model.SafeNextSteps)
@@ -707,6 +723,52 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
         html.AppendLine("      </div>");
         html.AppendLine("      <div data-testid=\"product-ledger-latest-state-snapshot-blockers\">");
+        if (state.Blockers.Count == 0)
+        {
+            html.AppendLine("        <p>none</p>");
+        }
+        else
+        {
+            foreach (var blocker in state.Blockers.OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal))
+            {
+                html.AppendLine($"        <p>{Encode(blocker.ToString())}</p>");
+            }
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("    </section>");
+        return html.ToString();
+    }
+
+    private static string ToLatestStateManifestStateHtml(ProductLedgerLocalOperatorSurfaceLatestStateManifestResult state)
+    {
+        var html = new StringBuilder();
+        html.AppendLine($"    <section data-testid=\"product-ledger-latest-state-manifest-state\" data-state=\"{Encode(state.State.ToString())}\" data-decision=\"{Encode(state.Decision.ToString())}\" data-local-only=\"{Lower(state.LocalOnly)}\" data-internal-only=\"{Lower(state.InternalOnly)}\" data-development-only=\"{Lower(state.DevelopmentOnly)}\" data-historical-index-evidence-only=\"{Lower(state.HistoricalIndexEvidenceOnly)}\" data-authority-live-product=\"{Lower(state.AuthorityLiveProduct)}\" data-product-authority=\"{Lower(state.ProductAuthority)}\" data-create-only=\"{Lower(state.CreateOnly)}\" data-versioned=\"{Lower(state.Versioned)}\" data-json-only=\"{Lower(state.JsonOnly)}\" data-overwrite-allowed=\"{Lower(state.OverwriteAllowed)}\" data-latest-pointer=\"{Lower(state.LatestPointerAvailable)}\" data-latest-pointer-overwrite-allowed=\"{Lower(state.LatestPointerOverwriteAllowed)}\" data-read-precedence=\"{Lower(state.ReadPrecedenceAllowed)}\" data-user-selected-path-allowed=\"{Lower(state.UserSelectedPathAllowed)}\" data-payload-controlled-root-allowed=\"{Lower(state.PayloadControlledRootAllowed)}\" data-canonicalization-passed=\"{Lower(state.CanonicalizationPassed)}\" data-reparse-validation-passed=\"{Lower(state.ReparseValidationPassed)}\" data-production-allowed=\"{Lower(state.ProductionAllowed)}\" data-public-product-allowed=\"{Lower(state.PublicProductAllowed)}\" data-shell-allowed=\"{Lower(state.ShellAllowed)}\" data-command-execution-allowed=\"{Lower(state.CommandExecutionAllowed)}\" data-provider-cloud-network=\"{Lower(state.ProviderCloudNetworkAvailable)}\" data-db-migration=\"{Lower(state.DbMigrationAvailable)}\" data-kms-worm-external-trust=\"{Lower(state.KmsWormExternalTrustAvailable)}\" data-live-automation=\"{Lower(state.BrowserCdpWcuOcrRecipesLiveAvailable)}\" data-pilot-run=\"{Lower(state.PilotRunAvailable)}\" data-release-commercial=\"{Lower(state.ReleaseCommercialReady)}\" data-compliance-custody=\"{Lower(state.ComplianceCustody)}\" data-cloud-backed-durability=\"{Lower(state.CloudBackedDurability)}\">");
+        html.AppendLine("      <h2>Latest-state manifest state</h2>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-status\">{Encode(state.StatusText)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-result-kind\">{Encode(state.State.ToString())}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-ids\">manifest={Encode(state.ManifestId)} / action={Encode(state.ActionId)} / source_snapshot={Encode(state.SourceSnapshotId)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-path\">{Encode(state.ManifestRelativePath)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-boundary\">{Encode(state.AllowedBoundary)} {Encode(state.Classification)} json-only immutable versioned create-only no-overwrite no latest pointer no read precedence</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-source-snapshot\">{Encode(state.SourceSnapshotRelativePath)} / snapshot_hash={Encode(state.SourceSnapshotContentHashPrefix)} / checkpoint_hash={Encode(state.SourceSnapshotCheckpointHashPrefix)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-hashes\">manifest_hash={Encode(state.ManifestContentHashPrefix)} / checkpoint_hash={Encode(state.CheckpointHashPrefix)}</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-latest-state-manifest-stale-policy\">{Encode(state.StalePolicy)}</p>");
+        html.AppendLine("      <p data-testid=\"product-ledger-latest-state-manifest-protection\">local/internal/development-only historical index evidence only not authority live/product no public/product path no Production route no broader workspace action no edit update delete no user-selected path no latest pointer no read precedence no shell no subprocess no command execution no Pilot run no live Browser CDP WCU OCR Recipes no network no DB no WORM/KMS no compliance custody no cloud-backed durability no release/commercial no business signoff</p>");
+        html.AppendLine("      <div data-testid=\"product-ledger-latest-state-manifest-evidence-refs\">");
+        foreach (var evidence in state.EvidenceRefs.OrderBy(evidence => evidence, StringComparer.Ordinal))
+        {
+            html.AppendLine($"        <p>{Encode(evidence)}</p>");
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("      <div data-testid=\"product-ledger-latest-state-manifest-negative-flags\">");
+        foreach (var flag in state.NegativeFlags.OrderBy(flag => flag, StringComparer.Ordinal))
+        {
+            html.AppendLine($"        <p>{Encode(flag)}</p>");
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("      <div data-testid=\"product-ledger-latest-state-manifest-blockers\">");
         if (state.Blockers.Count == 0)
         {
             html.AppendLine("        <p>none</p>");

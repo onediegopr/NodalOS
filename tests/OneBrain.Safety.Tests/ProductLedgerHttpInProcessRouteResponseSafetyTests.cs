@@ -63,7 +63,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
             Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
         }
 
-        Assert.AreEqual(7, Count(source, "endpoints.MapPost("));
+        Assert.AreEqual(8, Count(source, "endpoints.MapPost("));
         StringAssert.Contains(source, "LocalApprovalDecisionRoute");
         StringAssert.Contains(source, "LocalApprovalExecutionRoute");
         StringAssert.Contains(source, "LocalBoundedApprovalExecutionRoute");
@@ -71,6 +71,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         StringAssert.Contains(source, "LocalWorkspaceTestJailHandoffDraftRoute");
         StringAssert.Contains(source, "LocalUserWorkspaceAllowlistedHandoffDraftRoute");
         StringAssert.Contains(source, "LocalOperatorSurfaceLatestStateSnapshotRoute");
+        StringAssert.Contains(source, "LocalOperatorSurfaceLatestStateManifestRoute");
         StringAssert.Contains(source, "/internal/product-ledger/approval/decision");
         StringAssert.Contains(source, "/internal/product-ledger/approval/execute");
         StringAssert.Contains(source, "/internal/product-ledger/approval/execute-bounded");
@@ -78,6 +79,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         StringAssert.Contains(source, "/internal/product-ledger/approval/create-workspace-test-jail-handoff-draft");
         StringAssert.Contains(source, "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft");
         StringAssert.Contains(source, "/internal/product-ledger/operator-surface/create-latest-state-snapshot");
+        StringAssert.Contains(source, "/internal/product-ledger/operator-surface/create-latest-state-manifest");
         StringAssert.Contains(source, "environment.IsDevelopment()");
         StringAssert.Contains(source, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(source, "ProductLedgerLocalApprovedActionNoOpExecutor");
@@ -86,6 +88,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
         StringAssert.Contains(source, "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor");
         StringAssert.Contains(source, "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor");
         StringAssert.Contains(source, "ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor");
+        StringAssert.Contains(source, "ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter");
         StringAssert.Contains(source, "RequestsProductCommandExecution: body.RequestsProductCommandExecution == true");
         StringAssert.Contains(source, "RequestsBoundedAction: body.RequestsBoundedAction == true");
         StringAssert.Contains(source, "RequestsUserFileWrite: body.RequestsUserFileWrite == true");

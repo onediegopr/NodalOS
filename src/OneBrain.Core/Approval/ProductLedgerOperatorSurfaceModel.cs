@@ -68,6 +68,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot WorkspaceTestJailHandoffDraftState,
     ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot UserWorkspaceAllowlistedHandoffDraftState,
     ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult LatestStateSnapshotState,
+    ProductLedgerLocalOperatorSurfaceLatestStateManifestResult LatestStateManifestState,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -100,7 +101,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         ProductLedgerLocalApprovedHandoffReportDraftSnapshot? handoffReportDraftState = null,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot? workspaceTestJailHandoffDraftState = null,
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null,
-        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null)
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
         var actions = renderable.Model.Actions
@@ -160,6 +162,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             WorkspaceTestJailHandoffDraftState: workspaceTestJailHandoffDraftState ?? ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot.Pending,
             UserWorkspaceAllowlistedHandoffDraftState: userWorkspaceAllowlistedHandoffDraftState ?? ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot.Pending,
             LatestStateSnapshotState: latestStateSnapshotState ?? ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult.Pending,
+            LatestStateManifestState: latestStateManifestState ?? ProductLedgerLocalOperatorSurfaceLatestStateManifestResult.Pending,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",

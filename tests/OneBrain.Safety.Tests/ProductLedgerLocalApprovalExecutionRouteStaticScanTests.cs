@@ -18,7 +18,7 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         StringAssert.Contains(mapper, "endpoints.MapGet(");
         StringAssert.Contains(mapper, "endpoints.MapPost(");
         StringAssert.Contains(mapper, "ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
-        Assert.AreEqual(7, Count(mapper, "endpoints.MapPost("), "Product Ledger mapper may expose only local approval decision, no-op execution, bounded completion marker, local approved handoff draft, workspace test-jail handoff draft, user workspace allowlisted handoff draft, and latest-state snapshot POST routes.");
+        Assert.AreEqual(8, Count(mapper, "endpoints.MapPost("), "Product Ledger mapper may expose only local approval decision, no-op execution, bounded completion marker, local approved handoff draft, workspace test-jail handoff draft, user workspace allowlisted handoff draft, latest-state snapshot, and latest-state manifest create-only POST routes.");
         StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
         StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
         StringAssert.Contains(mapper, "LocalBoundedApprovalExecutionRoute");
@@ -26,6 +26,7 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         StringAssert.Contains(mapper, "LocalWorkspaceTestJailHandoffDraftRoute");
         StringAssert.Contains(mapper, "LocalUserWorkspaceAllowlistedHandoffDraftRoute");
         StringAssert.Contains(mapper, "LocalOperatorSurfaceLatestStateSnapshotRoute");
+        StringAssert.Contains(mapper, "LocalOperatorSurfaceLatestStateManifestRoute");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/decision");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/execute");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/execute-bounded");
@@ -33,6 +34,7 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-workspace-test-jail-handoff-draft");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft");
         StringAssert.Contains(mapper, "/internal/product-ledger/operator-surface/create-latest-state-snapshot");
+        StringAssert.Contains(mapper, "/internal/product-ledger/operator-surface/create-latest-state-manifest");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedActionNoOpExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalBoundedApprovedActionExecutor");
@@ -40,6 +42,7 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         StringAssert.Contains(mapper, "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor");
+        StringAssert.Contains(mapper, "ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter");
         Assert.IsFalse(mapper.Contains("Request.Query", StringComparison.Ordinal), "Product Ledger mapper must not accept arbitrary path query input.");
         Assert.IsFalse(mapper.Contains("QueryString", StringComparison.Ordinal), "Product Ledger mapper must not inspect query strings.");
     }

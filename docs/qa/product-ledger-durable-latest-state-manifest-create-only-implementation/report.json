@@ -1,0 +1,76 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_IMPLEMENTATION_READY",
+  "baselineHead": "931f40fbc283958733afb0c163716b9456fd6008",
+  "scope": "local-only-internal-only-development-only-implementation",
+  "actionName": "LocalOperatorSurfaceLatestStateManifestCreateOnly",
+  "allowedBoundary": "docs/test-output/product-ledger/operator-surface-latest-state-manifests/",
+  "format": ".json",
+  "classification": "LOCAL_INTERNAL_DEV_ONLY_VERSIONED_MANIFEST_NOT_AUTHORITY",
+  "stalePolicy": "MANIFESTS_ARE_HISTORICAL_INDEX_EVIDENCE_ONLY_NOT_LIVE_PRODUCT_AUTHORITY",
+  "immutableVersionedCreateOnly": true,
+  "overwriteAllowed": false,
+  "latestPointerAllowed": false,
+  "latestPointerOverwriteAllowed": false,
+  "readPrecedenceAllowed": false,
+  "redactionBeforePersistenceRequired": true,
+  "safeMetadataOnly": true,
+  "historicalIndexEvidenceOnly": true,
+  "authorityLiveProduct": false,
+  "productAuthority": false,
+  "activeDurableReaderEnabled": false,
+  "developmentRoute": "/internal/product-ledger/operator-surface/create-latest-state-manifest",
+  "developmentStateRoute": "/internal/product-ledger/operator-surface/latest-state-manifest-state",
+  "productionRouteEnabled": false,
+  "publicProductPathEnabled": false,
+  "broaderWorkspaceActionEnabled": false,
+  "editUpdateDeleteEnabled": false,
+  "userSelectedPathEnabled": false,
+  "shellSubprocessEnabled": false,
+  "commandExecutionEnabled": false,
+  "pilotRunEnabled": false,
+  "browserCdpWcuOcrRecipesLiveEnabled": false,
+  "providerCloudNetworkEnabled": false,
+  "dbMigrationEnabled": false,
+  "kmsWormExternalTrustEnabled": false,
+  "releaseCommercialReady": false,
+  "complianceCustodyClaim": false,
+  "cloudBackedDurabilityClaim": false,
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": [
+      "New local file write is bounded to docs/test-output/product-ledger/operator-surface-latest-state-manifests/ and guarded by create-only, redaction, hashes, checkpoint and reparse fail-closed checks."
+    ],
+    "p4": [
+      "Manifests are historical index/evidence only and can become stale; they are not live/product authority and do not create read precedence."
+    ]
+  },
+  "corrections": [
+    "Semideserialized existing manifest payloads with missing collections are classified as ExistingManifestCorrupt.",
+    "Static route guards were expanded from seven to eight Development-only Product Ledger POST routes.",
+    "Production route coverage now asserts manifest POST and state GET remain 404."
+  ],
+  "tests": {
+    "focusedSafetyLatestStateManifest": "6/6 PASS",
+    "focusedRecipesLatestStateManifestRoute": "1/1 PASS",
+    "productLedgerSafety": "257/257 PASS",
+    "productLedgerRecipes": "70/70 PASS",
+    "solutionBuild": "PASS 0 warnings 0 errors"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_EXTERNAL_AUDIT_READ_ONLY",
+  "frontiersStillRequiringSeparateAuthorization": [
+    "active durable latest-state reader",
+    "read precedence",
+    "mutable latest pointer",
+    "public/product exposure",
+    "Production route",
+    "broader workspace action",
+    "provider/cloud/network",
+    "DB/migration",
+    "KMS/WORM/external trust",
+    "release/commercial",
+    "compliance custody"
+  ]
+}
