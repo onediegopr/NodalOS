@@ -153,12 +153,18 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
         StringAssert.Contains(mapper, "LocalBoundedApprovalExecutionRoute");
         StringAssert.Contains(mapper, "LocalApprovedHandoffReportDraftRoute");
+        StringAssert.Contains(mapper, "LocalWorkspaceTestJailHandoffDraftRoute");
+        StringAssert.Contains(mapper, "LocalUserWorkspaceAllowlistedHandoffDraftRoute");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedActionNoOpExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalBoundedApprovedActionExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
+        StringAssert.Contains(mapper, "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor");
+        StringAssert.Contains(mapper, "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
-        Assert.AreEqual(5, Count(mapper, "endpoints.MapPost("));
+        StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-workspace-test-jail-handoff-draft");
+        StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft");
+        Assert.AreEqual(6, Count(mapper, "endpoints.MapPost("));
         foreach (var fragment in new[]
         {
             "ProductLedgerInternalCommandHandler",

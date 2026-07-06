@@ -61,11 +61,11 @@ public sealed class ProductLedgerUserWorkspaceAllowlistedHandoffDraftBoundaryTes
     }
 
     [TestMethod]
-    public void UserWorkspaceAllowlistedBoundary_FutureNamesRemainDocsAndTestsOnly()
+    public void UserWorkspaceAllowlistedBoundary_AuthorizedImplementationIsBoundedInSource()
     {
         var source = SourceText();
 
-        foreach (var futureFragment in new[]
+        foreach (var requiredFragment in new[]
         {
             FutureAction,
             FutureRoute,
@@ -77,12 +77,43 @@ public sealed class ProductLedgerUserWorkspaceAllowlistedHandoffDraftBoundaryTes
             "USER_WORKSPACE_ALLOWLISTED_BOUNDARY_ONLY"
         })
         {
-            Assert.IsFalse(source.Contains(futureFragment, StringComparison.Ordinal), futureFragment);
+            StringAssert.Contains(source, requiredFragment);
         }
 
         StringAssert.Contains(source, "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor");
         StringAssert.Contains(source, "/internal/product-ledger/approval/create-workspace-test-jail-handoff-draft");
         StringAssert.Contains(source, "WORKSPACE_TEST_JAIL_ONLY");
+        StringAssert.Contains(source, "FileMode.CreateNew");
+        StringAssert.Contains(source, "FileAttributes.ReparsePoint");
+        StringAssert.Contains(source, "environment.IsDevelopment()");
+
+        var implementationSource = string.Join(
+            Environment.NewLine,
+            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.cs"),
+            ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs"));
+
+        foreach (var forbidden in new[]
+        {
+            "Process.Start",
+            "ShellExecute",
+            "System.Diagnostics.Process",
+            "HttpClient",
+            "DbContext",
+            "MigrationBuilder",
+            "Directory.GetFiles",
+            "Directory.EnumerateFiles",
+            "FileMode.OpenOrCreate",
+            "FileMode.Create,",
+            "OverwriteAllowed: true",
+            "UserSelectedPathAllowed: true",
+            "PayloadControlledRootAllowed: true",
+            "ProductionAllowed: true",
+            "PublicProductAllowed: true",
+            "ReleaseCommercialReady: true"
+        })
+        {
+            Assert.IsFalse(implementationSource.Contains(forbidden, StringComparison.Ordinal), forbidden);
+        }
     }
 
     [TestMethod]

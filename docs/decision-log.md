@@ -1602,3 +1602,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 future write outside test-jail remains blocked until dedicated implementation GO, trusted workspace root source must exist and fail closed if absent, reparse/symlink/junction proof remains platform-metadata-bound; P4 this is readiness/design evidence only and not business/release signoff.
 - Readiness changes: Evidence/Timeline/Audit Trail 93-97% -> 94-97%; local-only internal product 88-92% -> 89-92%; usable end-to-end local product 73-81% -> 74-82%; Approval/Human Review, Runtime/Command/Execution, UI/Operator Surface, external/cloud and release/commercial unchanged.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_IMPLEMENTATION_WINDOW`.
+
+## NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_IMPLEMENTATION_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_IMPLEMENTATION_READY`
+- Baseline: `1dca6c694589dd4ee0e1e34f7cad63234c79023e`.
+- Scope: local-only/internal-only/Development-only implementation of `LocalUserWorkspaceAllowlistedHandoffDraftCreateOnly`.
+- Implemented: Core executor, Development-only POST `/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft`, Development-only GET `/internal/product-ledger/approval/user-workspace-allowlisted-handoff-draft-state`, operator surface state, create-only/no-overwrite write under `docs/nodal-os/handoffs/`, trusted workspace root classification, redaction-before-write, canonical final path validation, reparse fail-closed checks, idempotent exact replay and conflict blocking.
+- Non-goals preserved: no workspace-free write, user-selected path, arbitrary path, overwrite/edit/delete, destructive cleanup route, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, public/product path, Production route, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 real local write outside test-jail now exists but only under `docs/nodal-os/handoffs/`, and reparse/symlink/junction safety remains platform-metadata-bound and fail-closed; P4 latest route state is in-process surface evidence and cleanup remains procedural.
+- Readiness changes: Evidence/Timeline/Audit Trail 94-97% -> 95-98%; Runtime/Command/Execution 70-78% -> 72-80%; UI/Operator Surface 75-85% -> 77-87%; local-only internal product 89-92% -> 91-93%; usable end-to-end local product 74-82% -> 78-84%; external/cloud and release/commercial unchanged at 0%.
+- Next recommended macro-block: `NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY`.

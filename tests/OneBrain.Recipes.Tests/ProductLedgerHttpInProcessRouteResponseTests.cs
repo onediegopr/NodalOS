@@ -544,6 +544,101 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     }
 
     [TestMethod]
+    public async Task ProductLedgerUserWorkspaceAllowlistedHandoffDraftRoute_DevelopmentHostCreatesDraftAndSurfaceShowsState()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        using var boundedState = BoundedApprovalExecutionFixture.Create();
+        using var handoffDraftState = HandoffReportDraftFixture.Create();
+        using var workspaceDraftState = WorkspaceTestJailHandoffDraftFixture.Create();
+        using var userWorkspaceDraftState = UserWorkspaceAllowlistedHandoffDraftFixture.Create();
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor,
+            boundedState.Executor,
+            handoffDraftState.Executor,
+            workspaceDraftState.Executor,
+            userWorkspaceDraftState.Executor);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        using var approval = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalDecisionRoute,
+            JsonContent(ReadyApprovalDecisionBody("Approve")),
+            TestContext.CancellationTokenSource.Token);
+        using var noOp = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovalExecutionRoute,
+            JsonContent(ReadyApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var bounded = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalBoundedApprovalExecutionRoute,
+            JsonContent(ReadyBoundedApprovalExecutionBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var localDraft = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalApprovedHandoffReportDraftRoute,
+            JsonContent(ReadyHandoffReportDraftBody()),
+            TestContext.CancellationTokenSource.Token);
+        using var workspaceDraft = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalWorkspaceTestJailHandoffDraftRoute,
+            JsonContent(ReadyWorkspaceTestJailHandoffDraftBody(handoffDraftState.Executor.Read().ContentHash)),
+            TestContext.CancellationTokenSource.Token);
+        using var userWorkspaceDraft = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalUserWorkspaceAllowlistedHandoffDraftRoute,
+            JsonContent(ReadyUserWorkspaceAllowlistedHandoffDraftBody(
+                handoffDraftState.Executor.Read().ContentHash,
+                workspaceDraftState.Executor.Read().ContentHash)),
+            TestContext.CancellationTokenSource.Token);
+        var userWorkspaceDraftJson = await userWorkspaceDraft.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var userWorkspaceDraftStateResponse = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalUserWorkspaceAllowlistedHandoffDraftStateRoute,
+            TestContext.CancellationTokenSource.Token);
+        var userWorkspaceDraftStateJson = await userWorkspaceDraftStateResponse.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var surface = await client.GetAsync(
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            TestContext.CancellationTokenSource.Token);
+        var html = await surface.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, approval.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, noOp.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, bounded.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, localDraft.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, workspaceDraft.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, userWorkspaceDraft.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, userWorkspaceDraftStateResponse.StatusCode);
+        StringAssert.Contains(userWorkspaceDraftJson, "draftCreatedUserWorkspaceAllowlistedOnly");
+        StringAssert.Contains(userWorkspaceDraftJson, ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.AllowedRelativeOutputBoundary);
+        StringAssert.Contains(userWorkspaceDraftStateJson, "draftCreatedUserWorkspaceAllowlistedOnly");
+        Assert.IsTrue(File.Exists(userWorkspaceDraftState.ExpectedReadyPath));
+        Assert.IsTrue(Path.GetFullPath(userWorkspaceDraftState.ExpectedReadyPath).StartsWith(Path.GetFullPath(userWorkspaceDraftState.AllowedBoundaryRoot), StringComparison.OrdinalIgnoreCase));
+        var draftContent = File.ReadAllText(userWorkspaceDraftState.ExpectedReadyPath);
+        StringAssert.Contains(draftContent, "redacted user workspace allowlisted handoff summary");
+        StringAssert.Contains(draftContent, "User workspace allowlisted boundary only.");
+        StringAssert.Contains(draftContent, "No user-selected path.");
+        Assert.IsFalse(draftContent.Contains("password=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(draftContent.Contains(@"C:\Users\", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(draftContent.Contains(userWorkspaceDraftState.WorkspaceRoot, StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(html, "data-testid=\"product-ledger-user-workspace-allowlisted-handoff-draft-state\"");
+        StringAssert.Contains(html, "data-state=\"DraftCreatedUserWorkspaceAllowlistedOnly\"");
+        StringAssert.Contains(html, "data-user-workspace-allowlisted-boundary-only=\"true\"");
+        StringAssert.Contains(html, "data-create-only=\"true\"");
+        StringAssert.Contains(html, "data-overwrite-allowed=\"false\"");
+        StringAssert.Contains(html, "data-user-selected-path-allowed=\"false\"");
+        StringAssert.Contains(html, "data-payload-controlled-root-allowed=\"false\"");
+        StringAssert.Contains(html, "data-canonicalization-passed=\"true\"");
+        StringAssert.Contains(html, "data-reparse-validation-passed=\"true\"");
+        StringAssert.Contains(html, ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.AllowedRelativeOutputBoundary);
+        StringAssert.Contains(html, "no user-selected path no payload-controlled root no shell no subprocess no command execution no Pilot run");
+        Assert.IsFalse(html.Contains(userWorkspaceDraftState.WorkspaceRoot, StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("data-executable=\"true\"", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("onclick=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("formaction=", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public async Task ProductLedgerApprovedHandoffReportDraftRoute_FailsClosedForMissingBoundedMalformedUnsafeOrMismatchedInput()
     {
         var cases = new (bool PersistApproval, bool ExecuteNoOp, bool ExecuteBounded, StringContent Content, bool ExpectDraftFile)[]
@@ -876,6 +971,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var boundedState = BoundedApprovalExecutionFixture.Create();
         using var handoffDraftState = HandoffReportDraftFixture.Create();
         using var workspaceDraftState = WorkspaceTestJailHandoffDraftFixture.Create();
+        using var userWorkspaceDraftState = UserWorkspaceAllowlistedHandoffDraftFixture.Create();
         await using var app = BuildLocalOnlyApp(
             Environments.Production,
             ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
@@ -883,7 +979,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             executionState.Executor,
             boundedState.Executor,
             handoffDraftState.Executor,
-            workspaceDraftState.Executor);
+            workspaceDraftState.Executor,
+            userWorkspaceDraftState.Executor);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
 
         using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
@@ -922,6 +1019,13 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var workspaceDraftStateRead = await client.GetAsync(
             ProductLedgerLocalDevRouteEndpointMapper.LocalWorkspaceTestJailHandoffDraftStateRoute,
             TestContext.CancellationTokenSource.Token);
+        using var userWorkspaceDraft = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalUserWorkspaceAllowlistedHandoffDraftRoute,
+            JsonContent(ReadyUserWorkspaceAllowlistedHandoffDraftBody(new string('d', 64), new string('e', 64))),
+            TestContext.CancellationTokenSource.Token);
+        using var userWorkspaceDraftStateRead = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalUserWorkspaceAllowlistedHandoffDraftStateRoute,
+            TestContext.CancellationTokenSource.Token);
 
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, post.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, state.StatusCode);
@@ -933,10 +1037,13 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, draftStateRead.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, workspaceDraft.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, workspaceDraftStateRead.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, userWorkspaceDraft.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, userWorkspaceDraftStateRead.StatusCode);
         Assert.IsFalse(File.Exists(approvalState.StateFilePath));
         Assert.IsFalse(File.Exists(executionState.StateFilePath));
         Assert.IsFalse(File.Exists(boundedState.StateFilePath));
         Assert.IsFalse(File.Exists(handoffDraftState.ExpectedReadyPath));
+        Assert.IsFalse(File.Exists(userWorkspaceDraftState.ExpectedReadyPath));
     }
 
     public TestContext TestContext { get; set; } = null!;
@@ -948,7 +1055,8 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         ProductLedgerLocalApprovedActionNoOpExecutor? noOpExecutor = null,
         ProductLedgerLocalBoundedApprovedActionExecutor? boundedActionExecutor = null,
         ProductLedgerLocalApprovedHandoffReportDraftExecutor? handoffReportDraftExecutor = null,
-        ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor? workspaceTestJailHandoffDraftExecutor = null)
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor? workspaceTestJailHandoffDraftExecutor = null,
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -962,6 +1070,22 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             app.MapProductLedgerLocalDevRoutePreview(
                 app.Environment,
                 readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+        }
+        else if (noOpExecutor is not null
+            && boundedActionExecutor is not null
+            && handoffReportDraftExecutor is not null
+            && workspaceTestJailHandoffDraftExecutor is not null
+            && userWorkspaceAllowlistedHandoffDraftExecutor is not null)
+        {
+            app.MapProductLedgerLocalDevRoutePreview(
+                app.Environment,
+                readModelSource ?? ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalDecisionStateStore,
+                noOpExecutor,
+                boundedActionExecutor,
+                handoffReportDraftExecutor,
+                workspaceTestJailHandoffDraftExecutor,
+                userWorkspaceAllowlistedHandoffDraftExecutor);
         }
         else if (noOpExecutor is not null
             && boundedActionExecutor is not null
@@ -1108,6 +1232,54 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
             [
                 "docs/qa/product-ledger-workspace-test-jail-handoff-draft-implementation/report.md",
                 "docs/qa/product-ledger-local-approved-handoff-report-draft-implementation/report.md"
+            ],
+            ProposedPath: null,
+            ProposedRoot: null,
+            ProposedFilename: null,
+            ProposedCommand: null,
+            ProposedUrl: null,
+            ProposedProvider: null,
+            ProposedDbMigration: null,
+            ClaimsArbitraryPathInput: false,
+            ClaimsFilesystemScan: false,
+            RequestsOverwrite: false,
+            RequestsUserSelectedPath: false,
+            RequestsUserFileWrite: false,
+            RequestsPublicUiAction: false,
+            RequestsProductCommandExecution: false,
+            RequestsProductCommandHandler: false,
+            RequestsProductiveServiceRegistration: false,
+            RequestsShellOrSubprocess: false,
+            ClaimsArbitraryCommandExecution: false,
+            ClaimsProviderCloudNetwork: false,
+            ClaimsDbMigration: false,
+            ClaimsKmsWormExternalTrust: false,
+            ClaimsBrowserCdpWcuOcrRecipesLive: false,
+            ClaimsPilotRun: false,
+            ClaimsReleaseCommercial: false);
+
+    private static ProductLedgerUserWorkspaceAllowlistedHandoffDraftRouteBody ReadyUserWorkspaceAllowlistedHandoffDraftBody(
+        string localApprovedHandoffDraftContentHash,
+        string workspaceTestJailHandoffDraftContentHash) =>
+        new(
+            ExplicitUserWorkspaceAllowlistedScope: true,
+            DevelopmentMode: true,
+            LocalMode: true,
+            InternalMode: true,
+            ActionId: "user-workspace-draft-action-001",
+            CandidateId: "candidate-local-handoff-001",
+            ActionKind: ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftActionKind.LocalUserWorkspaceAllowlistedHandoffDraftCreateOnly.ToString(),
+            CandidateActionKind: ProductLedgerInternalCommandKind.ViewLedgerReadiness.ToString(),
+            CandidateEvidenceHash: new string('a', 64),
+            CurrentEvidenceHash: new string('a', 64),
+            LocalApprovedHandoffDraftContentHash: localApprovedHandoffDraftContentHash,
+            WorkspaceTestJailHandoffDraftContentHash: workspaceTestJailHandoffDraftContentHash,
+            DraftTitle: "Local User Workspace Allowlisted Handoff Draft",
+            RedactedDraftSummary: "redacted user workspace allowlisted handoff summary",
+            EvidenceReferences:
+            [
+                "docs/qa/product-ledger-user-workspace-allowlisted-handoff-draft-implementation/report.md",
+                "docs/qa/product-ledger-workspace-test-jail-handoff-draft-implementation/report.md"
             ],
             ProposedPath: null,
             ProposedRoot: null,
@@ -1520,6 +1692,47 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         bool ClaimsPilotRun,
         bool ClaimsReleaseCommercial);
 
+    private sealed record ProductLedgerUserWorkspaceAllowlistedHandoffDraftRouteBody(
+        bool ExplicitUserWorkspaceAllowlistedScope,
+        bool DevelopmentMode,
+        bool LocalMode,
+        bool InternalMode,
+        string ActionId,
+        string CandidateId,
+        string ActionKind,
+        string CandidateActionKind,
+        string CandidateEvidenceHash,
+        string CurrentEvidenceHash,
+        string LocalApprovedHandoffDraftContentHash,
+        string WorkspaceTestJailHandoffDraftContentHash,
+        string DraftTitle,
+        string RedactedDraftSummary,
+        IReadOnlyList<string> EvidenceReferences,
+        string? ProposedPath,
+        string? ProposedRoot,
+        string? ProposedFilename,
+        string? ProposedCommand,
+        string? ProposedUrl,
+        string? ProposedProvider,
+        string? ProposedDbMigration,
+        bool ClaimsArbitraryPathInput,
+        bool ClaimsFilesystemScan,
+        bool RequestsOverwrite,
+        bool RequestsUserSelectedPath,
+        bool RequestsUserFileWrite,
+        bool RequestsPublicUiAction,
+        bool RequestsProductCommandExecution,
+        bool RequestsProductCommandHandler,
+        bool RequestsProductiveServiceRegistration,
+        bool RequestsShellOrSubprocess,
+        bool ClaimsArbitraryCommandExecution,
+        bool ClaimsProviderCloudNetwork,
+        bool ClaimsDbMigration,
+        bool ClaimsKmsWormExternalTrust,
+        bool ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool ClaimsPilotRun,
+        bool ClaimsReleaseCommercial);
+
     private sealed class BoundedApprovalExecutionFixture : IDisposable
     {
         private const string StateFileName = "product-ledger-local-bounded-approved-action.json";
@@ -1647,6 +1860,53 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         public void Dispose()
         {
             var tempRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-workspace-test-jail-route-tests");
+            if (Directory.Exists(tempRoot))
+            {
+                Directory.Delete(tempRoot, recursive: true);
+            }
+        }
+    }
+
+    private sealed class UserWorkspaceAllowlistedHandoffDraftFixture : IDisposable
+    {
+        private UserWorkspaceAllowlistedHandoffDraftFixture(string workspaceRoot)
+        {
+            WorkspaceRoot = workspaceRoot;
+            Executor = new ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor(new ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftOptions(
+                TrustedWorkspaceRootPath: workspaceRoot,
+                WorkspaceClassification: ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.WorkspaceClassification,
+                ExplicitUserWorkspaceAllowlistedBoundary: true,
+                AllowsArbitraryPathInput: false,
+                AllowsFilesystemScan: false,
+                AllowsOverwrite: false,
+                AllowsUserSelectedPath: false,
+                AllowsShellOrSubprocess: false,
+                AllowsCommandExecution: false,
+                AllowsNetwork: false,
+                AllowsDb: false,
+                AllowsKmsWormExternalTrust: false,
+                AllowsReleaseCommercial: false));
+        }
+
+        public string WorkspaceRoot { get; }
+
+        public string AllowedBoundaryRoot =>
+            Path.Combine(WorkspaceRoot, "docs", "nodal-os", "handoffs");
+
+        public string ExpectedReadyPath =>
+            Path.Combine(AllowedBoundaryRoot, "user-workspace-allowlisted-handoff-draft-user-workspace-draft-action-001-aaaaaaaaaaaa.md");
+
+        public ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor Executor { get; }
+
+        public static UserWorkspaceAllowlistedHandoffDraftFixture Create()
+        {
+            var root = Path.Combine(RepoRoot(), ".tmp-product-ledger-user-workspace-allowlisted-route-tests", Guid.NewGuid().ToString("N"));
+            return new UserWorkspaceAllowlistedHandoffDraftFixture(root);
+        }
+
+        public void Dispose()
+        {
+            var tempRoot = Path.Combine(RepoRoot(), ".tmp-product-ledger-user-workspace-allowlisted-route-tests");
             if (Directory.Exists(tempRoot))
             {
                 Directory.Delete(tempRoot, recursive: true);

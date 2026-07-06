@@ -57,11 +57,11 @@ public sealed class ProductLedgerUserWorkspaceOrPublicProductAuthorizationBounda
     }
 
     [TestMethod]
-    public void UserWorkspaceOrPublicProductBoundary_FutureNamesRemainDocsAndTestsOnly()
+    public void UserWorkspaceOrPublicProductBoundary_AuthorizedUserWorkspaceAllowlistedNamesAreBoundedInSource()
     {
         var source = SourceText();
 
-        foreach (var futureFragment in new[]
+        foreach (var requiredFragment in new[]
         {
             FutureAction,
             FutureRoute,
@@ -72,25 +72,48 @@ public sealed class ProductLedgerUserWorkspaceOrPublicProductAuthorizationBounda
             RecommendedBoundary
         })
         {
-            Assert.IsFalse(source.Contains(futureFragment, StringComparison.Ordinal), futureFragment);
+            StringAssert.Contains(source, requiredFragment);
         }
 
         StringAssert.Contains(source, "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor");
         StringAssert.Contains(source, "/internal/product-ledger/approval/create-workspace-test-jail-handoff-draft");
+        StringAssert.Contains(source, "environment.IsDevelopment()");
+        StringAssert.Contains(source, "FileMode.CreateNew");
+        StringAssert.Contains(source, "FileAttributes.ReparsePoint");
     }
 
     [TestMethod]
-    public void UserWorkspaceOrPublicProductBoundary_StaticScanKeepsForbiddenFrontiersClosed()
+    public void UserWorkspaceOrPublicProductBoundary_StaticScanKeepsPublicProductAndUnsafeFrontiersClosed()
     {
         var source = ProductLedgerBoundarySourceText();
 
-        foreach (var forbidden in new[]
+        foreach (var required in new[]
         {
             "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor",
-            "LocalUserWorkspaceAllowlistedHandoffDraftRoute",
             "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft",
             "/internal/product-ledger/approval/user-workspace-allowlisted-handoff-draft-state",
-            "docs/nodal-os/handoffs/",
+            "docs/nodal-os/handoffs/"
+        })
+        {
+            StringAssert.Contains(source, required);
+        }
+
+        foreach (var forbidden in new[]
+        {
+            "UserSelectedPathAllowed: true",
+            "PayloadControlledRootAllowed: true",
+            "ProductionAllowed: true",
+            "PublicProductAllowed: true",
+            "ReleaseCommercialReady: true",
+            "ProductCommandExecuted: true",
+            "Process.Start",
+            "HttpClient",
+            "DbContext",
+            "MigrationBuilder",
+            "Directory.GetFiles",
+            "Directory.EnumerateFiles",
+            "FileMode.OpenOrCreate",
+            "FileMode.Create,",
             "UserSelectedPathAllowed: true",
             "PayloadControlledRootAllowed: true",
             "ProductionAllowed: true",
@@ -104,8 +127,8 @@ public sealed class ProductLedgerUserWorkspaceOrPublicProductAuthorizationBounda
 
         var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
         StringAssert.Contains(mapper, "environment.IsDevelopment()");
-        Assert.IsFalse(mapper.Contains(FutureRoute, StringComparison.Ordinal), FutureRoute);
-        Assert.IsFalse(mapper.Contains(FutureStateRoute, StringComparison.Ordinal), FutureStateRoute);
+        StringAssert.Contains(mapper, FutureRoute);
+        StringAssert.Contains(mapper, FutureStateRoute);
     }
 
     [TestMethod]
@@ -146,7 +169,8 @@ public sealed class ProductLedgerUserWorkspaceOrPublicProductAuthorizationBounda
             ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerOperatorSurfaceModel.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalDevRoutePreview.cs"),
-            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor.cs"));
+            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor.cs"),
+            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.cs"));
 
     private static string ReadRepoFile(params string[] segments) =>
         File.ReadAllText(Path.Combine(new[] { RepoRoot() }.Concat(segments).ToArray()));

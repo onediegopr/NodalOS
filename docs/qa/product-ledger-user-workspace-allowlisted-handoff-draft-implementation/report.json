@@ -1,0 +1,77 @@
+{
+  "decision": "GO_WITH_FINDINGS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_IMPLEMENTATION_READY",
+  "date": "2026-07-06",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "1dca6c694589dd4ee0e1e34f7cad63234c79023e",
+  "scope": "local-only-internal-only-development-only-user-workspace-allowlisted-create-only",
+  "implemented": {
+    "action": "LocalUserWorkspaceAllowlistedHandoffDraftCreateOnly",
+    "executor": "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor",
+    "postRoute": "POST /internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft",
+    "stateRoute": "GET /internal/product-ledger/approval/user-workspace-allowlisted-handoff-draft-state",
+    "operatorSurfaceState": "product-ledger-user-workspace-allowlisted-handoff-draft-state",
+    "allowedBoundary": "docs/nodal-os/handoffs/",
+    "workspaceClassification": "USER_WORKSPACE_ALLOWLISTED_BOUNDARY_ONLY",
+    "createOnlyNoOverwrite": true,
+    "redactionBeforePersistence": true,
+    "canonicalFinalPathUnderAllowedBoundary": true,
+    "reparseSymlinkJunctionFailClosed": true,
+    "exactIdempotentReplayOrConflict": true
+  },
+  "requiredPredecessors": {
+    "approvedLocalOnly": true,
+    "noOpExecutionCompleted": true,
+    "boundedInternalCompletionMarkerCompleted": true,
+    "localApprovedHandoffReportDraftCompleted": true,
+    "localWorkspaceTestJailHandoffDraftCreateOnlyCompleted": true,
+    "exactHashesRequired": true,
+    "evidenceRefsRequired": true
+  },
+  "notEnabled": {
+    "workspaceFreeWrite": false,
+    "userSelectedPath": false,
+    "arbitraryPath": false,
+    "overwrite": false,
+    "deleteRoute": false,
+    "automaticDestructiveCleanup": false,
+    "shellSubprocess": false,
+    "commandExecution": false,
+    "publicProductPath": false,
+    "productionRoute": false,
+    "pilotRun": false,
+    "browserCdpOcrWcuRecipesLive": false,
+    "cloudProviderNetworkDb": false,
+    "kmsWormComplianceCustody": false,
+    "releaseCommercial": false,
+    "businessSignoff": false
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "A real local write outside test-jail now exists but only under docs/nodal-os/handoffs/.",
+      "Reparse, symlink and junction evidence is platform-metadata-bound and fail-closed.",
+      "Output is not release, commercial, compliance custody or business signoff evidence."
+    ],
+    "P4": [
+      "Latest route state is in-process surface evidence.",
+      "Cleanup remains procedural; no destructive cleanup route exists."
+    ],
+    "TRUE_RISK": []
+  },
+  "validations": {
+    "focusedExecutorBoundarySafetyTests": "PASS_8_OF_8",
+    "focusedRouteDomProductionGuardRecipesTests": "PASS_2_OF_2",
+    "coreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "pilotBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "fullSafetyProductLedgerFocused": "PASS_369_OF_369",
+    "fullRecipesProductLedgerFocused": "PASS_68_OF_68",
+    "solutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "staticScans": "PASS"
+  },
+  "nextRecommendedMacroBlock": "NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY"
+}

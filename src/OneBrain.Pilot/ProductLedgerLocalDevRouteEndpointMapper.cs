@@ -39,6 +39,12 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     public const string LocalWorkspaceTestJailHandoffDraftStateRoute =
         "/internal/product-ledger/approval/workspace-test-jail-handoff-draft-state";
 
+    public const string LocalUserWorkspaceAllowlistedHandoffDraftRoute =
+        "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft";
+
+    public const string LocalUserWorkspaceAllowlistedHandoffDraftStateRoute =
+        "/internal/product-ledger/approval/user-workspace-allowlisted-handoff-draft-state";
+
     public const string LocalOnlyRouteResponseEvidenceMode =
         "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION";
 
@@ -132,8 +138,10 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalApprovedActionNoOpExecutor noOpExecutor,
         ProductLedgerLocalBoundedApprovedActionExecutor boundedActionExecutor,
         ProductLedgerLocalApprovedHandoffReportDraftExecutor handoffReportDraftExecutor,
-        ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor workspaceTestJailHandoffDraftExecutor)
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor workspaceTestJailHandoffDraftExecutor,
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null)
     {
+        userWorkspaceAllowlistedHandoffDraftExecutor ??= CreateDefaultUserWorkspaceAllowlistedHandoffDraftExecutor();
         if (!environment.IsDevelopment())
         {
             return endpoints;
@@ -141,7 +149,7 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
 
         endpoints.MapGet(
             ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
-            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read()));
+            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read(), userWorkspaceAllowlistedHandoffDraftExecutor.Read()));
         endpoints.MapGet(
             LocalApprovalDecisionStateRoute,
             () => Results.Json(decisionStateStore.Read(), RouteJsonOptions));
@@ -157,6 +165,9 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         endpoints.MapGet(
             LocalWorkspaceTestJailHandoffDraftStateRoute,
             () => Results.Json(workspaceTestJailHandoffDraftExecutor.Read(), RouteJsonOptions));
+        endpoints.MapGet(
+            LocalUserWorkspaceAllowlistedHandoffDraftStateRoute,
+            () => Results.Json(userWorkspaceAllowlistedHandoffDraftExecutor.Read(), RouteJsonOptions));
         Func<HttpContext, Task<IResult>> persistDecisionHandler =
             context => PersistProductLedgerLocalApprovalDecisionAsync(
                 context,
@@ -197,6 +208,17 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
                 handoffReportDraftExecutor,
                 workspaceTestJailHandoffDraftExecutor);
         endpoints.MapPost(LocalWorkspaceTestJailHandoffDraftRoute, createWorkspaceTestJailHandoffDraftHandler);
+        Func<HttpContext, Task<IResult>> createUserWorkspaceAllowlistedHandoffDraftHandler =
+            context => CreateProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftAsync(
+                context,
+                readModelSource,
+                decisionStateStore,
+                noOpExecutor,
+                boundedActionExecutor,
+                handoffReportDraftExecutor,
+                workspaceTestJailHandoffDraftExecutor,
+                userWorkspaceAllowlistedHandoffDraftExecutor);
+        endpoints.MapPost(LocalUserWorkspaceAllowlistedHandoffDraftRoute, createUserWorkspaceAllowlistedHandoffDraftHandler);
         return endpoints;
     }
 
@@ -259,7 +281,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalApprovedActionExecutionSnapshot approvedActionExecutionState,
         ProductLedgerLocalBoundedApprovedActionSnapshot boundedApprovedActionState,
         ProductLedgerLocalApprovedHandoffReportDraftSnapshot handoffReportDraftState,
-        ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot workspaceTestJailHandoffDraftState)
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot workspaceTestJailHandoffDraftState,
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null)
     {
         var result = new ProductLedgerLocalDevRoutePreview().Render(
             ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
@@ -268,7 +291,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             approvedActionExecutionState,
             boundedApprovedActionState,
             handoffReportDraftState,
-            workspaceTestJailHandoffDraftState);
+            workspaceTestJailHandoffDraftState,
+            userWorkspaceAllowlistedHandoffDraftState);
 
         return result.Decision == ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
             ? Results.Content(result.HtmlSnapshot, result.ContentType)
@@ -538,6 +562,65 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         return Results.Json(snapshot, RouteJsonOptions, statusCode: statusCode);
     }
 
+    private static async Task<IResult> CreateProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftAsync(
+        HttpContext context,
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource,
+        ProductLedgerLocalApprovalDecisionStateStore decisionStateStore,
+        ProductLedgerLocalApprovedActionNoOpExecutor noOpExecutor,
+        ProductLedgerLocalBoundedApprovedActionExecutor boundedActionExecutor,
+        ProductLedgerLocalApprovedHandoffReportDraftExecutor handoffReportDraftExecutor,
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor workspaceTestJailHandoffDraftExecutor,
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor userWorkspaceAllowlistedHandoffDraftExecutor)
+    {
+        if (context.Request.ContentLength is null or <= 0 or > 8192)
+        {
+            return Results.Json(ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot.Pending with
+            {
+                Blockers = [ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
+            && context.Request.ContentType?.StartsWith("application/json;", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            return Results.Json(ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot.Pending with
+            {
+                Blockers = [ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftBody? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftBody>(
+                context.Request.Body,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web),
+                context.RequestAborted);
+        }
+        catch (JsonException)
+        {
+            body = null;
+        }
+
+        var snapshot = userWorkspaceAllowlistedHandoffDraftExecutor.CreateDraft(ToUserWorkspaceAllowlistedHandoffDraftRequest(
+            body,
+            decisionStateStore.Read(),
+            noOpExecutor.Read(),
+            boundedActionExecutor.Read(),
+            handoffReportDraftExecutor.Read(),
+            workspaceTestJailHandoffDraftExecutor.Read(),
+            CurrentCandidate(readModelSource).CandidateActionKind));
+        var statusCode = snapshot.Decision switch
+        {
+            ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftDecision.DraftCreatedUserWorkspaceAllowlistedOnly => StatusCodes.Status200OK,
+            ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftDecision.IdempotentReplay => StatusCodes.Status200OK,
+            _ => StatusCodes.Status400BadRequest
+        };
+        return Results.Json(snapshot, RouteJsonOptions, statusCode: statusCode);
+    }
+
     private static ProductLedgerLocalApprovalDecisionStateRequest? ToStoreRequest(
         ProductLedgerLocalApprovalDecisionBody? body,
         ProductLedgerLocalApprovalExecutionResult candidate)
@@ -658,6 +741,68 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             CandidateEvidenceHash: body.CandidateEvidenceHash,
             CurrentEvidenceHash: body.CurrentEvidenceHash,
             PredecessorDraftContentHash: body.PredecessorDraftContentHash,
+            DraftTitle: body.DraftTitle,
+            RedactedDraftSummary: body.RedactedDraftSummary,
+            EvidenceReferences: body.EvidenceReferences ?? [],
+            ProposedPath: body.ProposedPath,
+            ProposedRoot: body.ProposedRoot,
+            ProposedFilename: body.ProposedFilename,
+            ProposedCommand: body.ProposedCommand,
+            ProposedUrl: body.ProposedUrl,
+            ProposedProvider: body.ProposedProvider,
+            ProposedDbMigration: body.ProposedDbMigration,
+            ClaimsArbitraryPathInput: body.ClaimsArbitraryPathInput == true,
+            ClaimsFilesystemScan: body.ClaimsFilesystemScan == true,
+            RequestsOverwrite: body.RequestsOverwrite == true,
+            RequestsUserSelectedPath: body.RequestsUserSelectedPath == true || body.RequestsUserFileWrite == true,
+            RequestsPublicUiAction: body.RequestsPublicUiAction == true,
+            RequestsProductCommandExecution: body.RequestsProductCommandExecution == true,
+            RequestsProductCommandHandler: body.RequestsProductCommandHandler == true,
+            RequestsProductiveServiceRegistration: body.RequestsProductiveServiceRegistration == true,
+            RequestsShellOrSubprocess: body.RequestsShellOrSubprocess == true,
+            ClaimsArbitraryCommandExecution: body.ClaimsArbitraryCommandExecution == true,
+            ClaimsProviderCloudNetwork: body.ClaimsProviderCloudNetwork == true,
+            ClaimsDbMigration: body.ClaimsDbMigration == true,
+            ClaimsKmsWormExternalTrust: body.ClaimsKmsWormExternalTrust == true,
+            ClaimsBrowserCdpWcuOcrRecipesLive: body.ClaimsBrowserCdpWcuOcrRecipesLive == true,
+            ClaimsPilotRun: body.ClaimsPilotRun == true,
+            ClaimsReleaseCommercial: body.ClaimsReleaseCommercial == true);
+    }
+
+    private static ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftRequest? ToUserWorkspaceAllowlistedHandoffDraftRequest(
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftBody? body,
+        ProductLedgerLocalApprovalDecisionSnapshot approval,
+        ProductLedgerLocalApprovedActionExecutionSnapshot noOpExecution,
+        ProductLedgerLocalBoundedApprovedActionSnapshot boundedExecution,
+        ProductLedgerLocalApprovedHandoffReportDraftSnapshot localHandoffDraft,
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot workspaceTestJailHandoffDraft,
+        ProductLedgerInternalCommandKind currentCandidateActionKind)
+    {
+        if (body is null)
+        {
+            return null;
+        }
+
+        return new ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftRequest(
+            ExplicitUserWorkspaceAllowlistedScope: body.ExplicitUserWorkspaceAllowlistedScope == true,
+            DevelopmentMode: body.DevelopmentMode == true,
+            LocalMode: body.LocalMode == true,
+            InternalMode: body.InternalMode == true,
+            ActionId: body.ActionId,
+            CandidateId: body.CandidateId,
+            ActionKind: ParseUserWorkspaceAllowlistedHandoffDraftActionKind(body.ActionKind),
+            ApprovalDecision: approval,
+            NoOpExecution: noOpExecution,
+            BoundedExecution: boundedExecution,
+            LocalApprovedHandoffDraft: localHandoffDraft,
+            WorkspaceTestJailHandoffDraft: workspaceTestJailHandoffDraft,
+            CandidateActionKind: body.CandidateActionKind is null
+                ? currentCandidateActionKind
+                : ParseCommandKind(body.CandidateActionKind),
+            CandidateEvidenceHash: body.CandidateEvidenceHash,
+            CurrentEvidenceHash: body.CurrentEvidenceHash,
+            LocalApprovedHandoffDraftContentHash: body.LocalApprovedHandoffDraftContentHash,
+            WorkspaceTestJailHandoffDraftContentHash: body.WorkspaceTestJailHandoffDraftContentHash,
             DraftTitle: body.DraftTitle,
             RedactedDraftSummary: body.RedactedDraftSummary,
             EvidenceReferences: body.EvidenceReferences ?? [],
@@ -849,6 +994,19 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         return null;
     }
 
+    private static ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftActionKind? ParseUserWorkspaceAllowlistedHandoffDraftActionKind(string? value)
+    {
+        if (Enum.TryParse<ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftActionKind>(
+            value,
+            ignoreCase: true,
+            out var action))
+        {
+            return action;
+        }
+
+        return null;
+    }
+
     private static ProductLedgerLocalApprovalDecisionStateStore CreateDefaultDecisionStateStore() =>
         new(new ProductLedgerLocalApprovalDecisionStateStoreOptions(
             StoreRootPath: Path.Combine(Path.GetTempPath(), "nodal-os-product-ledger-local-approval-state"),
@@ -900,6 +1058,22 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         new(new ProductLedgerLocalWorkspaceTestJailHandoffDraftOptions(
             WorkspaceTestJailRootPath: Path.Combine(FindRepoRoot(), "docs", "test-output", "product-ledger", "workspace-test-jail"),
             ExplicitWorkspaceTestJailBoundary: true,
+            AllowsArbitraryPathInput: false,
+            AllowsFilesystemScan: false,
+            AllowsOverwrite: false,
+            AllowsUserSelectedPath: false,
+            AllowsShellOrSubprocess: false,
+            AllowsCommandExecution: false,
+            AllowsNetwork: false,
+            AllowsDb: false,
+            AllowsKmsWormExternalTrust: false,
+            AllowsReleaseCommercial: false));
+
+    private static ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor CreateDefaultUserWorkspaceAllowlistedHandoffDraftExecutor() =>
+        new(new ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftOptions(
+            TrustedWorkspaceRootPath: FindRepoRoot(),
+            WorkspaceClassification: ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.WorkspaceClassification,
+            ExplicitUserWorkspaceAllowlistedBoundary: true,
             AllowsArbitraryPathInput: false,
             AllowsFilesystemScan: false,
             AllowsOverwrite: false,
@@ -1065,6 +1239,47 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         string? CandidateEvidenceHash,
         string? CurrentEvidenceHash,
         string? PredecessorDraftContentHash,
+        string? DraftTitle,
+        string? RedactedDraftSummary,
+        IReadOnlyList<string>? EvidenceReferences,
+        string? ProposedPath,
+        string? ProposedRoot,
+        string? ProposedFilename,
+        string? ProposedCommand,
+        string? ProposedUrl,
+        string? ProposedProvider,
+        string? ProposedDbMigration,
+        bool? ClaimsArbitraryPathInput,
+        bool? ClaimsFilesystemScan,
+        bool? RequestsOverwrite,
+        bool? RequestsUserSelectedPath,
+        bool? RequestsUserFileWrite,
+        bool? RequestsPublicUiAction,
+        bool? RequestsProductCommandExecution,
+        bool? RequestsProductCommandHandler,
+        bool? RequestsProductiveServiceRegistration,
+        bool? RequestsShellOrSubprocess,
+        bool? ClaimsArbitraryCommandExecution,
+        bool? ClaimsProviderCloudNetwork,
+        bool? ClaimsDbMigration,
+        bool? ClaimsKmsWormExternalTrust,
+        bool? ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool? ClaimsPilotRun,
+        bool? ClaimsReleaseCommercial);
+
+    private sealed record ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftBody(
+        bool? ExplicitUserWorkspaceAllowlistedScope,
+        bool? DevelopmentMode,
+        bool? LocalMode,
+        bool? InternalMode,
+        string? ActionId,
+        string? CandidateId,
+        string? ActionKind,
+        string? CandidateActionKind,
+        string? CandidateEvidenceHash,
+        string? CurrentEvidenceHash,
+        string? LocalApprovedHandoffDraftContentHash,
+        string? WorkspaceTestJailHandoffDraftContentHash,
         string? DraftTitle,
         string? RedactedDraftSummary,
         IReadOnlyList<string>? EvidenceReferences,
