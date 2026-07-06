@@ -63,20 +63,25 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
             Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
         }
 
-        Assert.AreEqual(3, Count(source, "endpoints.MapPost("));
+        Assert.AreEqual(4, Count(source, "endpoints.MapPost("));
         StringAssert.Contains(source, "LocalApprovalDecisionRoute");
         StringAssert.Contains(source, "LocalApprovalExecutionRoute");
         StringAssert.Contains(source, "LocalBoundedApprovalExecutionRoute");
+        StringAssert.Contains(source, "LocalApprovedHandoffReportDraftRoute");
         StringAssert.Contains(source, "/internal/product-ledger/approval/decision");
         StringAssert.Contains(source, "/internal/product-ledger/approval/execute");
         StringAssert.Contains(source, "/internal/product-ledger/approval/execute-bounded");
+        StringAssert.Contains(source, "/internal/product-ledger/approval/create-local-handoff-draft");
         StringAssert.Contains(source, "environment.IsDevelopment()");
         StringAssert.Contains(source, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(source, "ProductLedgerLocalApprovedActionNoOpExecutor");
         StringAssert.Contains(source, "ProductLedgerLocalBoundedApprovedActionExecutor");
+        StringAssert.Contains(source, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
         StringAssert.Contains(source, "RequestsProductCommandExecution: body.RequestsProductCommandExecution == true");
         StringAssert.Contains(source, "RequestsBoundedAction: body.RequestsBoundedAction == true");
         StringAssert.Contains(source, "RequestsUserFileWrite: body.RequestsUserFileWrite == true");
+        StringAssert.Contains(source, "RequestsOverwrite: body.RequestsOverwrite == true");
+        StringAssert.Contains(source, "RequestsShellOrSubprocess: body.RequestsShellOrSubprocess == true");
     }
 
     [TestMethod]

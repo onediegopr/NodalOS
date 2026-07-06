@@ -18,16 +18,19 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         StringAssert.Contains(mapper, "endpoints.MapGet(");
         StringAssert.Contains(mapper, "endpoints.MapPost(");
         StringAssert.Contains(mapper, "ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
-        Assert.AreEqual(3, Count(mapper, "endpoints.MapPost("), "Product Ledger mapper may expose only local approval decision, no-op execution and bounded completion marker POST routes.");
+        Assert.AreEqual(4, Count(mapper, "endpoints.MapPost("), "Product Ledger mapper may expose only local approval decision, no-op execution, bounded completion marker and local approved handoff draft POST routes.");
         StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
         StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
         StringAssert.Contains(mapper, "LocalBoundedApprovalExecutionRoute");
+        StringAssert.Contains(mapper, "LocalApprovedHandoffReportDraftRoute");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/decision");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/execute");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/execute-bounded");
+        StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedActionNoOpExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalBoundedApprovedActionExecutor");
+        StringAssert.Contains(mapper, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
         Assert.IsFalse(mapper.Contains("Request.Query", StringComparison.Ordinal), "Product Ledger mapper must not accept arbitrary path query input.");
         Assert.IsFalse(mapper.Contains("QueryString", StringComparison.Ordinal), "Product Ledger mapper must not inspect query strings.");
     }

@@ -152,10 +152,13 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
         StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
         StringAssert.Contains(mapper, "LocalBoundedApprovalExecutionRoute");
+        StringAssert.Contains(mapper, "LocalApprovedHandoffReportDraftRoute");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovalDecisionStateStore");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedActionNoOpExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalBoundedApprovedActionExecutor");
-        Assert.AreEqual(3, Count(mapper, "endpoints.MapPost("));
+        StringAssert.Contains(mapper, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
+        StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
+        Assert.AreEqual(4, Count(mapper, "endpoints.MapPost("));
         foreach (var fragment in new[]
         {
             "ProductLedgerInternalCommandHandler",

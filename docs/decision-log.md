@@ -1517,3 +1517,23 @@
 - Findings: P0=0, P1=0, P2=0; P3 recommended next action introduces a controlled user-visible write and therefore needs separate implementation GO, future output path must be allowlisted/create-only/no-overwrite and redaction-before-write is mandatory; P4 this is readiness/design evidence and scans are path-specific.
 - Readiness changes: UI/Operator Surface 68-78% -> 70-80%; local-only internal product 80-86% -> 81-87%; usable end-to-end local product 58-68% -> 60-70%; Approval/Human Review, Evidence/Timeline/Audit Trail, Runtime/Command/Execution, external/cloud and release/commercial unchanged.
 - Required next GO: `NODAL_OS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_IMPLEMENTATION_WINDOW`.
+
+## NODAL_OS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_IMPLEMENTATION_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_IMPLEMENTATION_READY`
+- Baseline: `9e5015afd02c7a8bb590d95be969cdfcc95c4dd0`.
+- Scope: local-only/internal-only/Development-only implementation of `LocalApprovedHandoffReportDraft`, the first real local user-facing Product Ledger action.
+- Implemented: Core executor, Development-only POST `/internal/product-ledger/approval/create-local-handoff-draft`, Development-only GET `/internal/product-ledger/approval/local-handoff-draft-state`, operator surface draft state, create-only/no-overwrite write to `docs/test-output/product-ledger/approved-local-handoff-drafts/`, redaction-before-write, idempotent exact replay and conflict blocking.
+- Non-goals preserved: no arbitrary path, path traversal, user workspace write, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, public/product path, Production route, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 a real local write now exists but only under the allowlisted `docs/test-output` boundary and is not product export/release evidence; P4 latest route state is in-process surface evidence and generated test-output artifacts are cleanup-safe inside the boundary.
+- Readiness changes: Evidence/Timeline/Audit Trail 90-95% -> 91-96%; Runtime/Command/Execution 65-73% -> 68-76%; UI/Operator Surface 70-80% -> 73-83%; local-only internal product 81-87% -> 84-90%; usable end-to-end local product 60-70% -> 66-74%; external/cloud and release/commercial unchanged at 0%.
+- Next recommended macro-block: `NODAL_OS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Scope: read-only/docs-only external-audit-style review of the implemented `LocalApprovedHandoffReportDraft` action.
+- Audited: implementation ADR, Core executor, Development-only route/state mapping, operator surface, Safety and Recipes Product Ledger tests, QA report, handoff, roadmap and decision-log.
+- Non-goals preserved: no source/test/runtime behavior changes in audit, arbitrary path, path traversal, filesystem scan, overwrite, user workspace write, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, public/product path, Production route, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 real local write remains bounded to `docs/test-output/product-ledger/approved-local-handoff-drafts/` and is not product export/release/compliance evidence; P4 audit is internal Codex read-only and latest state is in-process surface evidence.
+- Stop frontier: public/product exposure or user-workspace action requires a separate authorization window.

@@ -30,15 +30,47 @@ public sealed class ProductLedgerFirstRealUserFacingLocalActionReadinessTests
     }
 
     [TestMethod]
-    public void FirstRealUserFacingLocalActionReadiness_DoesNotImplementFutureRouteOrActionKind()
+    public void FirstRealUserFacingLocalActionReadiness_ImplementedCandidateRemainsLocalDevelopmentOnly()
     {
+        var implementationAdr = ReadRepoFile("docs", "adr", "product-ledger-local-approved-handoff-report-draft-implementation.md");
         var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
+        var handoffDraftExecutor = ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalApprovedHandoffReportDraftExecutor.cs");
         var approvalRoot = Path.Combine(RepoRoot(), "src", "OneBrain.Core", "Approval");
         var approvalSources = string.Join(Environment.NewLine, Directory.EnumerateFiles(approvalRoot, "*.cs").Select(File.ReadAllText));
 
-        Assert.IsFalse(mapper.Contains("/internal/product-ledger/approval/create-local-handoff-draft", StringComparison.Ordinal));
-        Assert.IsFalse(mapper.Contains("LocalApprovedHandoffReportDraft", StringComparison.Ordinal));
-        Assert.IsFalse(approvalSources.Contains("LocalApprovedHandoffReportDraft", StringComparison.Ordinal));
+        StringAssert.Contains(implementationAdr, "Decision: `GO_WITH_FINDINGS_LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_IMPLEMENTATION_READY`");
+        StringAssert.Contains(implementationAdr, "`docs/test-output/product-ledger/approved-local-handoff-drafts/`");
+        StringAssert.Contains(mapper, "environment.IsDevelopment()");
+        StringAssert.Contains(mapper, "LocalApprovedHandoffReportDraftRoute");
+        StringAssert.Contains(mapper, "LocalApprovedHandoffReportDraftStateRoute");
+        StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
+        StringAssert.Contains(mapper, "/internal/product-ledger/approval/local-handoff-draft-state");
+        StringAssert.Contains(mapper, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
+        StringAssert.Contains(approvalSources, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
+        StringAssert.Contains(handoffDraftExecutor, "FileMode.CreateNew");
+
+        foreach (var forbidden in new[]
+        {
+            "Process.Start",
+            "HttpClient",
+            "WebSocket",
+            "DbContext",
+            "MigrationBuilder",
+            "KmsClient",
+            "WormStore",
+            "PilotRecipeExecutor",
+            "PilotRecipeExecutionGate.Evaluate(",
+            "NODAL_OS_ENABLE_PILOT_RECIPE_EXECUTION",
+            "ReleaseCommercialReady: true",
+            "PublicProductAllowed: true",
+            "ProductionAllowed: true",
+            "UserFileWrite: true",
+            "OverwriteAllowed: true"
+        })
+        {
+            Assert.IsFalse(mapper.Contains(forbidden, StringComparison.Ordinal), forbidden);
+            Assert.IsFalse(handoffDraftExecutor.Contains(forbidden, StringComparison.Ordinal), forbidden);
+        }
     }
 
     [TestMethod]
