@@ -1658,3 +1658,13 @@
 - Findings: P0=0, P1=0, P2=0; P3 real local write exists but only under the fixed test-output snapshot boundary with create-only/redaction/hash/reparse fail-closed checks; P4 stale snapshots are historical evidence only and not live/product authority.
 - Readiness changes: Evidence/Timeline/Audit Trail 96-98% -> 97-99%; Runtime/Command/Execution 72-80% -> 73-81%; UI/Operator Surface 78-88% -> 80-89%; local-only internal product 91-93% -> 92-94%; usable end-to-end local product 80-86% -> 82-88%; external/cloud and release/commercial unchanged at 0%.
 - Next recommended macro-block: `NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Audited HEAD: `a129d50bed69e88d3c7202ed2e423540ed118b4e`.
+- Scope: read-only/docs-only external-audit-style review inside Codex of the implemented `LocalOperatorSurfaceLatestStateSnapshotCreateOnly`.
+- Audited: Core executor, Development-only route/state mapping, operator surface state, implementation ADR, QA report, handoff, roadmap, decision-log, Safety tests and Recipes route tests.
+- Non-goals preserved: no source/test/runtime behavior changes in the audit, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, release/commercial or business signoff.
+- Findings: P0=0, P1=0, P2=0; P3 local snapshot write remains bounded to `docs/test-output/product-ledger/operator-surface-latest-state-snapshots/`; P4 stale snapshots remain historical evidence only and not live/product authority.
+- Next recommended macro-block: `NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_PROPERTY_CORPUS_AND_STATIC_GUARD_HARDENING_TEST_ONLY`.
