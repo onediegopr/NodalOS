@@ -1690,3 +1690,15 @@
 - Non-goals preserved: no source/test/runtime behavior changes in this audit, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, release/commercial or business signoff.
 - Findings: P0=0, P1=0, P2=0; P3 bounded local snapshot write remains deliberate test-output evidence; P4 stale snapshots remain historical evidence only.
 - Stop frontier: durable/latest-state promotion or public/product exposure requires explicit authorization before implementation.
+
+## NODAL_OS_DURABLE_LATEST_STATE_PROMOTION_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_PROMOTION_BOUNDARY_DESIGN_ONLY_READY`
+- Baseline: `4d446b28494913a5abeb896f5ee8bcff7363491a`.
+- Scope: design-only/readiness-only/audit-only/test-only/guard-only durable/latest-state promotion boundary after the latest-state snapshot chain.
+- Confirmed current state: immutable/versioned create-only `.json` snapshots under `docs/test-output/product-ledger/operator-surface-latest-state-snapshots/`, no overwrite, no latest pointer overwrite, redaction-before-persistence, safe metadata, content hash/checkpoint, evidence refs, stale snapshots historical evidence only and property/corpus/static guard hardening.
+- Recommendation: option D, future `LocalDurableLatestStateManifestCreateOnly` manifest/index under `docs/test-output/product-ledger/operator-surface-latest-state-manifests/`, classified `LOCAL_INTERNAL_DEV_ONLY_VERSIONED_MANIFEST_NOT_AUTHORITY`.
+- Non-goals preserved: no durable latest-state promotion implementation, latest-state authority, active durable reader, read precedence change, latest pointer overwrite, public/product path, Production route, broader workspace action, edit/update/delete, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, release/commercial or business signoff.
+- Findings: P0=0, P1=0, P2=0; P3 future manifest implementation would add a bounded local test-output write and must remain create-only/no-overwrite/no-pointer; P4 candidate manifests may become stale and must remain not-authority evidence.
+- Readiness changes: Evidence/Timeline/Audit Trail 97-99% -> 98-99%; local-only internal product 92-94% -> 93-95%; usable end-to-end local product 82-88% -> 83-89%; Approval/Human Review, Runtime/Command/Execution, UI/Operator Surface, external/cloud and release/commercial unchanged.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_IMPLEMENTATION_WINDOW`.
