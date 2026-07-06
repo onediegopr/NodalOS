@@ -1537,3 +1537,14 @@
 - Non-goals preserved: no source/test/runtime behavior changes in audit, arbitrary path, path traversal, filesystem scan, overwrite, user workspace write, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, public/product path, Production route, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
 - Findings: P0=0, P1=0, P2=0; P3 real local write remains bounded to `docs/test-output/product-ledger/approved-local-handoff-drafts/` and is not product export/release/compliance evidence; P4 audit is internal Codex read-only and latest state is in-process surface evidence.
 - Stop frontier: public/product exposure or user-workspace action requires a separate authorization window.
+
+## NODAL_OS_PUBLIC_PRODUCT_OR_USER_WORKSPACE_ACTION_AUTHORIZATION_READINESS_MATRIX_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PUBLIC_PRODUCT_OR_USER_WORKSPACE_ACTION_AUTHORIZATION_READINESS_DESIGN_ONLY_READY`
+- Baseline: `d96f733065346ac6b368680c75dea8bd1e60d506`.
+- Scope: design-only/readiness-only/audit-only/test-only matrix comparing public/product exposure, first controlled user-workspace action, more local/internal hardening and workspace test-jail boundary proof pack.
+- Recommendation: do not open public/product yet; next safe macro-block should be `NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY`, with future action candidate `LocalWorkspaceTestJailHandoffDraftCreateOnly`.
+- Non-goals preserved: no public/product implementation, user-workspace action implementation, Production route, productive export, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 workspace action is recommended only after a dedicated boundary design and future canonicalization/reparse/idempotency/redaction/cleanup tests; P4 percentages are readiness estimates and matrix evidence is not business/product signoff.
+- Readiness changes: local-only internal product 84-90% -> 85-90%; usable end-to-end local product 66-74% -> 67-75%; other categories unchanged.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY`.
