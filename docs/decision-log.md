@@ -1559,3 +1559,23 @@
 - Findings: P0=0, P1=0, P2=0; P3 future implementation must prove canonicalization/reparse/symlink escape blocking and exact idempotency before write; P4 reparse detection depends on platform APIs and must fail closed if uncertain.
 - Readiness changes: Evidence/Timeline/Audit Trail 91-96% -> 92-96%; local-only internal product 85-90% -> 86-90%; usable end-to-end local product 67-75% -> 68-76%; other categories unchanged.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_IMPLEMENTATION_WINDOW`.
+
+## NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_IMPLEMENTATION_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_IMPLEMENTATION_READY`
+- Baseline: `e69941546e8ddfffaed9eb86acb7c8c5cfa0f726`.
+- Scope: local-only/internal-only/Development-only implementation of `LocalWorkspaceTestJailHandoffDraftCreateOnly`, the first controlled workspace test-jail write after the completed local approval/no-op/bounded/predecessor draft chain.
+- Implemented: Core executor, Development-only POST `/internal/product-ledger/approval/create-workspace-test-jail-handoff-draft`, Development-only GET `/internal/product-ledger/approval/workspace-test-jail-handoff-draft-state`, operator surface workspace test-jail draft state, create-only/no-overwrite write under `.nodal/product-ledger/handoff-drafts/` inside a trusted workspace test-jail root, redaction-before-write, canonical final path validation, reparse fail-closed checks, idempotent exact replay and conflict blocking.
+- Non-goals preserved: no workspace-free write, user-selected path, arbitrary path, payload-controlled root/raw filename, filesystem scan, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, public/product path, Production route, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 a real local write now exists but only inside the controlled workspace test-jail, and reparse/symlink/junction safety is platform-metadata-bound and fail-closed; P4 latest route state is in-process surface evidence and generated test-jail artifacts are cleanup-safe inside the boundary.
+- Readiness changes: Evidence/Timeline/Audit Trail 92-96% -> 93-97%; Runtime/Command/Execution 68-76% -> 70-78%; UI/Operator Surface 73-83% -> 75-85%; local-only internal product 86-90% -> 88-92%; usable end-to-end local product 68-76% -> 72-80%; external/cloud and release/commercial unchanged at 0%.
+- Stop frontier: user-workspace action outside test-jail or public/product exposure remains not authorized.
+
+## NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Scope: read-only/docs-only external-audit-style review inside Codex of the implemented `LocalWorkspaceTestJailHandoffDraftCreateOnly` action.
+- Audited: implementation ADR, Core executor, Development-only route/state mapping, operator surface, Safety and Recipes Product Ledger tests, QA report, handoff, roadmap and decision-log.
+- Non-goals preserved: no source/test/runtime behavior changes in audit, workspace-free write, user-selected path, public/product path, Production route, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 real local write remains bounded to the controlled workspace test-jail and reparse/symlink/junction evidence is platform-metadata-bound fail-closed; P4 audit is internal Codex read-only and latest state is in-process surface evidence.
+- Stop frontier: user-workspace action outside test-jail or public/product exposure requires a separate authorization window.

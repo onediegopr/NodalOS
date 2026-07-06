@@ -43,21 +43,50 @@ public sealed class ProductLedgerPublicProductOrWorkspaceActionAuthorizationRead
     }
 
     [TestMethod]
-    public void PublicProductOrWorkspaceAuthorizationReadiness_FutureWorkspaceActionIsNotActiveSource()
+    public void PublicProductOrWorkspaceAuthorizationReadiness_WorkspaceTestJailActionIsActiveButNotPublicProductOrUserWorkspace()
     {
         var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
         var approvalSources = string.Join(
             Environment.NewLine,
             Directory.EnumerateFiles(Path.Combine(RepoRoot(), "src", "OneBrain.Core", "Approval"), "*.cs")
                 .Select(File.ReadAllText));
+        var implementationSource = string.Join(
+            Environment.NewLine,
+            mapper,
+            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor.cs"));
 
-        Assert.IsFalse(mapper.Contains(FutureWorkspaceRoute, StringComparison.Ordinal), FutureWorkspaceRoute);
-        Assert.IsFalse(mapper.Contains(FutureWorkspaceAction, StringComparison.Ordinal), FutureWorkspaceAction);
-        Assert.IsFalse(approvalSources.Contains(FutureWorkspaceRoute, StringComparison.Ordinal), FutureWorkspaceRoute);
-        Assert.IsFalse(approvalSources.Contains(FutureWorkspaceAction, StringComparison.Ordinal), FutureWorkspaceAction);
+        StringAssert.Contains(mapper, FutureWorkspaceRoute);
+        StringAssert.Contains(mapper, "environment.IsDevelopment()");
+        StringAssert.Contains(mapper, "LocalWorkspaceTestJailHandoffDraftStateRoute");
+        StringAssert.Contains(approvalSources, FutureWorkspaceAction);
+        StringAssert.Contains(approvalSources, "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor");
+        StringAssert.Contains(approvalSources, "WORKSPACE_TEST_JAIL_ONLY");
+        StringAssert.Contains(approvalSources, "FileMode.CreateNew");
+        StringAssert.Contains(approvalSources, "FileAttributes.ReparsePoint");
 
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
         StringAssert.Contains(approvalSources, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
+
+        foreach (var forbiddenSource in new[]
+        {
+            "Process.Start",
+            "ShellExecute",
+            "System.Diagnostics.Process",
+            "HttpClient",
+            "DbContext",
+            "MigrationBuilder",
+            "KmsClient",
+            "WormStore",
+            "FileMode.OpenOrCreate",
+            "OverwriteAllowed: true",
+            "UserSelectedPathAllowed: true",
+            "ProductionAllowed: true",
+            "PublicProductAllowed: true",
+            "ReleaseCommercialReady: true"
+        })
+        {
+            Assert.IsFalse(implementationSource.Contains(forbiddenSource, StringComparison.Ordinal), forbiddenSource);
+        }
     }
 
     [TestMethod]

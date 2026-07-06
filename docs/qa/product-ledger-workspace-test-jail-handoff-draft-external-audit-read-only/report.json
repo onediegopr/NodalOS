@@ -1,0 +1,48 @@
+{
+  "decision": "GO_WITH_FINDINGS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY_READY",
+  "date": "2026-07-06",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "scope": "external-audit-read-only-inside-codex",
+  "auditedAction": "LocalWorkspaceTestJailHandoffDraftCreateOnly",
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Real local write is restricted to the workspace test-jail boundary.",
+      "Reparse/symlink/junction defense is platform-metadata-bound and fail-closed.",
+      "Static scans remain paired with behavior tests."
+    ],
+    "P4": [
+      "Latest route state is in-process operator surface evidence.",
+      "Generated draft is local test-jail evidence only."
+    ],
+    "TRUE_RISK": []
+  },
+  "boundaryConfirmation": {
+    "workspaceTestJailOnly": true,
+    "productionRouteAllowed": false,
+    "publicProductPathAllowed": false,
+    "userWorkspaceOutsideTestJailAllowed": false,
+    "shellSubprocessAllowed": false,
+    "commandExecutionAllowed": false,
+    "cloudProviderNetworkAllowed": false,
+    "dbMigrationAllowed": false,
+    "kmsWormExternalTrustAllowed": false,
+    "releaseCommercialClaimed": false
+  },
+  "validations": {
+    "workspaceTestJailExecutorSafetyFocused": "PASS_5_OF_5",
+    "safetyProductLedgerFocused": "PASS_224_OF_224",
+    "routeDomFocused": "PASS_17_OF_17",
+    "recipesProductLedgerFocused": "PASS_67_OF_67",
+    "coreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "pilotBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "solutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "staticScans": "PASS"
+  },
+  "stopFrontier": "USER_WORKSPACE_ACTION_OUTSIDE_TEST_JAIL_OR_PUBLIC_PRODUCT_EXPOSURE_REMAINS_NOT_AUTHORIZED"
+}

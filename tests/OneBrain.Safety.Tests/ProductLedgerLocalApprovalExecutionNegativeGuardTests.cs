@@ -158,7 +158,7 @@ public sealed class ProductLedgerLocalApprovalExecutionNegativeGuardTests
         StringAssert.Contains(mapper, "ProductLedgerLocalBoundedApprovedActionExecutor");
         StringAssert.Contains(mapper, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
-        Assert.AreEqual(4, Count(mapper, "endpoints.MapPost("));
+        Assert.AreEqual(5, Count(mapper, "endpoints.MapPost("));
         foreach (var fragment in new[]
         {
             "ProductLedgerInternalCommandHandler",

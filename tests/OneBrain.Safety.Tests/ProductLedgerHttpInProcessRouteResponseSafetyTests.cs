@@ -63,7 +63,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseSafetyTests
             Assert.IsFalse(source.Contains(fragment, StringComparison.OrdinalIgnoreCase), fragment);
         }
 
-        Assert.AreEqual(4, Count(source, "endpoints.MapPost("));
+        Assert.AreEqual(5, Count(source, "endpoints.MapPost("));
         StringAssert.Contains(source, "LocalApprovalDecisionRoute");
         StringAssert.Contains(source, "LocalApprovalExecutionRoute");
         StringAssert.Contains(source, "LocalBoundedApprovalExecutionRoute");

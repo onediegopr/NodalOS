@@ -48,7 +48,7 @@ public sealed class ProductLedgerWorkspaceTestJailHandoffDraftBoundaryTests
     }
 
     [TestMethod]
-    public void WorkspaceTestJailBoundary_FutureActionRouteAndExecutorAreNotActiveSource()
+    public void WorkspaceTestJailBoundary_ImplementedActionRemainsDevelopmentOnlyWorkspaceTestJailSource()
     {
         var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
         var approvalSources = string.Join(
@@ -56,19 +56,22 @@ public sealed class ProductLedgerWorkspaceTestJailHandoffDraftBoundaryTests
             Directory.EnumerateFiles(Path.Combine(RepoRoot(), "src", "OneBrain.Core", "Approval"), "*.cs")
                 .Select(File.ReadAllText));
 
-        Assert.IsFalse(mapper.Contains(FutureRoute, StringComparison.Ordinal), FutureRoute);
-        Assert.IsFalse(mapper.Contains(FutureAction, StringComparison.Ordinal), FutureAction);
-        Assert.IsFalse(mapper.Contains(FutureExecutor, StringComparison.Ordinal), FutureExecutor);
-        Assert.IsFalse(approvalSources.Contains(FutureRoute, StringComparison.Ordinal), FutureRoute);
-        Assert.IsFalse(approvalSources.Contains(FutureAction, StringComparison.Ordinal), FutureAction);
-        Assert.IsFalse(approvalSources.Contains(FutureExecutor, StringComparison.Ordinal), FutureExecutor);
+        StringAssert.Contains(mapper, FutureRoute);
+        StringAssert.Contains(mapper, "LocalWorkspaceTestJailHandoffDraftStateRoute");
+        StringAssert.Contains(mapper, "environment.IsDevelopment()");
+        StringAssert.Contains(mapper, FutureExecutor);
+        StringAssert.Contains(approvalSources, FutureAction);
+        StringAssert.Contains(approvalSources, FutureExecutor);
+        StringAssert.Contains(approvalSources, "FileMode.CreateNew");
+        StringAssert.Contains(approvalSources, "FileAttributes.ReparsePoint");
+        StringAssert.Contains(approvalSources, "WORKSPACE_TEST_JAIL_ONLY");
 
         StringAssert.Contains(mapper, "/internal/product-ledger/approval/create-local-handoff-draft");
         StringAssert.Contains(approvalSources, "ProductLedgerLocalApprovedHandoffReportDraftExecutor");
     }
 
     [TestMethod]
-    public void WorkspaceTestJailBoundary_StaticScanKeepsDesignOnlyFrontierClosed()
+    public void WorkspaceTestJailBoundary_StaticScanKeepsImplementedFrontierClosedOutsideTestJail()
     {
         var docs = string.Join(
             Environment.NewLine,
@@ -83,10 +86,7 @@ public sealed class ProductLedgerWorkspaceTestJailHandoffDraftBoundaryTests
         var source = string.Join(
             Environment.NewLine,
             ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs"),
-            string.Join(
-                Environment.NewLine,
-                Directory.EnumerateFiles(Path.Combine(RepoRoot(), "src", "OneBrain.Core", "Approval"), "*.cs")
-                    .Select(File.ReadAllText)));
+            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor.cs"));
 
         foreach (var requiredNegative in new[]
         {
@@ -107,13 +107,43 @@ public sealed class ProductLedgerWorkspaceTestJailHandoffDraftBoundaryTests
             StringAssert.Contains(docs, requiredNegative);
         }
 
-        foreach (var forbiddenSource in new[]
+        foreach (var requiredSource in new[]
         {
             FutureRoute,
             FutureAction,
             FutureExecutor,
             "WorkspaceTestJailHandoffDraftExecutor",
-            "create-workspace-test-jail-handoff-draft"
+            "create-workspace-test-jail-handoff-draft",
+            "FileMode.CreateNew",
+            "FileAttributes.ReparsePoint",
+            "NO_USER_SELECTED_PATH",
+            "NO_COMMAND_EXECUTION",
+            "NO_SHELL_SUBPROCESS"
+        })
+        {
+            StringAssert.Contains(source, requiredSource);
+        }
+
+        foreach (var forbiddenSource in new[]
+        {
+            "Process.Start",
+            "ShellExecute",
+            "System.Diagnostics.Process",
+            "HttpClient",
+            "DbContext",
+            "MigrationBuilder",
+            "KmsClient",
+            "WormStore",
+            "Directory.GetFiles",
+            "Directory.EnumerateFiles",
+            "FileMode.OpenOrCreate",
+            "FileMode.Create,",
+            "OverwriteAllowed: true",
+            "UserSelectedPathAllowed: true",
+            "PayloadControlledRootAllowed: true",
+            "ProductionAllowed: true",
+            "PublicProductAllowed: true",
+            "ReleaseCommercialReady: true"
         })
         {
             Assert.IsFalse(source.Contains(forbiddenSource, StringComparison.Ordinal), forbiddenSource);

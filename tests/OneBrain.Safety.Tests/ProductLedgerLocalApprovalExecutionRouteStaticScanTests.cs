@@ -18,7 +18,7 @@ public sealed class ProductLedgerLocalApprovalExecutionRouteStaticScanTests
         StringAssert.Contains(mapper, "endpoints.MapGet(");
         StringAssert.Contains(mapper, "endpoints.MapPost(");
         StringAssert.Contains(mapper, "ProductLedgerLocalDevRoutePreview.RouteTemplatePreview");
-        Assert.AreEqual(4, Count(mapper, "endpoints.MapPost("), "Product Ledger mapper may expose only local approval decision, no-op execution, bounded completion marker and local approved handoff draft POST routes.");
+        Assert.AreEqual(5, Count(mapper, "endpoints.MapPost("), "Product Ledger mapper may expose only local approval decision, no-op execution, bounded completion marker, local approved handoff draft, and workspace test-jail handoff draft POST routes.");
         StringAssert.Contains(mapper, "LocalApprovalDecisionRoute");
         StringAssert.Contains(mapper, "LocalApprovalExecutionRoute");
         StringAssert.Contains(mapper, "LocalBoundedApprovalExecutionRoute");

@@ -1,0 +1,81 @@
+{
+  "decision": "GO_WITH_FINDINGS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_IMPLEMENTATION_READY",
+  "date": "2026-07-06",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "initialHead": "e69941546e8ddfffaed9eb86acb7c8c5cfa0f726",
+  "implementedAction": {
+    "actionKind": "LocalWorkspaceTestJailHandoffDraftCreateOnly",
+    "postRoute": "POST /internal/product-ledger/approval/create-workspace-test-jail-handoff-draft",
+    "stateRoute": "GET /internal/product-ledger/approval/workspace-test-jail-handoff-draft-state",
+    "relativeOutputBoundary": ".nodal/product-ledger/handoff-drafts/",
+    "workspaceTestJailOnly": true,
+    "createOnly": true,
+    "overwriteAllowed": false,
+    "userSelectedPathAllowed": false,
+    "payloadControlledRootAllowed": false
+  },
+  "requiredPreState": {
+    "approvedLocalOnly": true,
+    "noOpExecutionCompleted": true,
+    "boundedInternalCompletionMarkerCompleted": true,
+    "localApprovedHandoffReportDraftPredecessorCompleted": true,
+    "predecessorContentHashExact": true,
+    "candidateEvidenceHashExact": true,
+    "redactionBeforePersistenceRequired": true
+  },
+  "validations": {
+    "workspaceTestJailExecutorSafetyFocused": "PASS_5_OF_5",
+    "safetyProductLedgerFocused": "PASS_224_OF_224",
+    "routeDomFocused": "PASS_17_OF_17",
+    "recipesProductLedgerFocused": "PASS_67_OF_67",
+    "coreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "pilotBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "solutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "staticScans": "PASS"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "A real local write is now implemented but restricted to a controlled workspace test-jail boundary.",
+      "Reparse/symlink/junction defense depends on platform filesystem metadata and fails closed on uncertainty.",
+      "The generated draft is local test-jail evidence only, not product export or release evidence."
+    ],
+    "P4": [
+      "Surface read state is in-process for the latest route execution.",
+      "Generated artifacts are local test-jail files and cleanup-safe within the controlled boundary."
+    ],
+    "TRUE_RISK": []
+  },
+  "boundaryConfirmation": {
+    "localOnly": true,
+    "internalOnly": true,
+    "developmentOnly": true,
+    "realLocalWriteExists": true,
+    "workspaceTestJailOnly": true,
+    "canonicalFinalPathUnderJail": true,
+    "reparseEscapeFailClosed": true,
+    "createOnly": true,
+    "overwriteAllowed": false,
+    "arbitraryPathAllowed": false,
+    "userSelectedPathAllowed": false,
+    "payloadControlledRootAllowed": false,
+    "filesystemScanAllowed": false,
+    "shellSubprocessAllowed": false,
+    "commandExecutionAllowed": false,
+    "pilotRunAllowed": false,
+    "browserCdpWcuOcrRecipesLiveAllowed": false,
+    "publicProductPathAllowed": false,
+    "productionRouteAllowed": false,
+    "cloudProviderNetworkAllowed": false,
+    "dbMigrationAllowed": false,
+    "kmsWormExternalTrustAllowed": false,
+    "releaseCommercialClaimed": false,
+    "businessSignoffClaimed": false
+  },
+  "nextFrontier": "USER_WORKSPACE_ACTION_OUTSIDE_TEST_JAIL_OR_PUBLIC_PRODUCT_EXPOSURE_REMAINS_NOT_AUTHORIZED"
+}
