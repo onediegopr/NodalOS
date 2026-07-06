@@ -53,27 +53,22 @@ public sealed class ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests
     }
 
     [TestMethod]
-    public void BroaderWorkspaceOrPublicProductBoundary_FutureNamesRemainDocsAndTestsOnly()
+    public void BroaderWorkspaceOrPublicProductBoundary_LatestStateSnapshotImplementationIsAuthorizedButOtherFrontiersRemainClosed()
     {
         var source = SourceText();
 
-        foreach (var futureFragment in new[]
-        {
-            FutureAction,
-            FutureRoute,
-            FutureStateRoute,
-            FutureExecutor,
-            "ProductLedgerLocalOperatorSurfaceLatestStateSnapshot",
-            "latest-state-snapshot",
-            FutureBoundary,
-            "LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_ONLY"
-        })
-        {
-            Assert.IsFalse(source.Contains(futureFragment, StringComparison.Ordinal), futureFragment);
-        }
-
+        StringAssert.Contains(source, FutureAction);
+        StringAssert.Contains(source, FutureStateRoute);
+        StringAssert.Contains(source, FutureExecutor);
+        StringAssert.Contains(source, "ProductLedgerLocalOperatorSurfaceLatestStateSnapshot");
+        StringAssert.Contains(source, "operator-surface-latest-state-snapshots");
+        StringAssert.Contains(source, "HISTORICAL_EVIDENCE_ONLY");
         StringAssert.Contains(source, "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor");
         StringAssert.Contains(source, "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft");
+        Assert.IsFalse(source.Contains("/public/product-ledger", StringComparison.Ordinal), "/public/product-ledger");
+        Assert.IsFalse(source.Contains("PublicProductAllowed: true", StringComparison.Ordinal), "PublicProductAllowed");
+        Assert.IsFalse(source.Contains("ProductionAllowed: true", StringComparison.Ordinal), "ProductionAllowed");
+        Assert.IsFalse(source.Contains("ReleaseCommercialReady: true,", StringComparison.Ordinal), "ReleaseCommercialReady");
     }
 
     [TestMethod]

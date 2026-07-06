@@ -1647,3 +1647,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 latest state still has an in-process component, first persistence boundary should remain under `docs/test-output/`, and stale snapshots must be historical evidence not live/product authority; P4 this is planning evidence only and percentages are readiness estimates.
 - Readiness changes: Evidence/Timeline/Audit Trail 95-98% -> 96-98%; UI/Operator Surface 77-87% -> 78-88%; usable end-to-end local product 79-85% -> 80-86%; Approval/Human Review, Runtime/Command/Execution, local-only internal product, external/cloud and release/commercial unchanged.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_IMPLEMENTATION_WINDOW`.
+
+## NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_IMPLEMENTATION_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_IMPLEMENTATION_READY`
+- Baseline: `8ca6cdbc72a8f0170d336c4b263981e87d8cf9b1`.
+- Scope: local-only/internal-only/Development-only implementation of `LocalOperatorSurfaceLatestStateSnapshotCreateOnly`.
+- Implemented: Core executor, Development-only POST `/internal/product-ledger/operator-surface/create-latest-state-snapshot`, Development-only GET `/internal/product-ledger/operator-surface/latest-state-snapshot-state`, operator surface latest snapshot state, immutable versioned `.json` create-only write under `docs/test-output/product-ledger/operator-surface-latest-state-snapshots/`, redaction-before-persistence, exact operator surface hash check, source chain evidence refs, content hash/checkpoint, stale-state historical evidence classification, idempotent replay for matching safe payloads and conflict/corrupt blocking.
+- Non-goals preserved: no public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, latest pointer overwrite, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, release/commercial or business signoff.
+- Findings: P0=0, P1=0, P2=0; P3 real local write exists but only under the fixed test-output snapshot boundary with create-only/redaction/hash/reparse fail-closed checks; P4 stale snapshots are historical evidence only and not live/product authority.
+- Readiness changes: Evidence/Timeline/Audit Trail 96-98% -> 97-99%; Runtime/Command/Execution 72-80% -> 73-81%; UI/Operator Surface 78-88% -> 80-89%; local-only internal product 91-93% -> 92-94%; usable end-to-end local product 80-86% -> 82-88%; external/cloud and release/commercial unchanged at 0%.
+- Next recommended macro-block: `NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_EXTERNAL_AUDIT_READ_ONLY`.

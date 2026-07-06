@@ -9,6 +9,7 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBoundary
 {
     private const string FutureAction = "LocalOperatorSurfaceLatestStateSnapshotCreateOnly";
     private const string FutureRoute = "/internal/product-ledger/operator-surface/latest-state-snapshot";
+    private const string ImplementationRoute = "/internal/product-ledger/operator-surface/create-latest-state-snapshot";
     private const string FutureStateRoute = "/internal/product-ledger/operator-surface/latest-state-snapshot-state";
     private const string FutureExecutor = "ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor";
     private const string RecommendedBoundary = "docs/test-output/product-ledger/operator-surface-latest-state-snapshots/";
@@ -58,24 +59,19 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBoundary
     }
 
     [TestMethod]
-    public void LatestStateSnapshotBoundary_FutureNamesRemainDocsAndTestsOnly()
+    public void LatestStateSnapshotBoundary_ImplementationNamesAppearOnlyInApprovedLocalInternalSource()
     {
         var source = SourceText();
 
-        foreach (var futureFragment in new[]
-        {
-            FutureAction,
-            FutureRoute,
-            FutureStateRoute,
-            FutureExecutor,
-            "ProductLedgerLocalOperatorSurfaceLatestStateSnapshot",
-            "operator-surface-latest-state-snapshots",
-            "LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_ONLY"
-        })
-        {
-            Assert.IsFalse(source.Contains(futureFragment, StringComparison.Ordinal), futureFragment);
-        }
-
+        StringAssert.Contains(source, FutureAction);
+        StringAssert.Contains(source, ImplementationRoute);
+        StringAssert.Contains(source, FutureStateRoute);
+        StringAssert.Contains(source, FutureExecutor);
+        StringAssert.Contains(source, "ProductLedgerLocalOperatorSurfaceLatestStateSnapshot");
+        StringAssert.Contains(source, "operator-surface-latest-state-snapshots");
+        StringAssert.Contains(source, "LOCAL_INTERNAL_DEV_ONLY_HISTORICAL_SNAPSHOT");
+        StringAssert.Contains(source, "HISTORICAL_EVIDENCE_ONLY");
+        StringAssert.Contains(source, "NO_LATEST_POINTER_OVERWRITE");
         StringAssert.Contains(source, "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor");
         StringAssert.Contains(source, "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft");
     }
@@ -88,15 +84,14 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBoundary
         foreach (var forbidden in new[]
         {
             "MapPost(\"/internal/product-ledger/operator-surface/latest-state-snapshot\"",
-            "MapGet(\"/internal/product-ledger/operator-surface/latest-state-snapshot-state\"",
-            "ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor",
-            "LocalOperatorSurfaceLatestStateSnapshotCreateOnly",
             "/public/product-ledger",
             "PublicProductAllowed: true",
             "ProductionAllowed: true",
+            "AuthorityLiveProduct: true",
             "ReleaseCommercialReady: true",
             "UserSelectedPathAllowed: true",
             "OverwriteAllowed: true",
+            "LatestPointerOverwriteAllowed: true",
             "FileMode.OpenOrCreate",
             "FileMode.Create,",
             "File.Delete(",
@@ -115,7 +110,10 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBoundary
 
         StringAssert.Contains(source, "environment.IsDevelopment()");
         StringAssert.Contains(source, "FileMode.CreateNew");
+        StringAssert.Contains(source, ImplementationRoute);
+        StringAssert.Contains(source, FutureStateRoute);
         StringAssert.Contains(source, "NO_OVERWRITE");
+        StringAssert.Contains(source, "NO_LATEST_POINTER_OVERWRITE");
         StringAssert.Contains(source, "NO_COMMAND_EXECUTION");
         StringAssert.Contains(source, "NO_SHELL_SUBPROCESS");
     }
@@ -137,7 +135,8 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBoundary
             ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalApprovedHandoffReportDraftExecutor.cs"),
             ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor.cs"),
-            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.cs"));
+            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.cs"),
+            ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.cs"));
 
     private static string ReadRepoFile(params string[] segments) =>
         File.ReadAllText(Path.Combine(new[] { RepoRoot() }.Concat(segments).ToArray()));

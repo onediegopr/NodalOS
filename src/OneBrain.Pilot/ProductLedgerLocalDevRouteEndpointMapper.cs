@@ -45,6 +45,12 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     public const string LocalUserWorkspaceAllowlistedHandoffDraftStateRoute =
         "/internal/product-ledger/approval/user-workspace-allowlisted-handoff-draft-state";
 
+    public const string LocalOperatorSurfaceLatestStateSnapshotRoute =
+        "/internal/product-ledger/operator-surface/create-latest-state-snapshot";
+
+    public const string LocalOperatorSurfaceLatestStateSnapshotStateRoute =
+        "/internal/product-ledger/operator-surface/latest-state-snapshot-state";
+
     public const string LocalOnlyRouteResponseEvidenceMode =
         "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION";
 
@@ -139,9 +145,11 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalBoundedApprovedActionExecutor boundedActionExecutor,
         ProductLedgerLocalApprovedHandoffReportDraftExecutor handoffReportDraftExecutor,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor workspaceTestJailHandoffDraftExecutor,
-        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null)
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor? latestStateSnapshotExecutor = null)
     {
         userWorkspaceAllowlistedHandoffDraftExecutor ??= CreateDefaultUserWorkspaceAllowlistedHandoffDraftExecutor();
+        latestStateSnapshotExecutor ??= CreateDefaultLatestStateSnapshotExecutor();
         if (!environment.IsDevelopment())
         {
             return endpoints;
@@ -149,7 +157,7 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
 
         endpoints.MapGet(
             ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
-            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read(), userWorkspaceAllowlistedHandoffDraftExecutor.Read()));
+            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read(), userWorkspaceAllowlistedHandoffDraftExecutor.Read(), latestStateSnapshotExecutor.Read()));
         endpoints.MapGet(
             LocalApprovalDecisionStateRoute,
             () => Results.Json(decisionStateStore.Read(), RouteJsonOptions));
@@ -168,6 +176,9 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         endpoints.MapGet(
             LocalUserWorkspaceAllowlistedHandoffDraftStateRoute,
             () => Results.Json(userWorkspaceAllowlistedHandoffDraftExecutor.Read(), RouteJsonOptions));
+        endpoints.MapGet(
+            LocalOperatorSurfaceLatestStateSnapshotStateRoute,
+            () => Results.Json(latestStateSnapshotExecutor.Read(), RouteJsonOptions));
         Func<HttpContext, Task<IResult>> persistDecisionHandler =
             context => PersistProductLedgerLocalApprovalDecisionAsync(
                 context,
@@ -219,6 +230,18 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
                 workspaceTestJailHandoffDraftExecutor,
                 userWorkspaceAllowlistedHandoffDraftExecutor);
         endpoints.MapPost(LocalUserWorkspaceAllowlistedHandoffDraftRoute, createUserWorkspaceAllowlistedHandoffDraftHandler);
+        Func<HttpContext, Task<IResult>> createLatestStateSnapshotHandler =
+            context => CreateProductLedgerLocalOperatorSurfaceLatestStateSnapshotAsync(
+                context,
+                readModelSource,
+                decisionStateStore,
+                noOpExecutor,
+                boundedActionExecutor,
+                handoffReportDraftExecutor,
+                workspaceTestJailHandoffDraftExecutor,
+                userWorkspaceAllowlistedHandoffDraftExecutor,
+                latestStateSnapshotExecutor);
+        endpoints.MapPost(LocalOperatorSurfaceLatestStateSnapshotRoute, createLatestStateSnapshotHandler);
         return endpoints;
     }
 
@@ -282,7 +305,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalBoundedApprovedActionSnapshot boundedApprovedActionState,
         ProductLedgerLocalApprovedHandoffReportDraftSnapshot handoffReportDraftState,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot workspaceTestJailHandoffDraftState,
-        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null)
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null)
     {
         var result = new ProductLedgerLocalDevRoutePreview().Render(
             ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
@@ -292,7 +316,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             boundedApprovedActionState,
             handoffReportDraftState,
             workspaceTestJailHandoffDraftState,
-            userWorkspaceAllowlistedHandoffDraftState);
+            userWorkspaceAllowlistedHandoffDraftState,
+            latestStateSnapshotState);
 
         return result.Decision == ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
             ? Results.Content(result.HtmlSnapshot, result.ContentType)
@@ -341,6 +366,68 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         {
             ProductLedgerLocalApprovalDecisionStoreDecision.PersistedLocalOnly => StatusCodes.Status200OK,
             ProductLedgerLocalApprovalDecisionStoreDecision.IdempotentReplay => StatusCodes.Status200OK,
+            _ => StatusCodes.Status400BadRequest
+        };
+        return Results.Json(snapshot, RouteJsonOptions, statusCode: statusCode);
+    }
+
+    private static async Task<IResult> CreateProductLedgerLocalOperatorSurfaceLatestStateSnapshotAsync(
+        HttpContext context,
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource,
+        ProductLedgerLocalApprovalDecisionStateStore decisionStateStore,
+        ProductLedgerLocalApprovedActionNoOpExecutor noOpExecutor,
+        ProductLedgerLocalBoundedApprovedActionExecutor boundedActionExecutor,
+        ProductLedgerLocalApprovedHandoffReportDraftExecutor handoffReportDraftExecutor,
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor workspaceTestJailHandoffDraftExecutor,
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor userWorkspaceAllowlistedHandoffDraftExecutor,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor latestStateSnapshotExecutor)
+    {
+        if (context.Request.ContentLength is null or <= 0 or > 8192)
+        {
+            return Results.Json(ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult.Pending with
+            {
+                Blockers = [ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        if (!string.Equals(context.Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
+            && context.Request.ContentType?.StartsWith("application/json;", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            return Results.Json(ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult.Pending with
+            {
+                Blockers = [ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingRequest],
+                StatusText = ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.RejectedStatus
+            }, RouteJsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBody? body;
+        try
+        {
+            body = await JsonSerializer.DeserializeAsync<ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBody>(
+                context.Request.Body,
+                new JsonSerializerOptions(JsonSerializerDefaults.Web),
+                context.RequestAborted);
+        }
+        catch (JsonException)
+        {
+            body = null;
+        }
+
+        var surface = CurrentSurface(
+            readModelSource,
+            decisionStateStore,
+            noOpExecutor,
+            boundedActionExecutor,
+            handoffReportDraftExecutor,
+            workspaceTestJailHandoffDraftExecutor,
+            userWorkspaceAllowlistedHandoffDraftExecutor,
+            latestStateSnapshotExecutor);
+        var snapshot = latestStateSnapshotExecutor.CreateSnapshot(ToLatestStateSnapshotRequest(body, surface));
+        var statusCode = snapshot.Decision switch
+        {
+            ProductLedgerLocalOperatorSurfaceLatestStateSnapshotDecision.SnapshotCreatedLocalOnly => StatusCodes.Status200OK,
+            ProductLedgerLocalOperatorSurfaceLatestStateSnapshotDecision.IdempotentReplay => StatusCodes.Status200OK,
             _ => StatusCodes.Status400BadRequest
         };
         return Results.Json(snapshot, RouteJsonOptions, statusCode: statusCode);
@@ -929,6 +1016,74 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             .CanonicalSurface
             .ApprovalExecutionCandidatePreview;
 
+    private static ProductLedgerOperatorSurfaceModel CurrentSurface(
+        ProductLedgerOperatorSurfaceReadModelSource readModelSource,
+        ProductLedgerLocalApprovalDecisionStateStore decisionStateStore,
+        ProductLedgerLocalApprovedActionNoOpExecutor noOpExecutor,
+        ProductLedgerLocalBoundedApprovedActionExecutor boundedActionExecutor,
+        ProductLedgerLocalApprovedHandoffReportDraftExecutor handoffReportDraftExecutor,
+        ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor workspaceTestJailHandoffDraftExecutor,
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor userWorkspaceAllowlistedHandoffDraftExecutor,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor latestStateSnapshotExecutor) =>
+        new ProductLedgerLocalDevRoutePreview()
+            .Render(
+                ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
+                readModelSource,
+                decisionStateStore.Read(),
+                noOpExecutor.Read(),
+                boundedActionExecutor.Read(),
+                handoffReportDraftExecutor.Read(),
+                workspaceTestJailHandoffDraftExecutor.Read(),
+                userWorkspaceAllowlistedHandoffDraftExecutor.Read(),
+                latestStateSnapshotExecutor.Read())
+            .CanonicalSurface;
+
+    private static ProductLedgerLocalOperatorSurfaceLatestStateSnapshotRequest? ToLatestStateSnapshotRequest(
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBody? body,
+        ProductLedgerOperatorSurfaceModel surface)
+    {
+        if (body is null)
+        {
+            return null;
+        }
+
+        return new ProductLedgerLocalOperatorSurfaceLatestStateSnapshotRequest(
+            ExplicitLatestStateSnapshotScope: body.ExplicitLatestStateSnapshotScope == true,
+            DevelopmentMode: body.DevelopmentMode == true,
+            LocalMode: body.LocalMode == true,
+            InternalMode: body.InternalMode == true,
+            SnapshotId: body.SnapshotId,
+            ActionId: body.ActionId,
+            ActionKind: ParseLatestStateSnapshotActionKind(body.ActionKind),
+            OperatorSurface: surface,
+            OperatorSurfaceModelHash: body.OperatorSurfaceModelHash,
+            EvidenceReferences: body.EvidenceReferences ?? [],
+            ProposedPath: body.ProposedPath,
+            ProposedRoot: body.ProposedRoot,
+            ProposedFilename: body.ProposedFilename,
+            ProposedCommand: body.ProposedCommand,
+            ProposedUrl: body.ProposedUrl,
+            ProposedProvider: body.ProposedProvider,
+            ProposedDbMigration: body.ProposedDbMigration,
+            ClaimsArbitraryPathInput: body.ClaimsArbitraryPathInput == true,
+            ClaimsFilesystemScan: body.ClaimsFilesystemScan == true,
+            RequestsOverwrite: body.RequestsOverwrite == true,
+            RequestsLatestPointerOverwrite: body.RequestsLatestPointerOverwrite == true,
+            RequestsUserSelectedPath: body.RequestsUserSelectedPath == true,
+            RequestsPublicUiAction: body.RequestsPublicUiAction == true,
+            RequestsProductCommandExecution: body.RequestsProductCommandExecution == true,
+            RequestsProductCommandHandler: body.RequestsProductCommandHandler == true,
+            RequestsProductiveServiceRegistration: body.RequestsProductiveServiceRegistration == true,
+            RequestsShellOrSubprocess: body.RequestsShellOrSubprocess == true,
+            ClaimsArbitraryCommandExecution: body.ClaimsArbitraryCommandExecution == true,
+            ClaimsProviderCloudNetwork: body.ClaimsProviderCloudNetwork == true,
+            ClaimsDbMigration: body.ClaimsDbMigration == true,
+            ClaimsKmsWormExternalTrust: body.ClaimsKmsWormExternalTrust == true,
+            ClaimsBrowserCdpWcuOcrRecipesLive: body.ClaimsBrowserCdpWcuOcrRecipesLive == true,
+            ClaimsPilotRun: body.ClaimsPilotRun == true,
+            ClaimsReleaseCommercial: body.ClaimsReleaseCommercial == true);
+    }
+
     private static ProductLedgerLocalApprovalOperatorDecisionKind? ParseDecision(string? value)
     {
         if (Enum.TryParse<ProductLedgerLocalApprovalOperatorDecisionKind>(
@@ -997,6 +1152,19 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     private static ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftActionKind? ParseUserWorkspaceAllowlistedHandoffDraftActionKind(string? value)
     {
         if (Enum.TryParse<ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftActionKind>(
+            value,
+            ignoreCase: true,
+            out var action))
+        {
+            return action;
+        }
+
+        return null;
+    }
+
+    private static ProductLedgerLocalOperatorSurfaceLatestStateSnapshotActionKind? ParseLatestStateSnapshotActionKind(string? value)
+    {
+        if (Enum.TryParse<ProductLedgerLocalOperatorSurfaceLatestStateSnapshotActionKind>(
             value,
             ignoreCase: true,
             out var action))
@@ -1077,6 +1245,22 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             AllowsArbitraryPathInput: false,
             AllowsFilesystemScan: false,
             AllowsOverwrite: false,
+            AllowsUserSelectedPath: false,
+            AllowsShellOrSubprocess: false,
+            AllowsCommandExecution: false,
+            AllowsNetwork: false,
+            AllowsDb: false,
+            AllowsKmsWormExternalTrust: false,
+            AllowsReleaseCommercial: false));
+
+    private static ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor CreateDefaultLatestStateSnapshotExecutor() =>
+        new(new ProductLedgerLocalOperatorSurfaceLatestStateSnapshotOptions(
+            WorkspaceRootPath: FindRepoRoot(),
+            ExplicitLatestStateSnapshotBoundary: true,
+            AllowsArbitraryPathInput: false,
+            AllowsFilesystemScan: false,
+            AllowsOverwrite: false,
+            AllowsLatestPointerOverwrite: false,
             AllowsUserSelectedPath: false,
             AllowsShellOrSubprocess: false,
             AllowsCommandExecution: false,
@@ -1295,6 +1479,41 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         bool? RequestsOverwrite,
         bool? RequestsUserSelectedPath,
         bool? RequestsUserFileWrite,
+        bool? RequestsPublicUiAction,
+        bool? RequestsProductCommandExecution,
+        bool? RequestsProductCommandHandler,
+        bool? RequestsProductiveServiceRegistration,
+        bool? RequestsShellOrSubprocess,
+        bool? ClaimsArbitraryCommandExecution,
+        bool? ClaimsProviderCloudNetwork,
+        bool? ClaimsDbMigration,
+        bool? ClaimsKmsWormExternalTrust,
+        bool? ClaimsBrowserCdpWcuOcrRecipesLive,
+        bool? ClaimsPilotRun,
+        bool? ClaimsReleaseCommercial);
+
+    private sealed record ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBody(
+        bool? ExplicitLatestStateSnapshotScope,
+        bool? DevelopmentMode,
+        bool? LocalMode,
+        bool? InternalMode,
+        string? SnapshotId,
+        string? ActionId,
+        string? ActionKind,
+        string? OperatorSurfaceModelHash,
+        IReadOnlyList<string>? EvidenceReferences,
+        string? ProposedPath,
+        string? ProposedRoot,
+        string? ProposedFilename,
+        string? ProposedCommand,
+        string? ProposedUrl,
+        string? ProposedProvider,
+        string? ProposedDbMigration,
+        bool? ClaimsArbitraryPathInput,
+        bool? ClaimsFilesystemScan,
+        bool? RequestsOverwrite,
+        bool? RequestsLatestPointerOverwrite,
+        bool? RequestsUserSelectedPath,
         bool? RequestsPublicUiAction,
         bool? RequestsProductCommandExecution,
         bool? RequestsProductCommandHandler,

@@ -67,6 +67,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     ProductLedgerLocalApprovedHandoffReportDraftSnapshot HandoffReportDraftState,
     ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot WorkspaceTestJailHandoffDraftState,
     ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot UserWorkspaceAllowlistedHandoffDraftState,
+    ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult LatestStateSnapshotState,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -98,7 +99,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         ProductLedgerLocalBoundedApprovedActionSnapshot? boundedApprovedActionState = null,
         ProductLedgerLocalApprovedHandoffReportDraftSnapshot? handoffReportDraftState = null,
         ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot? workspaceTestJailHandoffDraftState = null,
-        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null)
+        ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null,
+        ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
         var actions = renderable.Model.Actions
@@ -157,6 +159,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             HandoffReportDraftState: handoffReportDraftState ?? ProductLedgerLocalApprovedHandoffReportDraftSnapshot.Pending,
             WorkspaceTestJailHandoffDraftState: workspaceTestJailHandoffDraftState ?? ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot.Pending,
             UserWorkspaceAllowlistedHandoffDraftState: userWorkspaceAllowlistedHandoffDraftState ?? ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot.Pending,
+            LatestStateSnapshotState: latestStateSnapshotState ?? ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult.Pending,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",
@@ -168,6 +171,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
                 "LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_AUDIT_READ_ONLY",
                 "WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_AUDIT_READ_ONLY",
                 "USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_AUDIT_READ_ONLY",
+                "LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_AUDIT_READ_ONLY",
                 "DELETION_LIFECYCLE_DESIGN_ONLY"
             ],
             IsLocalOnly: true,

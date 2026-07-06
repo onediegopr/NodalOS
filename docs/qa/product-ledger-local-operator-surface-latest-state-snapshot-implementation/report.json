@@ -1,0 +1,61 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_IMPLEMENTATION_READY",
+  "baselineHead": "8ca6cdbc72a8f0170d336c4b263981e87d8cf9b1",
+  "scope": "local-only-internal-only-development-only-implementation",
+  "actionName": "LocalOperatorSurfaceLatestStateSnapshotCreateOnly",
+  "allowedBoundary": "docs/test-output/product-ledger/operator-surface-latest-state-snapshots/",
+  "format": ".json",
+  "immutableVersionedCreateOnly": true,
+  "overwriteAllowed": false,
+  "latestPointerOverwriteAllowed": false,
+  "redactionBeforePersistenceRequired": true,
+  "safeMetadataOnly": true,
+  "historicalEvidenceOnly": true,
+  "authorityLiveProduct": false,
+  "developmentRoute": "/internal/product-ledger/operator-surface/create-latest-state-snapshot",
+  "developmentStateRoute": "/internal/product-ledger/operator-surface/latest-state-snapshot-state",
+  "productionRouteEnabled": false,
+  "publicProductPathEnabled": false,
+  "broaderWorkspaceActionEnabled": false,
+  "editUpdateDeleteEnabled": false,
+  "userSelectedPathEnabled": false,
+  "shellSubprocessEnabled": false,
+  "commandExecutionEnabled": false,
+  "pilotRunEnabled": false,
+  "browserCdpWcuOcrRecipesLiveEnabled": false,
+  "providerCloudNetworkEnabled": false,
+  "dbMigrationEnabled": false,
+  "kmsWormExternalTrustEnabled": false,
+  "releaseCommercialReady": false,
+  "complianceCustodyClaim": false,
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": [
+      "New local file write is bounded to docs/test-output/product-ledger/operator-surface-latest-state-snapshots/ and guarded by create-only, redaction, hashes and reparse fail-closed checks."
+    ],
+    "p4": [
+      "Snapshots are historical evidence only and can become stale; they are not live/product authority."
+    ]
+  },
+  "tests": {
+    "focusedSafetyLatestStateSnapshot": "8/8 PASS",
+    "focusedRecipesLatestStateSnapshotRoute": "1/1 PASS",
+    "productLedgerSafety": "247/247 PASS",
+    "productLedgerRecipes": "69/69 PASS"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_EXTERNAL_AUDIT_READ_ONLY",
+  "frontiersStillRequiringSeparateAuthorization": [
+    "public/product exposure",
+    "Production route",
+    "broader workspace action",
+    "durable snapshot/state promotion",
+    "edit/update/delete",
+    "provider/cloud/network",
+    "DB/migration",
+    "KMS/WORM/external trust",
+    "release/commercial"
+  ]
+}
