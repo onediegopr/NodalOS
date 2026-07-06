@@ -1591,3 +1591,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 user-workspace allowlisted write is the best next value frontier but needs a dedicated boundary design before implementation, and public/product exposure remains blocked by auth/UX/release/commercial risk; P4 this is planning evidence only and percentages are readiness estimates.
 - Readiness changes: usable end-to-end local product 72-80% -> 73-81%; Approval/Human Review, Evidence/Timeline/Audit Trail, Runtime/Command/Execution, UI/Operator Surface, local-only internal product, external/cloud and release/commercial unchanged.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY`.
+
+## NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY_READY`
+- Baseline: `9bc13dab64ad4f4f0493772b76a8524cf1207c53`.
+- Scope: design-only/readiness-only/test-only/guard-only boundary for future `LocalUserWorkspaceAllowlistedHandoffDraftCreateOnly`.
+- Defined: trusted workspace root source, fixed allowlisted boundary `docs/nodal-os/handoffs/`, path jail rules, canonicalization, reparse/symlink/junction fail-closed behavior, traversal blocking, internal filename strategy, `.md` allowlist, create-only/no-overwrite, exact idempotency, redaction-before-persistence, evidence refs, rollback/cleanup policy, future route/read-model expectations and implementation test plan.
+- Non-goals preserved: no write outside workspace test-jail, active route, active executor, public/product exposure, Production route, user-selected path, payload-controlled root/path/filename, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 future write outside test-jail remains blocked until dedicated implementation GO, trusted workspace root source must exist and fail closed if absent, reparse/symlink/junction proof remains platform-metadata-bound; P4 this is readiness/design evidence only and not business/release signoff.
+- Readiness changes: Evidence/Timeline/Audit Trail 93-97% -> 94-97%; local-only internal product 88-92% -> 89-92%; usable end-to-end local product 73-81% -> 74-82%; Approval/Human Review, Runtime/Command/Execution, UI/Operator Surface, external/cloud and release/commercial unchanged.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_IMPLEMENTATION_WINDOW`.
