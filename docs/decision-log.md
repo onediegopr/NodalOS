@@ -1613,3 +1613,13 @@
 - Findings: P0=0, P1=0, P2=0; P3 real local write outside test-jail now exists but only under `docs/nodal-os/handoffs/`, and reparse/symlink/junction safety remains platform-metadata-bound and fail-closed; P4 latest route state is in-process surface evidence and cleanup remains procedural.
 - Readiness changes: Evidence/Timeline/Audit Trail 94-97% -> 95-98%; Runtime/Command/Execution 70-78% -> 72-80%; UI/Operator Surface 75-85% -> 77-87%; local-only internal product 89-92% -> 91-93%; usable end-to-end local product 74-82% -> 78-84%; external/cloud and release/commercial unchanged at 0%.
 - Next recommended macro-block: `NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Audited HEAD: `98ff6710521ce55bca8d28c8dde02859a18b6698`.
+- Scope: read-only/docs-only external-audit-style review of the implemented `LocalUserWorkspaceAllowlistedHandoffDraftCreateOnly` action.
+- Audited: implementation ADR, Core executor, Development-only route/state mapping, operator surface, Safety and Recipes Product Ledger tests, QA report, handoff, roadmap and decision-log.
+- Non-goals preserved: no source/test/runtime behavior changes in audit, workspace-free write, user-selected path, public/product path, Production route, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 real local write outside test-jail remains bounded to `docs/nodal-os/handoffs/` and reparse/symlink/junction evidence is platform-metadata-bound fail-closed; P4 audit is internal Codex read-only and latest state is in-process surface evidence.
+- Stop frontier: broader user-workspace action or public/product exposure requires a separate authorization window.

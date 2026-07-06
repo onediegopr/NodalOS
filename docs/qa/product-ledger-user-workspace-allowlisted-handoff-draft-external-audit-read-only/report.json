@@ -1,0 +1,51 @@
+{
+  "decision": "GO_WITH_FINDINGS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_EXTERNAL_AUDIT_READ_ONLY_READY",
+  "date": "2026-07-06",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "auditedHead": "98ff6710521ce55bca8d28c8dde02859a18b6698",
+  "scope": "read-only-docs-only-external-audit-style",
+  "auditedImplementation": {
+    "action": "LocalUserWorkspaceAllowlistedHandoffDraftCreateOnly",
+    "executor": "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor",
+    "postRoute": "POST /internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft",
+    "stateRoute": "GET /internal/product-ledger/approval/user-workspace-allowlisted-handoff-draft-state",
+    "allowedBoundary": "docs/nodal-os/handoffs/",
+    "workspaceClassification": "USER_WORKSPACE_ALLOWLISTED_BOUNDARY_ONLY",
+    "developmentOnly": true,
+    "productionRouteMapped": false,
+    "publicProductExposure": false,
+    "createOnlyNoOverwrite": true,
+    "redactionBeforePersistence": true,
+    "canonicalPathValidation": true,
+    "reparseFailClosed": true
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Real local write outside test-jail now exists but remains constrained to docs/nodal-os/handoffs/.",
+      "Reparse, symlink and junction proof is platform-metadata-bound and fail-closed.",
+      "Output is not release, commercial, compliance custody or business signoff evidence."
+    ],
+    "P4": [
+      "Audit is simulated/read-only inside Codex.",
+      "Route state is in-process surface evidence."
+    ],
+    "TRUE_RISK": []
+  },
+  "validations": {
+    "inheritedFocusedExecutorBoundarySafetyTests": "PASS_8_OF_8",
+    "inheritedFocusedRouteDomProductionGuardRecipesTests": "PASS_2_OF_2",
+    "inheritedFullSafetyProductLedgerFocused": "PASS_369_OF_369",
+    "inheritedFullRecipesProductLedgerFocused": "PASS_68_OF_68",
+    "inheritedCoreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "inheritedPilotBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "inheritedSolutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "staticReadOnlyAuditScan": "PASS"
+  },
+  "nextFrontierRequiresSeparateGo": "BROADER_USER_WORKSPACE_ACTION_OR_PUBLIC_PRODUCT_EXPOSURE"
+}
