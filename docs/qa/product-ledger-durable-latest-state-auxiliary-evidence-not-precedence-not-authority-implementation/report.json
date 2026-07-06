@@ -1,0 +1,79 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_IMPLEMENTATION_READY",
+  "baselineHead": "c53b4d210dcdf77f978ca97ccfac023956436652",
+  "scope": "local-only-internal-only-development-only-read-only-auxiliary-evidence-implementation",
+  "actionName": "LocalDurableLatestStateAuxiliaryEvidenceNotPrecedenceNotAuthority",
+  "classification": "LOCAL_INTERNAL_DEV_ONLY_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY",
+  "developmentRoute": "/internal/product-ledger/operator-surface/durable-latest-state-auxiliary-evidence",
+  "sourceReaderCandidate": "LocalDurableLatestStateReaderCandidateNotAuthority",
+  "readOnly": true,
+  "auxiliaryEvidenceOnly": true,
+  "staleAware": true,
+  "authority": false,
+  "liveAuthority": false,
+  "productAuthority": false,
+  "readPrecedence": false,
+  "latestPointer": false,
+  "latestPointerOverwrite": false,
+  "productionRouteEnabled": false,
+  "publicProductPathEnabled": false,
+  "broaderWorkspaceActionEnabled": false,
+  "editUpdateDeleteEnabled": false,
+  "userSelectedPathEnabled": false,
+  "shellSubprocessEnabled": false,
+  "commandExecutionEnabled": false,
+  "pilotRunEnabled": false,
+  "browserCdpWcuOcrRecipesLiveEnabled": false,
+  "providerCloudNetworkEnabled": false,
+  "dbMigrationEnabled": false,
+  "kmsWormExternalTrustEnabled": false,
+  "releaseCommercialReady": false,
+  "complianceCustodyClaim": false,
+  "cloudBackedDurabilityClaim": false,
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": [
+      "Auxiliary evidence is visible in the local/internal Development operator surface but remains no-authority, no-read-precedence and no-latest-pointer."
+    ],
+    "p4": [
+      "Auxiliary evidence can become stale and is displayed as stale-aware evidence only."
+    ]
+  },
+  "corrections": [
+    "Added Development-only auxiliary evidence route and operator surface state.",
+    "Added fail-closed candidate claim, boundary, query/header override and unsafe metadata checks.",
+    "Expanded Safety and Recipes route/static/DOM coverage.",
+    "Added Production 404 coverage for the auxiliary evidence route."
+  ],
+  "tests": {
+    "solutionBuild": "PASS",
+    "focusedSafetyAuxiliaryEvidence": "5/5 PASS",
+    "focusedRecipesAuxiliaryEvidenceRoute": "1/1 PASS",
+    "focusedSafetyReaderCandidateAndAuxiliaryEvidence": "10/10 PASS",
+    "focusedRecipesReaderCandidateAuxiliaryEvidenceAndProductionGuard": "3/3 PASS",
+    "productLedgerSafetySuite": "269/269 PASS",
+    "productLedgerRecipesSuite": "72/72 PASS"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY",
+  "frontiersStillRequiringSeparateAuthorization": [
+    "active durable read precedence",
+    "mutable latest pointer",
+    "latest pointer overwrite",
+    "product read-model authority",
+    "public/product exposure",
+    "Production route",
+    "broader workspace action",
+    "edit/update/delete",
+    "shell/subprocess",
+    "command execution",
+    "provider/cloud/network",
+    "DB/migration",
+    "KMS/WORM/external trust",
+    "Browser/CDP/WCU/OCR/Recipes live",
+    "release/commercial",
+    "compliance custody"
+  ]
+}

@@ -937,6 +937,110 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
     }
 
     [TestMethod]
+    public async Task ProductLedgerDurableLatestStateAuxiliaryEvidenceRoute_DevelopmentHostPresentsAuxiliaryEvidenceNotAuthority()
+    {
+        using var approvalState = ApprovalStateFixture.Create();
+        using var executionState = ApprovalExecutionFixture.Create();
+        using var boundedState = BoundedApprovalExecutionFixture.Create();
+        using var handoffDraftState = HandoffReportDraftFixture.Create();
+        using var workspaceDraftState = WorkspaceTestJailHandoffDraftFixture.Create();
+        using var userWorkspaceDraftState = UserWorkspaceAllowlistedHandoffDraftFixture.Create();
+        using var latestStateSnapshotState = LatestStateSnapshotFixture.Create();
+        using var latestStateManifestState = LatestStateManifestFixture.Create(latestStateSnapshotState.WorkspaceRoot);
+        using var durableReaderCandidateState = DurableLatestStateReaderCandidateFixture.Create(latestStateSnapshotState.WorkspaceRoot);
+        await using var app = BuildLocalOnlyApp(
+            Environments.Development,
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+            approvalState.Store,
+            executionState.Executor,
+            boundedState.Executor,
+            handoffDraftState.Executor,
+            workspaceDraftState.Executor,
+            userWorkspaceDraftState.Executor,
+            latestStateSnapshotState.Executor,
+            latestStateManifestState.Writer,
+            durableReaderCandidateState.Validator);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+        await CreateFullUserWorkspaceAllowlistedChainAsync(
+            client,
+            handoffDraftState,
+            workspaceDraftState,
+            TestContext.CancellationTokenSource.Token);
+        var surfaceModel = new ProductLedgerLocalDevRoutePreview()
+            .Render(
+                ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
+                ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe,
+                approvalState.Store.Read(),
+                executionState.Executor.Read(),
+                boundedState.Executor.Read(),
+                handoffDraftState.Executor.Read(),
+                workspaceDraftState.Executor.Read(),
+                userWorkspaceDraftState.Executor.Read(),
+                latestStateSnapshotState.Executor.Read(),
+                latestStateManifestState.Writer.Read(),
+                durableReaderCandidateState.Validator.Read())
+            .CanonicalSurface;
+        var surfaceHash = ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.ComputeOperatorSurfaceModelHash(surfaceModel);
+
+        using var snapshot = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateSnapshotRoute,
+            JsonContent(ReadyLatestStateSnapshotBody(surfaceHash)),
+            TestContext.CancellationTokenSource.Token);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, snapshot.StatusCode);
+        var snapshotState = latestStateSnapshotState.Executor.Read();
+
+        using var manifest = await client.PostAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalOperatorSurfaceLatestStateManifestRoute,
+            JsonContent(ReadyLatestStateManifestBody(snapshotState.SnapshotContentHash, snapshotState.CheckpointHash)),
+            TestContext.CancellationTokenSource.Token);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, manifest.StatusCode);
+
+        using var evidence = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateAuxiliaryEvidenceRoute,
+            TestContext.CancellationTokenSource.Token);
+        var evidenceJson = await evidence.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var surface = await client.GetAsync(
+            ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
+            TestContext.CancellationTokenSource.Token);
+        var html = await surface.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var queryOverride = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateAuxiliaryEvidenceRoute + "?readPrecedence=true",
+            TestContext.CancellationTokenSource.Token);
+        var queryOverrideJson = await queryOverride.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+        using var headerOverrideRequest = new HttpRequestMessage(HttpMethod.Get, ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateAuxiliaryEvidenceRoute);
+        headerOverrideRequest.Headers.Add("x-product-ledger-auxiliary-evidence-read-precedence", "true");
+        using var headerOverride = await client.SendAsync(headerOverrideRequest, TestContext.CancellationTokenSource.Token);
+        var headerOverrideJson = await headerOverride.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, evidence.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, surface.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, queryOverride.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, headerOverride.StatusCode);
+        StringAssert.Contains(evidenceJson, "presentedAuxiliaryEvidenceNotAuthority");
+        StringAssert.Contains(evidenceJson, ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter.Classification);
+        StringAssert.Contains(evidenceJson, "\"auxiliaryEvidenceOnly\":true");
+        StringAssert.Contains(evidenceJson, "\"authority\":false");
+        StringAssert.Contains(evidenceJson, "\"readPrecedence\":false");
+        StringAssert.Contains(evidenceJson, "\"latestPointer\":false");
+        StringAssert.Contains(evidenceJson, "\"publicProductAllowed\":false");
+        StringAssert.Contains(queryOverrideJson, "queryOverrideRejected");
+        StringAssert.Contains(headerOverrideJson, "headerOverrideRejected");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-durable-latest-state-auxiliary-evidence-state\"");
+        StringAssert.Contains(html, "data-state=\"AuxiliaryEvidenceVisibleNotAuthority\"");
+        StringAssert.Contains(html, "data-auxiliary-evidence-only=\"true\"");
+        StringAssert.Contains(html, "data-authority=\"false\"");
+        StringAssert.Contains(html, "data-read-precedence=\"false\"");
+        StringAssert.Contains(html, "data-latest-pointer=\"false\"");
+        StringAssert.Contains(html, "auxiliary evidence only not authority no read precedence no latest pointer stale-aware not public/product Development-only");
+        Assert.IsFalse(html.Contains(@"C:\Users\", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("password=", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
     public async Task ProductLedgerApprovedHandoffReportDraftRoute_FailsClosedForMissingBoundedMalformedUnsafeOrMismatchedInput()
     {
         var cases = new (bool PersistApproval, bool ExecuteNoOp, bool ExecuteBounded, StringContent Content, bool ExpectDraftFile)[]
@@ -1347,6 +1451,9 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         using var durableReaderCandidate = await client.GetAsync(
             ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateReaderCandidateRoute,
             TestContext.CancellationTokenSource.Token);
+        using var durableAuxiliaryEvidence = await client.GetAsync(
+            ProductLedgerLocalDevRouteEndpointMapper.LocalDurableLatestStateAuxiliaryEvidenceRoute,
+            TestContext.CancellationTokenSource.Token);
 
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, post.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, state.StatusCode);
@@ -1365,6 +1472,7 @@ public sealed class ProductLedgerHttpInProcessRouteResponseTests
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateManifest.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, latestStateManifestStateRead.StatusCode);
         Assert.AreEqual(System.Net.HttpStatusCode.NotFound, durableReaderCandidate.StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, durableAuxiliaryEvidence.StatusCode);
         Assert.IsFalse(File.Exists(approvalState.StateFilePath));
         Assert.IsFalse(File.Exists(executionState.StateFilePath));
         Assert.IsFalse(File.Exists(boundedState.StateFilePath));

@@ -56,9 +56,6 @@ public sealed class ProductLedgerDurableLatestStateDecisionMatrixDesignOnlyTests
 
         foreach (var forbidden in new[]
         {
-            RecommendedCapability,
-            "ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter",
-            RecommendedClassification,
             "LOCAL_INTERNAL_DEV_ONLY_READ_PRECEDENCE_CANDIDATE_NOT_PRODUCT_AUTHORITY",
             "LOCAL_INTERNAL_DEV_ONLY_DURABLE_AUTHORITY",
             "ReadPrecedence: true",
@@ -88,6 +85,9 @@ public sealed class ProductLedgerDurableLatestStateDecisionMatrixDesignOnlyTests
             Assert.IsFalse(source.Contains(forbidden, StringComparison.Ordinal), forbidden);
         }
 
+        StringAssert.Contains(source, RecommendedCapability);
+        StringAssert.Contains(source, "ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter");
+        StringAssert.Contains(source, RecommendedClassification);
         StringAssert.Contains(source, "LOCAL_INTERNAL_DEV_ONLY_READER_CANDIDATE_NOT_AUTHORITY");
         StringAssert.Contains(source, "NO_LATEST_POINTER");
         StringAssert.Contains(source, "NO_READ_PRECEDENCE");

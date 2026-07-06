@@ -60,6 +60,9 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
     public const string LocalDurableLatestStateReaderCandidateRoute =
         "/internal/product-ledger/operator-surface/durable-latest-state-reader-candidate";
 
+    public const string LocalDurableLatestStateAuxiliaryEvidenceRoute =
+        "/internal/product-ledger/operator-surface/durable-latest-state-auxiliary-evidence";
+
     public const string LocalOnlyRouteResponseEvidenceMode =
         "LOCAL_ONLY_DEVELOPMENT_ONLY_HTTP_RESPONSE_PREVIEW_NO_EXECUTION";
 
@@ -157,12 +160,14 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor? userWorkspaceAllowlistedHandoffDraftExecutor = null,
         ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor? latestStateSnapshotExecutor = null,
         ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter? latestStateManifestWriter = null,
-        ProductLedgerLocalDurableLatestStateReaderCandidateValidator? durableLatestStateReaderCandidateValidator = null)
+        ProductLedgerLocalDurableLatestStateReaderCandidateValidator? durableLatestStateReaderCandidateValidator = null,
+        ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter? durableLatestStateAuxiliaryEvidencePresenter = null)
     {
         userWorkspaceAllowlistedHandoffDraftExecutor ??= CreateDefaultUserWorkspaceAllowlistedHandoffDraftExecutor();
         latestStateSnapshotExecutor ??= CreateDefaultLatestStateSnapshotExecutor();
         latestStateManifestWriter ??= CreateDefaultLatestStateManifestWriter();
         durableLatestStateReaderCandidateValidator ??= CreateDefaultDurableLatestStateReaderCandidateValidator();
+        durableLatestStateAuxiliaryEvidencePresenter ??= CreateDefaultDurableLatestStateAuxiliaryEvidencePresenter();
         if (!environment.IsDevelopment())
         {
             return endpoints;
@@ -170,7 +175,7 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
 
         endpoints.MapGet(
             ProductLedgerLocalDevRoutePreview.RouteTemplatePreview,
-            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read(), userWorkspaceAllowlistedHandoffDraftExecutor.Read(), latestStateSnapshotExecutor.Read(), latestStateManifestWriter.Read(), durableLatestStateReaderCandidateValidator.Read()));
+            () => RenderProductLedgerLocalDevRoutePreview(readModelSource, decisionStateStore.Read(), noOpExecutor.Read(), boundedActionExecutor.Read(), handoffReportDraftExecutor.Read(), workspaceTestJailHandoffDraftExecutor.Read(), userWorkspaceAllowlistedHandoffDraftExecutor.Read(), latestStateSnapshotExecutor.Read(), latestStateManifestWriter.Read(), durableLatestStateReaderCandidateValidator.Read(), durableLatestStateAuxiliaryEvidencePresenter.Read()));
         endpoints.MapGet(
             LocalApprovalDecisionStateRoute,
             () => Results.Json(decisionStateStore.Read(), RouteJsonOptions));
@@ -201,6 +206,13 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
                 latestStateManifestWriter,
                 durableLatestStateReaderCandidateValidator);
         endpoints.MapGet(LocalDurableLatestStateReaderCandidateRoute, readDurableLatestStateReaderCandidateHandler);
+        Func<HttpContext, IResult> readDurableLatestStateAuxiliaryEvidenceHandler =
+            context => ReadProductLedgerLocalDurableLatestStateAuxiliaryEvidence(
+                context,
+                latestStateManifestWriter,
+                durableLatestStateReaderCandidateValidator,
+                durableLatestStateAuxiliaryEvidencePresenter);
+        endpoints.MapGet(LocalDurableLatestStateAuxiliaryEvidenceRoute, readDurableLatestStateAuxiliaryEvidenceHandler);
         Func<HttpContext, Task<IResult>> persistDecisionHandler =
             context => PersistProductLedgerLocalApprovalDecisionAsync(
                 context,
@@ -336,7 +348,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null,
         ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null,
         ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState = null,
-        ProductLedgerLocalDurableLatestStateReaderCandidateResult? durableLatestStateReaderCandidateState = null)
+        ProductLedgerLocalDurableLatestStateReaderCandidateResult? durableLatestStateReaderCandidateState = null,
+        ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult? durableLatestStateAuxiliaryEvidenceState = null)
     {
         var result = new ProductLedgerLocalDevRoutePreview().Render(
             ProductLedgerLocalDevRoutePreview.CreateDefaultLocalDevRequest(),
@@ -349,7 +362,8 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             userWorkspaceAllowlistedHandoffDraftState,
             latestStateSnapshotState,
             latestStateManifestState,
-            durableLatestStateReaderCandidateState);
+            durableLatestStateReaderCandidateState,
+            durableLatestStateAuxiliaryEvidenceState);
 
         return result.Decision == ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview
             ? Results.Content(result.HtmlSnapshot, result.ContentType)
@@ -377,6 +391,40 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
         return Results.Json(candidate, RouteJsonOptions, statusCode: statusCode);
     }
 
+    private static IResult ReadProductLedgerLocalDurableLatestStateAuxiliaryEvidence(
+        HttpContext context,
+        ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter latestStateManifestWriter,
+        ProductLedgerLocalDurableLatestStateReaderCandidateValidator durableLatestStateReaderCandidateValidator,
+        ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter durableLatestStateAuxiliaryEvidencePresenter)
+    {
+        var queryOverride = HasReaderCandidateQueryOverride(context);
+        var headerOverride = HasReaderCandidateOverrideHeader(context)
+            || HasAuxiliaryEvidenceOverrideHeader(context);
+        var candidate = durableLatestStateReaderCandidateValidator.Validate(
+            new ProductLedgerLocalDurableLatestStateReaderCandidateRequest(
+                ExplicitReaderCandidateScope: true,
+                DevelopmentMode: true,
+                LocalMode: true,
+                InternalMode: true,
+                SourceManifest: latestStateManifestWriter.Read(),
+                QueryOverridePresent: queryOverride,
+                HeaderOverridePresent: headerOverride));
+        var evidence = durableLatestStateAuxiliaryEvidencePresenter.Present(
+            new ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceRequest(
+                ExplicitAuxiliaryEvidenceScope: true,
+                DevelopmentMode: true,
+                LocalMode: true,
+                InternalMode: true,
+                SourceReaderCandidate: candidate,
+                QueryOverridePresent: queryOverride,
+                HeaderOverridePresent: headerOverride));
+
+        var statusCode = evidence.Decision == ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceDecision.PresentedAuxiliaryEvidenceNotAuthority
+            ? StatusCodes.Status200OK
+            : StatusCodes.Status400BadRequest;
+        return Results.Json(evidence, RouteJsonOptions, statusCode: statusCode);
+    }
+
     private static bool HasReaderCandidateQueryOverride(HttpContext context) =>
         context.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestFeature>()?.RawTarget?.Contains('?', StringComparison.Ordinal) == true;
 
@@ -389,6 +437,10 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             || key.StartsWith("x-product-ledger-read-precedence", StringComparison.OrdinalIgnoreCase)
             || key.StartsWith("x-product-ledger-latest-pointer", StringComparison.OrdinalIgnoreCase)
             || key.StartsWith("x-product-ledger-authority", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasAuxiliaryEvidenceOverrideHeader(HttpContext context) =>
+        context.Request.Headers.Keys.Any(key =>
+            key.StartsWith("x-product-ledger-auxiliary-evidence-", StringComparison.OrdinalIgnoreCase));
 
     private static async Task<IResult> PersistProductLedgerLocalApprovalDecisionAsync(
         HttpContext context,
@@ -1475,6 +1527,23 @@ public static class ProductLedgerLocalDevRouteEndpointMapper
             AllowsLatestPointer: false,
             AllowsLatestPointerOverwrite: false,
             AllowsReadPrecedence: false,
+            AllowsAuthority: false,
+            AllowsProductAuthority: false,
+            AllowsPublicProduct: false,
+            AllowsProductionRoute: false,
+            AllowsShellOrSubprocess: false,
+            AllowsCommandExecution: false,
+            AllowsNetwork: false,
+            AllowsDb: false,
+            AllowsKmsWormExternalTrust: false,
+            AllowsReleaseCommercial: false));
+
+    private static ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter CreateDefaultDurableLatestStateAuxiliaryEvidencePresenter() =>
+        new(new ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceOptions(
+            ExplicitAuxiliaryEvidenceBoundary: true,
+            AllowsReadPrecedence: false,
+            AllowsLatestPointer: false,
+            AllowsLatestPointerOverwrite: false,
             AllowsAuthority: false,
             AllowsProductAuthority: false,
             AllowsPublicProduct: false,

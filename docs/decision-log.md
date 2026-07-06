@@ -1772,3 +1772,15 @@
 - Findings: P0=0, P1=0, P2=0; P3 read precedence/latest pointer/public-product are plausible later but remain blocked by trust semantics; P4 auxiliary evidence can still be stale and must remain non-authoritative.
 - Readiness changes: none; design-only.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_IMPLEMENTATION_WINDOW`.
+
+## NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_IMPLEMENTATION_WINDOW
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_IMPLEMENTATION_READY`
+- Baseline: `c53b4d210dcdf77f978ca97ccfac023956436652`.
+- Scope: local-only/internal-only/Development-only implementation of `LocalDurableLatestStateAuxiliaryEvidenceNotPrecedenceNotAuthority`.
+- Implemented: Core auxiliary evidence presenter/result model, Development-only GET `/internal/product-ledger/operator-surface/durable-latest-state-auxiliary-evidence`, operator surface auxiliary evidence state, read-only composition over the validated durable latest-state reader candidate, query/header override rejection, candidate claim blocking and static no-enable guards.
+- Non-goals preserved: no durable authority, live/product authority, active read precedence, latest pointer, latest pointer overwrite, public/product exposure, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, cloud-backed durability, release/commercial or business signoff.
+- Validation: solution build pass, focused Safety auxiliary evidence 5/5 pass, focused Recipes auxiliary route 1/1 pass, focused Safety reader candidate + auxiliary evidence 10/10 pass, focused Recipes reader candidate + auxiliary evidence + Production guard 3/3 pass.
+- Findings: P0=0, P1=0, P2=0; P3 auxiliary evidence is visible in the Development operator surface but remains no-authority/no-precedence/no-pointer; P4 auxiliary evidence can become stale and is surfaced as stale-aware evidence only.
+- Readiness changes: Evidence/Timeline/Audit Trail unchanged at 98-99%; Runtime/Command/Execution 75-83% -> 76-84%; UI/Operator Surface 82-91% -> 83-92%; local-only internal product 95-96% -> 96-97%; usable end-to-end local product 85-91% -> 86-92%; external/cloud and release/commercial unchanged at 0%.
+- Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY`.

@@ -70,6 +70,7 @@ public sealed record ProductLedgerOperatorSurfaceModel(
     ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult LatestStateSnapshotState,
     ProductLedgerLocalOperatorSurfaceLatestStateManifestResult LatestStateManifestState,
     ProductLedgerLocalDurableLatestStateReaderCandidateResult DurableLatestStateReaderCandidateState,
+    ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult DurableLatestStateAuxiliaryEvidenceState,
     IReadOnlyList<string> SafeNextSteps,
     bool IsLocalOnly,
     bool IsDevelopmentOnly,
@@ -104,7 +105,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot? userWorkspaceAllowlistedHandoffDraftState = null,
         ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult? latestStateSnapshotState = null,
         ProductLedgerLocalOperatorSurfaceLatestStateManifestResult? latestStateManifestState = null,
-        ProductLedgerLocalDurableLatestStateReaderCandidateResult? durableLatestStateReaderCandidateState = null)
+        ProductLedgerLocalDurableLatestStateReaderCandidateResult? durableLatestStateReaderCandidateState = null,
+        ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult? durableLatestStateAuxiliaryEvidenceState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
         var actions = renderable.Model.Actions
@@ -166,6 +168,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             LatestStateSnapshotState: latestStateSnapshotState ?? ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult.Pending,
             LatestStateManifestState: latestStateManifestState ?? ProductLedgerLocalOperatorSurfaceLatestStateManifestResult.Pending,
             DurableLatestStateReaderCandidateState: durableLatestStateReaderCandidateState ?? ProductLedgerLocalDurableLatestStateReaderCandidateResult.Pending,
+            DurableLatestStateAuxiliaryEvidenceState: durableLatestStateAuxiliaryEvidenceState ?? ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult.Pending,
             SafeNextSteps:
             [
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",
