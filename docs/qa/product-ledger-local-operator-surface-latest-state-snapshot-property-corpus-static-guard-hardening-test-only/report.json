@@ -1,0 +1,55 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_PROPERTY_CORPUS_STATIC_GUARD_HARDENING_TEST_ONLY_READY",
+  "baselineHead": "d0c38b683093e944c48d01aa8578e390188105e0",
+  "scope": "test-only-property-corpus-static-guard-hardening",
+  "actionName": "LocalOperatorSurfaceLatestStateSnapshotCreateOnly",
+  "changedFiles": [
+    "tests/OneBrain.Safety.Tests/ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutorTests.cs"
+  ],
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "p3": [
+    "Real local snapshot write remains bounded to docs/test-output/product-ledger/operator-surface-latest-state-snapshots/."
+  ],
+  "p4": [
+    "Snapshots remain historical evidence only and may become stale."
+  ],
+  "coverageAdded": [
+    "whitespace normalization for snapshot/action ids",
+    "path traversal and URL-encoded traversal ids",
+    "drive-like, slash, backslash and overlong ids",
+    "missing snapshot id, action id, operator surface, operator surface hash and evidence references",
+    "unsafe option capability permutations fail closed",
+    "rejected requests create no snapshot json"
+  ],
+  "validationEvidence": {
+    "focusedSafetyLatestStateSnapshot": "10/10 PASS",
+    "productLedgerSafety": "249/249 PASS",
+    "focusedRecipesLatestStateSnapshotRoute": "1/1 PASS",
+    "solutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "productLedgerRecipesFull": "TIMEOUT_NO_FAILURE_RESULT",
+    "gitDiffCheck": "PASS_LF_CRLF_WARNINGS_ONLY",
+    "jsonValidation": "PASS",
+    "staticScanChangedFiles": "PASS_EXPECTED_NEGATIVE_TEST_DOC_GUARD_VOCABULARY_ONLY"
+  },
+  "notEnabled": [
+    "public/product path",
+    "Production route",
+    "broader workspace action",
+    "edit/update/delete",
+    "user-selected path",
+    "shell/subprocess",
+    "command execution",
+    "Pilot /run",
+    "Browser/CDP/WCU/OCR/Recipes live authority",
+    "provider/cloud/network",
+    "DB/migration",
+    "KMS/WORM/external trust",
+    "compliance custody",
+    "release/commercial readiness",
+    "business signoff"
+  ],
+  "nextFrontier": "Durable/latest-state promotion or public/product exposure requires explicit authorization before implementation."
+}

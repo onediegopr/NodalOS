@@ -1668,3 +1668,15 @@
 - Non-goals preserved: no source/test/runtime behavior changes in the audit, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, release/commercial or business signoff.
 - Findings: P0=0, P1=0, P2=0; P3 local snapshot write remains bounded to `docs/test-output/product-ledger/operator-surface-latest-state-snapshots/`; P4 stale snapshots remain historical evidence only and not live/product authority.
 - Next recommended macro-block: `NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_PROPERTY_CORPUS_AND_STATIC_GUARD_HARDENING_TEST_ONLY`.
+
+## NODAL_OS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_PROPERTY_CORPUS_AND_STATIC_GUARD_HARDENING_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_PROPERTY_CORPUS_STATIC_GUARD_HARDENING_TEST_ONLY_READY`
+- Baseline: `d0c38b683093e944c48d01aa8578e390188105e0`.
+- Scope: test-only hardening of latest-state snapshot id/property corpus and unsafe option capability guards.
+- Hardened: whitespace normalization, traversal and URL-encoded traversal ids, Windows drive-like ids, slash/backslash ids, overlong ids, missing required request fields, unsafe option/capability flags and no `.json` creation after rejected requests.
+- Non-goals preserved: no source runtime behavior change, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, release/commercial or business signoff.
+- Validation: focused Safety latest-state snapshot 10/10 pass, Product Ledger Safety 249/249 pass, focused Recipes latest-state snapshot route 1/1 pass, solution build pass with 0 warnings/0 errors; full Product Ledger Recipes timed out locally twice without a failure result.
+- Findings: P0=0, P1=0, P2=0; P3 bounded local snapshot write remains deliberate test-output evidence; P4 stale snapshots remain historical evidence only.
+- Readiness changes: none; this block strengthens test evidence without changing product/runtime capability percentages.
+- Stop frontier: durable/latest-state promotion or public/product exposure requires explicit authorization before implementation.

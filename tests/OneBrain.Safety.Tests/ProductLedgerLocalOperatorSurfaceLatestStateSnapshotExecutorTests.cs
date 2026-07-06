@@ -92,6 +92,49 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor
     }
 
     [TestMethod]
+    public void LatestStateSnapshotExecutor_NormalizesWhitespaceIdsAndRejectsUnsafeIdCorpus()
+    {
+        using var positiveFixture = LatestStateSnapshotFixture.Create();
+        var positive = positiveFixture.Executor.CreateSnapshot(ReadyRequest() with
+        {
+            SnapshotId = " Latest.State_002 ",
+            ActionId = " Action.002 "
+        });
+
+        Assert.AreEqual(ProductLedgerLocalOperatorSurfaceLatestStateSnapshotDecision.SnapshotCreatedLocalOnly, positive.Decision);
+        StringAssert.Contains(positive.SnapshotRelativePath, "operator-surface-latest-state-snapshot-latest-state-002-");
+        Assert.IsFalse(positive.SnapshotRelativePath.Contains(' '));
+        Assert.IsTrue(File.Exists(positiveFixture.FullPath(positive)));
+
+        var ready = ReadyRequest();
+        var unsafeCases = new (ProductLedgerLocalOperatorSurfaceLatestStateSnapshotRequest Request, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker Blocker)[]
+        {
+            (ready with { SnapshotId = null }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingSnapshotId),
+            (ready with { SnapshotId = "   " }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingSnapshotId),
+            (ready with { SnapshotId = "../unsafe" }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.UnsafeSnapshotId),
+            (ready with { SnapshotId = "%2e%2e%2funsafe" }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.UnsafeSnapshotId),
+            (ready with { SnapshotId = "C:unsafe" }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.UnsafeSnapshotId),
+            (ready with { SnapshotId = "unsafe/name" }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.UnsafeSnapshotId),
+            (ready with { SnapshotId = new string('s', 81) }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.UnsafeSnapshotId),
+            (ready with { ActionId = null }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingActionId),
+            (ready with { ActionId = "unsafe\\name" }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.UnsafeActionId),
+            (ready with { OperatorSurface = null }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingOperatorSurface),
+            (ready with { OperatorSurfaceModelHash = null }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingOperatorSurfaceModelHash),
+            (ready with { EvidenceReferences = [] }, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.MissingEvidenceReferences)
+        };
+
+        foreach (var testCase in unsafeCases)
+        {
+            using var fixture = LatestStateSnapshotFixture.Create();
+            var result = fixture.Executor.CreateSnapshot(testCase.Request);
+
+            Assert.AreEqual(ProductLedgerLocalOperatorSurfaceLatestStateSnapshotDecision.Rejected, result.Decision, testCase.Blocker.ToString());
+            CollectionAssert.Contains(result.Blockers.ToArray(), testCase.Blocker, testCase.Blocker.ToString());
+            Assert.IsFalse(Directory.Exists(fixture.AllowedBoundaryRoot) && Directory.GetFiles(fixture.AllowedBoundaryRoot, "*.json").Length > 0);
+        }
+    }
+
+    [TestMethod]
     public void LatestStateSnapshotExecutor_BlocksMissingChainPathCommandNetworkOverwriteAndUnsafeClaims()
     {
         var ready = ReadyRequest();
@@ -145,6 +188,38 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor
 
             Assert.AreEqual(ProductLedgerLocalOperatorSurfaceLatestStateSnapshotDecision.Rejected, result.Decision, testCase.Blocker.ToString());
             CollectionAssert.Contains(result.Blockers.ToArray(), testCase.Blocker, testCase.Blocker.ToString());
+            Assert.IsFalse(Directory.Exists(fixture.AllowedBoundaryRoot) && Directory.GetFiles(fixture.AllowedBoundaryRoot, "*.json").Length > 0);
+        }
+    }
+
+    [TestMethod]
+    public void LatestStateSnapshotExecutor_OptionCorpusFailsClosedForUnsafeBoundaryCapabilities()
+    {
+        var unsafeOptions = new Func<string, ProductLedgerLocalOperatorSurfaceLatestStateSnapshotOptions>[]
+        {
+            root => LatestStateSnapshotFixture.Options(root) with { ExplicitLatestStateSnapshotBoundary = false },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsArbitraryPathInput = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsFilesystemScan = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsOverwrite = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsLatestPointerOverwrite = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsUserSelectedPath = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsShellOrSubprocess = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsCommandExecution = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsNetwork = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsDb = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsKmsWormExternalTrust = true },
+            root => LatestStateSnapshotFixture.Options(root) with { AllowsReleaseCommercial = true },
+            _ => LatestStateSnapshotFixture.Options(string.Empty)
+        };
+
+        foreach (var optionsFactory in unsafeOptions)
+        {
+            using var fixture = LatestStateSnapshotFixture.Create();
+            var executor = new ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor(optionsFactory(fixture.WorkspaceRoot));
+            var result = executor.CreateSnapshot(ReadyRequest());
+
+            Assert.AreEqual(ProductLedgerLocalOperatorSurfaceLatestStateSnapshotDecision.Rejected, result.Decision);
+            CollectionAssert.Contains(result.Blockers.ToArray(), ProductLedgerLocalOperatorSurfaceLatestStateSnapshotBlocker.OutputBoundaryRejected);
             Assert.IsFalse(Directory.Exists(fixture.AllowedBoundaryRoot) && Directory.GetFiles(fixture.AllowedBoundaryRoot, "*.json").Length > 0);
         }
     }
@@ -396,7 +471,11 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor
         private LatestStateSnapshotFixture(string workspaceRoot)
         {
             WorkspaceRoot = workspaceRoot;
-            Executor = new ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor(new ProductLedgerLocalOperatorSurfaceLatestStateSnapshotOptions(
+            Executor = new ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor(Options(workspaceRoot));
+        }
+
+        public static ProductLedgerLocalOperatorSurfaceLatestStateSnapshotOptions Options(string workspaceRoot) =>
+            new(
                 WorkspaceRootPath: workspaceRoot,
                 ExplicitLatestStateSnapshotBoundary: true,
                 AllowsArbitraryPathInput: false,
@@ -409,8 +488,7 @@ public sealed class ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor
                 AllowsNetwork: false,
                 AllowsDb: false,
                 AllowsKmsWormExternalTrust: false,
-                AllowsReleaseCommercial: false));
-        }
+                AllowsReleaseCommercial: false);
 
         public string WorkspaceRoot { get; }
 
