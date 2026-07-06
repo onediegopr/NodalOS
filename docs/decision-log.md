@@ -1726,3 +1726,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 bounded local manifest write remains under `docs/test-output/product-ledger/operator-surface-latest-state-manifests/`; P4 manifests remain historical index/evidence only and can become stale.
 - Evidence: focused Safety latest-state manifest 6/6 pass, focused Recipes latest-state manifest route 1/1 pass, Product Ledger Safety 257/257 pass, Product Ledger Recipes 70/70 pass, solution build pass with 0 warnings/0 errors, `git diff --check` pass, JSON validation pass, changed source static scan pass.
 - Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_BOUNDARY_DESIGN_ONLY`.
+
+## NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_READER_CANDIDATE_BOUNDARY_DESIGN_ONLY_READY`
+- Baseline: `2caa0aaf641b4626c93f54663178664458b837cc`.
+- Scope: design-only/readiness-only/test-plan-only boundary for future `LocalDurableLatestStateReaderCandidateNotAuthority`.
+- Designed: candidate contract, fail-closed validation rules, required test plan and explicit no-authority/no-read-precedence constraints.
+- Non-goals preserved: no active durable reader, read precedence, runtime/product enablement, public/product path, Production route, product DI/service registration, command handler, UI product action, provider/cloud/network, DB/migration, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live, release/commercial or compliance custody.
+- Findings: P0=0, P1=0, P2=0; P3 future candidate reads need strict diagnostic-only no-authority/no-precedence guards; P4 candidate evidence can be stale.
+- Readiness changes: none; design/test-plan only.
+- Stop frontier: reader candidate implementation requires explicit GO.

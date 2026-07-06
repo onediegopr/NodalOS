@@ -1,0 +1,38 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_DURABLE_LATEST_STATE_READER_CANDIDATE_BOUNDARY_DESIGN_ONLY_READY",
+  "baselineHead": "2caa0aaf641b4626c93f54663178664458b837cc",
+  "scope": "design-only-readiness-only-test-plan-only",
+  "futureCandidateName": "LocalDurableLatestStateReaderCandidateNotAuthority",
+  "sourceRuntimeBehaviorChanged": false,
+  "activeReaderImplemented": false,
+  "readPrecedenceChanged": false,
+  "runtimeProductEnabled": false,
+  "publicProductRouteEnabled": false,
+  "productionRouteEnabled": false,
+  "providerCloudNetworkEnabled": false,
+  "dbMigrationEnabled": false,
+  "kmsWormExternalTrustEnabled": false,
+  "releaseCommercialReady": false,
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "p3": [
+    "Future candidate reads must remain diagnostic-only and fail closed on stale/corrupt/mismatched evidence."
+  ],
+  "p4": [
+    "Reader candidate evidence can become stale and must not be authority."
+  ],
+  "requiredFutureTests": [
+    "valid manifest plus matching snapshot creates diagnostic candidate only",
+    "corrupt or incomplete manifest blocks",
+    "authority/product/latest-pointer/read-precedence claims block",
+    "missing snapshot blocks",
+    "hash/checkpoint mismatch blocks",
+    "path traversal Windows-drive UNC and reparse variants block",
+    "directory scan and mutable latest pointer remain absent",
+    "Production route remains absent",
+    "product DI command handler UI action provider cloud network DB KMS WORM live automation release commercial remain absent"
+  ],
+  "nextStep": "explicit GO required before reader candidate implementation"
+}
