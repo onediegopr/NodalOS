@@ -1579,3 +1579,15 @@
 - Non-goals preserved: no source/test/runtime behavior changes in audit, workspace-free write, user-selected path, public/product path, Production route, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, business signoff or compliance custody claim.
 - Findings: P0=0, P1=0, P2=0; P3 real local write remains bounded to the controlled workspace test-jail and reparse/symlink/junction evidence is platform-metadata-bound fail-closed; P4 audit is internal Codex read-only and latest state is in-process surface evidence.
 - Stop frontier: user-workspace action outside test-jail or public/product exposure requires a separate authorization window.
+
+## NODAL_OS_USER_WORKSPACE_ACTION_OUTSIDE_TEST_JAIL_OR_PUBLIC_PRODUCT_EXPOSURE_AUTHORIZATION_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_USER_WORKSPACE_OR_PUBLIC_PRODUCT_AUTHORIZATION_BOUNDARY_DESIGN_ONLY_READY`
+- Baseline: `78c47f1226d8c80663a4e312ea6cdc54ccc86b77`.
+- Scope: design-only/readiness-only/audit-only/test-only/guard-only authorization matrix after the workspace test-jail handoff draft implementation.
+- Compared: controlled user-workspace allowlisted write outside test-jail, public/product exposure, local/internal hardening and fixture-only workspace evidence.
+- Recommendation: do not open public/product yet; next safe frontier should be a further design-only boundary for `LocalUserWorkspaceAllowlistedHandoffDraftCreateOnly`, with future route candidate `POST /internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft` and allowlisted boundary candidate `docs/nodal-os/handoffs/`.
+- Non-goals preserved: no action outside test-jail implementation, user-selected path, public/product exposure, Production route, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 user-workspace allowlisted write is the best next value frontier but needs a dedicated boundary design before implementation, and public/product exposure remains blocked by auth/UX/release/commercial risk; P4 this is planning evidence only and percentages are readiness estimates.
+- Readiness changes: usable end-to-end local product 72-80% -> 73-81%; Approval/Human Review, Evidence/Timeline/Audit Trail, Runtime/Command/Execution, UI/Operator Surface, local-only internal product, external/cloud and release/commercial unchanged.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY`.
