@@ -1,0 +1,61 @@
+{
+  "decision": "GO_WITH_FINDINGS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY_READY",
+  "date": "2026-07-06",
+  "repo": "C:/DESARROLLO/NodalOS/Codigo-m12-audit",
+  "branch": "chrome-lab-001-extension-local-ai-bridge",
+  "mode": "DESIGN_ONLY_READINESS_ONLY_TEST_ONLY_GUARD_ONLY",
+  "baselineHead": "a6451029cb0f26e00fae9cb0790e5e8af9fceb9e",
+  "futureAction": {
+    "actionName": "LocalWorkspaceTestJailHandoffDraftCreateOnly",
+    "actionKind": "LocalWorkspaceTestJailHandoffDraftCreateOnly",
+    "futureRoute": "POST /internal/product-ledger/approval/create-workspace-test-jail-handoff-draft",
+    "futureExecutor": "ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor",
+    "status": "NOT_IMPLEMENTED_DESIGN_ONLY",
+    "allowedRelativeOutputShape": ".nodal/product-ledger/handoff-drafts/<safe-action-id>.md",
+    "allowedExtension": ".md",
+    "predecessorRequired": "LocalApprovedHandoffReportDraft"
+  },
+  "validations": {
+    "safetyProductLedgerFocused": "PASS_219_OF_219",
+    "recipesProductLedgerFocused": "PASS_65_OF_65",
+    "focusedGuardReadinessTests": "PASS_3_OF_3",
+    "coreBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "solutionBuild": "PASS_0_WARNINGS_0_ERRORS",
+    "jsonValidation": "PASS",
+    "gitDiffCheck": "PASS",
+    "staticScans": "PASS"
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": [
+      "Workspace write is still not implemented and requires a separate implementation GO.",
+      "Future implementation must prove canonicalization, reparse, symlink/junction escape blocking and exact idempotency before write.",
+      "Cleanup remains procedural/design-only; no cleanup route or delete behavior exists."
+    ],
+    "P4": [
+      "Symlink/reparse detection depends on platform APIs and must fail closed if uncertain.",
+      "This is internal boundary/readiness evidence, not product/business signoff."
+    ],
+    "TRUE_RISK": []
+  },
+  "boundaryConfirmation": {
+    "designOnly": true,
+    "workspaceWriteImplemented": false,
+    "activeRouteImplementedInSrc": false,
+    "activeExecutorImplementedInSrc": false,
+    "publicProductPathImplemented": false,
+    "productionRouteImplemented": false,
+    "shellSubprocessAllowed": false,
+    "commandExecutionAllowed": false,
+    "browserCdpWcuOcrRecipesLiveAllowed": false,
+    "pilotRunAllowed": false,
+    "providerCloudNetworkAllowed": false,
+    "dbMigrationAllowed": false,
+    "kmsWormExternalTrustAllowed": false,
+    "releaseCommercialClaimed": false,
+    "complianceCustodyClaimed": false
+  },
+  "exactNextGoRequiredFromDiego": "AUTHORIZE_NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_IMPLEMENTATION_WINDOW"
+}

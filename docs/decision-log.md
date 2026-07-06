@@ -1548,3 +1548,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 workspace action is recommended only after a dedicated boundary design and future canonicalization/reparse/idempotency/redaction/cleanup tests; P4 percentages are readiness estimates and matrix evidence is not business/product signoff.
 - Readiness changes: local-only internal product 84-90% -> 85-90%; usable end-to-end local product 66-74% -> 67-75%; other categories unchanged.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY`.
+
+## NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_BOUNDARY_DESIGN_ONLY_READY`
+- Baseline: `a6451029cb0f26e00fae9cb0790e5e8af9fceb9e`.
+- Scope: design-only/readiness-only/test-only/guard-only boundary for future `LocalWorkspaceTestJailHandoffDraftCreateOnly`.
+- Defined: trusted workspace test-jail root, relative output path shape, filename/extension strategy, forbidden paths, canonicalization/reparse rules, symlink/reparse fail-closed handling, create-only/no-overwrite, exact idempotency, redaction, evidence, cleanup/rollback, failure modes, route/DOM/read-model expectations and future test plan.
+- Non-goals preserved: no workspace write implementation, active route in `src`, active executor in `src`, public/product path, Production route, shell/subprocess, command execution, Browser/CDP/WCU/OCR/Recipes live, Pilot `/run`, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial or compliance custody claim.
+- Findings: P0=0, P1=0, P2=0; P3 future implementation must prove canonicalization/reparse/symlink escape blocking and exact idempotency before write; P4 reparse detection depends on platform APIs and must fail closed if uncertain.
+- Readiness changes: Evidence/Timeline/Audit Trail 91-96% -> 92-96%; local-only internal product 85-90% -> 86-90%; usable end-to-end local product 67-75% -> 68-76%; other categories unchanged.
+- Exact next GO required: `AUTHORIZE_NODAL_OS_WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_IMPLEMENTATION_WINDOW`.
