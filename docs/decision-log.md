@@ -1715,3 +1715,14 @@
 - Findings: P0=0, P1=0, P2=0 after hardening; P3 bounded local manifest write exists only under fixed test-output boundary with create-only/redaction/hash/checkpoint/reparse fail-closed checks; P4 manifests remain historical index/evidence only and can become stale.
 - Readiness changes: Evidence/Timeline/Audit Trail unchanged at 98-99%; Runtime/Command/Execution 73-81% -> 74-82%; UI/Operator Surface 80-89% -> 81-90%; local-only internal product 93-95% -> 94-95%; usable end-to-end local product 83-89% -> 84-90%; external/cloud and release/commercial unchanged at 0%.
 - Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Audited HEAD: `478c868a517b88795127eb32abfd86b27a0f6657`.
+- Scope: read-only/docs-only external-audit-style review of `LocalOperatorSurfaceLatestStateManifestCreateOnly`.
+- Audited: Core writer, Development-only route/state mapping, operator surface manifest state, Safety tests, Recipes route tests, implementation ADR, QA report/json, handoff, roadmap note and decision-log.
+- Non-goals preserved: no active durable latest-state reader, read precedence, latest pointer, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, cloud-backed durability, release/commercial or business signoff.
+- Findings: P0=0, P1=0, P2=0; P3 bounded local manifest write remains under `docs/test-output/product-ledger/operator-surface-latest-state-manifests/`; P4 manifests remain historical index/evidence only and can become stale.
+- Evidence: focused Safety latest-state manifest 6/6 pass, focused Recipes latest-state manifest route 1/1 pass, Product Ledger Safety 257/257 pass, Product Ledger Recipes 70/70 pass, solution build pass with 0 warnings/0 errors, `git diff --check` pass, JSON validation pass, changed source static scan pass.
+- Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_BOUNDARY_DESIGN_ONLY`.

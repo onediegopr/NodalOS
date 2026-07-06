@@ -1,0 +1,50 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_DURABLE_LATEST_STATE_MANIFEST_CREATE_ONLY_EXTERNAL_AUDIT_READ_ONLY_READY",
+  "auditedHead": "478c868a517b88795127eb32abfd86b27a0f6657",
+  "scope": "external-audit-read-only-docs-only",
+  "auditedAction": "LocalOperatorSurfaceLatestStateManifestCreateOnly",
+  "allowedBoundary": "docs/test-output/product-ledger/operator-surface-latest-state-manifests/",
+  "p0": 0,
+  "p1": 0,
+  "p2": 0,
+  "p3": [
+    "Bounded local JSON write exists only under docs/test-output/product-ledger/operator-surface-latest-state-manifests/."
+  ],
+  "p4": [
+    "Manifest entries are historical index/evidence only and can become stale."
+  ],
+  "confirmedNotEnabled": {
+    "activeDurableReader": false,
+    "readPrecedence": false,
+    "latestPointer": false,
+    "latestPointerOverwrite": false,
+    "productAuthority": false,
+    "liveAuthority": false,
+    "publicProductPath": false,
+    "productionRoute": false,
+    "broaderWorkspaceAction": false,
+    "shellSubprocess": false,
+    "commandExecution": false,
+    "providerCloudNetwork": false,
+    "dbMigration": false,
+    "kmsWormExternalTrust": false,
+    "browserCdpWcuOcrRecipesLive": false,
+    "pilotRun": false,
+    "complianceCustody": false,
+    "cloudBackedDurability": false,
+    "releaseCommercial": false
+  },
+  "evidence": {
+    "focusedSafetyLatestStateManifest": "6/6 PASS",
+    "focusedRecipesLatestStateManifestRoute": "1/1 PASS",
+    "productLedgerSafety": "257/257 PASS",
+    "productLedgerRecipes": "70/70 PASS",
+    "solutionBuild": "PASS 0 warnings 0 errors",
+    "gitDiffCheck": "PASS",
+    "jsonValidation": "PASS",
+    "staticScanChangedSource": "PASS"
+  },
+  "nextSafeMacroBlock": "NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_BOUNDARY_DESIGN_ONLY",
+  "nextStepRestriction": "design-only-readiness-only-test-plan-only-no-active-reader-no-read-precedence"
+}
