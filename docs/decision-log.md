@@ -1749,3 +1749,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 durable local reads now exist over fixed test-output evidence but remain candidate-only/no-authority/no-precedence; P4 candidate evidence can become stale and is surfaced as stale-aware evidence only.
 - Readiness changes: Evidence/Timeline/Audit Trail unchanged at 98-99%; Runtime/Command/Execution 74-82% -> 75-83%; UI/Operator Surface 81-90% -> 82-91%; local-only internal product 94-95% -> 95-96%; usable end-to-end local product 84-90% -> 85-91%; external/cloud and release/commercial unchanged at 0%.
 - Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Audited HEAD: `bacbf27072a8ee298bb3224a3c6ad4aa3e47b87e`.
+- Scope: read-only/docs-only external-audit-style review inside Codex of `LocalDurableLatestStateReaderCandidateNotAuthority`.
+- Audited: Core validator, Development-only route, operator surface state, Safety tests, Recipes route/DOM tests, implementation ADR, QA report/json, handoff, roadmap and decision-log.
+- Non-goals preserved: no source/test/runtime behavior changes in the audit, active durable read precedence, latest pointer, latest pointer overwrite, product read-model authority, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, cloud-backed durability, release/commercial or business signoff.
+- Evidence: focused Safety reader candidate 5/5 pass, focused Recipes reader candidate route 1/1 pass, Product Ledger Safety 262/262 pass, Product Ledger Recipes 71/71 pass, Core/Pilot/Solution builds pass with 0 warnings/0 errors, `git diff --check` pass with line-ending warnings only, JSON validation pass, static scan pass with false-positive hits only.
+- Findings: P0=0, P1=0, P2=0; P3 durable local reads exist over fixed test-output evidence but remain candidate-only/no-authority/no-read-precedence; P4 candidate evidence can become stale and is surfaced as stale-aware evidence only.
+- Stop frontier: active durable read precedence, latest pointer behavior, product read-model authority, public/product exposure, Production route or broader workspace action requires separate explicit authorization.

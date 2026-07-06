@@ -1,0 +1,61 @@
+{
+  "date": "2026-07-06",
+  "decision": "GO_WITH_FINDINGS_DURABLE_LATEST_STATE_READER_CANDIDATE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY_READY",
+  "auditedHead": "bacbf27072a8ee298bb3224a3c6ad4aa3e47b87e",
+  "scope": "read-only-docs-only-external-audit-inside-codex",
+  "auditedAction": "LocalDurableLatestStateReaderCandidateNotAuthority",
+  "sourceBehaviorChanged": false,
+  "testBehaviorChanged": false,
+  "runtimeBehaviorChanged": false,
+  "readOnly": true,
+  "candidateEvidenceOnly": true,
+  "authority": false,
+  "liveAuthority": false,
+  "productAuthority": false,
+  "readPrecedence": false,
+  "latestPointer": false,
+  "latestPointerOverwrite": false,
+  "productionRouteEnabled": false,
+  "publicProductPathEnabled": false,
+  "providerCloudNetworkEnabled": false,
+  "dbMigrationEnabled": false,
+  "kmsWormExternalTrustEnabled": false,
+  "releaseCommercialReady": false,
+  "findings": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "p3": [
+      "Durable local reads exist over fixed test-output evidence but remain candidate-only/no-authority/no-read-precedence."
+    ],
+    "p4": [
+      "Candidate evidence can become stale and is surfaced as non-authoritative evidence only."
+    ]
+  },
+  "evidence": {
+    "focusedSafetyReaderCandidate": "5/5 PASS",
+    "focusedRecipesReaderCandidateRoute": "1/1 PASS",
+    "productLedgerSafety": "262/262 PASS",
+    "productLedgerRecipes": "71/71 PASS",
+    "coreBuild": "PASS 0 warnings 0 errors",
+    "pilotBuild": "PASS 0 warnings 0 errors",
+    "solutionBuild": "PASS 0 warnings 0 errors",
+    "gitDiffCheck": "PASS line-ending warnings only",
+    "jsonValidation": "PASS",
+    "staticScan": "PASS false-positive hits only"
+  },
+  "nextFrontierRequiresSeparateAuthorization": [
+    "active durable read precedence",
+    "latest pointer behavior",
+    "product read-model authority",
+    "public/product exposure",
+    "Production route",
+    "broader workspace action",
+    "provider/cloud/network",
+    "DB/migration",
+    "KMS/WORM/external trust",
+    "Browser/CDP/WCU/OCR/Recipes live",
+    "release/commercial",
+    "compliance custody"
+  ]
+}
