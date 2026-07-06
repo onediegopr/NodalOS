@@ -1784,3 +1784,14 @@
 - Findings: P0=0, P1=0, P2=0; P3 auxiliary evidence is visible in the Development operator surface but remains no-authority/no-precedence/no-pointer; P4 auxiliary evidence can become stale and is surfaced as stale-aware evidence only.
 - Readiness changes: Evidence/Timeline/Audit Trail unchanged at 98-99%; Runtime/Command/Execution 75-83% -> 76-84%; UI/Operator Surface 82-91% -> 83-92%; local-only internal product 95-96% -> 96-97%; usable end-to-end local product 85-91% -> 86-92%; external/cloud and release/commercial unchanged at 0%.
 - Next recommended macro-block: `NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY`.
+
+## NODAL_OS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_AUXILIARY_EVIDENCE_NOT_PRECEDENCE_NOT_AUTHORITY_EXTERNAL_AUDIT_READ_ONLY_READY`
+- Audited HEAD: `e1acd2849de36a509893e5dafe87fcc8ca539c9c`.
+- Scope: read-only/docs-only external-audit-style review inside Codex of `LocalDurableLatestStateAuxiliaryEvidenceNotPrecedenceNotAuthority`.
+- Audited: Core auxiliary evidence presenter, Development-only route, operator surface state/DOM panel, Safety tests, Recipes route/DOM/Production-guard tests, implementation ADR, QA report/json, handoff, roadmap and decision-log.
+- Non-goals preserved: no source/test/runtime behavior changes in the audit, durable authority, live/product authority, active read precedence, latest pointer, latest pointer overwrite, product read-model authority, public/product path, Production route, broader workspace action, edit/update/delete, user-selected path, shell/subprocess, command execution, Pilot `/run`, Browser/CDP/WCU/OCR/Recipes live, provider/cloud/network, DB/migration, KMS/WORM/external trust, compliance custody, cloud-backed durability, release/commercial or business signoff.
+- Evidence: focused Safety auxiliary evidence 5/5 pass, focused Recipes auxiliary route 1/1 pass, focused Safety reader candidate + auxiliary evidence 10/10 pass, focused Recipes reader candidate + auxiliary evidence + Production guard 3/3 pass, Product Ledger Safety 269/269 pass, Product Ledger Recipes 72/72 pass, solution build pass with 0 warnings/0 errors, `git diff --check` pass with line-ending warnings only, JSON validation pass, static scan pass with false-positive/negative-claim hits only.
+- Findings: P0=0, P1=0, P2=0; P3 auxiliary evidence is local/internal/Development-only and remains no-authority/no-precedence/no-pointer; P4 stale-aware non-authoritative evidence remains possible.
+- Stop frontier: active durable read precedence, latest pointer behavior, product read-model authority, public/product exposure, Production route or broader workspace action requires separate explicit authorization.
