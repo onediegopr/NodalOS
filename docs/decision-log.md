@@ -1900,3 +1900,15 @@
 - Non-goals preserved: no `src/` changes, test movement, test deletion, test skip behavior, assertion weakening, CI behavior change, scanner behavior change, runtime/product behavior change, public/product exposure, Production route, active read precedence, latest pointer, product authority, command execution, shell/subprocess activation, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future labels can be misread as permission to move/skip tests unless kept additive and discovery-only; P4 historical docs and OCR/legacy warning noise remain.
 - Next recommended macro-block: `NODAL_OS_BLOCK_C4_TEST_LABELS_METADATA_IMPLEMENTATION_TEST_ONLY`.
+
+## NODAL_OS_BLOCK_C4_TEST_LABELS_METADATA_IMPLEMENTATION_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_TEST_LABELS_METADATA_IMPLEMENTATION_TEST_ONLY_READY`.
+- Baseline: `fd573bd1d368db9dd1616cb1e2302226421653c3`.
+- Scope: test-only/metadata-only/additive-only first implementation of C3 labels.
+- Implemented: `TestCategory` metadata for `NodalOsTier1Safety`, `StaticGuard`, `ProductLedger`, `PublicProductBlock`, `ProductionRouteBlock`, `RunClaimCoherence`, `LatestPointerBlock`, `ReadPrecedenceBlock` and `ProductAuthorityBlock`.
+- Labeled subset: `NodalOsStaticGuardCatalogTests` class/methods and two `ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests` public/product plus Production route blocker methods.
+- Added evidence: `StaticGuardCatalog_C4MetadataLabelsAreAdditiveAndDiscoverable` verifies the initial labels by reflection.
+- Non-goals preserved: no `src/` changes, test movement, test deletion, skip behavior, assertion changes, setup changes, scanner behavior change, CI behavior change, runtime/product behavior change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, shell/subprocess, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 metadata can still be misread as CI enforcement or permission to move tests unless future C5 documents exact commands and limits; P4 only a tiny subset is labeled so Tier 1 is not yet complete.
+- Next recommended macro-block: `NODAL_OS_BLOCK_C5_PRE_REFACTOR_GATE_COMMANDS_AND_DISCOVERY_DESIGN_ONLY`.

@@ -295,6 +295,15 @@ Future scanner output should report:
 - Risks: gate too small misses route/authority regression.
 - Tests required: run focused gate and compare with current Product Ledger Safety/Recipes.
 - Stop conditions: test movement, test deletion, skip behavior, assertion weakening, CI behavior change, source behavior change or any failing required safety test.
+- Implementation status: partially implemented as metadata-only. The first labels are limited to `NodalOsStaticGuardCatalogTests` and two Product Ledger public/product plus Production route blocker methods. Discovery is covered by a reflection test; CI behavior remains unchanged.
+
+### C5 - Document pre-refactor gate commands and label discovery
+
+- Future block name: `NODAL_OS_BLOCK_C5_PRE_REFACTOR_GATE_COMMANDS_AND_DISCOVERY_DESIGN_ONLY`.
+- Expected files: docs/scripts-plan only unless separately authorized.
+- Risks: a documented gate can be mistaken for enforced CI.
+- Tests required: docs/static diff guard and optional command dry-run evidence.
+- Stop conditions: CI behavior change, test movement, assertion weakening or source behavior change.
 
 ### C5 - Move duplicate tests to extended, with GO
 

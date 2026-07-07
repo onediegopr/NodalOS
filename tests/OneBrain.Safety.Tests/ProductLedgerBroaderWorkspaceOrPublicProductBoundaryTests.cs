@@ -53,6 +53,10 @@ public sealed class ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
     public void BroaderWorkspaceOrPublicProductBoundary_LatestStateSnapshotImplementationIsAuthorizedButOtherFrontiersRemainClosed()
     {
         var source = SourceText();
@@ -76,6 +80,10 @@ public sealed class ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
     public void BroaderWorkspaceOrPublicProductBoundary_PublicProductMutationAndUnsafeFrontiersRemainClosed()
     {
         var source = ProductLedgerBoundarySourceText();

@@ -222,6 +222,37 @@ Mitigations:
 
 ## 9. Exact Next GO
 
-`AUTHORIZE_NODAL_OS_BLOCK_C4_TEST_LABELS_METADATA_IMPLEMENTATION_TEST_ONLY`
+After C4 closes, the safest next implementation/design block is:
 
-Expected outcome for C4: small additive metadata proof only. No source changes, no test movement, no test deletion, no CI changes and no assertion changes.
+`AUTHORIZE_NODAL_OS_BLOCK_C5_PRE_REFACTOR_GATE_COMMANDS_AND_DISCOVERY_DESIGN_ONLY`
+
+Expected outcome for C5: document exact pre-refactor gate commands and label-discovery commands without changing CI. No source changes, no test movement, no test deletion, no CI changes and no assertion changes.
+
+## 10. C4 Initial Metadata Implementation
+
+Implementation status: partially implemented in `NODAL_OS_BLOCK_C4_TEST_LABELS_METADATA_IMPLEMENTATION_TEST_ONLY`.
+
+Applied labels:
+
+| File | Test scope | Labels |
+| --- | --- | --- |
+| `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs` | class | `NodalOsTier1Safety`, `StaticGuard` |
+| `NodalOsStaticGuardCatalogTests.StaticGuardCatalog_DetectsForbiddenPositiveSamples` | method | `PublicProductBlock`, `ProductionRouteBlock`, `LatestPointerBlock`, `ReadPrecedenceBlock`, `ProductAuthorityBlock` |
+| `NodalOsStaticGuardCatalogTests.StaticGuardCatalog_AllowsExpectedNegativeNoGoWording` | method | `RunClaimCoherence` |
+| `NodalOsStaticGuardCatalogTests.StaticGuardCatalog_C2MirrorsRetainedOldSourceAssertions` | method | `LatestPointerBlock`, `ReadPrecedenceBlock`, `ProductAuthorityBlock` |
+| `NodalOsStaticGuardCatalogTests.StaticGuardCatalog_C2KeepsAllowedNegativeWordingSeparateFromPositiveMatches` | method | `LatestPointerBlock` |
+| `NodalOsStaticGuardCatalogTests.StaticGuardCatalog_C2SourceAndDocsScopesUseExplicitEntrypoints` | method | `ProductAuthorityBlock` |
+| `NodalOsStaticGuardCatalogTests.StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing` | method | `PublicProductBlock`, `ProductionRouteBlock` |
+| `ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests.BroaderWorkspaceOrPublicProductBoundary_LatestStateSnapshotImplementationIsAuthorizedButOtherFrontiersRemainClosed` | method | `NodalOsTier1Safety`, `ProductLedger`, `PublicProductBlock`, `ProductionRouteBlock` |
+| `ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests.BroaderWorkspaceOrPublicProductBoundary_PublicProductMutationAndUnsafeFrontiersRemainClosed` | method | `NodalOsTier1Safety`, `ProductLedger`, `PublicProductBlock`, `ProductionRouteBlock` |
+
+Discovery evidence:
+
+- `NodalOsStaticGuardCatalogTests.StaticGuardCatalog_C4MetadataLabelsAreAdditiveAndDiscoverable` verifies the initial class and method labels via reflection.
+- This is metadata-only. It does not change test discovery defaults, CI filters, skip behavior, test movement, assertions, scanner behavior or source behavior.
+
+Current label-run preview:
+
+- `dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NodalOsTier1Safety" -v:minimal`
+
+Do not promote this filter to CI until a later GO proves the labeled subset is representative and keeps current Product Ledger Safety/Recipes gates green.

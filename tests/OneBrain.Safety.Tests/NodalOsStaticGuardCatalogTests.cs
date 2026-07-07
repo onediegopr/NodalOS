@@ -5,6 +5,8 @@ namespace OneBrain.Safety.Tests;
 [TestClass]
 [TestCategory("ApprovalHumanReview")]
 [TestCategory("PhaseEApprovalHumanReview")]
+[TestCategory("NodalOsTier1Safety")]
+[TestCategory("StaticGuard")]
 public sealed class NodalOsStaticGuardCatalogTests
 {
     [TestMethod]
@@ -34,6 +36,11 @@ public sealed class NodalOsStaticGuardCatalogTests
     }
 
     [TestMethod]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("LatestPointerBlock")]
+    [TestCategory("ReadPrecedenceBlock")]
+    [TestCategory("ProductAuthorityBlock")]
     public void StaticGuardCatalog_DetectsForbiddenPositiveSamples()
     {
         var source = string.Join(
@@ -64,6 +71,7 @@ public sealed class NodalOsStaticGuardCatalogTests
     }
 
     [TestMethod]
+    [TestCategory("RunClaimCoherence")]
     public void StaticGuardCatalog_AllowsExpectedNegativeNoGoWording()
     {
         var source = string.Join(
@@ -87,6 +95,9 @@ public sealed class NodalOsStaticGuardCatalogTests
     }
 
     [TestMethod]
+    [TestCategory("LatestPointerBlock")]
+    [TestCategory("ReadPrecedenceBlock")]
+    [TestCategory("ProductAuthorityBlock")]
     public void StaticGuardCatalog_C2MirrorsRetainedOldSourceAssertions()
     {
         var samples = new[]
@@ -111,6 +122,7 @@ public sealed class NodalOsStaticGuardCatalogTests
     }
 
     [TestMethod]
+    [TestCategory("LatestPointerBlock")]
     public void StaticGuardCatalog_C2KeepsAllowedNegativeWordingSeparateFromPositiveMatches()
     {
         var allowedDocs = string.Join(
@@ -145,6 +157,7 @@ public sealed class NodalOsStaticGuardCatalogTests
     }
 
     [TestMethod]
+    [TestCategory("ProductAuthorityBlock")]
     public void StaticGuardCatalog_C2SourceAndDocsScopesUseExplicitEntrypoints()
     {
         const string source = "ProductAuthority: true";
@@ -162,6 +175,8 @@ public sealed class NodalOsStaticGuardCatalogTests
     }
 
     [TestMethod]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
     public void StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing()
     {
         var source = string.Join(
@@ -177,5 +192,49 @@ public sealed class NodalOsStaticGuardCatalogTests
         Assert.AreEqual(2, matches.Count);
         CollectionAssert.Contains(matches.Select(match => match.Category).ToArray(), NodalOsStaticGuardCategory.PublicProductExposure);
         CollectionAssert.Contains(matches.Select(match => match.Category).ToArray(), NodalOsStaticGuardCategory.ProductionRoutes);
+    }
+
+    [TestMethod]
+    public void StaticGuardCatalog_C4MetadataLabelsAreAdditiveAndDiscoverable()
+    {
+        var classCategories = CategoriesFor(typeof(NodalOsStaticGuardCatalogTests));
+        CollectionAssert.Contains(classCategories, "NodalOsTier1Safety");
+        CollectionAssert.Contains(classCategories, "StaticGuard");
+
+        var publicProductMethodCategories = CategoriesFor(
+            typeof(NodalOsStaticGuardCatalogTests),
+            nameof(StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing));
+        CollectionAssert.Contains(publicProductMethodCategories, "PublicProductBlock");
+        CollectionAssert.Contains(publicProductMethodCategories, "ProductionRouteBlock");
+
+        var runClaimMethodCategories = CategoriesFor(
+            typeof(NodalOsStaticGuardCatalogTests),
+            nameof(StaticGuardCatalog_AllowsExpectedNegativeNoGoWording));
+        CollectionAssert.Contains(runClaimMethodCategories, "RunClaimCoherence");
+
+        var productLedgerMethodCategories = CategoriesFor(
+            typeof(ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests),
+            nameof(ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests.BroaderWorkspaceOrPublicProductBoundary_PublicProductMutationAndUnsafeFrontiersRemainClosed));
+        CollectionAssert.Contains(productLedgerMethodCategories, "NodalOsTier1Safety");
+        CollectionAssert.Contains(productLedgerMethodCategories, "ProductLedger");
+        CollectionAssert.Contains(productLedgerMethodCategories, "PublicProductBlock");
+        CollectionAssert.Contains(productLedgerMethodCategories, "ProductionRouteBlock");
+    }
+
+    private static string[] CategoriesFor(Type type) =>
+        type.GetCustomAttributes(typeof(TestCategoryAttribute), inherit: false)
+            .Cast<TestCategoryAttribute>()
+            .SelectMany(attribute => attribute.TestCategories)
+            .ToArray();
+
+    private static string[] CategoriesFor(Type type, string methodName)
+    {
+        var method = type.GetMethod(methodName)
+            ?? throw new InvalidOperationException($"Method not found: {type.FullName}.{methodName}");
+
+        return method.GetCustomAttributes(typeof(TestCategoryAttribute), inherit: false)
+            .Cast<TestCategoryAttribute>()
+            .SelectMany(attribute => attribute.TestCategories)
+            .ToArray();
     }
 }

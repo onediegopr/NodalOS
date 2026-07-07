@@ -82,11 +82,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK C4 - Test Labels Metadata Implementation (Future GO Only)
 
 - Objective: add additive labels/traits metadata to a tiny subset as proof.
+- Status: completed as partial test-only metadata implementation. Initial labels cover the static guard catalog class/tests and two Product Ledger public/product plus Production route blocker methods only.
 - Expected files: selected tests and docs/log updates only.
 - Do not touch: CI filters, test movement, test deletion, skip behavior, assertion strength, scanner behavior or source behavior.
 - Tests required: metadata discovery/listing, focused labeled tests, Product Ledger Safety/Recipes, Core/Pilot/Solution builds and `git diff --check`.
 - Risk: medium; metadata can be mistaken for permission to move or skip tests.
 - Benefit: makes the Tier 1 hard gate discoverable while preserving current coverage.
+
+## BLOCK C5 - Pre-Refactor Gate Commands / Discovery Design (Future GO Only)
+
+- Objective: document exact pre-refactor gate commands, label discovery commands and expected outputs without changing CI.
+- Expected files: docs-only command policy and possibly a future dry-run evidence note.
+- Do not touch: CI behavior, source behavior, test movement, test deletion, skip behavior, assertions or scanner behavior.
+- Tests required: docs/static diff guard; optional command dry-run evidence if requested.
+- Risk: low/medium; documented commands can be misread as enforced CI.
+- Benefit: makes Tier 1 reproducible before D1/D2 source work.
 
 ## BLOCK D1 - Common Contracts Parallel Implementation (Future GO Only)
 
