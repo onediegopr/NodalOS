@@ -21,6 +21,7 @@ Purpose: rolling QA index. Future blocks should prefer one entry here over creat
 | Product Ledger latest-state auxiliary evidence | `docs/qa/product-ledger-durable-latest-state-auxiliary-evidence-not-precedence-not-authority-implementation/report.md` | GO_WITH_FINDINGS |
 | Durable latest-state decision matrix | `docs/qa/product-ledger-active-durable-read-precedence-latest-pointer-product-exposure-decision-matrix-design-only/report.md` | GO_WITH_FINDINGS |
 | Global safety claim reconciliation | `docs/qa/nodal-os-global-safety-claim-reconciliation-and-product-ledger-writer-concurrency-hardening/report.md` | GO_WITH_FINDINGS |
+| Source refactor readiness audit | `docs/architecture/nodal-os-source-refactor-readiness-audit.md` | GO_WITH_FINDINGS |
 
 ## Archive/Legacy Rule
 

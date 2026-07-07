@@ -1851,3 +1851,15 @@
 - Findings: P0=0, P1=0, P2=0; P3 read precedence candidate is useful but risks authority overclaim unless kept Development-only/not-product-authority/no-latest-pointer; P4 stale evidence remains expected and must stay visible/non-authoritative.
 - Readiness changes: none; design-only/test-only/guard-only.
 - Exact next GO required: `AUTHORIZE_NODAL_OS_ACTIVE_DURABLE_READ_PRECEDENCE_CANDIDATE_NOT_PRODUCT_AUTHORITY_DEVELOPMENT_ONLY_IMPLEMENTATION_WINDOW`.
+
+## NODAL_OS_BLOCK_E_SOURCE_REFACTOR_READINESS_AUDIT_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_READINESS_DESIGN_READY`.
+- Baseline: `b7665d96c2577832f1570315c06d82d8a872f967`.
+- Scope: design-only/audit-only/docs-only/readiness-only audit after Blocks A-D.
+- Created: `docs/architecture/nodal-os-source-refactor-readiness-audit.md`.
+- Updated: simplification backlog, handoff log, QA log and this decision-log.
+- Recommendation: run `NODAL_OS_BLOCK_C1_STATIC_GUARD_CATALOG_TEST_ONLY_IMPLEMENTATION` first; do not start D1 common contracts or D2 source adapters until C1 creates or proves an equivalent central static guard safety net.
+- Non-goals preserved: no `src/` changes, no test changes, no scanner behavior changes, no class/file renames, no common contracts, no source refactor, no runtime/product enablement, no public/product route, no Production route, no active read precedence, no latest pointer, no product authority, no cloud/network/DB, no KMS/WORM and no release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future C1 false positives and future D1 double-truth risk remain; P4 historical docs/tests retain mixed old/new vocabulary until implementation blocks.
+- Exact next GO: `AUTHORIZE_NODAL_OS_BLOCK_C1_STATIC_GUARD_CATALOG_TEST_ONLY_IMPLEMENTATION`.

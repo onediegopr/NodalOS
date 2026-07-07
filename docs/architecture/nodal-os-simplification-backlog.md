@@ -37,7 +37,36 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: prepares removal of contract explosion.
 - Follow-up: no common contract implementation, class rename or contract deletion until a separate GO runs Tier 1 plus focused Product Ledger Safety/Recipes.
 
-## BLOCK E - Source Refactor Implementation (Future GO Only)
+## BLOCK E - Source Refactor Readiness Audit Design-Only
+
+- Objective: decide whether the first implementation block should be static guard centralization, common contracts in parallel or a low-risk source adapter.
+- Status: completed as design-only in `docs/architecture/nodal-os-source-refactor-readiness-audit.md`.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_READINESS_DESIGN_READY`.
+- Recommendation: run `NODAL_OS_BLOCK_C1_STATIC_GUARD_CATALOG_TEST_ONLY_IMPLEMENTATION` before any source contract refactor.
+- Do not touch: `src/`, tests, scanner behavior, class/file names, runtime/product features.
+- Tests required: docs-only diff guard plus requested build/test evidence.
+- Risk: low for this audit; medium for future C1 false positives; high for source refactor if C1 is skipped.
+- Benefit: chooses the first safe implementation block and defines the pre-refactor gate.
+
+## BLOCK C1 - Static Guard Catalog Test-Only Implementation (Future GO Only)
+
+- Objective: add central `NodalOsStaticGuardCatalog` test-only helper and migrate 1-2 duplicated scans as proof.
+- Expected files: tests/test helper and selected static scan tests only.
+- Do not touch: production source behavior, runtime/product enablement, public/product routes, Production routes, active read precedence, latest pointer, product authority.
+- Tests required: Tier 1 static guards, Product Ledger Safety, Product Ledger Recipes/focused fallback, Core/Pilot/Solution builds and `git diff --check`.
+- Risk: medium due false positives or accidental assertion weakening.
+- Benefit: creates the safety net required before source contract work.
+
+## BLOCK D1 - Common Contracts Parallel Implementation (Future GO Only)
+
+- Objective: add shared contracts such as `LocalOnlyResult<T>`, `BoundaryClaims`, blockers, `WriterMode`, `EvidenceRole` and `GuardEvaluationResult` without runtime use.
+- Expected files: new shared contracts plus invariant tests.
+- Do not touch: existing behavior, redaction service, path validators, hash/checkpoint kernel, route behavior or product/public gates.
+- Tests required: Tier 1 plus contract invariants and central static guard evidence.
+- Risk: medium/high if common contracts create double truth.
+- Benefit: prepares later D2 low-risk adapter migration.
+
+## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
 - Expected files: source under Core/Approval and tests.

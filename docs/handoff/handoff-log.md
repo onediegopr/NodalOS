@@ -16,11 +16,13 @@ Purpose: rolling handoff index. Future blocks should add one entry here by defau
 - Test tiering map: `docs/architecture/nodal-os-test-tiering-map.csv`.
 - Model/contract merge design: `docs/architecture/nodal-os-model-contract-merge-design.md`.
 - Model/contract merge map: `docs/architecture/nodal-os-model-contract-merge-map.csv`.
+- Source refactor readiness audit: `docs/architecture/nodal-os-source-refactor-readiness-audit.md`.
 
 ## Latest Window Handoff
 
 | Window | Decision | Handoff |
 | --- | --- | --- |
+| `NODAL_OS_BLOCK_E_SOURCE_REFACTOR_READINESS_AUDIT_DESIGN_ONLY` | `GO_WITH_FINDINGS_SOURCE_REFACTOR_READINESS_DESIGN_READY` | Design-only source refactor readiness audit completed. No source, tests, scanners, class names, file names or behavior changed. Recommendation: run `NODAL_OS_BLOCK_C1_STATIC_GUARD_CATALOG_TEST_ONLY_IMPLEMENTATION` before D1 common contracts or any source adapter. |
 | `NODAL_OS_BLOCK_D_MODEL_CONTRACT_MERGE_DESIGN_ONLY` | `GO_WITH_FINDINGS_MODEL_CONTRACT_MERGE_DESIGN_READY` | Design-only model/contract merge plan completed. No source, tests, scanners, class names, file names or behavior changed. Future implementation must add common contracts in parallel and prove no guardrail loss before deprecating old contracts. Next recommended block: `NODAL_OS_BLOCK_E_SOURCE_REFACTOR_READINESS_AUDIT_DESIGN_ONLY`. |
 | `NODAL_OS_BLOCK_C_TEST_TIERING_AND_STATIC_SCAN_CONSOLIDATION_DESIGN_ONLY` | `GO_WITH_FINDINGS_TEST_TIERING_STATIC_SCAN_CONSOLIDATION_DESIGN_READY` | Design-only test tiering and static scan consolidation completed. No tests, assertions, source, CI behavior or scanner implementation were changed. Future implementation must prove coverage equivalence before moving duplicate Safety/Recipes assertions. Next recommended block: `NODAL_OS_BLOCK_D_MODEL_CONTRACT_MERGE_DESIGN_ONLY`. |
 | `NODAL_OS_BLOCK_B_NAMING_CONSOLIDATION_DESIGN_ONLY` | `GO_WITH_FINDINGS_NAMING_CONSOLIDATION_DESIGN_READY` | Design-only naming consolidation completed. Source names, tests, runtime routes and behavior remain unchanged. Future work should move status suffixes into policy fields before any source rename. Next recommended block: `NODAL_OS_BLOCK_C_TEST_TIERING_AND_STATIC_SCAN_CONSOLIDATION_DESIGN_ONLY`. |
