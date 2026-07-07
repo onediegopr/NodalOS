@@ -72,11 +72,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK C3 - Test Tier Labels / Gate Documentation (Future GO Only)
 
 - Objective: document or tag Tier 1/Tier 2/Tier 3 without moving tests to extended yet.
+- Status: completed as docs/design-only in `docs/architecture/nodal-os-test-tier-labels-and-gate-policy.md`.
 - Expected files: docs and possibly test trait metadata under a dedicated GO.
 - Do not touch: CI behavior or assertion strength without separate authorization.
 - Tests required: docs/static diff guard and any affected focused tests.
 - Risk: low/medium; labels can be confused with actual CI behavior.
 - Benefit: makes source-refactor gates easier to run consistently.
+
+## BLOCK C4 - Test Labels Metadata Implementation (Future GO Only)
+
+- Objective: add additive labels/traits metadata to a tiny subset as proof.
+- Expected files: selected tests and docs/log updates only.
+- Do not touch: CI filters, test movement, test deletion, skip behavior, assertion strength, scanner behavior or source behavior.
+- Tests required: metadata discovery/listing, focused labeled tests, Product Ledger Safety/Recipes, Core/Pilot/Solution builds and `git diff --check`.
+- Risk: medium; metadata can be mistaken for permission to move or skip tests.
+- Benefit: makes the Tier 1 hard gate discoverable while preserving current coverage.
 
 ## BLOCK D1 - Common Contracts Parallel Implementation (Future GO Only)
 

@@ -284,14 +284,17 @@ Future scanner output should report:
 - Risks: confusing labels with actual CI behavior.
 - Tests required: docs diff check.
 - Stop conditions: CI/build behavior change without GO.
-- Status: pending. C1 did not change suite membership or CI behavior.
+- Implementation status: completed as design/docs-only in `NODAL_OS_BLOCK_C3_TEST_TIER_LABELS_AND_GATE_DOCUMENTATION_DESIGN_ONLY`.
+- Canonical policy: `docs/architecture/nodal-os-test-tier-labels-and-gate-policy.md`.
+- Status: C3 complete. Future labels remain additive metadata only; no tests were moved, deleted, skipped, weakened or wired into CI.
 
 ### C4 - Create focused pre-refactor gate
 
-- Expected files: script or test command doc in a future authorized block.
+- Future block name: `NODAL_OS_BLOCK_C4_TEST_LABELS_METADATA_IMPLEMENTATION_TEST_ONLY`.
+- Expected files: small additive test metadata proof plus docs/log updates in a future authorized block.
 - Risks: gate too small misses route/authority regression.
 - Tests required: run focused gate and compare with current Product Ledger Safety/Recipes.
-- Stop conditions: any failing required safety test.
+- Stop conditions: test movement, test deletion, skip behavior, assertion weakening, CI behavior change, source behavior change or any failing required safety test.
 
 ### C5 - Move duplicate tests to extended, with GO
 

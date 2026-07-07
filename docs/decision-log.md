@@ -1887,3 +1887,16 @@
 - Non-goals preserved: no `src/` changes, runtime/product behavior change, test deletion, assertion weakening, suite movement, CI/build behavior change, public/product exposure, Production route, active read precedence, latest pointer activation, product authority, command execution, shell/subprocess activation, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future scan migration can still create false positives or hidden coverage gaps if old assertions are removed too early; P4 C2 remains intentionally partial and leaves most duplicated scans in place.
 - Next recommended macro-block: `NODAL_OS_BLOCK_C3_TEST_TIER_LABELS_AND_GATE_DOCUMENTATION_DESIGN_ONLY`.
+
+## NODAL_OS_BLOCK_C3_TEST_TIER_LABELS_AND_GATE_DOCUMENTATION_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_TEST_TIER_LABELS_GATE_DOCUMENTATION_DESIGN_ONLY_READY`.
+- Baseline: `c338dd5d1aa12f6930cf64e3db59423ae066f578`.
+- Scope: docs-only/design-only/test-plan-only/guard-policy-only definition of future test tier labels and exact gates.
+- Created: `docs/architecture/nodal-os-test-tier-labels-and-gate-policy.md`.
+- Defined: future additive labels `NodalOsTier1Safety`, `NodalOsTier2Integration`, `NodalOsTier3CorpusAudit`, `NodalOsTier4LegacyPeriodic` plus complementary labels for static guards, Product Ledger, Approval, `/run` claim coherence and hard-block families.
+- Defined gates: pre-source-refactor, pre-contract-merge, pre-public/product and pre-release/commercial. Release/commercial remains `0% / NO-GO`.
+- Defined policy: explicit do-not-move Tier 1 list, move-candidate list, central static guard catalog role and future C4 metadata implementation plan.
+- Non-goals preserved: no `src/` changes, test movement, test deletion, test skip behavior, assertion weakening, CI behavior change, scanner behavior change, runtime/product behavior change, public/product exposure, Production route, active read precedence, latest pointer, product authority, command execution, shell/subprocess activation, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future labels can be misread as permission to move/skip tests unless kept additive and discovery-only; P4 historical docs and OCR/legacy warning noise remain.
+- Next recommended macro-block: `NODAL_OS_BLOCK_C4_TEST_LABELS_METADATA_IMPLEMENTATION_TEST_ONLY`.
