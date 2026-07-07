@@ -278,6 +278,12 @@ Non-negotiable rule: do not merge a safety service into an envelope if that make
 - Required tests: Tier 1 + Tier 2 route/DOM if surfaced.
 - Rollback: revert adapter.
 - Stop conditions: output claim drift, route behavior drift.
+- Implementation status: completed as test/design-only mapping equivalence in `NODAL_OS_BLOCK_D2_MAPPING_ADAPTERS_EQUIVALENCE_EXPANSION_TEST_ONLY`.
+- Actual D2 artifact location: `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryMappingDesignOnlyAdapter.cs`.
+- Actual D2 scope: the mapper lives only in Safety tests, maps existing hard-block concepts into the D1 candidate envelope, and cannot override existing hard-block decisions.
+- Added test evidence: `NodalOsCommonBoundaryMappingDesignOnlyAdapterTests` proves public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, Product Ledger local/design-only boundary, `/run` claim coherence and static guard hard blocks map to blocked common claims.
+- Fail-closed rule: unsupported, unknown or non-authoritative source concepts map to rejected/blocked, never allowed.
+- D2 does not create a production adapter. The next source-facing step must be D3 plan/audit or a minimal parallel source candidate with a separate explicit GO and no-runtime wiring guard.
 
 ### D3 - Migrate latest-state snapshot/manifest/reader/auxiliary
 

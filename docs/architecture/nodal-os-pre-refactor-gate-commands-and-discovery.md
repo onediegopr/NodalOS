@@ -32,6 +32,7 @@ Implemented labels:
 - `CommandExecutionBlock`
 - `ReleaseCommercialBlock`
 - `CommonContracts`
+- `MappingAdapters`
 - `DesignOnly`
 - `NoRuntimeWiring`
 
@@ -88,12 +89,13 @@ List D1 common-contract candidate tests:
 ```powershell
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests --filter "TestCategory=CommonContracts"
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests --filter "TestCategory=DesignOnly"
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests --filter "TestCategory=MappingAdapters"
 ```
 
 Fallback if `--list-tests --filter` is unavailable or fragile in a local SDK/runner:
 
 ```powershell
-rg -n 'TestCategory\("(NodalOsTier1Safety|StaticGuard|ProductLedger|PublicProductBlock|ProductionRouteBlock|RunClaimCoherence|LatestPointerBlock|ReadPrecedenceBlock|ProductAuthorityBlock|CommandExecutionBlock|ReleaseCommercialBlock|CommonContracts|DesignOnly|NoRuntimeWiring)"\)' tests/OneBrain.Safety.Tests
+rg -n 'TestCategory\("(NodalOsTier1Safety|StaticGuard|ProductLedger|PublicProductBlock|ProductionRouteBlock|RunClaimCoherence|LatestPointerBlock|ReadPrecedenceBlock|ProductAuthorityBlock|CommandExecutionBlock|ReleaseCommercialBlock|CommonContracts|MappingAdapters|DesignOnly|NoRuntimeWiring)"\)' tests/OneBrain.Safety.Tests
 ```
 
 ## 4. Tier 1 Commands
@@ -128,6 +130,13 @@ D1 common-contract candidate proof:
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=CommonContracts" -v:minimal
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=DesignOnly" -v:minimal
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~NodalOsCommonContractsDesignOnlyCandidate" -v:minimal
+```
+
+D2 mapping adapter equivalence proof:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=MappingAdapters" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~NodalOsCommonBoundaryMappingDesignOnlyAdapter" -v:minimal
 ```
 
 These commands are discovery/gate previews only. They are not a substitute for full Product Ledger Safety and Recipes, and they are not CI enforcement.
@@ -265,11 +274,23 @@ Expected after D1:
 
 D1 remains manual/discovery-only. It does not create CI enforcement, production source contracts, route registration, service registration, command handlers or runtime/product behavior.
 
-## 13. Future Implementation Options
+## 13. D2 Mapping Adapter Equivalence Note
+
+D2 adds a Safety-test-only mapper and equivalence tests under `NodalOsCommonBoundaryMappingDesignOnlyAdapterTests`.
+
+Expected after D2:
+
+- `TestCategory=MappingAdapters`: 14 tests.
+- `FullyQualifiedName~NodalOsCommonBoundaryMappingDesignOnlyAdapter`: 14 tests.
+
+D2 keeps unknown/unsupported/non-authoritative concepts fail-closed. It does not replace existing contracts, does not touch `src/`, does not create production adapters and does not authorize runtime/product behavior.
+
+## 14. Future Implementation Options
 
 Safe next blocks:
 
 - `NODAL_OS_BLOCK_C7_PRE_REFACTOR_GATE_SCRIPT_TEST_ONLY_DISABLED`: add a disabled/local-only helper script for the documented gate, with no CI wiring.
-- `NODAL_OS_BLOCK_D2_MAPPING_ADAPTERS_EQUIVALENCE_EXPANSION_TEST_ONLY`: add mapping adapters/equivalence tests in parallel only, with no replacement of existing contracts.
+- `NODAL_OS_BLOCK_D3_SOURCE_REFACTOR_PLAN_AUDIT_ONLY`: decide the safest first source-facing move using D1/D2 evidence.
+- `NODAL_OS_BLOCK_D3_MINIMAL_PARALLEL_SOURCE_CANDIDATE_NO_RUNTIME_TEST_ONLY`: only with explicit GO, add a non-wired source candidate behind no-runtime/no-wiring guard.
 
 Do not proceed to source refactor, contract use, public/product exposure or release/commercial readiness from this document alone.

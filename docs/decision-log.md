@@ -1948,3 +1948,16 @@
 - Non-goals preserved: no `src/` changes, existing contract replacement, runtime wiring, service registration, route registration, command handler, CI change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 D2 can create double-truth if adapters are used before equivalence is proven; P4 D1 remains test-only so source bloat is not yet reduced.
 - Next recommended macro-block: `NODAL_OS_BLOCK_D2_MAPPING_ADAPTERS_EQUIVALENCE_EXPANSION_TEST_ONLY`.
+
+## NODAL_OS_BLOCK_D2_MAPPING_ADAPTERS_EQUIVALENCE_EXPANSION_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_COMMON_CONTRACT_MAPPING_EQUIVALENCE_TEST_ONLY_READY`.
+- Baseline: `4670ec36933930fbf3627e57e9528660e648e6b4`.
+- Scope: test-only/design-only/parallel-only mapping adapter and equivalence expansion for D1 common-contract candidates.
+- Implemented: `NodalOsCommonBoundaryMappingDesignOnlyAdapter` under Safety tests only.
+- Added evidence: fourteen `NodalOsCommonBoundaryMappingDesignOnlyAdapterTests` methods tagged `NodalOsTier1Safety`, `CommonContracts`, `MappingAdapters`, `DesignOnly` and `NoRuntimeWiring`.
+- Verified mappings: public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, Product Ledger local/design-only boundary, `/run` claim coherence and static guard hard blocks map to blocked common claims.
+- Verified safety: adapters are deterministic/in-memory/test-only, cannot override existing hard-block authority, unknown/unsupported/non-authoritative inputs fail closed, no runtime authority and no CI enforcement are created.
+- Non-goals preserved: no `src/` changes, production adapter, existing contract replacement, runtime wiring, service registration, route registration, command handler, CI change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future source-facing D3 can create double-truth if mapper output is treated as authority; P4 source bloat remains until a separate source-facing block.
+- Next recommended macro-block: `NODAL_OS_BLOCK_D3_SOURCE_REFACTOR_PLAN_AUDIT_ONLY`.

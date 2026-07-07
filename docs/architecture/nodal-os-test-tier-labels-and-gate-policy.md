@@ -43,6 +43,7 @@ Complementary labels:
 - `KmsWormComplianceBlock`
 - `ReleaseCommercialBlock`
 - `CommonContracts`
+- `MappingAdapters`
 - `DesignOnly`
 - `NoRuntimeWiring`
 
@@ -330,3 +331,26 @@ Additional labels introduced for D1:
 D1 Tier 1 impact: it adds five focused tests to the manual `NodalOsTier1Safety` discovery surface. These tests prove the common-contract candidate keeps public/product, Production route, latest pointer, read precedence, product authority, command execution, shell/subprocess, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, Pilot `/run` coupling and CI-enforcement claims blocked.
 
 CI enforcement remains 0%. Source refactor and contract replacement remain prohibited until a future D2/D3 GO proves old/new equivalence while keeping Product Ledger Safety and Recipes green.
+
+## 14. D2 Mapping Adapters Equivalence Expansion
+
+Implementation status: completed as test/design-only in `NODAL_OS_BLOCK_D2_MAPPING_ADAPTERS_EQUIVALENCE_EXPANSION_TEST_ONLY`.
+
+D2 adds a Safety-test-only mapper:
+
+- `NodalOsCommonBoundarySourceConcept`
+- `NodalOsCommonBoundaryMappingRequest`
+- `NodalOsCommonBoundaryMappingResult`
+- `NodalOsCommonBoundaryMappingDesignOnlyAdapter`
+
+The mapper translates existing hard-block concepts into D1 common-contract candidates only for test/design equivalence. It is not production authority, not in `src/`, not registered, not routed and not consumed by runtime/product code.
+
+Additional label introduced for D2:
+
+- `MappingAdapters`
+
+D2 Tier 1 impact: it adds focused mapping tests for public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, Product Ledger local/design-only evidence boundary, `/run` claim coherence, static guard hard blocks, no runtime authority, no CI enforcement, no double-truth and no production wiring.
+
+Fail-closed policy: unknown, unsupported or non-authoritative mapping inputs are rejected/blocked. Existing hard-block tests remain authoritative; D2 only translates their meaning for future planning.
+
+CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.

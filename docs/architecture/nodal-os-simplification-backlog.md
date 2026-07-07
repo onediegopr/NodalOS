@@ -121,6 +121,17 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: prepares later D2 low-risk adapter migration.
 - Follow-up: D2 should add mapping adapters/equivalence tests in parallel only. Do not replace old contracts, move tests, weaken assertions or wire runtime/product behavior.
 
+## BLOCK D2 - Mapping Adapters Equivalence Expansion Test-Only (Future GO Only)
+
+- Objective: prove selected existing hard-block concepts map into D1 common-contract candidates without creating production authority or double-truth.
+- Status: completed as test-only/design-only/parallel-only. The mapper lives under Safety tests as `NodalOsCommonBoundaryMappingDesignOnlyAdapter`.
+- Expected files: test-only mapper, equivalence tests and docs/log updates.
+- Do not touch: `src/`, existing contracts, runtime behavior, route behavior, DI, command handlers, CI, public/product gates, assertions, test movement or test deletion.
+- Tests required: Tier 1, CommonContracts, DesignOnly, MappingAdapters, static guard focused tests, Product Ledger Safety/Recipes and `git diff --check`.
+- Risk: medium/high if a future block treats mapper output as source of truth instead of translation evidence.
+- Benefit: proves D1 candidate can represent current hard-block semantics and unknown states fail closed before any source-facing refactor.
+- Follow-up: D3 should be source-refactor plan/audit only, or a minimal parallel source candidate behind a separate no-runtime/no-wiring guard. No real source adapter use without explicit GO.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
