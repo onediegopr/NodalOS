@@ -10,6 +10,8 @@ Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_BACKLOG_RECONCILIATI
 
 Selected next recommended block: `NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_DOCS_ONLY`.
 
+E3 next-action plan: `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`.
+
 ## 1. Executive Status
 
 Product Ledger has a real local/dev evidence line, but it is not public/product, not a Production route, not product authority and not release/commercial ready.
@@ -154,13 +156,15 @@ E2 did not add tests because the existing Product Ledger focused gates, hard-blo
 
 Pending safe work before any product/runtime move:
 
-- Choose the canonical next Product Ledger local/dev work lane.
+- Execute the E3-selected next block: `NODAL_OS_BLOCK_E4_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_CLEANUP_DOCS_ONLY`.
 - Compact repeated QA/handoff entrypoints while preserving history.
 - Merge latest-state snapshot/manifest/reader/auxiliary evidence roles into a shared `LatestStateEvidence` design.
 - Merge writer variants under a `WriterMode` design without changing product behavior.
 - Consolidate operator surfaces into one `OperatorSurfaceReadModel` design.
 - Continue model-contract simplification only through authorized narrow blocks.
 - Keep Product Ledger Safety/Recipes and hard-block scans green.
+
+E3 selects stale-doc cross-link cleanup because older Product Ledger QA/handoff/roadmap entrypoints remain the clearest drift risk after the canon. E3 does not authorize E4.
 
 ## 12. Findings
 

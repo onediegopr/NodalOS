@@ -2176,3 +2176,16 @@
 - Current posture: Product Ledger local/dev readiness `80%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
 - Findings: P0=0, P1=0, P2=0; P3 distributed Product Ledger backlog and manual-only gate evidence remain; P4 old handoff/QA files can still be misread without the canon.
 - Next recommended macro-block: `NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_DOCS_ONLY`.
+
+## NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_DOCS_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_READY`.
+- Baseline: `440f806837596ac680c3d68da06ee779de204419`.
+- Scope: docs-only/plan-only/roadmap-only Product Ledger local/dev next-action selection. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Plan doc added: `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`.
+- Candidates evaluated: canon guard test-only, stale-doc cross-link cleanup docs-only, external audit packet read-only, safety gate stabilization docs/test-only and operator review.
+- Selected next recommended block: `NODAL_OS_BLOCK_E4_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_CLEANUP_DOCS_ONLY`.
+- Rationale: after E2, stale Product Ledger QA/handoff/roadmap entrypoints are the clearest remaining drift risk and should be linked to the canon before an external audit packet or test-only canon guard.
+- Current posture: Product Ledger local/dev readiness `81%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 stale entrypoint drift and manual-only gates remain; P4 future canon guard may be useful after cross-link cleanup.
+- Authorization note: E3 recommends E4 but does not authorize starting E4.

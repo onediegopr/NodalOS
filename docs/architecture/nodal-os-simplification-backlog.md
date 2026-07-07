@@ -332,6 +332,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: Product Ledger local/dev is evidence only; public/product, Production route, latest pointer, read precedence, product authority, runtime/product enablement, CI enforcement and release/commercial remain blocked or `0%`.
 - Follow-up: `NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_DOCS_ONLY`.
 
+## BLOCK E3 - Product Ledger Local/Dev Next Action Plan
+
+- Objective: choose the next safe Product Ledger local/dev action after E2 canonization without implementing runtime/product behavior.
+- Status: completed as docs-only/plan-only/roadmap-only in `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_READY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Selected next block: `NODAL_OS_BLOCK_E4_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_CLEANUP_DOCS_ONLY`.
+- Rationale: stale Product Ledger QA/handoff/roadmap entrypoints remain the biggest practical drift risk after E2; cross-link cleanup should happen before canon guard tests or external audit packets.
+- Current posture: Product Ledger local/dev remains evidence only; runtime/product enablement, CI enforcement and release/commercial remain `0%`; public/product, Production route, latest pointer, read precedence and product authority remain blocked.
+- Follow-up: E3 recommends but does not authorize E4.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
