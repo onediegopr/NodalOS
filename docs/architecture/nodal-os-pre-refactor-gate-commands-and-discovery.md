@@ -31,6 +31,9 @@ Implemented labels:
 - `ProductAuthorityBlock`
 - `CommandExecutionBlock`
 - `ReleaseCommercialBlock`
+- `CommonContracts`
+- `DesignOnly`
+- `NoRuntimeWiring`
 
 Current labeled subset:
 
@@ -80,10 +83,17 @@ List Product Ledger Production route blockers:
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests --filter "TestCategory=ProductLedger&TestCategory=ProductionRouteBlock"
 ```
 
+List D1 common-contract candidate tests:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests --filter "TestCategory=CommonContracts"
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests --filter "TestCategory=DesignOnly"
+```
+
 Fallback if `--list-tests --filter` is unavailable or fragile in a local SDK/runner:
 
 ```powershell
-rg -n 'TestCategory\("(NodalOsTier1Safety|StaticGuard|ProductLedger|PublicProductBlock|ProductionRouteBlock|RunClaimCoherence|LatestPointerBlock|ReadPrecedenceBlock|ProductAuthorityBlock|CommandExecutionBlock|ReleaseCommercialBlock)"\)' tests/OneBrain.Safety.Tests
+rg -n 'TestCategory\("(NodalOsTier1Safety|StaticGuard|ProductLedger|PublicProductBlock|ProductionRouteBlock|RunClaimCoherence|LatestPointerBlock|ReadPrecedenceBlock|ProductAuthorityBlock|CommandExecutionBlock|ReleaseCommercialBlock|CommonContracts|DesignOnly|NoRuntimeWiring)"\)' tests/OneBrain.Safety.Tests
 ```
 
 ## 4. Tier 1 Commands
@@ -110,6 +120,14 @@ Product Ledger Production route blocker proof:
 
 ```powershell
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ProductLedger&TestCategory=ProductionRouteBlock" -v:minimal
+```
+
+D1 common-contract candidate proof:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=CommonContracts" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=DesignOnly" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~NodalOsCommonContractsDesignOnlyCandidate" -v:minimal
 ```
 
 These commands are discovery/gate previews only. They are not a substitute for full Product Ledger Safety and Recipes, and they are not CI enforcement.
@@ -235,11 +253,23 @@ The newly labeled groups cover:
 
 C6 did not change test assertions, scanner behavior, source behavior, CI or runtime/product behavior.
 
-## 12. Future Implementation Options
+## 12. D1 Common Contracts Parallel Candidate Note
+
+D1 adds five Safety tests under `NodalOsCommonContractsDesignOnlyCandidateTests` and one test-only candidate contract file under `tests/OneBrain.Safety.Tests`.
+
+Expected after D1:
+
+- `TestCategory=CommonContracts`: 5 tests.
+- `TestCategory=DesignOnly`: 5 tests.
+- `FullyQualifiedName~NodalOsCommonContractsDesignOnlyCandidate`: 5 tests.
+
+D1 remains manual/discovery-only. It does not create CI enforcement, production source contracts, route registration, service registration, command handlers or runtime/product behavior.
+
+## 13. Future Implementation Options
 
 Safe next blocks:
 
 - `NODAL_OS_BLOCK_C7_PRE_REFACTOR_GATE_SCRIPT_TEST_ONLY_DISABLED`: add a disabled/local-only helper script for the documented gate, with no CI wiring.
-- `NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_IMPLEMENTATION`: add common contracts only after C5/C6 evidence is accepted and required gates remain green.
+- `NODAL_OS_BLOCK_D2_MAPPING_ADAPTERS_EQUIVALENCE_EXPANSION_TEST_ONLY`: add mapping adapters/equivalence tests in parallel only, with no replacement of existing contracts.
 
 Do not proceed to source refactor, contract use, public/product exposure or release/commercial readiness from this document alone.

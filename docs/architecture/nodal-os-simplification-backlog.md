@@ -113,11 +113,13 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK D1 - Common Contracts Parallel Implementation (Future GO Only)
 
 - Objective: add shared contracts such as `LocalOnlyResult<T>`, `BoundaryClaims`, blockers, `WriterMode`, `EvidenceRole` and `GuardEvaluationResult` without runtime use.
+- Status: completed as design/test-only and parallel-only. The D1 candidate contracts live under Safety tests as `NodalOsCommonContractsDesignOnlyCandidate` and are not in `src/`, not wired, not registered and not product authority.
 - Expected files: new shared contracts plus invariant tests.
 - Do not touch: existing behavior, redaction service, path validators, hash/checkpoint kernel, route behavior or product/public gates.
 - Tests required: Tier 1 plus contract invariants and central static guard evidence.
 - Risk: medium/high if common contracts create double truth.
 - Benefit: prepares later D2 low-risk adapter migration.
+- Follow-up: D2 should add mapping adapters/equivalence tests in parallel only. Do not replace old contracts, move tests, weaken assertions or wire runtime/product behavior.
 
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 

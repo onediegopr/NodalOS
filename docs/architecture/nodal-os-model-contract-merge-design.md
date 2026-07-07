@@ -264,6 +264,11 @@ Non-negotiable rule: do not merge a safety service into an envelope if that make
 - Required tests: Tier 1.
 - Rollback: remove new parallel contracts.
 - Stop conditions: behavior changes, public/product claim, scanner weakening.
+- Implementation status: completed as design/test-only in `NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_DESIGN_TEST_ONLY`.
+- Actual D1 artifact location: `tests/OneBrain.Safety.Tests/NodalOsCommonContractsDesignOnlyCandidate.cs`.
+- Actual D1 scope: candidate contracts live only in Safety tests and are explicitly descriptive/non-wired. No `src/` contracts were added, replaced or referenced.
+- Added test evidence: `NodalOsCommonContractsDesignOnlyCandidateTests` validates blocked public/product, Production route, latest pointer, read precedence, product authority, command execution, shell/subprocess, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, Pilot `/run` coupling and CI-enforcement claims.
+- D1 does not authorize D2 migration by itself; D2 must add mapping adapters/equivalence in parallel and keep old contracts until old/new behavior is proven equivalent.
 
 ### D2 - Adapt one low-risk capability to common contracts
 

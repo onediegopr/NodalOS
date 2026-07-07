@@ -1936,3 +1936,15 @@
 - Non-goals preserved: no `src/` changes, test movement, test deletion, skip behavior, assertion changes, CI behavior change, scanner behavior change, runtime/product behavior change, public/product route activation, Production route activation, active read precedence, latest pointer, product authority, shell/subprocess, command execution enablement, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels are still partial and can be mistaken for full CI enforcement; P4 future C7/D1 should decide whether more Tier 1 expansion or common-contract parallel design is higher value.
 - Next recommended macro-block: `NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_IMPLEMENTATION_DESIGN_OR_TEST_ONLY` if C6 validation remains green; otherwise C7 additional Tier 1 expansion.
+
+## NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_DESIGN_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_COMMON_CONTRACTS_PARALLEL_DESIGN_TEST_ONLY_READY`.
+- Baseline: `1ecb883b9a7b2fb13faf82cbfe4c5244baedfa6c`.
+- Scope: design-only/test-only/parallel-only common-contract candidate surface.
+- Implemented: `NodalOsCommonContractsDesignOnlyCandidate` under Safety tests only, with boundary capability, claim, safety-envelope, writer-mode and evidence-role candidate types.
+- Added evidence: five `NodalOsCommonContractsDesignOnlyCandidateTests` methods tagged `NodalOsTier1Safety`, `CommonContracts`, `DesignOnly` and `NoRuntimeWiring`.
+- Verified invariants: public/product, Production route, latest pointer, read precedence, product authority, command execution, shell/subprocess, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, Pilot `/run` coupling and CI enforcement remain blocked.
+- Non-goals preserved: no `src/` changes, existing contract replacement, runtime wiring, service registration, route registration, command handler, CI change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 D2 can create double-truth if adapters are used before equivalence is proven; P4 D1 remains test-only so source bloat is not yet reduced.
+- Next recommended macro-block: `NODAL_OS_BLOCK_D2_MAPPING_ADAPTERS_EQUIVALENCE_EXPANSION_TEST_ONLY`.

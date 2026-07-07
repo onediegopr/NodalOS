@@ -42,6 +42,9 @@ Complementary labels:
 - `CloudNetworkDbBlock`
 - `KmsWormComplianceBlock`
 - `ReleaseCommercialBlock`
+- `CommonContracts`
+- `DesignOnly`
+- `NoRuntimeWiring`
 
 Label rule: a test may carry more than one complementary label. A test with any hard-block label that is the only current coverage for that boundary remains Tier 1 until an explicit future GO proves equivalent coverage.
 
@@ -302,3 +305,28 @@ Non-goals preserved:
 - no runtime/product capability change;
 - no public/product route, Production route, active read precedence, latest pointer or product authority;
 - no provider/cloud/network, DB/migration, KMS/WORM/external trust or release/commercial readiness.
+
+## 13. D1 Common Contracts Parallel Design/Test-Only
+
+Implementation status: completed as design/test-only in `NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_DESIGN_TEST_ONLY`.
+
+D1 adds a Safety-test-only candidate contract surface:
+
+- `NodalOsCommonBoundaryCapability`
+- `NodalOsCommonCapabilityState`
+- `NodalOsCommonBoundaryClaims`
+- `NodalOsCommonSafetyEnvelope`
+- `NodalOsCommonWriterMode`
+- `NodalOsCommonEvidenceRole`
+
+The D1 candidate is descriptive/evaluative only. It is not production authority, is not in `src/`, is not registered, is not routed and is not consumed by runtime/product code.
+
+Additional labels introduced for D1:
+
+- `CommonContracts`
+- `DesignOnly`
+- `NoRuntimeWiring`
+
+D1 Tier 1 impact: it adds five focused tests to the manual `NodalOsTier1Safety` discovery surface. These tests prove the common-contract candidate keeps public/product, Production route, latest pointer, read precedence, product authority, command execution, shell/subprocess, provider/cloud/network, DB/migration, KMS/WORM/external trust, release/commercial, Pilot `/run` coupling and CI-enforcement claims blocked.
+
+CI enforcement remains 0%. Source refactor and contract replacement remain prohibited until a future D2/D3 GO proves old/new equivalence while keeping Product Ledger Safety and Recipes green.
