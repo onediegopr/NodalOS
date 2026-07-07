@@ -314,9 +314,19 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Required tests: Tier 1, CommonContracts, MappingAdapters, Product Ledger Safety/Recipes, static guard and no-reference scans.
 - Rollback: remove the new candidate source file and D4 tests.
 - Stop conditions: any route/DI/command-handler/CI reference or existing behavior drift.
-- Next step: D5 equivalence hardening/no-runtime reference audit or D5 minimal replacement plan/audit only; not a broad refactor.
+- Next step: D5 equivalence hardening/no-runtime reference audit, then D6 minimal replacement plan/audit only or STOP_FOR_AUDIT; not a broad refactor.
 
-### D5 - Migrate latest-state snapshot/manifest/reader/auxiliary
+### D5 - Equivalence hardening, no runtime reference audit
+
+- Objective: harden D1/D2/D4 equivalence and candidate isolation before any replacement plan.
+- Implementation status: completed in `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`.
+- Actual files: Safety tests and docs/log updates only.
+- Actual D5 evidence: `NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests`.
+- New labels: `NoAuthority`, `NoDoubleTruth`.
+- Non-goals preserved: no `src/` changes, no new source candidate, no D4 candidate modification, no existing contract replacement, no runtime/product wiring, no CI enforcement and no source bloat reduction.
+- Next step: D6 minimal replacement plan/audit only or STOP_FOR_AUDIT.
+
+### D6 - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.
 - Expected files: latest-state contracts and tests.
@@ -325,7 +335,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: keep old role-specific contracts as compatibility aliases.
 - Stop conditions: any active read precedence/latest pointer/product authority drift.
 
-### D6 - Migrate handoff draft variants
+### D7 - Migrate handoff draft variants
 
 - Objective: migrate local, test-jail and allowlisted workspace drafts to role/mode fields.
 - Expected files: handoff writer contracts and tests.
@@ -334,7 +344,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: old writers remain compatibility path.
 - Stop conditions: arbitrary path, overwrite, user-selected path, filesystem scan.
 
-### D7 - Merge DurableAuditTrail Minimal/Candidate
+### D8 - Merge DurableAuditTrail Minimal/Candidate
 
 - Objective: merge minimal/candidate into one evidence ledger result shape.
 - Expected files: Durable audit trail contracts/tests.
@@ -343,7 +353,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: retain old minimal/candidate wrappers.
 - Stop conditions: runtime/product enablement or authority claim.
 
-### D8 - Remove/deprecate old contracts
+### D9 - Remove/deprecate old contracts
 
 - Objective: only after compatibility and test equivalence, deprecate old names.
 - Expected files: source/test/docs with explicit GO.
@@ -352,7 +362,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: revert deletion/deprecation commit.
 - Stop conditions: coverage gap, missing old/new scanner coverage.
 
-### D9 - Audit no guardrail loss
+### D10 - Audit no guardrail loss
 
 - Objective: compare old and new guard coverage.
 - Expected files: audit report and matrix.

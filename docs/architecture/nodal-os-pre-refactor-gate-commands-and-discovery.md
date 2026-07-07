@@ -333,12 +333,42 @@ The first command must return no matches. The second command should return only 
 
 CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.
 
-## 16. Future Implementation Options
+## 16. D5 Isolation And Equivalence Hardening Note
+
+D5 adds Safety tests only. It changes no `src/`, adds no source candidate and does not modify `NodalOsCommonBoundaryClaimsCandidate`.
+
+New D5-focused command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~NodalOsCommonBoundaryClaimsCandidateIsolationHardening" -v:minimal
+```
+
+Additional manual/discovery category commands:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=SourceCandidate" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoRuntimeWiring" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoAuthority" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoDoubleTruth" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=CommonContracts" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=MappingAdapters" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NodalOsTier1Safety" -v:minimal
+```
+
+Expected after D5:
+
+- `FullyQualifiedName~NodalOsCommonBoundaryClaimsCandidateIsolationHardening`: 14 tests.
+- `TestCategory=NoAuthority`: 14 tests.
+- `TestCategory=NoDoubleTruth`: 14 tests.
+
+These are manual/discovery commands, not CI enforcement. CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.
+
+## 17. Future Implementation Options
 
 Safe next blocks:
 
 - `NODAL_OS_BLOCK_C7_PRE_REFACTOR_GATE_SCRIPT_TEST_ONLY_DISABLED`: add a disabled/local-only helper script for the documented gate, with no CI wiring.
-- `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`: audit the D4 candidate and D1/D2/D4 equivalence without runtime/product wiring.
-- `NODAL_OS_BLOCK_D5_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY`: plan one future replacement path, docs/audit-only, before touching existing source behavior.
+- `NODAL_OS_BLOCK_D6_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY`: plan one future replacement path, docs/audit-only, before touching existing source behavior.
+- `STOP_FOR_AUDIT`: pause for external/read-only audit if more confidence is needed before a replacement plan.
 
 Do not proceed to source refactor, contract use, public/product exposure or release/commercial readiness from this document alone.

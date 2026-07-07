@@ -1988,3 +1988,16 @@
 - Non-goals preserved: no existing source behavior changes, existing contract replacement, broad source refactor, CI change, route/DI/service registration, command handler, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 source candidate can still be mistaken for authority if future references are added without no-reference guards; P4 source bloat reduction is still 0% because no old models were removed.
 - Next recommended macro-block: `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`.
+
+## NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT
+
+- Decision: `GO_WITH_FINDINGS_COMMON_BOUNDARY_CANDIDATE_ISOLATION_HARDENED_READY`.
+- Baseline: `f1a150a9aea1c4558a66d0a16e71ee4493408521`.
+- Scope: test/audit/docs-only hardening for the D4 source candidate.
+- Added evidence: `NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests`.
+- Added labels: `NoAuthority`, `NoDoubleTruth`.
+- Verified: D4 candidate is not referenced from Pilot runtime, CLI/command paths, route/DI/service/product-ledger runtime paths, CI/workflow files or unauthorized repository locations.
+- Verified: unsafe authority flags are detected, claim states remain closed, missing/unsupported future claims fail closed and D1/D2/D4 agree on blocked hard-block states.
+- Non-goals preserved: no `src/` changes, D4 candidate modification, new source candidate, existing contract replacement, CI change, runtime/product wiring, public/product exposure, Production route activation, latest pointer, active read precedence, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust, release/commercial readiness or source bloat reduction.
+- Findings: P0=0, P1=0, P2=0; P3 future replacement work must not treat D4 as authority; P4 source bloat reduction remains 0%.
+- Next recommended macro-block: `NODAL_OS_BLOCK_D6_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY` or `STOP_FOR_AUDIT`.

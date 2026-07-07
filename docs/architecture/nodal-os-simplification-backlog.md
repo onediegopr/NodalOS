@@ -158,6 +158,17 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: gives future source migrations a controlled target without changing behavior.
 - Follow-up: D5 should be equivalence hardening/no-runtime reference audit or minimal replacement plan/audit only. Do not start broad source refactor from D4 alone.
 
+## BLOCK D5 - Equivalence Hardening No Runtime Reference Audit
+
+- Objective: harden D1/D2/D4 equivalence, no-runtime-reference scans and non-authority/no-double-truth guarantees before any replacement plan.
+- Status: completed as test/audit/docs-only in `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`.
+- Actual tests: `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests.cs`.
+- Do not touch: `src/`, D4 candidate source, new source candidates, existing Product Ledger behavior files, Pilot routes, DI, command handlers, CI, public/product gates, latest pointer/read precedence/product authority, command execution or release/commercial claims.
+- Tests required: Core/Pilot/Solution build, Product Ledger Safety/Recipes, Tier 1, CommonContracts, DesignOnly, MappingAdapters, SourceCandidate, NoRuntimeWiring, NoAuthority, NoDoubleTruth, static guard, public/product and Production route filters, no-reference source scans and `git diff --check`.
+- Risk: low/medium; no-authority labels can be mistaken for source replacement permission unless docs remain explicit.
+- Benefit: raises confidence that D4 can remain safely parallel before any future replacement plan.
+- Follow-up: D6 minimal replacement plan/audit only or STOP_FOR_AUDIT. No broad refactor from D5 alone.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

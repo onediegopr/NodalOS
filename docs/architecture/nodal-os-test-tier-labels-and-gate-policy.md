@@ -372,3 +372,20 @@ Additional labels introduced for D4:
 D4 Tier 1 impact: it adds nineteen focused tests to the manual `NodalOsTier1Safety` discovery surface. These tests cover fail-closed defaults, public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, runtime/product no-go, unknown/ambiguous fail-closed behavior, no wiring/no authority guards and D1/D2 compatibility.
 
 D4 does not replace existing hard-block authorities. D1/D2 remain design/test-only. CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.
+
+## 16. D5 Equivalence Hardening No Runtime Reference Audit
+
+Implementation status: completed as test/audit/docs-only in `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`.
+
+D5 adds Safety tests only:
+
+- `NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests`
+
+Additional labels introduced for D5:
+
+- `NoAuthority`
+- `NoDoubleTruth`
+
+D5 Tier 1 impact: it adds fourteen focused tests to the manual `NodalOsTier1Safety` discovery surface. These tests harden no-runtime-reference scanning, allowed-reference boundaries, unsafe authority flag detection, closed claim-state taxonomy, missing/unsupported claim fail-closed behavior, D1/D2/D4 blocked-state equivalence and no-double-truth/non-authority proof.
+
+D5 changes no `src/`, adds no source candidate, does not modify the D4 candidate, does not replace existing contracts and does not reduce source bloat. Existing hard-block tests remain authoritative. CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.

@@ -44,7 +44,7 @@ D4 is not authorized by this document. It requires explicit Diego authorization 
 | Renderable operator surface model extraction | `ProductLedgerRenderableOperatorSurface.cs` | surface render model and no external/release claims | Recipes render tests, route/render tests | partial | P3 DOM/render drift | Defer. |
 | Product Ledger local dev route preview consolidation | `ProductLedgerLocalDevRoutePreview.cs` | route preview, nested surface state, local/dev boundary | broad Safety/Recipes/HTTP route tests | partial | P2/P3 because route-adjacent and large | Not first move. |
 | Path readiness guard result extraction | `ProductLedgerPathReadinessScaffold.cs` | guard evaluation, canonicalization/reparse/authority previews | Path readiness/canonicalization tests | partial | P3 path boundary drift | Defer until boundary claim candidate exists. |
-| Latest-state auxiliary evidence extraction | `ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter.cs` | not-authority, not-precedence, no latest pointer | Tier 1 C6 labels, Safety/Recipes latest-state tests | strong for hard blocks | P2/P3 authority/precedence drift | Defer; good D5/D6 candidate after D4. |
+| Latest-state auxiliary evidence extraction | `ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter.cs` | not-authority, not-precedence, no latest pointer | Tier 1 C6 labels, Safety/Recipes latest-state tests | strong for hard blocks | P2/P3 authority/precedence drift | Defer; good D6/D7 candidate after D5 hardening. |
 | Latest-state reader candidate extraction | `ProductLedgerLocalDurableLatestStateReaderCandidateValidator.cs` | candidate not authority, no read precedence/latest pointer | Safety/Recipes reader candidate tests | strong for hard blocks | P2/P3 authority drift | Defer; pair with auxiliary later. |
 | Handoff draft writer mode extraction | local approved/test-jail/allowlisted handoff draft executors | create-only writer mode and path boundary | handoff writer tests, path tests | partial | P2/P3 filesystem/path drift | Not first move. |
 | Static guard catalog source promotion | current `NodalOsStaticGuardCatalog` under tests | hard-block category representation | static guard catalog tests | strong | P3 if promoted too early | Do not move to source now. |
@@ -62,7 +62,7 @@ Why this is the safest first source-facing move:
 - it can be protected by no-runtime-wiring and no-production-reference scans;
 - it directly mirrors D1/D2 evidence without replacing existing contracts;
 - rollback is simple: remove the new file and its tests;
-- it gives later D5/D6 migrations a stable source-side type to compare against.
+- it gives later D6/D7 migrations a stable source-side type to compare against.
 
 Why C7 is not required before D4:
 
@@ -207,7 +207,32 @@ Actual D4 test evidence:
 
 Recommended next step after D4: D5 equivalence hardening/no-runtime reference audit. Do not proceed to a broad source refactor from D4 alone.
 
-## 8. Risks
+## 8. D5 Isolation Hardening Note
+
+D5 was executed as `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`.
+
+Actual D5 scope:
+
+- Safety tests only;
+- docs/log updates only;
+- no `src/` changes;
+- no new source candidate;
+- no modification to `NodalOsCommonBoundaryClaimsCandidate`;
+- no replacement or promotion of D1/D2 test-only artifacts;
+- no runtime/product wiring;
+- no source bloat reduction.
+
+Actual D5 test evidence:
+
+- `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests.cs`
+- `TestCategory=NoAuthority`
+- `TestCategory=NoDoubleTruth`
+- hardened no-runtime-reference and allowed-reference scans;
+- hardened D1/D2/D4 fail-closed equivalence checks.
+
+Recommended next step after D5: D6 minimal replacement plan/audit only or STOP_FOR_AUDIT. Do not proceed to broad replacement or implementation from D5 alone.
+
+## 9. Risks
 
 P0=0, P1=0, P2=0.
 
