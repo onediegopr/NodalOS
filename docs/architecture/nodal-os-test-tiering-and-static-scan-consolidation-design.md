@@ -274,7 +274,9 @@ Future scanner output should report:
 - Risks: category mismatch hides a forbidden token.
 - Tests required: before/after equivalent negative corpus.
 - Stop conditions: any guardrail loss or need to alter source.
-- Status: pending. Do not migrate broader scan families until C1 equivalence evidence stays green.
+- Implementation status: partially implemented in `NODAL_OS_BLOCK_C2_STATIC_GUARD_CATALOG_EQUIVALENCE_EXPANSION_TEST_ONLY`. Five additional source-scan checks in the auxiliary latest-state evidence source guard now call the catalog for latest pointer, read precedence, product authority, shell/subprocess and release/commercial categories. Old local assertions remain in place as the equivalence backstop; no tests were deleted, moved or weakened.
+- Added evidence: catalog-focused tests now prove retained old assertion samples hard-fail through the catalog, allowed negative no-go wording remains allowed, docs/source scan entrypoints stay explicit and a positive forbidden phrase is not suppressed by nearby negative wording.
+- Status: partial C2 complete. Do not migrate broader scan families until this equivalence evidence stays green across Product Ledger Safety/Recipes.
 
 ### C3 - Mark Tier 1/Tier 2/Tier 3 suites in docs
 

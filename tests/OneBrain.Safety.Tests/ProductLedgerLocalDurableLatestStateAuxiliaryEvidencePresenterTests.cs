@@ -133,6 +133,15 @@ public sealed class ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresent
     public void AuxiliaryEvidence_SourceHasNoForbiddenActivation()
     {
         var source = ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter.cs");
+
+        NodalOsStaticGuardCatalog.AssertNoForbiddenSourceMatches(
+            source,
+            NodalOsStaticGuardCategory.LatestPointer,
+            NodalOsStaticGuardCategory.ReadPrecedence,
+            NodalOsStaticGuardCategory.ProductAuthority,
+            NodalOsStaticGuardCategory.ShellSubprocess,
+            NodalOsStaticGuardCategory.ReleaseCommercial);
+
         foreach (var fragment in new[]
         {
             "File.ReadAllText",

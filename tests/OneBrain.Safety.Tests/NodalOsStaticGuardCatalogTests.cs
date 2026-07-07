@@ -87,6 +87,81 @@ public sealed class NodalOsStaticGuardCatalogTests
     }
 
     [TestMethod]
+    public void StaticGuardCatalog_C2MirrorsRetainedOldSourceAssertions()
+    {
+        var samples = new[]
+        {
+            (NodalOsStaticGuardCategory.LatestPointer, "LatestPointer: true"),
+            (NodalOsStaticGuardCategory.LatestPointer, "LatestPointerOverwrite: true"),
+            (NodalOsStaticGuardCategory.ReadPrecedence, "ReadPrecedence: true"),
+            (NodalOsStaticGuardCategory.ReadPrecedence, "AllowsReadPrecedence: true"),
+            (NodalOsStaticGuardCategory.ProductAuthority, "ProductAuthority: true"),
+            (NodalOsStaticGuardCategory.ProductAuthority, "AuthorityLiveProduct: true"),
+            (NodalOsStaticGuardCategory.ShellSubprocess, "Process.Start"),
+            (NodalOsStaticGuardCategory.ReleaseCommercial, "ReleaseCommercialReady: true")
+        };
+
+        foreach (var (category, source) in samples)
+        {
+            var matches = NodalOsStaticGuardCatalog.ScanSource(source, category);
+
+            Assert.IsTrue(matches.Count >= 1, $"{category}: {source}");
+            Assert.IsTrue(matches.All(match => match.Category == category), $"{category}: {source}");
+        }
+    }
+
+    [TestMethod]
+    public void StaticGuardCatalog_C2KeepsAllowedNegativeWordingSeparateFromPositiveMatches()
+    {
+        var allowedDocs = string.Join(
+            Environment.NewLine,
+            "No latest pointer.",
+            "No active read precedence.",
+            "No product authority.",
+            "No shell/subprocess.",
+            "No release/commercial.");
+
+        var allowedMatches = NodalOsStaticGuardCatalog.ScanDocs(
+            allowedDocs,
+            NodalOsStaticGuardCategory.LatestPointer,
+            NodalOsStaticGuardCategory.ReadPrecedence,
+            NodalOsStaticGuardCategory.ProductAuthority,
+            NodalOsStaticGuardCategory.ShellSubprocess,
+            NodalOsStaticGuardCategory.ReleaseCommercial);
+
+        Assert.AreEqual(0, allowedMatches.Count, string.Join(", ", allowedMatches.Select(match => match.Fragment)));
+
+        var blockedDocs = string.Join(
+            Environment.NewLine,
+            "No latest pointer.",
+            "latest pointer enabled");
+
+        var blockedMatches = NodalOsStaticGuardCatalog.ScanDocs(
+            blockedDocs,
+            NodalOsStaticGuardCategory.LatestPointer);
+
+        Assert.AreEqual(1, blockedMatches.Count);
+        Assert.AreEqual("latest pointer enabled", blockedMatches[0].Fragment);
+    }
+
+    [TestMethod]
+    public void StaticGuardCatalog_C2SourceAndDocsScopesUseExplicitEntrypoints()
+    {
+        const string source = "ProductAuthority: true";
+
+        var sourceMatches = NodalOsStaticGuardCatalog.ScanSource(
+            source,
+            NodalOsStaticGuardCategory.ProductAuthority);
+        var docsMatches = NodalOsStaticGuardCatalog.ScanDocs(
+            source,
+            NodalOsStaticGuardCategory.ProductAuthority);
+
+        Assert.AreEqual(1, sourceMatches.Count);
+        Assert.AreEqual(1, docsMatches.Count);
+        Assert.AreEqual(sourceMatches[0], docsMatches[0]);
+    }
+
+    [TestMethod]
     public void StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing()
     {
         var source = string.Join(

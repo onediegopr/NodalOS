@@ -16,6 +16,12 @@ internal enum NodalOsStaticGuardCategory
     RunClaimCoherence
 }
 
+internal enum NodalOsStaticGuardScope
+{
+    Source,
+    Docs
+}
+
 internal sealed record NodalOsStaticGuardDefinition(
     NodalOsStaticGuardCategory Category,
     IReadOnlyList<string> ForbiddenPositiveFragments,
@@ -74,7 +80,11 @@ internal static class NodalOsStaticGuardCatalog
             Define(
                 NodalOsStaticGuardCategory.LatestPointer,
                 [
+                    "LatestPointer: true",
                     "LatestPointerEnabled: true",
+                    "LatestPointerAvailable: true",
+                    "LatestPointerOverwrite: true",
+                    "LatestPointerOverwriteAllowed: true",
                     "latest pointer enabled",
                     "latest pointer overwrite enabled"
                 ],
@@ -85,7 +95,10 @@ internal static class NodalOsStaticGuardCatalog
             Define(
                 NodalOsStaticGuardCategory.ReadPrecedence,
                 [
+                    "ReadPrecedence: true",
                     "ReadPrecedenceAllowed: true",
+                    "AllowsReadPrecedence: true",
+                    "RequestsReadPrecedence: true",
                     "active read precedence enabled",
                     "read precedence enabled"
                 ],
@@ -96,7 +109,9 @@ internal static class NodalOsStaticGuardCatalog
             Define(
                 NodalOsStaticGuardCategory.ProductAuthority,
                 [
+                    "ProductAuthority: true",
                     "ProductAuthorityAllowed: true",
+                    "AuthorityLiveProduct: true",
                     "product authority enabled",
                     "product read-model authority enabled"
                 ],
@@ -195,9 +210,26 @@ internal static class NodalOsStaticGuardCatalog
 
     public static IReadOnlyList<NodalOsStaticGuardMatch> Scan(
         string source,
+        params NodalOsStaticGuardCategory[] categories) =>
+        Scan(source, NodalOsStaticGuardScope.Source, categories);
+
+    public static IReadOnlyList<NodalOsStaticGuardMatch> ScanSource(
+        string source,
+        params NodalOsStaticGuardCategory[] categories) =>
+        Scan(source, NodalOsStaticGuardScope.Source, categories);
+
+    public static IReadOnlyList<NodalOsStaticGuardMatch> ScanDocs(
+        string source,
+        params NodalOsStaticGuardCategory[] categories) =>
+        Scan(source, NodalOsStaticGuardScope.Docs, categories);
+
+    public static IReadOnlyList<NodalOsStaticGuardMatch> Scan(
+        string source,
+        NodalOsStaticGuardScope scope,
         params NodalOsStaticGuardCategory[] categories)
     {
         ArgumentNullException.ThrowIfNull(source);
+        _ = scope;
         var selected = categories.Length == 0
             ? Definitions.Values
             : categories.Select(Get);
@@ -219,9 +251,25 @@ internal static class NodalOsStaticGuardCatalog
 
     public static void AssertNoForbiddenMatches(
         string source,
+        params NodalOsStaticGuardCategory[] categories) =>
+        AssertNoForbiddenMatches(source, NodalOsStaticGuardScope.Source, categories);
+
+    public static void AssertNoForbiddenSourceMatches(
+        string source,
+        params NodalOsStaticGuardCategory[] categories) =>
+        AssertNoForbiddenMatches(source, NodalOsStaticGuardScope.Source, categories);
+
+    public static void AssertNoForbiddenDocsMatches(
+        string source,
+        params NodalOsStaticGuardCategory[] categories) =>
+        AssertNoForbiddenMatches(source, NodalOsStaticGuardScope.Docs, categories);
+
+    private static void AssertNoForbiddenMatches(
+        string source,
+        NodalOsStaticGuardScope scope,
         params NodalOsStaticGuardCategory[] categories)
     {
-        var matches = Scan(source, categories);
+        var matches = Scan(source, scope, categories);
 
         if (matches.Count > 0)
         {

@@ -1875,3 +1875,15 @@
 - Non-goals preserved: no production source behavior change, no runtime/product behavior change, no test deletion, no assertion weakening, no suite movement, no public/product activation, no Production route, no active read precedence, no latest pointer, no product authority, no cloud/network/DB, no KMS/WORM and no release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future C2 category expansion can create false positives or hidden coverage gaps if old assertions are removed too early; P4 C1 is partial and intentionally leaves most duplicated scans in place.
 - Next recommended macro-block: `NODAL_OS_BLOCK_C2_STATIC_GUARD_CATALOG_EQUIVALENCE_EXPANSION_TEST_ONLY`.
+
+## NODAL_OS_BLOCK_C2_STATIC_GUARD_CATALOG_EQUIVALENCE_EXPANSION_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_CATALOG_EQUIVALENCE_EXPANSION_TEST_ONLY_READY`.
+- Baseline: `aebe5f27864610752f76be8a1dfb3084f24d6b5d`.
+- Scope: test-only/guard-equivalence-only expansion of the central static guard catalog.
+- Implemented: catalog support for explicit source/docs scan entrypoints and retained old-assertion tokens for latest pointer, read precedence and product authority families.
+- Migrated: exactly five additional duplicated source-scan checks in `ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenterTests` now call the catalog for latest pointer, read precedence, product authority, shell/subprocess and release/commercial while the old local `Assert.IsFalse` forbidden-fragment assertions remain.
+- Added evidence: focused catalog tests prove old assertion samples still hard-fail, allowed negative no-go wording still passes, source/docs entrypoints remain explicit and positive forbidden wording is not suppressed by adjacent negative wording.
+- Non-goals preserved: no `src/` changes, runtime/product behavior change, test deletion, assertion weakening, suite movement, CI/build behavior change, public/product exposure, Production route, active read precedence, latest pointer activation, product authority, command execution, shell/subprocess activation, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future scan migration can still create false positives or hidden coverage gaps if old assertions are removed too early; P4 C2 remains intentionally partial and leaves most duplicated scans in place.
+- Next recommended macro-block: `NODAL_OS_BLOCK_C3_TEST_TIER_LABELS_AND_GATE_DOCUMENTATION_DESIGN_ONLY`.

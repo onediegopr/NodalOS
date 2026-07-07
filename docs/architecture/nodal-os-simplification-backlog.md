@@ -61,11 +61,13 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK C2 - Static Guard Catalog Equivalence Expansion (Future GO Only)
 
 - Objective: migrate additional duplicated static scans only after C1 evidence stays green.
+- Status: completed as partial test-only equivalence expansion; five additional source-scan checks now delegate to `NodalOsStaticGuardCatalog` while retaining their old local assertions.
 - Expected files: selected tests only; no production source behavior.
 - Do not touch: assertions that are the only coverage for a boundary, suite membership, runtime/product behavior or scanner hard-fail semantics.
 - Tests required: catalog-focused tests, Product Ledger Safety/Recipes and static no-enable scans.
 - Risk: medium; category mismatch could hide forbidden tokens.
 - Benefit: reduces duplicated forbidden-token arrays without coverage loss.
+- Follow-up: keep future migrations small and require old assertion samples, allowed negative wording and source/docs scope evidence for every migrated family.
 
 ## BLOCK C3 - Test Tier Labels / Gate Documentation (Future GO Only)
 
