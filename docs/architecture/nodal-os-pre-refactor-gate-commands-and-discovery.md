@@ -536,3 +536,40 @@ After D10, this command may show only:
 - `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
 
 D10 does not change CI and does not enable runtime/product behavior. The D10 command/execution wording exception is exact to `ApprovalExecutionDesignOnlyProtected.cs`; it does not permit command handlers, shell/subprocess, runtime command execution, route/DI/service registration or similar future files. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 23. D11 Post-Second-Replacement Isolation/Equivalence Audit Note
+
+D11 completed as test/audit/docs-only in `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+
+Actual focused D11 command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionPostSecondReplacementD11" -v:minimal
+```
+
+Expected D11 focused count: 12 tests.
+
+Additional required D11 category commands:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=PostReplacementAudit" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoAuthority" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoDoubleTruth" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ApprovalExecution" -v:minimal
+```
+
+D11 reference rule:
+
+```powershell
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+```
+
+After D11, this command may still show only:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+D11 changes no `src/`, no CI and no runtime/product behavior. It does not implement a third replacement. The D10 command/execution wording exception remains exact to `ApprovalExecutionDesignOnlyProtected.cs`, and the D7/D10 exceptions remain independent file-exact exceptions rather than a broad command/execution allowlist.
+
+Source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.

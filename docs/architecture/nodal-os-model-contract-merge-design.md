@@ -388,6 +388,19 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Actual bloat impact: source bloat reduction remains `0%`; D10 is additive proof-only with net `+70` lines in the selected source file. Cumulative D7+D10 source impact is net `+140` source lines.
 - Next step: D11 post-second-replacement isolation/equivalence audit or STOP_FOR_AUDIT, not a third replacement or broad refactor.
 
+### D11 - Post-second-replacement isolation/equivalence audit
+
+- Objective: audit the D10 second minimal replacement without implementing another replacement.
+- Implementation status: completed in `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+- Actual evidence: `ApprovalExecutionPostSecondReplacementD11Tests`.
+- Scope: test/audit/docs-only; no `src/` changes; no D4 candidate, D7 target or D10 target source changes; no third replacement.
+- Verified: the D10 command/execution exception remains exact to `ApprovalExecutionDesignOnlyProtected.cs`, D7 and D10 exceptions are independent and file-exact, and no broad command/execution allowlist was introduced.
+- Verified: candidate references remain limited to the candidate file, D7 target, D10 target, Safety tests and docs/logs.
+- Verified: D4 remains non-authoritative, D7 and D10 remain read-only/design-only/non-runtime, D1/D2 remain design/test-only and existing hard-block tests remain authoritative.
+- Runtime/product enablement remains `0%`; CI enforcement remains `0%`; release/commercial remains `0% / NO-GO`.
+- Source bloat reduction remains `0%`; D7+D10 cumulative source impact remains net `+140` lines. The D-series has so far proven equivalence/isolation, not reduced source bloat.
+- Next step: `D12 source-reduction plan/audit only` or STOP_FOR_AUDIT, not another proof-only replacement by default.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.

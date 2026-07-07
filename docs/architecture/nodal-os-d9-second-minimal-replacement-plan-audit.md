@@ -341,3 +341,34 @@ D10 required explicit Diego authorization and was later executed.
 ## Current Next Recommended Block After D10
 
 `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`
+
+## D11 Post-Second-Replacement Audit Note
+
+D11 was later authorized and executed as `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+
+Actual D11 scope:
+
+- test/audit/docs-only;
+- no `src/` changes;
+- no third replacement;
+- no D4 candidate, D7 target or D10 target source changes.
+
+Actual D11 evidence:
+
+- `tests/OneBrain.Safety.Tests/ApprovalExecutionPostSecondReplacementD11Tests.cs`
+- `docs/architecture/nodal-os-d11-post-second-replacement-isolation-audit.md`
+
+D11 confirms D10 remains isolated and equivalent: the D10 command/execution exception is exact to `ApprovalExecutionDesignOnlyProtected.cs`, D7 and D10 exceptions remain independent, candidate references remain limited to D4 source, D7 target, D10 target, Safety tests and docs/logs, and D1/D2 remain test/design-only.
+
+Source bloat trajectory remains unchanged:
+
+- source bloat reduction remains `0%`;
+- D7 net source impact remains `+70`;
+- D10 adds net `+70`;
+- cumulative D7+D10 source impact is net `+140` source lines.
+
+The D-series has so far proven equivalence/isolation, not reduced source bloat.
+
+Current next recommended block after D11:
+
+`D12 source-reduction plan/audit only`

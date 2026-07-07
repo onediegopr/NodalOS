@@ -453,3 +453,22 @@ D10 Tier 1 impact: it adds fifteen focused tests proving the Approval execution 
 D10 also hardens candidate reference scans so the D4 candidate may be referenced only by its own file, the D7 Reentry target, the D10 Approval execution target, Safety tests and docs/logs. The D10 command vocabulary exception is exact to `ApprovalExecutionDesignOnlyProtected.cs` and does not authorize command handlers or runtime command execution.
 
 D10 does not move tests, delete tests, weaken assertions or change CI filters. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.
+
+## 20. D11 Post-Second-Replacement Isolation/Equivalence Audit
+
+Implementation status: completed as test/audit/docs-only in `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+
+D11 adds focused Safety evidence:
+
+- `ApprovalExecutionPostSecondReplacementD11Tests`
+
+Additional labels used by D11:
+
+- `PostReplacementAudit`
+- `ApprovalExecution`
+- `NoAuthority`
+- `NoDoubleTruth`
+
+D11 Tier 1 impact: it adds twelve focused tests proving the D10 command/execution exception remains exact to `ApprovalExecutionDesignOnlyProtected.cs`, the D7 and D10 exceptions remain independent, candidate references remain limited to D4/D7/D10 plus Safety tests/docs/logs, D1/D2 remain test/design-only, D4 remains non-authoritative, and D7+D10 do not create common authority by accumulation.
+
+D11 also records the bloat trajectory: source bloat reduction remains `0%`, while cumulative D7+D10 source impact remains net `+140` lines. D11 does not move tests, delete tests, weaken assertions, change CI filters, change `src/`, implement a third replacement or enable runtime/product behavior. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.

@@ -2071,3 +2071,19 @@
 - Bloat impact: source bloat reduction remains `0%`; D10 adds net `+70` source lines and cumulative D7+D10 source impact is net `+140` lines.
 - Findings: P0=0, P1=0, P2=0; P3 D11 should audit the second replacement before any third replacement or broad refactor; P4 no meaningful source reduction yet.
 - Next recommended macro-block: `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+
+## NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT
+
+- Decision: `GO_WITH_FINDINGS_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT_READY`.
+- Baseline: `bcf2aabc65a670a9f71cfc40f174ac14961ad01c`.
+- Scope: test/audit/docs-only post-second-replacement audit of D10.
+- Source changed: none.
+- Tests added: `ApprovalExecutionPostSecondReplacementD11Tests` with `PostReplacementAudit`, `ApprovalExecution`, common-contract, no-runtime, no-authority and no-double-truth categories.
+- Audit doc added: `docs/architecture/nodal-os-d11-post-second-replacement-isolation-audit.md`.
+- Verified: D10 command/execution exception remains exact to `ApprovalExecutionDesignOnlyProtected.cs`; D7 and D10 exceptions are independent and file-exact, not a broad command/execution allowlist.
+- Verified: candidate references remain limited to candidate source, D7 source target, D10 source target, Safety tests and docs/logs.
+- Preserved: D4 candidate remains non-authoritative, D1/D2 remain design/test-only, D7 and D10 remain narrow/read-only/design-only/non-runtime, and existing hard-block tests remain authoritative.
+- Non-goals preserved: no `src/` change, third replacement, new source candidate, CI change, runtime/product wiring, public/product exposure, Production route activation, latest pointer, active read precedence, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live behavior or release/commercial readiness.
+- Bloat impact: source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines. The D-series has so far proven equivalence/isolation, not reduced source bloat.
+- Findings: P0=0, P1=0, P2=0; P3 next work should plan actual source reduction before another proof-only replacement; P4 D7+D10 evidence is stronger but net source size is higher.
+- Next recommended macro-block: `D12 source-reduction plan/audit only`.

@@ -234,6 +234,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Bloat impact: source bloat reduction remains `0%`; D10 adds net `+70` source lines and cumulative D7+D10 source impact is net `+140` lines.
 - Follow-up: D11 post-second-replacement isolation/equivalence audit or STOP_FOR_AUDIT. No broad refactor from D10 alone.
 
+## BLOCK D11 - Post-Second-Replacement Isolation/Equivalence Audit
+
+- Objective: audit the D10 second minimal replacement after the fact and harden isolation/equivalence evidence before any third replacement or broad refactor.
+- Status: completed as test/audit/docs-only in `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+- Decision: `GO_WITH_FINDINGS_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT_READY`.
+- Actual tests: `tests/OneBrain.Safety.Tests/ApprovalExecutionPostSecondReplacementD11Tests.cs`.
+- Actual audit doc: `docs/architecture/nodal-os-d11-post-second-replacement-isolation-audit.md`.
+- Do not touch: `src/`, D4 candidate source, D7 target, D10 target, new source candidates, Product Ledger behavior files, Pilot routes, DI, command handlers, CI, public/product gates, latest pointer/read precedence/product authority, command execution or release/commercial claims.
+- Verified: D10 command/execution exception is exact to `ApprovalExecutionDesignOnlyProtected.cs`, D7 and D10 exceptions are independent, and similar future files are not automatically allowed.
+- Verified: candidate references remain limited to candidate source, D7 source target, D10 source target, Safety tests and docs/logs.
+- Verified: D7+D10 together do not create common authority by accumulation; D1/D2 remain test/design-only and existing hard-block tests remain authoritative.
+- Bloat impact: source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines. The D-series has so far proven equivalence/isolation, not reduced source bloat.
+- Follow-up: `D12 source-reduction plan/audit only` or STOP_FOR_AUDIT. Do not default to a third proof-only replacement.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
