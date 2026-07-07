@@ -10,6 +10,8 @@ Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_REA
 
 Selected next recommended block: `NODAL_OS_BLOCK_E4_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_CLEANUP_DOCS_ONLY`.
 
+E4 cross-link index: `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md`.
+
 ## 1. Executive Status
 
 Product Ledger local/dev is still evidence-only and local/dev. It is not public/product, not a Production route, not a latest pointer, not active read precedence, not product authority and release/commercial remains `0% / NO-GO`.
@@ -21,6 +23,8 @@ E2 created the current canon:
 The canon reconciles path/canonicalization, local approval/execution, handoff drafts, latest-state evidence, operator surface/local-dev UI, runtime local-only/internal evidence, public/product blocker maps, redaction/retention, integration/property and broad user-workspace boundary docs. Historical QA, roadmap and handoff docs remain preserved, but current interpretation should enter through the canon.
 
 E3 does not authorize E4. E3 only selects the safest next recommended block.
+
+E4 later cross-linked selected stale Product Ledger entrypoints and recommended `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`. E4 does not authorize E5.
 
 ## 2. Current Percentages
 

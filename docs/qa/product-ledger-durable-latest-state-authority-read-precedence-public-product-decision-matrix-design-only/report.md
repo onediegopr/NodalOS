@@ -4,6 +4,10 @@ Date: 2026-07-06
 
 Decision: `GO_WITH_FINDINGS_DURABLE_LATEST_STATE_AUTHORITY_READ_PRECEDENCE_PUBLIC_PRODUCT_DECISION_MATRIX_DESIGN_ONLY_READY`
 
+## Current Interpretation Notice
+
+This document is historical/block-specific evidence. For current Product Ledger local/dev status, blockers, gates and next steps, use `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` and `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`. Product Ledger remains local/dev evidence-only; public/product, Production route, latest pointer, read precedence, product authority, CI enforcement and release/commercial remain blocked or `0% / NO-GO`.
+
 Baseline HEAD: `3923a87dedd64426d5511eca5953755d858eea15`
 
 ## Scope

@@ -12,6 +12,8 @@ Selected next recommended block: `NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_NEX
 
 E3 next-action plan: `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`.
 
+E4 stale-entrypoint cross-link index: `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md`.
+
 ## 1. Executive Status
 
 Product Ledger has a real local/dev evidence line, but it is not public/product, not a Production route, not product authority and not release/commercial ready.
@@ -156,8 +158,8 @@ E2 did not add tests because the existing Product Ledger focused gates, hard-blo
 
 Pending safe work before any product/runtime move:
 
-- Execute the E3-selected next block: `NODAL_OS_BLOCK_E4_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_CLEANUP_DOCS_ONLY`.
-- Compact repeated QA/handoff entrypoints while preserving history.
+- Execute the E4-selected next block: `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`.
+- Continue compacting lower-risk repeated QA/handoff entrypoints while preserving history.
 - Merge latest-state snapshot/manifest/reader/auxiliary evidence roles into a shared `LatestStateEvidence` design.
 - Merge writer variants under a `WriterMode` design without changing product behavior.
 - Consolidate operator surfaces into one `OperatorSurfaceReadModel` design.
@@ -165,6 +167,8 @@ Pending safe work before any product/runtime move:
 - Keep Product Ledger Safety/Recipes and hard-block scans green.
 
 E3 selects stale-doc cross-link cleanup because older Product Ledger QA/handoff/roadmap entrypoints remain the clearest drift risk after the canon. E3 does not authorize E4.
+
+E4 cross-linked the highest-risk historical Product Ledger entrypoints and selected a small canon guard test-only block as the next safe step. E4 does not authorize E5.
 
 ## 12. Findings
 

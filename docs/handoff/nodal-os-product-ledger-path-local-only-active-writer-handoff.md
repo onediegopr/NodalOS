@@ -4,6 +4,10 @@ Date: 2026-07-04
 
 Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_LOCAL_ONLY_ACTIVE_WRITER_READY`
 
+## Current Interpretation Notice
+
+This handoff is historical/block-specific evidence. For current Product Ledger local/dev status, blockers, gates and next steps, use `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` and `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`. Product Ledger remains local/dev evidence-only; public/product, Production route, latest pointer, read precedence, product authority, CI enforcement and release/commercial remain blocked or `0% / NO-GO`.
+
 ## Summary
 
 Added a Core-only local Product Ledger Path activation and bounded writer. It accepts a persisted local-only candidate, requires local authority and safety evidence, keeps runtime flag default-off and writes hash-only JSONL entries under the activated local path.

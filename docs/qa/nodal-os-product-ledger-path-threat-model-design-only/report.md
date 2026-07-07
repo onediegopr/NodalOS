@@ -4,6 +4,10 @@ Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PATH_THREAT_MODEL_DESIGN_ONLY_READY`
 
 Date: 2026-07-04
 
+## Current Interpretation Notice
+
+This document is historical/block-specific evidence. For current Product Ledger local/dev status, blockers, gates and next steps, use `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` and `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`. Product Ledger remains local/dev evidence-only; public/product, Production route, latest pointer, read precedence, product authority, CI enforcement and release/commercial remain blocked or `0% / NO-GO`.
+
 ## Scope
 
 Docs-only threat model for a future Durable Audit Trail product ledger path. No source, tests or runtime behavior changed.

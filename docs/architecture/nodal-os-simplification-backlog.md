@@ -345,6 +345,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: Product Ledger local/dev remains evidence only; runtime/product enablement, CI enforcement and release/commercial remain `0%`; public/product, Production route, latest pointer, read precedence and product authority remain blocked.
 - Follow-up: E3 recommends but does not authorize E4.
 
+## BLOCK E4 - Product Ledger Local/Dev Stale Doc Cross-Link Cleanup
+
+- Objective: add concise canon/current-status notices to stale or high-risk Product Ledger local/dev docs without deleting historical evidence.
+- Status: completed as docs-only/crosslink-only/no-runtime-change in `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_READY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Cross-linked: selected high-risk QA, handoff and roadmap entrypoints for active writer, runtime local-only internal enablement, public UI/actions, public surface readiness, public local-only operator acceptance, latest pointer/read precedence/product exposure decision matrices and the historical path threat model.
+- Current authority: E2 canon plus E3 plan; old docs remain preserved as block-specific evidence and should not be read as current product readiness.
+- Current posture: Product Ledger local/dev remains evidence only; runtime/product enablement, CI enforcement and release/commercial remain `0%`; public/product, Production route, latest pointer, read precedence and product authority remain blocked.
+- Follow-up: `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`. E4 recommends but does not authorize E5.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

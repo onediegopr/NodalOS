@@ -4,6 +4,10 @@ Date: 2026-07-04
 
 Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_PUBLIC_SURFACE_READINESS_AND_LAUNCH_BLOCKER_MAP_FINAL_PACKET_READY`
 
+## Current Interpretation Notice
+
+This document is historical/block-specific evidence. For current Product Ledger local/dev status, blockers, gates and next steps, use `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` and `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`. Product Ledger remains local/dev evidence-only; public/product, Production route, latest pointer, read precedence, product authority, CI enforcement and release/commercial remain blocked or `0% / NO-GO`.
+
 ## Safe Blocks Chained
 
 - `NODAL_OS_PRODUCT_LEDGER_PUBLIC_SURFACE_READINESS_AND_LAUNCH_BLOCKER_MAP_DESIGN_ONLY_WINDOW`

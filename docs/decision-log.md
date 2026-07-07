@@ -2189,3 +2189,16 @@
 - Current posture: Product Ledger local/dev readiness `81%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
 - Findings: P0=0, P1=0, P2=0; P3 stale entrypoint drift and manual-only gates remain; P4 future canon guard may be useful after cross-link cleanup.
 - Authorization note: E3 recommends E4 but does not authorize starting E4.
+
+## NODAL_OS_BLOCK_E4_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_CLEANUP_DOCS_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_STALE_DOC_CROSSLINK_READY`.
+- Baseline: `b74582a2d5dc954ea1d53550838e8d35d7bdefb1`.
+- Scope: docs-only/crosslink-only Product Ledger local/dev stale-entrypoint cleanup. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Cross-link index added: `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md`.
+- Cross-linked high-risk entrypoints: active writer QA/handoff, runtime local-only internal enablement QA/handoff, public UI/actions QA/handoff, public surface readiness QA, public local-only operator acceptance QA, latest pointer/read precedence/product exposure matrix QA/roadmap, authority/read-precedence/public-product matrix QA and historical path threat model QA.
+- Current authority: E2 canon plus E3 next-action plan. Historical docs remain preserved as block-specific evidence and are not current product readiness.
+- Current posture: Product Ledger local/dev readiness `83%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 documentation surface remains large and lower-risk docs may still benefit from future links; P4 QA JSON/old ADRs preserve old percentages by design.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`.
+- Authorization note: E4 recommends E5 but does not authorize starting E5.

@@ -4,6 +4,10 @@ Date: 2026-07-04
 
 Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_RUNTIME_LOCAL_ONLY_INTERNAL_ENABLEMENT_READY`
 
+## Current Interpretation Notice
+
+This handoff is historical/block-specific evidence. For current Product Ledger local/dev status, blockers, gates and next steps, use `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` and `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`. Product Ledger remains local/dev evidence-only; public/product, Production route, latest pointer, read precedence, product authority, CI enforcement and release/commercial remain blocked or `0% / NO-GO`.
+
 ## Summary
 
 Added a Core-only runtime local-only internal gate for Product Ledger. The feature flag is default-off and can arm only with `enabled:local-only-internal`. When armed, the internal adapter can read diagnostics or append safe hash-only entries through the bounded local-only writer. Unsupported command kinds and forged feature flag results fail closed.
