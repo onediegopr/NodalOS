@@ -285,7 +285,32 @@ Non-negotiable rule: do not merge a safety service into an envelope if that make
 - Fail-closed rule: unsupported, unknown or non-authoritative source concepts map to rejected/blocked, never allowed.
 - D2 does not create a production adapter. The next source-facing step must be D3 plan/audit or a minimal parallel source candidate with a separate explicit GO and no-runtime wiring guard.
 
-### D3 - Migrate latest-state snapshot/manifest/reader/auxiliary
+### D3 - Source refactor plan/audit
+
+Objective: choose the first future source-facing move using D1/D2 evidence before touching `src/`.
+
+Implementation status: completed as docs/audit-only in `NODAL_OS_BLOCK_D3_SOURCE_REFACTOR_PLAN_AUDIT_ONLY`.
+
+Canonical D3 plan:
+
+- `docs/architecture/nodal-os-d3-source-refactor-plan-audit.md`
+
+Decision: recommend `AUTHORIZE_NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING` as the next source-facing block. D3 does not authorize D4 and does not implement any source change.
+
+Selected D4 first move: add a minimal, non-wired, parallel source candidate for common boundary claims. Do not migrate latest-state, handoff, route, UI or writer models first.
+
+Stop conditions: any need to edit existing Product Ledger behavior files, routes, DI, CI, public/product claims, Production route, latest pointer, read precedence, product authority, command execution or release/commercial claims.
+
+### D4 - Minimal source candidate, no runtime wiring
+
+- Objective: add one isolated source-side common boundary-claims candidate with no consumers and no runtime/product authority.
+- Expected files: one new Core/Approval source file plus no-runtime/no-reference tests.
+- Risks: candidate can be mistaken for authority if named or documented poorly.
+- Required tests: Tier 1, CommonContracts, MappingAdapters, Product Ledger Safety/Recipes, static guard and no-reference scans.
+- Rollback: remove the new candidate source file and D4 tests.
+- Stop conditions: any route/DI/command-handler/CI reference or existing behavior drift.
+
+### D5 - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.
 - Expected files: latest-state contracts and tests.
@@ -294,7 +319,7 @@ Non-negotiable rule: do not merge a safety service into an envelope if that make
 - Rollback: keep old role-specific contracts as compatibility aliases.
 - Stop conditions: any active read precedence/latest pointer/product authority drift.
 
-### D4 - Migrate handoff draft variants
+### D6 - Migrate handoff draft variants
 
 - Objective: migrate local, test-jail and allowlisted workspace drafts to role/mode fields.
 - Expected files: handoff writer contracts and tests.
@@ -303,7 +328,7 @@ Non-negotiable rule: do not merge a safety service into an envelope if that make
 - Rollback: old writers remain compatibility path.
 - Stop conditions: arbitrary path, overwrite, user-selected path, filesystem scan.
 
-### D5 - Merge DurableAuditTrail Minimal/Candidate
+### D7 - Merge DurableAuditTrail Minimal/Candidate
 
 - Objective: merge minimal/candidate into one evidence ledger result shape.
 - Expected files: Durable audit trail contracts/tests.
@@ -312,7 +337,7 @@ Non-negotiable rule: do not merge a safety service into an envelope if that make
 - Rollback: retain old minimal/candidate wrappers.
 - Stop conditions: runtime/product enablement or authority claim.
 
-### D6 - Remove/deprecate old contracts
+### D8 - Remove/deprecate old contracts
 
 - Objective: only after compatibility and test equivalence, deprecate old names.
 - Expected files: source/test/docs with explicit GO.
@@ -321,7 +346,7 @@ Non-negotiable rule: do not merge a safety service into an envelope if that make
 - Rollback: revert deletion/deprecation commit.
 - Stop conditions: coverage gap, missing old/new scanner coverage.
 
-### D7 - Audit no guardrail loss
+### D9 - Audit no guardrail loss
 
 - Objective: compare old and new guard coverage.
 - Expected files: audit report and matrix.

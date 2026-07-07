@@ -132,6 +132,29 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: proves D1 candidate can represent current hard-block semantics and unknown states fail closed before any source-facing refactor.
 - Follow-up: D3 should be source-refactor plan/audit only, or a minimal parallel source candidate behind a separate no-runtime/no-wiring guard. No real source adapter use without explicit GO.
 
+## BLOCK D3 - Source Refactor Plan Audit Only
+
+- Objective: choose the safest first source-facing simplification move using D1/D2 evidence before touching `src/`.
+- Status: completed as docs/audit-only in `docs/architecture/nodal-os-d3-source-refactor-plan-audit.md`.
+- Decision: recommend `AUTHORIZE_NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
+- Selected D4 candidate: one isolated source-side common boundary-claims candidate, non-wired, no consumers, no runtime/product authority.
+- Expected files: docs/log updates only in D3.
+- Do not touch: `src/`, tests, CI, runtime behavior, existing contracts, route behavior, DI, command handlers or public/product gates.
+- Tests required: C5/D2 gate evidence; docs-only `git diff --check`.
+- Risk: low for D3; P3 for D4 if the source candidate is mistaken for authority.
+- Benefit: prevents the first source-facing move from jumping straight into route/latest-state/handoff/writer refactors.
+- Follow-up: D4 requires explicit Diego authorization. D4 must be one-file source-minimal and protected by no-runtime/no-reference tests.
+
+## BLOCK D4 - Minimal Source Candidate No Runtime Wiring (Future GO Only)
+
+- Objective: add one isolated source-side common boundary-claims candidate with no runtime/product wiring.
+- Status: future GO only.
+- Expected files: one new Core/Approval source candidate plus focused Safety tests and docs/log updates.
+- Do not touch: existing Product Ledger behavior files, Pilot routes, DI, command handlers, CI, public/product gates, latest pointer/read precedence/product authority, command execution or release/commercial claims.
+- Tests required: Core/Pilot/Solution build, Product Ledger Safety/Recipes, Tier 1, CommonContracts, MappingAdapters, static guard, public/product and Production route filters, no-reference source scans and `git diff --check`.
+- Risk: medium; source-side names can imply authority if not explicitly marked candidate/non-wired.
+- Benefit: gives future source migrations a controlled target without changing behavior.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

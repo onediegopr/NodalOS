@@ -285,12 +285,32 @@ Expected after D2:
 
 D2 keeps unknown/unsupported/non-authoritative concepts fail-closed. It does not replace existing contracts, does not touch `src/`, does not create production adapters and does not authorize runtime/product behavior.
 
-## 14. Future Implementation Options
+## 14. D3 Source Refactor Plan Audit Note
+
+D3 selects the first safe source-facing move but does not implement it.
+
+Canonical D3 plan:
+
+- `docs/architecture/nodal-os-d3-source-refactor-plan-audit.md`
+
+Selected future D4 candidate:
+
+- `AUTHORIZE_NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`
+
+D4 expected extra no-reference checks:
+
+```powershell
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src/OneBrain.Pilot src/OneBrain.Cli .github azure-pipelines.yml
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src/OneBrain.Core/Approval -g "*.cs"
+```
+
+The first command should return no matches. The second command should return only the new candidate file and any D4 test-approved self-reference if a future D4 is authorized.
+
+## 15. Future Implementation Options
 
 Safe next blocks:
 
 - `NODAL_OS_BLOCK_C7_PRE_REFACTOR_GATE_SCRIPT_TEST_ONLY_DISABLED`: add a disabled/local-only helper script for the documented gate, with no CI wiring.
-- `NODAL_OS_BLOCK_D3_SOURCE_REFACTOR_PLAN_AUDIT_ONLY`: decide the safest first source-facing move using D1/D2 evidence.
-- `NODAL_OS_BLOCK_D3_MINIMAL_PARALLEL_SOURCE_CANDIDATE_NO_RUNTIME_TEST_ONLY`: only with explicit GO, add a non-wired source candidate behind no-runtime/no-wiring guard.
+- `NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`: only with explicit GO, add a non-wired source candidate behind no-runtime/no-reference guards.
 
 Do not proceed to source refactor, contract use, public/product exposure or release/commercial readiness from this document alone.

@@ -1961,3 +1961,16 @@
 - Non-goals preserved: no `src/` changes, production adapter, existing contract replacement, runtime wiring, service registration, route registration, command handler, CI change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future source-facing D3 can create double-truth if mapper output is treated as authority; P4 source bloat remains until a separate source-facing block.
 - Next recommended macro-block: `NODAL_OS_BLOCK_D3_SOURCE_REFACTOR_PLAN_AUDIT_ONLY`.
+
+## NODAL_OS_BLOCK_D3_SOURCE_REFACTOR_PLAN_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_PLAN_AUDIT_ONLY_READY`.
+- Baseline: `24168684f4809b6905c932bcd90eb3f5d0c8a172`.
+- Scope: docs-only/audit-only/plan-only first source-facing simplification plan.
+- Created: `docs/architecture/nodal-os-d3-source-refactor-plan-audit.md`.
+- Inventoried: minimal boundary-claims source candidate, internal operator UI preview, renderable operator surface, local dev route preview, path readiness, latest-state reader/auxiliary, handoff writers, static guard source promotion and `/run` claim coherence status.
+- Selected future D4 candidate: `AUTHORIZE_NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
+- Rationale: one isolated non-wired source candidate is lower risk than touching route/latest-state/handoff/writer models first and is directly covered by D1/D2 semantics.
+- Non-goals preserved: no `src/` changes, tests, CI, runtime/product behavior, existing contract replacement, routes, DI, command handlers, public/product exposure, Production route, active read precedence, latest pointer, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future D4 candidate can be mistaken for authority unless naming/no-reference tests are strict; P4 source bloat remains until future source-facing implementation.
+- Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
