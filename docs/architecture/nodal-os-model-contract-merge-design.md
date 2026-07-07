@@ -448,6 +448,17 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Next recommended block: `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`.
 - Authorization note: D15 recommends E1 but does not authorize starting E1.
 
+### E1 - Main roadmap rebaseline after D-series
+
+- Objective: rebaseline the main roadmap after formal D-series closure.
+- Implementation status: completed as docs-only/roadmap-only/rebaseline-only in `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`.
+- Actual rebaseline doc: `docs/architecture/nodal-os-e1-main-roadmap-rebaseline-after-d-series.md`.
+- Scope: no `src/` changes, no tests changed, no CI change, no D-series implementation, no source reduction, no replacement implementation and no runtime/product behavior change.
+- Rebaseline: D-series remains closed; D4 remains non-authoritative; D7/D10 remain narrow proof replacements; D13 remains a local reduction only; broad Product Ledger/model-contract simplification remains pending.
+- Current posture: Tier 1 remains manual/discovery-only, CI enforcement remains `0%`, runtime/product enablement remains `0%`, release/commercial remains `0% / NO-GO`.
+- Next recommended block: `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY`.
+- Authorization note: E1 recommends E2 but does not authorize starting E2.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.

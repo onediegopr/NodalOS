@@ -2149,3 +2149,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger/model-contract simplification remains main-roadmap work; P4 do not overclaim D-series as broad simplification.
 - Next recommended macro-block: `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`.
 - Authorization note: D15 recommends E1 but does not authorize starting E1.
+
+## NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY
+
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_READY`.
+- Baseline: `b8fd7c2b4626511eca3f7d84d0dc30a8a0c4fb9d`.
+- Scope: docs-only/roadmap-only/rebaseline-only main roadmap rebaseline after D-series closure.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Rebaseline doc added: `docs/architecture/nodal-os-e1-main-roadmap-rebaseline-after-d-series.md`.
+- Imported closure: D-series remains closed; D4 candidate remains non-authoritative; D7/D10 remain narrow proof replacements; D13 remains local reduction only.
+- Current posture: Product Ledger local/dev line exists but backlog ordering is spread across many artifacts; Tier 1 remains manual/discovery-only; CI enforcement remains `0%`; runtime/product enablement remains `0%`; release/commercial remains `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Product Ledger local/dev backlog is the largest safe main-roadmap reconciliation lane; P4 E1 must not be treated as E2 authorization.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY`.
+- Authorization note: E1 recommends E2 but does not authorize starting E2.

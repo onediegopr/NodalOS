@@ -694,3 +694,19 @@ D14 changes no commands, tests, CI, source, scanner behavior or runtime/product 
 D14 selected `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP` because D13 proved a real local reduction while the remaining obvious D-series compaction target is low-value. Future source simplification should return to the main roadmap rather than continue D-series proof-target work by default.
 
 D-series source trajectory after D14 remains: D7 `+70`, D10 `+70`, D13 `-30`, net `+110`. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 27. E1 Main Roadmap Rebaseline Note
+
+E1 completed as docs-only/roadmap-only/rebaseline-only in `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`.
+
+Canonical E1 doc:
+
+```powershell
+docs/architecture/nodal-os-e1-main-roadmap-rebaseline-after-d-series.md
+```
+
+E1 changes no commands, tests, CI, source, scanner behavior or runtime/product behavior. It adds no new test label requirement and does not modify the pre-refactor command gate.
+
+E1 selected `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY` because the Product Ledger local/dev backlog is now the largest safe main-roadmap ordering problem after D-series closure.
+
+Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`. E1 recommends E2 but does not authorize E2.

@@ -306,6 +306,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Bloat impact remains: D7 `+70`, D10 `+70`, D13 `-30`, cumulative `+110`.
 - Follow-up: `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`. D15 recommends but does not authorize E1.
 
+## BLOCK E1 - Main Roadmap Rebaseline After D-Series
+
+- Objective: rebaseline the main NODAL OS roadmap after D-series closure.
+- Status: completed as docs-only/roadmap-only/rebaseline-only in `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`.
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_READY`.
+- Actual rebaseline doc: `docs/architecture/nodal-os-e1-main-roadmap-rebaseline-after-d-series.md`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Rebaseline: D-series is closed; Product Ledger local/dev safety backlog is now the highest-value safe next reconciliation lane.
+- Current posture: Tier 1 manual/discovery-only, CI enforcement `0%`, runtime/product enablement `0%`, release/commercial `0% / NO-GO`.
+- Not authorized: broad source refactor, runtime/product enablement, public/product route, Production route, latest pointer, read precedence, product authority, CI enforcement or release/commercial readiness.
+- Follow-up: `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY`. E1 recommends but does not authorize E2.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
