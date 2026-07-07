@@ -415,6 +415,18 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Source bloat reduction remains `0%`; D7+D10 cumulative source impact remains net `+140` lines until a future D13 actually removes lines and passes gates.
 - Next step: `AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE` with explicit Diego authorization.
 
+### D13 - Minimal source reduction implementation, no runtime change
+
+- Objective: implement the one D12-selected source reduction target without runtime/product behavior change.
+- Implementation status: completed as source-minimal/reduction-only/no-runtime-behavior-change in `NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Actual source target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Actual audit doc: `docs/architecture/nodal-os-d13-minimal-source-reduction-implementation.md`.
+- Reduction: replaced the repeated 13-call private claim/state proof chain with one private expected-claims table and one `All(...)` loop while preserving the reflected private helper signatures.
+- Non-authority rule: D4 remains non-authoritative, D1/D2 remain test/design-only, D7 remains unchanged and existing hard-block tests remain authoritative.
+- Non-goals preserved: no route/DI/service registration, command handler, Product Ledger runtime/latest-state/handoff/writer, public/product exposure, Production route, latest pointer/read precedence/product authority, CI change, Browser/CDP/WCU/OCR/Recipes live behavior or release/commercial readiness.
+- Bloat impact: D13 reduces the D10 target by net `-30` source lines. Cumulative D7+D10+D13 source impact is net `+110` lines, so source reduction is real but partial.
+- Next step: D14 post-source-reduction isolation/equivalence audit or STOP_FOR_AUDIT. Do not continue to another reduction implementation before auditing D13.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.

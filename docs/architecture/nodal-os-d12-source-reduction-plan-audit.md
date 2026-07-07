@@ -8,6 +8,8 @@ Baseline HEAD: `0877743c50dcd4844b0eddd2ce4d04e14c28dd99`.
 
 Decision: `GO_WITH_FINDINGS_SOURCE_REDUCTION_PLAN_AUDIT_ONLY_READY`.
 
+Follow-through note: after later explicit Diego authorization, D13 implemented the selected one-file D10 target reduction in `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`. D12 remains the plan/audit record; D13 is documented in `docs/architecture/nodal-os-d13-minimal-source-reduction-implementation.md`.
+
 ## 1. Executive Verdict
 
 D12 confirms that the D-series has proven isolation and equivalence, but has not reduced source bloat yet. D7 and D10 each added the same private common-boundary fail-closed proof pattern to a narrow non-runtime source target. The safe next move is not a third proof-only replacement. The safe next move is one minimal source reduction that removes repetition inside the newer D10 target while preserving the same private proof surface and all D4/D5/D7/D8/D10/D11 guards.

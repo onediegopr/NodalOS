@@ -263,6 +263,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: first actual source bloat reduction in the D-series, after equivalence/isolation evidence has been established.
 - Follow-up: D13 requires explicit Diego authorization. Do not choose a third proof-only replacement before attempting this one-file reduction.
 
+## BLOCK D13 - Minimal Source Reduction Implementation No Runtime Change
+
+- Objective: implement the D12-selected one-file source reduction while preserving runtime/product behavior.
+- Status: completed as source-minimal/reduction-only/no-runtime-behavior-change in `NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Decision: `GO_WITH_FINDINGS_MINIMAL_SOURCE_REDUCTION_NO_RUNTIME_CHANGE_READY`.
+- Actual source target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Actual audit doc: `docs/architecture/nodal-os-d13-minimal-source-reduction-implementation.md`.
+- Source reduction: compacted duplicated D10 private claim/state proof checks into a private expected-claims table and `All(...)` loop.
+- Do not treat as broad simplification: D4 candidate source unchanged, D7 target unchanged, Product Ledger source behavior unchanged, tests unchanged and CI unchanged.
+- Bloat impact: D13 net `-30` source lines in the D10 target; cumulative D7+D10+D13 source impact remains net `+110` lines.
+- Tests required for D14: D10/D11 focused tests, NoRuntimeWiring/NoAuthority/NoDoubleTruth/PostReplacementAudit/ApprovalExecution, Product Ledger Safety/Recipes, exact source-reference scans and D7/D10 command-runtime scans.
+- Risk: low/medium after green validation; future reductions should not proceed until D14 audits that this compaction preserved D10/D11 guard meaning.
+- Follow-up: D14 post-source-reduction isolation/equivalence audit or STOP_FOR_AUDIT.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

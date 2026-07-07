@@ -633,3 +633,48 @@ rg -n "IServiceCollection|AddSingleton|AddScoped|AddTransient|MapGet|MapPost|ICo
 D12 changes no `src/`, no tests, no CI and no runtime/product behavior. It selects D13 as a one-file private helper compaction in the D10 target only. D13 must not touch the D4 candidate source, D7 source target, Product Ledger source behavior, routes, DI, service registration, command handlers or CI unless a future explicit scope says otherwise.
 
 Source bloat reduction remains `0%` after D12; D7+D10 cumulative source impact remains net `+140` lines until a future D13 removes lines and passes gates. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 25. D13 Minimal Source Reduction Implementation Note
+
+D13 completed as source-minimal/reduction-only/no-runtime-behavior-change in `NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+Canonical D13 doc:
+
+```powershell
+docs/architecture/nodal-os-d13-minimal-source-reduction-implementation.md
+```
+
+Actual D13 source target:
+
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+Actual D13 reduction:
+
+- before D13: 368 lines;
+- after D13: 338 lines;
+- diff: `+22 / -52`, net `-30`.
+
+Required future D14 focused commands:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionDesignOnlyProtected" -v:minimal
+dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionDesignOnlyProtected" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionPostSecondReplacementD11" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=PostReplacementAudit" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoAuthority" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoDoubleTruth" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ApprovalExecution" -v:minimal
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+rg -n "IServiceCollection|AddSingleton|AddScoped|AddTransient|MapGet|MapPost|ICommandHandler|CommandHandler|Process\\.Start|File\\.Write|Directory\\.CreateDirectory|HttpClient|DbContext|MigrationBuilder" src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs
+```
+
+D13 reference rule remains unchanged:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+D13 changes no tests, no CI and no runtime/product behavior. D4 candidate source remains unchanged, D7 source target remains unchanged, D1/D2 remain design/test-only and existing hard-block tests remain authoritative.
+
+Cumulative source impact after D13: D7 `+70`, D10 `+70`, D13 `-30`, net `+110`. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.

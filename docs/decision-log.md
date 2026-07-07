@@ -2104,3 +2104,18 @@
 - Bloat impact: source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines until a future D13 actually removes lines and passes gates.
 - Findings: P0=0, P1=0, P2=0; P3 D13 must stay one-file/private/exact and preserve all claim/state pairs; P4 docs must steer future work away from another additive proof-only replacement.
 - Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+## NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE
+
+- Decision: `GO_WITH_FINDINGS_MINIMAL_SOURCE_REDUCTION_NO_RUNTIME_CHANGE_READY`.
+- Baseline: `439c69eb5a5b3f984efd507063e88884c735d532`.
+- Scope: source-minimal/reduction-only/no-runtime-behavior-change implementation of the D12-selected D10 target.
+- Source changed: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs` only.
+- Tests changed: none.
+- Audit doc added: `docs/architecture/nodal-os-d13-minimal-source-reduction-implementation.md`.
+- Implemented: replaced the repeated 13-call private D10 common-boundary fail-closed proof chain with a private expected-claims table and one `All(...)` loop.
+- Preserved: D4 candidate source unchanged, D7 target source unchanged, D1/D2 test/design-only status unchanged, existing hard-block tests authoritative and reflected private helper signatures preserved.
+- Non-goals preserved: no new source candidate, third replacement, route/DI/service registration, command handler, CI change, Product Ledger source behavior change, runtime/product wiring, public/product exposure, Production route activation, latest pointer, active read precedence, product authority, provider/cloud/network/DB, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live behavior or release/commercial readiness.
+- Bloat impact: target line count 368 to 338; D13 diff `+22 / -52`, net `-30`. Cumulative D7+D10+D13 source impact is net `+110`.
+- Findings: P0=0, P1=0, P2=0; P3 D13 is a local reduction only and broad Product Ledger contract bloat remains; P4 future handoffs must not overclaim full source simplification.
+- Next recommended macro-block: `D14 post-source-reduction isolation/equivalence audit`.

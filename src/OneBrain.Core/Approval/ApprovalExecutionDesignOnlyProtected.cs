@@ -1,3 +1,6 @@
+using CommonBoundaryClaim = OneBrain.Core.Approval.NodalOsCommonBoundaryClaimsCandidate.Claim;
+using CommonBoundaryClaimState = OneBrain.Core.Approval.NodalOsCommonBoundaryClaimsCandidate.ClaimState;
+
 namespace OneBrain.Core.Approval;
 
 public enum ApprovalExecutionDesignStatus
@@ -95,6 +98,23 @@ public sealed record ApprovalExecutionAntiCapabilityProof(
     bool NoRecipeExecution,
     ApprovalReviewNoSideEffectProof NoSideEffectProof)
 {
+    private static readonly (CommonBoundaryClaim Claim, CommonBoundaryClaimState ExpectedState)[] ExpectedFailClosedClaims =
+    [
+        (CommonBoundaryClaim.PublicProductBlocked, CommonBoundaryClaimState.Blocked),
+        (CommonBoundaryClaim.ProductionRouteBlocked, CommonBoundaryClaimState.Blocked),
+        (CommonBoundaryClaim.LatestPointerDisabled, CommonBoundaryClaimState.Disabled),
+        (CommonBoundaryClaim.ReadPrecedenceDisabled, CommonBoundaryClaimState.Disabled),
+        (CommonBoundaryClaim.ProductAuthorityBlocked, CommonBoundaryClaimState.Blocked),
+        (CommonBoundaryClaim.CommandExecutionDenied, CommonBoundaryClaimState.Denied),
+        (CommonBoundaryClaim.ShellSubprocessDenied, CommonBoundaryClaimState.Denied),
+        (CommonBoundaryClaim.ProviderCloudNetworkNotClaimed, CommonBoundaryClaimState.NotClaimed),
+        (CommonBoundaryClaim.DatabaseMigrationNotClaimed, CommonBoundaryClaimState.NotClaimed),
+        (CommonBoundaryClaim.ExternalTrustNotClaimed, CommonBoundaryClaimState.NotClaimed),
+        (CommonBoundaryClaim.ReleaseCommercialNoGo, CommonBoundaryClaimState.NoGo),
+        (CommonBoundaryClaim.RuntimeProductEnablementNoGo, CommonBoundaryClaimState.NoGo),
+        (CommonBoundaryClaim.CiEnforcementNotClaimed, CommonBoundaryClaimState.NotClaimed)
+    ];
+
     public bool Passes =>
         ReadOnly
         && DesignOnly
@@ -127,58 +147,8 @@ public sealed record ApprovalExecutionAntiCapabilityProof(
         && candidate.NonAuthoritative
         && !candidate.ExistingHardBlockAuthorityReplaced
         && !candidate.AllowsRuntimeProductOrAuthority()
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.ProviderCloudNetworkNotClaimed,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.DatabaseMigrationNotClaimed,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.ExternalTrustNotClaimed,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.RuntimeProductEnablementNoGo,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo)
-        && CommonBoundaryClaimRemainsFailClosed(
-            candidate,
-            NodalOsCommonBoundaryClaimsCandidate.Claim.CiEnforcementNotClaimed,
-            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed);
+        && ExpectedFailClosedClaims.All(expected =>
+            CommonBoundaryClaimRemainsFailClosed(candidate, expected.Claim, expected.ExpectedState));
 
     private static bool CommonBoundaryClaimRemainsFailClosed(
         NodalOsCommonBoundaryClaimsCandidate candidate,
