@@ -338,6 +338,18 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Non-goals preserved: no `src/` changes, no test changes, no CI changes, no source replacement, no source bloat reduction, no runtime/product wiring and no release/commercial readiness.
 - D7 remains unauthorized until explicit Diego GO.
 
+### D7 - Minimal replacement implementation, no runtime change
+
+- Objective: apply the single D6-selected source-facing replacement without changing runtime/product behavior.
+- Implementation status: completed in `NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Actual source target: `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`.
+- Actual test evidence: `ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests` plus a one-file D5 allowed-reference guard update.
+- Candidate usage: `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` is referenced only in the selected reentry packet target as a private local fail-closed proof input for `PassesSafetyProof`.
+- Non-authority rule: existing reentry counters/statuses, D1/D2 test-only contracts and existing hard-block tests remain authoritative. The D4 candidate cannot override hard blocks and is not product/runtime authority.
+- Non-goals preserved: no route/DI/service registration, command handler, Product Ledger runtime/latest-state/handoff/writer, public/product exposure, Production route, latest pointer/read precedence/product authority, CI change or release/commercial readiness.
+- Actual bloat impact: effectively `0%` net source bloat reduction; D7 is additive proof-only rather than deletion/removal.
+- Next step: D8 post-replacement isolation/equivalence audit or STOP_FOR_AUDIT, not broad refactor.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.

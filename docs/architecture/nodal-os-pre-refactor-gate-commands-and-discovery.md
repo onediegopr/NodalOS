@@ -401,3 +401,32 @@ After a future D7, the second `rg` command may only show:
 - `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
 
 D6 itself did not change `src/`, tests, CI, runtime/product behavior, source bloat or release/commercial status.
+
+## 19. D7 Minimal Replacement Implementation Note
+
+D7 completed as source-minimal/no-runtime-behavior-change in `NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+Actual source target:
+
+`src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+
+Actual focused D7 command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ReentryDecisionPacketReadOnlyCommonBoundaryD7" -v:minimal
+```
+
+Expected D7 focused count: 12 tests.
+
+D7 reference rule:
+
+```powershell
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+```
+
+After D7, this command may show only:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+
+D7 does not change CI. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. Release/commercial remains `0% / NO-GO`.

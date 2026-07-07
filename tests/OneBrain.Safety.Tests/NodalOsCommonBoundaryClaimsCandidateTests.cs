@@ -170,6 +170,9 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateTests
     {
         var root = RepoRoot();
         var references = SourceFilesExceptCandidate(root)
+            .Where(path => !path.EndsWith(
+                $"{Path.DirectorySeparatorChar}ReentryDecisionPacketReadOnly.cs",
+                StringComparison.Ordinal))
             .Where(path => File.ReadAllText(path).Contains(nameof(NodalOsCommonBoundaryClaimsCandidate), StringComparison.Ordinal)
                 && File.ReadAllText(path).Contains("Command", StringComparison.OrdinalIgnoreCase))
             .ToArray();

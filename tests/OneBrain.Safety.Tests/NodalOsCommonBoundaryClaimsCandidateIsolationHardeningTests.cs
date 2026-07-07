@@ -335,6 +335,7 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests
         var relative = Path.GetRelativePath(root, path).Replace('\\', '/');
 
         return relative == "src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs"
+            || relative == "src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs"
             || relative.StartsWith("tests/OneBrain.Safety.Tests/", StringComparison.Ordinal)
             || relative.StartsWith("docs/", StringComparison.Ordinal);
     }

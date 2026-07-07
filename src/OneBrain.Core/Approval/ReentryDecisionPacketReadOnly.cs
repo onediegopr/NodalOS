@@ -226,7 +226,77 @@ public sealed record ReentryDecisionPacketReadOnly(
         && BlockedRealCapabilityOptions.All(option => option.Status == ReentryNextSafeOptionStatus.BlockedNoGo)
         && BlockedRealCapabilityOptions.All(option => option.OpensRealCapability)
         && RequiredExternalAuditGates.All(gate => gate.RequiredBeforeImplementation && !gate.SatisfiedNow)
-        && ReleaseCommercialStatus == "NO-GO";
+        && ReleaseCommercialStatus == "NO-GO"
+        && CommonBoundaryClaimsRemainFailClosed();
+
+    private static bool CommonBoundaryClaimsRemainFailClosed() =>
+        CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked());
+
+    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate candidate) =>
+        candidate.ParallelOnly
+        && candidate.NonAuthoritative
+        && !candidate.ExistingHardBlockAuthorityReplaced
+        && !candidate.AllowsRuntimeProductOrAuthority()
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.ProviderCloudNetworkNotClaimed,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.DatabaseMigrationNotClaimed,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.ExternalTrustNotClaimed,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.RuntimeProductEnablementNoGo,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo)
+        && CommonBoundaryClaimRemainsFailClosed(
+            candidate,
+            NodalOsCommonBoundaryClaimsCandidate.Claim.CiEnforcementNotClaimed,
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed);
+
+    private static bool CommonBoundaryClaimRemainsFailClosed(
+        NodalOsCommonBoundaryClaimsCandidate candidate,
+        NodalOsCommonBoundaryClaimsCandidate.Claim claim,
+        NodalOsCommonBoundaryClaimsCandidate.ClaimState expectedState) =>
+        candidate.StateFor(claim) == expectedState
+        && candidate.IsFailClosed(claim)
+        && !candidate.CanOverrideExistingHardBlock(claim);
 }
 
 public static class ReentryDecisionPacketReadOnlyPresenter

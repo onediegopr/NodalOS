@@ -14,7 +14,7 @@ Selected next recommendation:
 
 `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`
 
-D7 is not authorized by this document. D7 requires explicit Diego authorization before any source or test change.
+D7 was not authorized by this document. It required a separate explicit Diego authorization before any source or test change.
 
 ## Read Evidence
 
@@ -230,3 +230,38 @@ P4:
 `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`
 
 D7 must require explicit Diego authorization.
+
+## D7 Implementation Note
+
+D7 was later authorized and executed as `NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+Actual D7 source change:
+
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+
+Actual D7 tests:
+
+- `tests/OneBrain.Safety.Tests/ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests.cs`
+- `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests.cs`
+
+D7 references `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` only inside `ReentryDecisionPacketReadOnly.cs` as a private, local, read-only fail-closed proof used by `PassesSafetyProof`. The D4 candidate remains non-authoritative: existing reentry counters/statuses, D1/D2 test-only evidence and hard-block tests remain the authority. The D5 allowed-reference guard was narrowed to exactly one additional source file, the selected D7 target, and was not broadened to Product Ledger, route, DI, command, CI or runtime paths.
+
+Runtime/product behavior remains unchanged:
+
+- no route/DI/service registration;
+- no command handler;
+- no Product Ledger runtime/latest-state/handoff/writer change;
+- no public/product exposure;
+- no Production route;
+- no latest pointer, read precedence or product authority;
+- no DB/provider/cloud/network/KMS/WORM/external trust;
+- no release/commercial readiness.
+
+Actual bloat impact:
+
+- source bloat reduction remains effectively `0%`.
+- D7 is additive proof-only: it adds a private common-boundary proof in the selected source target and focused tests rather than deleting existing contracts.
+
+Next recommended block after D7:
+
+`D8 post-replacement isolation/equivalence audit`.

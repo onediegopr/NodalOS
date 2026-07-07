@@ -2015,3 +2015,17 @@
 - Non-goals preserved: no `src/` changes, tests, CI, replacement implementation, source bloat reduction, runtime/product wiring, public/product exposure, Production route activation, latest pointer, read precedence, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 D7 must not broaden the D5 allowed-reference guard; P4 source bloat reduction remains 0%.
 - Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+## NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE
+
+- Decision: `GO_WITH_FINDINGS_MINIMAL_REPLACEMENT_NO_RUNTIME_CHANGE_READY`.
+- Baseline: `a872c601c13a588deab1d6d158a9399e62968c00`.
+- Scope: source-minimal/no-runtime-behavior-change implementation of the D6-selected reentry packet target.
+- Source changed: `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs` only under `src/`.
+- Tests added/updated: `ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests` and one exact allowed-reference update in `NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests`.
+- Implemented: `PassesSafetyProof` now includes a private local common-boundary fail-closed proof using `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()`.
+- Preserved: D4 candidate remains non-authoritative, D1/D2 remain test/design-only, existing reentry counters/statuses remain authoritative and existing hard-block tests remain authoritative.
+- Non-goals preserved: no route/DI/service registration, command handler, Product Ledger runtime/latest-state/handoff/writer, public/product exposure, Production route, latest pointer, read precedence, product authority, CI change, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Bloat impact: source bloat reduction remains effectively `0%`; D7 is additive proof-only.
+- Findings: P0=0, P1=0, P2=0; P3 future source replacement must not generalize this one allowed source reference; P4 no meaningful source reduction yet.
+- Next recommended macro-block: `D8 post-replacement isolation/equivalence audit`.

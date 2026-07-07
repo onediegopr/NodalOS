@@ -389,3 +389,31 @@ Additional labels introduced for D5:
 D5 Tier 1 impact: it adds fourteen focused tests to the manual `NodalOsTier1Safety` discovery surface. These tests harden no-runtime-reference scanning, allowed-reference boundaries, unsafe authority flag detection, closed claim-state taxonomy, missing/unsupported claim fail-closed behavior, D1/D2/D4 blocked-state equivalence and no-double-truth/non-authority proof.
 
 D5 changes no `src/`, adds no source candidate, does not modify the D4 candidate, does not replace existing contracts and does not reduce source bloat. Existing hard-block tests remain authoritative. CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.
+
+## 17. D7 Minimal Replacement Implementation
+
+Implementation status: completed as source-minimal/no-runtime-behavior-change in `NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+D7 adds focused Safety evidence:
+
+- `ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests`
+
+Additional labels used by D7:
+
+- `NodalOsTier1Safety`
+- `CommonContracts`
+- `SourceCandidate`
+- `NoRuntimeWiring`
+- `NoAuthority`
+- `NoDoubleTruth`
+- `PublicProductBlock`
+- `ProductionRouteBlock`
+- `LatestPointerBlock`
+- `ReadPrecedenceBlock`
+- `ProductAuthorityBlock`
+- `CommandExecutionBlock`
+- `ReleaseCommercialBlock`
+
+D7 Tier 1 impact: it adds twelve focused tests proving the reentry packet's private common-boundary proof preserves public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, no runtime/product authority, no broadened candidate references and D1/D2/D4 no-double-truth semantics.
+
+D7 does not move tests, delete tests, weaken assertions or change CI filters. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.

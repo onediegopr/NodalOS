@@ -182,6 +182,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: first source-facing replacement path is outside Product Ledger runtime and can be rolled back cleanly.
 - Follow-up: D7 requires explicit Diego authorization.
 
+## BLOCK D7 - Minimal Replacement Implementation No Runtime Change
+
+- Objective: implement the one D6-selected replacement target without runtime/product behavior change.
+- Status: completed as source-minimal/no-runtime-behavior-change in `NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Actual source target: `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`.
+- Actual tests: `tests/OneBrain.Safety.Tests/ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests.cs` and a narrow D5 allowed-reference guard update.
+- Candidate usage: `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` is used only as a private read-only fail-closed proof inside the selected target.
+- Do not treat as authority: the D4 candidate remains non-authoritative, D1/D2 remain test/design-only and existing hard-block tests remain authoritative.
+- Non-goals preserved: no route/DI/service registration, command handlers, Product Ledger runtime/latest-state/handoff/writer, public/product exposure, Production route, latest pointer/read precedence/product authority, CI change or release/commercial readiness.
+- Bloat impact: effectively `0%` net source reduction; additive proof-only.
+- Follow-up: D8 post-replacement isolation/equivalence audit or STOP_FOR_AUDIT. No broad refactor from D7 alone.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
