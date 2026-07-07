@@ -363,6 +363,19 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Source bloat reduction remains `0%`; D7 was additive proof-only with net +70 source lines.
 - Next step: `STOP_FOR_AUDIT` or `D9 second minimal replacement plan/audit only`, not broad refactor.
 
+### D9 - Second minimal replacement plan/audit only
+
+- Objective: decide whether one equally safe second source-facing replacement exists after D7/D8, without implementing it.
+- Implementation status: completed as docs/audit/plan-only in `NODAL_OS_BLOCK_D9_SECOND_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY`.
+- Canonical D9 plan: `docs/architecture/nodal-os-d9-second-minimal-replacement-plan-audit.md`.
+- Actual files: docs/log updates only.
+- Selected future D10 recommendation: `AUTHORIZE_NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected future D10 source target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Selection rationale: the target is a deterministic Core Approval fixture, read-only/design-only/preview-only, non-route, non-DI, non-service-registered, non-writer, not Product Ledger runtime/latest-state/handoff-facing and already covered by focused Safety/Recipes tests.
+- Required D10 guard rule: if authorized, the D4 candidate may be referenced only as a private local fail-closed proof in the selected target, with exact source-reference, no-authority, no-double-truth and command-guard exception tests.
+- Non-goals preserved: no `src/` changes, no tests changed, no CI change, no second replacement, no D4 candidate modification, no D7 target modification, no candidate reference broadening, no source bloat reduction, no runtime/product enablement and no release/commercial readiness.
+- D10 remains unauthorized until explicit Diego GO.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.

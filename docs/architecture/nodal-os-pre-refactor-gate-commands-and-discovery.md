@@ -461,3 +461,42 @@ After D8, this command may still show only:
 - `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
 
 D8 changes no `src/`, no CI and no runtime/product behavior. It does not implement a second replacement. The D7 command guard exception remains exact to `ReentryDecisionPacketReadOnly.cs`. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 21. D9 Second Minimal Replacement Plan Audit Note
+
+D9 completed as docs/audit/plan-only in `NODAL_OS_BLOCK_D9_SECOND_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY`.
+
+Canonical D9 plan:
+
+`docs/architecture/nodal-os-d9-second-minimal-replacement-plan-audit.md`
+
+Selected future D10:
+
+`AUTHORIZE_NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`
+
+Selected future D10 target:
+
+`src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+Required future D10 focused commands:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionDesignOnlyProtected" -v:minimal
+dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionDesignOnlyProtected" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~NodalOsCommonBoundaryClaimsCandidate" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ReentryDecisionPacketReadOnly" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoAuthority" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoDoubleTruth" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=PostReplacementAudit" -v:minimal
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src/OneBrain.Pilot src/OneBrain.Cli .github azure-pipelines.yml
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+rg -n "IServiceCollection|AddSingleton|AddScoped|AddTransient|MapGet|MapPost|ICommandHandler|CommandHandler|Process\\.Start|File\\.Write|Directory\\.CreateDirectory|HttpClient|DbContext|MigrationBuilder" src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs
+```
+
+After a future D10, the candidate source reference command may show only:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+D9 itself changed no `src/`, no tests, no CI and no runtime/product behavior. It did not implement the second replacement. D10 remains unauthorized until explicit Diego GO. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.

@@ -2043,3 +2043,17 @@
 - Non-goals preserved: no `src/` change, second replacement, new source candidate, CI change, runtime/product wiring, public/product exposure, Production route activation, latest pointer, active read precedence, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 D9 should be plan/audit-only before any second source replacement; P4 source bloat reduction remains 0%.
 - Next recommended macro-block: `STOP_FOR_AUDIT` or `D9 second minimal replacement plan/audit only`.
+
+## NODAL_OS_BLOCK_D9_SECOND_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_SECOND_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY_READY`.
+- Baseline: `39254d2423196eeec492fc24b08241a903527623`.
+- Scope: docs/audit/plan-only second minimal replacement selection after D7/D8.
+- Created: `docs/architecture/nodal-os-d9-second-minimal-replacement-plan-audit.md`.
+- Selected future D10 recommendation: `AUTHORIZE_NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected future D10 target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Rationale: read-only/design-only/preview-only Core Approval fixture, non-route, non-DI, non-service-registered, non-writer, not Product Ledger runtime/latest-state/handoff-facing and already covered by focused Safety/Recipes tests.
+- Deferred/rejected: export preview, read-only surface, physical export policy, redaction/retention/deletion policy, mutation store, durable audit trail, first real capability scope and implementation prep because each is more export/product/mutation/durable/future-capability-facing.
+- Non-goals preserved: no `src/` changes, tests, CI, D4 candidate modification, D7 source modification, second replacement implementation, candidate reference broadening, runtime/product wiring, public/product exposure, Production route activation, latest pointer/read precedence/product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future D10 must keep the command/execution wording exception exact to the selected source file and must not turn D4 into authority; P4 source bloat reduction remains 0%.
+- Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE` with explicit Diego authorization.

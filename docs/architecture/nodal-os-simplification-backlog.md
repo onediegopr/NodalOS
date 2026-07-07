@@ -206,6 +206,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: makes D7 auditable before any future D9 replacement planning.
 - Follow-up: `STOP_FOR_AUDIT` or D9 second minimal replacement plan/audit only. No broad refactor from D8 alone.
 
+## BLOCK D9 - Second Minimal Replacement Plan Audit Only
+
+- Objective: inventory possible second replacement targets after D7/D8 and select exactly one safe future D10 path or stop.
+- Status: completed as docs/audit/plan-only in `docs/architecture/nodal-os-d9-second-minimal-replacement-plan-audit.md`.
+- Decision: `GO_WITH_FINDINGS_SECOND_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY_READY`.
+- Selected future D10: `AUTHORIZE_NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected D10 target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Rationale: read-only/design-only/preview-only Approval fixture, non-route, non-DI, non-service-registered, non-writer, not Product Ledger runtime/latest-state/handoff-facing and already covered by focused Safety/Recipes tests.
+- Expected D10 scope: one tiny proof-only common-boundary replacement in the selected source target; exact source-reference, no-authority, no-double-truth and command-guard exception tests; no route/DI/command/product/runtime behavior.
+- Do not touch in D10: D4 candidate source, D7 Reentry source target, Product Ledger source behavior, Pilot routes, service registration, command handlers, CI, DB/provider/cloud/network/KMS/WORM, public/product gates or release/commercial claims.
+- Tests required for D10: Core/Pilot/Solution build, Approval execution Safety/Recipes focused tests, D4/D5/D7/D8 focused tests, Tier 1/CommonContracts/SourceCandidate/NoRuntimeWiring/NoAuthority/NoDoubleTruth/PostReplacementAudit, Product Ledger Safety/Recipes and exact no-reference scans.
+- Risk: medium; D10 command/execution vocabulary must not broaden scanner exceptions or make the D4 candidate authority.
+- Benefit: proves whether the D7 pattern can be repeated once in a second narrow non-Product-Ledger target before any broad source refactor.
+- Follow-up: D10 requires explicit Diego authorization.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
