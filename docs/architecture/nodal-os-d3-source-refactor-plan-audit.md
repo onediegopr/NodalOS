@@ -178,7 +178,36 @@ Immediate revert triggers:
 - No CI enforcement.
 - No runtime/product enablement.
 
-## 7. Risks
+## 7. D4 Execution Note
+
+D4 was executed as `NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
+
+Actual D4 source artifact:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+
+Actual D4 scope:
+
+- exactly one minimal source candidate;
+- parallel-only and non-authoritative;
+- no existing source behavior changes;
+- no runtime/product wiring;
+- no route, DI, service registration or command handler;
+- no CI enforcement;
+- no public/product or Production route;
+- no latest pointer, read precedence or product authority;
+- no release/commercial readiness.
+
+Actual D4 test evidence:
+
+- `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateTests.cs`
+- `TestCategory=SourceCandidate`
+- `TestCategory=NoRuntimeWiring`
+- D1/D2 compatibility assertions remain test/design-only and do not promote D1/D2 artifacts to source.
+
+Recommended next step after D4: D5 equivalence hardening/no-runtime reference audit. Do not proceed to a broad source refactor from D4 alone.
+
+## 8. Risks
 
 P0=0, P1=0, P2=0.
 

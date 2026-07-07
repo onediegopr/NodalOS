@@ -1974,3 +1974,17 @@
 - Non-goals preserved: no `src/` changes, tests, CI, runtime/product behavior, existing contract replacement, routes, DI, command handlers, public/product exposure, Production route, active read precedence, latest pointer, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future D4 candidate can be mistaken for authority unless naming/no-reference tests are strict; P4 source bloat remains until future source-facing implementation.
 - Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
+
+## NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING
+
+- Decision: `GO_WITH_FINDINGS_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING_READY`.
+- Baseline: `424b631e12e28c2707887b8a77137860c4222a4e`.
+- Scope: source-minimal/parallel-only/no-runtime-wiring first common boundary claims candidate.
+- Added source: `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`.
+- Added evidence: `NodalOsCommonBoundaryClaimsCandidateTests` with `SourceCandidate`, `NoRuntimeWiring`, `CommonContracts`, `DesignOnly` and hard-block categories.
+- Verified: fail-closed defaults, unknown/ambiguous fail-closed handling, public/product, Production route, latest pointer, read precedence, product authority, command execution, shell/subprocess, external trust, CI, runtime/product and release/commercial claims remain blocked/no-go/not claimed.
+- Verified: candidate is not referenced by routes/runtime registration, command handlers, CI/gate enforcement or existing source behavior.
+- D1/D2 compatibility: D1/D2 remain design/test-only; D2 mappings align with the D4 candidate's fail-closed defaults and remain non-authoritative.
+- Non-goals preserved: no existing source behavior changes, existing contract replacement, broad source refactor, CI change, route/DI/service registration, command handler, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 source candidate can still be mistaken for authority if future references are added without no-reference guards; P4 source bloat reduction is still 0% because no old models were removed.
+- Next recommended macro-block: `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`.

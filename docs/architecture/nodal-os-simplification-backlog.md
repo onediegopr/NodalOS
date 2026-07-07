@@ -148,12 +148,15 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK D4 - Minimal Source Candidate No Runtime Wiring (Future GO Only)
 
 - Objective: add one isolated source-side common boundary-claims candidate with no runtime/product wiring.
-- Status: future GO only.
+- Status: completed as source-minimal/parallel-only/no-runtime-wiring in `NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
+- Actual source artifact: `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`.
+- Actual tests: `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateTests.cs`.
 - Expected files: one new Core/Approval source candidate plus focused Safety tests and docs/log updates.
 - Do not touch: existing Product Ledger behavior files, Pilot routes, DI, command handlers, CI, public/product gates, latest pointer/read precedence/product authority, command execution or release/commercial claims.
 - Tests required: Core/Pilot/Solution build, Product Ledger Safety/Recipes, Tier 1, CommonContracts, MappingAdapters, static guard, public/product and Production route filters, no-reference source scans and `git diff --check`.
 - Risk: medium; source-side names can imply authority if not explicitly marked candidate/non-wired.
 - Benefit: gives future source migrations a controlled target without changing behavior.
+- Follow-up: D5 should be equivalence hardening/no-runtime reference audit or minimal replacement plan/audit only. Do not start broad source refactor from D4 alone.
 
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 

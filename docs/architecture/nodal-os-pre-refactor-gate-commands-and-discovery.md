@@ -306,11 +306,39 @@ rg -n "NodalOsCommonBoundaryClaimsCandidate" src/OneBrain.Core/Approval -g "*.cs
 
 The first command should return no matches. The second command should return only the new candidate file and any D4 test-approved self-reference if a future D4 is authorized.
 
-## 15. Future Implementation Options
+## 15. D4 Minimal Source Candidate Note
+
+D4 adds exactly one source candidate:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+
+The candidate is parallel-only, non-authoritative and not wired into runtime/product. It does not replace existing Product Ledger contracts, D1/D2 remain design/test-only, and existing hard-block authorities remain authoritative.
+
+Expected after D4:
+
+- `TestCategory=SourceCandidate`: 19 tests.
+- `FullyQualifiedName~NodalOsCommonBoundaryClaimsCandidate`: 19 tests.
+- `TestCategory=CommonContracts`: increases by 19.
+- `TestCategory=DesignOnly`: increases by 19.
+- `TestCategory=NoRuntimeWiring`: increases by 19.
+
+D4 no-reference checks:
+
+```powershell
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src/OneBrain.Pilot src/OneBrain.Cli .github azure-pipelines.yml
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src/OneBrain.Core/Approval -g "*.cs"
+```
+
+The first command must return no matches. The second command should return only `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`.
+
+CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.
+
+## 16. Future Implementation Options
 
 Safe next blocks:
 
 - `NODAL_OS_BLOCK_C7_PRE_REFACTOR_GATE_SCRIPT_TEST_ONLY_DISABLED`: add a disabled/local-only helper script for the documented gate, with no CI wiring.
-- `NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`: only with explicit GO, add a non-wired source candidate behind no-runtime/no-reference guards.
+- `NODAL_OS_BLOCK_D5_EQUIVALENCE_HARDENING_NO_RUNTIME_REFERENCE_AUDIT`: audit the D4 candidate and D1/D2/D4 equivalence without runtime/product wiring.
+- `NODAL_OS_BLOCK_D5_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY`: plan one future replacement path, docs/audit-only, before touching existing source behavior.
 
 Do not proceed to source refactor, contract use, public/product exposure or release/commercial readiness from this document alone.

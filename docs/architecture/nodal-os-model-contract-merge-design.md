@@ -305,10 +305,16 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 
 - Objective: add one isolated source-side common boundary-claims candidate with no consumers and no runtime/product authority.
 - Expected files: one new Core/Approval source file plus no-runtime/no-reference tests.
+- Implementation status: completed in `NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
+- Actual D4 source artifact: `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`.
+- Actual D4 scope: exactly one parallel-only, non-authoritative source candidate. It is not registered, routed, service-wired, command-wired, CI-enforced or consumed by runtime/product code.
+- Actual D4 test evidence: `NodalOsCommonBoundaryClaimsCandidateTests` validates fail-closed defaults, public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, runtime/product no-go, unknown/ambiguous fail-closed behavior, no wiring/no authority guards and D1/D2 compatibility.
+- Non-goals preserved: existing Product Ledger models/contracts remain unchanged; D1/D2 remain test/design-only; existing hard-block authorities remain authoritative.
 - Risks: candidate can be mistaken for authority if named or documented poorly.
 - Required tests: Tier 1, CommonContracts, MappingAdapters, Product Ledger Safety/Recipes, static guard and no-reference scans.
 - Rollback: remove the new candidate source file and D4 tests.
 - Stop conditions: any route/DI/command-handler/CI reference or existing behavior drift.
+- Next step: D5 equivalence hardening/no-runtime reference audit or D5 minimal replacement plan/audit only; not a broad refactor.
 
 ### D5 - Migrate latest-state snapshot/manifest/reader/auxiliary
 

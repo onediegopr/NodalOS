@@ -130,7 +130,9 @@ public sealed class NodalOsCommonContractsDesignOnlyCandidateTests
             Assert.IsFalse(d1Source.Contains(forbidden, StringComparison.Ordinal), forbidden);
         }
 
-        Assert.IsFalse(productionSource.Contains("NodalOsCommonBoundaryClaims", StringComparison.Ordinal), "src references D1 candidate");
+        Assert.IsFalse(
+            productionSource.Contains("NodalOsCommonBoundaryClaims.CurrentLocalDesignOnlyNoGo", StringComparison.Ordinal),
+            "src references D1 test-only candidate factory");
         Assert.IsFalse(productionSource.Contains("NodalOsCommonSafetyEnvelope", StringComparison.Ordinal), "src references D1 candidate");
     }
 

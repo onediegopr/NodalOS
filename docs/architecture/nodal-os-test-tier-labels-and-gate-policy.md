@@ -354,3 +354,21 @@ D2 Tier 1 impact: it adds focused mapping tests for public/product, Production r
 Fail-closed policy: unknown, unsupported or non-authoritative mapping inputs are rejected/blocked. Existing hard-block tests remain authoritative; D2 only translates their meaning for future planning.
 
 CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.
+
+## 15. D4 Minimal Source Candidate No Runtime Wiring
+
+Implementation status: completed as source-minimal/parallel-only/no-runtime-wiring in `NODAL_OS_BLOCK_D4_MINIMAL_SOURCE_CANDIDATE_NO_RUNTIME_WIRING`.
+
+D4 adds one source candidate:
+
+- `NodalOsCommonBoundaryClaimsCandidate`
+
+The candidate lives in `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`. It is descriptive, parallel-only and non-authoritative. It is not registered, not routed, not service-wired, not command-wired, not CI-enforced and not consumed by runtime/product code.
+
+Additional labels introduced for D4:
+
+- `SourceCandidate`
+
+D4 Tier 1 impact: it adds nineteen focused tests to the manual `NodalOsTier1Safety` discovery surface. These tests cover fail-closed defaults, public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, runtime/product no-go, unknown/ambiguous fail-closed behavior, no wiring/no authority guards and D1/D2 compatibility.
+
+D4 does not replace existing hard-block authorities. D1/D2 remain design/test-only. CI enforcement remains 0%. Runtime/product enablement remains 0%. Release/commercial remains 0% / NO-GO.
