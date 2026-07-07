@@ -51,11 +51,30 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK C1 - Static Guard Catalog Test-Only Implementation (Future GO Only)
 
 - Objective: add central `NodalOsStaticGuardCatalog` test-only helper and migrate 1-2 duplicated scans as proof.
+- Status: completed as partial test-only implementation; the catalog exists under Safety tests and only 1-2 low-risk public/product plus Production route scans were delegated.
 - Expected files: tests/test helper and selected static scan tests only.
 - Do not touch: production source behavior, runtime/product enablement, public/product routes, Production routes, active read precedence, latest pointer, product authority.
 - Tests required: Tier 1 static guards, Product Ledger Safety, Product Ledger Recipes/focused fallback, Core/Pilot/Solution builds and `git diff --check`.
 - Risk: medium due false positives or accidental assertion weakening.
 - Benefit: creates the safety net required before source contract work.
+
+## BLOCK C2 - Static Guard Catalog Equivalence Expansion (Future GO Only)
+
+- Objective: migrate additional duplicated static scans only after C1 evidence stays green.
+- Expected files: selected tests only; no production source behavior.
+- Do not touch: assertions that are the only coverage for a boundary, suite membership, runtime/product behavior or scanner hard-fail semantics.
+- Tests required: catalog-focused tests, Product Ledger Safety/Recipes and static no-enable scans.
+- Risk: medium; category mismatch could hide forbidden tokens.
+- Benefit: reduces duplicated forbidden-token arrays without coverage loss.
+
+## BLOCK C3 - Test Tier Labels / Gate Documentation (Future GO Only)
+
+- Objective: document or tag Tier 1/Tier 2/Tier 3 without moving tests to extended yet.
+- Expected files: docs and possibly test trait metadata under a dedicated GO.
+- Do not touch: CI behavior or assertion strength without separate authorization.
+- Tests required: docs/static diff guard and any affected focused tests.
+- Risk: low/medium; labels can be confused with actual CI behavior.
+- Benefit: makes source-refactor gates easier to run consistently.
 
 ## BLOCK D1 - Common Contracts Parallel Implementation (Future GO Only)
 

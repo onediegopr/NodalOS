@@ -1863,3 +1863,15 @@
 - Non-goals preserved: no `src/` changes, no test changes, no scanner behavior changes, no class/file renames, no common contracts, no source refactor, no runtime/product enablement, no public/product route, no Production route, no active read precedence, no latest pointer, no product authority, no cloud/network/DB, no KMS/WORM and no release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future C1 false positives and future D1 double-truth risk remain; P4 historical docs/tests retain mixed old/new vocabulary until implementation blocks.
 - Exact next GO: `AUTHORIZE_NODAL_OS_BLOCK_C1_STATIC_GUARD_CATALOG_TEST_ONLY_IMPLEMENTATION`.
+
+## NODAL_OS_BLOCK_C1_STATIC_GUARD_CATALOG_TEST_ONLY_IMPLEMENTATION
+
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_CATALOG_TEST_ONLY_READY`.
+- Baseline: `7c4bd235c0dca5c03081d5ec1b856cfd1a333104`.
+- Scope: test-only/guard-helper-only central static guard catalog implementation.
+- Implemented: `NodalOsStaticGuardCatalog` with categories for public/product exposure, Production routes, runtime execution claims, latest pointer, read precedence, product authority, command execution, shell/subprocess, cloud/network/DB, KMS/WORM/compliance, release/commercial and `/run` claim coherence.
+- Migrated: only 1-2 low-risk scans in `ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests` now call the catalog for public/product and Production route checks while retaining old local assertions.
+- Added: focused catalog tests for expected categories, forbidden positive samples, allowed no-go wording, and hard-fail public/product plus Production route samples.
+- Non-goals preserved: no production source behavior change, no runtime/product behavior change, no test deletion, no assertion weakening, no suite movement, no public/product activation, no Production route, no active read precedence, no latest pointer, no product authority, no cloud/network/DB, no KMS/WORM and no release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 future C2 category expansion can create false positives or hidden coverage gaps if old assertions are removed too early; P4 C1 is partial and intentionally leaves most duplicated scans in place.
+- Next recommended macro-block: `NODAL_OS_BLOCK_C2_STATIC_GUARD_CATALOG_EQUIVALENCE_EXPANSION_TEST_ONLY`.

@@ -266,6 +266,7 @@ Future scanner output should report:
 - Risks: false positives and accidentally weakening source activation scans.
 - Tests required: existing Product Ledger static/negative guards must stay green.
 - Stop conditions: source behavior change, deleted tests, product enablement.
+- Implementation status: partially implemented in `NODAL_OS_BLOCK_C1_STATIC_GUARD_CATALOG_TEST_ONLY_IMPLEMENTATION` with `NodalOsStaticGuardCatalog` under Safety tests and 1-2 low-risk public/product plus Production route scans delegated to the catalog. No tests were deleted and old local assertions remain.
 
 ### C2 - Repoint duplicate scans to catalog
 
@@ -273,6 +274,7 @@ Future scanner output should report:
 - Risks: category mismatch hides a forbidden token.
 - Tests required: before/after equivalent negative corpus.
 - Stop conditions: any guardrail loss or need to alter source.
+- Status: pending. Do not migrate broader scan families until C1 equivalence evidence stays green.
 
 ### C3 - Mark Tier 1/Tier 2/Tier 3 suites in docs
 
@@ -280,6 +282,7 @@ Future scanner output should report:
 - Risks: confusing labels with actual CI behavior.
 - Tests required: docs diff check.
 - Stop conditions: CI/build behavior change without GO.
+- Status: pending. C1 did not change suite membership or CI behavior.
 
 ### C4 - Create focused pre-refactor gate
 

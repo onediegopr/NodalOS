@@ -65,6 +65,10 @@ public sealed class ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests
         StringAssert.Contains(source, "HISTORICAL_EVIDENCE_ONLY");
         StringAssert.Contains(source, "ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor");
         StringAssert.Contains(source, "/internal/product-ledger/approval/create-user-workspace-allowlisted-handoff-draft");
+        NodalOsStaticGuardCatalog.AssertNoForbiddenMatches(
+            source,
+            NodalOsStaticGuardCategory.PublicProductExposure,
+            NodalOsStaticGuardCategory.ProductionRoutes);
         Assert.IsFalse(source.Contains("/public/product-ledger", StringComparison.Ordinal), "/public/product-ledger");
         Assert.IsFalse(source.Contains("PublicProductAllowed: true", StringComparison.Ordinal), "PublicProductAllowed");
         Assert.IsFalse(source.Contains("ProductionAllowed: true", StringComparison.Ordinal), "ProductionAllowed");
@@ -75,6 +79,11 @@ public sealed class ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests
     public void BroaderWorkspaceOrPublicProductBoundary_PublicProductMutationAndUnsafeFrontiersRemainClosed()
     {
         var source = ProductLedgerBoundarySourceText();
+
+        NodalOsStaticGuardCatalog.AssertNoForbiddenMatches(
+            source,
+            NodalOsStaticGuardCategory.PublicProductExposure,
+            NodalOsStaticGuardCategory.ProductionRoutes);
 
         foreach (var forbidden in new[]
         {
