@@ -196,3 +196,11 @@ P4:
 Close the D-series and return to main roadmap prioritization/simplification. The next main-roadmap block should focus on higher-value Product Ledger/model-contract simplification or product-readiness priorities under a separate authorization scope.
 
 Next recommended step: `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.
+
+## 11. D15 Closure Follow-up
+
+D15 completed as docs-only/roadmap-only/decision-log-only and formally closed the D-series for now.
+
+D15 selected `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY` as the next recommended block. That recommendation is not an authorization to start E1 inside D15.
+
+The D14 conclusion is preserved: no further D-series implementation is recommended immediately, D13 remains a local reduction only, and broad Product Ledger/model-contract simplification returns to the main roadmap.

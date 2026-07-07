@@ -437,6 +437,17 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Decision: close the D-series for now rather than continue to a low-value D15. D7 proof-chain compaction is possible but deferred; shared helper extraction or D4 changes are rejected as authority-broadening risk.
 - Next step: `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.
 
+### D15 - D-series closure and main roadmap return
+
+- Objective: formally close the D-series and return project prioritization to the main roadmap.
+- Implementation status: completed as docs-only/roadmap-only/decision-log-only in `NODAL_OS_BLOCK_D15_CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP_DOCS_ONLY`.
+- Actual closure doc: `docs/architecture/nodal-os-d15-d-series-closure-and-main-roadmap-return.md`.
+- Scope: no `src/` changes, no tests changed, no CI change, no D-series source implementation, no new source candidate and no runtime/product behavior change.
+- Closure: D-series is closed for now. D13 remains the only real local reduction; D4 remains non-authoritative; D7/D10 remain narrow proof replacements; existing hard-block tests remain authoritative.
+- Bloat impact remains: D7 `+70`, D10 `+70`, D13 `-30`, cumulative `+110`.
+- Next recommended block: `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`.
+- Authorization note: D15 recommends E1 but does not authorize starting E1.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.

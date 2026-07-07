@@ -2133,3 +2133,19 @@
 - Bloat impact: D7 `+70`, D10 `+70`, D13 `-30`; cumulative D-series source impact remains net `+110`.
 - Findings: P0=0, P1=0, P2=0; P3 remaining D7 proof-chain compaction is low-value and broad Product Ledger/model-contract simplification belongs to the main roadmap; P4 future handoffs must frame D-series as guard confidence plus one local reduction, not full simplification.
 - Next recommended macro-block: `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.
+
+## NODAL_OS_BLOCK_D15_CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP_DOCS_ONLY
+
+- Decision: `GO_WITH_FINDINGS_D_SERIES_CLOSED_RETURN_TO_MAIN_ROADMAP_READY`.
+- Baseline: `f0b2c728533a71477bb05449b61afc5e27c2fa6d`.
+- Scope: docs-only/roadmap-only/decision-log-only D-series closure.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Closure doc added: `docs/architecture/nodal-os-d15-d-series-closure-and-main-roadmap-return.md`.
+- Formal closure: D-series is closed for now; no further D-series implementation is recommended immediately.
+- Preserved: D4 candidate remains non-authoritative, D7/D10 remain narrow proof replacements, existing hard-block tests remain authoritative, Tier 1 remains manual/discovery-only, CI enforcement remains `0%`, runtime/product enablement remains `0%`, release/commercial remains `0% / NO-GO`.
+- Bloat impact remains: D7 `+70`, D10 `+70`, D13 `-30`, cumulative `+110`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger/model-contract simplification remains main-roadmap work; P4 do not overclaim D-series as broad simplification.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`.
+- Authorization note: D15 recommends E1 but does not authorize starting E1.

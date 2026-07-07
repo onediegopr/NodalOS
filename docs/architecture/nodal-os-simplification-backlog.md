@@ -291,6 +291,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Deferred: D7 private proof-chain compaction is possible but low-value; broad Product Ledger/model-contract simplification belongs to the main roadmap.
 - Follow-up: `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.
 
+## BLOCK D15 - Close D-Series And Return To Main Roadmap
+
+- Objective: formally close D-series and choose the next safe main-roadmap lane without implementation.
+- Status: completed as docs-only/roadmap-only/decision-log-only in `NODAL_OS_BLOCK_D15_CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP_DOCS_ONLY`.
+- Decision: `GO_WITH_FINDINGS_D_SERIES_CLOSED_RETURN_TO_MAIN_ROADMAP_READY`.
+- Actual closure doc: `docs/architecture/nodal-os-d15-d-series-closure-and-main-roadmap-return.md`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Closure: D-series is closed for now; no further D-series implementation is recommended immediately.
+- Achieved: useful safety/refactor confidence, D4 non-authoritative source candidate, D7/D10 narrow proof replacements, D13 local reduction and D14 value checkpoint.
+- Not achieved: broad source bloat reduction, broad Product Ledger/model-contract simplification, CI enforcement, runtime/product enablement or release/commercial readiness.
+- Bloat impact remains: D7 `+70`, D10 `+70`, D13 `-30`, cumulative `+110`.
+- Follow-up: `NODAL_OS_BLOCK_E1_MAIN_ROADMAP_REBASELINE_AFTER_D_SERIES_DOCS_ONLY`. D15 recommends but does not authorize E1.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
