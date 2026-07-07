@@ -2057,3 +2057,17 @@
 - Non-goals preserved: no `src/` changes, tests, CI, D4 candidate modification, D7 source modification, second replacement implementation, candidate reference broadening, runtime/product wiring, public/product exposure, Production route activation, latest pointer/read precedence/product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 future D10 must keep the command/execution wording exception exact to the selected source file and must not turn D4 into authority; P4 source bloat reduction remains 0%.
 - Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE` with explicit Diego authorization.
+
+## NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE
+
+- Decision: `GO_WITH_FINDINGS_SECOND_MINIMAL_REPLACEMENT_NO_RUNTIME_CHANGE_READY`.
+- Baseline: `249ea61cdb1a70a2cdb229c1db0333dca497334e`.
+- Scope: source-minimal/proof-only/no-runtime-behavior-change implementation of the D9-selected Approval execution target.
+- Source changed: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs` only under `src/`.
+- Tests added/updated: `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests` and exact allowed-reference guard updates in D4/D5/D7/D8 Safety tests.
+- Implemented: `ApprovalExecutionAntiCapabilityProof.Passes` now includes a private local common-boundary fail-closed proof using `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()`.
+- Preserved: D4 candidate remains non-authoritative, D1/D2 remain test/design-only, existing Approval execution readiness/gates/previews/anti-capability booleans remain authoritative and existing hard-block tests remain authoritative.
+- Non-goals preserved: no route/DI/service registration, command handler, Product Ledger runtime/latest-state/handoff/writer, public/product exposure, Production route, latest pointer/read precedence/product authority, CI change, Browser/CDP/WCU/OCR/Recipes live behavior, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Bloat impact: source bloat reduction remains `0%`; D10 adds net `+70` source lines and cumulative D7+D10 source impact is net `+140` lines.
+- Findings: P0=0, P1=0, P2=0; P3 D11 should audit the second replacement before any third replacement or broad refactor; P4 no meaningful source reduction yet.
+- Next recommended macro-block: `NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.

@@ -295,8 +295,49 @@ P4:
 - no command execution, shell/subprocess, DB/migration, provider/cloud/network or KMS/WORM/external trust;
 - no release/commercial readiness.
 
-## Next Recommended Block
+## D10 Implementation Note
+
+D10 was later authorized and executed as `NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+Actual D10 source change:
+
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+Actual D10 tests:
+
+- `tests/OneBrain.Safety.Tests/ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests.cs`
+- exact allowed-reference guard updates in D4/D5/D7/D8 Safety tests
+
+D10 references `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` only inside `ApprovalExecutionAntiCapabilityProof` as a private, local, read-only fail-closed proof used by `Passes`. The D4 candidate remains non-authoritative: existing Approval execution readiness, gates, previews, anti-capability booleans, D1/D2 test-only evidence and hard-block tests remain the authority.
+
+Runtime/product behavior remains unchanged:
+
+- no route/DI/service registration;
+- no command handler;
+- no Product Ledger runtime/latest-state/handoff/writer change;
+- no public/product exposure;
+- no Production route;
+- no latest pointer, read precedence or product authority;
+- no DB/provider/cloud/network/KMS/WORM/external trust;
+- no Browser/CDP/WCU/OCR/Recipes live behavior;
+- no release/commercial readiness.
+
+Actual bloat impact:
+
+- source bloat reduction remains `0%`;
+- D10 is additive proof-only with net `+70` lines in the selected source file;
+- cumulative D7+D10 source impact is net `+140` source lines.
+
+Next recommended block after D10:
+
+`NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`
+
+## Historical D9 Next Recommended Block
 
 `AUTHORIZE_NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`
 
-D10 must require explicit Diego authorization.
+D10 required explicit Diego authorization and was later executed.
+
+## Current Next Recommended Block After D10
+
+`NODAL_OS_BLOCK_D11_POST_SECOND_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`

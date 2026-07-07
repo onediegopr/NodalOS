@@ -221,6 +221,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: proves whether the D7 pattern can be repeated once in a second narrow non-Product-Ledger target before any broad source refactor.
 - Follow-up: D10 requires explicit Diego authorization.
 
+## BLOCK D10 - Second Minimal Replacement Implementation No Runtime Change
+
+- Objective: implement the D9-selected Approval execution proof-only replacement without runtime/product behavior change.
+- Status: completed as source-minimal/proof-only/no-runtime-behavior-change in `NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Decision: `GO_WITH_FINDINGS_SECOND_MINIMAL_REPLACEMENT_NO_RUNTIME_CHANGE_READY`.
+- Actual source target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Actual tests: `tests/OneBrain.Safety.Tests/ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests.cs` and exact D4/D5/D7/D8 guard updates.
+- Candidate usage: `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` is used only as a private read-only fail-closed proof inside `ApprovalExecutionAntiCapabilityProof.Passes`.
+- Do not treat as authority: D4 remains non-authoritative, D1/D2 remain test/design-only and existing hard-block tests remain authoritative.
+- Non-goals preserved: no route/DI/service registration, command handlers, Product Ledger runtime/latest-state/handoff/writer, public/product exposure, Production route, latest pointer/read precedence/product authority, CI change, Browser/CDP/WCU/OCR/Recipes live behavior or release/commercial readiness.
+- Bloat impact: source bloat reduction remains `0%`; D10 adds net `+70` source lines and cumulative D7+D10 source impact is net `+140` lines.
+- Follow-up: D11 post-second-replacement isolation/equivalence audit or STOP_FOR_AUDIT. No broad refactor from D10 alone.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

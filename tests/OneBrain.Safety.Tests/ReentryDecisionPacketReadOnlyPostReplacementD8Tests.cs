@@ -16,8 +16,10 @@ public sealed class ReentryDecisionPacketReadOnlyPostReplacementD8Tests
 {
     private const string CandidateRelativePath = "src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs";
     private const string D7TargetRelativePath = "src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs";
+    private const string D10TargetRelativePath = "src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs";
     private const string D7FocusedTestsRelativePath = "tests/OneBrain.Safety.Tests/ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests.cs";
     private const string D8FocusedTestsRelativePath = "tests/OneBrain.Safety.Tests/ReentryDecisionPacketReadOnlyPostReplacementD8Tests.cs";
+    private const string D10FocusedTestsRelativePath = "tests/OneBrain.Safety.Tests/ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests.cs";
 
     [TestMethod]
     [TestCategory("CommandExecutionBlock")]
@@ -88,7 +90,7 @@ public sealed class ReentryDecisionPacketReadOnlyPostReplacementD8Tests
     {
         var root = RepoRoot();
         var unexpected = Directory.EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
-            .Where(path => !IsCandidate(path) && !IsExactD7Target(root, path))
+            .Where(path => !IsCandidate(path) && !IsExactD7Target(root, path) && !IsExactD10Target(root, path))
             .Where(ContainsCandidate)
             .Where(path => File.ReadAllText(path).Contains("Command", StringComparison.OrdinalIgnoreCase))
             .Select(path => Relative(root, path))
@@ -119,10 +121,16 @@ public sealed class ReentryDecisionPacketReadOnlyPostReplacementD8Tests
 
         CollectionAssert.AreEqual(Array.Empty<string>(), unexpected);
         CollectionAssert.AreEqual(
-            new[] { CandidateRelativePath, D7TargetRelativePath },
+            new[]
+            {
+                CandidateRelativePath,
+                D10TargetRelativePath,
+                D7TargetRelativePath
+            }.OrderBy(path => path, StringComparer.Ordinal).ToArray(),
             sourceReferences);
         CollectionAssert.Contains(references, D7FocusedTestsRelativePath);
         CollectionAssert.Contains(references, D8FocusedTestsRelativePath);
+        CollectionAssert.Contains(references, D10FocusedTestsRelativePath);
     }
 
     [TestMethod]
@@ -376,6 +384,7 @@ public sealed class ReentryDecisionPacketReadOnlyPostReplacementD8Tests
     private static bool IsAllowedPostD7Reference(string relativePath) =>
         relativePath == CandidateRelativePath
         || relativePath == D7TargetRelativePath
+        || relativePath == D10TargetRelativePath
         || relativePath.StartsWith("tests/OneBrain.Safety.Tests/", StringComparison.Ordinal)
         || relativePath.StartsWith("docs/", StringComparison.Ordinal);
 
@@ -386,6 +395,9 @@ public sealed class ReentryDecisionPacketReadOnlyPostReplacementD8Tests
 
     private static bool IsExactD7Target(string root, string path) =>
         Relative(root, path) == D7TargetRelativePath;
+
+    private static bool IsExactD10Target(string root, string path) =>
+        Relative(root, path) == D10TargetRelativePath;
 
     private static bool ContainsCandidate(string path) =>
         File.ReadAllText(path).Contains(nameof(NodalOsCommonBoundaryClaimsCandidate), StringComparison.Ordinal);

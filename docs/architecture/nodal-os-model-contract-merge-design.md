@@ -374,7 +374,19 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Selection rationale: the target is a deterministic Core Approval fixture, read-only/design-only/preview-only, non-route, non-DI, non-service-registered, non-writer, not Product Ledger runtime/latest-state/handoff-facing and already covered by focused Safety/Recipes tests.
 - Required D10 guard rule: if authorized, the D4 candidate may be referenced only as a private local fail-closed proof in the selected target, with exact source-reference, no-authority, no-double-truth and command-guard exception tests.
 - Non-goals preserved: no `src/` changes, no tests changed, no CI change, no second replacement, no D4 candidate modification, no D7 target modification, no candidate reference broadening, no source bloat reduction, no runtime/product enablement and no release/commercial readiness.
-- D10 remains unauthorized until explicit Diego GO.
+- D10 remained unauthorized until explicit Diego GO and was later executed as the next section records.
+
+### D10 - Second minimal replacement implementation, no runtime change
+
+- Objective: apply the D9-selected second minimal source-facing replacement without runtime/product behavior change.
+- Implementation status: completed in `NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Actual source target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Actual test evidence: `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests` plus exact D4/D5/D7/D8 allowed-reference guard updates.
+- Candidate usage: `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` is referenced only in `ApprovalExecutionAntiCapabilityProof` as a private local fail-closed proof input for `Passes`.
+- Non-authority rule: existing Approval execution readiness fields, gates, previews, anti-capability booleans, D1/D2 test-only contracts and existing hard-block tests remain authoritative. The D4 candidate cannot override hard blocks and is not product/runtime authority.
+- Non-goals preserved: no route/DI/service registration, command handler, Product Ledger runtime/latest-state/handoff/writer, public/product exposure, Production route, latest pointer/read precedence/product authority, CI change, Browser/CDP/WCU/OCR/Recipes live behavior or release/commercial readiness.
+- Actual bloat impact: source bloat reduction remains `0%`; D10 is additive proof-only with net `+70` lines in the selected source file. Cumulative D7+D10 source impact is net `+140` source lines.
+- Next step: D11 post-second-replacement isolation/equivalence audit or STOP_FOR_AUDIT, not a third replacement or broad refactor.
 
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 

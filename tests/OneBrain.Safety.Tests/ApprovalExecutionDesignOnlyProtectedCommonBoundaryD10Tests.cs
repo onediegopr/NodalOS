@@ -11,53 +11,78 @@ namespace OneBrain.Safety.Tests;
 [TestCategory("NoRuntimeWiring")]
 [TestCategory("NoAuthority")]
 [TestCategory("NoDoubleTruth")]
-public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
+[TestCategory("PostReplacementAudit")]
+[TestCategory("ApprovalExecution")]
+[TestCategory("DesignOnly")]
+public sealed class ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests
 {
+    private const string CandidateRelativePath = "src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs";
+    private const string D7TargetRelativePath = "src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs";
+    private const string D10TargetRelativePath = "src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs";
+
+    [TestMethod]
+    public void ApprovalExecutionDesignOnlyProtectedPreservesDesignOnlyState()
+    {
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+
+        Assert.AreEqual(ApprovalExecutionDesignStatus.DesignOnly, spec.Status);
+        Assert.IsTrue(spec.ReadOnly);
+        Assert.IsTrue(spec.DesignOnly);
+        Assert.IsTrue(spec.PreviewOnly);
+        Assert.IsTrue(spec.AntiCapabilityProof.Passes);
+        Assert.IsTrue(spec.Readiness.BlocksRealExecution);
+        Assert.IsFalse(spec.HasRealExecution);
+        Assert.IsFalse(spec.HasStateMutation);
+        Assert.IsFalse(spec.HasRuntimeLive);
+        Assert.IsFalse(spec.HasPhysicalExport);
+        Assert.IsFalse(spec.HasProductActions);
+    }
+
     [TestMethod]
     [TestCategory("PublicProductBlock")]
-    public void ReentryDecisionPacketReadOnlyPreservesPublicProductBlockedState() =>
+    public void ApprovalExecutionDesignOnlyProtectedPreservesPublicProductBlockedState() =>
         AssertBoundaryClaim(
             NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked);
 
     [TestMethod]
     [TestCategory("ProductionRouteBlock")]
-    public void ReentryDecisionPacketReadOnlyPreservesProductionRouteBlockedState() =>
+    public void ApprovalExecutionDesignOnlyProtectedPreservesProductionRouteBlockedState() =>
         AssertBoundaryClaim(
             NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked);
 
     [TestMethod]
     [TestCategory("LatestPointerBlock")]
-    public void ReentryDecisionPacketReadOnlyPreservesLatestPointerDisabledState() =>
+    public void ApprovalExecutionDesignOnlyProtectedPreservesLatestPointerDisabledState() =>
         AssertBoundaryClaim(
             NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled);
 
     [TestMethod]
     [TestCategory("ReadPrecedenceBlock")]
-    public void ReentryDecisionPacketReadOnlyPreservesReadPrecedenceDisabledState() =>
+    public void ApprovalExecutionDesignOnlyProtectedPreservesReadPrecedenceDisabledState() =>
         AssertBoundaryClaim(
             NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled);
 
     [TestMethod]
     [TestCategory("ProductAuthorityBlock")]
-    public void ReentryDecisionPacketReadOnlyPreservesProductAuthorityBlockedState() =>
+    public void ApprovalExecutionDesignOnlyProtectedPreservesProductAuthorityBlockedState() =>
         AssertBoundaryClaim(
             NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked);
 
     [TestMethod]
     [TestCategory("CommandExecutionBlock")]
-    public void ReentryDecisionPacketReadOnlyPreservesCommandExecutionDeniedState() =>
+    public void ApprovalExecutionDesignOnlyProtectedPreservesCommandExecutionDeniedState() =>
         AssertBoundaryClaim(
             NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied);
 
     [TestMethod]
     [TestCategory("ReleaseCommercialBlock")]
-    public void ReentryDecisionPacketReadOnlyPreservesReleaseCommercialNoGoState() =>
+    public void ApprovalExecutionDesignOnlyProtectedPreservesReleaseCommercialNoGoState() =>
         AssertBoundaryClaim(
             NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo);
@@ -67,13 +92,13 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
     [TestCategory("ProductionRouteBlock")]
     [TestCategory("CommandExecutionBlock")]
     [TestCategory("ReleaseCommercialBlock")]
-    public void ReentryDecisionPacketReadOnlyUsesCommonBoundaryCandidateWithoutCreatingAuthority()
+    public void ApprovalExecutionDesignOnlyProtectedUsesCommonBoundaryCandidateWithoutCreatingAuthority()
     {
-        var packet = ReentryDecisionPacketReadOnlyPresenter.CreateFixture();
-        var source = ReentrySource();
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+        var source = D10TargetSource();
         var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
 
-        Assert.IsTrue(packet.PassesSafetyProof);
+        Assert.IsTrue(spec.AntiCapabilityProof.Passes);
         Assert.IsTrue(CommonBoundaryClaimsRemainFailClosed(candidate));
         Assert.IsFalse(candidate.AllowsRuntimeProductOrAuthority());
         StringAssert.Contains(source, "NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()");
@@ -85,25 +110,48 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
     [TestCategory("ProductionRouteBlock")]
     [TestCategory("CommandExecutionBlock")]
     [TestCategory("ReleaseCommercialBlock")]
-    public void ReentryDecisionPacketReadOnlyDoesNotCreateRuntimeProductEnablement()
+    public void ApprovalExecutionDesignOnlyProtectedDoesNotCreateRuntimeProductEnablement()
     {
-        var packet = ReentryDecisionPacketReadOnlyPresenter.CreateFixture();
-        var source = ReentrySource();
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+        var proof = spec.AntiCapabilityProof;
+        var source = D10TargetSource();
 
-        Assert.IsTrue(packet.PassesSafetyProof);
-        Assert.IsTrue(packet.CapabilityStatus.NoRealCapabilities);
-        Assert.IsTrue(packet.NoSideEffectProof.Counts.AllZero);
-        Assert.AreEqual(0, packet.ProductActionCount);
-        Assert.AreEqual(0, packet.StateMutationCount);
-        Assert.AreEqual(0, packet.ServiceRegistrationCount);
-        Assert.AreEqual(0, packet.CommandHandlerCount);
-        Assert.AreEqual(0, packet.RuntimeInvocationCount);
-        Assert.AreEqual("NO-GO", packet.ReleaseCommercialStatus);
+        Assert.IsTrue(proof.Passes);
+        Assert.IsFalse(spec.Readiness.ProductiveWriterPolicyPathAvailable);
+        Assert.IsFalse(spec.Readiness.CommandHandlerAvailable);
+        Assert.IsFalse(spec.Readiness.ProductServiceRegistered);
+        Assert.IsFalse(spec.Readiness.ReleaseCommercialReady);
+        Assert.IsFalse(spec.HasProductActions);
+        Assert.IsFalse(spec.HasRuntimeLive);
+        Assert.IsTrue(proof.NoProductiveWriterPolicyPath);
         AssertSourceHasNoForbiddenRuntimePatterns(source);
     }
 
     [TestMethod]
-    public void ReentryDecisionPacketReadOnlyUnknownOrAmbiguousStatesRemainFailClosed()
+    [TestCategory("CommandExecutionBlock")]
+    public void ApprovalExecutionDesignOnlyProtectedDoesNotCreateShellSubprocessOrCommandCapability()
+    {
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+        var proof = spec.AntiCapabilityProof;
+        var source = D10TargetSource();
+
+        Assert.IsTrue(proof.Passes);
+        Assert.IsTrue(proof.NoCommandHandler);
+        Assert.IsFalse(spec.Readiness.CommandHandlerAvailable);
+        Assert.IsFalse(spec.Previews.Any(preview => preview.ExecutesApproval));
+        Assert.AreEqual(
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
+            NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked().StateFor(
+                NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied));
+        Assert.AreEqual(
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
+            NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked().StateFor(
+                NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied));
+        AssertSourceHasNoForbiddenRuntimePatterns(source);
+    }
+
+    [TestMethod]
+    public void ApprovalExecutionDesignOnlyProtectedUnknownOrAmbiguousStatesRemainFailClosed()
     {
         var missingKnownClaim = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked() with
         {
@@ -111,6 +159,7 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
         };
         var unknown = (NodalOsCommonBoundaryClaimsCandidate.Claim)999;
 
+        Assert.IsFalse(CommonBoundaryClaimsRemainFailClosed(missingKnownClaim));
         Assert.IsTrue(CommonBoundaryClaimRemainsFailClosed(
             missingKnownClaim,
             NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked,
@@ -123,19 +172,19 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
 
     [TestMethod]
     [TestCategory("StaticGuard")]
-    public void D7DoesNotBroadenCandidateRuntimeReferences()
+    public void D10DoesNotBroadenCandidateRuntimeReferences()
     {
         var root = RepoRoot();
         var sourceReferences = Directory.EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => File.ReadAllText(path).Contains(nameof(NodalOsCommonBoundaryClaimsCandidate), StringComparison.Ordinal))
-            .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
+            .Select(path => Relative(root, path))
             .OrderBy(path => path, StringComparer.Ordinal)
             .ToArray();
         var expected = new[]
         {
-            "src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs",
-            "src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs",
-            "src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs"
+            CandidateRelativePath,
+            D10TargetRelativePath,
+            D7TargetRelativePath
         }.OrderBy(path => path, StringComparer.Ordinal).ToArray();
         var runtimeReferences = ExistingRuntimeRoots(root)
             .SelectMany(path => Directory.EnumerateFiles(path, "*.cs", SearchOption.AllDirectories))
@@ -147,37 +196,64 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
     }
 
     [TestMethod]
-    [TestCategory("PublicProductBlock")]
-    [TestCategory("ProductionRouteBlock")]
-    [TestCategory("CommandExecutionBlock")]
-    [TestCategory("ReleaseCommercialBlock")]
-    public void D7DoesNotWeakenNoAuthorityOrNoDoubleTruthGuards()
+    [TestCategory("NoAuthority")]
+    [TestCategory("NoDoubleTruth")]
+    public void D10DoesNotWeakenNoAuthorityNoDoubleTruthOrPostReplacementGuards()
     {
         var d1 = NodalOsCommonBoundaryClaims.CurrentLocalDesignOnlyNoGo();
         var d2 = NodalOsCommonBoundaryMappingDesignOnlyAdapter.Map(
             new NodalOsCommonBoundaryMappingRequest(NodalOsCommonBoundarySourceConcept.StaticGuardCatalogHardBlock));
         var d4 = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
+        var d7 = ReentryDecisionPacketReadOnlyPresenter.CreateFixture();
+        var d10 = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
+
+        Assert.IsTrue(d7.PassesSafetyProof);
+        Assert.IsTrue(d10.AntiCapabilityProof.Passes);
+        Assert.IsTrue(d2.ExistingHardBlockAuthoritative);
+        Assert.IsFalse(d2.OverrideAllowed);
+        Assert.IsFalse(d4.ExistingHardBlockAuthorityReplaced);
+        Assert.IsFalse(d4.AllowsRuntimeProductOrAuthority());
+        Assert.IsTrue(CommonBoundaryClaimsRemainFailClosed(d4));
 
         foreach (var capability in d2.MappedCapabilities)
         {
             Assert.IsTrue(d1.IsBlocked(capability), capability.ToString());
-            Assert.IsTrue(d4.IsFailClosed(ToCandidateClaim(capability)), capability.ToString());
+            Assert.IsFalse(d4.CanOverrideExistingHardBlock(ToCandidateClaim(capability)), capability.ToString());
         }
+    }
 
-        Assert.IsFalse(d2.OverrideAllowed);
-        Assert.IsFalse(d2.Envelope.HasRuntimeOrProductSurface());
-        Assert.IsFalse(d4.AllowsRuntimeProductOrAuthority());
-        Assert.IsTrue(CommonBoundaryClaimsRemainFailClosed(d4));
+    [TestMethod]
+    [TestCategory("CommandExecutionBlock")]
+    public void D10CommandVocabularyExceptionIsExactToApprovalExecutionDesignOnlyProtected()
+    {
+        var root = RepoRoot();
+        var d10TargetPath = Path.Combine(root, D10TargetRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        var hypotheticalSiblingPath = Path.Combine(
+            Path.GetDirectoryName(d10TargetPath)!,
+            "ApprovalExecutionDesignOnlyProtectedCommandProbe.cs");
+        var unexpected = Directory.EnumerateFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsCandidate(root, path) && !IsExactD7Target(root, path) && !IsExactD10Target(root, path))
+            .Where(path => File.ReadAllText(path).Contains(nameof(NodalOsCommonBoundaryClaimsCandidate), StringComparison.Ordinal))
+            .Where(path => File.ReadAllText(path).Contains("Command", StringComparison.OrdinalIgnoreCase))
+            .Select(path => Relative(root, path))
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsTrue(IsExactD10Target(root, d10TargetPath));
+        Assert.IsFalse(IsExactD10Target(root, hypotheticalSiblingPath));
+        Assert.IsFalse(IsExactD10Target(root, Path.Combine(root, "src", "OneBrain.Pilot", "ApprovalExecutionDesignOnlyProtected.cs")));
+        CollectionAssert.AreEqual(Array.Empty<string>(), unexpected);
+        AssertSourceHasNoForbiddenRuntimePatterns(D10TargetSource());
     }
 
     private static void AssertBoundaryClaim(
         NodalOsCommonBoundaryClaimsCandidate.Claim claim,
         NodalOsCommonBoundaryClaimsCandidate.ClaimState expectedState)
     {
-        var packet = ReentryDecisionPacketReadOnlyPresenter.CreateFixture();
+        var spec = ApprovalExecutionDesignOnlyProtectedPresenter.CreateFixture();
         var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
 
-        Assert.IsTrue(packet.PassesSafetyProof);
+        Assert.IsTrue(spec.AntiCapabilityProof.Passes);
         Assert.AreEqual(expectedState, candidate.StateFor(claim));
         Assert.IsTrue(CommonBoundaryClaimRemainsFailClosed(candidate, claim, expectedState));
         Assert.IsFalse(candidate.CanOverrideExistingHardBlock(claim));
@@ -185,7 +261,7 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
 
     private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate candidate)
     {
-        var method = typeof(ReentryDecisionPacketReadOnly).GetMethod(
+        var method = typeof(ApprovalExecutionAntiCapabilityProof).GetMethod(
             "CommonBoundaryClaimsRemainFailClosed",
             BindingFlags.NonPublic | BindingFlags.Static,
             binder: null,
@@ -201,7 +277,7 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
         NodalOsCommonBoundaryClaimsCandidate.Claim claim,
         NodalOsCommonBoundaryClaimsCandidate.ClaimState expectedState)
     {
-        var method = typeof(ReentryDecisionPacketReadOnly).GetMethod(
+        var method = typeof(ApprovalExecutionAntiCapabilityProof).GetMethod(
             "CommonBoundaryClaimRemainsFailClosed",
             BindingFlags.NonPublic | BindingFlags.Static,
             binder: null,
@@ -225,9 +301,10 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
             "Add" + "Singleton",
             "Add" + "Scoped",
             "Add" + "Transient",
+            "ICommand" + "Handler",
             "Map" + "Get",
             "Map" + "Post",
-            "ICommand" + "Handler",
+            "Endpoint" + "RouteBuilder",
             "Process" + ".Start",
             "Shell" + "Execute",
             "Http" + "Client",
@@ -236,6 +313,7 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
             "Kms" + "Client",
             "Worm" + "Store",
             "File" + ".Write",
+            "File" + ".Append",
             "Directory" + ".CreateDirectory"
         })
         {
@@ -263,24 +341,36 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
             _ => (NodalOsCommonBoundaryClaimsCandidate.Claim)999
         };
 
-    private static string ReentrySource() =>
-        File.ReadAllText(Path.Combine(
-            RepoRoot(),
-            "src",
-            "OneBrain.Core",
-            "Approval",
-            "ReentryDecisionPacketReadOnly.cs"));
-
     private static IEnumerable<string> ExistingRuntimeRoots(string root) =>
         new[]
         {
             "src/OneBrain.Pilot",
             "src/OneBrain.Cli",
             "src/OneBrain.Actions",
-            "src/OneBrain.Core/Execution"
+            "src/OneBrain.Core/Execution",
+            "src/OneBrain.AgentOperations.Core",
+            "src/OneBrain.AgentOperations.Adapters.Browser",
+            "src/OneBrain.BrowserRuntime",
+            "src/OneBrain.BrowserExecutor.Cdp",
+            "src/OneBrain.BrowserPerception"
         }
             .Select(relative => Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar)))
             .Where(Directory.Exists);
+
+    private static bool IsCandidate(string root, string path) =>
+        Relative(root, path) == CandidateRelativePath;
+
+    private static bool IsExactD7Target(string root, string path) =>
+        Relative(root, path) == D7TargetRelativePath;
+
+    private static bool IsExactD10Target(string root, string path) =>
+        Relative(root, path) == D10TargetRelativePath;
+
+    private static string D10TargetSource() =>
+        File.ReadAllText(Path.Combine(RepoRoot(), D10TargetRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+
+    private static string Relative(string root, string path) =>
+        Path.GetRelativePath(root, path).Replace('\\', '/');
 
     private static string RepoRoot()
     {

@@ -435,3 +435,21 @@ D8 Tier 1 impact: it adds ten focused tests proving the D7 command guard excepti
 D8 also proves the Reentry packet still preserves public/product, Production route, latest pointer, read precedence, product authority, command execution, external trust, CI, runtime/product and release/commercial blocked/no-go semantics. D4 remains non-authoritative. D1/D2 remain design/test-only. Existing hard-block tests remain authoritative.
 
 D8 changes no `src/`, no CI, no runtime/product behavior and no release/commercial posture. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.
+
+## 19. D10 Second Minimal Replacement Implementation
+
+Implementation status: completed as source-minimal/proof-only/no-runtime-behavior-change in `NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+D10 adds focused Safety evidence:
+
+- `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`
+
+Additional label used by D10:
+
+- `ApprovalExecution`
+
+D10 Tier 1 impact: it adds fifteen focused tests proving the Approval execution design-only protected proof preserves design-only state, public/product, Production route, latest pointer, read precedence, product authority, command execution, shell/subprocess, runtime/product, release/commercial and unknown/ambiguous fail-closed semantics.
+
+D10 also hardens candidate reference scans so the D4 candidate may be referenced only by its own file, the D7 Reentry target, the D10 Approval execution target, Safety tests and docs/logs. The D10 command vocabulary exception is exact to `ApprovalExecutionDesignOnlyProtected.cs` and does not authorize command handlers or runtime command execution.
+
+D10 does not move tests, delete tests, weaken assertions or change CI filters. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.

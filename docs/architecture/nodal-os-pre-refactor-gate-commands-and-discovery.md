@@ -499,4 +499,40 @@ After a future D10, the candidate source reference command may show only:
 - `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
 - `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
 
-D9 itself changed no `src/`, no tests, no CI and no runtime/product behavior. It did not implement the second replacement. D10 remains unauthorized until explicit Diego GO. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+D9 itself changed no `src/`, no tests, no CI and no runtime/product behavior. It did not implement the second replacement. D10 remained unauthorized until explicit Diego GO and was later executed as the next section records. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 22. D10 Second Minimal Replacement Implementation Note
+
+D10 completed as source-minimal/proof-only/no-runtime-behavior-change in `NODAL_OS_BLOCK_D10_SECOND_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+
+Actual source target:
+
+`src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+Actual focused D10 command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10" -v:minimal
+```
+
+Expected D10 focused count: 15 tests.
+
+New manual/discovery category command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ApprovalExecution" -v:minimal
+```
+
+D10 reference rule:
+
+```powershell
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+```
+
+After D10, this command may show only:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+D10 does not change CI and does not enable runtime/product behavior. The D10 command/execution wording exception is exact to `ApprovalExecutionDesignOnlyProtected.cs`; it does not permit command handlers, shell/subprocess, runtime command execution, route/DI/service registration or similar future files. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
