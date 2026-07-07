@@ -222,11 +222,11 @@ Mitigations:
 
 ## 9. Exact Next GO
 
-After C5 closes, the safest next implementation/design block is:
+After C6 closes with required gates green, the safest next block is:
 
-`AUTHORIZE_NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY`
+`AUTHORIZE_NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_IMPLEMENTATION_DESIGN_OR_TEST_ONLY`
 
-Expected outcome for C6: expand additive labels to a few more load-bearing hard-block tests without changing CI. No source changes, no test movement, no test deletion, no CI changes and no assertion changes.
+Expected outcome: prepare or add shared contracts in parallel only, with no runtime/product use and no deletion of existing Product Ledger contracts until equivalence is proven.
 
 ## 10. C4 Initial Metadata Implementation
 
@@ -266,3 +266,39 @@ Canonical command policy:
 - `docs/architecture/nodal-os-pre-refactor-gate-commands-and-discovery.md`
 
 The C5 command policy documents label discovery, current partial Tier 1 execution, focused static guard runs, Product Ledger Safety/Recipes, the pre-source-refactor gate, scenario matrix and timeout policy. It does not change CI or test behavior.
+
+## 12. C6 Tier 1 Label Expansion
+
+Implementation status: completed as test-only/metadata-only in `NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY`.
+
+Applied scope:
+
+| Group | Newly labeled methods | Why Tier 1 |
+| --- | ---: | --- |
+| Active durable read precedence decision matrix | 1 | Blocks read precedence, latest pointer, product authority, public/product, Production route, command execution and release/commercial overclaims. |
+| Durable latest-state auxiliary evidence | 3 | Blocks authority, read precedence, latest pointer, public/product, command execution and forbidden source activation while preserving auxiliary-not-authority semantics. |
+| Public/product or workspace action authorization | 2 | Blocks public/product, Production route, command execution and release/commercial claims around workspace-test-jail authorization. |
+| User workspace or public/product authorization boundary | 1 | Keeps allowlisted user-workspace source bounded and public/product unsafe frontiers closed. |
+| First real user-facing local action readiness | 2 | Keeps the local handoff draft candidate Development-only and blocks public/product, Production, command and release frontiers. |
+| Public UI action surface | 6 | Proves fail-closed behavior, dangerous action rejection, unsafe claim rejection, disabled dangerous buttons and no network/DB/KMS/live/release source overclaim. |
+| Reflection evidence | 1 | `StaticGuardCatalog_C6ExpandedTier1LabelsAreDiscoverable` verifies selected C6 labels remain discoverable. |
+
+New complementary categories used in C6:
+
+- `CommandExecutionBlock`
+- `ReleaseCommercialBlock`
+
+C6 deliberately does not label every Product Ledger test. Remaining future candidates include path canonicalization, redaction-before-persistence, append/hash/checkpoint, writer mode, route/DOM integration and property/corpus tests. Those remain covered by the full Product Ledger Safety and Recipes commands until a later C7 or D1/D2 gate proves a smaller Tier 1 is representative.
+
+Current Tier 1 label coverage estimate after C6: approximately 15-25% of the intended conceptual Tier 1 safety surface. It is meaningfully better than the C4 proof, but still not a complete replacement for Product Ledger Safety/Recipes.
+
+Non-goals preserved:
+
+- no `src/` changes;
+- no test movement, deletion, skip behavior or assertion change;
+- no scanner behavior change;
+- no CI/build script change;
+- no Tier 1 CI enforcement;
+- no runtime/product capability change;
+- no public/product route, Production route, active read precedence, latest pointer or product authority;
+- no provider/cloud/network, DB/migration, KMS/WORM/external trust or release/commercial readiness.

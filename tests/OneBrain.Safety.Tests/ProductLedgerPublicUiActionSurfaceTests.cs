@@ -11,6 +11,9 @@ namespace OneBrain.Safety.Tests;
 public sealed class ProductLedgerPublicUiActionSurfaceTests
 {
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
     public void PublicUiActionSurface_FailsClosedByDefaultUnknownAndCorrupt()
     {
         var surface = new ProductLedgerPublicUiActionSurface();
@@ -56,6 +59,11 @@ public sealed class ProductLedgerPublicUiActionSurfaceTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void PublicUiActionSurface_BlocksDangerousActionCommands()
     {
         var cases = new Dictionary<ProductLedgerPublicUiActionKind, ProductLedgerPublicUiActionBlocker>
@@ -93,6 +101,11 @@ public sealed class ProductLedgerPublicUiActionSurfaceTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void PublicUiActionSurface_BlocksUnsafeClaimsAndPreviewState()
     {
         var ready = ReadyRequest(ProductLedgerPublicUiActionKind.ViewDiagnostics);
@@ -124,6 +137,10 @@ public sealed class ProductLedgerPublicUiActionSurfaceTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("CommandExecutionBlock")]
     public void PublicUiActionSurface_RejectsCasingWhitespaceAndUnsafeExportCorpus()
     {
         using var fixture = ExportFixture.Create();
@@ -204,6 +221,11 @@ public sealed class ProductLedgerPublicUiActionSurfaceTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void PublicUiActionSurface_DangerousButtonsRenderDisabled()
     {
         var result = new ProductLedgerPublicUiActionSurface().Execute(ReadyRequest(ProductLedgerPublicUiActionKind.ViewDiagnostics));
@@ -226,6 +248,12 @@ public sealed class ProductLedgerPublicUiActionSurfaceTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("StaticGuard")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void PublicUiActionSurface_SourceHasNoNetworkDbKmsLiveReleaseRawOrOverclaim()
     {
         var source = File.ReadAllText(Path.Combine(

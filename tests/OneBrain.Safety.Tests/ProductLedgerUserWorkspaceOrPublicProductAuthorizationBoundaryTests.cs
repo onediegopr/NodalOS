@@ -83,6 +83,13 @@ public sealed class ProductLedgerUserWorkspaceOrPublicProductAuthorizationBounda
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("StaticGuard")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void UserWorkspaceOrPublicProductBoundary_StaticScanKeepsPublicProductAndUnsafeFrontiersClosed()
     {
         var source = ProductLedgerBoundarySourceText();

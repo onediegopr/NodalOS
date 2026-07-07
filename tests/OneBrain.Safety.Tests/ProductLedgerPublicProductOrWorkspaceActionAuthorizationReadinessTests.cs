@@ -43,6 +43,12 @@ public sealed class ProductLedgerPublicProductOrWorkspaceActionAuthorizationRead
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void PublicProductOrWorkspaceAuthorizationReadiness_WorkspaceTestJailActionIsActiveButNotPublicProductOrUserWorkspace()
     {
         var mapper = ReadRepoFile("src", "OneBrain.Pilot", "ProductLedgerLocalDevRouteEndpointMapper.cs");
@@ -90,6 +96,13 @@ public sealed class ProductLedgerPublicProductOrWorkspaceActionAuthorizationRead
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("StaticGuard")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void PublicProductOrWorkspaceAuthorizationReadiness_StaticScanKeepsBlockedFrontiersClosed()
     {
         var source = string.Join(

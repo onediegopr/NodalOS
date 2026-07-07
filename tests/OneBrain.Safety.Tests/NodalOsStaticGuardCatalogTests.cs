@@ -221,6 +221,45 @@ public sealed class NodalOsStaticGuardCatalogTests
         CollectionAssert.Contains(productLedgerMethodCategories, "ProductionRouteBlock");
     }
 
+    [TestMethod]
+    public void StaticGuardCatalog_C6ExpandedTier1LabelsAreDiscoverable()
+    {
+        var requiredMetadata = new (Type Type, string MethodName, string[] Categories)[]
+        {
+            (typeof(ProductLedgerActiveDurableReadPrecedenceDecisionMatrixDesignOnlyTests),
+                nameof(ProductLedgerActiveDurableReadPrecedenceDecisionMatrixDesignOnlyTests.ActiveDurableReadPrecedenceDecisionMatrix_SourceStillHasNoPrecedencePointerAuthorityOrPublicProduct),
+                ["NodalOsTier1Safety", "ProductLedger", "LatestPointerBlock", "ReadPrecedenceBlock", "ProductAuthorityBlock", "PublicProductBlock", "ProductionRouteBlock"]),
+            (typeof(ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenterTests),
+                nameof(ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenterTests.AuxiliaryEvidence_SourceHasNoForbiddenActivation),
+                ["NodalOsTier1Safety", "ProductLedger", "StaticGuard", "LatestPointerBlock", "ReadPrecedenceBlock", "ProductAuthorityBlock", "ReleaseCommercialBlock"]),
+            (typeof(ProductLedgerPublicProductOrWorkspaceActionAuthorizationReadinessTests),
+                nameof(ProductLedgerPublicProductOrWorkspaceActionAuthorizationReadinessTests.PublicProductOrWorkspaceAuthorizationReadiness_StaticScanKeepsBlockedFrontiersClosed),
+                ["NodalOsTier1Safety", "ProductLedger", "StaticGuard", "PublicProductBlock", "ProductionRouteBlock", "CommandExecutionBlock", "ReleaseCommercialBlock"]),
+            (typeof(ProductLedgerUserWorkspaceOrPublicProductAuthorizationBoundaryTests),
+                nameof(ProductLedgerUserWorkspaceOrPublicProductAuthorizationBoundaryTests.UserWorkspaceOrPublicProductBoundary_StaticScanKeepsPublicProductAndUnsafeFrontiersClosed),
+                ["NodalOsTier1Safety", "ProductLedger", "StaticGuard", "PublicProductBlock", "ProductionRouteBlock", "CommandExecutionBlock", "ReleaseCommercialBlock"]),
+            (typeof(ProductLedgerFirstRealUserFacingLocalActionReadinessTests),
+                nameof(ProductLedgerFirstRealUserFacingLocalActionReadinessTests.FirstRealUserFacingLocalActionReadiness_StaticScanKeepsForbiddenRuntimeFrontiersClosed),
+                ["NodalOsTier1Safety", "ProductLedger", "StaticGuard", "PublicProductBlock", "ProductionRouteBlock", "CommandExecutionBlock", "ReleaseCommercialBlock"]),
+            (typeof(ProductLedgerPublicUiActionSurfaceTests),
+                nameof(ProductLedgerPublicUiActionSurfaceTests.PublicUiActionSurface_BlocksDangerousActionCommands),
+                ["NodalOsTier1Safety", "ProductLedger", "PublicProductBlock", "CommandExecutionBlock", "ReleaseCommercialBlock"]),
+            (typeof(ProductLedgerPublicUiActionSurfaceTests),
+                nameof(ProductLedgerPublicUiActionSurfaceTests.PublicUiActionSurface_SourceHasNoNetworkDbKmsLiveReleaseRawOrOverclaim),
+                ["NodalOsTier1Safety", "ProductLedger", "StaticGuard", "PublicProductBlock", "CommandExecutionBlock", "ReleaseCommercialBlock"])
+        };
+
+        foreach (var (type, methodName, categories) in requiredMetadata)
+        {
+            var methodCategories = CategoriesFor(type, methodName);
+
+            foreach (var category in categories)
+            {
+                CollectionAssert.Contains(methodCategories, category, $"{type.Name}.{methodName}: {category}");
+            }
+        }
+    }
+
     private static string[] CategoriesFor(Type type) =>
         type.GetCustomAttributes(typeof(TestCategoryAttribute), inherit: false)
             .Cast<TestCategoryAttribute>()

@@ -52,6 +52,15 @@ public sealed class ProductLedgerActiveDurableReadPrecedenceDecisionMatrixDesign
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("LatestPointerBlock")]
+    [TestCategory("ReadPrecedenceBlock")]
+    [TestCategory("ProductAuthorityBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void ActiveDurableReadPrecedenceDecisionMatrix_SourceStillHasNoPrecedencePointerAuthorityOrPublicProduct()
     {
         var source = SourceText();

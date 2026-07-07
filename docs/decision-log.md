@@ -1924,3 +1924,15 @@
 - Non-goals preserved: no `src/` changes, test movement, test deletion, assertion changes, CI behavior change, scanner behavior change, runtime/product behavior change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, shell/subprocess, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 documented commands can be mistaken for enforced CI unless future blocks keep "manual only" explicit; P4 Tier 1 label coverage remains partial.
 - Next recommended macro-block: `NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY`.
+
+## NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_TIER1_LABEL_EXPANSION_TEST_ONLY_READY`.
+- Baseline: `26065ca3b02fb56ac7e7fdfcbcf435861186b7d2`.
+- Scope: test-only/metadata-only/additive-only expansion of MSTest `TestCategory` labels.
+- Implemented: `NodalOsTier1Safety` metadata on 15 additional existing Product Ledger hard-block methods covering active read precedence/latest pointer/product authority blockers, durable latest-state auxiliary evidence blockers, public/product and Production route blockers, command execution blockers, release/commercial blockers and public UI action fail-closed/unsafe-action blockers.
+- Added evidence: `StaticGuardCatalog_C6ExpandedTier1LabelsAreDiscoverable` verifies selected C6 labels by reflection.
+- Updated: test tier policy, pre-refactor command policy, simplification backlog, test tiering design, handoff log and this decision-log.
+- Non-goals preserved: no `src/` changes, test movement, test deletion, skip behavior, assertion changes, CI behavior change, scanner behavior change, runtime/product behavior change, public/product route activation, Production route activation, active read precedence, latest pointer, product authority, shell/subprocess, command execution enablement, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels are still partial and can be mistaken for full CI enforcement; P4 future C7/D1 should decide whether more Tier 1 expansion or common-contract parallel design is higher value.
+- Next recommended macro-block: `NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_IMPLEMENTATION_DESIGN_OR_TEST_ONLY` if C6 validation remains green; otherwise C7 additional Tier 1 expansion.

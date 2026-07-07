@@ -102,11 +102,13 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK C6 - Tier 1 Label Expansion Test-Only (Future GO Only)
 
 - Objective: expand additive labels to a few more load-bearing hard-block tests.
+- Status: completed as controlled test-only/metadata-only expansion. C6 labels 15 additional existing hard-block methods plus one reflection evidence method, without assertion, scanner, CI or source changes.
 - Expected files: selected tests and docs/log updates only.
 - Do not touch: CI behavior, source behavior, test movement, test deletion, skip behavior, assertions or scanner behavior.
 - Tests required: labeled discovery, Product Ledger Safety/Recipes, static guard focused tests, Core/Pilot/Solution builds and `git diff --check`.
 - Risk: medium; expanded labels can be mistaken for a complete Tier 1 suite.
 - Benefit: improves pre-refactor gate discoverability without changing execution behavior.
+- Follow-up: do not treat the C6 labeled set as a full replacement for Product Ledger Safety/Recipes. Use it as a pre-refactor smoke plus full focused Product Ledger gates until D1/D2 equivalence is proven.
 
 ## BLOCK D1 - Common Contracts Parallel Implementation (Future GO Only)
 

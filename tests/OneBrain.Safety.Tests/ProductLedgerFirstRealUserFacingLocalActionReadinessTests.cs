@@ -30,6 +30,12 @@ public sealed class ProductLedgerFirstRealUserFacingLocalActionReadinessTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void FirstRealUserFacingLocalActionReadiness_ImplementedCandidateRemainsLocalDevelopmentOnly()
     {
         var implementationAdr = ReadRepoFile("docs", "adr", "product-ledger-local-approved-handoff-report-draft-implementation.md");
@@ -74,6 +80,13 @@ public sealed class ProductLedgerFirstRealUserFacingLocalActionReadinessTests
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("StaticGuard")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void FirstRealUserFacingLocalActionReadiness_StaticScanKeepsForbiddenRuntimeFrontiersClosed()
     {
         var source = string.Join(

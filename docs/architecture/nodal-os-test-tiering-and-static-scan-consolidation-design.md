@@ -313,6 +313,7 @@ Future scanner output should report:
 - Risks: labeling too much too early creates false confidence that Tier 1 is complete.
 - Tests required: labeled discovery, Product Ledger Safety/Recipes, static guard focused tests and `git diff --check`.
 - Stop conditions: test movement, test deletion, skip behavior, assertion weakening, CI behavior change or source behavior change.
+- Implementation status: completed as controlled test-only/metadata-only expansion. Fifteen additional existing Product Ledger hard-block methods and one reflection evidence method now carry Tier 1 metadata. Coverage remains partial; Product Ledger Safety/Recipes remain required for Product Ledger-adjacent source/refactor work.
 
 ### C7 - Move duplicate tests to extended, with GO
 

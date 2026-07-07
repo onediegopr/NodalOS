@@ -4,17 +4,17 @@ Date: 2026-07-07
 
 Mode: docs-only / design-only / command-documentation-only / discovery-documentation-only. This document does not change CI, tests, test movement, test deletion, assertions, source behavior, scanner behavior, runtime/product behavior, public/product exposure, Production route, active read precedence, latest pointer, product authority, cloud/network/DB, KMS/WORM, release or commercial readiness.
 
-Baseline: C3 test tier labels and gate policy plus C4 initial additive `TestCategory` metadata.
+Baseline: C3 test tier labels and gate policy, C4 initial additive `TestCategory` metadata and C6 controlled Tier 1 label expansion.
 
 ## 1. Executive Verdict
 
 Decision: `GO_WITH_FINDINGS_PRE_REFACTOR_GATE_COMMANDS_DISCOVERY_DESIGN_ONLY_READY`.
 
-C5 documents the exact manual commands for label discovery, the current partial Tier 1 label run, static guard checks, Product Ledger Safety/Recipes and pre-source-refactor gating. It intentionally does not enforce these commands in CI. The C4 label set is a small proof, not a complete Tier 1 suite.
+C5 documents the exact manual commands for label discovery, the current partial Tier 1 label run, static guard checks, Product Ledger Safety/Recipes and pre-source-refactor gating. It intentionally does not enforce these commands in CI. The C6 label set is stronger than the C4 proof, but it is still not a complete Tier 1 suite.
 
 Findings: P0=0, P1=0, P2=0 new. P3 remains that documented commands may be mistaken for enforced CI. P4 remains that Tier 1 labels are partial and solution builds can still surface inherited non-C5 warnings.
 
-## 2. Current C4 Metadata Status
+## 2. Current C6 Metadata Status
 
 Current metadata exists in MSTest `TestCategory` attributes.
 
@@ -29,14 +29,18 @@ Implemented labels:
 - `LatestPointerBlock`
 - `ReadPrecedenceBlock`
 - `ProductAuthorityBlock`
+- `CommandExecutionBlock`
+- `ReleaseCommercialBlock`
 
 Current labeled subset:
 
 - `NodalOsStaticGuardCatalogTests` class and selected static guard methods.
 - Two `ProductLedgerBroaderWorkspaceOrPublicProductBoundaryTests` methods.
+- Selected Product Ledger hard-block methods for active read precedence, durable latest-state auxiliary evidence, public/product workspace authorization, user-workspace/public-product boundaries, first real local action readiness and public UI action surface.
 - Reflection evidence: `StaticGuardCatalog_C4MetadataLabelsAreAdditiveAndDiscoverable`.
+- Reflection evidence: `StaticGuardCatalog_C6ExpandedTier1LabelsAreDiscoverable`.
 
-Important limit: current `NodalOsTier1Safety` is not the complete Tier 1 gate. It is an initial metadata proof only.
+Important limit: current `NodalOsTier1Safety` is not the complete Tier 1 gate. It is a controlled metadata expansion only. Product Ledger Safety and Recipes remain mandatory for Product Ledger-adjacent source/refactor confidence.
 
 ## 3. Discovery Commands
 
@@ -52,7 +56,7 @@ List all discovered Safety tests:
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests
 ```
 
-List the current C4 Tier 1 labeled subset:
+List the current Tier 1 labeled subset:
 
 ```powershell
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --list-tests --filter "TestCategory=NodalOsTier1Safety"
@@ -79,12 +83,12 @@ dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build 
 Fallback if `--list-tests --filter` is unavailable or fragile in a local SDK/runner:
 
 ```powershell
-rg -n 'TestCategory\("(NodalOsTier1Safety|StaticGuard|ProductLedger|PublicProductBlock|ProductionRouteBlock|RunClaimCoherence|LatestPointerBlock|ReadPrecedenceBlock|ProductAuthorityBlock)"\)' tests/OneBrain.Safety.Tests
+rg -n 'TestCategory\("(NodalOsTier1Safety|StaticGuard|ProductLedger|PublicProductBlock|ProductionRouteBlock|RunClaimCoherence|LatestPointerBlock|ReadPrecedenceBlock|ProductAuthorityBlock|CommandExecutionBlock|ReleaseCommercialBlock)"\)' tests/OneBrain.Safety.Tests
 ```
 
 ## 4. Tier 1 Commands
 
-Current partial labeled Tier 1 proof:
+Current partial labeled Tier 1 proof after C6:
 
 ```powershell
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NodalOsTier1Safety" -v:minimal
@@ -108,7 +112,7 @@ Product Ledger Production route blocker proof:
 dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ProductLedger&TestCategory=ProductionRouteBlock" -v:minimal
 ```
 
-These commands are discovery/gate previews only. They are not a substitute for full Product Ledger Safety and Recipes.
+These commands are discovery/gate previews only. They are not a substitute for full Product Ledger Safety and Recipes, and they are not CI enforcement.
 
 ## 5. Static Guard Commands
 
@@ -216,11 +220,25 @@ C5 does not:
 - authorize active read precedence, latest pointer or product authority;
 - authorize command execution, shell/subprocess, provider/cloud/network, DB/migration, KMS/WORM or release/commercial readiness.
 
-## 11. Future Implementation Options
+## 11. C6 Label Expansion Note
+
+C6 added additive MSTest metadata to 15 existing hard-block methods and one reflection evidence method. The expected `NodalOsTier1Safety` discovery count after C6 is 26 tests if the local build artifacts are current.
+
+The newly labeled groups cover:
+
+- active durable read precedence/latest pointer/product authority blockers;
+- durable latest-state auxiliary evidence blockers;
+- public/product and Production route blockers;
+- command execution blockers;
+- release/commercial blockers;
+- public UI action fail-closed and dangerous-action rejection blockers.
+
+C6 did not change test assertions, scanner behavior, source behavior, CI or runtime/product behavior.
+
+## 12. Future Implementation Options
 
 Safe next blocks:
 
-- `NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY`: expand labels to a few more load-bearing hard-block tests, still no movement/CI changes.
 - `NODAL_OS_BLOCK_C7_PRE_REFACTOR_GATE_SCRIPT_TEST_ONLY_DISABLED`: add a disabled/local-only helper script for the documented gate, with no CI wiring.
 - `NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_IMPLEMENTATION`: add common contracts only after C5/C6 evidence is accepted and required gates remain green.
 

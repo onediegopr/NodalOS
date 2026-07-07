@@ -48,6 +48,13 @@ public sealed class ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresent
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("LatestPointerBlock")]
+    [TestCategory("ReadPrecedenceBlock")]
+    [TestCategory("ProductAuthorityBlock")]
+    [TestCategory("CommandExecutionBlock")]
     public void AuxiliaryEvidence_BlocksAuthorityPrecedencePointerAndUnsafeCandidateClaims()
     {
         var cases = new (Func<ProductLedgerLocalDurableLatestStateReaderCandidateResult, ProductLedgerLocalDurableLatestStateReaderCandidateResult> Mutate, ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceBlocker Blocker)[]
@@ -81,6 +88,10 @@ public sealed class ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresent
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductAuthorityBlock")]
     public void AuxiliaryEvidence_BlocksQueryHeaderAndUnsafeOptions()
     {
         var query = new ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter(SafeOptions())
@@ -130,6 +141,16 @@ public sealed class ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresent
     }
 
     [TestMethod]
+    [TestCategory("NodalOsTier1Safety")]
+    [TestCategory("ProductLedger")]
+    [TestCategory("StaticGuard")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("LatestPointerBlock")]
+    [TestCategory("ReadPrecedenceBlock")]
+    [TestCategory("ProductAuthorityBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
     public void AuxiliaryEvidence_SourceHasNoForbiddenActivation()
     {
         var source = ReadRepoFile("src", "OneBrain.Core", "Approval", "ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter.cs");
