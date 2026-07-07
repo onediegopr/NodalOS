@@ -10,6 +10,14 @@ Purpose: rolling handoff index. Future blocks should add one entry here by defau
 - Documentation governance: `docs/architecture/nodal-os-documentation-governance.md`.
 - Simplification backlog: `docs/architecture/nodal-os-simplification-backlog.md`.
 - `/run` claim reconciliation: `docs/audit/nodal-os-run-claim-coherence-reconciliation.md`.
+- Naming consolidation design: `docs/architecture/nodal-os-naming-consolidation-design.md`.
+- Naming consolidation map: `docs/architecture/nodal-os-naming-consolidation-map.csv`.
+
+## Latest Window Handoff
+
+| Window | Decision | Handoff |
+| --- | --- | --- |
+| `NODAL_OS_BLOCK_B_NAMING_CONSOLIDATION_DESIGN_ONLY` | `GO_WITH_FINDINGS_NAMING_CONSOLIDATION_DESIGN_READY` | Design-only naming consolidation completed. Source names, tests, runtime routes and behavior remain unchanged. Future work should move status suffixes into policy fields before any source rename. Next recommended block: `NODAL_OS_BLOCK_C_TEST_TIERING_AND_STATIC_SCAN_CONSOLIDATION_DESIGN_ONLY`. |
 
 ## Recent Canonical Handoffs To Keep Visible
 

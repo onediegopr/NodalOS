@@ -7,11 +7,13 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK B - Naming Consolidation Design-Only
 
 - Objective: map verbose status-suffix names to domain nouns plus status/claim fields.
-- Expected files: design doc, rename table, maybe ADR addendum.
+- Status: completed as design-only in `docs/architecture/nodal-os-naming-consolidation-design.md` and `docs/architecture/nodal-os-naming-consolidation-map.csv`.
+- Expected files: design doc and rename table.
 - Do not touch: source names, runtime routes, behavior.
-- Tests required: none beyond `git diff --check`.
+- Tests required: docs-only diff guard, `git diff --check`; build/test evidence may be carried by the block run.
 - Risk: low.
 - Benefit: reduces onboarding friction before source refactor.
+- Follow-up: no source rename until Blocks C-D define test tiering/static scans and contract merge design.
 
 ## BLOCK C - Test Tiering / Static Scan Consolidation
 
