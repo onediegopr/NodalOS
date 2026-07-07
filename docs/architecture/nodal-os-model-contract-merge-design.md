@@ -350,6 +350,19 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Actual bloat impact: effectively `0%` net source bloat reduction; D7 is additive proof-only rather than deletion/removal.
 - Next step: D8 post-replacement isolation/equivalence audit or STOP_FOR_AUDIT, not broad refactor.
 
+### D8 - Post-replacement isolation/equivalence audit
+
+- Objective: audit the D7 replacement without implementing another replacement.
+- Implementation status: completed in `NODAL_OS_BLOCK_D8_POST_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+- Actual evidence: `ReentryDecisionPacketReadOnlyPostReplacementD8Tests`.
+- Scope: test/audit/docs-only; no `src/` changes; no D4 candidate change; no Reentry source change; no second replacement.
+- Verified: the D7 command guard exception is exact to `ReentryDecisionPacketReadOnly.cs`, does not authorize command handlers, shell/subprocess, runtime command execution, product command execution, route/DI/service registration or similar future files.
+- Verified: candidate references remain limited to the candidate file, the D7 target, Safety tests and docs/logs.
+- Verified: D4 remains non-authoritative, Reentry remains read-only/non-runtime, D1/D2 remain design/test-only and existing hard-block tests remain authoritative.
+- Runtime/product enablement remains `0%`; CI enforcement remains `0%`; release/commercial remains `0% / NO-GO`.
+- Source bloat reduction remains `0%`; D7 was additive proof-only with net +70 source lines.
+- Next step: `STOP_FOR_AUDIT` or `D9 second minimal replacement plan/audit only`, not broad refactor.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.

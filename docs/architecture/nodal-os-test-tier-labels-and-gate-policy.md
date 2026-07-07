@@ -417,3 +417,21 @@ Additional labels used by D7:
 D7 Tier 1 impact: it adds twelve focused tests proving the reentry packet's private common-boundary proof preserves public/product, Production route, latest pointer, read precedence, product authority, command execution, release/commercial, no runtime/product authority, no broadened candidate references and D1/D2/D4 no-double-truth semantics.
 
 D7 does not move tests, delete tests, weaken assertions or change CI filters. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.
+
+## 18. D8 Post-Replacement Isolation/Equivalence Audit
+
+Implementation status: completed as test/audit/docs-only in `NODAL_OS_BLOCK_D8_POST_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+
+D8 adds focused Safety evidence:
+
+- `ReentryDecisionPacketReadOnlyPostReplacementD8Tests`
+
+Additional label introduced for D8:
+
+- `PostReplacementAudit`
+
+D8 Tier 1 impact: it adds ten focused tests proving the D7 command guard exception is exact to `ReentryDecisionPacketReadOnly.cs`, does not permit command handlers, shell/subprocess, runtime command execution, product command execution, route/DI/service registration or similar future files, and does not broaden candidate references beyond the candidate file, D7 target, Safety tests and docs/logs.
+
+D8 also proves the Reentry packet still preserves public/product, Production route, latest pointer, read precedence, product authority, command execution, external trust, CI, runtime/product and release/commercial blocked/no-go semantics. D4 remains non-authoritative. D1/D2 remain design/test-only. Existing hard-block tests remain authoritative.
+
+D8 changes no `src/`, no CI, no runtime/product behavior and no release/commercial posture. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.

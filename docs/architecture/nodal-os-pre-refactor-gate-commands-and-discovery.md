@@ -430,3 +430,34 @@ After D7, this command may show only:
 - `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
 
 D7 does not change CI. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 20. D8 Post-Replacement Isolation/Equivalence Audit Note
+
+D8 completed as test/audit/docs-only in `NODAL_OS_BLOCK_D8_POST_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+
+Actual focused D8 command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ReentryDecisionPacketReadOnlyPostReplacementD8" -v:minimal
+```
+
+Expected D8 focused count: 10 tests.
+
+New manual/discovery category command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=PostReplacementAudit" -v:minimal
+```
+
+D8 reference rule:
+
+```powershell
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+```
+
+After D8, this command may still show only:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+
+D8 changes no `src/`, no CI and no runtime/product behavior. It does not implement a second replacement. The D7 command guard exception remains exact to `ReentryDecisionPacketReadOnly.cs`. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.

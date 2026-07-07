@@ -194,6 +194,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Bloat impact: effectively `0%` net source reduction; additive proof-only.
 - Follow-up: D8 post-replacement isolation/equivalence audit or STOP_FOR_AUDIT. No broad refactor from D7 alone.
 
+## BLOCK D8 - Post-Replacement Isolation/Equivalence Audit
+
+- Objective: audit the D7 minimal replacement after the fact and harden isolation/equivalence evidence.
+- Status: completed as test/audit/docs-only in `NODAL_OS_BLOCK_D8_POST_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+- Actual tests: `tests/OneBrain.Safety.Tests/ReentryDecisionPacketReadOnlyPostReplacementD8Tests.cs`.
+- Do not touch: `src/`, D4 candidate source, Reentry source target, new source candidates, Product Ledger behavior files, Pilot routes, DI, command handlers, CI, public/product gates, latest pointer/read precedence/product authority, command execution or release/commercial claims.
+- Verified: D7 command guard exception is exact to `ReentryDecisionPacketReadOnly.cs`, does not allow runtime/product command execution, shell/subprocess, route/DI/service registration or similar future files.
+- Verified: candidate references remain limited to candidate source, D7 source target, Safety tests and docs/logs.
+- Risk: low/medium; post-replacement confidence is higher, but source bloat reduction remains 0% and broad refactor is still not authorized.
+- Benefit: makes D7 auditable before any future D9 replacement planning.
+- Follow-up: `STOP_FOR_AUDIT` or D9 second minimal replacement plan/audit only. No broad refactor from D8 alone.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

@@ -2029,3 +2029,17 @@
 - Bloat impact: source bloat reduction remains effectively `0%`; D7 is additive proof-only.
 - Findings: P0=0, P1=0, P2=0; P3 future source replacement must not generalize this one allowed source reference; P4 no meaningful source reduction yet.
 - Next recommended macro-block: `D8 post-replacement isolation/equivalence audit`.
+
+## NODAL_OS_BLOCK_D8_POST_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT
+
+- Decision: `GO_WITH_FINDINGS_POST_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT_READY`.
+- Baseline: `7c892cf30c9a996ed6e82a7bd042a1588ff82963`.
+- Scope: test/audit/docs-only post-replacement audit of D7.
+- Source changed: none.
+- Tests added: `ReentryDecisionPacketReadOnlyPostReplacementD8Tests` with `PostReplacementAudit` plus existing Tier 1/common-contract/no-runtime/no-authority/no-double-truth categories.
+- Verified: D7 command guard exception remains exact to `ReentryDecisionPacketReadOnly.cs`; it does not allow command handlers, shell/subprocess, runtime command execution, product command execution, route/DI/service registration or similar future files.
+- Verified: candidate references remain limited to candidate source, D7 source target, Safety tests and docs/logs.
+- Preserved: D4 candidate remains non-authoritative, D1/D2 remain design/test-only, Reentry remains read-only/non-runtime and existing hard-block tests remain authoritative.
+- Non-goals preserved: no `src/` change, second replacement, new source candidate, CI change, runtime/product wiring, public/product exposure, Production route activation, latest pointer, active read precedence, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 D9 should be plan/audit-only before any second source replacement; P4 source bloat reduction remains 0%.
+- Next recommended macro-block: `STOP_FOR_AUDIT` or `D9 second minimal replacement plan/audit only`.

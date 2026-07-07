@@ -265,3 +265,37 @@ Actual bloat impact:
 Next recommended block after D7:
 
 `D8 post-replacement isolation/equivalence audit`.
+
+## D8 Post-Replacement Isolation/Equivalence Audit Note
+
+D8 was later executed as `NODAL_OS_BLOCK_D8_POST_REPLACEMENT_ISOLATION_EQUIVALENCE_AUDIT`.
+
+Actual D8 scope:
+
+- test/audit/docs-only;
+- no `src/` changes;
+- no modification to `ReentryDecisionPacketReadOnly.cs`;
+- no modification to `NodalOsCommonBoundaryClaimsCandidate.cs`;
+- no second replacement;
+- no broadened D7 references.
+
+Actual D8 evidence:
+
+- `tests/OneBrain.Safety.Tests/ReentryDecisionPacketReadOnlyPostReplacementD8Tests.cs`
+
+D8 audits the D7 replacement after the fact. It proves the D7 command guard exception remains exact to `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`, does not allow command handlers, shell/subprocess execution, runtime command execution, product command execution, route registration, DI or service registration, and does not automatically authorize similar future files.
+
+Candidate references remain limited to:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`;
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`;
+- Safety tests;
+- docs/logs.
+
+Existing hard-block tests remain authoritative. The D4 candidate remains non-authoritative. `ReentryDecisionPacketReadOnly` remains read-only/non-runtime and cannot override D1/D2/D4 hard-block semantics.
+
+Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`. Source bloat reduction remains `0%`; D7 was additive proof-only with net +70 source lines.
+
+Next recommended block after D8:
+
+`STOP_FOR_AUDIT` or `D9 second minimal replacement plan/audit only`, not broad refactor.
