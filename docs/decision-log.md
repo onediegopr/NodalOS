@@ -1912,3 +1912,15 @@
 - Non-goals preserved: no `src/` changes, test movement, test deletion, skip behavior, assertion changes, setup changes, scanner behavior change, CI behavior change, runtime/product behavior change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, shell/subprocess, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
 - Findings: P0=0, P1=0, P2=0; P3 metadata can still be misread as CI enforcement or permission to move tests unless future C5 documents exact commands and limits; P4 only a tiny subset is labeled so Tier 1 is not yet complete.
 - Next recommended macro-block: `NODAL_OS_BLOCK_C5_PRE_REFACTOR_GATE_COMMANDS_AND_DISCOVERY_DESIGN_ONLY`.
+
+## NODAL_OS_BLOCK_C5_PRE_REFACTOR_GATE_COMMANDS_AND_DISCOVERY_DESIGN_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRE_REFACTOR_GATE_COMMANDS_DISCOVERY_DESIGN_ONLY_READY`.
+- Baseline: `47ed788ff35584592814088f2599d60370c5a9e2`.
+- Scope: docs-only/design-only/command-documentation-only/discovery-documentation-only.
+- Created: `docs/architecture/nodal-os-pre-refactor-gate-commands-and-discovery.md`.
+- Documented: MSTest label discovery commands, current partial `NodalOsTier1Safety` run, `StaticGuard` and blocker label commands, focused `NodalOsStaticGuardCatalog` command, Product Ledger Safety/Recipes commands and full manual pre-source-refactor gate sequence.
+- Defined: scenario gate matrix for docs-only, test-only, source-refactor, contract-merge, public/product and release/commercial; timeout policy states timeouts are not passes.
+- Non-goals preserved: no `src/` changes, test movement, test deletion, assertion changes, CI behavior change, scanner behavior change, runtime/product behavior change, public/product exposure, Production route activation, active read precedence, latest pointer, product authority, shell/subprocess, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 documented commands can be mistaken for enforced CI unless future blocks keep "manual only" explicit; P4 Tier 1 label coverage remains partial.
+- Next recommended macro-block: `NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY`.

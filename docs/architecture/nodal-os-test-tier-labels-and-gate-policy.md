@@ -222,11 +222,11 @@ Mitigations:
 
 ## 9. Exact Next GO
 
-After C4 closes, the safest next implementation/design block is:
+After C5 closes, the safest next implementation/design block is:
 
-`AUTHORIZE_NODAL_OS_BLOCK_C5_PRE_REFACTOR_GATE_COMMANDS_AND_DISCOVERY_DESIGN_ONLY`
+`AUTHORIZE_NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY`
 
-Expected outcome for C5: document exact pre-refactor gate commands and label-discovery commands without changing CI. No source changes, no test movement, no test deletion, no CI changes and no assertion changes.
+Expected outcome for C6: expand additive labels to a few more load-bearing hard-block tests without changing CI. No source changes, no test movement, no test deletion, no CI changes and no assertion changes.
 
 ## 10. C4 Initial Metadata Implementation
 
@@ -256,3 +256,13 @@ Current label-run preview:
 - `dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NodalOsTier1Safety" -v:minimal`
 
 Do not promote this filter to CI until a later GO proves the labeled subset is representative and keeps current Product Ledger Safety/Recipes gates green.
+
+## 11. C5 Gate Commands And Discovery
+
+Implementation status: completed as docs/design-only in `NODAL_OS_BLOCK_C5_PRE_REFACTOR_GATE_COMMANDS_AND_DISCOVERY_DESIGN_ONLY`.
+
+Canonical command policy:
+
+- `docs/architecture/nodal-os-pre-refactor-gate-commands-and-discovery.md`
+
+The C5 command policy documents label discovery, current partial Tier 1 execution, focused static guard runs, Product Ledger Safety/Recipes, the pre-source-refactor gate, scenario matrix and timeout policy. It does not change CI or test behavior.

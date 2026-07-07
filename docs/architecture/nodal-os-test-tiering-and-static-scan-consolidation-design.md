@@ -304,15 +304,24 @@ Future scanner output should report:
 - Risks: a documented gate can be mistaken for enforced CI.
 - Tests required: docs/static diff guard and optional command dry-run evidence.
 - Stop conditions: CI behavior change, test movement, assertion weakening or source behavior change.
+- Implementation status: completed as docs/design-only. Canonical command policy: `docs/architecture/nodal-os-pre-refactor-gate-commands-and-discovery.md`.
 
-### C5 - Move duplicate tests to extended, with GO
+### C6 - Expand Tier 1 labels, test-only
+
+- Future block name: `NODAL_OS_BLOCK_C6_TIER1_LABEL_EXPANSION_TEST_ONLY`.
+- Expected files: selected tests plus docs/log updates only.
+- Risks: labeling too much too early creates false confidence that Tier 1 is complete.
+- Tests required: labeled discovery, Product Ledger Safety/Recipes, static guard focused tests and `git diff --check`.
+- Stop conditions: test movement, test deletion, skip behavior, assertion weakening, CI behavior change or source behavior change.
+
+### C7 - Move duplicate tests to extended, with GO
 
 - Expected files: test trait/category changes only.
 - Risks: deleting instead of moving; losing Safety/Recipes mirror needed for coverage.
 - Tests required: full Safety build, Product Ledger Safety, Product Ledger Recipes, scanner equivalence.
 - Stop conditions: test deletion, assertion weakening, P0/P1/P2.
 
-### C6 - Verify no guardrail loss
+### C8 - Verify no guardrail loss
 
 - Expected files: audit report and coverage matrix.
 - Risks: overconfidence from labels.

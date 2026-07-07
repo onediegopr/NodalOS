@@ -92,11 +92,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK C5 - Pre-Refactor Gate Commands / Discovery Design (Future GO Only)
 
 - Objective: document exact pre-refactor gate commands, label discovery commands and expected outputs without changing CI.
+- Status: completed as docs/design-only in `docs/architecture/nodal-os-pre-refactor-gate-commands-and-discovery.md`.
 - Expected files: docs-only command policy and possibly a future dry-run evidence note.
 - Do not touch: CI behavior, source behavior, test movement, test deletion, skip behavior, assertions or scanner behavior.
 - Tests required: docs/static diff guard; optional command dry-run evidence if requested.
 - Risk: low/medium; documented commands can be misread as enforced CI.
 - Benefit: makes Tier 1 reproducible before D1/D2 source work.
+
+## BLOCK C6 - Tier 1 Label Expansion Test-Only (Future GO Only)
+
+- Objective: expand additive labels to a few more load-bearing hard-block tests.
+- Expected files: selected tests and docs/log updates only.
+- Do not touch: CI behavior, source behavior, test movement, test deletion, skip behavior, assertions or scanner behavior.
+- Tests required: labeled discovery, Product Ledger Safety/Recipes, static guard focused tests, Core/Pilot/Solution builds and `git diff --check`.
+- Risk: medium; expanded labels can be mistaken for a complete Tier 1 suite.
+- Benefit: improves pre-refactor gate discoverability without changing execution behavior.
 
 ## BLOCK D1 - Common Contracts Parallel Implementation (Future GO Only)
 
