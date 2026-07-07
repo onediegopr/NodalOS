@@ -573,3 +573,63 @@ After D11, this command may still show only:
 D11 changes no `src/`, no CI and no runtime/product behavior. It does not implement a third replacement. The D10 command/execution wording exception remains exact to `ApprovalExecutionDesignOnlyProtected.cs`, and the D7/D10 exceptions remain independent file-exact exceptions rather than a broad command/execution allowlist.
 
 Source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 24. D12 Source Reduction Plan/Audit Note
+
+D12 completed as docs/audit/plan-only in `NODAL_OS_BLOCK_D12_SOURCE_REDUCTION_PLAN_AUDIT_ONLY`.
+
+Canonical D12 plan:
+
+```powershell
+docs/architecture/nodal-os-d12-source-reduction-plan-audit.md
+```
+
+Selected future D13:
+
+`AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`
+
+Selected future D13 source target:
+
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+Required future D13 focused commands:
+
+```powershell
+dotnet build src/OneBrain.Core/OneBrain.Core.csproj
+dotnet build src/OneBrain.Pilot/OneBrain.Pilot.csproj
+dotnet build OneBrain.slnx
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "ProductLedger" -v:minimal
+dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --no-build --filter "ProductLedger" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NodalOsTier1Safety" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=CommonContracts" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=SourceCandidate" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoRuntimeWiring" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoAuthority" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoDoubleTruth" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=PostReplacementAudit" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ApprovalExecution" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ApprovalExecutionPostSecondReplacementD11" -v:minimal
+```
+
+D13 reference rule:
+
+```powershell
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+```
+
+After D13, this command may still show only:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+- `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`
+
+Required future D13 command/runtime scan:
+
+```powershell
+rg -n "IServiceCollection|AddSingleton|AddScoped|AddTransient|MapGet|MapPost|ICommandHandler|CommandHandler|Process\\.Start|File\\.Write|Directory\\.CreateDirectory|HttpClient|DbContext|MigrationBuilder" src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs
+```
+
+D12 changes no `src/`, no tests, no CI and no runtime/product behavior. It selects D13 as a one-file private helper compaction in the D10 target only. D13 must not touch the D4 candidate source, D7 source target, Product Ledger source behavior, routes, DI, service registration, command handlers or CI unless a future explicit scope says otherwise.
+
+Source bloat reduction remains `0%` after D12; D7+D10 cumulative source impact remains net `+140` lines until a future D13 removes lines and passes gates. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.

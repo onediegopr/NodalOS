@@ -248,6 +248,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Bloat impact: source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines. The D-series has so far proven equivalence/isolation, not reduced source bloat.
 - Follow-up: `D12 source-reduction plan/audit only` or STOP_FOR_AUDIT. Do not default to a third proof-only replacement.
 
+## BLOCK D12 - Source Reduction Plan Audit Only
+
+- Objective: decide whether future D13 can safely reduce actual source bloat after D7/D10/D11 without implementing source reduction in D12.
+- Status: completed as docs/audit/plan-only in `NODAL_OS_BLOCK_D12_SOURCE_REDUCTION_PLAN_AUDIT_ONLY`.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REDUCTION_PLAN_AUDIT_ONLY_READY`.
+- Actual audit doc: `docs/architecture/nodal-os-d12-source-reduction-plan-audit.md`.
+- Selected future D13 recommendation: `AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected future D13 target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Expected D13 scope: one-file private helper compaction inside the D10 target; preserve claim/state equivalence, D4 non-authority, D7 isolation and all D10/D11 focused guard meaning.
+- Do not touch in D13 unless separately justified by failed guards: D4 candidate source, D7 target source, Product Ledger source behavior, Pilot routes, DI, command handlers, CI, tests or release/commercial claims.
+- Tests required for D13: Core/Pilot/Solution build, Product Ledger Safety/Recipes, Tier 1/CommonContracts/SourceCandidate/NoRuntimeWiring/NoAuthority/NoDoubleTruth/PostReplacementAudit/ApprovalExecution, D10/D11 focused tests and exact no-reference scans.
+- Risk: medium if D13 broadens source references or turns the D4 candidate into reusable authority; low/medium if it stays one-file and private.
+- Benefit: first actual source bloat reduction in the D-series, after equivalence/isolation evidence has been established.
+- Follow-up: D13 requires explicit Diego authorization. Do not choose a third proof-only replacement before attempting this one-file reduction.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

@@ -2087,3 +2087,20 @@
 - Bloat impact: source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines. The D-series has so far proven equivalence/isolation, not reduced source bloat.
 - Findings: P0=0, P1=0, P2=0; P3 next work should plan actual source reduction before another proof-only replacement; P4 D7+D10 evidence is stronger but net source size is higher.
 - Next recommended macro-block: `D12 source-reduction plan/audit only`.
+
+## NODAL_OS_BLOCK_D12_SOURCE_REDUCTION_PLAN_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REDUCTION_PLAN_AUDIT_ONLY_READY`.
+- Baseline: `0877743c50dcd4844b0eddd2ce4d04e14c28dd99`.
+- Scope: docs/audit/plan-only source reduction selection after D7/D10/D11.
+- Source changed: none.
+- Tests changed: none.
+- Audit doc added: `docs/architecture/nodal-os-d12-source-reduction-plan-audit.md`.
+- Selected future D13 recommendation: `AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected future D13 target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Rationale: D10 is the newer duplicated private fail-closed proof target; compacting its repeated expected-claim checks is lower risk than touching the D4 candidate, the older D7 target or broad Product Ledger contracts.
+- Preserved: D4 candidate remains non-authoritative, D1/D2 remain test/design-only, D7 and D10 remain narrow/read-only/design-only/non-runtime, existing hard-block tests remain authoritative and the allowed source reference set remains D4/D7/D10 only.
+- Non-goals preserved: no source reduction implemented in D12, no D4 candidate modification, no D7 target modification, no Product Ledger source behavior change, no route/DI/service registration, command handler, CI change, runtime/product wiring, public/product exposure, Production route activation, latest pointer, active read precedence, product authority, provider/cloud/network/DB, KMS/WORM/external trust, Browser/CDP/WCU/OCR/Recipes live behavior or release/commercial readiness.
+- Bloat impact: source bloat reduction remains `0%`; cumulative D7+D10 source impact remains net `+140` lines until a future D13 actually removes lines and passes gates.
+- Findings: P0=0, P1=0, P2=0; P3 D13 must stay one-file/private/exact and preserve all claim/state pairs; P4 docs must steer future work away from another additive proof-only replacement.
+- Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.

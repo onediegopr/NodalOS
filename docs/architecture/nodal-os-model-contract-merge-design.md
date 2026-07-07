@@ -401,6 +401,20 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Source bloat reduction remains `0%`; D7+D10 cumulative source impact remains net `+140` lines. The D-series has so far proven equivalence/isolation, not reduced source bloat.
 - Next step: `D12 source-reduction plan/audit only` or STOP_FOR_AUDIT, not another proof-only replacement by default.
 
+### D12 - Source reduction plan/audit only
+
+- Objective: choose whether actual source reduction can safely start after D7/D10/D11, without implementing it.
+- Implementation status: completed as docs/audit/plan-only in `NODAL_OS_BLOCK_D12_SOURCE_REDUCTION_PLAN_AUDIT_ONLY`.
+- Canonical D12 plan: `docs/architecture/nodal-os-d12-source-reduction-plan-audit.md`.
+- Actual files: docs/log updates only.
+- Selected future D13 recommendation: `AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected future D13 source target: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Selection rationale: D10 is the newer duplicated proof target, read-only/design-only/protected, non-route, non-DI, non-service-registered and already covered by D10/D11 focused tests. Compacting its repeated private claim/state proof is lower risk than touching D4, D7 or Product Ledger contracts.
+- Required D13 guard rule: if authorized, D13 may compact repeated expected-claim checks inside the D10 target only while preserving D4 non-authority, D7 isolation, D10/D11 focused guard meaning and the exact allowed source reference set.
+- Non-goals preserved: no `src/` changes in D12, no tests changed, no CI change, no reduction implemented, no D4 candidate modification, no D7 target modification, no Product Ledger source behavior change, no runtime/product enablement and no release/commercial readiness.
+- Source bloat reduction remains `0%`; D7+D10 cumulative source impact remains net `+140` lines until a future D13 actually removes lines and passes gates.
+- Next step: `AUTHORIZE_NODAL_OS_BLOCK_D13_MINIMAL_SOURCE_REDUCTION_IMPLEMENTATION_NO_RUNTIME_CHANGE` with explicit Diego authorization.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.
