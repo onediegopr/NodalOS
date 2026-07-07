@@ -167,3 +167,9 @@ P4:
 `D14 post-source-reduction isolation/equivalence audit`.
 
 Do not continue directly to another reduction implementation before auditing D13.
+
+## 8. D14 Follow-up
+
+D14 completed as docs/audit/checkpoint-only and selected `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.
+
+D13 remains the only D-series source-reduction implementation. It achieved a real local reduction in the D10 target, but the D-series remains net additive by `+110` source lines and should not continue into another source implementation by default.

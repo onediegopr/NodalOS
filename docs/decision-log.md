@@ -2119,3 +2119,17 @@
 - Bloat impact: target line count 368 to 338; D13 diff `+22 / -52`, net `-30`. Cumulative D7+D10+D13 source impact is net `+110`.
 - Findings: P0=0, P1=0, P2=0; P3 D13 is a local reduction only and broad Product Ledger contract bloat remains; P4 future handoffs must not overclaim full source simplification.
 - Next recommended macro-block: `D14 post-source-reduction isolation/equivalence audit`.
+
+## NODAL_OS_BLOCK_D14_D_SERIES_VALUE_CHECKPOINT_AND_POST_REDUCTION_AUDIT
+
+- Decision: `GO_WITH_FINDINGS_D_SERIES_VALUE_CHECKPOINT_READY`.
+- Baseline: `e16b2fa7e632115bd5845a1dcb35a4500835e975`.
+- Scope: docs/audit/checkpoint-only D-series value review after D13.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Checkpoint doc added: `docs/architecture/nodal-os-d14-d-series-value-checkpoint.md`.
+- Verified: D13 stayed limited to one source file, D4 remains non-authoritative, D7 remains unchanged, D1/D2 remain test/design-only and existing hard-block tests remain authoritative.
+- Bloat impact: D7 `+70`, D10 `+70`, D13 `-30`; cumulative D-series source impact remains net `+110`.
+- Findings: P0=0, P1=0, P2=0; P3 remaining D7 proof-chain compaction is low-value and broad Product Ledger/model-contract simplification belongs to the main roadmap; P4 future handoffs must frame D-series as guard confidence plus one local reduction, not full simplification.
+- Next recommended macro-block: `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.

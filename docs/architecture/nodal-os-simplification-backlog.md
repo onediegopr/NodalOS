@@ -277,6 +277,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Risk: low/medium after green validation; future reductions should not proceed until D14 audits that this compaction preserved D10/D11 guard meaning.
 - Follow-up: D14 post-source-reduction isolation/equivalence audit or STOP_FOR_AUDIT.
 
+## BLOCK D14 - D-Series Value Checkpoint and Post-Reduction Audit
+
+- Objective: audit D13 after implementation and decide whether another D-series reduction target has enough value.
+- Status: completed as docs/audit/checkpoint-only in `NODAL_OS_BLOCK_D14_D_SERIES_VALUE_CHECKPOINT_AND_POST_REDUCTION_AUDIT`.
+- Decision: `GO_WITH_FINDINGS_D_SERIES_VALUE_CHECKPOINT_READY`.
+- Actual checkpoint doc: `docs/architecture/nodal-os-d14-d-series-value-checkpoint.md`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none.
+- Verified: D13 stayed one-file, D4 remains non-authoritative, D7 remains unchanged, D1/D2 remain test/design-only and existing hard-block tests remain authoritative.
+- Bloat impact: D7 `+70`, D10 `+70`, D13 `-30`; cumulative D-series source impact remains net `+110`.
+- Deferred: D7 private proof-chain compaction is possible but low-value; broad Product Ledger/model-contract simplification belongs to the main roadmap.
+- Follow-up: `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

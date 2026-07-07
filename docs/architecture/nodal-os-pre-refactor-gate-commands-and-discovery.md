@@ -678,3 +678,19 @@ D13 reference rule remains unchanged:
 D13 changes no tests, no CI and no runtime/product behavior. D4 candidate source remains unchanged, D7 source target remains unchanged, D1/D2 remain design/test-only and existing hard-block tests remain authoritative.
 
 Cumulative source impact after D13: D7 `+70`, D10 `+70`, D13 `-30`, net `+110`. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 26. D14 D-Series Value Checkpoint Note
+
+D14 completed as docs/audit/checkpoint-only in `NODAL_OS_BLOCK_D14_D_SERIES_VALUE_CHECKPOINT_AND_POST_REDUCTION_AUDIT`.
+
+Canonical D14 doc:
+
+```powershell
+docs/architecture/nodal-os-d14-d-series-value-checkpoint.md
+```
+
+D14 changes no commands, tests, CI, source, scanner behavior or runtime/product behavior. It adds no new test label requirement and does not modify the pre-refactor command gate.
+
+D14 selected `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP` because D13 proved a real local reduction while the remaining obvious D-series compaction target is low-value. Future source simplification should return to the main roadmap rather than continue D-series proof-target work by default.
+
+D-series source trajectory after D14 remains: D7 `+70`, D10 `+70`, D13 `-30`, net `+110`. Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.

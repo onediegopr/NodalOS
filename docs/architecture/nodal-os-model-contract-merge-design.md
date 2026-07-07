@@ -427,6 +427,16 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Bloat impact: D13 reduces the D10 target by net `-30` source lines. Cumulative D7+D10+D13 source impact is net `+110` lines, so source reduction is real but partial.
 - Next step: D14 post-source-reduction isolation/equivalence audit or STOP_FOR_AUDIT. Do not continue to another reduction implementation before auditing D13.
 
+### D14 - D-series value checkpoint
+
+- Objective: audit the D-series after D13 and decide whether another D-series source-reduction block has enough value.
+- Implementation status: completed as docs/audit/checkpoint-only in `NODAL_OS_BLOCK_D14_D_SERIES_VALUE_CHECKPOINT_AND_POST_REDUCTION_AUDIT`.
+- Actual checkpoint doc: `docs/architecture/nodal-os-d14-d-series-value-checkpoint.md`.
+- Scope: no `src/` changes, no tests changed, no CI change, no D4/D7/D10 source edits and no runtime/product behavior change.
+- Finding: D13's `-30` line reduction is real, but D7 `+70`, D10 `+70` and D13 `-30` leave cumulative D-series source impact at net `+110`.
+- Decision: close the D-series for now rather than continue to a low-value D15. D7 proof-chain compaction is possible but deferred; shared helper extraction or D4 changes are rejected as authority-broadening risk.
+- Next step: `CLOSE_D_SERIES_RETURN_TO_MAIN_ROADMAP`.
+
 ### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.
