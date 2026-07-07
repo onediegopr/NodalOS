@@ -232,7 +232,37 @@ Actual D5 test evidence:
 
 Recommended next step after D5: D6 minimal replacement plan/audit only or STOP_FOR_AUDIT. Do not proceed to broad replacement or implementation from D5 alone.
 
-## 9. Risks
+## 9. D6 Minimal Replacement Plan Audit Note
+
+D6 was executed as `NODAL_OS_BLOCK_D6_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY`.
+
+Canonical D6 plan:
+
+- `docs/architecture/nodal-os-d6-minimal-replacement-plan-audit.md`
+
+D6 scope:
+
+- docs/audit/plan-only;
+- no `src/` changes;
+- no test changes;
+- no CI changes;
+- no replacement implemented;
+- no source bloat reduction;
+- no runtime/product wiring.
+
+D6 selected exactly one future recommendation:
+
+- `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`
+
+Selected D7 target:
+
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+
+Reason: the reentry packet is read-only, fixture-safe, non-route, non-DI, non-command, not Product Ledger runtime-facing and already covered by Safety/Recipes tests. Product Ledger latest-state, handoff, writer, route and UI targets remain deferred because they are higher-risk source behavior surfaces.
+
+D7 remains unauthorized until explicit Diego GO. The D4 candidate remains parallel/non-authoritative unless a future D7 safely narrows one read-only proof use.
+
+## 10. Risks
 
 P0=0, P1=0, P2=0.
 

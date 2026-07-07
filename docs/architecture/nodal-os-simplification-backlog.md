@@ -169,6 +169,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Benefit: raises confidence that D4 can remain safely parallel before any future replacement plan.
 - Follow-up: D6 minimal replacement plan/audit only or STOP_FOR_AUDIT. No broad refactor from D5 alone.
 
+## BLOCK D6 - Minimal Replacement Plan Audit Only
+
+- Objective: inventory possible first replacement targets related to the D4 candidate and select exactly one future D7 path or stop.
+- Status: completed as docs/audit/plan-only in `docs/architecture/nodal-os-d6-minimal-replacement-plan-audit.md`.
+- Selected future D7: `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected D7 target: `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`.
+- Expected D7 scope: one tiny read-only proof replacement around duplicated common-boundary no-go evidence; no route, DI, command, Product Ledger writer, public/product, DB/provider/cloud/KMS/WORM or release/commercial behavior.
+- Do not touch in D7: Product Ledger latest-state/handoff/writer/path/route/UI source behavior, Pilot routes, service registration, command handlers, CI, release/commercial claims or existing hard-block authorities.
+- Tests required for D7: Core/Pilot/Solution build, Reentry Safety/Recipes focused tests, D4/D5 focused tests, Tier 1/CommonContracts/DesignOnly/SourceCandidate/NoRuntimeWiring/NoAuthority/NoDoubleTruth, Product Ledger Safety/Recipes and no-reference scans.
+- Risk: medium; a single allowed source reference can become broad adoption if the D5 guard is weakened instead of narrowed.
+- Benefit: first source-facing replacement path is outside Product Ledger runtime and can be rolled back cleanly.
+- Follow-up: D7 requires explicit Diego authorization.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

@@ -326,7 +326,19 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Non-goals preserved: no `src/` changes, no new source candidate, no D4 candidate modification, no existing contract replacement, no runtime/product wiring, no CI enforcement and no source bloat reduction.
 - Next step: D6 minimal replacement plan/audit only or STOP_FOR_AUDIT.
 
-### D6 - Migrate latest-state snapshot/manifest/reader/auxiliary
+### D6 - Minimal replacement plan/audit only
+
+- Objective: choose one future minimal replacement path related to the D4 source candidate without implementing it.
+- Implementation status: completed as docs/audit/plan-only in `NODAL_OS_BLOCK_D6_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY`.
+- Canonical D6 plan: `docs/architecture/nodal-os-d6-minimal-replacement-plan-audit.md`.
+- Actual files: docs/log updates only.
+- Selected future D7 recommendation: `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected D7 source target: `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`.
+- Selection rationale: the reentry packet is read-only, fixture-safe, non-route, non-DI, non-command, not Product Ledger runtime-facing and has existing Safety/Recipes evidence.
+- Non-goals preserved: no `src/` changes, no test changes, no CI changes, no source replacement, no source bloat reduction, no runtime/product wiring and no release/commercial readiness.
+- D7 remains unauthorized until explicit Diego GO.
+
+### Future later phase - Migrate latest-state snapshot/manifest/reader/auxiliary
 
 - Objective: migrate four latest-state roles to `LatestStateEvidence`.
 - Expected files: latest-state contracts and tests.
@@ -335,7 +347,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: keep old role-specific contracts as compatibility aliases.
 - Stop conditions: any active read precedence/latest pointer/product authority drift.
 
-### D7 - Migrate handoff draft variants
+### Future later phase - Migrate handoff draft variants
 
 - Objective: migrate local, test-jail and allowlisted workspace drafts to role/mode fields.
 - Expected files: handoff writer contracts and tests.
@@ -344,7 +356,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: old writers remain compatibility path.
 - Stop conditions: arbitrary path, overwrite, user-selected path, filesystem scan.
 
-### D8 - Merge DurableAuditTrail Minimal/Candidate
+### Future later phase - Merge DurableAuditTrail Minimal/Candidate
 
 - Objective: merge minimal/candidate into one evidence ledger result shape.
 - Expected files: Durable audit trail contracts/tests.
@@ -353,7 +365,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: retain old minimal/candidate wrappers.
 - Stop conditions: runtime/product enablement or authority claim.
 
-### D9 - Remove/deprecate old contracts
+### Future later phase - Remove/deprecate old contracts
 
 - Objective: only after compatibility and test equivalence, deprecate old names.
 - Expected files: source/test/docs with explicit GO.
@@ -362,7 +374,7 @@ Stop conditions: any need to edit existing Product Ledger behavior files, routes
 - Rollback: revert deletion/deprecation commit.
 - Stop conditions: coverage gap, missing old/new scanner coverage.
 
-### D10 - Audit no guardrail loss
+### Future later phase - Audit no guardrail loss
 
 - Objective: compare old and new guard coverage.
 - Expected files: audit report and matrix.

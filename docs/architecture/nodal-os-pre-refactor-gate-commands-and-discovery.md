@@ -372,3 +372,32 @@ Safe next blocks:
 - `STOP_FOR_AUDIT`: pause for external/read-only audit if more confidence is needed before a replacement plan.
 
 Do not proceed to source refactor, contract use, public/product exposure or release/commercial readiness from this document alone.
+
+## 18. D6 Minimal Replacement Plan Audit Note
+
+D6 completed as docs/audit/plan-only in `docs/architecture/nodal-os-d6-minimal-replacement-plan-audit.md`.
+
+Selected future D7:
+
+`AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`
+
+Selected D7 target:
+
+`src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+
+Required future D7 focused commands:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ReentryDecisionPacketReadOnly" -v:minimal
+dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --no-build --filter "FullyQualifiedName~ReentryDecisionPacketReadOnly" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~NodalOsCommonBoundaryClaimsCandidate" -v:minimal
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src/OneBrain.Pilot src/OneBrain.Cli .github azure-pipelines.yml
+rg -n "NodalOsCommonBoundaryClaimsCandidate" src -g "*.cs"
+```
+
+After a future D7, the second `rg` command may only show:
+
+- `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`
+- `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`
+
+D6 itself did not change `src/`, tests, CI, runtime/product behavior, source bloat or release/commercial status.

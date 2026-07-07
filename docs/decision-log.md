@@ -2001,3 +2001,17 @@
 - Non-goals preserved: no `src/` changes, D4 candidate modification, new source candidate, existing contract replacement, CI change, runtime/product wiring, public/product exposure, Production route activation, latest pointer, active read precedence, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust, release/commercial readiness or source bloat reduction.
 - Findings: P0=0, P1=0, P2=0; P3 future replacement work must not treat D4 as authority; P4 source bloat reduction remains 0%.
 - Next recommended macro-block: `NODAL_OS_BLOCK_D6_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY` or `STOP_FOR_AUDIT`.
+
+## NODAL_OS_BLOCK_D6_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_MINIMAL_REPLACEMENT_PLAN_AUDIT_ONLY_READY`.
+- Baseline: `53d9ff23fb8d85341c4e3122fda4708402851d74`.
+- Scope: docs/audit/plan-only minimal future replacement selection.
+- Created: `docs/architecture/nodal-os-d6-minimal-replacement-plan-audit.md`.
+- Selected future D7 recommendation: `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
+- Selected D7 target: `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`.
+- Rationale: read-only, fixture-safe, non-route, non-DI, non-command, not Product Ledger runtime-facing and covered by Safety/Recipes tests.
+- Deferred: latest-state, handoff, writer, route, UI, path readiness, static guard promotion and `/run` claim coherence source edits.
+- Non-goals preserved: no `src/` changes, tests, CI, replacement implementation, source bloat reduction, runtime/product wiring, public/product exposure, Production route activation, latest pointer, read precedence, product authority, command execution, provider/cloud/network/DB, KMS/WORM/external trust or release/commercial readiness.
+- Findings: P0=0, P1=0, P2=0; P3 D7 must not broaden the D5 allowed-reference guard; P4 source bloat reduction remains 0%.
+- Next recommended macro-block: `AUTHORIZE_NODAL_OS_BLOCK_D7_MINIMAL_REPLACEMENT_IMPLEMENTATION_NO_RUNTIME_CHANGE`.
