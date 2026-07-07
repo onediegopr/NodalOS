@@ -1,0 +1,366 @@
+# NODAL OS Model Contract Merge Design
+
+Date: 2026-07-07
+
+Mode: design-only / docs-only / audit-only. This block does not modify `src/`, rename classes, rename files, delete contracts, change tests, change scanners, change runtime behavior, activate features, expose product/public routes, introduce active read precedence, latest pointer, product authority, cloud/network/DB, KMS/WORM, release or commercial readiness.
+
+Baseline: Block A current architecture, Block B naming consolidation, Block C test tiering/static scan design and the full-system bloat audit.
+
+## 1. Executive Verdict
+
+NODAL OS has a strong local-only Product Ledger kernel hidden behind repeated contract families. The repeated shape is now clear: most Product Ledger and Approval nodes define their own `Decision`, `State`, `ActionKind`, `Blocker`, `Options`, `Request`, `Snapshot` or `Result`, even when the underlying semantics are the same: local/internal scope, fail-closed validation, no public/product exposure, no Production route, no command execution, no cloud/network/DB, no KMS/WORM and no release/commercial claim.
+
+Decision: `GO_WITH_FINDINGS_MODEL_CONTRACT_MERGE_DESIGN_READY`.
+
+The future merge should introduce shared contracts in parallel first, then migrate one low-risk capability, then role-based latest-state evidence and writer modes. The merge must preserve safety as data and tests, not just shorter names.
+
+Findings: P0 0, P1 0, P2 0 new. P3 risks remain around accidental guardrail loss in a future implementation. P4 risks remain around mixed old/new contract vocabulary during transition.
+
+## 2. Contract Bloat Diagnosis
+
+Read-only inventory confirms the bloat pattern flagged by the full-system audit:
+
+| Family | Representative files | Signal |
+| --- | --- | --- |
+| Approval decision and execution | `ProductLedgerLocalApprovalDecisionStateStore.cs`, `ProductLedgerLocalApprovedActionNoOpExecutor.cs`, `ProductLedgerLocalBoundedApprovedActionExecutor.cs` | Repeated decision/state/blocker/request/snapshot shapes. |
+| Handoff drafts | `ProductLedgerLocalApprovedHandoffReportDraftExecutor.cs`, `ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor.cs`, `ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.cs` | Same create-only writer semantics with different scope and output boundary. |
+| Latest-state evidence | `ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.cs`, `ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter.cs`, `ProductLedgerLocalDurableLatestStateReaderCandidateValidator.cs`, `ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter.cs` | Same evidence chain with different role, authority and precedence claims. |
+| Writer variants | `ProductLedgerPathWriterScaffoldDisabled.cs`, `ProductLedgerPathLocalTempWriterTestOnly.cs`, `ProductLedgerPathLocalOnlyActiveWriter.cs` | Same ledger writer family split by mode. |
+| Durable audit trail variants | `DurableAuditTrailAppendOnlyMinimal.cs`, `DurableAuditTrailAppendOnlyCandidate.cs` | Minimal/candidate names encode authority and maturity in separate contracts. |
+| Route/read-model DTOs | `ProductLedgerLocalDevRoutePreview.cs`, `ProductLedgerRenderableOperatorSurface.cs`, `ProductLedgerInternalOperatorUiPreview.cs`, `ProductLedgerOperatorSurfaceModel.cs`, `ProductLedgerOperatorSurfaceReadModelProvider.cs` | Multiple surface DTO layers describe the same local/internal operator state. |
+| Static guard/result models | `ProductLedgerPathReadinessScaffold.cs`, `ProductLedgerInternalCommandPreviewRouter.cs`, design-only protected classes | Repeated blocker and anti-capability result models. |
+
+Large Product Ledger nodes range from roughly 600 to 1000 lines and commonly define 7 to 10 local types. That is acceptable while proving boundaries, but expensive when every new boundary repeats the same guard shape.
+
+## 3. Inventory Summary
+
+| Current contract | File path | Purpose | Duplicated concepts | Policy encoded in name | Proposed target | Classification | Priority |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `ProductLedgerLocalApprovalDecisionSnapshot` | `src/OneBrain.Core/Approval/ProductLedgerLocalApprovalDecisionStateStore.cs` | Persist approval decision state | decision, state, blockers, evidence refs | Local | `LocalOnlyResult<ApprovalDecision>` + `BoundaryClaims` | merge | High |
+| `ProductLedgerLocalApprovedActionExecutionSnapshot` | `src/OneBrain.Core/Approval/ProductLedgerLocalApprovedActionNoOpExecutor.cs` | No-op approved action state | decision, state, blockers | Local, no-op | `LocalOnlyResult<ApprovedAction>` | merge | High |
+| `ProductLedgerLocalBoundedApprovedActionSnapshot` | `src/OneBrain.Core/Approval/ProductLedgerLocalBoundedApprovedActionExecutor.cs` | Bounded local marker | decision, state, blockers | Local, bounded | `LocalOnlyResult<ApprovedAction>` | merge | High |
+| `ProductLedgerLocalApprovedHandoffReportDraftSnapshot` | `src/OneBrain.Core/Approval/ProductLedgerLocalApprovedHandoffReportDraftExecutor.cs` | Local handoff draft create-only | request/options/snapshot/blockers | Local, draft | `LocalOnlyResult<HandoffDraft>` | merge | High |
+| `ProductLedgerLocalWorkspaceTestJailHandoffDraftSnapshot` | `src/OneBrain.Core/Approval/ProductLedgerLocalWorkspaceTestJailHandoffDraftExecutor.cs` | Workspace test-jail draft | request/options/snapshot/blockers | Local, test jail, create-only | `LocalOnlyResult<WorkspaceDraft>` | merge | High |
+| `ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftSnapshot` | `src/OneBrain.Core/Approval/ProductLedgerLocalUserWorkspaceAllowlistedHandoffDraftExecutor.cs` | Allowlisted workspace draft | request/options/snapshot/blockers | Local, allowlisted, create-only | `LocalOnlyResult<WorkspaceDraft>` | merge | High |
+| `ProductLedgerLocalOperatorSurfaceLatestStateSnapshotResult` | `src/OneBrain.Core/Approval/ProductLedgerLocalOperatorSurfaceLatestStateSnapshotExecutor.cs` | Latest-state snapshot evidence | action kind, result, payload, blockers | Local, snapshot, create-only | `LatestStateEvidence` | merge | High |
+| `ProductLedgerLocalOperatorSurfaceLatestStateManifestResult` | `src/OneBrain.Core/Approval/ProductLedgerLocalOperatorSurfaceLatestStateManifestWriter.cs` | Manifest evidence | action kind, result, payload, entry, blockers | Local, manifest, create-only | `LatestStateEvidence` | merge | High |
+| `ProductLedgerLocalDurableLatestStateReaderCandidateResult` | `src/OneBrain.Core/Approval/ProductLedgerLocalDurableLatestStateReaderCandidateValidator.cs` | Reader candidate validation | validation, result, blockers | Local, durable, candidate | `LatestStateEvidence` | merge | High |
+| `ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult` | `src/OneBrain.Core/Approval/ProductLedgerLocalDurableLatestStateAuxiliaryEvidencePresenter.cs` | Auxiliary non-authority evidence | validation, result, blockers | Local, auxiliary, not authority, not precedence | `LatestStateEvidence` | merge | High |
+| `DurableAuditTrailAppendOnlyMinimalResult` | `src/OneBrain.Core/Approval/DurableAuditTrailAppendOnlyMinimal.cs` | Append-only test ledger result | policy, request, entry, result, verification | Minimal, append-only | `EvidenceLedgerResult` | simplify | Medium |
+| `DurableAuditTrailAppendOnlyCandidateResult` | `src/OneBrain.Core/Approval/DurableAuditTrailAppendOnlyCandidate.cs` | Candidate append-only preview | gate, request, preview, counts, result | Candidate | `EvidenceLedgerResult` | simplify | Medium |
+| `ProductLedgerPathLocalOnlyAppendResult` | `src/OneBrain.Core/Approval/ProductLedgerPathLocalOnlyActiveWriter.cs` | Active local-only writer append | activation, append, entry, checkpoint | Local-only active | `EvidenceLedgerResult` + `WriterMode` | merge | High |
+| `ProductLedgerPathLocalTempWriterResult` | `src/OneBrain.Core/Approval/ProductLedgerPathLocalTempWriterTestOnly.cs` | Local-temp test writer | request, entry, checkpoint, result | Local temp test-only | `EvidenceLedgerResult` + `WriterMode` | merge | High |
+| `ProductLedgerPathWriterScaffoldResult` | `src/OneBrain.Core/Approval/ProductLedgerPathWriterScaffoldDisabled.cs` | Disabled writer scaffold | request/result/blockers | Disabled scaffold | `EvidenceLedgerResult` + `WriterMode=Disabled` | delete-candidate future | Medium |
+| `ProductLedgerLocalDevRoutePreviewResult` | `src/OneBrain.Core/Approval/ProductLedgerLocalDevRoutePreview.cs` | Local dev route preview | route decision, blockers, nested surface states | Local dev preview | `OperatorSurfaceReadModel` | merge | Medium |
+| `ProductLedgerRenderableOperatorSurfaceResult` | `src/OneBrain.Core/Approval/ProductLedgerRenderableOperatorSurface.cs` | Renderable surface result | request/model/result/blockers | Renderable surface | `OperatorSurfaceReadModel` | merge | Medium |
+| `ProductLedgerInternalOperatorUiPreviewResult` | `src/OneBrain.Core/Approval/ProductLedgerInternalOperatorUiPreview.cs` | Internal UI preview | header/sections/actions/severity | Internal preview | `OperatorSurfaceReadModel` | merge | Medium |
+| `ProductLedgerPathReadinessResult` | `src/OneBrain.Core/Approval/ProductLedgerPathReadinessScaffold.cs` | Readiness scaffold | risk previews, blockers | Readiness scaffold | `GuardEvaluationResult` | merge | Medium |
+| `ProductLedgerInternalCommandPreviewResult` | `src/OneBrain.Core/Approval/ProductLedgerInternalCommandPreviewRouter.cs` | Internal command preview | command kind, blockers, preview | Internal command preview | `GuardEvaluationResult` + `CapabilityMode` | freeze/merge | Medium |
+
+The full row-level merge map is in `docs/architecture/nodal-os-model-contract-merge-map.csv`.
+
+## 4. Common Contract Proposal
+
+This is a future design. Do not implement in this block.
+
+### `LocalOnlyResult<T>`
+
+Purpose: common envelope for Product Ledger local/internal operations.
+
+Suggested fields:
+
+- `success`
+- `state`
+- `value`
+- `blockers`
+- `warnings`
+- `evidenceRefs`
+- `classification`
+- `safeNextStep`
+- `claims`
+
+Notes:
+
+- `success=false` must be the default for null/malformed/unauthorized inputs.
+- `value` must not carry raw secrets, raw paths or unredacted payloads.
+- `claims` should contain the safety/authority posture instead of encoding it in names.
+
+### `BoundaryClaims`
+
+Purpose: one explicit safety posture record used by local-only results and guard scanners.
+
+Suggested fields:
+
+- `scope`
+- `authority`
+- `precedence`
+- `exposure`
+- `mutability`
+- `writeMode`
+- `environment`
+- `publicProductAllowed`
+- `productionAllowed`
+- `commandExecutionAllowed`
+- `cloudAllowed`
+- `databaseAllowed`
+- `kmsWormExternalTrustAllowed`
+- `releaseCommercialAllowed`
+- `pilotRunCoupled`
+
+Required invariant:
+
+Current Product Ledger local/internal results must set public/product, Production, command execution, cloud, DB, KMS/WORM, release/commercial and Pilot `/run` coupling to false unless a future explicit GO changes that boundary.
+
+### `Blocker`
+
+Purpose: common fail-closed reason model.
+
+Suggested fields:
+
+- `code`
+- `severity`
+- `message`
+- `source`
+- `evidenceRefs`
+- `category`
+
+Suggested categories:
+
+- `MissingInput`
+- `UnsafeInput`
+- `BoundaryRejected`
+- `AuthorityRejected`
+- `PrecedenceRejected`
+- `PathRejected`
+- `RedactionRejected`
+- `TamperDetected`
+- `ExternalCapabilityRejected`
+- `ReleaseCommercialRejected`
+
+### `EvidenceRef`
+
+Use existing canonical evidence reference concepts where possible. Do not create a parallel evidence reference hierarchy if `ProductLedgerOperatorSurfaceEvidenceRef`, string evidence refs or ledger entry refs already satisfy a local result.
+
+Target shape, if needed later:
+
+- `id`
+- `kind`
+- `hash`
+- `safeSummary`
+- `source`
+- `classification`
+
+### `WriterMode`
+
+Suggested values:
+
+- `ReadOnly`
+- `CreateOnly`
+- `AppendOnly`
+- `VersionedCreateOnly`
+- `Disabled`
+
+Mapping:
+
+- no-op and route previews: `ReadOnly`
+- handoff drafts and latest-state snapshot: `CreateOnly`
+- manifest: `VersionedCreateOnly`
+- ledger append: `AppendOnly`
+- disabled scaffold/public preview: `Disabled`
+
+### `EvidenceRole`
+
+Suggested values:
+
+- `Snapshot`
+- `Manifest`
+- `ReaderCandidate`
+- `Auxiliary`
+- `HandoffDraft`
+- `WorkspaceDraft`
+- `LedgerEntry`
+- `Checkpoint`
+
+### `LatestStateEvidence`
+
+Purpose: merge snapshot, manifest, reader candidate and auxiliary evidence under role and claims.
+
+Suggested fields:
+
+- `id`
+- `role`
+- `refs`
+- `hashes`
+- `staleState`
+- `tamperState`
+- `authority`
+- `precedence`
+- `evidenceRefs`
+- `classification`
+- `claims`
+- `safeSummary`
+
+Required current roles:
+
+- `Snapshot`: historical evidence only, create-only.
+- `Manifest`: versioned evidence index, not latest pointer.
+- `ReaderCandidate`: candidate only, not product authority.
+- `Auxiliary`: not authority, not precedence.
+
+### `GuardEvaluationResult`
+
+Purpose: common result for static guards, readiness scaffolds and command previews.
+
+Suggested fields:
+
+- `decision`
+- `blockers`
+- `warnings`
+- `claims`
+- `scannedScope`
+- `matchedTokens`
+- `allowedNegativeContexts`
+- `safeNextStep`
+
+This should align with the future `NodalOsStaticGuardCatalog` from Block C.
+
+## 5. Merge Map
+
+| Current family | Proposed target | Fields kept | Moved to `BoundaryClaims` | Moved to role/mode | Security implication | Tests required |
+| --- | --- | --- | --- | --- | --- | --- |
+| Approval decision snapshots | `LocalOnlyResult<ApprovalDecision>` | decision id, operator decision, candidate action, evidence refs | local/internal, no product, no command | none | approval remains state only, not execution | Tier 1 approval/Product Ledger safety |
+| Approved no-op/bounded action snapshots | `LocalOnlyResult<ApprovedAction>` | action id, candidate, state, evidence refs | no command/product/cloud | `CapabilityMode=NoOp/Bounded` | bounded marker must not become real destructive action | Tier 1 + route/DOM if surfaced |
+| Handoff draft snapshots | `LocalOnlyResult<HandoffDraft>` / `WorkspaceDraft` | draft id, path-safe relative refs, evidence hash | scope, mutability, no overwrite, no arbitrary path | `EvidenceRole=HandoffDraft/WorkspaceDraft`, `WriterMode=CreateOnly` | path confinement and create-only must stay explicit | Tier 1 path/redaction + Tier 3 corpus |
+| Latest-state snapshot/manifest | `LatestStateEvidence` | id, payload refs, hash, state, blockers | local/internal, no public/product | `EvidenceRole=Snapshot/Manifest`, `WriterMode=CreateOnly/VersionedCreateOnly` | manifest must not become latest pointer | Tier 1 latest-state + Tier 2 route |
+| Reader candidate/auxiliary evidence | `LatestStateEvidence` | validation state, refs, stale/tamper state | authority, precedence, no product | `EvidenceRole=ReaderCandidate/Auxiliary` | reader candidate not authority; auxiliary not precedence | Tier 1 not-authority/not-precedence |
+| DurableAuditTrail Minimal/Candidate | `EvidenceLedgerResult` | append result, verification, counts | authority/candidate status | `WriterMode=AppendOnly` | candidate must not imply product authority | Tier 1 durable/Product Ledger ledger tests |
+| Writer scaffold/temp/active | `EvidenceLedgerResult` | entry, checkpoint, hash, sequence | scope, environment, write permission | `WriterMode=Disabled/AppendOnly` | disabled/temp/active must remain distinguishable | Tier 1 writer/path + Tier 3 tamper |
+| Route/read-model DTOs | `OperatorSurfaceReadModel` | sections, actions, disabled actions, status | exposure, public/product, production | surface mode | operator route remains local/dev/internal | Tier 2 route/DOM |
+| Static guard/readiness DTOs | `GuardEvaluationResult` | blockers, warnings, tokens, status | public/product/cloud/release booleans | guard category | centralization must not weaken hard-fail scans | Tier 1 static guard + Tier 3 docs scan |
+
+## 6. Security Preservation Design
+
+| Invariant | Lives today | After merge | Tests required |
+| --- | --- | --- | --- |
+| Fail-closed null/malformed inputs | Per-node blockers and rejected states | `LocalOnlyResult<T>.success=false` plus `Blocker` | Tier 1 Product Ledger Safety and Approval Safety |
+| Redaction-before-persistence | `RedactionBeforePersistenceService`, metadata guard and writer tests | Keep service separate; only reference redaction state in common result | Redaction-focused Safety plus Product Ledger writer tests |
+| Path confinement | path validators, handoff draft writers, canonicalization tests | Keep validators separate; claims and blockers report path boundary | Tier 1 path canonicalization plus Tier 3 traversal corpus |
+| No overwrite/create-only | handoff, snapshot, manifest writers | `WriterMode=CreateOnly/VersionedCreateOnly`, explicit blocker category | Handoff/latest-state Safety and Recipes |
+| No authority/no precedence/no latest pointer | reader/auxiliary/latest-state contracts | `BoundaryClaims.authority`, `BoundaryClaims.precedence`, `LatestStateEvidence.role` | Latest-state not-authority/not-precedence tests |
+| No public/product or Production route | route/static scan tests and surface models | `BoundaryClaims.exposure`, `productionAllowed=false` | Route 200/404 and static no-public/no-Production scans |
+| Hash/checkpoint/tamper validation | active/temp writers and Durable audit trail | Keep kernel separate; report verification in `EvidenceLedgerResult` | Tier 1 writer/hash/checkpoint and Tier 3 tamper |
+| `/run` claim-coherence separation | docs, Pilot gate tests and Product Ledger route tests | `BoundaryClaims.pilotRunCoupled=false` for Product Ledger | `/run` claim-coherence guard and Product Ledger route tests |
+| No cloud/DB/KMS/WORM/release | per-node blockers and docs/static scans | common `BoundaryClaims` booleans plus central scanner | Tier 1 static guard and Tier 3 docs scan |
+
+Non-negotiable rule: do not merge a safety service into an envelope if that makes the safety service optional. Redaction, path canonicalization and hash/checkpoint verification remain real components, not just fields.
+
+## 7. Migration Phases
+
+### D1 - Add common contracts in parallel
+
+- Objective: add `LocalOnlyResult<T>`, `BoundaryClaims`, `Blocker`, `WriterMode`, `EvidenceRole` and `GuardEvaluationResult` without removing old contracts.
+- Expected files: future source under Core/Approval or a shared Core namespace, plus tests.
+- Risks: names look authoritative before adoption.
+- Required tests: Tier 1.
+- Rollback: remove new parallel contracts.
+- Stop conditions: behavior changes, public/product claim, scanner weakening.
+
+### D2 - Adapt one low-risk capability to common contracts
+
+- Objective: adapt a read-only or preview-only capability first, such as internal operator UI preview.
+- Expected files: target capability plus compatibility adapter.
+- Risks: route/render surface shifts unexpectedly.
+- Required tests: Tier 1 + Tier 2 route/DOM if surfaced.
+- Rollback: revert adapter.
+- Stop conditions: output claim drift, route behavior drift.
+
+### D3 - Migrate latest-state snapshot/manifest/reader/auxiliary
+
+- Objective: migrate four latest-state roles to `LatestStateEvidence`.
+- Expected files: latest-state contracts and tests.
+- Risks: manifest becomes latest pointer by accident; reader candidate becomes authority.
+- Required tests: Tier 1 latest-state + Tier 2 route + Tier 3 role corpus.
+- Rollback: keep old role-specific contracts as compatibility aliases.
+- Stop conditions: any active read precedence/latest pointer/product authority drift.
+
+### D4 - Migrate handoff draft variants
+
+- Objective: migrate local, test-jail and allowlisted workspace drafts to role/mode fields.
+- Expected files: handoff writer contracts and tests.
+- Risks: scope broadening or path boundary weakening.
+- Required tests: Tier 1 path/redaction + Tier 3 traversal corpus.
+- Rollback: old writers remain compatibility path.
+- Stop conditions: arbitrary path, overwrite, user-selected path, filesystem scan.
+
+### D5 - Merge DurableAuditTrail Minimal/Candidate
+
+- Objective: merge minimal/candidate into one evidence ledger result shape.
+- Expected files: Durable audit trail contracts/tests.
+- Risks: candidate status overclaims product authority.
+- Required tests: Tier 1 Durable/Product Ledger ledger tests.
+- Rollback: retain old minimal/candidate wrappers.
+- Stop conditions: runtime/product enablement or authority claim.
+
+### D6 - Remove/deprecate old contracts
+
+- Objective: only after compatibility and test equivalence, deprecate old names.
+- Expected files: source/test/docs with explicit GO.
+- Risks: lost grepability and audit history.
+- Required tests: Tier 1 + Product Ledger Safety/Recipes + selected Tier 3.
+- Rollback: revert deletion/deprecation commit.
+- Stop conditions: coverage gap, missing old/new scanner coverage.
+
+### D7 - Audit no guardrail loss
+
+- Objective: compare old and new guard coverage.
+- Expected files: audit report and matrix.
+- Risks: overconfidence from passing narrow tests.
+- Required tests: Tier 1 + Tier 2 + selected Tier 3.
+- Rollback: pause further merge.
+- Stop conditions: any P0/P1/P2, TRUE_RISK, public/product/release drift.
+
+## 8. What Not To Merge Yet
+
+Do not merge or hide these as generic fields in the first implementation block:
+
+- Product Ledger authority semantics.
+- `RedactionBeforePersistenceService`.
+- Path canonicalization validators.
+- Hash-chain/checkpoint kernel.
+- `/run` and Pilot runtime execution boundary.
+- ChromeLab/Browser/OCR/WCU tracks.
+- Release/commercial docs.
+- Public/product gates.
+- Active read precedence and latest pointer.
+- Product read-model authority.
+
+These are load-bearing boundaries or separate runtime footprints. They may be referenced by shared claims, but not collapsed into vague generic status until dedicated design and tests prove no loss.
+
+## 9. Risks
+
+P3 risks:
+
+- Common envelopes can hide hard boundary facts if `BoundaryClaims` is optional.
+- Generic blockers can erase specific failure modes that current tests expect.
+- Role/mode fields can accidentally turn non-authority evidence into active authority if defaults are unsafe.
+- Compatibility aliases can leave two truth sources if not audited.
+
+P4 risks:
+
+- Old and new contracts will coexist for at least one migration phase.
+- Historical docs/tests will keep long names.
+- Scanner and test tier implementation must follow Block C before any deletion.
+
+Mitigations:
+
+- Add common contracts in parallel.
+- Default all claims to denied/fail-closed.
+- Keep old contracts until test equivalence is proven.
+- Require old-name and new-name static scans during transition.
+- Run Tier 1 for every source migration and Tier 2/Tier 3 for route/writer changes.
+
+## 10. Next Recommended Block
+
+`NODAL_OS_BLOCK_E_SOURCE_REFACTOR_READINESS_AUDIT_DESIGN_ONLY`.
+
+Reason: Blocks A-D now define current-state docs, naming, test tiering/static scan consolidation and contract merge design. The next safe step should be a readiness audit that checks whether an implementation GO can be scoped to one low-risk parallel-contract pilot. It should remain design/audit-only unless Diego explicitly authorizes source implementation.

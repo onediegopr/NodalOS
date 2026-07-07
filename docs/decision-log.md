@@ -31,6 +31,17 @@
 - Findings: P0 0, P1 0, P2 0; P3 3 coverage-loss/false-positive risks; P4 3 mixed-vocabulary and historical-doc allowlist risks.
 - Next recommended macro-block: `NODAL_OS_BLOCK_D_MODEL_CONTRACT_MERGE_DESIGN_ONLY`.
 
+## NODAL_OS_BLOCK_D_MODEL_CONTRACT_MERGE_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_MODEL_CONTRACT_MERGE_DESIGN_READY`.
+- Input HEAD: `07b06daa7faba6da648eba061c7083f3bd76b6e3`.
+- Scope: docs-only/design-only/audit-only model/contract merge planning. No source changes, contract implementation, class/file renames, contract deletion, test rewrite, scanner behavior change, feature activation, active read precedence, latest pointer, product authority, public/product exposure, Production route, broader workspace action, edit/update/delete, shell/subprocess, command execution, cloud/network/DB, KMS/WORM, release or commercial readiness.
+- Created docs: `docs/architecture/nodal-os-model-contract-merge-design.md` and `docs/architecture/nodal-os-model-contract-merge-map.csv`.
+- Contract canon: future source work should introduce common contracts in parallel first: `LocalOnlyResult<T>`, `BoundaryClaims`, `Blocker`, `WriterMode`, `EvidenceRole`, `LatestStateEvidence`, `EvidenceLedgerResult`, `OperatorSurfaceReadModel` and `GuardEvaluationResult`.
+- Security canon: redaction service, path canonicalization validators and hash-chain/checkpoint kernel remain load-bearing separate components; common envelopes may report their state but must not replace them.
+- Findings: P0 0, P1 0, P2 0; P3 4 future guardrail-loss risks; P4 3 mixed-contract-vocabulary risks.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E_SOURCE_REFACTOR_READINESS_AUDIT_DESIGN_ONLY`.
+
 ## NODAL_OS_BLOCK_A_DOCS_COMPACTION_AND_RUN_CLAIM_RECONCILIATION_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_BLOCK_A_DOCS_COMPACTION_AND_RUN_CLAIM_RECONCILIATION_READY`

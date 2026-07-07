@@ -29,11 +29,13 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK D - Model / Contract Merge Design-Only
 
 - Objective: design shared `LocalOnlyResult<T>`, `BoundaryClaims`, shared blockers and unified request/options/validation patterns.
-- Expected files: ADR/design doc and before/after LOC estimate.
+- Status: completed as design-only in `docs/architecture/nodal-os-model-contract-merge-design.md` and `docs/architecture/nodal-os-model-contract-merge-map.csv`.
+- Expected files: ADR/design doc and merge map.
 - Do not touch: source contracts yet.
 - Tests required: design guard only.
 - Risk: medium.
 - Benefit: prepares removal of contract explosion.
+- Follow-up: no common contract implementation, class rename or contract deletion until a separate GO runs Tier 1 plus focused Product Ledger Safety/Recipes.
 
 ## BLOCK E - Source Refactor Implementation (Future GO Only)
 
