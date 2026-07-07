@@ -18,11 +18,13 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK C - Test Tiering / Static Scan Consolidation
 
 - Objective: split required-smoke vs extended suites and centralize negative static scans.
+- Status: completed as design-only in `docs/architecture/nodal-os-test-tiering-and-static-scan-consolidation-design.md` and `docs/architecture/nodal-os-test-tiering-map.csv`.
 - Expected files: test governance doc, category matrix, scanner design.
 - Do not touch: source behavior, unique load-bearing tests.
 - Tests required: Safety build, Product Ledger Safety, Product Ledger Recipes.
 - Risk: medium; coverage loss if done carelessly.
 - Benefit: lower `TEST_NOISE`, faster feedback, less duplicated Safety/Recipes assertions.
+- Follow-up: no test deletion, assertion rewrite or static scan implementation change until a separate GO proves coverage equivalence.
 
 ## BLOCK D - Model / Contract Merge Design-Only
 

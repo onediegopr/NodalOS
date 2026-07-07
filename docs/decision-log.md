@@ -20,6 +20,17 @@
 - Findings: P0 0, P1 0, P2 0; P3 3 naming/test-route migration risks; P4 2 mixed-vocabulary/doc-link risks.
 - Next recommended macro-block: `NODAL_OS_BLOCK_C_TEST_TIERING_AND_STATIC_SCAN_CONSOLIDATION_DESIGN_ONLY`.
 
+## NODAL_OS_BLOCK_C_TEST_TIERING_AND_STATIC_SCAN_CONSOLIDATION_DESIGN_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_TEST_TIERING_STATIC_SCAN_CONSOLIDATION_DESIGN_READY`.
+- Input HEAD: `0b44485b91df7336cc6bac790c030e6166e8edd0`.
+- Scope: docs-only/design-only/audit-only/test-plan-only static guard design. No source changes, test deletion, test movement, assertion rewrite, static scan behavior change, CI/build behavior change, feature activation, active read precedence, latest pointer, product authority, public/product exposure, Production route, broader workspace action, edit/update/delete, shell/subprocess, command execution, cloud/network/DB, KMS/WORM, release or commercial readiness.
+- Created docs: `docs/architecture/nodal-os-test-tiering-and-static-scan-consolidation-design.md` and `docs/architecture/nodal-os-test-tiering-map.csv`.
+- Test canon: Tier 1 is required safety gate, Tier 2 is extended integration, Tier 3 is audit/property/corpus, Tier 4 is legacy/periodic. Product Ledger source refactors must keep Tier 1 and focused Product Ledger Safety/Recipes green before any future test movement.
+- Static scan canon: future consolidation should use a conceptual `NodalOsStaticGuardCatalog` with categories for runtime execution claims, public/product exposure, Production routes, durable authority, latest pointer, read precedence, command execution, shell/subprocess, cloud/network/DB, KMS/WORM/compliance, release/commercial, `/run` claim coherence, source activation and docs negative-claim allowlists.
+- Findings: P0 0, P1 0, P2 0; P3 3 coverage-loss/false-positive risks; P4 3 mixed-vocabulary and historical-doc allowlist risks.
+- Next recommended macro-block: `NODAL_OS_BLOCK_D_MODEL_CONTRACT_MERGE_DESIGN_ONLY`.
+
 ## NODAL_OS_BLOCK_A_DOCS_COMPACTION_AND_RUN_CLAIM_RECONCILIATION_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_BLOCK_A_DOCS_COMPACTION_AND_RUN_CLAIM_RECONCILIATION_READY`
