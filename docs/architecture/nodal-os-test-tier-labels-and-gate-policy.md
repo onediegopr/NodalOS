@@ -484,3 +484,21 @@ Canonical E2 doc:
 E2 does not add labels, move tests, delete tests, weaken assertions or change CI filters. It records that the existing Product Ledger focused gates, the current partial `NodalOsTier1Safety` surface, `PublicProductBlock`, `ProductionRouteBlock`, `NoRuntimeWiring`, `NoAuthority`, `NoDoubleTruth` and `NodalOsStaticGuardCatalogTests` remain the relevant manual evidence surface.
 
 Important boundary: Product Ledger Safety/Recipes passing evidence does not mean public/product readiness, Production route readiness, latest pointer readiness, read precedence readiness, product authority or release/commercial readiness. CI enforcement remains `0%`, and Tier 1 remains manual/discovery-only.
+
+## 22. E5 Product Ledger Local/Dev Canon Guard
+
+E5 adds `ProductLedgerLocalDevCanonGuardTests` as a focused Safety guard over:
+
+- `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md`
+- `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`
+- `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md`
+
+The class carries additive metadata only: `NodalOsTier1Safety`, `ProductLedger`, `DesignOnly`, `NoRuntimeWiring`, `NoAuthority`, `NoDoubleTruth`, `PublicProductBlock`, `ProductionRouteBlock` and `ReleaseCommercialBlock`.
+
+The focused run is:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ProductLedgerLocalDevCanonGuardTests" -v:minimal
+```
+
+E5 does not add CI enforcement, does not move or delete tests, does not weaken assertions and does not change runtime/product capability. Passing this guard means only that the current Product Ledger local/dev canon still carries the required blocked-state wording. It is not product readiness.

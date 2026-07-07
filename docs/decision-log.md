@@ -2202,3 +2202,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 documentation surface remains large and lower-risk docs may still benefit from future links; P4 QA JSON/old ADRs preserve old percentages by design.
 - Next recommended macro-block: `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`.
 - Authorization note: E4 recommends E5 but does not authorize starting E5.
+
+## NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_READY`.
+- Baseline: `037f383bb312512ac7316c8f58c391bb4453d933`.
+- Scope: test-only/docs-only Product Ledger local/dev canon guard. No `src/`, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Test added: `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`.
+- Docs updated: Product Ledger canon, E3 plan, E4 cross-link index, gate command docs, test tier policy, simplification backlog and handoff log.
+- Guarded claims: local/dev evidence-only status, blocked runtime/product/public/product/Production/latest-pointer/read-precedence/product-authority/external-trust/release posture, Safety/Recipes authority and manual/discovery-only Tier 1 gates.
+- Current posture: Product Ledger local/dev readiness `85%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 documentation surface remains large and the next audit packet should preserve historical/current authority separation; P4 historical docs still preserve old percentages by design.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY`.
+- Authorization note: E5 recommends E6 but does not authorize starting E6.

@@ -22,6 +22,8 @@ The local/dev line includes persisted approval state, bounded local evidence wri
 
 This canon reconciles the distributed Product Ledger backlog after E1. It does not implement runtime behavior, modify source, modify tests, create a latest pointer, activate read precedence, create product authority, open public/product routes, open Production routes or change CI.
 
+This document is the current Product Ledger local/dev canon for blocked-state interpretation until a later authorized canon replaces it.
+
 ## 2. Implemented Local/Dev Evidence
 
 Implemented or previously validated as local/dev evidence:
@@ -70,6 +72,8 @@ The current Product Ledger evidence surface is protected by manual/discovery-onl
 - Local/dev route, DOM, read-model, visual QA, diagnostics and operator-surface checks.
 
 These tests are evidence, not CI enforcement. Passing them does not mean public/product readiness.
+
+Safety/Recipes remain the authoritative evidence surface for Product Ledger local/dev, together with the manual/discovery-only Tier 1 guard commands listed below.
 
 ## 5. Docs-Only Evidence
 
@@ -150,15 +154,17 @@ These commands are manual/discovery-only. They are not CI enforcement, and they 
 
 ## 10. Test Change Decision
 
-`TEST_CHANGE_NOT_NEEDED`.
+`TEST_CHANGE_ADDED_IN_E5`.
 
-E2 did not add tests because the existing Product Ledger focused gates, hard-block labels, no-runtime/no-authority/no-double-truth checks and static guard catalog already protect the blocked frontiers that E2 documents. If a future guard is desired, use `NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_CANONICAL_BACKLOG_GUARD_TEST_ONLY`.
+E2 did not add tests because the existing Product Ledger focused gates, hard-block labels, no-runtime/no-authority/no-double-truth checks and static guard catalog already protected the blocked frontiers that E2 documented.
+
+E5 later added `ProductLedgerLocalDevCanonGuardTests` as a focused Safety guard over this canon, the E3 next-action plan and the E4 stale-entrypoint cross-link index. This guard is test-only/manual-discovery evidence. It does not create CI enforcement, does not make Tier 1 CI-enforced, does not make Product Ledger product-ready and does not change runtime/product behavior.
 
 ## 11. Pending Work
 
 Pending safe work before any product/runtime move:
 
-- Execute the E4-selected next block: `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`.
+- Execute the E5-selected next block: `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY`.
 - Continue compacting lower-risk repeated QA/handoff entrypoints while preserving history.
 - Merge latest-state snapshot/manifest/reader/auxiliary evidence roles into a shared `LatestStateEvidence` design.
 - Merge writer variants under a `WriterMode` design without changing product behavior.
@@ -169,6 +175,8 @@ Pending safe work before any product/runtime move:
 E3 selects stale-doc cross-link cleanup because older Product Ledger QA/handoff/roadmap entrypoints remain the clearest drift risk after the canon. E3 does not authorize E4.
 
 E4 cross-linked the highest-risk historical Product Ledger entrypoints and selected a small canon guard test-only block as the next safe step. E4 does not authorize E5.
+
+E5 added a focused Safety canon guard and selected an external audit packet read-only block as the next safe step. E5 does not authorize E6.
 
 ## 12. Findings
 

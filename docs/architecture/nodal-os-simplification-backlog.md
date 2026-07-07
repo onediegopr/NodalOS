@@ -358,6 +358,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: Product Ledger local/dev remains evidence only; runtime/product enablement, CI enforcement and release/commercial remain `0%`; public/product, Production route, latest pointer, read precedence and product authority remain blocked.
 - Follow-up: `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`. E4 recommends but does not authorize E5.
 
+## BLOCK E5 - Product Ledger Local/Dev Canon Guard
+
+- Objective: add a focused test-only guard that protects the E2 Product Ledger local/dev canon, E3 plan and E4 stale-entrypoint cross-link index from future overclaim drift.
+- Status: completed as test-only/docs-only/no-runtime-change in `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_READY`.
+- Source changed: none under `src/`.
+- Tests changed: one new Safety test class; no tests moved, deleted or weakened.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Guarded posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Current authority: E2 canon plus E3 plan, with E4 high-risk historical entrypoint links.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY`.
+- Authorization note: E5 recommends E6 but does not authorize starting E6.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

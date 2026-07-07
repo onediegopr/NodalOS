@@ -73,6 +73,8 @@ Rationale: E4 found many historical entrypoints and cross-linked the highest-ris
 
 E4 recommends but does not authorize E5.
 
+E5 follow-up status: `ProductLedgerLocalDevCanonGuardTests` now guards this index, the E2 canon and the E3 plan as manual/discovery-only Safety evidence. E5 does not change runtime/product, CI, Tier 1 enforcement, public/product readiness, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial posture. E5 selects `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY` as the next recommended safe block but does not authorize E6.
+
 ## 7. Validation Result
 
 Validation result: PASS.

@@ -26,6 +26,8 @@ E3 does not authorize E4. E3 only selects the safest next recommended block.
 
 E4 later cross-linked selected stale Product Ledger entrypoints and recommended `NODAL_OS_BLOCK_E5_PRODUCT_LEDGER_LOCAL_DEV_CANON_GUARD_TEST_ONLY`. E4 does not authorize E5.
 
+E5 later added focused manual/discovery-only Safety guard tests for the Product Ledger local/dev canon and selected `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY`. E5 does not authorize E6, and it does not change runtime/product, CI, Tier 1 enforcement or product readiness.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.

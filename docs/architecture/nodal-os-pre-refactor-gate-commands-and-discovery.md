@@ -736,3 +736,28 @@ dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build 
 ```
 
 E2 adds no CI enforcement, no test labels and no new Product Ledger source behavior. Passing these commands is safety evidence only; it is not public/product readiness. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.
+
+## 29. E5 Product Ledger Local/Dev Canon Guard
+
+E5 adds one focused Safety test class:
+
+`tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`
+
+Manual/discovery-only focused command:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~ProductLedgerLocalDevCanonGuardTests" -v:minimal
+```
+
+Related manual/discovery category commands:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ProductLedger" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NodalOsTier1Safety" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoRuntimeWiring" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoAuthority" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoDoubleTruth" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ReleaseCommercialBlock" -v:minimal
+```
+
+These commands are not CI enforcement. Passing the E5 canon guard does not mean Product Ledger product readiness, public/product readiness, Production route readiness, latest pointer readiness, read precedence readiness, product authority or release/commercial readiness. Runtime/product enablement remains `0%`; CI enforcement remains `0%`; Tier 1 remains manual/discovery-only.
