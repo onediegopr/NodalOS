@@ -710,3 +710,29 @@ E1 changes no commands, tests, CI, source, scanner behavior or runtime/product b
 E1 selected `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY` because the Product Ledger local/dev backlog is now the largest safe main-roadmap ordering problem after D-series closure.
 
 Tier 1 remains manual/discovery-only. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`. E1 recommends E2 but does not authorize E2.
+
+## 28. E2 Product Ledger Local/Dev Backlog Canon Note
+
+E2 completed as docs-only/backlog-reconciliation-only in `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY`.
+
+Canonical E2 doc:
+
+```powershell
+docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md
+```
+
+Product Ledger local/dev gate commands remain manual/discovery-only:
+
+```powershell
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "ProductLedger" -v:minimal
+dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --no-build --filter "ProductLedger" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NodalOsTier1Safety" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=PublicProductBlock" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=ProductionRouteBlock" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoRuntimeWiring" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoAuthority" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "TestCategory=NoDoubleTruth" -v:minimal
+dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build --filter "FullyQualifiedName~NodalOsStaticGuardCatalogTests" -v:minimal
+```
+
+E2 adds no CI enforcement, no test labels and no new Product Ledger source behavior. Passing these commands is safety evidence only; it is not public/product readiness. Runtime/product enablement remains `0%`. CI enforcement remains `0%`. Release/commercial remains `0% / NO-GO`.

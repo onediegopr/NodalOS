@@ -2164,3 +2164,15 @@
 - Findings: P0=0, P1=0, P2=0; P3 Product Ledger local/dev backlog is the largest safe main-roadmap reconciliation lane; P4 E1 must not be treated as E2 authorization.
 - Next recommended macro-block: `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY`.
 - Authorization note: E1 recommends E2 but does not authorize starting E2.
+
+## NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_BACKLOG_RECONCILIATION_READY`.
+- Baseline: `929b152e14b703663838bd2ca3107a3501179246`.
+- Scope: docs-only/backlog-reconciliation-only Product Ledger local/dev canon. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Canon doc added: `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md`.
+- Reconciled families: path/canonicalization, local approval/execution, handoff drafts, latest-state evidence, operator surface/local-dev UI, runtime local-only/internal evidence, public/product blocker maps, redaction/retention, integration/property and broad user-workspace boundary docs.
+- Test decision: `TEST_CHANGE_NOT_NEEDED`; existing Product Ledger Safety/Recipes, Tier 1, ProductLedger label, no-runtime, no-authority, no-double-truth, public/product, Production route and static guard evidence protect the blocked frontiers documented by E2.
+- Current posture: Product Ledger local/dev readiness `80%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 distributed Product Ledger backlog and manual-only gate evidence remain; P4 old handoff/QA files can still be misread without the canon.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_DOCS_ONLY`.

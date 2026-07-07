@@ -320,6 +320,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Not authorized: broad source refactor, runtime/product enablement, public/product route, Production route, latest pointer, read precedence, product authority, CI enforcement or release/commercial readiness.
 - Follow-up: `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY`. E1 recommends but does not authorize E2.
 
+## BLOCK E2 - Product Ledger Local/Dev Safety Backlog Reconciliation
+
+- Objective: reconcile distributed Product Ledger local/dev backlog artifacts into one current canon before any new capability, runtime/product or source lane.
+- Status: completed as docs-only/backlog-reconciliation-only in `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_BACKLOG_RECONCILIATION_READY`.
+- Source changed: none.
+- Tests changed: none; `TEST_CHANGE_NOT_NEEDED` because existing Product Ledger Safety/Recipes, Tier 1, no-runtime, no-authority, no-double-truth and static guards already protect the blocked frontiers documented by E2.
+- CI changed: none.
+- Reconciled: path/canonicalization, local approval/execution, handoff draft boundaries, latest-state evidence, operator surface/local-dev UI, runtime local-only/internal evidence, public/product blocker maps, redaction/retention, integration/property and broad user-workspace boundary docs.
+- Current posture: Product Ledger local/dev is evidence only; public/product, Production route, latest pointer, read precedence, product authority, runtime/product enablement, CI enforcement and release/commercial remain blocked or `0%`.
+- Follow-up: `NODAL_OS_BLOCK_E3_PRODUCT_LEDGER_LOCAL_DEV_NEXT_ACTION_PLAN_DOCS_ONLY`.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

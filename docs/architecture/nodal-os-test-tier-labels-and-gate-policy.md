@@ -472,3 +472,15 @@ Additional labels used by D11:
 D11 Tier 1 impact: it adds twelve focused tests proving the D10 command/execution exception remains exact to `ApprovalExecutionDesignOnlyProtected.cs`, the D7 and D10 exceptions remain independent, candidate references remain limited to D4/D7/D10 plus Safety tests/docs/logs, D1/D2 remain test/design-only, D4 remains non-authoritative, and D7+D10 do not create common authority by accumulation.
 
 D11 also records the bloat trajectory: source bloat reduction remains `0%`, while cumulative D7+D10 source impact remains net `+140` lines. D11 does not move tests, delete tests, weaken assertions, change CI filters, change `src/`, implement a third replacement or enable runtime/product behavior. Tier 1 remains manual/discovery-only and partial. Product Ledger Safety/Recipes remain required.
+
+## 21. E2 Product Ledger Local/Dev Backlog Canon
+
+Implementation status: completed as docs-only/backlog-reconciliation-only in `NODAL_OS_BLOCK_E2_PRODUCT_LEDGER_LOCAL_DEV_SAFETY_BACKLOG_RECONCILIATION_DOCS_TEST_ONLY`.
+
+Canonical E2 doc:
+
+`docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md`
+
+E2 does not add labels, move tests, delete tests, weaken assertions or change CI filters. It records that the existing Product Ledger focused gates, the current partial `NodalOsTier1Safety` surface, `PublicProductBlock`, `ProductionRouteBlock`, `NoRuntimeWiring`, `NoAuthority`, `NoDoubleTruth` and `NodalOsStaticGuardCatalogTests` remain the relevant manual evidence surface.
+
+Important boundary: Product Ledger Safety/Recipes passing evidence does not mean public/product readiness, Production route readiness, latest pointer readiness, read precedence readiness, product authority or release/commercial readiness. CI enforcement remains `0%`, and Tier 1 remains manual/discovery-only.
