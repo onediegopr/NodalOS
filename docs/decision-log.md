@@ -9,6 +9,16 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_BLOCK_A_DOCS_COMPACTION_AND_RUN_CLAIM_RECONCILIATION_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_BLOCK_A_DOCS_COMPACTION_AND_RUN_CLAIM_RECONCILIATION_READY`
+- Input HEAD: `9610ae01fb721a17374845d862ed78d2d78eedfd`.
+- Scope: docs-only/audit-only/index-only compaction plus `/run` claim-coherence reconciliation. No source behavior, runtime route, refactor, deletion, feature, public/product or release/commercial change.
+- Created canonical docs: current local/internal architecture, documentation inventory/compaction map, ADR canonical index, QA log, handoff log, documentation governance, simplification backlog, `/run` claim reconciliation and Block A scorecard.
+- Claim canon: Product Ledger approval/snapshot/manifest/reader/auxiliary evidence path remains no-command-execution. Pilot `/run` is not `ZeroReadOnly`; it is a separate gated allowlisted local execution path when enabled under Pilot gates. Unscoped repo-wide `NO_RUNTIME_NO_EXECUTION` is not current canonical wording.
+- Findings: P0 0, P1 0 new, P2 0 new; existing claim-coherence risk is reconciled in docs but remains a source/product wording risk if future productization exposes `/run`.
+- Next recommended macro-block: `NODAL_OS_BLOCK_B_NAMING_CONSOLIDATION_DESIGN_ONLY`.
+
 ## NODAL_OS_GLOBAL_SAFETY_CLAIM_RECONCILIATION_AND_PRODUCT_LEDGER_WRITER_CONCURRENCY_HARDENING
 
 - Decision target: `GO_WITH_FINDINGS_GLOBAL_SAFETY_CLAIM_RECONCILIATION_AND_PRODUCT_LEDGER_WRITER_CONCURRENCY_HARDENING_READY`
