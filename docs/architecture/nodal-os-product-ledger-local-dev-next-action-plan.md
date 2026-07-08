@@ -50,6 +50,8 @@ E15 later added `docs/audit/product-ledger-local-dev/no-authority-static-scan-co
 
 E16 later added `docs/audit/product-ledger-local-dev/internal-packet-closeout-e2-e15.md` and selected `STOP_AFTER_PRODUCT_LEDGER_LOCAL_DEV_INTERNAL_PACKET_CLOSEOUT_NO_PRODUCT_AUTHORITY`. E16 closes the internal local/dev E2-E15 packet only and recommends `PAUSE_PRODUCT_LEDGER_LOCAL_DEV_LINE_AND_RETURN_TO_ROADMAP_MAIN`. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
 
+E17 later added `docs/architecture/nodal-os-e17-return-to-main-roadmap-after-product-ledger-closeout.md` and selected `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK`. E17 pauses the Product Ledger local/dev subline and returns selection to the main roadmap. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.

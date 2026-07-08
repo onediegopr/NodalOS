@@ -540,6 +540,23 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_AFTER_PRODUCT_LEDGER_LOCAL_DEV_INTERNAL_PACKET_CLOSEOUT_NO_PRODUCT_AUTHORITY`.
 - Authorization note: E16 closes the internal packet only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK E17 - Return To Main Roadmap After Product Ledger Closeout
+
+- Objective: pause the Product Ledger local/dev subline after E16 and return next-block selection to the main roadmap.
+- Status: completed as docs-only/read-only in `docs/architecture/nodal-os-e17-return-to-main-roadmap-after-product-ledger-closeout.md`.
+- Decision: `GO_WITH_FINDINGS_RETURN_TO_MAIN_ROADMAP_READY`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_LINE_PAUSED_RETURNED_TO_MAIN_ROADMAP_NO_PRODUCT_AUTHORITY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Product Ledger local/dev line: paused unless a concrete new finding or separate explicit operator authorization appears.
+- Recommended next macro-block: `NODAL_OS_MAIN_ROADMAP_SOURCE_REFACTOR_READINESS_REFRESH_AUDIT_ONLY`.
+- Why: Product Ledger local/dev is closed enough; main-roadmap source-refactor readiness should be refreshed read-only before selecting any implementation lane.
+- Findings: P0=0, P1=0, P2=0; P3 Product Ledger closeout can still create documentation churn if overused and main-roadmap readiness may be stale after D/E series; P4 repeated negative wording remains by design.
+- Current posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK`.
+- Authorization note: E17 returns to the main roadmap only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

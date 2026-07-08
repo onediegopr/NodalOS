@@ -2372,3 +2372,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 internal/operator-only continuation remains internal evidence, no external response is recorded, manual gates are not CI enforcement and future gates require separate explicit authorization; P4 repeated negative wording remains by design.
 - Next recommended macro-block: `STOP_AFTER_PRODUCT_LEDGER_LOCAL_DEV_INTERNAL_PACKET_CLOSEOUT_NO_PRODUCT_AUTHORITY`.
 - Authorization note: E16 closes the internal local/dev packet only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## NODAL_OS_BLOCK_E17_RETURN_TO_ROADMAP_MAIN_AFTER_PRODUCT_LEDGER_LOCAL_DEV_CLOSEOUT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_RETURN_TO_MAIN_ROADMAP_READY`.
+- Baseline: `4761f4deeab8f5145948233d079130285f031c62`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_LINE_PAUSED_RETURNED_TO_MAIN_ROADMAP_NO_PRODUCT_AUTHORITY`.
+- Scope: docs-only/read-only roadmap return after Product Ledger local/dev E16 closeout. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Roadmap return added: `docs/architecture/nodal-os-e17-return-to-main-roadmap-after-product-ledger-closeout.md`.
+- Confirmed: Product Ledger local/dev is internally closed enough for its current documentation/test-only purpose and should not continue by default without a concrete new finding or separate explicit operator authorization.
+- Recommended next macro-block: `NODAL_OS_MAIN_ROADMAP_SOURCE_REFACTOR_READINESS_REFRESH_AUDIT_ONLY`.
+- Current posture: Product Ledger local/dev readiness `92%`, audit/operator-review readiness `99%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 Product Ledger closeout can still be overused as documentation churn and main-roadmap source-refactor evidence may be stale after D/E series; P4 repeated negative wording remains by design.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK`.
+- Authorization note: E17 returns to the main roadmap only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
