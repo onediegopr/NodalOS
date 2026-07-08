@@ -27,6 +27,16 @@
 - Boundary: no `src/`, no tests, no broad docs scan, no CI/workflows, no runtime/product, no external audit approval claim, no DB/cloud/network/provider enablement, no KMS/WORM guarantee/external trust, no release/commercial.
 - Findings: P0 0, P1 0, P2 0; P3 further Static Guard expansion risks false-positive churn and runner/build commands need explicit stable invocation; P4 historical SG next-step records remain traceability only.
 
+## NODAL_OS_STATIC_GUARD_LINE_CLOSEOUT_AND_RETURN_TO_MAIN_ROADMAP_AUDIT_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_STATIC_GUARD_LINE_CLOSEOUT_READY`.
+- Input HEAD: `5cdeae943c26c1048aaab9fb5aa32534bb981368`.
+- Scope: read-only/docs-only/audit-only closeout of Static Guard Catalog / Forbidden Phrase Guard line and return to main roadmap.
+- Closeout: `STATIC_GUARD_LINE_CLOSED_RETURNED_TO_MAIN_ROADMAP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Selection: `NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`.
+- Boundary: no `src/`, no tests, no broad docs scan, no CI/workflows, no runtime/product, no external audit approval claim, no DB/cloud/network/provider enablement, no KMS/WORM guarantee/external trust, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 further guard expansion risks churn/false positives and runner/build commands need explicit stable invocation; P4 Static Guard does not replace Product Ledger Safety/Recipes.
+
 ## NODAL_OS_BLOCK_B_NAMING_CONSOLIDATION_DESIGN_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_NAMING_CONSOLIDATION_DESIGN_READY`.

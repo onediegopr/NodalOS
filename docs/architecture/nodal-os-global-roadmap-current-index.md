@@ -189,6 +189,18 @@ Selected next gate:
 
 `NODAL_OS_STATIC_GUARD_LINE_CLOSEOUT_AND_RETURN_TO_MAIN_ROADMAP_AUDIT_ONLY`
 
+Static Guard line closeout:
+
+`docs/architecture/nodal-os-static-guard-line-closeout-and-return-to-main-roadmap.md`
+
+Resulting state:
+
+`STATIC_GUARD_LINE_CLOSED_RETURNED_TO_MAIN_ROADMAP_NO_RUNTIME_PRODUCT_AUTHORITY`
+
+Selected main-roadmap next selector:
+
+`NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`
+
 ## Findings
 
 P0: 0.

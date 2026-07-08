@@ -975,3 +975,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 further guard expansion risks false-positive churn and default runner/build commands can hang locally; P4 closeout should preserve historical SG recommendations as traceability only.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES`.
 - Authorization note: SG9 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## BLOCK SG10 - Static Guard Line Closeout And Return To Main Roadmap
+
+- Objective: close the Static Guard Catalog / Forbidden Phrase Guard line and return focus to the main roadmap without implementation.
+- Status: completed as docs-only/read-only/audit-only closeout in `docs/architecture/nodal-os-static-guard-line-closeout-and-return-to-main-roadmap.md`.
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_LINE_CLOSEOUT_READY`.
+- Resulting state: `STATIC_GUARD_LINE_CLOSED_RETURNED_TO_MAIN_ROADMAP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Selected next macro-block: `MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Static Guard Catalog readiness `96%`; forbidden phrase expansion readiness `86%`; global roadmap readiness `78%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 further guard expansion risks churn/false positives and default runner/build commands can hang locally; P4 Static Guard remains useful but does not replace Product Ledger Safety/Recipes.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK_AFTER_STATIC_GUARD_CLOSEOUT`.
+- Authorization note: SG10 closes and selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
