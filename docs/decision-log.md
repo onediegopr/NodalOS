@@ -2443,3 +2443,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 D7 has likely higher line-reduction value than D10 now but needs audit-only selection because it is older/canonical evidence; P4 pausing source-refactor is safe but leaves D7 unresolved.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_POST_D13_SOURCE_REFACTOR_NEXT_GATE`.
 - Authorization note: this block selects the next gate only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_D7_PROOF_CHAIN_MICRO_REDUCTION_SELECTION_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_D7_PROOF_CHAIN_MICRO_REDUCTION_SCOPE_SELECTED_READY`.
+- Baseline: `2a08b8888dfe4ad5c350a0dd89b653bd57ec3052`.
+- Resulting state: `D7_PROOF_CHAIN_MICRO_REDUCTION_SCOPE_SELECTED_NO_IMPLEMENTATION`.
+- Scope: docs-only/read-only/audit-only D7 micro-reduction selection. No `src/`, tests, CI, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Selection added: `docs/architecture/nodal-os-d7-proof-chain-micro-reduction-selection.md`.
+- Selected future micro-target: `D7_EXPECTED_FAIL_CLOSED_CLAIMS_TABLE`.
+- Recommended next implementation block: `NODAL_OS_D7_PROOF_CHAIN_SELECTED_MICRO_REDUCTION_TEST_ONLY`, requiring separate explicit operator authorization.
+- Current posture: D7 selected-target implementation readiness `76%`; source-refactor readiness `75%`; broad source simplification readiness `45%`; static guard catalog readiness `92%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 D7 can likely mirror the D13/D10 expected-claims-table pattern but must preserve the exact thirteen fail-closed claim/state pairs and audit discoverability; P4 alias-only cleanup is too small.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_D7_SELECTED_MICRO_REDUCTION_IMPLEMENTATION`.
+- Authorization note: this block selects the D7 scope only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.

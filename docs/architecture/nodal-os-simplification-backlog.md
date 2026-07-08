@@ -620,6 +620,23 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_POST_D13_SOURCE_REFACTOR_NEXT_GATE`.
 - Authorization note: SR4 selects the next gate only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR5 - D7 Proof Chain Micro Reduction Selection
+
+- Objective: inspect the D7 proof-chain target and select one future micro-reduction scope without implementing it.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-d7-proof-chain-micro-reduction-selection.md`.
+- Decision: `GO_WITH_FINDINGS_D7_PROOF_CHAIN_MICRO_REDUCTION_SCOPE_SELECTED_READY`.
+- Resulting state: `D7_PROOF_CHAIN_MICRO_REDUCTION_SCOPE_SELECTED_NO_IMPLEMENTATION`.
+- Selected future micro-target: `D7_EXPECTED_FAIL_CLOSED_CLAIMS_TABLE`.
+- Recommended next implementation block: `NODAL_OS_D7_PROOF_CHAIN_SELECTED_MICRO_REDUCTION_TEST_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Not selected: alias-only cleanup, shared helper extraction, D7 presenter/label cleanup, docs stale-link cleanup and pause/no-safe-target.
+- Findings: P0=0, P1=0, P2=0; P3 D7 has a concrete local proof-chain reduction opportunity but must preserve the exact thirteen fail-closed claim/state pairs; P4 alias-only cleanup is safe but too small.
+- Current posture: D7 selected-target implementation readiness `76%`; source-refactor readiness `75%`; broad source simplification readiness `45%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_D7_SELECTED_MICRO_REDUCTION_IMPLEMENTATION`.
+- Authorization note: SR5 selects the D7 scope only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
