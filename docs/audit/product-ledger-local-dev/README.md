@@ -33,6 +33,7 @@ Current authority entrypoints:
 - `external-review-handoff.md`
 - `operator-submission-packet.md`
 - `external-review-response-intake.md`
+- `internal-continuation-gate-reconciliation.md`
 
 ## Reviewer Rule
 
@@ -63,3 +64,9 @@ E12 operator decision: `CLOSE_EXTERNAL_REVIEW_WAIT_WITHOUT_EXTERNAL_RESPONSE_AND
 E12 resulting state: `EXTERNAL_REVIEW_WAIT_CLOSED_NO_EXTERNAL_RESPONSE_RECORDED_OPERATOR_INTERNAL_CONTINUATION`.
 
 E12 records an internal/operator decision only. No external response is recorded, no external approval is claimed, no external audit pass is claimed and no runtime/product authority is created.
+
+E13 internal continuation reconciliation: `internal-continuation-gate-reconciliation.md`.
+
+E13 resulting state: `INTERNAL_CONTINUATION_GATE_RECONCILED_NO_PRODUCT_AUTHORITY`.
+
+E13 recommends `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_DOCS_TEST_ONLY` as the next internal safe gate and stops for operator decision. It does not authorize runtime/product.

@@ -42,6 +42,8 @@ E11 later created `docs/audit/product-ledger-local-dev/external-review-response-
 
 E12 later recorded Diego's decision `CLOSE_EXTERNAL_REVIEW_WAIT_WITHOUT_EXTERNAL_RESPONSE_AND_CONTINUE_INTERNAL_ONLY` in `docs/audit/product-ledger-local-dev/external-review-response-intake.md` and selected `STOP_AFTER_EXTERNAL_REVIEW_WAIT_CLOSED_INTERNAL_ONLY_NO_PRODUCT_AUTHORITY`. E12 records no external response, claims no external approval, claims no external audit pass and does not authorize runtime/product.
 
+E13 later added `docs/audit/product-ledger-local-dev/internal-continuation-gate-reconciliation.md` and selected `STOP_FOR_OPERATOR_DECISION_ON_NEXT_INTERNAL_SAFE_GATE`. E13 recommends `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_DOCS_TEST_ONLY` as a future internal safe gate. E13 does not convert internal continuation into external approval and does not authorize runtime/product.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.
