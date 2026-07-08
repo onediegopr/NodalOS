@@ -3,7 +3,6 @@ namespace OneBrain.Core.Approval;
 public enum ProductLedgerOperatorSurfaceReadModelMode
 {
     FixtureSafeReadModel,
-    ExistingLocalLedgerReadModel,
     TestSafeLiveLedgerReadModel
 }
 

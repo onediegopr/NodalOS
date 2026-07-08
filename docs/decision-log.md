@@ -9,6 +9,17 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_FIRST_BOUNDED_MICRO_TARGET_IMPLEMENT_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_FIRST_BOUNDED_MICRO_TARGET_READY`.
+- Input HEAD: `e56dc1d061eb0c9e5fe7db49d1f6a65a94d7bd20`.
+- Micro-target: remove the unused ambiguous `ExistingLocalLedgerReadModel` enum value from `ProductLedgerOperatorSurfaceReadModelMode`.
+- Source changed: one file, `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`.
+- Test changed: one focal assertion in `ProductLedgerLocalDevRoutePreviewTests` locks allowed read-model modes to `FixtureSafeReadModel` and `TestSafeLiveLedgerReadModel`.
+- Boundary: no runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 future operator-surface model consolidation remains blocked; P4 this is intentionally tiny and does not reduce broad source bloat.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_FIRST_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

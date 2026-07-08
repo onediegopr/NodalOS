@@ -205,6 +205,13 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.AreEqual(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, model.RoutePath);
         Assert.AreEqual(ProductLedgerOperatorSurfaceModelFactory.Scope, model.Scope);
         Assert.AreEqual(ProductLedgerOperatorSurfaceReadModelMode.FixtureSafeReadModel, model.ReadModelMode);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                nameof(ProductLedgerOperatorSurfaceReadModelMode.FixtureSafeReadModel),
+                nameof(ProductLedgerOperatorSurfaceReadModelMode.TestSafeLiveLedgerReadModel)
+            },
+            Enum.GetNames<ProductLedgerOperatorSurfaceReadModelMode>());
         Assert.AreEqual(nameof(ProductLedgerPathLocalOnlyActiveWriter), model.LedgerAuthority);
         Assert.AreEqual("ACTIVE_PRODUCT_LEDGER_PATH_LOCAL_ONLY", model.LedgerAuthorityBoundaryStatus);
         Assert.IsTrue(model.UsesFixtureReadModel);

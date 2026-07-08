@@ -170,6 +170,10 @@ Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_
 
 Boundary: no source changes, CI enforcement, runtime/product, public/product surface, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, external audit approval or release/commercial work was opened. The only test change is a focal Safety guard over docs terminology.
 
+Latest bounded micro-target: `PRODUCT_LEDGER_FIRST_BOUNDED_MICRO_TARGET_READY_NO_PRODUCT_AUTHORITY`.
+
+Micro-target result: removed unused `ExistingLocalLedgerReadModel` from `ProductLedgerOperatorSurfaceReadModelMode` and guarded the allowed mode set in `ProductLedgerLocalDevRoutePreviewTests`. No route/writer/latest-state/runtime/product authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
