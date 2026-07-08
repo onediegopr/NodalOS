@@ -14,6 +14,10 @@ Current state: `PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_NO_PRODUCT_A
 
 Stop condition: `STOP_AFTER_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
 
+Follow-up status: the recommended post-evidence-role next-scope selector was executed in `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EVIDENCE_ROLE_TERMINOLOGY_AUDIT_ONLY` and selected `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+
+Follow-up selector: `docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-evidence-role-selection.md`.
+
 ## Purpose
 
 This document reconciles Product Ledger evidence-role terminology. It makes terms such as `evidence`, `audit evidence`, `record`, `ledger evidence`, `latest-state evidence`, `read model evidence`, `operator evidence`, `packet evidence` and `historical evidence` mean local/dev review evidence only.

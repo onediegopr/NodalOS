@@ -1161,3 +1161,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 latest-state evidence and read-model evidence remain medium-risk terms; P4 historical evidence wording remains broad but now has a current qualifier.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
 - Authorization note: MR10 reconciles evidence-role terminology only. It does not authorize source changes, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR11 - Product Ledger Model Consolidation Next Safe Scope After Evidence Role Selection
+
+- Objective: select exactly one next safe Product Ledger/model consolidation scope after evidence-role terminology reconciliation.
+- Status: completed as docs-only/read-only/audit-only selection in `docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-evidence-role-selection.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_AFTER_EVIDENCE_ROLE_SELECTED_READY`.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_EVIDENCE_ROLE_SELECTED_NO_IMPLEMENTATION`.
+- Selected scope: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `60%`; double-truth mitigation confidence `90%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `89%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 operator-surface/read-model terminology is medium/high risk because route, surface and read-model wording is close to product UI and product read-model authority; P4 selector overhead is accepted.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_AFTER_EVIDENCE_ROLE`.
+- Authorization note: MR11 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

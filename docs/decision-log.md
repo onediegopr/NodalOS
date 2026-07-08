@@ -9,6 +9,18 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EVIDENCE_ROLE_TERMINOLOGY_AUDIT_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_AFTER_EVIDENCE_ROLE_SELECTED_READY`.
+- Input HEAD: `9ee1c1c3563220491956b537e0e957798016b220`.
+- Scope: read-only/docs-only/audit-only selection after Product Ledger evidence-role terminology reconciliation.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_EVIDENCE_ROLE_SELECTED_NO_IMPLEMENTATION`.
+- Selected scope: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+- Selection reason: after evidence-role terminology was qualified as audit/documentation/historical/local-dev review evidence, operator-surface/read-model wording is the next bounded semantic risk before writer-mode, latest-state or common-boundary work.
+- Selection: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+- Boundary: no `src/`, no tests, no CI/workflows, no runtime/product, no Product Ledger/model consolidation implementation, no writer/latest-state/operator-surface/common-boundary merge, no latest pointer/read precedence/product authority, no external audit approval claim, no DB/cloud/network/provider, no KMS/WORM, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 operator-surface/read-model terminology is medium/high risk due route/product-surface vocabulary; P4 selector overhead accepted.
+
 ## NODAL_OS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_READY`.
