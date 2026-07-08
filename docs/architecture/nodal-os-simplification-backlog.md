@@ -637,6 +637,24 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_D7_SELECTED_MICRO_REDUCTION_IMPLEMENTATION`.
 - Authorization note: SR5 selects the D7 scope only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR6 - D7 Expected Fail Closed Claims Table
+
+- Objective: implement the selected D7 proof-chain micro-reduction without changing behavior or authority.
+- Status: completed as source-minimal/test-only/no-runtime in `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs` with closeout doc `docs/architecture/nodal-os-d7-expected-fail-closed-claims-table.md`.
+- Decision: `GO_WITH_FINDINGS_D7_EXPECTED_FAIL_CLOSED_CLAIMS_TABLE_READY`.
+- Resulting state: `D7_EXPECTED_FAIL_CLOSED_CLAIMS_TABLE_READY`.
+- Source changed: exactly one authorized file, `ReentryDecisionPacketReadOnly.cs`.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Reduction applied: replaced the repeated D7 thirteen-claim fail-closed chain with a local private `ExpectedFailClosedClaims` table and `All(...)` loop.
+- Line impact: `493 -> 461`, net `-32`.
+- Not changed: D4 candidate, D10 source, Product Ledger source/model consolidation, broad common-contract refactor, runtime/product, CI enforcement or release/commercial.
+- Validated: Core build; D7, D8, Reentry Safety, Reentry Recipes, StaticGuardCatalog, NoAuthority and NoDoubleTruth focal runs.
+- Findings: P0=0, P1=0, P2=0; P3 broad ReentryDecisionPacketReadOnly Safety filter hung locally and was replaced with narrower passing class/category runs; P4 D7 and D10 now intentionally share a local table shape without shared helper extraction.
+- Current posture: D7 selected-target readiness `100%`; source-refactor readiness `76%`; broad source simplification readiness `45%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Next recommended macro-block: `NODAL_OS_D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Authorization note: SR6 implements only the selected D7 micro-target. It does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

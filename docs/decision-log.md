@@ -2457,3 +2457,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 D7 can likely mirror the D13/D10 expected-claims-table pattern but must preserve the exact thirteen fail-closed claim/state pairs and audit discoverability; P4 alias-only cleanup is too small.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_D7_SELECTED_MICRO_REDUCTION_IMPLEMENTATION`.
 - Authorization note: this block selects the D7 scope only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_D7_PROOF_CHAIN_SELECTED_MICRO_REDUCTION_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_D7_EXPECTED_FAIL_CLOSED_CLAIMS_TABLE_READY`.
+- Baseline: `2448e6979594aac81c5aacdf23b737cf44abe4a6`.
+- Resulting state: `D7_EXPECTED_FAIL_CLOSED_CLAIMS_TABLE_READY`.
+- Scope: source-minimal/test-only/no-runtime D7 micro-reduction. Changed exactly one authorized source file, `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`; no tests, CI, workflows, D4 candidate, D10 source, Product Ledger source/model consolidation, broad common-contract refactor, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Closeout added: `docs/architecture/nodal-os-d7-expected-fail-closed-claims-table.md`.
+- Reduction applied: replaced the repeated thirteen-call fail-closed claim chain with a local private `ExpectedFailClosedClaims` table and `All(...)` loop.
+- Line impact: `493 -> 461`, net `-32`.
+- Validation: Core build PASS; D7 PASS 12/12; D8 PASS 10/10; Reentry Safety PASS 6/6; Reentry Recipes PASS 4/4; StaticGuardCatalog PASS 9/9; NoAuthority PASS 71/71; NoDoubleTruth PASS 71/71.
+- Current posture: D7 selected-target readiness `100%`; source-refactor readiness `76%`; broad source simplification readiness `45%`; static guard catalog readiness `92%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad ReentryDecisionPacketReadOnly Safety filter hung locally and narrower class/category runs passed; P4 D7/D10 now have parallel local table shape by design, not shared authority.
+- Next recommended macro-block: `NODAL_OS_D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Authorization note: this block implements only the selected D7 micro-target. It does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
