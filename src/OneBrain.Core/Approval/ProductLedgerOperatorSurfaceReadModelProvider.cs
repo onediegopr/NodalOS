@@ -16,7 +16,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
     bool AllowsWrite,
     bool AllowsExport,
     bool AllowsCommandExecution,
-    bool AllowsNetwork,
+    bool AllowsExternalNetwork,
     bool AllowsDbMigration,
     bool AllowsReleaseCommercial)
 {
@@ -31,7 +31,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
             AllowsWrite: false,
             AllowsExport: false,
             AllowsCommandExecution: false,
-            AllowsNetwork: false,
+            AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
 
@@ -48,7 +48,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
             AllowsWrite: false,
             AllowsExport: false,
             AllowsCommandExecution: false,
-            AllowsNetwork: false,
+            AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
 }
@@ -79,7 +79,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSnapshot(
     bool AllowsWrite,
     bool AllowsExport,
     bool AllowsCommandExecution,
-    bool AllowsNetwork,
+    bool AllowsExternalNetwork,
     bool AllowsDbMigration,
     bool AllowsReleaseCommercial);
 
@@ -119,7 +119,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             || source.AllowsWrite
             || source.AllowsExport
             || source.AllowsCommandExecution
-            || source.AllowsNetwork
+            || source.AllowsExternalNetwork
             || source.AllowsDbMigration
             || source.AllowsReleaseCommercial
             || activation is null
@@ -171,7 +171,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             AllowsWrite: false,
             AllowsExport: false,
             AllowsCommandExecution: false,
-            AllowsNetwork: false,
+            AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
     }
@@ -205,7 +205,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             AllowsWrite: false,
             AllowsExport: false,
             AllowsCommandExecution: false,
-            AllowsNetwork: false,
+            AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
     }

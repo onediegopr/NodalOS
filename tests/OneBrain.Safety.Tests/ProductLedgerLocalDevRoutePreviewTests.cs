@@ -247,7 +247,9 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
             "OneBrain.Core",
             "Approval",
             "ProductLedgerOperatorSurfaceReadModelProvider.cs"));
+        StringAssert.Contains(readModelProvider, "AllowsExternalNetwork");
         StringAssert.Contains(readModelProvider, "AllowsDbMigration");
+        Assert.IsFalse(readModelProvider.Contains("AllowsNetwork,", StringComparison.Ordinal));
         Assert.IsFalse(readModelProvider.Contains("AllowsDb,", StringComparison.Ordinal));
     }
 

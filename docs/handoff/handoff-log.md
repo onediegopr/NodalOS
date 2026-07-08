@@ -178,6 +178,10 @@ Second bounded micro-target: `PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_READY_N
 
 Second micro-target result: renamed the read-model provider DB frontier flag from `AllowsDb` to `AllowsDbMigration` and guarded the provider terminology in `ProductLedgerLocalDevRoutePreviewTests`. No route/writer/latest-state/runtime/product authority changed.
 
+Third bounded micro-target: `PRODUCT_LEDGER_THIRD_BOUNDED_MICRO_TARGET_READY_NO_PRODUCT_AUTHORITY`.
+
+Third micro-target result: renamed the read-model provider network frontier flag from `AllowsNetwork` to `AllowsExternalNetwork` and guarded the provider terminology in `ProductLedgerLocalDevRoutePreviewTests`. No route/writer/latest-state/runtime/product authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
