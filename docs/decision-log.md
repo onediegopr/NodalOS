@@ -2472,3 +2472,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 broad ReentryDecisionPacketReadOnly Safety filter hung locally and narrower class/category runs passed; P4 D7/D10 now have parallel local table shape by design, not shared authority.
 - Next recommended macro-block: `NODAL_OS_D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READ_ONLY`.
 - Authorization note: this block implements only the selected D7 micro-target. It does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READY`.
+- Baseline: `9f6e931d834b720b7b8e601241354620062e02fa`.
+- Resulting state: `D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READY`.
+- Scope: read-only/docs-only/audit-only D7 equivalence audit. No `src/`, tests, CI, workflows, D4 candidate, D10 source, Product Ledger source/model consolidation, broad common-contract refactor, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Audit added: `docs/architecture/nodal-os-d7-post-micro-reduction-equivalence-audit.md`.
+- Equivalence confirmed: D7 local `ExpectedFailClosedClaims` table preserves exactly thirteen claim/state pairs, all fail-closed checks, helper names and no-authority behavior.
+- Validation: Core build PASS; D7 PASS 12/12; D8 PASS 10/10; Reentry Safety PASS 6/6; Reentry Recipes PASS 4/4; StaticGuardCatalog PASS 9/9; NoAuthority PASS 71/71; NoDoubleTruth PASS 71/71; NoRuntimeWiring PASS 109/109; pair exact match PASS; anti-overclaim and anti-scope scans PASS.
+- Current posture: D7 selected-target readiness `100%`; source-refactor readiness `77%`; broad source simplification readiness `45%`; static guard catalog readiness `92%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad/silent test filters can hang locally and should be investigated separately; P4 D7/D10 parallel local table shapes remain acceptable intentional duplication.
+- Next recommended macro-block: `NODAL_OS_SOURCE_REFACTOR_MICRO_LANE_CLOSEOUT_AND_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`.
+- Authorization note: this block audits equivalence only. It does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.

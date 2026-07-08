@@ -655,6 +655,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `NODAL_OS_D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READ_ONLY`.
 - Authorization note: SR6 implements only the selected D7 micro-target. It does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR7 - D7 Post Micro Reduction Equivalence Audit
+
+- Objective: audit D7 post-reduction equivalence without implementing anything.
+- Status: completed as read-only/docs-only/audit-only in `docs/architecture/nodal-os-d7-post-micro-reduction-equivalence-audit.md`.
+- Decision: `GO_WITH_FINDINGS_D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READY`.
+- Resulting state: `D7_POST_MICRO_REDUCTION_EQUIVALENCE_AUDIT_READY`.
+- Source changed: none in this audit block.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Equivalence confirmed: D7 local `ExpectedFailClosedClaims` table preserves exactly thirteen claim/state pairs, helper names, fail-closed checks and no-authority checks.
+- Validated: Core build; D7, D8, Reentry Safety, Reentry Recipes, StaticGuardCatalog, NoAuthority, NoDoubleTruth and NoRuntimeWiring focal runs; pair exact match; anti-overclaim and anti-scope scans.
+- Findings: P0=0, P1=0, P2=0; P3 broad or silent test filters can hang locally and should be investigated separately; P4 D7/D10 parallel local table shapes remain acceptable intentional duplication.
+- Current posture: D7 selected-target readiness `100%`; source-refactor readiness `77%`; broad source simplification readiness `45%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Next recommended macro-block: `NODAL_OS_SOURCE_REFACTOR_MICRO_LANE_CLOSEOUT_AND_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`.
+- Authorization note: SR7 audits equivalence only. It does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
