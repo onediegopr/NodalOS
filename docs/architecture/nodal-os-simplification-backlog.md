@@ -398,6 +398,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `NODAL_OS_BLOCK_E8_EXTERNAL_AUDIT_PACKET_OPERATOR_REVIEW_HANDOFF_READ_ONLY`.
 - Authorization note: E7 recommends E8 but does not authorize starting E8.
 
+## BLOCK E8 - Product Ledger Local/Dev Operator Review Handoff
+
+- Objective: prepare a clean Diego/operator review handoff for the Product Ledger local/dev audit packet after E7 review.
+- Status: completed as docs-only/read-only/operator-handoff-only in `docs/audit/product-ledger-local-dev/operator-review-handoff.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_REVIEW_HANDOFF_READY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- External submission: none; E8 prepares handoff only.
+- Operator review execution: none; Diego/operator review is the next step.
+- Findings: P0=0, P1=0, P2=0; P3 manual gates remain operator-run and lower-risk stale docs may still need future cross-links if operator review finds ambiguity; P4 historical percentages/noisy anti-capability wording remain by design.
+- Current posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_REVIEW`.
+- Authorization note: E8 stops for Diego/operator review and does not authorize E9 or runtime/product work.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

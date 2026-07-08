@@ -2241,3 +2241,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 manual gates remain operator-run and lower-risk stale docs may still need future cross-links; P4 E6 packet next-step wording needed E7 result linkage and was fixed.
 - Next recommended macro-block: `NODAL_OS_BLOCK_E8_EXTERNAL_AUDIT_PACKET_OPERATOR_REVIEW_HANDOFF_READ_ONLY`.
 - Authorization note: E7 recommends E8 but does not authorize starting E8.
+
+## NODAL_OS_BLOCK_E8_EXTERNAL_AUDIT_PACKET_OPERATOR_REVIEW_HANDOFF_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_REVIEW_HANDOFF_READY`.
+- Baseline: `68d4a63df6ed00c386371da787df5858d8c22ae7`.
+- Scope: docs-only/read-only/operator-handoff-only for Product Ledger local/dev audit packet review. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Handoff added: `docs/audit/product-ledger-local-dev/operator-review-handoff.md`.
+- External audit execution: none; no external API call, upload, export or submission.
+- Operator review execution: none; E8 prepares the handoff only.
+- Current posture: Product Ledger local/dev readiness `88%`, audit/operator-review readiness `97%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 manual gates remain operator-run and lower-risk stale docs may still need future cross-links if operator review finds ambiguity; P4 historical percentages/noisy anti-capability wording remain by design.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_REVIEW`.
+- Authorization note: E8 stops for Diego/operator review and does not authorize E9 or runtime/product work.

@@ -29,6 +29,7 @@ Current authority entrypoints:
 - `expected-audit-findings.md`
 - `risk-register.md`
 - `audit-review-result.md`
+- `operator-review-handoff.md`
 
 ## Reviewer Rule
 
@@ -37,3 +38,5 @@ Review current authority first. Treat older QA, handoff and roadmap docs as hist
 Do not infer product readiness, CI enforcement, release readiness, external trust, public/product exposure or Production route readiness from local/dev evidence.
 
 E7 review result: `audit-review-result.md`.
+
+E8 operator review handoff: `operator-review-handoff.md`.

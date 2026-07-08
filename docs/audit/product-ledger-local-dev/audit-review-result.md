@@ -67,6 +67,8 @@ GO with findings. No P0/P1/P2 findings were identified.
 
 The packet is ready for operator/external manual review handoff.
 
+E8 handoff file: `operator-review-handoff.md`.
+
 ## Must Not Be Inferred
 
 - Product Ledger is not product-ready.

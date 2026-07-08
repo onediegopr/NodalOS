@@ -32,6 +32,8 @@ E6 later added the read-only audit packet at `docs/audit/product-ledger-local-de
 
 E7 later reviewed the packet internally/read-only at `docs/audit/product-ledger-local-dev/audit-review-result.md` and selected `NODAL_OS_BLOCK_E8_EXTERNAL_AUDIT_PACKET_OPERATOR_REVIEW_HANDOFF_READ_ONLY`. E7 does not execute or submit an external audit and does not authorize E8.
 
+E8 later added `docs/audit/product-ledger-local-dev/operator-review-handoff.md` and selected `STOP_FOR_OPERATOR_REVIEW`. E8 does not perform operator review, does not submit externally and does not authorize E9 or runtime/product work.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.
