@@ -689,6 +689,24 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_GATE_AFTER_MICRO_LANE_CLOSEOUT`.
 - Authorization note: SR8 closes and selects only. It does not authorize source implementation, test edits, CI enforcement, runtime/product, release/commercial or external audit approval.
 
+## BLOCK SR9 - Runner Filter Hang Investigation
+
+- Objective: audit the local runner/filter hang observed during D7 validation without changing test infrastructure.
+- Status: completed as read-only/docs-only/test-infra-audit-only in `docs/architecture/nodal-os-runner-filter-hang-investigation.md`.
+- Decision: `GO_WITH_FINDINGS_RUNNER_FILTER_HANG_INVESTIGATION_RECORDED`.
+- Resulting state: `RUNNER_FILTER_HANG_INVESTIGATION_RECORDED_NO_CI_ENFORCEMENT`.
+- Source changed: none.
+- Tests changed: none.
+- Project/solution/workflow files changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Classification: `WIDE_FILTER_UNSAFE_FOR_LOCAL_USE` with secondary `LOCAL_RUNNER_FILTER_TIMEOUT_INTERMITTENT`.
+- Evidence: D7, Reentry Safety and Reentry Recipes focused runs passed; D8 focused run timed out once and passed on one retry; broad Reentry execution filter timed out under minimal and normal verbosity; broad list-tests passed and found 28 tests.
+- Recommendation: use focal filters only, explicit timeouts and cleanup rules; use broad filter only for discovery/listing until a separate test-infra fix block is authorized.
+- Findings: P0=0, P1=0, P2=0; P3 broad local Reentry execution filter is unsafe and can leave dotnet/vstest processes alive; P4 broad discovery/listing remains safe.
+- Current posture: source-refactor readiness `78%`; test runner confidence `72%` for focal filters and `35%` for broad local execution filters; D7 lane readiness `100%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Next recommended macro-block: `NODAL_OS_RUNNER_FILTER_HANG_OPERATIONAL_GUIDANCE_AND_SAFE_COMMANDS_DOCS_ONLY`.
+- Authorization note: SR9 records the audit only. It does not authorize source changes, test edits, project/solution/workflow changes, CI enforcement, runtime/product or release/commercial work.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

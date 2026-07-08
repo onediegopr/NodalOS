@@ -2501,3 +2501,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 broad/silent local test filters can hang and should be investigated before more micro-refactor lanes depend on them; P4 historical stale recommendations remain but are superseded by this closeout.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_GATE_AFTER_MICRO_LANE_CLOSEOUT`.
 - Authorization note: this block closes and selects only. It does not authorize source implementation, test edits, CI enforcement, runtime/product, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_RUNNER_FILTER_HANG_INVESTIGATION_READ_ONLY_OR_TEST_INFRA_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_RUNNER_FILTER_HANG_INVESTIGATION_RECORDED`.
+- Baseline: `f934358b9148d73e8f968c0be2dfd9189f61511e`.
+- Resulting state: `RUNNER_FILTER_HANG_INVESTIGATION_RECORDED_NO_CI_ENFORCEMENT`.
+- Scope: read-only/docs-only/test-infra-audit-only runner/filter investigation. No `src/`, tests, project files, solution files, workflows, CI, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Audit added: `docs/architecture/nodal-os-runner-filter-hang-investigation.md`.
+- Classification: `WIDE_FILTER_UNSAFE_FOR_LOCAL_USE`; secondary classification `LOCAL_RUNNER_FILTER_TIMEOUT_INTERMITTENT`.
+- Command evidence: D7 focused normal PASS 12/12; D8 focused normal TIMEOUT once then PASS 10/10 on one retry; Reentry Safety normal PASS 6/6; Reentry Recipes normal PASS 4/4; broad Reentry minimal TIMEOUT; broad Reentry normal TIMEOUT; broad Reentry list-tests PASS with 28 matched tests.
+- Recommendation: use focal filters only with explicit timeouts and cleanup; use broad filter only for discovery/listing until a separately authorized test-infra fix block exists.
+- Current posture: source-refactor readiness `78%`; test runner confidence `72%` for focal filters and `35%` for broad local execution filters; D7 lane readiness `100%`; broad source simplification readiness `45%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad local Reentry execution filter is unsafe and can leave dotnet/vstest processes alive; P4 broad discovery/listing remains safe.
+- Next recommended macro-block: `NODAL_OS_RUNNER_FILTER_HANG_OPERATIONAL_GUIDANCE_AND_SAFE_COMMANDS_DOCS_ONLY`.
+- Authorization note: this block records the audit only. It does not authorize source changes, test edits, project/solution/workflow changes, CI enforcement, runtime/product or release/commercial work.

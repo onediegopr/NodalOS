@@ -165,3 +165,21 @@ Selected next gate:
 Exact next block:
 
 `NODAL_OS_RUNNER_FILTER_HANG_INVESTIGATION_READ_ONLY_OR_TEST_INFRA_AUDIT_ONLY`
+
+## Current Runner Filter Follow-up
+
+Current runner audit:
+
+`docs/architecture/nodal-os-runner-filter-hang-investigation.md`
+
+Resulting state:
+
+`RUNNER_FILTER_HANG_INVESTIGATION_RECORDED_NO_CI_ENFORCEMENT`
+
+Classification:
+
+`WIDE_FILTER_UNSAFE_FOR_LOCAL_USE`
+
+Recommendation:
+
+Use focal filters only with explicit timeouts and cleanup; use broad Reentry filters only for discovery/listing until a separate test-infra fix block is authorized.
