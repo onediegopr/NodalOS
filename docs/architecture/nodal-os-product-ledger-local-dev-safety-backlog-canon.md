@@ -18,6 +18,8 @@ E6 external audit packet: `docs/audit/product-ledger-local-dev/README.md`.
 
 Current Product Ledger local/dev canon reference index: `docs/audit/product-ledger-local-dev/canon-reference-index.md`.
 
+Current Product Ledger evidence-role terminology reconciliation: `docs/audit/product-ledger-local-dev/evidence-role-terminology.md`.
+
 ## 1. Executive Status
 
 Product Ledger has a real local/dev evidence line, but it is not public/product, not a Production route, not product authority and not release/commercial ready.
@@ -84,6 +86,8 @@ These tests are evidence, not CI enforcement. Passing them does not mean public/
 Safety/Recipes remain the authoritative evidence surface for Product Ledger local/dev, together with the manual/discovery-only Tier 1 guard commands listed below.
 
 Here `authoritative evidence surface` means manual/discovery-only local/dev evidence for review and safety checking. It is not CI enforcement, not product authority and not runtime authority.
+
+Evidence-role terminology means audit/documentation/historical/local-dev review evidence. It is not latest-state authority, not read precedence, not latest pointer authority, not product authority, not Product Ledger writer/runtime authority and not model-consolidation implementation.
 
 ## 5. Docs-Only Evidence
 

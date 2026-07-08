@@ -18,6 +18,8 @@ Follow-up status: the recommended post-canon-index next-scope selector was execu
 
 Follow-up selector: `docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-canon-index-selection.md`.
 
+Evidence-role terminology reconciliation: `docs/audit/product-ledger-local-dev/evidence-role-terminology.md`.
+
 ## Purpose
 
 This index is the current navigation entrypoint for Product Ledger local/dev canon references. It helps readers enter through current canon and audit records before older block-specific QA, handoff, roadmap or submission artifacts.
@@ -55,6 +57,7 @@ That authority means current review, audit and blocked-state interpretation for 
 | `docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-equivalence-selection.md` | `CURRENT_AUDIT_REFERENCE` | Current selected next safe scope: canon/reference/index cleanup docs-only. |
 | `docs/architecture/nodal-os-product-ledger-model-consolidation-readiness-audit.md` | `CURRENT_AUDIT_REFERENCE` | Current readiness baseline for Product Ledger model consolidation. |
 | `docs/architecture/nodal-os-product-ledger-model-consolidation-scope-selection.md` | `CURRENT_AUDIT_REFERENCE` | Historical/current selection record for authority-map terminology reconciliation and follow-ups. |
+| `docs/audit/product-ledger-local-dev/evidence-role-terminology.md` | `CURRENT_AUDIT_REFERENCE` | Current terminology map for evidence-role wording; audit/documentation/historical/local-dev review evidence only, not product authority. |
 
 ## Historical Evidence
 
@@ -145,9 +148,9 @@ P4:
 
 Recommended next safe macro-block:
 
-`NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_CANON_REFERENCE_CLEANUP_AUDIT_ONLY`
+`NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EVIDENCE_ROLE_TERMINOLOGY_AUDIT_ONLY`
 
-Purpose: select one next safe Product Ledger/model-consolidation lane after the canon reference index cleanup, without implementation.
+Purpose: select one next safe Product Ledger/model-consolidation lane after evidence-role terminology reconciliation, without implementation.
 
 ## Final Boundary
 

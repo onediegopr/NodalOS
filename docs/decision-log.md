@@ -9,6 +9,17 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_READY`.
+- Input HEAD: `c7235e7a34002390f22e7efb9aff326908874af7`.
+- Scope: docs-only/test-only-focal Product Ledger evidence-role terminology reconciliation.
+- Resulting state: `PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Terminology map: `docs/audit/product-ledger-local-dev/evidence-role-terminology.md`.
+- Guard added: `ProductLedgerEvidenceRoleTerminologyRemainsAuditEvidenceAndNoProductAuthority`.
+- Boundary: no `src/`, no CI/workflows, no runtime/product, no Product Ledger/model consolidation implementation, no writer/latest-state/operator-surface/common-boundary merge, no latest pointer/read precedence/product authority, no external audit approval claim, no DB/cloud/network/provider, no KMS/WORM, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 latest-state evidence and read-model evidence remain medium-risk terms; P4 historical evidence wording remains broad but now has a current qualifier.
+
 ## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_CANON_REFERENCE_CLEANUP_AUDIT_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_AFTER_CANON_INDEX_SELECTED_READY`.

@@ -10,9 +10,12 @@ Current navigation entrypoint: `docs/audit/product-ledger-local-dev/canon-refere
 
 When source or test artifacts use terms such as local ledger authority, active writer authority or authoritative evidence, read them as local-only evidence authority inside the Product Ledger local/dev canon unless a later explicit operator-authorized product gate says otherwise. This map does not change source-of-truth product behavior and does not enable DB/cloud/network/provider, KMS/WORM, CI enforcement or release/commercial readiness.
 
+Evidence-role terminology is reconciled in `docs/audit/product-ledger-local-dev/evidence-role-terminology.md`. Evidence-role wording means audit/documentation/historical/local-dev review evidence only. It does not replace this authority map, does not replace the E2 canon, does not create product authority, does not create latest pointer authority and does not create read precedence authority.
+
 | Artifact | Role |
 | --- | --- |
 | `docs/audit/product-ledger-local-dev/canon-reference-index.md` | Current Product Ledger local/dev canon reference navigation index; entrypoint only, not product authority. |
+| `docs/audit/product-ledger-local-dev/evidence-role-terminology.md` | Current evidence-role terminology reconciliation; audit/documentation/historical/local-dev review evidence only, not product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` | Current Product Ledger local/dev canon reference for blocked-state interpretation; local/dev documentary authority only, not product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md` | Current local/dev next-action selection logic and safe-lane ordering; not runtime/product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md` | Index of high-risk historical entrypoints cross-linked back to local/dev documentary authority. |

@@ -325,6 +325,22 @@ Selected next block:
 
 `NODAL_OS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
 
+Current evidence-role terminology reconciliation:
+
+`docs/audit/product-ledger-local-dev/evidence-role-terminology.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`
+
+Implemented guard:
+
+`ProductLedgerEvidenceRoleTerminologyRemainsAuditEvidenceAndNoProductAuthority`
+
+Recommended next safe macro-block:
+
+`NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EVIDENCE_ROLE_TERMINOLOGY_AUDIT_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -346,6 +362,7 @@ P3:
 - Product Ledger post-equivalence next scope is selected as canon/reference/index cleanup docs-only; model/source consolidation remains deferred.
 - Product Ledger canon reference index cleanup now gives current readers a single entrypoint before historical packet artifacts; model/source consolidation remains deferred.
 - Product Ledger post-canon-index next scope is selected as evidence-role terminology reconciliation docs/test-only; model/source consolidation remains deferred.
+- Product Ledger evidence-role terminology now means audit/documentation/historical/local-dev review evidence only; model/source consolidation remains deferred.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:

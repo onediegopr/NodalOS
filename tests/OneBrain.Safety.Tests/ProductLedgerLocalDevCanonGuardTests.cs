@@ -23,6 +23,8 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
     private const string ExternalReviewResponseIntakePath = "docs/audit/product-ledger-local-dev/external-review-response-intake.md";
     private const string NoAuthorityStaticScanContractPath = "docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md";
     private const string CurrentAuthorityMapPath = "docs/audit/product-ledger-local-dev/current-authority-map.md";
+    private const string CanonReferenceIndexPath = "docs/audit/product-ledger-local-dev/canon-reference-index.md";
+    private const string EvidenceRoleTerminologyPath = "docs/audit/product-ledger-local-dev/evidence-role-terminology.md";
 
     [TestMethod]
     public void ProductLedgerLocalDevCanonExistsAndIsCurrentAuthority()
@@ -190,6 +192,42 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
         StringAssert.Contains(canon, "read precedence authority");
         StringAssert.Contains(canon, "Product Ledger writer/runtime authority");
         StringAssert.Contains(canon, "not CI enforcement, not product authority and not runtime authority");
+        AssertDoesNotContainPositiveProductReadinessClaim(authorityMap);
+        AssertDoesNotContainPositiveProductReadinessClaim(canon);
+    }
+
+    [TestMethod]
+    public void ProductLedgerEvidenceRoleTerminologyRemainsAuditEvidenceAndNoProductAuthority()
+    {
+        var terminology = ReadRepoFile(EvidenceRoleTerminologyPath);
+        var index = ReadRepoFile(CanonReferenceIndexPath);
+        var authorityMap = ReadRepoFile(CurrentAuthorityMapPath);
+        var canon = ReadRepoFile(CanonPath);
+
+        StringAssert.Contains(terminology, "audit evidence");
+        StringAssert.Contains(terminology, "documentation evidence");
+        StringAssert.Contains(terminology, "historical evidence");
+        StringAssert.Contains(terminology, "local/dev review evidence");
+        StringAssert.Contains(terminology, "not read precedence");
+        StringAssert.Contains(terminology, "not latest-state authority");
+        StringAssert.Contains(terminology, "not product authority");
+        StringAssert.Contains(terminology, "does not decide product authority");
+        StringAssert.Contains(terminology, "does not change latest pointer behavior");
+        StringAssert.Contains(terminology, "does not change read precedence");
+        StringAssert.Contains(terminology, "does not enable Product Ledger writer/runtime");
+        StringAssert.Contains(terminology, "does not enable runtime/product");
+        StringAssert.Contains(terminology, "does not replace the current authority map");
+        StringAssert.Contains(terminology, "does not replace the E2 canon");
+        StringAssert.Contains(terminology, "is not a productive read model");
+        StringAssert.Contains(terminology, "is not latest-state authority");
+
+        StringAssert.Contains(index, EvidenceRoleTerminologyPath);
+        StringAssert.Contains(authorityMap, EvidenceRoleTerminologyPath);
+        StringAssert.Contains(authorityMap, "Evidence-role wording means audit/documentation/historical/local-dev review evidence only");
+        StringAssert.Contains(canon, "Evidence-role terminology means audit/documentation/historical/local-dev review evidence");
+        StringAssert.Contains(canon, "It is not latest-state authority, not read precedence, not latest pointer authority, not product authority, not Product Ledger writer/runtime authority");
+        AssertDoesNotContainPositiveProductReadinessClaim(terminology);
+        AssertDoesNotContainPositiveProductReadinessClaim(index);
         AssertDoesNotContainPositiveProductReadinessClaim(authorityMap);
         AssertDoesNotContainPositiveProductReadinessClaim(canon);
     }

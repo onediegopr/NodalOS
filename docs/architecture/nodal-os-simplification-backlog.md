@@ -1145,3 +1145,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 evidence-role terminology remains medium-risk because it touches latest-state/read-model/audit evidence vocabulary; P4 selector overhead is accepted to keep scope narrow.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_AFTER_CANON_INDEX`.
 - Authorization note: MR9 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR10 - Product Ledger Evidence Role Terminology Reconciliation
+
+- Objective: reconcile Product Ledger evidence-role terminology so evidence/audit/record/latest-state/read-model wording cannot be read as product authority, latest pointer, read precedence, route authority, writer/runtime or model-consolidation implementation.
+- Status: completed as docs-only/test-only-focal in `docs/audit/product-ledger-local-dev/evidence-role-terminology.md` and `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_READY`.
+- Resulting state: `PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Guard added: `ProductLedgerEvidenceRoleTerminologyRemainsAuditEvidenceAndNoProductAuthority`.
+- Source changed: none.
+- Tests changed: one focal Product Ledger local/dev canon guard only.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `59%`; double-truth mitigation confidence `89%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `88%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 latest-state evidence and read-model evidence remain medium-risk terms; P4 historical evidence wording remains broad but now has a current qualifier.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR10 reconciles evidence-role terminology only. It does not authorize source changes, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
