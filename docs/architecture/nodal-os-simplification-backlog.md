@@ -589,6 +589,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_SOURCE_REFACTOR_TARGET`.
 - Authorization note: SR2 selects a target only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR3 - D13 Follow-Up Bounded Source Cleanup
+
+- Objective: apply one minimal no-runtime cleanup inside the selected D13/D10 target.
+- Status: completed as source-minimal/no-runtime in `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs` with closeout doc `docs/architecture/nodal-os-d13-follow-up-bounded-source-cleanup.md`.
+- Decision: `GO_WITH_FINDINGS_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_READY`.
+- Resulting state: `SOURCE_REFACTOR_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_READY`.
+- Source changed: exactly one selected file, `ApprovalExecutionDesignOnlyProtected.cs`.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Reduction applied: normalized the private common-boundary fail-closed helper to use the existing D13 aliases `CommonBoundaryClaim` and `CommonBoundaryClaimState`.
+- Not changed: D4 candidate, D7 target, Product Ledger source/model consolidation, broad common-contract refactor, runtime/product, CI enforcement or release/commercial.
+- Findings: P0=0, P1=0, P2=0; P3 remaining D10 cleanup may now be exhausted and D7 remains deferred; P4 cleanup is intentionally small.
+- Next recommended macro-block: `STOP_AFTER_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: SR3 does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

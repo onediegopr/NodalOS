@@ -152,8 +152,8 @@ public sealed record ApprovalExecutionAntiCapabilityProof(
 
     private static bool CommonBoundaryClaimRemainsFailClosed(
         NodalOsCommonBoundaryClaimsCandidate candidate,
-        NodalOsCommonBoundaryClaimsCandidate.Claim claim,
-        NodalOsCommonBoundaryClaimsCandidate.ClaimState expectedState) =>
+        CommonBoundaryClaim claim,
+        CommonBoundaryClaimState expectedState) =>
         candidate.StateFor(claim) == expectedState
         && candidate.IsFailClosed(claim)
         && !candidate.CanOverrideExistingHardBlock(claim);

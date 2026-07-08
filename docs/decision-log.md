@@ -2415,3 +2415,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 selected D13 follow-up may find no safe remaining D10 cleanup, D7 has larger opportunity but higher canonical-risk, broad common-contract/Product Ledger consolidation still carries double-truth risk; P4 historical docs retain stale recommendations.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_SOURCE_REFACTOR_TARGET`.
 - Authorization note: this block selects target only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_SOURCE_REFACTOR_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_READY`.
+- Baseline: `cea8c278bb55d453b3350c4f8fa68b0993d9a273`.
+- Resulting state: `SOURCE_REFACTOR_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_READY`.
+- Scope: source-minimal no-runtime cleanup inside the selected D13/D10 target. No D4 candidate source, D7 source, Product Ledger source/model consolidation, broad common-contract refactor, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Source changed: `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Docs added: `docs/architecture/nodal-os-d13-follow-up-bounded-source-cleanup.md`.
+- Reduction applied: normalized the private common-boundary fail-closed helper to use the existing D13 aliases `CommonBoundaryClaim` and `CommonBoundaryClaimState`.
+- Current posture: source-refactor readiness `73%`; broad source simplification readiness `45%`; static guard catalog readiness `92%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 remaining D10 cleanup may now be exhausted and D7 remains deferred; P4 cleanup is intentionally small.
+- Next recommended macro-block: `STOP_AFTER_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: this block does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
