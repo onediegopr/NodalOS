@@ -15,7 +15,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
     bool AllowsFilesystemScan,
     bool AllowsWrite,
     bool AllowsExport,
-    bool AllowsCommandExecution,
+    bool AllowsProductCommandExecution,
     bool AllowsExternalNetwork,
     bool AllowsDbMigration,
     bool AllowsReleaseCommercial)
@@ -30,7 +30,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
             AllowsFilesystemScan: false,
             AllowsWrite: false,
             AllowsExport: false,
-            AllowsCommandExecution: false,
+            AllowsProductCommandExecution: false,
             AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
@@ -47,7 +47,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
             AllowsFilesystemScan: false,
             AllowsWrite: false,
             AllowsExport: false,
-            AllowsCommandExecution: false,
+            AllowsProductCommandExecution: false,
             AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
@@ -78,7 +78,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSnapshot(
     bool AllowsFilesystemScan,
     bool AllowsWrite,
     bool AllowsExport,
-    bool AllowsCommandExecution,
+    bool AllowsProductCommandExecution,
     bool AllowsExternalNetwork,
     bool AllowsDbMigration,
     bool AllowsReleaseCommercial);
@@ -118,7 +118,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             || source.AllowsFilesystemScan
             || source.AllowsWrite
             || source.AllowsExport
-            || source.AllowsCommandExecution
+            || source.AllowsProductCommandExecution
             || source.AllowsExternalNetwork
             || source.AllowsDbMigration
             || source.AllowsReleaseCommercial
@@ -170,7 +170,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             AllowsFilesystemScan: false,
             AllowsWrite: false,
             AllowsExport: false,
-            AllowsCommandExecution: false,
+            AllowsProductCommandExecution: false,
             AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
@@ -204,7 +204,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             AllowsFilesystemScan: false,
             AllowsWrite: false,
             AllowsExport: false,
-            AllowsCommandExecution: false,
+            AllowsProductCommandExecution: false,
             AllowsExternalNetwork: false,
             AllowsDbMigration: false,
             AllowsReleaseCommercial: false);

@@ -1259,3 +1259,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 future operator-surface/read-model consolidation remains blocked; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_THIRD_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
 - Authorization note: MR16 does not authorize broad model consolidation, route/writer/latest-state/common-boundary merge, runtime/product, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.
+
+## BLOCK MR17 - Product Ledger Fourth Bounded Micro Target
+
+- Objective: apply exactly one fourth real bounded Product Ledger/model-consolidation micro-target or close the bounded micro-target lane.
+- Status: completed as source-minimal/test-focal in `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceReadModelProvider.cs` and `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_READY`.
+- Resulting state: `PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_READY_NO_PRODUCT_AUTHORITY`.
+- Micro-target: renamed the read-model provider command frontier flag from `AllowsCommandExecution` to `AllowsProductCommandExecution` so the provider mirrors the canonical product-command frontier wording.
+- Source changed: one file.
+- Tests changed: one focal assertion.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `66%`; double-truth mitigation confidence `93%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `90%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 bounded micro-target lane should close after this because remaining provider names are no longer obvious one-file authority terminology fixes; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR17 does not authorize broad model consolidation, route/writer/latest-state/common-boundary merge, runtime/product, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.

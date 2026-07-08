@@ -42,6 +42,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 future operator-surface/read-model consolidation remains blocked; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_THIRD_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
 
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_MICRO_TARGET_LINE_CLOSE_OR_FOURTH_TARGET_IMPLEMENT_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_READY`.
+- Input HEAD: `98bd302ca53638b541ed0ee41f658b631cb5c88e`.
+- Micro-target: rename the read-model provider command frontier flag from `AllowsCommandExecution` to `AllowsProductCommandExecution`.
+- Source changed: one file, `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceReadModelProvider.cs`.
+- Test changed: one focal assertion in `ProductLedgerLocalDevRoutePreviewTests` prevents the ambiguous provider flag name from returning.
+- Boundary: no runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 bounded micro-target lane should close after this because remaining provider names are no longer obvious one-file authority terminology fixes; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

@@ -182,6 +182,10 @@ Third bounded micro-target: `PRODUCT_LEDGER_THIRD_BOUNDED_MICRO_TARGET_READY_NO_
 
 Third micro-target result: renamed the read-model provider network frontier flag from `AllowsNetwork` to `AllowsExternalNetwork` and guarded the provider terminology in `ProductLedgerLocalDevRoutePreviewTests`. No route/writer/latest-state/runtime/product authority changed.
 
+Fourth bounded micro-target: `PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_READY_NO_PRODUCT_AUTHORITY`.
+
+Fourth micro-target result: renamed the read-model provider command frontier flag from `AllowsCommandExecution` to `AllowsProductCommandExecution` and guarded the provider terminology in `ProductLedgerLocalDevRoutePreviewTests`. No route/writer/latest-state/runtime/product authority changed. The bounded micro-target lane should close after this unless a future operator-selected target is more substantial than local terminology cleanup.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
