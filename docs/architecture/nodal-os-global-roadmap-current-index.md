@@ -249,6 +249,22 @@ Implemented guard:
 
 `ProductLedgerLocalDevAuthorityMapTerminologyRemainsLocalDevOnlyAndNoProductAuthority`
 
+Current post-authority-terminology next-scope selection:
+
+`docs/architecture/nodal-os-product-ledger-model-consolidation-post-authority-terminology-next-scope-selection.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_MODEL_CONSOLIDATION_POST_AUTHORITY_TERMINOLOGY_NEXT_SCOPE_SELECTED_NO_IMPLEMENTATION`
+
+Selected next safe scope:
+
+`PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
+
+Selected next block:
+
+`NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -265,6 +281,7 @@ P3:
 - Product Ledger/model consolidation readiness is now audited, but implementation remains deferred until a one-target scope-selection audit names an authority owner and no-double-truth proof.
 - Product Ledger/model consolidation scope is now selected as authority-map terminology reconciliation only; model/source consolidation remains deferred.
 - Product Ledger authority-map terminology now distinguishes local/dev documentary authority from product/runtime, latest pointer and read precedence authority.
+- Product Ledger post-terminology next scope is selected as read-only no-double-truth equivalence audit; model/source consolidation remains deferred.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:

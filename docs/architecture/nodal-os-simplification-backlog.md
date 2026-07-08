@@ -1060,3 +1060,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 source/model consolidation remains deferred; P4 terminology guard is narrow and does not reduce source bloat.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
 - Authorization note: MR4 reconciles terminology only. It does not authorize source changes, model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, CI enforcement, runtime/product, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR5 - Product Ledger Post-Authority-Terminology Next Scope Selection
+
+- Objective: select the next safe Product Ledger/model consolidation scope after authority-map terminology reconciliation.
+- Status: completed as docs-only/read-only/audit-only selection in `docs/architecture/nodal-os-product-ledger-model-consolidation-post-authority-terminology-next-scope-selection.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_SELECTED_READY`.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_POST_AUTHORITY_TERMINOLOGY_NEXT_SCOPE_SELECTED_NO_IMPLEMENTATION`.
+- Selected scope: `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Exact next block: `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `54%`; double-truth mitigation confidence `78%`; Product Ledger local/dev readiness `93%`; global roadmap readiness `83%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 model/source consolidation remains deferred until authority-map/canon/guard equivalence is audited; P4 one more read-only audit adds documentation overhead.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SAFE_SCOPE`.
+- Authorization note: MR5 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

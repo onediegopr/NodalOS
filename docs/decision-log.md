@@ -9,6 +9,18 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_POST_AUTHORITY_TERMINOLOGY_NEXT_SCOPE_SELECTION_AUDIT_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_SELECTED_READY`.
+- Input HEAD: `e955694282c05715d98ff88d7b9eba1e307dda72`.
+- Scope: read-only/docs-only/audit-only next-scope selection after Product Ledger authority-map terminology reconciliation.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_POST_AUTHORITY_TERMINOLOGY_NEXT_SCOPE_SELECTED_NO_IMPLEMENTATION`.
+- Selected scope: `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Selection reason: a read-only equivalence audit is the lowest-risk way to confirm authority map, E2 canon and focal guard agree before any further terminology or model work.
+- Selection: `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Boundary: no `src/`, no tests, no CI/workflows, no runtime/product, no Product Ledger/model consolidation implementation, no writer/latest-state/operator-surface/common-boundary merge, no latest pointer/read precedence/product authority, no external audit approval claim, no DB/cloud/network/provider, no KMS/WORM, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 source/model consolidation remains deferred until equivalence is audited; P4 read-only audit adds small documentation overhead.
+
 ## NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILED_READY`.

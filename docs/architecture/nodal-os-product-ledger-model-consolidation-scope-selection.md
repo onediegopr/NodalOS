@@ -16,6 +16,8 @@ Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_PRODUCT_LEDGER_MODEL_CON
 
 Follow-up status: the selected authority-map terminology reconciliation was executed in `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY` and records state `PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
 
+Post-terminology next-scope selection was executed in `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_POST_AUTHORITY_TERMINOLOGY_NEXT_SCOPE_SELECTION_AUDIT_ONLY` and selected `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
+
 ## Scope
 
 This document selects exactly one future Product Ledger/model consolidation target. It does not implement consolidation, edit `src/`, edit tests, change CI/workflows, enable runtime/product, create a latest pointer, activate read precedence, grant product authority, wire a Product Ledger writer/runtime, enable DB/cloud/network/provider, claim KMS/WORM/external trust, claim external audit approval or change release/commercial posture.
@@ -144,6 +146,10 @@ Expected no-double-truth assertion:
 Implemented focal guard:
 
 `ProductLedgerLocalDevAuthorityMapTerminologyRemainsLocalDevOnlyAndNoProductAuthority`.
+
+Selected post-terminology next scope:
+
+`PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
 
 NO-GO conditions:
 
