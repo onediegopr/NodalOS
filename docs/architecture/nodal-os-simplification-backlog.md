@@ -1112,3 +1112,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 future evidence-role/writer/latest-state/operator-surface/common-boundary work remains higher-risk; P4 cleanup is docs-heavy but reduces navigation ambiguity.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SAFE_SCOPE_AFTER_EQUIVALENCE`.
 - Authorization note: MR7 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR8 - Product Ledger Canon Reference Index Cleanup
+
+- Objective: create a current Product Ledger local/dev canon reference index and point current entrypoints at it before historical packet artifacts.
+- Status: completed as docs-only/read-only/audit-only index cleanup in `docs/audit/product-ledger-local-dev/canon-reference-index.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_READY`.
+- Resulting state: `PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_READY_NO_PRODUCT_AUTHORITY`.
+- Current entrypoints: canon reference index, E2 local/dev canon, current authority map, no-double-truth equivalence audit and global roadmap current index.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `57%`; double-truth mitigation confidence `86%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `86%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 future model-consolidation lanes still need one-target selection; P4 historical Product Ledger docs remain numerous and preserved.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR8 cleans references only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

@@ -9,6 +9,18 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_DOCS_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_READY`.
+- Input HEAD: `69bd3cc06210b318515f43f948d93d47588d6b35`.
+- Scope: docs-only/read-only/audit-only Product Ledger local/dev canon reference index cleanup.
+- Resulting state: `PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_READY_NO_PRODUCT_AUTHORITY`.
+- Current entrypoint added: `docs/audit/product-ledger-local-dev/canon-reference-index.md`.
+- Cleanup result: current readers should enter through canon reference index, E2 canon, current authority map, no-double-truth equivalence audit and global roadmap current index before historical packet artifacts.
+- Selection: `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_CANON_REFERENCE_CLEANUP_AUDIT_ONLY`.
+- Boundary: no `src/`, no tests, no CI/workflows, no runtime/product, no Product Ledger/model consolidation implementation, no writer/latest-state/operator-surface/common-boundary merge, no latest pointer/read precedence/product authority, no external audit approval claim, no DB/cloud/network/provider, no KMS/WORM, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 future model-consolidation lanes still need one-target selection; P4 historical Product Ledger docs remain numerous.
+
 ## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EQUIVALENCE_AUDIT_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_EQUIVALENCE_SELECTED_READY`.

@@ -14,6 +14,10 @@ Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_EQUIV
 
 Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SAFE_SCOPE_AFTER_EQUIVALENCE`.
 
+Follow-up status: the selected canon/reference/index cleanup was executed in `NODAL_OS_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_DOCS_ONLY` and records state `PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_READY_NO_PRODUCT_AUTHORITY`.
+
+Follow-up index: `docs/audit/product-ledger-local-dev/canon-reference-index.md`.
+
 ## Scope
 
 This selector evaluates the Product Ledger model-consolidation lane after the authority-map no-double-truth equivalence audit. It selects exactly one next safe scope and defines the next-block contract. It does not implement consolidation, edit `src/`, edit tests, change CI/workflows, enable runtime/product, create a latest pointer, activate read precedence, grant product authority, wire a Product Ledger writer/runtime, enable DB/cloud/network/provider, claim KMS/WORM/external trust, claim external audit approval or change release/commercial posture.

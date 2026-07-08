@@ -4,12 +4,15 @@
 
 Authority terminology in this file is scoped to `local/dev documentary authority`.
 
+Current navigation entrypoint: `docs/audit/product-ledger-local-dev/canon-reference-index.md`.
+
 `local/dev documentary authority` means this packet is the current canon reference for Product Ledger local/dev review, blocked-state interpretation and audit handoff ordering. It does not mean runtime/product authority, public/product authority, Production route authority, latest pointer authority, read precedence authority, product authority or Product Ledger writer/runtime authority.
 
 When source or test artifacts use terms such as local ledger authority, active writer authority or authoritative evidence, read them as local-only evidence authority inside the Product Ledger local/dev canon unless a later explicit operator-authorized product gate says otherwise. This map does not change source-of-truth product behavior and does not enable DB/cloud/network/provider, KMS/WORM, CI enforcement or release/commercial readiness.
 
 | Artifact | Role |
 | --- | --- |
+| `docs/audit/product-ledger-local-dev/canon-reference-index.md` | Current Product Ledger local/dev canon reference navigation index; entrypoint only, not product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` | Current Product Ledger local/dev canon reference for blocked-state interpretation; local/dev documentary authority only, not product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md` | Current local/dev next-action selection logic and safe-lane ordering; not runtime/product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md` | Index of high-risk historical entrypoints cross-linked back to local/dev documentary authority. |
@@ -50,6 +53,6 @@ Older QA, handoff, roadmap and ADR files remain traceability. They should not be
 
 ## Next Recommended Block
 
-`STOP_AFTER_PRODUCT_LEDGER_LOCAL_DEV_INTERNAL_PACKET_CLOSEOUT_NO_PRODUCT_AUTHORITY`
+Current roadmap navigation now enters through `docs/audit/product-ledger-local-dev/canon-reference-index.md` and `docs/architecture/nodal-os-global-roadmap-current-index.md`.
 
-E16 closes the internal Product Ledger local/dev E2-E15 packet. E16 does not record external approval, does not claim external audit pass and does not authorize runtime/product, CI enforcement or release/commercial work.
+Historical E16 closeout remains `STOP_AFTER_PRODUCT_LEDGER_LOCAL_DEV_INTERNAL_PACKET_CLOSEOUT_NO_PRODUCT_AUTHORITY`. E16 does not record external approval, does not claim external audit pass and does not authorize runtime/product, CI enforcement or release/commercial work.

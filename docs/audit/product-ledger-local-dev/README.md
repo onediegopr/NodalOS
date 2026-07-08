@@ -8,12 +8,15 @@ Block: `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ON
 
 This packet prepares a reviewer to audit the Product Ledger local/dev line after E2 canonization, E4 stale-entrypoint cross-links and E5 canon guard tests. It does not execute or submit an external audit.
 
+Current navigation entrypoint: `canon-reference-index.md`. Use that index before this historical packet index when deciding current Product Ledger local/dev posture, current authority references or next safe roadmap work.
+
 ## Scope
 
 Product Ledger local/dev is evidence-only and internal. It is not public/product, not a Production route, not release/commercial ready and not product authority.
 
 Current authority entrypoints:
 
+- Canon reference index: `docs/audit/product-ledger-local-dev/canon-reference-index.md`
 - E2 canon: `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md`
 - E3 next-action plan: `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md`
 - E4 stale-entrypoint cross-link index: `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md`

@@ -16,6 +16,8 @@ E4 stale-entrypoint cross-link index: `docs/architecture/nodal-os-product-ledger
 
 E6 external audit packet: `docs/audit/product-ledger-local-dev/README.md`.
 
+Current Product Ledger local/dev canon reference index: `docs/audit/product-ledger-local-dev/canon-reference-index.md`.
+
 ## 1. Executive Status
 
 Product Ledger has a real local/dev evidence line, but it is not public/product, not a Production route, not product authority and not release/commercial ready.
@@ -25,6 +27,8 @@ The local/dev line includes persisted approval state, bounded local evidence wri
 This canon reconciles the distributed Product Ledger backlog after E1. It does not implement runtime behavior, modify source, modify tests, create a latest pointer, activate read precedence, create product authority, open public/product routes, open Production routes or change CI.
 
 This document is the current Product Ledger local/dev canon for blocked-state interpretation until a later authorized canon replaces it.
+
+For navigation across current Product Ledger local/dev canon references, authority-map records, audit references and historical packet artifacts, use `docs/audit/product-ledger-local-dev/canon-reference-index.md`.
 
 Terminology note: this canon and the Product Ledger local/dev authority map use authority wording only as `local/dev documentary authority`, meaning the current review and audit reference for local/internal evidence. That wording does not grant runtime/product authority, public/product authority, Production route authority, latest pointer authority, read precedence authority, product authority or Product Ledger writer/runtime authority.
 
