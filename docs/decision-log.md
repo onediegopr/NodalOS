@@ -18,6 +18,15 @@
 - Boundary: no `src/`, no broad docs scan, no CI/workflows, no runtime/product, no external audit approval claim, no DB/cloud/network/provider enablement, no KMS/WORM guarantee/external trust, no release/commercial.
 - Findings: P0 0, P1 0, P2 0; P3 deferred-family coverage remains narrow by design; P4 blocked-claim catalog examples require explicit local allowance.
 
+## NODAL_OS_STATIC_GUARD_CATALOG_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES_SELECTION_AUDIT_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_STATIC_GUARD_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES_SELECTED_READY`.
+- Input HEAD: `7f6157c7216b0e6b443e5bfd436241c5e7852d9e`.
+- Scope: read-only/docs-only/audit-only selection after Static Guard deferred-family narrow guard.
+- Selection: `NODAL_OS_STATIC_GUARD_LINE_CLOSEOUT_AND_RETURN_TO_MAIN_ROADMAP_AUDIT_ONLY`.
+- Boundary: no `src/`, no tests, no broad docs scan, no CI/workflows, no runtime/product, no external audit approval claim, no DB/cloud/network/provider enablement, no KMS/WORM guarantee/external trust, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 further Static Guard expansion risks false-positive churn and runner/build commands need explicit stable invocation; P4 historical SG next-step records remain traceability only.
+
 ## NODAL_OS_BLOCK_B_NAMING_CONSOLIDATION_DESIGN_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_NAMING_CONSOLIDATION_DESIGN_READY`.

@@ -189,6 +189,20 @@ Next safe selector:
 
 `NODAL_OS_STATIC_GUARD_CATALOG_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES_SELECTION_AUDIT_ONLY`
 
+## Current Next Increment Selection After Deferred Families
+
+Current selection record:
+
+`docs/architecture/nodal-os-static-guard-next-increment-after-deferred-families-selection.md`
+
+Resulting state:
+
+`STATIC_GUARD_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES_SELECTED_NO_IMPLEMENTATION`
+
+Selected next gate:
+
+`NODAL_OS_STATIC_GUARD_LINE_CLOSEOUT_AND_RETURN_TO_MAIN_ROADMAP_AUDIT_ONLY`
+
 ## Findings
 
 P0: 0.
