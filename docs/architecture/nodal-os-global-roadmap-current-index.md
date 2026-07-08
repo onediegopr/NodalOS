@@ -213,6 +213,18 @@ Selected next macro-block:
 
 `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDIT_ONLY`
 
+Current Product Ledger model consolidation readiness audit:
+
+`docs/architecture/nodal-os-product-ledger-model-consolidation-readiness-audit.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDITED_NO_IMPLEMENTATION`
+
+Selected next safe gate:
+
+`NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTION_AUDIT_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -226,6 +238,7 @@ P3:
 - Historical roadmap files preserve old next-step recommendations by design.
 - Broad source simplification remains `45%`.
 - Product Ledger/model consolidation and broad common-contract work remain deferred due to double-truth risk.
+- Product Ledger/model consolidation readiness is now audited, but implementation remains deferred until a one-target scope-selection audit names an authority owner and no-double-truth proof.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:

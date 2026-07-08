@@ -1009,3 +1009,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 Product Ledger/model consolidation is high-value but double-truth prone and must start as audit-only; P4 closed sublines should remain closed unless a new finding appears.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_MAIN_ROADMAP_SAFE_GATE`.
 - Authorization note: MR1 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation implementation or broad common-contract implementation.
+
+## BLOCK MR2 - Product Ledger Model Consolidation Readiness Audit
+
+- Objective: audit readiness for future Product Ledger model consolidation before any implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-product-ledger-model-consolidation-readiness-audit.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDIT_READY`.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDITED_NO_IMPLEMENTATION`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Readiness finding: Product Ledger/model consolidation is high-value but still double-truth prone across latest-state, writer, evidence-role, operator-surface and common-boundary families.
+- Selected next gate: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTION_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTION_AUDIT_ONLY`.
+- Current posture: global roadmap readiness `80%`; Product Ledger local/dev readiness `92%`; Product Ledger model consolidation readiness `45%`; Static Guard Catalog readiness `96%`; source-refactor readiness `78%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 double-truth risk requires one-target scope selection before implementation; P4 blocked-claim repetition remains intentional safety noise.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE`.
+- Authorization note: MR2 audits only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, broad common-contract implementation, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
