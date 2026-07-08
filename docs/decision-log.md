@@ -2327,3 +2327,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 external/manual review response absent and continuation is internal/operator-attested only; P3 manual/operator gate ambiguity remains the highest-value safe internal cleanup target; P4 historical/negative anti-capability wording remains by design.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_INTERNAL_SAFE_GATE`.
 - Authorization note: E13 does not authorize the next gate, runtime/product, implementation, CI enforcement or release/commercial work.
+
+## NODAL_OS_BLOCK_E14_PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_DOCS_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_READY`.
+- Baseline: `9aba45fd06139811409b3930da84098159bf8d98`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
+- Scope: docs/test-only manual gate decision table. No `src/`, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Manual gate table added: `docs/audit/product-ledger-local-dev/manual-gate-decision-table.md`.
+- Focal guard updated: `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`.
+- Current E-series gate rule: Product/runtime authority remains `NO`.
+- Future runtime/product, CI enforcement and release/commercial gates: `NOT_AUTHORIZED_NOW`, `REQUIRES_SEPARATE_EXPLICIT_OPERATOR_AUTHORIZATION`, `REQUIRES_NEW_BLOCK`, `REQUIRES_NO_GO_IF_AMBIGUOUS`.
+- Current posture: Product Ledger local/dev readiness `90%`, audit/operator-review readiness `99%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 manual/operator gate ambiguity is reduced but future gates still require operator decisions; P4 table intentionally repeats blocked states to reduce ambiguity.
+- Next recommended macro-block: `STOP_AFTER_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
+- Authorization note: E14 does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.

@@ -19,6 +19,7 @@
 | `docs/audit/product-ledger-local-dev/operator-submission-packet.md` | E10 operator submission packet. It prepares manual operator submission only; no external review result exists yet. |
 | `docs/audit/product-ledger-local-dev/external-review-response-intake.md` | E11 response intake scaffold plus E12 wait-closure record. It records no external response, no external approval and no reviewer findings. |
 | `docs/audit/product-ledger-local-dev/internal-continuation-gate-reconciliation.md` | E13 internal continuation gate reconciliation. It recommends a safe internal manual-gate table and creates no product authority. |
+| `docs/audit/product-ledger-local-dev/manual-gate-decision-table.md` | E14 manual gate decision table. It clarifies operator/manual gates and creates no product/runtime authority. |
 
 ## Historical / Block-Specific Evidence
 
@@ -36,6 +37,6 @@ Older QA, handoff, roadmap and ADR files remain traceability. They should not be
 
 ## Next Recommended Block
 
-`STOP_FOR_OPERATOR_DECISION_ON_NEXT_INTERNAL_SAFE_GATE`
+`STOP_AFTER_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`
 
-E13 reconciles internal continuation after external wait closure and recommends `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_DOCS_TEST_ONLY`. E13 does not record external approval, does not claim external audit pass and does not authorize runtime/product work.
+E14 clarifies manual/operator gates and adds a focal Safety guard. E14 does not record external approval, does not claim external audit pass and does not authorize runtime/product work.

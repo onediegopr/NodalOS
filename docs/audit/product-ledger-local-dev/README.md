@@ -34,6 +34,7 @@ Current authority entrypoints:
 - `operator-submission-packet.md`
 - `external-review-response-intake.md`
 - `internal-continuation-gate-reconciliation.md`
+- `manual-gate-decision-table.md`
 
 ## Reviewer Rule
 
@@ -70,3 +71,9 @@ E13 internal continuation reconciliation: `internal-continuation-gate-reconcilia
 E13 resulting state: `INTERNAL_CONTINUATION_GATE_RECONCILED_NO_PRODUCT_AUTHORITY`.
 
 E13 recommends `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_DOCS_TEST_ONLY` as the next internal safe gate and stops for operator decision. It does not authorize runtime/product.
+
+E14 manual gate decision table: `manual-gate-decision-table.md`.
+
+E14 resulting state: `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
+
+E14 clarifies manual/operator gates and adds a focal Safety guard. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.

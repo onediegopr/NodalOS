@@ -44,6 +44,8 @@ E12 later recorded Diego's decision `CLOSE_EXTERNAL_REVIEW_WAIT_WITHOUT_EXTERNAL
 
 E13 later added `docs/audit/product-ledger-local-dev/internal-continuation-gate-reconciliation.md` and selected `STOP_FOR_OPERATOR_DECISION_ON_NEXT_INTERNAL_SAFE_GATE`. E13 recommends `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_DOCS_TEST_ONLY` as a future internal safe gate. E13 does not convert internal continuation into external approval and does not authorize runtime/product.
 
+E14 later added `docs/audit/product-ledger-local-dev/manual-gate-decision-table.md`, guarded it with `ProductLedgerLocalDevCanonGuardTests` and selected `STOP_AFTER_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`. E14 clarifies manual/operator gates only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.

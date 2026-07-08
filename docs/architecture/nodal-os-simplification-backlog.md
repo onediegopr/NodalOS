@@ -492,6 +492,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_INTERNAL_SAFE_GATE`.
 - Authorization note: E13 does not authorize the next gate, runtime/product, implementation, CI enforcement or release/commercial work.
 
+## BLOCK E14 - Product Ledger Manual Gate Decision Table
+
+- Objective: create a canonical decision table for Product Ledger local/dev manual/operator gates.
+- Status: completed as docs/test-only in `docs/audit/product-ledger-local-dev/manual-gate-decision-table.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_READY`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
+- Source changed: none.
+- Tests changed: `ProductLedgerLocalDevCanonGuardTests` gained a focal guard for the decision table.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Future gates: runtime/product, CI enforcement and release/commercial remain `NOT_AUTHORIZED_NOW` and require separate explicit operator authorization.
+- Findings: P0=0, P1=0, P2=0; P3 manual/operator gate ambiguity is reduced but future gates still require operator decisions; P4 table intentionally repeats blocked states to reduce ambiguity.
+- Current posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Next recommended macro-block: `STOP_AFTER_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
+- Authorization note: E14 does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
