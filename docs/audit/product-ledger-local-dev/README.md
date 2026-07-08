@@ -36,6 +36,7 @@ Current authority entrypoints:
 - `internal-continuation-gate-reconciliation.md`
 - `manual-gate-decision-table.md`
 - `no-authority-static-scan-contract.md`
+- `internal-packet-closeout-e2-e15.md`
 
 ## Reviewer Rule
 
@@ -84,3 +85,9 @@ E15 no-authority static scan contract: `no-authority-static-scan-contract.md`.
 E15 resulting state: `PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENED`.
 
 E15 hardens no-authority scans and the focal Safety guard. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
+E16 internal packet closeout: `internal-packet-closeout-e2-e15.md`.
+
+E16 resulting state: `PRODUCT_LEDGER_LOCAL_DEV_E2_E15_INTERNAL_PACKET_CLOSED_NO_PRODUCT_AUTHORITY`.
+
+E16 closes the internal Product Ledger local/dev E2-E15 packet for current documentation/test-only purposes. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.

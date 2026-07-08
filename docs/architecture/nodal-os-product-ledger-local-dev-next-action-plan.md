@@ -48,6 +48,8 @@ E14 later added `docs/audit/product-ledger-local-dev/manual-gate-decision-table.
 
 E15 later added `docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md`, hardened `ProductLedgerLocalDevCanonGuardTests` and selected `STOP_AFTER_NO_AUTHORITY_STATIC_SCAN_HARDENED_NO_PRODUCT_AUTHORITY`. E15 hardens no-authority scan interpretation only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
 
+E16 later added `docs/audit/product-ledger-local-dev/internal-packet-closeout-e2-e15.md` and selected `STOP_AFTER_PRODUCT_LEDGER_LOCAL_DEV_INTERNAL_PACKET_CLOSEOUT_NO_PRODUCT_AUTHORITY`. E16 closes the internal local/dev E2-E15 packet only and recommends `PAUSE_PRODUCT_LEDGER_LOCAL_DEV_LINE_AND_RETURN_TO_ROADMAP_MAIN`. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.
