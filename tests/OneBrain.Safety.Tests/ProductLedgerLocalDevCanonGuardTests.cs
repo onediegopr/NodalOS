@@ -22,6 +22,7 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
     private const string ManualGateDecisionTablePath = "docs/audit/product-ledger-local-dev/manual-gate-decision-table.md";
     private const string ExternalReviewResponseIntakePath = "docs/audit/product-ledger-local-dev/external-review-response-intake.md";
     private const string NoAuthorityStaticScanContractPath = "docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md";
+    private const string CurrentAuthorityMapPath = "docs/audit/product-ledger-local-dev/current-authority-map.md";
 
     [TestMethod]
     public void ProductLedgerLocalDevCanonExistsAndIsCurrentAuthority()
@@ -159,6 +160,38 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
         StringAssert.Contains(intake, "External response status: `NO_EXTERNAL_RESPONSE_RECORDED`.");
         StringAssert.Contains(intake, "- No external audit pass is claimed.");
         AssertDoesNotContainPositiveProductReadinessClaim(table);
+    }
+
+    [TestMethod]
+    public void ProductLedgerLocalDevAuthorityMapTerminologyRemainsLocalDevOnlyAndNoProductAuthority()
+    {
+        var authorityMap = ReadRepoFile(CurrentAuthorityMapPath);
+        var canon = ReadRepoFile(CanonPath);
+
+        StringAssert.Contains(authorityMap, "local/dev documentary authority");
+        StringAssert.Contains(authorityMap, "current canon reference for Product Ledger local/dev review");
+        StringAssert.Contains(authorityMap, "does not mean runtime/product authority");
+        StringAssert.Contains(authorityMap, "public/product authority");
+        StringAssert.Contains(authorityMap, "Production route authority");
+        StringAssert.Contains(authorityMap, "latest pointer authority");
+        StringAssert.Contains(authorityMap, "read precedence authority");
+        StringAssert.Contains(authorityMap, "product authority");
+        StringAssert.Contains(authorityMap, "Product Ledger writer/runtime authority");
+        StringAssert.Contains(authorityMap, "Local-only ledger authority is not product authority.");
+        StringAssert.Contains(authorityMap, "Local-only ledger authority is not runtime authority.");
+        StringAssert.Contains(authorityMap, "Local-only ledger authority is not latest pointer authority.");
+        StringAssert.Contains(authorityMap, "Local-only ledger authority is not read precedence authority.");
+        StringAssert.Contains(authorityMap, "Local-only ledger authority does not make a Product Ledger writer/runtime real.");
+        StringAssert.Contains(authorityMap, "does not enable DB/cloud/network/provider, KMS/WORM, CI enforcement or release/commercial readiness");
+
+        StringAssert.Contains(canon, "local/dev documentary authority");
+        StringAssert.Contains(canon, "does not grant runtime/product authority");
+        StringAssert.Contains(canon, "latest pointer authority");
+        StringAssert.Contains(canon, "read precedence authority");
+        StringAssert.Contains(canon, "Product Ledger writer/runtime authority");
+        StringAssert.Contains(canon, "not CI enforcement, not product authority and not runtime authority");
+        AssertDoesNotContainPositiveProductReadinessClaim(authorityMap);
+        AssertDoesNotContainPositiveProductReadinessClaim(canon);
     }
 
     private static void AssertDoesNotContainPositiveProductReadinessClaim(string canon)

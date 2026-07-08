@@ -2,11 +2,17 @@
 
 ## Current Authority
 
+Authority terminology in this file is scoped to `local/dev documentary authority`.
+
+`local/dev documentary authority` means this packet is the current canon reference for Product Ledger local/dev review, blocked-state interpretation and audit handoff ordering. It does not mean runtime/product authority, public/product authority, Production route authority, latest pointer authority, read precedence authority, product authority or Product Ledger writer/runtime authority.
+
+When source or test artifacts use terms such as local ledger authority, active writer authority or authoritative evidence, read them as local-only evidence authority inside the Product Ledger local/dev canon unless a later explicit operator-authorized product gate says otherwise. This map does not change source-of-truth product behavior and does not enable DB/cloud/network/provider, KMS/WORM, CI enforcement or release/commercial readiness.
+
 | Artifact | Role |
 | --- | --- |
-| `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` | Current Product Ledger local/dev canon for blocked-state interpretation. |
-| `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md` | Current next-action selection logic and safe-lane ordering. |
-| `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md` | Index of high-risk historical entrypoints cross-linked back to current authority. |
+| `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` | Current Product Ledger local/dev canon reference for blocked-state interpretation; local/dev documentary authority only, not product authority. |
+| `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md` | Current local/dev next-action selection logic and safe-lane ordering; not runtime/product authority. |
+| `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md` | Index of high-risk historical entrypoints cross-linked back to local/dev documentary authority. |
 | `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs` | Test-only guard proving the canon still carries required blocked-state wording. |
 
 ## Review Evidence
@@ -36,6 +42,11 @@ Older QA, handoff, roadmap and ADR files remain traceability. They should not be
 - CI enforcement remains `0%`.
 - Runtime/product enablement remains `0%`.
 - Release/commercial readiness remains `0% / NO-GO`.
+- Local-only ledger authority is not product authority.
+- Local-only ledger authority is not runtime authority.
+- Local-only ledger authority is not latest pointer authority.
+- Local-only ledger authority is not read precedence authority.
+- Local-only ledger authority does not make a Product Ledger writer/runtime real.
 
 ## Next Recommended Block
 

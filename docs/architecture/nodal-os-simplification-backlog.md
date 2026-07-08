@@ -1044,3 +1044,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 source-side local ledger authority vocabulary and docs-side no-product-authority vocabulary need reconciliation before model/source consolidation; P4 selected target is small and terminology-heavy.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_PRODUCT_LEDGER_MODEL_CONSOLIDATION_TARGET`.
 - Authorization note: MR3 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, broad common-contract implementation, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR4 - Product Ledger Authority Map Terminology Reconciliation
+
+- Objective: reconcile Product Ledger authority-map/canon terminology so local-only ledger authority cannot be read as product/runtime, latest pointer, read precedence or product authority.
+- Status: completed as docs/test-only in `docs/audit/product-ledger-local-dev/current-authority-map.md`, `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` and `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILED_READY`.
+- Resulting state: `PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Guard added: `ProductLedgerLocalDevAuthorityMapTerminologyRemainsLocalDevOnlyAndNoProductAuthority`.
+- Source changed: none.
+- Tests changed: one focal Product Ledger local/dev canon guard only.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `53%`; double-truth mitigation confidence `76%`; Product Ledger local/dev readiness `93%`; global roadmap readiness `82%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 source/model consolidation remains deferred; P4 terminology guard is narrow and does not reduce source bloat.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR4 reconciles terminology only. It does not authorize source changes, model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, CI enforcement, runtime/product, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

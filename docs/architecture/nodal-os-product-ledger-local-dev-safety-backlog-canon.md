@@ -26,6 +26,8 @@ This canon reconciles the distributed Product Ledger backlog after E1. It does n
 
 This document is the current Product Ledger local/dev canon for blocked-state interpretation until a later authorized canon replaces it.
 
+Terminology note: this canon and the Product Ledger local/dev authority map use authority wording only as `local/dev documentary authority`, meaning the current review and audit reference for local/internal evidence. That wording does not grant runtime/product authority, public/product authority, Production route authority, latest pointer authority, read precedence authority, product authority or Product Ledger writer/runtime authority.
+
 ## 2. Implemented Local/Dev Evidence
 
 Implemented or previously validated as local/dev evidence:
@@ -76,6 +78,8 @@ The current Product Ledger evidence surface is protected by manual/discovery-onl
 These tests are evidence, not CI enforcement. Passing them does not mean public/product readiness.
 
 Safety/Recipes remain the authoritative evidence surface for Product Ledger local/dev, together with the manual/discovery-only Tier 1 guard commands listed below.
+
+Here `authoritative evidence surface` means manual/discovery-only local/dev evidence for review and safety checking. It is not CI enforcement, not product authority and not runtime authority.
 
 ## 5. Docs-Only Evidence
 

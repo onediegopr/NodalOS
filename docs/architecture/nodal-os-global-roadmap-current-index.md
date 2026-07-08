@@ -241,6 +241,14 @@ Selected next block:
 
 `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
 
+Current authority-map terminology reconciliation:
+
+`PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`
+
+Implemented guard:
+
+`ProductLedgerLocalDevAuthorityMapTerminologyRemainsLocalDevOnlyAndNoProductAuthority`
+
 ## Findings
 
 P0: 0.
@@ -256,6 +264,7 @@ P3:
 - Product Ledger/model consolidation and broad common-contract work remain deferred due to double-truth risk.
 - Product Ledger/model consolidation readiness is now audited, but implementation remains deferred until a one-target scope-selection audit names an authority owner and no-double-truth proof.
 - Product Ledger/model consolidation scope is now selected as authority-map terminology reconciliation only; model/source consolidation remains deferred.
+- Product Ledger authority-map terminology now distinguishes local/dev documentary authority from product/runtime, latest pointer and read precedence authority.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:
