@@ -2645,3 +2645,20 @@
 - Findings: P0=0, P1=0, P2=0; P3 negative/no-go wording is frequent in current docs and must be allowlisted before any future phrase expansion; P4 external audit and DB/cloud/KMS/WORM phrases remain deferred until their own corpus can be safely scoped.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_FORBIDDEN_PHRASE_EXPANSION_IMPLEMENTATION_SCOPE`.
 - Authorization note: this block selects only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## AUTHORIZE_NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY`.
+- Baseline: `ab9ba8dc522c62fcc586a5d6378a027cd04d6cc2`.
+- Resulting state: `FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY`.
+- Scope: test-only focal/docs-minimal narrow forbidden phrase guard. No `src/`, workflows, CI enforcement, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM, broad docs scan or release/commercial changes.
+- Test added: `StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist` in `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs`.
+- Corpus guarded: `docs/architecture/nodal-os-global-roadmap-current-index.md`, `docs/architecture/nodal-os-static-guard-catalog-coverage-map.md`, `docs/architecture/nodal-os-static-guard-catalog-metadata-consistency-check.md`, `docs/architecture/nodal-os-simplification-backlog.md` and `docs/decision-log.md`.
+- Families covered: runtime/product authority, public/product, Production route, latest pointer/read precedence, CI enforcement and release/commercial claims.
+- Deferred families: external audit approval and DB/cloud/network/KMS/WORM capability claims.
+- Validated: Safety test project build PASS; exact new test `1/1 PASS`; `NodalOsStaticGuardCatalogTests` class `11/11 PASS`.
+- Runner note: `TestCategory=StaticGuard` timed out locally and was cleaned up; exact/class filters remain the safe evidence path for this lane.
+- Current posture: Static Guard Catalog readiness `95%`; forbidden phrase expansion readiness `78%`; Tier 1 label coverage `71%`; metadata consistency confidence `83%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broader StaticGuard category filter is still locally unsafe; P4 external audit and DB/cloud/KMS/WORM families remain deferred.
+- Next recommended macro-block: `STOP_AFTER_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY_NO_CI_NO_RUNTIME_PRODUCT`.
+- Authorization note: this block implements only the narrow test guard. It does not authorize source changes, broad docs scans, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

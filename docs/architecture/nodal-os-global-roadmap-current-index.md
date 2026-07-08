@@ -153,6 +153,14 @@ Selected next block:
 
 `NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_TEST_ONLY`
 
+Current narrow guard state:
+
+`FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY`
+
+Implemented focal guard:
+
+`StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`
+
 ## Findings
 
 P0: 0.

@@ -14,6 +14,12 @@ Resulting state: `FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTED_NO_IMPLEMENTATION`.
 
 Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_FORBIDDEN_PHRASE_EXPANSION_IMPLEMENTATION_SCOPE`.
 
+Current follow-up implementation state: `FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY`.
+
+Follow-up guard:
+
+`StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`
+
 ## Executive Verdict
 
 The next safe Static Guard increment is a narrow, test-only forbidden phrase expansion, but only after this corpus selection. The future guard must scan a small current corpus, must honor negative/no-go wording and must not become a broad docs gate or CI enforcement.
@@ -31,9 +37,9 @@ This block selects only. It does not add forbidden fragments, edit tests, touch 
 Current posture:
 
 - Static Guard Catalog readiness: `94%`.
-- Forbidden phrase expansion readiness: `67%`.
-- Tier 1 label coverage: `70%`.
-- Metadata consistency confidence: `82%`.
+- Forbidden phrase expansion readiness: `78%`.
+- Tier 1 label coverage: `71%`.
+- Metadata consistency confidence: `83%`.
 - Runtime/product enablement: `0%`.
 - CI enforcement: `0%`.
 - Release/commercial: `0% / NO-GO`.
@@ -113,6 +119,15 @@ Exact next block:
 
 `NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_TEST_ONLY`
 
+Implementation result:
+
+- Status: completed as narrow Safety test-only guard.
+- Test added: `StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`.
+- Corpus used: exactly the selected five files listed above.
+- Families implemented: runtime/product, public/product, Production route, latest pointer/read precedence, CI enforcement and release/commercial.
+- Families still deferred: external audit approval and DB/cloud/network/KMS/WORM capability claims.
+- Broad `docs/` scan remains blocked.
+
 Allowed scope:
 
 - Add or update focused Safety tests only.
@@ -163,9 +178,10 @@ P2: 0.
 
 P3:
 
-- Forbidden phrase expansion is worthwhile but only for a narrow current corpus.
-- Release/commercial, CI and runtime/product wording is intentionally repeated in negative form across closeout records.
+- Forbidden phrase expansion is now guarded for the narrow current corpus only.
+- Release/commercial, CI and runtime/product wording remains intentionally repeated in negative form across closeout records.
 - Product Ledger local/dev and external-review docs should remain out of the first implementation corpus to avoid false positives.
+- The broader `TestCategory=StaticGuard` local filter timed out in this environment after the exact test and class filter passed; use exact/class filters for this lane until runner behavior is separately fixed.
 
 P4:
 
@@ -173,4 +189,4 @@ P4:
 
 ## Final Boundary
 
-This block selects corpus, phrase families, allowlist rules and the next test-only contract. It does not implement forbidden phrase expansion, edit tests, touch source, change CI, broaden static scans, authorize runtime/product, authorize release/commercial or claim product authority.
+This line now has a narrow test-only guard for the selected corpus. It does not touch source, change CI, broaden static scans, authorize runtime/product, authorize release/commercial or claim product authority.

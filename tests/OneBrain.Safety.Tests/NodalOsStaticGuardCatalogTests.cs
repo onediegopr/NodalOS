@@ -289,6 +289,86 @@ public sealed class NodalOsStaticGuardCatalogTests
         AssertDoesNotContainAuthorityOrCiLabels(staticGuardMethodCategories, nameof(StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing));
     }
 
+    [TestMethod]
+    [TestCategory("RunClaimCoherence")]
+    [TestCategory("NoRuntimeWiring")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("LatestPointerBlock")]
+    [TestCategory("ReadPrecedenceBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
+    public void StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist()
+    {
+        var allowedNegativeSamples = string.Join(
+            Environment.NewLine,
+            "no runtime/product enabled",
+            "does not authorize runtime/product",
+            "runtime/product remains 0%",
+            "NOT_AUTHORIZED_NOW",
+            "No public/product",
+            "public/product remains blocked",
+            "No Production route",
+            "Production route remains blocked",
+            "No latest pointer",
+            "No active read precedence",
+            "CI changed: none",
+            "no CI enforcement",
+            "Release/commercial: 0% / NO-GO",
+            "not enabled and not release/commercial ready",
+            "Non-goals: runtime enabled by default");
+
+        AssertNoNarrowForbiddenPhraseMatches(
+            allowedNegativeSamples,
+            context: nameof(allowedNegativeSamples));
+
+        var positiveSamples = string.Join(
+            Environment.NewLine,
+            "runtime/product ready",
+            "product enabled",
+            "public route live",
+            "Production route enabled",
+            "latest pointer promoted",
+            "read precedence changed",
+            "CI enforcement active",
+            "release approved",
+            "commercial ready");
+
+        var positiveMatches = ScanNarrowForbiddenPhraseLines(
+            positiveSamples,
+            context: nameof(positiveSamples));
+
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "RuntimeProduct");
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "PublicProduct");
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "ProductionRoute");
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "LatestPointerReadPrecedence");
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "CiEnforcement");
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "ReleaseCommercial");
+
+        var separatePositiveClaim = string.Join(
+            Environment.NewLine,
+            "runtime/product remains 0%.",
+            "release approved");
+
+        var separateMatches = ScanNarrowForbiddenPhraseLines(
+            separatePositiveClaim,
+            context: nameof(separatePositiveClaim));
+
+        Assert.AreEqual(1, separateMatches.Count, string.Join(", ", separateMatches.Select(match => match.Fragment)));
+        Assert.AreEqual("ReleaseCommercial", separateMatches[0].Category);
+
+        foreach (var corpusFile in NarrowForbiddenPhraseCorpusFiles())
+        {
+            var matches = ScanNarrowForbiddenPhraseLines(
+                System.IO.File.ReadAllText(corpusFile),
+                context: corpusFile);
+
+            Assert.AreEqual(
+                0,
+                matches.Count,
+                string.Join(Environment.NewLine, matches.Select(match => match.ToString())));
+        }
+    }
+
     private static string[] CategoriesFor(Type type) =>
         type.GetCustomAttributes(typeof(TestCategoryAttribute), inherit: false)
             .Cast<TestCategoryAttribute>()
@@ -313,4 +393,148 @@ public sealed class NodalOsStaticGuardCatalogTests
             Assert.IsFalse(categories.Contains(forbidden), $"{context}: {forbidden}");
         }
     }
+
+    private static string[] NarrowForbiddenPhraseCorpusFiles()
+    {
+        var root = RepositoryRoot();
+
+        return
+        [
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-global-roadmap-current-index.md"),
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-static-guard-catalog-coverage-map.md"),
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-static-guard-catalog-metadata-consistency-check.md"),
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-simplification-backlog.md"),
+            System.IO.Path.Combine(root, "docs/decision-log.md")
+        ];
+    }
+
+    private static string RepositoryRoot()
+    {
+        var current = AppContext.BaseDirectory;
+
+        while (!string.IsNullOrWhiteSpace(current))
+        {
+            var marker = System.IO.Path.Combine(
+                current,
+                "docs/architecture/nodal-os-global-roadmap-current-index.md");
+
+            if (System.IO.File.Exists(marker))
+            {
+                return current;
+            }
+
+            current = System.IO.Directory.GetParent(current)?.FullName;
+        }
+
+        throw new InvalidOperationException("Repository root not found for narrow forbidden phrase corpus.");
+    }
+
+    private static void AssertNoNarrowForbiddenPhraseMatches(string source, string context)
+    {
+        var matches = ScanNarrowForbiddenPhraseLines(source, context);
+
+        Assert.AreEqual(
+            0,
+            matches.Count,
+            string.Join(Environment.NewLine, matches.Select(match => match.ToString())));
+    }
+
+    private static IReadOnlyList<NarrowForbiddenPhraseMatch> ScanNarrowForbiddenPhraseLines(
+        string source,
+        string context)
+    {
+        var matches = new List<NarrowForbiddenPhraseMatch>();
+        var lines = source.Replace("\r\n", "\n").Split('\n');
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            foreach (var segment in SplitClaimSegments(lines[lineIndex]))
+            {
+                foreach (var phrase in NarrowForbiddenPositivePhrases())
+                {
+                    if (segment.Contains(phrase.Fragment, StringComparison.OrdinalIgnoreCase)
+                        && !IsAllowedNegativeForbiddenPhraseContext(segment))
+                    {
+                        matches.Add(new NarrowForbiddenPhraseMatch(
+                            context,
+                            lineIndex + 1,
+                            phrase.Category,
+                            phrase.Fragment,
+                            segment.Trim()));
+                    }
+                }
+            }
+        }
+
+        return matches;
+    }
+
+    private static IEnumerable<string> SplitClaimSegments(string line) =>
+        line.Split(['.', ';'], StringSplitOptions.RemoveEmptyEntries);
+
+    private static bool IsAllowedNegativeForbiddenPhraseContext(string segment)
+    {
+        var value = segment.Trim().ToLowerInvariant();
+
+        return value.StartsWith("- non-goals:", StringComparison.Ordinal)
+            || value.Contains("non-goals:", StringComparison.Ordinal)
+            || value.Contains(" no ", StringComparison.Ordinal)
+            || value.StartsWith("no ", StringComparison.Ordinal)
+            || value.Contains(" not ", StringComparison.Ordinal)
+            || value.StartsWith("not ", StringComparison.Ordinal)
+            || value.Contains("does not authorize", StringComparison.Ordinal)
+            || value.Contains("does not enable", StringComparison.Ordinal)
+            || value.Contains("remains blocked", StringComparison.Ordinal)
+            || value.Contains("remains 0%", StringComparison.Ordinal)
+            || value.Contains("no-go", StringComparison.Ordinal)
+            || value.Contains("not_authorized_now", StringComparison.Ordinal)
+            || value.Contains("blocked", StringComparison.Ordinal)
+            || value.Contains("denied", StringComparison.Ordinal)
+            || value.Contains("not claimed", StringComparison.Ordinal)
+            || value.Contains("historical", StringComparison.Ordinal)
+            || value.Contains("superseded", StringComparison.Ordinal)
+            || value.Contains("future", StringComparison.Ordinal)
+            || value.Contains("requires separate explicit operator authorization", StringComparison.Ordinal)
+            || value.Contains("requires explicit operator authorization", StringComparison.Ordinal)
+            || value.Contains("ci changed: none", StringComparison.Ordinal)
+            || value.Contains("runtime/product changed: none", StringComparison.Ordinal);
+    }
+
+    private static IReadOnlyList<(string Category, string Fragment)> NarrowForbiddenPositivePhrases() =>
+    [
+        ("RuntimeProduct", "runtime enabled"),
+        ("RuntimeProduct", "product enabled"),
+        ("RuntimeProduct", "runtime/product ready"),
+        ("RuntimeProduct", "product authority granted"),
+        ("PublicProduct", "public product enabled"),
+        ("PublicProduct", "public route live"),
+        ("PublicProduct", "product surface live"),
+        ("PublicProduct", "public/product exposure implemented"),
+        ("PublicProduct", "Product Ledger public product route is live"),
+        ("ProductionRoute", "production route enabled"),
+        ("ProductionRoute", "production route active"),
+        ("ProductionRoute", "production route ready"),
+        ("ProductionRoute", "Production route is live"),
+        ("LatestPointerReadPrecedence", "latest pointer promoted"),
+        ("LatestPointerReadPrecedence", "latest pointer enabled"),
+        ("LatestPointerReadPrecedence", "read precedence changed"),
+        ("LatestPointerReadPrecedence", "read precedence enabled"),
+        ("LatestPointerReadPrecedence", "authoritative read path changed"),
+        ("CiEnforcement", "CI enforced"),
+        ("CiEnforcement", "CI gate active"),
+        ("CiEnforcement", "CI blocks release"),
+        ("CiEnforcement", "CI enforcement active"),
+        ("ReleaseCommercial", "release approved"),
+        ("ReleaseCommercial", "commercial ready"),
+        ("ReleaseCommercial", "launch ready"),
+        ("ReleaseCommercial", "production-ready"),
+        ("ReleaseCommercial", "release ready")
+    ];
+
+    private sealed record NarrowForbiddenPhraseMatch(
+        string Context,
+        int Line,
+        string Category,
+        string Fragment,
+        string Text);
 }

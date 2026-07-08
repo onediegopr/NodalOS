@@ -899,3 +899,25 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 first implementation must prove negative/no-go allowlist before failing current corpus; P4 external audit and DB/cloud/KMS/WORM families are valid later but too noisy for the first narrow guard.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_FORBIDDEN_PHRASE_EXPANSION_IMPLEMENTATION_SCOPE`.
 - Authorization note: SG5 selects corpus and contract only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## BLOCK SG6 - Forbidden Phrase Expansion Narrow Guard
+
+- Objective: implement the selected narrow forbidden phrase expansion guard over the selected corpus without broad docs scan or CI enforcement.
+- Status: completed as Safety test-only/docs-minimal in `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs`.
+- Decision: `GO_WITH_FINDINGS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY`.
+- Resulting state: `FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY`.
+- Guard added: `StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`.
+- Corpus guarded: current roadmap index, Static Guard coverage map, metadata consistency check, simplification backlog and decision-log.
+- Families covered: runtime/product authority, public/product, Production route, latest pointer/read precedence, CI enforcement and release/commercial claims.
+- Negative allowlist implemented: local line/sentence markers for `no`, `not`, `does not authorize`, `does not enable`, `remains blocked`, `remains 0%`, `NO-GO`, `NOT_AUTHORIZED_NOW`, `historical`, `superseded`, `future`, explicit operator authorization and no-change closeout wording.
+- Deferred families: external audit approval and DB/cloud/network/KMS/WORM.
+- Source changed: none.
+- Tests changed: one focal Safety test method only.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Validated: Safety test project build PASS; exact new test `1/1 PASS`; `NodalOsStaticGuardCatalogTests` class `11/11 PASS`.
+- Runner note: `TestCategory=StaticGuard` timed out locally and was cleaned up; exact/class filters are the current safe gate for this lane.
+- Current posture: Static Guard Catalog readiness `95%`; forbidden phrase expansion readiness `78%`; Tier 1 label coverage `71%`; metadata consistency confidence `83%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broader StaticGuard category filter remains locally unsafe; P4 deferred phrase families are valid later but need a separate corpus selection.
+- Stop condition: `STOP_AFTER_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY_NO_CI_NO_RUNTIME_PRODUCT`.
+- Authorization note: SG6 implements only the narrow test guard. It does not authorize source changes, broad docs scans, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
