@@ -190,6 +190,10 @@ Bounded micro-target lane closeout: `PRODUCT_LEDGER_BOUNDED_MICRO_TARGET_LANE_CL
 
 Closeout result: MR14-MR17 are closed as bounded/no-runtime micro-targets with focal guards. No further provider/model rename lane is recommended without a more substantive operator-selected target. Next selected scope: `NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AFTER_PRODUCT_LEDGER_MICRO_LANE_CLOSEOUT`.
 
+Main-roadmap return after micro-lane: `MAIN_ROADMAP_NEXT_SAFE_GATE_AFTER_PRODUCT_LEDGER_MICRO_LANE_SELECTED_NO_IMPLEMENTATION`.
+
+Selected next gate: `NODAL_OS_SOURCE_REFACTOR_NEXT_BOUNDED_MICRO_TARGET_IMPLEMENT_OR_NO_GO`. The next block must choose exactly one bounded/no-runtime source-refactor micro-target or close NO-GO; it must not reopen Product Ledger rename churn, broad common-contract work, runtime/product, CI enforcement or release/commercial.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

@@ -64,6 +64,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 further Product Ledger provider/model cleanup should require a more substantive operator-selected target; P4 local rename lane is intentionally stopped to avoid churn.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_NEXT_REAL_SCOPE_OR_MAIN_ROADMAP_RETURN`.
 
+## AUTHORIZE_NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AFTER_PRODUCT_LEDGER_MICRO_LANE_CLOSEOUT
+
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_GATE_AFTER_PRODUCT_LEDGER_MICRO_LANE_SELECTED_READY`.
+- Input HEAD: `deb82478f9d9f7a93488bf1b4626cba8bd8ec6fe`.
+- Resulting state: `MAIN_ROADMAP_NEXT_SAFE_GATE_AFTER_PRODUCT_LEDGER_MICRO_LANE_SELECTED_NO_IMPLEMENTATION`.
+- Gate selected: `NODAL_OS_SOURCE_REFACTOR_NEXT_BOUNDED_MICRO_TARGET_IMPLEMENT_OR_NO_GO`.
+- Selection rationale: Product Ledger rename lane is closed; the next useful roadmap step should seek one bounded/no-runtime source-refactor micro-target or close NO-GO instead of adding another Product Ledger selector.
+- Boundary: docs-only selection; no `src/`, tests, implementation, CI/workflows, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 source-refactor target is not yet selected and must be proven in the next block; P4 selector overhead accepted because it returns control to the main roadmap.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_MAIN_ROADMAP_GATE_AFTER_PRODUCT_LEDGER_MICRO_LANE`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

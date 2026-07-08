@@ -373,6 +373,25 @@ Recommended next block:
 
 `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
 
+Current Product Ledger bounded micro-target lane closeout:
+
+`PRODUCT_LEDGER_BOUNDED_MICRO_TARGET_LANE_CLOSED_NO_PRODUCT_AUTHORITY`
+
+Current main-roadmap next gate selection after Product Ledger micro-lane:
+
+`MAIN_ROADMAP_NEXT_SAFE_GATE_AFTER_PRODUCT_LEDGER_MICRO_LANE_SELECTED_NO_IMPLEMENTATION`
+
+Selected next gate:
+
+`NODAL_OS_SOURCE_REFACTOR_NEXT_BOUNDED_MICRO_TARGET_IMPLEMENT_OR_NO_GO`
+
+Next gate contract:
+
+- select exactly one bounded/no-runtime source-refactor micro-target;
+- implement only if the target is safe, reversible and not broad common-contract work;
+- otherwise close NO-GO without source churn;
+- keep runtime/product, CI enforcement and release/commercial blocked.
+
 ## Findings
 
 P0: 0.
