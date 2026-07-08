@@ -2629,3 +2629,19 @@
 - Findings: P0=0, P1=0, P2=0; P3 phrase expansion is still useful but false-positive prone without corpus and negative allowlist rules; P4 Static Guard selection should remain narrow.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY`.
 - Authorization note: this block selects only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## AUTHORIZE_NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTION_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTED_READY`.
+- Baseline: `d4c80ad01cc7537aa685c5bdde283413a89077ea`.
+- Resulting state: `FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTED_NO_IMPLEMENTATION`.
+- Scope: docs-only/read-only/audit-only forbidden phrase expansion corpus selection. No `src/`, tests, workflows, CI enforcement, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM, broad phrase expansion or release/commercial changes.
+- Corpus selection added: `docs/architecture/nodal-os-forbidden-phrase-expansion-corpus-selection.md`.
+- Selected initial corpus: `docs/architecture/nodal-os-global-roadmap-current-index.md`, `docs/architecture/nodal-os-static-guard-catalog-coverage-map.md`, `docs/architecture/nodal-os-static-guard-catalog-metadata-consistency-check.md`, `docs/architecture/nodal-os-simplification-backlog.md` and `docs/decision-log.md`.
+- Selected first-implementation families: runtime/product authority claims, public/product claims, Production route claims, latest pointer/read precedence claims, CI enforcement claims and release/commercial claims.
+- Deferred families: external audit approval claims and DB/cloud/network/KMS/WORM capability claims.
+- Exact next block: `NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_TEST_ONLY`.
+- Current posture: Static Guard Catalog readiness `94%`; forbidden phrase expansion readiness `67%`; Tier 1 label coverage `70%`; metadata consistency confidence `82%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 negative/no-go wording is frequent in current docs and must be allowlisted before any future phrase expansion; P4 external audit and DB/cloud/KMS/WORM phrases remain deferred until their own corpus can be safely scoped.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_FORBIDDEN_PHRASE_EXPANSION_IMPLEMENTATION_SCOPE`.
+- Authorization note: this block selects only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

@@ -151,6 +151,20 @@ Selected next block:
 
 `NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTION_AUDIT_ONLY`
 
+## Current Forbidden Phrase Corpus Selection
+
+Current corpus selection record:
+
+`docs/architecture/nodal-os-forbidden-phrase-expansion-corpus-selection.md`
+
+Resulting state:
+
+`FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTED_NO_IMPLEMENTATION`
+
+Selected next block:
+
+`NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_TEST_ONLY`
+
 ## Findings
 
 P0: 0.

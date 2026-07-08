@@ -879,3 +879,23 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 phrase expansion is still useful but false-positive prone without corpus and negative allowlist rules; P4 Static Guard selection should remain narrow.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY`.
 - Authorization note: SG4 selects only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## BLOCK SG5 - Forbidden Phrase Expansion Corpus Selection
+
+- Objective: select a narrow future forbidden phrase expansion corpus, phrase families, negative allowlist and implementation contract without implementing the expansion.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-forbidden-phrase-expansion-corpus-selection.md`.
+- Decision: `GO_WITH_FINDINGS_FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTED_READY`.
+- Resulting state: `FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTED_NO_IMPLEMENTATION`.
+- Selected initial corpus: current roadmap index, Static Guard coverage map, metadata consistency check, simplification backlog and decision-log.
+- Deferred corpus: Product Ledger local/dev docs, source-refactor closeout docs, runner guidance docs and broad `docs/` tree scan.
+- Selected first-implementation families: runtime/product authority claims, public/product claims, Production route claims, latest pointer/read precedence claims, CI enforcement claims and release/commercial claims.
+- Deferred families: external audit approval claims and DB/cloud/network/KMS/WORM capability claims.
+- Exact next block: `NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_TEST_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Static Guard Catalog readiness `94%`; forbidden phrase expansion readiness `67%`; Tier 1 label coverage `70%`; metadata consistency confidence `82%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 first implementation must prove negative/no-go allowlist before failing current corpus; P4 external audit and DB/cloud/KMS/WORM families are valid later but too noisy for the first narrow guard.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_FORBIDDEN_PHRASE_EXPANSION_IMPLEMENTATION_SCOPE`.
+- Authorization note: SG5 selects corpus and contract only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
