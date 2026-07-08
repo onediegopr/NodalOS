@@ -265,6 +265,22 @@ Selected next block:
 
 `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
 
+Current authority-map no-double-truth equivalence audit:
+
+`docs/architecture/nodal-os-product-ledger-authority-map-no-double-truth-equivalence-audit.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDITED_NO_IMPLEMENTATION`
+
+Recommendation:
+
+`PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_CONFIRMED_RETURN_TO_SCOPE_SELECTION`
+
+Recommended next safe macro-block:
+
+`NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EQUIVALENCE_AUDIT_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -282,6 +298,7 @@ P3:
 - Product Ledger/model consolidation scope is now selected as authority-map terminology reconciliation only; model/source consolidation remains deferred.
 - Product Ledger authority-map terminology now distinguishes local/dev documentary authority from product/runtime, latest pointer and read precedence authority.
 - Product Ledger post-terminology next scope is selected as read-only no-double-truth equivalence audit; model/source consolidation remains deferred.
+- Product Ledger authority-map no-double-truth equivalence audit confirms the authority map, E2 canon and focal guard are equivalent; model/source consolidation remains deferred.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:

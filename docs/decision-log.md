@@ -9,6 +9,18 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READY`.
+- Input HEAD: `92688024ffe30b7133cd9c5fd2f457c0e8cb2ab6`.
+- Scope: read-only/docs-only/audit-only equivalence audit between Product Ledger authority map, E2 local/dev canon and focal guard.
+- Resulting state: `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDITED_NO_IMPLEMENTATION`.
+- Equivalence result: 13/13 assertions `EQUIVALENT_NO_DOUBLE_TRUTH`; no drift requiring docs reconciliation, no new test guard required and no `NO_GO_DOUBLE_TRUTH`.
+- Recommendation: `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_CONFIRMED_RETURN_TO_SCOPE_SELECTION`.
+- Selection: `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EQUIVALENCE_AUDIT_ONLY`.
+- Boundary: no `src/`, no tests, no CI/workflows, no runtime/product, no Product Ledger/model consolidation implementation, no writer/latest-state/operator-surface/common-boundary merge, no latest pointer/read precedence/product authority, no external audit approval claim, no DB/cloud/network/provider, no KMS/WORM, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 future writer/latest-state/operator-surface terminology remains higher-risk; P4 audit adds one docs artifact.
+
 ## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_POST_AUTHORITY_TERMINOLOGY_NEXT_SCOPE_SELECTION_AUDIT_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_SELECTED_READY`.

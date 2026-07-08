@@ -1077,3 +1077,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 model/source consolidation remains deferred until authority-map/canon/guard equivalence is audited; P4 one more read-only audit adds documentation overhead.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SAFE_SCOPE`.
 - Authorization note: MR5 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR6 - Product Ledger Authority Map No-Double-Truth Equivalence Audit
+
+- Objective: audit equivalence between the current authority map, E2 Product Ledger local/dev canon and focal guard without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-product-ledger-authority-map-no-double-truth-equivalence-audit.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READY`.
+- Resulting state: `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDITED_NO_IMPLEMENTATION`.
+- Equivalence result: 13/13 assertions `EQUIVALENT_NO_DOUBLE_TRUTH`; no drift requiring docs reconciliation, no new test guard required and no `NO_GO_DOUBLE_TRUTH`.
+- Recommendation: `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_CONFIRMED_RETURN_TO_SCOPE_SELECTION`.
+- Recommended next safe macro-block: `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EQUIVALENCE_AUDIT_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `55%`; double-truth mitigation confidence `82%`; Product Ledger local/dev readiness `93%`; global roadmap readiness `84%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 future writer/latest-state/operator-surface terminology remains higher-risk; P4 audit adds one more docs artifact but reduces ambiguity.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR6 audits only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

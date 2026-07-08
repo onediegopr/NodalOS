@@ -14,6 +14,10 @@ Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_POST_AUTHORITY_TERMINOLOGY_
 
 Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SAFE_SCOPE`.
 
+Follow-up status: the selected no-double-truth equivalence audit was executed in `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY` and records state `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDITED_NO_IMPLEMENTATION`.
+
+Follow-up audit: `docs/architecture/nodal-os-product-ledger-authority-map-no-double-truth-equivalence-audit.md`.
+
 ## Scope
 
 This selector evaluates the state after Product Ledger authority-map terminology reconciliation and selects exactly one next safe scope. It does not implement Product Ledger/model consolidation, edit `src/`, edit tests, change CI/workflows, enable runtime/product, create a latest pointer, activate read precedence, grant product authority, wire a Product Ledger writer/runtime, enable DB/cloud/network/provider, claim KMS/WORM/external trust, claim external audit approval or change release/commercial posture.
