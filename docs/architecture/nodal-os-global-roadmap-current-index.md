@@ -201,6 +201,18 @@ Selected main-roadmap next selector:
 
 `NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`
 
+Current main-roadmap safe gate selection:
+
+`docs/architecture/nodal-os-main-roadmap-next-safe-gate-selection.md`
+
+Resulting state:
+
+`MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTED_NO_IMPLEMENTATION`
+
+Selected next macro-block:
+
+`NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDIT_ONLY`
+
 ## Findings
 
 P0: 0.

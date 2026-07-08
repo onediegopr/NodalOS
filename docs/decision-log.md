@@ -37,6 +37,16 @@
 - Boundary: no `src/`, no tests, no broad docs scan, no CI/workflows, no runtime/product, no external audit approval claim, no DB/cloud/network/provider enablement, no KMS/WORM guarantee/external trust, no release/commercial.
 - Findings: P0 0, P1 0, P2 0; P3 further guard expansion risks churn/false positives and runner/build commands need explicit stable invocation; P4 Static Guard does not replace Product Ledger Safety/Recipes.
 
+## NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTED_READY`.
+- Input HEAD: `c2879613cf5cb9c013a11714daa0c36d3e351577`.
+- Scope: read-only/docs-only/audit-only main roadmap next safe gate selection.
+- Selection: `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDIT_ONLY`.
+- Resulting state: `MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTED_NO_IMPLEMENTATION`.
+- Boundary: no `src/`, no tests, no broad docs scan, no CI/workflows, no runtime/product, no Product Ledger/model consolidation implementation, no common-contract implementation, no external audit approval claim, no DB/cloud/network/provider enablement, no KMS/WORM guarantee/external trust, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 Product Ledger/model consolidation remains high-value but double-truth prone and must start as audit-only; P4 closed sublines should not reopen without a new finding.
+
 ## NODAL_OS_BLOCK_B_NAMING_CONSOLIDATION_DESIGN_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_NAMING_CONSOLIDATION_DESIGN_READY`.
