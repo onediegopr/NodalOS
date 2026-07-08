@@ -17,7 +17,7 @@
 | `docs/audit/product-ledger-local-dev/operator-review-handoff.md` | E8 operator handoff and E9 operator approval record. It is handoff evidence, not product authority. |
 | `docs/audit/product-ledger-local-dev/external-review-handoff.md` | E9 external/manual review handoff. It prepares operator submission only; Codex did not submit externally. |
 | `docs/audit/product-ledger-local-dev/operator-submission-packet.md` | E10 operator submission packet. It prepares manual operator submission only; no external review result exists yet. |
-| `docs/audit/product-ledger-local-dev/external-review-response-intake.md` | E11 response intake scaffold. It is pending operator submission or response and records no reviewer result yet. |
+| `docs/audit/product-ledger-local-dev/external-review-response-intake.md` | E11 response intake scaffold plus E12 wait-closure record. It records no external response, no external approval and no reviewer findings. |
 
 ## Historical / Block-Specific Evidence
 
@@ -35,6 +35,6 @@ Older QA, handoff, roadmap and ADR files remain traceability. They should not be
 
 ## Next Recommended Block
 
-`STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_AND_RETURN_RESPONSE`
+`STOP_AFTER_EXTERNAL_REVIEW_WAIT_CLOSED_INTERNAL_ONLY_NO_PRODUCT_AUTHORITY`
 
-E11 creates a response intake scaffold only. E11 does not submit externally, does not record an external response, does not complete external review and does not authorize runtime/product work.
+E12 closes the external review wait as internal/operator-attested only because no verified external response is available. E12 does not record external approval, does not claim external audit pass and does not authorize runtime/product work.

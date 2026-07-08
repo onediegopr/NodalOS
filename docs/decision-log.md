@@ -2294,3 +2294,20 @@
 - Findings: P0=0, P1=0, P2=0; P3 response scaffold can be misread as reviewer feedback if detached from E11 wording; P3 manual gates remain operator-run; P4 historical percentages/noisy anti-capability wording remain by design.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_AND_RETURN_RESPONSE`.
 - Authorization note: E11 creates a future intake scaffold only. E11 does not authorize feedback processing without Diego-provided response, runtime/product or release/commercial work.
+
+## NODAL_OS_BLOCK_E12_OPERATOR_DECISION_TO_CLOSE_EXTERNAL_REVIEW_WAIT_AND_CONTINUE_INTERNAL_ONLY
+
+- Decision: `GO_WITH_FINDINGS_EXTERNAL_REVIEW_WAIT_CLOSED_INTERNAL_ONLY_NO_RESPONSE_RECORDED`.
+- Baseline: `0ede9736d3b894e309fd35d13e31a9f0c3a1a55f`.
+- Operator decision: `CLOSE_EXTERNAL_REVIEW_WAIT_WITHOUT_EXTERNAL_RESPONSE_AND_CONTINUE_INTERNAL_ONLY`.
+- Resulting state: `EXTERNAL_REVIEW_WAIT_CLOSED_NO_EXTERNAL_RESPONSE_RECORDED_OPERATOR_INTERNAL_CONTINUATION`.
+- Scope: docs-only/read-only/operator-decision-record-only. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- External response recorded: no.
+- External review completed: no.
+- External audit pass claimed: no.
+- External approval claimed: no.
+- Continuation path: internal/operator-attested only.
+- Current posture: Product Ledger local/dev readiness `88%`, audit/operator-review readiness `99%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 external/manual review response absent and continuation is internal/operator-attested only; P4 historical/negative anti-capability wording remains by design.
+- Next recommended macro-block: `STOP_AFTER_EXTERNAL_REVIEW_WAIT_CLOSED_INTERNAL_ONLY_NO_PRODUCT_AUTHORITY`.
+- Authorization note: E12 does not authorize runtime/product, implementation, CI enforcement or release/commercial work.

@@ -14,6 +14,55 @@ External review response status: `PENDING_OPERATOR_SUBMISSION_OR_RESPONSE`.
 
 Stop condition: `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_AND_RETURN_RESPONSE`.
 
+## External Review Wait Closure Record
+
+Source: `OPERATOR_DECISION`.
+
+Operator decision: `CLOSE_EXTERNAL_REVIEW_WAIT_WITHOUT_EXTERNAL_RESPONSE_AND_CONTINUE_INTERNAL_ONLY`.
+
+External response status: `NO_EXTERNAL_RESPONSE_RECORDED`.
+
+External review status: `NOT_SUBMITTED_OR_NOT_VERIFIABLY_COMPLETED_IN_REPO_RECORD`.
+
+Resulting state: `EXTERNAL_REVIEW_WAIT_CLOSED_NO_EXTERNAL_RESPONSE_RECORDED_OPERATOR_INTERNAL_CONTINUATION`.
+
+Reason: Operator chose to continue without recording an external/manual reviewer response.
+
+Honesty statement:
+
+- No external reviewer response is recorded in this block.
+- No external approval is claimed.
+- No external audit pass is claimed.
+- No reviewer identity is claimed.
+- No reviewer findings are claimed.
+
+Scope limitation:
+
+- This is an internal/operator decision record only.
+- It does not grant runtime/product authority.
+- It does not grant public/product authority.
+- It does not grant Production route authority.
+- It does not grant latest pointer authority.
+- It does not grant read precedence authority.
+- It does not grant Product Ledger writer/runtime authority.
+- It does not grant DB/cloud/network/provider authority.
+- It does not grant KMS/WORM authority.
+- It does not grant CI enforcement.
+- It does not grant release/commercial authority.
+
+Findings:
+
+- P0: 0.
+- P1: 0.
+- P2: 0.
+- P3: external/manual review response absent; continuation is internal/operator-attested only.
+- P4: historical/negative anti-capability wording remains by design.
+
+Required next gate:
+
+- Any future claim of external review must require real external response content.
+- Any future runtime/product step requires separate explicit operator authorization and must not rely on this block as product authority.
+
 ## Current State
 
 The E10 operator submission packet is ready at `docs/audit/product-ledger-local-dev/operator-submission-packet.md`.
@@ -73,6 +122,6 @@ No listed decision authorizes runtime/product work, public/product exposure, Pro
 
 ## Stop Condition
 
-`STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_AND_RETURN_RESPONSE`
+`STOP_AFTER_EXTERNAL_REVIEW_WAIT_CLOSED_INTERNAL_ONLY_NO_PRODUCT_AUTHORITY`
 
-E11 creates an intake scaffold only. It does not submit the external review, does not record an external response, does not complete external review and does not authorize runtime/product.
+E12 records Diego's decision to close the external review wait without a verified external response and continue internally. It does not invent external review, does not claim reviewer approval, does not claim external audit pass and does not authorize runtime/product.

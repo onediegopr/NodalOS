@@ -57,3 +57,9 @@ E10 finalizes a manual operator submission packet only. Codex did not submit any
 E11 response intake scaffold: `external-review-response-intake.md`.
 
 E11 creates a placeholder for future response intake only. No external response is recorded yet, no external review has been completed and no runtime/product authority is created.
+
+E12 operator decision: `CLOSE_EXTERNAL_REVIEW_WAIT_WITHOUT_EXTERNAL_RESPONSE_AND_CONTINUE_INTERNAL_ONLY`.
+
+E12 resulting state: `EXTERNAL_REVIEW_WAIT_CLOSED_NO_EXTERNAL_RESPONSE_RECORDED_OPERATOR_INTERNAL_CONTINUATION`.
+
+E12 records an internal/operator decision only. No external response is recorded, no external approval is claimed, no external audit pass is claimed and no runtime/product authority is created.
