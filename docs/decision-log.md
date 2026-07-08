@@ -9,6 +9,18 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTION_AUDIT_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTED_READY`.
+- Input HEAD: `ca5446b1bc6998513c3c1ac4b0f6555d8f5c0a80`.
+- Scope: read-only/docs-only/audit-only scope selection for Product Ledger model consolidation.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTED_NO_IMPLEMENTATION`.
+- Selected target: `PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+- Selection reason: authority-map terminology reconciliation has the clearest owner and lowest double-truth risk; latest-state, writer, operator-surface and common-boundary source candidates remain deferred.
+- Selection: `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+- Boundary: no `src/`, no tests, no CI/workflows, no runtime/product, no Product Ledger/model consolidation implementation, no broad common-contract implementation, no latest pointer/read precedence/product authority, no external audit approval claim, no DB/cloud/network/provider, no KMS/WORM, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 local ledger authority vocabulary must be separated from product/runtime authority before model/source consolidation; P4 selected target is intentionally small.
+
 ## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDIT_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_READINESS_AUDIT_READY`.

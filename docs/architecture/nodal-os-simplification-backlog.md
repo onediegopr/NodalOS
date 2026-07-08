@@ -1027,3 +1027,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 double-truth risk requires one-target scope selection before implementation; P4 blocked-claim repetition remains intentional safety noise.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE`.
 - Authorization note: MR2 audits only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, broad common-contract implementation, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR3 - Product Ledger Model Consolidation Scope Selection
+
+- Objective: select exactly one future Product Ledger/model consolidation target without implementation.
+- Status: completed as docs-only/read-only/audit-only scope selection in `docs/architecture/nodal-os-product-ledger-model-consolidation-scope-selection.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTED_READY`.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTED_NO_IMPLEMENTATION`.
+- Selected target: `PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+- Exact next block: `NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `50%`; double-truth mitigation confidence `72%`; Product Ledger local/dev readiness `92%`; global roadmap readiness `81%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 source-side local ledger authority vocabulary and docs-side no-product-authority vocabulary need reconciliation before model/source consolidation; P4 selected target is small and terminology-heavy.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_PRODUCT_LEDGER_MODEL_CONSOLIDATION_TARGET`.
+- Authorization note: MR3 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, broad common-contract implementation, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

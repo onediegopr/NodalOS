@@ -225,6 +225,22 @@ Selected next safe gate:
 
 `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTION_AUDIT_ONLY`
 
+Current Product Ledger model consolidation scope selection:
+
+`docs/architecture/nodal-os-product-ledger-model-consolidation-scope-selection.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_SELECTED_NO_IMPLEMENTATION`
+
+Selected target:
+
+`PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+
+Selected next block:
+
+`NODAL_OS_PRODUCT_LEDGER_AUTHORITY_MAP_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -239,6 +255,7 @@ P3:
 - Broad source simplification remains `45%`.
 - Product Ledger/model consolidation and broad common-contract work remain deferred due to double-truth risk.
 - Product Ledger/model consolidation readiness is now audited, but implementation remains deferred until a one-target scope-selection audit names an authority owner and no-double-truth proof.
+- Product Ledger/model consolidation scope is now selected as authority-map terminology reconciliation only; model/source consolidation remains deferred.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:
