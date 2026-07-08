@@ -776,3 +776,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Per-node request/result/options/validation into a unified local-only result model.
 - Safety/Recipes mirror tests into tiered required/extended suites.
 - Negative scanners into one central static scanner.
+
+## BLOCK GR1 - Global Roadmap Rebaseline After Product Ledger, Source Refactor and Runner Guidance
+
+- Objective: pause operationally after Product Ledger local/dev, source-refactor D13/D7 micro-lane and runner guidance closeouts, then rebaseline the global roadmap without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-global-roadmap-rebaseline-after-product-ledger-source-refactor-runner.md`.
+- Decision: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_REBASELINE_READY`.
+- Resulting state: `GLOBAL_ROADMAP_REBASELINED_AFTER_PRODUCT_LEDGER_SOURCE_REFACTOR_RUNNER_GUIDANCE_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Validated as current posture: Product Ledger local/dev is paused/closed internally, source-refactor D13/D7 micro-lane is closed, runner safe-command guidance exists, broad source simplification remains low and runtime/product/release stay blocked.
+- Selected next gate: `GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY`.
+- Exact next block: `NODAL_OS_GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY`.
+- Current posture: global roadmap readiness `76%`; source-refactor readiness `78%`; Product Ledger local/dev readiness `92%`; test runner confidence `74%` focal and `35%` broad local execution; D7 lane readiness `100%`; broad source simplification `45%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 historical docs still contain stale next-step recommendations, runner fix is not implemented and Product Ledger/model plus common-contract consolidation still carry double-truth risk; P4 repeated negative claims remain intentional documentation noise.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_GLOBAL_ROADMAP_NEXT_MACROBLOCK`.
+- Authorization note: GR1 is a roadmap selector only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, common-contract broad refactor or product authority.

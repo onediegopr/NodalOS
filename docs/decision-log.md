@@ -2544,3 +2544,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 global roadmap ordering may now be stale after sequential closeouts; P4 historical docs still contain older recommendations.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK_AFTER_SOURCE_REFACTOR_RETURN`.
 - Authorization note: this block returns to the main roadmap only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, broad common-contract refactor or Product Ledger/model consolidation.
+
+## AUTHORIZE_NODAL_OS_PAUSE_AND_GLOBAL_ROADMAP_REBASELINE_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_REBASELINE_READY`.
+- Baseline: `27aa1c597d2636869597bfd3b3797d79f4e1c171`.
+- Resulting state: `GLOBAL_ROADMAP_REBASELINED_AFTER_PRODUCT_LEDGER_SOURCE_REFACTOR_RUNNER_GUIDANCE_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Scope: docs-only/read-only/audit-only global roadmap rebaseline. No `src/`, tests, project files, solution files, workflows, CI enforcement, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Rebaseline added: `docs/architecture/nodal-os-global-roadmap-rebaseline-after-product-ledger-source-refactor-runner.md`.
+- Confirmed: Product Ledger local/dev line is paused/closed internally, source-refactor D13/D7 micro-lane is closed, runner safe command guidance exists, runtime/product remains `0%`, CI enforcement remains `0%` and release/commercial remains `0% / NO-GO`.
+- Selected next gate: `GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY`.
+- Exact next block: `NODAL_OS_GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY`.
+- Current posture: global roadmap readiness `76%`; source-refactor readiness `78%`; Product Ledger local/dev readiness `92%`; test runner confidence `74%` focal and `35%` broad local execution; D7 lane readiness `100%`; broad source simplification `45%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 historical docs still contain stale next-step recommendations, runner fix is not implemented and Product Ledger/model plus common-contract consolidation still carry double-truth risk; P4 repeated negative claims remain intentional documentation noise.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_GLOBAL_ROADMAP_NEXT_MACROBLOCK`.
+- Authorization note: this block rebaselines and selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation or product authority.

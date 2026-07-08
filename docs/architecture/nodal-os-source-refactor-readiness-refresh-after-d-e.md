@@ -215,3 +215,25 @@ Selected next gate:
 Exact next block:
 
 `NODAL_OS_PAUSE_AND_GLOBAL_ROADMAP_REBASELINE_AUDIT_ONLY`
+
+## Current Global Roadmap Rebaseline Follow-up
+
+Current rebaseline record:
+
+`docs/architecture/nodal-os-global-roadmap-rebaseline-after-product-ledger-source-refactor-runner.md`
+
+Resulting state:
+
+`GLOBAL_ROADMAP_REBASELINED_AFTER_PRODUCT_LEDGER_SOURCE_REFACTOR_RUNNER_GUIDANCE_NO_RUNTIME_PRODUCT_AUTHORITY`
+
+Selected next gate:
+
+`GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY`
+
+Exact next block:
+
+`NODAL_OS_GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY`
+
+Interpretation:
+
+Historical source-refactor next-step recommendations remain traceability. The global roadmap rebaseline is the current selector after Product Ledger local/dev closeout, source-refactor D13/D7 closeout and runner guidance.
