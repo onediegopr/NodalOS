@@ -862,3 +862,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial/manual-only and Product Ledger Safety/Recipes are not replaced; P4 focal check is representative, not exhaustive.
 - Stop condition: `STOP_AFTER_STATIC_GUARD_METADATA_CONSISTENCY_CHECK_READY_NO_CI_NO_RUNTIME_PRODUCT`.
 - Authorization note: SG3 adds metadata consistency only. It does not authorize CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, broad common-contract implementation or broad forbidden phrase expansion.
+
+## BLOCK SG4 - Static Guard Next Increment After Metadata Consistency Selection
+
+- Objective: select the next Static Guard increment after metadata consistency without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-static-guard-next-increment-after-metadata-consistency-selection.md`.
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_SELECTED_READY`.
+- Resulting state: `STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY_SELECTED_NO_IMPLEMENTATION`.
+- Selected next increment: `FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTION_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTION_AUDIT_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Static Guard Catalog readiness `94%`; Tier 1 label coverage `70%`; metadata consistency confidence `82%`; global roadmap readiness `77%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 phrase expansion is still useful but false-positive prone without corpus and negative allowlist rules; P4 Static Guard selection should remain narrow.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY`.
+- Authorization note: SG4 selects only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

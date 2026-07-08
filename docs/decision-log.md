@@ -2615,3 +2615,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial/manual-only and Product Ledger Safety/Recipes are not replaced; P4 focal check is representative, not exhaustive.
 - Next recommended macro-block: `STOP_AFTER_STATIC_GUARD_METADATA_CONSISTENCY_CHECK_READY_NO_CI_NO_RUNTIME_PRODUCT`.
 - Authorization note: this block adds metadata consistency only. It does not authorize CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation, product authority or broad forbidden phrase expansion.
+
+## AUTHORIZE_NODAL_OS_STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY_SELECTION_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_SELECTED_READY`.
+- Baseline: `4d0cddb2f97fc041846a0541f15180f422022193`.
+- Resulting state: `STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY_SELECTED_NO_IMPLEMENTATION`.
+- Scope: docs-only/read-only/audit-only Static Guard next-increment selection. No `src/`, tests, workflows, CI enforcement, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM, broad forbidden phrase expansion or release/commercial changes.
+- Selection added: `docs/architecture/nodal-os-static-guard-next-increment-after-metadata-consistency-selection.md`.
+- Selected next increment: `FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTION_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTION_AUDIT_ONLY`.
+- Current posture: Static Guard Catalog readiness `94%`; Tier 1 label coverage `70%`; metadata consistency confidence `82%`; global roadmap readiness `77%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 phrase expansion is still useful but false-positive prone without corpus and negative allowlist rules; P4 Static Guard selection should remain narrow.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY`.
+- Authorization note: this block selects only. It does not authorize phrase expansion implementation, test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

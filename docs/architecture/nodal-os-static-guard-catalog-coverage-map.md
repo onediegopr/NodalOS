@@ -137,6 +137,20 @@ Implemented focal check:
 
 `StaticGuardCatalog_MetadataConsistencyKeepsTier1PartialAndSemanticLabelsSeparate`
 
+## Current Next Increment Selection After Metadata Consistency
+
+Current selection record:
+
+`docs/architecture/nodal-os-static-guard-next-increment-after-metadata-consistency-selection.md`
+
+Resulting state:
+
+`STATIC_GUARD_NEXT_INCREMENT_AFTER_METADATA_CONSISTENCY_SELECTED_NO_IMPLEMENTATION`
+
+Selected next block:
+
+`NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_CORPUS_SELECTION_AUDIT_ONLY`
+
 ## Findings
 
 P0: 0.
