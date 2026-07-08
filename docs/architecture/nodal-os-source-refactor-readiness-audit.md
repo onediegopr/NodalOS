@@ -194,3 +194,17 @@ Allowed in that future GO:
 - no cloud/network/DB/KMS/WORM/release/commercial.
 
 If C1 closes without P0/P1/P2, the next safe source-readiness implementation should be `NODAL_OS_BLOCK_D1_COMMON_CONTRACTS_PARALLEL_IMPLEMENTATION`.
+
+## 12. Current Selector Addendum After D/E
+
+Current selector superseding the original next-step recommendation:
+
+`docs/architecture/nodal-os-source-refactor-readiness-refresh-after-d-e.md`
+
+The original audit remains valid as historical/readiness evidence, but its exact next GO is stale after later C1-style static guard catalog work, D-series proof replacements/reduction and Product Ledger local/dev closeout.
+
+Current recommended next macro-block:
+
+`NODAL_OS_SOURCE_REFACTOR_NEXT_MINIMAL_REDUCTION_TARGET_SELECTION_AUDIT_ONLY`
+
+This addendum does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.

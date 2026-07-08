@@ -2386,3 +2386,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 Product Ledger closeout can still be overused as documentation churn and main-roadmap source-refactor evidence may be stale after D/E series; P4 repeated negative wording remains by design.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK`.
 - Authorization note: E17 returns to the main roadmap only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_MAIN_ROADMAP_SOURCE_REFACTOR_READINESS_REFRESH_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_READINESS_REFRESH_READY`.
+- Baseline: `3169ea10c9cad7b85e18c287e5d713da8c2435db`.
+- Resulting state: `SOURCE_REFACTOR_READINESS_REFRESHED_AFTER_D_E_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Scope: docs-only/read-only/audit-only source-refactor readiness refresh after D/E and Product Ledger closeout. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Refresh added: `docs/architecture/nodal-os-source-refactor-readiness-refresh-after-d-e.md`.
+- Current source-refactor posture: bounded/no-runtime reduction selection is ready; broad production/Core contract refactor is not ready as the next immediate move.
+- Recommended next macro-block: `NODAL_OS_SOURCE_REFACTOR_NEXT_MINIMAL_REDUCTION_TARGET_SELECTION_AUDIT_ONLY`.
+- Current posture: source-refactor readiness `72%` for bounded/no-runtime source reduction selection; broad source simplification readiness `45%`; static guard catalog readiness `92%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 old readiness next-step is stale, D-series remains net additive and broad common-contract/Product Ledger consolidation still carries double-truth risk; P4 historical docs preserve old next-step recommendations.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_MACROBLOCK`.
+- Authorization note: this refresh does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.

@@ -557,6 +557,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK`.
 - Authorization note: E17 returns to the main roadmap only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR1 - Source Refactor Readiness Refresh After D/E
+
+- Objective: refresh source-refactor readiness after D-series closure and Product Ledger local/dev E17 closeout.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-source-refactor-readiness-refresh-after-d-e.md`.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_READINESS_REFRESH_READY`.
+- Resulting state: `SOURCE_REFACTOR_READINESS_REFRESHED_AFTER_D_E_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Validated: static guard catalog exists, D4/D7/D10 source references exist, D13 reduced the D10 target, D15 closed the D-series and E17 paused Product Ledger local/dev.
+- Not validated: broad source simplification, D7 proof-chain reduction, runtime common-contract authority, latest-state/read-precedence/product-authority merge, CI enforcement or release/commercial readiness.
+- Recommended next macro-block: `NODAL_OS_SOURCE_REFACTOR_NEXT_MINIMAL_REDUCTION_TARGET_SELECTION_AUDIT_ONLY`.
+- Findings: P0=0, P1=0, P2=0; P3 old readiness next-step is stale, D-series remains net additive and broad common-contract/Product Ledger consolidation still carries double-truth risk; P4 historical docs preserve old next-step recommendations.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_MACROBLOCK`.
+- Authorization note: SR1 refreshes readiness only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
