@@ -846,3 +846,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial, runtime/product blocking and runner guidance are not fully catalog-backed and forbidden phrase expansion remains false-positive prone; P4 coverage is intentionally redundant.
 - Stop condition: `STOP_AFTER_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: SG2 maps coverage only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, broad common-contract implementation or broad forbidden phrase expansion.
+
+## BLOCK SG3 - Static Guard Catalog Metadata Consistency Check
+
+- Objective: add one focal metadata consistency check for Static Guard Catalog and Product Ledger guard labels.
+- Status: completed as test-only focal/docs-only continuity in `docs/architecture/nodal-os-static-guard-catalog-metadata-consistency-check.md`.
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_METADATA_CONSISTENCY_CHECK_READY`.
+- Resulting state: `STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_READY`.
+- Source changed: none.
+- Tests changed: one focal method added to `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs`.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Focal check added: `StaticGuardCatalog_MetadataConsistencyKeepsTier1PartialAndSemanticLabelsSeparate`.
+- Current posture: Static Guard Catalog readiness `94%`; Tier 1 label coverage `70%`; metadata consistency confidence `82%`; global roadmap readiness `77%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial/manual-only and Product Ledger Safety/Recipes are not replaced; P4 focal check is representative, not exhaustive.
+- Stop condition: `STOP_AFTER_STATIC_GUARD_METADATA_CONSISTENCY_CHECK_READY_NO_CI_NO_RUNTIME_PRODUCT`.
+- Authorization note: SG3 adds metadata consistency only. It does not authorize CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, broad common-contract implementation or broad forbidden phrase expansion.

@@ -260,6 +260,35 @@ public sealed class NodalOsStaticGuardCatalogTests
         }
     }
 
+    [TestMethod]
+    public void StaticGuardCatalog_MetadataConsistencyKeepsTier1PartialAndSemanticLabelsSeparate()
+    {
+        var catalogClassCategories = CategoriesFor(typeof(NodalOsStaticGuardCatalogTests));
+        CollectionAssert.Contains(catalogClassCategories, "NodalOsTier1Safety");
+        CollectionAssert.Contains(catalogClassCategories, "StaticGuard");
+        Assert.IsFalse(catalogClassCategories.Contains("ProductLedger"));
+        AssertDoesNotContainAuthorityOrCiLabels(catalogClassCategories, nameof(NodalOsStaticGuardCatalogTests));
+
+        var productLedgerClassCategories = CategoriesFor(typeof(ProductLedgerLocalDevCanonGuardTests));
+        CollectionAssert.Contains(productLedgerClassCategories, "NodalOsTier1Safety");
+        CollectionAssert.Contains(productLedgerClassCategories, "ProductLedger");
+        CollectionAssert.Contains(productLedgerClassCategories, "NoAuthority");
+        CollectionAssert.Contains(productLedgerClassCategories, "NoRuntimeWiring");
+        CollectionAssert.Contains(productLedgerClassCategories, "NoDoubleTruth");
+        CollectionAssert.Contains(productLedgerClassCategories, "PublicProductBlock");
+        CollectionAssert.Contains(productLedgerClassCategories, "ProductionRouteBlock");
+        CollectionAssert.Contains(productLedgerClassCategories, "ReleaseCommercialBlock");
+        Assert.IsFalse(productLedgerClassCategories.Contains("StaticGuard"));
+        AssertDoesNotContainAuthorityOrCiLabels(productLedgerClassCategories, nameof(ProductLedgerLocalDevCanonGuardTests));
+
+        var staticGuardMethodCategories = CategoriesFor(
+            typeof(NodalOsStaticGuardCatalogTests),
+            nameof(StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing));
+        CollectionAssert.Contains(staticGuardMethodCategories, "PublicProductBlock");
+        CollectionAssert.Contains(staticGuardMethodCategories, "ProductionRouteBlock");
+        AssertDoesNotContainAuthorityOrCiLabels(staticGuardMethodCategories, nameof(StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing));
+    }
+
     private static string[] CategoriesFor(Type type) =>
         type.GetCustomAttributes(typeof(TestCategoryAttribute), inherit: false)
             .Cast<TestCategoryAttribute>()
@@ -275,5 +304,13 @@ public sealed class NodalOsStaticGuardCatalogTests
             .Cast<TestCategoryAttribute>()
             .SelectMany(attribute => attribute.TestCategories)
             .ToArray();
+    }
+
+    private static void AssertDoesNotContainAuthorityOrCiLabels(string[] categories, string context)
+    {
+        foreach (var forbidden in new[] { "CiEnforced", "RuntimeProductAuthority", "ProductAuthorityGranted", "ReleaseCommercialReady" })
+        {
+            Assert.IsFalse(categories.Contains(forbidden), $"{context}: {forbidden}");
+        }
     }
 }

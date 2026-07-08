@@ -121,6 +121,14 @@ Selected next safe increment:
 
 `NODAL_OS_STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_TEST_ONLY`
 
+Current metadata consistency follow-up:
+
+`docs/architecture/nodal-os-static-guard-catalog-metadata-consistency-check.md`
+
+Resulting state:
+
+`STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_READY`
+
 ## Findings
 
 P0: 0.

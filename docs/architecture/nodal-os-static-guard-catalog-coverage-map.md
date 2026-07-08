@@ -123,6 +123,20 @@ Why:
 
 The coverage map shows that metadata labels are useful but partial. A focused metadata consistency check can prove the existing catalog/category labels stay aligned without changing source, runtime/product, CI or assertions.
 
+## Current Metadata Consistency Follow-up
+
+Current consistency record:
+
+`docs/architecture/nodal-os-static-guard-catalog-metadata-consistency-check.md`
+
+Resulting state:
+
+`STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_READY`
+
+Implemented focal check:
+
+`StaticGuardCatalog_MetadataConsistencyKeepsTier1PartialAndSemanticLabelsSeparate`
+
 ## Findings
 
 P0: 0.

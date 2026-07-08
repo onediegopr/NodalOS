@@ -2602,3 +2602,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial, runtime/product blocking and runner guidance are not fully catalog-backed and forbidden phrase expansion remains false-positive prone; P4 coverage remains intentionally redundant across catalog tests, Product Ledger canon guards and docs.
 - Next recommended macro-block: `STOP_AFTER_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: this block maps coverage only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation, product authority or broad forbidden phrase expansion.
+
+## AUTHORIZE_NODAL_OS_STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_METADATA_CONSISTENCY_CHECK_READY`.
+- Baseline: `69a6a27b303d67186caf6b2e29dcedb9bd73bfa0`.
+- Resulting state: `STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_READY`.
+- Scope: test-only focal/docs-only metadata consistency check. No `src/`, project files, solution files, workflows, CI enforcement, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM, broad forbidden phrase expansion or release/commercial changes.
+- Consistency doc added: `docs/architecture/nodal-os-static-guard-catalog-metadata-consistency-check.md`.
+- Focal test added: `StaticGuardCatalog_MetadataConsistencyKeepsTier1PartialAndSemanticLabelsSeparate` in `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs`.
+- Current posture: Static Guard Catalog readiness `94%`; Tier 1 label coverage `70%`; metadata consistency confidence `82%`; global roadmap readiness `77%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial/manual-only and Product Ledger Safety/Recipes are not replaced; P4 focal check is representative, not exhaustive.
+- Next recommended macro-block: `STOP_AFTER_STATIC_GUARD_METADATA_CONSISTENCY_CHECK_READY_NO_CI_NO_RUNTIME_PRODUCT`.
+- Authorization note: this block adds metadata consistency only. It does not authorize CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation, product authority or broad forbidden phrase expansion.
