@@ -20,6 +20,7 @@
 | `docs/audit/product-ledger-local-dev/external-review-response-intake.md` | E11 response intake scaffold plus E12 wait-closure record. It records no external response, no external approval and no reviewer findings. |
 | `docs/audit/product-ledger-local-dev/internal-continuation-gate-reconciliation.md` | E13 internal continuation gate reconciliation. It recommends a safe internal manual-gate table and creates no product authority. |
 | `docs/audit/product-ledger-local-dev/manual-gate-decision-table.md` | E14 manual gate decision table. It clarifies operator/manual gates and creates no product/runtime authority. |
+| `docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md` | E15 no-authority static scan contract. It hardens blocked/future-not-authorized claim interpretation and creates no product authority. |
 
 ## Historical / Block-Specific Evidence
 
@@ -37,6 +38,6 @@ Older QA, handoff, roadmap and ADR files remain traceability. They should not be
 
 ## Next Recommended Block
 
-`STOP_AFTER_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`
+`STOP_AFTER_NO_AUTHORITY_STATIC_SCAN_HARDENED_NO_PRODUCT_AUTHORITY`
 
-E14 clarifies manual/operator gates and adds a focal Safety guard. E14 does not record external approval, does not claim external audit pass and does not authorize runtime/product work.
+E15 hardens no-authority static scans and the focal Safety guard. E15 does not record external approval, does not claim external audit pass and does not authorize runtime/product work.

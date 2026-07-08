@@ -2342,3 +2342,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 manual/operator gate ambiguity is reduced but future gates still require operator decisions; P4 table intentionally repeats blocked states to reduce ambiguity.
 - Next recommended macro-block: `STOP_AFTER_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
 - Authorization note: E14 does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## NODAL_OS_BLOCK_E15_PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENING_DOCS_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENED`.
+- Baseline: `ddce233cb8b56c6116afbf965d717033165a00ed`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENED`.
+- Scope: docs/test-only no-authority static scan hardening. No `src/`, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- No-authority scan contract added: `docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md`.
+- Focal guard updated: `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`.
+- Scan interpretation: matches are acceptable only when clearly negative, historical, blocked or future-not-authorized.
+- Future runtime/product, CI enforcement and release/commercial gates remain `NOT_AUTHORIZED_NOW`.
+- Current posture: Product Ledger local/dev readiness `91%`, audit/operator-review readiness `99%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 no-authority scan matches can still be misread if detached from scan interpretation; P4 repeated negative wording remains by design.
+- Next recommended macro-block: `STOP_AFTER_NO_AUTHORITY_STATIC_SCAN_HARDENED_NO_PRODUCT_AUTHORITY`.
+- Authorization note: E15 does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.

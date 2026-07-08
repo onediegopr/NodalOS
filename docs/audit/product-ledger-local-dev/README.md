@@ -35,6 +35,7 @@ Current authority entrypoints:
 - `external-review-response-intake.md`
 - `internal-continuation-gate-reconciliation.md`
 - `manual-gate-decision-table.md`
+- `no-authority-static-scan-contract.md`
 
 ## Reviewer Rule
 
@@ -77,3 +78,9 @@ E14 manual gate decision table: `manual-gate-decision-table.md`.
 E14 resulting state: `PRODUCT_LEDGER_LOCAL_DEV_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
 
 E14 clarifies manual/operator gates and adds a focal Safety guard. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
+E15 no-authority static scan contract: `no-authority-static-scan-contract.md`.
+
+E15 resulting state: `PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENED`.
+
+E15 hardens no-authority scans and the focal Safety guard. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.

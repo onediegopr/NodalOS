@@ -507,6 +507,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_AFTER_MANUAL_GATE_DECISION_TABLE_READY_NO_PRODUCT_AUTHORITY`.
 - Authorization note: E14 does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK E15 - Product Ledger No-Authority Static Scan Hardening
+
+- Objective: harden Product Ledger local/dev no-authority scan interpretation and focal guards.
+- Status: completed as docs/test-only in `docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENED`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENED`.
+- Source changed: none.
+- Tests changed: `ProductLedgerLocalDevCanonGuardTests` gained a focal no-authority static scan contract guard.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Scan interpretation: matches are acceptable only when clearly negative, historical, blocked or future-not-authorized.
+- Future gates: runtime/product, CI enforcement and release/commercial remain `NOT_AUTHORIZED_NOW`.
+- Findings: P0=0, P1=0, P2=0; P3 no-authority scan matches can still be misread if detached from scan interpretation; P4 repeated negative wording remains by design.
+- Current posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Next recommended macro-block: `STOP_AFTER_NO_AUTHORITY_STATIC_SCAN_HARDENED_NO_PRODUCT_AUTHORITY`.
+- Authorization note: E15 does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

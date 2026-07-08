@@ -20,6 +20,8 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
     private const string NextActionPlanPath = "docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md";
     private const string StaleEntrypointIndexPath = "docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md";
     private const string ManualGateDecisionTablePath = "docs/audit/product-ledger-local-dev/manual-gate-decision-table.md";
+    private const string ExternalReviewResponseIntakePath = "docs/audit/product-ledger-local-dev/external-review-response-intake.md";
+    private const string NoAuthorityStaticScanContractPath = "docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md";
 
     [TestMethod]
     public void ProductLedgerLocalDevCanonExistsAndIsCurrentAuthority()
@@ -126,6 +128,36 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
         StringAssert.Contains(table, "No gate may claim external review response, external reviewer approval or external audit pass unless actual response content is provided and recorded.");
         StringAssert.Contains(table, "Manual/operator-run gates are not CI enforcement.");
         StringAssert.Contains(table, "E14 clarifies manual gates only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.");
+        AssertDoesNotContainPositiveProductReadinessClaim(table);
+    }
+
+    [TestMethod]
+    public void ProductLedgerLocalDevNoAuthorityStaticScanContractHardensFutureGateBlocks()
+    {
+        var table = ReadRepoFile(ManualGateDecisionTablePath);
+        var intake = ReadRepoFile(ExternalReviewResponseIntakePath);
+        var contract = ReadRepoFile(NoAuthorityStaticScanContractPath);
+
+        StringAssert.Contains(contract, "PRODUCT_LEDGER_LOCAL_DEV_NO_AUTHORITY_STATIC_SCAN_HARDENED");
+        StringAssert.Contains(contract, "Prevent Product Ledger local/dev docs/test metadata from implying product/runtime authority.");
+        StringAssert.Contains(contract, "Matches are acceptable only when clearly negative, historical, blocked or future-not-authorized.");
+        StringAssert.Contains(contract, "Future runtime/product gate remains `NOT_AUTHORIZED_NOW`.");
+        StringAssert.Contains(contract, "Future CI enforcement gate remains `NOT_AUTHORIZED_NOW`.");
+        StringAssert.Contains(contract, "Future release/commercial gate remains `NOT_AUTHORIZED_NOW`.");
+        StringAssert.Contains(contract, "Current E-series gates keep Product/runtime authority = `NO`.");
+        StringAssert.Contains(contract, "External review wait closure says no external response recorded.");
+        StringAssert.Contains(contract, "No external audit pass is claimed.");
+        StringAssert.Contains(contract, "Manual/operator-run gates are not CI enforcement.");
+        StringAssert.Contains(contract, "E15 hardens no-authority scans only. It does not authorize runtime/product, CI enforcement, release/commercial or external audit approval.");
+
+        StringAssert.Contains(table, "`FUTURE_RUNTIME_PRODUCT_AUTHORIZATION_GATE`");
+        StringAssert.Contains(table, "`FUTURE_CI_ENFORCEMENT_GATE`");
+        StringAssert.Contains(table, "`FUTURE_RELEASE_COMMERCIAL_GATE`");
+        StringAssert.Contains(table, "`NOT_AUTHORIZED_NOW`");
+        StringAssert.Contains(table, "`REQUIRES_SEPARATE_EXPLICIT_OPERATOR_AUTHORIZATION`");
+        StringAssert.Contains(table, "Every current E-series gate has Product/runtime authority = `NO`.");
+        StringAssert.Contains(intake, "External response status: `NO_EXTERNAL_RESPONSE_RECORDED`.");
+        StringAssert.Contains(intake, "- No external audit pass is claimed.");
         AssertDoesNotContainPositiveProductReadinessClaim(table);
     }
 
