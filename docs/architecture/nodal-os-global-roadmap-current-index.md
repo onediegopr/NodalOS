@@ -281,6 +281,22 @@ Recommended next safe macro-block:
 
 `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EQUIVALENCE_AUDIT_ONLY`
 
+Current post-equivalence next-scope selection:
+
+`docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-equivalence-selection.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_EQUIVALENCE_SELECTED_NO_IMPLEMENTATION`
+
+Selected next safe scope:
+
+`PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_DOCS_ONLY`
+
+Selected next block:
+
+`NODAL_OS_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_DOCS_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -299,6 +315,7 @@ P3:
 - Product Ledger authority-map terminology now distinguishes local/dev documentary authority from product/runtime, latest pointer and read precedence authority.
 - Product Ledger post-terminology next scope is selected as read-only no-double-truth equivalence audit; model/source consolidation remains deferred.
 - Product Ledger authority-map no-double-truth equivalence audit confirms the authority map, E2 canon and focal guard are equivalent; model/source consolidation remains deferred.
+- Product Ledger post-equivalence next scope is selected as canon/reference/index cleanup docs-only; model/source consolidation remains deferred.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:

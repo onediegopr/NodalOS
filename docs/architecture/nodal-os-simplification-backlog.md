@@ -1095,3 +1095,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 future writer/latest-state/operator-surface terminology remains higher-risk; P4 audit adds one more docs artifact but reduces ambiguity.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_NO_PRODUCT_AUTHORITY`.
 - Authorization note: MR6 audits only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR7 - Product Ledger Model Consolidation Next Safe Scope After Equivalence Selection
+
+- Objective: select exactly one next safe Product Ledger/model consolidation scope after authority-map no-double-truth equivalence was confirmed.
+- Status: completed as docs-only/read-only/audit-only selection in `docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-equivalence-selection.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_EQUIVALENCE_SELECTED_READY`.
+- Resulting state: `PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_EQUIVALENCE_SELECTED_NO_IMPLEMENTATION`.
+- Selected scope: `PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_DOCS_ONLY`.
+- Exact next block: `NODAL_OS_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_DOCS_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `56%`; double-truth mitigation confidence `84%`; Product Ledger local/dev readiness `94%`; global roadmap readiness `85%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 future evidence-role/writer/latest-state/operator-surface/common-boundary work remains higher-risk; P4 cleanup is docs-heavy but reduces navigation ambiguity.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SAFE_SCOPE_AFTER_EQUIVALENCE`.
+- Authorization note: MR7 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

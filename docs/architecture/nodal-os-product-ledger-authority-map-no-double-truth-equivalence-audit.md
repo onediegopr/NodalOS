@@ -14,6 +14,10 @@ Resulting state: `PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT
 
 Stop condition: `STOP_AFTER_PRODUCT_LEDGER_AUTHORITY_MAP_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_NO_PRODUCT_AUTHORITY`.
 
+Follow-up status: the recommended post-equivalence next-scope selector was executed in `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EQUIVALENCE_AUDIT_ONLY` and selected `PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_DOCS_ONLY`.
+
+Follow-up selector: `docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-equivalence-selection.md`.
+
 ## Scope
 
 This audit compares the current Product Ledger local/dev authority map, the E2 Product Ledger local/dev canon and the existing focal Safety guard. It verifies whether those records say the same thing about local/dev documentary authority, no runtime/product authority, no public/product authority, no Production route authority, no latest pointer authority, no read precedence authority and no product authority.
