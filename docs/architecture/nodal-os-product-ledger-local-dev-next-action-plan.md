@@ -30,6 +30,8 @@ E5 later added focused manual/discovery-only Safety guard tests for the Product 
 
 E6 later added the read-only audit packet at `docs/audit/product-ledger-local-dev/README.md` and selected `NODAL_OS_BLOCK_E7_EXTERNAL_AUDIT_PACKET_REVIEW_READ_ONLY`. E6 does not execute an external audit, submit anything externally or authorize E7.
 
+E7 later reviewed the packet internally/read-only at `docs/audit/product-ledger-local-dev/audit-review-result.md` and selected `NODAL_OS_BLOCK_E8_EXTERNAL_AUDIT_PACKET_OPERATOR_REVIEW_HANDOFF_READ_ONLY`. E7 does not execute or submit an external audit and does not authorize E8.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.

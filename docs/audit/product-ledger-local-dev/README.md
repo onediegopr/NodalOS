@@ -28,9 +28,12 @@ Current authority entrypoints:
 - `audit-question-bank.md`
 - `expected-audit-findings.md`
 - `risk-register.md`
+- `audit-review-result.md`
 
 ## Reviewer Rule
 
 Review current authority first. Treat older QA, handoff and roadmap docs as historical/block-specific evidence unless the E2 canon or E3 plan explicitly adopts them as current posture.
 
 Do not infer product readiness, CI enforcement, release readiness, external trust, public/product exposure or Production route readiness from local/dev evidence.
+
+E7 review result: `audit-review-result.md`.
