@@ -2516,3 +2516,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 broad local Reentry execution filter is unsafe and can leave dotnet/vstest processes alive; P4 broad discovery/listing remains safe.
 - Next recommended macro-block: `NODAL_OS_RUNNER_FILTER_HANG_OPERATIONAL_GUIDANCE_AND_SAFE_COMMANDS_DOCS_ONLY`.
 - Authorization note: this block records the audit only. It does not authorize source changes, test edits, project/solution/workflow changes, CI enforcement, runtime/product or release/commercial work.
+
+## AUTHORIZE_NODAL_OS_RUNNER_FILTER_HANG_OPERATIONAL_GUIDANCE_AND_SAFE_COMMANDS_DOCS_ONLY
+
+- Decision: `GO_WITH_FINDINGS_RUNNER_FILTER_SAFE_COMMAND_GUIDANCE_READY`.
+- Baseline: `d102de3e87f8bf0d6327f62e497600d4c4dfaa8c`.
+- Resulting state: `RUNNER_FILTER_SAFE_COMMAND_GUIDANCE_READY_NO_CI_ENFORCEMENT`.
+- Scope: docs-only/read-only/audit-only operational guidance. No `src/`, tests, project files, solution files, workflows, CI, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Guidance added: `docs/architecture/nodal-os-runner-filter-safe-commands-guidance.md`.
+- Safe guidance: focal filters only with explicit timeouts and cleanup; broad Reentry filter only for `--list-tests` discovery; avoid broad Reentry execution filters as local gates.
+- Current posture: source-refactor readiness `78%`; test runner confidence `74%` for focal filters and `35%` for broad local execution filters; D7 lane readiness `100%`; broad source simplification readiness `45%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Reentry execution filters remain unsafe for local gate use and D8 focal execution remains locally variable; P4 broad list-tests remains acceptable for discovery.
+- Next recommended macro-block: `NODAL_OS_SOURCE_REFACTOR_RETURN_TO_MAIN_ROADMAP_AFTER_RUNNER_GUIDANCE_AUDIT_ONLY`.
+- Authorization note: this block documents guidance only. It does not authorize source changes, test edits, test-infra fixes, project/solution/workflow changes, CI enforcement, runtime/product or release/commercial work.

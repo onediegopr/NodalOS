@@ -707,6 +707,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `NODAL_OS_RUNNER_FILTER_HANG_OPERATIONAL_GUIDANCE_AND_SAFE_COMMANDS_DOCS_ONLY`.
 - Authorization note: SR9 records the audit only. It does not authorize source changes, test edits, project/solution/workflow changes, CI enforcement, runtime/product or release/commercial work.
 
+## BLOCK SR10 - Runner Filter Safe Commands Guidance
+
+- Objective: convert the runner/filter hang investigation into local safe command guidance.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-runner-filter-safe-commands-guidance.md`.
+- Decision: `GO_WITH_FINDINGS_RUNNER_FILTER_SAFE_COMMAND_GUIDANCE_READY`.
+- Resulting state: `RUNNER_FILTER_SAFE_COMMAND_GUIDANCE_READY_NO_CI_ENFORCEMENT`.
+- Source changed: none.
+- Tests changed: none.
+- Project/solution/workflow files changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Guidance: use focal filters only with explicit timeouts and cleanup; use broad Reentry filters only for discovery/listing; avoid broad Reentry execution filters as local gates.
+- Findings: P0=0, P1=0, P2=0; P3 broad Reentry execution filters remain unsafe for local gate use and D8 focal execution remains locally variable; P4 broad list-tests remains acceptable for discovery.
+- Current posture: source-refactor readiness `78%`; test runner confidence `74%` for focal filters and `35%` for broad local execution filters; D7 lane readiness `100%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Next recommended macro-block: `NODAL_OS_SOURCE_REFACTOR_RETURN_TO_MAIN_ROADMAP_AFTER_RUNNER_GUIDANCE_AUDIT_ONLY`.
+- Authorization note: SR10 documents guidance only. It does not authorize source changes, test edits, test-infra fixes, project/solution/workflow changes, CI enforcement, runtime/product or release/commercial work.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

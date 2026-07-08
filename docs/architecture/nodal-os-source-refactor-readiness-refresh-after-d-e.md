@@ -183,3 +183,17 @@ Classification:
 Recommendation:
 
 Use focal filters only with explicit timeouts and cleanup; use broad Reentry filters only for discovery/listing until a separate test-infra fix block is authorized.
+
+## Current Runner Safe Commands Follow-up
+
+Current command guidance:
+
+`docs/architecture/nodal-os-runner-filter-safe-commands-guidance.md`
+
+Resulting state:
+
+`RUNNER_FILTER_SAFE_COMMAND_GUIDANCE_READY_NO_CI_ENFORCEMENT`
+
+Recommendation:
+
+Use the safe command guidance for local source-refactor validation until a separate test-infra fix block is authorized. This does not enable CI enforcement and does not claim CI failure.
