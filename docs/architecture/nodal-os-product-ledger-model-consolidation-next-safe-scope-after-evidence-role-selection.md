@@ -74,11 +74,11 @@ Exact next block:
 
 `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`
 
-Follow-up status: the selected operator-surface/read-model terminology audit was executed in `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+Follow-up status: the selected operator-surface/read-model terminology audit was executed in `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY` and then reconciled in `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
 
 Follow-up audit: `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`.
 
-Follow-up state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
+Follow-up state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
 
 Objective:
 

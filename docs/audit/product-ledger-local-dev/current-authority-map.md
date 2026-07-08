@@ -12,10 +12,13 @@ When source or test artifacts use terms such as local ledger authority, active w
 
 Evidence-role terminology is reconciled in `docs/audit/product-ledger-local-dev/evidence-role-terminology.md`. Evidence-role wording means audit/documentation/historical/local-dev review evidence only. It does not replace this authority map, does not replace the E2 canon, does not create product authority, does not create latest pointer authority and does not create read precedence authority.
 
+Operator-surface/read-model terminology is reconciled in `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`. Operator surface wording means local/dev operator review surface only. Read model wording means docs/local-dev/audit view only. Route wording does not imply Production route. Snapshot wording does not imply latest pointer or read precedence. Preview wording does not imply execution authority. This terminology does not replace this authority map, does not replace the E2 canon and does not create product authority.
+
 | Artifact | Role |
 | --- | --- |
 | `docs/audit/product-ledger-local-dev/canon-reference-index.md` | Current Product Ledger local/dev canon reference navigation index; entrypoint only, not product authority. |
 | `docs/audit/product-ledger-local-dev/evidence-role-terminology.md` | Current evidence-role terminology reconciliation; audit/documentation/historical/local-dev review evidence only, not product authority. |
+| `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md` | Current operator-surface/read-model terminology reconciliation; local/dev operator review and docs/local-dev/audit view only, not product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` | Current Product Ledger local/dev canon reference for blocked-state interpretation; local/dev documentary authority only, not product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-next-action-plan.md` | Current local/dev next-action selection logic and safe-lane ordering; not runtime/product authority. |
 | `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md` | Index of high-risk historical entrypoints cross-linked back to local/dev documentary authority. |

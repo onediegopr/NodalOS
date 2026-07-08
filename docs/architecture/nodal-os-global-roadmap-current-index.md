@@ -363,15 +363,15 @@ Current operator-surface/read-model terminology audit:
 
 Resulting state:
 
-`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`
+`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`
 
 Selected next safe follow-up:
 
-`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
 
 Recommended next block:
 
-`NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+`NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
 
 ## Findings
 
@@ -397,6 +397,7 @@ P3:
 - Product Ledger evidence-role terminology now means audit/documentation/historical/local-dev review evidence only; model/source consolidation remains deferred.
 - Product Ledger post-evidence-role next scope is selected as operator-surface/read-model terminology audit-only; model/source consolidation remains deferred.
 - Product Ledger operator-surface/read-model terminology audit now requires route, surface, read-model, snapshot, view and preview wording to remain local/dev review evidence only; model/source consolidation remains deferred.
+- Product Ledger operator-surface/read-model terminology is now reconciled and guarded as local/dev review/docs-only/audit-view terminology only; no-double-truth equivalence remains the next safe read-only check.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:

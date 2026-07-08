@@ -20,6 +20,17 @@
 - Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_NO_PRODUCT_AUTHORITY`.
 
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_READY`.
+- Input HEAD: `df31f0bff2770299aafb116b760946909975f4e2`.
+- Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Scope: docs-only/audit-only/test-only focal terminology reconciliation; no `src/`, model consolidation implementation, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime, DB/cloud/network/provider, KMS/WORM, CI enforcement, workflows or release/commercial.
+- Guard added: `ProductLedgerOperatorSurfaceReadModelTerminologyRemainsLocalDevReviewOnlyAndNoProductAuthority`.
+- Finding: P0=0, P1=0, P2=0; P3 future unqualified route/surface/read-model/snapshot/view wording remains a localized drift risk.
+- Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+
 ## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EVIDENCE_ROLE_TERMINOLOGY_AUDIT_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_AFTER_EVIDENCE_ROLE_SELECTED_READY`.

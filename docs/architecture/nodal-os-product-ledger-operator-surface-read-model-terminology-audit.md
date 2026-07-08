@@ -2,23 +2,39 @@
 
 Date: 2026-07-08
 
-Mode: read-only / docs-only / audit-only / terminology-audit-only.
+Mode: docs-only / audit-only / test-only-focal / terminology-reconciliation-only.
 
-Block: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+Block: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+
+Prior audit block: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
 
 Baseline HEAD: `ac52c1c677594b4db58d4795eaec015aae21fd22`.
 
-Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.
+Reconciliation baseline HEAD: `df31f0bff2770299aafb116b760946909975f4e2`.
 
-Current state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
+Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_READY`.
 
-Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_NO_PRODUCT_AUTHORITY`.
+Current state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+
+Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
 
 ## Current State
 
 Product Ledger operator-surface/read-model wording is safe only when read as local/dev review evidence. It is not public/product UI, not a Production route, not product read-model authority, not latest pointer authority, not read precedence authority, not writer/runtime authority and not Product Ledger/model consolidation implementation.
 
-The audit found no P0/P1/P2 scope leak. The remaining risk is P3 terminology ambiguity: words such as `operator surface`, `surface`, `route`, `read model`, `view`, `panel`, `snapshot`, `current state` and `latest view` sit close to product concepts and must stay qualified as local/dev, audit-only, review-only, preview-only or evidence-only.
+The reconciliation found no P0/P1/P2 scope leak. The remaining risk is P3 terminology ambiguity: words such as `operator surface`, `surface`, `route`, `read model`, `view`, `panel`, `snapshot`, `current state` and `latest view` sit close to product concepts and must stay qualified as local/dev, audit-only, review-only, preview-only or evidence-only.
+
+## Reconciled Terms
+
+- Operator surface terminology is local/dev review only.
+- Read model terminology is docs/local-dev/audit view only.
+- Route terminology does not imply Production route.
+- Snapshot terminology does not imply latest pointer or read precedence.
+- Surface terminology does not imply public/product surface.
+- Preview terminology does not imply execution authority.
+- Current view/current state wording does not imply latest pointer authority or read precedence authority.
+- Approval surface wording does not imply product authority.
+- Current authority remains owned by `docs/audit/product-ledger-local-dev/current-authority-map.md` and `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md`.
 
 ## Terminology Baseline
 
@@ -80,17 +96,16 @@ The audit found no P0/P1/P2 scope leak. The remaining risk is P3 terminology amb
 
 Selected next recommendation:
 
-`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
 
 Rationale:
 
-- Wording risk is present and localized.
-- The risk is still terminology-level, not implementation-level.
-- A small docs/test-only reconciliation can add explicit qualifiers and, if authorized, a focal guard without touching `src/`, product routes, runtime, writer behavior, latest pointer, read precedence or product authority.
+- Wording risk is now reconciled in docs and guarded by a focal test.
+- The next useful step is a read-only no-double-truth equivalence audit before any future `OperatorSurfaceReadModel` design or implementation work.
+- The next step must not touch `src/`, product routes, runtime, writer behavior, latest pointer, read precedence or product authority.
 
 Deferred:
 
-- `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY` is useful after terminology reconciliation exists.
 - `PRODUCT_LEDGER_MODEL_CONSOLIDATION_PAUSE_RETURN_TO_MAIN_ROADMAP` is not selected because a small safe terminology follow-up remains valuable.
 
 ## Findings
@@ -103,7 +118,7 @@ P2: 0.
 
 P3:
 
-- Operator-surface/read-model terminology remains medium/high risk if route, surface, read-model, snapshot or view wording appears without local/dev, evidence-only or no-authority qualifiers.
+- Operator-surface/read-model terminology remains medium risk if future route, surface, read-model, snapshot or view wording appears without local/dev, evidence-only or no-authority qualifiers.
 - Future `OperatorSurfaceReadModel` consolidation remains blocked until a separate explicit gate proves no product authority and no double truth.
 
 P4:
@@ -112,8 +127,8 @@ P4:
 
 ## Updated Percentages
 
-- Product Ledger model consolidation readiness: `61%`.
-- Double-truth mitigation confidence: `91%`.
+- Product Ledger model consolidation readiness: `62%`.
+- Double-truth mitigation confidence: `92%`.
 - Product Ledger local/dev readiness: `95%`.
 - Global roadmap readiness: `90%`.
 - Runtime/product enablement: `0%`.

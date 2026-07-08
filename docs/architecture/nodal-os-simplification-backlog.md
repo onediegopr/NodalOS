@@ -1182,8 +1182,8 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 ## BLOCK MR12 - Product Ledger Operator Surface / Read Model Terminology Audit
 
 - Objective: audit Product Ledger operator-surface/read-model terminology so route, surface, view, panel, preview, snapshot and read-model wording cannot be read as public/product UI, Production route, latest pointer, read precedence, product authority, writer/runtime authority or model-consolidation implementation.
-- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`.
-- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.
+- Status: completed as docs-only/read-only/audit-only, then reconciled by MR13 in `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`; superseded as current state by MR13.
 - Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
 - Source changed: none.
 - Tests changed: none.
@@ -1194,3 +1194,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_NO_PRODUCT_AUTHORITY`.
 - Authorization note: MR12 audits terminology only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR13 - Product Ledger Operator Surface / Read Model Terminology Reconciliation
+
+- Objective: reconcile Product Ledger operator-surface/read-model terminology so operator surface, read model, route, surface, snapshot, view, panel, preview, current state and approval surface wording is explicitly local/dev review/docs-only/audit-view terminology only.
+- Status: completed as docs/test-only focal in `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`, `docs/audit/product-ledger-local-dev/current-authority-map.md`, `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md` and `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevCanonGuardTests.cs`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_READY`.
+- Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Guard added: `ProductLedgerOperatorSurfaceReadModelTerminologyRemainsLocalDevReviewOnlyAndNoProductAuthority`.
+- Source changed: none.
+- Tests changed: one focal Product Ledger local/dev canon guard only.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `62%`; double-truth mitigation confidence `92%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `90%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 future unqualified operator-surface/read-model wording remains a medium-risk drift area; P4 guard/docs overhead accepted.
+- Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR13 reconciles terminology only. It does not authorize source changes, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.

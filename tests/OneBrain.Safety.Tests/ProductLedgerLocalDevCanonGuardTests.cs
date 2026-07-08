@@ -25,6 +25,7 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
     private const string CurrentAuthorityMapPath = "docs/audit/product-ledger-local-dev/current-authority-map.md";
     private const string CanonReferenceIndexPath = "docs/audit/product-ledger-local-dev/canon-reference-index.md";
     private const string EvidenceRoleTerminologyPath = "docs/audit/product-ledger-local-dev/evidence-role-terminology.md";
+    private const string OperatorSurfaceReadModelTerminologyPath = "docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md";
 
     [TestMethod]
     public void ProductLedgerLocalDevCanonExistsAndIsCurrentAuthority()
@@ -226,6 +227,41 @@ public sealed class ProductLedgerLocalDevCanonGuardTests
         StringAssert.Contains(authorityMap, "Evidence-role wording means audit/documentation/historical/local-dev review evidence only");
         StringAssert.Contains(canon, "Evidence-role terminology means audit/documentation/historical/local-dev review evidence");
         StringAssert.Contains(canon, "It is not latest-state authority, not read precedence, not latest pointer authority, not product authority, not Product Ledger writer/runtime authority");
+        AssertDoesNotContainPositiveProductReadinessClaim(terminology);
+        AssertDoesNotContainPositiveProductReadinessClaim(index);
+        AssertDoesNotContainPositiveProductReadinessClaim(authorityMap);
+        AssertDoesNotContainPositiveProductReadinessClaim(canon);
+    }
+
+    [TestMethod]
+    public void ProductLedgerOperatorSurfaceReadModelTerminologyRemainsLocalDevReviewOnlyAndNoProductAuthority()
+    {
+        var terminology = ReadRepoFile(OperatorSurfaceReadModelTerminologyPath);
+        var index = ReadRepoFile(CanonReferenceIndexPath);
+        var authorityMap = ReadRepoFile(CurrentAuthorityMapPath);
+        var canon = ReadRepoFile(CanonPath);
+
+        StringAssert.Contains(terminology, "Operator surface terminology is local/dev review only.");
+        StringAssert.Contains(terminology, "Read model terminology is docs/local-dev/audit view only.");
+        StringAssert.Contains(terminology, "Route terminology does not imply Production route.");
+        StringAssert.Contains(terminology, "Snapshot terminology does not imply latest pointer or read precedence.");
+        StringAssert.Contains(terminology, "Surface terminology does not imply public/product surface.");
+        StringAssert.Contains(terminology, "Preview terminology does not imply execution authority.");
+        StringAssert.Contains(terminology, "Current view/current state wording does not imply latest pointer authority or read precedence authority.");
+        StringAssert.Contains(terminology, "Approval surface wording does not imply product authority.");
+        StringAssert.Contains(terminology, "Current authority remains owned by `docs/audit/product-ledger-local-dev/current-authority-map.md` and `docs/architecture/nodal-os-product-ledger-local-dev-safety-backlog-canon.md`.");
+        StringAssert.Contains(terminology, "not public/product UI");
+        StringAssert.Contains(terminology, "not Product Ledger/model consolidation implementation");
+
+        StringAssert.Contains(index, OperatorSurfaceReadModelTerminologyPath);
+        StringAssert.Contains(index, "Current terminology reconciliation for operator-surface/read-model wording");
+        StringAssert.Contains(authorityMap, OperatorSurfaceReadModelTerminologyPath);
+        StringAssert.Contains(authorityMap, "Operator surface wording means local/dev operator review surface only.");
+        StringAssert.Contains(authorityMap, "Read model wording means docs/local-dev/audit view only.");
+        StringAssert.Contains(authorityMap, "does not replace this authority map");
+        StringAssert.Contains(canon, OperatorSurfaceReadModelTerminologyPath);
+        StringAssert.Contains(canon, "Operator-surface/read-model terminology means local/dev operator review surface and docs/local-dev/audit view only.");
+        StringAssert.Contains(canon, "It is not public/product surface, not Production route, not latest pointer authority, not read precedence authority, not product authority, not execution authority");
         AssertDoesNotContainPositiveProductReadinessClaim(terminology);
         AssertDoesNotContainPositiveProductReadinessClaim(index);
         AssertDoesNotContainPositiveProductReadinessClaim(authorityMap);

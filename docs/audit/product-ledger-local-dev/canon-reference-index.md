@@ -58,7 +58,7 @@ That authority means current review, audit and blocked-state interpretation for 
 | `docs/architecture/nodal-os-product-ledger-model-consolidation-readiness-audit.md` | `CURRENT_AUDIT_REFERENCE` | Current readiness baseline for Product Ledger model consolidation. |
 | `docs/architecture/nodal-os-product-ledger-model-consolidation-scope-selection.md` | `CURRENT_AUDIT_REFERENCE` | Historical/current selection record for authority-map terminology reconciliation and follow-ups. |
 | `docs/audit/product-ledger-local-dev/evidence-role-terminology.md` | `CURRENT_AUDIT_REFERENCE` | Current terminology map for evidence-role wording; audit/documentation/historical/local-dev review evidence only, not product authority. |
-| `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md` | `CURRENT_AUDIT_REFERENCE` | Current terminology audit for operator-surface/read-model wording; local/dev review evidence only, not public/product surface, Production route, latest pointer, read precedence or product authority. |
+| `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md` | `CURRENT_AUDIT_REFERENCE` | Current terminology reconciliation for operator-surface/read-model wording; local/dev review evidence and docs/local-dev/audit view only, not public/product surface, Production route, latest pointer, read precedence or product authority. |
 
 ## Historical Evidence
 
@@ -94,7 +94,7 @@ Older next-step recommendations remain traceability records. They are superseded
 These are future gates only and are not authorized now:
 
 - `NODAL_OS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
-- `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+- `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
 - `NODAL_OS_PRODUCT_LEDGER_WRITER_MODE_CONSOLIDATION_READINESS_AUDIT_ONLY`.
 - `NODAL_OS_PRODUCT_LEDGER_LATEST_STATE_CONSOLIDATION_READINESS_AUDIT_ONLY`.
 - `NODAL_OS_PRODUCT_LEDGER_COMMON_BOUNDARY_CANDIDATES_READINESS_AUDIT_ONLY`.
@@ -149,9 +149,9 @@ P4:
 
 Recommended next safe macro-block:
 
-`NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EVIDENCE_ROLE_TERMINOLOGY_AUDIT_ONLY`
+`NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`
 
-Purpose: select one next safe Product Ledger/model-consolidation lane after evidence-role terminology reconciliation, without implementation.
+Purpose: audit no-double-truth equivalence after operator-surface/read-model terminology reconciliation, without implementation.
 
 ## Final Boundary
 

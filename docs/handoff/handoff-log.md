@@ -162,13 +162,13 @@ Purpose: rolling handoff index. Future blocks should add one entry here by defau
 
 | Area | Handoff |
 | --- | --- |
-| Operator-surface/read-model terminology audit | `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md` |
+| Operator-surface/read-model terminology reconciliation | `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md` |
 
-Current state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
+Current state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILED_NO_PRODUCT_AUTHORITY`.
 
-Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_EQUIVALENCE_AUDIT_READ_ONLY`.
 
-Boundary: no source changes, test edits, CI enforcement, runtime/product, public/product surface, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, external audit approval or release/commercial work was opened.
+Boundary: no source changes, CI enforcement, runtime/product, public/product surface, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, external audit approval or release/commercial work was opened. The only test change is a focal Safety guard over docs terminology.
 
 ## Archive/Legacy Rule
 

@@ -20,6 +20,8 @@ Current Product Ledger local/dev canon reference index: `docs/audit/product-ledg
 
 Current Product Ledger evidence-role terminology reconciliation: `docs/audit/product-ledger-local-dev/evidence-role-terminology.md`.
 
+Current Product Ledger operator-surface/read-model terminology reconciliation: `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`.
+
 ## 1. Executive Status
 
 Product Ledger has a real local/dev evidence line, but it is not public/product, not a Production route, not product authority and not release/commercial ready.
@@ -88,6 +90,8 @@ Safety/Recipes remain the authoritative evidence surface for Product Ledger loca
 Here `authoritative evidence surface` means manual/discovery-only local/dev evidence for review and safety checking. It is not CI enforcement, not product authority and not runtime authority.
 
 Evidence-role terminology means audit/documentation/historical/local-dev review evidence. It is not latest-state authority, not read precedence, not latest pointer authority, not product authority, not Product Ledger writer/runtime authority and not model-consolidation implementation.
+
+Operator-surface/read-model terminology means local/dev operator review surface and docs/local-dev/audit view only. It is not public/product surface, not Production route, not latest pointer authority, not read precedence authority, not product authority, not execution authority, not Product Ledger writer/runtime authority and not model-consolidation implementation.
 
 ## 5. Docs-Only Evidence
 
