@@ -2254,3 +2254,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 manual gates remain operator-run and lower-risk stale docs may still need future cross-links if operator review finds ambiguity; P4 historical percentages/noisy anti-capability wording remain by design.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_REVIEW`.
 - Authorization note: E8 stops for Diego/operator review and does not authorize E9 or runtime/product work.
+
+## NODAL_OS_BLOCK_E9_RECORD_OPERATOR_APPROVAL_AND_PREPARE_EXTERNAL_REVIEW_HANDOFF_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_EXTERNAL_REVIEW_APPROVAL_RECORDED_READY`.
+- Baseline: `aa4bc73c8efc344aa509a572af6e5a737ddf3d3b`.
+- Operator decision recorded: `APPROVE_PACKET_FOR_EXTERNAL_REVIEW`.
+- Scope: docs-only/read-only/external-manual-review-handoff-only for Product Ledger local/dev audit packet. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- External review handoff added: `docs/audit/product-ledger-local-dev/external-review-handoff.md`.
+- External audit execution: none; no external API call, upload, export or submission by Codex.
+- Current posture: Product Ledger local/dev readiness `88%`, audit/operator-review readiness `98%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 external review approval can be misread as runtime/product authorization if separated from E9 wording; P3 manual gates remain operator-run; P4 historical percentages/noisy anti-capability wording remain by design.
+- Next recommended macro-block: `STOP_FOR_EXTERNAL_REVIEW_SUBMISSION_BY_OPERATOR`.
+- Authorization note: E9 records approval and prepares handoff only. E9 does not authorize E10, runtime/product or release/commercial work.

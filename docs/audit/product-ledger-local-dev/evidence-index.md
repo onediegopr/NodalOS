@@ -19,8 +19,8 @@
 
 ## Discovery Evidence
 
-- Safety MSTest discovery: 6475 tests.
-- Recipes MSTest discovery: 1580 tests.
+- Safety MSTest discovery: 6477 tests.
+- Recipes MSTest discovery: 1582 tests.
 
 ## Blocked Capabilities To Verify
 

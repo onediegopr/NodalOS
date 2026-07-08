@@ -14,6 +14,8 @@
 | Artifact | Role |
 | --- | --- |
 | `docs/audit/product-ledger-local-dev/audit-review-result.md` | E7 read-only review result for the E6 packet. It is review evidence, not product authority. |
+| `docs/audit/product-ledger-local-dev/operator-review-handoff.md` | E8 operator handoff and E9 operator approval record. It is handoff evidence, not product authority. |
+| `docs/audit/product-ledger-local-dev/external-review-handoff.md` | E9 external/manual review handoff. It prepares operator submission only; Codex did not submit externally. |
 
 ## Historical / Block-Specific Evidence
 
@@ -31,6 +33,6 @@ Older QA, handoff, roadmap and ADR files remain traceability. They should not be
 
 ## Next Recommended Block
 
-`NODAL_OS_BLOCK_E8_EXTERNAL_AUDIT_PACKET_OPERATOR_REVIEW_HANDOFF_READ_ONLY`
+`STOP_FOR_EXTERNAL_REVIEW_SUBMISSION_BY_OPERATOR`
 
-E7 recommends but does not authorize E8.
+E9 records Diego/operator approval to prepare the packet for external/manual review. E9 does not submit externally and does not authorize runtime/product work.

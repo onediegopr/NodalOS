@@ -30,6 +30,7 @@ Current authority entrypoints:
 - `risk-register.md`
 - `audit-review-result.md`
 - `operator-review-handoff.md`
+- `external-review-handoff.md`
 
 ## Reviewer Rule
 
@@ -40,3 +41,9 @@ Do not infer product readiness, CI enforcement, release readiness, external trus
 E7 review result: `audit-review-result.md`.
 
 E8 operator review handoff: `operator-review-handoff.md`.
+
+E9 operator decision: `APPROVE_PACKET_FOR_EXTERNAL_REVIEW`.
+
+E9 external review handoff: `external-review-handoff.md`.
+
+E9 prepares Diego/operator manual external review handoff only. Codex did not submit anything externally and E9 does not authorize runtime/product, public/product, Production route, latest pointer, read precedence, product authority, CI enforcement or release/commercial readiness.

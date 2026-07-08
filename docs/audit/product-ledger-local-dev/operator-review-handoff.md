@@ -10,6 +10,18 @@ Baseline HEAD: `68d4a63df6ed00c386371da787df5858d8c22ae7`.
 
 Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_REVIEW_HANDOFF_READY`.
 
+## E9 Operator Decision Record
+
+Diego/operator decision: `APPROVE_PACKET_FOR_EXTERNAL_REVIEW`.
+
+Decision date: 2026-07-08.
+
+This approval applies only to preparing the Product Ledger local/dev audit packet for external/manual review handoff.
+
+This approval does not authorize runtime/product work, external submission by Codex, public/product exposure, Production route, latest pointer, read precedence, product authority, CI enforcement, DB/cloud/network/provider/KMS/WORM, release/commercial/public readiness or any claim that Product Ledger local/dev is product-ready.
+
+External review handoff: `docs/audit/product-ledger-local-dev/external-review-handoff.md`.
+
 ## Purpose
 
 This handoff gives Diego/operator a clean review path for the Product Ledger local/dev audit packet. It prepares manual review only. It does not perform operator review, submit anything externally, authorize runtime/product work or change Product Ledger behavior.
@@ -41,6 +53,8 @@ This handoff gives Diego/operator a clean review path for the Product Ledger loc
 7. `expected-audit-findings.md`
 8. `risk-register.md`
 9. `audit-review-result.md`
+10. `operator-review-handoff.md`
+11. `external-review-handoff.md`
 
 ## Validation Commands To Run
 
@@ -138,6 +152,6 @@ No listed decision implies product readiness, runtime activation, public/product
 
 ## Recommended Next Step
 
-`STOP_FOR_OPERATOR_REVIEW`
+`STOP_FOR_EXTERNAL_REVIEW_SUBMISSION_BY_OPERATOR`
 
-E8 intentionally stops for Diego/operator review. E8 does not authorize E9 or runtime/product work.
+E9 records Diego/operator approval for external/manual review preparation only. E9 does not submit anything externally, does not authorize E10 feedback intake and does not authorize runtime/product work.

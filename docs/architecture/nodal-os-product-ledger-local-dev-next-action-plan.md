@@ -34,6 +34,8 @@ E7 later reviewed the packet internally/read-only at `docs/audit/product-ledger-
 
 E8 later added `docs/audit/product-ledger-local-dev/operator-review-handoff.md` and selected `STOP_FOR_OPERATOR_REVIEW`. E8 does not perform operator review, does not submit externally and does not authorize E9 or runtime/product work.
 
+E9 later recorded Diego/operator decision `APPROVE_PACKET_FOR_EXTERNAL_REVIEW`, added `docs/audit/product-ledger-local-dev/external-review-handoff.md` and selected `STOP_FOR_EXTERNAL_REVIEW_SUBMISSION_BY_OPERATOR`. E9 prepares external/manual review handoff only. It does not submit externally, does not authorize E10, does not authorize runtime/product, does not add CI enforcement and does not change release/commercial posture.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.

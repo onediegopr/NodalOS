@@ -413,6 +413,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_REVIEW`.
 - Authorization note: E8 stops for Diego/operator review and does not authorize E9 or runtime/product work.
 
+## BLOCK E9 - Product Ledger External Review Approval Record
+
+- Objective: record Diego/operator decision `APPROVE_PACKET_FOR_EXTERNAL_REVIEW` and prepare external/manual review handoff.
+- Status: completed as docs-only/read-only/external-manual-review-handoff-only in `docs/audit/product-ledger-local-dev/external-review-handoff.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_EXTERNAL_REVIEW_APPROVAL_RECORDED_READY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- External submission: none by Codex; packet is prepared for Diego/operator manual submission only.
+- Findings: P0=0, P1=0, P2=0; P3 external review approval can be misread as runtime/product authorization if detached from E9 wording and manual gates remain operator-run; P4 historical percentages/noisy anti-capability wording remain by design.
+- Current posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Next recommended macro-block: `STOP_FOR_EXTERNAL_REVIEW_SUBMISSION_BY_OPERATOR`.
+- Authorization note: E9 does not authorize E10, runtime/product or release/commercial work.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
