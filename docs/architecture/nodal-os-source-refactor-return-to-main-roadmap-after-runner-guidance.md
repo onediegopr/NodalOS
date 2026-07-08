@@ -80,6 +80,10 @@ Exact next block:
 
 `NODAL_OS_PAUSE_AND_GLOBAL_ROADMAP_REBASELINE_AUDIT_ONLY`
 
+Current interpretation after global roadmap index cleanup:
+
+This recommendation is historical and completed. The current roadmap selector is `docs/architecture/nodal-os-global-roadmap-current-index.md`; do not treat this SR11 recommendation as the active next step.
+
 Why:
 
 After Product Ledger closeout, the D13/D7 source-refactor micro-lane and runner guidance, the safest next move is to rebaseline the global roadmap before opening another source, Product Ledger, runner or runtime-adjacent lane.

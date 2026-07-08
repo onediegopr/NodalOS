@@ -237,3 +237,17 @@ Exact next block:
 Interpretation:
 
 Historical source-refactor next-step recommendations remain traceability. The global roadmap rebaseline is the current selector after Product Ledger local/dev closeout, source-refactor D13/D7 closeout and runner guidance.
+
+## Current Global Roadmap Index Follow-up
+
+Current index record:
+
+`docs/architecture/nodal-os-global-roadmap-current-index.md`
+
+Resulting state:
+
+`GLOBAL_ROADMAP_INDEX_STALE_RECOMMENDATION_CLEANUP_READY_NO_RUNTIME_PRODUCT_AUTHORITY`
+
+Interpretation:
+
+Historical source-refactor and Product Ledger recommendations are traceability only unless this index or a later committed selector names them as current. The index does not authorize source changes, test edits, CI enforcement, runtime/product or release/commercial work.

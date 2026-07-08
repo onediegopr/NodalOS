@@ -2559,3 +2559,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 historical docs still contain stale next-step recommendations, runner fix is not implemented and Product Ledger/model plus common-contract consolidation still carry double-truth risk; P4 repeated negative claims remain intentional documentation noise.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_GLOBAL_ROADMAP_NEXT_MACROBLOCK`.
 - Authorization note: this block rebaselines and selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation or product authority.
+
+## AUTHORIZE_NODAL_OS_GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY
+
+- Decision: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_INDEX_CLEANUP_READY`.
+- Baseline: `680a8e5500eac8848d2e209a3b5a0d86fc11d69f`.
+- Resulting state: `GLOBAL_ROADMAP_INDEX_STALE_RECOMMENDATION_CLEANUP_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Scope: docs-only/read-only/audit-only roadmap index cleanup. No `src/`, tests, project files, solution files, workflows, CI enforcement, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Current index added: `docs/architecture/nodal-os-global-roadmap-current-index.md`.
+- Stale notes added to the E17, SR11 and GR1 roadmap selector records so their old recommendations are interpreted as historical/completed, not active next steps.
+- Current source of truth: `docs/architecture/nodal-os-global-roadmap-current-index.md`.
+- Current posture: global roadmap readiness `77%`; roadmap index freshness `88%`; source-refactor readiness `78%`; Product Ledger local/dev readiness `92%`; test runner confidence `74%` focal and `35%` broad local execution; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 historical roadmap files preserve old next-step recommendations by design, Product Ledger/model consolidation and broad common-contract work remain deferred due to double-truth risk, and runner fix remains unimplemented; P4 documentation remains intentionally redundant around blocked runtime/product and release claims.
+- Next recommended macro-block: `STOP_AFTER_GLOBAL_ROADMAP_INDEX_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: this block cleans the current index only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation or product authority.

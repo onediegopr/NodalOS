@@ -794,3 +794,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 historical docs still contain stale next-step recommendations, runner fix is not implemented and Product Ledger/model plus common-contract consolidation still carry double-truth risk; P4 repeated negative claims remain intentional documentation noise.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_GLOBAL_ROADMAP_NEXT_MACROBLOCK`.
 - Authorization note: GR1 is a roadmap selector only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, common-contract broad refactor or product authority.
+
+## BLOCK GR2 - Global Roadmap Index And Stale Recommendation Cleanup
+
+- Objective: create the current global roadmap index and mark stale/superseded recommendations after the GR1 rebaseline without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-global-roadmap-current-index.md`.
+- Decision: `GO_WITH_FINDINGS_GLOBAL_ROADMAP_INDEX_CLEANUP_READY`.
+- Resulting state: `GLOBAL_ROADMAP_INDEX_STALE_RECOMMENDATION_CLEANUP_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current source of truth: `docs/architecture/nodal-os-global-roadmap-current-index.md`.
+- Historical recommendations marked: E17 source-refactor refresh, SR11 global rebaseline and GR1 index cleanup are completed/historical, not active next steps.
+- Current posture: global roadmap readiness `77%`; roadmap index freshness `88%`; source-refactor readiness `78%`; Product Ledger local/dev readiness `92%`; test runner confidence `74%` focal and `35%` broad local execution; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 historical roadmap docs still preserve old recommendations by design and broad source/Product Ledger/common-contract work remains deferred; P4 documentation remains intentionally redundant around blocked authority.
+- Stop condition: `STOP_AFTER_GLOBAL_ROADMAP_INDEX_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: GR2 cleans the index only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, common-contract broad refactor or product authority.

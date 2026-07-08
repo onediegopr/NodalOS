@@ -59,6 +59,10 @@ Recommended next macroblock:
 
 `NODAL_OS_MAIN_ROADMAP_SOURCE_REFACTOR_READINESS_REFRESH_AUDIT_ONLY`
 
+Current interpretation after global roadmap rebaseline:
+
+This recommendation is historical and completed. The current roadmap selector is `docs/architecture/nodal-os-global-roadmap-current-index.md`; do not treat this E17 recommendation as the active next step.
+
 Why:
 
 Product Ledger local/dev is now closed enough. The highest-value safe next step is a read-only refresh of the main roadmap source-refactor readiness posture, using the latest D-series and E-series evidence, before choosing any source, product-surface or implementation lane.

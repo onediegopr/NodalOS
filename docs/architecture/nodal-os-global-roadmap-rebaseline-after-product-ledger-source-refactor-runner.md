@@ -32,6 +32,10 @@ Exact next block:
 
 `NODAL_OS_GLOBAL_ROADMAP_INDEX_AND_STALE_RECOMMENDATION_CLEANUP_DOCS_ONLY`
 
+Current interpretation after index cleanup:
+
+This recommendation is completed by `docs/architecture/nodal-os-global-roadmap-current-index.md`. The index is now the source-of-truth entrypoint for interpreting historical roadmap recommendations.
+
 ## Recently Closed Lines
 
 - Product Ledger local/dev internal packet and return to roadmap.
