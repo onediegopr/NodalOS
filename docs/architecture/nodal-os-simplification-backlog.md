@@ -671,6 +671,24 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `NODAL_OS_SOURCE_REFACTOR_MICRO_LANE_CLOSEOUT_AND_NEXT_SAFE_GATE_SELECTION_AUDIT_ONLY`.
 - Authorization note: SR7 audits equivalence only. It does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR8 - Source Refactor Micro-Lane Closeout After D13/D7
+
+- Objective: close the D13/D7 source-refactor micro-lane and select one next safe gate without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-source-refactor-micro-lane-closeout-after-d13-d7.md`.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_MICRO_LANE_CLOSEOUT_READY`.
+- Resulting state: `SOURCE_REFACTOR_MICRO_LANE_CLOSED_NEXT_SAFE_GATE_SELECTED_NO_IMPLEMENTATION`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Closed lane: D13 follow-up bounded source cleanup, D7 expected fail-closed claims table implementation and D7 equivalence audit.
+- Selected next gate: `RUNNER_FILTER_HANG_INVESTIGATION_READ_ONLY_OR_TEST_INFRA_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_RUNNER_FILTER_HANG_INVESTIGATION_READ_ONLY_OR_TEST_INFRA_AUDIT_ONLY`.
+- Not selected: return-to-roadmap pause, static guard docs cleanup, stale readiness link cleanup, common-contract broad audit, Product Ledger/model consolidation audit or larger D7 proof-chain reduction selection.
+- Findings: P0=0, P1=0, P2=0; P3 broad/silent local test filters can hang and should be investigated separately; P4 current closeout mitigates but does not erase historical stale recommendations.
+- Current posture: source-refactor readiness `78%`; broad source simplification readiness `45%`; D7 lane readiness `100%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_GATE_AFTER_MICRO_LANE_CLOSEOUT`.
+- Authorization note: SR8 closes and selects only. It does not authorize source implementation, test edits, CI enforcement, runtime/product, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
