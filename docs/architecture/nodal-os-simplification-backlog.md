@@ -723,6 +723,24 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `NODAL_OS_SOURCE_REFACTOR_RETURN_TO_MAIN_ROADMAP_AFTER_RUNNER_GUIDANCE_AUDIT_ONLY`.
 - Authorization note: SR10 documents guidance only. It does not authorize source changes, test edits, test-infra fixes, project/solution/workflow changes, CI enforcement, runtime/product or release/commercial work.
 
+## BLOCK SR11 - Source Refactor Return To Main Roadmap After Runner Guidance
+
+- Objective: close the source-refactor micro-lane plus runner guidance line and return control to the main roadmap.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-source-refactor-return-to-main-roadmap-after-runner-guidance.md`.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_RETURN_TO_MAIN_ROADMAP_READY`.
+- Resulting state: `SOURCE_REFACTOR_MICRO_LANE_AND_RUNNER_GUIDANCE_RETURNED_TO_MAIN_ROADMAP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Source changed: none.
+- Tests changed: none.
+- Project/solution/workflow files changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Confirmed: Product Ledger local/dev line is paused/closed internally, D13/D7 micro-lane is closed, runner guidance is documented and runtime/product remains `0%`.
+- Selected next gate: `PAUSE_AND_GLOBAL_ROADMAP_REBASELINE_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_PAUSE_AND_GLOBAL_ROADMAP_REBASELINE_AUDIT_ONLY`.
+- Findings: P0=0, P1=0, P2=0; P3 global roadmap ordering may now be stale after sequential closeouts; P4 historical docs still contain older recommendations.
+- Current posture: global roadmap readiness `76%`; source-refactor readiness `78%`; test runner confidence `74%` focal and `35%` broad local execution; D7 lane readiness `100%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_MACROBLOCK_AFTER_SOURCE_REFACTOR_RETURN`.
+- Authorization note: SR11 returns to the main roadmap only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, broad common-contract refactor or Product Ledger/model consolidation.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

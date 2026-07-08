@@ -197,3 +197,21 @@ Resulting state:
 Recommendation:
 
 Use the safe command guidance for local source-refactor validation until a separate test-infra fix block is authorized. This does not enable CI enforcement and does not claim CI failure.
+
+## Current Main Roadmap Return Follow-up
+
+Current return record:
+
+`docs/architecture/nodal-os-source-refactor-return-to-main-roadmap-after-runner-guidance.md`
+
+Resulting state:
+
+`SOURCE_REFACTOR_MICRO_LANE_AND_RUNNER_GUIDANCE_RETURNED_TO_MAIN_ROADMAP_NO_RUNTIME_PRODUCT_AUTHORITY`
+
+Selected next gate:
+
+`PAUSE_AND_GLOBAL_ROADMAP_REBASELINE_AUDIT_ONLY`
+
+Exact next block:
+
+`NODAL_OS_PAUSE_AND_GLOBAL_ROADMAP_REBASELINE_AUDIT_ONLY`
