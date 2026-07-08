@@ -14,6 +14,10 @@ Current state: `PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_READY_NO_PRODUCT_AU
 
 Stop condition: `STOP_AFTER_PRODUCT_LEDGER_CANON_REFERENCE_INDEX_CLEANUP_NO_PRODUCT_AUTHORITY`.
 
+Follow-up status: the recommended post-canon-index next-scope selector was executed in `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_CANON_REFERENCE_CLEANUP_AUDIT_ONLY` and selected `PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+
+Follow-up selector: `docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-canon-index-selection.md`.
+
 ## Purpose
 
 This index is the current navigation entrypoint for Product Ledger local/dev canon references. It helps readers enter through current canon and audit records before older block-specific QA, handoff, roadmap or submission artifacts.

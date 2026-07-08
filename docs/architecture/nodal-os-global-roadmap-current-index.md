@@ -309,6 +309,22 @@ Recommended next safe macro-block:
 
 `NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_CANON_REFERENCE_CLEANUP_AUDIT_ONLY`
 
+Current post-canon-index next-scope selection:
+
+`docs/architecture/nodal-os-product-ledger-model-consolidation-next-safe-scope-after-canon-index-selection.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_AFTER_CANON_REFERENCE_CLEANUP_SELECTED_NO_IMPLEMENTATION`
+
+Selected next safe scope:
+
+`PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+
+Selected next block:
+
+`NODAL_OS_PRODUCT_LEDGER_EVIDENCE_ROLE_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -329,6 +345,7 @@ P3:
 - Product Ledger authority-map no-double-truth equivalence audit confirms the authority map, E2 canon and focal guard are equivalent; model/source consolidation remains deferred.
 - Product Ledger post-equivalence next scope is selected as canon/reference/index cleanup docs-only; model/source consolidation remains deferred.
 - Product Ledger canon reference index cleanup now gives current readers a single entrypoint before historical packet artifacts; model/source consolidation remains deferred.
+- Product Ledger post-canon-index next scope is selected as evidence-role terminology reconciliation docs/test-only; model/source consolidation remains deferred.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:
