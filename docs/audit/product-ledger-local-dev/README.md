@@ -31,6 +31,7 @@ Current authority entrypoints:
 - `audit-review-result.md`
 - `operator-review-handoff.md`
 - `external-review-handoff.md`
+- `operator-submission-packet.md`
 
 ## Reviewer Rule
 
@@ -47,3 +48,7 @@ E9 operator decision: `APPROVE_PACKET_FOR_EXTERNAL_REVIEW`.
 E9 external review handoff: `external-review-handoff.md`.
 
 E9 prepares Diego/operator manual external review handoff only. Codex did not submit anything externally and E9 does not authorize runtime/product, public/product, Production route, latest pointer, read precedence, product authority, CI enforcement or release/commercial readiness.
+
+E10 operator submission packet: `operator-submission-packet.md`.
+
+E10 finalizes a manual operator submission packet only. Codex did not submit anything externally and no external review result exists yet.

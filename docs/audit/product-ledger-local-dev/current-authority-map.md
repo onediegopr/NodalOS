@@ -16,6 +16,7 @@
 | `docs/audit/product-ledger-local-dev/audit-review-result.md` | E7 read-only review result for the E6 packet. It is review evidence, not product authority. |
 | `docs/audit/product-ledger-local-dev/operator-review-handoff.md` | E8 operator handoff and E9 operator approval record. It is handoff evidence, not product authority. |
 | `docs/audit/product-ledger-local-dev/external-review-handoff.md` | E9 external/manual review handoff. It prepares operator submission only; Codex did not submit externally. |
+| `docs/audit/product-ledger-local-dev/operator-submission-packet.md` | E10 operator submission packet. It prepares manual operator submission only; no external review result exists yet. |
 
 ## Historical / Block-Specific Evidence
 
@@ -33,6 +34,6 @@ Older QA, handoff, roadmap and ADR files remain traceability. They should not be
 
 ## Next Recommended Block
 
-`STOP_FOR_EXTERNAL_REVIEW_SUBMISSION_BY_OPERATOR`
+`STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_MANUALLY`
 
-E9 records Diego/operator approval to prepare the packet for external/manual review. E9 does not submit externally and does not authorize runtime/product work.
+E10 finalizes the manual operator submission packet. E10 does not submit externally, does not complete external review and does not authorize runtime/product work.

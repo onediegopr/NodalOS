@@ -45,6 +45,7 @@ Treat older QA, roadmap and handoff files as historical/block-specific evidence 
 9. `audit-review-result.md`
 10. `operator-review-handoff.md`
 11. `external-review-handoff.md`
+12. `operator-submission-packet.md`
 
 ## Validation Commands
 
@@ -154,6 +155,6 @@ Report each finding with:
 
 ## Selected Next Recommended Block
 
-`STOP_FOR_EXTERNAL_REVIEW_SUBMISSION_BY_OPERATOR`
+`STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_MANUALLY`
 
-The packet is prepared for Diego/operator to pass manually to an external reviewer. E9 does not submit anything externally and does not authorize E10, runtime/product or release/commercial work.
+E10 finalizes the operator submission packet at `operator-submission-packet.md`. The packet is prepared for Diego/operator to pass manually to an external reviewer. E10 does not submit anything externally, does not complete external review and does not authorize runtime/product or release/commercial work.
