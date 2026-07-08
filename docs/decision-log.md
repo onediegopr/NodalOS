@@ -2400,3 +2400,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 old readiness next-step is stale, D-series remains net additive and broad common-contract/Product Ledger consolidation still carries double-truth risk; P4 historical docs preserve old next-step recommendations.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_MACROBLOCK`.
 - Authorization note: this refresh does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_SOURCE_REFACTOR_NEXT_MINIMAL_REDUCTION_TARGET_SELECTION_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_MINIMAL_TARGET_SELECTED_READY`.
+- Baseline: `ae9cc990c69a40d2a1f24337b57764d473f43297`.
+- Resulting state: `SOURCE_REFACTOR_NEXT_MINIMAL_REDUCTION_TARGET_SELECTED_NO_IMPLEMENTATION`.
+- Scope: docs-only/read-only/audit-only target selection. No `src/`, tests, CI, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Selection added: `docs/architecture/nodal-os-source-refactor-next-minimal-reduction-target-selection.md`.
+- Selected target: `D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP`.
+- Recommended next implementation block: `NODAL_OS_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_NO_RUNTIME_CHANGE`, requiring separate explicit operator authorization.
+- Not selected: D7 proof-chain micro-reduction, static guard duplicate wording cleanup, stale readiness link cleanup, broad common-contract refactor and Product Ledger/model consolidation.
+- Current posture: target-selection confidence `86%`; selected-target implementation readiness `74%`; broad source simplification readiness `45%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 selected D13 follow-up may find no safe remaining D10 cleanup, D7 has larger opportunity but higher canonical-risk, broad common-contract/Product Ledger consolidation still carries double-truth risk; P4 historical docs retain stale recommendations.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_SOURCE_REFACTOR_TARGET`.
+- Authorization note: this block selects target only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.

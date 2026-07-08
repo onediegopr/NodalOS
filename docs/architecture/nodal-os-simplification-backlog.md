@@ -573,6 +573,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_MACROBLOCK`.
 - Authorization note: SR1 refreshes readiness only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR2 - Source Refactor Next Minimal Reduction Target Selection
+
+- Objective: select exactly one bounded next source-refactor reduction target without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-source-refactor-next-minimal-reduction-target-selection.md`.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_MINIMAL_TARGET_SELECTED_READY`.
+- Resulting state: `SOURCE_REFACTOR_NEXT_MINIMAL_REDUCTION_TARGET_SELECTED_NO_IMPLEMENTATION`.
+- Selected target: `D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP`.
+- Recommended next implementation block: `NODAL_OS_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_NO_RUNTIME_CHANGE`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Not selected: D7 proof-chain micro-reduction, static guard wording cleanup, stale-link cleanup, broad common-contract refactor and Product Ledger/model consolidation.
+- Findings: P0=0, P1=0, P2=0; P3 selected D13 follow-up may find no safe remaining D10 cleanup, D7 has larger opportunity but higher canonical-risk, broad common-contract/Product Ledger consolidation still carries double-truth risk; P4 historical docs retain stale recommendations.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_SOURCE_REFACTOR_TARGET`.
+- Authorization note: SR2 selects a target only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

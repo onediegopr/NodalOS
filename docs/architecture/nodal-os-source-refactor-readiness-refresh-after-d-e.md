@@ -125,3 +125,21 @@ P4:
 `STOP_FOR_OPERATOR_DECISION_ON_SOURCE_REFACTOR_NEXT_SAFE_MACROBLOCK`
 
 This refresh does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## Current Target Selection Follow-up
+
+Current target-selection record:
+
+`docs/architecture/nodal-os-source-refactor-next-minimal-reduction-target-selection.md`
+
+Resulting state:
+
+`SOURCE_REFACTOR_NEXT_MINIMAL_REDUCTION_TARGET_SELECTED_NO_IMPLEMENTATION`
+
+Selected target:
+
+`D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP`
+
+Recommended next implementation block, requiring separate explicit operator authorization:
+
+`NODAL_OS_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_NO_RUNTIME_CHANGE`
