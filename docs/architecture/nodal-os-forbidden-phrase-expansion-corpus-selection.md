@@ -26,7 +26,11 @@ Current deferred-family corpus selection:
 
 Deferred-family state:
 
-`FORBIDDEN_PHRASE_DEFERRED_FAMILIES_CORPUS_SELECTED_NO_IMPLEMENTATION`
+`FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_READY`
+
+Deferred-family guard:
+
+`StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist`
 
 ## Executive Verdict
 
@@ -42,11 +46,11 @@ This block selects only. It does not add forbidden fragments, edit tests, touch 
 - Catalog source for future implementation reference only: `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalog.cs`.
 - Catalog tests for future implementation reference only: `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs`.
 
-Current posture:
+Current posture after deferred-family guard:
 
-- Static Guard Catalog readiness: `94%`.
-- Forbidden phrase expansion readiness: `82%`.
-- Deferred families readiness: `66%`.
+- Static Guard Catalog readiness: `96%`.
+- Forbidden phrase expansion readiness: `86%`.
+- Deferred families readiness: `78%`.
 - Tier 1 label coverage: `71%`.
 - Metadata consistency confidence: `83%`.
 - Runtime/product enablement: `0%`.
@@ -87,8 +91,8 @@ Deferred corpus:
 | Latest pointer / read precedence claims | Yes | `latest pointer promoted`, `read precedence changed`, `authoritative read path changed` | `No latest pointer`, `No active read precedence`, `latest pointer remains blocked`, `read precedence remains blocked` | Latest-state evidence docs distinguish candidate evidence from authority | Require positive authority wording, not neutral design terms |
 | CI enforcement claims | Yes | `CI enforced`, `CI gate active`, `CI blocks release` | `no CI enforcement`, `CI enforcement remains 0%`, `CI changed: none` | Almost every closeout says CI remains 0% | Include only after negative allowlist is proven in the same future test |
 | Release/commercial claims | Yes | `release approved`, `commercial ready`, `launch ready`, `production-ready` | `No release/commercial`, `release/commercial NO-GO`, `release/commercial remains 0%` | NO-GO docs often contain the words release/commercial | Keep high priority, but exact positive phrases only |
-| External audit approval claims | Defer from first implementation | `external audit passed`, `external reviewer approved`, `external approval granted` | `no external audit pass`, `no external response recorded`, `operator submission only` | Product Ledger E-series has external-review packet and no-response history | Defer until external-review docs get their own corpus/allowlist |
-| DB/cloud/network/KMS/WORM capability claims | Defer from first implementation | `DB enabled`, `cloud backed`, `provider enabled`, `KMS/WORM guaranteed` | `No DB/migration`, `No provider/cloud/network`, `No KMS/WORM`, `KMS/WORM remains unimplemented` | Existing static guard has source-like tokens such as `HttpClient` and `DbContext`; docs use many no-go lists | Defer until implementation distinguishes capability claims from anti-capability lists |
+| External audit approval claims | Implemented in deferred-family follow-up | `external audit passed`, `external reviewer approved`, `external approval granted` | `no external audit pass`, `no external response recorded`, `operator submission only` | Product Ledger E-series has external-review packet and no-response history | Guarded only in selected deferred-family corpus |
+| DB/cloud/network/KMS/WORM capability claims | Implemented in deferred-family follow-up | `DB enabled`, `cloud backed`, `provider enabled`, `KMS/WORM guaranteed` | `No DB/migration`, `No provider/cloud/network`, `No KMS/WORM`, `KMS/WORM remains unimplemented` | Existing static guard has source-like tokens such as `HttpClient` and `DbContext`; docs use many no-go lists | Guarded only in selected deferred-family corpus |
 
 ## Negative Allowlist Rules
 
@@ -134,7 +138,7 @@ Implementation result:
 - Test added: `StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`.
 - Corpus used: exactly the selected five files listed above.
 - Families implemented: runtime/product, public/product, Production route, latest pointer/read precedence, CI enforcement and release/commercial.
-- Families still deferred: external audit approval and DB/cloud/network/KMS/WORM capability claims.
+- Families implemented in deferred follow-up: external audit approval and DB/cloud/network/KMS/WORM capability claims.
 - Broad `docs/` scan remains blocked.
 
 Allowed scope:

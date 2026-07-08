@@ -2,23 +2,23 @@
 
 Date: 2026-07-08
 
-Mode: read-only / docs-only / audit-only / corpus-selection-only.
+Mode: test-only / docs-minimal / narrow-guard-only.
 
-Block: `AUTHORIZE_NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_DEFERRED_FAMILIES_CORPUS_SELECTION_AUDIT_ONLY`.
+Block: `AUTHORIZE_NODAL_OS_FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_TEST_ONLY`.
 
 Baseline HEAD: `dcb2a3b0570290119f7a634bcd94356049dc79c2`.
 
-Decision: `GO_WITH_FINDINGS_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_CORPUS_SELECTED_READY`.
+Decision: `GO_WITH_FINDINGS_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_NARROW_GUARD_READY`.
 
-Resulting state: `FORBIDDEN_PHRASE_DEFERRED_FAMILIES_CORPUS_SELECTED_NO_IMPLEMENTATION`.
+Resulting state: `FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_READY`.
 
-Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_IMPLEMENTATION_SCOPE`.
+Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES`.
 
 ## Executive Verdict
 
-The deferred forbidden phrase families are suitable for a future narrow test-only guard, but only against a small high-signal corpus. The first deferred-family implementation must not scan all docs and must not convert external-review packets, no-authority lists or DB/cloud/KMS/WORM no-go wording into positive claims.
+The deferred forbidden phrase families now have a focal test-only guard against a small high-signal corpus. The implementation does not scan all docs and does not convert external-review packets, no-authority lists or DB/cloud/KMS/WORM no-go wording into positive claims.
 
-This block selects corpus and contract only. It does not edit tests, touch source, add phrase guards, enable CI, authorize runtime/product, claim external audit approval, enable DB/cloud/network/provider/KMS/WORM or change release/commercial posture.
+This block adds one Safety test guard and updates docs minimally. It does not touch source, enable CI, authorize runtime/product, claim external audit approval, enable DB/cloud/network/provider/KMS/WORM or change release/commercial posture.
 
 ## Current Source Of Truth
 
@@ -28,6 +28,7 @@ This block selects corpus and contract only. It does not edit tests, touch sourc
 - Current backlog: `docs/architecture/nodal-os-simplification-backlog.md`.
 - Decision log: `docs/decision-log.md`.
 - Current narrow guard: `StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`.
+- Current deferred-family guard: `StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist`.
 
 Confirmed current coverage:
 
@@ -43,11 +44,11 @@ Confirmed deferred families:
 - External audit approval claims.
 - DB/cloud/network/provider/KMS/WORM capability claims.
 
-Current posture:
+Current posture after implementation:
 
-- Static Guard Catalog readiness: `95%`.
-- Forbidden phrase expansion readiness: `82%`.
-- Deferred families readiness: `66%`.
+- Static Guard Catalog readiness: `96%`.
+- Forbidden phrase expansion readiness: `86%`.
+- Deferred families readiness: `78%`.
 - Runtime/product enablement: `0%`.
 - CI enforcement: `0%`.
 - Release/commercial: `0% / NO-GO`.
@@ -124,9 +125,9 @@ Required policy:
 - Operator submission packet existence is not external review completion.
 - DB/cloud/KMS/WORM design vocabulary is not capability enablement unless a positive enablement/guarantee phrase appears without a negative marker.
 
-## Future Test Contract
+## Implemented Test Contract
 
-Exact next block:
+Implemented block:
 
 `NODAL_OS_FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_TEST_ONLY`
 
@@ -153,7 +154,7 @@ Blocked scope:
 - no broad common-contract implementation;
 - no release/commercial.
 
-Required future tests:
+Implemented focal tests:
 
 - Positive samples fail for external audit approval claims.
 - Positive samples fail for DB/cloud/network/provider/KMS/WORM capability claims.
@@ -162,7 +163,11 @@ Required future tests:
 - The selected deferred-family corpus produces zero active approval/capability matches.
 - Operator packet and response-intake wording must remain non-authority unless explicit approval/pass content is recorded.
 
-NO-GO conditions for next block:
+Guard added:
+
+`StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist`
+
+Residual NO-GO conditions:
 
 - External review packet wording cannot be separated from actual approval/pass claims.
 - DB/cloud/KMS/WORM design/no-go wording cannot be separated from enablement/guarantee claims.
@@ -186,8 +191,8 @@ P3:
 
 P4:
 
-- The deferred families are valuable enough for one future narrow test-only guard, but not for broad docs scanning or CI enforcement.
+- The deferred families are covered by one narrow test-only guard, but remain unsuitable for broad docs scanning or CI enforcement.
 
 ## Final Boundary
 
-This block selects a deferred-family corpus and future test contract only. It does not implement deferred-family guards, edit tests, touch source, enable CI, authorize runtime/product, claim external audit approval, enable DB/cloud/network/provider/KMS/WORM or claim release/commercial readiness.
+This block implements a deferred-family guard only in Safety tests. It does not touch source, enable CI, authorize runtime/product, claim external audit approval, enable DB/cloud/network/provider/KMS/WORM or claim release/commercial readiness.

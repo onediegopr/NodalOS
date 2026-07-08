@@ -940,3 +940,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 external-review packet wording and DB/cloud/KMS/WORM no-go vocabulary are high false-positive areas; P4 deferred-family guard is useful only as a narrow test-only guard.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_IMPLEMENTATION_SCOPE`.
 - Authorization note: SG7 selects only. It does not authorize deferred-family guard implementation, test edits, source changes, broad docs scans, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## BLOCK SG8 - Forbidden Phrase Deferred Families Narrow Guard
+
+- Objective: implement the selected deferred external-audit and DB/cloud/KMS/WORM forbidden phrase families as one narrow Safety test guard.
+- Status: completed as test-only/docs-minimal in `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs`.
+- Decision: `GO_WITH_FINDINGS_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_NARROW_GUARD_READY`.
+- Resulting state: `FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_READY`.
+- Guard added: `StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist`.
+- Corpus guarded: current roadmap/static-guard canon plus `current-authority-map.md`, `external-review-response-intake.md`, `internal-packet-closeout-e2-e15.md` and `no-authority-static-scan-contract.md` from Product Ledger local/dev audit docs.
+- Deferred corpus remains excluded: operator submission/review handoffs, full Product Ledger local/dev packet, durable checkpoint/trust design docs, runner docs and broad `docs/` tree scan.
+- Source changed: none.
+- Tests changed: one focal Safety test method and local helper methods only.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Static Guard Catalog readiness `96%`; forbidden phrase expansion readiness `86%`; deferred families readiness `78%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 deferred-family guard is narrow and does not replace broad Product Ledger/doc review; P4 no-authority static scan blocked-claim examples require an explicit catalog-example allowance.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES`.
+- Authorization note: SG8 implements only a narrow test guard. It does not authorize source changes, broad docs scans, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

@@ -369,6 +369,101 @@ public sealed class NodalOsStaticGuardCatalogTests
         }
     }
 
+    [TestMethod]
+    [TestCategory("RunClaimCoherence")]
+    [TestCategory("NoAuthority")]
+    [TestCategory("NoRuntimeWiring")]
+    [TestCategory("StaticGuard")]
+    public void StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist()
+    {
+        var allowedNegativeSamples = string.Join(
+            Environment.NewLine,
+            "no external response recorded",
+            "no external approval claimed",
+            "no external audit pass",
+            "external review wait closed without response",
+            "internal/operator-attested only",
+            "operator-run external review packet",
+            "operator submission only",
+            "external review is not submitted",
+            "external audit approval remains blocked",
+            "external approval is NOT_AUTHORIZED_NOW",
+            "design-only external approval planning",
+            "future external review requires explicit response content",
+            "requires separate explicit operator authorization",
+            "does not grant external approval",
+            "no DB/cloud/network/provider",
+            "DB/cloud/network/provider remains blocked",
+            "no KMS/WORM guarantee",
+            "KMS/WORM not claimed");
+
+        AssertNoDeferredForbiddenPhraseMatches(
+            allowedNegativeSamples,
+            context: nameof(allowedNegativeSamples));
+
+        var positiveSamples = string.Join(
+            Environment.NewLine,
+            "external audit passed",
+            "external reviewer approved",
+            "external approval granted",
+            "reviewer approval recorded",
+            "external audit completed as approval",
+            "external review approved product readiness",
+            "external review approved",
+            "external approval claimed",
+            "DB enabled",
+            "database migration active",
+            "cloud backed",
+            "provider enabled",
+            "network enabled",
+            "KMS guaranteed",
+            "WORM guaranteed",
+            "durable WORM active",
+            "external trust guaranteed",
+            "DB/cloud/network enabled",
+            "KMS/WORM guarantee",
+            "cloud/provider capability enabled");
+
+        var positiveMatches = ScanDeferredForbiddenPhraseLines(
+            positiveSamples,
+            context: nameof(positiveSamples));
+
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "ExternalAuditApproval");
+        CollectionAssert.Contains(positiveMatches.Select(match => match.Category).ToArray(), "DbCloudNetworkKmsWorm");
+
+        var separatePositiveClaim = string.Join(
+            Environment.NewLine,
+            "no external approval claimed",
+            "external audit passed");
+
+        var separateMatches = ScanDeferredForbiddenPhraseLines(
+            separatePositiveClaim,
+            context: nameof(separatePositiveClaim));
+
+        Assert.AreEqual(1, separateMatches.Count, string.Join(", ", separateMatches.Select(match => match.Fragment)));
+        Assert.AreEqual("ExternalAuditApproval", separateMatches[0].Category);
+
+        var corpusFiles = DeferredForbiddenPhraseCorpusFiles();
+        foreach (var corpusFile in corpusFiles)
+        {
+            var matches = ScanDeferredForbiddenPhraseLines(
+                System.IO.File.ReadAllText(corpusFile),
+                context: corpusFile);
+
+            Assert.AreEqual(
+                0,
+                matches.Count,
+                string.Join(Environment.NewLine, matches.Select(match => match.ToString())));
+        }
+
+        foreach (var excludedCorpusFile in DeferredForbiddenPhraseExcludedCorpusFiles())
+        {
+            Assert.IsFalse(
+                corpusFiles.Contains(excludedCorpusFile, StringComparer.OrdinalIgnoreCase),
+                excludedCorpusFile);
+        }
+    }
+
     private static string[] CategoriesFor(Type type) =>
         type.GetCustomAttributes(typeof(TestCategoryAttribute), inherit: false)
             .Cast<TestCategoryAttribute>()
@@ -408,6 +503,37 @@ public sealed class NodalOsStaticGuardCatalogTests
         ];
     }
 
+    private static string[] DeferredForbiddenPhraseCorpusFiles()
+    {
+        var root = RepositoryRoot();
+
+        return
+        [
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-global-roadmap-current-index.md"),
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-forbidden-phrase-expansion-corpus-selection.md"),
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-static-guard-catalog-coverage-map.md"),
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-simplification-backlog.md"),
+            System.IO.Path.Combine(root, "docs/decision-log.md"),
+            System.IO.Path.Combine(root, "docs/audit/product-ledger-local-dev/current-authority-map.md"),
+            System.IO.Path.Combine(root, "docs/audit/product-ledger-local-dev/external-review-response-intake.md"),
+            System.IO.Path.Combine(root, "docs/audit/product-ledger-local-dev/internal-packet-closeout-e2-e15.md"),
+            System.IO.Path.Combine(root, "docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md")
+        ];
+    }
+
+    private static string[] DeferredForbiddenPhraseExcludedCorpusFiles()
+    {
+        var root = RepositoryRoot();
+
+        return
+        [
+            System.IO.Path.Combine(root, "docs/audit/product-ledger-local-dev/operator-submission-packet.md"),
+            System.IO.Path.Combine(root, "docs/audit/product-ledger-local-dev/external-review-handoff.md"),
+            System.IO.Path.Combine(root, "docs/audit/product-ledger-local-dev/operator-review-handoff.md"),
+            System.IO.Path.Combine(root, "docs/architecture/nodal-os-runner-filter-safe-commands-guidance.md")
+        ];
+    }
+
     private static string RepositoryRoot()
     {
         var current = AppContext.BaseDirectory;
@@ -432,6 +558,16 @@ public sealed class NodalOsStaticGuardCatalogTests
     private static void AssertNoNarrowForbiddenPhraseMatches(string source, string context)
     {
         var matches = ScanNarrowForbiddenPhraseLines(source, context);
+
+        Assert.AreEqual(
+            0,
+            matches.Count,
+            string.Join(Environment.NewLine, matches.Select(match => match.ToString())));
+    }
+
+    private static void AssertNoDeferredForbiddenPhraseMatches(string source, string context)
+    {
+        var matches = ScanDeferredForbiddenPhraseLines(source, context);
 
         Assert.AreEqual(
             0,
@@ -469,6 +605,37 @@ public sealed class NodalOsStaticGuardCatalogTests
         return matches;
     }
 
+    private static IReadOnlyList<NarrowForbiddenPhraseMatch> ScanDeferredForbiddenPhraseLines(
+        string source,
+        string context)
+    {
+        var matches = new List<NarrowForbiddenPhraseMatch>();
+        var lines = source.Replace("\r\n", "\n").Split('\n');
+
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
+        {
+            foreach (var segment in SplitClaimSegments(lines[lineIndex]))
+            {
+                foreach (var phrase in DeferredForbiddenPositivePhrases())
+                {
+                    if (segment.Contains(phrase.Fragment, StringComparison.OrdinalIgnoreCase)
+                        && !IsAllowedDeferredForbiddenPhraseContext(segment)
+                        && !IsAllowedDeferredForbiddenPhraseCatalogExample(context, lines, lineIndex))
+                    {
+                        matches.Add(new NarrowForbiddenPhraseMatch(
+                            context,
+                            lineIndex + 1,
+                            phrase.Category,
+                            phrase.Fragment,
+                            segment.Trim()));
+                    }
+                }
+            }
+        }
+
+        return matches;
+    }
+
     private static IEnumerable<string> SplitClaimSegments(string line) =>
         line.Split(['.', ';'], StringSplitOptions.RemoveEmptyEntries);
 
@@ -480,6 +647,7 @@ public sealed class NodalOsStaticGuardCatalogTests
             || value.Contains("non-goals:", StringComparison.Ordinal)
             || value.Contains(" no ", StringComparison.Ordinal)
             || value.StartsWith("no ", StringComparison.Ordinal)
+            || value.Contains(": no", StringComparison.Ordinal)
             || value.Contains(" not ", StringComparison.Ordinal)
             || value.StartsWith("not ", StringComparison.Ordinal)
             || value.Contains("does not authorize", StringComparison.Ordinal)
@@ -498,6 +666,78 @@ public sealed class NodalOsStaticGuardCatalogTests
             || value.Contains("requires explicit operator authorization", StringComparison.Ordinal)
             || value.Contains("ci changed: none", StringComparison.Ordinal)
             || value.Contains("runtime/product changed: none", StringComparison.Ordinal);
+    }
+
+    private static bool IsAllowedDeferredForbiddenPhraseContext(string segment)
+    {
+        var value = segment.Trim().ToLowerInvariant();
+
+        return value.Contains(" no ", StringComparison.Ordinal)
+            || value.StartsWith("no ", StringComparison.Ordinal)
+            || value.Contains(": no", StringComparison.Ordinal)
+            || value.Contains(" not ", StringComparison.Ordinal)
+            || value.StartsWith("not ", StringComparison.Ordinal)
+            || value.Contains("not claimed", StringComparison.Ordinal)
+            || value.Contains("no external response recorded", StringComparison.Ordinal)
+            || value.Contains("no external approval claimed", StringComparison.Ordinal)
+            || value.Contains("no external audit pass", StringComparison.Ordinal)
+            || value.Contains("wait closed without response", StringComparison.Ordinal)
+            || value.Contains("without response", StringComparison.Ordinal)
+            || value.Contains("internal/operator-attested only", StringComparison.Ordinal)
+            || value.Contains("operator-run", StringComparison.Ordinal)
+            || value.Contains("operator submission", StringComparison.Ordinal)
+            || value.Contains("not submitted", StringComparison.Ordinal)
+            || value.Contains("blocked", StringComparison.Ordinal)
+            || value.Contains("remains blocked", StringComparison.Ordinal)
+            || value.Contains("no-go", StringComparison.Ordinal)
+            || value.Contains("not_authorized_now", StringComparison.Ordinal)
+            || value.Contains("design-only", StringComparison.Ordinal)
+            || value.Contains("future", StringComparison.Ordinal)
+            || value.Contains("explicit authorization", StringComparison.Ordinal)
+            || value.Contains("explicit response content", StringComparison.Ordinal)
+            || value.Contains("requires separate explicit operator authorization", StringComparison.Ordinal)
+            || value.Contains("does not authorize", StringComparison.Ordinal)
+            || value.Contains("does not grant", StringComparison.Ordinal)
+            || value.Contains("no db/cloud/network/provider", StringComparison.Ordinal)
+            || value.Contains("no kms/worm guarantee", StringComparison.Ordinal)
+            || value.Contains("kms/worm not claimed", StringComparison.Ordinal);
+    }
+
+    private static bool IsAllowedDeferredForbiddenPhraseCatalogExample(
+        string context,
+        string[] lines,
+        int lineIndex)
+    {
+        var normalizedContext = context.Replace('\\', '/');
+        if (normalizedContext.EndsWith(
+            "docs/audit/product-ledger-local-dev/no-authority-static-scan-contract.md",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return HasRecentHeading(lines, lineIndex, "## Blocked Claim Families");
+        }
+
+        if (normalizedContext.EndsWith(
+            "docs/architecture/nodal-os-forbidden-phrase-expansion-corpus-selection.md",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return HasRecentHeading(lines, lineIndex, "## Phrase Families");
+        }
+
+        return false;
+    }
+
+    private static bool HasRecentHeading(string[] lines, int lineIndex, string heading)
+    {
+        var start = Math.Max(0, lineIndex - 24);
+        for (var index = start; index <= lineIndex; index++)
+        {
+            if (lines[index].Contains(heading, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static IReadOnlyList<(string Category, string Fragment)> NarrowForbiddenPositivePhrases() =>
@@ -529,6 +769,30 @@ public sealed class NodalOsStaticGuardCatalogTests
         ("ReleaseCommercial", "launch ready"),
         ("ReleaseCommercial", "production-ready"),
         ("ReleaseCommercial", "release ready")
+    ];
+
+    private static IReadOnlyList<(string Category, string Fragment)> DeferredForbiddenPositivePhrases() =>
+    [
+        ("ExternalAuditApproval", "external audit passed"),
+        ("ExternalAuditApproval", "external reviewer approved"),
+        ("ExternalAuditApproval", "external approval granted"),
+        ("ExternalAuditApproval", "reviewer approval recorded"),
+        ("ExternalAuditApproval", "external audit completed as approval"),
+        ("ExternalAuditApproval", "external review approved product readiness"),
+        ("ExternalAuditApproval", "external review approved"),
+        ("ExternalAuditApproval", "external approval claimed"),
+        ("DbCloudNetworkKmsWorm", "DB enabled"),
+        ("DbCloudNetworkKmsWorm", "database migration active"),
+        ("DbCloudNetworkKmsWorm", "cloud backed"),
+        ("DbCloudNetworkKmsWorm", "provider enabled"),
+        ("DbCloudNetworkKmsWorm", "network enabled"),
+        ("DbCloudNetworkKmsWorm", "KMS guaranteed"),
+        ("DbCloudNetworkKmsWorm", "WORM guaranteed"),
+        ("DbCloudNetworkKmsWorm", "durable WORM active"),
+        ("DbCloudNetworkKmsWorm", "external trust guaranteed"),
+        ("DbCloudNetworkKmsWorm", "DB/cloud/network enabled"),
+        ("DbCloudNetworkKmsWorm", "KMS/WORM guarantee"),
+        ("DbCloudNetworkKmsWorm", "cloud/provider capability enabled")
     ];
 
     private sealed record NarrowForbiddenPhraseMatch(

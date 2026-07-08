@@ -167,11 +167,15 @@ Current deferred-family corpus selection:
 
 Resulting state:
 
-`FORBIDDEN_PHRASE_DEFERRED_FAMILIES_CORPUS_SELECTED_NO_IMPLEMENTATION`
+`FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_READY`
 
-Selected next block:
+Implemented deferred-family guard:
 
-`NODAL_OS_FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_TEST_ONLY`
+`StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist`
+
+Next safe selector:
+
+`NODAL_OS_STATIC_GUARD_CATALOG_NEXT_INCREMENT_AFTER_DEFERRED_FAMILIES_SELECTION_AUDIT_ONLY`
 
 ## Findings
 

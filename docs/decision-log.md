@@ -9,6 +9,15 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## NODAL_OS_FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_TEST_ONLY
+
+- Decision target: `GO_WITH_FINDINGS_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_NARROW_GUARD_READY`.
+- Input HEAD: `d9bc23c2b5e9b6d358db6e9ca6393e5b44bfd5bd`.
+- Scope: test-only/docs-minimal Static Guard Catalog increment for external audit approval claims and DB/cloud/network/provider/KMS/WORM capability claims.
+- Guard added: `StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist`.
+- Boundary: no `src/`, no broad docs scan, no CI/workflows, no runtime/product, no external audit approval claim, no DB/cloud/network/provider enablement, no KMS/WORM guarantee/external trust, no release/commercial.
+- Findings: P0 0, P1 0, P2 0; P3 deferred-family coverage remains narrow by design; P4 blocked-claim catalog examples require explicit local allowance.
+
 ## NODAL_OS_BLOCK_B_NAMING_CONSOLIDATION_DESIGN_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_NAMING_CONSOLIDATION_DESIGN_READY`.
