@@ -1275,3 +1275,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 bounded micro-target lane should close after this because remaining provider names are no longer obvious one-file authority terminology fixes; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
 - Authorization note: MR17 does not authorize broad model consolidation, route/writer/latest-state/common-boundary merge, runtime/product, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.
+
+## BLOCK MR18 - Product Ledger Bounded Micro Target Lane Closeout
+
+- Objective: close the bounded micro-target lane after MR14-MR17 and select the next real scope.
+- Status: completed as docs-only/read-only closeout.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MICRO_TARGET_LANE_CLOSED_RETURN_TO_MAIN_ROADMAP_READY`.
+- Resulting state: `PRODUCT_LEDGER_BOUNDED_MICRO_TARGET_LANE_CLOSED_NO_PRODUCT_AUTHORITY`.
+- Closeout summary: MR14 removed `ExistingLocalLedgerReadModel`; MR15 aligned DB/migration wording; MR16 aligned external-network wording; MR17 aligned product-command wording.
+- Next selected scope: `NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AFTER_PRODUCT_LEDGER_MICRO_LANE_CLOSEOUT`.
+- Source changed: none.
+- Tests changed: none.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `66%`; double-truth mitigation confidence `93%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `91%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 further Product Ledger provider/model cleanup should require a more substantive operator-selected target; P4 local rename lane is intentionally stopped to avoid churn.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_NEXT_REAL_SCOPE_OR_MAIN_ROADMAP_RETURN`.
+- Authorization note: MR18 does not authorize source changes, tests, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.

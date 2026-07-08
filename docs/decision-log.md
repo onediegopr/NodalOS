@@ -53,6 +53,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 bounded micro-target lane should close after this because remaining provider names are no longer obvious one-file authority terminology fixes; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_FOURTH_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
 
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_BOUNDED_MICRO_TARGET_LANE_CLOSEOUT_AND_NEXT_REAL_SCOPE_SELECTION
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MICRO_TARGET_LANE_CLOSED_RETURN_TO_MAIN_ROADMAP_READY`.
+- Input HEAD: `1e94aa4f9d039d7bb3769116fa16e0a87852b53d`.
+- Closeout: the Product Ledger bounded micro-target lane is closed after four source-minimal/no-runtime changes.
+- Closed micro-targets: removed `ExistingLocalLedgerReadModel`, renamed `AllowsDb` to `AllowsDbMigration`, renamed `AllowsNetwork` to `AllowsExternalNetwork`, and renamed `AllowsCommandExecution` to `AllowsProductCommandExecution`.
+- Next selected scope: `NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_GATE_SELECTION_AFTER_PRODUCT_LEDGER_MICRO_LANE_CLOSEOUT`.
+- Boundary: docs-only closeout; no `src/`, tests, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 further Product Ledger provider/model cleanup should require a more substantive operator-selected target; P4 local rename lane is intentionally stopped to avoid churn.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_NEXT_REAL_SCOPE_OR_MAIN_ROADMAP_RETURN`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.
