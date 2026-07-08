@@ -2573,3 +2573,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 historical roadmap files preserve old next-step recommendations by design, Product Ledger/model consolidation and broad common-contract work remain deferred due to double-truth risk, and runner fix remains unimplemented; P4 documentation remains intentionally redundant around blocked runtime/product and release claims.
 - Next recommended macro-block: `STOP_AFTER_GLOBAL_ROADMAP_INDEX_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: this block cleans the current index only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation or product authority.
+
+## AUTHORIZE_NODAL_OS_STATIC_GUARD_CATALOG_NEXT_INCREMENT_SELECTION_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_NEXT_INCREMENT_SELECTED_READY`.
+- Baseline: `e124fc008b5f0bd98dba5d2125b6ab57d3298020`.
+- Resulting state: `STATIC_GUARD_CATALOG_NEXT_INCREMENT_SELECTED_NO_IMPLEMENTATION`.
+- Scope: docs-only/read-only/audit-only Static Guard Catalog next-increment selection. No `src/`, tests, project files, solution files, workflows, CI enforcement, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Selection added: `docs/architecture/nodal-os-static-guard-catalog-next-increment-selection.md`.
+- Selected future increment: `STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_TEST_ONLY`.
+- Exact next block: `NODAL_OS_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_TEST_ONLY`.
+- Current posture: global roadmap readiness `77%`; roadmap index freshness `88%`; Static Guard Catalog readiness `92%`; source-refactor readiness `78%`; Product Ledger local/dev readiness `92%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 catalog coverage is not fully mapped after later closeouts, C6 labels remain partial and forbidden phrase expansion could create false positives if attempted before coverage mapping; P4 old C1/C2/C6 recommendations remain traceability only.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT`.
+- Authorization note: this block selects only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation or product authority.

@@ -811,3 +811,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 historical roadmap docs still preserve old recommendations by design and broad source/Product Ledger/common-contract work remains deferred; P4 documentation remains intentionally redundant around blocked authority.
 - Stop condition: `STOP_AFTER_GLOBAL_ROADMAP_INDEX_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: GR2 cleans the index only. It does not authorize source changes, test edits, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, common-contract broad refactor or product authority.
+
+## BLOCK SG1 - Static Guard Catalog Next Increment Selection
+
+- Objective: select exactly one future Static Guard Catalog increment from the current roadmap without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-static-guard-catalog-next-increment-selection.md`.
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_NEXT_INCREMENT_SELECTED_READY`.
+- Resulting state: `STATIC_GUARD_CATALOG_NEXT_INCREMENT_SELECTED_NO_IMPLEMENTATION`.
+- Selected future increment: `STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_TEST_ONLY`.
+- Exact next block: `NODAL_OS_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_TEST_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: global roadmap readiness `77%`; roadmap index freshness `88%`; Static Guard Catalog readiness `92%`; source-refactor readiness `78%`; Product Ledger local/dev readiness `92%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 catalog coverage is not fully mapped after later closeouts and C6 labels remain partial; P4 old C1/C2/C6 recommendations remain traceability only.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT`.
+- Authorization note: SG1 selects only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

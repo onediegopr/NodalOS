@@ -97,6 +97,18 @@ Possible future safe choices, requiring explicit operator selection:
 - `TEST_INFRA_RUNNER_FIX_DESIGN_ONLY`.
 - `PAUSE_NO_CHANGES_READY`.
 
+Current follow-up selection:
+
+`docs/architecture/nodal-os-static-guard-catalog-next-increment-selection.md`
+
+Resulting state:
+
+`STATIC_GUARD_CATALOG_NEXT_INCREMENT_SELECTED_NO_IMPLEMENTATION`
+
+Selected future block:
+
+`NODAL_OS_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_TEST_ONLY`
+
 ## Findings
 
 P0: 0.
