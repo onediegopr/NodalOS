@@ -109,6 +109,18 @@ Selected future block:
 
 `NODAL_OS_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_TEST_ONLY`
 
+Current coverage-map follow-up:
+
+`docs/architecture/nodal-os-static-guard-catalog-coverage-map.md`
+
+Resulting state:
+
+`STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_READY`
+
+Selected next safe increment:
+
+`NODAL_OS_STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_TEST_ONLY`
+
 ## Findings
 
 P0: 0.

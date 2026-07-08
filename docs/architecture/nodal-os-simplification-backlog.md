@@ -828,3 +828,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 catalog coverage is not fully mapped after later closeouts and C6 labels remain partial; P4 old C1/C2/C6 recommendations remain traceability only.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT`.
 - Authorization note: SG1 selects only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## BLOCK SG2 - Static Guard Catalog Coverage Map Refresh
+
+- Objective: refresh the Static Guard Catalog coverage map without source/test implementation.
+- Status: completed as docs-only/read-only coverage-map refresh in `docs/architecture/nodal-os-static-guard-catalog-coverage-map.md`.
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_COVERAGE_MAP_REFRESH_READY`.
+- Resulting state: `STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_READY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Coverage mapped: runtime/product blocking, public/product blocking, Production route blocking, latest pointer/read precedence, product authority, Product Ledger local/dev no-authority, release/commercial NO-GO, NoRuntimeWiring, NoDoubleTruth, NoAuthority, StaticGuardCatalog discovery, Tier 1 metadata and runner guidance relation.
+- Selected next safe increment: `STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_TEST_ONLY`.
+- Exact next block: `NODAL_OS_STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_TEST_ONLY`.
+- Current posture: Static Guard Catalog readiness `93%`; Tier 1 label coverage `68%`; global roadmap readiness `77%`; roadmap index freshness `89%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial, runtime/product blocking and runner guidance are not fully catalog-backed and forbidden phrase expansion remains false-positive prone; P4 coverage is intentionally redundant.
+- Stop condition: `STOP_AFTER_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: SG2 maps coverage only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation, broad common-contract implementation or broad forbidden phrase expansion.

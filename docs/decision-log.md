@@ -2587,3 +2587,18 @@
 - Findings: P0=0, P1=0, P2=0; P3 catalog coverage is not fully mapped after later closeouts, C6 labels remain partial and forbidden phrase expansion could create false positives if attempted before coverage mapping; P4 old C1/C2/C6 recommendations remain traceability only.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_STATIC_GUARD_NEXT_INCREMENT`.
 - Authorization note: this block selects only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation or product authority.
+
+## AUTHORIZE_NODAL_OS_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_TEST_ONLY
+
+- Decision: `GO_WITH_FINDINGS_STATIC_GUARD_COVERAGE_MAP_REFRESH_READY`.
+- Baseline: `de13d941d4a3f81c6e9ec4b18c9735b6ce907d84`.
+- Resulting state: `STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_READY`.
+- Scope: docs-only/read-only coverage-map refresh. No `src/`, tests, project files, solution files, workflows, CI enforcement, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM, broad forbidden phrase expansion or release/commercial changes.
+- Coverage map added: `docs/architecture/nodal-os-static-guard-catalog-coverage-map.md`.
+- Coverage mapped: runtime/product blocking, public/product blocking, Production route blocking, latest pointer/read precedence, product authority, Product Ledger local/dev no-authority, release/commercial NO-GO, NoRuntimeWiring, NoDoubleTruth, NoAuthority, StaticGuardCatalog discovery, Tier 1 metadata and runner guidance relation.
+- Selected next safe increment: `STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_TEST_ONLY`.
+- Exact next block: `NODAL_OS_STATIC_GUARD_CATALOG_METADATA_CONSISTENCY_CHECK_TEST_ONLY`.
+- Current posture: Static Guard Catalog readiness `93%`; Tier 1 label coverage `68%`; global roadmap readiness `77%`; roadmap index freshness `89%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Tier 1 labels remain partial, runtime/product blocking and runner guidance are not fully catalog-backed and forbidden phrase expansion remains false-positive prone; P4 coverage remains intentionally redundant across catalog tests, Product Ledger canon guards and docs.
+- Next recommended macro-block: `STOP_AFTER_STATIC_GUARD_CATALOG_COVERAGE_MAP_REFRESH_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: this block maps coverage only. It does not authorize test edits, source changes, CI enforcement, runtime/product, release/commercial, broad common-contract refactor, Product Ledger/model consolidation, product authority or broad forbidden phrase expansion.
