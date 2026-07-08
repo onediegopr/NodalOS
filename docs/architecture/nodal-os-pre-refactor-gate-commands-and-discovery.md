@@ -761,3 +761,17 @@ dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build 
 ```
 
 These commands are not CI enforcement. Passing the E5 canon guard does not mean Product Ledger product readiness, public/product readiness, Production route readiness, latest pointer readiness, read precedence readiness, product authority or release/commercial readiness. Runtime/product enablement remains `0%`; CI enforcement remains `0%`; Tier 1 remains manual/discovery-only.
+
+## 30. E6 Product Ledger Local/Dev External Audit Packet
+
+E6 adds the read-only audit packet:
+
+`docs/audit/product-ledger-local-dev/README.md`
+
+The packet references the exact manual validation commands in:
+
+`docs/audit/product-ledger-local-dev/validation-commands.md`
+
+These commands remain manual/discovery-only. They include Product Ledger Safety, Product Ledger Recipes, `ProductLedgerLocalDevCanonGuardTests`, `TestCategory=NodalOsTier1Safety`, `TestCategory=ProductLedger`, `TestCategory=NoRuntimeWiring`, `TestCategory=NoAuthority`, `TestCategory=NoDoubleTruth`, `TestCategory=ReleaseCommercialBlock`, `NodalOsStaticGuardCatalogTests`, `TestCategory=PublicProductBlock`, `TestCategory=ProductionRouteBlock` and MSTest discovery commands.
+
+E6 does not submit an external audit, does not add CI enforcement and does not imply Product Ledger product readiness. Runtime/product enablement remains `0%`; release/commercial remains `0% / NO-GO`.

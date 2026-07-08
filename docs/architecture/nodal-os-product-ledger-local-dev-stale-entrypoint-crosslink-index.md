@@ -75,6 +75,8 @@ E4 recommends but does not authorize E5.
 
 E5 follow-up status: `ProductLedgerLocalDevCanonGuardTests` now guards this index, the E2 canon and the E3 plan as manual/discovery-only Safety evidence. E5 does not change runtime/product, CI, Tier 1 enforcement, public/product readiness, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial posture. E5 selects `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY` as the next recommended safe block but does not authorize E6.
 
+E6 follow-up status: the read-only external audit packet is at `docs/audit/product-ledger-local-dev/README.md`. It packages current authority and validation evidence only; it does not submit an external audit or change Product Ledger posture. E6 selects `NODAL_OS_BLOCK_E7_EXTERNAL_AUDIT_PACKET_REVIEW_READ_ONLY` as the next recommended safe block but does not authorize E7.
+
 ## 7. Validation Result
 
 Validation result: PASS.

@@ -2215,3 +2215,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 documentation surface remains large and the next audit packet should preserve historical/current authority separation; P4 historical docs still preserve old percentages by design.
 - Next recommended macro-block: `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY`.
 - Authorization note: E5 recommends E6 but does not authorize starting E6.
+
+## NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_EXTERNAL_AUDIT_PACKET_READY`.
+- Baseline: `be68b7c1492218ade9c166c1ee2976bd0a54d248`.
+- Scope: docs-only/read-only/audit-packet-only Product Ledger local/dev review packet. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Packet added: `docs/audit/product-ledger-local-dev/README.md`.
+- Packet contents: scope/non-goals, current authority map, evidence index, validation commands, audit question bank, expected audit findings and risk register.
+- External audit execution: none; no external API call and no external submission.
+- Current posture: Product Ledger local/dev readiness `86%`, audit readiness `90%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 audit should verify current-vs-historical authority separation and manual gate reproducibility; P4 historical docs still preserve old percentages by design.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E7_EXTERNAL_AUDIT_PACKET_REVIEW_READ_ONLY`.
+- Authorization note: E6 recommends E7 but does not authorize starting E7.

@@ -371,6 +371,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY`.
 - Authorization note: E5 recommends E6 but does not authorize starting E6.
 
+## BLOCK E6 - Product Ledger Local/Dev External Audit Packet
+
+- Objective: package Product Ledger local/dev current authority, evidence, blocked states, questions and risks for read-only audit review.
+- Status: completed as docs-only/read-only/audit-packet-only in `docs/audit/product-ledger-local-dev/README.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_EXTERNAL_AUDIT_PACKET_READY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- External submission: none; E6 creates the packet only.
+- Current posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Next recommended macro-block: `NODAL_OS_BLOCK_E7_EXTERNAL_AUDIT_PACKET_REVIEW_READ_ONLY`.
+- Authorization note: E6 recommends E7 but does not authorize starting E7.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

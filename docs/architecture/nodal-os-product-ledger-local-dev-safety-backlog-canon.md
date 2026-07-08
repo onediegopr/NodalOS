@@ -14,6 +14,8 @@ E3 next-action plan: `docs/architecture/nodal-os-product-ledger-local-dev-next-a
 
 E4 stale-entrypoint cross-link index: `docs/architecture/nodal-os-product-ledger-local-dev-stale-entrypoint-crosslink-index.md`.
 
+E6 external audit packet: `docs/audit/product-ledger-local-dev/README.md`.
+
 ## 1. Executive Status
 
 Product Ledger has a real local/dev evidence line, but it is not public/product, not a Production route, not product authority and not release/commercial ready.
@@ -164,7 +166,7 @@ E5 later added `ProductLedgerLocalDevCanonGuardTests` as a focused Safety guard 
 
 Pending safe work before any product/runtime move:
 
-- Execute the E5-selected next block: `NODAL_OS_BLOCK_E6_EXTERNAL_AUDIT_PACKET_PRODUCT_LEDGER_LOCAL_DEV_READ_ONLY`.
+- Execute the E6-selected next block: `NODAL_OS_BLOCK_E7_EXTERNAL_AUDIT_PACKET_REVIEW_READ_ONLY`.
 - Continue compacting lower-risk repeated QA/handoff entrypoints while preserving history.
 - Merge latest-state snapshot/manifest/reader/auxiliary evidence roles into a shared `LatestStateEvidence` design.
 - Merge writer variants under a `WriterMode` design without changing product behavior.
@@ -177,6 +179,8 @@ E3 selects stale-doc cross-link cleanup because older Product Ledger QA/handoff/
 E4 cross-linked the highest-risk historical Product Ledger entrypoints and selected a small canon guard test-only block as the next safe step. E4 does not authorize E5.
 
 E5 added a focused Safety canon guard and selected an external audit packet read-only block as the next safe step. E5 does not authorize E6.
+
+E6 added a read-only external audit packet at `docs/audit/product-ledger-local-dev/README.md` and selected audit packet review as the next safe step. E6 does not execute or submit an external audit and does not authorize E7.
 
 ## 12. Findings
 

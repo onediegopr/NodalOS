@@ -502,3 +502,11 @@ dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-build 
 ```
 
 E5 does not add CI enforcement, does not move or delete tests, does not weaken assertions and does not change runtime/product capability. Passing this guard means only that the current Product Ledger local/dev canon still carries the required blocked-state wording. It is not product readiness.
+
+## 23. E6 Product Ledger Local/Dev External Audit Packet
+
+E6 adds `docs/audit/product-ledger-local-dev/` as docs-only/read-only audit packet material. It does not add, move, delete or relabel tests.
+
+The packet cites the existing manual/discovery categories and focused commands, including `NodalOsTier1Safety`, `ProductLedger`, `NoRuntimeWiring`, `NoAuthority`, `NoDoubleTruth`, `ReleaseCommercialBlock`, `PublicProductBlock`, `ProductionRouteBlock` and `ProductLedgerLocalDevCanonGuardTests`.
+
+E6 does not create CI enforcement and does not imply product readiness. The packet is evidence organization only.
