@@ -74,6 +74,12 @@ Exact next block:
 
 `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`
 
+Follow-up status: the selected operator-surface/read-model terminology audit was executed in `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`.
+
+Follow-up audit: `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`.
+
+Follow-up state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
+
 Objective:
 
 Audit Product Ledger operator-surface/read-model terminology so local/dev route, surface, diagnostics, preview and read-model wording cannot be read as public/product UI, Production route, product read-model authority, active read precedence, latest pointer authority, runtime/product enablement or Product Ledger/model consolidation implementation.

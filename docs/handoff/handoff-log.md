@@ -158,6 +158,18 @@ Purpose: rolling handoff index. Future blocks should add one entry here by defau
 | Latest-state snapshot implementation | `docs/handoff/nodal-os-local-operator-surface-latest-state-snapshot-implementation-handoff.md` |
 | Global claim reconciliation and writer concurrency | `docs/handoff/nodal-os-global-safety-claim-reconciliation-and-product-ledger-writer-concurrency-hardening-handoff.md` |
 
+## Latest Product Ledger Model-Consolidation Handoff
+
+| Area | Handoff |
+| --- | --- |
+| Operator-surface/read-model terminology audit | `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md` |
+
+Current state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
+
+Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+
+Boundary: no source changes, test edits, CI enforcement, runtime/product, public/product surface, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, external audit approval or release/commercial work was opened.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

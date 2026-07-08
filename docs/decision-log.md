@@ -9,6 +9,17 @@
 - Historical entries below remain traceability records. They do not create a repo-wide inert/read-only claim when Pilot, ChromeLab or CDP lab/dev runtime code exists. Release/commercial readiness remains `0% / NO-GO`.
 - Continuation policy update: safe new scopes may continue automatically when they remain docs-only, design-only, audit-only, external-audit-read-only executable in Codex, test-plan-only, test-only, local-temp only, fixture-safe, read-only, no-runtime, no-product, no-release and no-commercial. Older pauses that were based only on "new scope" are superseded; pauses still apply for runtime/product enablement, productive registration/handlers/UI actions/product ledger path/DB/provider/cloud/network/live Browser-CDP-WCU-OCR-Recipes/release-commercial, credentials or human external audit, P0/P1, scope leak, origin divergence, unexplained dirty worktree or unaudited HEAD.
 
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.
+- Input HEAD: `ac52c1c677594b4db58d4795eaec015aae21fd22`.
+- Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
+- Scope: docs-only/read-only/audit-only terminology audit; no `src/`, tests, CI/workflows, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime, DB/cloud/network/provider, KMS/WORM or release/commercial.
+- Audit report: `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`.
+- Finding: P0=0, P1=0, P2=0; P3 unqualified route/surface/read-model/snapshot/view wording remains a localized terminology risk.
+- Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_NO_PRODUCT_AUTHORITY`.
+
 ## NODAL_OS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SAFE_SCOPE_SELECTION_AFTER_EVIDENCE_ROLE_TERMINOLOGY_AUDIT_ONLY
 
 - Decision target: `GO_WITH_FINDINGS_PRODUCT_LEDGER_MODEL_CONSOLIDATION_NEXT_SCOPE_AFTER_EVIDENCE_ROLE_SELECTED_READY`.

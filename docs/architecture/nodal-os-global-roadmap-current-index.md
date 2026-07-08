@@ -357,6 +357,22 @@ Selected next block:
 
 `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY`
 
+Current operator-surface/read-model terminology audit:
+
+`docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`
+
+Resulting state:
+
+`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`
+
+Selected next safe follow-up:
+
+`PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+
+Recommended next block:
+
+`NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`
+
 ## Findings
 
 P0: 0.
@@ -380,6 +396,7 @@ P3:
 - Product Ledger post-canon-index next scope is selected as evidence-role terminology reconciliation docs/test-only; model/source consolidation remains deferred.
 - Product Ledger evidence-role terminology now means audit/documentation/historical/local-dev review evidence only; model/source consolidation remains deferred.
 - Product Ledger post-evidence-role next scope is selected as operator-surface/read-model terminology audit-only; model/source consolidation remains deferred.
+- Product Ledger operator-surface/read-model terminology audit now requires route, surface, read-model, snapshot, view and preview wording to remain local/dev review evidence only; model/source consolidation remains deferred.
 - Runner fix is not implemented; broad execution filters are not local gates.
 
 P4:

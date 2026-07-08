@@ -1178,3 +1178,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 operator-surface/read-model terminology is medium/high risk because route, surface and read-model wording is close to product UI and product read-model authority; P4 selector overhead is accepted.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_PRODUCT_LEDGER_MODEL_CONSOLIDATION_SCOPE_AFTER_EVIDENCE_ROLE`.
 - Authorization note: MR11 selects only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
+
+## BLOCK MR12 - Product Ledger Operator Surface / Read Model Terminology Audit
+
+- Objective: audit Product Ledger operator-surface/read-model terminology so route, surface, view, panel, preview, snapshot and read-model wording cannot be read as public/product UI, Production route, latest pointer, read precedence, product authority, writer/runtime authority or model-consolidation implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-product-ledger-operator-surface-read-model-terminology-audit.md`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.
+- Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDITED_NO_PRODUCT_AUTHORITY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `61%`; double-truth mitigation confidence `91%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `90%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 unqualified operator-surface/read-model wording can still be misread as product UI, Production route, latest pointer or product read-model authority; P4 terminology docs add overhead but reduce future consolidation drift.
+- Recommended next safe follow-up: `NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_RECONCILIATION_DOCS_TEST_ONLY`.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR12 audits terminology only. It does not authorize source changes, test edits, CI enforcement, runtime/product, Product Ledger/model consolidation implementation, writer/latest-state/operator-surface/common-boundary merge, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM enablement, external audit approval or release/commercial.
