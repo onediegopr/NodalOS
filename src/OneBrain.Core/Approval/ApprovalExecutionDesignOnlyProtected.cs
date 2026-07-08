@@ -22,7 +22,7 @@ public enum ApprovalExecutionBlockedReason
     ClipboardDownloadNotAuthorized,
     FilesystemProductIoNotAuthorized,
     DatabaseNotAuthorized,
-    ProviderCloudNotAuthorized,
+    ProviderCloudNetworkNotAuthorized,
     LlmLiveNotAuthorized,
     ServiceRegistrationNotAuthorized,
     ReleaseCommercialNotAuthorized
@@ -264,7 +264,7 @@ public static class ApprovalExecutionDesignOnlyProtectedPresenter
         Gate("clipboard.download.boundary", "Clipboard/download boundary gate", ApprovalExecutionBlockedReason.ClipboardDownloadNotAuthorized, "future copy/download policy and safety review"),
         Gate("filesystem.product.io.boundary", "Filesystem product IO gate", ApprovalExecutionBlockedReason.FilesystemProductIoNotAuthorized, "future product IO policy and audit trail"),
         Gate("database.boundary", "Database boundary gate", ApprovalExecutionBlockedReason.DatabaseNotAuthorized, "future DB schema, migration and persistence review"),
-        Gate("provider.cloud.boundary", "Provider/cloud boundary gate", ApprovalExecutionBlockedReason.ProviderCloudNotAuthorized, "future provider, network and cloud policy"),
+        Gate("provider.cloud.boundary", "Provider/cloud boundary gate", ApprovalExecutionBlockedReason.ProviderCloudNetworkNotAuthorized, "future provider, network and cloud policy"),
         Gate("llm.live.boundary", "LLM live boundary gate", ApprovalExecutionBlockedReason.LlmLiveNotAuthorized, "future live model policy and audit review"),
         Gate("service.registration.boundary", "Service registration boundary gate", ApprovalExecutionBlockedReason.ServiceRegistrationNotAuthorized, "future product service registration review"),
         Gate("release.commercial.boundary", "Release/commercial boundary gate", ApprovalExecutionBlockedReason.ReleaseCommercialNotAuthorized, "future release and commercial audit")

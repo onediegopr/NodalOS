@@ -36,6 +36,12 @@ public sealed class ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests
         Assert.IsFalse(spec.HasRuntimeLive);
         Assert.IsFalse(spec.HasPhysicalExport);
         Assert.IsFalse(spec.HasProductActions);
+        CollectionAssert.Contains(
+            Enum.GetNames<ApprovalExecutionBlockedReason>(),
+            nameof(ApprovalExecutionBlockedReason.ProviderCloudNetworkNotAuthorized));
+        CollectionAssert.DoesNotContain(
+            Enum.GetNames<ApprovalExecutionBlockedReason>(),
+            "ProviderCloudNotAuthorized");
     }
 
     [TestMethod]

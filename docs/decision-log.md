@@ -75,6 +75,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 source-refactor target is not yet selected and must be proven in the next block; P4 selector overhead accepted because it returns control to the main roadmap.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_MAIN_ROADMAP_GATE_AFTER_PRODUCT_LEDGER_MICRO_LANE`.
 
+## AUTHORIZE_NODAL_OS_SOURCE_REFACTOR_NEXT_BOUNDED_MICRO_TARGET_IMPLEMENT_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_READY`.
+- Input HEAD: `61b9ddcc7f84b03d2bf7281857b2b53acf65a206`.
+- Micro-target: rename D10 provider/cloud blocked-reason terminology from `ProviderCloudNotAuthorized` to `ProviderCloudNetworkNotAuthorized`.
+- Source changed: one file, `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Test changed: one focal assertion in `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests` prevents the ambiguous enum name from returning.
+- Boundary: no runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 further source-refactor cleanup should still require one-target proof; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

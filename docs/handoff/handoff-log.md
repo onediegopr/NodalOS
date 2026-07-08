@@ -194,6 +194,10 @@ Main-roadmap return after micro-lane: `MAIN_ROADMAP_NEXT_SAFE_GATE_AFTER_PRODUCT
 
 Selected next gate: `NODAL_OS_SOURCE_REFACTOR_NEXT_BOUNDED_MICRO_TARGET_IMPLEMENT_OR_NO_GO`. The next block must choose exactly one bounded/no-runtime source-refactor micro-target or close NO-GO; it must not reopen Product Ledger rename churn, broad common-contract work, runtime/product, CI enforcement or release/commercial.
 
+Source-refactor bounded micro-target: `SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+Micro-target result: renamed D10 provider/cloud blocked-reason terminology from `ProviderCloudNotAuthorized` to `ProviderCloudNetworkNotAuthorized` and guarded the enum name in `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`. No runtime/product, Product Ledger model consolidation, broad common-contract, route, DI, command handler, CI or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

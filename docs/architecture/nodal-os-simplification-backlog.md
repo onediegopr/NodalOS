@@ -1307,3 +1307,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 source-refactor target still must be selected/proven in the next block; P4 selector overhead accepted to avoid Product Ledger churn.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_SELECTED_MAIN_ROADMAP_GATE_AFTER_PRODUCT_LEDGER_MICRO_LANE`.
 - Authorization note: MR19 does not authorize implementation, source changes, tests, runtime/product, Product Ledger/model consolidation, broad common-contract implementation, CI enforcement or release/commercial.
+
+## BLOCK MR20 - Source Refactor Bounded Micro Target
+
+- Objective: implement exactly one bounded/no-runtime Source Refactor micro-target or close NO-GO.
+- Status: completed as source-minimal/test-focal.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_READY`.
+- Resulting state: `SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Micro-target: renamed D10 provider/cloud blocked-reason terminology from `ProviderCloudNotAuthorized` to `ProviderCloudNetworkNotAuthorized`.
+- Source changed: one file, `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Tests changed: one focal assertion in `tests/OneBrain.Safety.Tests/ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests.cs`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: source-refactor readiness `79%`; broad source simplification readiness `45%`; Product Ledger model consolidation readiness `66%`; global roadmap readiness `92%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 further source-refactor cleanup should still require one-target proof; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: MR20 does not authorize broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, CI enforcement, DB/cloud/KMS/WORM or release/commercial.
