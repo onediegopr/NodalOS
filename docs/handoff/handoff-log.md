@@ -174,6 +174,10 @@ Latest bounded micro-target: `PRODUCT_LEDGER_FIRST_BOUNDED_MICRO_TARGET_READY_NO
 
 Micro-target result: removed unused `ExistingLocalLedgerReadModel` from `ProductLedgerOperatorSurfaceReadModelMode` and guarded the allowed mode set in `ProductLedgerLocalDevRoutePreviewTests`. No route/writer/latest-state/runtime/product authority changed.
 
+Second bounded micro-target: `PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_READY_NO_PRODUCT_AUTHORITY`.
+
+Second micro-target result: renamed the read-model provider DB frontier flag from `AllowsDb` to `AllowsDbMigration` and guarded the provider terminology in `ProductLedgerLocalDevRoutePreviewTests`. No route/writer/latest-state/runtime/product authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

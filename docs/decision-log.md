@@ -20,6 +20,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 future operator-surface model consolidation remains blocked; P4 this is intentionally tiny and does not reduce broad source bloat.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_FIRST_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
 
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_IMPLEMENT_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_READY`.
+- Input HEAD: `4d7b2d6c9df70834f73ce5aae4f7688edca19c6b`.
+- Micro-target: rename the read-model provider DB frontier flag from `AllowsDb` to `AllowsDbMigration`.
+- Source changed: one file, `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceReadModelProvider.cs`.
+- Test changed: one focal assertion in `ProductLedgerLocalDevRoutePreviewTests` prevents the ambiguous provider flag name from returning.
+- Boundary: no runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 future operator-surface/read-model consolidation remains blocked; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

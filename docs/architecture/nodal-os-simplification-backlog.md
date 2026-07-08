@@ -1227,3 +1227,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 future operator-surface model consolidation remains blocked; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_FIRST_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
 - Authorization note: MR14 does not authorize broad model consolidation, route/writer/latest-state/common-boundary merge, runtime/product, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.
+
+## BLOCK MR15 - Product Ledger Second Bounded Micro Target
+
+- Objective: apply exactly one second real bounded Product Ledger/model-consolidation micro-target or close NO-GO.
+- Status: completed as source-minimal/test-focal in `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceReadModelProvider.cs` and `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs`.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_READY`.
+- Resulting state: `PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_READY_NO_PRODUCT_AUTHORITY`.
+- Micro-target: renamed the read-model provider DB frontier flag from `AllowsDb` to `AllowsDbMigration` so the provider mirrors the canonical DB/migration frontier wording.
+- Source changed: one file.
+- Tests changed: one focal assertion.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `64%`; double-truth mitigation confidence `92%`; Product Ledger local/dev readiness `95%`; global roadmap readiness `90%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 future operator-surface/read-model consolidation remains blocked; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_SECOND_BOUNDED_MICRO_TARGET_NO_PRODUCT_AUTHORITY`.
+- Authorization note: MR15 does not authorize broad model consolidation, route/writer/latest-state/common-boundary merge, runtime/product, latest pointer, read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.

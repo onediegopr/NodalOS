@@ -240,6 +240,15 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "release-commercial"));
         Assert.IsTrue(model.ActionPreviews.Count > 0);
         Assert.IsTrue(model.ActionPreviews.All(action => action.Disabled && action.ReadOnly));
+
+        var readModelProvider = File.ReadAllText(Path.Combine(
+            RepoRoot(),
+            "src",
+            "OneBrain.Core",
+            "Approval",
+            "ProductLedgerOperatorSurfaceReadModelProvider.cs"));
+        StringAssert.Contains(readModelProvider, "AllowsDbMigration");
+        Assert.IsFalse(readModelProvider.Contains("AllowsDb,", StringComparison.Ordinal));
     }
 
     private static ProductLedgerLocalDevRoutePreviewRequest ReadyRequest() =>

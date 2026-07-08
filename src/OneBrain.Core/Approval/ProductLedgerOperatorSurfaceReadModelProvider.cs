@@ -17,7 +17,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
     bool AllowsExport,
     bool AllowsCommandExecution,
     bool AllowsNetwork,
-    bool AllowsDb,
+    bool AllowsDbMigration,
     bool AllowsReleaseCommercial)
 {
     public static ProductLedgerOperatorSurfaceReadModelSource FixtureSafe { get; } =
@@ -32,7 +32,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
             AllowsExport: false,
             AllowsCommandExecution: false,
             AllowsNetwork: false,
-            AllowsDb: false,
+            AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
 
     public static ProductLedgerOperatorSurfaceReadModelSource TestSafeLiveLedger(
@@ -49,7 +49,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSource(
             AllowsExport: false,
             AllowsCommandExecution: false,
             AllowsNetwork: false,
-            AllowsDb: false,
+            AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
 }
 
@@ -80,7 +80,7 @@ public sealed record ProductLedgerOperatorSurfaceReadModelSnapshot(
     bool AllowsExport,
     bool AllowsCommandExecution,
     bool AllowsNetwork,
-    bool AllowsDb,
+    bool AllowsDbMigration,
     bool AllowsReleaseCommercial);
 
 public sealed class ProductLedgerOperatorSurfaceReadModelProvider
@@ -120,7 +120,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             || source.AllowsExport
             || source.AllowsCommandExecution
             || source.AllowsNetwork
-            || source.AllowsDb
+            || source.AllowsDbMigration
             || source.AllowsReleaseCommercial
             || activation is null
             || activation.Decision != ProductLedgerPathLocalOnlyActivationDecision.ActivatedLocalOnly
@@ -172,7 +172,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             AllowsExport: false,
             AllowsCommandExecution: false,
             AllowsNetwork: false,
-            AllowsDb: false,
+            AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
     }
 
@@ -206,7 +206,7 @@ public sealed class ProductLedgerOperatorSurfaceReadModelProvider
             AllowsExport: false,
             AllowsCommandExecution: false,
             AllowsNetwork: false,
-            AllowsDb: false,
+            AllowsDbMigration: false,
             AllowsReleaseCommercial: false);
     }
 
