@@ -2280,3 +2280,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 operator submission packet can be misread as external review completed if detached from E10 wording; P3 manual gates remain operator-run; P4 historical percentages/noisy anti-capability wording remain by design.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_MANUALLY`.
 - Authorization note: E10 prepares manual submission only. E10 does not authorize feedback intake, runtime/product or release/commercial work.
+
+## NODAL_OS_BLOCK_E11_EXTERNAL_REVIEW_RESPONSE_INTAKE_SCAFFOLD_READ_ONLY
+
+- Decision: `GO_WITH_FINDINGS_EXTERNAL_REVIEW_RESPONSE_INTAKE_SCAFFOLD_READY`.
+- Baseline: `1312e0ae6ebba1ac2d6ac66ef409d84f12d09b76`.
+- Scope: docs-only/read-only/response-intake-scaffold-only for Product Ledger local/dev external/manual review. No `src/`, tests, CI, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Response intake scaffold added: `docs/audit/product-ledger-local-dev/external-review-response-intake.md`.
+- External review response status: `PENDING_OPERATOR_SUBMISSION_OR_RESPONSE`.
+- External submission: none; no auditor contacted, no external API call, no upload, no browser and no network action by Codex.
+- External review result: none; E11 does not claim review submitted, completed or passed.
+- Current posture: Product Ledger local/dev readiness `88%`, audit/operator-review readiness `99%`, runtime/product enablement `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`; Tier 1 remains manual/discovery-only.
+- Findings: P0=0, P1=0, P2=0; P3 response scaffold can be misread as reviewer feedback if detached from E11 wording; P3 manual gates remain operator-run; P4 historical percentages/noisy anti-capability wording remain by design.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_AND_RETURN_RESPONSE`.
+- Authorization note: E11 creates a future intake scaffold only. E11 does not authorize feedback processing without Diego-provided response, runtime/product or release/commercial work.

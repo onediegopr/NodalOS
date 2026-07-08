@@ -38,6 +38,8 @@ E9 later recorded Diego/operator decision `APPROVE_PACKET_FOR_EXTERNAL_REVIEW`, 
 
 E10 later finalized `docs/audit/product-ledger-local-dev/operator-submission-packet.md` and selected `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_MANUALLY`. E10 prepares a manual operator submission packet only. It does not submit externally, does not complete external review, does not authorize feedback intake and does not authorize runtime/product.
 
+E11 later created `docs/audit/product-ledger-local-dev/external-review-response-intake.md` and selected `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_AND_RETURN_RESPONSE`. E11 is a response intake scaffold only. It does not submit externally, does not record an external response, does not complete external review and does not authorize runtime/product.
+
 ## 2. Current Percentages
 
 - E3 next-action planning: `100%` after validation.

@@ -32,6 +32,7 @@ Current authority entrypoints:
 - `operator-review-handoff.md`
 - `external-review-handoff.md`
 - `operator-submission-packet.md`
+- `external-review-response-intake.md`
 
 ## Reviewer Rule
 
@@ -52,3 +53,7 @@ E9 prepares Diego/operator manual external review handoff only. Codex did not su
 E10 operator submission packet: `operator-submission-packet.md`.
 
 E10 finalizes a manual operator submission packet only. Codex did not submit anything externally and no external review result exists yet.
+
+E11 response intake scaffold: `external-review-response-intake.md`.
+
+E11 creates a placeholder for future response intake only. No external response is recorded yet, no external review has been completed and no runtime/product authority is created.

@@ -441,6 +441,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_MANUALLY`.
 - Authorization note: E10 does not authorize feedback intake, runtime/product or release/commercial work.
 
+## BLOCK E11 - Product Ledger External Review Response Intake Scaffold
+
+- Objective: create a safe scaffold for future Diego-provided external/manual reviewer response intake.
+- Status: completed as docs-only/read-only/response-intake-scaffold-only in `docs/audit/product-ledger-local-dev/external-review-response-intake.md`.
+- Decision: `GO_WITH_FINDINGS_EXTERNAL_REVIEW_RESPONSE_INTAKE_SCAFFOLD_READY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- External submission: none by Codex; no auditor contacted, no upload, no browser, no network action and no external review result exists yet.
+- External response status: `PENDING_OPERATOR_SUBMISSION_OR_RESPONSE`.
+- Findings: P0=0, P1=0, P2=0; P3 response scaffold can be misread as reviewer feedback if detached from E11 wording and manual gates remain operator-run; P4 historical percentages/noisy anti-capability wording remain by design.
+- Current posture: Product Ledger local/dev remains evidence-only; runtime/product enablement, public/product, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM and release/commercial remain blocked or `0% / NO-GO`.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_TO_SUBMIT_EXTERNAL_REVIEW_AND_RETURN_RESPONSE`.
+- Authorization note: E11 does not authorize response processing without Diego-provided response, runtime/product or release/commercial work.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.
