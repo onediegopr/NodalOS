@@ -604,6 +604,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Next recommended macro-block: `STOP_AFTER_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: SR3 does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
 
+## BLOCK SR4 - Post-D13 Source Refactor Next Gate Selection
+
+- Objective: select the next safe source-refactor gate after the D13 follow-up cleanup without implementing anything.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-source-refactor-post-d13-next-gate-selection.md`.
+- Decision: `GO_WITH_FINDINGS_POST_D13_SOURCE_REFACTOR_NEXT_GATE_SELECTED_READY`.
+- Resulting state: `SOURCE_REFACTOR_POST_D13_NEXT_GATE_SELECTED_NO_IMPLEMENTATION`.
+- Selected next gate: `D7_PROOF_CHAIN_MICRO_REDUCTION_SELECTION_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_D7_PROOF_CHAIN_MICRO_REDUCTION_SELECTION_AUDIT_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; Tier 1 remains manual/discovery-only and CI enforcement remains `0%`.
+- Not selected: immediate D7 implementation, broad common-contract refactor, Product Ledger/model consolidation, static guard docs cleanup or stale-link cleanup.
+- Findings: P0=0, P1=0, P2=0; P3 D7 has likely higher line-reduction value but needs audit-only selection because it is older/canonical evidence; P4 pausing is safe but leaves D7 unresolved.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_POST_D13_SOURCE_REFACTOR_NEXT_GATE`.
+- Authorization note: SR4 selects the next gate only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
 ## BLOCK F - Source Refactor Implementation (Future GO Only)
 
 - Objective: behavior-preserving source merge after Blocks B-D.

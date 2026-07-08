@@ -2429,3 +2429,17 @@
 - Findings: P0=0, P1=0, P2=0; P3 remaining D10 cleanup may now be exhausted and D7 remains deferred; P4 cleanup is intentionally small.
 - Next recommended macro-block: `STOP_AFTER_D13_FOLLOW_UP_BOUNDED_SOURCE_CLEANUP_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: this block does not authorize further source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
+
+## AUTHORIZE_NODAL_OS_SOURCE_REFACTOR_POST_D13_NEXT_GATE_SELECTION_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_POST_D13_SOURCE_REFACTOR_NEXT_GATE_SELECTED_READY`.
+- Baseline: `6fbb588f507140ba14ffd07010603e900036a1cc`.
+- Resulting state: `SOURCE_REFACTOR_POST_D13_NEXT_GATE_SELECTED_NO_IMPLEMENTATION`.
+- Scope: docs-only/read-only/audit-only post-D13 next-gate selection. No `src/`, tests, CI, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, DB/provider/cloud/network/KMS/WORM or release/commercial changes.
+- Selection added: `docs/architecture/nodal-os-source-refactor-post-d13-next-gate-selection.md`.
+- Selected next gate: `D7_PROOF_CHAIN_MICRO_REDUCTION_SELECTION_AUDIT_ONLY`.
+- Exact next block: `NODAL_OS_D7_PROOF_CHAIN_MICRO_REDUCTION_SELECTION_AUDIT_ONLY`.
+- Current posture: source-refactor readiness `74%`; broad source simplification readiness `45%`; D7 selection-readiness `68%`; static guard catalog readiness `92%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 D7 has likely higher line-reduction value than D10 now but needs audit-only selection because it is older/canonical evidence; P4 pausing source-refactor is safe but leaves D7 unresolved.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_POST_D13_SOURCE_REFACTOR_NEXT_GATE`.
+- Authorization note: this block selects the next gate only. It does not authorize source implementation, runtime/product, CI enforcement, release/commercial or external audit approval.
