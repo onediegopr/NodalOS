@@ -2662,3 +2662,19 @@
 - Findings: P0=0, P1=0, P2=0; P3 broader StaticGuard category filter is still locally unsafe; P4 external audit and DB/cloud/KMS/WORM families remain deferred.
 - Next recommended macro-block: `STOP_AFTER_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY_NO_CI_NO_RUNTIME_PRODUCT`.
 - Authorization note: this block implements only the narrow test guard. It does not authorize source changes, broad docs scans, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## AUTHORIZE_NODAL_OS_FORBIDDEN_PHRASE_EXPANSION_DEFERRED_FAMILIES_CORPUS_SELECTION_AUDIT_ONLY
+
+- Decision: `GO_WITH_FINDINGS_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_CORPUS_SELECTED_READY`.
+- Baseline: `dcb2a3b0570290119f7a634bcd94356049dc79c2`.
+- Resulting state: `FORBIDDEN_PHRASE_DEFERRED_FAMILIES_CORPUS_SELECTED_NO_IMPLEMENTATION`.
+- Scope: docs-only/read-only/audit-only corpus selection for deferred forbidden phrase families. No `src/`, tests, workflows, CI enforcement, implementation, runtime/product behavior, public/product route, Production route, latest pointer, read precedence, product authority, Product Ledger/model consolidation, broad common-contract implementation, DB/provider/cloud/network/KMS/WORM enablement, external audit approval claim or release/commercial changes.
+- Corpus selection added: `docs/architecture/nodal-os-forbidden-phrase-deferred-families-corpus-selection.md`.
+- Families selected: external audit approval claims and DB/cloud/network/provider/KMS/WORM capability claims.
+- Selected corpus: current roadmap/static-guard canon plus Product Ledger local/dev `current-authority-map.md`, `external-review-response-intake.md`, `internal-packet-closeout-e2-e15.md` and `no-authority-static-scan-contract.md`.
+- Deferred corpus: operator submission/review handoffs, full Product Ledger local/dev packet, durable checkpoint/trust design docs, runner docs and broad `docs/` tree scan.
+- Exact next block: `NODAL_OS_FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_TEST_ONLY`.
+- Current posture: Static Guard Catalog readiness `95%`; forbidden phrase expansion readiness `82%`; deferred families readiness `66%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 external-review packet wording and DB/cloud/KMS/WORM no-go vocabulary are false-positive prone; P4 deferred-family guard is valuable only as a narrow test-only guard.
+- Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_IMPLEMENTATION_SCOPE`.
+- Authorization note: this block selects only. It does not authorize deferred-family guard implementation, test edits, source changes, broad docs scans, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

@@ -173,6 +173,18 @@ Implemented focal guard:
 
 `StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`
 
+Current deferred-family corpus selection:
+
+`docs/architecture/nodal-os-forbidden-phrase-deferred-families-corpus-selection.md`
+
+Resulting state:
+
+`FORBIDDEN_PHRASE_DEFERRED_FAMILIES_CORPUS_SELECTED_NO_IMPLEMENTATION`
+
+Selected next block:
+
+`NODAL_OS_FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_TEST_ONLY`
+
 ## Findings
 
 P0: 0.

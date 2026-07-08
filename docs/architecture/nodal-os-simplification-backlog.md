@@ -921,3 +921,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broader StaticGuard category filter remains locally unsafe; P4 deferred phrase families are valid later but need a separate corpus selection.
 - Stop condition: `STOP_AFTER_FORBIDDEN_PHRASE_EXPANSION_NARROW_GUARD_READY_NO_CI_NO_RUNTIME_PRODUCT`.
 - Authorization note: SG6 implements only the narrow test guard. It does not authorize source changes, broad docs scans, CI enforcement, runtime/product, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## BLOCK SG7 - Forbidden Phrase Deferred Families Corpus Selection
+
+- Objective: select corpus, phrase families, false-positive risks and allowlist rules for deferred external-audit and DB/cloud/KMS/WORM forbidden phrase families without implementation.
+- Status: completed as docs-only/read-only/audit-only in `docs/architecture/nodal-os-forbidden-phrase-deferred-families-corpus-selection.md`.
+- Decision: `GO_WITH_FINDINGS_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_CORPUS_SELECTED_READY`.
+- Resulting state: `FORBIDDEN_PHRASE_DEFERRED_FAMILIES_CORPUS_SELECTED_NO_IMPLEMENTATION`.
+- Selected corpus: current roadmap/static-guard canon plus `current-authority-map.md`, `external-review-response-intake.md`, `internal-packet-closeout-e2-e15.md` and `no-authority-static-scan-contract.md` from Product Ledger local/dev audit docs.
+- Deferred corpus: operator submission/review handoffs, full Product Ledger local/dev packet, durable checkpoint/trust design docs, runner docs and broad `docs/` tree scan.
+- Families selected: external audit approval claims and DB/cloud/network/provider/KMS/WORM capability claims.
+- Exact next block: `NODAL_OS_FORBIDDEN_PHRASE_DEFERRED_FAMILIES_NARROW_GUARD_TEST_ONLY`.
+- Source changed: none.
+- Tests changed: none.
+- CI changed: none; CI enforcement remains `0%`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- Current posture: Static Guard Catalog readiness `95%`; forbidden phrase expansion readiness `82%`; deferred families readiness `66%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 external-review packet wording and DB/cloud/KMS/WORM no-go vocabulary are high false-positive areas; P4 deferred-family guard is useful only as a narrow test-only guard.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_IMPLEMENTATION_SCOPE`.
+- Authorization note: SG7 selects only. It does not authorize deferred-family guard implementation, test edits, source changes, broad docs scans, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.

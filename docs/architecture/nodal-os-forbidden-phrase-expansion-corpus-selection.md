@@ -20,6 +20,14 @@ Follow-up guard:
 
 `StaticGuardCatalog_ForbiddenPhraseExpansionNarrowCorpusRespectsNegativeAllowlist`
 
+Current deferred-family corpus selection:
+
+`docs/architecture/nodal-os-forbidden-phrase-deferred-families-corpus-selection.md`
+
+Deferred-family state:
+
+`FORBIDDEN_PHRASE_DEFERRED_FAMILIES_CORPUS_SELECTED_NO_IMPLEMENTATION`
+
 ## Executive Verdict
 
 The next safe Static Guard increment is a narrow, test-only forbidden phrase expansion, but only after this corpus selection. The future guard must scan a small current corpus, must honor negative/no-go wording and must not become a broad docs gate or CI enforcement.
@@ -37,7 +45,8 @@ This block selects only. It does not add forbidden fragments, edit tests, touch 
 Current posture:
 
 - Static Guard Catalog readiness: `94%`.
-- Forbidden phrase expansion readiness: `78%`.
+- Forbidden phrase expansion readiness: `82%`.
+- Deferred families readiness: `66%`.
 - Tier 1 label coverage: `71%`.
 - Metadata consistency confidence: `83%`.
 - Runtime/product enablement: `0%`.
