@@ -302,6 +302,10 @@ Common Contract D11 expected-state canonicalization macro: `COMMON_CONTRACT_D11_
 
 Executed one bounded test-only no-double-truth reduction: D11 no longer defines a local `ExpectedCandidateStates()` table and now consumes `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates` directly, with a guard preventing the duplicate helper from returning. No `src/`, broad common-contract extraction, Product Ledger consolidation, runtime/product, workflows, CI enforcement or release/commercial authority changed.
 
+Next macro frontier after D11 canonicalization: `MAIN_MACRO_FRONTIER_NO_SAFE_REAL_TARGET_AVAILABLE_AFTER_D11_CANONICALIZATION`.
+
+Closed with NO-GO instead of forcing churn. The post-D11 scan found no remaining duplicate expected-state/claim/capability map suitable for bounded removal. Remaining candidates were classified as safe-but-too-small test data, helper extraction churn, unsafe broad Product Ledger/Common Contract/source work, or out-of-scope Validation/Static Guard work without a concrete bug. No `src/`, tests, runtime/product, workflows, CI enforcement or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
