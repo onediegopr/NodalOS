@@ -234,6 +234,10 @@ Common Contract next real micro-target: `COMMON_CONTRACT_DEFAULT_BLOCKED_READONL
 
 Implemented one source-minimal/test-only guard: `DefaultBlocked()` now publishes the default claims map through a read-only wrapper, with `CandidateDefaultBlockedClaimsAreReadOnlyAndCannotDriftAfterCreation` proving the canonical default cannot be mutated after creation. No broad common-contract implementation, Product Ledger model consolidation, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
 
+Main roadmap next safe workstream: `PRODUCT_LEDGER_OPERATOR_SURFACE_COLLECTIONS_READONLY_GUARD_READY`.
+
+Implemented one Product Ledger bounded guard: canonical operator-surface collections now use read-only wrappers, with `LocalDevRoutePreview_CanonicalSurfaceCollectionsAreReadOnlyAndCannotDrift` proving statuses, evidence refs, blocked frontiers, action previews and safe next steps cannot drift through post-render mutation. No broad Product Ledger model consolidation, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

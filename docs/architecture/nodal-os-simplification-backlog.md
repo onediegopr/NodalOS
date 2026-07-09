@@ -1467,3 +1467,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs were kept minimal.
 - Stop condition: `STOP_AFTER_COMMON_CONTRACT_NEXT_REAL_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: MR29 does not authorize broad common-contract implementation, global extraction, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR30 - Main Roadmap Next Safe Workstream
+
+- Objective: choose and execute the next safe main-roadmap workstream with real value and no runtime/product authority.
+- Status: completed as Product Ledger source-minimal/test-only focal guard plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_READY`.
+- Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_COLLECTIONS_READONLY_GUARD_READY`.
+- Front chosen: Product Ledger bounded guard, because Static Guard was closed and further Common Contract work risked cosmetic lane squeezing.
+- Micro-target: canonical operator-surface read-model collections now use read-only wrappers so rendered surface state cannot drift through post-render mutation.
+- Source changed: `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`.
+- Guard added: `LocalDevRoutePreview_CanonicalSurfaceCollectionsAreReadOnlyAndCannotDrift` in `ProductLedgerLocalDevRoutePreviewTests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `68%`; operator-surface/read-model no-double-truth confidence `95%`; global roadmap readiness `95%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 docs were kept minimal.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: MR30 does not authorize broad Product Ledger model consolidation, runtime/product, public/product, Production route, latest/read precedence, product authority, writer/runtime real, CI/workflows, DB/cloud/KMS/WORM or release/commercial.

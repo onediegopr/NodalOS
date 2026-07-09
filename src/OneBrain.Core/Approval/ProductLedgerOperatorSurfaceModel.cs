@@ -108,7 +108,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult? durableLatestStateAuxiliaryEvidenceState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
-        var actions = renderable.Model.Actions
+        var actions = ReadOnly(renderable.Model.Actions
             .Select(action => new ProductLedgerOperatorSurfaceActionPreview(
                 ActionId: action.ActionId,
                 Label: action.Label,
@@ -120,7 +120,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
                     ? action.DisabledReason
                     : "Canonical operator route is read-only and does not execute product commands."))
             .OrderBy(action => action.ActionId, StringComparer.Ordinal)
-            .ToArray();
+            .ToArray());
 
         var statuses = Statuses(readModel);
         var evidenceRefs = EvidenceRefs();
@@ -168,8 +168,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             LatestStateManifestState: latestStateManifestState ?? ProductLedgerLocalOperatorSurfaceLatestStateManifestResult.Pending,
             DurableLatestStateReaderCandidateState: durableLatestStateReaderCandidateState ?? ProductLedgerLocalDurableLatestStateReaderCandidateResult.Pending,
             DurableLatestStateAuxiliaryEvidenceState: durableLatestStateAuxiliaryEvidenceState ?? ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult.Pending,
-            SafeNextSteps:
-            [
+            SafeNextSteps: ReadOnly(
                 "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",
                 "LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP",
                 "LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY",
@@ -181,7 +180,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
                 "USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_AUDIT_READ_ONLY",
                 "LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_AUDIT_READ_ONLY",
                 "DELETION_LIFECYCLE_DESIGN_ONLY"
-            ],
+            ),
             IsLocalOnly: true,
             IsDevelopmentOnly: true,
             IsReadOnly: true,
@@ -201,7 +200,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
 
     private static IReadOnlyList<ProductLedgerOperatorSurfaceStatus> Statuses(
         ProductLedgerOperatorSurfaceReadModelSnapshot readModel) =>
-    [
+        ReadOnly<ProductLedgerOperatorSurfaceStatus>(
         new("ledger-authority", "Ledger authority", readModel.LedgerAuthorityBoundaryStatus, nameof(ProductLedgerLocalLedgerTaxonomy), 96),
         new("ledger-verification", "Ledger verification", readModel.LedgerVerificationStatus, nameof(ProductLedgerPathLocalOnlyActiveWriter), readModel.UsesTestSafeLiveLedger ? 88 : 72),
         new("checkpoint", "Checkpoint/head", readModel.CheckpointStatus, nameof(ProductLedgerPathLocalOnlyActiveWriter), readModel.UsesTestSafeLiveLedger ? 88 : 72),
@@ -215,16 +214,16 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         new("public-action-contract", "Public local-only action contract", readModel.PublicLocalOnlyActionContractStatus, nameof(ProductLedgerPublicUiActionSurface), 70),
         new("visual-evidence", "Visual evidence", readModel.VisualEvidenceStatus, nameof(ProductLedgerLocalDevVisualQaEvidence), 64),
         new("screenshot-evidence", "Screenshot evidence", readModel.ScreenshotEvidenceStatus, "ProductLedgerBrowserLocalOnlyScreenshotEvidence", 58)
-    ];
+    );
 
     private static IReadOnlyList<ProductLedgerOperatorSurfaceEvidenceRef> EvidenceRefs() =>
-    [
+        ReadOnly<ProductLedgerOperatorSurfaceEvidenceRef>(
         new("authority-taxonomy", nameof(ProductLedgerLocalLedgerTaxonomy), "local-only canonical authority"),
         new("active-writer", nameof(ProductLedgerPathLocalOnlyActiveWriter), "bounded local-only writer authority"),
         new("route-preview", nameof(ProductLedgerLocalDevRoutePreview), "development-only route adapter"),
         new("operator-acceptance", nameof(ProductLedgerOperatorAcceptanceLocalOnlyMatrix), "fixture-safe acceptance matrix"),
         new("visual-qa", nameof(ProductLedgerLocalDevVisualQaEvidence), "static HTML visual evidence")
-    ];
+    );
 
     private static ProductLedgerLocalApprovalExecutionRequest CreateApprovalExecutionCandidatePreviewRequest()
     {
@@ -260,7 +259,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
     }
 
     private static IReadOnlyList<ProductLedgerOperatorSurfaceBlockedFrontier> BlockedFrontiers() =>
-    [
+        ReadOnly<ProductLedgerOperatorSurfaceBlockedFrontier>(
         new("public-ui-action", "Public UI action", "No public operator action is exposed by this route."),
         new("product-command-execution", "Product command execution", "Route renders read-only state and never invokes product commands."),
         new("public-internet", "Public internet exposure", "Pilot maps this route only in Development mode."),
@@ -271,5 +270,8 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         new("release-commercial", "Release/commercial", "No release, commercial or compliance custody readiness is claimed."),
         new("destructive-action", "Destructive action", "All destructive and unsafe write actions remain disabled."),
         new("unbounded-export", "Unbounded export/write", "Only bounded export status is visible; the route does not call an exporter.")
-    ];
+    );
+
+    private static IReadOnlyList<T> ReadOnly<T>(params T[] items) =>
+        Array.AsReadOnly(items);
 }

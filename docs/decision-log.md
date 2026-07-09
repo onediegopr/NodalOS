@@ -3034,3 +3034,16 @@
 - Current posture: Common Contract candidate readiness `74%`; Common Contract no-double-truth confidence `90%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs-minimal closeout only.
 - Stop condition: `STOP_AFTER_COMMON_CONTRACT_NEXT_REAL_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+## AUTHORIZE_NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_SELECTION_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_READY`.
+- Baseline: `2a2b1ac08604c46d936710f9074c9afcb691b848`.
+- Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_COLLECTIONS_READONLY_GUARD_READY`.
+- Scope: source-minimal/test-only focal Product Ledger bounded guard. Touched exactly one source file and one focal test file plus docs-minimal logs. No runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows, CI enforcement, broad common-contract implementation, broad Product Ledger model consolidation or release/commercial changes.
+- Front chosen: Product Ledger bounded guard; Static Guard was closed without a new concrete finding, Source Refactor/Test Infra were closed, and continuing Common Contract immediately would risk cosmetic lane squeezing.
+- Micro-target implemented: `ProductLedgerOperatorSurfaceModelFactory` now wraps canonical operator-surface collections with read-only lists.
+- Test added: `LocalDevRoutePreview_CanonicalSurfaceCollectionsAreReadOnlyAndCannotDrift` in `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs`.
+- Current posture: Product Ledger model consolidation readiness `68%`; operator-surface/read-model no-double-truth confidence `95%`; global roadmap readiness `95%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 docs-minimal closeout only.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.

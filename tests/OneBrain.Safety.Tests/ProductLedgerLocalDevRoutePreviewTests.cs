@@ -290,6 +290,34 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsFalse(model.AllowsExternalCloudExport);
     }
 
+    [TestMethod]
+    public void LocalDevRoutePreview_CanonicalSurfaceCollectionsAreReadOnlyAndCannotDrift()
+    {
+        var result = new ProductLedgerLocalDevRoutePreview().Render(ReadyRequest());
+        var model = result.CanonicalSurface;
+
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, result.Decision);
+        AssertReadOnlyList(
+            model.Statuses,
+            new ProductLedgerOperatorSurfaceStatus("mutated", "mutated", "mutated", "mutated", 0));
+        AssertReadOnlyList(
+            model.EvidenceRefs,
+            new ProductLedgerOperatorSurfaceEvidenceRef("mutated", "mutated", "mutated"));
+        AssertReadOnlyList(
+            model.BlockedFrontiers,
+            new ProductLedgerOperatorSurfaceBlockedFrontier("mutated", "mutated", "mutated"));
+        AssertReadOnlyList(
+            model.ActionPreviews,
+            new ProductLedgerOperatorSurfaceActionPreview("mutated", "mutated", Disabled: false, ReadOnly: false, LocalOnly: false, NonDestructive: false, "mutated"));
+        AssertReadOnlyList(model.SafeNextSteps, "MUTATED_RUNTIME_PRODUCT_STEP");
+
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "ledger-verification"));
+        Assert.IsTrue(model.EvidenceRefs.Any(reference => reference.EvidenceId == "authority-taxonomy"));
+        Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "product-command-execution"));
+        Assert.IsTrue(model.ActionPreviews.All(action => action.Disabled && action.ReadOnly));
+        Assert.IsFalse(model.SafeNextSteps.Contains("MUTATED_RUNTIME_PRODUCT_STEP"));
+    }
+
     private static ProductLedgerLocalDevRoutePreviewRequest ReadyRequest() =>
         new(
             ExplicitLocalDevInternalPreviewScope: true,
@@ -466,6 +494,24 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsNotNull(result.CanonicalSurface);
         Assert.AreEqual(ProductLedgerOperatorSurfaceModelFactory.CanonicalSurfaceId, result.CanonicalSurface.SurfaceId);
         Assert.AreEqual(ProductLedgerLocalDevRoutePreview.RouteTemplatePreview, result.CanonicalSurface.RoutePath);
+    }
+
+    private static void AssertReadOnlyList<T>(IReadOnlyList<T> values, T mutationValue)
+    {
+        Assert.IsFalse(values is T[]);
+
+        if (values is IList<T> mutable)
+        {
+            Assert.IsTrue(mutable.IsReadOnly);
+            try
+            {
+                mutable[0] = mutationValue;
+                Assert.Fail("Canonical operator surface collections must reject post-render mutation.");
+            }
+            catch (NotSupportedException)
+            {
+            }
+        }
     }
 
     private static string RepoRoot()
