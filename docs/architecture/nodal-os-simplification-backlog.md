@@ -1451,3 +1451,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs were kept minimal.
 - Stop condition: `STOP_AFTER_COMMON_CONTRACT_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: MR28 does not authorize `src/`, broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR29 - Common Contract Next Real Micro Target
+
+- Objective: implement exactly one next real Common Contract micro-target or close NO-GO.
+- Status: completed as source-minimal/test-only focal guard plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_COMMON_CONTRACT_NEXT_REAL_MICRO_TARGET_READY`.
+- Resulting state: `COMMON_CONTRACT_DEFAULT_BLOCKED_READONLY_CLAIMS_READY`.
+- Micro-target: make `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` publish a read-only claims map so the canonical default cannot drift by accidental mutation after creation.
+- Source changed: `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`.
+- Guard added: `CandidateDefaultBlockedClaimsAreReadOnlyAndCannotDriftAfterCreation` in `NodalOsCommonBoundaryClaimsCandidateTests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Common Contract candidate readiness `74%`; Common Contract no-double-truth confidence `90%`; global roadmap readiness `94%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs were kept minimal.
+- Stop condition: `STOP_AFTER_COMMON_CONTRACT_NEXT_REAL_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: MR29 does not authorize broad common-contract implementation, global extraction, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM or release/commercial.

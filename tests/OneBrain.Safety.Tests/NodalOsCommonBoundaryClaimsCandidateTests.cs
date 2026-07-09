@@ -76,6 +76,36 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateTests
     }
 
     [TestMethod]
+    [TestCategory("NoDoubleTruth")]
+    [TestCategory("NoAuthority")]
+    public void CandidateDefaultBlockedClaimsAreReadOnlyAndCannotDriftAfterCreation()
+    {
+        var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
+        var claims = candidate.Claims;
+
+        Assert.IsFalse(claims is Dictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState>);
+
+        if (claims is IDictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState> mutable)
+        {
+            Assert.IsTrue(mutable.IsReadOnly);
+            try
+            {
+                mutable[NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked] =
+                    NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied;
+                Assert.Fail("DefaultBlocked claims must reject post-creation mutation.");
+            }
+            catch (NotSupportedException)
+            {
+            }
+        }
+
+        Assert.AreEqual(
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
+            candidate.StateFor(NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked));
+        Assert.IsFalse(candidate.CanOverrideExistingHardBlock(NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked));
+    }
+
+    [TestMethod]
     [TestCategory("PublicProductBlock")]
     public void CandidateRepresentsPublicProductBlockedWithoutEnablingProduct()
     {

@@ -3021,3 +3021,16 @@
 - Current posture: Common Contract candidate readiness `72%`; Common Contract no-double-truth confidence `88%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs-minimal closeout only.
 - Stop condition: `STOP_AFTER_COMMON_CONTRACT_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+## AUTHORIZE_NODAL_OS_COMMON_CONTRACT_NEXT_REAL_MICRO_TARGET_IMPLEMENT_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_COMMON_CONTRACT_NEXT_REAL_MICRO_TARGET_READY`.
+- Baseline: `d964ccd4077a6e625de6ecc9dcc20df39466275f`.
+- Resulting state: `COMMON_CONTRACT_DEFAULT_BLOCKED_READONLY_CLAIMS_READY`.
+- Scope: source-minimal/test-only focal Common Contract guard. Touched exactly one source file and one focal test file plus docs-minimal logs. No broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows, CI enforcement or release/commercial changes.
+- Micro-target implemented: `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` now wraps its default claims map in `ReadOnlyDictionary`.
+- Test added: `CandidateDefaultBlockedClaimsAreReadOnlyAndCannotDriftAfterCreation` in `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateTests.cs`.
+- Selection reason: after the completeness guard, the next concrete risk was accidental post-creation mutation of the canonical default map; read-only wrapping removes that drift path without moving contracts or adding shared authority.
+- Current posture: Common Contract candidate readiness `74%`; Common Contract no-double-truth confidence `90%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs-minimal closeout only.
+- Stop condition: `STOP_AFTER_COMMON_CONTRACT_NEXT_REAL_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.

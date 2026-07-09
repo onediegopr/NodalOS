@@ -230,6 +230,10 @@ Common Contract micro-target: `COMMON_CONTRACT_DEFAULT_BLOCKED_COMPLETENESS_GUAR
 
 Implemented one test-only focal guard, `CandidateDefaultBlockedPublishesEverySupportedClaimWithCanonicalClosedState`, proving the Common Boundary source candidate default map explicitly publishes every supported claim with its canonical closed state. No `src/`, broad common-contract implementation, Product Ledger model consolidation, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
 
+Common Contract next real micro-target: `COMMON_CONTRACT_DEFAULT_BLOCKED_READONLY_CLAIMS_READY`.
+
+Implemented one source-minimal/test-only guard: `DefaultBlocked()` now publishes the default claims map through a read-only wrapper, with `CandidateDefaultBlockedClaimsAreReadOnlyAndCannotDriftAfterCreation` proving the canonical default cannot be mutated after creation. No broad common-contract implementation, Product Ledger model consolidation, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

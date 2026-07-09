@@ -47,22 +47,23 @@ public sealed record NodalOsCommonBoundaryClaimsCandidate(
 
     public static NodalOsCommonBoundaryClaimsCandidate DefaultBlocked() =>
         new(
-            Claims: new Dictionary<Claim, ClaimState>
-            {
-                [Claim.PublicProductBlocked] = ClaimState.Blocked,
-                [Claim.ProductionRouteBlocked] = ClaimState.Blocked,
-                [Claim.LatestPointerDisabled] = ClaimState.Disabled,
-                [Claim.ReadPrecedenceDisabled] = ClaimState.Disabled,
-                [Claim.ProductAuthorityBlocked] = ClaimState.Blocked,
-                [Claim.CommandExecutionDenied] = ClaimState.Denied,
-                [Claim.ShellSubprocessDenied] = ClaimState.Denied,
-                [Claim.ProviderCloudNetworkNotClaimed] = ClaimState.NotClaimed,
-                [Claim.DatabaseMigrationNotClaimed] = ClaimState.NotClaimed,
-                [Claim.ExternalTrustNotClaimed] = ClaimState.NotClaimed,
-                [Claim.ReleaseCommercialNoGo] = ClaimState.NoGo,
-                [Claim.RuntimeProductEnablementNoGo] = ClaimState.NoGo,
-                [Claim.CiEnforcementNotClaimed] = ClaimState.NotClaimed
-            },
+            Claims: new System.Collections.ObjectModel.ReadOnlyDictionary<Claim, ClaimState>(
+                new Dictionary<Claim, ClaimState>
+                {
+                    [Claim.PublicProductBlocked] = ClaimState.Blocked,
+                    [Claim.ProductionRouteBlocked] = ClaimState.Blocked,
+                    [Claim.LatestPointerDisabled] = ClaimState.Disabled,
+                    [Claim.ReadPrecedenceDisabled] = ClaimState.Disabled,
+                    [Claim.ProductAuthorityBlocked] = ClaimState.Blocked,
+                    [Claim.CommandExecutionDenied] = ClaimState.Denied,
+                    [Claim.ShellSubprocessDenied] = ClaimState.Denied,
+                    [Claim.ProviderCloudNetworkNotClaimed] = ClaimState.NotClaimed,
+                    [Claim.DatabaseMigrationNotClaimed] = ClaimState.NotClaimed,
+                    [Claim.ExternalTrustNotClaimed] = ClaimState.NotClaimed,
+                    [Claim.ReleaseCommercialNoGo] = ClaimState.NoGo,
+                    [Claim.RuntimeProductEnablementNoGo] = ClaimState.NoGo,
+                    [Claim.CiEnforcementNotClaimed] = ClaimState.NotClaimed
+                }),
             ParallelOnly: true,
             NonAuthoritative: true,
             ExistingHardBlockAuthorityReplaced: false,
