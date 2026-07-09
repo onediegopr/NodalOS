@@ -118,6 +118,17 @@ public sealed class ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests
     }
 
     [TestMethod]
+    [TestCategory("NoDoubleTruth")]
+    public void ApprovalExecutionDesignOnlyProtectedUsesCandidateExpectedClosedStatesWithoutLocalDuplicateTable()
+    {
+        var source = D10TargetSource();
+
+        StringAssert.Contains(source, "NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates");
+        Assert.IsFalse(source.Contains("ExpectedFailClosedClaims", StringComparison.Ordinal));
+        Assert.IsTrue(CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()));
+    }
+
+    [TestMethod]
     [TestCategory("PublicProductBlock")]
     [TestCategory("ProductionRouteBlock")]
     [TestCategory("CommandExecutionBlock")]

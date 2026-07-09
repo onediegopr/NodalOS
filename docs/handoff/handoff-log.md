@@ -286,6 +286,10 @@ Macro safe execution after CI readiness: `MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RU
 
 Executed three bounded local-validation hardenings in `tools/scripts/run-focal-dotnet.ps1`: default `-MinFreeGiB 10` fail-fast, repo-contained project path guard and case/whitespace-insensitive block for the known unsafe broad Reentry filter. Validated with helper help and fail-closed negative probes only, avoiding build/test artifact generation. No workflows, CI enforcement, `src/`, tests, runtime/product, DB/cloud/KMS/WORM or release/commercial authority changed.
 
+Common Contract canonical closed states macro: `COMMON_CONTRACT_CANONICAL_CLOSED_STATES_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed a bounded Common Contract no-double-truth consolidation: `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates` is now the single read-only canonical closed-state map, `DefaultBlocked()` uses it, and D10 approval execution proof consumes it instead of a duplicate local table. Added focal guards in `NodalOsCommonBoundaryClaimsCandidateTests` and `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`. No broad common-contract extraction, Product Ledger consolidation, runtime/product, workflows, CI enforcement or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

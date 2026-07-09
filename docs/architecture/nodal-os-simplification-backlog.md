@@ -1682,3 +1682,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 disk pressure remains operational risk but now fails closed in the helper; P4 broader CI transition still requires an explicit non-enforcing packet or future operator-approved CI block.
 - Stop condition: `STOP_AFTER_MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
 - Authorization note: MSE1 does not authorize `.github/workflows`, CI enforcement, broad filters as gates, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MSE2 - Common Contract Canonical Closed States Macro
+
+- Objective: execute the next substantive safe macro frontier with real bounded no-double-truth work.
+- Status: completed as source-minimal/test-focal Common Contract consolidation.
+- Decision: `GO_WITH_FINDINGS_NEXT_SUBSTANTIVE_MACRO_FRONTIER_READY`.
+- Resulting state: `COMMON_CONTRACT_CANONICAL_CLOSED_STATES_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `COMMON_CONTRACT_FAIL_CLOSED_AND_NO_DOUBLE_TRUTH_MACRO`.
+- Targets executed: publish one canonical read-only closed-state map in `NodalOsCommonBoundaryClaimsCandidate`, make `DefaultBlocked()` use that map, make D10 proof consume the same map, and add focal guards that prevent local duplicate state tables from returning.
+- Source changed: `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs` and `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Tests changed: `NodalOsCommonBoundaryClaimsCandidateTests` and `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: Common Contract candidate readiness `80%`; Common Contract no-double-truth confidence `94%`; global roadmap readiness `97%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction remains blocked; P4 broader source bloat outside this local contract remains.
+- Stop condition: `STOP_AFTER_NEXT_SUBSTANTIVE_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Authorization note: MSE2 does not authorize broad common-contract extraction, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.

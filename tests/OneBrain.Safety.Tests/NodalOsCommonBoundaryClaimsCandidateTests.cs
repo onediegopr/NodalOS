@@ -46,22 +46,7 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateTests
     public void CandidateDefaultBlockedPublishesEverySupportedClaimWithCanonicalClosedState()
     {
         var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
-        var expectedStates = new Dictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState>
-        {
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProviderCloudNetworkNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.DatabaseMigrationNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ExternalTrustNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.RuntimeProductEnablementNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.CiEnforcementNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed
-        };
+        var expectedStates = NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates;
 
         Assert.AreEqual(expectedStates.Count, candidate.Claims.Count);
         CollectionAssert.AreEquivalent(expectedStates.Keys.ToArray(), candidate.Claims.Keys.ToArray());
@@ -73,6 +58,26 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateTests
             Assert.IsTrue(candidate.IsFailClosed(claim), claim.ToString());
             Assert.IsFalse(candidate.CanOverrideExistingHardBlock(claim), claim.ToString());
         }
+    }
+
+    [TestMethod]
+    [TestCategory("NoDoubleTruth")]
+    [TestCategory("NoAuthority")]
+    public void CandidateExpectedClosedStatesAreReadOnlyAndSharedByDefaultBlocked()
+    {
+        var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
+        var expectedStates = NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates;
+
+        Assert.AreSame(expectedStates, candidate.Claims);
+        Assert.IsFalse(expectedStates is Dictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState>);
+        if (expectedStates is IDictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState> mutable)
+        {
+            Assert.IsTrue(mutable.IsReadOnly);
+        }
+
+        CollectionAssert.AreEquivalent(
+            Enum.GetValues<NodalOsCommonBoundaryClaimsCandidate.Claim>(),
+            expectedStates.Keys.ToArray());
     }
 
     [TestMethod]

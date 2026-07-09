@@ -3206,3 +3206,16 @@
 - Current posture: CI validation readiness `68%`; local focal validation confidence `88%`; broad local filter confidence `35%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 disk pressure remains operational risk but now fails closed in the helper; P4 broader CI transition remains deferred.
 - Stop condition: `STOP_AFTER_MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+## AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_MACRO_FRONTIER_AFTER_SAFE_EXECUTION
+
+- Decision: `GO_WITH_FINDINGS_NEXT_SUBSTANTIVE_MACRO_FRONTIER_READY`.
+- Baseline: `49ad4762e39082bd44587d4b31fe806000a5c35e`.
+- Resulting state: `COMMON_CONTRACT_CANONICAL_CLOSED_STATES_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `COMMON_CONTRACT_FAIL_CLOSED_AND_NO_DOUBLE_TRUTH_MACRO`.
+- Scope: source-minimal/test-focal Common Contract consolidation plus docs-minimal closeout. No broad common-contract extraction, no Product Ledger model consolidation, no runtime/product, no public/product, no latest pointer/read precedence activation, no product authority, no DB/cloud/network/provider, no KMS/WORM, no `.github/workflows`, no CI enforcement and no release/commercial changes.
+- Targets executed: `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates` is the single read-only closed-state map; `DefaultBlocked()` uses that map; D10 `ApprovalExecutionAntiCapabilityProof` consumes that same map instead of a local duplicate table; focal tests guard readonly sharing and no D10 duplicate table.
+- Validated: Safety test project build PASS after focal restore; `NodalOsCommonBoundaryClaimsCandidateTests` PASS `23/23`; `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests` PASS `17/17`.
+- Current posture: Common Contract candidate readiness `80%`; Common Contract no-double-truth confidence `94%`; global roadmap readiness `97%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction remains blocked; P4 broader source bloat outside this local contract remains.
+- Stop condition: `STOP_AFTER_NEXT_SUBSTANTIVE_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
