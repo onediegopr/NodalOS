@@ -104,6 +104,19 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
         CollectionAssert.Contains(previewSection.Lines.ToArray(), "read_precedence_authority=false");
         CollectionAssert.Contains(previewSection.Lines.ToArray(), "product_authority=false");
         CollectionAssert.Contains(previewSection.Lines.ToArray(), "release_commercial_ready=false");
+
+        var diagnosticsPreview = diagnostics.ActionPreviews.Single(action => action.Label == "Advance local/dev runtime readiness next slice");
+        var propagatedPreview = result.ViewModel.ActionPreviews.Single(action => action.Label == diagnosticsPreview.Label);
+        Assert.AreEqual(diagnosticsPreview.Reason, propagatedPreview.BlockedReason);
+        Assert.AreEqual(diagnosticsPreview.Risk, propagatedPreview.RiskLabel);
+        Assert.AreEqual(diagnosticsPreview.BlockedFrontier, propagatedPreview.BlockedFrontier);
+        Assert.AreEqual(diagnosticsPreview.RequiredOperatorSignal, propagatedPreview.RequiredOperatorSignal);
+        CollectionAssert.AreEqual(diagnosticsPreview.RequiredEvidence.ToArray(), propagatedPreview.RequiredEvidence.ToArray());
+        Assert.IsTrue(propagatedPreview.Disabled);
+        Assert.IsNull(propagatedPreview.ProductiveCommandId);
+        Assert.IsNull(propagatedPreview.HandlerId);
+        Assert.IsNull(propagatedPreview.CallbackName);
+
         AssertNoExecutableSurface(result.ViewModel);
     }
 

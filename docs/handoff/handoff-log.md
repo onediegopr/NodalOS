@@ -390,6 +390,10 @@ Local/dev runtime productive slice follow-up: `LOCAL_DEV_RUNTIME_DISABLED_ACTION
 
 Executed one bounded metadata target for the disabled next-action preview. Diagnostics action previews now expose `BlockedFrontier` and `RequiredOperatorSignal`, and internal operator UI previews preserve those fields when diagnostics previews are propagated. The next runtime-readiness preview remains disabled/read-only/non-executable and carries `LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER` plus `operator-selected-frontier`. No production runtime, public/product promotion, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_LINE_CLOSE_OR_NEXT_OPERATOR_FRONTIER`.
 
+Local/dev runtime productive slice final acceptance: `LOCAL_DEV_RUNTIME_ACTION_PREVIEW_METADATA_ACCEPTANCE_READY_NO_PRODUCTION_AUTHORITY`.
+
+Executed one final acceptance target after structured action-preview metadata. The internal operator UI preview test now proves diagnostics action-preview reason, risk, blocked frontier, required operator signal and required evidence are preserved for the disabled next-runtime-readiness preview, while command id, handler and callback remain null. No `src/`, production runtime, public/product promotion, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSEOUT_AND_NEXT_PRODUCTIVE_FRONTIER`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

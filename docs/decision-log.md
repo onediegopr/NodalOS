@@ -3543,3 +3543,17 @@
 - Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `42%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and production/runtime/product authority remains blocked; P4 further local/dev runtime work should close unless a new visible slice is explicit.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_LINE_CLOSE_OR_NEXT_OPERATOR_FRONTIER`.
+
+## AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSE_OR_NEXT_FRONTIER_AFTER_ACTION_PREVIEW_METADATA
+
+- Decision: `GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FINAL_TARGET_READY`.
+- Baseline: `406c7f2af40a28536f9af041c28e19573a366972`.
+- Resulting state: `LOCAL_DEV_RUNTIME_ACTION_PREVIEW_METADATA_ACCEPTANCE_READY_NO_PRODUCTION_AUTHORITY`.
+- Candidate table: action-preview metadata acceptance consistency = accepted; next-frontier preview local/dev = copy-only churn after MSE27; closeout only = deferred to next block after final acceptance; production/public action = blocked.
+- Target executed: focal Safety acceptance evidence now proves diagnostics action-preview metadata is preserved in the internal operator UI preview.
+- Behavior changed: no runtime behavior changed; the local/dev acceptance surface now proves reason, risk, blocked frontier, required operator signal and required evidence remain consistent across diagnostics and internal UI propagation.
+- Scope: one Safety test update plus docs-minimal. No `src/`, production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval execution, command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial.
+- Validation: Safety build PASS with 32 pre-existing warnings; `ProductLedgerInternalOperatorUiPreviewTests` PASS `8/8`; no broad suite, no CI/workflows.
+- Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `43%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and production/runtime/product authority remains blocked; P4 local/dev runtime productive slice should close unless Diego selects a new productive frontier.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSEOUT_AND_NEXT_PRODUCTIVE_FRONTIER`.
