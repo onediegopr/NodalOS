@@ -180,4 +180,49 @@ public sealed class ApprovalDurableAuditTrailDesignOnlyProtectedSafetyTests
         Assert.IsTrue(design.PassesSafetyProof);
         Assert.AreEqual("NODAL_OS_DURABLE_APPROVAL_AUDIT_TRAIL_DESIGN_EXTERNAL_AUDIT", design.NextSafeStep);
     }
+
+    [TestMethod]
+    public void DurableAuditTrailDesign_DoesNotClaimMinimalAppendOnlyLedgerAuthority()
+    {
+        var design = ApprovalDurableAuditTrailDesignOnlyProtectedPresenter.CreateFixture();
+        var designSource = SourceText("src/OneBrain.Core/Approval/ApprovalDurableAuditTrailDesignOnlyProtected.cs");
+        var minimalLedgerSource = SourceText("src/OneBrain.Core/Approval/DurableAuditTrailAppendOnlyMinimal.cs");
+
+        Assert.IsFalse(design.HasDurableAuditTrail);
+        Assert.IsFalse(design.HasAppendOnlyLedger);
+        Assert.IsFalse(design.CapabilityStatus.CanAppendAuditEvent);
+        Assert.IsFalse(design.CapabilityStatus.CanPersistAuditTrail);
+        Assert.IsTrue(design.AntiCapabilityProof.CannotUseAppendOnlyLedger);
+        Assert.IsTrue(design.AntiCapabilityProof.CannotInvokeWriter);
+        Assert.IsTrue(design.AntiCapabilityProof.CannotInvokePolicyProductivePath);
+        Assert.IsTrue(design.PassesSafetyProof);
+
+        Assert.IsFalse(designSource.Contains(nameof(DurableAuditTrailAppendOnlyMinimal), StringComparison.Ordinal));
+        Assert.IsFalse(designSource.Contains("AppendStage2TestOnly", StringComparison.Ordinal));
+        StringAssert.Contains(minimalLedgerSource, "AppendStage2TestOnly");
+        StringAssert.Contains(minimalLedgerSource, "AllowLocalTestStorageOnly");
+        StringAssert.Contains(minimalLedgerSource, "StorageRootOutsideLocalTestBoundary");
+        StringAssert.Contains(minimalLedgerSource, "ProductActionAllowed: false");
+        StringAssert.Contains(minimalLedgerSource, "NetworkAllowed: false");
+        StringAssert.Contains(minimalLedgerSource, "DbMigrationAllowed: false");
+        StringAssert.Contains(minimalLedgerSource, "ReleaseCommercialReady: false");
+    }
+
+    private static string SourceText(string relativePath)
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, relativePath);
+            if (File.Exists(candidate))
+            {
+                return File.ReadAllText(candidate);
+            }
+
+            directory = directory.Parent;
+        }
+
+        Assert.Fail($"Could not locate repository source file: {relativePath}");
+        return string.Empty;
+    }
 }

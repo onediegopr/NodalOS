@@ -427,19 +427,19 @@ P4:
 
 Selected frontier:
 
-`NO_GO_NEXT_MACRO_FRONTIER_NO_SAFE_REAL_TARGET_AVAILABLE`
+`DURABLE_AUDIT_TRAIL_LOCAL_TEST_SAFE_BOUNDARY`
 
 Resulting state:
 
-`MAIN_MACRO_FRONTIER_NO_SAFE_REAL_TARGET_AVAILABLE_AFTER_D11_CANONICALIZATION`
+`DURABLE_AUDIT_TRAIL_TEST_ONLY_BOUNDARY_GUARD_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
 
 Next exact block:
 
-`AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_DECISION_AFTER_NO_SAFE_MACRO_TARGET`
+`AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_AFTER_DURABLE_AUDIT_TRAIL_TEST_ONLY_BOUNDARY_GUARD`
 
 Execution contract:
 
-- select a new substantive frontier, not another local hardening pass over D7/D10/D11/Common Boundary maps;
+- select a new substantive frontier, not another local hardening pass over D7/D10/D11/Common Boundary maps or the durable audit trail boundary unless new semantic drift appears;
 - require a real product-roadmap, architecture, validation or consolidation boundary with clear value;
 - avoid packet-review/read-only as the main objective unless it is a real blocker;
 - keep validation candidate commands helper-shaped, focal, repo-contained and disk-space bounded;

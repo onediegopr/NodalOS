@@ -306,6 +306,10 @@ Next macro frontier after D11 canonicalization: `MAIN_MACRO_FRONTIER_NO_SAFE_REA
 
 Closed with NO-GO instead of forcing churn. The post-D11 scan found no remaining duplicate expected-state/claim/capability map suitable for bounded removal. Remaining candidates were classified as safe-but-too-small test data, helper extraction churn, unsafe broad Product Ledger/Common Contract/source work, or out-of-scope Validation/Static Guard work without a concrete bug. No `src/`, tests, runtime/product, workflows, CI enforcement or release/commercial authority changed.
 
+Next substantive frontier after no-safe-target closeout: `DURABLE_AUDIT_TRAIL_TEST_ONLY_BOUNDARY_GUARD_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed one focal durable audit trail boundary guard: the design-only protected audit trail now has a Safety test proving it does not reference or claim authority from the minimal append-only ledger, while the minimal ledger remains local/test-only and explicitly non-product, non-network, non-DB and non-release. Candidate families were classified and Product Ledger Stage 3, Approval/Reentry source reduction, Validation Reliability, Static Guard metadata, Roadmap-only reconciliation and pause were rejected as churn, too small or not enough once the durable boundary target was found. No `src/`, runtime/product, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
