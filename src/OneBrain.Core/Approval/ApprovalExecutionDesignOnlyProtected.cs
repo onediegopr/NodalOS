@@ -90,7 +90,7 @@ public sealed record ApprovalExecutionAntiCapabilityProof(
     bool NoClipboardDownload,
     bool NoFilesystemProductIo,
     bool NoDatabase,
-    bool NoProviderCloud,
+    bool NoProviderCloudNetwork,
     bool NoLlmLive,
     bool NoDurableMemory,
     bool NoBrowserCdpLive,
@@ -130,7 +130,7 @@ public sealed record ApprovalExecutionAntiCapabilityProof(
         && NoClipboardDownload
         && NoFilesystemProductIo
         && NoDatabase
-        && NoProviderCloud
+        && NoProviderCloudNetwork
         && NoLlmLive
         && NoDurableMemory
         && NoBrowserCdpLive
@@ -204,7 +204,7 @@ public static class ApprovalExecutionDesignOnlyProtectedPresenter
             NoClipboardDownload: true,
             NoFilesystemProductIo: true,
             NoDatabase: true,
-            NoProviderCloud: true,
+            NoProviderCloudNetwork: true,
             NoLlmLive: true,
             NoDurableMemory: true,
             NoBrowserCdpLive: true,

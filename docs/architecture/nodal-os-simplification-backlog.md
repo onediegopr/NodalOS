@@ -1323,3 +1323,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 further source-refactor cleanup should still require one-target proof; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: MR20 does not authorize broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, CI enforcement, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR21 - Source Refactor Next Micro Target Or Close Lane
+
+- Objective: implement one final obvious bounded/no-runtime Source Refactor micro-target or close the lane.
+- Status: completed as source-minimal/test-focal.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_NEXT_MICRO_TARGET_READY`.
+- Resulting state: `SOURCE_REFACTOR_NEXT_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Micro-target: renamed D10 anti-capability proof terminology from `NoProviderCloud` to `NoProviderCloudNetwork`.
+- Source changed: one file, `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Tests changed: one focal reflection assertion in `tests/OneBrain.Safety.Tests/ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests.cs`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: source-refactor readiness `80%`; broad source simplification readiness `45%`; Product Ledger model consolidation readiness `66%`; global roadmap readiness `92%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 source-refactor micro-lane should close unless a more substantive operator-selected target appears; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_SOURCE_REFACTOR_NEXT_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: MR21 does not authorize broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, CI enforcement, DB/cloud/KMS/WORM or release/commercial.

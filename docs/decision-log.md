@@ -86,6 +86,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 further source-refactor cleanup should still require one-target proof; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
 
+## AUTHORIZE_NODAL_OS_SOURCE_REFACTOR_NEXT_MICRO_TARGET_OR_CLOSE_LANE_IMPLEMENT_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_NEXT_MICRO_TARGET_READY`.
+- Input HEAD: `d4acc1ee4c38ec9582fa219514e51b5af735d85e`.
+- Micro-target: rename D10 anti-capability proof terminology from `NoProviderCloud` to `NoProviderCloudNetwork`.
+- Source changed: one file, `src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs`.
+- Test changed: one focal reflection assertion in `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests` prevents the ambiguous proof property name from returning.
+- Boundary: no runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 source-refactor micro-lane should close unless a more substantive operator-selected target appears; P4 impact is deliberately tiny.
+- Stop condition: `STOP_AFTER_SOURCE_REFACTOR_NEXT_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

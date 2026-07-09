@@ -198,6 +198,10 @@ Source-refactor bounded micro-target: `SOURCE_REFACTOR_BOUNDED_MICRO_TARGET_READ
 
 Micro-target result: renamed D10 provider/cloud blocked-reason terminology from `ProviderCloudNotAuthorized` to `ProviderCloudNetworkNotAuthorized` and guarded the enum name in `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`. No runtime/product, Product Ledger model consolidation, broad common-contract, route, DI, command handler, CI or release/commercial authority changed.
 
+Source-refactor next micro-target: `SOURCE_REFACTOR_NEXT_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+Micro-target result: renamed D10 anti-capability proof terminology from `NoProviderCloud` to `NoProviderCloudNetwork` and guarded the proof property name in `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`. No runtime/product, Product Ledger model consolidation, broad common-contract, route, DI, command handler, CI or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

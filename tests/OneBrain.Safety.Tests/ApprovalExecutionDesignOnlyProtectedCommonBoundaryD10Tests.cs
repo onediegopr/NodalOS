@@ -42,6 +42,12 @@ public sealed class ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests
         CollectionAssert.DoesNotContain(
             Enum.GetNames<ApprovalExecutionBlockedReason>(),
             "ProviderCloudNotAuthorized");
+        CollectionAssert.Contains(
+            typeof(ApprovalExecutionAntiCapabilityProof).GetProperties().Select(property => property.Name).ToArray(),
+            nameof(ApprovalExecutionAntiCapabilityProof.NoProviderCloudNetwork));
+        CollectionAssert.DoesNotContain(
+            typeof(ApprovalExecutionAntiCapabilityProof).GetProperties().Select(property => property.Name).ToArray(),
+            "NoProviderCloud");
     }
 
     [TestMethod]
