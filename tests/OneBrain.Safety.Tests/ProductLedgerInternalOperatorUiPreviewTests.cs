@@ -129,12 +129,16 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
             Assert.IsNull(action.ProductiveCommandId);
             Assert.IsNull(action.HandlerId);
             Assert.IsNull(action.CallbackName);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(action.BlockedFrontier));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(action.RequiredOperatorSignal));
             Assert.IsTrue(action.RequiredEvidence.Count > 0);
             StringAssert.Contains(action.BlockedReason, "read-only");
         }
 
         var nextSlice = viewModel.ActionPreviews.Single(action => action.Label == "Advance local/dev runtime readiness next slice");
         StringAssert.Contains(nextSlice.BlockedReason, "operator-selected frontier");
+        Assert.AreEqual("LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER", nextSlice.BlockedFrontier);
+        Assert.AreEqual("operator-selected-frontier", nextSlice.RequiredOperatorSignal);
         CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "operator-selected frontier");
         CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "no production runtime");
         CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "no release/commercial");
@@ -189,6 +193,8 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
                     "unsafe",
                     "unsafe",
                     "unsafe",
+                    "UNSAFE_PRODUCT_FRONTIER",
+                    "unsafe-product-signal",
                     [],
                     Disabled: false,
                     ProductiveCommandId: "product.execute",
@@ -287,8 +293,8 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
             ],
             ActionPreviews:
             [
-                new("View local-only diagnostics snapshot", "read-only preview only", "operator visibility without execution authority", ["runtime gate"], Disabled: true, ProductiveCommandId: null, HandlerName: null, CallbackName: null),
-                new("Advance local/dev runtime readiness next slice", "read-only preview only; requires a new operator-selected frontier", "local/dev readiness can advance only with focal evidence and no production authority", ["operator-selected frontier", "focal diagnostics/operator UI evidence", "no production runtime", "no release/commercial"], Disabled: true, ProductiveCommandId: null, HandlerName: null, CallbackName: null)
+                new("View local-only diagnostics snapshot", "read-only preview only", "operator visibility without execution authority", "LOCAL_ONLY_OPERATOR_DIAGNOSTICS_READ_ONLY_REVIEW", "operator-read-only-review", ["runtime gate"], Disabled: true, ProductiveCommandId: null, HandlerName: null, CallbackName: null),
+                new("Advance local/dev runtime readiness next slice", "read-only preview only; requires a new operator-selected frontier", "local/dev readiness can advance only with focal evidence and no production authority", "LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER", "operator-selected-frontier", ["operator-selected frontier", "focal diagnostics/operator UI evidence", "no production runtime", "no release/commercial"], Disabled: true, ProductiveCommandId: null, HandlerName: null, CallbackName: null)
             ],
             DisabledActions: ["public UI action", "destructive user-facing action", "product command handler", "provider/cloud/network access", "release/commercial readiness"],
             SafeNextStep: "EXTERNAL_AUDIT_READ_ONLY_THEN_STATIC_SCAN_HARDENING",

@@ -68,11 +68,39 @@ public sealed record ProductLedgerInternalOperatorUiPreviewActionPreview(
     string Label,
     string RiskLabel,
     string BlockedReason,
+    string BlockedFrontier,
+    string RequiredOperatorSignal,
     IReadOnlyList<string> RequiredEvidence,
     bool Disabled,
     string? ProductiveCommandId,
     string? HandlerId,
-    string? CallbackName);
+    string? CallbackName)
+{
+    public ProductLedgerInternalOperatorUiPreviewActionPreview(
+        string ActionId,
+        string Label,
+        string RiskLabel,
+        string BlockedReason,
+        IReadOnlyList<string> RequiredEvidence,
+        bool Disabled,
+        string? ProductiveCommandId,
+        string? HandlerId,
+        string? CallbackName)
+        : this(
+            ActionId,
+            Label,
+            RiskLabel,
+            BlockedReason,
+            "INTERNAL_DISABLED_PREVIEW_REQUIRES_OPERATOR_AUTHORITY",
+            "explicit-operator-signal",
+            RequiredEvidence,
+            Disabled,
+            ProductiveCommandId,
+            HandlerId,
+            CallbackName)
+    {
+    }
+}
 
 public sealed record ProductLedgerInternalOperatorUiPreviewViewModel(
     string ViewModelId,
@@ -431,6 +459,8 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                 Label: label,
                 RiskLabel: "disabled-preview-only",
                 BlockedReason: "Internal operator UI preview is read-only and exposes no executable handler.",
+                BlockedFrontier: "INTERNAL_OPERATOR_UI_PRODUCT_ACTION_AUTHORITY",
+                RequiredOperatorSignal: "explicit-human-go",
                 RequiredEvidence: ["explicit human GO", "boundary audit", "safety tests"],
                 Disabled: true,
                 ProductiveCommandId: null,
@@ -446,6 +476,8 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                 Label: preview.Label,
                 RiskLabel: preview.Risk,
                 BlockedReason: preview.Reason,
+                BlockedFrontier: preview.BlockedFrontier,
+                RequiredOperatorSignal: preview.RequiredOperatorSignal,
                 RequiredEvidence: preview.RequiredEvidence,
                 Disabled: true,
                 ProductiveCommandId: null,
@@ -462,6 +494,8 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                 Label: result.Preview.Label,
                 RiskLabel: result.Preview.RiskLevel,
                 BlockedReason: result.Preview.BlockedReason,
+                BlockedFrontier: "INTERNAL_COMMAND_PREVIEW_EXECUTION_AUTHORITY",
+                RequiredOperatorSignal: "explicit-command-execution-go",
                 RequiredEvidence: result.Preview.RequiredEvidence,
                 Disabled: true,
                 ProductiveCommandId: null,

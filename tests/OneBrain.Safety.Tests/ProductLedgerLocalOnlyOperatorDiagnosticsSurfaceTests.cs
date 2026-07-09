@@ -158,12 +158,16 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsSurfaceTests
             Assert.IsNull(preview.ProductiveCommandId);
             Assert.IsNull(preview.HandlerName);
             Assert.IsNull(preview.CallbackName);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(preview.BlockedFrontier));
+            Assert.IsFalse(string.IsNullOrWhiteSpace(preview.RequiredOperatorSignal));
             Assert.IsTrue(preview.RequiredEvidence.Count > 0);
         }
 
         var nextSlice = result.ActionPreviews.Single(preview => preview.Label == "Advance local/dev runtime readiness next slice");
         StringAssert.Contains(nextSlice.Reason, "preview only");
         StringAssert.Contains(nextSlice.Risk, "no production authority");
+        Assert.AreEqual("LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER", nextSlice.BlockedFrontier);
+        Assert.AreEqual("operator-selected-frontier", nextSlice.RequiredOperatorSignal);
         CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "operator-selected frontier");
         CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "focal diagnostics/operator UI evidence");
         CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "no production runtime");

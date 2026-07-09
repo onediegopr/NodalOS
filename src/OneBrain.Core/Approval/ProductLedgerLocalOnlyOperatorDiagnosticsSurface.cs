@@ -73,11 +73,37 @@ public sealed record ProductLedgerLocalOnlyOperatorDiagnosticsActionPreview(
     string Label,
     string Reason,
     string Risk,
+    string BlockedFrontier,
+    string RequiredOperatorSignal,
     IReadOnlyList<string> RequiredEvidence,
     bool Disabled,
     string? ProductiveCommandId,
     string? HandlerName,
-    string? CallbackName);
+    string? CallbackName)
+{
+    public ProductLedgerLocalOnlyOperatorDiagnosticsActionPreview(
+        string Label,
+        string Reason,
+        string Risk,
+        IReadOnlyList<string> RequiredEvidence,
+        bool Disabled,
+        string? ProductiveCommandId,
+        string? HandlerName,
+        string? CallbackName)
+        : this(
+            Label,
+            Reason,
+            Risk,
+            "LOCAL_DEV_DISABLED_PREVIEW_REQUIRES_OPERATOR_AUTHORITY",
+            "explicit-operator-signal",
+            RequiredEvidence,
+            Disabled,
+            ProductiveCommandId,
+            HandlerName,
+            CallbackName)
+    {
+    }
+}
 
 public sealed record ProductLedgerLocalOnlyOperatorDiagnosticsResult(
     ProductLedgerLocalOnlyOperatorDiagnosticsDecision Decision,
@@ -473,6 +499,8 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
                 "View local-only diagnostics snapshot",
                 "read-only preview only",
                 "operator visibility without execution authority",
+                "LOCAL_ONLY_OPERATOR_DIAGNOSTICS_READ_ONLY_REVIEW",
+                "operator-read-only-review",
                 ["runtime gate", "active path policy", "checkpoint head", "evidence gates"],
                 Disabled: true,
                 ProductiveCommandId: null,
@@ -482,6 +510,8 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
                 "Advance local/dev runtime readiness next slice",
                 "read-only preview only; requires a new operator-selected frontier",
                 "local/dev readiness can advance only with focal evidence and no production authority",
+                "LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER",
+                "operator-selected-frontier",
                 ["operator-selected frontier", "focal diagnostics/operator UI evidence", "no production runtime", "no release/commercial"],
                 Disabled: true,
                 ProductiveCommandId: null,
@@ -491,6 +521,8 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
                 "Append bounded local-only ledger entry",
                 "disabled on the operator surface",
                 "writes stay outside this read-only presenter",
+                "PRODUCT_LEDGER_BOUNDED_LOCAL_ONLY_WRITE_AUTHORITY",
+                "bounded-write-authority",
                 ["redaction-before-persistence", "safe payload hash", "authority evidence"],
                 Disabled: true,
                 ProductiveCommandId: null,
@@ -500,6 +532,8 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
                 "Enable public UI product action",
                 "prohibited by boundary",
                 "would require a new human decision",
+                "PUBLIC_PRODUCT_UI_ACTION_AUTHORITY",
+                "public-product-ui-go",
                 ["public UI GO", "release gate"],
                 Disabled: true,
                 ProductiveCommandId: null,
@@ -509,6 +543,8 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
                 "Promote release or commercial readiness",
                 "prohibited by boundary",
                 "release/commercial remains NO-GO",
+                "RELEASE_COMMERCIAL_READINESS",
+                "release-commercial-go",
                 ["release authority", "commercial readiness packet"],
                 Disabled: true,
                 ProductiveCommandId: null,

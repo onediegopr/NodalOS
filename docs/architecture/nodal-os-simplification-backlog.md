@@ -2075,3 +2075,17 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `41%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and production/runtime/product authority remains blocked; P4 further local/dev runtime work should be another visible slice or return to operator frontier selection.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER`.
+
+## BLOCK MSE27 - Local/Dev Runtime Productive Slice Follow-Up Metadata
+
+- Objective: execute one follow-up only if it adds visible/testable local-dev behavior to the disabled runtime-readiness action preview.
+- Status: completed as bounded source/test/docs-minimal metadata work.
+- Decision: `GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_READY`.
+- Resulting state: `LOCAL_DEV_RUNTIME_DISABLED_ACTION_PREVIEW_METADATA_READY_NO_PRODUCTION_AUTHORITY`.
+- Candidate classification: structured disabled-preview metadata = `REAL_LOCAL_DEV_PRODUCTIVE_TARGET`; action-preview consistency was already covered by MSE26 tests; next-frontier selector text-only was `COPY_ONLY_CHURN`; production/public action was `UNSAFE_PRODUCT_PROMOTION`.
+- Target executed: `ProductLedgerLocalOnlyOperatorDiagnosticsActionPreview` and propagated internal operator UI previews now expose `BlockedFrontier` and `RequiredOperatorSignal`.
+- Behavior added: the disabled `Advance local/dev runtime readiness next slice` preview visibly carries `LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER` and `operator-selected-frontier` while remaining disabled and non-executable.
+- Scope: local/dev, read-only, non-destructive preview metadata. No production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval execution, command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial.
+- Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `42%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and production/runtime/product authority remains blocked; P4 further local/dev runtime work should close unless a new visible slice is explicit.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_LINE_CLOSE_OR_NEXT_OPERATOR_FRONTIER`.

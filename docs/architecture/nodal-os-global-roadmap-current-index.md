@@ -869,6 +869,39 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER`
 
+Local/dev runtime/productive slice follow-up:
+
+`GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_READY`
+
+Resulting state:
+
+`LOCAL_DEV_RUNTIME_DISABLED_ACTION_PREVIEW_METADATA_READY_NO_PRODUCTION_AUTHORITY`
+
+Target executed:
+
+- Diagnostics action previews now carry structured `BlockedFrontier` and `RequiredOperatorSignal` metadata.
+- Internal operator UI action previews now preserve that metadata when diagnostics previews are propagated.
+- The next runtime readiness preview remains disabled, read-only and non-executable while exposing the blocked frontier and required operator signal as testable fields.
+
+Current boundary:
+
+- No production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval execution, command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority was opened.
+- C: remains above the corrected hard floor of `2 GB`; disk remains a P3 operational constraint for broad validations only.
+
+Updated readiness:
+
+- Global roadmap readiness: `98%`.
+- Runtime/product local-dev readiness: `42%`.
+- Runtime/product production readiness: `0%`.
+- Product Ledger local/dev product surface readiness: `86%`.
+- Product Ledger model consolidation: `77%`.
+- CI enforcement: `0%`.
+- Release/commercial: `0% / NO-GO`.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_LINE_CLOSE_OR_NEXT_OPERATOR_FRONTIER`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

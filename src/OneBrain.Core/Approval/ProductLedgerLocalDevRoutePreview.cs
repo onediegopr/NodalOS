@@ -1140,7 +1140,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
             ],
             ActionPreviews:
             [
-                new("View local-only diagnostics snapshot", "read-only preview only", "operator visibility without execution authority", ["runtime gate"], Disabled: true, ProductiveCommandId: null, HandlerName: null, CallbackName: null)
+                new("View local-only diagnostics snapshot", "read-only preview only", "operator visibility without execution authority", "LOCAL_ONLY_OPERATOR_DIAGNOSTICS_READ_ONLY_REVIEW", "operator-read-only-review", ["runtime gate"], Disabled: true, ProductiveCommandId: null, HandlerName: null, CallbackName: null)
             ],
             DisabledActions: ["destructive user-facing action", "provider/cloud/network", "release/commercial"],
             SafeNextStep: "LOCAL_DEV_ROUTE_INTERNAL_ENDPOINT_PREVIEW",

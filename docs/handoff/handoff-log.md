@@ -386,6 +386,10 @@ Local/dev runtime productive slice: `LOCAL_DEV_RUNTIME_NEXT_OPERATOR_ACTION_PREV
 
 Executed one real local/dev behavior target after Diego corrected the disk stop policy. Diagnostics now expose a disabled `Advance local/dev runtime readiness next slice` action preview, and internal operator UI preview carries diagnostics action previews forward when no explicit command previews are supplied. The preview is read-only, disabled, non-executable and requires an operator-selected frontier, focal diagnostics/operator UI evidence, no production runtime and no release/commercial. No production runtime, public/product promotion, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER`.
 
+Local/dev runtime productive slice follow-up: `LOCAL_DEV_RUNTIME_DISABLED_ACTION_PREVIEW_METADATA_READY_NO_PRODUCTION_AUTHORITY`.
+
+Executed one bounded metadata target for the disabled next-action preview. Diagnostics action previews now expose `BlockedFrontier` and `RequiredOperatorSignal`, and internal operator UI previews preserve those fields when diagnostics previews are propagated. The next runtime-readiness preview remains disabled/read-only/non-executable and carries `LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER` plus `operator-selected-frontier`. No production runtime, public/product promotion, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_LINE_CLOSE_OR_NEXT_OPERATOR_FRONTIER`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
