@@ -334,6 +334,10 @@ Workspace Context follow-up closeout: `WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LINE
 
 Closed with NO-GO instead of forcing more local hardening. No new semantic target was found beyond the MSE12 authority-boundary guard: export preview remains in-memory/no-file/no-clipboard/no-download, provider/cloud and semantic/vector remain disabled, memory remains non-durable, and historical Phase D next-step strings are fixture traceability rather than current roadmap authority. No `src/`, tests, runtime/product, workflows, CI enforcement, trusted context activation, durable evidence persistence, product memory activation, source-of-truth activation, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_MAIN_ROADMAP_REBASELINE_AFTER_WORKSPACE_CONTEXT_LINE_CLOSE`.
 
+Main roadmap rebaseline after Workspace Context close: `MAIN_ROADMAP_REBASELINE_NO_SAFE_FRONTIER_AVAILABLE_AFTER_WORKSPACE_CONTEXT_CLOSE`.
+
+Closed with NO-GO after classifying the major roadmap families. Common Boundary/Common Contract, Product Ledger local/dev, Durable audit/evidence, Workspace Context, Reentry/Approval authority and Static Guard discovery are exhausted for now; Source Refactor is unsafe broad without a new bounded reduction; Approval Packet read-only needs operator authorization; Validation reliability is too small without a concrete bug; Browser/ChromeLab/Recipes live automation, CI/workflows and release/commercial remain blocked. No `src/`, tests, runtime/product, workflows, CI enforcement, product writer, latest/read precedence, trusted context activation, durable evidence persistence, product memory activation, source-of-truth activation, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

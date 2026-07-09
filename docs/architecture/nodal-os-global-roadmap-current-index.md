@@ -526,6 +526,41 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_MAIN_ROADMAP_REBASELINE_AFTER_WORKSPACE_CONTEXT_LINE_CLOSE`
 
+Main roadmap rebaseline after Workspace Context close:
+
+`NO_GO_MAIN_ROADMAP_REBASELINE_NO_SAFE_FRONTIER_AVAILABLE`
+
+Resulting state:
+
+`MAIN_ROADMAP_REBASELINE_NO_SAFE_FRONTIER_AVAILABLE_AFTER_WORKSPACE_CONTEXT_CLOSE`
+
+Frontier-family rebaseline:
+
+| Family | Classification | Reason |
+| --- | --- | --- |
+| Common Boundary / Common Contract | `EXHAUSTED_FOR_NOW` | D7/D10/D11 already consume canonical sources; no remaining bounded expected-state, claim or capability duplicate is known. |
+| Source Refactor | `UNSAFE_BROAD` | The recent D-series and micro-lane removed bounded targets; the next meaningful reduction would require broader source planning. |
+| Product Ledger local/dev | `EXHAUSTED_FOR_NOW` | Stage 1/2 consolidation closed the bounded double-truth targets; Stage 3 remains repetitive or broad. |
+| Durable audit/evidence | `EXHAUSTED_FOR_NOW` | Minimal local/test boundary, durable audit trail separation and Human Review evidence-link guards are already covered. |
+| Workspace Context | `EXHAUSTED_FOR_NOW` | The authority-boundary guard exists and follow-up found no duplicate authority, source-of-truth or activation boundary. |
+| Approval Packet read-only | `NEEDS_OPERATOR_AUTHORIZATION` | Side-effect counts remain zero; any move beyond read-only packet preparation needs explicit operator authorization. |
+| Reentry/Approval authority | `EXHAUSTED_FOR_NOW` | D7/D10/D11 local truth maps were removed or canonicalized; further work would be rename/helper churn. |
+| Validation reliability | `SAFE_BUT_TOO_SMALL` | Local helper guidance exists and no concrete helper or runner bug is currently selected. |
+| Static guard discovery | `EXHAUSTED_FOR_NOW` | Trusted-context/durable-evidence discovery is covered; no new semantic family was found. |
+| Browser/ChromeLab/Recipes/live automation | `RUNTIME_PRODUCT_BLOCKED` | Live action authority remains outside the safe local/read-only/test-only roadmap lane. |
+| CI/workflows | `CI_ENFORCEMENT_BLOCKED` | CI readiness is documented, but workflow edits and enforcement remain blocked. |
+| Release/commercial | `RUNTIME_PRODUCT_BLOCKED` | Release/commercial posture remains `0% / NO-GO`. |
+
+Decision:
+
+- No `REAL_SUBSTANTIVE_BOUNDED_TARGET` exists inside the current authorization window.
+- Do not continue with helper-only churn, repeated static guards, broad Product Ledger/Common Contract/source consolidation or runtime/product work.
+- The next step requires an operator-selected substantive frontier or an explicit pause.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.
