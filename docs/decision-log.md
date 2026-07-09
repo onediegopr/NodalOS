@@ -3110,3 +3110,20 @@
 - Current posture: global roadmap readiness `95%`; Common Contract candidate readiness `76%`; Product Ledger model consolidation readiness `69%`; Static Guard Catalog readiness `96%`; test-infra focal confidence `82%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger/Common Contract work still carries double-truth risk and runner broad filters remain unsafe local gates; P4 further micro-hardening would be churn without a new substantive target.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_NO_SAFE_TARGET_AVAILABLE_WITH_EVIDENCE`.
+
+## AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_DECISION_AND_EXECUTION_PLAN
+
+- Decision: `GO_WITH_FINDINGS_NEXT_SUBSTANTIVE_FRONTIER_SELECTED_READY`.
+- Baseline: `a08e8516e44d0c02fff553c8a71595d66c2cc3f8`.
+- Resulting state: `PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_SELECTED_NO_IMPLEMENTATION`.
+- Selected frontier: `PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1`.
+- Scope: roadmap/design-minimal execution contract only. No `src/`, tests, workflows, CI enforcement, runtime/product, public/product, Production route, latest pointer activation, read precedence activation, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, broad implementation or release/commercial changes.
+- Rationale: Product Ledger consolidation is the only candidate with enough accumulated readiness/equivalence evidence to unlock real next work without repeating micro-hardening; the plan is bounded to local/dev model consolidation and must fail closed if it needs broad authority movement.
+- Next exact block: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_IMPLEMENT_OR_NO_GO`.
+- Next-block allowed scope: max two Product Ledger local/dev source files plus one focal Safety test, or test-only equivalence if implementation is unsafe; docs-minimal closeout.
+- Candidate files: `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`, `src/OneBrain.Core/Approval/ProductLedgerRenderableOperatorSurface.cs`, `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs`.
+- Required validations: Safety build, exact/focal tests via stable local commands, `git diff --check`, docs/source scope scan, wiring scan, anti-overclaim scan, final clean repo/origin guard.
+- NO-GO conditions: product authority, latest/read precedence, writer/runtime, public route, DB/cloud/KMS/WORM, CI enforcement, release/commercial, broad consolidation, unclear authority owner, double-truth regression, extra source files or unstable validation.
+- Current posture: Product Ledger model consolidation readiness `70%`; Product Ledger double-truth confidence `96%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Stage 1 can still uncover double-truth or authority-owner ambiguity; P4 execution contract is intentionally narrow and may close NO-GO if no safe source consolidation exists.
+- Stop condition: `STOP_AFTER_NEXT_SUBSTANTIVE_FRONTIER_SELECTED_NO_IMPLEMENTATION`.

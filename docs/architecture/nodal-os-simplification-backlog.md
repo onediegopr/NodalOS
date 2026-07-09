@@ -1566,3 +1566,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger/Common Contract work still carries double-truth risk and runner broad filters remain unsafe local gates; P4 further micro-hardening would be churn without a new substantive target.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_NO_SAFE_TARGET_AVAILABLE_WITH_EVIDENCE`.
 - Authorization note: MR35 does not authorize source changes, test edits, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM, broad Product Ledger model consolidation, broad common-contract implementation, Static Guard broad expansion or release/commercial.
+
+## BLOCK NF1 - Next Substantive Frontier Decision
+
+- Objective: select exactly one new substantive frontier and produce an executable no-runtime/no-product contract for the next block.
+- Status: completed as roadmap/design-minimal frontier selection.
+- Decision: `GO_WITH_FINDINGS_NEXT_SUBSTANTIVE_FRONTIER_SELECTED_READY`.
+- Resulting state: `PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_SELECTED_NO_IMPLEMENTATION`.
+- Selected frontier: `PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1`.
+- Selection reason: Product Ledger has the highest real unlock value after micro-lanes closed, already has readiness/equivalence evidence, and can begin with a bounded local/dev consolidation candidate without activating runtime, product authority, latest pointer, read precedence, writer, CI or release.
+- Deferred alternatives: CI validation readiness remains useful but lower value until a concrete gate is chosen; runtime/product authority gate must remain design/test-boundary only and is riskier; source refactor substantive reduction remains blocked by low broad simplification readiness and prior source-refactor closeout.
+- Next block: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_IMPLEMENT_OR_NO_GO`.
+- Next-block objective: implement exactly one bounded Product Ledger local/dev consolidation candidate or close NO-GO if the candidate requires product authority, latest/read precedence, writer/runtime, broad model consolidation or more than the allowed files.
+- Allowed next-block scope: max two Product Ledger local/dev source files plus one focal Safety test file, or test-only equivalence if source consolidation is not safe; docs-minimal closeout only.
+- Candidate files: `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`, `src/OneBrain.Core/Approval/ProductLedgerRenderableOperatorSurface.cs`, and `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs`.
+- Required validation: build Safety project with stable non-shared compilation settings, exact/focal tests only, `git diff --check`, scope/wiring/anti-overclaim scans and final repo guard.
+- NO-GO conditions: any runtime/product/public route/latest pointer/read precedence/product authority/writer/runtime/DB/cloud/KMS/WORM/CI/release opening, broad consolidation, unclear authority owner, double-truth regression, test hang that cannot be reduced to a focal helper command, or need to touch extra source files.
+- Target posture after next block: Product Ledger model consolidation readiness `72%`, double-truth confidence `97%`, runtime/product `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_READY_OR_NO_GO_NO_RUNTIME_PRODUCT_AUTHORITY`.

@@ -423,6 +423,26 @@ P4:
 
 - Documentation remains intentionally redundant around blocked runtime/product and release claims.
 
+## Current Next Substantive Frontier
+
+Selected frontier:
+
+`PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1`
+
+Resulting state:
+
+`PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_SELECTED_NO_IMPLEMENTATION`
+
+Next exact block:
+
+`AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_IMPLEMENT_OR_NO_GO`
+
+Execution contract:
+
+- attempt exactly one bounded Product Ledger local/dev model consolidation candidate;
+- use at most `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`, `src/OneBrain.Core/Approval/ProductLedgerRenderableOperatorSurface.cs` and one focal `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs` guard;
+- close NO-GO if the candidate requires broad consolidation, runtime/product, latest pointer, read precedence, product authority, writer/runtime, CI enforcement, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

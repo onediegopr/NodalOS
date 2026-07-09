@@ -258,6 +258,10 @@ Main roadmap next safe workstream: `MAIN_ROADMAP_NO_SAFE_REAL_TARGET_AVAILABLE_W
 
 Closed with NO-GO instead of forcing churn: Source Refactor and Test Infra are closed, Product Ledger/Static Guard leftovers are broad or repetitive, and Common Contract just received bounded completeness/read-only/null fail-closed guards. No source, tests, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
 
+Next substantive frontier: `PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_SELECTED_NO_IMPLEMENTATION`.
+
+Selected Product Ledger bounded Stage 1 as the next real frontier. Next block is `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_IMPLEMENT_OR_NO_GO`: attempt exactly one local/dev Product Ledger model consolidation candidate using `ProductLedgerOperatorSurfaceModel.cs`, `ProductLedgerRenderableOperatorSurface.cs` and one focal `ProductLedgerLocalDevRoutePreviewTests.cs` guard, or close NO-GO if it requires broad consolidation, runtime/product, latest/read precedence, product authority, writer/runtime, CI or release authority.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
