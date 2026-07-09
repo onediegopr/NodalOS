@@ -487,6 +487,26 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_SUBSTANTIVE_FRONTIER_REBASELINE_OR_OPERATOR_SELECTED_NEW_LINE`
 
+Operator-selected new line:
+
+`GO_WITH_FINDINGS_OPERATOR_SELECTED_NEW_LINE_READY`
+
+Resulting state:
+
+`WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LOCAL_READ_ONLY_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
+
+Frontier chosen:
+
+`WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LOCAL_READ_ONLY`
+
+Target executed:
+
+- Added a focal Workspace Context authority-boundary Safety guard proving the read-only packet, surface, export preview and guard outputs do not claim trusted context, durable evidence, product memory, product authority, latest/read precedence, source-of-truth or release/commercial state.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_FOLLOW_UP_OR_CLOSE_LINE`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

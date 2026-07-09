@@ -3335,3 +3335,17 @@
 - Current posture: global roadmap readiness `97%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; durable evidence/review-link boundary confidence `87%`; local focal validation confidence `88%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad consolidation and Workspace Context authority work require a separately selected substantive line; P4 more local hardening would be churn without semantic drift.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_SUBSTANTIVE_FRONTIER_REBASELINE_OR_OPERATOR_SELECTED_NEW_LINE`.
+
+## AUTHORIZE_NODAL_OS_SUBSTANTIVE_FRONTIER_REBASELINE_OR_OPERATOR_SELECTED_NEW_LINE
+
+- Decision: `GO_WITH_FINDINGS_OPERATOR_SELECTED_NEW_LINE_READY`.
+- Baseline: `5426e58584495ee90ca8d3e223070a57ca98e33a`.
+- Resulting state: `WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LOCAL_READ_ONLY_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LOCAL_READ_ONLY`.
+- Classification: `REAL_SUBSTANTIVE_BOUNDED_TARGET`. Workspace Context already had read-only/no-side-effect coverage, but lacked a focal guard against trusted-context, durable-evidence, product-memory, product-authority, latest/read-precedence, source-of-truth and release-state overclaims.
+- Target executed: `WorkspaceContextAuthorityBoundary_DoesNotClaimTrustedContextDurableEvidenceProductAuthorityOrReleaseState` in Safety tests.
+- Scope: test-only/docs-minimal. No `src/`, runtime/product, product writer, public/product behavior, latest pointer/read precedence activation, trusted context activation, durable evidence persistence activation, workspace import product behavior, user/customer data processing, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial changes.
+- Validation: Safety project build PASS with 32 pre-existing warnings; `WorkspaceContextReadOnlyFoundationSafetyTests` PASS `37/37` after build-server shutdown. Initial focused test command timed out during build, then `--no-build` focal run passed.
+- Current posture: global roadmap readiness `97%`; Workspace Context authority boundary confidence `88%`; durable audit trail local/test boundary confidence `85%`; durable evidence/review-link boundary confidence `87%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; local focal validation confidence `88%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broader Workspace Context authority/source-of-truth work requires a separate bounded target; P4 additional phrase guarding would be churn without new drift.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_FOLLOW_UP_OR_CLOSE_LINE`.

@@ -1850,3 +1850,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: global roadmap readiness `97%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; durable evidence/review-link boundary confidence `87%`; local focal validation confidence `88%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger/Common Contract/source consolidation and Workspace Context authority work require a separately selected substantive line; P4 more local hardening would be churn without a new semantic drift finding.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_SUBSTANTIVE_FRONTIER_REBASELINE_OR_OPERATOR_SELECTED_NEW_LINE`.
+
+## BLOCK MSE12 - Workspace Context Authority Boundary Local Read-Only
+
+- Objective: evaluate and execute the operator-selected Workspace Context authority boundary local/read-only line if a real bounded target exists.
+- Status: completed as test-only/focal authority-boundary hardening plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_OPERATOR_SELECTED_NEW_LINE_READY`.
+- Resulting state: `WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LOCAL_READ_ONLY_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LOCAL_READ_ONLY`.
+- Target executed: added `WorkspaceContextAuthorityBoundary_DoesNotClaimTrustedContextDurableEvidenceProductAuthorityOrReleaseState`, proving Workspace Context packet/surface/export preview and guard outputs do not claim trusted context, durable evidence, product memory, product authority, latest/read precedence, source-of-truth or release/commercial state.
+- Source changed: none.
+- Tests changed: `WorkspaceContextReadOnlyFoundationSafetyTests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: global roadmap readiness `97%`; Workspace Context authority boundary confidence `88%`; durable audit trail local/test boundary confidence `85%`; durable evidence/review-link boundary confidence `87%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; local focal validation confidence `88%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broader Workspace Context authority/source-of-truth work remains blocked unless a separate target is proven; P4 further phrase guards would be churn unless tied to concrete semantic drift.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_FOLLOW_UP_OR_CLOSE_LINE`.
+- Authorization note: MSE12 does not authorize source changes, runtime/product, product writer, public/product behavior, latest/read precedence, trusted context activation, durable evidence persistence activation, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM, CI enforcement, workflows or release/commercial.

@@ -146,6 +146,74 @@ public sealed class WorkspaceContextReadOnlyFoundationSafetyTests
     }
 
     [TestMethod]
+    public void WorkspaceContextAuthorityBoundary_DoesNotClaimTrustedContextDurableEvidenceProductAuthorityOrReleaseState()
+    {
+        var packet = WorkspaceContextReadOnlyPresenter.CreateFixture();
+        var surface = WorkspaceContextPacketReadOnlySurfacePresenter.CreateFixture();
+        var preview = WorkspaceContextPacketExportReadOnlyPresenter.CreateFixture();
+        var text = string.Join(
+            "\n",
+            packet.Mode,
+            packet.ReadOnlySummary,
+            packet.Summary,
+            packet.SafeNextStep,
+            string.Join("\n", packet.Items.Select(item => $"{item.Title} {item.Summary} {string.Join(" ", item.Warnings)} {string.Join(" ", item.Blockers)}")),
+            string.Join("\n", packet.MemoryCandidates.Select(candidate => $"{candidate.Title} {candidate.Preview} {string.Join(" ", candidate.Warnings)} {string.Join(" ", candidate.Blockers)}")),
+            surface.Mode,
+            surface.ReadOnlySummary,
+            surface.NextRecommendedBlock,
+            string.Join("\n", surface.GuardSummaries),
+            string.Join("\n", surface.CandidateSummaries),
+            string.Join("\n", surface.DisabledNotices),
+            string.Join("\n", surface.Sections.Select(section => $"{section.SectionId} {section.Title} {string.Join(" ", section.Warnings)} {string.Join(" ", section.Blockers)}")),
+            preview.Mode,
+            preview.NextSafeStep,
+            preview.PreviewText,
+            string.Join("\n", preview.DisabledNotices),
+            string.Join("\n", preview.Warnings),
+            string.Join("\n", preview.Blockers),
+            string.Join("\n", WorkspaceContextAuthorityFreshnessGuard.EvaluateCatalog().Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}")),
+            string.Join("\n", WorkspaceContextSelectionLockExclusionGuard.EvaluateCatalog().Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}")),
+            string.Join("\n", WorkspaceMemoryCandidateContradictionRiskGuard.EvaluateCatalog().Select(result => $"{result.FixtureId} {result.Decision} {string.Join(" ", result.Warnings)} {string.Join(" ", result.Blockers)}")));
+
+        var forbidden = new[]
+        {
+            "trusted context enabled",
+            "trusted context active",
+            "trusted context authority",
+            "durable evidence enabled",
+            "durable evidence persisted",
+            "durable evidence authority",
+            "product memory enabled",
+            "product memory active",
+            "product memory persisted",
+            "product authority granted",
+            "latest pointer",
+            "read precedence",
+            "release state ready",
+            "release/commercial ready",
+            "source of truth",
+            "source-of-truth"
+        };
+
+        Assert.IsTrue(packet.NoSideEffectProof.Passes);
+        Assert.IsTrue(surface.NoSideEffectProof.Passes);
+        Assert.IsTrue(preview.NoSideEffectProof.Passes);
+        Assert.IsFalse(packet.HasDurableMemory);
+        Assert.IsFalse(surface.HasDurableMemory);
+        Assert.IsFalse(preview.HasDurableMemory);
+        Assert.AreEqual(0, surface.ProductActionsCount);
+        Assert.AreEqual(0, preview.Manifest.ProductActionsCount);
+        Assert.AreEqual(0, preview.Manifest.ExportActionsCount);
+        Assert.IsFalse(preview.HasRealExport);
+
+        foreach (var term in forbidden)
+        {
+            Assert.IsFalse(text.Contains(term, StringComparison.OrdinalIgnoreCase), term);
+        }
+    }
+
+    [TestMethod]
     public void FoundationText_HasNoSyntheticSecretLeakage()
     {
         var packet = WorkspaceContextReadOnlyPresenter.CreateFixture();

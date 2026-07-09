@@ -326,6 +326,10 @@ Post-static-guard recheck: `MAIN_MACRO_FRONTIER_NO_SAFE_REAL_TARGET_AVAILABLE_AF
 
 Closed with NO-GO after a second candidate-family search. Product Ledger Stage 3 remains broad/repetitive, Approval candidate prep remains blocked and read-only, D7/D10/D11 duplicate state maps remain absent, durable-evidence/trusted-context hits are only expected guards/fixtures, Validation has no helper bug, and Workspace Context authority/freshness/memory is a separate out-of-scope line requiring operator selection. No `src/`, tests, runtime/product, workflows, CI enforcement, product writer, latest/read precedence, trusted context activation, durable evidence persistence, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_SUBSTANTIVE_FRONTIER_REBASELINE_OR_OPERATOR_SELECTED_NEW_LINE`.
 
+Workspace Context authority boundary: `WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_LOCAL_READ_ONLY_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed one focal Safety guard after operator selected Workspace Context as a new line. The guard proves Workspace Context packet/surface/export preview and authority/selection/memory guard outputs do not claim trusted context, durable evidence, product memory, product authority, latest/read precedence, source-of-truth or release/commercial state. No `src/`, runtime/product, workflows, CI enforcement, trusted context activation, durable evidence persistence, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_WORKSPACE_CONTEXT_AUTHORITY_BOUNDARY_FOLLOW_UP_OR_CLOSE_LINE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
