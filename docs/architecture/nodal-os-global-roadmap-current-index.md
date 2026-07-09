@@ -427,21 +427,22 @@ P4:
 
 Selected frontier:
 
-`PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1`
+`CI_VALIDATION_READINESS_NON_ENFORCING_PLAN`
 
 Resulting state:
 
-`PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_SELECTED_NO_IMPLEMENTATION`
+`CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_READY_NO_CI_ENFORCEMENT`
 
 Next exact block:
 
-`AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_IMPLEMENT_OR_NO_GO`
+`AUTHORIZE_NODAL_OS_CI_VALIDATION_READINESS_PACKET_REVIEW_READ_ONLY`
 
 Execution contract:
 
-- attempt exactly one bounded Product Ledger local/dev model consolidation candidate;
-- use at most `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`, `src/OneBrain.Core/Approval/ProductLedgerRenderableOperatorSurface.cs` and one focal `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs` guard;
-- close NO-GO if the candidate requires broad consolidation, runtime/product, latest pointer, read precedence, product authority, writer/runtime, CI enforcement, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
+- review the non-enforcing validation readiness packet only;
+- do not edit workflows or enable CI enforcement;
+- keep validation candidate commands helper-shaped, focal and disk-space bounded;
+- close or return to roadmap if the next step requires workflows, broad filters, suite-wide gates, runtime/product, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
 
 ## Final Boundary
 

@@ -1650,3 +1650,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 further local/dev Product Ledger consolidation would likely be churn without a new double-truth finding.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_MAIN_ROADMAP_FRONTIER_AFTER_PRODUCT_LEDGER_CONSOLIDATION_CLOSEOUT`.
 - Authorization note: PLCS4 does not authorize implementation, broad Product Ledger model consolidation, runtime/product, public/product, latest pointer, read precedence, product authority, writer/runtime, DB/cloud/KMS/WORM, CI/workflows or release/commercial.
+
+## BLOCK CIR1 - CI Validation Readiness Non-Enforcing Plan
+
+- Objective: create a non-enforcing CI/validation readiness plan that improves validation reliability without touching workflows or enabling CI enforcement.
+- Status: completed as docs-only/design-only plan.
+- Decision: `GO_WITH_FINDINGS_CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_READY`.
+- Resulting state: `CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_READY_NO_CI_ENFORCEMENT`.
+- Plan: `docs/architecture/nodal-os-ci-validation-readiness-non-enforcing-plan.md`.
+- Reliable local evidence today: focal helper-shaped builds/tests, exact/narrow filters, `git diff --check`, docs-only scope scans, wiring scans and anti-overclaim scans.
+- P3 policy added: disk pressure is operational P3; require `10 GiB` minimum and prefer `20 GiB` free before build/test validation; broad execution filters remain non-gates.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: CI validation readiness `62%`; local focal validation confidence `84%`; broad local filter confidence `35%`; global roadmap readiness `96%`; runtime/product `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk pressure and broad-filter instability remain operational risks; P4 plan is intentionally non-enforcing until a separate operator-approved CI block exists.
+- Stop condition: `STOP_AFTER_CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_NO_CI_ENFORCEMENT`.
+- Authorization note: CIR1 does not authorize `.github/workflows`, CI enforcement, scripts, source/test changes, runtime/product, DB/cloud/KMS/WORM or release/commercial.

@@ -3182,3 +3182,15 @@
 - Current posture: Product Ledger model consolidation readiness `75%`; Product Ledger local/dev double-truth confidence `98%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 more local/dev Product Ledger consolidation would likely be churn without a new double-truth finding.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_MAIN_ROADMAP_FRONTIER_AFTER_PRODUCT_LEDGER_CONSOLIDATION_CLOSEOUT`.
+
+## AUTHORIZE_NODAL_OS_CI_VALIDATION_READINESS_NON_ENFORCING_PLAN
+
+- Decision: `GO_WITH_FINDINGS_CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_READY`.
+- Baseline: `11b2d30a5d9b8611ba9fa2df003117bc4df26c08`.
+- Resulting state: `CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_READY_NO_CI_ENFORCEMENT`.
+- Scope: docs-only/design-only CI validation readiness plan. No `.github/workflows`, no CI enforcement, no scripts, no `src/`, no tests, no project/solution files, no runtime/product, no public/product, no DB/cloud/network/provider, no KMS/WORM and no release/commercial changes.
+- Plan added: `docs/architecture/nodal-os-ci-validation-readiness-non-enforcing-plan.md`.
+- Policy recorded: focal helper-shaped validation is the current safe local pattern; broad execution filters are not gates; disk pressure is operational P3 with `10 GiB` minimum and `20 GiB` recommended free space before build/test validation.
+- Current posture: CI validation readiness `62%`; local focal validation confidence `84%`; broad local filter confidence `35%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk pressure and broad-filter instability remain operational risks; P4 no CI enforcement exists yet by design.
+- Stop condition: `STOP_AFTER_CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_NO_CI_ENFORCEMENT`.
