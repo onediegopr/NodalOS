@@ -836,6 +836,39 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_NEXT_OPERATOR_SELECTED_FRONTIER_AFTER_LOCAL_DEV_RUNTIME_READINESS_CLOSEOUT`
 
+Operator-selected local/dev runtime/product next action preview:
+
+`GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_READY`
+
+Resulting state:
+
+`LOCAL_DEV_RUNTIME_NEXT_OPERATOR_ACTION_PREVIEW_READY_NO_PRODUCTION_AUTHORITY`
+
+Target executed:
+
+- Diagnostics now expose a disabled `Advance local/dev runtime readiness next slice` action preview.
+- Internal operator UI preview now carries diagnostics action previews forward when no explicit command previews are supplied.
+- The new preview is read-only, disabled, non-executable and requires an operator-selected frontier plus focal diagnostics/operator UI evidence.
+
+Current boundary:
+
+- No production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval execution, command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority was opened.
+- Disk remains a P3 operational constraint, but the active hard stop for this window is `2 GB` free on C:, not the older 55/60 GB advisory threshold.
+
+Updated readiness:
+
+- Global roadmap readiness: `98%`.
+- Runtime/product local-dev readiness: `41%`.
+- Runtime/product production readiness: `0%`.
+- Product Ledger local/dev product surface readiness: `86%`.
+- Product Ledger model consolidation: `77%`.
+- CI enforcement: `0%`.
+- Release/commercial: `0% / NO-GO`.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

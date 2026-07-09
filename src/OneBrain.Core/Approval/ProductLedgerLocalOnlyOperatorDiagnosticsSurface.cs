@@ -479,6 +479,15 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
                 HandlerName: null,
                 CallbackName: null),
             new(
+                "Advance local/dev runtime readiness next slice",
+                "read-only preview only; requires a new operator-selected frontier",
+                "local/dev readiness can advance only with focal evidence and no production authority",
+                ["operator-selected frontier", "focal diagnostics/operator UI evidence", "no production runtime", "no release/commercial"],
+                Disabled: true,
+                ProductiveCommandId: null,
+                HandlerName: null,
+                CallbackName: null),
+            new(
                 "Append bounded local-only ledger entry",
                 "disabled on the operator surface",
                 "writes stay outside this read-only presenter",

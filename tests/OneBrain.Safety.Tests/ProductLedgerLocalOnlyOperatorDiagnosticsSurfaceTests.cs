@@ -161,6 +161,14 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsSurfaceTests
             Assert.IsTrue(preview.RequiredEvidence.Count > 0);
         }
 
+        var nextSlice = result.ActionPreviews.Single(preview => preview.Label == "Advance local/dev runtime readiness next slice");
+        StringAssert.Contains(nextSlice.Reason, "preview only");
+        StringAssert.Contains(nextSlice.Risk, "no production authority");
+        CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "operator-selected frontier");
+        CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "focal diagnostics/operator UI evidence");
+        CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "no production runtime");
+        CollectionAssert.Contains(nextSlice.RequiredEvidence.ToArray(), "no release/commercial");
+
         CollectionAssert.Contains(result.DisabledActions.ToArray(), "public UI action");
         CollectionAssert.Contains(result.DisabledActions.ToArray(), "destructive user-facing action");
         CollectionAssert.Contains(result.DisabledActions.ToArray(), "product command handler");

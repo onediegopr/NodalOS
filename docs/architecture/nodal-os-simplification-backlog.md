@@ -2060,3 +2060,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `39%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 disk is below the 55 GB operational threshold and production/runtime/product authority remains blocked; P4 further local/dev runtime readiness work requires a new explicit operator frontier.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_NEXT_OPERATOR_SELECTED_FRONTIER_AFTER_LOCAL_DEV_RUNTIME_READINESS_CLOSEOUT`.
+
+## BLOCK MSE26 - Local/Dev Runtime Productive Slice: Next Operator Action Preview
+
+- Objective: execute Diego's selected `LOCAL_DEV_RUNTIME_PRODUCT_READINESS_NEXT_PRODUCTIVE_SLICE` as one observable local/dev behavior target, not another guard-only loop.
+- Status: completed as bounded source/test/docs-minimal diagnostics/operator preview work.
+- Decision: `GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_READY`.
+- Resulting state: `LOCAL_DEV_RUNTIME_NEXT_OPERATOR_ACTION_PREVIEW_READY_NO_PRODUCTION_AUTHORITY`.
+- Candidate classification: next operator action preview = `REAL_LOCAL_DEV_PRODUCTIVE_TARGET`; another route/operator consistency guard = `SAFE_BUT_TOO_SMALL`; copy-only surface text = `CHURN_HELPER`; production runtime/public product action = `UNSAFE_PRODUCT_PROMOTION`.
+- Target executed: added a disabled `Advance local/dev runtime readiness next slice` diagnostics action preview and propagated diagnostics action previews into the internal operator UI preview when no command previews are supplied.
+- Behavior added: the local/dev operator can now see the next readiness action as a read-only, disabled, non-executable preview with required evidence: operator-selected frontier, focal diagnostics/operator UI evidence, no production runtime and no release/commercial.
+- Scope: local/dev, read-only, non-destructive diagnostics/operator preview. No production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval execution, command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial.
+- Disk policy update: C: remains P3 constrained, but Diego corrected the hard stop for this window to `2 GB`; focal validation is allowed while above that floor.
+- Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `41%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and production/runtime/product authority remains blocked; P4 further local/dev runtime work should be another visible slice or return to operator frontier selection.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_FOLLOW_UP_OR_NEXT_OPERATOR_FRONTIER`.

@@ -311,7 +311,9 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
             headerStatus: "LOCAL_ONLY_INTERNAL_READ_ONLY_PREVIEW",
             readinessPercentage: 86,
             sections: sections,
-            actionPreviews: commandPreviews is null ? ActionPreviews() : FromCommandPreviews(commandPreviews),
+            actionPreviews: commandPreviews is null
+                ? FromDiagnosticsActionPreviews(diagnostics.ActionPreviews)
+                : FromCommandPreviews(commandPreviews),
             blockers: [],
             warnings:
             [
@@ -435,6 +437,22 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                 HandlerId: null,
                 CallbackName: null))
             .ToArray();
+
+    private static IReadOnlyList<ProductLedgerInternalOperatorUiPreviewActionPreview> FromDiagnosticsActionPreviews(
+        IReadOnlyList<ProductLedgerLocalOnlyOperatorDiagnosticsActionPreview> diagnosticsPreviews) =>
+        [
+            .. diagnosticsPreviews.Select(preview => new ProductLedgerInternalOperatorUiPreviewActionPreview(
+                ActionId: SectionId(preview.Label),
+                Label: preview.Label,
+                RiskLabel: preview.Risk,
+                BlockedReason: preview.Reason,
+                RequiredEvidence: preview.RequiredEvidence,
+                Disabled: true,
+                ProductiveCommandId: null,
+                HandlerId: null,
+                CallbackName: null)),
+            .. ActionPreviews()
+        ];
 
     private static IReadOnlyList<ProductLedgerInternalOperatorUiPreviewActionPreview> FromCommandPreviews(
         IReadOnlyList<ProductLedgerInternalCommandPreviewResult> commandPreviews) =>
