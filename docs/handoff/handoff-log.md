@@ -350,6 +350,10 @@ Main roadmap rebaseline after Approval Packet close: `MAIN_ROADMAP_REBASELINE_NO
 
 Closed with NO-GO after classifying the major roadmap families. Common Boundary/Common Contract, Product Ledger local/dev, Durable audit/evidence, Workspace Context, Approval Packet read-only, Reentry/Approval authority and Static Guard discovery are exhausted for now; Source Refactor remains unsafe broad; Validation reliability is too small without a concrete bug; Browser/ChromeLab/Recipes live automation, public/product UI, CI/workflows and release/commercial remain blocked. No `src/`, tests, approval execution, mutation, product action, service registration, runtime/product, export/download, latest/read precedence, trusted context activation, durable evidence persistence, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM, workflows, CI enforcement or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE_AFTER_APPROVAL_PACKET_LINE_CLOSE`.
 
+Operator-selected frontier pause: `MAIN_ROADMAP_PAUSED_CLEAN_WAITING_FOR_OPERATOR_SELECTED_FRONTIER`.
+
+Closed as a clean pause because no explicit new frontier was selected. Product Ledger public/product exposure, Browser/ChromeLab/Recipes live and release/commercial remain runtime/product blocked; CI workflow enforcement remains CI-blocked; broad Source Refactor remains unsafe broad without risk acceptance. No `src/`, tests, approval execution, mutation, product action, service registration, runtime/product, public/product exposure, export/download, latest/read precedence, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_EXPLICIT_OPERATOR_SELECTED_FRONTIER_WITH_SCOPE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

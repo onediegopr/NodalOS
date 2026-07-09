@@ -643,6 +643,38 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE_AFTER_APPROVAL_PACKET_LINE_CLOSE`
 
+Operator-selected frontier decision after Approval Packet close:
+
+`PAUSE_OPERATOR_SELECTED_FRONTIER_REQUIRED`
+
+Resulting state:
+
+`MAIN_ROADMAP_PAUSED_CLEAN_WAITING_FOR_OPERATOR_SELECTED_FRONTIER`
+
+Operator frontier selected:
+
+- None. The default operator choice for this run is `PAUSE_UNTIL_NEW_EXPLICIT_FRONTIER`.
+
+Blocked candidate families pending explicit GO:
+
+| Candidate family | Classification | Required operator signal |
+| --- | --- | --- |
+| Product Ledger public/product exposure | `RUNTIME_PRODUCT_BLOCKED` | Explicit GO for public/product exposure or product authority prep. |
+| CI workflow enforcement prep | `CI_ENFORCEMENT_BLOCKED` | Explicit GO for workflow/CI enforcement planning. |
+| Browser/ChromeLab/Recipes live prep | `RUNTIME_PRODUCT_BLOCKED` | Explicit GO for live automation authority prep. |
+| Source Refactor broad simplification | `UNSAFE_BROAD` | Explicit GO plus risk acceptance for broad source simplification. |
+| Release/commercial readiness | `RUNTIME_PRODUCT_BLOCKED` | Explicit GO for release/commercial readiness work. |
+| Other operator-selected frontier | `NEEDS_OPERATOR_AUTHORIZATION` | Exact frontier name, allowed scope, blocked scope and stop condition. |
+
+Decision:
+
+- Pause cleanly; do not reopen exhausted local/read-only/test-only lines.
+- Next work requires a concrete operator-selected frontier and any needed GO for runtime/product, CI/workflows, broad refactor or release/commercial scope.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_EXPLICIT_OPERATOR_SELECTED_FRONTIER_WITH_SCOPE`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.
