@@ -119,6 +119,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 local runner reliability remains a validation-speed risk; P4 docs-only snippets already exist and are less useful than selecting one helper target.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_TEST_INFRA_RUNNER_MICRO_TARGET`.
 
+## AUTHORIZE_NODAL_OS_TEST_INFRA_FOCAL_TEST_COMMAND_HELPER_SCRIPT_MICRO_TARGET
+
+- Decision: `GO_WITH_FINDINGS_TEST_INFRA_FOCAL_HELPER_SCRIPT_READY`.
+- Input HEAD: `ee90a76633db2612fab5a6b156d6a59c7910444f`.
+- Helper implemented: `tools/scripts/run-focal-dotnet.ps1`.
+- Helper scope: local/operator-run focal dotnet build/test commands with explicit timeout, optional max-one retry, narrow process-tree cleanup and build-server shutdown.
+- Docs changed: runner safe commands guidance, simplification backlog, decision-log and handoff.
+- Boundary: no `src/`, tests, project/solution files, CI/workflows, CI enforcement, runtime/product, public/product, Product Ledger consolidation, source-refactor churn, DB/cloud/network/provider, KMS/WORM or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 broad execution filters remain unsafe local gates; P4 helper is intentionally narrow and local-only.
+- Stop condition: `STOP_AFTER_TEST_INFRA_FOCAL_HELPER_SCRIPT_READY_NO_CI_ENFORCEMENT`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

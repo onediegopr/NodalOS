@@ -47,6 +47,14 @@ Current authority:
 
 ## Recommended Safe Commands
 
+Local focal helper:
+
+```powershell
+pwsh -File tools/scripts/run-focal-dotnet.ps1 -Mode test -Project tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj -Filter "FullyQualifiedName~ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests" -TimeoutSeconds 120
+```
+
+The helper is local/operator-run only. It does not enable CI enforcement, does not make broad filters safe as gates and still requires focal filters for `test` mode.
+
 D7 focused:
 
 ```powershell

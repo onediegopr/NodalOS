@@ -210,6 +210,10 @@ Test-infra runner micro-target selection: `TEST_INFRA_RUNNER_FOCAL_HELPER_MICRO_
 
 Selected next block: `NODAL_OS_TEST_INFRA_FOCAL_TEST_COMMAND_HELPER_SCRIPT_MICRO_TARGET`. Target: one local helper for focal `dotnet build/test` commands with explicit timeout, controlled retry option and narrow cleanup/build-server handling. No `src/`, tests, CI/workflows, runtime/product or release/commercial authority changed.
 
+Test-infra focal helper script: `TEST_INFRA_FOCAL_HELPER_SCRIPT_READY_NO_CI_ENFORCEMENT`.
+
+Implemented `tools/scripts/run-focal-dotnet.ps1` for local/operator-run focal dotnet build/test commands with timeout, optional max-one retry, narrow process-tree cleanup and build-server shutdown. No `src/`, tests, CI/workflows, runtime/product or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

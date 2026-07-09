@@ -1375,3 +1375,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 runner reliability remains a validation-speed risk; P4 docs-only snippet would help less than a small local focal helper.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_TEST_INFRA_RUNNER_MICRO_TARGET`.
 - Authorization note: MR23 does not implement the helper and does not authorize `src/`, tests, CI/workflows, runtime/product or release/commercial.
+
+## BLOCK MR24 - Test Infra Focal Test Command Helper Script Micro Target
+
+- Objective: implement one local/operator-run helper for focal dotnet build/test commands.
+- Status: completed as local tool/docs-minimal.
+- Decision: `GO_WITH_FINDINGS_TEST_INFRA_FOCAL_HELPER_SCRIPT_READY`.
+- Resulting state: `TEST_INFRA_FOCAL_HELPER_SCRIPT_READY_NO_CI_ENFORCEMENT`.
+- Helper: `tools/scripts/run-focal-dotnet.ps1`.
+- Docs changed: runner safe command guidance, simplification backlog, decision-log and handoff.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: test-infra runner reliability `78%`; broad local execution filter confidence `35%`; focal filter confidence `80%`; global roadmap readiness `93%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad execution filters remain unsafe local gates; P4 helper is intentionally local and narrow.
+- Stop condition: `STOP_AFTER_TEST_INFRA_FOCAL_HELPER_SCRIPT_READY_NO_CI_ENFORCEMENT`.
+- Authorization note: MR24 does not authorize `src/`, tests, CI/workflows, CI enforcement, runtime/product, broad suite gates, DB/cloud/KMS/WORM or release/commercial.
