@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OneBrain.Core.Approval;
 
 namespace OneBrain.Safety.Tests;
 
@@ -122,6 +123,22 @@ public sealed class NodalOsCommonBoundaryMappingDesignOnlyAdapterTests
         }
 
         AssertBlockedAndNonAuthoritative(result);
+    }
+
+    [TestMethod]
+    [TestCategory("NoDoubleTruth")]
+    public void CandidateClaimMappingAlignsWithCanonicalClosedStates()
+    {
+        var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
+
+        foreach (var capability in Enum.GetValues<NodalOsCommonBoundaryCapability>())
+        {
+            var claim = NodalOsCommonBoundaryMappingDesignOnlyAdapter.ToCandidateClaim(capability);
+
+            Assert.IsTrue(NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates.ContainsKey(claim), capability.ToString());
+            Assert.IsTrue(candidate.IsFailClosed(claim), capability.ToString());
+            Assert.IsFalse(candidate.CanOverrideExistingHardBlock(claim), capability.ToString());
+        }
     }
 
     [TestMethod]

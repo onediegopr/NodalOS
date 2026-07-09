@@ -427,22 +427,22 @@ P4:
 
 Selected frontier:
 
-`SOURCE_REFACTOR_SUBSTANTIVE_REDUCTION_MACRO`
+`COMMON_CONTRACT_FOLLOW_UP_MACRO`
 
 Resulting state:
 
-`SOURCE_REFACTOR_REENTRY_COMMON_BOUNDARY_REDUCTION_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
+`COMMON_CONTRACT_CAPABILITY_MAPPING_HELPER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
 
 Next exact block:
 
-`AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_REENTRY_COMMON_BOUNDARY_REDUCTION`
+`AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_COMMON_CONTRACT_CAPABILITY_MAPPING_HELPER`
 
 Execution contract:
 
 - select one substantive macro frontier with 2-4 real bounded targets;
 - avoid packet-review/read-only as the main objective unless it is a real blocker;
 - prefer a new Product Ledger, Source Refactor, Validation, Static Guard or Common Contract macro only if it has 2+ non-repetitive real targets;
-- skip further D7/D10/Reentry canonical-state work unless a new semantic bug appears;
+- skip further Common Boundary mapping-helper work unless a new semantic drift or safety bug appears;
 - keep validation candidate commands helper-shaped, focal, repo-contained and disk-space bounded;
 - close or return to roadmap if the next step requires workflows, CI enforcement, broad filters as gates, suite-wide gates, runtime/product, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
 

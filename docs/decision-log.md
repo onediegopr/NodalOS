@@ -3232,3 +3232,16 @@
 - Current posture: source-refactor readiness `80%`; Common Contract no-double-truth confidence `95%`; global roadmap readiness `97%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad source simplification and broad Common Contract extraction remain blocked; P4 remaining source bloat outside D7/D10 requires a new substantive target before more refactor work.
 - Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+## AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_REENTRY_COMMON_BOUNDARY_REDUCTION
+
+- Decision: `GO_WITH_FINDINGS_NEXT_MACRO_FRONTIER_READY`.
+- Baseline: `5f82b5e5931f30c896f4b804d7b773d5e632e50c`.
+- Resulting state: `COMMON_CONTRACT_CAPABILITY_MAPPING_HELPER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `COMMON_CONTRACT_FOLLOW_UP_MACRO`.
+- Scope: test-only/focal Common Contract consolidation plus docs-minimal closeout. No `src/`, no broad common-contract extraction, no Product Ledger consolidation, no runtime/product, no public/product, no latest pointer/read precedence activation, no product authority, no DB/cloud/network/provider, no KMS/WORM, no `.github/workflows`, no CI enforcement and no release/commercial changes.
+- Targets executed: centralized `NodalOsCommonBoundaryCapability` to candidate-claim mapping in `NodalOsCommonBoundaryMappingDesignOnlyAdapter.ToCandidateClaim(...)`; removed duplicate local `ToCandidateClaim` switches from D4/D5/D7/D8/D10/D11 Safety guards; added `CandidateClaimMappingAlignsWithCanonicalClosedStates`.
+- Validated: Safety test project build PASS; `NodalOsCommonBoundaryMappingDesignOnlyAdapterTests` PASS `15/15`; migrated Common Boundary focal classes passed during the window before docs closeout.
+- Current posture: Common Contract no-double-truth confidence `96%`; source-refactor readiness `80%`; global roadmap readiness `97%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction and broad source simplification remain blocked; P4 remaining bloat outside Common Boundary mapping requires a new semantic target.
+- Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.

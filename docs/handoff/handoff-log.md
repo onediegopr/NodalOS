@@ -294,6 +294,10 @@ Source Refactor Reentry common-boundary reduction macro: `SOURCE_REFACTOR_REENTR
 
 Executed a bounded D7/Reentry reduction: `ReentryDecisionPacketReadOnly` now consumes `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates`, rejects a null common-boundary candidate fail-closed, and no longer carries a duplicate local `ExpectedFailClosedClaims` table. D7/D8 focal tests now guard the canonical-state dependency and post-replacement evidence. No broad source refactor, broad common-contract extraction, Product Ledger consolidation, runtime/product, workflows, CI enforcement or release/commercial authority changed.
 
+Common Contract capability mapping helper macro: `COMMON_CONTRACT_CAPABILITY_MAPPING_HELPER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed a bounded test-only Common Contract consolidation: `NodalOsCommonBoundaryMappingDesignOnlyAdapter.ToCandidateClaim(...)` is now the single Safety-test helper for capability-to-candidate-claim mapping, replacing duplicate local `ToCandidateClaim` switches in D4/D5/D7/D8/D10/D11 guards. `CandidateClaimMappingAlignsWithCanonicalClosedStates` proves the helper stays aligned with `ExpectedClosedStates` and remains fail-closed/no-authority. No `src/`, broad common-contract extraction, Product Ledger consolidation, runtime/product, workflows, CI enforcement or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

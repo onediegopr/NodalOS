@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OneBrain.Core.Approval;
+using static OneBrain.Safety.Tests.NodalOsCommonBoundaryMappingDesignOnlyAdapter;
 
 namespace OneBrain.Safety.Tests;
 
@@ -375,26 +376,6 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateIsolationHardeningTests
             || normalized.Contains("/obj/", StringComparison.Ordinal)
             || normalized.Contains("/TestResults/", StringComparison.Ordinal);
     }
-
-    private static NodalOsCommonBoundaryClaimsCandidate.Claim ToCandidateClaim(
-        NodalOsCommonBoundaryCapability capability) =>
-        capability switch
-        {
-            NodalOsCommonBoundaryCapability.PublicProductExposure => NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked,
-            NodalOsCommonBoundaryCapability.ProductionRoute => NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked,
-            NodalOsCommonBoundaryCapability.LatestPointer => NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled,
-            NodalOsCommonBoundaryCapability.ReadPrecedence => NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled,
-            NodalOsCommonBoundaryCapability.ProductAuthority => NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked,
-            NodalOsCommonBoundaryCapability.CommandExecution => NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied,
-            NodalOsCommonBoundaryCapability.ShellSubprocess => NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied,
-            NodalOsCommonBoundaryCapability.ProviderCloudNetwork => NodalOsCommonBoundaryClaimsCandidate.Claim.ProviderCloudNetworkNotClaimed,
-            NodalOsCommonBoundaryCapability.DatabaseMigration => NodalOsCommonBoundaryClaimsCandidate.Claim.DatabaseMigrationNotClaimed,
-            NodalOsCommonBoundaryCapability.KmsWormExternalTrust => NodalOsCommonBoundaryClaimsCandidate.Claim.ExternalTrustNotClaimed,
-            NodalOsCommonBoundaryCapability.ReleaseCommercialReadiness => NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo,
-            NodalOsCommonBoundaryCapability.PilotRunCoupling => NodalOsCommonBoundaryClaimsCandidate.Claim.RuntimeProductEnablementNoGo,
-            NodalOsCommonBoundaryCapability.CiEnforcement => NodalOsCommonBoundaryClaimsCandidate.Claim.CiEnforcementNotClaimed,
-            _ => (NodalOsCommonBoundaryClaimsCandidate.Claim)999
-        };
 
     private static readonly string[] ContentExtensions =
     [
