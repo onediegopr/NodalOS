@@ -274,6 +274,10 @@ Product Ledger bounded Stage 2: `PRODUCT_LEDGER_ACTION_PROJECTION_CONSOLIDATED_N
 
 Implemented one bounded local/dev consolidation: canonical action previews now project through `ProductLedgerLocalDevActionProjection.ToCanonicalPreviews(...)`, guarded by `LocalDevRoutePreview_RenderableActionsProjectToCanonicalPreviewsWithoutCreatingActionAuthority`. The renderable action source remains the owner; canonical previews are still disabled/read-only and no runtime/product, latest/read precedence, product authority, writer/runtime, CI/workflows or release/commercial authority changed.
 
+Product Ledger consolidation line closed after Stage 2: `PRODUCT_LEDGER_CONSOLIDATION_LINE_CLOSED_AFTER_STAGE_2_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+Closed without selecting a Stage 3: Stage 1 already consolidated local/dev snapshot collection sealing and Stage 2 already consolidated action projection. The remaining allowed Product Ledger candidates are repetitive guards/wrappers/renames or broad model consolidation, so the next recommended main-roadmap frontier is `CI_VALIDATION_READINESS_NON_ENFORCING_PLAN`. No implementation, `src/`, tests, CI enforcement, runtime/product, latest/read precedence, product authority, writer/runtime or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
