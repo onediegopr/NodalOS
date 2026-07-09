@@ -728,6 +728,36 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_CLOSEOUT_AND_RETURN_TO_MAIN_ROADMAP`
 
+Product Ledger local/dev product surface closeout:
+
+`GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_CLOSEOUT_READY`
+
+Resulting state:
+
+`PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_LINE_CLOSED_RETURNED_TO_MAIN_ROADMAP_NO_PRODUCTION_AUTHORITY`
+
+Closeout confirmation:
+
+- `product-ledger-local-dev-product-surface-prep` panel exists and remains local/dev review evidence.
+- Local/dev product surface readiness is recorded at `85%`.
+- Blocker metadata includes category and required operator signal.
+- Route/operator consistency acceptance is recorded.
+- Release/commercial, latest/read-precedence, real export/download and command-execution blockers remain visible.
+- No production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, command/approval execution, irreversible write, service registration, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority was opened.
+
+Disk-space note:
+
+- C: free space remains below 60 GB and is tracked as an operational P3. Avoid broad builds, suite-wide runs and generated artifacts unless a future block explicitly needs them.
+
+Current main-roadmap return:
+
+- The Product Ledger local/dev product surface line is closed for now.
+- Future Product Ledger work must be a new operator-selected frontier, not continuation by inertia.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_NEXT_OPERATOR_SELECTED_PRODUCTIVE_FRONTIER_AFTER_PRODUCT_LEDGER_LOCAL_DEV_CLOSEOUT`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

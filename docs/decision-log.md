@@ -3460,3 +3460,15 @@
 - Current posture: global roadmap readiness `98%`; Product Ledger local/dev product surface readiness `85%`; Product Ledger model consolidation `77%`; runtime/product local-dev readiness `36%`; runtime/product production readiness `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 production Product Ledger exposure, product authority and real export/release remain blocked; P4 line should close unless Diego selects a new substantive local/dev frontier.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_CLOSEOUT_AND_RETURN_TO_MAIN_ROADMAP`.
+
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_CLOSEOUT_AND_RETURN_TO_MAIN_ROADMAP
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_CLOSEOUT_READY`.
+- Baseline: `c859572e7c2474948b0d87ce50b87391f5096b81`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_LINE_CLOSED_RETURNED_TO_MAIN_ROADMAP_NO_PRODUCTION_AUTHORITY`.
+- Scope: docs-only closeout and roadmap return. No `src/`, tests, production runtime, public/product promotion, Product Ledger exposure outside local/dev, latest pointer authority, read precedence authority, product authority, command execution, approval execution, irreversible write, service registration, real export/download, DB/cloud/network/provider, KMS/WORM, customer/user data, CI/workflows or release/commercial.
+- Closeout confirmation: the local/dev product-surface prep panel, readiness status, blocker metadata category/required-operator-signal, route/operator consistency acceptance and blockers for release, latest/read-precedence, real export/download and command execution are all recorded.
+- Disk-space note: C: free space is above the 55 GB stop threshold but below 60 GB; continue treating disk as P3 operational risk.
+- Current posture: global roadmap readiness `98%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; runtime/product local-dev readiness `36%`; runtime/product production readiness `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk space remains constrained and production Product Ledger exposure/product authority remain blocked; P4 more local/dev surface work should require a new operator-selected frontier.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_NEXT_OPERATOR_SELECTED_PRODUCTIVE_FRONTIER_AFTER_PRODUCT_LEDGER_LOCAL_DEV_CLOSEOUT`.
