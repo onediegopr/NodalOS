@@ -3373,3 +3373,16 @@
 - Current posture: global roadmap readiness `97%`; Workspace Context authority boundary confidence `88%`; durable audit trail local/test boundary confidence `85%`; durable evidence/review-link boundary confidence `87%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; local focal validation confidence `88%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 next meaningful work requires an operator-selected substantive frontier; P4 more local hardening would be churn.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE`.
+
+## AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE
+
+- Decision: `GO_WITH_FINDINGS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_READY`.
+- Baseline: `a0d83b5ba68dd541e9ebe65e4126a8a05e84d67c`.
+- Resulting state: `APPROVAL_PACKET_READ_ONLY_BOUNDARY_PREP_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Operator-selected candidate: `APPROVAL_PACKET_READ_ONLY_BOUNDARY_PREP`.
+- Classification: `REAL_SUBSTANTIVE_BOUNDED_TARGET`; the target stayed test-only/read-only and added explicit separation between the Approval Packet surface and selected capability implementation prep.
+- Scope: one Safety test guard plus docs-minimal closeout. No `src/`, approval execution, mutation, product action, service registration, runtime/product, export/download, latest pointer/read precedence, product authority, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial changes.
+- Validation: focused `ApprovalHumanReviewReadOnlyFoundationSafetyTests` PASS `16/16`; initial build attempt hit a pre-existing file lock and passed after `dotnet build-server shutdown` and stopping stale `dotnet`.
+- Current posture: global roadmap readiness `97%`; Approval Packet read-only boundary confidence `86%`; Workspace Context authority boundary confidence `88%`; durable audit trail local/test boundary confidence `85%`; durable evidence/review-link boundary confidence `87%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; local focal validation confidence `89%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Approval Packet execution/mutation/export/product action remains blocked pending explicit GO; P4 more local phrase hardening would be churn.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_APPROVAL_PACKET_READ_ONLY_BOUNDARY_FOLLOW_UP_OR_CLOSE_LINE`.

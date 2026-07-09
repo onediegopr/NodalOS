@@ -14,6 +14,7 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     private const string ApprovalPacketSurfacePath = "src/OneBrain.Core/Approval/ApprovalPacketReadOnlySurface.cs";
     private const string HumanReviewPacketExportPreviewPath = "src/OneBrain.Core/Approval/HumanReviewPacketExportReadOnlyPreview.cs";
     private const string ApprovalExecutionDesignOnlyProtectedPath = "src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs";
+    private const string SelectedCapabilityPrepPath = "src/OneBrain.Core/Approval/SelectedCapabilityImplementationCandidatePrepReadOnly.cs";
 
     [TestMethod]
     public void FoundationSource_HasNoFilesystemDatabaseProviderVectorRuntimeOrServiceImplementation()
@@ -251,6 +252,39 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
         Assert.IsFalse(proof.ApprovalStateMutationAttempted);
         Assert.IsFalse(proof.ProductActionExposed);
         Assert.IsFalse(proof.ProductServiceRegistered);
+    }
+
+    [TestMethod]
+    public void ApprovalPacketSurface_RemainsSeparateFromImplementationPrepAndCountsDoNotCreateAuthority()
+    {
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+        var surfaceSource = ReadRepoText(ApprovalPacketSurfacePath);
+        var prepSource = ReadRepoText(SelectedCapabilityPrepPath);
+
+        Assert.IsTrue(surface.ReadOnly);
+        Assert.IsTrue(surface.Mode.Contains("READ_ONLY", StringComparison.Ordinal));
+        Assert.IsTrue(surface.Mode.Contains("NO_APPROVAL_EXECUTION", StringComparison.Ordinal));
+        Assert.IsTrue(surface.Mode.Contains("NO_ACTIONS", StringComparison.Ordinal));
+        Assert.IsTrue(surface.Mode.Contains("NO_EXPORT", StringComparison.Ordinal));
+        Assert.AreEqual("PHASE_E_HUMAN_REVIEW_PACKET_EXPORT_PREVIEW_READ_ONLY", surface.NextRecommendedBlock);
+        Assert.AreEqual(0, surface.ProductActionsCount);
+        Assert.AreEqual(0, surface.StateMutationsCount);
+        Assert.AreEqual(0, surface.ExportActionsCount);
+        Assert.IsFalse(surface.HasApprovalExecution);
+        Assert.IsFalse(surface.HasApprovalStateMutation);
+        Assert.IsFalse(surface.HasProductActions);
+        Assert.IsFalse(surface.HasExportActions);
+        Assert.IsTrue(surface.DisabledNotices.Any(notice => notice.Contains("Approval execution disabled", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.DisabledNotices.Any(notice => notice.Contains("Export actions disabled", StringComparison.Ordinal)));
+        Assert.IsTrue(surface.ReadOnlySummary.Contains("Product actions: 0.", StringComparison.Ordinal));
+        Assert.IsTrue(surface.ReadOnlySummary.Contains("State mutations: 0.", StringComparison.Ordinal));
+        Assert.IsTrue(surface.ReadOnlySummary.Contains("Export actions: 0.", StringComparison.Ordinal));
+
+        Assert.IsFalse(surfaceSource.Contains(nameof(SelectedCapabilityImplementationCandidatePrepReadOnlyPresenter), StringComparison.Ordinal));
+        Assert.IsFalse(surfaceSource.Contains("DURABLE_AUDIT_TRAIL_APPEND_ONLY_MINIMAL", StringComparison.Ordinal));
+        Assert.IsFalse(surfaceSource.Contains("IMPLEMENTATION_CANDIDATE_PREPARED", StringComparison.Ordinal));
+        Assert.IsFalse(surfaceSource.Contains("BLOCKED_PENDING_USER_GO_FOR_IMPLEMENTATION", StringComparison.Ordinal));
+        Assert.IsTrue(prepSource.Contains("BLOCKED_PENDING_USER_GO_FOR_IMPLEMENTATION", StringComparison.Ordinal));
     }
 
     [TestMethod]

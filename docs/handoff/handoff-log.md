@@ -338,6 +338,10 @@ Main roadmap rebaseline after Workspace Context close: `MAIN_ROADMAP_REBASELINE_
 
 Closed with NO-GO after classifying the major roadmap families. Common Boundary/Common Contract, Product Ledger local/dev, Durable audit/evidence, Workspace Context, Reentry/Approval authority and Static Guard discovery are exhausted for now; Source Refactor is unsafe broad without a new bounded reduction; Approval Packet read-only needs operator authorization; Validation reliability is too small without a concrete bug; Browser/ChromeLab/Recipes live automation, CI/workflows and release/commercial remain blocked. No `src/`, tests, runtime/product, workflows, CI enforcement, product writer, latest/read precedence, trusted context activation, durable evidence persistence, product memory activation, source-of-truth activation, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE`.
 
+Approval Packet read-only boundary prep: `APPROVAL_PACKET_READ_ONLY_BOUNDARY_PREP_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed one focal Safety guard after operator selected Approval Packet read-only as the next substantive frontier. The guard proves the read-only surface remains separate from selected capability implementation prep, keeps product-action/state-mutation/export counts at zero, keeps approval execution/export disabled, and does not convert zero-count summaries into implementation authority. No `src/`, approval execution, mutation, product action, service registration, runtime/product, export/download, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_APPROVAL_PACKET_READ_ONLY_BOUNDARY_FOLLOW_UP_OR_CLOSE_LINE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

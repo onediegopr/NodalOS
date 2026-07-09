@@ -561,6 +561,26 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE`
 
+Operator-selected Approval Packet frontier:
+
+`GO_WITH_FINDINGS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_READY`
+
+Resulting state:
+
+`APPROVAL_PACKET_READ_ONLY_BOUNDARY_PREP_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
+
+Frontier chosen:
+
+`APPROVAL_PACKET_READ_ONLY_BOUNDARY_PREP`
+
+Target executed:
+
+- Added a focal Safety guard proving the Approval Packet read-only surface remains separated from selected capability implementation prep, preserves zero product-action/state-mutation/export counts, keeps approval execution and export disabled, and does not treat read-only count summaries as implementation authority.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_APPROVAL_PACKET_READ_ONLY_BOUNDARY_FOLLOW_UP_OR_CLOSE_LINE`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.
