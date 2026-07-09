@@ -183,6 +183,12 @@ public sealed class ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests
     }
 
     [TestMethod]
+    public void ApprovalExecutionDesignOnlyProtectedRejectsNullCommonBoundaryCandidateFailClosed()
+    {
+        Assert.IsFalse(CommonBoundaryClaimsRemainFailClosed(null));
+    }
+
+    [TestMethod]
     [TestCategory("StaticGuard")]
     public void D10DoesNotBroadenCandidateRuntimeReferences()
     {
@@ -271,7 +277,7 @@ public sealed class ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests
         Assert.IsFalse(candidate.CanOverrideExistingHardBlock(claim));
     }
 
-    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate candidate)
+    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate? candidate)
     {
         var method = typeof(ApprovalExecutionAntiCapabilityProof).GetMethod(
             "CommonBoundaryClaimsRemainFailClosed",

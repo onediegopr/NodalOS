@@ -3085,3 +3085,16 @@
 - Current posture: Common Contract candidate readiness `75%`; Common Contract fail-closed confidence `91%`; global roadmap readiness `95%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 source bloat is unchanged.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+## AUTHORIZE_NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_SELECTION_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_READY`.
+- Baseline: `560af1cbc47825594e72b8773f3e69ff30045596`.
+- Resulting state: `COMMON_CONTRACT_NULL_CANDIDATE_FAIL_CLOSED_READY`.
+- Scope: source-minimal/test-only focal Common Contract guard. Touched exactly one source file and one focal test file plus docs-minimal logs. No broad common-contract implementation, moving contracts, shared abstraction, Product Ledger model consolidation, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows, CI enforcement or release/commercial changes.
+- Front chosen: Common Contract; Source Refactor had no non-cosmetic target in the recent D7/D10/D13 lane, and the D10/Common Boundary proof still had a concrete corrupt-candidate null-hole.
+- Micro-target implemented: `CommonBoundaryClaimsRemainFailClosed` now returns `false` for a null candidate instead of dereferencing it.
+- Test added: `ApprovalExecutionDesignOnlyProtectedRejectsNullCommonBoundaryCandidateFailClosed` in `tests/OneBrain.Safety.Tests/ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests.cs`.
+- Current posture: Common Contract candidate readiness `76%`; Common Contract fail-closed confidence `92%`; global roadmap readiness `95%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad/class-level local test filters can still hang and must be avoided as gates without the focal helper; P4 source bloat is unchanged.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.

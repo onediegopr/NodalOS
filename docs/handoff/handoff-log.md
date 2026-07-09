@@ -250,6 +250,10 @@ Main roadmap next safe workstream: `COMMON_CONTRACT_NULL_CLAIMS_FAIL_CLOSED_READ
 
 Implemented one Common Contract bounded guard: `NodalOsCommonBoundaryClaimsCandidate.StateFor` now treats a null claims map as `Denied`, with `CandidateRejectsNullClaimsMapFailClosed` proving corrupt candidate state remains fail-closed and non-authoritative. No broad common-contract implementation, contract movement, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
 
+Main roadmap next safe workstream: `COMMON_CONTRACT_NULL_CANDIDATE_FAIL_CLOSED_READY`.
+
+Implemented one Common Contract bounded guard: `ApprovalExecutionAntiCapabilityProof.CommonBoundaryClaimsRemainFailClosed` now rejects a null common-boundary candidate as fail-closed, with `ApprovalExecutionDesignOnlyProtectedRejectsNullCommonBoundaryCandidateFailClosed` proving corrupt D10/Common Boundary proof state does not dereference into an exception. No broad common-contract implementation, contract movement, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

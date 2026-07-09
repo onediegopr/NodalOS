@@ -142,8 +142,9 @@ public sealed record ApprovalExecutionAntiCapabilityProof(
     private static bool CommonBoundaryClaimsRemainFailClosed() =>
         CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked());
 
-    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate candidate) =>
-        candidate.ParallelOnly
+    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate? candidate) =>
+        candidate is not null
+        && candidate.ParallelOnly
         && candidate.NonAuthoritative
         && !candidate.ExistingHardBlockAuthorityReplaced
         && !candidate.AllowsRuntimeProductOrAuthority()
