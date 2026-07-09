@@ -220,6 +220,21 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateTests
     }
 
     [TestMethod]
+    [TestCategory("NoDoubleTruth")]
+    [TestCategory("NoAuthority")]
+    public void CandidateRejectsNullClaimsMapFailClosed()
+    {
+        var corrupt = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked() with { Claims = null! };
+
+        Assert.AreEqual(
+            NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
+            corrupt.StateFor(NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked));
+        Assert.IsTrue(corrupt.IsFailClosed(NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked));
+        Assert.IsFalse(corrupt.CanOverrideExistingHardBlock(NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked));
+        Assert.IsFalse(corrupt.AllowsRuntimeProductOrAuthority());
+    }
+
+    [TestMethod]
     [TestCategory("StaticGuard")]
     public void SourceCandidateIsNotReferencedByRoutesOrRuntimeRegistration()
     {

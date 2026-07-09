@@ -1517,3 +1517,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 this hardens collection immutability but does not reduce source bloat.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: MR32 does not authorize broad Product Ledger model consolidation, runtime/product, public/product, Production route, latest/read precedence, product authority, writer/runtime real, CI/workflows, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR33 - Main Roadmap Next Safe Workstream
+
+- Objective: choose and execute the next safe main-roadmap workstream with real value and no runtime/product authority.
+- Status: completed as Common Contract source-minimal/test-only focal guard plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_READY`.
+- Resulting state: `COMMON_CONTRACT_NULL_CLAIMS_FAIL_CLOSED_READY`.
+- Front chosen: Common Contract, because Source Refactor had no non-cosmetic target and the common boundary candidate still had a concrete corrupt-input null-hole.
+- Micro-target: `NodalOsCommonBoundaryClaimsCandidate.StateFor` now treats a null claims map as `Denied` instead of throwing.
+- Source changed: `src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs`.
+- Guard added: `CandidateRejectsNullClaimsMapFailClosed` in `NodalOsCommonBoundaryClaimsCandidateTests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Common Contract candidate readiness `75%`; Common Contract fail-closed confidence `91%`; global roadmap readiness `95%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 source bloat is unchanged.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: MR33 does not authorize broad common-contract implementation, moving contracts, shared abstraction, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM or release/commercial.

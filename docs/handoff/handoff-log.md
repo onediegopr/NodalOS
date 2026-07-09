@@ -246,6 +246,10 @@ Main roadmap next safe workstream: `PRODUCT_LEDGER_RENDERABLE_SNAPSHOT_COLLECTIO
 
 Implemented one Product Ledger bounded guard: renderable operator-surface snapshot collections now use read-only wrappers, with `LocalDevRoutePreview_RenderableSnapshotCollectionsAreReadOnlyAndCannotDrift` proving snapshot blockers, notices, sections, actions and warnings cannot drift through post-render mutation. No broad Product Ledger model consolidation, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
 
+Main roadmap next safe workstream: `COMMON_CONTRACT_NULL_CLAIMS_FAIL_CLOSED_READY`.
+
+Implemented one Common Contract bounded guard: `NodalOsCommonBoundaryClaimsCandidate.StateFor` now treats a null claims map as `Denied`, with `CandidateRejectsNullClaimsMapFailClosed` proving corrupt candidate state remains fail-closed and non-authoritative. No broad common-contract implementation, contract movement, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

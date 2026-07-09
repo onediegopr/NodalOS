@@ -3072,3 +3072,16 @@
 - Current posture: Product Ledger model consolidation readiness `69%`; renderable/canonical operator-surface no-double-truth confidence `96%`; global roadmap readiness `95%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 source bloat is unchanged.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+## AUTHORIZE_NODAL_OS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_SELECTION_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_READY`.
+- Baseline: `401b32c5eb909a9bf995c955bfcce3de92cc1df9`.
+- Resulting state: `COMMON_CONTRACT_NULL_CLAIMS_FAIL_CLOSED_READY`.
+- Scope: source-minimal/test-only focal Common Contract guard. Touched exactly one source file and one focal test file plus docs-minimal logs. No broad common-contract implementation, moving contracts, shared abstraction, Product Ledger model consolidation, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows, CI enforcement or release/commercial changes.
+- Front chosen: Common Contract; Source Refactor had no non-cosmetic target in the recent D7/D10/D13 lane, and the common boundary candidate still had a concrete corrupt-input null-hole.
+- Micro-target implemented: `NodalOsCommonBoundaryClaimsCandidate.StateFor` now fails closed to `Denied` when the claims map is null.
+- Test added: `CandidateRejectsNullClaimsMapFailClosed` in `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateTests.cs`.
+- Current posture: Common Contract candidate readiness `75%`; Common Contract fail-closed confidence `91%`; global roadmap readiness `95%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 source bloat is unchanged.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.

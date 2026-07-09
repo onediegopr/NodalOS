@@ -77,7 +77,7 @@ public sealed record NodalOsCommonBoundaryClaimsCandidate(
             ReleaseCommercialReady: false);
 
     public ClaimState StateFor(Claim claim) =>
-        IsSupported(claim) && Claims.TryGetValue(claim, out var state)
+        IsSupported(claim) && Claims is not null && Claims.TryGetValue(claim, out var state)
             ? state
             : ClaimState.Denied;
 
