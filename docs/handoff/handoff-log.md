@@ -238,6 +238,10 @@ Main roadmap next safe workstream: `PRODUCT_LEDGER_OPERATOR_SURFACE_COLLECTIONS_
 
 Implemented one Product Ledger bounded guard: canonical operator-surface collections now use read-only wrappers, with `LocalDevRoutePreview_CanonicalSurfaceCollectionsAreReadOnlyAndCannotDrift` proving statuses, evidence refs, blocked frontiers, action previews and safe next steps cannot drift through post-render mutation. No broad Product Ledger model consolidation, CI/workflows, runtime/product, latest/read precedence, product authority or release/commercial authority changed.
 
+Main roadmap next safe workstream: `STATIC_GUARD_DEFERRED_FORBIDDEN_PHRASE_RELEASE_METADATA_READY`.
+
+Implemented one Static Guard/Safety Metadata hardening: the deferred forbidden-phrase guard is now discoverable under `ReleaseCommercialBlock`, and the metadata consistency test asserts its no-authority/no-runtime/static-guard/release-block categories. No `src/`, CI/workflows, runtime/product, Product Ledger model consolidation, latest/read precedence, product authority or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

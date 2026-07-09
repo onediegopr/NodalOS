@@ -1484,3 +1484,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 docs were kept minimal.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: MR30 does not authorize broad Product Ledger model consolidation, runtime/product, public/product, Production route, latest/read precedence, product authority, writer/runtime real, CI/workflows, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR31 - Main Roadmap Next Safe Workstream
+
+- Objective: choose and execute the next safe main-roadmap workstream with real value and no runtime/product authority.
+- Status: completed as Static Guard/Safety Metadata test-only focal hardening plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_NEXT_SAFE_WORKSTREAM_READY`.
+- Resulting state: `STATIC_GUARD_DEFERRED_FORBIDDEN_PHRASE_RELEASE_METADATA_READY`.
+- Front chosen: Static Guard/Safety Metadata, because the deferred forbidden-phrase guard already covers external-review product-readiness approval wording but was not discoverable via `ReleaseCommercialBlock`.
+- Micro-target: add `ReleaseCommercialBlock` metadata to `StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist` and guard the method categories in the existing metadata consistency test.
+- Test changed: `tests/OneBrain.Safety.Tests/NodalOsStaticGuardCatalogTests.cs`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Static Guard Catalog readiness `96%`; forbidden phrase expansion readiness `87%`; deferred-family metadata confidence `83%`; global roadmap readiness `95%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Static Guard expansion remains false-positive prone; P4 this is metadata/discovery hardening only.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: MR31 does not authorize `src/`, CI/workflows, CI enforcement, runtime/product, public/product, Production route, latest/read precedence, product authority, Product Ledger model consolidation, broad common-contract implementation, DB/cloud/KMS/WORM or release/commercial.

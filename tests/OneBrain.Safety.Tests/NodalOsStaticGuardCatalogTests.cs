@@ -287,6 +287,17 @@ public sealed class NodalOsStaticGuardCatalogTests
         CollectionAssert.Contains(staticGuardMethodCategories, "PublicProductBlock");
         CollectionAssert.Contains(staticGuardMethodCategories, "ProductionRouteBlock");
         AssertDoesNotContainAuthorityOrCiLabels(staticGuardMethodCategories, nameof(StaticGuardCatalog_PublicProductAndProductionRouteAssertionsRemainHardFailing));
+
+        var deferredForbiddenPhraseMethodCategories = CategoriesFor(
+            typeof(NodalOsStaticGuardCatalogTests),
+            nameof(StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist));
+        CollectionAssert.Contains(deferredForbiddenPhraseMethodCategories, "NoAuthority");
+        CollectionAssert.Contains(deferredForbiddenPhraseMethodCategories, "NoRuntimeWiring");
+        CollectionAssert.Contains(deferredForbiddenPhraseMethodCategories, "ReleaseCommercialBlock");
+        CollectionAssert.Contains(deferredForbiddenPhraseMethodCategories, "StaticGuard");
+        AssertDoesNotContainAuthorityOrCiLabels(
+            deferredForbiddenPhraseMethodCategories,
+            nameof(StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist));
     }
 
     [TestMethod]
@@ -373,6 +384,7 @@ public sealed class NodalOsStaticGuardCatalogTests
     [TestCategory("RunClaimCoherence")]
     [TestCategory("NoAuthority")]
     [TestCategory("NoRuntimeWiring")]
+    [TestCategory("ReleaseCommercialBlock")]
     [TestCategory("StaticGuard")]
     public void StaticGuardCatalog_DeferredForbiddenPhraseFamiliesNarrowCorpusRespectsNegativeAllowlist()
     {
