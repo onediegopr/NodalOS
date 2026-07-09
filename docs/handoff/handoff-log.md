@@ -398,6 +398,10 @@ Local/dev runtime productive slice closeout: `LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE
 
 Closed the local/dev runtime productive-slice line after diagnostics preview, structured metadata, internal UI propagation and acceptance evidence. The disabled next-runtime-readiness preview remains non-executable with null command id, handler and callback. This closeout is docs-only; no `src/`, tests, production runtime, public/product promotion, live browser execution, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP`.
 
+ChromeLab local/dev operator surface prep: `CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP_VISIBLE_NO_LIVE_BROWSER_NO_PRODUCT_AUTHORITY`.
+
+Executed one bounded ChromeLab local/dev surface target. `ChromeLabLocalDevOperatorSurfacePresenter` now renders prep status, readiness `27%`, limits, blockers, required operator signal, safe next step and a disabled/non-executable action preview. The focal Safety test pack proves fail-closed unsafe requests, unavailable live/product capabilities and no source-level route/service/process/browser/network/file-write wiring in the new surface file. No Chrome/Browser/CDP execution, service registration, route registration, public/product promotion, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_FOLLOW_UP_OR_CLOSE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

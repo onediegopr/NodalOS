@@ -3570,3 +3570,16 @@
 - Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `43%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and ChromeLab live/product authority remains blocked; P4 next work must stay local/dev visible/testable.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP`.
+
+## AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP
+
+- Decision: `GO_WITH_FINDINGS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP_READY`.
+- Baseline: `c0f501af71b98a0e651169296024aa16c2ebf941`.
+- Resulting state: `CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP_VISIBLE_NO_LIVE_BROWSER_NO_PRODUCT_AUTHORITY`.
+- Target executed: added a ChromeLab local/dev operator prep surface with status, limits, blockers, required operator signal, safe next step and one disabled/non-executable action preview.
+- Behavior changed: local/dev ChromeLab readiness is now visible/testable as `27%` prep without live browser execution, Chrome launch, CDP connection, external automation, network provider, user/customer data, production runtime, public/product promotion, product authority, approval/command execution or release/commercial readiness.
+- Scope: bounded `src/OneBrain.ChromeLab.Bridge` + focal Safety tests + docs-minimal. No route registration, service registration, live browser connection, public/product behavior, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial.
+- Validation: ChromeLab bridge build PASS `0 warnings`; Safety build PASS with 32 pre-existing warnings; `ChromeLabLocalDevOperatorSurfaceTests` PASS `5/5`; no broad suite, no browser/Chrome execution.
+- Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `44%`; ChromeLab local/dev operator surface readiness `27%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 live browser/product authority remains blocked and disk remains operationally constrained; P4 follow-up should add acceptance evidence or close the ChromeLab prep line.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_FOLLOW_UP_OR_CLOSE`.
