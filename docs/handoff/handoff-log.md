@@ -202,6 +202,10 @@ Source-refactor next micro-target: `SOURCE_REFACTOR_NEXT_MICRO_TARGET_READY_NO_R
 
 Micro-target result: renamed D10 anti-capability proof terminology from `NoProviderCloud` to `NoProviderCloudNetwork` and guarded the proof property name in `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`. No runtime/product, Product Ledger model consolidation, broad common-contract, route, DI, command handler, CI or release/commercial authority changed.
 
+Source-refactor micro-lane closeout: `SOURCE_REFACTOR_MICRO_LANE_CLOSED_RETURNED_TO_MAIN_ROADMAP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+Closeout result: D13 follow-up cleanup, D7 fail-closed table, D7 equivalence audit, `ProviderCloudNetworkNotAuthorized` rename and `NoProviderCloudNetwork` proof rename are closed as bounded/no-runtime work. Next selected gate: `NODAL_OS_TEST_INFRA_RUNNER_FIX_DESIGN_OR_MICRO_TARGET_SELECTION`. No `src/`, tests, implementation, CI/workflows, runtime/product or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

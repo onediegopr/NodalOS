@@ -97,6 +97,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 source-refactor micro-lane should close unless a more substantive operator-selected target appears; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_SOURCE_REFACTOR_NEXT_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
 
+## AUTHORIZE_NODAL_OS_SOURCE_REFACTOR_MICRO_LANE_CLOSEOUT_RETURN_TO_MAIN_ROADMAP
+
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_MICRO_LANE_CLOSED_RETURN_TO_MAIN_ROADMAP_READY`.
+- Input HEAD: `9a28c6cc68c2e2565fb4ca73b9e3e32016bdd168`.
+- Closeout: D13 follow-up cleanup, D7 fail-closed table, D7 equivalence audit, `ProviderCloudNetworkNotAuthorized` rename and `NoProviderCloudNetwork` proof rename are closed as bounded/no-runtime micro-lane work.
+- Next selected gate: `NODAL_OS_TEST_INFRA_RUNNER_FIX_DESIGN_OR_MICRO_TARGET_SELECTION`.
+- Selection reason: runner/build/test filtering remains a P3 validation-speed risk; more source-refactor micro-renames would be churn without a substantive target.
+- Boundary: docs-only closeout; no `src/`, tests, implementation, CI/workflows, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 runner/test-infra reliability should be selected before accumulating more refactors; P4 source-refactor micro-lane is intentionally stopped to avoid rename churn.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_GATE_AFTER_SOURCE_REFACTOR_MICRO_LANE`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

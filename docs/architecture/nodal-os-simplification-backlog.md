@@ -1339,3 +1339,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 source-refactor micro-lane should close unless a more substantive operator-selected target appears; P4 impact is deliberately tiny.
 - Stop condition: `STOP_AFTER_SOURCE_REFACTOR_NEXT_MICRO_TARGET_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: MR21 does not authorize broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, CI enforcement, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR22 - Source Refactor Micro-Lane Closeout Return To Main Roadmap
+
+- Objective: close the recent D10/D11/D13 source-refactor micro-lane and select the next main-roadmap gate.
+- Status: completed as docs-only/roadmap-only closeout.
+- Decision: `GO_WITH_FINDINGS_SOURCE_REFACTOR_MICRO_LANE_CLOSED_RETURN_TO_MAIN_ROADMAP_READY`.
+- Resulting state: `SOURCE_REFACTOR_MICRO_LANE_CLOSED_RETURNED_TO_MAIN_ROADMAP_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Closed lane: D13 follow-up cleanup, D7 fail-closed table, D7 equivalence audit, `ProviderCloudNetworkNotAuthorized` rename and `NoProviderCloudNetwork` proof rename.
+- Next selected gate: `NODAL_OS_TEST_INFRA_RUNNER_FIX_DESIGN_OR_MICRO_TARGET_SELECTION`.
+- Next gate contract: select a bounded runner/build/test-infra design or micro-target that improves validation reliability without broad filters, suite rewrites or CI enforcement.
+- Allowed next scope: docs-only/design-only or one bounded test-infra micro-target with focal validation, no product/runtime authority.
+- Blocked next scope: source refactor rename churn, broad common-contract implementation, Product Ledger model consolidation, CI/workflow enforcement, runtime/product, DB/cloud/network/provider, KMS/WORM and release/commercial.
+- NO-GO conditions: no clear runner/test-infra target, need for broad suite execution, CI/workflow changes, product/runtime coupling, origin/worktree mismatch or P0/P1.
+- Current posture: source-refactor readiness `80%`; broad source simplification readiness `45%`; Product Ledger model consolidation readiness `66%`; test-infra runner reliability `70%`; global roadmap readiness `93%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 runner/build/test filtering remains a validation-speed risk; P4 more source-refactor micro-renames would be churn without a substantive target.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_GATE_AFTER_SOURCE_REFACTOR_MICRO_LANE`.
+- Authorization note: MR22 does not authorize `src/`, tests, implementation, CI/workflows, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM or release/commercial.
