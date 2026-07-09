@@ -56,7 +56,7 @@ public sealed class ReentryDecisionPacketReadOnlyPostReplacementD8Tests
         var source = ReentrySource();
         var packet = ReentryDecisionPacketReadOnlyPresenter.CreateFixture();
 
-        StringAssert.Contains(source, "CommandExecutionDenied");
+        StringAssert.Contains(source, "NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates");
         Assert.AreEqual(0, packet.CommandHandlerCount);
         Assert.AreEqual(0, packet.RuntimeInvocationCount);
         Assert.AreEqual(
@@ -162,22 +162,7 @@ public sealed class ReentryDecisionPacketReadOnlyPostReplacementD8Tests
     {
         var packet = ReentryDecisionPacketReadOnlyPresenter.CreateFixture();
         var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
-        var expectedStates = new Dictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState>
-        {
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProviderCloudNetworkNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.DatabaseMigrationNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ExternalTrustNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.RuntimeProductEnablementNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.CiEnforcementNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed
-        };
+        var expectedStates = NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates;
 
         Assert.IsTrue(packet.PassesSafetyProof);
         foreach (var (claim, state) in expectedStates)

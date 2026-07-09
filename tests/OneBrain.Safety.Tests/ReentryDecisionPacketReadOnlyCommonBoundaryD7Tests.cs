@@ -81,6 +81,17 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
     }
 
     [TestMethod]
+    [TestCategory("NoDoubleTruth")]
+    public void ReentryDecisionPacketReadOnlyUsesCandidateExpectedClosedStatesWithoutLocalDuplicateTable()
+    {
+        var source = ReentrySource();
+
+        StringAssert.Contains(source, "NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates");
+        Assert.IsFalse(source.Contains("ExpectedFailClosedClaims", StringComparison.Ordinal));
+        Assert.IsTrue(CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()));
+    }
+
+    [TestMethod]
     [TestCategory("PublicProductBlock")]
     [TestCategory("ProductionRouteBlock")]
     [TestCategory("CommandExecutionBlock")]
@@ -119,6 +130,14 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
             NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked(),
             unknown,
             NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied));
+    }
+
+    [TestMethod]
+    [TestCategory("NoAuthority")]
+    [TestCategory("NoDoubleTruth")]
+    public void ReentryDecisionPacketReadOnlyRejectsNullCommonBoundaryCandidateFailClosed()
+    {
+        Assert.IsFalse(CommonBoundaryClaimsRemainFailClosed(null));
     }
 
     [TestMethod]
@@ -183,7 +202,7 @@ public sealed class ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests
         Assert.IsFalse(candidate.CanOverrideExistingHardBlock(claim));
     }
 
-    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate candidate)
+    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate? candidate)
     {
         var method = typeof(ReentryDecisionPacketReadOnly).GetMethod(
             "CommonBoundaryClaimsRemainFailClosed",

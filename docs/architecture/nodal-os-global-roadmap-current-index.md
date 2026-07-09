@@ -427,22 +427,22 @@ P4:
 
 Selected frontier:
 
-`COMMON_CONTRACT_FAIL_CLOSED_AND_NO_DOUBLE_TRUTH_MACRO`
+`SOURCE_REFACTOR_SUBSTANTIVE_REDUCTION_MACRO`
 
 Resulting state:
 
-`COMMON_CONTRACT_CANONICAL_CLOSED_STATES_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
+`SOURCE_REFACTOR_REENTRY_COMMON_BOUNDARY_REDUCTION_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
 
 Next exact block:
 
-`AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_COMMON_CONTRACT_CANONICAL_STATES`
+`AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_REENTRY_COMMON_BOUNDARY_REDUCTION`
 
 Execution contract:
 
 - select one substantive macro frontier with 2-4 real bounded targets;
 - avoid packet-review/read-only as the main objective unless it is a real blocker;
-- prefer Source Refactor substantive reduction next if it can reduce real bloat without broad extraction;
-- otherwise choose Product Ledger, Common Contract, Validation or Static Guard only if there are 2+ non-repetitive real targets;
+- prefer a new Product Ledger, Source Refactor, Validation, Static Guard or Common Contract macro only if it has 2+ non-repetitive real targets;
+- skip further D7/D10/Reentry canonical-state work unless a new semantic bug appears;
 - keep validation candidate commands helper-shaped, focal, repo-contained and disk-space bounded;
 - close or return to roadmap if the next step requires workflows, CI enforcement, broad filters as gates, suite-wide gates, runtime/product, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
 

@@ -3219,3 +3219,16 @@
 - Current posture: Common Contract candidate readiness `80%`; Common Contract no-double-truth confidence `94%`; global roadmap readiness `97%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction remains blocked; P4 broader source bloat outside this local contract remains.
 - Stop condition: `STOP_AFTER_NEXT_SUBSTANTIVE_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+## AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_COMMON_CONTRACT_CANONICAL_STATES
+
+- Decision: `GO_WITH_FINDINGS_NEXT_MACRO_FRONTIER_READY`.
+- Baseline: `76174edd42fdd2b2c9da998c379f541efd7ad30b`.
+- Resulting state: `SOURCE_REFACTOR_REENTRY_COMMON_BOUNDARY_REDUCTION_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `SOURCE_REFACTOR_SUBSTANTIVE_REDUCTION_MACRO`.
+- Scope: source-minimal/test-focal D7/Reentry common-boundary reduction plus docs-minimal closeout. No broad source refactor, broad common-contract extraction, Product Ledger model consolidation, runtime/product, public/product, latest pointer/read precedence activation, product authority, DB/cloud/network/provider, KMS/WORM, `.github/workflows`, CI enforcement or release/commercial changes.
+- Targets executed: removed the D7/Reentry local duplicate closed-state table, made Reentry consume `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates`, made a null common-boundary candidate fail closed, added a D7 guard against duplicate table reintroduction, and aligned D8 post-replacement evidence with the canonical state map.
+- Validated: Safety test project build PASS with 32 pre-existing warnings; `ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests` PASS `14/14`; `ReentryDecisionPacketReadOnlyPostReplacementD8Tests` PASS `10/10`; `NodalOsCommonBoundaryClaimsCandidateTests` PASS `23/23`; `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests` PASS `17/17`.
+- Current posture: source-refactor readiness `80%`; Common Contract no-double-truth confidence `95%`; global roadmap readiness `97%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad source simplification and broad Common Contract extraction remain blocked; P4 remaining source bloat outside D7/D10 requires a new substantive target before more refactor work.
+- Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.

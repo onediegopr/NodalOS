@@ -1699,3 +1699,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction remains blocked; P4 broader source bloat outside this local contract remains.
 - Stop condition: `STOP_AFTER_NEXT_SUBSTANTIVE_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
 - Authorization note: MSE2 does not authorize broad common-contract extraction, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.
+
+## BLOCK MSE3 - Source Refactor Reentry Common Boundary Reduction Macro
+
+- Objective: execute the next substantive macro frontier after Common Contract canonical closed states.
+- Status: completed as source-minimal/test-focal Source Refactor reduction.
+- Decision: `GO_WITH_FINDINGS_NEXT_MACRO_FRONTIER_READY`.
+- Resulting state: `SOURCE_REFACTOR_REENTRY_COMMON_BOUNDARY_REDUCTION_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `SOURCE_REFACTOR_SUBSTANTIVE_REDUCTION_MACRO`.
+- Targets executed: D7/Reentry now consumes `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates`, rejects a null common-boundary candidate fail-closed, D7 guards prevent the local duplicate table from returning, and D8 post-replacement evidence uses the same canonical state map.
+- Source changed: `src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs`.
+- Tests changed: `ReentryDecisionPacketReadOnlyCommonBoundaryD7Tests` and `ReentryDecisionPacketReadOnlyPostReplacementD8Tests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: source-refactor readiness `80%`; Common Contract no-double-truth confidence `95%`; global roadmap readiness `97%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad source simplification and broad Common Contract extraction remain blocked; P4 remaining source bloat outside D7/D10 requires a new substantive target before more refactor work.
+- Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Authorization note: MSE3 does not authorize broad source refactor, broad common-contract extraction, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.

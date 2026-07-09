@@ -290,6 +290,10 @@ Common Contract canonical closed states macro: `COMMON_CONTRACT_CANONICAL_CLOSED
 
 Executed a bounded Common Contract no-double-truth consolidation: `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates` is now the single read-only canonical closed-state map, `DefaultBlocked()` uses it, and D10 approval execution proof consumes it instead of a duplicate local table. Added focal guards in `NodalOsCommonBoundaryClaimsCandidateTests` and `ApprovalExecutionDesignOnlyProtectedCommonBoundaryD10Tests`. No broad common-contract extraction, Product Ledger consolidation, runtime/product, workflows, CI enforcement or release/commercial authority changed.
 
+Source Refactor Reentry common-boundary reduction macro: `SOURCE_REFACTOR_REENTRY_COMMON_BOUNDARY_REDUCTION_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed a bounded D7/Reentry reduction: `ReentryDecisionPacketReadOnly` now consumes `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates`, rejects a null common-boundary candidate fail-closed, and no longer carries a duplicate local `ExpectedFailClosedClaims` table. D7/D8 focal tests now guard the canonical-state dependency and post-replacement evidence. No broad source refactor, broad common-contract extraction, Product Ledger consolidation, runtime/product, workflows, CI enforcement or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

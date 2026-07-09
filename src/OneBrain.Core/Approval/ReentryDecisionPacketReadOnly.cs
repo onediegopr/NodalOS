@@ -216,23 +216,6 @@ public sealed record ReentryDecisionPacketReadOnly(
     public int BrowserCdpLiveActionCount => NoSideEffectProof.Counts.BrowserCdpLiveActionCount;
     public int WcuOcrLiveActionCount => NoSideEffectProof.Counts.WcuOcrLiveActionCount;
 
-    private static readonly (CommonBoundaryClaim Claim, CommonBoundaryClaimState ExpectedState)[] ExpectedFailClosedClaims =
-    [
-        (CommonBoundaryClaim.PublicProductBlocked, CommonBoundaryClaimState.Blocked),
-        (CommonBoundaryClaim.ProductionRouteBlocked, CommonBoundaryClaimState.Blocked),
-        (CommonBoundaryClaim.LatestPointerDisabled, CommonBoundaryClaimState.Disabled),
-        (CommonBoundaryClaim.ReadPrecedenceDisabled, CommonBoundaryClaimState.Disabled),
-        (CommonBoundaryClaim.ProductAuthorityBlocked, CommonBoundaryClaimState.Blocked),
-        (CommonBoundaryClaim.CommandExecutionDenied, CommonBoundaryClaimState.Denied),
-        (CommonBoundaryClaim.ShellSubprocessDenied, CommonBoundaryClaimState.Denied),
-        (CommonBoundaryClaim.ProviderCloudNetworkNotClaimed, CommonBoundaryClaimState.NotClaimed),
-        (CommonBoundaryClaim.DatabaseMigrationNotClaimed, CommonBoundaryClaimState.NotClaimed),
-        (CommonBoundaryClaim.ExternalTrustNotClaimed, CommonBoundaryClaimState.NotClaimed),
-        (CommonBoundaryClaim.ReleaseCommercialNoGo, CommonBoundaryClaimState.NoGo),
-        (CommonBoundaryClaim.RuntimeProductEnablementNoGo, CommonBoundaryClaimState.NoGo),
-        (CommonBoundaryClaim.CiEnforcementNotClaimed, CommonBoundaryClaimState.NotClaimed)
-    ];
-
     public bool PassesSafetyProof =>
         Status == ReentryDecisionPacketStatus.ReadOnly
         && CanonicalState == "PAUSED_READ_ONLY_NO_RUNTIME_NO_EXECUTION_NO_MUTATION_NO_PHYSICAL_EXPORT_NO_REDACTION_RUNTIME"
@@ -252,13 +235,14 @@ public sealed record ReentryDecisionPacketReadOnly(
     private static bool CommonBoundaryClaimsRemainFailClosed() =>
         CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked());
 
-    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate candidate) =>
-        candidate.ParallelOnly
+    private static bool CommonBoundaryClaimsRemainFailClosed(NodalOsCommonBoundaryClaimsCandidate? candidate) =>
+        candidate is not null
+        && candidate.ParallelOnly
         && candidate.NonAuthoritative
         && !candidate.ExistingHardBlockAuthorityReplaced
         && !candidate.AllowsRuntimeProductOrAuthority()
-        && ExpectedFailClosedClaims.All(expected =>
-            CommonBoundaryClaimRemainsFailClosed(candidate, expected.Claim, expected.ExpectedState));
+        && NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates.All(expected =>
+            CommonBoundaryClaimRemainsFailClosed(candidate, expected.Key, expected.Value));
 
     private static bool CommonBoundaryClaimRemainsFailClosed(
         NodalOsCommonBoundaryClaimsCandidate candidate,
