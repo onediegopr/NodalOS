@@ -108,6 +108,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 runner/test-infra reliability should be selected before accumulating more refactors; P4 source-refactor micro-lane is intentionally stopped to avoid rename churn.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_GATE_AFTER_SOURCE_REFACTOR_MICRO_LANE`.
 
+## AUTHORIZE_NODAL_OS_TEST_INFRA_RUNNER_FIX_DESIGN_OR_MICRO_TARGET_SELECTION
+
+- Decision: `GO_WITH_FINDINGS_TEST_INFRA_RUNNER_MICRO_TARGET_SELECTED_READY`.
+- Input HEAD: `55f55adf5e7b931a9c08cef4642fc40eacfb7744`.
+- Selected micro-target: `TEST_INFRA_FOCAL_TEST_COMMAND_HELPER_SCRIPT_MICRO_TARGET`.
+- Next block: `NODAL_OS_TEST_INFRA_FOCAL_TEST_COMMAND_HELPER_SCRIPT_MICRO_TARGET`.
+- Selection reason: a small local helper for focal build/test commands with timeout, controlled retry and cleanup reduces repeated runner failures without CI enforcement, broad filters or suite rewrites.
+- Boundary: docs-only selector; no `src/`, tests, implementation, CI/workflows, runtime/product, public/product, Product Ledger consolidation, source-refactor rename churn, DB/cloud/network/provider, KMS/WORM or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 local runner reliability remains a validation-speed risk; P4 docs-only snippets already exist and are less useful than selecting one helper target.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_TEST_INFRA_RUNNER_MICRO_TARGET`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

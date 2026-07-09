@@ -1356,3 +1356,22 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 runner/build/test filtering remains a validation-speed risk; P4 more source-refactor micro-renames would be churn without a substantive target.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_GATE_AFTER_SOURCE_REFACTOR_MICRO_LANE`.
 - Authorization note: MR22 does not authorize `src/`, tests, implementation, CI/workflows, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR23 - Test Infra Runner Fix Design Or Micro Target Selection
+
+- Objective: select one bounded local test-infra/runner micro-target after the source-refactor micro-lane closeout.
+- Status: completed as docs-only selector.
+- Decision: `GO_WITH_FINDINGS_TEST_INFRA_RUNNER_MICRO_TARGET_SELECTED_READY`.
+- Resulting state: `TEST_INFRA_RUNNER_FOCAL_HELPER_MICRO_TARGET_SELECTED_NO_CI_ENFORCEMENT`.
+- Selected micro-target: `TEST_INFRA_FOCAL_TEST_COMMAND_HELPER_SCRIPT_MICRO_TARGET`.
+- Selection reason: existing runner docs show broad execution filters are unsafe locally, broad `--list-tests` is acceptable for discovery, D8 focal can need timeout plus one retry, and stable recent commands use `-m:1`, `UseSharedCompilation=false`, `-nr:false` and build-server shutdown.
+- Next block: `NODAL_OS_TEST_INFRA_FOCAL_TEST_COMMAND_HELPER_SCRIPT_MICRO_TARGET`.
+- Next block objective: add one local helper for focal `dotnet build/test` commands with explicit timeout, one controlled retry option, narrow residual process inspection guidance and build-server cleanup.
+- Candidate files: one local script under a repository test-infra/scripts area plus minimal docs update; no source or test edits.
+- Allowed next scope: local helper script, docs minimal, local-only validation of the helper help/argument behavior, no CI enforcement.
+- Blocked next scope: `src/`, test edits, CI/workflows, broad execution filters as gates, suite rewrite, external dependencies, runtime/product, Product Ledger consolidation, DB/cloud/network/provider, KMS/WORM and release/commercial.
+- NO-GO conditions: helper requires broad suite execution, CI/workflow changes, external dependency, destructive process cleanup, product/runtime coupling, or more than one small local helper.
+- Current posture: test-infra runner reliability `72%`; broad local execution filter confidence `35%`; focal filter confidence `76%`; global roadmap readiness `93%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 runner reliability remains a validation-speed risk; P4 docs-only snippet would help less than a small local focal helper.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_TEST_INFRA_RUNNER_MICRO_TARGET`.
+- Authorization note: MR23 does not implement the helper and does not authorize `src/`, tests, CI/workflows, runtime/product or release/commercial.

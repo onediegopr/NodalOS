@@ -206,6 +206,10 @@ Source-refactor micro-lane closeout: `SOURCE_REFACTOR_MICRO_LANE_CLOSED_RETURNED
 
 Closeout result: D13 follow-up cleanup, D7 fail-closed table, D7 equivalence audit, `ProviderCloudNetworkNotAuthorized` rename and `NoProviderCloudNetwork` proof rename are closed as bounded/no-runtime work. Next selected gate: `NODAL_OS_TEST_INFRA_RUNNER_FIX_DESIGN_OR_MICRO_TARGET_SELECTION`. No `src/`, tests, implementation, CI/workflows, runtime/product or release/commercial authority changed.
 
+Test-infra runner micro-target selection: `TEST_INFRA_RUNNER_FOCAL_HELPER_MICRO_TARGET_SELECTED_NO_CI_ENFORCEMENT`.
+
+Selected next block: `NODAL_OS_TEST_INFRA_FOCAL_TEST_COMMAND_HELPER_SCRIPT_MICRO_TARGET`. Target: one local helper for focal `dotnet build/test` commands with explicit timeout, controlled retry option and narrow cleanup/build-server handling. No `src/`, tests, CI/workflows, runtime/product or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
