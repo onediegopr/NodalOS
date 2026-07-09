@@ -394,6 +394,10 @@ Local/dev runtime productive slice final acceptance: `LOCAL_DEV_RUNTIME_ACTION_P
 
 Executed one final acceptance target after structured action-preview metadata. The internal operator UI preview test now proves diagnostics action-preview reason, risk, blocked frontier, required operator signal and required evidence are preserved for the disabled next-runtime-readiness preview, while command id, handler and callback remain null. No `src/`, production runtime, public/product promotion, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSEOUT_AND_NEXT_PRODUCTIVE_FRONTIER`.
 
+Local/dev runtime productive slice closeout: `LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSED_NEXT_FRONTIER_SELECTED_NO_PRODUCTION_AUTHORITY`.
+
+Closed the local/dev runtime productive-slice line after diagnostics preview, structured metadata, internal UI propagation and acceptance evidence. The disabled next-runtime-readiness preview remains non-executable with null command id, handler and callback. This closeout is docs-only; no `src/`, tests, production runtime, public/product promotion, live browser execution, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

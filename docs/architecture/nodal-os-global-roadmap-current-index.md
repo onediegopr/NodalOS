@@ -934,6 +934,45 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSEOUT_AND_NEXT_PRODUCTIVE_FRONTIER`
 
+Local/dev runtime/productive slice closeout:
+
+`GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSEOUT_READY`
+
+Resulting state:
+
+`LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSED_NEXT_FRONTIER_SELECTED_NO_PRODUCTION_AUTHORITY`
+
+Closeout confirmation:
+
+- Diagnostics expose the disabled `Advance local/dev runtime readiness next slice` action preview.
+- The preview carries structured blocked-frontier and required-operator-signal metadata.
+- Internal operator UI preview propagates diagnostics action previews.
+- Acceptance evidence preserves reason, risk, blocked frontier, required operator signal and required evidence.
+- Command id, handler and callback remain `null`; no execution, production runtime or release/commercial readiness was opened.
+
+Next productive frontier selected:
+
+`CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP`
+
+Reason:
+
+- Product Ledger local/dev and local/dev runtime productive-slice lines now have enough visible/acceptance evidence for this stage.
+- ChromeLab local/dev operator surface prep is a concrete next local/dev surface that can be visible/testable without live browser execution, public/product exposure or external automation.
+
+Updated readiness:
+
+- Global roadmap readiness: `98%`.
+- Runtime/product local-dev readiness: `43%`.
+- Runtime/product production readiness: `0%`.
+- Product Ledger local/dev product surface readiness: `86%`.
+- Product Ledger model consolidation: `77%`.
+- CI enforcement: `0%`.
+- Release/commercial: `0% / NO-GO`.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

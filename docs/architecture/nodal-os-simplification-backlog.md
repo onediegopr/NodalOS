@@ -2102,3 +2102,17 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `43%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and production/runtime/product authority remains blocked; P4 local/dev runtime productive slice should close unless Diego selects a new productive frontier.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSEOUT_AND_NEXT_PRODUCTIVE_FRONTIER`.
+
+## BLOCK MSE29 - Local/Dev Runtime Productive Slice Closeout
+
+- Objective: formally close the local/dev runtime productive-slice line after MSE26-MSE28 and select the next concrete productive frontier.
+- Status: completed as docs-only closeout and frontier selection.
+- Decision: `GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSEOUT_READY`.
+- Resulting state: `LOCAL_DEV_RUNTIME_PRODUCTIVE_SLICE_CLOSED_NEXT_FRONTIER_SELECTED_NO_PRODUCTION_AUTHORITY`.
+- Closeout evidence: diagnostics expose the disabled next-runtime-readiness preview; the preview has structured `BlockedFrontier` and `RequiredOperatorSignal`; internal operator UI propagates it; acceptance evidence preserves reason/risk/frontier/signal/evidence; command id, handler and callback remain null.
+- Scope: docs-only. No `src/`, tests, production runtime, public/product promotion, live browser execution, latest pointer authority, read precedence authority, product authority, approval execution, command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial.
+- Next productive frontier selected: `CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP`.
+- Selection reason: ChromeLab local/dev operator surface prep is a visible/testable local/dev surface and avoids Product Ledger/runtime-readiness inertia while staying no-live-browser, no-public/product and no-release.
+- Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `43%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk remains operationally constrained and live browser/product authority remains blocked; P4 next frontier must stay local/dev and visible/testable.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_PREP`.
