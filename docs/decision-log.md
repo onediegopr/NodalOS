@@ -130,6 +130,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 broad execution filters remain unsafe local gates; P4 helper is intentionally narrow and local-only.
 - Stop condition: `STOP_AFTER_TEST_INFRA_FOCAL_HELPER_SCRIPT_READY_NO_CI_ENFORCEMENT`.
 
+## AUTHORIZE_NODAL_OS_TEST_INFRA_FOCAL_HELPER_ADOPTION_CHECK_AND_NEXT_GATE_SELECTION
+
+- Decision: `TEST_INFRA_FOCAL_HELPER_ADOPTION_CHECK_READY_NEXT_GATE_SELECTED_NO_CI_ENFORCEMENT`.
+- Input HEAD: `c39e19078eb6fc478acd561e011efade01659731`.
+- Adoption check: `tools/scripts/run-focal-dotnet.ps1` exists, help loads, docs mark it local/operator-run only, and no CI enforcement is enabled.
+- Selected gate: `NODAL_OS_TEST_INFRA_FOCAL_HELPER_NO_MORE_WORK_RETURN_TO_MAIN_ROADMAP`.
+- Selection reason: the helper resolves the immediate P3 runner ergonomics enough for now; further test-infra work needs a concrete bug.
+- Boundary: docs-minimal selector; no `src/`, tests, project/solution files, CI/workflows, CI enforcement, runtime/product, public/product, Product Ledger consolidation, source-refactor churn, DB/cloud/network/provider, KMS/WORM or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 broad execution filters remain unsafe local gates; P4 more helper docs would be churn without a concrete bug.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_GATE_AFTER_TEST_INFRA_HELPER`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

@@ -214,6 +214,10 @@ Test-infra focal helper script: `TEST_INFRA_FOCAL_HELPER_SCRIPT_READY_NO_CI_ENFO
 
 Implemented `tools/scripts/run-focal-dotnet.ps1` for local/operator-run focal dotnet build/test commands with timeout, optional max-one retry, narrow process-tree cleanup and build-server shutdown. No `src/`, tests, CI/workflows, runtime/product or release/commercial authority changed.
 
+Test-infra focal helper adoption check: `TEST_INFRA_FOCAL_HELPER_ADOPTION_CHECK_READY_NEXT_GATE_SELECTED_NO_CI_ENFORCEMENT`.
+
+Adoption check result: helper exists, help loads and docs keep it local/operator-run with no CI enforcement. Selected gate: `NODAL_OS_TEST_INFRA_FOCAL_HELPER_NO_MORE_WORK_RETURN_TO_MAIN_ROADMAP`; further test-infra work should wait for a concrete bug. No `src/`, tests, CI/workflows, runtime/product or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

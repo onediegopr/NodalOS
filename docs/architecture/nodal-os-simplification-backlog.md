@@ -1390,3 +1390,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad execution filters remain unsafe local gates; P4 helper is intentionally local and narrow.
 - Stop condition: `STOP_AFTER_TEST_INFRA_FOCAL_HELPER_SCRIPT_READY_NO_CI_ENFORCEMENT`.
 - Authorization note: MR24 does not authorize `src/`, tests, CI/workflows, CI enforcement, runtime/product, broad suite gates, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR25 - Test Infra Focal Helper Adoption Check And Next Gate Selection
+
+- Objective: verify minimal adoption evidence for the local focal helper and decide whether more test-infra work is needed now.
+- Status: completed as read-only/docs-minimal selector.
+- Decision: `TEST_INFRA_FOCAL_HELPER_ADOPTION_CHECK_READY_NEXT_GATE_SELECTED_NO_CI_ENFORCEMENT`.
+- Resulting state: `TEST_INFRA_FOCAL_HELPER_NO_MORE_WORK_RETURN_TO_MAIN_ROADMAP`.
+- Adoption check: helper exists at `tools/scripts/run-focal-dotnet.ps1`; help loads; docs state local/operator-run only; CI enforcement remains disabled.
+- Selected gate: `NODAL_OS_TEST_INFRA_FOCAL_HELPER_NO_MORE_WORK_RETURN_TO_MAIN_ROADMAP`.
+- Next gate contract: do not continue test-infra without a concrete bug; return to main-roadmap operator decision before any new source, Product Ledger, common-contract or runtime-facing lane.
+- Allowed next scope: operator-selected docs-only/design-only/test-only bounded gate with explicit repo guard and no CI enforcement by default.
+- Blocked next scope: test-infra churn, `src/`, tests, project/solution files, workflows/CI, broad execution filters as gates, runtime/product, Product Ledger consolidation, DB/cloud/network/provider, KMS/WORM and release/commercial.
+- Current posture: test-infra runner reliability `80%`; broad local execution filter confidence `35%`; focal filter confidence `82%`; global roadmap readiness `93%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad execution filters remain unsafe local gates but immediate helper work is sufficient; P4 further test-infra docs would be churn without a concrete bug.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_GATE_AFTER_TEST_INFRA_HELPER`.
+- Authorization note: MR25 does not authorize `src/`, tests, CI/workflows, CI enforcement, runtime/product or release/commercial.
