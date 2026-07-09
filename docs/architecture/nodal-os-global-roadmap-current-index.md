@@ -465,6 +465,28 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_DECISION_AFTER_POST_STATIC_GUARD_NO_SAFE_TARGET`
 
+Post-static-guard recheck:
+
+`NO_GO_NEXT_SUBSTANTIVE_FRONTIER_NO_SAFE_REAL_TARGET_AVAILABLE`
+
+Resulting state:
+
+`MAIN_MACRO_FRONTIER_NO_SAFE_REAL_TARGET_AVAILABLE_AFTER_POST_STATIC_GUARD_RECHECK`
+
+Evidence:
+
+- Product Ledger local/dev Stage 3 remains broad model consolidation or repetitive flag/wrapper/rename cleanup, not a new bounded double-truth reduction after Stage 1/2.
+- Approval packet/read-only candidate prep remains blocked by explicit user-GO gates and zero side-effect counts; no safe boundary reduction was found without reopening durable audit implementation.
+- Reentry/Approval D7/D10/D11 expected-state and claim maps remain canonicalized; remaining literals are adversarial test data or canonical adapter calls, not alternate authority.
+- Durable audit/evidence/trusted-context drift search found only expected false-state source fields, negative guards and static guard positive fixtures.
+- Validation reliability has no concrete helper bug; broad filters remain non-gates.
+- Static Guard has no new semantic phrase family beyond trusted-context/durable-evidence discovery.
+- Workspace Context authority/freshness/memory surfaced as a potentially substantive separate family, but it is outside this authorized candidate window and requires an operator-selected line before any work.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_SUBSTANTIVE_FRONTIER_REBASELINE_OR_OPERATOR_SELECTED_NEW_LINE`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

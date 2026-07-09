@@ -322,6 +322,10 @@ Next substantive frontier after trusted-context static discovery: `MAIN_MACRO_FR
 
 Closed with NO-GO instead of forcing churn. The post-static-guard search found no new trusted-context/durable-evidence drift, no bounded Approval/Reentry duplicate beyond D7/D10/D11, no Product Ledger Stage 3 double-truth reduction, no helper bug, and no new static-guard semantic drift family. No `src/`, tests, runtime/product, workflows, CI enforcement, trusted context activation, durable evidence persistence, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_DECISION_AFTER_POST_STATIC_GUARD_NO_SAFE_TARGET`.
 
+Post-static-guard recheck: `MAIN_MACRO_FRONTIER_NO_SAFE_REAL_TARGET_AVAILABLE_AFTER_POST_STATIC_GUARD_RECHECK`.
+
+Closed with NO-GO after a second candidate-family search. Product Ledger Stage 3 remains broad/repetitive, Approval candidate prep remains blocked and read-only, D7/D10/D11 duplicate state maps remain absent, durable-evidence/trusted-context hits are only expected guards/fixtures, Validation has no helper bug, and Workspace Context authority/freshness/memory is a separate out-of-scope line requiring operator selection. No `src/`, tests, runtime/product, workflows, CI enforcement, product writer, latest/read precedence, trusted context activation, durable evidence persistence, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_SUBSTANTIVE_FRONTIER_REBASELINE_OR_OPERATOR_SELECTED_NEW_LINE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
