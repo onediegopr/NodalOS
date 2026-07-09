@@ -286,6 +286,33 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
     }
 
     [TestMethod]
+    public void LocalDevRoutePreview_RouteHtmlAndCanonicalSurfaceBlockersStayConsistent()
+    {
+        var result = new ProductLedgerLocalDevRoutePreview().Render(ReadyRequest());
+        var model = result.CanonicalSurface;
+        var html = result.HtmlSnapshot;
+        var prepStatus = model.Statuses.Single(status => status.StatusId == "local-dev-product-surface-prep");
+
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, result.Decision);
+        StringAssert.Contains(html, $"data-readiness=\"{prepStatus.ReadinessPercent}\"");
+        StringAssert.Contains(html, prepStatus.Value);
+        StringAssert.Contains(html, model.SafeNextSteps.First());
+
+        foreach (var frontier in model.BlockedFrontiers)
+        {
+            StringAssert.Contains(html, $"data-testid=\"surface-blocked-{frontier.FrontierId}\"");
+            StringAssert.Contains(html, $"data-testid=\"product-ledger-local-dev-product-surface-prep-blocker-{frontier.FrontierId}\"");
+            StringAssert.Contains(html, $"data-category=\"{frontier.Category}\"");
+            StringAssert.Contains(html, $"data-required-operator-signal=\"{frontier.RequiredOperatorSignal}\"");
+            StringAssert.Contains(html, frontier.Reason);
+        }
+
+        Assert.IsFalse(model.AllowsProductCommandExecution);
+        Assert.IsFalse(model.AllowsReleaseCommercial);
+        Assert.IsFalse(model.AllowsExternalCloudExport);
+    }
+
+    [TestMethod]
     public void LocalDevRoutePreview_ReadModelAndSurfaceModelDoNotCreateDoubleTruth()
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(
