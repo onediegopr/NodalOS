@@ -88,6 +88,26 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
     }
 
     [TestMethod]
+    public void InternalOperatorUiPreview_RuntimeReadinessSectionStaysConsistentWithDiagnosticsSurface()
+    {
+        var diagnostics = ReadyDiagnostics();
+        var result = new ProductLedgerInternalOperatorUiPresenter().Render(ReadyRequest() with { Diagnostics = diagnostics });
+        var diagnosticsSection = diagnostics.Sections.Single(section => section.Title == "Runtime/Product Local-Dev Readiness");
+        var previewSection = result.ViewModel.Sections.Single(section => section.Title == "Runtime/Product Local-Dev Readiness");
+
+        Assert.AreEqual(diagnosticsSection.Status, previewSection.Status);
+        CollectionAssert.AreEqual(diagnosticsSection.Lines.ToArray(), previewSection.Lines.ToArray());
+        CollectionAssert.Contains(previewSection.Lines.ToArray(), "runtime_product_local_dev_readiness=36");
+        CollectionAssert.Contains(previewSection.Lines.ToArray(), "runtime_product_production_readiness=0");
+        CollectionAssert.Contains(previewSection.Lines.ToArray(), "product_surface_local_dev_readiness=86");
+        CollectionAssert.Contains(previewSection.Lines.ToArray(), "latest_pointer_authority=false");
+        CollectionAssert.Contains(previewSection.Lines.ToArray(), "read_precedence_authority=false");
+        CollectionAssert.Contains(previewSection.Lines.ToArray(), "product_authority=false");
+        CollectionAssert.Contains(previewSection.Lines.ToArray(), "release_commercial_ready=false");
+        AssertNoExecutableSurface(result.ViewModel);
+    }
+
+    [TestMethod]
     public void InternalOperatorUiPreview_DisabledActionsAndActionPreviewsAreNonExecutable()
     {
         var viewModel = new ProductLedgerInternalOperatorUiPresenter().Render(ReadyRequest()).ViewModel;
