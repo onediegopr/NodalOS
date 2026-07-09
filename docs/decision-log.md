@@ -3245,3 +3245,17 @@
 - Current posture: Common Contract no-double-truth confidence `96%`; source-refactor readiness `80%`; global roadmap readiness `97%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction and broad source simplification remain blocked; P4 remaining bloat outside Common Boundary mapping requires a new semantic target.
 - Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+## AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_COMMON_CONTRACT_CAPABILITY_MAPPING_HELPER
+
+- Decision: `GO_WITH_FINDINGS_NEXT_MACRO_FRONTIER_READY`.
+- Baseline: `aa3f9997bb77e43514250e364797b56583888573`.
+- Resulting state: `COMMON_CONTRACT_D11_EXPECTED_STATES_CANONICALIZED_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `COMMON_CONTRACT_FOLLOW_UP_MACRO`.
+- Scope: test-only/focal Common Contract no-double-truth reduction plus docs-minimal closeout. No `src/`, no broad common-contract extraction, no Product Ledger consolidation, no runtime/product, no public/product, no latest pointer/read precedence activation, no product authority, no DB/cloud/network/provider, no KMS/WORM, no `.github/workflows`, no CI enforcement and no release/commercial changes.
+- Target executed: D11 no longer carries a local `ExpectedCandidateStates()` table; `D11_ApprovalExecutionCommonClaimStatesRemainEquivalentToCandidate` now iterates `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates` and guards against reintroducing the local table.
+- Rejected candidates: further mapping-helper work was churn; Product Ledger consolidation Stage 3 remained closed; Validation/Static Guard had no new concrete bug; broad source/Common Contract extraction remained unsafe.
+- Validated: `ApprovalExecutionPostSecondReplacementD11Tests` PASS `12/12`.
+- Current posture: Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; global roadmap readiness `97%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction and broad source simplification remain blocked; P4 further Common Boundary work requires a new semantic drift finding.
+- Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.

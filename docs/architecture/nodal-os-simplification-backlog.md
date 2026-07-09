@@ -1733,3 +1733,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction and broad source simplification remain blocked; P4 remaining bloat outside Common Boundary mapping requires a new semantic target.
 - Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
 - Authorization note: MSE4 does not authorize broad common-contract extraction, source/product refactor, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.
+
+## BLOCK MSE5 - D11 Expected States Canonicalization Macro
+
+- Objective: execute the next safe macro frontier after Common Contract capability mapping helper.
+- Status: completed as test-only/focal Common Contract no-double-truth reduction.
+- Decision: `GO_WITH_FINDINGS_NEXT_MACRO_FRONTIER_READY`.
+- Resulting state: `COMMON_CONTRACT_D11_EXPECTED_STATES_CANONICALIZED_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `COMMON_CONTRACT_FOLLOW_UP_MACRO`.
+- Target executed: removed the D11 local `ExpectedCandidateStates()` duplicate table and made D11 use `NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates` directly.
+- Source changed: none.
+- Tests changed: `ApprovalExecutionPostSecondReplacementD11Tests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; global roadmap readiness `97%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Common Contract extraction and broad source simplification remain blocked; P4 further Common Boundary work requires a new semantic drift finding.
+- Stop condition: `STOP_AFTER_NEXT_MACRO_FRONTIER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Authorization note: MSE5 does not authorize broad common-contract extraction, source/product refactor, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement or release/commercial.

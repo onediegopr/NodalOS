@@ -20,6 +20,7 @@ public sealed class ApprovalExecutionPostSecondReplacementD11Tests
     private const string CandidateRelativePath = "src/OneBrain.Core/Approval/NodalOsCommonBoundaryClaimsCandidate.cs";
     private const string D7TargetRelativePath = "src/OneBrain.Core/Approval/ReentryDecisionPacketReadOnly.cs";
     private const string D10TargetRelativePath = "src/OneBrain.Core/Approval/ApprovalExecutionDesignOnlyProtected.cs";
+    private const string D11FocusedTestsRelativePath = "tests/OneBrain.Safety.Tests/ApprovalExecutionPostSecondReplacementD11Tests.cs";
     private const string D11AuditDocRelativePath = "docs/architecture/nodal-os-d11-post-second-replacement-isolation-audit.md";
 
     [TestMethod]
@@ -152,9 +153,13 @@ public sealed class ApprovalExecutionPostSecondReplacementD11Tests
     public void D11_ApprovalExecutionCommonClaimStatesRemainEquivalentToCandidate()
     {
         var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
+        var d11Source = File.ReadAllText(Path.Combine(
+            RepoRoot(),
+            D11FocusedTestsRelativePath.Replace('/', Path.DirectorySeparatorChar)));
 
         Assert.IsTrue(D10CommonBoundaryClaimsRemainFailClosed(candidate));
-        foreach (var (claim, expectedState) in ExpectedCandidateStates())
+        Assert.IsFalse(d11Source.Contains("Expected" + "CandidateStates", StringComparison.Ordinal));
+        foreach (var (claim, expectedState) in NodalOsCommonBoundaryClaimsCandidate.ExpectedClosedStates)
         {
             Assert.AreEqual(expectedState, candidate.StateFor(claim), claim.ToString());
             Assert.IsTrue(candidate.IsFailClosed(claim), claim.ToString());
@@ -282,24 +287,6 @@ public sealed class ApprovalExecutionPostSecondReplacementD11Tests
         AssertNoPublicCommonBoundaryMethods(typeof(ReentryDecisionPacketReadOnly));
         AssertNoPublicCommonBoundaryMethods(typeof(ApprovalExecutionAntiCapabilityProof));
     }
-
-    private static IReadOnlyDictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState> ExpectedCandidateStates() =>
-        new Dictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState>
-        {
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProviderCloudNetworkNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.DatabaseMigrationNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ExternalTrustNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.RuntimeProductEnablementNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
-            [NodalOsCommonBoundaryClaimsCandidate.Claim.CiEnforcementNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed
-        };
 
     private static IReadOnlyList<NodalOsCommonBoundaryClaimsCandidate> UnsafeCandidateVariants()
     {

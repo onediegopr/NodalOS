@@ -431,18 +431,18 @@ Selected frontier:
 
 Resulting state:
 
-`COMMON_CONTRACT_CAPABILITY_MAPPING_HELPER_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
+`COMMON_CONTRACT_D11_EXPECTED_STATES_CANONICALIZED_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
 
 Next exact block:
 
-`AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_COMMON_CONTRACT_CAPABILITY_MAPPING_HELPER`
+`AUTHORIZE_NODAL_OS_NEXT_MACRO_FRONTIER_AFTER_D11_EXPECTED_STATES_CANONICALIZATION`
 
 Execution contract:
 
 - select one substantive macro frontier with 2-4 real bounded targets;
 - avoid packet-review/read-only as the main objective unless it is a real blocker;
 - prefer a new Product Ledger, Source Refactor, Validation, Static Guard or Common Contract macro only if it has 2+ non-repetitive real targets;
-- skip further Common Boundary mapping-helper work unless a new semantic drift or safety bug appears;
+- skip further D11/Common Boundary expected-state work unless a new semantic drift or safety bug appears;
 - keep validation candidate commands helper-shaped, focal, repo-contained and disk-space bounded;
 - close or return to roadmap if the next step requires workflows, CI enforcement, broad filters as gates, suite-wide gates, runtime/product, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
 
