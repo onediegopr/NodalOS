@@ -141,6 +141,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 broad execution filters remain unsafe local gates; P4 more helper docs would be churn without a concrete bug.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_NEXT_GATE_AFTER_TEST_INFRA_HELPER`.
 
+## AUTHORIZE_NODAL_OS_TEST_INFRA_FOCAL_HELPER_NO_MORE_WORK_RETURN_TO_MAIN_ROADMAP
+
+- Decision: `TEST_INFRA_HELPER_LINE_CLOSED_RETURNED_TO_MAIN_ROADMAP`.
+- Input HEAD: `491f0aa110147601b4c85f93b40db420d31719cb`.
+- Closeout: helper exists, help loads, no CI enforcement is enabled and no concrete test-infra bug remains pending.
+- Selected next gate: `MAIN_ROADMAP_PAUSE_NO_CHANGES_READY`.
+- Selection reason: Product Ledger micro-targets, Source Refactor micro-lane and Test Infra helper are closed; without an explicit real target from Diego, pausing is safer than opening another churn lane.
+- Boundary: docs-only closeout; no `src/`, tests, project/solution files, workflows/CI, CI enforcement, runtime/product, public/product, Product Ledger consolidation, source-refactor churn, DB/cloud/network/provider, KMS/WORM or release/commercial opened.
+- Finding: P0=0, P1=0, P2=0; P3 next progress requires an explicit real target; P4 selector/doc churn should stop here.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_GATE_AFTER_TEST_INFRA_HELPER`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

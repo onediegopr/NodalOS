@@ -218,6 +218,10 @@ Test-infra focal helper adoption check: `TEST_INFRA_FOCAL_HELPER_ADOPTION_CHECK_
 
 Adoption check result: helper exists, help loads and docs keep it local/operator-run with no CI enforcement. Selected gate: `NODAL_OS_TEST_INFRA_FOCAL_HELPER_NO_MORE_WORK_RETURN_TO_MAIN_ROADMAP`; further test-infra work should wait for a concrete bug. No `src/`, tests, CI/workflows, runtime/product or release/commercial authority changed.
 
+Test-infra helper line closeout: `TEST_INFRA_HELPER_LINE_CLOSED_RETURNED_TO_MAIN_ROADMAP`.
+
+Closeout result: helper line is closed; no concrete test-infra bug remains pending and CI enforcement is still `0%`. Selected next gate: `MAIN_ROADMAP_PAUSE_NO_CHANGES_READY`; continue only when Diego chooses a real next target such as Product Ledger, Source Refactor or Common Contract micro-target selection. No `src/`, tests, CI/workflows, runtime/product or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
