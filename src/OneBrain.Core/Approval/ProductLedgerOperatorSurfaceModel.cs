@@ -93,6 +93,30 @@ internal static class ProductLedgerLocalDevSnapshotCollections
         Array.AsReadOnly(items);
 }
 
+internal static class ProductLedgerLocalDevActionProjection
+{
+    private const string CanonicalReadOnlyDisabledReason =
+        "Canonical operator route is read-only and does not execute product commands.";
+
+    public static IReadOnlyList<ProductLedgerOperatorSurfaceActionPreview> ToCanonicalPreviews(
+        IReadOnlyList<ProductLedgerRenderableOperatorSurfaceActionModel> renderableActions) =>
+        ProductLedgerLocalDevSnapshotCollections.Seal(renderableActions
+            .Select(ToCanonicalPreview)
+            .OrderBy(action => action.ActionId, StringComparer.Ordinal)
+            .ToArray());
+
+    private static ProductLedgerOperatorSurfaceActionPreview ToCanonicalPreview(
+        ProductLedgerRenderableOperatorSurfaceActionModel action) =>
+        new(
+            ActionId: action.ActionId,
+            Label: action.Label,
+            Disabled: true,
+            ReadOnly: true,
+            LocalOnly: action.LocalOnly,
+            NonDestructive: action.NonDestructive,
+            DisabledReason: action.Disabled ? action.DisabledReason : CanonicalReadOnlyDisabledReason);
+}
+
 public static class ProductLedgerOperatorSurfaceModelFactory
 {
     public const string CanonicalSurfaceId = "product-ledger.local-dev.operator-surface.v1";
@@ -114,19 +138,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult? durableLatestStateAuxiliaryEvidenceState = null)
     {
         var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(readModelSource);
-        var actions = ProductLedgerLocalDevSnapshotCollections.Seal(renderable.Model.Actions
-            .Select(action => new ProductLedgerOperatorSurfaceActionPreview(
-                ActionId: action.ActionId,
-                Label: action.Label,
-                Disabled: true,
-                ReadOnly: true,
-                LocalOnly: action.LocalOnly,
-                NonDestructive: action.NonDestructive,
-                DisabledReason: action.Disabled
-                    ? action.DisabledReason
-                    : "Canonical operator route is read-only and does not execute product commands."))
-            .OrderBy(action => action.ActionId, StringComparer.Ordinal)
-            .ToArray());
+        var actions = ProductLedgerLocalDevActionProjection.ToCanonicalPreviews(renderable.Model.Actions);
 
         var statuses = Statuses(readModel);
         var evidenceRefs = EvidenceRefs();

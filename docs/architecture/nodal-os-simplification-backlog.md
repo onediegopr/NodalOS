@@ -1617,3 +1617,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - NO-GO conditions: runtime/product/public route/latest pointer/read precedence/product authority/writer/runtime/DB/cloud/KMS/WORM/CI/release opening, broad Product Ledger model consolidation, unclear action-source ownership, changed route behavior, extra source files or unstable focal validation.
 - Target posture after next block: Product Ledger model consolidation readiness `74%`, action-projection double-truth confidence `98%`, runtime/product `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_CONSOLIDATION_STAGE_2_IMPLEMENT_OR_NO_GO`.
+
+## BLOCK PLCS3 - Product Ledger Consolidation Bounded Stage 2
+
+- Objective: implement exactly one bounded action-projection consolidation or close NO-GO.
+- Status: completed as source-bounded/test-focal consolidation.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_READY`.
+- Resulting state: `PRODUCT_LEDGER_ACTION_PROJECTION_CONSOLIDATED_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Consolidation: extracted canonical action projection from inline `Build` mapping into `ProductLedgerLocalDevActionProjection.ToCanonicalPreviews(...)`, preserving renderable action source ownership while forcing canonical previews to remain disabled/read-only.
+- Source changed: `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`.
+- Guard added: `LocalDevRoutePreview_RenderableActionsProjectToCanonicalPreviewsWithoutCreatingActionAuthority` in `ProductLedgerLocalDevRoutePreviewTests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Validated: Safety build PASS through local focal helper; exact new test PASS `1/1`; `ProductLedgerLocalDevRoutePreviewTests` PASS `11/11`; `ProductLedgerLocalDevCanonGuardTests` PASS `11/11`.
+- Current posture: Product Ledger model consolidation readiness `74%`; action-projection double-truth confidence `98%`; global roadmap readiness `96%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broader Product Ledger model consolidation remains deferred; P4 helper is internal/local-dev and does not create a public shared abstraction.
+- Stop condition: `STOP_AFTER_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: PLCS3 does not authorize broad Product Ledger model consolidation, changing action source ownership, runtime/product, public/product, latest pointer, read precedence, product authority, writer/runtime, DB/cloud/KMS/WORM, CI/workflows or release/commercial.

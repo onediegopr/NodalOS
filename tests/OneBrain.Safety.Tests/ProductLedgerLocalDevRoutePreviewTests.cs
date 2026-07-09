@@ -291,6 +291,42 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
     }
 
     [TestMethod]
+    public void LocalDevRoutePreview_RenderableActionsProjectToCanonicalPreviewsWithoutCreatingActionAuthority()
+    {
+        var result = new ProductLedgerLocalDevRoutePreview().Render(ReadyRequest());
+        var renderableActions = result.RenderableSnapshot.Model.Actions
+            .OrderBy(action => action.ActionId, StringComparer.Ordinal)
+            .ToArray();
+        var canonicalPreviews = result.CanonicalSurface.ActionPreviews
+            .OrderBy(action => action.ActionId, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, result.Decision);
+        Assert.AreEqual(renderableActions.Length, canonicalPreviews.Length);
+
+        for (var index = 0; index < renderableActions.Length; index++)
+        {
+            var renderable = renderableActions[index];
+            var canonical = canonicalPreviews[index];
+
+            Assert.AreEqual(renderable.ActionId, canonical.ActionId);
+            Assert.AreEqual(renderable.Label, canonical.Label);
+            Assert.AreEqual(renderable.LocalOnly, canonical.LocalOnly);
+            Assert.AreEqual(renderable.NonDestructive, canonical.NonDestructive);
+            Assert.IsTrue(canonical.Disabled);
+            Assert.IsTrue(canonical.ReadOnly);
+            Assert.AreEqual(
+                renderable.Disabled
+                    ? renderable.DisabledReason
+                    : "Canonical operator route is read-only and does not execute product commands.",
+                canonical.DisabledReason);
+        }
+
+        Assert.IsTrue(canonicalPreviews.All(action => action.Disabled && action.ReadOnly));
+        Assert.IsFalse(result.CanonicalSurface.AllowsProductCommandExecution);
+    }
+
+    [TestMethod]
     public void LocalDevRoutePreview_CanonicalSurfaceCollectionsAreReadOnlyAndCannotDrift()
     {
         var result = new ProductLedgerLocalDevRoutePreview().Render(ReadyRequest());
