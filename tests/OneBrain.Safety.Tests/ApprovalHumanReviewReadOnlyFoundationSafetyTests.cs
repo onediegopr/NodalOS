@@ -181,6 +181,36 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationSafetyTests
     }
 
     [TestMethod]
+    public void EvidenceContextLinks_DoNotBecomeDurableEvidenceOrAuditTrailAuthority()
+    {
+        var guardSource = ReadRepoText(EvidenceContextLinkGuardPath);
+        var packetSurfaceSource = ReadRepoText(ApprovalPacketSurfacePath);
+        var links = HumanReviewEvidenceContextLinkReadOnlyGuard.EvaluateCatalog();
+        var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();
+
+        Assert.IsTrue(links.Count > 0);
+        Assert.IsTrue(links.All(link => link.PreviewOnly));
+        Assert.IsTrue(links.All(link => !link.EvidenceLinkIsDurableEvidence));
+        Assert.IsTrue(links.All(link => !link.ContextLinkTrustedByDefault));
+        Assert.IsTrue(links.All(link => !link.ApprovalExecutionAllowed));
+        Assert.IsTrue(links.All(link => !link.StateMutationAllowed));
+        Assert.IsTrue(links.All(link => !link.ProductActionAllowed));
+        Assert.IsTrue(links.All(link => !link.ServiceRegistrationAllowed));
+        Assert.IsTrue(surface.EvidenceContextLinkSummaries.Any(summary =>
+            summary.Contains("Evidence link is not durable evidence", StringComparison.Ordinal)));
+
+        foreach (var source in new[] { guardSource, packetSurfaceSource })
+        {
+            Assert.IsFalse(source.Contains(nameof(DurableAuditTrailAppendOnlyMinimal), StringComparison.Ordinal));
+            Assert.IsFalse(source.Contains(nameof(DurableAuditTrailAppendOnlyCandidate), StringComparison.Ordinal));
+            Assert.IsFalse(source.Contains("AppendStage2TestOnly", StringComparison.Ordinal));
+            Assert.IsFalse(source.Contains("EvidenceLedger", StringComparison.Ordinal));
+            Assert.IsFalse(source.Contains("EvidenceLinkIsDurableEvidence: true", StringComparison.Ordinal));
+            Assert.IsFalse(source.Contains("ContextLinkTrustedByDefault: true", StringComparison.Ordinal));
+        }
+    }
+
+    [TestMethod]
     public void ApprovalPacketSurfaceProof_DisablesAllSideEffectsRuntimeApprovalMutationProductAndExportActions()
     {
         var surface = ApprovalPacketReadOnlySurfacePresenter.CreateFixture();

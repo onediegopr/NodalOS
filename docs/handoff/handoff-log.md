@@ -310,6 +310,10 @@ Next substantive frontier after no-safe-target closeout: `DURABLE_AUDIT_TRAIL_TE
 
 Executed one focal durable audit trail boundary guard: the design-only protected audit trail now has a Safety test proving it does not reference or claim authority from the minimal append-only ledger, while the minimal ledger remains local/test-only and explicitly non-product, non-network, non-DB and non-release. Candidate families were classified and Product Ledger Stage 3, Approval/Reentry source reduction, Validation Reliability, Static Guard metadata, Roadmap-only reconciliation and pause were rejected as churn, too small or not enough once the durable boundary target was found. No `src/`, runtime/product, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial authority changed.
 
+Next substantive frontier after durable audit trail boundary guard: `HUMAN_REVIEW_EVIDENCE_LINKS_DURABLE_EVIDENCE_BOUNDARY_GUARD_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed one focal durable-evidence boundary guard: Human Review evidence/context links now have a Safety test proving they remain preview-only review references, not durable evidence, not trusted context, not approval execution, and not source-wired to durable audit trail minimal/candidate, Stage2 append or `EvidenceLedger`. Candidate families were classified and durable audit trail repeat work, Approval/Reentry durable authority, Product Ledger Stage 3, Validation Reliability and pause were rejected as churn, no bounded duplicate, too small or unnecessary after this real target. No `src/`, runtime/product, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

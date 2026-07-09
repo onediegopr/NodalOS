@@ -427,19 +427,19 @@ P4:
 
 Selected frontier:
 
-`DURABLE_AUDIT_TRAIL_LOCAL_TEST_SAFE_BOUNDARY`
+`DURABLE_EVIDENCE_BOUNDARY_RECONCILIATION_TEST_ONLY`
 
 Resulting state:
 
-`DURABLE_AUDIT_TRAIL_TEST_ONLY_BOUNDARY_GUARD_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
+`HUMAN_REVIEW_EVIDENCE_LINKS_DURABLE_EVIDENCE_BOUNDARY_GUARD_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
 
 Next exact block:
 
-`AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_AFTER_DURABLE_AUDIT_TRAIL_TEST_ONLY_BOUNDARY_GUARD`
+`AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_AFTER_HUMAN_REVIEW_DURABLE_EVIDENCE_BOUNDARY_GUARD`
 
 Execution contract:
 
-- select a new substantive frontier, not another local hardening pass over D7/D10/D11/Common Boundary maps or the durable audit trail boundary unless new semantic drift appears;
+- select a new substantive frontier, not another local hardening pass over D7/D10/D11/Common Boundary maps, durable audit trail boundary, or human-review evidence-link durable-evidence boundary unless new semantic drift appears;
 - require a real product-roadmap, architecture, validation or consolidation boundary with clear value;
 - avoid packet-review/read-only as the main objective unless it is a real blocker;
 - keep validation candidate commands helper-shaped, focal, repo-contained and disk-space bounded;
