@@ -21,7 +21,9 @@ public sealed record ProductLedgerOperatorSurfaceEvidenceRef(
 public sealed record ProductLedgerOperatorSurfaceBlockedFrontier(
     string FrontierId,
     string Label,
-    string Reason);
+    string Reason,
+    string Category,
+    string RequiredOperatorSignal);
 
 public sealed record ProductLedgerOperatorSurfaceActionPreview(
     string ActionId,
@@ -272,17 +274,17 @@ public static class ProductLedgerOperatorSurfaceModelFactory
 
     private static IReadOnlyList<ProductLedgerOperatorSurfaceBlockedFrontier> BlockedFrontiers() =>
         ProductLedgerLocalDevSnapshotCollections.Seal<ProductLedgerOperatorSurfaceBlockedFrontier>(
-        new("public-ui-action", "Public UI action", "No public operator action is exposed by this route."),
-        new("product-command-execution", "Product command execution", "Route renders read-only state and never invokes product commands."),
-        new("public-internet", "Public internet exposure", "Pilot maps this route only in Development mode."),
-        new("external-network-provider-cloud", "External network/provider/cloud", "No provider, cloud, sync, telemetry or billing surface is enabled."),
-        new("db-migration", "DB/migration", "No database or migration authority is introduced."),
-        new("kms-worm-external-trust", "KMS/WORM/external trust", "No external custody, key or WORM claim is made."),
-        new("browser-cdp-wcu-ocr-recipes-live", "Browser/CDP/WCU/OCR/Recipes live", "No live automation authority is exposed."),
-        new("release-commercial", "Release/commercial", "No release, commercial or compliance custody readiness is claimed."),
-        new("latest-pointer-read-precedence", "Latest pointer/read precedence", "Local/dev latest-state evidence remains auxiliary and does not become product authority."),
-        new("destructive-action", "Destructive action", "All destructive and unsafe write actions remain disabled."),
-        new("unbounded-export", "Unbounded export/write", "Only bounded export status is visible; the route does not call an exporter.")
+        new("public-ui-action", "Public UI action", "No public operator action is exposed by this route.", "public-product-surface", "EXPLICIT_PUBLIC_PRODUCT_UI_GO_REQUIRED"),
+        new("product-command-execution", "Product command execution", "Route renders read-only state and never invokes product commands.", "command-execution", "EXPLICIT_PRODUCT_COMMAND_EXECUTION_GO_REQUIRED"),
+        new("public-internet", "Public internet exposure", "Pilot maps this route only in Development mode.", "deployment-boundary", "EXPLICIT_PUBLIC_DEPLOYMENT_GO_REQUIRED"),
+        new("external-network-provider-cloud", "External network/provider/cloud", "No provider, cloud, sync, telemetry or billing surface is enabled.", "external-dependency", "EXPLICIT_PROVIDER_CLOUD_NETWORK_GO_REQUIRED"),
+        new("db-migration", "DB/migration", "No database or migration authority is introduced.", "persistence-boundary", "EXPLICIT_DB_MIGRATION_GO_REQUIRED"),
+        new("kms-worm-external-trust", "KMS/WORM/external trust", "No external custody, key or WORM claim is made.", "external-trust", "EXPLICIT_KMS_WORM_EXTERNAL_TRUST_GO_REQUIRED"),
+        new("browser-cdp-wcu-ocr-recipes-live", "Browser/CDP/WCU/OCR/Recipes live", "No live automation authority is exposed.", "live-automation", "EXPLICIT_LIVE_AUTOMATION_GO_REQUIRED"),
+        new("release-commercial", "Release/commercial", "No release, commercial or compliance custody readiness is claimed.", "release-commercial", "EXPLICIT_RELEASE_COMMERCIAL_GO_REQUIRED"),
+        new("latest-pointer-read-precedence", "Latest pointer/read precedence", "Local/dev latest-state evidence remains auxiliary and does not become product authority.", "product-authority-boundary", "EXPLICIT_LATEST_READ_PRECEDENCE_GO_REQUIRED"),
+        new("destructive-action", "Destructive action", "All destructive and unsafe write actions remain disabled.", "destructive-action", "EXPLICIT_DESTRUCTIVE_ACTION_GO_REQUIRED"),
+        new("unbounded-export", "Unbounded export/write", "Only bounded export status is visible; the route does not call an exporter.", "export-boundary", "EXPLICIT_REAL_EXPORT_DOWNLOAD_GO_REQUIRED")
     );
 
 }

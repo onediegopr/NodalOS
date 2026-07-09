@@ -513,7 +513,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine("    <div data-testid=\"surface-blocked-frontiers\">");
         foreach (var frontier in model.BlockedFrontiers.OrderBy(frontier => frontier.FrontierId, StringComparer.Ordinal))
         {
-            html.AppendLine($"      <p data-testid=\"surface-blocked-{Encode(frontier.FrontierId)}\">{Encode(frontier.Label)}: {Encode(frontier.Reason)}</p>");
+            html.AppendLine($"      <p data-testid=\"surface-blocked-{Encode(frontier.FrontierId)}\" data-category=\"{Encode(frontier.Category)}\" data-required-operator-signal=\"{Encode(frontier.RequiredOperatorSignal)}\">{Encode(frontier.Label)}: {Encode(frontier.Reason)}</p>");
         }
 
         html.AppendLine("    </div>");
@@ -561,7 +561,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine("      <div data-testid=\"product-ledger-local-dev-product-surface-prep-blockers\">");
         foreach (var frontier in model.BlockedFrontiers.OrderBy(frontier => frontier.FrontierId, StringComparer.Ordinal))
         {
-            html.AppendLine($"        <p>{Encode(frontier.FrontierId)}: {Encode(frontier.Reason)}</p>");
+            html.AppendLine($"        <p data-testid=\"product-ledger-local-dev-product-surface-prep-blocker-{Encode(frontier.FrontierId)}\" data-category=\"{Encode(frontier.Category)}\" data-required-operator-signal=\"{Encode(frontier.RequiredOperatorSignal)}\">{Encode(frontier.FrontierId)}: {Encode(frontier.Reason)}</p>");
         }
 
         html.AppendLine("      </div>");

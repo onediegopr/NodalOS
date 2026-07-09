@@ -96,6 +96,13 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         StringAssert.Contains(html, "data-testid=\"surface-blocked-product-command-execution\"");
         StringAssert.Contains(html, "data-testid=\"surface-blocked-public-internet\"");
         StringAssert.Contains(html, "data-testid=\"surface-blocked-release-commercial\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-local-dev-product-surface-prep-blocker-release-commercial\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-local-dev-product-surface-prep-blocker-latest-pointer-read-precedence\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-local-dev-product-surface-prep-blocker-unbounded-export\"");
+        StringAssert.Contains(html, "data-required-operator-signal=\"EXPLICIT_RELEASE_COMMERCIAL_GO_REQUIRED\"");
+        StringAssert.Contains(html, "data-required-operator-signal=\"EXPLICIT_LATEST_READ_PRECEDENCE_GO_REQUIRED\"");
+        StringAssert.Contains(html, "data-required-operator-signal=\"EXPLICIT_REAL_EXPORT_DOWNLOAD_GO_REQUIRED\"");
+        StringAssert.Contains(html, "data-required-operator-signal=\"EXPLICIT_PRODUCT_COMMAND_EXECUTION_GO_REQUIRED\"");
         StringAssert.Contains(html, "data-testid=\"disabled-dangerous-actions\"");
         StringAssert.Contains(html, "data-testid=\"action-destructive-write\"");
         StringAssert.Contains(html, "disabled aria-disabled=\"true\"");
@@ -247,6 +254,17 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "public-internet"));
         Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "release-commercial"));
         Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "latest-pointer-read-precedence"));
+        Assert.IsTrue(model.BlockedFrontiers.All(frontier => !string.IsNullOrWhiteSpace(frontier.Category)));
+        Assert.IsTrue(model.BlockedFrontiers.All(frontier => !string.IsNullOrWhiteSpace(frontier.RequiredOperatorSignal)));
+        Assert.AreEqual(
+            "EXPLICIT_RELEASE_COMMERCIAL_GO_REQUIRED",
+            model.BlockedFrontiers.Single(frontier => frontier.FrontierId == "release-commercial").RequiredOperatorSignal);
+        Assert.AreEqual(
+            "EXPLICIT_LATEST_READ_PRECEDENCE_GO_REQUIRED",
+            model.BlockedFrontiers.Single(frontier => frontier.FrontierId == "latest-pointer-read-precedence").RequiredOperatorSignal);
+        Assert.AreEqual(
+            "EXPLICIT_REAL_EXPORT_DOWNLOAD_GO_REQUIRED",
+            model.BlockedFrontiers.Single(frontier => frontier.FrontierId == "unbounded-export").RequiredOperatorSignal);
         Assert.IsTrue(model.ActionPreviews.Count > 0);
         Assert.IsTrue(model.ActionPreviews.All(action => action.Disabled && action.ReadOnly));
         CollectionAssert.Contains(
@@ -353,7 +371,7 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
             new ProductLedgerOperatorSurfaceEvidenceRef("mutated", "mutated", "mutated"));
         AssertReadOnlyList(
             model.BlockedFrontiers,
-            new ProductLedgerOperatorSurfaceBlockedFrontier("mutated", "mutated", "mutated"));
+            new ProductLedgerOperatorSurfaceBlockedFrontier("mutated", "mutated", "mutated", "mutated", "mutated"));
         AssertReadOnlyList(
             model.ActionPreviews,
             new ProductLedgerOperatorSurfaceActionPreview("mutated", "mutated", Disabled: false, ReadOnly: false, LocalOnly: false, NonDestructive: false, "mutated"));

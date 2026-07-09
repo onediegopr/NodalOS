@@ -358,6 +358,10 @@ Product Ledger local/dev product surface advancement: `PRODUCT_LEDGER_LOCAL_DEV_
 
 Executed Diego's explicit Product Ledger local/dev frontier with real surface progress. The local/dev route now renders a product-surface prep panel with readiness, limits, blockers and next-action anchors; the canonical surface includes `local-dev-product-surface-prep` and current local/dev next steps; the internal operator preview now points to route/operator verification instead of generic hardening. Safety coverage passed for route preview, internal operator preview, public UI action blockers and public read-only disabled preview. No CI/workflows, production deployment, public internet exposure, DB/cloud/KMS/WORM, external provider, customer/user data, latest pointer/read precedence authority, irreversible write, productive service registration, real export/download or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_OR_CLOSE`.
 
+Product Ledger local/dev product surface follow-up: `PRODUCT_LEDGER_LOCAL_DEV_BLOCKER_ACCEPTANCE_EVIDENCE_VISIBLE_NO_PRODUCTION_AUTHORITY`.
+
+Executed one acceptance-evidence target: Product Ledger blocked frontiers now carry structured category and required-operator-signal metadata, and the local/dev route/product-surface prep panel renders those fields as testable anchors for release, latest/read-precedence, real export/download and command-execution blockers. Focal validation passed for route preview and public/read-only blocker surfaces. No production runtime, public/product promotion, product authority, approval/command execution, irreversible write, service registration, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_LINE_CLOSE_OR_NEXT_ACCEPTANCE_TARGET`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

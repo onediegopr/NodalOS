@@ -694,6 +694,24 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_OR_CLOSE`
 
+Product Ledger local/dev product surface follow-up:
+
+`GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_READY`
+
+Resulting state:
+
+`PRODUCT_LEDGER_LOCAL_DEV_BLOCKER_ACCEPTANCE_EVIDENCE_VISIBLE_NO_PRODUCTION_AUTHORITY`
+
+Target executed:
+
+- Product Ledger local/dev blockers now carry structured category and required-operator-signal metadata.
+- Local/dev route and product-surface prep panel render those blocker fields as testable anchors.
+- Focal Safety coverage verifies release, export, command execution and latest/read-precedence blockers stay visible and require explicit operator GO.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_LINE_CLOSE_OR_NEXT_ACCEPTANCE_TARGET`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.
