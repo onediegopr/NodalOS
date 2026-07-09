@@ -3140,3 +3140,19 @@
 - Current posture: Product Ledger model consolidation readiness `72%`; Product Ledger double-truth confidence `97%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 direct dotnet build initially timed out locally and was replaced by helper-controlled build; P4 broader Product Ledger consolidation remains deferred.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_SELECTION_OR_CLOSE
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_SELECTED_READY`.
+- Baseline: `1cc5a848498edad696c40f7f83d95ae5d5040fdd`.
+- Resulting state: `PRODUCT_LEDGER_ACTION_PROJECTION_CONSOLIDATION_STAGE_2_SELECTED_NO_IMPLEMENTATION`.
+- Scope: read-only/selection-only docs-minimal Stage 2 contract. No implementation, no `src/`, no tests, no workflows, no CI enforcement, no runtime/product, no public/product, no Production route, no latest pointer/read precedence, no product authority, no writer/runtime real, no DB/cloud/network/provider, no KMS/WORM and no release/commercial changes.
+- Stage 2 selected: consolidate the local/dev action projection from renderable snapshot actions to canonical operator-surface action previews.
+- Evidence: Stage 1 already removed duplicate collection sealing; the next real double-truth risk is the inline canonical projection over `renderable.Model.Actions`, which should preserve action id, label, local-only and non-destructive semantics while forcing canonical disabled/read-only behavior.
+- Next exact block: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_IMPLEMENT_OR_NO_GO`.
+- Candidate files: `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`, `src/OneBrain.Core/Approval/ProductLedgerRenderableOperatorSurface.cs`, `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs`.
+- Required validations: local focal helper Safety build, exact action-projection test, `ProductLedgerLocalDevRoutePreviewTests`, `ProductLedgerLocalDevCanonGuardTests`, diff/scope/wiring/anti-overclaim scans and final repo guard.
+- NO-GO conditions: broad model consolidation, changed route behavior, product authority, latest/read precedence, writer/runtime, runtime/product, public/product, DB/cloud/KMS/WORM, CI/release, extra source files or unstable focal validation.
+- Current posture: Product Ledger model consolidation readiness `73%`; action-projection double-truth confidence `96%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 Stage 2 may close NO-GO if action-source ownership becomes ambiguous; P4 remaining non-action model consolidation remains deferred.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_CONSOLIDATION_STAGE_2_OR_LINE_CLOSE`.

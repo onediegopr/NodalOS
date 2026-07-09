@@ -1601,3 +1601,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 direct dotnet build initially timed out locally but helper-controlled build passed; P4 consolidation is intentionally small and does not address broader model/source consolidation.
 - Stop condition: `STOP_AFTER_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_1_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: PLCS1 does not authorize public/shared abstractions, broad Product Ledger model consolidation, runtime/product, public/product, latest pointer, read precedence, product authority, writer/runtime, DB/cloud/KMS/WORM, CI/workflows or release/commercial.
+
+## BLOCK PLCS2 - Product Ledger Consolidation Bounded Stage 2 Selection
+
+- Objective: determine whether a real bounded Stage 2 exists after Stage 1 or close the local/dev consolidation line.
+- Status: completed as selection-only/docs-minimal Stage 2 contract.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_SELECTED_READY`.
+- Resulting state: `PRODUCT_LEDGER_ACTION_PROJECTION_CONSOLIDATION_STAGE_2_SELECTED_NO_IMPLEMENTATION`.
+- Stage 2 selected: consolidate local/dev action projection between `ProductLedgerRenderableOperatorSurfaceActionModel` and `ProductLedgerOperatorSurfaceActionPreview`.
+- Evidence: Stage 1 sealer is shared; remaining substantive local duplication is the inline renderable-to-canonical action projection in `ProductLedgerOperatorSurfaceModelFactory.Build`, while `ProductLedgerRenderableOperatorSurfaceRenderer.ReadyModel` constructs the upstream renderable action model.
+- Next block: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_IMPLEMENT_OR_NO_GO`.
+- Next-block objective: implement exactly one bounded action-projection consolidation or close NO-GO if it requires broad model work, authority changes or extra source files.
+- Allowed next-block scope: `src/OneBrain.Core/Approval/ProductLedgerOperatorSurfaceModel.cs`, `src/OneBrain.Core/Approval/ProductLedgerRenderableOperatorSurface.cs`, one focal update in `tests/OneBrain.Safety.Tests/ProductLedgerLocalDevRoutePreviewTests.cs`, and docs-minimal closeout.
+- Required validation: Safety build through local focal helper, exact new/adjusted action-projection test, `ProductLedgerLocalDevRoutePreviewTests`, `ProductLedgerLocalDevCanonGuardTests`, `git diff --check`, scope/wiring/anti-overclaim scans and final repo guard.
+- NO-GO conditions: runtime/product/public route/latest pointer/read precedence/product authority/writer/runtime/DB/cloud/KMS/WORM/CI/release opening, broad Product Ledger model consolidation, unclear action-source ownership, changed route behavior, extra source files or unstable focal validation.
+- Target posture after next block: Product Ledger model consolidation readiness `74%`, action-projection double-truth confidence `98%`, runtime/product `0%`, CI enforcement `0%`, release/commercial `0% / NO-GO`.
+- Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_PRODUCT_LEDGER_CONSOLIDATION_STAGE_2_IMPLEMENT_OR_NO_GO`.

@@ -266,6 +266,10 @@ Product Ledger bounded Stage 1: `PRODUCT_LEDGER_LOCAL_DEV_SNAPSHOT_COLLECTION_SE
 
 Implemented one bounded local/dev consolidation: canonical and renderable operator surfaces now share `ProductLedgerLocalDevSnapshotCollections.Seal(...)` for read-only snapshot collection sealing, guarded by `LocalDevRoutePreview_OperatorSurfaceAndRenderableSurfaceUseSharedSnapshotCollectionSealer`. No public/shared abstraction, runtime/product, latest/read precedence, product authority, writer/runtime, CI/workflows or release/commercial authority changed.
 
+Product Ledger bounded Stage 2 selected: `PRODUCT_LEDGER_ACTION_PROJECTION_CONSOLIDATION_STAGE_2_SELECTED_NO_IMPLEMENTATION`.
+
+Selected next bounded target: consolidate the local/dev action projection between renderable snapshot actions and canonical operator-surface action previews. Next block is `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_CONSOLIDATION_BOUNDED_STAGE_2_IMPLEMENT_OR_NO_GO`; it must touch only the two Product Ledger surface source files plus one focal route-preview test, or close NO-GO if it requires broad model consolidation, authority changes, runtime/product, latest/read precedence, writer/runtime, CI or release authority.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
