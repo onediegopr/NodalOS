@@ -30,6 +30,7 @@ public sealed class NodalOsStaticGuardCatalogTests
                 NodalOsStaticGuardCategory.CloudNetworkDb,
                 NodalOsStaticGuardCategory.KmsWormCompliance,
                 NodalOsStaticGuardCategory.ReleaseCommercial,
+                NodalOsStaticGuardCategory.TrustedContextDurableEvidence,
                 NodalOsStaticGuardCategory.RunClaimCoherence
             },
             categories.ToArray());
@@ -54,7 +55,8 @@ public sealed class NodalOsStaticGuardCatalogTests
             "Process.Start",
             "HttpClient",
             "KMS enabled",
-            "release ready");
+            "release ready",
+            "trusted context enabled");
 
         var matches = NodalOsStaticGuardCatalog.Scan(source);
 
@@ -68,6 +70,7 @@ public sealed class NodalOsStaticGuardCatalogTests
         CollectionAssert.Contains(matches.Select(match => match.Category).ToArray(), NodalOsStaticGuardCategory.CloudNetworkDb);
         CollectionAssert.Contains(matches.Select(match => match.Category).ToArray(), NodalOsStaticGuardCategory.KmsWormCompliance);
         CollectionAssert.Contains(matches.Select(match => match.Category).ToArray(), NodalOsStaticGuardCategory.ReleaseCommercial);
+        CollectionAssert.Contains(matches.Select(match => match.Category).ToArray(), NodalOsStaticGuardCategory.TrustedContextDurableEvidence);
     }
 
     [TestMethod]
@@ -87,6 +90,8 @@ public sealed class NodalOsStaticGuardCatalogTests
             "No DB/migration.",
             "No KMS/WORM/external trust.",
             "No release/commercial.",
+            "Evidence link is not durable evidence.",
+            "Context link is not trusted context.",
             "Pilot `/run` is separate: `/run` is a gated allowlisted local execution path.");
 
         var matches = NodalOsStaticGuardCatalog.Scan(source);
@@ -109,7 +114,9 @@ public sealed class NodalOsStaticGuardCatalogTests
             (NodalOsStaticGuardCategory.ProductAuthority, "ProductAuthority: true"),
             (NodalOsStaticGuardCategory.ProductAuthority, "AuthorityLiveProduct: true"),
             (NodalOsStaticGuardCategory.ShellSubprocess, "Process.Start"),
-            (NodalOsStaticGuardCategory.ReleaseCommercial, "ReleaseCommercialReady: true")
+            (NodalOsStaticGuardCategory.ReleaseCommercial, "ReleaseCommercialReady: true"),
+            (NodalOsStaticGuardCategory.TrustedContextDurableEvidence, "EvidenceLinkIsDurableEvidence: true"),
+            (NodalOsStaticGuardCategory.TrustedContextDurableEvidence, "ContextLinkTrustedByDefault: true")
         };
 
         foreach (var (category, source) in samples)
@@ -172,6 +179,38 @@ public sealed class NodalOsStaticGuardCatalogTests
         Assert.AreEqual(1, sourceMatches.Count);
         Assert.AreEqual(1, docsMatches.Count);
         Assert.AreEqual(sourceMatches[0], docsMatches[0]);
+    }
+
+    [TestMethod]
+    [TestCategory("StaticGuard")]
+    [TestCategory("NoAuthority")]
+    public void StaticGuardCatalog_DetectsTrustedContextAndDurableEvidenceOverclaims()
+    {
+        var allowedNegativeSamples = string.Join(
+            Environment.NewLine,
+            "Evidence link is not durable evidence.",
+            "Context link is not trusted context.",
+            "durable evidence remains blocked.",
+            "trusted context remains blocked.");
+        var positiveSamples = string.Join(
+            Environment.NewLine,
+            "EvidenceLinkIsDurableEvidence: true",
+            "ContextLinkTrustedByDefault: true",
+            "review link promoted to durable evidence",
+            "review link promoted to trusted context");
+
+        Assert.AreEqual(
+            0,
+            NodalOsStaticGuardCatalog.Scan(
+                allowedNegativeSamples,
+                NodalOsStaticGuardCategory.TrustedContextDurableEvidence).Count);
+
+        var matches = NodalOsStaticGuardCatalog.Scan(
+            positiveSamples,
+            NodalOsStaticGuardCategory.TrustedContextDurableEvidence);
+
+        Assert.AreEqual(4, matches.Count, string.Join(", ", matches.Select(match => match.Fragment)));
+        Assert.IsTrue(matches.All(match => match.Category == NodalOsStaticGuardCategory.TrustedContextDurableEvidence));
     }
 
     [TestMethod]

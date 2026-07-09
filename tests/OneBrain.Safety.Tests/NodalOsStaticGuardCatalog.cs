@@ -13,6 +13,7 @@ internal enum NodalOsStaticGuardCategory
     CloudNetworkDb,
     KmsWormCompliance,
     ReleaseCommercial,
+    TrustedContextDurableEvidence,
     RunClaimCoherence
 }
 
@@ -187,6 +188,23 @@ internal static class NodalOsStaticGuardCatalog
                     "No release/commercial",
                     "release/commercial remains blocked",
                     "release/commercial readiness remains 0%"
+                ]),
+            Define(
+                NodalOsStaticGuardCategory.TrustedContextDurableEvidence,
+                [
+                    "EvidenceLinkIsDurableEvidence: true",
+                    "ContextLinkTrustedByDefault: true",
+                    "durable evidence enabled",
+                    "trusted context enabled",
+                    "trusted context activated",
+                    "review link promoted to durable evidence",
+                    "review link promoted to trusted context"
+                ],
+                [
+                    "not durable evidence",
+                    "not trusted context",
+                    "durable evidence remains blocked",
+                    "trusted context remains blocked"
                 ]),
             Define(
                 NodalOsStaticGuardCategory.RunClaimCoherence,

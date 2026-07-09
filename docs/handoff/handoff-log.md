@@ -314,6 +314,10 @@ Next substantive frontier after durable audit trail boundary guard: `HUMAN_REVIE
 
 Executed one focal durable-evidence boundary guard: Human Review evidence/context links now have a Safety test proving they remain preview-only review references, not durable evidence, not trusted context, not approval execution, and not source-wired to durable audit trail minimal/candidate, Stage2 append or `EvidenceLedger`. Candidate families were classified and durable audit trail repeat work, Approval/Reentry durable authority, Product Ledger Stage 3, Validation Reliability and pause were rejected as churn, no bounded duplicate, too small or unnecessary after this real target. No `src/`, runtime/product, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial authority changed.
 
+Next substantive frontier after Human Review durable-evidence boundary guard: `STATIC_GUARD_TRUSTED_CONTEXT_DURABLE_EVIDENCE_DISCOVERY_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed one focal static-guard discovery target: `NodalOsStaticGuardCatalog` now detects trusted-context and durable-evidence overclaims, and the catalog tests prove positive samples are caught while negative no-go wording remains allowed. Candidate families were classified and repeat durable/evidence guards, Approval/Reentry authority reduction, Product Ledger Stage 3 and Validation Reliability were rejected as churn, no bounded duplicate, unsafe broad or too small. No `src/`, runtime/product, workflows, CI enforcement, trusted context activation, DB/cloud/KMS/WORM or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

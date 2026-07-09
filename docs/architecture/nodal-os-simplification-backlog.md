@@ -1802,3 +1802,21 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 durable evidence consolidation remains blocked unless a separate bounded scope is selected; P4 further evidence-link guarding would be churn without new semantic drift.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_AFTER_HUMAN_REVIEW_DURABLE_EVIDENCE_BOUNDARY_GUARD`.
 - Authorization note: MSE8 does not authorize durable audit trail runtime, durable evidence persistence, product writer, public/product authority, latest/read precedence, DB/cloud/KMS/WORM, CI enforcement, workflows or release/commercial.
+
+## BLOCK MSE9 - Static Guard Trusted Context Durable Evidence Discovery
+
+- Objective: execute the next substantive frontier after the Human Review durable-evidence boundary guard without repeating the same guard.
+- Status: completed as test-only/static-guard discovery hardening plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_NEXT_SUBSTANTIVE_FRONTIER_READY`.
+- Resulting state: `STATIC_GUARD_TRUSTED_CONTEXT_DURABLE_EVIDENCE_DISCOVERY_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Frontier chosen: `STATIC_GUARD_SAFETY_DISCOVERY_TARGETED`.
+- Target executed: `NodalOsStaticGuardCatalog` now has `TrustedContextDurableEvidence` detection for durable-evidence/trusted-context overclaims, with focal tests proving positive samples are detected and negative no-go wording remains allowed.
+- Source changed: none.
+- Tests changed: `NodalOsStaticGuardCatalog`, `NodalOsStaticGuardCatalogTests`.
+- Candidate classification: Durable evidence follow-up = churn without new drift; durable audit trail follow-up = churn; Approval/Reentry authority = no bounded duplicate found; Product Ledger Stage 3 = churn/unsafe broad; Static Guard targeted = real substantive bounded target because the new durable-evidence boundary lacked catalog discoverability; Validation reliability = safe but too small without a helper bug.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: global roadmap readiness `97%`; durable audit trail local/test boundary confidence `85%`; durable evidence/review-link boundary confidence `87%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; local focal validation confidence `88%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 trusted-context/durable-evidence activation remains prohibited; P4 further static phrase expansion would be churn without a new semantic drift family.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_FRONTIER_AFTER_STATIC_GUARD_TRUSTED_CONTEXT_DURABLE_EVIDENCE_DISCOVERY`.
+- Authorization note: MSE9 does not authorize trusted context activation, durable evidence persistence, durable audit trail runtime, product writer, public/product authority, latest/read precedence, DB/cloud/KMS/WORM, CI enforcement, workflows or release/commercial.
