@@ -1935,3 +1935,20 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 Approval Packet execution/mutation/export/product action remains blocked pending explicit GO; P4 further local hardening would be churn.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_MAIN_ROADMAP_REBASELINE_AFTER_APPROVAL_PACKET_LINE_CLOSE`.
 - Authorization note: MSE16 does not authorize approval execution, mutation, product action, service registration, runtime/product, export/download real behavior, latest/read precedence, product authority, DB/cloud/KMS/WORM, CI enforcement, workflows or release/commercial.
+
+## BLOCK MSE17 - Main Roadmap Rebaseline After Approval Packet Close
+
+- Objective: rebaseline the main roadmap after Approval Packet read-only follow-up closed with no safe target.
+- Status: completed as docs-only rebaseline and NO-GO closeout.
+- Decision: `NO_GO_MAIN_ROADMAP_REBASELINE_NO_SAFE_FRONTIER_AVAILABLE`.
+- Resulting state: `MAIN_ROADMAP_REBASELINE_NO_SAFE_FRONTIER_AVAILABLE_AFTER_APPROVAL_PACKET_CLOSE`.
+- Frontier classification: Common Boundary/Common Contract = `EXHAUSTED_FOR_NOW`; Source Refactor = `UNSAFE_BROAD`; Product Ledger local/dev = `EXHAUSTED_FOR_NOW`; Durable audit/evidence = `EXHAUSTED_FOR_NOW`; Workspace Context = `EXHAUSTED_FOR_NOW`; Approval Packet read-only = `EXHAUSTED_FOR_NOW`; Reentry/Approval authority = `EXHAUSTED_FOR_NOW`; Validation reliability = `SAFE_BUT_TOO_SMALL`; Static guard discovery = `EXHAUSTED_FOR_NOW`; Browser/ChromeLab/Recipes live = `RUNTIME_PRODUCT_BLOCKED`; CI/workflows = `CI_ENFORCEMENT_BLOCKED`; release/commercial = `RUNTIME_PRODUCT_BLOCKED`; public/product UI or Product Ledger product exposure = `RUNTIME_PRODUCT_BLOCKED`.
+- Evidence: the latest safe lines consumed their bounded targets. Remaining candidates require broader source planning, product/runtime authority, CI enforcement, release/commercial authorization or an explicit operator-selected frontier.
+- Source changed: none.
+- Tests changed: none.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: global roadmap readiness `97%`; Approval Packet read-only boundary confidence `86%`; Workspace Context authority boundary confidence `88%`; durable audit trail local/test boundary confidence `85%`; durable evidence/review-link confidence `87%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; local focal validation confidence `89%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 no current safe substantive frontier is selected; P4 more local hardening would be churn without a new semantic drift finding.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_OPERATOR_SELECTED_SUBSTANTIVE_FRONTIER_OR_PAUSE_AFTER_APPROVAL_PACKET_LINE_CLOSE`.
+- Authorization note: MSE17 does not authorize source changes, tests, approval execution, mutation, product action, service registration, runtime/product, export/download real behavior, latest/read precedence, product authority, trusted context activation, durable evidence persistence, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM, CI enforcement, workflows or release/commercial.
