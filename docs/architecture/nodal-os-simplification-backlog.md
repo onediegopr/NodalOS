@@ -1551,3 +1551,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad/class-level local test filters can still hang and should not be used as gates without the focal helper; P4 source bloat is unchanged.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
 - Authorization note: MR34 does not authorize broad common-contract implementation, moving contracts, shared abstraction, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR35 - Main Roadmap Next Safe Workstream No-Go
+
+- Objective: choose and execute the next safe main-roadmap workstream only if a non-repetitive real target exists.
+- Status: completed as docs-minimal NO-GO; no implementation target was selected.
+- Decision: `NO_GO_MAIN_ROADMAP_NO_SAFE_REAL_TARGET_AVAILABLE`.
+- Resulting state: `MAIN_ROADMAP_NO_SAFE_REAL_TARGET_AVAILABLE_WITH_EVIDENCE`.
+- Front review: Source Refactor remains closed without a substantive target; Product Ledger bounded collection/no-double-truth guards were already executed and broad model consolidation remains deferred; Common Contract just received completeness, read-only and null fail-closed guards; Static Guard broad expansion remains false-positive prone; Test Infra has no concrete helper bug.
+- No target selected: the remaining safe candidates found in current roadmap evidence are cosmetic, repetitive or require broad Product Ledger/Common Contract work.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: global roadmap readiness `95%`; Common Contract candidate readiness `76%`; Product Ledger model consolidation readiness `69%`; Static Guard Catalog readiness `96%`; test-infra focal confidence `82%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger/Common Contract work still carries double-truth risk and runner broad filters remain unsafe local gates; P4 further micro-hardening would be churn without a new substantive target.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_NO_SAFE_TARGET_AVAILABLE_WITH_EVIDENCE`.
+- Authorization note: MR35 does not authorize source changes, test edits, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM, broad Product Ledger model consolidation, broad common-contract implementation, Static Guard broad expansion or release/commercial.
