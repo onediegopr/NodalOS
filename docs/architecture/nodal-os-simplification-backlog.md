@@ -1421,3 +1421,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 next progress requires an explicit real target; P4 further docs-only selector churn should be avoided.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_GATE_AFTER_TEST_INFRA_HELPER`.
 - Authorization note: MR26 does not authorize `src/`, tests, project/solution files, workflows/CI, CI enforcement, runtime/product, Product Ledger consolidation, source-refactor churn, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR27 - Main Roadmap Safe Workstream Continued
+
+- Objective: continue the main roadmap by executing one safe real workstream without runtime/product, CI or release authority.
+- Status: completed as test-only focal guard plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_SAFE_WORKSTREAM_CONTINUED_READY`.
+- Resulting state: `PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_NO_DOUBLE_TRUTH_GUARD_READY`.
+- Front chosen: Product Ledger bounded no-authority cleanup, because the roadmap still carried operator-surface/read-model no-double-truth as a safe read-only/test-only follow-up and source-refactor/test-infra lanes were closed.
+- Guard added: `LocalDevRoutePreview_ReadModelAndSurfaceModelDoNotCreateDoubleTruth` in `ProductLedgerLocalDevRoutePreviewTests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Product Ledger model consolidation readiness `67%`; operator-surface/read-model double-truth confidence `94%`; global roadmap readiness `94%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 docs were kept minimal.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_CONTINUED_OR_BLOCKED_BY_REAL_NO_GO`.
+- Authorization note: MR27 does not authorize `src/`, workflows/CI, CI enforcement, runtime/product, Product Ledger model consolidation implementation, latest/read precedence, product authority, DB/cloud/KMS/WORM or release/commercial.

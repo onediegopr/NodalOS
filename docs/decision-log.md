@@ -152,6 +152,17 @@
 - Finding: P0=0, P1=0, P2=0; P3 next progress requires an explicit real target; P4 selector/doc churn should stop here.
 - Stop condition: `STOP_FOR_OPERATOR_DECISION_ON_MAIN_ROADMAP_NEXT_GATE_AFTER_TEST_INFRA_HELPER`.
 
+## AUTHORIZE_NODAL_OS_CONTINUE_MAIN_ROADMAP_SAFE_WORKSTREAM_NON_STOP_UNTIL_BLOCKER
+
+- Decision: `GO_WITH_FINDINGS_MAIN_ROADMAP_SAFE_WORKSTREAM_CONTINUED_READY`.
+- Input HEAD: `71eaa1e25db5f4eca1b13aab21e06928a6455038`.
+- Front chosen: Product Ledger operator-surface/read-model no-double-truth focal guard.
+- Change: added `LocalDevRoutePreview_ReadModelAndSurfaceModelDoNotCreateDoubleTruth` to `ProductLedgerLocalDevRoutePreviewTests`.
+- Selection reason: roadmap still identified operator-surface/read-model no-double-truth as a safe Product Ledger follow-up; this is test-only and does not reopen model consolidation implementation.
+- Boundary: no `src/`, workflows/CI, CI enforcement, runtime/product, public/product, Production route, latest pointer/read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, release/commercial or broad Product Ledger/model consolidation opened.
+- Finding: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 docs were kept minimal.
+- Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_CONTINUED_OR_BLOCKED_BY_REAL_NO_GO`.
+
 ## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_ONLY
 
 - Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_OPERATOR_SURFACE_READ_MODEL_TERMINOLOGY_AUDIT_READY`.

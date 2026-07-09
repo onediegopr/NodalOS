@@ -255,6 +255,41 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsFalse(readModelProvider.Contains("AllowsDb,", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void LocalDevRoutePreview_ReadModelAndSurfaceModelDoNotCreateDoubleTruth()
+    {
+        var readModel = new ProductLedgerOperatorSurfaceReadModelProvider().Read(
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+        var result = new ProductLedgerLocalDevRoutePreview().Render(
+            ReadyRequest(),
+            ProductLedgerOperatorSurfaceReadModelSource.FixtureSafe);
+        var model = result.CanonicalSurface;
+
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, result.Decision);
+        Assert.AreEqual(readModel.Mode, model.ReadModelMode);
+        Assert.AreEqual(readModel.SourceId, model.Statuses.Single(status => status.StatusId == "ledger-entry-count").EvidenceRef);
+        Assert.AreEqual(readModel.LedgerAuthority, model.LedgerAuthority);
+        Assert.AreEqual(readModel.LedgerAuthorityBoundaryStatus, model.LedgerAuthorityBoundaryStatus);
+        Assert.AreEqual(readModel.LedgerVerificationStatus, model.LedgerVerificationStatus);
+        Assert.AreEqual(readModel.CheckpointStatus, model.CheckpointStatus);
+        Assert.AreEqual(readModel.EntryCount, model.LedgerEntryCount);
+        Assert.AreEqual(readModel.HeadSequence, model.LedgerHeadSequence);
+        Assert.AreEqual(readModel.HeadHashPrefix, model.LedgerHeadHashPrefix);
+        Assert.AreEqual(readModel.LedgerHashPrefix, model.LedgerHashPrefix);
+        Assert.AreEqual(readModel.UsesFixtureReadModel, model.UsesFixtureReadModel);
+        Assert.AreEqual(readModel.UsesTestSafeLiveLedger, model.UsesTestSafeLiveLedgerReadModel);
+        Assert.AreEqual(readModel.AllowsProductCommandExecution, model.AllowsProductCommandExecution);
+        Assert.AreEqual(readModel.AllowsExternalNetwork, model.AllowsExternalNetwork);
+        Assert.AreEqual(readModel.AllowsDbMigration, model.AllowsDbMigration);
+        Assert.AreEqual(readModel.AllowsReleaseCommercial, model.AllowsReleaseCommercial);
+        Assert.IsFalse(model.AllowsPublicInternetExposure);
+        Assert.IsFalse(model.AllowsKmsWormExternalTrust);
+        Assert.IsFalse(model.AllowsBrowserCdpWcuOcrRecipesLive);
+        Assert.IsFalse(model.AllowsDestructiveAction);
+        Assert.IsFalse(model.AllowsUnboundedExport);
+        Assert.IsFalse(model.AllowsExternalCloudExport);
+    }
+
     private static ProductLedgerLocalDevRoutePreviewRequest ReadyRequest() =>
         new(
             ExplicitLocalDevInternalPreviewScope: true,
