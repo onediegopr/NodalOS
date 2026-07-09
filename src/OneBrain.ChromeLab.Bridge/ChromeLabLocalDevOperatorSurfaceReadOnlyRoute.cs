@@ -104,21 +104,40 @@ public sealed class ChromeLabLocalDevOperatorSurfaceReadOnlyRoute
 
 public static class ChromeLabLocalDevOperatorSurfaceEndpointExtensions
 {
-    public static RouteHandlerBuilder MapChromeLabLocalDevOperatorSurfaceReadOnlyRoute(
-        this IEndpointRouteBuilder endpoints) =>
+    public static IEndpointRouteBuilder MapChromeLabLocalDevOperatorSurfaceReadOnlyRoute(
+        this IEndpointRouteBuilder endpoints)
+    {
         endpoints.MapGet(ChromeLabLocalDevOperatorSurfaceReadOnlyRoute.RoutePath, (HttpContext context) =>
         {
-            context.Response.Headers.CacheControl = "no-store";
+            ApplyNoStore(context);
             var response = new ChromeLabLocalDevOperatorSurfaceReadOnlyRoute()
                 .Handle(context.Connection.RemoteIpAddress);
-            return ToHttpResult(response);
+            return ToJsonHttpResult(response);
         }).WithName("ChromeLabLocalDevOperatorSurfaceReadOnly");
 
-    private static IResult ToHttpResult(ChromeLabLocalDevOperatorSurfaceRouteResponse response)
+        endpoints.MapGet(ChromeLabLocalDevOperatorSurfaceHtmlRenderer.RoutePath, (HttpContext context) =>
+        {
+            ApplyNoStore(context);
+            var response = new ChromeLabLocalDevOperatorSurfaceReadOnlyRoute()
+                .Handle(context.Connection.RemoteIpAddress);
+            if (response.StatusCode == StatusCodes.Status404NotFound)
+                return Results.NotFound();
+
+            var html = new ChromeLabLocalDevOperatorSurfaceHtmlRenderer().Render(response);
+            return Results.Content(html.Html, html.ContentType, statusCode: html.StatusCode);
+        }).WithName("ChromeLabLocalDevOperatorSurfaceHtmlReadOnly");
+
+        return endpoints;
+    }
+
+    private static IResult ToJsonHttpResult(ChromeLabLocalDevOperatorSurfaceRouteResponse response)
     {
         if (response.StatusCode == StatusCodes.Status404NotFound)
             return Results.NotFound();
 
         return Results.Json(response, statusCode: response.StatusCode);
     }
+
+    private static void ApplyNoStore(HttpContext context) =>
+        context.Response.Headers.CacheControl = "no-store";
 }
