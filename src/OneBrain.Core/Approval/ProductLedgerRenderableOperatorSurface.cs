@@ -197,7 +197,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
         IReadOnlyList<ProductLedgerRenderableOperatorSurfaceBlocker> blockers,
         ProductLedgerPublicUiActionResult? actionSurface)
     {
-        var distinct = ReadOnly(blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray());
+        var distinct = ProductLedgerLocalDevSnapshotCollections.Seal(blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray());
         var rendered = distinct.Count == 0 && actionSurface is not null;
         var model = rendered ? ReadyModel(actionSurface!) : BlockedModel(distinct);
         return new ProductLedgerRenderableOperatorSurfaceResult(
@@ -214,7 +214,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
         Model(
             rendered: true,
             statusText: ReadyStatus,
-            sections: ReadOnly(
+            sections: ProductLedgerLocalDevSnapshotCollections.Seal(
                 "Runtime gate: local-only internal default-off evidence visible.",
                 "Product Ledger writer: bounded local-only writer evidence visible.",
                 "Bounded export: local fixture only, hash verified when export evidence is present.",
@@ -222,7 +222,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
                 "Disabled dangerous actions: destructive, external/cloud, DB, KMS/WORM, live automation and release/commercial are blocked.",
                 "Safe next step: DOM contract hardening or read-only audit only."
             ),
-            actions: ReadOnly(actionSurface.Buttons.Select(button => new ProductLedgerRenderableOperatorSurfaceActionModel(
+            actions: ProductLedgerLocalDevSnapshotCollections.Seal(actionSurface.Buttons.Select(button => new ProductLedgerRenderableOperatorSurfaceActionModel(
                 ActionId: ToKebab(button.ActionKind.ToString()),
                 Label: button.Label,
                 RiskLabel: button.RiskLabel,
@@ -234,7 +234,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
                 NonDestructive: button.NonDestructive,
                 Bounded: button.Bounded,
                 DisabledReason: button.DisabledReason)).ToArray()),
-            warnings: ReadOnly(
+            warnings: ProductLedgerLocalDevSnapshotCollections.Seal(
                 "Renderable snapshot fixture only; not deployed.",
                 "No public route, endpoint or controller.",
                 "No telemetry, sync, provider/cloud/network, DB/migration, KMS/WORM/external trust or live automation.",
@@ -246,11 +246,11 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
         Model(
             rendered: false,
             statusText: RejectedStatus,
-            sections: ReadOnly(blockers.Select(blocker => blocker.ToString()).ToArray()),
-            actions: ReadOnly<ProductLedgerRenderableOperatorSurfaceActionModel>(
+            sections: ProductLedgerLocalDevSnapshotCollections.Seal(blockers.Select(blocker => blocker.ToString()).ToArray()),
+            actions: ProductLedgerLocalDevSnapshotCollections.Seal<ProductLedgerRenderableOperatorSurfaceActionModel>(
                 new ProductLedgerRenderableOperatorSurfaceActionModel("blocked", "Snapshot blocked", "blocked", "fix blockers", false, true, true, true, false, false, "Fail-closed snapshot did not render active actions.")
             ),
-            warnings: ReadOnly("Fail-closed render model does not expose action handlers."));
+            warnings: ProductLedgerLocalDevSnapshotCollections.Seal("Fail-closed render model does not expose action handlers."));
 
     private static ProductLedgerRenderableOperatorSurfaceModel Model(
         bool rendered,
@@ -268,7 +268,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
             ExternalCloudReadinessPercent: 0,
             KmsWormExternalTrustPercent: 0,
             ReleaseCommercialReadinessPercent: 0,
-            Notices: ReadOnly(
+            Notices: ProductLedgerLocalDevSnapshotCollections.Seal(
                 "local-only",
                 "internal-only",
                 "renderable snapshot fixture",
@@ -379,6 +379,4 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
         string.Concat(value.Select((ch, index) =>
             index > 0 && char.IsUpper(ch) ? "-" + char.ToLowerInvariant(ch) : char.ToLowerInvariant(ch).ToString()));
 
-    private static IReadOnlyList<T> ReadOnly<T>(params T[] items) =>
-        Array.AsReadOnly(items);
 }

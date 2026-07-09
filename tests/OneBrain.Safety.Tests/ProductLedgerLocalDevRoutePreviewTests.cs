@@ -341,6 +341,29 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsTrue(model.Warnings.Any(warning => warning.Contains("No public route", StringComparison.Ordinal)));
     }
 
+    [TestMethod]
+    public void LocalDevRoutePreview_OperatorSurfaceAndRenderableSurfaceUseSharedSnapshotCollectionSealer()
+    {
+        var root = RepoRoot();
+        var canonicalSource = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "OneBrain.Core",
+            "Approval",
+            "ProductLedgerOperatorSurfaceModel.cs"));
+        var renderableSource = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "OneBrain.Core",
+            "Approval",
+            "ProductLedgerRenderableOperatorSurface.cs"));
+
+        StringAssert.Contains(canonicalSource, "ProductLedgerLocalDevSnapshotCollections");
+        StringAssert.Contains(renderableSource, "ProductLedgerLocalDevSnapshotCollections.Seal");
+        Assert.IsFalse(canonicalSource.Contains("private static IReadOnlyList<T> ReadOnly", StringComparison.Ordinal));
+        Assert.IsFalse(renderableSource.Contains("private static IReadOnlyList<T> ReadOnly", StringComparison.Ordinal));
+    }
+
     private static ProductLedgerLocalDevRoutePreviewRequest ReadyRequest() =>
         new(
             ExplicitLocalDevInternalPreviewScope: true,
