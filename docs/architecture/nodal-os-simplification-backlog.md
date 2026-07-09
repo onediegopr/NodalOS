@@ -1970,3 +1970,15 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 no operator-selected frontier is currently authorized; P4 more local hardening would be churn.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_EXPLICIT_OPERATOR_SELECTED_FRONTIER_WITH_SCOPE`.
 - Authorization note: MSE18 does not authorize source changes, tests, approval execution, mutation, product action, service registration, runtime/product, public/product exposure, export/download real behavior, latest/read precedence, product authority, trusted context activation, durable evidence persistence, workspace import product behavior, user/customer data processing, DB/cloud/KMS/WORM, CI enforcement, workflows or release/commercial.
+
+## BLOCK MSE19 - Product Ledger Local/Dev Product Surface Advancement
+
+- Objective: execute Diego's explicit Product Ledger local/dev frontier with visible, functional surface progress instead of another selector or guard-only block.
+- Status: completed as bounded `src/` + Safety-test + docs-minimal advancement.
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_READY`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_PREP_VISIBLE_NO_PRODUCTION_AUTHORITY`.
+- Targets executed: local/dev route product-surface prep panel; canonical `local-dev-product-surface-prep` readiness status and current local/dev next steps; internal operator preview next step moved to route/operator verification; focal tests for route anchors and public action/export/release blockers.
+- Scope: local/dev, read-only, non-destructive, no production authority. No workflows, CI enforcement, DB/cloud/KMS/WORM, external provider, public internet exposure, latest pointer/read precedence authority, irreversible write, productive service registration, real export/download or release/commercial work.
+- Current posture: global roadmap readiness `98%`; Product Ledger local/dev product surface readiness `82%`; Product Ledger model consolidation `77%`; runtime/product local-dev readiness `35%`; runtime/product production readiness `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 production Product Ledger exposure, latest/read precedence authority and release/commercial remain blocked; P4 further copy-only local/dev tweaks should be avoided unless tied to behavior or acceptance evidence.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_OR_CLOSE`.

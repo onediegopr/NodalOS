@@ -308,7 +308,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
         return ViewModel(
             rendered: true,
             headerStatus: "LOCAL_ONLY_INTERNAL_READ_ONLY_PREVIEW",
-            readinessPercentage: 82,
+            readinessPercentage: 86,
             sections: sections,
             actionPreviews: commandPreviews is null ? ActionPreviews() : FromCommandPreviews(commandPreviews),
             blockers: [],
@@ -316,7 +316,8 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
             [
                 "Preview is internal-only and local-only.",
                 "Checkpoint/head evidence is same-boundary local trust only.",
-                "Action previews are disabled labels without execution authority."
+                "Action previews are disabled labels without execution authority.",
+                "Next visible advancement is local/dev route response and operator preview verification."
             ]);
     }
 
@@ -400,7 +401,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
             Blockers: blockers,
             Warnings: warnings,
             SafeNextStep: rendered
-                ? "READ_ONLY_AUDIT_OR_PROPERTY_CORPUS_OR_STATIC_SCAN_HARDENING"
+                ? "LOCAL_DEV_PRODUCT_SURFACE_PREP_VERIFY_ROUTE_RESPONSE_AND_OPERATOR_PREVIEW"
                 : "FIX_BLOCKERS_BEFORE_INTERNAL_OPERATOR_UI_PREVIEW",
             LocalOnly: true,
             InternalOnly: true,
@@ -462,11 +463,10 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
 
     private static IReadOnlyList<string> SafeNextStepLabels() =>
     [
-        "read-only audit",
-        "property/corpus hardening",
-        "static scan hardening",
-        "operator docs",
-        "manual external review packet"
+        "verify local/dev route response anchors",
+        "verify operator preview disabled actions",
+        "verify readiness and blocker copy",
+        "keep public/product, release and external trust blocked"
     ];
 
     private static string SectionId(string value) =>

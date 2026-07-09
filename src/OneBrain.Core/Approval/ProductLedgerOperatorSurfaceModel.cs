@@ -187,17 +187,10 @@ public static class ProductLedgerOperatorSurfaceModelFactory
             DurableLatestStateReaderCandidateState: durableLatestStateReaderCandidateState ?? ProductLedgerLocalDurableLatestStateReaderCandidateResult.Pending,
             DurableLatestStateAuxiliaryEvidenceState: durableLatestStateAuxiliaryEvidenceState ?? ProductLedgerLocalDurableLatestStateAuxiliaryEvidenceResult.Pending,
             SafeNextSteps: ProductLedgerLocalDevSnapshotCollections.Seal(
-                "RENDERED_UI_INTERACTION_LOCAL_ONLY_TEST_PACK",
-                "LOCAL_APPROVAL_TO_ACTION_READ_ONLY_PREVIEW_LOOP",
-                "LOCAL_APPROVAL_EXECUTION_ROUTE_PREVIEW_EVIDENCE_TEST_ONLY",
-                "LOCAL_APPROVAL_REAL_OPERATOR_INPUT_AND_STATE_PERSISTENCE_WINDOW",
-                "APPROVED_ACTION_EXECUTION_LOCAL_ONLY_NO_OP_TO_BOUNDED_ACTION_WINDOW",
-                "APPROVED_ACTION_EXECUTION_BOUNDED_LOCAL_NON_DESTRUCTIVE_ACTION_DESIGN_TEST_WINDOW",
-                "LOCAL_APPROVED_HANDOFF_REPORT_DRAFT_AUDIT_READ_ONLY",
-                "WORKSPACE_TEST_JAIL_HANDOFF_DRAFT_AUDIT_READ_ONLY",
-                "USER_WORKSPACE_ALLOWLISTED_HANDOFF_DRAFT_AUDIT_READ_ONLY",
-                "LOCAL_OPERATOR_SURFACE_LATEST_STATE_SNAPSHOT_AUDIT_READ_ONLY",
-                "DELETION_LIFECYCLE_DESIGN_ONLY"
+                "LOCAL_DEV_PRODUCT_SURFACE_ROUTE_RESPONSE_VERIFICATION",
+                "LOCAL_DEV_OPERATOR_PREVIEW_DISABLED_ACTION_REVIEW",
+                "LOCAL_DEV_READINESS_BLOCKER_COPY_REVIEW",
+                "PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_OR_CLOSE"
             ),
             IsLocalOnly: true,
             IsDevelopmentOnly: true,
@@ -230,6 +223,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         new("bounded-export", "Bounded export", readModel.BoundedExportStatus, nameof(ProductLedgerLocalReportExportService), 70),
         new("operator-acceptance", "Operator acceptance", readModel.OperatorAcceptanceStatus, nameof(ProductLedgerOperatorAcceptanceLocalOnlyMatrix), 76),
         new("public-action-contract", "Public local-only action contract", readModel.PublicLocalOnlyActionContractStatus, nameof(ProductLedgerPublicUiActionSurface), 70),
+        new("local-dev-product-surface-prep", "Local/dev product surface prep", "VISIBLE_ROUTE_RESPONSE_WITH_BLOCKED_ACTIONS", nameof(ProductLedgerLocalDevRoutePreview), 78),
         new("visual-evidence", "Visual evidence", readModel.VisualEvidenceStatus, nameof(ProductLedgerLocalDevVisualQaEvidence), 64),
         new("screenshot-evidence", "Screenshot evidence", readModel.ScreenshotEvidenceStatus, "ProductLedgerBrowserLocalOnlyScreenshotEvidence", 58)
     );
@@ -286,6 +280,7 @@ public static class ProductLedgerOperatorSurfaceModelFactory
         new("kms-worm-external-trust", "KMS/WORM/external trust", "No external custody, key or WORM claim is made."),
         new("browser-cdp-wcu-ocr-recipes-live", "Browser/CDP/WCU/OCR/Recipes live", "No live automation authority is exposed."),
         new("release-commercial", "Release/commercial", "No release, commercial or compliance custody readiness is claimed."),
+        new("latest-pointer-read-precedence", "Latest pointer/read precedence", "Local/dev latest-state evidence remains auxiliary and does not become product authority."),
         new("destructive-action", "Destructive action", "All destructive and unsafe write actions remain disabled."),
         new("unbounded-export", "Unbounded export/write", "Only bounded export status is visible; the route does not call an exporter.")
     );

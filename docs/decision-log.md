@@ -3422,3 +3422,15 @@
 - Current posture: global roadmap readiness `97%`; Approval Packet read-only boundary confidence `86%`; Workspace Context authority boundary confidence `88%`; durable audit trail local/test boundary confidence `85%`; durable evidence/review-link confidence `87%`; Common Contract no-double-truth confidence `97%`; source-refactor readiness `80%`; Product Ledger model consolidation readiness `75%`; local focal validation confidence `89%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 no explicit operator frontier is selected; P4 more local hardening would be churn.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_EXPLICIT_OPERATOR_SELECTED_FRONTIER_WITH_SCOPE`.
+
+## AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_MACRO
+
+- Decision: `GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_READY`.
+- Baseline: `48cc21700236c73da8b1b75bf3140cdd69fe8c60`.
+- Resulting state: `PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_PREP_VISIBLE_NO_PRODUCTION_AUTHORITY`.
+- Scope: bounded Product Ledger local/dev source/test/docs advancement. No CI/workflows, production deployment, public internet exposure, DB/cloud/KMS/WORM, external provider, customer/user data, latest pointer/read precedence authority, irreversible write, productive service registration, real export/download or release/commercial change.
+- Targets executed: route-level local/dev product-surface prep panel, canonical surface readiness/next-step update, internal operator preview next-step update, focal route/operator/public-action disabled-surface tests.
+- Validation: Core build PASS; focal Product Ledger route preview `11/11` PASS; internal operator UI preview `7/7` PASS; public UI action surface `9/9` PASS; public read-only disabled preview `6/6` PASS. Initial combined test filter timed out and was replaced with helper-bounded focal runs.
+- Current posture: global roadmap readiness `98%`; Product Ledger local/dev product surface readiness `82%`; Product Ledger model consolidation `77%`; runtime/product local-dev readiness `35%`; runtime/product production readiness `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 production Product Ledger exposure and product authority remain blocked; P4 further copy-only polish would be churn unless tied to local/dev behavior.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_OR_CLOSE`.

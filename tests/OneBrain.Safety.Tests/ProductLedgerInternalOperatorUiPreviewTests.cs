@@ -44,7 +44,7 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
         Assert.AreEqual(0, result.Blockers.Count);
         Assert.AreEqual("Product Ledger Local-Only", result.ViewModel.Header.Title);
         Assert.AreEqual("LOCAL_ONLY_INTERNAL_READ_ONLY_PREVIEW", result.ViewModel.Header.Status);
-        Assert.AreEqual(82, result.ViewModel.Header.ReadinessPercentage);
+        Assert.AreEqual(86, result.ViewModel.Header.ReadinessPercentage);
         CollectionAssert.Contains(result.ViewModel.Header.Notices.ToArray(), "local-only");
         CollectionAssert.Contains(result.ViewModel.Header.Notices.ToArray(), "internal-only");
         CollectionAssert.Contains(result.ViewModel.Header.Notices.ToArray(), "read-only preview");
@@ -77,7 +77,8 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
         StringAssert.Contains(allLines, "replay_failure=True");
         StringAssert.Contains(allLines, "rollback_non_rollback=True");
         StringAssert.Contains(allLines, "no_external_trust=true");
-        StringAssert.Contains(result.ViewModel.SafeNextStep, "READ_ONLY_AUDIT");
+        StringAssert.Contains(result.ViewModel.SafeNextStep, "LOCAL_DEV_PRODUCT_SURFACE_PREP");
+        Assert.IsTrue(result.ViewModel.Warnings.Any(warning => warning.Contains("local/dev route response", StringComparison.Ordinal)));
     }
 
     [TestMethod]

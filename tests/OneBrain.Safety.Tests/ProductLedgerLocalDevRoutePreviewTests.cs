@@ -83,6 +83,13 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         StringAssert.Contains(html, "data-testid=\"surface-bounded-export\"");
         StringAssert.Contains(html, "data-testid=\"surface-operator-acceptance\"");
         StringAssert.Contains(html, "data-testid=\"surface-public-action-contract\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-local-dev-product-surface-prep\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-local-dev-product-surface-prep-status\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-local-dev-product-surface-prep-limits\"");
+        StringAssert.Contains(html, "data-testid=\"product-ledger-local-dev-product-surface-prep-next-action\"");
+        StringAssert.Contains(html, "VISIBLE_ROUTE_RESPONSE_WITH_BLOCKED_ACTIONS");
+        StringAssert.Contains(html, "LOCAL_DEV_PRODUCT_SURFACE_ROUTE_RESPONSE_VERIFICATION");
+        StringAssert.Contains(html, "no latest pointer/read precedence authority");
         StringAssert.Contains(html, "data-testid=\"surface-visual-evidence\"");
         StringAssert.Contains(html, "data-testid=\"surface-screenshot-evidence\"");
         StringAssert.Contains(html, "data-testid=\"surface-blocked-frontiers\"");
@@ -235,11 +242,16 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "bounded-export"));
         Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "operator-acceptance"));
         Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "public-action-contract"));
+        Assert.IsTrue(model.Statuses.Any(status => status.StatusId == "local-dev-product-surface-prep"));
         Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "product-command-execution"));
         Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "public-internet"));
         Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "release-commercial"));
+        Assert.IsTrue(model.BlockedFrontiers.Any(frontier => frontier.FrontierId == "latest-pointer-read-precedence"));
         Assert.IsTrue(model.ActionPreviews.Count > 0);
         Assert.IsTrue(model.ActionPreviews.All(action => action.Disabled && action.ReadOnly));
+        CollectionAssert.Contains(
+            model.SafeNextSteps.ToArray(),
+            "LOCAL_DEV_PRODUCT_SURFACE_ROUTE_RESPONSE_VERIFICATION");
 
         var readModelProvider = File.ReadAllText(Path.Combine(
             RepoRoot(),

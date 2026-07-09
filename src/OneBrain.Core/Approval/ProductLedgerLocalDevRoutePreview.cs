@@ -494,6 +494,7 @@ public sealed class ProductLedgerLocalDevRoutePreview
         html.AppendLine($"    <p data-testid=\"product-ledger-visual-evidence-status\">{Encode(model.VisualEvidenceStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"surface-screenshot-evidence\">{Encode(model.ScreenshotEvidenceStatus)}</p>");
         html.AppendLine($"    <p data-testid=\"product-ledger-screenshot-evidence-status\">{Encode(model.ScreenshotEvidenceStatus)}</p>");
+        html.AppendLine(ToLocalDevProductSurfacePrepHtml(model));
         html.AppendLine("    <div data-testid=\"surface-statuses\">");
         foreach (var status in model.Statuses.OrderBy(status => status.StatusId, StringComparer.Ordinal))
         {
@@ -545,6 +546,26 @@ public sealed class ProductLedgerLocalDevRoutePreview
 
         html.AppendLine("    </div>");
         html.AppendLine("  </section>");
+        return html.ToString();
+    }
+
+    private static string ToLocalDevProductSurfacePrepHtml(ProductLedgerOperatorSurfaceModel model)
+    {
+        var prepStatus = model.Statuses.Single(status => status.StatusId == "local-dev-product-surface-prep");
+        var html = new StringBuilder();
+        html.AppendLine($"    <section data-testid=\"product-ledger-local-dev-product-surface-prep\" data-readiness=\"{prepStatus.ReadinessPercent}\" data-local-only=\"{Lower(model.IsLocalOnly)}\" data-development-only=\"{Lower(model.IsDevelopmentOnly)}\" data-read-only=\"{Lower(model.IsReadOnly)}\" data-product-command-execution=\"{Lower(model.AllowsProductCommandExecution)}\" data-public-internet=\"{Lower(model.AllowsPublicInternetExposure)}\" data-release-commercial=\"{Lower(model.AllowsReleaseCommercial)}\" data-latest-read-precedence-authority=\"false\">");
+        html.AppendLine("      <h3>Local/dev product surface prep</h3>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-local-dev-product-surface-prep-status\">{Encode(prepStatus.Value)}; readiness={prepStatus.ReadinessPercent}%; evidence={Encode(prepStatus.EvidenceRef)}</p>");
+        html.AppendLine("      <p data-testid=\"product-ledger-local-dev-product-surface-prep-limits\">local/dev only; read-only; no public internet; no product command execution; no latest pointer/read precedence authority; no release/commercial</p>");
+        html.AppendLine($"      <p data-testid=\"product-ledger-local-dev-product-surface-prep-next-action\">{Encode(model.SafeNextSteps.First())}</p>");
+        html.AppendLine("      <div data-testid=\"product-ledger-local-dev-product-surface-prep-blockers\">");
+        foreach (var frontier in model.BlockedFrontiers.OrderBy(frontier => frontier.FrontierId, StringComparer.Ordinal))
+        {
+            html.AppendLine($"        <p>{Encode(frontier.FrontierId)}: {Encode(frontier.Reason)}</p>");
+        }
+
+        html.AppendLine("      </div>");
+        html.AppendLine("    </section>");
         return html.ToString();
     }
 

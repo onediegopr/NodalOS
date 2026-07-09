@@ -675,6 +675,25 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_EXPLICIT_OPERATOR_SELECTED_FRONTIER_WITH_SCOPE`
 
+Operator-selected Product Ledger local/dev product surface advancement:
+
+`GO_WITH_FINDINGS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_READY`
+
+Resulting state:
+
+`PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_PREP_VISIBLE_NO_PRODUCTION_AUTHORITY`
+
+Targets executed:
+
+- Product Ledger local/dev route now exposes a visible product-surface prep panel with readiness, limits, blockers and next action anchors.
+- Canonical operator surface now includes `local-dev-product-surface-prep` status and current local/dev next steps instead of stale hardening-only steps.
+- Internal operator preview now points to local/dev route response and operator preview verification while actions remain disabled.
+- Focal Safety coverage verifies route anchors, operator preview next step, public action/export/release blockers and no executable surface.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_OR_CLOSE`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

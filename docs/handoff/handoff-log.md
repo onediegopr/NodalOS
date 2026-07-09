@@ -354,6 +354,10 @@ Operator-selected frontier pause: `MAIN_ROADMAP_PAUSED_CLEAN_WAITING_FOR_OPERATO
 
 Closed as a clean pause because no explicit new frontier was selected. Product Ledger public/product exposure, Browser/ChromeLab/Recipes live and release/commercial remain runtime/product blocked; CI workflow enforcement remains CI-blocked; broad Source Refactor remains unsafe broad without risk acceptance. No `src/`, tests, approval execution, mutation, product action, service registration, runtime/product, public/product exposure, export/download, latest/read precedence, workflows, CI enforcement, DB/cloud/KMS/WORM or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_EXPLICIT_OPERATOR_SELECTED_FRONTIER_WITH_SCOPE`.
 
+Product Ledger local/dev product surface advancement: `PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_PREP_VISIBLE_NO_PRODUCTION_AUTHORITY`.
+
+Executed Diego's explicit Product Ledger local/dev frontier with real surface progress. The local/dev route now renders a product-surface prep panel with readiness, limits, blockers and next-action anchors; the canonical surface includes `local-dev-product-surface-prep` and current local/dev next steps; the internal operator preview now points to route/operator verification instead of generic hardening. Safety coverage passed for route preview, internal operator preview, public UI action blockers and public read-only disabled preview. No CI/workflows, production deployment, public internet exposure, DB/cloud/KMS/WORM, external provider, customer/user data, latest pointer/read precedence authority, irreversible write, productive service registration, real export/download or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_PRODUCT_LEDGER_LOCAL_DEV_PRODUCT_SURFACE_ADVANCEMENT_FOLLOW_UP_OR_CLOSE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:
