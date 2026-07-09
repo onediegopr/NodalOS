@@ -282,6 +282,10 @@ CI validation readiness non-enforcing plan: `CI_VALIDATION_READINESS_NON_ENFORCI
 
 Added `docs/architecture/nodal-os-ci-validation-readiness-non-enforcing-plan.md`. The plan records focal helper-shaped local validation, disk-space P3 policy, broad-filter non-gate policy and future CI preconditions. No workflows, CI enforcement, scripts, `src/`, tests, runtime/product, DB/cloud/KMS/WORM or release/commercial authority changed.
 
+Macro safe execution after CI readiness: `MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+
+Executed three bounded local-validation hardenings in `tools/scripts/run-focal-dotnet.ps1`: default `-MinFreeGiB 10` fail-fast, repo-contained project path guard and case/whitespace-insensitive block for the known unsafe broad Reentry filter. Validated with helper help and fail-closed negative probes only, avoiding build/test artifact generation. No workflows, CI enforcement, `src/`, tests, runtime/product, DB/cloud/KMS/WORM or release/commercial authority changed.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

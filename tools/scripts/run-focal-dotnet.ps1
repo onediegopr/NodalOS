@@ -7,7 +7,8 @@
     Runs one bounded dotnet build or focal dotnet test command with an explicit
     timeout, optional single retry and narrow process-tree cleanup. This helper
     is for operator-run local validation only. It does not enable CI enforcement
-    and must not be used as a broad suite gate.
+    and must not be used as a broad suite gate. It fails closed when free disk
+    space is below the configured minimum.
 
 .EXAMPLE
     pwsh -File tools/scripts/run-focal-dotnet.ps1 -Mode build -Project src/OneBrain.Core/OneBrain.Core.csproj -TimeoutSeconds 120
@@ -34,6 +35,8 @@ param(
     [ValidateSet('quiet', 'minimal', 'normal', 'detailed', 'diagnostic')]
     [string]$Verbosity = 'normal',
 
+    [int]$MinFreeGiB = 10,
+
     [string]$Dotnet = 'dotnet'
 )
 
@@ -49,6 +52,41 @@ function Resolve-RepoPath([string]$path) {
     }
 
     return Join-Path (Get-Location).Path $path
+}
+
+function Get-RepoRoot() {
+    $root = (& git rev-parse --show-toplevel 2>$null)
+    if ([string]::IsNullOrWhiteSpace($root)) {
+        throw 'Repo root could not be resolved. Run this helper from inside the repository.'
+    }
+
+    return [System.IO.Path]::GetFullPath($root.Trim())
+}
+
+function Assert-PathInsideRepo([string]$path, [string]$repoRoot) {
+    $fullPath = [System.IO.Path]::GetFullPath($path)
+    $root = $repoRoot.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+
+    if (-not $fullPath.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Project must stay inside repo root: $path"
+    }
+
+    return $fullPath
+}
+
+function Assert-FreeDiskSpace([string]$path, [int]$minFreeGiB) {
+    if ($minFreeGiB -lt 1) {
+        throw 'MinFreeGiB must be at least 1.'
+    }
+
+    $root = [System.IO.Path]::GetPathRoot([System.IO.Path]::GetFullPath($path))
+    $driveName = $root.TrimEnd('\').TrimEnd(':')
+    $drive = Get-PSDrive -Name $driveName -ErrorAction Stop
+    $minBytes = [int64]$minFreeGiB * 1GB
+
+    if ($drive.Free -lt $minBytes) {
+        throw "Insufficient free disk space on $($drive.Name): required ${minFreeGiB}GiB, available $([math]::Round($drive.Free / 1GB, 2))GiB."
+    }
 }
 
 function Get-ChildProcessIds([int]$parentId) {
@@ -109,22 +147,27 @@ if ($TimeoutSeconds -lt 15) {
     throw 'TimeoutSeconds must be at least 15.'
 }
 
-$projectPath = Resolve-RepoPath $Project
+$repoRoot = Get-RepoRoot
+$projectPath = Assert-PathInsideRepo -path (Resolve-RepoPath $Project) -repoRoot $repoRoot
 if (-not (Test-Path -LiteralPath $projectPath)) {
     throw "Project not found: $Project"
 }
+
+Assert-FreeDiskSpace -path $repoRoot -minFreeGiB $MinFreeGiB
 
 if ($Mode -eq 'test' -and [string]::IsNullOrWhiteSpace($Filter)) {
     throw 'Focal test mode requires -Filter. Broad suite execution is not a safe local default.'
 }
 
-if ($Mode -eq 'test' -and -not $ListTests -and $Filter -eq 'FullyQualifiedName~ReentryDecisionPacketReadOnly') {
+$normalizedFilter = $Filter.Trim()
+if ($Mode -eq 'test' -and -not $ListTests -and $normalizedFilter.Equals('FullyQualifiedName~ReentryDecisionPacketReadOnly', [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'Known broad Reentry execution filter is unsafe locally. Use a concrete class filter or -ListTests for discovery only.'
 }
 
 Write-Host 'NODAL OS local focal dotnet runner helper'
 Write-Host 'Scope: local/operator-run only; no CI enforcement; prefer focal filters.'
 Write-Host 'Broad execution filters are not local validation gates.'
+Write-Host ("Disk guard: MinFreeGiB={0}" -f $MinFreeGiB)
 
 $arguments = @($Mode, $Project, '--no-restore')
 if ($Mode -eq 'build') {

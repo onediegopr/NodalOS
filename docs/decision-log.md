@@ -3194,3 +3194,15 @@
 - Current posture: CI validation readiness `62%`; local focal validation confidence `84%`; broad local filter confidence `35%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 disk pressure and broad-filter instability remain operational risks; P4 no CI enforcement exists yet by design.
 - Stop condition: `STOP_AFTER_CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_NO_CI_ENFORCEMENT`.
+
+## AUTHORIZE_NODAL_OS_MACRO_SAFE_EXECUTION_BLOCK_AFTER_CI_READINESS_PLAN
+
+- Decision: `GO_WITH_FINDINGS_MACRO_SAFE_EXECUTION_BLOCK_READY`.
+- Baseline: `9221082c7e388ae3925a33a74cf8abb1dbb968f3`.
+- Resulting state: `MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Scope: helper/local-validation hardening plus docs-minimal closeout. No `.github/workflows`, no CI enforcement, no `src/`, no tests, no project/solution files, no runtime/product, no public/product, no DB/cloud/network/provider, no KMS/WORM and no release/commercial changes.
+- Targets executed: `run-focal-dotnet.ps1` now enforces `-MinFreeGiB 10` by default, rejects project paths outside the repo and blocks the known unsafe broad Reentry filter case-insensitively with surrounding whitespace trimmed.
+- Validated without build artifact generation: script help, unsafe filter fail-closed, outside-repo project fail-closed and artificial disk-pressure fail-closed.
+- Current posture: CI validation readiness `68%`; local focal validation confidence `88%`; broad local filter confidence `35%`; global roadmap readiness `96%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk pressure remains operational risk but now fails closed in the helper; P4 broader CI transition remains deferred.
+- Stop condition: `STOP_AFTER_MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.

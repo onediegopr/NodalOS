@@ -1666,3 +1666,19 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 disk pressure and broad-filter instability remain operational risks; P4 plan is intentionally non-enforcing until a separate operator-approved CI block exists.
 - Stop condition: `STOP_AFTER_CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_NO_CI_ENFORCEMENT`.
 - Authorization note: CIR1 does not authorize `.github/workflows`, CI enforcement, scripts, source/test changes, runtime/product, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MSE1 - Macro Safe Execution After CI Readiness
+
+- Objective: execute a safe post-CI-readiness macro-block with real bounded improvements and no CI enforcement.
+- Status: completed as helper/local-validation hardening plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_MACRO_SAFE_EXECUTION_BLOCK_READY`.
+- Resulting state: `MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Targets executed: local focal helper disk-space fail-fast, repo-contained project path guard and case/whitespace-insensitive unsafe broad Reentry filter block.
+- Source/script changed: `tools/scripts/run-focal-dotnet.ps1`.
+- Docs changed: runner safe-command guidance, CI validation readiness plan, backlog, decision-log, handoff and current index.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`; no workflow files were touched.
+- Current posture: CI validation readiness `68%`; local focal validation confidence `88%`; broad local filter confidence `35%`; global roadmap readiness `96%`; runtime/product `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 disk pressure remains operational risk but now fails closed in the helper; P4 broader CI transition still requires an explicit non-enforcing packet or future operator-approved CI block.
+- Stop condition: `STOP_AFTER_MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`.
+- Authorization note: MSE1 does not authorize `.github/workflows`, CI enforcement, broad filters as gates, runtime/product, public/product, latest/read precedence, product authority, DB/cloud/KMS/WORM or release/commercial.

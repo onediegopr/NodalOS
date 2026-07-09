@@ -427,22 +427,22 @@ P4:
 
 Selected frontier:
 
-`CI_VALIDATION_READINESS_NON_ENFORCING_PLAN`
+`MACRO_SAFE_EXECUTION_BLOCK_AFTER_CI_READINESS`
 
 Resulting state:
 
-`CI_VALIDATION_READINESS_NON_ENFORCING_PLAN_READY_NO_CI_ENFORCEMENT`
+`MACRO_SAFE_EXECUTION_BLOCK_READY_NO_RUNTIME_PRODUCT_NO_CI_ENFORCEMENT`
 
 Next exact block:
 
-`AUTHORIZE_NODAL_OS_CI_VALIDATION_READINESS_PACKET_REVIEW_READ_ONLY`
+`AUTHORIZE_NODAL_OS_NEXT_SUBSTANTIVE_MACRO_FRONTIER_AFTER_SAFE_EXECUTION`
 
 Execution contract:
 
-- review the non-enforcing validation readiness packet only;
-- do not edit workflows or enable CI enforcement;
-- keep validation candidate commands helper-shaped, focal and disk-space bounded;
-- close or return to roadmap if the next step requires workflows, broad filters, suite-wide gates, runtime/product, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
+- select one substantive macro frontier with 2-4 real bounded targets;
+- avoid packet-review/read-only as the main objective unless it is a real blocker;
+- keep validation candidate commands helper-shaped, focal, repo-contained and disk-space bounded;
+- close or return to roadmap if the next step requires workflows, CI enforcement, broad filters as gates, suite-wide gates, runtime/product, DB/cloud/network/provider, KMS/WORM or release/commercial authority.
 
 ## Final Boundary
 

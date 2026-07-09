@@ -54,6 +54,7 @@ pwsh -File tools/scripts/run-focal-dotnet.ps1 -Mode test -Project tests/OneBrain
 ```
 
 The helper is local/operator-run only. It does not enable CI enforcement, does not make broad filters safe as gates and still requires focal filters for `test` mode.
+It also fails closed before `dotnet` when free disk space is below `-MinFreeGiB` (default `10`) or when the project path is outside the repository.
 
 D7 focused:
 
@@ -124,6 +125,7 @@ dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --no-restor
 Avoid:
 
 - broad `FullyQualifiedName` execution filters for this Reentry lane;
+- broad `FullyQualifiedName~ReentryDecisionPacketReadOnly` variants with different casing or surrounding whitespace;
 - broad silent/minimal execution filters that previously hung;
 - suite-wide local execution without explicit timeout;
 - repeating a timed-out command indefinitely;

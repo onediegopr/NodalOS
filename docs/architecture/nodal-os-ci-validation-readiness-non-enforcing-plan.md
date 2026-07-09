@@ -46,12 +46,15 @@ Future CI may be considered only after all preconditions below pass locally with
 - Recommended free C: `20 GiB` or more.
 - If free space is below `10 GiB`, stop before build/test and clean only regenerable artifacts: `bin/`, `obj/`, `.tmp-*`, local caches, local virtualenvs and package installs.
 - Do not delete tracked docs/source/tests/artifacts as part of validation cleanup unless a separate operator-approved cleanup block explicitly targets them.
+- The local focal helper enforces `-MinFreeGiB 10` by default before invoking `dotnet`.
+- The local focal helper rejects project paths outside the repository so validation does not create uncontrolled external build artifacts.
 
 ## No-Broad-Filter Policy
 
 - Broad filters are allowed for discovery/list-tests only.
 - Broad filters are not gates.
 - Known unsafe local execution filter remains blocked: `FullyQualifiedName~ReentryDecisionPacketReadOnly`.
+- That known unsafe filter must be blocked case-insensitively and with surrounding whitespace trimmed.
 - Any future workflow must start with exact tests or narrow class/category filters that have stable local evidence.
 
 ## Stop Conditions
