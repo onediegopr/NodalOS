@@ -35,6 +35,47 @@ public sealed class NodalOsCommonBoundaryClaimsCandidateTests
     }
 
     [TestMethod]
+    [TestCategory("NoDoubleTruth")]
+    [TestCategory("PublicProductBlock")]
+    [TestCategory("ProductionRouteBlock")]
+    [TestCategory("LatestPointerBlock")]
+    [TestCategory("ReadPrecedenceBlock")]
+    [TestCategory("ProductAuthorityBlock")]
+    [TestCategory("CommandExecutionBlock")]
+    [TestCategory("ReleaseCommercialBlock")]
+    public void CandidateDefaultBlockedPublishesEverySupportedClaimWithCanonicalClosedState()
+    {
+        var candidate = NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked();
+        var expectedStates = new Dictionary<NodalOsCommonBoundaryClaimsCandidate.Claim, NodalOsCommonBoundaryClaimsCandidate.ClaimState>
+        {
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.PublicProductBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductionRouteBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.LatestPointerDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReadPrecedenceDisabled] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Disabled,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProductAuthorityBlocked] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Blocked,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.CommandExecutionDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.ShellSubprocessDenied] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.Denied,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.ProviderCloudNetworkNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.DatabaseMigrationNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.ExternalTrustNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.ReleaseCommercialNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.RuntimeProductEnablementNoGo] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NoGo,
+            [NodalOsCommonBoundaryClaimsCandidate.Claim.CiEnforcementNotClaimed] = NodalOsCommonBoundaryClaimsCandidate.ClaimState.NotClaimed
+        };
+
+        Assert.AreEqual(expectedStates.Count, candidate.Claims.Count);
+        CollectionAssert.AreEquivalent(expectedStates.Keys.ToArray(), candidate.Claims.Keys.ToArray());
+
+        foreach (var (claim, expectedState) in expectedStates)
+        {
+            Assert.AreEqual(expectedState, candidate.Claims[claim], claim.ToString());
+            Assert.AreEqual(expectedState, candidate.StateFor(claim), claim.ToString());
+            Assert.IsTrue(candidate.IsFailClosed(claim), claim.ToString());
+            Assert.IsFalse(candidate.CanOverrideExistingHardBlock(claim), claim.ToString());
+        }
+    }
+
+    [TestMethod]
     [TestCategory("PublicProductBlock")]
     public void CandidateRepresentsPublicProductBlockedWithoutEnablingProduct()
     {

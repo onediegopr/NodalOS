@@ -3008,3 +3008,16 @@
 - Findings: P0=0, P1=0, P2=0; P3 external-review packet wording and DB/cloud/KMS/WORM no-go vocabulary are false-positive prone; P4 deferred-family guard is valuable only as a narrow test-only guard.
 - Next recommended macro-block: `STOP_FOR_OPERATOR_DECISION_ON_DEFERRED_FORBIDDEN_PHRASE_FAMILIES_IMPLEMENTATION_SCOPE`.
 - Authorization note: this block selects only. It does not authorize deferred-family guard implementation, test edits, source changes, broad docs scans, CI enforcement, runtime/product, DB/cloud/KMS/WORM enablement, external audit approval, release/commercial, Product Ledger/model consolidation or broad common-contract implementation.
+
+## AUTHORIZE_NODAL_OS_COMMON_CONTRACT_NEXT_SAFE_MICRO_TARGET_SELECTION_OR_NO_GO
+
+- Decision: `GO_WITH_FINDINGS_COMMON_CONTRACT_MICRO_TARGET_SELECTED_READY`.
+- Baseline: `3f70c0d58c4a969fb16ecced49bca16d0656fff4`.
+- Resulting state: `COMMON_CONTRACT_DEFAULT_BLOCKED_COMPLETENESS_GUARD_READY`.
+- Scope: test-only focal/docs-minimal Common Contract guard. No `src/`, broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, writer/runtime real, DB/cloud/network/provider, KMS/WORM, CI/workflows, CI enforcement or release/commercial changes.
+- Micro-target selected and implemented: `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` completeness and canonical closed-state guard.
+- Test added: `CandidateDefaultBlockedPublishesEverySupportedClaimWithCanonicalClosedState` in `tests/OneBrain.Safety.Tests/NodalOsCommonBoundaryClaimsCandidateTests.cs`.
+- Selection reason: the candidate already failed closed for missing claims, but no focal guard required the default map to explicitly publish every supported claim with the expected closed state; this is bounded and prevents incomplete Common Contract truth without moving contracts or touching source.
+- Current posture: Common Contract candidate readiness `72%`; Common Contract no-double-truth confidence `88%`; runtime/product enablement `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs-minimal closeout only.
+- Stop condition: `STOP_AFTER_COMMON_CONTRACT_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.

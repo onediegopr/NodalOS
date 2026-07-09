@@ -1436,3 +1436,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Findings: P0=0, P1=0, P2=0; P3 broad Product Ledger model consolidation remains deferred; P4 docs were kept minimal.
 - Stop condition: `STOP_AFTER_MAIN_ROADMAP_SAFE_WORKSTREAM_CONTINUED_OR_BLOCKED_BY_REAL_NO_GO`.
 - Authorization note: MR27 does not authorize `src/`, workflows/CI, CI enforcement, runtime/product, Product Ledger model consolidation implementation, latest/read precedence, product authority, DB/cloud/KMS/WORM or release/commercial.
+
+## BLOCK MR28 - Common Contract Next Safe Micro Target
+
+- Objective: select or execute one clearly safe Common Contract micro-target without broad contract implementation.
+- Status: completed as test-only focal guard plus docs-minimal closeout.
+- Decision: `GO_WITH_FINDINGS_COMMON_CONTRACT_MICRO_TARGET_SELECTED_READY`.
+- Resulting state: `COMMON_CONTRACT_DEFAULT_BLOCKED_COMPLETENESS_GUARD_READY`.
+- Micro-target: guard that `NodalOsCommonBoundaryClaimsCandidate.DefaultBlocked()` explicitly publishes every supported claim with its canonical closed state.
+- Guard added: `CandidateDefaultBlockedPublishesEverySupportedClaimWithCanonicalClosedState` in `NodalOsCommonBoundaryClaimsCandidateTests`.
+- Runtime/product changed: none; runtime/product remains `0%`.
+- CI changed: none; CI enforcement remains `0%`.
+- Current posture: Common Contract candidate readiness `72%`; Common Contract no-double-truth confidence `88%`; global roadmap readiness `94%`; runtime/product `0%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 broad common-contract implementation remains blocked by double-truth and authority risk; P4 docs were kept minimal.
+- Stop condition: `STOP_AFTER_COMMON_CONTRACT_MICRO_TARGET_READY_NO_RUNTIME_PRODUCT_AUTHORITY`.
+- Authorization note: MR28 does not authorize `src/`, broad common-contract implementation, Product Ledger model consolidation, runtime/product, public/product, latest/read precedence, product authority, CI/workflows, DB/cloud/KMS/WORM or release/commercial.
