@@ -318,6 +318,29 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         Assert.IsFalse(model.SafeNextSteps.Contains("MUTATED_RUNTIME_PRODUCT_STEP"));
     }
 
+    [TestMethod]
+    public void LocalDevRoutePreview_RenderableSnapshotCollectionsAreReadOnlyAndCannotDrift()
+    {
+        var result = new ProductLedgerLocalDevRoutePreview().Render(ReadyRequest());
+        var snapshot = result.RenderableSnapshot;
+        var model = snapshot.Model;
+
+        Assert.AreEqual(ProductLedgerLocalDevRoutePreviewDecision.RenderedLocalDevInternalPreview, result.Decision);
+        Assert.AreEqual(ProductLedgerRenderableOperatorSurfaceDecision.RenderedSnapshot, snapshot.Decision);
+        AssertReadOnlyList(snapshot.Blockers, ProductLedgerRenderableOperatorSurfaceBlocker.ReleaseCommercialClaimed);
+        AssertReadOnlyList(model.Notices, "mutated");
+        AssertReadOnlyList(model.Sections, "mutated");
+        AssertReadOnlyList(
+            model.Actions,
+            new ProductLedgerRenderableOperatorSurfaceActionModel("mutated", "mutated", "mutated", "mutated", SafeAction: true, Dangerous: false, Disabled: false, LocalOnly: false, NonDestructive: false, Bounded: false, "mutated"));
+        AssertReadOnlyList(model.Warnings, "mutated");
+
+        Assert.IsTrue(model.Notices.Contains("local-only"));
+        Assert.IsTrue(model.Sections.Any(section => section.Contains("local-only internal", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(model.Actions.Any(action => action.ActionId == "mutated"));
+        Assert.IsTrue(model.Warnings.Any(warning => warning.Contains("No public route", StringComparison.Ordinal)));
+    }
+
     private static ProductLedgerLocalDevRoutePreviewRequest ReadyRequest() =>
         new(
             ExplicitLocalDevInternalPreviewScope: true,
@@ -503,6 +526,11 @@ public sealed class ProductLedgerLocalDevRoutePreviewTests
         if (values is IList<T> mutable)
         {
             Assert.IsTrue(mutable.IsReadOnly);
+            if (values.Count == 0)
+            {
+                return;
+            }
+
             try
             {
                 mutable[0] = mutationValue;

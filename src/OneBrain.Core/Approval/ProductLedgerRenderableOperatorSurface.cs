@@ -197,8 +197,8 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
         IReadOnlyList<ProductLedgerRenderableOperatorSurfaceBlocker> blockers,
         ProductLedgerPublicUiActionResult? actionSurface)
     {
-        var distinct = blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray();
-        var rendered = distinct.Length == 0 && actionSurface is not null;
+        var distinct = ReadOnly(blockers.Distinct().OrderBy(blocker => blocker.ToString(), StringComparer.Ordinal).ToArray());
+        var rendered = distinct.Count == 0 && actionSurface is not null;
         var model = rendered ? ReadyModel(actionSurface!) : BlockedModel(distinct);
         return new ProductLedgerRenderableOperatorSurfaceResult(
             Decision: rendered
@@ -214,16 +214,15 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
         Model(
             rendered: true,
             statusText: ReadyStatus,
-            sections:
-            [
+            sections: ReadOnly(
                 "Runtime gate: local-only internal default-off evidence visible.",
                 "Product Ledger writer: bounded local-only writer evidence visible.",
                 "Bounded export: local fixture only, hash verified when export evidence is present.",
                 "Evidence gates: redaction, retention, authority, failure/replay and rollback required.",
                 "Disabled dangerous actions: destructive, external/cloud, DB, KMS/WORM, live automation and release/commercial are blocked.",
                 "Safe next step: DOM contract hardening or read-only audit only."
-            ],
-            actions: actionSurface.Buttons.Select(button => new ProductLedgerRenderableOperatorSurfaceActionModel(
+            ),
+            actions: ReadOnly(actionSurface.Buttons.Select(button => new ProductLedgerRenderableOperatorSurfaceActionModel(
                 ActionId: ToKebab(button.ActionKind.ToString()),
                 Label: button.Label,
                 RiskLabel: button.RiskLabel,
@@ -234,26 +233,24 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
                 LocalOnly: button.LocalOnly,
                 NonDestructive: button.NonDestructive,
                 Bounded: button.Bounded,
-                DisabledReason: button.DisabledReason)).ToArray(),
-            warnings:
-            [
+                DisabledReason: button.DisabledReason)).ToArray()),
+            warnings: ReadOnly(
                 "Renderable snapshot fixture only; not deployed.",
                 "No public route, endpoint or controller.",
                 "No telemetry, sync, provider/cloud/network, DB/migration, KMS/WORM/external trust or live automation.",
                 "Not release-ready, not commercial-ready and not compliance-grade custody."
-            ]);
+            ));
 
     private static ProductLedgerRenderableOperatorSurfaceModel BlockedModel(
         IReadOnlyList<ProductLedgerRenderableOperatorSurfaceBlocker> blockers) =>
         Model(
             rendered: false,
             statusText: RejectedStatus,
-            sections: blockers.Select(blocker => blocker.ToString()).ToArray(),
-            actions:
-            [
-                new("blocked", "Snapshot blocked", "blocked", "fix blockers", false, true, true, true, false, false, "Fail-closed snapshot did not render active actions.")
-            ],
-            warnings: ["Fail-closed render model does not expose action handlers."]);
+            sections: ReadOnly(blockers.Select(blocker => blocker.ToString()).ToArray()),
+            actions: ReadOnly<ProductLedgerRenderableOperatorSurfaceActionModel>(
+                new ProductLedgerRenderableOperatorSurfaceActionModel("blocked", "Snapshot blocked", "blocked", "fix blockers", false, true, true, true, false, false, "Fail-closed snapshot did not render active actions.")
+            ),
+            warnings: ReadOnly("Fail-closed render model does not expose action handlers."));
 
     private static ProductLedgerRenderableOperatorSurfaceModel Model(
         bool rendered,
@@ -271,8 +268,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
             ExternalCloudReadinessPercent: 0,
             KmsWormExternalTrustPercent: 0,
             ReleaseCommercialReadinessPercent: 0,
-            Notices:
-            [
+            Notices: ReadOnly(
                 "local-only",
                 "internal-only",
                 "renderable snapshot fixture",
@@ -283,7 +279,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
                 "no WORM/KMS/cloud",
                 "not external trust",
                 "not compliance-grade custody"
-            ],
+            ),
             Sections: sections,
             Actions: actions,
             Warnings: warnings,
@@ -382,4 +378,7 @@ public sealed class ProductLedgerRenderableOperatorSurfaceRenderer
     private static string ToKebab(string value) =>
         string.Concat(value.Select((ch, index) =>
             index > 0 && char.IsUpper(ch) ? "-" + char.ToLowerInvariant(ch) : char.ToLowerInvariant(ch).ToString()));
+
+    private static IReadOnlyList<T> ReadOnly<T>(params T[] items) =>
+        Array.AsReadOnly(items);
 }
