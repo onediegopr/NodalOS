@@ -119,6 +119,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
         "Bounded Writer Status",
         "Checkpoint / Head Status",
         "Evidence Gates",
+        "Runtime/Product Local-Dev Readiness",
         "Disabled Actions",
         "Safe Next Step"
     ];
@@ -317,7 +318,8 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
                 "Preview is internal-only and local-only.",
                 "Checkpoint/head evidence is same-boundary local trust only.",
                 "Action previews are disabled labels without execution authority.",
-                "Next visible advancement is local/dev route response and operator preview verification."
+                "Runtime/product local-dev readiness is visible without production runtime authority.",
+                "Next visible advancement is operator-selected local/dev runtime acceptance."
             ]);
     }
 
@@ -401,7 +403,7 @@ public sealed class ProductLedgerInternalOperatorUiPresenter
             Blockers: blockers,
             Warnings: warnings,
             SafeNextStep: rendered
-                ? "LOCAL_DEV_PRODUCT_SURFACE_PREP_VERIFY_ROUTE_RESPONSE_AND_OPERATOR_PREVIEW"
+                ? "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_ACCEPTANCE_THEN_OPERATOR_FRONTIER_DECISION"
                 : "FIX_BLOCKERS_BEFORE_INTERNAL_OPERATOR_UI_PREVIEW",
             LocalOnly: true,
             InternalOnly: true,

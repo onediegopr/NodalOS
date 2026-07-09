@@ -370,6 +370,10 @@ Product Ledger local/dev product surface closeout: `PRODUCT_LEDGER_LOCAL_DEV_PRO
 
 Closed the local/dev product surface line after MSE19-MSE21: the prep panel, local/dev readiness, blocker category/required-operator-signal metadata, route/operator consistency acceptance and release/latest-read-precedence/export/command blockers are recorded. This closeout is docs-only; no `src/`, tests, production runtime, public/product promotion, Product Ledger exposure outside local/dev, latest/read precedence authority, product authority, command/approval execution, irreversible write, service registration, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. C: remains below 60 GB free, so disk stays a P3 operational constraint. Next exact macro prompt: `AUTHORIZE_NODAL_OS_NEXT_OPERATOR_SELECTED_PRODUCTIVE_FRONTIER_AFTER_PRODUCT_LEDGER_LOCAL_DEV_CLOSEOUT`.
 
+Local/dev runtime product readiness slice: `LOCAL_DEV_RUNTIME_PRODUCT_READINESS_VISIBLE_IN_OPERATOR_DIAGNOSTICS_NO_PRODUCTION_AUTHORITY`.
+
+Executed the operator-selected local/dev runtime readiness frontier with one observable diagnostics/preview target. `ProductLedgerLocalOnlyOperatorDiagnosticsPresenter` now emits a `Runtime/Product Local-Dev Readiness` section, and `ProductLedgerInternalOperatorUiPresenter` requires and renders it. The section reports local/dev runtime readiness, production runtime readiness `0`, Product Ledger local/dev surface readiness, disabled public/product surface, disabled latest/read precedence/product authority and release/commercial false. This is source/test/docs-minimal and read-only; no production runtime, public/product promotion, command/approval execution, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCT_READINESS_FOLLOW_UP_OR_RETURN_TO_OPERATOR_FRONTIER`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

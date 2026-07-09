@@ -758,6 +758,37 @@ Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_NEXT_OPERATOR_SELECTED_PRODUCTIVE_FRONTIER_AFTER_PRODUCT_LEDGER_LOCAL_DEV_CLOSEOUT`
 
+Operator-selected local/dev runtime product readiness slice:
+
+`GO_WITH_FINDINGS_LOCAL_DEV_RUNTIME_PRODUCT_READINESS_NEXT_SLICE_READY`
+
+Resulting state:
+
+`LOCAL_DEV_RUNTIME_PRODUCT_READINESS_VISIBLE_IN_OPERATOR_DIAGNOSTICS_NO_PRODUCTION_AUTHORITY`
+
+Targets executed:
+
+- Diagnostics now expose a deterministic `Runtime/Product Local-Dev Readiness` section.
+- Internal operator preview now requires and renders that section.
+- The section records local/dev runtime readiness, production runtime readiness `0`, Product Ledger local/dev surface readiness, disabled production/public/product authority flags and release/commercial `false`.
+
+Current boundary:
+
+- No production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval execution, command execution, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority was opened.
+
+Updated readiness:
+
+- Global roadmap readiness: `98%`.
+- Runtime/product local-dev readiness: `38%`.
+- Runtime/product production readiness: `0%`.
+- Product Ledger local/dev product surface readiness: `86%`.
+- CI enforcement: `0%`.
+- Release/commercial: `0% / NO-GO`.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_LOCAL_DEV_RUNTIME_PRODUCT_READINESS_FOLLOW_UP_OR_RETURN_TO_OPERATOR_FRONTIER`
+
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.

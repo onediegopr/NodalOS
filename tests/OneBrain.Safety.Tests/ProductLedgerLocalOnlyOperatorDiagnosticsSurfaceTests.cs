@@ -52,11 +52,12 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsSurfaceTests
                 "Bounded Writer Status",
                 "Checkpoint / Head Status",
                 "Evidence Gates",
+                "Runtime/Product Local-Dev Readiness",
                 "Disabled Actions",
                 "Safe Next Step"
             },
             result.Sections.Select(section => section.Title).ToArray());
-        Assert.AreEqual("EXTERNAL_AUDIT_READ_ONLY_THEN_STATIC_SCAN_HARDENING", result.SafeNextStep);
+        Assert.AreEqual("LOCAL_DEV_RUNTIME_PRODUCT_READINESS_ACCEPTANCE_THEN_OPERATOR_FRONTIER_DECISION", result.SafeNextStep);
         StringAssert.Contains(result.StatusText, "READ_ONLY_SURFACE_READY");
         StringAssert.Contains(result.StatusText, "NO_RELEASE_COMMERCIAL");
         AssertNoExecutableSurface(result);
@@ -85,6 +86,28 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsSurfaceTests
             string.Join(" ", defaultOff.Sections.Single(section => section.Title == "Runtime Local-Only Gate").Lines),
             "feature_flag=off");
         AssertNoExecutableSurface(defaultOff);
+    }
+
+    [TestMethod]
+    public void OperatorDiagnosticsSurface_RendersLocalDevRuntimeReadinessWithoutProductionAuthority()
+    {
+        using var fixture = LedgerFixture.Create();
+        var result = new ProductLedgerLocalOnlyOperatorDiagnosticsPresenter().Render(ReadyRequest(fixture));
+        var section = result.Sections.Single(section => section.Title == "Runtime/Product Local-Dev Readiness");
+        var lines = string.Join(" ", section.Lines);
+
+        Assert.AreEqual("LOCAL_DEV_RUNTIME_PRODUCT_READINESS_SLICE_VISIBLE", section.Status);
+        StringAssert.Contains(lines, "runtime_product_local_dev_readiness=36");
+        StringAssert.Contains(lines, "runtime_product_production_readiness=0");
+        StringAssert.Contains(lines, "product_surface_local_dev_readiness=86");
+        StringAssert.Contains(lines, "diagnostics_readiness_surface_local_only=True");
+        StringAssert.Contains(lines, "production_runtime_enabled=false");
+        StringAssert.Contains(lines, "public_product_surface_enabled=false");
+        StringAssert.Contains(lines, "latest_pointer_authority=false");
+        StringAssert.Contains(lines, "read_precedence_authority=false");
+        StringAssert.Contains(lines, "product_authority=false");
+        StringAssert.Contains(lines, "release_commercial_ready=false");
+        AssertNoExecutableSurface(result);
     }
 
     [TestMethod]
@@ -210,7 +233,7 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsSurfaceTests
         }
 
         StringAssert.Contains(source, "ALL_ACTIONS_DISABLED");
-        StringAssert.Contains(source, "EXTERNAL_AUDIT_READ_ONLY_THEN_STATIC_SCAN_HARDENING");
+        StringAssert.Contains(source, "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_ACCEPTANCE_THEN_OPERATOR_FRONTIER_DECISION");
     }
 
     private static ProductLedgerLocalOnlyOperatorDiagnosticsRequest ReadyRequest(LedgerFixture fixture)

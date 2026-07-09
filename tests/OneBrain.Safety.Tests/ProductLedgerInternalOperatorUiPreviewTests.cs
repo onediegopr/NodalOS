@@ -55,6 +55,7 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
         AssertSection(result, "Bounded Writer Status");
         AssertSection(result, "Checkpoint / Head Status");
         AssertSection(result, "Evidence Gates");
+        AssertSection(result, "Runtime/Product Local-Dev Readiness");
         AssertSection(result, "Disabled Actions");
         AssertSection(result, "Safe Next Step");
         AssertNoExecutableSurface(result.ViewModel);
@@ -77,8 +78,13 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
         StringAssert.Contains(allLines, "replay_failure=True");
         StringAssert.Contains(allLines, "rollback_non_rollback=True");
         StringAssert.Contains(allLines, "no_external_trust=true");
-        StringAssert.Contains(result.ViewModel.SafeNextStep, "LOCAL_DEV_PRODUCT_SURFACE_PREP");
-        Assert.IsTrue(result.ViewModel.Warnings.Any(warning => warning.Contains("local/dev route response", StringComparison.Ordinal)));
+        Assert.IsTrue(result.ViewModel.Sections.Any(section =>
+            section.Title == "Runtime/Product Local-Dev Readiness"
+            && section.Lines.Contains("runtime_product_local_dev_readiness=36")
+            && section.Lines.Contains("runtime_product_production_readiness=0")
+            && section.Lines.Contains("product_authority=false")));
+        StringAssert.Contains(result.ViewModel.SafeNextStep, "LOCAL_DEV_RUNTIME_PRODUCT_READINESS");
+        Assert.IsTrue(result.ViewModel.Warnings.Any(warning => warning.Contains("Runtime/product local-dev readiness", StringComparison.Ordinal)));
     }
 
     [TestMethod]
@@ -243,8 +249,9 @@ public sealed class ProductLedgerInternalOperatorUiPreviewTests
                 Section("Bounded Writer Status", "WRITER_BOUNDED_LOCAL_ONLY_SURFACE_READ_ONLY", ["writer_policy_allows_bounded_local_only=True", "append_read_verification=True", "safe_payload_hash=sha256-only", "metadata_verification=True", "operator_surface_write_allowed=false", "no_external_writer=true", "no_worm_kms_cloud=true"]),
                 Section("Checkpoint / Head Status", "VERIFIED_HEAD_PRESENT", ["head_entry_hash=abc123", "checkpoint_path=C:/local-only/product-ledger.local-only.head.json", "same_boundary_trust=true", "checkpoint_limitation=same-boundary", "tail_deletion_limitation=local-only", "no_external_recovery_claim=true"]),
                 Section("Evidence Gates", "EVIDENCE_REFERENCES_FRESH_AND_WELL_FORMED", ["redaction_before_persistence=True", "retention=True", "authority=True", "replay_failure=True", "rollback_non_rollback=True", "missing_stale_malformed_blockers=0", "no_external_trust=true"]),
+                Section("Runtime/Product Local-Dev Readiness", "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_SLICE_VISIBLE", ["runtime_product_local_dev_readiness=36", "runtime_product_production_readiness=0", "product_surface_local_dev_readiness=86", "production_runtime_enabled=false", "public_product_surface_enabled=false", "latest_pointer_authority=false", "read_precedence_authority=false", "product_authority=false", "release_commercial_ready=false"]),
                 Section("Disabled Actions", "ALL_ACTIONS_DISABLED", ["enable public UI", "run destructive action", "register command handler", "connect provider/cloud", "create DB migration", "enable KMS/WORM", "enable Browser/CDP/WCU/OCR/Recipes live", "release/commercial"]),
-                Section("Safe Next Step", "READ_ONLY_AUDIT_OR_STATIC_SCAN_HARDENING_ONLY", ["read-only audit", "property/corpus hardening", "static scan hardening", "operator docs", "manual external review packet"])
+                Section("Safe Next Step", "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_NEXT_OPERATOR_FRONTIER", ["LOCAL_DEV_RUNTIME_PRODUCT_READINESS_ACCEPTANCE_THEN_OPERATOR_FRONTIER_DECISION", "NO_RELEASE_COMMERCIAL", "NO_PUBLIC_DESTRUCTIVE_ACTION", "NO_PRODUCTION_RUNTIME"])
             ],
             ActionPreviews:
             [

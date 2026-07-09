@@ -333,7 +333,7 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
             ActionPreviews: ActionPreviews(),
             DisabledActions: disabledActions,
             SafeNextStep: rendered
-                ? "EXTERNAL_AUDIT_READ_ONLY_THEN_STATIC_SCAN_HARDENING"
+                ? "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_ACCEPTANCE_THEN_OPERATOR_FRONTIER_DECISION"
                 : "FIX_BLOCKERS_BEFORE_OPERATOR_DIAGNOSTICS_SURFACE",
             ReadOnly: true,
             LocalOnly: true,
@@ -413,17 +413,35 @@ public sealed class ProductLedgerLocalOnlyOperatorDiagnosticsPresenter
                 ],
                 ProductLedgerLocalOnlyOperatorDiagnosticsSeverity.Info),
             new(
+                "Runtime/Product Local-Dev Readiness",
+                "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_SLICE_VISIBLE",
+                [
+                    "runtime_product_local_dev_readiness=36",
+                    "runtime_product_production_readiness=0",
+                    "product_surface_local_dev_readiness=86",
+                    $"runtime_local_only_internal_enabled={runtime.RuntimeLocalOnlyInternalEnabled}",
+                    $"diagnostics_readiness_surface_local_only={runtime.DiagnosticsReadinessSurfaceLocalOnlyAllowed}",
+                    "production_runtime_enabled=false",
+                    "public_product_surface_enabled=false",
+                    "latest_pointer_authority=false",
+                    "read_precedence_authority=false",
+                    "product_authority=false",
+                    "release_commercial_ready=false"
+                ],
+                ProductLedgerLocalOnlyOperatorDiagnosticsSeverity.Info),
+            new(
                 "Disabled Actions",
                 "ALL_ACTIONS_DISABLED",
                 DisabledActions(),
                 ProductLedgerLocalOnlyOperatorDiagnosticsSeverity.Warning),
             new(
                 "Safe Next Step",
-                "READ_ONLY_AUDIT_OR_STATIC_SCAN_HARDENING_ONLY",
+                "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_NEXT_OPERATOR_FRONTIER",
                 [
-                    "EXTERNAL_AUDIT_READ_ONLY_THEN_STATIC_SCAN_HARDENING",
+                    "LOCAL_DEV_RUNTIME_PRODUCT_READINESS_ACCEPTANCE_THEN_OPERATOR_FRONTIER_DECISION",
                     "NO_RELEASE_COMMERCIAL",
-                    "NO_PUBLIC_DESTRUCTIVE_ACTION"
+                    "NO_PUBLIC_DESTRUCTIVE_ACTION",
+                    "NO_PRODUCTION_RUNTIME"
                 ],
                 ProductLedgerLocalOnlyOperatorDiagnosticsSeverity.Info)
         ];
