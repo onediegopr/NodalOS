@@ -52,6 +52,7 @@ builder.WebHost.UseUrls($"http://{options.Host}:{options.Port}");
 var app = builder.Build();
 app.UseCors();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(20) });
+app.MapChromeLabLocalDevOperatorSurfaceReadOnlyRoute();
 
 app.MapGet("/health", (
     ChromeLabClientRegistry clients,
