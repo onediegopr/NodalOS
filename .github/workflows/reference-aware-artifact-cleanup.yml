@@ -32,14 +32,24 @@ jobs:
 
       - name: Remove unreferenced historical artifacts
         shell: pwsh
+        env:
+          ARTIFACT_CLEANUP_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: ./tools/repository/clean-unreferenced-artifacts.ps1 -Apply
 
       - name: Validate generated diff
         shell: pwsh
         run: |
           git diff --check
-          if (-not (Test-Path docs/audit/artifact-cleanup-report.md)) {
+          $report = 'docs/audit/artifact-cleanup-report.md'
+          if (-not (Test-Path $report)) {
             throw 'artifact cleanup report was not generated'
+          }
+          $text = [System.IO.File]::ReadAllText($report)
+          foreach ($character in $text.ToCharArray()) {
+            $code = [int]$character
+            if ($code -lt 32 -and $character -ne "`r" -and $character -ne "`n") {
+              throw "artifact cleanup report contains control character code $code"
+            }
           }
 
       - name: Commit cleanup result
