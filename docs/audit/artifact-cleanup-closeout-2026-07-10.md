@@ -18,6 +18,7 @@ Decision: `GO_WITH_FINDINGS_REFERENCE_AWARE_ARTIFACT_CLEANUP_READY`
 - References were checked using full path, artifact-relative path and basename.
 - Product/runtime/release authority is unchanged.
 - The deterministic cleanup report is validated for diff correctness and control characters.
+- Final verification reruns the cleanup against the same pull-request base and must produce no additional artifact deletion.
 
 ## Remaining work
 
