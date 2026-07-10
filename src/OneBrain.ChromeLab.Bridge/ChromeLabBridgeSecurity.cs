@@ -1,7 +1,9 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace OneBrain.ChromeLab.Bridge;
 
@@ -137,9 +139,19 @@ public sealed class ChromeLabBridgeSecurityMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public ChromeLabBridgeSecurityMiddleware(RequestDelegate next)
+    public ChromeLabBridgeSecurityMiddleware(
+        RequestDelegate next,
+        IOptions<CorsOptions> corsOptions,
+        ChromeLabOptions options)
     {
         _next = next;
+        corsOptions.Value.AddDefaultPolicy(policy =>
+        {
+            policy
+                .SetIsOriginAllowed(origin => ChromeLabBridgeSecurity.IsOriginAllowed(origin, options))
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
     }
 
     public async Task InvokeAsync(HttpContext context, ChromeLabOptions options)
