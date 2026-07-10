@@ -16,7 +16,7 @@ permissions:
 
 concurrency:
   group: artifact-cleanup-${{ github.head_ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   cleanup:
