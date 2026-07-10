@@ -20,16 +20,16 @@ public static class ChromeLabBridgeSecurity
     ];
 
     public static bool IsPublicPath(PathString path) =>
-        PublicPaths.Any(candidate => path.Equals(candidate, StringComparison.Ordinal));
+        PublicPaths.Any(candidate => string.Equals(path.Value, candidate, StringComparison.Ordinal));
 
     public static bool IsPairingPath(PathString path) =>
-        path.Equals("/pairing/local-token", StringComparison.Ordinal);
+        string.Equals(path.Value, "/pairing/local-token", StringComparison.Ordinal);
 
     public static bool IsExtensionWebSocketPath(PathString path) =>
-        path.Equals("/ws/extension", StringComparison.Ordinal);
+        string.Equals(path.Value, "/ws/extension", StringComparison.Ordinal);
 
     public static bool IsStealthWebSocketPath(PathString path) =>
-        path.Equals("/ws/stealth", StringComparison.Ordinal);
+        string.Equals(path.Value, "/ws/stealth", StringComparison.Ordinal);
 
     public static bool IsLocalPairingEnabled() =>
         string.Equals(
@@ -42,7 +42,7 @@ public static class ChromeLabBridgeSecurity
         var token = context.Request.Headers[TokenHeaderName].ToString();
         if (string.IsNullOrWhiteSpace(token))
         {
-            var authorization = context.Request.Headers.Authorization.ToString();
+            var authorization = context.Request.Headers["Authorization"].ToString();
             const string bearer = "Bearer ";
             if (authorization.StartsWith(bearer, StringComparison.OrdinalIgnoreCase))
                 token = authorization[bearer.Length..].Trim();
@@ -75,11 +75,16 @@ public static class ChromeLabBridgeSecurity
             return options.AllowLan && IsPrivateLanAddress(uri.Host);
         }
 
-        if (!string.Equals(uri.Scheme, "chrome-extension", StringComparison.OrdinalIgnoreCase))
+        if (!IsChromeExtensionOrigin(uri))
             return false;
 
         var allowedIds = GetAllowedExtensionIds();
         return allowedIds.Contains(uri.Host, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static bool IsChromeExtensionOrigin(string? origin)
+    {
+        return Uri.TryCreate(origin, UriKind.Absolute, out var uri) && IsChromeExtensionOrigin(uri);
     }
 
     public static IReadOnlyList<string> GetAllowedExtensionIds() =>
@@ -111,6 +116,10 @@ public static class ChromeLabBridgeSecurity
                payload.Contains("\"error\":\"protocol_version_mismatch\"", StringComparison.Ordinal) ||
                payload.Contains("\"error\":\"authentication_required\"", StringComparison.Ordinal);
     }
+
+    private static bool IsChromeExtensionOrigin(Uri uri) =>
+        string.Equals(uri.Scheme, "chrome-extension", StringComparison.OrdinalIgnoreCase) &&
+        !string.IsNullOrWhiteSpace(uri.Host);
 
     private static bool IsPrivateLanAddress(string host)
     {
@@ -146,9 +155,19 @@ public sealed class ChromeLabBridgeSecurityMiddleware
         var path = context.Request.Path;
         var remote = context.Connection.RemoteIpAddress;
         var isLoopback = remote is not null && IPAddress.IsLoopback(remote);
-        var origin = context.Request.Headers.Origin.ToString();
+        var origin = context.Request.Headers["Origin"].ToString();
+        var authorized = ChromeLabBridgeSecurity.IsAuthorized(
+            context,
+            options,
+            allowQueryToken: ChromeLabBridgeSecurity.IsStealthWebSocketPath(path));
+        var extensionOrigin = ChromeLabBridgeSecurity.IsChromeExtensionOrigin(origin);
+        var originAllowed = ChromeLabBridgeSecurity.IsOriginAllowed(origin, options) ||
+            (extensionOrigin &&
+             (ChromeLabBridgeSecurity.IsPublicPath(path) ||
+              ChromeLabBridgeSecurity.IsExtensionWebSocketPath(path) ||
+              authorized));
 
-        if (!ChromeLabBridgeSecurity.IsOriginAllowed(origin, options))
+        if (!originAllowed)
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
@@ -156,7 +175,9 @@ public sealed class ChromeLabBridgeSecurityMiddleware
 
         if (ChromeLabBridgeSecurity.IsPairingPath(path))
         {
-            if (!isLoopback || !ChromeLabBridgeSecurity.IsLocalPairingEnabled())
+            if (!isLoopback ||
+                !ChromeLabBridgeSecurity.IsLocalPairingEnabled() ||
+                (extensionOrigin && !ChromeLabBridgeSecurity.IsOriginAllowed(origin, options)))
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 return;
@@ -175,8 +196,7 @@ public sealed class ChromeLabBridgeSecurityMiddleware
 
         if (ChromeLabBridgeSecurity.IsStealthWebSocketPath(path))
         {
-            if (!options.StealthEnabled ||
-                !ChromeLabBridgeSecurity.IsAuthorized(context, options, allowQueryToken: true))
+            if (!options.StealthEnabled || !authorized)
             {
                 context.Response.StatusCode = isLoopback
                     ? StatusCodes.Status401Unauthorized
@@ -188,7 +208,7 @@ public sealed class ChromeLabBridgeSecurityMiddleware
             return;
         }
 
-        if (!ChromeLabBridgeSecurity.IsAuthorized(context, options))
+        if (!authorized)
         {
             context.Response.StatusCode = isLoopback
                 ? StatusCodes.Status401Unauthorized
