@@ -27,16 +27,16 @@ El estado actual ya contiene remediaciones que no estaban presentes en el baseli
 
 Estado de estas remediaciones:
 
-`IMPLEMENTED_PENDING_EXECUTED_CI_AND_ADVERSARIAL_RUNTIME_CONFIRMATION`
+`LOCAL_VALIDATION_PASS_REMOTE_CI_AND_BRANCH_PROTECTION_PENDING`
 
-No deben seguir tratándose como trabajo ausente, pero tampoco como cierre productivo hasta tener ejecuciones PASS y evidencia de runtime.
+No deben seguir tratándose como trabajo ausente. El cierre local ejecutado valida el bridge como lab seguro, pero no equivale a CI remoto obligatorio, branch protection ni cierre productivo.
 
 ## 2. Estado ejecutivo real
 
 - Cobertura de roadmap/governance: `93%`.
-- Implementación técnica agregada: `68%`.
-- Integración de producto: `51%`.
-- MVP vendible: `48%`.
+- Implementación técnica agregada: `70%`.
+- Integración de producto: `52%`.
+- MVP vendible: `49%`.
 - Production runtime: `0%`.
 - Release/commercial: `0% / NO-GO`.
 
@@ -49,8 +49,8 @@ La cifra histórica `98%` queda retirada como indicador de producto. Sólo descr
 | Roadmap/governance | Roadmaps, logs, handoffs, audits, CODEOWNERS, PR template | Consolidar un solo source of truth y retirar porcentajes viejos | Avanzado | 93% |
 | Arquitectura core | Solución modular, contratos, core, safety, verification | Reducir duplicaciones y escoger caminos canónicos | Avanzado/parcial | 82% |
 | Safety/guardrails | Fail-closed, path jail, redaction, consent, approval guards | Ejecutar Tier 1 continuo y cerrar adversarial gaps | Avanzado | 86% |
-| ChromeLab security | Política central, WS auth hardening, auth client, tests | Ejecutar tests/CI, pairing adversarial, runtime validation | Implementado/no cerrado | 72% |
-| Branch/CI governance | Workflows Tier 1 y cleanup, CODEOWNERS, docs | Cambiar default branch, protección obligatoria, demostrar runs PASS | Inicial funcional | 35% |
+| ChromeLab security | Política central, WS auth hardening, auth client, tests, smoke runtime local | CI remoto y branch protection quedan separados por acceso GitHub | Local validation PASS / lab seguro | 84% |
+| Branch/CI governance | Workflows Tier 1 y cleanup, CODEOWNERS, docs | Cambiar default branch, protección obligatoria, demostrar runs remotos PASS | Inicial funcional | 38% |
 | Artifact hygiene | Gran limpieza y tooling reference-aware | Segunda pasada y verificación de links/fixtures | Avanzado | 78% |
 | Runtime local | Varios runtimes y surfaces locales | Unificar en vertical slice | Parcial | 61% |
 | Approval/Evidence/Timeline | Contratos, previews, ledger, durable evidence | Loop de producto integrado y minimal evidence schema | Parcial/avanzado | 69% |
@@ -132,12 +132,11 @@ Sólo reabrir si aparece un defecto real, una integración del vertical slice o 
 
 ### P0 — Cierre inmediato
 
-1. Ejecutar y verificar Tier 1 Safety y tests focales ChromeLab.
-2. Validar auth HTTP/WS/stealth con casos adversariales reales.
-3. Validar pairing/token: no exposición indebida, replay o bypass local/LAN.
-4. Confirmar CORS exacto y extension allowlist.
-5. Mantener LAN disabled hasta evidencia PASS.
-6. Cambiar la rama default y aplicar branch protection.
+1. Cambiar la rama default y aplicar branch protection cuando haya credenciales GitHub.
+2. Demostrar run remoto de `tier1-safety.yml` como required check.
+3. Mantener LAN disabled y ChromeLab clasificado como `LAB_LEGACY_TRANSITION`.
+
+Macro 1 local ya quedó validado en Codex: ChromeLab focused Release PASS `25/25`, Safety focal Release PASS `35/35`, bridge Release build PASS, Safety aggregate Release build PASS con `32` warnings preexistentes, smoke runtime local PASS para auth/origin/pairing/stealth/no-store y extensión estática PASS.
 
 ### P1 — MVP vertical slice
 
@@ -233,4 +232,4 @@ Rechazar:
 
 ## 9. Próxima decisión
 
-`READY_FOR_CHROMELAB_SECURITY_CI_RUNTIME_VALIDATION_AND_LAB_CLOSEOUT`
+`READY_FOR_CANONICAL_DEFAULT_BRANCH_PROTECTION_AND_MVP_VERTICAL_SLICE_FREEZE`

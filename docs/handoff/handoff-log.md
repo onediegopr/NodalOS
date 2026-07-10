@@ -402,6 +402,10 @@ ChromeLab local/dev operator surface prep: `CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE
 
 Executed one bounded ChromeLab local/dev surface target. `ChromeLabLocalDevOperatorSurfacePresenter` now renders prep status, readiness `27%`, limits, blockers, required operator signal, safe next step and a disabled/non-executable action preview. The focal Safety test pack proves fail-closed unsafe requests, unavailable live/product capabilities and no source-level route/service/process/browser/network/file-write wiring in the new surface file. No Chrome/Browser/CDP execution, service registration, route registration, public/product promotion, DB/cloud/network/provider, KMS/WORM, CI/workflows or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_FOLLOW_UP_OR_CLOSE`.
 
+ChromeLab security/CI/runtime local validation and lab closeout: `CHROMELAB_LAB_LOCAL_VALIDATED_REMOTE_CI_BRANCH_PROTECTION_PENDING_NO_PRODUCT_AUTHORITY`.
+
+Closed the ChromeLab lab-local validation path after executing focused tests, Release workflow-equivalent local commands, extension static checks and loopback runtime smoke. Auth/origin/pairing/stealth/no-store boundaries passed locally; ChromeLab remains `LAB_LEGACY_TRANSITION` and CloakBrowser remains the canonical product browser runtime. No source fix, Chrome/Edge launch, Playwright product runtime, live Browser/CDP/WCU/OCR/Recipes action, production runtime, public/product promotion, product authority, approval/command execution, DB/cloud/network/provider, KMS/WORM, workflow edit, CI enforcement or release/commercial authority changed. Remote branch protection/default branch/required checks remain blocked on GitHub credentials. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CANONICAL_DEFAULT_BRANCH_PROTECTION_AND_MVP_VERTICAL_SLICE_FREEZE`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

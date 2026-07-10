@@ -2129,3 +2129,18 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `44%`; ChromeLab local/dev operator surface readiness `27%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 live browser/product authority remains blocked and disk remains operationally constrained; P4 follow-up should add acceptance evidence or close the ChromeLab prep line.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_CHROMELAB_LOCAL_DEV_OPERATOR_SURFACE_FOLLOW_UP_OR_CLOSE`.
+
+## BLOCK MSE31 - ChromeLab Security/CI/Runtime Local Validation And Lab Closeout
+
+- Objective: validate the ChromeLab bridge security, local runtime, extension static surface and Tier 1 local workflow path, then close ChromeLab as a safe lab transition.
+- Status: completed as validation/docs-minimal closeout; no source fix was required.
+- Decision: `GO_WITH_FINDINGS_CHROMELAB_SECURITY_CI_RUNTIME_VALIDATION_AND_LAB_CLOSEOUT_READY`.
+- Resulting state: `CHROMELAB_LAB_LOCAL_VALIDATED_REMOTE_CI_BRANCH_PROTECTION_PENDING_NO_PRODUCT_AUTHORITY`.
+- Validation executed: ChromeLab tests Debug PASS `25/25`; ChromeLab tests Release PASS `25/25`; Safety focal ChromeLab Debug PASS `35/35`; Safety focal ChromeLab Release PASS `35/35`; ChromeLab bridge Debug/Release build PASS; Safety aggregate Release build PASS with `32` pre-existing warnings.
+- Runtime smoke: loopback fixture token verified public health/config/operator routes, protected metrics/runtime, query-token rejection, pairing default-off, stealth default-off, wrong HTML path fail-closed, no-store cache control and strict origin rejection.
+- Extension/workflow checks: `node --check` passed for extension JS files; manifests parsed as MV3; local Tier 1 workflow commands for ChromeLab and Safety aggregate were reproduced.
+- Scope: validation/docs-only closeout. No Chrome/Edge/system-browser launch, no Playwright product runtime, no live Browser/CDP/WCU/OCR/Recipes action, no production runtime, no public/product promotion, no product authority, no approval/command execution, no DB/cloud/network/provider, no KMS/WORM, no workflow edit, no CI enforcement and no release/commercial.
+- External blocker: `gh auth status` is not logged in, so remote default branch/protection/required-check settings remain operator/credential work.
+- Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `45%`; ChromeLab local/dev operator surface readiness `33%`; ChromeLab lab security local validation `84%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 remote GitHub governance remains blocked by missing gh authentication and Safety aggregate build is slow but passing; P4 branch/default protection and MVP vertical-slice freeze should be the next macro, not more ChromeLab local surface work.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_CANONICAL_DEFAULT_BRANCH_PROTECTION_AND_MVP_VERTICAL_SLICE_FREEZE`.
