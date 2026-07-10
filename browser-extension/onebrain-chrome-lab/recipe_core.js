@@ -1,3 +1,7 @@
+if (typeof importScripts === 'function') {
+  importScripts('bridge_auth.js');
+}
+
 const NEXA_RECIPE_SCHEMA_VERSION = 1;
 const NEXA_RECIPE_STEP_TYPES = new Set([
   'navigate',
