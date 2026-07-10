@@ -74,6 +74,8 @@ public sealed class WebSocketSession : IWebSocketSession
         }
         finally
         {
+            if (_handler is ExtensionMessageHandler extensionHandler)
+                extensionHandler.ForgetClient(ClientId);
             _events.Add("ws.closed", "WebSocket closed", clientId: ClientId);
         }
     }
