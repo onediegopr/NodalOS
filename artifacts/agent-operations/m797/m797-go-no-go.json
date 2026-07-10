@@ -1,6 +1,0 @@
-{
-  "milestone": "M797",
-  "decision": "SIMULATED_CAPABILITY_EXECUTOR_ROUTING_READY",
-  "go": true,
-  "scope": "test-only/in-memory"
-}

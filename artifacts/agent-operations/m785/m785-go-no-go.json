@@ -1,6 +1,0 @@
-{
-  "milestone": "M785",
-  "decision": "GO",
-  "simulatedRuntimeInMemoryExecutionTests": "READY",
-  "sideEffectSinkInvocations": 0
-}

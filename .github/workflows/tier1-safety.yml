@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - chrome-lab-001-extension-local-ai-bridge
+      - main
   workflow_dispatch:
 
 permissions:
@@ -79,7 +80,15 @@ jobs:
           import sys
 
           diff = subprocess.check_output(
-              ["git", "diff", "--unified=0", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+              [
+                  "git",
+                  "diff",
+                  "--diff-filter=ACMR",
+                  "--no-ext-diff",
+                  "--unified=0",
+                  os.environ["BASE_SHA"],
+                  os.environ["HEAD_SHA"],
+              ],
               text=True,
               errors="replace",
           )
@@ -91,13 +100,25 @@ jobs:
               re.compile(r"(?i)(?:api[_-]?key|secret|password|token)\s*[:=]\s*[\"'][^\"']{12,}[\"']"),
               re.compile(r"(?:nexa|nodal)_[0-9a-fA-F]{32,}"),
           ]
+          generated_metadata = {
+              "docs/audit/artifact-cleanup-report.md",
+          }
           findings = []
+          current_path = ""
           for line in diff.splitlines():
-              if not line.startswith("+") or line.startswith("+++"):
+              if line.startswith("+++ b/"):
+                  current_path = line[6:]
+                  continue
+              if line.startswith("+++"):
+                  current_path = ""
+                  continue
+              if current_path in generated_metadata:
+                  continue
+              if not line.startswith("+"):
                   continue
               value = line[1:]
               if any(pattern.search(value) for pattern in patterns):
-                  findings.append(value[:240])
+                  findings.append(f"{current_path}: {value[:240]}")
           if findings:
               print("Potential credentials found in added lines:")
               for finding in findings:

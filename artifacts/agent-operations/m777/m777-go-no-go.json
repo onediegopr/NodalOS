@@ -1,8 +1,0 @@
-{
-  "milestone": "M777",
-  "decision": "EVIDENCE_ENVELOPE_PROJECTION_READY",
-  "evidenceEnvelopeProjectionReady": true,
-  "redactionProofProjectionReady": true,
-  "ledgerBindingsReady": true,
-  "actualExecutionPerformed": false
-}

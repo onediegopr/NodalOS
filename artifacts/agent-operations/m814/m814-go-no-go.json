@@ -1,7 +1,0 @@
-{
-  "project": "NODAL OS",
-  "decision": "M814_READY",
-  "approvalBoundaryAuditSummary": "READY",
-  "validationStatus": "PASS",
-  "auditGate": "AUDIT_GATE_CLEAN"
-}

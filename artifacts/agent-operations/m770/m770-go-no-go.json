@@ -1,8 +1,0 @@
-{
-  "milestone": "M770",
-  "decision": "SIMULATED_DRY_RUN_ORCHESTRATOR_CONTRACT_READY",
-  "orchestratorContractReady": true,
-  "simulationOnly": true,
-  "productiveExecutionAllowed": false,
-  "actualExecutionPerformed": false
-}

@@ -1,9 +1,0 @@
-{
-  "milestone": "M759",
-  "decision": "RUNTIME_PROMOTION_CRITERIA_READY",
-  "runtimePromotionCriteria": "READY",
-  "productiveEnableAllowedInThisMilestone": false,
-  "futureOwnerApprovedRuntimeUnlockGateRequired": true,
-  "publicRelease": "NO-GO",
-  "chromeWebStore": "NO-GO"
-}

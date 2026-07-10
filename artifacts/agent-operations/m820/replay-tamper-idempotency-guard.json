@@ -1,9 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M820",
-  "replayTamperIdempotencyGuard": "READY",
-  "duplicateReplay": "idempotent_audit_only",
-  "tamperCasesDenied": ["missing_ledger_event", "modified_reason_code", "modified_decision_type", "modified_evidence_id", "modified_noExecutionProof_ref", "modified_redactionProof_ref", "reordered_critical_events", "executionPerformed_true", "productiveEnabled_true", "product_bridge_csp_true"],
-  "selectedExecutor": null,
-  "sideEffectSinkInvocations": 0
-}

@@ -1,6 +1,0 @@
-{
-  "milestone": "M798",
-  "decision": "DENYLIST_ENFORCEMENT_READY",
-  "go": true,
-  "blockedCapabilitiesDenied": true
-}

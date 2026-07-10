@@ -1,9 +1,0 @@
-{
-  "milestone": "M757",
-  "decision": "DRY_RUN_NEXT_DECISION_READY",
-  "runtimeDryRunContractMatrix": "READY",
-  "capabilityApprovalGates": "READY",
-  "productiveUnlockAllowed": false,
-  "publicRelease": "NO-GO",
-  "chromeWebStore": "NO-GO"
-}

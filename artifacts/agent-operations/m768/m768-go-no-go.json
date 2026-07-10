@@ -1,8 +1,0 @@
-{
-  "milestone": "M768",
-  "decision": "NO_EXECUTION_PROOF_SUITE_READY",
-  "negativeEnforcementTestsReady": true,
-  "redactionSyntheticPayloadProofReady": true,
-  "forbiddenFieldsProofReady": true,
-  "actualExecutionPerformed": false
-}
