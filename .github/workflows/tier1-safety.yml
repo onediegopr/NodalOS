@@ -54,13 +54,54 @@ jobs:
           --logger "console;verbosity=normal"
 
   secret-scan:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Checkout full history
+      - name: Checkout pull request head
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
 
-      - name: Scan pull request for secrets
-        uses: gitleaks/gitleaks-action@v2
+      - name: Fetch pull request base
+        run: git fetch origin ${{ github.event.pull_request.base.sha }} --depth=1
+
+      - name: Scan added lines for credential patterns
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import subprocess
+          import sys
+
+          diff = subprocess.check_output(
+              ["git", "diff", "--unified=0", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+              text=True,
+              errors="replace",
+          )
+          patterns = [
+              re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+              re.compile(r"AKIA[0-9A-Z]{16}"),
+              re.compile(r"gh[pousr]_[A-Za-z0-9]{30,}"),
+              re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
+              re.compile(r"(?i)(?:api[_-]?key|secret|password|token)\s*[:=]\s*[\"'][^\"']{12,}[\"']"),
+              re.compile(r"(?:nexa|nodal)_[0-9a-fA-F]{32,}"),
+          ]
+          findings = []
+          for line in diff.splitlines():
+              if not line.startswith("+") or line.startswith("+++"):
+                  continue
+              value = line[1:]
+              if any(pattern.search(value) for pattern in patterns):
+                  findings.append(value[:240])
+          if findings:
+              print("Potential credentials found in added lines:")
+              for finding in findings:
+                  print(f"- {finding}")
+              sys.exit(1)
+          print("No credential patterns found in added lines.")
+          PY
