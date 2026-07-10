@@ -1,9 +1,0 @@
-{
-  "milestone": "M758",
-  "decision": "DRY_RUN_EVIDENCE_ENVELOPE_READY",
-  "dryRunEvidenceEnvelope": "READY",
-  "productiveExecutionAllowed": false,
-  "actualExecutionPerformed": false,
-  "publicRelease": "NO-GO",
-  "chromeWebStore": "NO-GO"
-}

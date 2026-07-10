@@ -1,8 +1,0 @@
-{
-  "milestone": "M761",
-  "decision": "DRY_RUN_ELIGIBILITY_CLASSIFICATION_READY",
-  "dryRunEligibilityClassification": "READY",
-  "productiveEnabledUsed": false,
-  "publicRelease": "NO-GO",
-  "chromeWebStore": "NO-GO"
-}

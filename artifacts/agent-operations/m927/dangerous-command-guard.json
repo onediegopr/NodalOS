@@ -1,7 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M927",
-  "guard": "DANGEROUS_COMMAND_GUARD",
-  "status": "TEST_ONLY_READY",
-  "blockedPatterns": ["shell", "cmd", "powershell", "bash", "delete/remove", "format/disk", "kill process", "credential/token/key access", "network exfiltration", "browser automation productive action", "filesystem write", "registry modification", "startup persistence", "privilege escalation", "release/store/package", "product/Bridge/CSP modification"]
-}

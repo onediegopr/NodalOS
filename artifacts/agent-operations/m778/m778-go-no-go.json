@@ -1,7 +1,0 @@
-{
-  "milestone": "M778",
-  "decision": "POSITIVE_FLOW_NEXT_DECISION_READY",
-  "positiveSimulatedDryRunFlowReady": true,
-  "evidenceEnvelopeProjectionReady": true,
-  "productiveRuntimeExecution": "DISABLED"
-}

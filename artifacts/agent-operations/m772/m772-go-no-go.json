@@ -1,7 +1,0 @@
-{
-  "milestone": "M772",
-  "decision": "ORCHESTRATOR_NEXT_DECISION_READY",
-  "orchestratorContractReady": true,
-  "ledgerEventProjectionReady": true,
-  "productiveRuntimeExecution": "DISABLED"
-}

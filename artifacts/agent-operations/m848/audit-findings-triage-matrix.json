@@ -1,7 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M848",
-  "triageMatrix": "READY",
-  "conditionalFindingClasses": ["DOC_DRIFT", "FLAKY_EXTERNAL"],
-  "blockingFindingClasses": ["SAFETY_DRIFT", "SCOPE_DRIFT", "RELEASE_DRIFT", "PRODUCTIVE_RUNTIME_PATH", "PROVIDER_CLOUD_PATH", "FILESYSTEM_BROWSER_UNLOCK_PATH", "REDACTION_GAP_HIGH", "NO_EXECUTION_GAP", "VALIDATION_GAP"]
-}

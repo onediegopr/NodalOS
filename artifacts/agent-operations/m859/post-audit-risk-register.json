@@ -1,6 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M859",
-  "postAuditRiskRegister": "READY",
-  "risks": ["freeze misinterpreted as release", "freeze misinterpreted as productive unlock", "future drift from simulated to real execution", "provider/cloud accidentally wired", "filesystem/browser unlock accidentally wired", "product/Bridge/CSP touched without gate", "redaction regression", "no-execution proof regression", "full suite flake recurrence", "docs/artifacts/tests contradiction"]
-}

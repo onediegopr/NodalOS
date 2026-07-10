@@ -1,8 +1,0 @@
-{
-  "milestone": "M755",
-  "decision": "RUNTIME_DRY_RUN_CONTRACT_MATRIX_READY",
-  "runtimeDryRunContractMatrix": "READY",
-  "productiveExecutionAllowed": false,
-  "publicRelease": "NO-GO",
-  "chromeWebStore": "NO-GO"
-}

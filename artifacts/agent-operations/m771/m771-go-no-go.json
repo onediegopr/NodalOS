@@ -1,7 +1,0 @@
-{
-  "milestone": "M771",
-  "decision": "LEDGER_EVENT_PROJECTION_READY",
-  "ledgerProjectionReady": true,
-  "simulationOnly": true,
-  "actualExecutionPerformed": false
-}

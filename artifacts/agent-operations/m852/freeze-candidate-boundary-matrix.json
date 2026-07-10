@@ -1,7 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M852",
-  "freezeBoundaryMatrix": "READY",
-  "goWithinFreeze": ["simulated runtime contracts", "fake-only executors", "in-memory evidence ledger", "no-execution proof", "redaction proof", "governance snapshot", "readiness scorecard", "audit handoff", "safety drift guard", "timeline/replay/export/determinism"],
-  "noGoWithinFreeze": ["productive runtime", "provider/cloud", "filesystem write real", "browser automation real", "capability unlock", "public release", "Chrome Web Store", "signed public ZIP", "product file changes", "Bridge/CSP changes"]
-}

@@ -1,8 +1,0 @@
-{
-  "milestone": "M754",
-  "decision": "RUNTIME_REENTRY_NEXT_DECISION_READY",
-  "runtimeCapabilityInventory": "READY",
-  "policyEvidenceReentryPlan": "READY",
-  "productiveUnlockAllowed": false,
-  "recommendedNextMilestone": "M755-M757 Runtime Dry-Run Contract Matrix + Capability Approval Gates"
-}

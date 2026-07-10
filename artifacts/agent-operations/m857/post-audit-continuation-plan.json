@@ -1,8 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M857",
-  "postAuditContinuationPlan": "READY",
-  "allowedImmediateWork": ["docs cleanup", "artifact consolidation", "safety tests", "governance scorecards", "internal simulated runtime refinements", "no-execution proof hardening", "redaction proof hardening", "fake-only in-memory matrix consolidation"],
-  "conditionalWork": ["future dry-run real planning", "future local-only provider planning", "future filesystem read-only planning", "future UI documentation views planning"],
-  "blockedWork": ["productive runtime", "provider/cloud", "filesystem write", "browser automation", "capability unlock", "public release", "Chrome Web Store", "signed public ZIP", "product files", "Bridge/CSP"]
-}

@@ -1,8 +1,0 @@
-{
-  "milestone": "M753",
-  "decision": "POLICY_EVIDENCE_REENTRY_PLAN_READY",
-  "productiveUnlockAllowed": false,
-  "manualApprovalRequiredForHighRisk": true,
-  "evidenceRequiredForHighRisk": true,
-  "policyGateRequiredForHighRisk": true
-}

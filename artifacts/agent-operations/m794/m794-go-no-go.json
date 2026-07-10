@@ -1,6 +1,0 @@
-{
-  "milestone": "M794",
-  "decision": "CAPABILITY_SPECIFIC_FAKE_EXECUTORS_PLAN_READY",
-  "go": true,
-  "scope": "TEST_ONLY_IN_MEMORY_FAKE"
-}

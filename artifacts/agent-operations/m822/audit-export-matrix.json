@@ -1,7 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M822",
-  "auditExportMatrix": "READY",
-  "coveredOutcomes": ["allowed simulated route", "denylisted capability", "unsupported capability", "policy violation", "manual approval required", "approval granted", "approval denied", "approval expired", "approval invalid", "replay guard accepted audit-only", "replay guard denied tampered", "replay guard duplicate idempotent"],
-  "allExportsSafeOrDeniedSafely": true
-}

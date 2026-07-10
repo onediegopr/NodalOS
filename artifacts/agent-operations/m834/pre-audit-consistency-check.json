@@ -1,7 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M834",
-  "preAuditConsistencyCheck": "READY",
-  "currentArtifactsConsistent": true,
-  "detectedMismatchTypes": ["missing_decision_type", "missing_reason_code", "missing_capability", "missing_denylisted_capability", "unsupported_behavior_mismatch", "approval_status_mismatch", "replay_mode_mismatch", "export_flag_mismatch", "readiness_percentage_mismatch", "no_go_boundary_mismatch", "caveat_status_mismatch", "full_suite_claim_without_evidence"]
-}

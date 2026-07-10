@@ -1,9 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M925",
-  "contract": "CONTROLLED_COMMAND_ALLOWLIST_FOUNDATION",
-  "status": "TEST_ONLY_READY",
-  "allowedCategories": ["noop", "metadata_read", "liveness_probe", "environment_observation", "focus_safe_window_planning"],
-  "focusSafeWindowPlanningMode": "planned_only_noop",
-  "blockedCategories": ["arbitrary_shell", "filesystem_write", "browser_automation", "provider_cloud", "capability_unlock", "process_kill", "network_call", "credential_access", "release_store", "product_file_modification", "bridge_csp_modification"]
-}

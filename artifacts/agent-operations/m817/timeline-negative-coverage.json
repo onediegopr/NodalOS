@@ -1,9 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M817",
-  "timelineNegativeCoverage": "READY",
-  "decisionTypesCovered": ["ALLOW_SIMULATED_DRY_RUN", "DENY_DENYLISTED_CAPABILITY", "DENY_UNSUPPORTED_CAPABILITY", "DENY_POLICY_VIOLATION", "REQUIRE_MANUAL_APPROVAL_SIMULATED", "APPROVAL_GRANTED_SIMULATED", "APPROVAL_DENIED_SIMULATED", "APPROVAL_EXPIRED_SIMULATED", "APPROVAL_INVALID_SIMULATED"],
-  "capabilityClassesCovered": ["allowed", "denylisted", "unsupported", "policy_violation"],
-  "releaseStoreMarked": false,
-  "productBridgeCspMarked": false
-}

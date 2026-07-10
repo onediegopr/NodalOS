@@ -1,9 +1,0 @@
-{
-  "milestone": "M763",
-  "decision": "ELIGIBILITY_NEXT_DECISION_READY",
-  "dryRunEligibilityClassification": "READY",
-  "futureRuntimeGate": "READY",
-  "productiveUnlockAllowed": false,
-  "publicRelease": "NO-GO",
-  "chromeWebStore": "NO-GO"
-}

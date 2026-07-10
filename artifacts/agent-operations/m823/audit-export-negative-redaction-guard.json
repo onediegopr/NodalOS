@@ -1,8 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M823",
-  "auditExportNegativeRedactionGuard": "READY",
-  "forbiddenFieldsIncluded": {"secrets":false,"credentials":false,"tokens":false,"cookies":false,"rawUserData":false,"rawLogs":false,"providerKeys":false,"privateKeys":false,"browserSessionData":false},
-  "dangerousInjectedFlagsRejected": ["executionPerformed", "productiveRuntime", "providerCloudInvoked", "filesystemWritePerformed", "browserAutomationPerformed", "capabilityUnlocked", "publicReleasePerformed", "storeSubmissionPerformed", "signedPublicZipCreated", "productFilesModified", "bridgeCspModified"],
-  "sideEffectSinkInvocations": 0
-}

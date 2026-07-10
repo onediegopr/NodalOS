@@ -1,7 +1,0 @@
-{
-  "project": "NODAL OS",
-  "decision": "M862_READY",
-  "commitPushFinalNextStep": "READY",
-  "validationStatus": "PASS",
-  "nextMacroHito": "M863-M874 - External Audit Result Application + Freeze Candidate Lock + Future Runtime Re-Entry Criteria"
-}

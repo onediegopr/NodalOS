@@ -1,8 +1,0 @@
-{
-  "project": "NODAL OS",
-  "decision": "AUDIT_GATE_CLEAN",
-  "flakeRegressionWatch": "READY",
-  "fullSuiteStatus": "PASS",
-  "historicalGate9FlakeReproducedThisBlock": false,
-  "securityRelatedFailure": false
-}

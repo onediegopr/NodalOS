@@ -1,8 +1,0 @@
-{
-  "project": "NODAL OS",
-  "milestone": "M849",
-  "remediationPlanContract": "READY",
-  "allowedFileScope": ["tests/OneBrain.Safety.Tests", "docs/reports", "artifacts/agent-operations"],
-  "prohibitedFileScope": ["src", "browser-extension", "product files", "Bridge/CSP"],
-  "blockingRemediations": ["TEST_FIX_REQUIRED", "SAFETY_FIX_REQUIRED", "SCOPE_FIX_REQUIRED", "RELEASE_BOUNDARY_FIX_REQUIRED", "VALIDATION_RERUN_REQUIRED"]
-}
