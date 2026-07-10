@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25107-01" />
+    <PackageReference Include="MSTest.TestFramework" Version="4.0.0-preview.25358.7" />
+    <PackageReference Include="MSTest.TestAdapter" Version="4.0.0-preview.25358.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="..\..\src\OneBrain.ChromeLab.Bridge\OneBrain.ChromeLab.Bridge.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\OneBrain.Safety.Tests\ChromeLabBridgeSecurityTests.cs" Link="ChromeLabBridgeSecurityTests.cs" />
+    <Compile Include="..\OneBrain.Safety.Tests\ChromeLabLocalDevOperatorSurfaceAcceptanceEvidenceTests.cs" Link="ChromeLabLocalDevOperatorSurfaceAcceptanceEvidenceTests.cs" />
+    <Compile Include="..\OneBrain.Safety.Tests\ChromeLabLocalDevOperatorSurfaceHtmlRendererTests.cs" Link="ChromeLabLocalDevOperatorSurfaceHtmlRendererTests.cs" />
+    <Compile Include="..\OneBrain.Safety.Tests\ChromeLabLocalDevOperatorSurfaceReadOnlyRouteTests.cs" Link="ChromeLabLocalDevOperatorSurfaceReadOnlyRouteTests.cs" />
+    <Compile Include="..\OneBrain.Safety.Tests\ChromeLabLocalDevOperatorSurfaceTests.cs" Link="ChromeLabLocalDevOperatorSurfaceTests.cs" />
+  </ItemGroup>
+
+</Project>
