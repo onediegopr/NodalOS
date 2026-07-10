@@ -1,0 +1,56 @@
+name: Reference-Aware Artifact Cleanup
+
+on:
+  pull_request:
+    branches:
+      - chrome-lab-001-extension-local-ai-bridge
+    paths:
+      - tools/repository/clean-unreferenced-artifacts.ps1
+      - .github/workflows/reference-aware-artifact-cleanup.yml
+      - artifacts/**
+      - docs/audit/artifact-cleanup-report.md
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: artifact-cleanup-${{ github.head_ref }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    if: startsWith(github.head_ref, 'maintenance/reference-aware-artifact-cleanup')
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout maintenance branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Remove unreferenced historical artifacts
+        shell: pwsh
+        run: ./tools/repository/clean-unreferenced-artifacts.ps1 -Apply
+
+      - name: Validate generated diff
+        shell: pwsh
+        run: |
+          git diff --check
+          if (-not (Test-Path docs/audit/artifact-cleanup-report.md)) {
+            throw 'artifact cleanup report was not generated'
+          }
+
+      - name: Commit cleanup result
+        shell: pwsh
+        run: |
+          if (-not (git status --porcelain)) {
+            Write-Host 'No unreferenced tracked artifacts found.'
+            exit 0
+          }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(repo): remove unreferenced historical artifacts'
+          git push origin "HEAD:${{ github.head_ref }}"
