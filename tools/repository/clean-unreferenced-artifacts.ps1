@@ -16,22 +16,40 @@ $tracked = @(& git ls-files -- $ArtifactRoot | Where-Object { $_ -and $_.Trim() 
 $kept = [System.Collections.Generic.List[object]]::new()
 $removable = [System.Collections.Generic.List[object]]::new()
 
-function Find-ReferencesOutsideArtifacts {
+# Build the external-reference corpus once. The previous per-artifact git-grep
+# approach was safe but unnecessarily O(artifacts × repository scan).
+$referenceFiles = @()
+try {
+    $referenceFiles = @(& git grep -I -l -e . -- ":!$ArtifactRoot/**" 2>$null)
+}
+catch {
+    $referenceFiles = @()
+}
+
+$corpusBuilder = [System.Text.StringBuilder]::new()
+foreach ($referenceFile in $referenceFiles) {
+    try {
+        $absolute = Join-Path $repoRoot $referenceFile
+        if ([System.IO.File]::Exists($absolute)) {
+            [void]$corpusBuilder.AppendLine([System.IO.File]::ReadAllText($absolute))
+        }
+    }
+    catch {
+        Write-Warning "Unable to inspect reference file: $referenceFile"
+    }
+}
+$referenceCorpus = $corpusBuilder.ToString()
+
+function Test-ExternalReference {
     param([string[]]$Needles)
 
     foreach ($needle in ($Needles | Where-Object { $_ } | Select-Object -Unique)) {
-        try {
-            $matches = @(& git grep -l -F -- $needle -- ":!$ArtifactRoot/**" 2>$null)
-            if ($matches.Count -gt 0) {
-                return @($matches)
-            }
-        }
-        catch {
-            # git grep returns a non-zero exit code when no matches exist.
+        if ($referenceCorpus.Contains($needle, [StringComparison]::Ordinal)) {
+            return $true
         }
     }
 
-    return @()
+    return $false
 }
 
 foreach ($file in $tracked) {
@@ -46,13 +64,7 @@ foreach ($file in $tracked) {
     if (-not $reason) {
         $relativeToRoot = $normalized.Substring($ArtifactRoot.TrimEnd("/").Length).TrimStart("/")
         $basename = [System.IO.Path]::GetFileName($normalized)
-        $references = Find-ReferencesOutsideArtifacts -Needles @(
-            $normalized,
-            $relativeToRoot,
-            $basename
-        )
-
-        if ($references.Count -gt 0) {
+        if (Test-ExternalReference -Needles @($normalized, $relativeToRoot, $basename)) {
             $reason = "referenced-outside-artifacts"
         }
     }
@@ -90,6 +102,7 @@ $lines.Add("")
 $lines.Add("## Summary")
 $lines.Add("")
 $lines.Add("- Tracked files inspected: $($tracked.Count)")
+$lines.Add("- External text files inspected for references: $($referenceFiles.Count)")
 $lines.Add("- Kept: $($kept.Count)")
 $lines.Add("- Removed or proposed for removal: $($removable.Count)")
 $lines.Add("- Mode: $(if ($Apply) { 'APPLY' } else { 'DRY-RUN' })")
