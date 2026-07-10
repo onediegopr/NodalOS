@@ -1,7 +1,5 @@
-using System.Security.Cryptography;
-using System.Text;
+using System.Collections.Concurrent;
 using System.Text.Json;
-using OneBrain.ChromeLab.Bridge.Sessions;
 using OneBrain.ChromeLab.Bridge.Stealth;
 
 namespace OneBrain.ChromeLab.Bridge.Sessions;
@@ -15,6 +13,7 @@ public sealed class ExtensionMessageHandler : IMessageHandler
     private readonly ChromeLabOptions _config;
     private readonly ProtocolEventBuffer _events;
     private readonly IUnifiedFrictionPolicyEngine _policyEngine;
+    private readonly ConcurrentDictionary<string, byte> _authenticatedClients = new(StringComparer.Ordinal);
 
     public ExtensionMessageHandler(
         ChromeLabRunManager runs,
@@ -41,6 +40,18 @@ public sealed class ExtensionMessageHandler : IMessageHandler
 
         _clients.MarkSeen(clientId);
 
+        if (!string.Equals(type, "extension.hello", StringComparison.Ordinal) &&
+            !_authenticatedClients.ContainsKey(clientId))
+        {
+            _events.Add("auth.required", "Authenticated extension hello required before operational messages", clientId: clientId);
+            return JsonSerializer.Serialize(new
+            {
+                type = "protocol.error",
+                error = "authentication_required",
+                message = "Authenticate with extension.hello before sending operational messages."
+            }, ChromeLabProtocol.JsonOptions);
+        }
+
         switch (type)
         {
             case "extension.hello":
@@ -60,12 +71,19 @@ public sealed class ExtensionMessageHandler : IMessageHandler
         }
     }
 
+    public bool IsAuthenticated(string clientId) =>
+        _authenticatedClients.ContainsKey(clientId);
+
+    public void ForgetClient(string clientId) =>
+        _authenticatedClients.TryRemove(clientId, out _);
+
     private async Task<string?> HandleHello(JsonDocument doc, string clientId, CancellationToken ct)
     {
         var token = doc.RootElement.TryGetProperty("token", out var tp) ? tp.GetString() ?? "" : "";
 
-        if (!FixedTimeTokenEquals(token, _config.ConnectionToken))
+        if (!ChromeLabBridgeSecurity.FixedTimeEquals(token, _config.ConnectionToken))
         {
+            ForgetClient(clientId);
             _clients.MarkError(clientId, "Invalid connection token");
             _events.Add("auth.rejected",
                 $"Invalid token; expectedLen={_config.ConnectionToken.Length} receivedLen={token.Length}",
@@ -82,6 +100,7 @@ public sealed class ExtensionMessageHandler : IMessageHandler
         var protocolVersion = doc.RootElement.TryGetProperty("protocolVersion", out var pp) ? pp.GetString() ?? "" : "";
         if (!string.Equals(protocolVersion, ChromeLabProtocol.Version, StringComparison.Ordinal))
         {
+            ForgetClient(clientId);
             _clients.MarkError(clientId, "Protocol version mismatch");
             _events.Add("protocol.rejected", "Protocol version mismatch", clientId: clientId);
             return JsonSerializer.Serialize(new
@@ -92,11 +111,11 @@ public sealed class ExtensionMessageHandler : IMessageHandler
             }, ChromeLabProtocol.JsonOptions);
         }
 
-        var extClientId = doc.RootElement.TryGetProperty("clientId", out var cp) ? cp.GetString() ?? "" : "";
         var extVersion = doc.RootElement.TryGetProperty("extensionVersion", out var vp) ? vp.GetString() ?? "" : "";
         var browser = doc.RootElement.TryGetProperty("browser", out var bp) ? bp.GetString() ?? "" : "";
         var resumeRunId = doc.RootElement.TryGetProperty("resumeRunId", out var rp) ? rp.GetString() : null;
 
+        _authenticatedClients[clientId] = 1;
         _clients.RegisterHello(clientId, protocolVersion, extVersion, browser, resumeRunId);
         _events.Add("extension.hello", $"Extension hello from {browser} {extVersion}", clientId: clientId);
 
@@ -195,13 +214,4 @@ public sealed class ExtensionMessageHandler : IMessageHandler
 
     private static bool ReadBool(JsonElement el, string prop) =>
         el.TryGetProperty(prop, out var p) && p.ValueKind is JsonValueKind.True or JsonValueKind.False && p.GetBoolean();
-
-    private static bool FixedTimeTokenEquals(string? received, string? expected)
-    {
-        if (received is null || expected is null) return false;
-        var r = Encoding.UTF8.GetBytes(received);
-        var e = Encoding.UTF8.GetBytes(expected);
-        if (r.Length != e.Length) return false;
-        return CryptographicOperations.FixedTimeEquals(r, e);
-    }
 }
