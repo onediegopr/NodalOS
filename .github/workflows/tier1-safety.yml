@@ -1,0 +1,107 @@
+name: Tier 1 Safety
+
+on:
+  pull_request:
+    branches:
+      - chrome-lab-001-extension-local-ai-bridge
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tier1-safety-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chromelab-security:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 11 preview
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.x
+          dotnet-quality: preview
+
+      - name: Restore focused and aggregate test projects
+        shell: pwsh
+        run: |
+          dotnet restore tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj
+          dotnet restore tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj
+
+      - name: Build ChromeLab bridge
+        shell: pwsh
+        run: dotnet build src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj --configuration Release --no-restore
+
+      - name: Build focused ChromeLab tests
+        shell: pwsh
+        run: dotnet build tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj --configuration Release --no-restore
+
+      - name: Build Safety aggregate
+        shell: pwsh
+        run: dotnet build tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --configuration Release --no-restore
+
+      - name: Run focused ChromeLab tests
+        shell: pwsh
+        run: >-
+          dotnet test tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj
+          --configuration Release
+          --no-build
+          --logger "console;verbosity=normal"
+
+  secret-scan:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout pull request head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+
+      - name: Fetch pull request base
+        run: git fetch origin ${{ github.event.pull_request.base.sha }} --depth=1
+
+      - name: Scan added lines for credential patterns
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import subprocess
+          import sys
+
+          diff = subprocess.check_output(
+              ["git", "diff", "--unified=0", os.environ["BASE_SHA"], os.environ["HEAD_SHA"]],
+              text=True,
+              errors="replace",
+          )
+          patterns = [
+              re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
+              re.compile(r"AKIA[0-9A-Z]{16}"),
+              re.compile(r"gh[pousr]_[A-Za-z0-9]{30,}"),
+              re.compile(r"sk-[A-Za-z0-9_-]{20,}"),
+              re.compile(r"(?i)(?:api[_-]?key|secret|password|token)\s*[:=]\s*[\"'][^\"']{12,}[\"']"),
+              re.compile(r"(?:nexa|nodal)_[0-9a-fA-F]{32,}"),
+          ]
+          findings = []
+          for line in diff.splitlines():
+              if not line.startswith("+") or line.startswith("+++"):
+                  continue
+              value = line[1:]
+              if any(pattern.search(value) for pattern in patterns):
+                  findings.append(value[:240])
+          if findings:
+              print("Potential credentials found in added lines:")
+              for finding in findings:
+                  print(f"- {finding}")
+              sys.exit(1)
+          print("No credential patterns found in added lines.")
+          PY

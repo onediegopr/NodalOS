@@ -15,6 +15,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="ChromeLabBridgeSecurityTests.cs" />
+    <Compile Remove="ChromeLabLocalDevOperatorSurfaceAcceptanceEvidenceTests.cs" />
+    <Compile Remove="ChromeLabLocalDevOperatorSurfaceHtmlRendererTests.cs" />
+    <Compile Remove="ChromeLabLocalDevOperatorSurfaceReadOnlyRouteTests.cs" />
+    <Compile Remove="ChromeLabLocalDevOperatorSurfaceTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\OneBrain.Safety\OneBrain.Safety.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.AgentOperations.Adapters.Browser\OneBrain.AgentOperations.Adapters.Browser.csproj" />
     <ProjectReference Include="..\..\src\OneBrain.AgentOperations.Contracts\OneBrain.AgentOperations.Contracts.csproj" />

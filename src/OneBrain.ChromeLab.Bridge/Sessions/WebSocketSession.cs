@@ -1,7 +1,6 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using OneBrain.ChromeLab.Bridge.Sessions;
 
 namespace OneBrain.ChromeLab.Bridge.Sessions;
 
@@ -39,7 +38,17 @@ public sealed class WebSocketSession : IWebSocketSession
                 {
                     var response = await _handler.HandleAsync(received, ClientId, ct);
                     if (!string.IsNullOrEmpty(response))
+                    {
                         await SendRawAsync(socket, response, ct);
+                        if (ChromeLabBridgeSecurity.IsFatalProtocolError(response))
+                        {
+                            await socket.CloseAsync(
+                                WebSocketCloseStatus.PolicyViolation,
+                                "authentication or protocol rejected",
+                                ct);
+                            break;
+                        }
+                    }
                 }
                 catch (JsonException)
                 {
@@ -65,6 +74,8 @@ public sealed class WebSocketSession : IWebSocketSession
         }
         finally
         {
+            if (_handler is ExtensionMessageHandler extensionHandler)
+                extensionHandler.ForgetClient(ClientId);
             _events.Add("ws.closed", "WebSocket closed", clientId: ClientId);
         }
     }
@@ -75,14 +86,14 @@ public sealed class WebSocketSession : IWebSocketSession
         using var stream = new MemoryStream();
         while (true)
         {
-            if (stream.Length + buffer.Length > MaxMessageSizeBytes)
-                throw new InvalidOperationException($"WebSocket message exceeds max size of {MaxMessageSizeBytes} bytes");
-
             var result = await socket.ReceiveAsync(buffer, ct);
             if (result.MessageType == WebSocketMessageType.Close)
                 return null;
             if (result.MessageType != WebSocketMessageType.Text)
                 throw new InvalidOperationException("Only text messages supported.");
+            if (stream.Length + result.Count > MaxMessageSizeBytes)
+                throw new InvalidOperationException($"WebSocket message exceeds max size of {MaxMessageSizeBytes} bytes");
+
             stream.Write(buffer, 0, result.Count);
             if (result.EndOfMessage)
                 break;

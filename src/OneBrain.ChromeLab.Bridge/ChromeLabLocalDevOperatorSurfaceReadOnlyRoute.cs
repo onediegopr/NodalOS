@@ -107,6 +107,9 @@ public static class ChromeLabLocalDevOperatorSurfaceEndpointExtensions
     public static IEndpointRouteBuilder MapChromeLabLocalDevOperatorSurfaceReadOnlyRoute(
         this IEndpointRouteBuilder endpoints)
     {
+        if (endpoints is WebApplication application)
+            application.UseMiddleware<ChromeLabBridgeSecurityMiddleware>();
+
         endpoints.MapGet(ChromeLabLocalDevOperatorSurfaceReadOnlyRoute.RoutePath, (HttpContext context) =>
         {
             ApplyNoStore(context);

@@ -20,6 +20,7 @@
     <Project Path="src/OneBrain.WindowsComputerUse/OneBrain.WindowsComputerUse.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj" />
     <Project Path="tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj" />
     <Project Path="tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj" />
   </Folder>
