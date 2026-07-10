@@ -27,25 +27,28 @@ jobs:
           dotnet-version: 11.0.x
           dotnet-quality: preview
 
-      - name: Restore ChromeLab and Safety
+      - name: Restore focused and aggregate test projects
         shell: pwsh
         run: |
-          dotnet restore src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj
+          dotnet restore tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj
           dotnet restore tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj
 
       - name: Build ChromeLab bridge
         shell: pwsh
         run: dotnet build src/OneBrain.ChromeLab.Bridge/OneBrain.ChromeLab.Bridge.csproj --configuration Release --no-restore
 
-      - name: Build Safety tests
+      - name: Build focused ChromeLab tests
+        shell: pwsh
+        run: dotnet build tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj --configuration Release --no-restore
+
+      - name: Build Safety aggregate
         shell: pwsh
         run: dotnet build tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj --configuration Release --no-restore
 
-      - name: Run ChromeLab security and operator-surface tests
+      - name: Run focused ChromeLab tests
         shell: pwsh
         run: >-
-          dotnet test tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj
+          dotnet test tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj
           --configuration Release
           --no-build
-          --filter "FullyQualifiedName~ChromeLabBridgeSecurityTests|FullyQualifiedName~ChromeLabLocalDevOperatorSurface"
           --logger "console;verbosity=normal"
