@@ -6,7 +6,6 @@ Generated deterministically by `tools/repository/clean-unreferenced-artifacts.ps
 
 - Base tracked artifacts: 1689
 - Resulting tracked artifacts: 1469
-- External text files inspected for references: 3832
 - Removed from the pull-request base: 220
 - Mode: APPLY
 
