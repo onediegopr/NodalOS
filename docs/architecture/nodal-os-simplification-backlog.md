@@ -2158,3 +2158,17 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: roadmap/governance `94%`; implementation technical `71%`; product integration `53%`; MVP sellable `50%`; production runtime `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 remote branch governance remains credential-blocked and CloakBrowser binary/runtime availability still requires preflight; P4 old duplicated roadmap models must migrate gradually.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`.
+
+## BLOCK MSE33 - CloakBrowser Direct CDP MVP Slice Preflight
+
+- Objective: continue from the MVP freeze into CloakBrowser/CDP and add the missing product-runtime preflight layer without using Chrome/Edge/Playwright fallbacks.
+- Status: completed as bounded BrowserRuntime source/test implementation.
+- Decision: `GO_WITH_FINDINGS_CLOAKBROWSER_ADAPTER_READY_RUNTIME_BINARY_BLOCKED_EXTERNAL`.
+- Resulting state: `CLOAKBROWSER_DIRECT_CDP_MVP_PREFLIGHT_READY_RUNTIME_BINARY_BLOCKED_EXTERNAL`.
+- Target executed: added `CloakBrowserDirectCdpMvpSlicePreflight`, which classifies `REAL_PINNED_RUNTIME`, `CONFIGURED_BUT_MISSING_BINARY`, `CONFIGURED_BUT_HASH_MISMATCH`, `AVAILABLE_LOCAL_BINARY`, rejected system-browser fallback, rejected Playwright default and rejected ChromeLab extension runtime.
+- Test evidence: `CloakBrowserDirectCdpMvpSlicePreflightTests` PASS `5/5`; `CloakBrowserRuntimeFoundationTests` PASS `50/50`; `CloakBrowserRuntimeLiveTests` skipped/inconclusive `18/18` with 0 failures because the external pinned CloakBrowser binary is missing.
+- Runtime blocker: `BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY`; `browser-runtime.lock.json` remains pinned, but no matching local binary is configured/present in this environment.
+- Scope: bounded `src/OneBrain.BrowserRuntime` + focal Safety tests + docs-minimal logs. No production runtime, public/product promotion, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, workflow edit, CI enforcement or release/commercial authority opened.
+- Current posture: roadmap/governance `94%`; implementation technical `72%`; product integration `54%`; MVP sellable `50%`; production runtime `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 external CloakBrowser binary provisioning is required before live smoke can pass; P4 further local fixture work can continue only if it does not pretend live runtime success.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_BINARY_PROVISIONING_OR_MVP_VERTICAL_SLICE_LOCAL_FIXTURE_CONTINUATION`.

@@ -1085,3 +1085,40 @@ Current posture:
 Next exact macro prompt:
 
 `AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`
+
+## CloakBrowser Direct CDP MVP Slice Preflight
+
+Decision:
+
+`GO_WITH_FINDINGS_CLOAKBROWSER_ADAPTER_READY_RUNTIME_BINARY_BLOCKED_EXTERNAL`
+
+Resulting state:
+
+`CLOAKBROWSER_DIRECT_CDP_MVP_PREFLIGHT_READY_RUNTIME_BINARY_BLOCKED_EXTERNAL`
+
+Implementation:
+
+- Added `CloakBrowserDirectCdpMvpSlicePreflight`.
+- The preflight classifies the pinned lockfile, configured artifact, missing binary, hash mismatch, available local binary, rejected system browser fallback, rejected Playwright default and rejected ChromeLab extension runtime.
+- No process is launched by the preflight.
+- Existing direct-CDP healthcheck/runtime foundation remains the runtime smoke path when a pinned CloakBrowser binary is available.
+
+Runtime preflight result:
+
+- `browser-runtime.lock.json` is pinned to CloakBrowser `146.0.7680.177.5`.
+- No matching local CloakBrowser binary is configured/present in this environment.
+- Live smoke is blocked as `BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY`.
+- `CloakBrowserRuntimeLiveTests` correctly reported 18 skipped/inconclusive tests, 0 failures, because the external runtime artifact is missing.
+
+Current posture:
+
+- Roadmap/governance: `94%`.
+- Implementation technical: `72%`.
+- Product integration: `54%`.
+- MVP sellable: `50%`.
+- Production runtime: `0%`.
+- Release/commercial: `0% / NO-GO`.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_CLOAKBROWSER_BINARY_PROVISIONING_OR_MVP_VERTICAL_SLICE_LOCAL_FIXTURE_CONTINUATION`

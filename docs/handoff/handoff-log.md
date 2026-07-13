@@ -410,6 +410,10 @@ Canonical main and MVP vertical slice freeze: `CANONICAL_MAIN_ALIGNED_MVP_VERTIC
 
 Local `main`, `origin/main` and `origin/chrome-lab-001-extension-local-ai-bridge` are aligned at `e38c4325e48dbfce24bec971d957c39bbc4071eb`. Remote GitHub default branch/protection could not be changed because `gh` is not authenticated; exact commands, real Tier 1 check names and branch-protection payload are recorded in `docs/operations/branch-governance.md`. The canonical MVP path is now frozen in `docs/architecture/nodal-os-mvp-vertical-slice-canonical.md` as Workspace -> Mission -> Plan -> Approval -> Controlled Action -> Verification -> Evidence/Timeline -> Handoff. Safety architecture guard `NodalOsMvpVerticalSliceCanonicalTests` prevents drift back to ChromeLab as product runtime or Product Ledger as authority. No production runtime, public/product promotion, product authority, workflow edit, CI enforcement or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`.
 
+CloakBrowser direct CDP MVP preflight: `CLOAKBROWSER_DIRECT_CDP_MVP_PREFLIGHT_READY_RUNTIME_BINARY_BLOCKED_EXTERNAL`.
+
+Added `CloakBrowserDirectCdpMvpSlicePreflight` in `OneBrain.BrowserRuntime` with Safety coverage for missing external binary, hash mismatch, available local binary, ChromeLab extension rejection, system-browser/Playwright fallback rejection and sanitized evidence fields. The existing direct-CDP healthcheck remains the live smoke path once a pinned binary is provided. Live tests are blocked externally, not failing: `CloakBrowserRuntimeLiveTests` skipped/inconclusive 18/18 because no matching local CloakBrowser binary is configured/present. No Chrome/Edge fallback, Playwright default runtime, ChromeLab extension runtime, production runtime, public/product promotion, product authority, workflow edit, CI enforcement or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_BINARY_PROVISIONING_OR_MVP_VERTICAL_SLICE_LOCAL_FIXTURE_CONTINUATION`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

@@ -3607,3 +3607,16 @@
 - Boundary: no production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, workflow edit, CI enforcement or release/commercial authority opened.
 - Findings: P0=0, P1=0, P2=0; P3 GitHub remote governance awaits credentials and CloakBrowser binary/runtime preflight remains next; P4 duplicated historical roadmap models remain traceability until touched.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`.
+
+## AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION
+
+- Decision: `GO_WITH_FINDINGS_CLOAKBROWSER_ADAPTER_READY_RUNTIME_BINARY_BLOCKED_EXTERNAL`.
+- Baseline: `9bc8e7420db8f814f7e975e7a18d15b62643191e`.
+- Resulting state: `CLOAKBROWSER_DIRECT_CDP_MVP_PREFLIGHT_READY_RUNTIME_BINARY_BLOCKED_EXTERNAL`.
+- Target executed: added `CloakBrowserDirectCdpMvpSlicePreflight` and focal Safety tests.
+- Runtime classification: `browser-runtime.lock.json` is a `REAL_PINNED_RUNTIME`; the local environment is `BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY` because no matching configured local CloakBrowser binary is present.
+- Behavior changed: the browser runtime now has a no-launch preflight that distinguishes missing binary, hash mismatch, available local binary, rejected system browser fallback, rejected Playwright default and rejected ChromeLab extension runtime.
+- Validation: BrowserRuntime build PASS `0/0`; Safety build PASS with 32 pre-existing warnings; preflight tests PASS `5/5`; foundation tests PASS `50/50`; live tests skipped/inconclusive `18/18`, 0 failures, due missing external binary.
+- Boundary: no Chrome/Edge fallback, no Playwright default runtime, no ChromeLab extension runtime, no production runtime, public/product promotion, latest/read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, workflow edit, CI enforcement or release/commercial authority opened.
+- Findings: P0=0, P1=0, P2=0; P3 CloakBrowser binary provisioning is the real external blocker for live smoke; P4 local fixture continuation must not overclaim runtime readiness.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_BINARY_PROVISIONING_OR_MVP_VERTICAL_SLICE_LOCAL_FIXTURE_CONTINUATION`.
