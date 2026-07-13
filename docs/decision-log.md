@@ -3594,3 +3594,16 @@
 - External blocker: GitHub remote settings and required-check enforcement were not changed because `gh` is not authenticated in this environment.
 - Current posture: ChromeLab local lab security is validated locally; remote CI governance remains pending; CloakBrowser remains the canonical product browser runtime.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_CANONICAL_DEFAULT_BRANCH_PROTECTION_AND_MVP_VERTICAL_SLICE_FREEZE`.
+
+## AUTHORIZE_NODAL_OS_CANONICAL_DEFAULT_BRANCH_PROTECTION_AND_MVP_VERTICAL_SLICE_FREEZE
+
+- Decision: `GO_WITH_FINDINGS_CANONICAL_MAIN_AND_MVP_VERTICAL_SLICE_FROZEN`.
+- Baseline: `e38c4325e48dbfce24bec971d957c39bbc4071eb`.
+- Resulting state: `CANONICAL_MAIN_ALIGNED_MVP_VERTICAL_SLICE_FROZEN_GITHUB_REMOTE_SETTINGS_BLOCKED`.
+- Governance: local `main`, `origin/main` and `origin/chrome-lab-001-extension-local-ai-bridge` are aligned; remote GitHub default branch/protection is blocked by missing `gh` authentication and recorded as `BLOCKED_EXTERNAL_GITHUB_REMOTE_SETTINGS`.
+- MVP path frozen: `Workspace -> Mission -> Plan -> Approval -> Controlled Action -> Verification -> Evidence/Timeline -> Handoff`.
+- Artifact: `docs/architecture/nodal-os-mvp-vertical-slice-canonical.md`.
+- Guard: `NodalOsMvpVerticalSliceCanonicalTests` locks the ordered path, ChromeLab lab-only status, CloakBrowser direct CDP as product browser-runtime target, Product Ledger non-authority, and real Tier 1 check names.
+- Boundary: no production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, workflow edit, CI enforcement or release/commercial authority opened.
+- Findings: P0=0, P1=0, P2=0; P3 GitHub remote governance awaits credentials and CloakBrowser binary/runtime preflight remains next; P4 duplicated historical roadmap models remain traceability until touched.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`.

@@ -406,6 +406,10 @@ ChromeLab security/CI/runtime local validation and lab closeout: `CHROMELAB_LAB_
 
 Closed the ChromeLab lab-local validation path after executing focused tests, Release workflow-equivalent local commands, extension static checks and loopback runtime smoke. Auth/origin/pairing/stealth/no-store boundaries passed locally; ChromeLab remains `LAB_LEGACY_TRANSITION` and CloakBrowser remains the canonical product browser runtime. No source fix, Chrome/Edge launch, Playwright product runtime, live Browser/CDP/WCU/OCR/Recipes action, production runtime, public/product promotion, product authority, approval/command execution, DB/cloud/network/provider, KMS/WORM, workflow edit, CI enforcement or release/commercial authority changed. Remote branch protection/default branch/required checks remain blocked on GitHub credentials. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CANONICAL_DEFAULT_BRANCH_PROTECTION_AND_MVP_VERTICAL_SLICE_FREEZE`.
 
+Canonical main and MVP vertical slice freeze: `CANONICAL_MAIN_ALIGNED_MVP_VERTICAL_SLICE_FROZEN_GITHUB_REMOTE_SETTINGS_BLOCKED`.
+
+Local `main`, `origin/main` and `origin/chrome-lab-001-extension-local-ai-bridge` are aligned at `e38c4325e48dbfce24bec971d957c39bbc4071eb`. Remote GitHub default branch/protection could not be changed because `gh` is not authenticated; exact commands, real Tier 1 check names and branch-protection payload are recorded in `docs/operations/branch-governance.md`. The canonical MVP path is now frozen in `docs/architecture/nodal-os-mvp-vertical-slice-canonical.md` as Workspace -> Mission -> Plan -> Approval -> Controlled Action -> Verification -> Evidence/Timeline -> Handoff. Safety architecture guard `NodalOsMvpVerticalSliceCanonicalTests` prevents drift back to ChromeLab as product runtime or Product Ledger as authority. No production runtime, public/product promotion, product authority, workflow edit, CI enforcement or release/commercial authority changed. Next exact macro prompt: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`.
+
 ## Archive/Legacy Rule
 
 Older handoffs remain traceability. Mark as archive/legacy if they:

@@ -2144,3 +2144,17 @@ This backlog follows the full-system bloat audit and Block A documentation compa
 - Current posture: global roadmap readiness `98%`; runtime/product local-dev readiness `45%`; ChromeLab local/dev operator surface readiness `33%`; ChromeLab lab security local validation `84%`; runtime/product production readiness `0%`; Product Ledger local/dev product surface readiness `86%`; Product Ledger model consolidation `77%`; CI enforcement `0%`; release/commercial `0% / NO-GO`.
 - Findings: P0=0, P1=0, P2=0; P3 remote GitHub governance remains blocked by missing gh authentication and Safety aggregate build is slow but passing; P4 branch/default protection and MVP vertical-slice freeze should be the next macro, not more ChromeLab local surface work.
 - Next macro frontier: `AUTHORIZE_NODAL_OS_CANONICAL_DEFAULT_BRANCH_PROTECTION_AND_MVP_VERTICAL_SLICE_FREEZE`.
+
+## BLOCK MSE32 - Canonical Main And MVP Vertical Slice Freeze
+
+- Objective: make `main` the local product integration branch, record the remote GitHub governance blocker, and freeze one canonical MVP path before CloakBrowser/CDP implementation.
+- Status: completed as docs/test architecture freeze.
+- Decision: `GO_WITH_FINDINGS_CANONICAL_MAIN_AND_MVP_VERTICAL_SLICE_FROZEN`.
+- Resulting state: `CANONICAL_MAIN_ALIGNED_MVP_VERTICAL_SLICE_FROZEN_GITHUB_REMOTE_SETTINGS_BLOCKED`.
+- Artifact: `docs/architecture/nodal-os-mvp-vertical-slice-canonical.md`.
+- Guard: `NodalOsMvpVerticalSliceCanonicalTests` verifies one ordered path, ChromeLab lab-only status, CloakBrowser as browser-runtime target, Product Ledger non-authority, and remote governance blocker/check names.
+- Branch governance: local `main`, `origin/main` and `origin/chrome-lab-001-extension-local-ai-bridge` are aligned at `e38c4325e48dbfce24bec971d957c39bbc4071eb`; GitHub default branch/protection remains externally blocked by missing `gh` auth.
+- Scope: docs/test architecture freeze only. No production runtime, public/product promotion, latest pointer authority, read precedence authority, product authority, approval/command execution, mutation, irreversible write, real export/download, DB/cloud/network/provider, KMS/WORM, CI workflow edit, CI enforcement or release/commercial authority opened.
+- Current posture: roadmap/governance `94%`; implementation technical `71%`; product integration `53%`; MVP sellable `50%`; production runtime `0%`; release/commercial `0% / NO-GO`.
+- Findings: P0=0, P1=0, P2=0; P3 remote branch governance remains credential-blocked and CloakBrowser binary/runtime availability still requires preflight; P4 old duplicated roadmap models must migrate gradually.
+- Next macro frontier: `AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`.

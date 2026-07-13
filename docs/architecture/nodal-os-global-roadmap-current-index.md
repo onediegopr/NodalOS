@@ -1047,3 +1047,41 @@ Next exact macro prompt:
 ## Final Boundary
 
 This index is documentation only. It does not authorize source changes, test edits, CI enforcement, runtime/product, public/product, Production route, latest pointer, read precedence, product authority, Product Ledger runtime/model consolidation, broad common-contract implementation, DB/cloud/network/provider, KMS/WORM or release/commercial work.
+
+## Canonical Main And MVP Vertical Slice Freeze
+
+Decision:
+
+`GO_WITH_FINDINGS_CANONICAL_MAIN_AND_MVP_VERTICAL_SLICE_FROZEN`
+
+Resulting state:
+
+`CANONICAL_MAIN_ALIGNED_MVP_VERTICAL_SLICE_FROZEN_GITHUB_REMOTE_SETTINGS_BLOCKED`
+
+Canonical artifact:
+
+`docs/architecture/nodal-os-mvp-vertical-slice-canonical.md`
+
+Branch governance:
+
+- Local `main` is aligned with `origin/main` at `e38c4325e48dbfce24bec971d957c39bbc4071eb`.
+- `origin/main` and `origin/chrome-lab-001-extension-local-ai-bridge` are aligned `0 0`.
+- Remote default branch/protection cannot be changed here because `gh` is not authenticated.
+- Remote blocker is recorded as `BLOCKED_EXTERNAL_GITHUB_REMOTE_SETTINGS` in `docs/operations/branch-governance.md`.
+
+Canonical MVP path:
+
+`Workspace -> Mission -> Plan -> Approval -> Controlled Action -> Verification -> Evidence/Timeline -> Handoff`
+
+Current posture:
+
+- Roadmap/governance: `94%`.
+- Implementation technical: `71%`.
+- Product integration: `53%`.
+- MVP sellable: `50%`.
+- Production runtime: `0%`.
+- Release/commercial: `0% / NO-GO`.
+
+Next exact macro prompt:
+
+`AUTHORIZE_NODAL_OS_CLOAKBROWSER_DIRECT_CDP_MVP_VERTICAL_SLICE_IMPLEMENTATION`
