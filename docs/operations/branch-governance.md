@@ -1,80 +1,86 @@
 # NODAL OS Branch Governance
 
-Last updated: 2026-07-10
+Last updated: 2026-07-15
 
-## Canonical branches
+## Canonical branch
 
 - `main` is the canonical product and integration branch.
-- `chrome-lab-001-extension-local-ai-bridge` is a temporary compatibility branch and must remain fast-forward aligned with `main` until repository settings use `main` as the default branch.
-- Feature, security and maintenance work must use short-lived branches and pull requests into `main`.
+- Feature, security, audit and maintenance work use short-lived branches and pull requests into `main`.
+- `chrome-lab-001-extension-local-ai-bridge` is a compatibility/lab branch, not the product integration branch.
+- `wip/hito-004b-target-window-selection` is historical and must not remain the repository default.
 
-## Required merge gates
+## Actual remote state found by the total technical audit
 
-Every pull request into `main` must pass:
+Repository: `onediegopr/NodalOS`.
 
-1. Tier 1 ChromeLab restore/build/test.
-2. Safety aggregate build.
-3. Pull-request added-line secret scan.
-4. Scope-specific tests for changed behavior.
-5. Review of product/runtime/release boundary claims.
+Observed before audit closeout:
 
-## Merge policy
+- GitHub default branch: `wip/hito-004b-target-window-selection`.
+- `main` was 1,007 commits ahead and 0 behind that default branch.
+- `chrome-lab-001-extension-local-ai-bridge` was behind `main`.
+- The repository is public.
+- No published GitHub release was identified.
 
-- Prefer squash merge for bounded product, security and maintenance changes.
-- Never force-push `main`.
-- Do not merge a failing or cancelled required check.
-- Preserve protected stealth, browser, approval, evidence and local-first boundaries.
-- Do not infer production or release authority from a successful local/dev build.
-
-## Release policy
-
-A commit on `main` is not a release by itself. Release qualification additionally requires:
-
-- reproducible installer/update artifacts;
-- explicit release authorization;
-- signed artifacts and rollback instructions;
-- deployment inventory update;
-- no unresolved critical/high security finding;
-- a release candidate validation record.
-
-## Default-branch transition
-
-Repository settings must select `main` as default and require pull requests plus the Tier 1 checks. Until that setting is applied, both canonical and compatibility branch refs must point to the same commit after each accepted integration.
-
-## Remote Governance Status - 2026-07-13
+This is a high-severity governance defect because cloning, browsing and external integrations begin from stale history even though active development is merged into `main`.
 
 Decision: `BLOCKED_EXTERNAL_GITHUB_REMOTE_SETTINGS`.
 
-Local state:
+The connected GitHub integration can inspect repository metadata and update branches, files and pull requests, but it does not expose repository-default-branch or branch-protection mutations. The older local CLI check `gh auth status` was also unauthenticated. The remaining setting change is therefore an external repository-administration action, not a source-code blocker.
 
-- Repository: `onediegopr/NodalOS`.
-- Local branch for product integration: `main`.
-- Local HEAD: `e38c4325e48dbfce24bec971d957c39bbc4071eb`.
-- `origin/main`: `e38c4325e48dbfce24bec971d957c39bbc4071eb`.
-- `origin/chrome-lab-001-extension-local-ai-bridge`: `e38c4325e48dbfce24bec971d957c39bbc4071eb`.
-- `origin/main...origin/chrome-lab-001-extension-local-ai-bridge`: `0 0`.
-- `chrome-lab-001-extension-local-ai-bridge` remains preserved as the lab/legacy transition branch.
+## Required merge gates
 
-External blocker:
+Every pull request into `main` must pass the checks applicable to its scope:
 
-- `gh auth status` is not authenticated in this environment.
-- `GH_TOKEN` and `GITHUB_TOKEN` are not present.
-- GitHub default branch and branch-protection settings cannot be inspected or changed from this environment without operator-provided GitHub authentication.
-- This blocks remote repository settings only; it does not block local roadmap work on `main`.
+1. `chromelab-security` — ChromeLab bridge/tests and Safety aggregate build.
+2. `secret-scan` — added-line credential-pattern scan.
+3. `runtime-integration` — Runtime/Recipes build, runtime tests and Pilot product-loop smoke for source/runtime changes.
+4. Scope-specific tests for changed behavior.
+5. Review of product/runtime/release boundary claims.
 
-Required remote setting when credentials are available:
+The Runtime suite is intentionally not duplicated inside Tier 1 Safety. `runtime-integration` owns that validation for relevant source/test changes.
+
+## Merge policy
+
+- Prefer squash merge for bounded product, security, audit and maintenance changes.
+- Never force-push `main`.
+- Do not merge a failing or cancelled applicable check.
+- Preserve stealth, browser, approval, evidence, semantic verification and local-first boundaries.
+- Do not infer production or release authority from a successful local/dev build.
+- Keep compatibility branches fast-forwardable; do not rewrite their history.
+
+## Release policy
+
+A commit on `main` is not a release. Release qualification additionally requires:
+
+- a declared product license;
+- reproducible installer/update artifacts;
+- explicit release authorization;
+- signed artifact strategy and rollback instructions;
+- deployment inventory update;
+- no unresolved critical/high security finding;
+- a release-candidate validation record;
+- clean-install validation on a fresh supported Windows environment.
+
+## Required remote administration action
+
+Run with an authenticated repository administrator:
 
 ```powershell
-gh auth login
+gh auth status
 gh repo edit onediegopr/NodalOS --default-branch main
 ```
 
-Required checks must use actual workflow job names from `.github/workflows/tier1-safety.yml`:
+Then configure a branch ruleset or branch protection for `main` that:
 
-- `chromelab-security`
-- `secret-scan`
+- requires pull requests before merge;
+- requires `chromelab-security` and `secret-scan`;
+- requires the runtime workflow for source/runtime changes without leaving docs-only pull requests permanently pending;
+- requires conversation resolution;
+- blocks force pushes;
+- blocks branch deletion;
+- preserves CODEOWNERS review when available.
 
-Suggested branch-protection payload, after confirming the exact repository rules supported by the current GitHub plan:
+A classic branch-protection example for the always-running checks is:
 
 ```powershell
 gh api --method PUT repos/onediegopr/NodalOS/branches/main/protection `
@@ -96,7 +102,6 @@ Remote governance requirements:
 - Pull requests are required before merge.
 - Force push is blocked.
 - Branch deletion is blocked.
-- Required checks are the real Tier 1 workflow jobs above; do not invent check names.
-- Required conversations must be resolved.
-- CODEOWNERS review remains preserved where GitHub reports it as available.
+- Required checks use real workflow job names; invented or retired contexts are not allowed.
+- Required conversations are resolved.
 - A successful local/dev or lab validation does not create production, release or commercial authority.
