@@ -149,6 +149,9 @@ public static class BoundedWorkspaceUnderstandingEndpointMapper
         var blockers = snapshot.ReviewBlockers.Count == 0
             ? "<p class=\"muted\">No blocker inside this bounded review.</p>"
             : string.Join(Environment.NewLine, snapshot.ReviewBlockers.Select(value => $"<p class=\"notice\">{Html(value)}</p>"));
+        var export = snapshot.Accepted
+            ? $"<a class=\"download\" data-action-id=\"download-verified-handoff\" href=\"{BoundedWorkspaceHandoffExportEndpointMapper.MarkdownRoute}\" download>Download verified handoff (.md)</a>"
+            : "<p class=\"muted\">Export becomes available after bounded evidence and mission verification pass.</p>";
         var statusClass = snapshot.Accepted ? "ok" : "blocked";
 
         return $$$"""
@@ -160,7 +163,7 @@ public static class BoundedWorkspaceUnderstandingEndpointMapper
               <meta name="robots" content="noindex,nofollow">
               <title>NODAL OS Workspace Understanding</title>
               <style>
-                :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#0d1117;color:#f5f7fa}*{box-sizing:border-box}body{margin:0;background:#0d1117}.shell{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr) 300px;grid-template-rows:auto 1fr auto}.top{grid-column:1/-1;padding:18px 24px;border-bottom:1px solid #30363d;background:#161b22;display:flex;justify-content:space-between;align-items:center;gap:16px}.top h1{font-size:18px;margin:0}.badge{padding:6px 10px;border:1px solid #4f7cff;border-radius:999px;color:#b8c7ff}.badge.ok{border-color:#2ea043;color:#7ee787}.badge.blocked{border-color:#d29922;color:#e3b341}.side,.right{padding:20px;background:#161b22}.side{border-right:1px solid #30363d}.right{border-left:1px solid #30363d}.main{padding:24px;min-width:0}.card{background:#1c2128;border:1px solid #30363d;border-radius:12px;padding:16px;margin-bottom:16px}.metric{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #30363d}.metric:last-child{border-bottom:0}.metric strong{word-break:break-word;text-align:right}.list{list-style:none;padding:0;margin:0}.list li{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid #30363d}.plan li{margin:8px 0;color:#d0d7de}.notice{border-left:3px solid #d29922;padding:8px 10px;background:#251f12;color:#e3b341}.muted{color:#8b949e}.bottom{grid-column:1/-1;padding:12px 24px;border-top:1px solid #30363d;background:#161b22;color:#8b949e;font-size:13px}@media(max-width:900px){.shell{grid-template-columns:1fr}.top,.bottom{grid-column:1}.side,.right{border:0;border-bottom:1px solid #30363d}}
+                :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#0d1117;color:#f5f7fa}*{box-sizing:border-box}body{margin:0;background:#0d1117}.shell{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr) 300px;grid-template-rows:auto 1fr auto}.top{grid-column:1/-1;padding:18px 24px;border-bottom:1px solid #30363d;background:#161b22;display:flex;justify-content:space-between;align-items:center;gap:16px}.top h1{font-size:18px;margin:0}.badge{padding:6px 10px;border:1px solid #4f7cff;border-radius:999px;color:#b8c7ff}.badge.ok{border-color:#2ea043;color:#7ee787}.badge.blocked{border-color:#d29922;color:#e3b341}.side,.right{padding:20px;background:#161b22}.side{border-right:1px solid #30363d}.right{border-left:1px solid #30363d}.main{padding:24px;min-width:0}.card{background:#1c2128;border:1px solid #30363d;border-radius:12px;padding:16px;margin-bottom:16px}.metric{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid #30363d}.metric:last-child{border-bottom:0}.metric strong{word-break:break-word;text-align:right}.list{list-style:none;padding:0;margin:0}.list li{display:flex;justify-content:space-between;gap:16px;padding:7px 0;border-bottom:1px solid #30363d}.plan li{margin:8px 0;color:#d0d7de}.notice{border-left:3px solid #d29922;padding:8px 10px;background:#251f12;color:#e3b341}.muted{color:#8b949e}.download{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:1px solid #4f7cff;border-radius:10px;background:#202a44;color:#dbe5ff;font-weight:700;text-decoration:none}.download:focus-visible{outline:2px solid #7c5cff;outline-offset:3px}.bottom{grid-column:1/-1;padding:12px 24px;border-top:1px solid #30363d;background:#161b22;color:#8b949e;font-size:13px}@media(max-width:900px){.shell{grid-template-columns:1fr}.top,.bottom{grid-column:1}.side,.right{border:0;border-bottom:1px solid #30363d}}
               </style>
             </head>
             <body>
@@ -183,6 +186,7 @@ public static class BoundedWorkspaceUnderstandingEndpointMapper
                   <section class="card" data-section-id="plan"><h2>Reviewed plan</h2><ol class="plan">{{{plan}}}</ol></section>
                   <section class="card" data-section-id="blockers"><h2>Scope and blockers</h2>{{{blockers}}}</section>
                   <section class="card" data-section-id="evidence"><h2>Evidence</h2><div class="metric"><span>Digest</span><strong>{{{Html(snapshot.EvidenceDigest)}}}</strong></div><div class="metric"><span>Handoff</span><strong>{{{Html(snapshot.HandoffPackId)}}}</strong></div></section>
+                  <section class="card" data-section-id="export"><h2>Export</h2>{{{export}}}</section>
                 </main>
                 <aside class="right" data-section-id="boundaries">
                   <h2>Boundaries</h2>
@@ -192,7 +196,7 @@ public static class BoundedWorkspaceUnderstandingEndpointMapper
                   <div class="metric"><span>Network</span><strong>{{{snapshot.NetworkUsed}}}</strong></div>
                   <div class="metric"><span>Product authority</span><strong>{{{snapshot.ProductAuthorityGranted}}}</strong></div>
                 </aside>
-                <footer class="bottom">Local/dev read-only operator surface. Root paths and raw secret-bearing content are never rendered. No scripts, forms, external resources, provider calls or execution authority.</footer>
+                <footer class="bottom">Local/dev read-only operator surface. Root paths and raw secret-bearing content are never rendered. The only enabled action downloads the verified redacted handoff. No scripts, forms, external resources, provider calls or execution authority.</footer>
               </div>
             </body>
             </html>
