@@ -22,6 +22,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj" />
     <Project Path="tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj" />
+    <Project Path="tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj" />
     <Project Path="tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
