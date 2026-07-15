@@ -1,3 +1,4 @@
+using OneBrain.Core.Contracts;
 using OneBrain.Core.Models;
 using OneBrain.Core.Perception;
 using OneBrain.Core.Recipes;
