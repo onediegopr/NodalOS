@@ -371,7 +371,7 @@ public sealed class ExecutableSkillMemoryTests
             Assert.IsTrue(projection.ConfidenceScore >= 75);
             Assert.IsTrue(write.Success, write.Error);
             Assert.IsNotNull(loaded);
-            Assert.AreEqual(projection.Id, loaded.Id);
+            Assert.AreEqual(projection.Id, loaded!.Id);
             Assert.IsFalse(json.Contains(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(json.Contains("RawValuePresent\":true", StringComparison.OrdinalIgnoreCase));
             Assert.IsTrue(projection.Notes.Any(note => note.Contains("existing Process Memory", StringComparison.Ordinal)));
