@@ -79,18 +79,217 @@ public sealed class NodalOsControlledFixtureVerticalSliceScenario
     public async ValueTask<NodalOsControlledFixtureVerticalSliceResult> RunAsync(
         CancellationToken cancellationToken = default)
     {
+        var eventBus = new NodalOsCoreEventBus();
+        var registry = new NodalOsExecutionRegistry();
+        NodalOsExecutionRegistryEntry? registryEntry = null;
+        NodalOsApprovalCard? approvalCard = null;
+        NodalOsApprovalDecision? approvalDecision = null;
+        SafeExecutionResult? controlledAction = null;
+        NodalOsEvidenceBridgeRef? controlledEvidence = null;
+
+        ValueTask<IReadOnlyList<string>> ExecuteControlledStep(
+            LightweightMissionRuntime missionRuntime,
+            string stepId,
+            CancellationToken stepCancellationToken)
+        {
+            var missionId = missionRuntime.Plan.MissionId;
+            var seedEvidence = CreateEvidenceRef(
+                "evidence-mission-scope-fixture",
+                "mission-scope-authorization",
+                NodalOsEvidenceBridgeUseKind.AuditTrail);
+            registryEntry = registry.Register(new NodalOsExecutionRequest
+            {
+                RequestId = "fixture-controlled-observation",
+                MissionId = missionId,
+                TaskId = stepId,
+                RunId = missionRuntime.State.RunId,
+                RequestedBy = "fixture-operator-preauthorized",
+                ActorKind = NodalOsExecutionActorKind.HumanOperator,
+                SourceKind = NodalOsExecutionSourceKind.MissionControl,
+                RuntimeExecutionAllowed = false,
+                RuntimeExecutionDeferred = true,
+                RequiresGlobalPolicyEvaluation = true,
+                RequiresEvidenceRedaction = true,
+                Summary = "Observe one fixture-owned value through SafeExecutionFsm.",
+                EvidenceRefs = [seedEvidence],
+                CreatedAt = DateTimeOffset.UtcNow
+            });
+            Publish(
+                eventBus,
+                NodalOsCoreEventKind.ExecutionRequestRegistered,
+                registryEntry,
+                missionId,
+                stepId,
+                "Controlled fixture observation registered.");
+
+            registryEntry = registry.Transition(
+                registryEntry.RegistryEntryId,
+                NodalOsExecutionRegistryState.PolicyEvaluated,
+                "fixture-policy-gate",
+                "Read-only fixture observation is inside the authorized mission scope.",
+                policyDecisionRef: "fixture-policy-read-only");
+            Publish(
+                eventBus,
+                NodalOsCoreEventKind.PolicyGateEvaluated,
+                registryEntry,
+                missionId,
+                stepId,
+                "Policy allowed one read-only fixture observation within the current mission scope.");
+
+            registryEntry = registry.Transition(
+                registryEntry.RegistryEntryId,
+                NodalOsExecutionRegistryState.ApprovalRequired,
+                "fixture-approval-center",
+                "Mission-level authorization is required once before the controlled action.");
+            var approvalRequiredEvent = Publish(
+                eventBus,
+                NodalOsCoreEventKind.ApprovalRequired,
+                registryEntry,
+                missionId,
+                stepId,
+                "Mission-level authorization required for the controlled fixture observation.");
+
+            var approvalService = new NodalOsApprovalCenterService();
+            approvalCard = approvalService.CreateApprovalCard(
+                registryEntry,
+                approvalRequiredEvent,
+                NodalOsApprovalSeverity.Low,
+                NodalOsApprovalActionKind.Observation,
+                "Read one fixture-owned value without mutation or external IO.",
+                "The current mission scope permits one read-only observation through the controlled boundary.",
+                ["fixture-owned observation target"]);
+            EnsureValid(new NodalOsApprovalTimelineEvidenceValidator().ValidateApprovalCard(approvalCard));
+            approvalDecision = approvalService.CreateDecision(
+                approvalCard,
+                NodalOsApprovalDecisionKind.Approve,
+                "fixture-operator-preauthorized",
+                "Approved once for this mission, workspace and read-only capability scope.");
+            EnsureValid(new NodalOsApprovalTimelineEvidenceValidator().ValidateApprovalDecision(approvalDecision));
+
+            registryEntry = registry.Transition(
+                registryEntry.RegistryEntryId,
+                NodalOsExecutionRegistryState.Approved,
+                "fixture-operator-preauthorized",
+                "Mission-level authorization approved.",
+                approvalRef: approvalDecision.DecisionId);
+            Publish(
+                eventBus,
+                NodalOsCoreEventKind.ApprovalGranted,
+                registryEntry,
+                missionId,
+                stepId,
+                "Mission-level authorization approved; ordinary read-only step continues without another prompt.",
+                new Dictionary<string, string>
+                {
+                    ["approvalCardId"] = approvalCard.ApprovalCardId,
+                    ["approvalDecisionId"] = approvalDecision.DecisionId
+                });
+
+            registryEntry = registry.Transition(
+                registryEntry.RegistryEntryId,
+                NodalOsExecutionRegistryState.DryRunPlanned,
+                "fixture-safe-execution",
+                "Fixture executor performs no external IO.",
+                dryRunRef: "fixture-safe-read-plan");
+            Publish(
+                eventBus,
+                NodalOsCoreEventKind.DryRunPlanCreated,
+                registryEntry,
+                missionId,
+                stepId,
+                "Controlled read-only fixture action prepared.");
+
+            missionRuntime.RecordToolCallStarted(
+                stepId,
+                "filesystem.read",
+                "fixture-controlled-read-start");
+            controlledAction = ExecuteControlledObservation(approvalDecision, stepCancellationToken);
+            controlledEvidence = CreateControlledActionEvidence(controlledAction);
+            if (!controlledAction.Success)
+            {
+                registryEntry = registry.Transition(
+                    registryEntry.RegistryEntryId,
+                    NodalOsExecutionRegistryState.Failed,
+                    "safe-execution-fsm",
+                    controlledAction.BlockReason,
+                    evidenceRefs: [controlledEvidence]);
+                Publish(
+                    eventBus,
+                    NodalOsCoreEventKind.ExecutionFailed,
+                    registryEntry,
+                    missionId,
+                    stepId,
+                    "Controlled fixture observation failed closed.",
+                    evidenceRefs: [controlledEvidence]);
+                missionRuntime.FailStep(stepId, controlledAction.BlockReason, "fixture-controlled-read-failed");
+                throw new InvalidOperationException(controlledAction.BlockReason);
+            }
+
+            registryEntry = registry.Transition(
+                registryEntry.RegistryEntryId,
+                NodalOsExecutionRegistryState.Completed,
+                "safe-execution-fsm",
+                "Controlled fixture observation verified.",
+                verificationReportRef: "fixture-verification-passed",
+                evidenceRefs: [controlledEvidence]);
+            Publish(
+                eventBus,
+                NodalOsCoreEventKind.ExecutionCompleted,
+                registryEntry,
+                missionId,
+                stepId,
+                "Controlled fixture observation completed and verified.",
+                evidenceRefs: [controlledEvidence]);
+            Publish(
+                eventBus,
+                NodalOsCoreEventKind.EvidenceAttached,
+                registryEntry,
+                missionId,
+                stepId,
+                "SafeExecutionFsm transition digest attached as verification evidence.",
+                evidenceRefs: [controlledEvidence]);
+            missionRuntime.RecordToolCallCompleted(
+                stepId,
+                "filesystem.read",
+                "fixture-controlled-read-complete",
+                [controlledEvidence.EvidenceId]);
+
+            return ValueTask.FromResult<IReadOnlyList<string>>([controlledEvidence.EvidenceId]);
+        }
+
         var runtime = await new NodalOsSelectiveRuntimeFixtureScenario()
-            .RunAsync(cancellationToken)
+            .RunAsync(ExecuteControlledStep, cancellationToken)
             .ConfigureAwait(false);
+        var finalRegistryEntry = registryEntry
+            ?? throw new InvalidOperationException("Controlled fixture registry entry was not created.");
+        var finalApprovalCard = approvalCard
+            ?? throw new InvalidOperationException("Controlled fixture approval card was not created.");
+        var finalApprovalDecision = approvalDecision
+            ?? throw new InvalidOperationException("Controlled fixture approval decision was not created.");
+        var finalControlledAction = controlledAction
+            ?? throw new InvalidOperationException("Controlled fixture action was not executed.");
+        var finalControlledEvidence = controlledEvidence
+            ?? throw new InvalidOperationException("Controlled fixture evidence was not created.");
+
+        var controlledTimeline = eventBus.ToTimelineProjections();
+        var timeline = runtime.Timeline
+            .Concat(controlledTimeline)
+            .GroupBy(item => item.EventId, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .OrderBy(item => item.CreatedAt)
+            .ToArray();
 
         var workspaceService = new NodalOsWorkspaceService();
         var workspace = workspaceService.CreateActiveReadOnlyWorkspace() with
         {
             ActiveMissionRefs = [runtime.Plan.MissionId],
-            TimelineRefs = runtime.Timeline.Select(item => item.ProjectionId).ToArray(),
-            EvidenceRefs = runtime.Timeline.SelectMany(item => item.EvidenceRefs)
+            TimelineRefs = timeline.Select(item => item.ProjectionId).ToArray(),
+            EvidenceRefs = timeline.SelectMany(item => item.EvidenceRefs)
                 .DistinctBy(item => item.EvidenceId)
-                .DefaultIfEmpty(CreateEvidenceRef("evidence-workspace-runtime-fixture", "workspace-runtime-fixture", NodalOsEvidenceBridgeUseKind.AuditTrail))
+                .DefaultIfEmpty(CreateEvidenceRef(
+                    "evidence-workspace-runtime-fixture",
+                    "workspace-runtime-fixture",
+                    NodalOsEvidenceBridgeUseKind.AuditTrail))
                 .ToArray(),
             UpdatedAt = DateTimeOffset.UtcNow
         };
@@ -111,127 +310,13 @@ public sealed class NodalOsControlledFixtureVerticalSliceScenario
         EnsureValid(new NodalOsWorkspaceValidator().ValidatePathJailBinding(pathJail));
         EnsureValid(new NodalOsWorkspaceMissionValidator().ValidateMissionBinding(missionBinding));
 
-        var eventBus = new NodalOsCoreEventBus();
-        var registry = new NodalOsExecutionRegistry();
-        var registryEntry = registry.Register(new NodalOsExecutionRequest
-        {
-            RequestId = "fixture-controlled-observation",
-            MissionId = runtime.Plan.MissionId,
-            TaskId = runtime.Plan.Steps.Single().Id,
-            RunId = runtime.Mission.RunId,
-            RequestedBy = "fixture-operator-preauthorized",
-            ActorKind = NodalOsExecutionActorKind.HumanOperator,
-            SourceKind = NodalOsExecutionSourceKind.MissionControl,
-            RuntimeExecutionAllowed = false,
-            RuntimeExecutionDeferred = true,
-            RequiresGlobalPolicyEvaluation = true,
-            RequiresEvidenceRedaction = true,
-            Summary = "Observe one fixture-owned value through SafeExecutionFsm.",
-            EvidenceRefs = workspace.EvidenceRefs,
-            CreatedAt = DateTimeOffset.UtcNow
-        });
-        Publish(eventBus, NodalOsCoreEventKind.ExecutionRequestRegistered, registryEntry,
-            "Controlled fixture observation registered.");
-
-        registryEntry = registry.Transition(
-            registryEntry.RegistryEntryId,
-            NodalOsExecutionRegistryState.PolicyEvaluated,
-            "fixture-policy-gate",
-            "Read-only fixture observation is inside the authorized mission scope.",
-            policyDecisionRef: "fixture-policy-read-only");
-        Publish(eventBus, NodalOsCoreEventKind.PolicyGateEvaluated, registryEntry,
-            "Policy allowed one read-only fixture observation within the current mission scope.");
-
-        registryEntry = registry.Transition(
-            registryEntry.RegistryEntryId,
-            NodalOsExecutionRegistryState.ApprovalRequired,
-            "fixture-approval-center",
-            "Mission-level authorization is required once before the controlled action.");
-        var approvalRequiredEvent = Publish(
-            eventBus,
-            NodalOsCoreEventKind.ApprovalRequired,
-            registryEntry,
-            "Mission-level authorization required for the controlled fixture observation.");
-
-        var approvalService = new NodalOsApprovalCenterService();
-        var approvalCard = approvalService.CreateApprovalCard(
-            registryEntry,
-            approvalRequiredEvent,
-            NodalOsApprovalSeverity.Low,
-            NodalOsApprovalActionKind.Observation,
-            "Read one fixture-owned value without mutation or external IO.",
-            "The current mission scope permits one read-only observation through the controlled boundary.",
-            ["fixture-owned observation target"]);
-        EnsureValid(new NodalOsApprovalTimelineEvidenceValidator().ValidateApprovalCard(approvalCard));
-        var approvalDecision = approvalService.CreateDecision(
-            approvalCard,
-            NodalOsApprovalDecisionKind.Approve,
-            "fixture-operator-preauthorized",
-            "Approved once for this mission, workspace and read-only capability scope.");
-        EnsureValid(new NodalOsApprovalTimelineEvidenceValidator().ValidateApprovalDecision(approvalDecision));
-
-        registryEntry = registry.Transition(
-            registryEntry.RegistryEntryId,
-            NodalOsExecutionRegistryState.Approved,
-            "fixture-operator-preauthorized",
-            "Mission-level authorization approved.",
-            approvalRef: approvalDecision.DecisionId);
-        Publish(
-            eventBus,
-            NodalOsCoreEventKind.ApprovalGranted,
-            registryEntry,
-            "Mission-level authorization approved; ordinary read-only step continues without another prompt.",
-            new Dictionary<string, string>
-            {
-                ["approvalCardId"] = approvalCard.ApprovalCardId,
-                ["approvalDecisionId"] = approvalDecision.DecisionId
-            });
-
-        registryEntry = registry.Transition(
-            registryEntry.RegistryEntryId,
-            NodalOsExecutionRegistryState.DryRunPlanned,
-            "fixture-safe-execution",
-            "Fixture executor performs no external IO.",
-            dryRunRef: "fixture-safe-read-plan");
-        Publish(eventBus, NodalOsCoreEventKind.DryRunPlanCreated, registryEntry,
-            "Controlled read-only fixture action prepared.");
-
-        var controlledAction = ExecuteControlledObservation(approvalDecision, cancellationToken);
-        var controlledEvidence = CreateControlledActionEvidence(controlledAction);
-        if (controlledAction.Success)
-        {
-            registryEntry = registry.Transition(
-                registryEntry.RegistryEntryId,
-                NodalOsExecutionRegistryState.Completed,
-                "safe-execution-fsm",
-                "Controlled fixture observation verified.",
-                verificationReportRef: "fixture-verification-passed",
-                evidenceRefs: [controlledEvidence]);
-            Publish(eventBus, NodalOsCoreEventKind.ExecutionCompleted, registryEntry,
-                "Controlled fixture observation completed and verified.", evidenceRefs: [controlledEvidence]);
-            Publish(eventBus, NodalOsCoreEventKind.EvidenceAttached, registryEntry,
-                "SafeExecutionFsm transition digest attached as verification evidence.", evidenceRefs: [controlledEvidence]);
-        }
-        else
-        {
-            registryEntry = registry.Transition(
-                registryEntry.RegistryEntryId,
-                NodalOsExecutionRegistryState.Failed,
-                "safe-execution-fsm",
-                controlledAction.BlockReason,
-                evidenceRefs: [controlledEvidence]);
-            Publish(eventBus, NodalOsCoreEventKind.ExecutionFailed, registryEntry,
-                "Controlled fixture observation failed closed.", evidenceRefs: [controlledEvidence]);
-        }
-
-        var controlledTimeline = eventBus.ToTimelineProjections();
-        var timeline = runtime.Timeline
-            .Concat(controlledTimeline)
-            .GroupBy(item => item.EventId, StringComparer.Ordinal)
-            .Select(group => group.First())
-            .OrderBy(item => item.CreatedAt)
-            .ToArray();
-        var handoff = BuildHandoff(runtime, registryEntry, approvalDecision, controlledAction, controlledEvidence, timeline);
+        var handoff = BuildHandoff(
+            runtime,
+            finalRegistryEntry,
+            finalApprovalDecision,
+            finalControlledAction,
+            finalControlledEvidence,
+            timeline);
         var handoffRender = RenderHandoff(handoff);
 
         return new NodalOsControlledFixtureVerticalSliceResult(
@@ -239,11 +324,11 @@ public sealed class NodalOsControlledFixtureVerticalSliceScenario
             PathJail: pathJail,
             MissionBinding: missionBinding,
             Runtime: runtime,
-            RegistryEntry: registryEntry,
-            MissionAuthorizationCard: approvalCard,
-            MissionAuthorizationDecision: approvalDecision,
-            ControlledAction: controlledAction,
-            ControlledActionEvidence: controlledEvidence,
+            RegistryEntry: finalRegistryEntry,
+            MissionAuthorizationCard: finalApprovalCard,
+            MissionAuthorizationDecision: finalApprovalDecision,
+            ControlledAction: finalControlledAction,
+            ControlledActionEvidence: finalControlledEvidence,
             Timeline: timeline,
             Handoff: handoff,
             HandoffRender: handoffRender,
@@ -429,6 +514,8 @@ public sealed class NodalOsControlledFixtureVerticalSliceScenario
         NodalOsCoreEventBus eventBus,
         NodalOsCoreEventKind kind,
         NodalOsExecutionRegistryEntry entry,
+        string missionId,
+        string taskId,
         string summary,
         IReadOnlyDictionary<string, string>? metadata = null,
         IReadOnlyList<NodalOsEvidenceBridgeRef>? evidenceRefs = null)
@@ -439,8 +526,8 @@ public sealed class NodalOsControlledFixtureVerticalSliceScenario
             Kind = kind,
             ExecutionRegistryEntryId = entry.RegistryEntryId,
             ExecutionRequestId = entry.RequestId,
-            MissionId = "fixture-mission",
-            TaskId = "fixture-analyze",
+            MissionId = missionId,
+            TaskId = taskId,
             RuntimeExecutionAllowed = false,
             RuntimeExecutionDeferred = true,
             RequiresGlobalPolicyEvaluation = true,
