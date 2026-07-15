@@ -31,7 +31,7 @@ public sealed class ControlledFixtureVerticalSliceTests
             result.ControlledActionEvidence.EvidenceId,
             StringComparer.Ordinal));
 
-        var approvalIndex = TimelineIndex(result, "Mission-level authorization required");
+        var approvalIndex = TimelineIndex(result, NodalOsCoreEventKind.ApprovalRequired);
         var actionIndex = TimelineIndex(result, "Controlled fixture observation completed and verified");
         var missionCompletionIndex = TimelineIndex(result, "Mission completed after every required step was verified");
         Assert.IsTrue(approvalIndex < actionIndex);
@@ -108,11 +108,15 @@ public sealed class ControlledFixtureVerticalSliceTests
         Assert.IsFalse(result.HandoffRender.HtmlRedacted.Contains("https://", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static int TimelineIndex(NodalOsControlledFixtureVerticalSliceResult result, string summary)
-    {
-        var match = result.Timeline
+    private static int TimelineIndex(NodalOsControlledFixtureVerticalSliceResult result, NodalOsCoreEventKind kind) =>
+        result.Timeline
+            .Select((item, index) => new { item.Kind, Index = index })
+            .Single(item => item.Kind == kind)
+            .Index;
+
+    private static int TimelineIndex(NodalOsControlledFixtureVerticalSliceResult result, string summary) =>
+        result.Timeline
             .Select((item, index) => new { item.SummaryRedacted, Index = index })
-            .Single(item => item.SummaryRedacted.Contains(summary, StringComparison.Ordinal));
-        return match.Index;
-    }
+            .Single(item => item.SummaryRedacted.Contains(summary, StringComparison.Ordinal))
+            .Index;
 }
