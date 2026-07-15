@@ -14,6 +14,7 @@ public static class PilotRuntimeIntegrationEndpointMapper
             environment);
         SelectiveRuntimeInspectorEndpointMapper.MapSelectiveRuntimeInspector(app, environment);
         TestOwnedFileCreateEndpointMapper.MapTestOwnedFileCreateFixture(app, environment);
+        TestOwnedFileUpdateEndpointMapper.MapTestOwnedFileUpdateFixture(app, environment);
         BoundedWorkspaceUnderstandingEndpointMapper.MapBoundedWorkspaceUnderstanding(app, environment);
         BoundedWorkspaceHandoffExportEndpointMapper.MapBoundedWorkspaceHandoffExport(app, environment);
         return app;
