@@ -1,4 +1,5 @@
 using System.Net;
+using OneBrain.AgentOperations.Contracts;
 using OneBrain.AgentOperations.Core.Runtime;
 
 namespace OneBrain.Pilot;
@@ -10,7 +11,7 @@ public static class RuntimeInspectorHtmlRenderer
         ArgumentNullException.ThrowIfNull(result);
         var inspector = result.Runtime.Inspector;
         var timeline = string.Join(Environment.NewLine, result.Timeline.Select(item =>
-            $"<li><span>{Html(item.CreatedAt.ToString("HH:mm:ss"))}</span><strong>{Html(item.Kind.ToString())}</strong><p>{Html(item.SummaryRedacted)}</p></li>"));
+            $"<li><span>{Html(item.CreatedAt.ToString("HH:mm:ss"))}</span><strong>{Html(item.Kind.ToString())}</strong><p>{Html(TimelineSummary(item))}</p></li>"));
         var capabilities = string.Join(Environment.NewLine, inspector.Capabilities.Select(item => $"<li>{Html(item)}</li>"));
         var providers = string.Join(Environment.NewLine, inspector.Providers.Select(item => $"<li>{Html(item)}</li>"));
         var evidence = string.Join(Environment.NewLine, result.Handoff.EvidenceRefs.Select(item => $"<li>{Html(item)}</li>"));
@@ -73,6 +74,13 @@ public static class RuntimeInspectorHtmlRenderer
             </html>
             """;
     }
+
+    private static string TimelineSummary(NodalOsCoreTimelineProjection item) => item.Kind switch
+    {
+        NodalOsCoreEventKind.ApprovalRequired => "Mission-level approval required for the controlled fixture observation.",
+        NodalOsCoreEventKind.ApprovalGranted => "Mission-level approval granted; the ordinary read-only step continued without another prompt.",
+        _ => item.SummaryRedacted
+    };
 
     private static string Html(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
 }
