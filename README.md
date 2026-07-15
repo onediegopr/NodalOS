@@ -9,6 +9,7 @@ NODAL OS is a local-first mission-control foundation for supervised AI work on r
 - Product maturity: local/dev technical foundation, not a production release.
 - Browser target: CloakBrowser direct CDP; ChromeLab remains lab/transition only.
 - Desktop distribution: no signed installer, updater channel or published release yet.
+- License: not declared yet; external/commercial distribution remains blocked until a license is selected.
 - Cloud: optional by product strategy; no cloud dependency is required by the current local runtime.
 
 ## Validated product foundations
