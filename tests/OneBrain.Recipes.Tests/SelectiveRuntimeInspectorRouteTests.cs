@@ -104,12 +104,21 @@ public sealed class SelectiveRuntimeInspectorRouteTests
 
         using var document = JsonDocument.Parse(json);
         var root = document.RootElement;
-        Assert.AreEqual("GO_TEACH_NODAL_LOCAL_DEV_SURFACE_READY", root.GetProperty("decision").GetString());
+        Assert.AreEqual("GO_TEACH_NODAL_CAPTURE_PREP_LOCAL_DEV_SURFACE_READY", root.GetProperty("decision").GetString());
         Assert.IsTrue(root.GetProperty("accepted").GetBoolean());
         Assert.IsTrue(root.GetProperty("localDevOnly").GetBoolean());
         Assert.IsTrue(root.GetProperty("readOnly").GetBoolean());
         Assert.IsTrue(root.GetProperty("fixtureOnly").GetBoolean());
         Assert.IsTrue(root.GetProperty("secretsExcluded").GetBoolean());
+        Assert.AreEqual("ReviewReady", root.GetProperty("captureState").GetString());
+        Assert.IsTrue(root.GetProperty("captureOptInRecorded").GetBoolean());
+        Assert.IsTrue(root.GetProperty("captureApplicationScopeBound").GetBoolean());
+        Assert.IsTrue(root.GetProperty("captureCanCompileVerifiedSkill").GetBoolean());
+        Assert.AreEqual(2, root.GetProperty("captureObservationCount").GetInt32());
+        Assert.AreEqual(0, root.GetProperty("perStepApprovalsRequested").GetInt32());
+        Assert.IsFalse(root.GetProperty("captureRawInputStored").GetBoolean());
+        Assert.IsFalse(root.GetProperty("captureGlobalHooksUsed").GetBoolean());
+        Assert.IsFalse(root.GetProperty("captureExecutionAuthorityGranted").GetBoolean());
         StringAssert.StartsWith(root.GetProperty("compilationDecision").GetString() ?? string.Empty, "CompiledVerifiedSkill");
         Assert.IsFalse(root.GetProperty("recipeLiveRuntimeEnabled").GetBoolean());
         Assert.AreEqual("Verified", root.GetProperty("skillState").GetString());
@@ -131,7 +140,7 @@ public sealed class SelectiveRuntimeInspectorRouteTests
         Assert.IsFalse(root.GetProperty("promptInjectionExpandedScope").GetBoolean());
         Assert.IsFalse(root.GetProperty("promptInjectionPublishedExternally").GetBoolean());
         Assert.AreEqual(TeachNodalLocalDevSurface.DisabledActionId, root.GetProperty("disabledActionId").GetString());
-        Assert.AreEqual("DISABLED_LOCAL_DEV_FIXTURE_ONLY", root.GetProperty("disabledActionState").GetString());
+        Assert.AreEqual("DISABLED_CAPTURE_ADAPTER_NOT_CONNECTED", root.GetProperty("disabledActionState").GetString());
         Assert.AreEqual(TeachNodalLocalDevSurface.RequiredOperatorSignal, root.GetProperty("requiredOperatorSignal").GetString());
         Assert.IsFalse(root.GetProperty("liveRecorderUsed").GetBoolean());
         Assert.IsFalse(root.GetProperty("mouseOrKeyboardHooksUsed").GetBoolean());
@@ -144,7 +153,9 @@ public sealed class SelectiveRuntimeInspectorRouteTests
         StringAssert.Contains(html, "data-local-dev-only=\"true\"");
         StringAssert.Contains(html, "data-read-only=\"true\"");
         StringAssert.Contains(html, "data-fixture-only=\"true\"");
+        StringAssert.Contains(html, "data-capture-prep=\"true\"");
         StringAssert.Contains(html, "data-product-authority=\"false\"");
+        StringAssert.Contains(html, "data-section-id=\"capture-prep\"");
         StringAssert.Contains(html, "data-section-id=\"teaching-timeline\"");
         StringAssert.Contains(html, "data-section-id=\"compiled-outputs\"");
         StringAssert.Contains(html, "data-section-id=\"trusted-control\"");
@@ -153,7 +164,7 @@ public sealed class SelectiveRuntimeInspectorRouteTests
         StringAssert.Contains(html, $"data-action-id=\"{TeachNodalLocalDevSurface.DisabledActionId}\"");
         StringAssert.Contains(html, "Observed prompt-injection text remained evidence");
         StringAssert.Contains(html, TeachNodalLocalDevSurface.RequiredOperatorSignal);
-        StringAssert.Contains(html, "Live capture remains closed");
+        StringAssert.Contains(html, "Global hooks and raw input remain closed");
         AssertNoExecutableOrExternalSurface(html);
         Assert.IsFalse(json.Contains("sk-", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(html.Contains("sk-", StringComparison.OrdinalIgnoreCase));
@@ -177,7 +188,16 @@ public sealed class SelectiveRuntimeInspectorRouteTests
         CollectionAssert.AreEqual(
             first.Steps.Select(value => value.AfterFingerprint).ToArray(),
             second.Steps.Select(value => value.AfterFingerprint).ToArray());
-        Assert.AreEqual("DISABLED_LOCAL_DEV_FIXTURE_ONLY", first.DisabledActionState);
+        Assert.AreEqual("ReviewReady", first.CaptureState);
+        Assert.IsTrue(first.CaptureOptInRecorded);
+        Assert.IsTrue(first.CaptureApplicationScopeBound);
+        Assert.IsTrue(first.CaptureCanCompileVerifiedSkill);
+        Assert.AreEqual(2, first.CaptureObservationCount);
+        Assert.AreEqual(0, first.PerStepApprovalsRequested);
+        Assert.IsFalse(first.CaptureRawInputStored);
+        Assert.IsFalse(first.CaptureGlobalHooksUsed);
+        Assert.IsFalse(first.CaptureExecutionAuthorityGranted);
+        Assert.AreEqual("DISABLED_CAPTURE_ADAPTER_NOT_CONNECTED", first.DisabledActionState);
         Assert.IsFalse(first.LiveRecorderUsed);
         Assert.IsFalse(first.MouseOrKeyboardHooksUsed);
         Assert.IsFalse(first.NetworkUsed);
