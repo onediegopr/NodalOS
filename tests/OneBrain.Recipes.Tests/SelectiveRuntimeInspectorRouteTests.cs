@@ -69,6 +69,8 @@ public sealed class SelectiveRuntimeInspectorRouteTests
         StringAssert.Contains(html, "data-section-id=\"controlled-action\"");
         StringAssert.Contains(html, "data-section-id=\"handoff\"");
         StringAssert.Contains(html, "data-section-id=\"timeline\"");
+        StringAssert.Contains(html, "Mission-level approval required");
+        StringAssert.Contains(html, "Mission-level approval granted");
         StringAssert.Contains(html, "Primary fixture model was rate-limited");
         StringAssert.Contains(html, "No per-step prompt");
         StringAssert.Contains(html, "SafeExecutionFsm");
