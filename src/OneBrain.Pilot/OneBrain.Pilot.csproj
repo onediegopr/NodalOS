@@ -11,6 +11,7 @@
     <ProjectReference Include="..\OneBrain.Core\OneBrain.Core.csproj" />
     <ProjectReference Include="..\OneBrain.Actions\OneBrain.Actions.csproj" />
     <ProjectReference Include="..\OneBrain.Observation\OneBrain.Observation.csproj" />
+    <ProjectReference Include="..\OneBrain.AgentOperations.Core\OneBrain.AgentOperations.Core.csproj" />
   </ItemGroup>
 
 </Project>
