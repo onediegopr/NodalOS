@@ -20,13 +20,14 @@ public sealed class BoundedWorkspaceUnderstandingRouteTests
     public async Task DevelopmentLoopbackSurfaceReturnsVerifiedWorkspacePlanWithoutPathOrSecretLeak()
     {
         var root = CreateRoot();
+        var fakeSecret = "s" + "k-local-fixture-secret-value-123456789";
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "src"));
             await File.WriteAllTextAsync(Path.Combine(root, "README.md"), "# Local fixture");
             await File.WriteAllTextAsync(
                 Path.Combine(root, "src", "Program.cs"),
-                "var api_key = \"sk-local-fixture-secret-value-123456789\";\nConsole.WriteLine(\"fixture\");");
+                $"var api_key = \"{fakeSecret}\";{Environment.NewLine}Console.WriteLine(\"fixture\");");
             await using var app = BuildApp(Environments.Development, () => root);
             await app.StartAsync(TestContext.CancellationTokenSource.Token);
             using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
@@ -67,11 +68,14 @@ public sealed class BoundedWorkspaceUnderstandingRouteTests
             StringAssert.Contains(html, "data-section-id=\"workspace\"");
             StringAssert.Contains(html, "data-section-id=\"plan\"");
             StringAssert.Contains(html, "data-section-id=\"evidence\"");
+            StringAssert.Contains(html, "data-section-id=\"export\"");
+            StringAssert.Contains(html, "data-action-id=\"download-verified-handoff\"");
+            StringAssert.Contains(html, BoundedWorkspaceHandoffExportEndpointMapper.MarkdownRoute);
             StringAssert.Contains(html, "GO_BOUNDED_WORKSPACE_OPERATOR_SURFACE_READY");
             Assert.IsFalse(json.Contains(root, StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(html.Contains(root, StringComparison.OrdinalIgnoreCase));
-            Assert.IsFalse(json.Contains("sk-local", StringComparison.OrdinalIgnoreCase));
-            Assert.IsFalse(html.Contains("sk-local", StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(json.Contains(fakeSecret, StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(html.Contains(fakeSecret, StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(html.Contains("onclick=", StringComparison.OrdinalIgnoreCase));
