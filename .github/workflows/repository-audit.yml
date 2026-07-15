@@ -1,0 +1,36 @@
+name: Repository Audit Inventory
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "eng/audit/**"
+      - ".github/workflows/repository-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run deterministic repository inventory
+        run: python eng/audit/repository_audit.py
+
+      - name: Upload repository audit inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-audit-inventory
+          path: artifacts/repository-audit
+          if-no-files-found: error
+          retention-days: 7
