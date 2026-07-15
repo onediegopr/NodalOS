@@ -89,11 +89,19 @@ jobs:
 
       - name: Run selective runtime tests
         shell: pwsh
-        run: >-
-          dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj
-          --configuration Release
-          --no-build
-          --logger "console;verbosity=normal"
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP "selective-runtime-test.log"
+          dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log
+          exit $LASTEXITCODE
+
+      - name: Upload selective runtime test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selective-runtime-test-log
+          path: ${{ runner.temp }}/selective-runtime-test.log
+          if-no-files-found: ignore
+          retention-days: 3
 
   secret-scan:
     if: github.event_name == 'pull_request'
