@@ -116,10 +116,17 @@ public sealed class TeachNodalCompilerV1Tests
             BrowserDemonstration(Step("open-summary", "closed", "opened", action, "opened")));
         var skill = RequiredSkill(result);
         var transition = skill.Transitions.Single();
+        var injectionDecision = result.ControlDecisions.Single(decision => decision.PossiblePromptInjection);
+        var trustedIntentDecision = result.ControlDecisions.Single(decision => decision.CanExpandScope);
 
-        Assert.IsTrue(result.ControlDecisions.Any(decision => decision.PossiblePromptInjection));
+        Assert.AreEqual("TRUSTED_CONTROL_EVIDENCE_ATTACHMENT_ALLOWED", injectionDecision.Code);
+        Assert.IsFalse(injectionDecision.CanModifyMissionGoal);
+        Assert.IsFalse(injectionDecision.CanExpandScope);
+        Assert.IsFalse(injectionDecision.CanPublishExternally);
+        Assert.AreEqual("TRUSTED_CONTROL_AUTHORITY_MUTATION_ALLOWED", trustedIntentDecision.Code);
+        Assert.IsTrue(trustedIntentDecision.CanExpandScope);
+        Assert.IsFalse(trustedIntentDecision.PossiblePromptInjection);
         Assert.IsFalse(result.ControlDecisions.Any(decision => decision.CanModifyMissionGoal));
-        Assert.IsFalse(result.ControlDecisions.Any(decision => decision.CanExpandScope));
         Assert.IsFalse(result.ControlDecisions.Any(decision => decision.CanPublishExternally));
         Assert.AreEqual("invoke", transition.Action.Operation);
         Assert.AreEqual("summary-button", transition.Action.SemanticTargetRef);
