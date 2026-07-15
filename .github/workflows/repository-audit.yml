@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "eng/audit/**"
+      - "tools/repository/clean-unreferenced-artifacts.ps1"
       - ".github/workflows/repository-audit.yml"
   workflow_dispatch:
 
@@ -32,5 +33,31 @@ jobs:
         with:
           name: repository-audit-inventory
           path: artifacts/repository-audit
+          if-no-files-found: error
+          retention-days: 7
+
+  artifact-projection:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Project reference-aware artifact cleanup without applying it
+        shell: pwsh
+        run: |
+          $log = Join-Path $env:RUNNER_TEMP "artifact-cleanup-dry-run.log"
+          ./tools/repository/clean-unreferenced-artifacts.ps1 2>&1 | Tee-Object -FilePath $log
+          exit $LASTEXITCODE
+
+      - name: Upload artifact cleanup projection
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-artifact-cleanup-projection
+          path: |
+            docs/audit/artifact-cleanup-report.md
+            ${{ runner.temp }}/artifact-cleanup-dry-run.log
           if-no-files-found: error
           retention-days: 7
