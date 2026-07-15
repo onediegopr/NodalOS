@@ -55,7 +55,7 @@ jobs:
           $log = Join-Path $env:RUNNER_TEMP "selective-runtime-integration-test.log"
           dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests|FullyQualifiedName~TestOwnedFileCreateRouteTests|FullyQualifiedName~BoundedWorkspaceUnderstandingRouteTests|FullyQualifiedName~BoundedWorkspaceHandoffExportRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
+          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests|FullyQualifiedName~TestOwnedFileCreateRouteTests|FullyQualifiedName~TestOwnedFileUpdateRouteTests|FullyQualifiedName~BoundedWorkspaceUnderstandingRouteTests|FullyQualifiedName~BoundedWorkspaceHandoffExportRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
           exit $LASTEXITCODE
 
       - name: Smoke Pilot product loops
@@ -129,6 +129,49 @@ jobs:
             if ($fileResponse.Headers["Cache-Control"] -notmatch "no-store") { throw "Create-only fixture surface must be no-store." }
             if ($fileResponse.Content -notmatch 'data-nodal-os="test-owned-file-create"') { throw "Create-only fixture anchor missing." }
             if ($fileResponse.Content -match '<script|<form|https?://') { throw "Create-only fixture opened an executable or external surface." }
+
+            $updateSnapshot = Invoke-RestMethod -Uri "http://127.0.0.1:5097/api/runtime/file-update-fixture" -TimeoutSec 15
+            if (-not $updateSnapshot.localDevOnly -or -not $updateSnapshot.readOnlySurface -or -not $updateSnapshot.secretsExcluded) {
+              throw "Exact-hash update fixture boundary flags are invalid."
+            }
+            if ($updateSnapshot.missionStatus -ne "Completed" -or $updateSnapshot.registryState -ne "Completed") {
+              throw "Exact-hash update fixture mission did not complete."
+            }
+            if ($updateSnapshot.approvalStatus -ne "Approve" -or $updateSnapshot.fileUpdateState -ne "UpdatedAndVerified") {
+              throw "Exact-hash update approval or action state is invalid."
+            }
+            if (-not $updateSnapshot.fileUpdateVerified -or
+                -not $updateSnapshot.preconditionMatched -or
+                -not $updateSnapshot.snapshotCreated -or
+                -not $updateSnapshot.atomicReplaceUsed -or
+                -not $updateSnapshot.rollbackPlanCreated -or
+                -not $updateSnapshot.fixtureCleanupRemovedRollbackSnapshot -or
+                -not $updateSnapshot.testOwnedFixtureCleaned) {
+              throw "Exact-hash update verification, restore plan or cleanup failed."
+            }
+            if ($updateSnapshot.originalSha256.Length -ne 64 -or
+                $updateSnapshot.updatedSha256.Length -ne 64 -or
+                $updateSnapshot.originalSha256 -eq $updateSnapshot.updatedSha256) {
+              throw "Exact-hash update evidence is invalid."
+            }
+            if ($updateSnapshot.userWorkspaceFilesystemTouched -or $updateSnapshot.networkUsed -or $updateSnapshot.productAuthorityGranted) {
+              throw "Exact-hash update crossed a forbidden boundary."
+            }
+            $updateResponse = Invoke-WebRequest -Uri "http://127.0.0.1:5097/runtime/file-update-fixture" -TimeoutSec 15
+            if ($updateResponse.StatusCode -ne 200) { throw "Exact-hash update HTML did not return 200." }
+            if ($updateResponse.Headers["Cache-Control"] -notmatch "no-store") { throw "Exact-hash update surface must be no-store." }
+            if ($updateResponse.Headers["Content-Security-Policy"] -notmatch "default-src 'none'") { throw "Exact-hash update CSP is missing." }
+            if ($updateResponse.Content -notmatch 'data-nodal-os="test-owned-file-update"' -or
+                $updateResponse.Content -notmatch 'data-section-id="rollback"' -or
+                $updateResponse.Content -notmatch 'UpdatedAndVerified' -or
+                $updateResponse.Content -notmatch 'General patch') {
+              throw "Exact-hash update surface is incomplete."
+            }
+            if ($updateResponse.Content -match '<script|<form|onclick=|https?://') { throw "Exact-hash update opened an executable or external surface." }
+            if ($updateResponse.Content.IndexOf($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+                $updateResponse.Content.IndexOf($fakeSecret, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+              throw "Exact-hash update leaked a workspace root or secret."
+            }
 
             $workspaceJsonResponse = Invoke-WebRequest -Uri "http://127.0.0.1:5097/api/workspace/understanding" -TimeoutSec 15
             if ($workspaceJsonResponse.StatusCode -ne 200) { throw "Bounded workspace JSON did not return 200." }
@@ -243,7 +286,7 @@ jobs:
             $fixtureRoot = Join-Path ([System.IO.Path]::GetTempPath()) "nodal-os-mvp-fixtures"
             if (Test-Path $fixtureRoot) {
               $leftovers = @(Get-ChildItem $fixtureRoot -Directory -Filter "run-*" -ErrorAction Stop)
-              if ($leftovers.Count -ne 0) { throw "Create-only fixture left test-owned run directories behind." }
+              if ($leftovers.Count -ne 0) { throw "Test-owned file fixtures left run directories behind." }
             }
           }
           finally {
