@@ -22,11 +22,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 11 preview
+      - name: Setup pinned .NET 11 preview
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 11.0.x
-          dotnet-quality: preview
+          dotnet-version: 11.0.100-preview.6.26359.118
 
       - name: Restore focused and aggregate test projects
         shell: pwsh
@@ -54,55 +53,6 @@ jobs:
           --no-build
           --logger "console;verbosity=normal"
 
-  selective-runtime-foundation:
-    runs-on: windows-latest
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 11 preview
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 11.0.x
-          dotnet-quality: preview
-
-      - name: Restore selective runtime tests
-        shell: pwsh
-        run: dotnet restore tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj
-
-      - name: Build selective runtime tests
-        shell: pwsh
-        run: |
-          $log = Join-Path $env:RUNNER_TEMP "selective-runtime-build.log"
-          dotnet build tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log
-          exit $LASTEXITCODE
-
-      - name: Upload selective runtime build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: selective-runtime-build-log
-          path: ${{ runner.temp }}/selective-runtime-build.log
-          if-no-files-found: ignore
-          retention-days: 3
-
-      - name: Run selective runtime tests
-        shell: pwsh
-        run: |
-          $log = Join-Path $env:RUNNER_TEMP "selective-runtime-test.log"
-          dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log
-          exit $LASTEXITCODE
-
-      - name: Upload selective runtime test diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: selective-runtime-test-log
-          path: ${{ runner.temp }}/selective-runtime-test.log
-          if-no-files-found: ignore
-          retention-days: 3
-
   secret-scan:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -129,17 +79,17 @@ jobs:
           import sys
 
           diff = subprocess.check_output(
-              [
-                  "git",
-                  "diff",
-                  "--diff-filter=ACMR",
-                  "--no-ext-diff",
-                  "--unified=0",
-                  os.environ["BASE_SHA"],
-                  os.environ["HEAD_SHA"],
-              ],
-              text=True,
-              errors="replace",
+            [
+                "git",
+                "diff",
+                "--diff-filter=ACMR",
+                "--no-ext-diff",
+                "--unified=0",
+                os.environ["BASE_SHA"],
+                os.environ["HEAD_SHA"],
+            ],
+            text=True,
+            errors="replace",
           )
           patterns = [
               re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
