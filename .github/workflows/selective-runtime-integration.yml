@@ -43,17 +43,19 @@ jobs:
       - name: Build runtime and Pilot surfaces
         shell: pwsh
         run: |
-          dotnet build tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-restore --verbosity minimal
+          $log = Join-Path $env:RUNNER_TEMP "selective-runtime-integration-build.log"
+          dotnet build tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-restore --verbosity minimal
+          dotnet build tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log -Append
           exit $LASTEXITCODE
 
       - name: Run selective runtime tests
         shell: pwsh
         run: |
-          dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal"
+          $log = Join-Path $env:RUNNER_TEMP "selective-runtime-integration-test.log"
+          dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests" --logger "console;verbosity=normal"
+          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
           exit $LASTEXITCODE
 
       - name: Smoke Pilot Runtime Inspector
@@ -106,6 +108,8 @@ jobs:
         with:
           name: selective-runtime-integration-logs
           path: |
+            ${{ runner.temp }}/selective-runtime-integration-build.log
+            ${{ runner.temp }}/selective-runtime-integration-test.log
             ${{ runner.temp }}/pilot-runtime-inspector.stdout.log
             ${{ runner.temp }}/pilot-runtime-inspector.stderr.log
           if-no-files-found: ignore
