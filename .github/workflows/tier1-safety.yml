@@ -103,29 +103,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 3
 
-  repository-inspection-snapshot:
-    if: github.head_ref == 'feature/airi-selective-runtime-integration'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create bounded source snapshot
-        run: >-
-          tar -czf "$RUNNER_TEMP/nodal-source-inspection.tgz"
-          --exclude='**/bin'
-          --exclude='**/obj'
-          --exclude='artifacts'
-          src tests browser-extension docs .github OneBrain.slnx browser-runtime.lock.json
-
-      - name: Upload bounded source snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: nodal-source-inspection
-          path: ${{ runner.temp }}/nodal-source-inspection.tgz
-          retention-days: 1
-
   secret-scan:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
