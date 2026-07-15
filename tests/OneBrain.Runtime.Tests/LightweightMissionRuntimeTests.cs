@@ -45,7 +45,7 @@ public sealed class LightweightMissionRuntimeTests
         runtime.Start("start");
         runtime.BeginStep("step-1", "begin");
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             runtime.MarkReadyForVerification("step-1", "ready", Array.Empty<string>()));
         Assert.AreNotEqual(MissionStatus.Completed, runtime.State.Status);
     }
@@ -133,7 +133,7 @@ public sealed class LightweightMissionRuntimeTests
         Assert.AreEqual(first.VerifiedStepCount, second.VerifiedStepCount);
         CollectionAssert.AreEqual(first.Blockers.ToArray(), second.Blockers.ToArray());
         var invalid = runtime.Events.Select((value, index) => index == 1 ? value with { Sequence = 4 } : value).ToArray();
-        Assert.ThrowsException<InvalidOperationException>(() => MissionReducer.Reduce(runtime.Plan, invalid));
+        Assert.ThrowsExactly<InvalidOperationException>(() => MissionReducer.Reduce(runtime.Plan, invalid));
     }
 
     [TestMethod]
@@ -144,7 +144,7 @@ public sealed class LightweightMissionRuntimeTests
         stream.Append(MissionEventKind.RunStarted, "runtime", "corr", "started");
         stream.Append(MissionEventKind.RunCancelled, "operator", "corr", "cancelled");
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             stream.Append(MissionEventKind.StepStarted, "runtime", "corr", "late", "step"));
     }
 
