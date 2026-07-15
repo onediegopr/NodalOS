@@ -13,6 +13,7 @@ public static class PilotRuntimeIntegrationEndpointMapper
             (IEndpointRouteBuilder)app,
             environment);
         SelectiveRuntimeInspectorEndpointMapper.MapSelectiveRuntimeInspector(app, environment);
+        TestOwnedFileCreateEndpointMapper.MapTestOwnedFileCreateFixture(app, environment);
         return app;
     }
 }
