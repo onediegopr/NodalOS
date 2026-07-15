@@ -55,7 +55,7 @@ jobs:
           $log = Join-Path $env:RUNNER_TEMP "selective-runtime-integration-test.log"
           dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests|FullyQualifiedName~TestOwnedFileCreateRouteTests|FullyQualifiedName~BoundedWorkspaceUnderstandingRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
+          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests|FullyQualifiedName~TestOwnedFileCreateRouteTests|FullyQualifiedName~BoundedWorkspaceUnderstandingRouteTests|FullyQualifiedName~BoundedWorkspaceHandoffExportRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
           exit $LASTEXITCODE
 
       - name: Smoke Pilot product loops
@@ -159,6 +159,51 @@ jobs:
             if ($workspaceResponse.Content.IndexOf($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
                 $workspaceResponse.Content.IndexOf($fakeSecret, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
               throw "Bounded workspace HTML leaked a root path or secret."
+            }
+
+            $handoffJsonResponse = Invoke-WebRequest -Uri "http://127.0.0.1:5097/api/workspace/understanding/handoff" -TimeoutSec 15
+            if ($handoffJsonResponse.StatusCode -ne 200) { throw "Workspace handoff JSON did not return 200." }
+            if ($handoffJsonResponse.Headers["Cache-Control"] -notmatch "no-store") { throw "Workspace handoff JSON must be no-store." }
+            $handoffSnapshot = $handoffJsonResponse.Content | ConvertFrom-Json
+            if (-not $handoffSnapshot.accepted -or -not $handoffSnapshot.localDevOnly -or -not $handoffSnapshot.readOnly -or -not $handoffSnapshot.secretsExcluded) {
+              throw "Workspace handoff boundary flags are invalid."
+            }
+            if ($handoffSnapshot.missionStatus -ne "Completed" -or $handoffSnapshot.decision -ne "GO_BOUNDED_WORKSPACE_HANDOFF_EXPORT_READY") {
+              throw "Workspace handoff did not reach the verified export state."
+            }
+            if (-not $handoffSnapshot.deterministic -or $handoffSnapshot.containsRawPayload -or $handoffSnapshot.containsExternalResource) {
+              throw "Workspace handoff render safety flags are invalid."
+            }
+            if ($handoffSnapshot.isAuthoritative -or $handoffSnapshot.executable -or $handoffSnapshot.filesystemMutationAllowed -or $handoffSnapshot.networkUsed -or $handoffSnapshot.productAuthorityGranted) {
+              throw "Workspace handoff crossed a forbidden boundary."
+            }
+            if ($handoffSnapshot.evidenceDigest.Length -ne 64 -or $handoffSnapshot.evidenceRefs.Count -lt 1) {
+              throw "Workspace handoff evidence is incomplete."
+            }
+            if ($handoffSnapshot.markdownRedacted -notmatch 'NODAL OS Bounded Workspace Handoff') {
+              throw "Workspace handoff markdown is missing its canonical heading."
+            }
+            if ($handoffJsonResponse.Content.IndexOf($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+                $handoffJsonResponse.Content.IndexOf($fakeSecret, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+              throw "Workspace handoff JSON leaked a root path or secret."
+            }
+
+            $handoffResponse = Invoke-WebRequest -Uri "http://127.0.0.1:5097/workspace/understanding/handoff.md" -TimeoutSec 15
+            if ($handoffResponse.StatusCode -ne 200) { throw "Workspace handoff Markdown did not return 200." }
+            if ($handoffResponse.Headers["Cache-Control"] -notmatch "no-store") { throw "Workspace handoff Markdown must be no-store." }
+            if ($handoffResponse.Headers["Content-Disposition"] -notmatch 'attachment; filename="nodal-os-workspace-handoff-[0-9a-f]{12}\.md"') {
+              throw "Workspace handoff attachment filename is invalid."
+            }
+            if ($handoffResponse.Headers["Content-Type"] -notmatch 'text/markdown') { throw "Workspace handoff content type is invalid." }
+            if ($handoffResponse.Content -notmatch '# NODAL OS Bounded Workspace Handoff' -or
+                $handoffResponse.Content -notmatch '## Evidence' -or
+                $handoffResponse.Content -notmatch '## Next safe step') {
+              throw "Workspace handoff Markdown is incomplete."
+            }
+            if ($handoffResponse.Content -match '<script|<form|https?://') { throw "Workspace handoff contains executable or external content." }
+            if ($handoffResponse.Content.IndexOf($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+                $handoffResponse.Content.IndexOf($fakeSecret, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
+              throw "Workspace handoff Markdown leaked a root path or secret."
             }
 
             $fixtureRoot = Join-Path ([System.IO.Path]::GetTempPath()) "nodal-os-mvp-fixtures"
