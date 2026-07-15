@@ -95,7 +95,7 @@ public sealed class NodalOsControlledFixtureVerticalSliceScenario
             var missionId = missionRuntime.Plan.MissionId;
             var seedEvidence = CreateEvidenceRef(
                 "evidence-mission-scope-fixture",
-                "mission-scope-authorization",
+                "mission-scope-approval-record",
                 NodalOsEvidenceBridgeUseKind.AuditTrail);
             registryEntry = registry.Register(new NodalOsExecutionRequest
             {
