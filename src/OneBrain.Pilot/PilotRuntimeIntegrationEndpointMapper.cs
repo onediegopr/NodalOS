@@ -17,6 +17,7 @@ public static class PilotRuntimeIntegrationEndpointMapper
         TestOwnedFileUpdateEndpointMapper.MapTestOwnedFileUpdateFixture(app, environment);
         BoundedWorkspaceUnderstandingEndpointMapper.MapBoundedWorkspaceUnderstanding(app, environment);
         BoundedWorkspaceHandoffExportEndpointMapper.MapBoundedWorkspaceHandoffExport(app, environment);
+        TeachNodalLocalDevSurface.MapTeachNodalLocalDevSurface(app, environment);
         return app;
     }
 }
