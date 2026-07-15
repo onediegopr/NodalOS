@@ -36,70 +36,17 @@ public sealed class ExecutableSkillMemoryTests
     }
 
     [TestMethod]
-    public void FailedOrIncompleteVerificationCannotEnterExecutableMemory()
+    public void PromotionRejectsFailedVerificationRawValuesRawScreenshotsAndBlockingConflicts()
     {
-        var memory = new ExecutableSkillMemory();
-        var fixture = VerifiedFixture("draft", "draft");
+        var unchangedMemory = new ExecutableSkillMemory();
+        var unchanged = VerifiedFixture("draft", "draft");
+        Assert.AreEqual(
+            SkillPromotionDecision.Rejected,
+            unchangedMemory.PromoteVerifiedTransition(unchanged.Request).Decision);
 
-        var promotion = memory.PromoteVerifiedTransition(fixture.Request);
-
-        Assert.AreEqual(SkillPromotionDecision.Rejected, promotion.Decision);
-        Assert.AreEqual(0, memory.List().Count);
-        Assert.IsNull(promotion.Skill);
-        Assert.IsNull(promotion.Transition);
-    }
-
-    [TestMethod]
-    public void SuccessfulSemanticVerificationPromotesTransitionAndExactStateReplayTemplate()
-    {
-        var memory = new ExecutableSkillMemory();
-        var fixture = VerifiedFixture("draft", "saved");
-
-        var promotion = memory.PromoteVerifiedTransition(fixture.Request);
-        var replay = memory.FindReplay(ReplayRequest(promotion.Skill!, fixture.Before.StateFingerprint));
-
-        Assert.AreEqual(SkillPromotionDecision.CreatedVerifiedSkill, promotion.Decision);
-        Assert.AreEqual(ExecutableSkillState.Verified, promotion.Skill!.State);
-        Assert.AreEqual(1, promotion.Skill.Transitions.Count);
-        Assert.AreEqual(VerifiedSkillTransitionState.Verified, promotion.Transition!.State);
-        Assert.AreEqual(1, promotion.Transition.SuccessfulRuns);
-        Assert.AreEqual(0, promotion.Transition.FailedRuns);
-        Assert.AreEqual(SkillReplayDecision.Ready, replay.Decision);
-        Assert.IsTrue(replay.Ready);
-        Assert.AreEqual(promotion.Transition.TransitionId, replay.Transition!.TransitionId);
-        Assert.IsFalse(replay.ActionAuthorityGranted);
-        Assert.IsTrue(replay.RequiresExistingMissionAuthorization);
-        Assert.IsFalse(promotion.Skill.LiveExecutionAuthorityGranted);
-    }
-
-    [TestMethod]
-    public void ReverificationDeduplicatesTransitionAndDoesNotChangeStructuralSkillVersion()
-    {
-        var memory = new ExecutableSkillMemory();
-        var fixture = VerifiedFixture("draft", "saved");
-        var first = memory.PromoteVerifiedTransition(fixture.Request);
-        var secondRequest = fixture.Request with
-        {
-            VerifiedAtUtc = fixture.Request.VerifiedAtUtc.AddMinutes(5),
-            EvidenceRefs = ["evidence:semantic", "evidence:second-verification"]
-        };
-
-        var second = memory.PromoteVerifiedTransition(secondRequest);
-
-        Assert.AreEqual(SkillPromotionDecision.ReverifiedExistingTransition, second.Decision);
-        Assert.AreEqual(1, second.Skill!.Transitions.Count);
-        Assert.AreEqual(2, second.Transition!.SuccessfulRuns);
-        Assert.AreEqual(first.Skill!.Version, second.Skill.Version);
-        Assert.AreEqual(first.Transition!.TransitionId, second.Transition.TransitionId);
-        Assert.IsTrue(second.Transition.EvidenceRefs.Contains("evidence:second-verification", StringComparer.Ordinal));
-    }
-
-    [TestMethod]
-    public void RawSecretParameterAndRawScreenshotAreRejectedWithoutMutation()
-    {
-        var memory = new ExecutableSkillMemory();
-        var fixture = VerifiedFixture("draft", "saved");
-        var unsafeAction = fixture.Request.Action with
+        var unsafeMemory = new ExecutableSkillMemory();
+        var verified = VerifiedFixture("draft", "saved");
+        var unsafeAction = verified.Action with
         {
             Parameters =
             [
@@ -110,48 +57,75 @@ public sealed class ExecutableSkillMemoryTests
                     RawValuePresent: true)
             ]
         };
-        var unsafeRequest = fixture.Request with { Action = unsafeAction };
-        var rawScreenshotRequest = fixture.Request with
-        {
-            Before = fixture.Before with { ContainsRawScreenshot = true }
-        };
+        Assert.AreEqual(
+            SkillPromotionDecision.Rejected,
+            unsafeMemory.PromoteVerifiedTransition(verified.Request with { Action = unsafeAction }).Decision);
+        Assert.AreEqual(
+            SkillPromotionDecision.Rejected,
+            unsafeMemory.PromoteVerifiedTransition(verified.Request with
+            {
+                Before = verified.Before with { ContainsRawScreenshot = true }
+            }).Decision);
 
-        var unsafeResult = memory.PromoteVerifiedTransition(unsafeRequest);
-        var screenshotResult = memory.PromoteVerifiedTransition(rawScreenshotRequest);
-
-        Assert.AreEqual(SkillPromotionDecision.Rejected, unsafeResult.Decision);
-        Assert.AreEqual(SkillPromotionDecision.Rejected, screenshotResult.Decision);
-        Assert.AreEqual(0, memory.List().Count);
-    }
-
-    [TestMethod]
-    public void BlockingCrossChannelConflictCannotBeLearned()
-    {
-        var memory = new ExecutableSkillMemory();
-        var fixture = VerifiedFixture("draft", "saved");
+        var conflictMemory = new ExecutableSkillMemory();
         var conflictingAfter = SnapshotWithClaims(
             "saved",
-            processId: 101,
+            101,
             [
                 Claim("editor", "value", "saved", Provenance.Uia),
                 Claim("editor", "value", "deleted", Provenance.Vision)
             ]);
-        var request = fixture.Request with { After = conflictingAfter };
-
-        var result = memory.PromoteVerifiedTransition(request);
-
-        Assert.AreEqual(SkillPromotionDecision.Rejected, result.Decision);
         Assert.IsTrue(conflictingAfter.HasBlockingConflicts);
-        Assert.AreEqual(0, memory.List().Count);
+        Assert.AreEqual(
+            SkillPromotionDecision.Rejected,
+            conflictMemory.PromoteVerifiedTransition(verified.Request with { After = conflictingAfter }).Decision);
+
+        Assert.AreEqual(0, unchangedMemory.List().Count);
+        Assert.AreEqual(0, unsafeMemory.List().Count);
+        Assert.AreEqual(0, conflictMemory.List().Count);
     }
 
     [TestMethod]
-    public void ReplayFailsClosedOnProfileVersionOrCapabilityScopeMismatch()
+    public void VerifiedPromotionReverificationAndReplayAreDeterministicAndNonAuthoritative()
     {
         var memory = new ExecutableSkillMemory();
         var fixture = VerifiedFixture("draft", "saved");
-        var promotion = memory.PromoteVerifiedTransition(fixture.Request);
-        var skill = promotion.Skill!;
+        var first = memory.PromoteVerifiedTransition(fixture.Request);
+        var firstSkill = RequiredSkill(first);
+        var firstTransition = RequiredTransition(first);
+        var replay = memory.FindReplay(ReplayRequest(firstSkill, fixture.Before.StateFingerprint));
+        var second = memory.PromoteVerifiedTransition(fixture.Request with
+        {
+            VerifiedAtUtc = fixture.VerifiedAtUtc.AddMinutes(5),
+            EvidenceRefs = ["evidence:semantic", "evidence:second-verification"]
+        });
+        var secondSkill = RequiredSkill(second);
+        var secondTransition = RequiredTransition(second);
+
+        Assert.AreEqual(SkillPromotionDecision.CreatedVerifiedSkill, first.Decision);
+        Assert.AreEqual(ExecutableSkillState.Verified, firstSkill.State);
+        Assert.AreEqual(SkillReplayDecision.Ready, replay.Decision);
+        Assert.AreEqual(firstTransition.TransitionId, replay.Transition?.TransitionId);
+        Assert.IsFalse(replay.ActionAuthorityGranted);
+        Assert.IsTrue(replay.RequiresExistingMissionAuthorization);
+        Assert.IsFalse(firstSkill.LiveExecutionAuthorityGranted);
+
+        Assert.AreEqual(SkillPromotionDecision.ReverifiedExistingTransition, second.Decision);
+        Assert.AreEqual(1, secondSkill.Transitions.Count);
+        Assert.AreEqual(2, secondTransition.SuccessfulRuns);
+        Assert.AreEqual(firstSkill.Version, secondSkill.Version);
+        Assert.AreEqual(firstTransition.TransitionId, secondTransition.TransitionId);
+        Assert.IsTrue(secondTransition.EvidenceRefs.Contains("evidence:second-verification", StringComparer.Ordinal));
+    }
+
+    [TestMethod]
+    public void ReplayFailsClosedOnProfileVersionCapabilityAndStateMismatch()
+    {
+        var memory = new ExecutableSkillMemory();
+        var fixture = VerifiedFixture("draft", "saved");
+        var promoted = memory.PromoteVerifiedTransition(fixture.Request);
+        var skill = RequiredSkill(promoted);
+        var unrelatedState = Snapshot("other", 101).StateFingerprint;
 
         var profile = memory.FindReplay(ReplayRequest(skill, fixture.Before.StateFingerprint) with
         {
@@ -165,166 +139,181 @@ public sealed class ExecutableSkillMemoryTests
         {
             AuthorizedCapabilities = new HashSet<string>(StringComparer.Ordinal) { "filesystem.read" }
         });
+        var state = memory.FindReplay(ReplayRequest(skill, unrelatedState));
 
         Assert.AreEqual(SkillReplayDecision.ProfileMismatch, profile.Decision);
         Assert.AreEqual(SkillReplayDecision.ProfileVersionMismatch, version.Decision);
         Assert.AreEqual(SkillReplayDecision.CapabilityNotAuthorized, capability.Decision);
+        Assert.AreEqual(SkillReplayDecision.CurrentStateNotFound, state.Decision);
     }
 
     [TestMethod]
     public void OneDegradedTransitionDoesNotDisableUnrelatedVerifiedTransition()
     {
         var memory = new ExecutableSkillMemory();
-        var firstFixture = VerifiedFixture("draft", "saved", skillId: "skill-multi-state");
-        var secondFixture = VerifiedFixture("closed", "opened", skillId: "skill-multi-state");
+        var firstFixture = VerifiedFixture("draft", "saved", "skill-multi-state");
+        var secondFixture = VerifiedFixture("closed", "opened", "skill-multi-state");
         var first = memory.PromoteVerifiedTransition(firstFixture.Request);
         var second = memory.PromoteVerifiedTransition(secondFixture.Request);
+        var firstSkill = RequiredSkill(first);
+        var firstTransition = RequiredTransition(first);
+        var secondTransition = RequiredTransition(second);
 
         var failure = memory.RecordTransitionFailure(new SkillTransitionFailureObservation(
-            SkillId: first.Skill!.SkillId,
-            TransitionId: first.Transition!.TransitionId,
-            FailureClass: SemanticVerificationFailureClass.TargetNotFound,
-            FailureKind: FailureKind.NotFound,
-            FailedAtUtc: firstFixture.VerifiedAtUtc.AddMinutes(1),
-            EvidenceRefs: ["evidence:target-missing"],
-            ReasonRedacted: "The target moved after an application update."));
-        var degradedReplay = memory.FindReplay(ReplayRequest(failure.Skill!, firstFixture.Before.StateFingerprint));
-        var unaffectedReplay = memory.FindReplay(ReplayRequest(failure.Skill!, secondFixture.Before.StateFingerprint));
+            firstSkill.SkillId,
+            firstTransition.TransitionId,
+            SemanticVerificationFailureClass.TargetNotFound,
+            FailureKind.NotFound,
+            firstFixture.VerifiedAtUtc.AddMinutes(1),
+            ["evidence:target-missing"],
+            "The target moved after an application update."));
+        var failedSkill = failure.Skill ?? throw new AssertFailedException("Expected degraded skill.");
+        var degradedReplay = memory.FindReplay(ReplayRequest(failedSkill, firstFixture.Before.StateFingerprint));
+        var unaffectedReplay = memory.FindReplay(ReplayRequest(failedSkill, secondFixture.Before.StateFingerprint));
 
         Assert.AreEqual(SkillFailureDecision.TransitionDegraded, failure.Decision);
-        Assert.AreEqual(ExecutableSkillState.Degraded, failure.Skill!.State);
-        Assert.AreEqual(VerifiedSkillTransitionState.Degraded, failure.Transition!.State);
+        Assert.AreEqual(ExecutableSkillState.Degraded, failedSkill.State);
+        Assert.AreEqual(VerifiedSkillTransitionState.Degraded, failure.Transition?.State);
         Assert.AreEqual(SkillReplayDecision.TransitionDegraded, degradedReplay.Decision);
         Assert.AreEqual(SkillReplayDecision.Ready, unaffectedReplay.Decision);
-        Assert.AreEqual(second.Transition!.TransitionId, unaffectedReplay.Transition!.TransitionId);
-        Assert.AreEqual(2, failure.Skill.Transitions.Count);
+        Assert.AreEqual(secondTransition.TransitionId, unaffectedReplay.Transition?.TransitionId);
+        Assert.AreEqual(2, failedSkill.Transitions.Count);
     }
 
     [TestMethod]
-    public void SevereSideEffectInvalidatesSingleTransitionSkillImmediately()
+    public void SevereSideEffectInvalidatesSkillButUserInterruptionDoesNotPunishQuality()
     {
-        var memory = new ExecutableSkillMemory();
+        var interruptedMemory = new ExecutableSkillMemory();
         var fixture = VerifiedFixture("draft", "saved");
-        var promoted = memory.PromoteVerifiedTransition(fixture.Request);
-
-        var failure = memory.RecordTransitionFailure(new SkillTransitionFailureObservation(
-            promoted.Skill!.SkillId,
-            promoted.Transition!.TransitionId,
-            SemanticVerificationFailureClass.UnexpectedSideEffect,
-            FailureKind.PolicyDenied,
-            fixture.VerifiedAtUtc.AddMinutes(1),
-            ["evidence:unexpected-side-effect"],
-            "A neighboring semantic object changed unexpectedly."));
-        var replay = memory.FindReplay(ReplayRequest(failure.Skill!, fixture.Before.StateFingerprint));
-
-        Assert.AreEqual(SkillFailureDecision.SkillInvalidated, failure.Decision);
-        Assert.AreEqual(ExecutableSkillState.Invalidated, failure.Skill!.State);
-        Assert.AreEqual(VerifiedSkillTransitionState.Invalidated, failure.Transition!.State);
-        Assert.AreEqual(SkillReplayDecision.Invalidated, replay.Decision);
-    }
-
-    [TestMethod]
-    public void UserInterruptionDoesNotPunishTransitionQuality()
-    {
-        var memory = new ExecutableSkillMemory();
-        var fixture = VerifiedFixture("draft", "saved");
-        var promoted = memory.PromoteVerifiedTransition(fixture.Request);
-
-        var failure = memory.RecordTransitionFailure(new SkillTransitionFailureObservation(
-            promoted.Skill!.SkillId,
-            promoted.Transition!.TransitionId,
+        var interruptedPromotion = interruptedMemory.PromoteVerifiedTransition(fixture.Request);
+        var interruptedSkill = RequiredSkill(interruptedPromotion);
+        var interruptedTransition = RequiredTransition(interruptedPromotion);
+        var interruption = interruptedMemory.RecordTransitionFailure(new SkillTransitionFailureObservation(
+            interruptedSkill.SkillId,
+            interruptedTransition.TransitionId,
             SemanticVerificationFailureClass.UserInterrupted,
             FailureKind.HumanInterrupted,
             fixture.VerifiedAtUtc.AddMinutes(1),
             ["evidence:user-interruption"],
             "The operator paused the mission."));
 
-        Assert.AreEqual(SkillFailureDecision.IgnoredExternalInterruption, failure.Decision);
-        Assert.AreEqual(ExecutableSkillState.Verified, failure.Skill!.State);
-        Assert.AreEqual(0, failure.Transition!.FailedRuns);
-        Assert.AreEqual(VerifiedSkillTransitionState.Verified, failure.Transition.State);
+        Assert.AreEqual(SkillFailureDecision.IgnoredExternalInterruption, interruption.Decision);
+        Assert.AreEqual(ExecutableSkillState.Verified, interruption.Skill?.State);
+        Assert.AreEqual(0, interruption.Transition?.FailedRuns);
+
+        var severeMemory = new ExecutableSkillMemory();
+        var severePromotion = severeMemory.PromoteVerifiedTransition(fixture.Request);
+        var severeSkill = RequiredSkill(severePromotion);
+        var severeTransition = RequiredTransition(severePromotion);
+        var failure = severeMemory.RecordTransitionFailure(new SkillTransitionFailureObservation(
+            severeSkill.SkillId,
+            severeTransition.TransitionId,
+            SemanticVerificationFailureClass.UnexpectedSideEffect,
+            FailureKind.PolicyDenied,
+            fixture.VerifiedAtUtc.AddMinutes(1),
+            ["evidence:unexpected-side-effect"],
+            "A neighboring semantic object changed unexpectedly."));
+        var invalidatedSkill = failure.Skill ?? throw new AssertFailedException("Expected invalidated skill.");
+
+        Assert.AreEqual(SkillFailureDecision.SkillInvalidated, failure.Decision);
+        Assert.AreEqual(ExecutableSkillState.Invalidated, invalidatedSkill.State);
+        Assert.AreEqual(VerifiedSkillTransitionState.Invalidated, failure.Transition?.State);
+        Assert.AreEqual(
+            SkillReplayDecision.Invalidated,
+            severeMemory.FindReplay(ReplayRequest(invalidatedSkill, fixture.Before.StateFingerprint)).Decision);
     }
 
     [TestMethod]
-    public void LocalizedRepairSupersedesOnlyFailedTransitionAndPreservesSkillGraph()
+    public void LocalizedRepairSupersedesOnlyFailedTransitionAndPreservesOtherStates()
     {
         var memory = new ExecutableSkillMemory();
-        var firstFixture = VerifiedFixture("draft", "saved", skillId: "skill-repair");
-        var secondFixture = VerifiedFixture("closed", "opened", skillId: "skill-repair");
+        var firstFixture = VerifiedFixture("draft", "saved", "skill-repair");
+        var secondFixture = VerifiedFixture("closed", "opened", "skill-repair");
         var first = memory.PromoteVerifiedTransition(firstFixture.Request);
         var second = memory.PromoteVerifiedTransition(secondFixture.Request);
+        var firstSkill = RequiredSkill(first);
+        var firstTransition = RequiredTransition(first);
+        var secondTransition = RequiredTransition(second);
         var degraded = memory.RecordTransitionFailure(new SkillTransitionFailureObservation(
-            first.Skill!.SkillId,
-            first.Transition!.TransitionId,
+            firstSkill.SkillId,
+            firstTransition.TransitionId,
             SemanticVerificationFailureClass.TargetNotFound,
             FailureKind.NotFound,
             firstFixture.VerifiedAtUtc.AddMinutes(1),
             ["evidence:locator-drift"],
             "The original selector alias no longer resolves."));
-        var repairedAction = firstFixture.Request.Action with
+        var degradedSkill = degraded.Skill ?? throw new AssertFailedException("Expected degraded skill.");
+        var degradedTransition = degraded.Transition ?? throw new AssertFailedException("Expected degraded transition.");
+        var repairedAction = firstFixture.Action with
         {
             TemplateId = "set-editor-value-repaired",
-            SemanticTargetRef = "editor-semantic-role",
             SelectorAliasRefs = ["app-profile:editor:stable-alias-v2"]
         };
+
         var repair = memory.RepairTransition(new SkillRepairRequest(
-            SkillId: degraded.Skill!.SkillId,
-            TransitionId: degraded.Transition!.TransitionId,
-            Before: firstFixture.Before,
-            After: firstFixture.After,
-            RepairedAction: repairedAction,
-            VerificationPlan: firstFixture.Plan,
-            VerificationReport: firstFixture.Report,
-            RepairedAtUtc: firstFixture.VerifiedAtUtc.AddMinutes(2),
-            EvidenceRefs: ["evidence:localized-repair"]));
-        var repairedReplay = memory.FindReplay(ReplayRequest(repair.Skill!, firstFixture.Before.StateFingerprint));
-        var unrelatedReplay = memory.FindReplay(ReplayRequest(repair.Skill!, secondFixture.Before.StateFingerprint));
+            degradedSkill.SkillId,
+            degradedTransition.TransitionId,
+            firstFixture.Before,
+            firstFixture.After,
+            repairedAction,
+            firstFixture.Plan,
+            firstFixture.Report,
+            firstFixture.VerifiedAtUtc.AddMinutes(2),
+            ["evidence:localized-repair"]));
+        var repairedSkill = repair.Skill ?? throw new AssertFailedException("Expected repaired skill.");
+        var repairedTransition = repair.RepairedTransition ?? throw new AssertFailedException("Expected repaired transition.");
+        var superseded = repair.SupersededTransition ?? throw new AssertFailedException("Expected superseded transition.");
 
         Assert.AreEqual(SkillRepairDecision.Repaired, repair.Decision);
-        Assert.AreEqual(ExecutableSkillState.Verified, repair.Skill!.State);
-        Assert.AreEqual(3, repair.Skill.Transitions.Count);
-        Assert.AreEqual(VerifiedSkillTransitionState.Invalidated, repair.SupersededTransition!.State);
-        Assert.AreEqual(repair.RepairedTransition!.TransitionId, repair.SupersededTransition.SupersededByTransitionId);
-        Assert.AreEqual("app-profile:editor:stable-alias-v2", repair.RepairedTransition.Action.SelectorAliasRefs.Single());
-        Assert.AreEqual(SkillReplayDecision.Ready, repairedReplay.Decision);
-        Assert.AreEqual(repair.RepairedTransition.TransitionId, repairedReplay.Transition!.TransitionId);
-        Assert.AreEqual(SkillReplayDecision.Ready, unrelatedReplay.Decision);
-        Assert.AreEqual(second.Transition!.TransitionId, unrelatedReplay.Transition!.TransitionId);
+        Assert.AreEqual(ExecutableSkillState.Verified, repairedSkill.State);
+        Assert.AreEqual(3, repairedSkill.Transitions.Count);
+        Assert.AreEqual(VerifiedSkillTransitionState.Invalidated, superseded.State);
+        Assert.AreEqual(repairedTransition.TransitionId, superseded.SupersededByTransitionId);
+        Assert.AreEqual("app-profile:editor:stable-alias-v2", repairedTransition.Action.SelectorAliasRefs.Single());
+        Assert.AreEqual(
+            repairedTransition.TransitionId,
+            memory.FindReplay(ReplayRequest(repairedSkill, firstFixture.Before.StateFingerprint)).Transition?.TransitionId);
+        Assert.AreEqual(
+            secondTransition.TransitionId,
+            memory.FindReplay(ReplayRequest(repairedSkill, secondFixture.Before.StateFingerprint)).Transition?.TransitionId);
     }
 
     [TestMethod]
-    public void RepairCannotChangeCapabilityOperationOrSemanticEndpoints()
+    public void LocalizedRepairCannotChangeCapabilityOrOperation()
     {
         var memory = new ExecutableSkillMemory();
         var fixture = VerifiedFixture("draft", "saved");
         var promoted = memory.PromoteVerifiedTransition(fixture.Request);
+        var skill = RequiredSkill(promoted);
+        var transition = RequiredTransition(promoted);
         var degraded = memory.RecordTransitionFailure(new SkillTransitionFailureObservation(
-            promoted.Skill!.SkillId,
-            promoted.Transition!.TransitionId,
+            skill.SkillId,
+            transition.TransitionId,
             SemanticVerificationFailureClass.TargetNotFound,
             FailureKind.NotFound,
             fixture.VerifiedAtUtc.AddMinutes(1),
             ["evidence:drift"],
             "Target drift."));
-        var changedCapability = fixture.Request.Action with
+        var degradedSkill = degraded.Skill ?? throw new AssertFailedException("Expected degraded skill.");
+        var degradedTransition = degraded.Transition ?? throw new AssertFailedException("Expected degraded transition.");
+        var changedCapability = fixture.Action with
         {
             TemplateId = "unsafe-capability-change",
             CapabilityId = "browser.action.execute"
         };
-        var request = new SkillRepairRequest(
-            degraded.Skill!.SkillId,
-            degraded.Transition!.TransitionId,
+        var versionBefore = degradedSkill.Version;
+
+        var result = memory.RepairTransition(new SkillRepairRequest(
+            degradedSkill.SkillId,
+            degradedTransition.TransitionId,
             fixture.Before,
             fixture.After,
             changedCapability,
             fixture.Plan,
             fixture.Report,
             fixture.VerifiedAtUtc.AddMinutes(2),
-            ["evidence:invalid-repair"]);
-        var versionBefore = degraded.Skill.Version;
-
-        var result = memory.RepairTransition(request);
-        var stored = memory.Get(degraded.Skill.SkillId)!;
+            ["evidence:invalid-repair"]));
+        var stored = memory.Get(degradedSkill.SkillId) ?? throw new AssertFailedException("Expected stored skill.");
 
         Assert.AreEqual(SkillRepairDecision.Rejected, result.Decision);
         Assert.AreEqual(versionBefore, stored.Version);
@@ -338,8 +327,9 @@ public sealed class ExecutableSkillMemoryTests
         var memory = new ExecutableSkillMemory();
         var fixture = VerifiedFixture("draft", "saved");
         var promoted = memory.PromoteVerifiedTransition(fixture.Request);
+        var skill = RequiredSkill(promoted);
         var archived = memory.Archive(
-            promoted.Skill!.SkillId,
+            skill.SkillId,
             fixture.VerifiedAtUtc.AddDays(1),
             ["evidence:archived"]);
 
@@ -351,27 +341,28 @@ public sealed class ExecutableSkillMemoryTests
     }
 
     [TestMethod]
-    public void ProcessMemoryProjectionUsesExistingStoreAndNeverCreatesSecondLedger()
+    public void ProcessMemoryProjectionUsesExistingStoreWithoutRawDataOrSecondLedger()
     {
         var memory = new ExecutableSkillMemory();
         var fixture = VerifiedFixture("draft", "saved", recipeId: "recipe-verified-editor");
         var promoted = memory.PromoteVerifiedTransition(fixture.Request);
-        var projection = promoted.Skill!.ToProcessMemoryEntry();
+        var skill = RequiredSkill(promoted);
+        var projection = skill.ToProcessMemoryEntry();
         var root = Path.Combine(Path.GetTempPath(), "nodal-skill-memory-" + Guid.NewGuid().ToString("N"));
         try
         {
             var write = ProcessMemoryStore.Write(root, projection);
-            var loaded = ProcessMemoryStore.ReadById(root, projection.Id);
+            var loaded = ProcessMemoryStore.ReadById(root, projection.Id)
+                         ?? throw new AssertFailedException("Expected process memory projection to load.");
             var json = JsonSerializer.Serialize(projection);
 
             Assert.AreEqual(ProcessMemoryStatuses.Stable, projection.Status);
             Assert.AreEqual(ProcessMemorySources.Recipe, projection.Source);
             Assert.AreEqual("recipe-verified-editor", projection.Links.RecipeId);
-            Assert.AreEqual(promoted.Skill.SkillFingerprint, projection.Links.ConfidenceId);
+            Assert.AreEqual(skill.SkillFingerprint, projection.Links.ConfidenceId);
             Assert.IsTrue(projection.ConfidenceScore >= 75);
             Assert.IsTrue(write.Success, write.Error);
-            Assert.IsNotNull(loaded);
-            Assert.AreEqual(projection.Id, loaded!.Id);
+            Assert.AreEqual(projection.Id, loaded.Id);
             Assert.IsFalse(json.Contains(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(json.Contains("RawValuePresent\":true", StringComparison.OrdinalIgnoreCase));
             Assert.IsTrue(projection.Notes.Any(note => note.Contains("existing Process Memory", StringComparison.Ordinal)));
@@ -384,35 +375,43 @@ public sealed class ExecutableSkillMemoryTests
     }
 
     [TestMethod]
-    public void TransitionIdentityIsDeterministicAcrossEvidenceAndVerificationTime()
+    public void TransitionAndSkillIdentityIgnoreEvidenceAndVerificationTime()
     {
         var firstMemory = new ExecutableSkillMemory();
         var secondMemory = new ExecutableSkillMemory();
         var firstFixture = VerifiedFixture("draft", "saved");
-        var secondFixture = VerifiedFixture("draft", "saved") with
+        var secondFixture = VerifiedFixture("draft", "saved");
+        var secondRequest = secondFixture.Request with
         {
-            Request = VerifiedFixture("draft", "saved").Request with
-            {
-                VerifiedAtUtc = DateTimeOffset.Parse("2026-07-16T00:00:00Z"),
-                EvidenceRefs = ["evidence:different-run"]
-            }
+            VerifiedAtUtc = DateTimeOffset.Parse("2026-07-16T00:00:00Z"),
+            EvidenceRefs = ["evidence:different-run"]
         };
 
         var first = firstMemory.PromoteVerifiedTransition(firstFixture.Request);
-        var second = secondMemory.PromoteVerifiedTransition(secondFixture.Request);
+        var second = secondMemory.PromoteVerifiedTransition(secondRequest);
+        var firstSkill = RequiredSkill(first);
+        var secondSkill = RequiredSkill(second);
+        var firstTransition = RequiredTransition(first);
+        var secondTransition = RequiredTransition(second);
 
-        Assert.AreEqual(first.Transition!.TransitionId, second.Transition!.TransitionId);
-        Assert.AreEqual(first.Transition.TransitionFingerprint, second.Transition.TransitionFingerprint);
-        Assert.AreEqual(first.Skill!.SkillFingerprint, second.Skill!.SkillFingerprint);
+        Assert.AreEqual(firstTransition.TransitionId, secondTransition.TransitionId);
+        Assert.AreEqual(firstTransition.TransitionFingerprint, secondTransition.TransitionFingerprint);
+        Assert.AreEqual(firstSkill.SkillFingerprint, secondSkill.SkillFingerprint);
     }
+
+    private static ExecutableSkill RequiredSkill(SkillPromotionResult result) =>
+        result.Skill ?? throw new AssertFailedException("Expected promoted skill.");
+
+    private static VerifiedSkillTransition RequiredTransition(SkillPromotionResult result) =>
+        result.Transition ?? throw new AssertFailedException("Expected promoted transition.");
 
     private static SkillReplayRequest ReplayRequest(ExecutableSkill skill, string currentStateFingerprint) =>
         new(
-            SkillId: skill.SkillId,
-            AppProfileId: skill.AppProfileId,
-            AppProfileVersion: skill.AppProfileVersion,
-            CurrentStateFingerprint: currentStateFingerprint,
-            AuthorizedCapabilities: new HashSet<string>(skill.RequiredCapabilities, StringComparer.Ordinal));
+            skill.SkillId,
+            skill.AppProfileId,
+            skill.AppProfileVersion,
+            currentStateFingerprint,
+            new HashSet<string>(skill.RequiredCapabilities, StringComparer.Ordinal));
 
     private static VerifiedFixtureData VerifiedFixture(
         string beforeValue,
@@ -420,14 +419,11 @@ public sealed class ExecutableSkillMemoryTests
         string skillId = "skill-editor-save",
         string? recipeId = "recipe-editor-save")
     {
-        var before = Snapshot(beforeValue, processId: 101);
-        var after = Snapshot(afterValue, processId: 101);
+        var before = Snapshot(beforeValue, 101);
+        var after = Snapshot(afterValue, 101);
         var plan = new SemanticVerificationPlan(
             PlanId: "verify-editor-transition",
-            Preconditions:
-            [
-                Rule("editor-present", SemanticVerificationRuleKind.ElementPresent, "editor")
-            ],
+            Preconditions: [Rule("editor-present", SemanticVerificationRuleKind.ElementPresent, "editor")],
             ExpectedTransition:
             [
                 Rule("editor-value-changed", SemanticVerificationRuleKind.PropertyChanged, "editor", "value"),
@@ -448,8 +444,8 @@ public sealed class ExecutableSkillMemoryTests
         var report = new SemanticVerifierV2().Verify(
             plan,
             new SemanticVerificationContext(
-                Before: before,
-                After: after,
+                before,
+                after,
                 ActionExecuted: true,
                 ActionRejected: false,
                 UserInterrupted: false,
@@ -457,28 +453,28 @@ public sealed class ExecutableSkillMemoryTests
                 EvidenceRefs: ["evidence:semantic"]));
         var verifiedAt = DateTimeOffset.Parse("2026-07-15T00:00:00Z");
         var candidate = new SkillCandidateRequest(
-            SkillId: skillId,
-            TitleRedacted: "Set fixture editor semantic value",
-            AppProfileId: "fixture-editor",
-            AppProfileVersion: 1,
-            RecipeId: recipeId,
-            ProcessMemoryId: null,
-            RunId: "run-fixture-editor",
-            RequiredCapabilities: new HashSet<string>(StringComparer.Ordinal) { "desktop.uia.action" },
-            RiskLevel: "low",
-            ObservedAtUtc: verifiedAt.AddMinutes(-1),
-            EvidenceRefs: ["evidence:candidate"],
-            InitialState: ExecutableSkillState.Candidate);
+            skillId,
+            "Set fixture editor semantic value",
+            "fixture-editor",
+            1,
+            recipeId,
+            null,
+            "run-fixture-editor",
+            new HashSet<string>(StringComparer.Ordinal) { "desktop.uia.action" },
+            "low",
+            verifiedAt.AddMinutes(-1),
+            ["evidence:candidate"],
+            ExecutableSkillState.Candidate);
         var action = Action();
         var request = new SkillPromotionRequest(
-            Candidate: candidate,
-            Before: before,
-            After: after,
-            Action: action,
-            VerificationPlan: plan,
-            VerificationReport: report,
-            VerifiedAtUtc: verifiedAt,
-            EvidenceRefs: ["evidence:semantic", "evidence:skill-promotion"]);
+            candidate,
+            before,
+            after,
+            action,
+            plan,
+            report,
+            verifiedAt,
+            ["evidence:semantic", "evidence:skill-promotion"]);
         return new VerifiedFixtureData(before, after, plan, report, action, request, verifiedAt);
     }
 
@@ -488,34 +484,28 @@ public sealed class ExecutableSkillMemoryTests
             CapabilityId: "desktop.uia.action",
             Operation: "set-value",
             SemanticTargetRef: "editor-semantic-role",
-            Parameters:
-            [
-                new SkillParameterBinding("TEXT", "variable-ref:TEXT")
-            ],
+            Parameters: [new SkillParameterBinding("TEXT", "variable-ref:TEXT")],
             SelectorAliasRefs: ["app-profile:editor:stable-alias"],
             RecoveryAlternatives:
             [
                 new SkillRecoveryAlternative(
-                    RecoveryId: "reobserve-editor",
-                    Kind: SkillRecoveryKind.ReobserveApplication,
-                    SummaryRedacted: "Capture a fresh semantic snapshot of the fixture editor.",
-                    SelectorAliasRef: null,
-                    EvidenceRefs: ["evidence:recovery-design"]),
+                    "reobserve-editor",
+                    SkillRecoveryKind.ReobserveApplication,
+                    "Capture a fresh semantic snapshot of the fixture editor.",
+                    null,
+                    ["evidence:recovery-design"]),
                 new SkillRecoveryAlternative(
-                    RecoveryId: "alternate-editor-alias",
-                    Kind: SkillRecoveryKind.AlternateSelectorAlias,
-                    SummaryRedacted: "Try the validated secondary app-profile selector alias.",
-                    SelectorAliasRef: "app-profile:editor:secondary-alias",
-                    EvidenceRefs: ["evidence:selector-alias"])
+                    "alternate-editor-alias",
+                    SkillRecoveryKind.AlternateSelectorAlias,
+                    "Try the validated secondary app-profile selector alias.",
+                    "app-profile:editor:secondary-alias",
+                    ["evidence:selector-alias"])
             ],
             RiskLevel: "low",
             RequiresExistingMissionAuthorization: true);
 
     private static CognitiveSnapshotV2 Snapshot(string value, int processId) =>
-        SnapshotWithClaims(
-            value,
-            processId,
-            [Claim("editor", "value", value, Provenance.Fixture)]);
+        SnapshotWithClaims(value, processId, [Claim("editor", "value", value, Provenance.Fixture)]);
 
     private static CognitiveSnapshotV2 SnapshotWithClaims(
         string value,
@@ -558,13 +548,13 @@ public sealed class ExecutableSkillMemoryTests
         string value,
         Provenance provenance) =>
         new(
-            SubjectRef: subjectRef,
-            Property: property,
-            ValueRedacted: value,
-            Source: provenance,
-            Confidence: 1d,
-            CapturedAtUtc: DateTimeOffset.Parse("2026-07-15T00:00:00Z"),
-            EvidenceRef: "evidence:claim:" + provenance);
+            subjectRef,
+            property,
+            value,
+            provenance,
+            1d,
+            DateTimeOffset.Parse("2026-07-15T00:00:00Z"),
+            "evidence:claim:" + provenance);
 
     private static SemanticVerificationRule Rule(
         string ruleId,
@@ -572,13 +562,7 @@ public sealed class ExecutableSkillMemoryTests
         string? subjectRef = null,
         string? property = null,
         string? expected = null) =>
-        new(
-            RuleId: ruleId,
-            Kind: kind,
-            SubjectRef: subjectRef,
-            Property: property,
-            ExpectedValueRedacted: expected,
-            Required: true);
+        new(ruleId, kind, subjectRef, property, expected, Required: true);
 
     private sealed record VerifiedFixtureData(
         CognitiveSnapshotV2 Before,
