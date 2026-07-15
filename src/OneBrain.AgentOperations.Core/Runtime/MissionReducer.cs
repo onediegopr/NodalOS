@@ -186,12 +186,17 @@ public static class MissionReducer
     {
         ArgumentNullException.ThrowIfNull(plan);
         ArgumentNullException.ThrowIfNull(state);
+        var currentStep = state.CurrentStepId is { } currentStepId
+            ? plan.Steps.FirstOrDefault(step =>
+                string.Equals(step.Id, currentStepId, StringComparison.Ordinal))?.Intent ?? currentStepId
+            : memory?.CurrentStep;
+
         return new MissionResumeCard(
             plan.MissionId,
             plan.Goal,
             state.Status,
             state.Progress,
-            state.CurrentStepId ?? memory?.CurrentStep,
+            currentStep,
             state.LastEvent?.Summary ?? "Mission has not started.",
             state.Blockers.FirstOrDefault() ?? memory?.Blockers.FirstOrDefault(),
             memory?.NextStep ?? FindNextStep(plan, state.Steps),
