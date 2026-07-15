@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace OneBrain.Core.Models;
@@ -119,6 +120,7 @@ public sealed class EphemeralSecretReferenceStore : ISecretReferenceStore, IDisp
     }
 }
 
+[SupportedOSPlatform("windows")]
 public sealed class WindowsDpapiSecretReferenceStore : ISecretReferenceStore
 {
     public const string StoreId = "windows-dpapi";
