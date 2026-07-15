@@ -1,14 +1,16 @@
-# NODAL OS MVP Vertical Slice Canonical
+# NODAL OS MVP Technical Safety Vertical Slice Canonical
 
-Date: 2026-07-13
+Date: 2026-07-15
 
 Decision: `GO_WITH_FINDINGS_CANONICAL_MAIN_AND_MVP_VERTICAL_SLICE_FROZEN`
 
-Purpose: freeze one product path for the first sellable MVP and stop parallel roadmap drift.
+Purpose: freeze one ordered technical safety path, prevent parallel runtime drift and prove the control chain used by the future sellable MVP.
 
-Initial user: Diego/operator running a local-first NODAL OS workspace.
+This document does **not** claim that the current fixture/local-dev implementation is an installable or sellable product. Productization, real user-workspace enablement, BYOK live use, desktop packaging, release operations and private-beta validation are tracked separately in `nodal-os-current-mvp-roadmap-compact.md`.
 
-Initial use case: use a fixture or test-owned workspace, create one low-risk mission, generate a reviewed plan, approve one bounded non-destructive/reversible action, execute only through the controlled boundary, verify the result, record redacted evidence/timeline, and produce a human handoff.
+Initial operator: Diego/operator running a local-first NODAL OS workspace.
+
+Technical use case: use a fixture or test-owned workspace, create one low-risk mission, generate a reviewed plan, approve one bounded non-destructive/reversible action, execute only through the controlled boundary, verify the result, record redacted evidence/timeline, and produce a human handoff.
 
 ## Flow
 
@@ -45,22 +47,22 @@ Order is load-bearing: approval precedes any sensitive controlled action; verifi
 - System Chrome/Edge is never a silent product-runtime fallback.
 - Playwright default Chromium is never a product-runtime substitute.
 - Product Ledger remains local/dev review evidence/read model/supporting timeline until a separate product-authority GO. It is not latest pointer authority, read precedence authority, product authority or release authority.
-- WCU/OCR/Recipes/live browser actions stay outside the MVP slice until separately authorized.
-- Stealth Core Auditado remains protected scope; do not change stealth, anti-fingerprint, captcha, proxy or handoff internals for this freeze.
+- WCU/OCR/Recipes/live browser actions stay outside this technical slice until separately authorized.
+- Stealth Core Auditado remains protected scope; do not change stealth, anti-fingerprint, captcha, proxy or handoff internals through this slice.
 
 ## Stage Requirements
 
-- Explanation: each action proposal must include human-readable reason and scope.
+- Explanation: each action proposal includes a human-readable reason and scope.
 - Policy: sensitive action classification and fail-closed policy evaluation run before approval.
 - Approval: no sensitive controlled action runs without an approval decision bound to the expected identity.
 - Timeout: startup/action/verification timeouts fail closed.
 - Cancellation: cancellation is honored before validation, before dispatch and during verification where the FSM allows it.
-- Rollback/handoff: rollback plan is redacted and shown before approval; if rollback is not available, human handoff is required.
-- Errors: errors must not include raw secrets, raw DOM/network payloads or unredacted local paths.
-- UI: first UI only needs local workspace/mission/plan/approval/action/verifier/evidence/handoff status with disabled blockers visible.
-- Performance budget: fixture workspace load and plan preview should stay under 2 seconds; controlled action read-only browser capture target should stay under 10 seconds once CloakBrowser binary is available.
+- Rollback/handoff: rollback plan is redacted and shown before approval; if rollback is unavailable, human handoff is required.
+- Errors: errors do not include raw secrets, raw DOM/network payloads or unredacted local paths.
+- UI: the technical surface only needs local workspace/mission/plan/approval/action/verifier/evidence/handoff status with blockers visible.
+- Performance budget: fixture workspace load and plan preview target under 2 seconds; controlled read-only browser capture target under 10 seconds once the pinned CloakBrowser binary is available.
 
-## Definition Of Done
+## Technical Definition Of Done
 
 1. One fixture workspace can be selected.
 2. One mission can bind to that workspace.
@@ -90,30 +92,39 @@ Order is load-bearing: approval precedes any sensitive controlled action; verifi
 | WCU/OCR/Recipes live execution | `OUT_OF_SLICE` | blocked until separate GO |
 | Evidence Intelligence export/read-only previews | `CANONICAL_WITH_ADAPTER` | evidence/handoff support only, no export authority |
 
-## Implementation Order
+## Implementation History
 
 1. Freeze this matrix and guard it with Safety architecture tests.
 2. Add CloakBrowser direct CDP descriptor/preflight/read-only capture path.
-3. Connect the read-only browser capture as evidence for the controlled action boundary.
-4. Add one local fixture vertical slice test over workspace -> mission -> plan -> approval -> controlled action -> verification -> evidence -> handoff.
-5. Only after that, consider a bounded non-destructive action inside a test-owned local target.
+3. Connect controlled fixture evidence and verification.
+4. Validate workspace -> mission -> plan -> approval -> action -> verification -> evidence -> handoff.
+5. Add test-owned create and exact-hash update actions.
+6. Add bounded workspace understanding, Advisor and handoff export.
+7. Add Living Skills foundations and application-scoped Windows observation.
 
-## Private Beta Criteria
+These steps prove architecture and guardrails. They do not replace the productization roadmap.
 
-- Roadmap/governance: branch governance documented, default branch protection either applied or explicitly blocked by GitHub credentials.
-- Implementation technical: one vertical slice fixture passes locally.
-- Product integration: CloakBrowser direct CDP is the browser target; ChromeLab is not the product runtime.
-- MVP sellable: one low-risk local mission produces a reviewed handoff with evidence.
-- Production runtime: remains `0%` until separate authorization.
-- Release/commercial: remains `0% / NO-GO`.
+## Sellable MVP entry criteria
+
+Before private beta, the project still requires:
+
+- `main` as the actual protected GitHub default branch;
+- one coherent dark-first Mission Control shell;
+- real local workspace selection and persistence;
+- one approved reversible operation in an explicitly selected user workspace;
+- usable BYOK configuration and one real provider path;
+- a reproducible Windows installer/update strategy;
+- product license and security/privacy documentation;
+- clean-install and onboarding validation.
+
+Production runtime and release/commercial readiness remain `0% / NO-GO` until those gates are implemented and evidenced.
 
 ## Exclusions
 
-- No customer data.
-- No login, payment, purchase, submit, delete, upload or real download.
-- No public internet target as required test target.
+- No customer data in the technical fixture slice.
+- No login, payment, purchase, submit, delete, upload or real download as required test targets.
+- No public internet target as a required test target.
 - No production deployment.
-- No DB/cloud/network/provider requirement.
+- No DB/cloud/network/provider requirement for the technical fixture slice.
 - No KMS/WORM/external trust.
-- No CI enforcement or workflow change from this freeze.
 - No release/commercial claim.
