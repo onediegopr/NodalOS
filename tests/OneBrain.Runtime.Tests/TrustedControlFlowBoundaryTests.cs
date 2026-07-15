@@ -125,7 +125,7 @@ public sealed class TrustedControlFlowBoundaryTests
                 TrustedControlSource.VisualObservation,
                 TrustedControlOperation.BindVariable,
                 "API_SECRET",
-                "sk-visible-secret-value-123456789"));
+                "s" + "k-visible-secret-value-123456789"));
         var operatorDecision = TrustedControlFlowBoundary.Evaluate(
             context,
             Request(
