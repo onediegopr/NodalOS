@@ -229,7 +229,7 @@ public static class BoundedWorkspaceUnderstandingEndpointMapper
         response.Headers.Pragma = "no-cache";
         response.Headers.XContentTypeOptions = "nosniff";
         response.Headers.ContentSecurityPolicy = "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
-        response.Headers.ReferrerPolicy = "no-referrer";
+        response.Headers["Referrer-Policy"] = "no-referrer";
     }
 
     private static string Html(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
