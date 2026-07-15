@@ -43,7 +43,7 @@ public sealed class PilotAIConfigConsoleTests
 
         var html = PilotHomePageRenderer.RenderAIConfigConsole(profiles);
 
-        StringAssert.Contains(html, "sk-...A91F");
+        StringAssert.Contains(html, "[configured]");
         Assert.IsFalse(html.Contains("sk-test-secret-A91F", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(html.Contains("test-secret", StringComparison.OrdinalIgnoreCase));
     }

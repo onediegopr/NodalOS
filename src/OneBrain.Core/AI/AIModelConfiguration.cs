@@ -22,11 +22,7 @@ public static class AIModelConfiguration
         if (string.IsNullOrWhiteSpace(value))
             return "[not configured]";
 
-        var trimmed = value.Trim();
-        if (trimmed.Length <= 8)
-            return "[configured]";
-
-        return $"{trimmed[..3]}...{trimmed[^4..]}";
+        return "[configured]";
     }
 
     private static AIModelProfile Build(
