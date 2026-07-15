@@ -20,13 +20,12 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
     [TestMethod]
     public void BoundForegroundWindowProducesVerifiedSkillEvenWhenWindowTitleChanges()
     {
-        var snapshots = new Queue<CognitiveSnapshot>(
+        var adapter = Adapter(
         [
             Snapshot("Fixture Editor — Draft", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor — Draft", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor — Saved", 101, foreground: true, "saved")
         ]);
-        var adapter = Adapter(snapshots);
         var binding = adapter.Bind(Hwnd, "fixture-binding", "fixture-editor", 1, "evidence:binding", Now);
         var session = adapter.CreateCaptureSession(
             binding,
@@ -39,12 +38,10 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
             maximumSteps: 4);
         session.Arm(Consent(), Now);
         session.Start(Now);
+
         var token = adapter.BeginStep(binding, "save-document", "evidence:before-save", Now.AddSeconds(1));
         var documentRef = ElementRef(token.Before, "document-state");
         var targetRef = ElementRef(token.Before, "save-button");
-        var plan = Plan("save-document", documentRef, targetRef, "saved");
-        var action = Action("save-document", targetRef);
-
         var observation = adapter.CompleteStepAndObserve(
             session,
             binding,
@@ -52,8 +49,8 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
             sequence: 1,
             source: TeachNodalCaptureSource.Uia,
             intentSource: TrustedControlSource.UserInstruction,
-            action,
-            plan,
+            Action("save-document", targetRef),
+            Plan("save-document", documentRef, targetRef, "saved"),
             actionExecuted: true,
             actionRejected: false,
             userInterrupted: false,
@@ -109,65 +106,38 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
     [TestMethod]
     public void CompletionFailsClosedWhenBoundWindowLosesForegroundOrChangesProcess()
     {
-        var foregroundLoss = new Queue<CognitiveSnapshot>(
+        var foregroundLoss = Adapter(
         [
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor", 101, foreground: false, "saved")
         ]);
-        var adapter = Adapter(foregroundLoss);
-        var binding = adapter.Bind(Hwnd, "binding", "fixture-editor", 1, "evidence:binding", Now);
-        var token = adapter.BeginStep(binding, "save", "evidence:before", Now.AddSeconds(1));
-        var plan = Plan("save", ElementRef(token.Before, "document-state"), ElementRef(token.Before, "save-button"), "saved");
-        Assert.ThrowsExactly<InvalidOperationException>(() => adapter.CompleteStep(
-            binding,
-            token,
-            TeachNodalCaptureSource.Uia,
-            TrustedControlSource.UserInstruction,
-            Action("save", ElementRef(token.Before, "save-button")),
-            plan,
-            true,
-            false,
-            false,
-            ["evidence:verified:save"],
-            Now.AddSeconds(2)));
-        Assert.AreEqual(1, adapter.PendingStepCount);
-        Assert.IsTrue(adapter.CancelStep(binding, token.TokenId));
+        var binding = foregroundLoss.Bind(Hwnd, "binding", "fixture-editor", 1, "evidence:binding", Now);
+        var token = foregroundLoss.BeginStep(binding, "save", "evidence:before", Now.AddSeconds(1));
+        Assert.ThrowsExactly<InvalidOperationException>(() => Complete(foregroundLoss, binding, token));
+        Assert.AreEqual(1, foregroundLoss.PendingStepCount);
+        Assert.IsTrue(foregroundLoss.CancelStep(binding, token.TokenId));
 
-        var processChange = new Queue<CognitiveSnapshot>(
+        var processChange = Adapter(
         [
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Other App", 202, foreground: true, "saved", processName: "other-app")
         ]);
-        var secondAdapter = Adapter(processChange);
-        var secondBinding = secondAdapter.Bind(Hwnd, "binding-2", "fixture-editor", 1, "evidence:binding-2", Now);
-        var secondToken = secondAdapter.BeginStep(secondBinding, "save", "evidence:before", Now.AddSeconds(1));
-        var secondPlan = Plan("save", ElementRef(secondToken.Before, "document-state"), ElementRef(secondToken.Before, "save-button"), "saved");
-        Assert.ThrowsExactly<InvalidOperationException>(() => secondAdapter.CompleteStep(
-            secondBinding,
-            secondToken,
-            TeachNodalCaptureSource.Uia,
-            TrustedControlSource.UserInstruction,
-            Action("save", ElementRef(secondToken.Before, "save-button")),
-            secondPlan,
-            true,
-            false,
-            false,
-            ["evidence:verified:save"],
-            Now.AddSeconds(2)));
-        Assert.AreEqual(1, secondAdapter.PendingStepCount);
+        var secondBinding = processChange.Bind(Hwnd, "binding-2", "fixture-editor", 1, "evidence:binding-2", Now);
+        var secondToken = processChange.BeginStep(secondBinding, "save", "evidence:before", Now.AddSeconds(1));
+        Assert.ThrowsExactly<InvalidOperationException>(() => Complete(processChange, secondBinding, secondToken));
+        Assert.AreEqual(1, processChange.PendingStepCount);
     }
 
     [TestMethod]
     public void AdapterRejectsUntrustedIntentControlLabelsUnsupportedSourcesAndExpiredSteps()
     {
-        var snapshots = new Queue<CognitiveSnapshot>(
+        var adapter = Adapter(
         [
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor", 101, foreground: true, "empty")
         ]);
-        var adapter = Adapter(snapshots);
         var binding = adapter.Bind(Hwnd, "binding", "fixture-editor", 1, "evidence:binding", Now);
         var token = adapter.BeginStep(
             binding,
@@ -199,52 +169,26 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
     [TestMethod]
     public void TokenCannotReplayReleaseOrRebindWhilePending()
     {
-        var snapshots = new Queue<CognitiveSnapshot>(
+        var adapter = Adapter(
         [
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
-            Snapshot("Fixture Editor", 101, foreground: true, "saved"),
             Snapshot("Fixture Editor", 101, foreground: true, "saved")
         ]);
-        var adapter = Adapter(snapshots);
         var binding = adapter.Bind(Hwnd, "binding", "fixture-editor", 1, "evidence:binding", Now);
         var token = adapter.BeginStep(binding, "save", "evidence:before", Now.AddSeconds(1));
-        var targetRef = ElementRef(token.Before, "save-button");
-        var plan = Plan("save", ElementRef(token.Before, "document-state"), targetRef, "saved");
 
         Assert.ThrowsExactly<InvalidOperationException>(() => adapter.ReleaseBinding(binding));
         Assert.ThrowsExactly<InvalidOperationException>(() => adapter.Bind(
             new IntPtr(5252), "other-binding", "fixture-editor", 1, "evidence:other", Now.AddSeconds(1)));
 
-        var observation = adapter.CompleteStep(
-            binding,
-            token,
-            TeachNodalCaptureSource.Uia,
-            TrustedControlSource.UserInstruction,
-            Action("save", targetRef),
-            plan,
-            true,
-            false,
-            false,
-            ["evidence:verified:save"],
-            Now.AddSeconds(2));
+        var observation = Complete(adapter, binding, token);
         Assert.IsFalse(observation.GlobalHookUsed);
         Assert.IsFalse(observation.RawKeyboardPayloadPresent);
         Assert.IsFalse(observation.RawPointerCoordinatesPresent);
         Assert.IsFalse(observation.RawScreenshotPresent);
         Assert.IsFalse(observation.RawDomPresent);
-        Assert.ThrowsExactly<InvalidOperationException>(() => adapter.CompleteStep(
-            binding,
-            token,
-            TeachNodalCaptureSource.Uia,
-            TrustedControlSource.UserInstruction,
-            Action("save", targetRef),
-            plan,
-            true,
-            false,
-            false,
-            ["evidence:verified:save"],
-            Now.AddSeconds(2)));
+        Assert.ThrowsExactly<InvalidOperationException>(() => Complete(adapter, binding, token));
         adapter.ReleaseBinding(binding);
         Assert.IsNull(adapter.Binding);
     }
@@ -252,12 +196,11 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
     [TestMethod]
     public void MismatchedCaptureSessionCannotConsumeWindowsObservation()
     {
-        var snapshots = new Queue<CognitiveSnapshot>(
+        var adapter = Adapter(
         [
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor", 101, foreground: true, "empty")
         ]);
-        var adapter = Adapter(snapshots);
         var binding = adapter.Bind(Hwnd, "binding", "fixture-editor", 1, "evidence:binding", Now);
         var token = adapter.BeginStep(binding, "save", "evidence:before", Now.AddSeconds(1));
         var mismatched = new TeachNodalCaptureSessionV1(new TeachNodalCaptureScope(
@@ -272,6 +215,7 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
             ReliableRecipeRiskProfile.ReadOnly,
             2));
 
+        var targetRef = ElementRef(token.Before, "save-button");
         Assert.ThrowsExactly<InvalidOperationException>(() => adapter.CompleteStepAndObserve(
             mismatched,
             binding,
@@ -279,14 +223,34 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
             1,
             TeachNodalCaptureSource.Uia,
             TrustedControlSource.UserInstruction,
-            Action("save", ElementRef(token.Before, "save-button")),
-            Plan("save", ElementRef(token.Before, "document-state"), ElementRef(token.Before, "save-button"), "saved"),
+            Action("save", targetRef),
+            Plan("save", ElementRef(token.Before, "document-state"), targetRef, "saved"),
             true,
             false,
             false,
             ["evidence:verified:save"],
             Now.AddSeconds(2)));
         Assert.AreEqual(1, adapter.PendingStepCount);
+    }
+
+    private static TeachNodalCaptureObservation Complete(
+        TeachNodalWindowsObservationAdapterV1 adapter,
+        TeachNodalWindowsApplicationBinding binding,
+        TeachNodalWindowsStepToken token)
+    {
+        var targetRef = ElementRef(token.Before, "save-button");
+        return adapter.CompleteStep(
+            binding,
+            token,
+            TeachNodalCaptureSource.Uia,
+            TrustedControlSource.UserInstruction,
+            Action("save", targetRef),
+            Plan("save", ElementRef(token.Before, "document-state"), targetRef, "saved"),
+            actionExecuted: true,
+            actionRejected: false,
+            userInterrupted: false,
+            evidenceRefs: ["evidence:verified:save"],
+            completedAtUtc: Now.AddSeconds(2));
     }
 
     private static TeachNodalWindowsObservationAdapterV1 Adapter(IEnumerable<CognitiveSnapshot> snapshots)
@@ -326,12 +290,12 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
         Preconditions: [Rule(id + "-target", SemanticVerificationRuleKind.ElementPresent, targetRef)],
         ExpectedTransition:
         [
-            Rule(id + "-changed", SemanticVerificationRuleKind.PropertyChanged, documentRef, "value"),
+            Rule(id + "-changed", SemanticVerificationRuleKind.PropertyChanged, documentRef, "name"),
             Rule(id + "-fingerprint", SemanticVerificationRuleKind.StateFingerprintChanged)
         ],
         ExpectedOutcome:
         [
-            Rule(id + "-outcome", SemanticVerificationRuleKind.PropertyEquals, documentRef, "value", expected),
+            Rule(id + "-outcome", SemanticVerificationRuleKind.PropertyEquals, documentRef, "name", expected),
             Rule(id + "-conflicts", SemanticVerificationRuleKind.NoBlockingConflicts)
         ],
         ForbiddenSideEffects: [],
