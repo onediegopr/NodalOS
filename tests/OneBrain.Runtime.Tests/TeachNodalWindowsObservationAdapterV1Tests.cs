@@ -173,6 +173,7 @@ public sealed class TeachNodalWindowsObservationAdapterV1Tests
         [
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
             Snapshot("Fixture Editor", 101, foreground: true, "empty"),
+            Snapshot("Fixture Editor", 101, foreground: true, "saved"),
             Snapshot("Fixture Editor", 101, foreground: true, "saved")
         ]);
         var binding = adapter.Bind(Hwnd, "binding", "fixture-editor", 1, "evidence:binding", Now);
