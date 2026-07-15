@@ -27,6 +27,15 @@ public sealed class ControlledFixtureVerticalSliceTests
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ApprovalGranted));
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ExecutionCompleted));
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.EvidenceAttached));
+        Assert.IsTrue(result.Runtime.Mission.EvidenceRefs.Contains(
+            result.ControlledActionEvidence.EvidenceId,
+            StringComparer.Ordinal));
+
+        var approvalIndex = TimelineIndex(result, "Mission-level authorization required");
+        var actionIndex = TimelineIndex(result, "Controlled fixture observation completed and verified");
+        var missionCompletionIndex = TimelineIndex(result, "Mission completed after every required step was verified");
+        Assert.IsTrue(approvalIndex < actionIndex);
+        Assert.IsTrue(actionIndex < missionCompletionIndex);
         Assert.IsTrue(result.Handoff.VerifiesEvidenceContent);
         Assert.IsFalse(result.Handoff.IsAuthoritative);
         Assert.IsFalse(result.Handoff.Executable);
@@ -97,5 +106,13 @@ public sealed class ControlledFixtureVerticalSliceTests
         Assert.IsFalse(result.HandoffRender.HtmlRedacted.Contains("<script", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(result.HandoffRender.HtmlRedacted.Contains("http://", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(result.HandoffRender.HtmlRedacted.Contains("https://", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static int TimelineIndex(NodalOsControlledFixtureVerticalSliceResult result, string summary)
+    {
+        var match = result.Timeline
+            .Select((item, index) => new { item.SummaryRedacted, Index = index })
+            .Single(item => item.SummaryRedacted.Contains(summary, StringComparison.Ordinal));
+        return match.Index;
     }
 }
