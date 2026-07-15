@@ -83,7 +83,7 @@ public sealed class CapabilityRegistryTests
             [CapabilityRuntime.Verification]));
 
         Assert.IsFalse(selection.Available);
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             registry.UpdateHealth("verification.run", "core", null, CapabilityState.Ready, 100));
     }
 
