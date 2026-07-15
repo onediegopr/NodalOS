@@ -10,8 +10,33 @@ namespace OneBrain.Pilot;
 
 internal static class TeachNodalLocalDevFixture
 {
-    internal static TeachNodalDemonstration CreateDemonstration()
+    private static readonly DateTimeOffset StartedAtUtc = DateTimeOffset.Parse("2026-07-15T00:00:00Z");
+
+    internal static TeachNodalCaptureReview CreateCaptureReview()
     {
+        var session = new TeachNodalCaptureSessionV1(new TeachNodalCaptureScope(
+            CaptureId: "teach-local-dev-document",
+            TitleRedacted: "Prepare and save one fixture document",
+            WorkspaceScope: "workspace.fixture",
+            AppProfileId: "fixture-editor",
+            AppProfileVersion: 1,
+            ApplicationRef: "app-fixture-editor",
+            Surface: TeachNodalSurface.BrowserFixture,
+            AuthorizedCapabilities: new HashSet<string>(StringComparer.Ordinal) { "browser.action.execute" },
+            RiskProfile: ReliableRecipeRiskProfile.ReadOnly,
+            MaximumSteps: 8));
+        session.Arm(new TeachNodalCaptureConsent(
+            ExplicitOptIn: true,
+            GrantedAtUtc: StartedAtUtc,
+            ExpiresAtUtc: StartedAtUtc.AddMinutes(30),
+            AllowedSources: new HashSet<TeachNodalCaptureSource>
+            {
+                TeachNodalCaptureSource.ApplicationScopedKeyboard,
+                TeachNodalCaptureSource.ApplicationScopedPointer
+            },
+            ConsentEvidenceRef: "evidence:teach-local-dev-consent"), StartedAtUtc);
+        session.Start(StartedAtUtc);
+
         var type = Action(
             "type-title",
             TeachNodalActionKind.Type,
@@ -28,24 +53,31 @@ internal static class TeachNodalLocalDevFixture
         {
             TargetLabelSource = TrustedControlSource.VisualObservation
         };
-        return new TeachNodalDemonstration(
-            "teach-local-dev-document",
-            "Prepare and save one fixture document",
-            "workspace.fixture",
-            "fixture-editor",
-            1,
-            TeachNodalSurface.BrowserFixture,
-            [
-                Step("type-title", "empty", "typed", type, "typed"),
-                Step("save-document", "typed", "saved", save, "saved")
-            ],
-            new HashSet<string>(StringComparer.Ordinal) { "browser.action.execute" },
-            ReliableRecipeRiskProfile.ReadOnly,
-            DateTimeOffset.Parse("2026-07-15T00:00:00Z"),
-            ["evidence:teach-local-dev-demonstration"]);
+        session.Observe(Observation(
+            sequence: 1,
+            capturedAtUtc: StartedAtUtc.AddSeconds(1),
+            source: TeachNodalCaptureSource.ApplicationScopedKeyboard,
+            id: "type-title",
+            beforeValue: "empty",
+            afterValue: "typed",
+            action: type,
+            expected: "typed"));
+        session.Observe(Observation(
+            sequence: 2,
+            capturedAtUtc: StartedAtUtc.AddSeconds(2),
+            source: TeachNodalCaptureSource.ApplicationScopedPointer,
+            id: "save-document",
+            beforeValue: "typed",
+            afterValue: "saved",
+            action: save,
+            expected: "saved"));
+        return session.Complete(StartedAtUtc.AddSeconds(3));
     }
 
-    private static TeachNodalDemonstrationStep Step(
+    private static TeachNodalCaptureObservation Observation(
+        long sequence,
+        DateTimeOffset capturedAtUtc,
+        TeachNodalCaptureSource source,
         string id,
         string beforeValue,
         string afterValue,
@@ -72,24 +104,22 @@ internal static class TeachNodalLocalDevFixture
             RequireActionExecuted: true,
             AllowProcessChange: false,
             FailOnBlockingConflicts: true);
-        var report = new SemanticVerifierV2().Verify(
-            plan,
-            new SemanticVerificationContext(
-                before,
-                after,
-                ActionExecuted: true,
-                ActionRejected: false,
-                UserInterrupted: false,
-                Elapsed: TimeSpan.FromMilliseconds(30),
-                EvidenceRefs: ["evidence:verified:" + id]));
-        return new TeachNodalDemonstrationStep(
-            id,
-            before,
-            action,
-            after,
-            plan,
-            report,
-            ["evidence:verified:" + id]);
+        return new TeachNodalCaptureObservation(
+            Sequence: sequence,
+            CapturedAtUtc: capturedAtUtc,
+            Source: source,
+            IntentSource: TrustedControlSource.UserInstruction,
+            StepId: id,
+            Action: action,
+            Before: before,
+            After: after,
+            VerificationPlan: plan,
+            ActionExecuted: true,
+            ActionRejected: false,
+            UserInterrupted: false,
+            VerificationElapsed: TimeSpan.FromMilliseconds(30),
+            EvidenceRefs: ["evidence:verified:" + id],
+            TargetApplicationForeground: true);
     }
 
     private static TeachNodalObservedAction Action(
@@ -125,7 +155,7 @@ internal static class TeachNodalLocalDevFixture
         };
         return CognitiveSnapshotV2Factory.Create(new CognitiveSnapshotV2Input(
             "teach-local-dev-snapshot-" + state + "-" + target,
-            DateTimeOffset.Parse("2026-07-15T00:00:00Z"),
+            StartedAtUtc,
             new CognitiveApplicationIdentity("app-fixture-editor", "fixture-editor", 101, "Fixture Editor"),
             new WindowBounds(0, 0, 1280, 720),
             IsForeground: true,
@@ -154,7 +184,7 @@ internal static class TeachNodalLocalDevFixture
                 value.Value,
                 Provenance.Fixture,
                 1d,
-                DateTimeOffset.Parse("2026-07-15T00:00:00Z"),
+                StartedAtUtc,
                 "evidence:claim:" + id)).ToArray());
 
     private static SemanticVerificationRule Rule(
