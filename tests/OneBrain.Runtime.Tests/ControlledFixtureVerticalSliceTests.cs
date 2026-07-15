@@ -20,9 +20,9 @@ public sealed class ControlledFixtureVerticalSliceTests
         Assert.AreEqual(MissionStatus.Completed, result.Runtime.Mission.Status);
         Assert.AreEqual(NodalOsExecutionRegistryState.Completed, result.RegistryEntry.State);
         Assert.AreEqual(NodalOsApprovalDecisionKind.Approve, result.MissionAuthorizationDecision.DecisionKind);
-        Assert.AreEqual(true, result.ControlledAction.Success);
+        Assert.IsTrue(result.ControlledAction.Success);
         Assert.AreEqual(StepState.Succeeded, result.ControlledAction.FinalState);
-        Assert.IsTrue(result.ControlledAction.VerificationResult?.Success == true);
+        Assert.AreEqual(true, result.ControlledAction.VerificationResult?.Success);
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ApprovalRequired));
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ApprovalGranted));
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ExecutionCompleted));
