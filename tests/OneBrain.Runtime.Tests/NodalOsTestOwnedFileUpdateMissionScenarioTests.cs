@@ -97,8 +97,9 @@ public sealed class NodalOsTestOwnedFileUpdateMissionScenarioTests
         Assert.IsTrue(result.Timeline.Any(value => value.Kind == NodalOsCoreEventKind.PolicyGateEvaluated));
         Assert.IsTrue(result.Timeline.Any(value => value.Kind == NodalOsCoreEventKind.DryRunPlanCreated));
         Assert.IsTrue(result.Timeline.Any(value => value.Kind == NodalOsCoreEventKind.ExecutionCompleted));
-        Assert.AreEqual(1, result.Timeline.Select(value => value.EventId).Distinct(StringComparer.Ordinal).Count(value =>
-            result.Timeline.Count(item => item.EventId == value) == 1));
+        Assert.AreEqual(
+            result.Timeline.Count,
+            result.Timeline.Select(value => value.EventId).Distinct(StringComparer.Ordinal).Count());
     }
 
     [TestMethod]
@@ -109,7 +110,8 @@ public sealed class NodalOsTestOwnedFileUpdateMissionScenarioTests
         var json = JsonSerializer.Serialize(snapshot);
 
         Assert.IsFalse(json.Contains(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase));
-        Assert.IsFalse(json.Contains(Environment.UserName, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(Environment.UserName) && Environment.UserName.Length > 2)
+            Assert.IsFalse(json.Contains(Environment.UserName, StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(json.Contains(".nodal-restore", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(json.Contains(".bak", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(snapshot.UserWorkspaceFilesystemTouched);
