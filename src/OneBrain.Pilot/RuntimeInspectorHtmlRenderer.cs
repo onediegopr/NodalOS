@@ -17,7 +17,7 @@ public static class RuntimeInspectorHtmlRenderer
             ? "<p class=\"muted\">No fallback was required.</p>"
             : string.Join(Environment.NewLine, inspector.RecentFallbacks.Select(item => $"<p class=\"notice\">↺ {Html(item)}</p>"));
 
-        return $$"""
+        return $$$"""
             <!doctype html>
             <html lang="en">
             <head>
@@ -33,29 +33,29 @@ public static class RuntimeInspectorHtmlRenderer
             <body>
               <div class="shell" data-nodal-os="runtime-inspector" data-local-dev-only="true" data-read-only="true">
                 <header class="top">
-                  <div><h1>{{Html(inspector.Goal)}}</h1><div class="muted">{{Html(inspector.MissionId)}} · {{Html(inspector.RunId)}}</div></div>
-                  <span class="badge">{{Html(inspector.MissionStatus)}} · {{Math.Round(inspector.Progress * 100)}}%</span>
+                  <div><h1>{{{Html(inspector.Goal)}}}</h1><div class="muted">{{{Html(inspector.MissionId)}}} · {{{Html(inspector.RunId)}}}</div></div>
+                  <span class="badge">{{{Html(inspector.MissionStatus)}}} · {{{Math.Round(inspector.Progress * 100)}}}%</span>
                 </header>
                 <aside class="side" data-section-id="mission">
                   <h2>Mission</h2>
-                  <div class="metric"><span>Current step</span><strong>{{Html(inspector.CurrentStep ?? "none")}}</strong></div>
-                  <div class="metric"><span>Logical model</span><strong>{{Html(inspector.LogicalModel ?? "none")}}</strong></div>
-                  <div class="metric"><span>Provider</span><strong>{{Html(inspector.ActiveProvider ?? "none")}}</strong></div>
-                  <div class="progress"><span style="width:{{Math.Clamp(inspector.Progress * 100, 0, 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}}%"></span></div>
-                  <h3>Plan</h3><ul>{{string.Join(Environment.NewLine, inspector.PlanSteps.Select(item => $"<li>{Html(item)}</li>"))}}</ul>
+                  <div class="metric"><span>Current step</span><strong>{{{Html(inspector.CurrentStep ?? "none")}}}</strong></div>
+                  <div class="metric"><span>Logical model</span><strong>{{{Html(inspector.LogicalModel ?? "none")}}}</strong></div>
+                  <div class="metric"><span>Provider</span><strong>{{{Html(inspector.ActiveProvider ?? "none")}}}</strong></div>
+                  <div class="progress"><span style="width:{{{Math.Clamp(inspector.Progress * 100, 0, 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}}}%"></span></div>
+                  <h3>Plan</h3><ul>{{{string.Join(Environment.NewLine, inspector.PlanSteps.Select(item => $"<li>{Html(item)}</li>"))}}}</ul>
                 </aside>
                 <main class="main" data-section-id="timeline">
-                  <section class="card"><h2>Timeline</h2><ol class="timeline">{{timeline}}</ol></section>
-                  <section class="card" data-section-id="fallback"><h2>Continuity</h2>{{fallbacks}}</section>
-                  <section class="card"><h2>Evidence</h2><ul>{{string.Join(Environment.NewLine, inspector.EvidenceRefs.Select(item => $"<li>{Html(item)}</li>"))}}</ul></section>
+                  <section class="card"><h2>Timeline</h2><ol class="timeline">{{{timeline}}}</ol></section>
+                  <section class="card" data-section-id="fallback"><h2>Continuity</h2>{{{fallbacks}}}</section>
+                  <section class="card"><h2>Evidence</h2><ul>{{{string.Join(Environment.NewLine, inspector.EvidenceRefs.Select(item => $"<li>{Html(item)}</li>"))}}}</ul></section>
                 </main>
                 <aside class="right" data-section-id="runtime">
                   <h2>Runtime</h2>
-                  <div class="metric"><span>Browser</span><strong>{{Html(inspector.Browser.Runtime)}}</strong></div>
-                  <div class="metric"><span>Browser state</span><strong>{{Html(inspector.Browser.State)}}</strong></div>
+                  <div class="metric"><span>Browser</span><strong>{{{Html(inspector.Browser.Runtime)}}}</strong></div>
+                  <div class="metric"><span>Browser state</span><strong>{{{Html(inspector.Browser.State)}}}</strong></div>
                   <div class="metric"><span>Secrets</span><strong>excluded</strong></div>
-                  <h3>Capabilities</h3><ul>{{capabilities}}</ul>
-                  <h3>Providers</h3><ul>{{providers}}</ul>
+                  <h3>Capabilities</h3><ul>{{{capabilities}}}</ul>
+                  <h3>Providers</h3><ul>{{{providers}}}</ul>
                 </aside>
                 <footer class="bottom">Local/dev read-only inspector. No scripts, forms, external resources, network provider calls or product authority.</footer>
               </div>
