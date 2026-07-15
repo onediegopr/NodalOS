@@ -293,7 +293,14 @@ public sealed class TrustedControlFlowBoundaryTests
         var second = TrustedControlFlowBoundary.Evaluate(Context(), request);
         var json = JsonSerializer.Serialize(first);
 
-        Assert.AreEqual(first, second);
+        Assert.AreEqual(first.Decision, second.Decision);
+        Assert.AreEqual(first.Code, second.Code);
+        Assert.AreEqual(first.Reason, second.Reason);
+        Assert.AreEqual(first.PossiblePromptInjection, second.PossiblePromptInjection);
+        Assert.AreEqual(first.CanModifyMissionGoal, second.CanModifyMissionGoal);
+        Assert.AreEqual(first.CanExpandScope, second.CanExpandScope);
+        Assert.AreEqual(first.CanPublishExternally, second.CanPublishExternally);
+        CollectionAssert.AreEqual(first.EvidenceRefs.ToArray(), second.EvidenceRefs.ToArray());
         Assert.IsFalse(json.Contains(secret, StringComparison.Ordinal));
         Assert.IsFalse(first.CanModifyMissionGoal);
         Assert.IsFalse(first.CanExpandScope);
