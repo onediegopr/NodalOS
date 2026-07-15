@@ -14,7 +14,7 @@ public sealed class BrowserBridgeReliabilityTests
 
         Assert.AreEqual(TimeSpan.FromMilliseconds(250), policy.DelayForAttempt(1));
         Assert.AreEqual(TimeSpan.FromSeconds(4), policy.DelayForAttempt(5));
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => policy.DelayForAttempt(6));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => policy.DelayForAttempt(6));
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public sealed class BrowserBridgeReliabilityTests
     public async Task PayloadLimitFailsClosedWithoutArbitraryCommandExecution()
     {
         var registry = new PendingBrowserCommandRegistry(["dom.read"]);
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             registry.Begin("bad", "corr", "arbitrary.eval", TimeSpan.FromSeconds(1)));
         registry.Begin("req", "corr", "dom.read", TimeSpan.FromSeconds(1), maximumResponseBytes: 4);
         Assert.IsTrue(registry.TryComplete(new BrowserCommandResponse("req", "corr", true, "12345", null)));
@@ -93,7 +93,7 @@ public sealed class BrowserBridgeReliabilityTests
         {
             new BrowserFrameDescriptor("root", null, new Uri("https://example.invalid"), 0, 0, false, true)
         };
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             BrowserFrameLocator.ResolveGlobalTarget(detached, new BrowserFrameElementCandidate("root", "#x", 0, 0, 1, 1)));
 
         var cycle = new[]
@@ -101,7 +101,7 @@ public sealed class BrowserBridgeReliabilityTests
             new BrowserFrameDescriptor("a", "b", new Uri("https://a.invalid"), 0, 0, true, true),
             new BrowserFrameDescriptor("b", "a", new Uri("https://b.invalid"), 0, 0, true, true)
         };
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             BrowserFrameLocator.ResolveGlobalTarget(cycle, new BrowserFrameElementCandidate("a", "#x", 0, 0, 1, 1)));
     }
 
