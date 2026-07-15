@@ -30,6 +30,15 @@ public sealed record TeachNodalLocalDevOperatorSnapshot(
     bool ReadOnly,
     bool FixtureOnly,
     bool SecretsExcluded,
+    string CaptureState,
+    bool CaptureOptInRecorded,
+    bool CaptureApplicationScopeBound,
+    bool CaptureCanCompileVerifiedSkill,
+    int CaptureObservationCount,
+    int PerStepApprovalsRequested,
+    bool CaptureRawInputStored,
+    bool CaptureGlobalHooksUsed,
+    bool CaptureExecutionAuthorityGranted,
     string DemonstrationId,
     string Title,
     string CompilationDecision,
@@ -67,7 +76,7 @@ public static class TeachNodalLocalDevSurface
     public const string JsonRoute = "/api/runtime/teach-nodal";
     public const string HtmlRoute = "/runtime/teach-nodal";
     public const string DisabledActionId = "TEACH_NODAL_LIVE_CAPTURE_AUTHORITY";
-    public const string RequiredOperatorSignal = "AUTHORIZE_NODAL_OS_TEACH_NODAL_OPT_IN_LOCAL_CAPTURE_PREP";
+    public const string RequiredOperatorSignal = "AUTHORIZE_NODAL_OS_TEACH_NODAL_APPLICATION_SCOPED_WINDOWS_OBSERVATION_ADAPTER_PREP";
 
     public static IEndpointRouteBuilder MapTeachNodalLocalDevSurface(
         this IEndpointRouteBuilder endpoints,
@@ -95,7 +104,8 @@ public static class TeachNodalLocalDevSurface
 
     public static TeachNodalLocalDevOperatorSnapshot BuildSnapshot()
     {
-        var demonstration = TeachNodalLocalDevFixture.CreateDemonstration();
+        var capture = TeachNodalLocalDevFixture.CreateCaptureReview();
+        var demonstration = capture.Demonstration;
         var compilation = new TeachNodalCompilerV1().Compile(demonstration);
         var skill = compilation.Skill;
         var recipe = compilation.RecipeDraft;
@@ -129,7 +139,12 @@ public static class TeachNodalLocalDevSurface
         var compilationVerified = compilation.Decision is
             TeachNodalCompilationDecision.CompiledVerifiedSkill or
             TeachNodalCompilationDecision.CompiledVerifiedSkillRecipeNeedsReview;
-        var accepted = compilationVerified && compilation.FixtureOnly && secretsExcluded &&
+        var captureReady = capture.State == TeachNodalCaptureSessionState.ReviewReady &&
+                           capture.ExplicitOptInRecorded && capture.ApplicationScopeBound &&
+                           capture.CanCompileVerifiedSkill && capture.ObservationCount == demonstration.Steps.Count &&
+                           capture.PerStepApprovalsRequested == 0 && !capture.RawInputStored &&
+                           !capture.GlobalHooksUsed && !capture.ExecutionAuthorityGranted;
+        var accepted = captureReady && compilationVerified && compilation.FixtureOnly && secretsExcluded &&
                        skill is not null && skill.State == ExecutableSkillState.Verified &&
                        skill.Transitions.Count == demonstration.Steps.Count &&
                        recipe is not null && !recipe.LiveRuntimeEnabled &&
@@ -140,16 +155,33 @@ public static class TeachNodalLocalDevSurface
                        !compilation.LiveRecorderUsed && !compilation.MouseOrKeyboardHooksUsed &&
                        !compilation.RawScreenshotStored && !compilation.RawDomStored &&
                        !compilation.NetworkUsed && !compilation.ProductAuthorityGranted;
+        var findings = capture.Findings.Concat(compilation.Findings)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToArray();
+        var evidenceRefs = capture.EvidenceRefs.Concat(compilation.EvidenceRefs)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(value => value, StringComparer.Ordinal)
+            .ToArray();
 
         return new TeachNodalLocalDevOperatorSnapshot(
             Decision: accepted
-                ? "GO_TEACH_NODAL_LOCAL_DEV_SURFACE_READY"
-                : "BLOCKED_TEACH_NODAL_LOCAL_DEV_COMPILATION_NOT_VERIFIED",
+                ? "GO_TEACH_NODAL_CAPTURE_PREP_LOCAL_DEV_SURFACE_READY"
+                : "BLOCKED_TEACH_NODAL_CAPTURE_PREP_NOT_VERIFIED",
             Accepted: accepted,
             LocalDevOnly: true,
             ReadOnly: true,
             FixtureOnly: compilation.FixtureOnly,
             SecretsExcluded: secretsExcluded,
+            CaptureState: capture.State.ToString(),
+            CaptureOptInRecorded: capture.ExplicitOptInRecorded,
+            CaptureApplicationScopeBound: capture.ApplicationScopeBound,
+            CaptureCanCompileVerifiedSkill: capture.CanCompileVerifiedSkill,
+            CaptureObservationCount: capture.ObservationCount,
+            PerStepApprovalsRequested: capture.PerStepApprovalsRequested,
+            CaptureRawInputStored: capture.RawInputStored,
+            CaptureGlobalHooksUsed: capture.GlobalHooksUsed,
+            CaptureExecutionAuthorityGranted: capture.ExecutionAuthorityGranted,
             DemonstrationId: demonstration.DemonstrationId,
             Title: demonstration.TitleRedacted,
             CompilationDecision: compilation.Decision.ToString(),
@@ -168,12 +200,12 @@ public static class TeachNodalLocalDevSurface
             PromptInjectionModifiedGoal: injectionDecisions.Any(value => value.CanModifyMissionGoal),
             PromptInjectionExpandedScope: injectionDecisions.Any(value => value.CanExpandScope),
             PromptInjectionPublishedExternally: injectionDecisions.Any(value => value.CanPublishExternally),
-            Findings: compilation.Findings,
-            EvidenceRefs: compilation.EvidenceRefs,
+            Findings: findings,
+            EvidenceRefs: evidenceRefs,
             DisabledActionId: DisabledActionId,
-            DisabledActionState: "DISABLED_LOCAL_DEV_FIXTURE_ONLY",
+            DisabledActionState: "DISABLED_CAPTURE_ADAPTER_NOT_CONNECTED",
             RequiredOperatorSignal: RequiredOperatorSignal,
-            NextSafeStep: "Review the verified draft and transitions. Live capture remains closed.",
+            NextSafeStep: "Connect an explicit application-scoped observation adapter. Global hooks and raw input remain closed.",
             LiveRecorderUsed: compilation.LiveRecorderUsed,
             MouseOrKeyboardHooksUsed: compilation.MouseOrKeyboardHooksUsed,
             RawScreenshotStored: compilation.RawScreenshotStored,
