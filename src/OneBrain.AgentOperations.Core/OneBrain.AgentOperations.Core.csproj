@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OneBrain.AgentOperations.Contracts\OneBrain.AgentOperations.Contracts.csproj" />
+    <ProjectReference Include="..\OneBrain.Core\OneBrain.Core.csproj" />
   </ItemGroup>
 
 </Project>
