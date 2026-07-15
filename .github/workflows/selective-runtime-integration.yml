@@ -55,7 +55,7 @@ jobs:
           $log = Join-Path $env:RUNNER_TEMP "selective-runtime-integration-test.log"
           dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
+          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests|FullyQualifiedName~TestOwnedFileCreateRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
           exit $LASTEXITCODE
 
       - name: Smoke Pilot Runtime Inspector
@@ -95,6 +95,34 @@ jobs:
             if ($response.Headers["Cache-Control"] -notmatch "no-store") { throw "Runtime Inspector must be no-store." }
             if ($response.Content -notmatch 'data-nodal-os="runtime-inspector"') { throw "Runtime Inspector anchor missing." }
             if ($response.Content -match '<script|<form|https?://') { throw "Runtime Inspector opened an executable or external surface." }
+
+            $fileSnapshot = Invoke-RestMethod -Uri "http://127.0.0.1:5097/api/runtime/file-create-fixture" -TimeoutSec 10
+            if (-not $fileSnapshot.localDevOnly -or -not $fileSnapshot.readOnlySurface -or -not $fileSnapshot.secretsExcluded) {
+              throw "Create-only fixture boundary flags are invalid."
+            }
+            if ($fileSnapshot.missionStatus -ne "Completed" -or $fileSnapshot.registryState -ne "Completed") {
+              throw "Create-only fixture mission did not complete."
+            }
+            if ($fileSnapshot.approvalStatus -ne "Approve" -or $fileSnapshot.fileCreateState -ne "CreatedAndVerified") {
+              throw "Create-only fixture approval or action state is invalid."
+            }
+            if (-not $fileSnapshot.fileCreateVerified -or -not $fileSnapshot.testOwnedFixtureCleaned) {
+              throw "Create-only fixture verification or cleanup failed."
+            }
+            if ($fileSnapshot.userWorkspaceFilesystemTouched -or $fileSnapshot.networkUsed -or $fileSnapshot.productAuthorityGranted) {
+              throw "Create-only fixture crossed a forbidden boundary."
+            }
+            $fileResponse = Invoke-WebRequest -Uri "http://127.0.0.1:5097/runtime/file-create-fixture" -TimeoutSec 10
+            if ($fileResponse.StatusCode -ne 200) { throw "Create-only fixture HTML did not return 200." }
+            if ($fileResponse.Headers["Cache-Control"] -notmatch "no-store") { throw "Create-only fixture surface must be no-store." }
+            if ($fileResponse.Content -notmatch 'data-nodal-os="test-owned-file-create"') { throw "Create-only fixture anchor missing." }
+            if ($fileResponse.Content -match '<script|<form|https?://') { throw "Create-only fixture opened an executable or external surface." }
+
+            $fixtureRoot = Join-Path ([System.IO.Path]::GetTempPath()) "nodal-os-mvp-fixtures"
+            if (Test-Path $fixtureRoot) {
+              $leftovers = @(Get-ChildItem $fixtureRoot -Directory -Filter "run-*" -ErrorAction Stop)
+              if ($leftovers.Count -ne 0) { throw "Create-only fixture left test-owned run directories behind." }
+            }
           }
           finally {
             if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
