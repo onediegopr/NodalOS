@@ -19,7 +19,12 @@ public sealed record NodalOsSelectiveRuntimeFixtureResult(
 
 public sealed class NodalOsSelectiveRuntimeFixtureScenario
 {
-    public async ValueTask<NodalOsSelectiveRuntimeFixtureResult> RunAsync(
+    public ValueTask<NodalOsSelectiveRuntimeFixtureResult> RunAsync(
+        CancellationToken cancellationToken = default) =>
+        RunAsync(beforeVerification: null, cancellationToken);
+
+    internal async ValueTask<NodalOsSelectiveRuntimeFixtureResult> RunAsync(
+        Func<LightweightMissionRuntime, string, CancellationToken, ValueTask<IReadOnlyList<string>>>? beforeVerification,
         CancellationToken cancellationToken = default)
     {
         var taskGraph = CreateTaskGraph();
@@ -99,15 +104,28 @@ public sealed class NodalOsSelectiveRuntimeFixtureScenario
             "model.chat",
             "fixture-model-complete",
             ["evidence:fixture-model-response"]);
+
+        var verificationEvidence = new List<string>
+        {
+            "evidence:fixture-snapshot",
+            "evidence:fixture-model-response"
+        };
+        if (beforeVerification is not null)
+        {
+            var additionalEvidence = await beforeVerification(runtime, stepId, cancellationToken)
+                .ConfigureAwait(false);
+            verificationEvidence.AddRange(additionalEvidence.Where(value => !string.IsNullOrWhiteSpace(value)));
+        }
+
         runtime.MarkReadyForVerification(
             stepId,
             "fixture-ready",
-            ["evidence:fixture-snapshot", "evidence:fixture-model-response"]);
+            verificationEvidence.Distinct(StringComparer.Ordinal));
         runtime.VerifyStep(
             stepId,
             passed: true,
             "fixture-verified",
-            ["evidence:fixture-verification"]);
+            [.. verificationEvidence, "evidence:fixture-verification"]);
 
         var eventBus = new NodalOsCoreEventBus();
         var timeline = new NodalOsMissionEventProjectionService().Project(runtime.Events, eventBus);

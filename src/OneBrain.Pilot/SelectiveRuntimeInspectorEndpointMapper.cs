@@ -22,10 +22,10 @@ public static class SelectiveRuntimeInspectorEndpointMapper
                 return Results.NotFound(new { decision = "RUNTIME_INSPECTOR_LOCAL_DEV_ONLY" });
 
             ApplyReadOnlyHeaders(context.Response);
-            var result = await new NodalOsSelectiveRuntimeFixtureScenario()
+            var result = await new NodalOsControlledFixtureVerticalSliceScenario()
                 .RunAsync(context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(result.Inspector);
+            return Results.Json(result.ToInspectorSnapshot());
         });
 
         endpoints.MapGet(HtmlRoute, async (HttpContext context) =>
@@ -34,7 +34,7 @@ public static class SelectiveRuntimeInspectorEndpointMapper
                 return Results.NotFound();
 
             ApplyReadOnlyHeaders(context.Response);
-            var result = await new NodalOsSelectiveRuntimeFixtureScenario()
+            var result = await new NodalOsControlledFixtureVerticalSliceScenario()
                 .RunAsync(context.RequestAborted)
                 .ConfigureAwait(false);
             return Results.Content(

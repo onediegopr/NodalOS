@@ -17,7 +17,7 @@ namespace OneBrain.Recipes.Tests;
 public sealed class SelectiveRuntimeInspectorRouteTests
 {
     [TestMethod]
-    public async Task DevelopmentLoopbackRoutesReturnReadOnlyInspectorWithoutExecutableSurface()
+    public async Task DevelopmentLoopbackRoutesReturnControlledVerifiedSliceWithoutExecutableSurface()
     {
         await using var app = BuildApp(Environments.Development);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
@@ -40,16 +40,41 @@ public sealed class SelectiveRuntimeInspectorRouteTests
         StringAssert.Contains(htmlResponse.Content.Headers.ContentType?.CharSet ?? string.Empty, "utf-8");
 
         using var document = JsonDocument.Parse(json);
-        Assert.IsTrue(document.RootElement.GetProperty("localDevOnly").GetBoolean());
-        Assert.IsTrue(document.RootElement.GetProperty("readOnly").GetBoolean());
-        Assert.IsTrue(document.RootElement.GetProperty("secretsExcluded").GetBoolean());
-        Assert.AreEqual("Completed", document.RootElement.GetProperty("missionStatus").GetString());
+        var root = document.RootElement;
+        Assert.IsTrue(root.GetProperty("localDevOnly").GetBoolean());
+        Assert.IsTrue(root.GetProperty("readOnly").GetBoolean());
+        Assert.IsTrue(root.GetProperty("secretsExcluded").GetBoolean());
+        Assert.AreEqual("Completed", root.GetProperty("missionStatus").GetString());
+        Assert.AreEqual("Completed", root.GetProperty("registryState").GetString());
+        Assert.AreEqual("Approve", root.GetProperty("approvalStatus").GetString());
+        Assert.AreEqual("Succeeded", root.GetProperty("controlledActionState").GetString());
+        Assert.IsTrue(root.GetProperty("controlledActionVerified").GetBoolean());
+        Assert.IsTrue(root.GetProperty("missionAuthorizationReused").GetBoolean());
+        Assert.IsFalse(root.GetProperty("additionalStepApprovalRequested").GetBoolean());
+        Assert.IsFalse(root.GetProperty("realFilesystemTouched").GetBoolean());
+        Assert.IsFalse(root.GetProperty("networkUsed").GetBoolean());
+        Assert.IsFalse(root.GetProperty("productAuthorityGranted").GetBoolean());
+        Assert.IsTrue(root.GetProperty("timelineCount").GetInt32() >= 4);
+        Assert.IsTrue(root.GetProperty("evidenceCount").GetInt32() >= 1);
+        StringAssert.Contains(root.GetProperty("handoffPackId").GetString() ?? string.Empty, "verified-handoff-");
+        Assert.AreEqual(
+            "BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY",
+            root.GetProperty("runtime").GetProperty("browser").GetProperty("state").GetString());
 
         StringAssert.Contains(html, "data-nodal-os=\"runtime-inspector\"");
         StringAssert.Contains(html, "data-local-dev-only=\"true\"");
         StringAssert.Contains(html, "data-read-only=\"true\"");
+        StringAssert.Contains(html, "data-product-authority=\"false\"");
+        StringAssert.Contains(html, "data-section-id=\"approval\"");
+        StringAssert.Contains(html, "data-section-id=\"controlled-action\"");
+        StringAssert.Contains(html, "data-section-id=\"handoff\"");
         StringAssert.Contains(html, "data-section-id=\"timeline\"");
+        StringAssert.Contains(html, "Mission-level approval required");
+        StringAssert.Contains(html, "Mission-level approval granted");
         StringAssert.Contains(html, "Primary fixture model was rate-limited");
+        StringAssert.Contains(html, "No per-step prompt");
+        StringAssert.Contains(html, "SafeExecutionFsm");
+        StringAssert.Contains(html, "verified report");
         Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(html.Contains("onclick=", StringComparison.OrdinalIgnoreCase));
