@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OneBrain.AgentOperations.Core.Workspace;
 using OneBrain.Pilot;
 
 namespace OneBrain.Recipes.Tests;
@@ -17,7 +18,7 @@ namespace OneBrain.Recipes.Tests;
 public sealed class BoundedWorkspaceUnderstandingRouteTests
 {
     [TestMethod]
-    public async Task DevelopmentLoopbackSurfaceReturnsVerifiedWorkspacePlanWithoutPathOrSecretLeak()
+    public async Task DevelopmentLoopbackSurfaceReturnsVerifiedWorkspacePlanAndNonExecutorAdvisorWithoutLeaks()
     {
         var root = CreateRoot();
         var fakeSecret = "s" + "k-local-fixture-secret-value-123456789";
@@ -58,6 +59,17 @@ public sealed class BoundedWorkspaceUnderstandingRouteTests
             Assert.IsTrue(payload.GetProperty("rootConfigured").GetBoolean());
             Assert.AreEqual("Completed", payload.GetProperty("missionStatus").GetString());
             Assert.AreEqual("GO_BOUNDED_WORKSPACE_CONTEXT_READY_FOR_REVIEWED_PLAN", payload.GetProperty("planDecision").GetString());
+            Assert.AreEqual("GO_EXPERT_ADVISOR_SUGGESTIONS_READY", payload.GetProperty("advisorDecision").GetString());
+            Assert.AreEqual("Balanced", payload.GetProperty("advisorProfile").GetString());
+            Assert.AreEqual(50, payload.GetProperty("advisorInterventionLevel").GetInt32());
+            Assert.IsTrue(payload.GetProperty("advisorNonExecutor").GetBoolean());
+            var suggestions = payload.GetProperty("advisorSuggestions");
+            Assert.IsTrue(suggestions.GetArrayLength() > 0);
+            foreach (var suggestion in suggestions.EnumerateArray())
+            {
+                Assert.IsTrue(suggestion.GetProperty("nonExecutable").GetBoolean());
+                Assert.IsFalse(suggestion.GetProperty("canAuthorizeExecution").GetBoolean());
+            }
             Assert.IsFalse(payload.GetProperty("filesystemMutationAllowed").GetBoolean());
             Assert.IsFalse(payload.GetProperty("networkUsed").GetBoolean());
             Assert.IsFalse(payload.GetProperty("productAuthorityGranted").GetBoolean());
@@ -67,11 +79,15 @@ public sealed class BoundedWorkspaceUnderstandingRouteTests
             StringAssert.Contains(html, "data-nodal-os=\"bounded-workspace-understanding\"");
             StringAssert.Contains(html, "data-section-id=\"workspace\"");
             StringAssert.Contains(html, "data-section-id=\"plan\"");
+            StringAssert.Contains(html, "data-section-id=\"advisor\"");
             StringAssert.Contains(html, "data-section-id=\"evidence\"");
             StringAssert.Contains(html, "data-section-id=\"export\"");
             StringAssert.Contains(html, "data-action-id=\"download-verified-handoff\"");
             StringAssert.Contains(html, BoundedWorkspaceHandoffExportEndpointMapper.MarkdownRoute);
             StringAssert.Contains(html, "GO_BOUNDED_WORKSPACE_OPERATOR_SURFACE_READY");
+            StringAssert.Contains(html, "Expert Advisor");
+            StringAssert.Contains(html, "non-executor");
+            StringAssert.Contains(html, "Secret-like values were redacted");
             Assert.IsFalse(json.Contains(root, StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(html.Contains(root, StringComparison.OrdinalIgnoreCase));
             Assert.IsFalse(json.Contains(fakeSecret, StringComparison.OrdinalIgnoreCase));
@@ -89,7 +105,7 @@ public sealed class BoundedWorkspaceUnderstandingRouteTests
     }
 
     [TestMethod]
-    public async Task MissingConfiguredRootReturnsConflictWithoutStartingScan()
+    public async Task MissingConfiguredRootReturnsConflictWithoutStartingScanOrAdvisor()
     {
         await using var app = BuildApp(Environments.Development, () => null);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
@@ -105,8 +121,27 @@ public sealed class BoundedWorkspaceUnderstandingRouteTests
         Assert.IsFalse(document.RootElement.GetProperty("accepted").GetBoolean());
         Assert.IsFalse(document.RootElement.GetProperty("rootConfigured").GetBoolean());
         Assert.AreEqual("BLOCKED_BOUNDED_WORKSPACE_ROOT_NOT_CONFIGURED", document.RootElement.GetProperty("decision").GetString());
+        Assert.AreEqual("BLOCKED_EXPERT_ADVISOR_INPUT_FAIL_CLOSED", document.RootElement.GetProperty("advisorDecision").GetString());
+        Assert.IsTrue(document.RootElement.GetProperty("advisorNonExecutor").GetBoolean());
+        Assert.AreEqual(0, document.RootElement.GetProperty("advisorSuggestions").GetArrayLength());
         Assert.AreEqual(0, document.RootElement.GetProperty("filesRead").GetInt32());
         Assert.IsFalse(document.RootElement.GetProperty("realFilesystemRead").GetBoolean());
+    }
+
+    [TestMethod]
+    public void AdvisorSettingsAreOperatorConfigurableAndClampedWithoutQueryParameters()
+    {
+        var critical = BoundedWorkspaceUnderstandingEndpointMapper.ResolveAdvisorSettings(
+            "critical-senior",
+            "140");
+        var defaults = BoundedWorkspaceUnderstandingEndpointMapper.ResolveAdvisorSettings(
+            "unknown-profile",
+            "invalid");
+
+        Assert.AreEqual(BoundedWorkspaceAdvisorProfile.CriticalSenior, critical.Profile);
+        Assert.AreEqual(100, critical.InterventionLevel);
+        Assert.AreEqual(BoundedWorkspaceAdvisorProfile.Balanced, defaults.Profile);
+        Assert.AreEqual(50, defaults.InterventionLevel);
     }
 
     [TestMethod]
