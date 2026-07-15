@@ -5,12 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "src/OneBrain.Core/**"
-      - "src/OneBrain.AgentOperations.Core/**"
-      - "src/OneBrain.Pilot/**"
-      - "src/OneBrain.Actions/**"
-      - "src/OneBrain.Observation/**"
-      - "src/OneBrain.BrowserRuntime/**"
+      - "src/**"
       - "tests/OneBrain.Runtime.Tests/**"
       - "tests/OneBrain.Recipes.Tests/**"
       - "eng/ci/smoke-pilot-product-loops.ps1"
