@@ -72,6 +72,8 @@ jobs:
             ('var api_key = "{0}";{1}Console.WriteLine("fixture");' -f $fakeSecret, [Environment]::NewLine)
           )
           $env:NODAL_OS_WORKSPACE_ROOT = $workspaceRoot
+          $env:NODAL_OS_ADVISOR_PROFILE = "Balanced"
+          $env:NODAL_OS_ADVISOR_INTERVENTION_LEVEL = "50"
           $stdout = Join-Path $env:RUNNER_TEMP "pilot-runtime-inspector.stdout.log"
           $stderr = Join-Path $env:RUNNER_TEMP "pilot-runtime-inspector.stderr.log"
           $process = Start-Process dotnet -ArgumentList @(
@@ -139,6 +141,16 @@ jobs:
             if ($workspaceSnapshot.planDecision -ne "GO_BOUNDED_WORKSPACE_CONTEXT_READY_FOR_REVIEWED_PLAN") {
               throw "Bounded workspace reviewed plan was not produced."
             }
+            if ($workspaceSnapshot.advisorDecision -ne "GO_EXPERT_ADVISOR_SUGGESTIONS_READY" -or
+                $workspaceSnapshot.advisorProfile -ne "Balanced" -or
+                $workspaceSnapshot.advisorInterventionLevel -ne 50 -or
+                -not $workspaceSnapshot.advisorNonExecutor -or
+                $workspaceSnapshot.advisorSuggestions.Count -lt 1) {
+              throw "Bounded workspace advisor projection is invalid."
+            }
+            if ($workspaceSnapshot.advisorSuggestions.Where({ -not $_.nonExecutable -or $_.canAuthorizeExecution }).Count -ne 0) {
+              throw "Bounded workspace advisor exposed executable or authoritative suggestions."
+            }
             if ($workspaceSnapshot.filesystemMutationAllowed -or $workspaceSnapshot.networkUsed -or $workspaceSnapshot.productAuthorityGranted) {
               throw "Bounded workspace crossed a forbidden boundary."
             }
@@ -154,7 +166,14 @@ jobs:
             if ($workspaceResponse.Headers["Cache-Control"] -notmatch "no-store") { throw "Bounded workspace HTML must be no-store." }
             if ($workspaceResponse.Headers["Content-Security-Policy"] -notmatch "default-src 'none'") { throw "Bounded workspace CSP is missing." }
             if ($workspaceResponse.Content -notmatch 'data-nodal-os="bounded-workspace-understanding"') { throw "Bounded workspace anchor missing." }
-            if ($workspaceResponse.Content -notmatch 'data-section-id="plan"') { throw "Bounded workspace plan section missing." }
+            if ($workspaceResponse.Content -notmatch 'data-section-id="plan"' -or
+                $workspaceResponse.Content -notmatch 'data-section-id="advisor"') {
+              throw "Bounded workspace plan or advisor section is missing."
+            }
+            if ($workspaceResponse.Content -notmatch 'Expert Advisor' -or
+                $workspaceResponse.Content -notmatch 'non-executor') {
+              throw "Bounded workspace advisor copy is missing."
+            }
             if ($workspaceResponse.Content -match '<script|<form|onclick=|https?://') { throw "Bounded workspace opened an executable or external surface." }
             if ($workspaceResponse.Content.IndexOf($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
                 $workspaceResponse.Content.IndexOf($fakeSecret, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
@@ -168,11 +187,23 @@ jobs:
             if (-not $handoffSnapshot.accepted -or -not $handoffSnapshot.localDevOnly -or -not $handoffSnapshot.readOnly -or -not $handoffSnapshot.secretsExcluded) {
               throw "Workspace handoff boundary flags are invalid."
             }
-            if ($handoffSnapshot.missionStatus -ne "Completed" -or $handoffSnapshot.decision -ne "GO_BOUNDED_WORKSPACE_HANDOFF_EXPORT_READY") {
-              throw "Workspace handoff did not reach the verified export state."
+            if ($handoffSnapshot.missionStatus -ne "Completed" -or
+                $handoffSnapshot.decision -ne "GO_BOUNDED_WORKSPACE_ADVISOR_HANDOFF_EXPORT_READY") {
+              throw "Workspace advisor handoff did not reach the verified export state."
             }
             if (-not $handoffSnapshot.deterministic -or $handoffSnapshot.containsRawPayload -or $handoffSnapshot.containsExternalResource) {
               throw "Workspace handoff render safety flags are invalid."
+            }
+            if ($handoffSnapshot.advisorDecision -ne "GO_EXPERT_ADVISOR_SUGGESTIONS_READY" -or
+                $handoffSnapshot.advisorProfile -ne "Balanced" -or
+                $handoffSnapshot.advisorInterventionLevel -ne 50 -or
+                $handoffSnapshot.advisorSuggestionCount -lt 1 -or
+                -not $handoffSnapshot.advisorFindingsIncluded -or
+                -not $handoffSnapshot.advisorNonExecutor) {
+              throw "Workspace handoff advisor metadata is invalid."
+            }
+            if ($handoffSnapshot.advisorFindings.Where({ -not $_.nonExecutable -or $_.canAuthorizeExecution }).Count -ne 0) {
+              throw "Workspace handoff included executable or authoritative advisor findings."
             }
             if ($handoffSnapshot.isAuthoritative -or $handoffSnapshot.executable -or $handoffSnapshot.filesystemMutationAllowed -or $handoffSnapshot.networkUsed -or $handoffSnapshot.productAuthorityGranted) {
               throw "Workspace handoff crossed a forbidden boundary."
@@ -180,8 +211,9 @@ jobs:
             if ($handoffSnapshot.evidenceDigest.Length -ne 64 -or $handoffSnapshot.evidenceRefs.Count -lt 1) {
               throw "Workspace handoff evidence is incomplete."
             }
-            if ($handoffSnapshot.markdownRedacted -notmatch 'NODAL OS Bounded Workspace Handoff') {
-              throw "Workspace handoff markdown is missing its canonical heading."
+            if ($handoffSnapshot.markdownRedacted -notmatch 'NODAL OS Bounded Workspace Handoff' -or
+                $handoffSnapshot.markdownRedacted -notmatch 'Expert Advisor findings') {
+              throw "Workspace handoff markdown is missing canonical or advisor sections."
             }
             if ($handoffJsonResponse.Content.IndexOf($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
                 $handoffJsonResponse.Content.IndexOf($fakeSecret, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
@@ -197,8 +229,10 @@ jobs:
             if ($handoffResponse.Headers["Content-Type"] -notmatch 'text/markdown') { throw "Workspace handoff content type is invalid." }
             if ($handoffResponse.Content -notmatch '# NODAL OS Bounded Workspace Handoff' -or
                 $handoffResponse.Content -notmatch '## Evidence' -or
+                $handoffResponse.Content -notmatch '## Expert Advisor findings' -or
+                $handoffResponse.Content -notmatch 'Profile: Balanced \(50/100\)' -or
                 $handoffResponse.Content -notmatch '## Next safe step') {
-              throw "Workspace handoff Markdown is incomplete."
+              throw "Workspace advisor handoff Markdown is incomplete."
             }
             if ($handoffResponse.Content -match '<script|<form|https?://') { throw "Workspace handoff contains executable or external content." }
             if ($handoffResponse.Content.IndexOf($workspaceRoot, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
@@ -215,6 +249,8 @@ jobs:
           finally {
             if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
             Remove-Item Env:NODAL_OS_WORKSPACE_ROOT -ErrorAction SilentlyContinue
+            Remove-Item Env:NODAL_OS_ADVISOR_PROFILE -ErrorAction SilentlyContinue
+            Remove-Item Env:NODAL_OS_ADVISOR_INTERVENTION_LEVEL -ErrorAction SilentlyContinue
             if (Test-Path $workspaceRoot) { Remove-Item $workspaceRoot -Recurse -Force }
             Get-Content $stdout -ErrorAction SilentlyContinue
             Get-Content $stderr -ErrorAction SilentlyContinue
