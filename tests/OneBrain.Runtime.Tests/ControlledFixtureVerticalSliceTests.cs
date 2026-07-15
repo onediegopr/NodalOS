@@ -22,7 +22,7 @@ public sealed class ControlledFixtureVerticalSliceTests
         Assert.AreEqual(NodalOsApprovalDecisionKind.Approve, result.MissionAuthorizationDecision.DecisionKind);
         Assert.IsTrue(result.ControlledAction.Success);
         Assert.AreEqual(StepState.Succeeded, result.ControlledAction.FinalState);
-        Assert.IsTrue(result.ControlledAction.VerificationResult?.Success);
+        Assert.IsTrue(result.ControlledAction.VerificationResult?.Success == true);
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ApprovalRequired));
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ApprovalGranted));
         Assert.IsTrue(result.Timeline.Any(item => item.Kind == NodalOsCoreEventKind.ExecutionCompleted));
@@ -67,7 +67,7 @@ public sealed class ControlledFixtureVerticalSliceTests
         Assert.AreEqual("safe-execution-fsm-transition-digest", result.ControlledActionEvidence.Kind);
         Assert.AreEqual(NodalOsEvidenceBridgeAuthority.SupportsVerificationOnly, result.ControlledActionEvidence.Authority);
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.ControlledActionEvidence.Hash));
-        Assert.AreEqual(64, result.ControlledActionEvidence.Hash?.Length);
+        Assert.AreEqual(64, result.ControlledActionEvidence.Hash!.Length);
     }
 
     [TestMethod]
