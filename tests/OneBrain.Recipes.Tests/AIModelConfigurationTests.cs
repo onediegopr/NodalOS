@@ -44,7 +44,7 @@ public sealed class AIModelConfigurationTests
 
         var masked = AIModelConfiguration.MaskSecret(secret);
 
-        Assert.AreEqual("sk-...A91F", masked);
+        Assert.AreEqual("[configured]", masked);
         Assert.AreNotEqual(secret, masked);
         Assert.IsFalse(masked.Contains("test-secret", StringComparison.OrdinalIgnoreCase));
     }
@@ -59,7 +59,7 @@ public sealed class AIModelConfigurationTests
         var profile = profiles.Single(item => item.ProfileId == AIProfileIds.CheapIntent);
 
         Assert.IsTrue(profile.ApiKeyConfigured);
-        Assert.AreEqual("sk-...A91F", profile.ApiKeyMasked);
+        Assert.AreEqual("[configured]", profile.ApiKeyMasked);
         Assert.AreEqual("OB_AI_CHEAP_INTENT_API_KEY", profile.ApiKeySecretName);
     }
 }
