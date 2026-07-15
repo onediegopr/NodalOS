@@ -79,12 +79,13 @@ public sealed class NodalOsTestOwnedFileUpdateMissionScenarioTests
     {
         var result = await new NodalOsTestOwnedFileUpdateMissionScenario().RunAsync();
         var evidenceId = result.FileUpdateAction.Evidence!.EvidenceId;
-        var evidenceIndex = result.Timeline
+        var evidenceIndexes = result.Timeline
             .Select((value, index) => (value, index))
-            .Single(pair =>
+            .Where(pair =>
                 pair.value.Kind == NodalOsCoreEventKind.EvidenceAttached &&
                 pair.value.EvidenceRefs.Any(reference => reference.EvidenceId == evidenceId))
-            .index;
+            .Select(pair => pair.index)
+            .ToArray();
         var runtimeCompletionIndex = result.Timeline
             .Select((value, index) => (value, index))
             .Where(pair =>
@@ -93,7 +94,8 @@ public sealed class NodalOsTestOwnedFileUpdateMissionScenarioTests
             .Select(pair => pair.index)
             .Single();
 
-        Assert.IsTrue(evidenceIndex < runtimeCompletionIndex);
+        Assert.IsTrue(evidenceIndexes.Length >= 2);
+        Assert.IsTrue(evidenceIndexes.All(index => index < runtimeCompletionIndex));
         Assert.IsTrue(result.Timeline.Any(value => value.Kind == NodalOsCoreEventKind.PolicyGateEvaluated));
         Assert.IsTrue(result.Timeline.Any(value => value.Kind == NodalOsCoreEventKind.DryRunPlanCreated));
         Assert.IsTrue(result.Timeline.Any(value => value.Kind == NodalOsCoreEventKind.ExecutionCompleted));
