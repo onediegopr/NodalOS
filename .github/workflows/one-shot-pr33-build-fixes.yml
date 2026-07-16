@@ -1,0 +1,86 @@
+name: One-shot PR33 BYOK build fixes
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-pr33-build-fixes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/productization-real-byok-connection-v1
+          fetch-depth: 0
+      - name: Fix endpoint scheme checks and deterministic test handler
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path('src/OneBrain.AgentOperations.Core/Models/NodalOsByokModelConfiguration.cs')
+          text = source.read_text(encoding='utf-8')
+          old = '''        if (endpoint.Scheme is not (Uri.UriSchemeHttp or Uri.UriSchemeHttps))
+              return null;
+          '''
+          new = '''        if (!string.Equals(endpoint.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+              !string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+              return null;
+          '''
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected one scheme-check block, found {text.count(old)}')
+          source.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          tests = Path('tests/OneBrain.Runtime.Tests/NodalOsByokModelConfigurationTests.cs')
+          text = tests.read_text(encoding='utf-8')
+          replacements = [
+              ('Assert.IsTrue(configured.Primary?.CredentialConfigured);',
+               'Assert.IsTrue(configured.Primary?.CredentialConfigured == true);'),
+              ('using (var lease = await secrets.OpenAsync(document.Primary.CredentialReference))',
+               'using (var lease = await secrets.OpenAsync(document!.Primary.CredentialReference!))'),
+              ('Assert.IsNull(await secrets.OpenAsync(document.Primary.CredentialReference));',
+               'Assert.IsNull(await secrets.OpenAsync(document!.Primary.CredentialReference!));'),
+              ('''        var handler = new QueueHandler((request, _) =>
+              {
+                  Assert.AreEqual("Bearer", request.Headers.Authorization?.Scheme);
+                  Assert.AreEqual(rawKey, request.Headers.Authorization?.Parameter);
+                  return Json(HttpStatusCode.OK, "NODAL_OK", promptTokens: 11, completionTokens: 3);
+              });''',
+               '''        var handler = new QueueHandler((request, _) =>
+              {
+                  Assert.AreEqual("Bearer", request.Headers.Authorization?.Scheme);
+                  Assert.AreEqual(rawKey, request.Headers.Authorization?.Parameter);
+                  return Task.FromResult(Json(HttpStatusCode.OK, "NODAL_OK", promptTokens: 11, completionTokens: 3));
+              });'''),
+              ('''        var handler = new QueueHandler(
+              (_, _) => Json(HttpStatusCode.ServiceUnavailable, "ignored"),
+              (_, _) => Json(HttpStatusCode.OK, "FALLBACK_OK", promptTokens: 7, completionTokens: 2));''',
+               '''        var handler = new QueueHandler(
+              (_, _) => Task.FromResult(Json(HttpStatusCode.ServiceUnavailable, "ignored")),
+              (_, _) => Task.FromResult(Json(HttpStatusCode.OK, "FALLBACK_OK", promptTokens: 7, completionTokens: 2)));'''),
+              ('''        public QueueHandler(params Func<HttpRequestMessage, CancellationToken, HttpResponseMessage>[] responses)
+              {
+                  foreach (var response in responses)
+                      this.responses.Enqueue((request, token) => Task.FromResult(response(request, token)));
+              }
+
+          ''', '')
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit(f'Expected one test block, found {text.count(old)}: {old[:80]!r}')
+              text = text.replace(old, new, 1)
+          tests.write_text(text, encoding='utf-8')
+          PY
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add src/OneBrain.AgentOperations.Core/Models/NodalOsByokModelConfiguration.cs tests/OneBrain.Runtime.Tests/NodalOsByokModelConfigurationTests.cs
+          git commit -m 'fix: compile secure BYOK runtime and tests'
+          git push origin HEAD:feature/productization-real-byok-connection-v1
