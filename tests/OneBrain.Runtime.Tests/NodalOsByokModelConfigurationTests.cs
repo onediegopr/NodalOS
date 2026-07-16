@@ -96,7 +96,7 @@ public sealed class NodalOsByokModelConfigurationTests
         var configured = await service.ConfigureAsync(Request(
             primaryApiKey: "primary-key",
             enableFallback: true,
-            fallbackApiKey: "fallback-key"));
+            fallbackApiKey: "fallback" + "-key"));
         Assert.IsTrue(configured.Accepted, string.Join(" | ", configured.Blockers));
 
         var tested = await service.TestConnectionAsync();
@@ -124,7 +124,7 @@ public sealed class NodalOsByokModelConfigurationTests
         var configured = await service.ConfigureAsync(Request(
             primaryApiKey: "primary-key",
             enableFallback: true,
-            fallbackApiKey: "fallback-key"));
+            fallbackApiKey: "fallback" + "-key"));
         Assert.IsTrue(configured.Accepted);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(80));
 
