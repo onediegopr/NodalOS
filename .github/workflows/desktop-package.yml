@@ -72,7 +72,8 @@ jobs:
         with:
           name: nodal-os-private-beta-msix
           path: |
-            ${{ runner.temp }}/nodal-desktop-package/**
+            ${{ runner.temp }}/nodal-desktop-package/*-private-beta.zip
+            ${{ runner.temp }}/nodal-desktop-package/nodal-os-update-manifest.json
             ${{ runner.temp }}/nodal-desktop-package-smoke.log
           if-no-files-found: warn
           retention-days: 7
