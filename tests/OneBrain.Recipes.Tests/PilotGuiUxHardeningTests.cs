@@ -20,7 +20,7 @@ public sealed class PilotGuiUxHardeningTests
         StringAssert.Contains(html, "href=\"/app-profiles\"");
         StringAssert.Contains(html, "href=\"/approvals/demo\"");
         StringAssert.Contains(html, "href=\"/runs\"");
-        StringAssert.Contains(html, "href=\"/pilot/legacy/pilot/legacy/pilot/legacy/pilot/legacy/ai/config\"");
+        StringAssert.Contains(html, "href=\"/pilot/legacy/ai/config\"");
         StringAssert.Contains(html, "href=\"/ai/audit\"");
         StringAssert.Contains(html, "Guiarme paso a paso");
         StringAssert.Contains(html, "Tareas");
