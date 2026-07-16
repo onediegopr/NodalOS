@@ -717,15 +717,16 @@ public sealed class NodalOsWorkspaceHandoffExecutionService
         var card = new NodalOsApprovalCard
         {
             ApprovalCardId = $"approval-{candidate.ActionId}",
-            RegistryEntryId = $"registry-{candidate.ActionId}",
-            RequestId = $"request-{candidate.ActionId}",
+            ApprovalRequestId = $"request-{candidate.ActionId}",
+            ExecutionRegistryEntryId = $"registry-{candidate.ActionId}",
             MissionId = mission.Binding.MissionId,
             TaskId = "execute-controlled-action",
+            Status = NodalOsApprovalStatus.PendingHumanDecision,
             Severity = candidate.RiskLevel == MissionRiskLevel.Low ? NodalOsApprovalSeverity.Low : NodalOsApprovalSeverity.Medium,
-            ActionKind = NodalOsApprovalActionKind.ExternalMutationFuture,
-            ActionSummaryRedacted = $"{candidate.Kind} one reviewed handoff document in the selected local workspace.",
-            RiskExplanationRedacted = "The target, workspace fingerprint, proposed hash and current target precondition are fixed; shell, network and other paths are denied.",
-            AffectedTargetsRedacted = [candidate.RelativeTargetPath],
+            RequestedAction = NodalOsApprovalActionKind.ExternalMutationFuture,
+            HumanExplanationRedacted = $"{candidate.Kind} one reviewed handoff document in the selected local workspace.",
+            PolicyGateReasonRedacted = "The target, workspace fingerprint, proposed hash and current target precondition are fixed; shell, network and other paths are denied.",
+            AffectedResourcesRedacted = [candidate.RelativeTargetPath],
             RollbackPlanRedacted = candidate.RollbackPlanRedacted,
             EvidencePlanRedacted = "Record approval scope, precondition, post-write SHA-256, verification and rollback readiness before completion.",
             EvidenceRefs = evidenceRefs,
@@ -734,16 +735,14 @@ public sealed class NodalOsWorkspaceHandoffExecutionService
                 NodalOsApprovalUserOptionKind.Approve,
                 NodalOsApprovalUserOptionKind.Reject,
                 NodalOsApprovalUserOptionKind.RequestChanges,
-                NodalOsApprovalUserOptionKind.OpenEvidence
+                NodalOsApprovalUserOptionKind.RequestExplanation
             ],
-            ReadOnlyPreview = true,
             CanAuthorizeExecution = false,
             RuntimeExecutionAllowed = false,
             RuntimeExecutionDeferred = true,
             RequiresGlobalPolicyEvaluation = true,
             RequiresEvidenceRedaction = true,
-            CreatedAt = now,
-            UpdatedAt = now
+            CreatedAt = now
         };
         if (!approvalValidator.ValidateApprovalCard(card).IsValid)
             return null;
