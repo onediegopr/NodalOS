@@ -32,40 +32,6 @@ jobs:
       - name: Run deterministic inventory
         run: python eng/audit/repository_audit.py
 
-      - name: Collect structural hotspots
-        shell: bash
-        run: |
-          set -eu
-          out="artifacts/repository-audit/structural-hotspots.txt"
-          {
-            echo "# HEAD"
-            git rev-parse HEAD
-            echo
-            echo "# Tracked files"
-            git ls-files | wc -l
-            echo
-            echo "# Largest C# source files"
-            find src -type f -name '*.cs' -print0 | xargs -0 wc -l | sort -nr | head -40
-            echo
-            echo "# Largest C# test files"
-            find tests -type f -name '*.cs' -print0 | xargs -0 wc -l | sort -nr | head -40
-            echo
-            echo "# Fixture scenario references in product source"
-            grep -RIn --include='*.cs' 'NodalOsSelectiveRuntimeFixtureScenario' src || true
-            echo
-            echo "# Product-facing legacy/lab markers"
-            grep -RIn --include='*.cs' -E 'fixture-backed|FixtureBacked|pilot/legacy|LAB_LEGACY_TRANSITION' src/OneBrain.Pilot src/OneBrain.AgentOperations.Core || true
-            echo
-            echo "# One-shot workflows accidentally tracked"
-            find .github/workflows -maxdepth 1 -type f -iname '*one-shot*' -print | sort
-            echo
-            echo "# Root technology manifests"
-            find . -maxdepth 3 -type f \( -name package.json -o -name Cargo.toml -o -name tauri.conf.json -o -name tauri.conf.json5 \) -print | sort
-            echo
-            echo "# Git object statistics"
-            git count-objects -vH
-          } > "$out"
-
       - name: Upload repository audit
         uses: actions/upload-artifact@v4
         with:
@@ -107,8 +73,7 @@ jobs:
       - name: Reference-aware artifact cleanup projection
         shell: pwsh
         run: |
-          $log = 'artifacts/total-audit/artifact-cleanup.txt'
-          ./tools/repository/clean-unreferenced-artifacts.ps1 2>&1 | Tee-Object -FilePath $log
+          ./tools/repository/clean-unreferenced-artifacts.ps1
           exit $LASTEXITCODE
 
       - name: Build canonical product projects
