@@ -83,7 +83,7 @@ jobs:
         shell: pwsh
         run: ./eng/ci/smoke-real-workspace-handoff-execution.ps1
 
-      # P3 productization gate: secure-store configuration and real primary/fallback provider process smoke.
+      # P3 gate proves secure-store configuration, primary 503, authorized fallback 200, restart rehydration and cleanup.
       - name: Smoke secure real BYOK model connection
         shell: pwsh
         run: ./eng/ci/smoke-real-byok-model-connection.ps1
