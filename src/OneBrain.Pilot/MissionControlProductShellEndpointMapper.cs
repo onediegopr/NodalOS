@@ -37,6 +37,11 @@ public sealed record MissionControlProductShellSnapshot(
     string? WorkspaceId,
     string? WorkspaceFingerprint,
     int WorkspaceFilesRead,
+    bool RealMissionDraft,
+    bool MissionDraftPersisted,
+    string? ActionCandidateKind,
+    string? ActionCandidateTarget,
+    bool ActionExecutionEnabled,
     string LogicalModel,
     string ActiveProvider,
     string ActiveModel,
@@ -65,11 +70,13 @@ public static class MissionControlProductShellEndpointMapper
     public static IEndpointRouteBuilder MapMissionControlProductShell(
         this IEndpointRouteBuilder endpoints,
         IHostEnvironment environment,
-        Func<NodalOsWorkspaceSelectionService>? workspaceSelectionServiceFactory = null)
+        Func<NodalOsWorkspaceSelectionService>? workspaceSelectionServiceFactory = null,
+        Func<NodalOsWorkspaceMissionDraftService>? missionDraftServiceFactory = null)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(environment);
         workspaceSelectionServiceFactory ??= NodalOsWorkspaceSelectionRuntime.CreateDefault;
+        missionDraftServiceFactory ??= NodalOsWorkspaceMissionDraftRuntime.CreateDefault;
 
         endpoints.MapGet(JsonRoute, async (HttpContext context) =>
         {
@@ -79,7 +86,8 @@ public static class MissionControlProductShellEndpointMapper
             ApplyReadOnlyHeaders(context.Response);
             var snapshot = await BuildSnapshotAsync(
                     context.RequestAborted,
-                    workspaceSelectionServiceFactory())
+                    workspaceSelectionServiceFactory(),
+                    missionDraftServiceFactory())
                 .ConfigureAwait(false);
             return Results.Json(snapshot);
         });
@@ -92,7 +100,8 @@ public static class MissionControlProductShellEndpointMapper
             ApplyReadOnlyHeaders(context.Response);
             var snapshot = await BuildSnapshotAsync(
                     context.RequestAborted,
-                    workspaceSelectionServiceFactory())
+                    workspaceSelectionServiceFactory(),
+                    missionDraftServiceFactory())
                 .ConfigureAwait(false);
             return Results.Content(
                 MissionControlProductShellHtmlRenderer.Render(snapshot),
@@ -113,7 +122,8 @@ public static class MissionControlProductShellEndpointMapper
 
     public static async ValueTask<MissionControlProductShellSnapshot> BuildSnapshotAsync(
         CancellationToken cancellationToken = default,
-        NodalOsWorkspaceSelectionService? workspaceSelectionService = null)
+        NodalOsWorkspaceSelectionService? workspaceSelectionService = null,
+        NodalOsWorkspaceMissionDraftService? missionDraftService = null)
     {
         var result = await new NodalOsSelectiveRuntimeFixtureScenario()
             .RunAsync(cancellationToken)
@@ -121,33 +131,30 @@ public static class MissionControlProductShellEndpointMapper
         var workspaceSelection = workspaceSelectionService is null
             ? null
             : await workspaceSelectionService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
+        var missionDraft = missionDraftService is null
+            ? null
+            : await missionDraftService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
         var workspaceSelected = workspaceSelection?.Accepted == true;
+        var realMissionDraft = missionDraft?.Accepted == true &&
+            missionDraft.Plan is not null &&
+            missionDraft.Binding is not null &&
+            missionDraft.Candidate is not null;
 
-        var timeline = result.Timeline
-            .OrderBy(value => value.CreatedAt)
-            .Select((value, index) => new MissionControlProductTimelineItem(
-                Sequence: index + 1,
-                EventId: value.EventId,
-                Title: TimelineTitle(value),
-                Detail: value.SummaryRedacted,
-                State: TimelineState(value),
-                EvidenceRefs: value.EvidenceRefs
-                    .Select(reference => reference.EvidenceId)
-                    .Where(reference => !string.IsNullOrWhiteSpace(reference))
-                    .Distinct(StringComparer.Ordinal)
-                    .Take(8)
-                    .ToArray()))
-            .ToArray();
+        var timeline = realMissionDraft
+            ? ProjectPlanTimeline(missionDraft!.Plan!)
+            : ProjectFixtureTimeline(result);
 
         var workspaceEvidence = workspaceSelection?.Workspace?.EvidenceRefs
             .Select(reference => reference.EvidenceId)
             ?? [];
+        var missionEvidence = missionDraft?.EvidenceRefs ?? [];
         var evidenceRefs = result.Mission.EvidenceRefs
             .Concat(timeline.SelectMany(value => value.EvidenceRefs))
             .Concat(workspaceEvidence)
+            .Concat(missionEvidence)
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.Ordinal)
-            .Take(24)
+            .Take(32)
             .ToArray();
 
         var activeProvider = ValueOr(result.Inspector.ActiveProvider, "not selected");
@@ -165,80 +172,112 @@ public static class MissionControlProductShellEndpointMapper
             ? $"Protected local selection · {workspaceSelection!.FilesRead} bounded file refs · fingerprint {Short(workspaceSelection.RootPathFingerprint, 12)}."
             : "Select and persist a real local workspace before moving the mission runtime off fixtures.";
 
-        var context = new[]
+        var context = new List<MissionControlProductContextItem>
         {
-            new MissionControlProductContextItem(
+            new(
+                "mission",
+                "Mission",
+                realMissionDraft ? "Real workspace draft" : "Fixture mission",
+                realMissionDraft
+                    ? "The goal, plan and action candidate are persisted and bound to the selected workspace."
+                    : "Create a real workspace mission draft to replace the runtime fixture projection.",
+                realMissionDraft ? "ready" : "attention"),
+            new(
                 "model",
                 "Active model",
                 activeModel,
                 $"{activeProvider} · logical alias {logicalModel}",
                 "active"),
-            new MissionControlProductContextItem(
+            new(
                 "fallback",
                 "Fallback policy",
                 recentFallback is null ? "No fallback used" : "Fallback applied automatically",
                 recentFallback ?? "The current route completed without changing provider.",
                 recentFallback is null ? "ready" : "fallback"),
-            new MissionControlProductContextItem(
+            new(
                 "capabilities",
                 "Capabilities",
                 $"{readyCapabilities}/{totalCapabilities} ready",
                 "The registry reports availability; policy still controls use.",
                 readyCapabilities == totalCapabilities ? "ready" : "attention"),
-            new MissionControlProductContextItem(
+            new(
                 "providers",
                 "Providers",
                 $"{readyProviders}/{totalProviders} ready",
                 "Local fixture providers prove routing and fallback without external calls.",
                 readyProviders > 0 ? "ready" : "attention"),
-            new MissionControlProductContextItem(
+            new(
                 "workspace",
                 "Workspace",
                 workspaceDisplay,
                 workspaceDetail,
                 workspaceSelected ? "ready" : "attention"),
-            new MissionControlProductContextItem(
+            new(
                 "advisor",
                 "Expert Advisor",
                 "Observer · non-executor",
                 "Advisor context can inform the mission but cannot authorize or execute work.",
                 "neutral"),
-            new MissionControlProductContextItem(
+            new(
                 "browser",
                 result.Inspector.Browser.Runtime,
                 result.Inspector.Browser.State,
                 result.Inspector.Browser.LastError ?? "Browser runtime is healthy.",
-                result.Inspector.Browser.State.Contains("BLOCKED", StringComparison.OrdinalIgnoreCase) ? "blocked" : "ready"),
-            new MissionControlProductContextItem(
-                "human-control",
-                "Human control",
-                result.ApprovalRequested ? "Review required" : "No pending decision",
-                result.ApprovalRequested
-                    ? "The mission is waiting at a material boundary."
-                    : "Mission-level scope avoids per-step approval prompts for ordinary work.",
-                result.ApprovalRequested ? "attention" : "ready")
+                result.Inspector.Browser.State.Contains("BLOCKED", StringComparison.OrdinalIgnoreCase) ? "blocked" : "ready")
         };
 
-        var progressPercent = (int)Math.Clamp(
-            Math.Round(result.Mission.Progress * 100, MidpointRounding.AwayFromZero),
-            0,
-            100);
+        if (realMissionDraft)
+        {
+            context.Add(new MissionControlProductContextItem(
+                "action",
+                "Reviewed action",
+                $"{missionDraft!.Candidate!.Kind} · {missionDraft.Candidate.RelativeTargetPath}",
+                "Reversible candidate prepared with preconditions, rollback and expected evidence. Execution remains disabled.",
+                "attention"));
+        }
+        context.Add(new MissionControlProductContextItem(
+            "human-control",
+            "Human control",
+            realMissionDraft ? "Mission-scope approval required" : result.ApprovalRequested ? "Review required" : "No pending decision",
+            realMissionDraft
+                ? "Approval must bind mission, workspace fingerprint, action id, capability and relative target before execution."
+                : result.ApprovalRequested
+                    ? "The mission is waiting at a material boundary."
+                    : "Mission-level scope avoids per-step approval prompts for ordinary work.",
+            realMissionDraft || result.ApprovalRequested ? "attention" : "ready"));
+
+        var progressPercent = realMissionDraft
+            ? missionDraft!.ProgressPercent
+            : (int)Math.Clamp(
+                Math.Round(result.Mission.Progress * 100, MidpointRounding.AwayFromZero),
+                0,
+                100);
+        var missionId = realMissionDraft ? missionDraft!.MissionId! : result.Mission.MissionId;
+        var runId = realMissionDraft ? $"draft:{missionId}" : result.Mission.RunId;
+        var goal = realMissionDraft ? missionDraft!.GoalRedacted! : result.Plan.Goal;
+        var missionStatus = realMissionDraft ? "AwaitingMissionScopeApproval" : result.Mission.Status.ToString();
+        var currentStep = realMissionDraft ? missionDraft!.CurrentStep : result.ResumeCard.CurrentStep ?? "Mission complete";
+        var approvalState = realMissionDraft
+            ? missionDraft!.ApprovalState
+            : result.ApprovalRequested
+                ? "Human review required"
+                : "Mission scope authorized · no per-step prompt";
 
         return new MissionControlProductShellSnapshot(
             Decision,
             Accepted: true,
-            ProductMode: workspaceSelected
-                ? "Local product preview · real workspace selected"
-                : "Local product preview",
-            MissionId: result.Mission.MissionId,
-            RunId: result.Mission.RunId,
-            Goal: result.Plan.Goal,
-            MissionStatus: result.Mission.Status.ToString(),
+            ProductMode: realMissionDraft
+                ? "Local product preview · real workspace mission draft"
+                : workspaceSelected
+                    ? "Local product preview · real workspace selected"
+                    : "Local product preview",
+            MissionId: missionId,
+            RunId: runId,
+            Goal: goal,
+            MissionStatus: missionStatus,
             ProgressPercent: progressPercent,
-            CurrentStep: result.ResumeCard.CurrentStep ?? "Mission complete",
-            ApprovalState: result.ApprovalRequested
-                ? "Human review required"
-                : "Mission scope authorized · no per-step prompt",
+            CurrentStep: currentStep,
+            ApprovalState: approvalState,
             WorkspaceState: workspaceSelected
                 ? $"{workspaceDisplay} · protected + revalidated"
                 : "Workspace selection required",
@@ -247,6 +286,11 @@ public static class MissionControlProductShellEndpointMapper
             WorkspaceId: workspaceSelection?.WorkspaceId,
             WorkspaceFingerprint: workspaceSelection?.RootPathFingerprint,
             WorkspaceFilesRead: workspaceSelection?.FilesRead ?? 0,
+            RealMissionDraft: realMissionDraft,
+            MissionDraftPersisted: missionDraft?.Persisted == true,
+            ActionCandidateKind: missionDraft?.Candidate?.Kind.ToString(),
+            ActionCandidateTarget: missionDraft?.Candidate?.RelativeTargetPath,
+            ActionExecutionEnabled: missionDraft?.Candidate?.ExecutionEnabled == true,
             LogicalModel: logicalModel,
             ActiveProvider: activeProvider,
             ActiveModel: activeModel,
@@ -258,10 +302,14 @@ public static class MissionControlProductShellEndpointMapper
             EvidenceRefs: evidenceRefs,
             Diagnostics:
             [
-                $"run:{result.Mission.RunId}",
-                $"mission:{result.Mission.MissionId}",
+                $"run:{runId}",
+                $"mission:{missionId}",
+                $"real-mission-draft:{realMissionDraft.ToString().ToLowerInvariant()}",
+                $"mission-draft-persisted:{(missionDraft?.Persisted == true).ToString().ToLowerInvariant()}",
                 $"workspace-selected:{workspaceSelected.ToString().ToLowerInvariant()}",
                 $"workspace-fingerprint:{Short(workspaceSelection?.RootPathFingerprint, 12)}",
+                $"action-target:{missionDraft?.Candidate?.RelativeTargetPath ?? "none"}",
+                $"action-execution-enabled:{(missionDraft?.Candidate?.ExecutionEnabled == true).ToString().ToLowerInvariant()}",
                 $"logical-model:{logicalModel}",
                 $"provider:{activeProvider}",
                 $"browser:{result.Inspector.Browser.State}",
@@ -270,7 +318,7 @@ public static class MissionControlProductShellEndpointMapper
             ],
             LocalOnly: true,
             ReadOnly: true,
-            FixtureBacked: true,
+            FixtureBacked: !realMissionDraft,
             SecretsExcluded: true,
             ExternalIoUsed: result.ExternalIoUsed,
             NetworkUsed: result.NetworkUsed,
@@ -279,6 +327,58 @@ public static class MissionControlProductShellEndpointMapper
 
     public static bool IsRequestAllowed(IPAddress? remoteAddress) =>
         remoteAddress is not null && IPAddress.IsLoopback(remoteAddress);
+
+    private static IReadOnlyList<MissionControlProductTimelineItem> ProjectPlanTimeline(MissionPlan plan) =>
+        plan.Steps.Select((step, index) => new MissionControlProductTimelineItem(
+            Sequence: index + 1,
+            EventId: $"plan-step:{step.Id}",
+            Title: PlanStepTitle(step),
+            Detail: $"{step.ExecutionSurface} · risk {step.RiskLevel}" +
+                    (step.ApprovalRequired ? " · approval required" : string.Empty),
+            State: PlanStepState(step.Status),
+            EvidenceRefs: step.EvidenceRefs
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.Ordinal)
+                .Take(8)
+                .ToArray()))
+        .ToArray();
+
+    private static IReadOnlyList<MissionControlProductTimelineItem> ProjectFixtureTimeline(
+        NodalOsSelectiveRuntimeFixtureResult result) => result.Timeline
+        .OrderBy(value => value.CreatedAt)
+        .Select((value, index) => new MissionControlProductTimelineItem(
+            Sequence: index + 1,
+            EventId: value.EventId,
+            Title: TimelineTitle(value),
+            Detail: value.SummaryRedacted,
+            State: TimelineState(value),
+            EvidenceRefs: value.EvidenceRefs
+                .Select(reference => reference.EvidenceId)
+                .Where(reference => !string.IsNullOrWhiteSpace(reference))
+                .Distinct(StringComparer.Ordinal)
+                .Take(8)
+                .ToArray()))
+        .ToArray();
+
+    private static string PlanStepTitle(MissionStep step) => step.Id switch
+    {
+        "workspace-context-reviewed" => "Workspace context verified",
+        "review-action-candidate" => "Action candidate ready for review",
+        "resolve-mission-scope-approval" => "Mission-scope approval pending",
+        "execute-controlled-action" => "Controlled action pending",
+        "verify-result" => "Verification pending",
+        "record-evidence-handoff" => "Evidence and handoff pending",
+        _ => step.Intent
+    };
+
+    private static string PlanStepState(MissionStepStatus status) => status switch
+    {
+        MissionStepStatus.Verified => "complete",
+        MissionStepStatus.InProgress or MissionStepStatus.ReadyForVerification => "attention",
+        MissionStepStatus.Blocked or MissionStepStatus.Failed => "blocked",
+        MissionStepStatus.Skipped or MissionStepStatus.Cancelled => "blocked",
+        _ => "pending"
+    };
 
     private static string TimelineTitle(NodalOsCoreTimelineProjection value)
     {
