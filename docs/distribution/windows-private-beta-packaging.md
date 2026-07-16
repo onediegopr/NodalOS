@@ -30,13 +30,14 @@ From a Windows machine with the SDK pinned by `global.json` and a Windows 10/11 
 The script:
 
 1. publishes `OneBrain.Pilot` self-contained for `win-x64`;
-2. generates deterministic NODAL OS package assets from the product palette;
-3. generates the MSIX manifest from `eng/packaging/AppxManifest.xml.template`;
-4. packages with the Windows SDK `MakeAppx.exe`;
-5. signs with `SignTool.exe`;
-6. verifies the signature;
-7. writes a SHA-256-bound manual update manifest;
-8. emits install/uninstall scripts and a private-beta ZIP bundle.
+2. copies only the four recipes currently allowlisted by the product and excludes lab, negative and unrelated recipe fixtures;
+3. generates deterministic NODAL OS package assets from the product palette;
+4. generates the MSIX manifest from `eng/packaging/AppxManifest.xml.template`;
+5. packages with the Windows SDK `MakeAppx.exe`;
+6. signs with `SignTool.exe`;
+7. verifies the signature;
+8. writes a SHA-256-bound manual update manifest;
+9. emits install/uninstall scripts and a private-beta ZIP bundle.
 
 A test signing certificate is generated when no external PFX is supplied. It is valid only for controlled testing and is never a public release identity.
 
@@ -99,5 +100,7 @@ This is intentionally explicit because removing local data can be irreversible.
 8. product-authority, local-only and secret-exclusion assertions;
 9. process shutdown;
 10. package uninstall and registration cleanup.
+
+The CI artifact uploads the private-beta bundle once, together with its update manifest and complete smoke log, rather than duplicating the raw MSIX payload.
 
 The produced artifact is a private-beta engineering artifact. Passing this gate does not create a public release or authorize customer-data use.
