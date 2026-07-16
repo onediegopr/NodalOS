@@ -3,6 +3,7 @@ name: Reference-Aware Artifact Cleanup
 on:
   pull_request:
     branches:
+      - main
       - chrome-lab-001-extension-local-ai-bridge
     paths:
       - tools/repository/clean-unreferenced-artifacts.ps1

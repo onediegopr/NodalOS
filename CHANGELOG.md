@@ -1,34 +1,26 @@
 # NODAL OS — Changelog
 
-## v1.0.0-production (2026-06-25)
+## Unreleased — technical foundation
 
-### Phase 0 — Unification
-- UnifiedFrictionPolicyEngine: single policy gate for companion + stealth
-- FrictionSignalRouter: normalizes friction signals from both modes
-- StealthHandoffGateway: stealth-mode handoff activation
-- Extended BrowserCredentialBoundaryDecisionKind with RetryWithBackoff
+NODAL OS has no production release, signed desktop installer, public update channel or commercial release at this point.
 
-### Phase 1 — Stealth Engine MVP
-- Playwright-based headful Chromium with fingerprint camouflage
-- CAPTCHA detection (DOM + frames + text) and 2captcha solver
-- Remote handoff server with viewport streaming
-- Basic tools: observePage, navigate, click, setValue
+Current validated foundations on `main` include:
 
-### Phase 2 — Advanced Fingerprinting & Anti-Blocking
-- Complete fingerprint injection: WebGL, Canvas, AudioContext, WebRTC, permissions
-- Proxy manager with sticky sessions, rotation, health checks
-- Anti-blocking recovery with exponential backoff
-- Human behavior: Bézier mouse, keyboard errors, adaptive scroll
+- local/dev Mission Control and Runtime Inspector surfaces;
+- bounded local workspace understanding with redaction and verified handoff export;
+- test-owned create and exact-hash update operations with verification and cleanup;
+- mission-level approval, evidence and semantic verification foundations;
+- policy-aware model routing and fallback fixtures;
+- Expert Advisor as a deterministic non-executor;
+- CognitiveSnapshotV2, Trusted Control Flow and verified skill memory;
+- Teach NODAL fixture compilation, bounded capture sessions and application-scoped Windows UIA observation;
+- ChromeLab security validation as `LAB_LEGACY_TRANSITION`;
+- CloakBrowser as the canonical browser target, with live CDP validation still blocked when the pinned external binary is unavailable.
 
-### Phase 3 — Visual CAPTCHA & Adaptive Behavior
-- VisualCaptchaSolver: OCR (Tesseract) + AI vision (GPT-4V)
-- AdaptiveBehaviorEngine: session-unique parameter variance
-- Ballistic mouse trajectories for long distances
-- FingerprintEvolutionPipeline: offline audit tool
+All product-runtime, customer-data, public deployment, billing, licensing, auto-update and release claims remain closed until separately implemented and validated.
 
-### Phase 4 — Production Readiness
-- StealthBrowserManager: concurrent session pool with queue
-- Docker Compose: bridge + stealth-engine + stealth-panel
-- Health checks and Prometheus metrics
-- Complete documentation (ARCHITECTURE, CONFIGURATION, DEPLOYMENT, OPERATIONS, ROADMAP)
-- Deployment scripts for Windows, Linux, macOS
+## Historical experimental milestone — 2026-06-25
+
+An earlier changelog labeled an experimental stealth/browser line as `v1.0.0-production`. That label did not correspond to a published NODAL OS production release and is superseded by the current canonical status above.
+
+Historical work in that line explored browser stealth, CAPTCHA detection, proxy management, remote handoff, metrics and deployment concepts. Those experiments do not grant current product authority, do not make ChromeLab the product runtime and do not establish release readiness.
