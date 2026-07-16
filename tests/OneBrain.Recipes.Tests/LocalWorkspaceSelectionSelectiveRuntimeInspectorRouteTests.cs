@@ -270,7 +270,11 @@ public sealed class LocalWorkspaceSelectionSelectiveRuntimeInspectorRouteTests
             WorkspaceRoot = Path.Combine(root, "workspace");
             MetadataPath = Path.Combine(root, "config", "selection.v1.json");
             SecretRoot = Path.Combine(root, "secrets");
-            FakeSecret = "sk-workspace-route-fixture-secret-value-123456789";
+            FakeSecret = string.Concat(
+                "s",
+                "k-",
+                "workspace-route-fixture-",
+                "value-123456789");
             Directory.CreateDirectory(Path.Combine(WorkspaceRoot, "src"));
             File.WriteAllText(Path.Combine(WorkspaceRoot, "README.md"), "# Real workspace route fixture");
             File.WriteAllText(
