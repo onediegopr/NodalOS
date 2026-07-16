@@ -39,6 +39,24 @@ public static class NodalOsDesktopLaunchRuntime
         }
     }
 
+    public static string ResolveProductDataRoot(
+        string? requestedRoot = null,
+        string? localApplicationData = null)
+    {
+        var root = requestedRoot;
+        if (string.IsNullOrWhiteSpace(root))
+        {
+            localApplicationData ??= Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (string.IsNullOrWhiteSpace(localApplicationData))
+                localApplicationData = Path.GetTempPath();
+            root = Path.Combine(localApplicationData, "NodalOS", "ProductData");
+        }
+
+        root = Path.GetFullPath(root);
+        Directory.CreateDirectory(root);
+        return root;
+    }
+
     public static string ResolveLoopbackUrls(string? requestedUrls)
     {
         var value = string.IsNullOrWhiteSpace(requestedUrls)
