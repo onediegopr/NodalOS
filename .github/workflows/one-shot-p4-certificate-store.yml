@@ -1,0 +1,59 @@
+name: One-shot P4 certificate store fix
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-p4-certificate-store.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'feature/productization-desktop-packaging-v1'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/productization-desktop-packaging-v1
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Use machine Trusted People for test-signed MSIX
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path('eng/packaging/build-msix.ps1'): [
+                  ('$temporaryRootThumbprint', '$temporaryTrustedPeopleThumbprint'),
+                  ('Cert:\\CurrentUser\\Root', 'Cert:\\LocalMachine\\TrustedPeople'),
+              ],
+              Path('eng/ci/smoke-desktop-package.ps1'): [
+                  ('$trustedRootThumbprint', '$trustedPeopleThumbprint'),
+                  ('$trustedRootPath', '$trustedPeoplePath'),
+                  ('$trustedRoot', '$trustedPeople'),
+                  ('Cert:\\CurrentUser\\Root', 'Cert:\\LocalMachine\\TrustedPeople'),
+              ],
+          }
+
+          for path, pairs in replacements.items():
+              text = path.read_text(encoding='utf-8-sig')
+              for old, new in pairs:
+                  if old not in text:
+                      raise SystemExit(f'{path}: missing expected text {old!r}')
+                  text = text.replace(old, new)
+              path.write_text(text, encoding='utf-8')
+          PY
+
+          git rm .github/workflows/one-shot-p4-certificate-store.yml
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add eng/packaging/build-msix.ps1 eng/ci/smoke-desktop-package.ps1
+          git commit -m 'fix: trust test MSIX certificate in machine Trusted People'
+          git push origin HEAD:feature/productization-desktop-packaging-v1
