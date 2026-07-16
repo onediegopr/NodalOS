@@ -15,45 +15,18 @@ on:
       - "eng/ci/smoke-real-workspace-handoff-execution.ps1"
       - "eng/ci/smoke-real-byok-model-connection.ps1"
       - "eng/ci/openai_compatible_fixture_server.py"
-      - "eng/ci/patch-pr33-byok-quality.py"
       - "global.json"
       - ".github/workflows/selective-runtime-integration.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: selective-runtime-integration-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  patch-byok-product-quality:
-    if: github.event_name == 'pull_request' && github.head_ref == 'feature/productization-real-byok-connection-v1'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pull request head
-        uses: actions/checkout@v4
-        with:
-          ref: feature/productization-real-byok-connection-v1
-          fetch-depth: 0
-
-      - name: Apply and commit final BYOK quality fixes
-        shell: bash
-        run: |
-          set -euo pipefail
-          python eng/ci/patch-pr33-byok-quality.py
-          git rm eng/ci/patch-pr33-byok-quality.py
-          if [ -f .github/workflows/one-shot-pr33-byok-product-quality.yml ]; then
-            git rm .github/workflows/one-shot-pr33-byok-product-quality.yml
-          fi
-          git diff --check
-          git config user.name 'nodal-os-ci'
-          git config user.email 'nodal-os-ci@users.noreply.github.com'
-          git add src tests
-          git commit -m 'fix: harden BYOK product route and audit semantics'
-          git push origin HEAD:feature/productization-real-byok-connection-v1
-
   runtime-integration:
     runs-on: windows-latest
     timeout-minutes: 50
