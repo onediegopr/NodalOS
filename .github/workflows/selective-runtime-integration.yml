@@ -11,6 +11,7 @@ on:
       - "eng/ci/smoke-pilot-product-loops.ps1"
       - "eng/ci/smoke-mission-control-root.ps1"
       - "eng/ci/smoke-workspace-selection.ps1"
+      - "eng/ci/smoke-real-workspace-mission-draft.ps1"
       - "global.json"
       - ".github/workflows/selective-runtime-integration.yml"
   workflow_dispatch:
@@ -25,7 +26,7 @@ concurrency:
 jobs:
   runtime-integration:
     runs-on: windows-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,7 +57,7 @@ jobs:
           $log = Join-Path $env:RUNNER_TEMP "selective-runtime-integration-test.log"
           dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests|FullyQualifiedName~TestOwnedFileCreateRouteTests|FullyQualifiedName~TestOwnedFileUpdateRouteTests|FullyQualifiedName~BoundedWorkspaceUnderstandingRouteTests|FullyQualifiedName~BoundedWorkspaceHandoffExportRouteTests" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
+          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~AIModelConfigurationTests|FullyQualifiedName~PilotAIConfigConsoleTests|FullyQualifiedName~SelectiveRuntimeInspectorRouteTests|FullyQualifiedName~TestOwnedFileCreateRouteTests|FullyQualifiedName~TestOwnedFileUpdateRouteTests|FullyQualifiedName~BoundedWorkspaceUnderstandingRouteTests|FullyQualifiedName~BoundedWorkspaceHandoffExportRouteTests|FullyQualifiedName~RealWorkspaceMissionDraft" --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $log -Append
           exit $LASTEXITCODE
 
       - name: Smoke Pilot product loops
@@ -70,6 +71,10 @@ jobs:
       - name: Smoke protected local workspace selection
         shell: pwsh
         run: ./eng/ci/smoke-workspace-selection.ps1
+
+      - name: Smoke persisted real workspace mission draft
+        shell: pwsh
+        run: ./eng/ci/smoke-real-workspace-mission-draft.ps1
 
       - name: Upload runtime diagnostics
         if: always()
@@ -87,5 +92,9 @@ jobs:
             ${{ runner.temp }}/pilot-workspace-selection-first.stderr.log
             ${{ runner.temp }}/pilot-workspace-selection-restart.stdout.log
             ${{ runner.temp }}/pilot-workspace-selection-restart.stderr.log
+            ${{ runner.temp }}/pilot-real-workspace-mission-first.stdout.log
+            ${{ runner.temp }}/pilot-real-workspace-mission-first.stderr.log
+            ${{ runner.temp }}/pilot-real-workspace-mission-restart.stdout.log
+            ${{ runner.temp }}/pilot-real-workspace-mission-restart.stderr.log
           if-no-files-found: ignore
           retention-days: 3

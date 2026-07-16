@@ -17,12 +17,8 @@ public static class MissionControlProductShellHtmlRenderer
         var fallback = string.IsNullOrWhiteSpace(snapshot.RecentFallback)
             ? "Sin fallback reciente"
             : snapshot.RecentFallback;
-        var nextGate = snapshot.WorkspaceSelected
-            ? "El workspace real quedó protegido y revalidado. El próximo gate es crear una misión real sobre este contexto y mantener cualquier mutación detrás de aprobación, snapshot, rollback y verificación."
-            : "Seleccionar y persistir un workspace local real, generar un plan revisado y mantener los paths absolutos fuera de la superficie.";
-        var workspaceAction = snapshot.WorkspaceSelected
-            ? "Revisar o cambiar workspace"
-            : "Seleccionar workspace local";
+        var (nextStage, nextGate, nextAction, nextHref) = NextGate(snapshot);
+        var actionCandidate = RenderActionCandidate(snapshot);
 
         const string template = """
 <!doctype html>
@@ -49,111 +45,34 @@ public static class MissionControlProductShellHtmlRenderer
     }
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
-    body {
-      margin: 0;
-      background: var(--background);
-      color: var(--text);
-      font-family: Inter, Geist, Manrope, "Segoe UI", sans-serif;
-      font-size: 14px;
-    }
+    body { margin: 0; background: var(--background); color: var(--text); font-family: Inter, Geist, Manrope, "Segoe UI", sans-serif; font-size: 14px; }
     a { color: inherit; text-decoration: none; }
     button { font: inherit; }
-    .shell {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 230px minmax(0, 1fr);
-    }
-    .sidebar {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      border-right: 1px solid var(--border);
-      background: #10151C;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 26px;
-    }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 230px minmax(0, 1fr); }
+    .sidebar { position: sticky; top: 0; height: 100vh; border-right: 1px solid var(--border); background: #10151C; padding: 24px 16px; display: flex; flex-direction: column; gap: 26px; }
     .brand { display: grid; gap: 5px; padding: 0 8px; }
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      display: grid;
-      place-items: center;
-      background: var(--blue);
-      color: white;
-      font-weight: 900;
-      letter-spacing: -.04em;
-    }
+    .brand-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--blue); color: white; font-weight: 900; letter-spacing: -.04em; }
     .brand strong { font-size: 15px; letter-spacing: .04em; }
     .brand span { color: var(--muted); font-size: 12px; }
     nav { display: grid; gap: 6px; }
-    .nav-link {
-      min-height: 38px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid transparent;
-      border-radius: 10px;
-      padding: 0 11px;
-      color: var(--muted);
-    }
+    .nav-link { min-height: 38px; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; border-radius: 10px; padding: 0 11px; color: var(--muted); }
     .nav-link:hover { border-color: var(--border); color: var(--text); }
     .nav-link.active { background: #1B2330; border-color: #35415A; color: var(--text); }
     .nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--disabled); }
     .active .nav-dot { background: var(--blue); box-shadow: 0 0 0 4px rgba(79,124,255,.14); }
-    .boundary {
-      margin-top: auto;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-      padding: 12px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
+    .boundary { margin-top: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); padding: 12px; color: var(--muted); font-size: 12px; line-height: 1.5; }
     .boundary strong { color: var(--positive); display: block; margin-bottom: 4px; }
     .workspace { min-width: 0; padding: 22px 24px 30px; }
-    .topbar {
-      min-height: 66px;
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--panel);
-      padding: 12px 14px 12px 18px;
-    }
+    .topbar { min-height: 66px; display: flex; align-items: center; gap: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); padding: 12px 14px 12px 18px; }
     .topbar-main { min-width: 0; flex: 1; display: grid; gap: 4px; }
-    .topbar-label, .metric-label, .context-label {
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-    }
+    .topbar-label, .metric-label, .context-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
     .topbar-title { font-weight: 760; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .topbar-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; }
     .actions { display: flex; gap: 8px; }
-    .button {
-      min-height: 36px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 0 13px;
-      color: var(--disabled);
-      background: var(--card);
-    }
+    .button { min-height: 36px; border: 1px solid var(--border); border-radius: 9px; padding: 0 13px; color: var(--disabled); background: var(--card); }
     .button.primary { color: #DDE5FF; border-color: #3E538C; background: #26375F; }
     .button:disabled { cursor: not-allowed; opacity: .72; }
-    .mission-card {
-      margin-top: 18px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--panel);
-      padding: 22px;
-      display: grid;
-      gap: 16px;
-    }
+    .mission-card { margin-top: 18px; border: 1px solid var(--border); border-radius: 16px; background: var(--panel); padding: 22px; display: grid; gap: 16px; }
     .eyebrow { color: #91A9FF; text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 800; }
     h1 { margin: 7px 0 8px; font-size: clamp(26px, 3vw, 38px); line-height: 1.1; letter-spacing: -.035em; }
     .mission-summary { color: var(--muted); max-width: 920px; line-height: 1.6; }
@@ -191,7 +110,9 @@ public static class MissionControlProductShellHtmlRenderer
     .lower-grid { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
     .evidence-list { padding: 14px 18px 18px; display: flex; flex-wrap: wrap; gap: 8px; }
     .empty { color: var(--muted); padding: 18px; line-height: 1.55; }
-    .workspace-cta { display: inline-flex; margin-top: 12px; border: 1px solid #405891; border-radius: 9px; padding: 9px 12px; color: #DFE7FF; background: #202A44; }
+    .product-cta { display: inline-flex; margin-top: 12px; border: 1px solid #405891; border-radius: 9px; padding: 9px 12px; color: #DFE7FF; background: #202A44; }
+    .candidate-box { margin: 0 18px 18px; border: 1px solid rgba(240,180,90,.34); border-radius: 12px; background: rgba(240,180,90,.06); padding: 12px; color: var(--muted); line-height: 1.5; }
+    .candidate-box strong { color: var(--text); display: block; margin-bottom: 5px; overflow-wrap: anywhere; }
     details { margin-top: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
     summary { cursor: pointer; padding: 15px 18px; font-weight: 720; }
     .diagnostics { border-top: 1px solid var(--border); padding: 12px 18px 16px; display: grid; gap: 7px; color: var(--muted); font-family: "Cascadia Code", Consolas, monospace; font-size: 12px; }
@@ -218,7 +139,7 @@ public static class MissionControlProductShellHtmlRenderer
     }
   </style>
 </head>
-<body data-nodal-os="mission-control-product-shell" data-local-only="@@LOCAL_ONLY@@" data-read-only="@@READ_ONLY@@" data-fixture-backed="@@FIXTURE_BACKED@@" data-workspace-selected="@@WORKSPACE_SELECTED@@" data-workspace-persisted="@@WORKSPACE_PERSISTED@@" data-product-authority="@@PRODUCT_AUTHORITY@@">
+<body data-nodal-os="mission-control-product-shell" data-local-only="@@LOCAL_ONLY@@" data-read-only="@@READ_ONLY@@" data-fixture-backed="@@FIXTURE_BACKED@@" data-workspace-selected="@@WORKSPACE_SELECTED@@" data-workspace-persisted="@@WORKSPACE_PERSISTED@@" data-real-mission-draft="@@REAL_MISSION_DRAFT@@" data-mission-draft-persisted="@@MISSION_DRAFT_PERSISTED@@" data-action-execution-enabled="@@ACTION_EXECUTION_ENABLED@@" data-product-authority="@@PRODUCT_AUTHORITY@@">
   <div class="shell">
     <aside class="sidebar">
       <div class="brand"><div class="brand-mark">N</div><div><strong>NODAL OS</strong><span>AI Mission Control</span></div></div>
@@ -226,6 +147,7 @@ public static class MissionControlProductShellHtmlRenderer
         <a class="nav-link active" href="/"><span class="nav-dot"></span><span>Mission Control</span></a>
         <a class="nav-link" href="#timeline"><span class="nav-dot"></span><span>Timeline</span></a>
         <a class="nav-link" href="/workspace/select"><span class="nav-dot"></span><span>Workspace</span></a>
+        <a class="nav-link" href="/mission/new"><span class="nav-dot"></span><span>Mission</span></a>
         <a class="nav-link" href="/ai/config"><span class="nav-dot"></span><span>Models</span></a>
         <a class="nav-link" href="#evidence"><span class="nav-dot"></span><span>Evidence</span></a>
         <a class="nav-link" href="/guia"><span class="nav-dot"></span><span>Settings</span></a>
@@ -251,16 +173,16 @@ public static class MissionControlProductShellHtmlRenderer
 
       <div class="content-grid">
         <section class="panel" id="timeline" data-section-id="timeline"><div class="panel-header"><h2>Timeline de misión</h2><span>@@TIMELINE_COUNT@@ eventos</span></div><div class="timeline">@@TIMELINE@@</div></section>
-        <aside class="panel" data-section-id="context"><div class="panel-header"><h2>Contexto activo</h2><span>runtime</span></div><div class="context-list">@@CONTEXT@@</div><div class="fallback-note"><strong>Último fallback</strong><br>@@FALLBACK@@</div></aside>
+        <aside class="panel" data-section-id="context"><div class="panel-header"><h2>Contexto activo</h2><span>runtime</span></div><div class="context-list">@@CONTEXT@@</div><div class="fallback-note"><strong>Último fallback</strong><br>@@FALLBACK@@</div>@@ACTION_CANDIDATE@@</aside>
       </div>
 
       <div class="lower-grid">
         <section class="panel" id="evidence" data-section-id="evidence"><div class="panel-header"><h2>Evidencia</h2><span>refs redacted</span></div><div class="evidence-list">@@EVIDENCE@@</div></section>
-        <section class="panel" data-section-id="next-step"><div class="panel-header"><h2>Próximo gate productivo</h2><span>P2</span></div><div class="empty">@@NEXT_GATE@@<br><a class="workspace-cta" href="/workspace/select">@@WORKSPACE_ACTION@@</a></div></section>
+        <section class="panel" data-section-id="next-step"><div class="panel-header"><h2>Próximo gate productivo</h2><span>@@NEXT_STAGE@@</span></div><div class="empty">@@NEXT_GATE@@<br><a class="product-cta" href="@@NEXT_HREF@@">@@NEXT_ACTION@@</a></div></section>
       </div>
 
       <details data-section-id="diagnostics"><summary>Diagnóstico técnico y eventos</summary><div class="diagnostics">@@DIAGNOSTICS@@</div></details>
-      <div class="footer"><span>Local-only · read-only mission shell · sin product authority</span><a href="/pilot/legacy">Abrir laboratorio Pilot legado</a></div>
+      <div class="footer"><span>Local-only · bounded mission control · sin product authority</span><a href="/pilot/legacy">Abrir laboratorio Pilot legado</a></div>
     </main>
   </div>
 </body>
@@ -274,6 +196,9 @@ public static class MissionControlProductShellHtmlRenderer
             .Replace("@@FIXTURE_BACKED@@", Bool(snapshot.FixtureBacked), StringComparison.Ordinal)
             .Replace("@@WORKSPACE_SELECTED@@", Bool(snapshot.WorkspaceSelected), StringComparison.Ordinal)
             .Replace("@@WORKSPACE_PERSISTED@@", Bool(snapshot.WorkspacePersisted), StringComparison.Ordinal)
+            .Replace("@@REAL_MISSION_DRAFT@@", Bool(snapshot.RealMissionDraft), StringComparison.Ordinal)
+            .Replace("@@MISSION_DRAFT_PERSISTED@@", Bool(snapshot.MissionDraftPersisted), StringComparison.Ordinal)
+            .Replace("@@ACTION_EXECUTION_ENABLED@@", Bool(snapshot.ActionExecutionEnabled), StringComparison.Ordinal)
             .Replace("@@PRODUCT_AUTHORITY@@", Bool(snapshot.ProductAuthorityGranted), StringComparison.Ordinal)
             .Replace("@@GOAL@@", H(snapshot.Goal), StringComparison.Ordinal)
             .Replace("@@MISSION_STATUS@@", H(snapshot.MissionStatus), StringComparison.Ordinal)
@@ -289,10 +214,49 @@ public static class MissionControlProductShellHtmlRenderer
             .Replace("@@TIMELINE@@", timeline, StringComparison.Ordinal)
             .Replace("@@CONTEXT@@", context, StringComparison.Ordinal)
             .Replace("@@FALLBACK@@", H(fallback), StringComparison.Ordinal)
+            .Replace("@@ACTION_CANDIDATE@@", actionCandidate, StringComparison.Ordinal)
             .Replace("@@EVIDENCE@@", evidence, StringComparison.Ordinal)
+            .Replace("@@NEXT_STAGE@@", H(nextStage), StringComparison.Ordinal)
             .Replace("@@NEXT_GATE@@", H(nextGate), StringComparison.Ordinal)
-            .Replace("@@WORKSPACE_ACTION@@", H(workspaceAction), StringComparison.Ordinal)
+            .Replace("@@NEXT_HREF@@", H(nextHref), StringComparison.Ordinal)
+            .Replace("@@NEXT_ACTION@@", H(nextAction), StringComparison.Ordinal)
             .Replace("@@DIAGNOSTICS@@", diagnostics, StringComparison.Ordinal);
+    }
+
+    private static (string Stage, string Text, string Action, string Href) NextGate(
+        MissionControlProductShellSnapshot snapshot)
+    {
+        if (!snapshot.WorkspaceSelected)
+        {
+            return (
+                "P2",
+                "Seleccionar y persistir un workspace local real, generar un plan revisado y mantener los paths absolutos fuera de la superficie.",
+                "Seleccionar workspace local",
+                "/workspace/select");
+        }
+
+        if (!snapshot.RealMissionDraft)
+        {
+            return (
+                "P2b",
+                "El workspace real quedó protegido y revalidado. El próximo gate es crear una misión real, revisar su plan y preparar una acción reversible sin mutar el proyecto.",
+                "Crear misión real",
+                "/mission/new");
+        }
+
+        return (
+            "P2b",
+            $"La misión real y el candidato {snapshot.ActionCandidateKind ?? "reviewed action"} para {snapshot.ActionCandidateTarget ?? "the bounded target"} quedaron persistidos. El próximo gate es resolver aprobación de alcance y ejecutar mediante la operación controlada con precondición, rollback, verificación y evidencia.",
+            "Revisar misión y candidato",
+            "/mission/new");
+    }
+
+    private static string RenderActionCandidate(MissionControlProductShellSnapshot snapshot)
+    {
+        if (!snapshot.RealMissionDraft || string.IsNullOrWhiteSpace(snapshot.ActionCandidateTarget))
+            return string.Empty;
+
+        return $"<div class=\"candidate-box\" data-section-id=\"action-candidate\"><strong>{H(snapshot.ActionCandidateKind)} · {H(snapshot.ActionCandidateTarget)}</strong>Reversible, approval-scoped y todavía no ejecutado. Execution enabled: {Bool(snapshot.ActionExecutionEnabled)}.</div>";
     }
 
     private static string RenderTimeline(IReadOnlyList<MissionControlProductTimelineItem> items)

@@ -28,7 +28,8 @@ public enum MissionStepStatus
     ReadyForVerification,
     Verified,
     Failed,
-    Skipped
+    Skipped,
+    Cancelled
 }
 
 public enum MissionStatus
