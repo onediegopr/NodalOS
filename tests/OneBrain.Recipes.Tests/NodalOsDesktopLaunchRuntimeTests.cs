@@ -9,23 +9,6 @@ namespace OneBrain.Recipes.Tests;
 [TestCategory("MvpVerticalSlice")]
 public sealed class NodalOsDesktopLaunchRuntimeTests
 {
-    [TestMethod]
-    public void ResolveProductRootUsesBoundedLocalApplicationDataDirectory()
-    {
-        var baseDirectory = Path.Combine(Path.GetTempPath(), "nodal-os-desktop-root-tests", Guid.NewGuid().ToString("N"));
-        try
-        {
-            var root = NodalOsDesktopLaunchRuntime.ResolveProductRoot(localApplicationData: baseDirectory);
-
-            Assert.AreEqual(Path.Combine(baseDirectory, "NodalOS", "ProductData"), root);
-            Assert.IsTrue(Directory.Exists(root));
-        }
-        finally
-        {
-            if (Directory.Exists(baseDirectory))
-                Directory.Delete(baseDirectory, recursive: true);
-        }
-    }
 
     [TestMethod]
     public void ResolveLoopbackUrlsAcceptsOnlyLocalHttpOrigins()

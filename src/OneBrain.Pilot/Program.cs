@@ -17,15 +17,19 @@ using OneBrain.Observation.Uia;
 using OneBrain.Observation.Windows;
 using FlaUI.UIA3;
 
+var packaged = NodalOsDesktopLaunchRuntime.IsPackaged();
 var root = ResolveRepoRoot(GetArg(args, "--root") ?? Directory.GetCurrentDirectory());
 var dotnet = GetArg(args, "--dotnet")
     ?? Environment.GetEnvironmentVariable("ONEBRAIN_DOTNET")
     ?? PilotRecipeExecutor.DefaultDotnetPath;
+var urls = NodalOsDesktopLaunchRuntime.ResolveLoopbackUrls(GetArg(args, "--urls"));
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls(GetArg(args, "--urls") ?? "http://127.0.0.1:5084");
+builder.WebHost.UseUrls(urls);
 
 var app = builder.Build();
+if (NodalOsDesktopLaunchRuntime.ShouldOpenBrowser(args, packaged))
+    NodalOsDesktopLaunchRuntime.RegisterBrowserLaunch(app.Lifetime, urls);
 var router = new PilotIntentRouter();
 var planner = new PilotPlanBuilder();
 var executor = new PilotRecipeExecutor(root, dotnet);

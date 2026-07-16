@@ -142,7 +142,7 @@ $testCertificate = $null
 $testCertificatePath = $null
 $temporaryPfxPath = $null
 $temporaryPfxPassword = $null
-$temporaryTrustThumbprint = $null
+$temporaryRootThumbprint = $null
 $certificateSubject = $Publisher
 
 if (-not [string]::IsNullOrWhiteSpace($SigningPfxPath)) {
@@ -215,15 +215,15 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "SignTool sign failed with exit code $LASTEXITCODE." }
 
     if ($testCertificatePath) {
-        $trusted = Import-Certificate -FilePath $testCertificatePath -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
-        $temporaryTrustThumbprint = $trusted.Thumbprint
+        $trustedRoot = Import-Certificate -FilePath $testCertificatePath -CertStoreLocation "Cert:\CurrentUser\Root"
+        $temporaryRootThumbprint = $trustedRoot.Thumbprint
     }
     & $signTool verify /pa /v $msixPath
     if ($LASTEXITCODE -ne 0) { throw "SignTool verification failed with exit code $LASTEXITCODE." }
 }
 finally {
-    if ($temporaryTrustThumbprint) {
-        Remove-CertificateByThumbprint "Cert:\CurrentUser\TrustedPeople" $temporaryTrustThumbprint
+    if ($temporaryRootThumbprint) {
+        Remove-CertificateByThumbprint "Cert:\CurrentUser\Root" $temporaryRootThumbprint
     }
     if ($testCertificate) {
         Remove-CertificateByThumbprint "Cert:\CurrentUser\My" $testCertificate.Thumbprint
@@ -295,7 +295,7 @@ if (Test-Path `$certificate) {
     if (-not `$TrustTestCertificate) {
         throw "This private-beta package uses a test certificate. Re-run with -TrustTestCertificate only on a controlled test device."
     }
-    Import-Certificate -FilePath `$certificate -CertStoreLocation "Cert:\CurrentUser\TrustedPeople" | Out-Null
+    Import-Certificate -FilePath `$certificate -CertStoreLocation "Cert:\CurrentUser\Root" | Out-Null
 }
 Add-AppxPackage -Path `$package -ForceUpdateFromAnyVersion
 Write-Host "NODAL OS $packageVersion installed for the current user."

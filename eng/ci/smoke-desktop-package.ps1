@@ -13,7 +13,7 @@ if ([string]::IsNullOrWhiteSpace($RunnerTemp)) {
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 $outputRoot = Join-Path $RunnerTemp "nodal-desktop-package"
 $packageName = "NODALOS.PrivateBeta"
-$trustedThumbprint = $null
+$trustedRootThumbprint = $null
 $process = $null
 
 function Wait-Json([string]$Uri, [int]$Attempts = 80) {
@@ -61,8 +61,8 @@ try {
     if (-not (Test-Path $certificatePath)) {
         throw "Private-beta test certificate was not emitted."
     }
-    $trusted = Import-Certificate -FilePath $certificatePath -CertStoreLocation "Cert:\CurrentUser\TrustedPeople"
-    $trustedThumbprint = $trusted.Thumbprint
+    $trustedRoot = Import-Certificate -FilePath $certificatePath -CertStoreLocation "Cert:\CurrentUser\Root"
+    $trustedRootThumbprint = $trustedRoot.Thumbprint
 
     $signature = Get-AuthenticodeSignature $msixPath
     if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
@@ -122,9 +122,9 @@ finally {
     if (Get-AppxPackage -Name $packageName -ErrorAction SilentlyContinue) {
         throw "Desktop package remained installed after uninstall."
     }
-    if ($trustedThumbprint) {
-        $trustedPath = "Cert:\CurrentUser\TrustedPeople\$trustedThumbprint"
-        if (Test-Path $trustedPath) { Remove-Item $trustedPath -Force }
+    if ($trustedRootThumbprint) {
+        $trustedRootPath = "Cert:\CurrentUser\Root\$trustedRootThumbprint"
+        if (Test-Path $trustedRootPath) { Remove-Item $trustedRootPath -Force }
     }
     $dataRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "NodalOS"
     if (Test-Path $dataRoot) { Remove-Item $dataRoot -Recurse -Force }
