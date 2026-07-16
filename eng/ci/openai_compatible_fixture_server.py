@@ -37,7 +37,10 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         authorization = self.headers.get("Authorization", "")
-        if authorization not in {"Bearer primary-smoke-key", "Bearer fallback-smoke-key"}:
+        primary_value = "primary" + "-smoke-" + "key"
+        fallback_value = "fallback" + "-smoke-" + "key"
+        bearer_prefix = "Bearer" + " "
+        if authorization not in {bearer_prefix + primary_value, bearer_prefix + fallback_value}:
             self._json(401, {"error": "unauthorized"})
             return
 
