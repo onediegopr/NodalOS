@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "headSha": "9658e9ce045ff65febbb0082de527f7e2e275f79",
+  "validatedAtUtc": "2026-07-16T23:26:35.8851136+00:00",
+  "scope": "Mission Control recovery guidance renderer, focused route tests and process smoke",
+  "commands": [
+    "dotnet restore tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj",
+    "dotnet build tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-restore",
+    "dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter FullyQualifiedName~MissionControlProductShellSelectiveRuntimeInspectorRouteTests",
+    "./eng/ci/smoke-mission-control-root.ps1"
+  ],
+  "failure": null
+}
