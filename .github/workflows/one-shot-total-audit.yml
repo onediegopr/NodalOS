@@ -1,9 +1,16 @@
 name: One-shot Total Technical Audit
 
 on:
-  push:
+  pull_request:
     branches:
-      - audit/total-cleanup-2026-07-16
+      - main
+    paths:
+      - '.github/workflows/one-shot-total-audit.yml'
+      - 'eng/audit/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'tools/repository/**'
+      - 'global.json'
 
 permissions:
   contents: read
