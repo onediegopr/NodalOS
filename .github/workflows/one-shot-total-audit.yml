@@ -1,0 +1,127 @@
+name: One-shot Total Technical Audit
+
+on:
+  push:
+    branches:
+      - audit/total-cleanup-2026-07-16
+
+permissions:
+  contents: read
+
+concurrency:
+  group: one-shot-total-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run deterministic inventory
+        run: python eng/audit/repository_audit.py
+
+      - name: Collect structural hotspots
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="artifacts/repository-audit/structural-hotspots.txt"
+          {
+            echo "# HEAD"
+            git rev-parse HEAD
+            echo
+            echo "# Tracked files"
+            git ls-files | wc -l
+            echo
+            echo "# Largest C# source files"
+            find src -type f -name '*.cs' -print0 | xargs -0 wc -l | sort -nr | head -40
+            echo
+            echo "# Largest C# test files"
+            find tests -type f -name '*.cs' -print0 | xargs -0 wc -l | sort -nr | head -40
+            echo
+            echo "# Fixture scenario references in product source"
+            grep -RIn --include='*.cs' 'NodalOsSelectiveRuntimeFixtureScenario' src || true
+            echo
+            echo "# Product-facing legacy/lab markers"
+            grep -RIn --include='*.cs' -E 'fixture-backed|FixtureBacked|pilot/legacy|LAB_LEGACY_TRANSITION' src/OneBrain.Pilot src/OneBrain.AgentOperations.Core || true
+            echo
+            echo "# One-shot workflows accidentally tracked"
+            find .github/workflows -maxdepth 1 -type f -iname '*one-shot*' -print | sort
+            echo
+            echo "# Root technology manifests"
+            find . -maxdepth 3 -type f \( -name package.json -o -name Cargo.toml -o -name tauri.conf.json -o -name tauri.conf.json5 \) -print | sort
+            echo
+            echo "# Git object statistics"
+            git count-objects -vH
+          } > "$out"
+
+      - name: Upload repository audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-audit-repository-inventory
+          path: artifacts/repository-audit
+          if-no-files-found: error
+          retention-days: 3
+
+  dependency-and-cleanup-audit:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pinned .NET 11 preview
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.100-preview.6.26359.118
+
+      - name: Restore solution
+        shell: pwsh
+        run: dotnet restore OneBrain.slnx
+
+      - name: Dependency audit
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/total-audit | Out-Null
+          $log = 'artifacts/total-audit/dependencies.txt'
+          '# Vulnerable packages' | Set-Content $log
+          dotnet list OneBrain.slnx package --vulnerable --include-transitive 2>&1 | Tee-Object -FilePath $log -Append
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "`n# Deprecated packages" | Add-Content $log
+          dotnet list OneBrain.slnx package --deprecated 2>&1 | Tee-Object -FilePath $log -Append
+          exit $LASTEXITCODE
+
+      - name: Reference-aware artifact cleanup projection
+        shell: pwsh
+        run: |
+          $log = 'artifacts/total-audit/artifact-cleanup.txt'
+          ./tools/repository/clean-unreferenced-artifacts.ps1 2>&1 | Tee-Object -FilePath $log
+          exit $LASTEXITCODE
+
+      - name: Build canonical product projects
+        shell: pwsh
+        run: |
+          $log = 'artifacts/total-audit/build.txt'
+          dotnet build src/OneBrain.Pilot/OneBrain.Pilot.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log -Append
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log -Append
+          exit $LASTEXITCODE
+
+      - name: Upload dependency and cleanup audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-audit-dependency-cleanup
+          path: |
+            artifacts/total-audit
+            docs/audit/artifact-cleanup-report.md
+          if-no-files-found: warn
+          retention-days: 3
