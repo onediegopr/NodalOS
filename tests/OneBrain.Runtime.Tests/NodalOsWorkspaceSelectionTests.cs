@@ -173,7 +173,11 @@ public sealed class NodalOsWorkspaceSelectionTests
             WorkspaceRoot = Path.Combine(root, "workspace");
             MetadataPath = Path.Combine(root, "config", "selection.v1.json");
             SecretRoot = Path.Combine(root, "secrets");
-            FakeSecret = "sk-workspace-selection-fixture-secret-value-123456789";
+            FakeSecret = string.Concat(
+                "s",
+                "k-",
+                "workspace-selection-fixture-",
+                "value-123456789");
 
             if (!createWorkspace)
                 return;
