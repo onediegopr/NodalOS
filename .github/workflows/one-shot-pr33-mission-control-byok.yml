@@ -1,0 +1,97 @@
+name: One-shot PR33 Mission Control BYOK projection
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-pr33-mission-control-byok.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/productization-real-byok-connection-v1
+          fetch-depth: 0
+      - name: Project secure BYOK state into canonical Mission Control
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/OneBrain.Pilot/MissionControlProductShellEndpointMapper.cs')
+          text = path.read_text(encoding='utf-8')
+
+          def replace(old, new, count=1):
+              global text
+              actual = text.count(old)
+              if actual != count:
+                  raise SystemExit(f'Expected {count} occurrence(s), found {actual}: {old[:100]!r}')
+              text = text.replace(old, new, count)
+
+          replace(
+              'using OneBrain.AgentOperations.Contracts;\nusing OneBrain.AgentOperations.Core.Runtime;',
+              'using OneBrain.AgentOperations.Contracts;\nusing OneBrain.AgentOperations.Core.Models;\nusing OneBrain.AgentOperations.Core.Runtime;')
+          replace(
+              '    bool ActionRollbackAvailable,\n    bool ActionRolledBack,\n    string LogicalModel,',
+              '    bool ActionRollbackAvailable,\n    bool ActionRolledBack,\n    bool ByokConfigured,\n    bool ModelConnectionVerified,\n    bool ModelFallbackApplied,\n    string LogicalModel,')
+          replace(
+              '        Func<NodalOsWorkspaceMissionDraftService>? missionDraftServiceFactory = null,\n        Func<NodalOsWorkspaceHandoffExecutionService>? handoffExecutionServiceFactory = null)',
+              '        Func<NodalOsWorkspaceMissionDraftService>? missionDraftServiceFactory = null,\n        Func<NodalOsWorkspaceHandoffExecutionService>? handoffExecutionServiceFactory = null,\n        Func<NodalOsByokModelConfigurationService>? byokModelConfigurationServiceFactory = null)')
+          replace(
+              '        workspaceSelectionServiceFactory ??= NodalOsWorkspaceSelectionRuntime.CreateDefault;\n        missionDraftServiceFactory ??= NodalOsWorkspaceMissionDraftRuntime.CreateDefault;\n',
+              '        workspaceSelectionServiceFactory ??= NodalOsWorkspaceSelectionRuntime.CreateDefault;\n        missionDraftServiceFactory ??= NodalOsWorkspaceMissionDraftRuntime.CreateDefault;\n        handoffExecutionServiceFactory ??= NodalOsWorkspaceHandoffExecutionRuntime.CreateDefault;\n        byokModelConfigurationServiceFactory ??= NodalOsByokModelConfigurationRuntime.CreateDefault;\n')
+          replace(
+              '                    missionDraftServiceFactory(),\n                    handoffExecutionServiceFactory?.Invoke())',
+              '                    missionDraftServiceFactory(),\n                    handoffExecutionServiceFactory(),\n                    byokModelConfigurationServiceFactory())',
+              count=2)
+          replace(
+              '        NodalOsWorkspaceMissionDraftService? missionDraftService = null,\n        NodalOsWorkspaceHandoffExecutionService? handoffExecutionService = null)',
+              '        NodalOsWorkspaceMissionDraftService? missionDraftService = null,\n        NodalOsWorkspaceHandoffExecutionService? handoffExecutionService = null,\n        NodalOsByokModelConfigurationService? byokModelConfigurationService = null)')
+          replace(
+              '        var execution = handoffExecutionService is null\n            ? null\n            : await handoffExecutionService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);\n\n        var workspaceSelected',
+              '        var execution = handoffExecutionService is null\n            ? null\n            : await handoffExecutionService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);\n        var modelConfiguration = byokModelConfigurationService is null\n            ? null\n            : await byokModelConfigurationService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);\n\n        var byokConfigured = modelConfiguration?.Configured == true;\n        var modelConnectionVerified = modelConfiguration?.Connected == true;\n        var workspaceSelected')
+          replace(
+              '        var executionTimeline = execution?.Timeline.Count > 0\n            ? ProjectExecutionTimeline(execution.Timeline, planTimeline.Count)\n            : [];\n        var timeline = planTimeline.Concat(executionTimeline).ToArray();',
+              '        var executionTimeline = execution?.Timeline.Count > 0\n            ? ProjectExecutionTimeline(execution.Timeline, planTimeline.Count)\n            : [];\n        var modelTimeline = modelConfiguration?.Timeline.Count > 0\n            ? ProjectExecutionTimeline(modelConfiguration.Timeline, planTimeline.Count + executionTimeline.Count)\n            : [];\n        var timeline = planTimeline.Concat(executionTimeline).Concat(modelTimeline).ToArray();')
+          replace(
+              '        var executionEvidence = execution?.EvidenceRefs ?? [];\n        var evidenceRefs = fixture.Mission.EvidenceRefs',
+              '        var executionEvidence = execution?.EvidenceRefs ?? [];\n        var modelEvidence = modelConfiguration?.EvidenceRefs ?? [];\n        var evidenceRefs = fixture.Mission.EvidenceRefs')
+          replace(
+              '            .Concat(executionEvidence)\n            .Where(value => !string.IsNullOrWhiteSpace(value))',
+              '            .Concat(executionEvidence)\n            .Concat(modelEvidence)\n            .Where(value => !string.IsNullOrWhiteSpace(value))')
+          replace(
+              '        var activeProvider = ValueOr(fixture.Inspector.ActiveProvider, "not selected");\n        var activeModel = ValueOr(fixture.Inspector.ActiveModel, "not selected");\n        var logicalModel = ValueOr(fixture.Inspector.LogicalModel, "not selected");\n        var recentFallback = fixture.ResumeCard.RecentFallback ?? fixture.Inspector.RecentFallbacks.LastOrDefault();',
+              '        var activeProvider = modelConnectionVerified\n            ? ValueOr(modelConfiguration!.SelectedProviderId, modelConfiguration.Primary?.ProviderId ?? "not selected")\n            : byokConfigured ? modelConfiguration!.Primary?.ProviderId ?? "configured" : ValueOr(fixture.Inspector.ActiveProvider, "not selected");\n        var activeModel = modelConnectionVerified\n            ? ValueOr(modelConfiguration!.SelectedModelId, modelConfiguration.Primary?.ModelId ?? "not selected")\n            : byokConfigured ? modelConfiguration!.Primary?.ModelId ?? "configured" : ValueOr(fixture.Inspector.ActiveModel, "not selected");\n        var logicalModel = byokConfigured\n            ? modelConfiguration!.LogicalModel\n            : ValueOr(fixture.Inspector.LogicalModel, "not selected");\n        var recentFallback = modelConfiguration?.FallbackApplied == true\n            ? $"Pre-authorized BYOK fallback selected {modelConfiguration.SelectedProviderId} / {modelConfiguration.SelectedModelId}."\n            : fixture.ResumeCard.RecentFallback ?? fixture.Inspector.RecentFallbacks.LastOrDefault();')
+          replace(
+              '            new("model", "Active model", activeModel, $"{activeProvider} · logical alias {logicalModel}", "active"),',
+              '            new(\n                "model",\n                "Active model",\n                activeModel,\n                modelConnectionVerified\n                    ? $"{activeProvider} · logical alias {logicalModel} · real connection verified"\n                    : byokConfigured\n                        ? $"{activeProvider} · logical alias {logicalModel} · connection test pending"\n                        : $"{activeProvider} · logical alias {logicalModel} · fixture-backed",\n                modelConnectionVerified ? "ready" : byokConfigured ? "attention" : "neutral"),')
+          replace(
+              '            new(\n                "providers",\n                "Providers",\n                $"{readyProviders}/{totalProviders} ready",\n                "Local fixture providers prove routing and fallback without external calls.",\n                readyProviders > 0 ? "ready" : "attention"),',
+              '            new(\n                "providers",\n                "Providers",\n                byokConfigured\n                    ? $"{1 + (modelConfiguration!.Fallback is null ? 0 : 1)} configured"\n                    : $"{readyProviders}/{totalProviders} fixture-ready",\n                modelConnectionVerified\n                    ? "A real provider call completed through the existing policy-aware router with redacted evidence."\n                    : byokConfigured\n                        ? "Configuration is stored securely; run the bounded connection test before using it for missions."\n                        : "Configure a BYOK or loopback provider to replace fixture-backed model context.",\n                modelConnectionVerified ? "ready" : "attention"),')
+          replace(
+              '            new("workspace", "Workspace", workspaceDisplay, workspaceDetail, workspaceSelected ? "ready" : "attention"),\n            new(\n                "advisor",',
+              '            new("workspace", "Workspace", workspaceDisplay, workspaceDetail, workspaceSelected ? "ready" : "attention"),\n            new(\n                "model-connection",\n                "BYOK connection",\n                modelConnectionVerified ? "Verified" : byokConfigured ? "Test required" : "Not configured",\n                modelConnectionVerified\n                    ? $"{modelConfiguration!.AttemptCount} bounded attempt(s) · cost ${modelConfiguration.TotalEstimatedCost:0.########} · response hash {Short(modelConfiguration.ResponseSha256, 12)}."\n                    : "Keys remain in the local secure store; only opaque references enter configuration and evidence.",\n                modelConnectionVerified ? "ready" : "attention"),\n            new(\n                "advisor",')
+          replace(
+              '            ActionRollbackAvailable: execution?.RollbackAvailable == true,\n            ActionRolledBack: execution?.RolledBack == true,\n            LogicalModel: logicalModel,',
+              '            ActionRollbackAvailable: execution?.RollbackAvailable == true,\n            ActionRolledBack: execution?.RolledBack == true,\n            ByokConfigured: byokConfigured,\n            ModelConnectionVerified: modelConnectionVerified,\n            ModelFallbackApplied: modelConfiguration?.FallbackApplied == true,\n            LogicalModel: logicalModel,')
+          replace(
+              '                $"rollback-available:{(execution?.RollbackAvailable == true).ToString().ToLowerInvariant()}",\n                $"logical-model:{logicalModel}",',
+              '                $"rollback-available:{(execution?.RollbackAvailable == true).ToString().ToLowerInvariant()}",\n                $"byok-configured:{byokConfigured.ToString().ToLowerInvariant()}",\n                $"model-connection-verified:{modelConnectionVerified.ToString().ToLowerInvariant()}",\n                $"model-fallback-applied:{(modelConfiguration?.FallbackApplied == true).ToString().ToLowerInvariant()}",\n                $"logical-model:{logicalModel}",')
+          replace(
+              '            FixtureBacked: !realMissionDraft,\n            SecretsExcluded: true,\n            ExternalIoUsed: fixture.ExternalIoUsed,\n            NetworkUsed: fixture.NetworkUsed,',
+              '            FixtureBacked: !realMissionDraft || !modelConnectionVerified,\n            SecretsExcluded: true,\n            ExternalIoUsed: fixture.ExternalIoUsed || modelConfiguration?.RealProviderCallAttempted == true,\n            NetworkUsed: fixture.NetworkUsed || modelConfiguration?.NetworkUsed == true,')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add src/OneBrain.Pilot/MissionControlProductShellEndpointMapper.cs
+          git commit -m 'feat: project secure BYOK state into Mission Control'
+          git push origin HEAD:feature/productization-real-byok-connection-v1
