@@ -25,9 +25,9 @@ public sealed class NodalOsByokModelConfigurationTests
         var configured = await service.ConfigureAsync(Request(primaryApiKey: rawKey));
 
         Assert.IsTrue(configured.Accepted, string.Join(" | ", configured.Blockers));
-        Assert.AreEqual(true, configured.Configured);
+        Assert.IsTrue(configured.Configured);
         Assert.IsTrue(configured.Persisted);
-        Assert.IsTrue(configured.Primary?.CredentialConfigured == true);
+        Assert.AreEqual(true, configured.Primary?.CredentialConfigured);
         Assert.AreEqual("ephemeral", configured.Primary?.CredentialStoreId);
         Assert.IsTrue(File.Exists(fixture.MetadataPath));
         var json = await File.ReadAllTextAsync(fixture.MetadataPath);
