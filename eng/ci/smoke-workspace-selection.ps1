@@ -144,7 +144,8 @@ try {
         $metadata -notmatch 'windows-dpapi') {
         throw "Workspace selection metadata is unsafe or incomplete."
     }
-    if (@(Get-ChildItem $secretRoot -File -Filter '*.bin').Count -ne 1) {
+    $protectedFiles = @(Get-ChildItem $secretRoot -File -Filter '*.bin' -Force)
+    if ($protectedFiles.Count -ne 1) {
         throw "Protected workspace root reference was not persisted exactly once."
     }
     Assert-WorkspaceUnchanged $before
@@ -178,7 +179,7 @@ finally {
     Remove-Item Env:NODAL_OS_WORKSPACE_SELECTION_METADATA_PATH -ErrorAction SilentlyContinue
     Remove-Item Env:NODAL_OS_WORKSPACE_SELECTION_SECRET_ROOT -ErrorAction SilentlyContinue
     if (Test-Path $fixtureRoot) {
-        Get-ChildItem $fixtureRoot -File -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+        Get-ChildItem $fixtureRoot -File -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
             $_.Attributes = [System.IO.FileAttributes]::Normal
         }
         Remove-Item $fixtureRoot -Recurse -Force
