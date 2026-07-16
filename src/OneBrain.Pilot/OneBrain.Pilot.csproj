@@ -5,6 +5,11 @@
     <TargetFramework>net11.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Product>NODAL OS</Product>
+    <Company>NODAL OS</Company>
+    <Authors>NODAL OS</Authors>
+    <Description>Local-first AI Mission Control for controlled work on real projects.</Description>
+    <VersionPrefix>0.1.0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
