@@ -9,6 +9,7 @@ public static class PilotRuntimeIntegrationEndpointMapper
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(environment);
 
+        MissionControlProductShellEndpointMapper.MapMissionControlProductShell(app, environment);
         ProductLedgerLocalDevRouteEndpointMapper.MapProductLedgerLocalDevRoutePreview(
             (IEndpointRouteBuilder)app,
             environment);
