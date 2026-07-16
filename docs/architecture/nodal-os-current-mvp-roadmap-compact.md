@@ -40,12 +40,12 @@ No further Living Skills expansion is prioritized until the productization gates
 
 | Area | Readiness | Evidence-backed interpretation |
 | --- | ---: | --- |
-| Safety and control foundations | 91% | Strong tests, mission/scope approval contracts, redaction, semantic verification, stale-precondition detection and fail-closed boundaries exist. |
-| Local/dev runtime foundations | 81% | Workspace understanding, protected workspace selection, persisted mission draft, test-owned file operations, model routing fixtures, Advisor and handoff loops run in CI. |
+| Safety and control foundations | 93% | Mission/scope approval binding, stale-precondition checks, exact-hash verification, redaction and guarded rollback are covered by focused and process-level tests. |
+| Local/dev runtime foundations | 85% | Protected workspace selection, persisted mission draft, real bounded handoff execution, restart rehydration, rollback, model routing fixtures, Advisor and handoff loops run in CI. |
 | Living Skills foundation | 80% | Compiler, memory, capture session and Windows observation adapter are validated; live product capture/replay is not enabled. |
-| Coherent product experience | 54% | Mission Control is canonical and now exposes a protected real workspace, a persisted real mission goal, reviewed plan and one reversible action candidate. Execution is still disabled. |
+| Coherent product experience | 62% | Mission Control is canonical and projects a real workspace, real mission, reviewed action, approval, verified execution, evidence and rollback state. Live model configuration remains fixture-backed. |
 | Installable desktop product | 0% | No desktop packaging project, signed installer or updater channel exists in the current repository. |
-| Sellable MVP | 48% | The product has a coherent entry surface, real local workspace identity and mission preparation, but controlled user-workspace execution, live BYOK and packaging remain open. |
+| Sellable MVP | 55% | The core local mission loop now reaches a verified reversible workspace action, but live BYOK, desktop packaging, onboarding and private-beta hardening remain open. |
 | Production and commercial release | 0% | No published release, licensing/billing flow, customer-data validation or production deployment. |
 
 Percentages are directional planning estimates, not completion claims.
@@ -73,12 +73,13 @@ Implemented in shell v1:
 - `/api/mission-control` exposes the same redacted projection;
 - the existing lightweight mission runtime, model router, capability registry, canonical event/timeline and evidence refs are reused;
 - fallback, verification, browser blocker, human-control status and evidence are visible;
-- the protected workspace and persisted real mission draft are projected into the same shell;
+- the protected workspace, persisted real mission and controlled handoff execution are projected into the same shell;
+- approval availability, execution status, verification and rollback readiness are visible without introducing a second dashboard;
 - diagnostics remain collapsed and local-only;
 - the former root Pilot/demo surface remains available explicitly at `/pilot/legacy`;
 - no second timeline, ledger, policy engine, storage layer or product authority was introduced.
 
-Remaining before P1 is fully product-complete: replace the fixture execution stream with the approved real mission run and its verified result.
+Remaining before P1 is fully product-complete: replace fixture-backed model/provider context with the usable BYOK path and finish desktop packaging/onboarding.
 
 ### P2 — Real local workspace MVP loop
 
@@ -110,30 +111,39 @@ Implemented:
 - stale-precondition detection when the target changes after review;
 - mission and candidate rehydration after process restart;
 - real goal, plan and candidate projected into canonical Mission Control;
-- execution, filesystem mutation and product authority remain explicitly disabled;
 - no arbitrary patch, shell, path escape or absolute path exposure.
 
 Decision: `REAL_WORKSPACE_MISSION_DRAFT_V1_READY`.
 
 #### P2c — mission-scope approval and one verified reversible action
 
-Next exit criteria:
+Implemented:
 
-- resolve one approval bound to mission id, workspace fingerprint, action id, capability and relative target;
-- revalidate the selected workspace, target precondition and proposed content immediately before execution;
-- execute only the approved `CreateTextFile` or `ExactHashUpdate` candidate;
-- atomic write with snapshot/restore plan where an existing file is replaced;
-- deterministic post-write content and SHA-256 verification;
-- rollback path validated without broadening filesystem authority;
-- canonical evidence and timeline emitted before completion;
-- handoff uses redacted relative identifiers;
-- cancellation and stale state fail closed.
+- `/mission/execution` presents the exact reviewed scope and `/api/mission/execution` exposes the redacted execution projection;
+- one-shot operator approval is bound to mission id, workspace id/fingerprint, action id, `filesystem.write.safe`, relative target and reviewed hashes;
+- the approval record remains non-authoritative by itself: runtime execution and product authority stay false in approval contracts;
+- workspace identity, target state and proposed content hash are revalidated immediately before mutation;
+- only the reviewed `CreateTextFile` or `ExactHashUpdate` operation over `NODAL_HANDOFF.md` can run;
+- create uses create-only atomic move and exact byte/SHA-256 verification;
+- update requires the exact reviewed current hash, writes a verified app-local snapshot, uses atomic replace and verifies exact result bytes/SHA-256;
+- execution state is persisted before mutation and completed state is persisted only after deterministic verification;
+- interrupted approved execution does not resume automatically after restart;
+- guarded rollback requires the exact current result hash and restores only the matching create/update operation;
+- rollback refuses to overwrite a result changed externally after execution;
+- execution and rollback evidence reuse canonical evidence refs and timeline projections;
+- result, verification and rollback readiness rehydrate after process restart;
+- Mission Control projects approval, execution, verification, evidence and rollback state;
+- same-origin one-time-token POST, loopback-only access, closed CSP, no-store and bounded forms protect the product surface;
+- process smoke proves select workspace → create mission → approve exact scope → execute → verify → restart → rehydrate → rollback → verify original workspace state;
+- no shell, subprocess, network, cloud/provider call, arbitrary target or product authority.
 
-The current test-owned file operations remain regression fixtures. Their atomic-write, exact-hash, snapshot, verification and rollback behaviors should be consolidated into the product operation rather than duplicated.
+Decision: `REAL_WORKSPACE_HANDOFF_EXECUTION_V1_READY`.
+
+The test-owned file operations remain regression fixtures. Their atomic-write, exact-hash, snapshot, verification and rollback behaviors were consolidated into the bounded product operation rather than exposed as broader filesystem authority.
 
 ### P3 — BYOK usable from the product
 
-Exit criteria:
+Next exit criteria:
 
 - provider/model selection from the product shell;
 - opaque secret reference stored through the approved local secure store;
@@ -186,8 +196,9 @@ Exit criteria:
 - Sensitive scope expansion, external communication, destructive actions, secrets, cost/privacy escalation and irreversible work require intervention.
 - Verification and evidence precede completion/promotion.
 - Secrets, raw DOM, raw screenshots, absolute paths and credential-like values do not enter logs, handoffs or learned skill memory.
-- Workspace selection and mission drafting may mutate NODAL OS local configuration, but never the selected workspace.
-- A reviewed action candidate is guidance and evidence, not execution authority.
+- Workspace selection and mission drafting may mutate NODAL OS local configuration, but not the selected workspace.
+- Workspace mutation is restricted to the exact approved `NODAL_HANDOFF.md` candidate and must preserve its reviewed precondition, verification and rollback boundary.
+- A reviewed action candidate and an approval decision are inputs to the controlled executor; neither grants general filesystem or product authority.
 - CloakBrowser remains the canonical browser target; ChromeLab remains lab/transition only.
 - Product authority, production deployment and release/commercial claims require separate evidence-backed gates.
 
@@ -198,10 +209,10 @@ Exit criteria:
 1. canonical dark Mission Control shell — `MISSION_CONTROL_PRODUCT_SHELL_V1_READY`;
 2. protected real local workspace selection and persistence — `REAL_LOCAL_WORKSPACE_SELECTION_V1_READY`;
 3. real workspace mission binding and reviewed action candidate — `REAL_WORKSPACE_MISSION_DRAFT_V1_READY`;
-4. mission-scope approval and one verified reversible handoff action — next;
-5. real BYOK connection path;
+4. mission-scope approval and one verified reversible handoff action — `REAL_WORKSPACE_HANDOFF_EXECUTION_V1_READY`;
+5. real BYOK connection path — next;
 6. packaging and private-beta installer.
 
 Next exact macro:
 
-`NODAL_OS_PRODUCTIZATION_MISSION_SCOPE_APPROVAL_AND_CONTROLLED_HANDOFF_EXECUTION`
+`NODAL_OS_PRODUCTIZATION_REAL_BYOK_CONNECTION_PATH`
