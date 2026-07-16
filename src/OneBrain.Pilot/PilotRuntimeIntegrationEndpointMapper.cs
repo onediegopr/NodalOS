@@ -1,3 +1,4 @@
+using OneBrain.AgentOperations.Core.Models;
 using OneBrain.AgentOperations.Core.Workspace;
 
 namespace OneBrain.Pilot;
@@ -17,6 +18,8 @@ public static class PilotRuntimeIntegrationEndpointMapper
             NodalOsWorkspaceMissionDraftRuntime.CreateDefault;
         Func<NodalOsWorkspaceHandoffExecutionService> handoffExecutionServiceFactory =
             NodalOsWorkspaceHandoffExecutionRuntime.CreateDefault;
+        Func<NodalOsByokModelConfigurationService> byokModelConfigurationServiceFactory =
+            NodalOsByokModelConfigurationRuntime.CreateDefault;
         LocalWorkspaceSelectionEndpointMapper.MapLocalWorkspaceSelection(
             app,
             environment,
@@ -29,12 +32,17 @@ public static class PilotRuntimeIntegrationEndpointMapper
             app,
             environment,
             handoffExecutionServiceFactory);
+        NodalOsByokModelConfigurationEndpointMapper.MapNodalOsByokModelConfiguration(
+            app,
+            environment,
+            byokModelConfigurationServiceFactory);
         MissionControlProductShellEndpointMapper.MapMissionControlProductShell(
             app,
             environment,
             workspaceSelectionServiceFactory,
             missionDraftServiceFactory,
-            handoffExecutionServiceFactory);
+            handoffExecutionServiceFactory,
+            byokModelConfigurationServiceFactory);
         ProductLedgerLocalDevRouteEndpointMapper.MapProductLedgerLocalDevRoutePreview(
             (IEndpointRouteBuilder)app,
             environment);
