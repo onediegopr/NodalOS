@@ -2,7 +2,7 @@
 
 Date: 2026-07-16
 
-Status: `TECHNICAL_FOUNDATION_STRONG_PRODUCTIZATION_IN_PROGRESS`
+Status: `PRIVATE_BETA_PACKAGE_READY_HARDENING_NEXT`
 
 This document is the compact planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this current product path.
 
@@ -44,9 +44,9 @@ No further Living Skills expansion is prioritized until the productization gates
 | Local/dev runtime foundations | 90% | Protected workspace selection, persisted mission draft, real bounded handoff execution, restart rehydration, rollback, real BYOK connection/fallback, Advisor and handoff loops run in CI. |
 | Living Skills foundation | 80% | Compiler, memory, capture session and Windows observation adapter are validated; live product capture/replay is not enabled. |
 | Coherent product experience | 72% | Mission Control is canonical and projects a real workspace, real mission, reviewed action, approval, verified execution, evidence, rollback and verified BYOK route without creating a second source of truth. |
-| Installable desktop product | 0% | No desktop packaging project, signed installer or updater channel exists in the current repository. |
-| Sellable MVP | 65% | The core local mission loop reaches a verified reversible workspace action and a verified BYOK route, but desktop packaging, onboarding and private-beta hardening remain open. |
-| Production and commercial release | 0% | No published release, licensing/billing flow, customer-data validation or production deployment. |
+| Installable desktop product | 85% | A versioned test-signed MSIX is built from the existing .NET runtime and passes clean build/install/launch/health/uninstall on fresh Windows; production signing and public distribution remain closed. |
+| Sellable MVP | 72% | The core loop and installable private-beta package are validated; onboarding, failure recovery, real design-partner use and release/legal hardening remain open. |
+| Production and commercial release | 0% | No production signing identity, published release, licensing/billing flow, customer-data validation or production deployment. |
 
 Percentages are directional planning estimates, not completion claims.
 
@@ -80,7 +80,7 @@ Implemented in shell v1:
 - the environment-only AI configuration console is isolated under `/pilot/legacy/ai/config`;
 - no second timeline, ledger, policy engine, storage layer or product authority was introduced.
 
-Remaining before P1 is fully product-complete: desktop packaging, onboarding and private-beta usability hardening.
+Remaining before P1 is fully product-complete: onboarding and private-beta usability hardening.
 
 ### P2 — Real local workspace MVP loop
 
@@ -169,17 +169,22 @@ Productization decision: `REAL_BYOK_MODEL_CONNECTION_V1_READY`.
 
 ### P4 — Packaging and local distribution
 
-Choose and implement one desktop packaging route for the existing .NET runtime. Do not assume Tauri because historical documents mentioned it.
+Implemented:
 
-Exit criteria:
+- one Windows-native MSIX route built directly from the existing `OneBrain.Pilot` .NET application;
+- self-contained `win-x64` Release publish without Tauri, Electron, Node, a second shell or a third-party installer framework;
+- packaged runtime keeps Kestrel on validated loopback HTTP origins and opens the existing Mission Control only after startup;
+- mutable packaged state defaults to `%LOCALAPPDATA%\NodalOS\ProductData` rather than the read-only package location;
+- deterministic NODAL OS assets use the canonical dark background and electric-blue accent;
+- four-part package version, SHA-256-bound manual update manifest and optional HTTPS `.appinstaller` generation;
+- ephemeral test signing for controlled devices plus externally managed PFX support, with no private key or signing password in artifacts;
+- install/uninstall scripts preserve `%LOCALAPPDATA%\NodalOS` by default and remove it only through an explicit destructive switch;
+- license, signing/release and local-data boundaries are documented without claiming public release readiness;
+- fresh-Windows CI smoke proves Release build → focused desktop tests → self-contained publish → MSIX creation/signature verification → install → launch from installed location → Mission Control and clean BYOK health → process shutdown → uninstall → certificate and registration cleanup;
+- Selective Runtime Integration and Tier 1 Safety remain green on the same implementation;
+- no product authority, public listener, cloud/account dependency, production key or public update channel was introduced.
 
-- reproducible Release build;
-- versioned Windows installer;
-- application data directories and uninstall behavior;
-- signed artifact strategy;
-- update manifest/channel or an explicit manual-update v1;
-- clean install smoke on a fresh Windows environment;
-- license, security and privacy documentation present.
+Decision: `WINDOWS_PRIVATE_BETA_MSIX_V1_READY`.
 
 ### P5 — Private beta hardening
 
@@ -227,8 +232,8 @@ Exit criteria:
 3. real workspace mission binding and reviewed action candidate — `REAL_WORKSPACE_MISSION_DRAFT_V1_READY`;
 4. mission-scope approval and one verified reversible handoff action — `REAL_WORKSPACE_HANDOFF_EXECUTION_V1_READY`;
 5. real BYOK connection path — `REAL_BYOK_MODEL_CONNECTION_V1_READY`;
-6. packaging and private-beta installer — next.
+6. packaging and private-beta installer — `WINDOWS_PRIVATE_BETA_MSIX_V1_READY`.
 
 Next exact macro:
 
-`NODAL_OS_PRODUCTIZATION_DESKTOP_PACKAGING_AND_LOCAL_DISTRIBUTION`
+`NODAL_OS_PRODUCTIZATION_PRIVATE_BETA_HARDENING`
