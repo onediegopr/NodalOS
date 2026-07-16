@@ -26,7 +26,8 @@ public static class PilotRuntimeIntegrationEndpointMapper
         MissionControlProductShellEndpointMapper.MapMissionControlProductShell(
             app,
             environment,
-            workspaceSelectionServiceFactory);
+            workspaceSelectionServiceFactory,
+            missionDraftServiceFactory);
         ProductLedgerLocalDevRouteEndpointMapper.MapProductLedgerLocalDevRoutePreview(
             (IEndpointRouteBuilder)app,
             environment);
