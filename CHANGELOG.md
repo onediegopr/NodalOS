@@ -1,8 +1,8 @@
 # NODAL OS — Changelog
 
-## Unreleased — productization in progress
+## Unreleased — private-beta hardening next
 
-NODAL OS has no production release, signed desktop installer, public update channel or commercial release at this point.
+NODAL OS has a validated test-signed Windows private-beta package, but no production signing identity, public update channel or commercial release.
 
 Current validated foundations include:
 
@@ -36,6 +36,12 @@ Current validated foundations include:
 - verified BYOK provider/model/fallback state projected into canonical Mission Control without creating another router, policy engine, timeline or ledger;
 - restart rehydration and guarded clearing of BYOK metadata and stored credential references;
 - process-level CI smoke covering secure configuration, DPAPI plaintext checks, primary HTTP 503, authorized fallback HTTP 200, response-hash verification, Mission Control projection, restart, rehydration and credential cleanup;
+- Windows-native MSIX built directly from the existing .NET Pilot runtime without Tauri, Electron, Node or a second shell;
+- self-contained `win-x64` publish, versioned package identity, deterministic product assets and SHA-256-bound manual update manifest;
+- ephemeral test signing for controlled devices and support for an externally managed PFX without copying private keys into artifacts;
+- packaged startup restricted to loopback, with writable state under `%LOCALAPPDATA%\NodalOS\ProductData` and optional headless launch;
+- uninstall preserving local product data by default and deleting it only through an explicit destructive switch;
+- fresh-Windows CI smoke proving package build, signature verification, install, launch from the installed location, Mission Control/BYOK health, shutdown, uninstall and certificate cleanup;
 - one-time request tokens, strict same-origin POST, no-store and closed CSP on workspace, mission, execution and model surfaces;
 - former ONE BRAIN Pilot demo home preserved under an explicit legacy lab route instead of defining the primary product experience;
 - environment-only AI configuration preserved explicitly under `/pilot/legacy/ai/config` instead of competing with the canonical BYOK product surface;
@@ -49,7 +55,7 @@ Current validated foundations include:
 - ChromeLab security validation as `LAB_LEGACY_TRANSITION`;
 - CloakBrowser as the canonical browser target, with live CDP validation still blocked when the pinned external binary is unavailable.
 
-The selected workspace can now be mutated only through the exact approved and revalidated `NODAL_HANDOFF.md` candidate, with deterministic verification and guarded rollback. A real BYOK route can now be configured, tested, rehydrated and cleared without exposing its credential or provider response. Broader user-workspace mutation, arbitrary patching, shell execution, using the verified BYOK route for unrestricted mission inference, customer-data workflows, desktop packaging, public deployment, billing, licensing, auto-update and release claims remain closed until separately implemented and validated.
+The selected workspace can be mutated only through the exact approved and revalidated `NODAL_HANDOFF.md` candidate, with deterministic verification and guarded rollback. A real BYOK route can be configured, tested, rehydrated and cleared without exposing its credential or provider response. The private-beta MSIX is engineering evidence, not a public release. Broader user-workspace mutation, arbitrary patching, shell execution, unrestricted mission inference, customer-data workflows, production signing, public distribution, billing, licensing, auto-update and commercial release claims remain closed until separately implemented and validated.
 
 ## Historical experimental milestone — 2026-06-25
 
