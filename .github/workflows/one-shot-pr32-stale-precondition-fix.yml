@@ -1,0 +1,70 @@
+name: One-shot PR32 stale precondition fix
+
+on:
+  push:
+    branches:
+      - 'feature/productization-controlled-handoff-execution-v1'
+    paths:
+      - '.github/workflows/one-shot-pr32-stale-precondition-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/productization-controlled-handoff-execution-v1
+          fetch-depth: 0
+
+      - name: Map stale reviewed candidates to the execution precondition decision
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/OneBrain.AgentOperations.Core/Workspace/NodalOsWorkspaceHandoffExecution.cs')
+          text = path.read_text(encoding='utf-8')
+          old = '''        var draft = await missionDraft.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
+          if (!draft.Accepted || draft.Candidate is null || draft.Plan is null || draft.Binding is null)
+          {
+              return Failure(
+                  "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_DRAFT_NOT_READY",
+                  NodalOsWorkspaceHandoffExecutionState.CandidateStale,
+                  draft.ReviewBlockers.DefaultIfEmpty("A fresh reviewed mission draft is required before approval.").ToArray());
+          }
+          '''
+          new = '''        var draft = await missionDraft.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
+          if (draft.Candidate?.State == NodalOsReviewedWorkspaceActionState.StalePrecondition)
+          {
+              return Failure(
+                  "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_PRECONDITION_CHANGED",
+                  NodalOsWorkspaceHandoffExecutionState.CandidateStale,
+                  draft.ReviewBlockers.DefaultIfEmpty("The reviewed target precondition changed before approval.").ToArray());
+          }
+          if (!draft.Accepted || draft.Candidate is null || draft.Plan is null || draft.Binding is null)
+          {
+              return Failure(
+                  "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_DRAFT_NOT_READY",
+                  NodalOsWorkspaceHandoffExecutionState.CandidateStale,
+                  draft.ReviewBlockers.DefaultIfEmpty("A fresh reviewed mission draft is required before approval.").ToArray());
+          }
+          '''
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected exactly one target block, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8', newline='\n')
+          PY
+          git diff --check
+          git diff --exit-code --quiet && { echo 'Expected a source change but none was produced.'; exit 1; }
+
+      - name: Commit source fix
+        shell: bash
+        run: |
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add src/OneBrain.AgentOperations.Core/Workspace/NodalOsWorkspaceHandoffExecution.cs
+          git commit -m 'fix: preserve stale handoff precondition decision'
+          git push origin HEAD:feature/productization-controlled-handoff-execution-v1
