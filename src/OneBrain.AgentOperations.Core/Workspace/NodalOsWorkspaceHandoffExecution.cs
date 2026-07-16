@@ -310,6 +310,13 @@ public sealed class NodalOsWorkspaceHandoffExecutionService
             return await GetCurrentAsync(cancellationToken).ConfigureAwait(false);
 
         var draft = await missionDraft.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
+        if (draft.Candidate?.State == NodalOsReviewedWorkspaceActionState.StalePrecondition)
+        {
+            return Failure(
+                "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_PRECONDITION_CHANGED",
+                NodalOsWorkspaceHandoffExecutionState.CandidateStale,
+                draft.ReviewBlockers.DefaultIfEmpty("The reviewed target precondition changed before approval.").ToArray());
+        }
         if (!draft.Accepted || draft.Candidate is null || draft.Plan is null || draft.Binding is null)
         {
             return Failure(
