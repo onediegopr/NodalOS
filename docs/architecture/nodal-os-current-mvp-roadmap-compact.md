@@ -41,11 +41,11 @@ No further Living Skills expansion is prioritized until the productization gates
 | Area | Readiness | Evidence-backed interpretation |
 | --- | ---: | --- |
 | Safety and control foundations | 90% | Strong tests, mission/scope approval, redaction, semantic verification and fail-closed boundaries exist. |
-| Local/dev runtime foundations | 75% | Workspace understanding, test-owned file operations, model routing fixtures, Advisor and handoff loops run in CI. |
+| Local/dev runtime foundations | 78% | Workspace understanding, protected workspace selection, test-owned file operations, model routing fixtures, Advisor and handoff loops run in CI. |
 | Living Skills foundation | 80% | Compiler, memory, capture session and Windows observation adapter are validated; live product capture/replay is not enabled. |
-| Coherent product experience | 42% | The canonical root is now a dark Mission Control shell over the existing runtime; workspace selection, mission creation and customer data remain fixture-backed or diagnostic. |
+| Coherent product experience | 48% | Mission Control is canonical and now exposes a protected, persisted, revalidated real workspace selection; mission creation and action execution remain fixture-backed. |
 | Installable desktop product | 0% | No desktop packaging project, signed installer or updater channel exists in the current repository. |
-| Sellable MVP | 38% | The product now has a coherent entry surface, but real workspace selection, live BYOK, reversible user-workspace action and packaging remain open. |
+| Sellable MVP | 43% | The product has a coherent entry surface and real local workspace identity, but real mission binding, live BYOK, reversible user-workspace action and packaging remain open. |
 | Production and commercial release | 0% | No published release, licensing/billing flow, customer-data validation or production deployment. |
 
 Percentages are directional planning estimates, not completion claims.
@@ -67,16 +67,6 @@ Current state: code and compatibility refs are aligned; the remote default-branc
 
 ### P1 — One coherent Mission Control product shell
 
-Build one dark-first entry surface that replaces the current collection of demo links as the primary experience.
-
-Required surface:
-
-- top bar: mission, status, progress, active model and pause/approval state;
-- left navigation: Mission Control, Timeline, Workspace, Models, Evidence, Settings;
-- central vertical timeline: plan, actions, verification, fallbacks, decisions and evidence;
-- right context: active capability/model, fallback, Advisor and human intervention;
-- bottom or expandable diagnostics: logs/events/evidence, hidden from normal flow unless requested.
-
 Implemented in shell v1:
 
 - `/` is the canonical dark-first Mission Control surface;
@@ -87,20 +77,47 @@ Implemented in shell v1:
 - the former root Pilot/demo surface remains available explicitly at `/pilot/legacy`;
 - no second timeline, ledger, policy engine, storage layer or product authority was introduced.
 
-Remaining before P1 is fully product-complete: replace fixture-backed mission/workspace content with the real selected workspace and real mission lifecycle.
+Remaining before P1 is fully product-complete: bind the shell to the real selected workspace and a real mission lifecycle rather than a fixture mission.
 
 ### P2 — Real local workspace MVP loop
 
-Exit criteria:
+#### P2a — selection and persistence
 
-- explicit local workspace selection and persistence;
-- bounded scan and reviewed plan over a real user-selected workspace;
-- one allowlisted reversible file create or exact-hash update in that workspace;
-- precondition, approval, snapshot/rollback plan and semantic/post-write verification;
-- no arbitrary patch, shell or path escape;
-- evidence and handoff use redacted relative identifiers.
+Implemented:
 
-The current test-owned file operations remain regression fixtures, not the sellable feature by themselves.
+- explicit local folder/repository entry at `/workspace/select`;
+- bounded real read-only scan using the existing workspace understanding service;
+- reviewed plan projection from the existing canonical planning service;
+- absolute root stored as an opaque secret reference through Windows current-user DPAPI;
+- redacted metadata persisted atomically under local application data;
+- revalidation and rehydration after process restart;
+- selected workspace projected into Mission Control without absolute path or secret exposure;
+- one-time request token, strict same-origin POST, loopback-only access, bounded form payload and fail-closed errors;
+- no writes to the selected workspace, shell, network, cloud, provider call or product authority.
+
+#### P2b — real mission binding and reviewed action
+
+Next exit criteria:
+
+- create one real mission bound to the selected workspace identity;
+- produce a reviewed plan from the revalidated workspace context;
+- select one allowlisted reversible create or exact-hash update candidate;
+- show affected relative path, precondition, risk, rollback and expected evidence before execution;
+- keep execution disabled until the existing mission/scope approval boundary authorizes it;
+- no arbitrary patch, shell, path escape or absolute path exposure.
+
+#### P2c — one verified reversible action
+
+Later exit criteria:
+
+- execute the approved candidate inside the selected workspace;
+- atomic write with precondition and snapshot/restore plan;
+- semantic or deterministic post-write verification;
+- rollback path validated;
+- evidence and handoff use redacted relative identifiers;
+- no escalation to broader filesystem authority.
+
+The current test-owned file operations remain regression fixtures; they are reused as implementation evidence but are not the sellable feature by themselves.
 
 ### P3 — BYOK usable from the product
 
@@ -157,6 +174,7 @@ Exit criteria:
 - Sensitive scope expansion, external communication, destructive actions, secrets, cost/privacy escalation and irreversible work require intervention.
 - Verification and evidence precede completion/promotion.
 - Secrets, raw DOM, raw screenshots, absolute paths and credential-like values do not enter logs, handoffs or learned skill memory.
+- Workspace selection may mutate NODAL OS local configuration, but never the selected workspace.
 - CloakBrowser remains the canonical browser target; ChromeLab remains lab/transition only.
 - Product authority, production deployment and release/commercial claims require separate evidence-backed gates.
 
@@ -165,11 +183,12 @@ Exit criteria:
 `NODAL_OS_PRODUCTIZATION_MISSION_CONTROL_AND_REAL_LOCAL_WORKSPACE_MVP`
 
 1. canonical dark Mission Control shell — `MISSION_CONTROL_PRODUCT_SHELL_V1_READY`;
-2. real local workspace selection and persistence — next;
-3. real BYOK connection path;
-4. one reversible user-workspace file operation;
-5. packaging and private-beta installer.
+2. protected real local workspace selection and persistence — `REAL_LOCAL_WORKSPACE_SELECTION_V1_READY`;
+3. real workspace mission binding and reviewed action candidate — next;
+4. real BYOK connection path;
+5. one verified reversible user-workspace file operation;
+6. packaging and private-beta installer.
 
 Next exact macro:
 
-`NODAL_OS_PRODUCTIZATION_REAL_LOCAL_WORKSPACE_SELECTION_AND_PERSISTENCE`
+`NODAL_OS_PRODUCTIZATION_REAL_WORKSPACE_MISSION_BINDING_AND_REVIEWED_ACTION`

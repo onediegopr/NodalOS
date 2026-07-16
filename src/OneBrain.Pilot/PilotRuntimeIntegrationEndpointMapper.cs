@@ -1,3 +1,5 @@
+using OneBrain.AgentOperations.Core.Workspace;
+
 namespace OneBrain.Pilot;
 
 public static class PilotRuntimeIntegrationEndpointMapper
@@ -9,7 +11,16 @@ public static class PilotRuntimeIntegrationEndpointMapper
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(environment);
 
-        MissionControlProductShellEndpointMapper.MapMissionControlProductShell(app, environment);
+        Func<NodalOsWorkspaceSelectionService> workspaceSelectionServiceFactory =
+            NodalOsWorkspaceSelectionRuntime.CreateDefault;
+        LocalWorkspaceSelectionEndpointMapper.MapLocalWorkspaceSelection(
+            app,
+            environment,
+            workspaceSelectionServiceFactory);
+        MissionControlProductShellEndpointMapper.MapMissionControlProductShell(
+            app,
+            environment,
+            workspaceSelectionServiceFactory);
         ProductLedgerLocalDevRouteEndpointMapper.MapProductLedgerLocalDevRoutePreview(
             (IEndpointRouteBuilder)app,
             environment);

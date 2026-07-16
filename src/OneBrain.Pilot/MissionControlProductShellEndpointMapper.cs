@@ -1,6 +1,7 @@
 using System.Net;
 using OneBrain.AgentOperations.Contracts;
 using OneBrain.AgentOperations.Core.Runtime;
+using OneBrain.AgentOperations.Core.Workspace;
 
 namespace OneBrain.Pilot;
 
@@ -31,6 +32,11 @@ public sealed record MissionControlProductShellSnapshot(
     string CurrentStep,
     string ApprovalState,
     string WorkspaceState,
+    bool WorkspaceSelected,
+    bool WorkspacePersisted,
+    string? WorkspaceId,
+    string? WorkspaceFingerprint,
+    int WorkspaceFilesRead,
     string LogicalModel,
     string ActiveProvider,
     string ActiveModel,
@@ -58,10 +64,12 @@ public static class MissionControlProductShellEndpointMapper
 
     public static IEndpointRouteBuilder MapMissionControlProductShell(
         this IEndpointRouteBuilder endpoints,
-        IHostEnvironment environment)
+        IHostEnvironment environment,
+        Func<NodalOsWorkspaceSelectionService>? workspaceSelectionServiceFactory = null)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(environment);
+        workspaceSelectionServiceFactory ??= NodalOsWorkspaceSelectionRuntime.CreateDefault;
 
         endpoints.MapGet(JsonRoute, async (HttpContext context) =>
         {
@@ -69,7 +77,10 @@ public static class MissionControlProductShellEndpointMapper
                 return Results.NotFound(new { decision = "MISSION_CONTROL_LOCAL_ONLY" });
 
             ApplyReadOnlyHeaders(context.Response);
-            var snapshot = await BuildSnapshotAsync(context.RequestAborted).ConfigureAwait(false);
+            var snapshot = await BuildSnapshotAsync(
+                    context.RequestAborted,
+                    workspaceSelectionServiceFactory())
+                .ConfigureAwait(false);
             return Results.Json(snapshot);
         });
 
@@ -79,7 +90,10 @@ public static class MissionControlProductShellEndpointMapper
                 return Results.NotFound();
 
             ApplyReadOnlyHeaders(context.Response);
-            var snapshot = await BuildSnapshotAsync(context.RequestAborted).ConfigureAwait(false);
+            var snapshot = await BuildSnapshotAsync(
+                    context.RequestAborted,
+                    workspaceSelectionServiceFactory())
+                .ConfigureAwait(false);
             return Results.Content(
                 MissionControlProductShellHtmlRenderer.Render(snapshot),
                 "text/html; charset=utf-8");
@@ -98,11 +112,16 @@ public static class MissionControlProductShellEndpointMapper
     }
 
     public static async ValueTask<MissionControlProductShellSnapshot> BuildSnapshotAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        NodalOsWorkspaceSelectionService? workspaceSelectionService = null)
     {
         var result = await new NodalOsSelectiveRuntimeFixtureScenario()
             .RunAsync(cancellationToken)
             .ConfigureAwait(false);
+        var workspaceSelection = workspaceSelectionService is null
+            ? null
+            : await workspaceSelectionService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
+        var workspaceSelected = workspaceSelection?.Accepted == true;
 
         var timeline = result.Timeline
             .OrderBy(value => value.CreatedAt)
@@ -120,8 +139,12 @@ public static class MissionControlProductShellEndpointMapper
                     .ToArray()))
             .ToArray();
 
+        var workspaceEvidence = workspaceSelection?.Workspace?.EvidenceRefs
+            .Select(reference => reference.EvidenceId)
+            ?? [];
         var evidenceRefs = result.Mission.EvidenceRefs
             .Concat(timeline.SelectMany(value => value.EvidenceRefs))
+            .Concat(workspaceEvidence)
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.Ordinal)
             .Take(24)
@@ -135,6 +158,12 @@ public static class MissionControlProductShellEndpointMapper
         var totalCapabilities = result.Inspector.Capabilities.Count;
         var readyProviders = result.Inspector.Providers.Count(value => value.Contains(":Ready:", StringComparison.Ordinal));
         var totalProviders = result.Inspector.Providers.Count;
+        var workspaceDisplay = workspaceSelected
+            ? workspaceSelection!.DisplayNameRedacted ?? "Selected Local Workspace"
+            : "No real workspace selected";
+        var workspaceDetail = workspaceSelected
+            ? $"Protected local selection · {workspaceSelection!.FilesRead} bounded file refs · fingerprint {Short(workspaceSelection.RootPathFingerprint, 12)}."
+            : "Select and persist a real local workspace before moving the mission runtime off fixtures.";
 
         var context = new[]
         {
@@ -165,9 +194,9 @@ public static class MissionControlProductShellEndpointMapper
             new MissionControlProductContextItem(
                 "workspace",
                 "Workspace",
-                "Fixture-backed preview",
-                "Explicit real local workspace selection and persistence is the next product gate.",
-                "attention"),
+                workspaceDisplay,
+                workspaceDetail,
+                workspaceSelected ? "ready" : "attention"),
             new MissionControlProductContextItem(
                 "advisor",
                 "Expert Advisor",
@@ -198,7 +227,9 @@ public static class MissionControlProductShellEndpointMapper
         return new MissionControlProductShellSnapshot(
             Decision,
             Accepted: true,
-            ProductMode: "Local product preview",
+            ProductMode: workspaceSelected
+                ? "Local product preview · real workspace selected"
+                : "Local product preview",
             MissionId: result.Mission.MissionId,
             RunId: result.Mission.RunId,
             Goal: result.Plan.Goal,
@@ -208,7 +239,14 @@ public static class MissionControlProductShellEndpointMapper
             ApprovalState: result.ApprovalRequested
                 ? "Human review required"
                 : "Mission scope authorized · no per-step prompt",
-            WorkspaceState: "Fixture workspace · real selection next",
+            WorkspaceState: workspaceSelected
+                ? $"{workspaceDisplay} · protected + revalidated"
+                : "Workspace selection required",
+            WorkspaceSelected: workspaceSelected,
+            WorkspacePersisted: workspaceSelection?.Persisted == true,
+            WorkspaceId: workspaceSelection?.WorkspaceId,
+            WorkspaceFingerprint: workspaceSelection?.RootPathFingerprint,
+            WorkspaceFilesRead: workspaceSelection?.FilesRead ?? 0,
             LogicalModel: logicalModel,
             ActiveProvider: activeProvider,
             ActiveModel: activeModel,
@@ -222,6 +260,8 @@ public static class MissionControlProductShellEndpointMapper
             [
                 $"run:{result.Mission.RunId}",
                 $"mission:{result.Mission.MissionId}",
+                $"workspace-selected:{workspaceSelected.ToString().ToLowerInvariant()}",
+                $"workspace-fingerprint:{Short(workspaceSelection?.RootPathFingerprint, 12)}",
                 $"logical-model:{logicalModel}",
                 $"provider:{activeProvider}",
                 $"browser:{result.Inspector.Browser.State}",
@@ -284,6 +324,9 @@ public static class MissionControlProductShellEndpointMapper
 
     private static string ValueOr(string? value, string fallback) =>
         string.IsNullOrWhiteSpace(value) ? fallback : value;
+
+    private static string Short(string? value, int length) =>
+        string.IsNullOrWhiteSpace(value) ? "not-selected" : value[..Math.Min(length, value.Length)];
 
     private static void ApplyReadOnlyHeaders(HttpResponse response)
     {

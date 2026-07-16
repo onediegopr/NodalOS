@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text;
 
@@ -16,8 +17,14 @@ public static class MissionControlProductShellHtmlRenderer
         var fallback = string.IsNullOrWhiteSpace(snapshot.RecentFallback)
             ? "Sin fallback reciente"
             : snapshot.RecentFallback;
+        var nextGate = snapshot.WorkspaceSelected
+            ? "El workspace real quedó protegido y revalidado. El próximo gate es crear una misión real sobre este contexto y mantener cualquier mutación detrás de aprobación, snapshot, rollback y verificación."
+            : "Seleccionar y persistir un workspace local real, generar un plan revisado y mantener los paths absolutos fuera de la superficie.";
+        var workspaceAction = snapshot.WorkspaceSelected
+            ? "Revisar o cambiar workspace"
+            : "Seleccionar workspace local";
 
-        return $$"""
+        const string template = """
 <!doctype html>
 <html lang="es">
 <head>
@@ -119,7 +126,12 @@ public static class MissionControlProductShellHtmlRenderer
       padding: 12px 14px 12px 18px;
     }
     .topbar-main { min-width: 0; flex: 1; display: grid; gap: 4px; }
-    .topbar-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
+    .topbar-label, .metric-label, .context-label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
     .topbar-title { font-weight: 760; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .topbar-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; }
     .actions { display: flex; gap: 8px; }
@@ -147,7 +159,6 @@ public static class MissionControlProductShellHtmlRenderer
     .mission-summary { color: var(--muted); max-width: 920px; line-height: 1.6; }
     .mission-metrics { display: grid; grid-template-columns: minmax(260px, 2fr) repeat(3, minmax(130px, 1fr)); gap: 10px; }
     .metric { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 12px; min-width: 0; }
-    .metric-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .09em; }
     .metric-value { margin-top: 6px; font-weight: 700; overflow-wrap: anywhere; }
     .progress-track { height: 7px; margin-top: 10px; background: #0F141A; border: 1px solid #29313B; border-radius: 999px; overflow: hidden; }
     .progress-fill { display: block; height: 100%; background: var(--blue); }
@@ -165,9 +176,9 @@ public static class MissionControlProductShellHtmlRenderer
     .timeline-item.fallback .timeline-node { border-color: rgba(124,92,255,.65); color: #A996FF; }
     .timeline-item.attention .timeline-node { border-color: rgba(240,180,90,.65); color: var(--attention); }
     .timeline-item.blocked .timeline-node { border-color: rgba(240,106,106,.65); color: var(--blocked); }
-    .timeline-body { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 12px 14px; min-width: 0; }
-    .timeline-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 720; }
-    .timeline-detail { margin-top: 7px; color: var(--muted); line-height: 1.5; overflow-wrap: anywhere; }
+    .timeline-body, .context-card { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 12px 14px; min-width: 0; }
+    .timeline-title, .context-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 720; }
+    .timeline-detail, .context-detail { margin-top: 7px; color: var(--muted); line-height: 1.5; overflow-wrap: anywhere; }
     .refs { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 6px; }
     .ref, .badge { display: inline-flex; align-items: center; min-height: 24px; border-radius: 999px; border: 1px solid var(--border); padding: 0 8px; font-size: 11px; color: var(--muted); background: #141A21; }
     .badge.complete, .badge.ready { color: var(--positive); border-color: rgba(0,194,168,.34); }
@@ -175,15 +186,12 @@ public static class MissionControlProductShellHtmlRenderer
     .badge.attention { color: var(--attention); border-color: rgba(240,180,90,.4); }
     .badge.blocked { color: var(--blocked); border-color: rgba(240,106,106,.4); }
     .context-list { display: grid; gap: 9px; padding: 12px; }
-    .context-card { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 12px; }
-    .context-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .context-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
     .context-value { margin-top: 6px; font-weight: 730; overflow-wrap: anywhere; }
-    .context-detail { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.45; }
     .fallback-note { margin: 12px; border: 1px solid rgba(124,92,255,.44); border-radius: 12px; background: rgba(124,92,255,.08); padding: 12px; color: #D9D1FF; line-height: 1.5; }
     .lower-grid { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
     .evidence-list { padding: 14px 18px 18px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .empty { color: var(--muted); padding: 18px; }
+    .empty { color: var(--muted); padding: 18px; line-height: 1.55; }
+    .workspace-cta { display: inline-flex; margin-top: 12px; border: 1px solid #405891; border-radius: 9px; padding: 9px 12px; color: #DFE7FF; background: #202A44; }
     details { margin-top: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
     summary { cursor: pointer; padding: 15px 18px; font-weight: 720; }
     .diagnostics { border-top: 1px solid var(--border); padding: 12px 18px 16px; display: grid; gap: 7px; color: var(--muted); font-family: "Cascadia Code", Consolas, monospace; font-size: 12px; }
@@ -210,90 +218,81 @@ public static class MissionControlProductShellHtmlRenderer
     }
   </style>
 </head>
-<body data-nodal-os="mission-control-product-shell" data-local-only="{{Bool(snapshot.LocalOnly)}}" data-read-only="{{Bool(snapshot.ReadOnly)}}" data-fixture-backed="{{Bool(snapshot.FixtureBacked)}}" data-product-authority="{{Bool(snapshot.ProductAuthorityGranted)}}">
+<body data-nodal-os="mission-control-product-shell" data-local-only="@@LOCAL_ONLY@@" data-read-only="@@READ_ONLY@@" data-fixture-backed="@@FIXTURE_BACKED@@" data-workspace-selected="@@WORKSPACE_SELECTED@@" data-workspace-persisted="@@WORKSPACE_PERSISTED@@" data-product-authority="@@PRODUCT_AUTHORITY@@">
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">N</div>
-        <div><strong>NODAL OS</strong><span>AI Mission Control</span></div>
-      </div>
+      <div class="brand"><div class="brand-mark">N</div><div><strong>NODAL OS</strong><span>AI Mission Control</span></div></div>
       <nav aria-label="Navegación principal">
-        {{Nav("/", "Mission Control", true)}}
-        {{Nav("#timeline", "Timeline", false)}}
-        {{Nav("/workspace/understanding", "Workspace", false)}}
-        {{Nav("/ai/config", "Models", false)}}
-        {{Nav("#evidence", "Evidence", false)}}
-        {{Nav("/guia", "Settings", false)}}
+        <a class="nav-link active" href="/"><span class="nav-dot"></span><span>Mission Control</span></a>
+        <a class="nav-link" href="#timeline"><span class="nav-dot"></span><span>Timeline</span></a>
+        <a class="nav-link" href="/workspace/select"><span class="nav-dot"></span><span>Workspace</span></a>
+        <a class="nav-link" href="/ai/config"><span class="nav-dot"></span><span>Models</span></a>
+        <a class="nav-link" href="#evidence"><span class="nav-dot"></span><span>Evidence</span></a>
+        <a class="nav-link" href="/guia"><span class="nav-dot"></span><span>Settings</span></a>
       </nav>
       <div class="boundary"><strong>Local-first</strong>Vista protegida por loopback. Sin secretos, cloud obligatorio ni autoridad de producción.</div>
     </aside>
 
     <main class="workspace">
       <header class="topbar" data-section-id="topbar">
-        <div class="topbar-main">
-          <div class="topbar-label">Misión actual</div>
-          <div class="topbar-title">{{H(snapshot.Goal)}}</div>
-          <div class="topbar-meta"><span>{{H(snapshot.MissionStatus)}}</span><span>•</span><span>{{snapshot.ProgressPercent}}%</span><span>•</span><span>{{H(snapshot.ActiveModel)}}</span></div>
-        </div>
-        <div class="actions">
-          <button class="button" type="button" disabled>Pausar</button>
-          <button class="button primary" type="button" disabled>{{H(snapshot.ApprovalState)}}</button>
-        </div>
+        <div class="topbar-main"><div class="topbar-label">Misión actual</div><div class="topbar-title">@@GOAL@@</div><div class="topbar-meta"><span>@@MISSION_STATUS@@</span><span>•</span><span>@@PROGRESS@@%</span><span>•</span><span>@@ACTIVE_MODEL@@</span></div></div>
+        <div class="actions"><button class="button" type="button" disabled>Pausar</button><button class="button primary" type="button" disabled>@@APPROVAL_STATE@@</button></div>
       </header>
 
       <section class="mission-card" data-section-id="mission">
-        <div>
-          <div class="eyebrow">{{H(snapshot.ProductMode)}} / {{H(snapshot.Decision)}}</div>
-          <h1>Una misión, un timeline, control visible.</h1>
-          <div class="mission-summary">La raíz de Pilot ahora presenta una sola experiencia de Mission Control. El runtime, los modelos, los fallbacks, la verificación y la evidencia se proyectan aquí sin crear una segunda fuente de verdad.</div>
-        </div>
+        <div><div class="eyebrow">@@PRODUCT_MODE@@ / @@DECISION@@</div><h1>Una misión, un timeline, control visible.</h1><div class="mission-summary">El runtime, los modelos, los fallbacks, la verificación, el workspace protegido y la evidencia se proyectan aquí sin crear una segunda fuente de verdad.</div></div>
         <div class="mission-metrics">
-          <div class="metric">
-            <div class="metric-label">Progreso</div>
-            <div class="metric-value">{{snapshot.ProgressPercent}}% · {{H(snapshot.CurrentStep)}}</div>
-            <div class="progress-track" aria-label="Progreso de misión"><span class="progress-fill" style="width: {{snapshot.ProgressPercent}}%"></span></div>
-          </div>
-          <div class="metric"><div class="metric-label">Workspace</div><div class="metric-value">{{H(snapshot.WorkspaceState)}}</div></div>
-          <div class="metric"><div class="metric-label">Modelo</div><div class="metric-value">{{H(snapshot.ActiveProvider)}} / {{H(snapshot.ActiveModel)}}</div></div>
-          <div class="metric"><div class="metric-label">Control humano</div><div class="metric-value">{{H(snapshot.ApprovalState)}}</div></div>
+          <div class="metric"><div class="metric-label">Progreso</div><div class="metric-value">@@PROGRESS@@% · @@CURRENT_STEP@@</div><div class="progress-track" aria-label="Progreso de misión"><span class="progress-fill" style="width: @@PROGRESS@@%"></span></div></div>
+          <div class="metric"><div class="metric-label">Workspace</div><div class="metric-value">@@WORKSPACE_STATE@@</div></div>
+          <div class="metric"><div class="metric-label">Modelo</div><div class="metric-value">@@ACTIVE_PROVIDER@@ / @@ACTIVE_MODEL@@</div></div>
+          <div class="metric"><div class="metric-label">Control humano</div><div class="metric-value">@@APPROVAL_STATE@@</div></div>
         </div>
       </section>
 
       <div class="content-grid">
-        <section class="panel" id="timeline" data-section-id="timeline">
-          <div class="panel-header"><h2>Timeline de misión</h2><span>{{snapshot.Timeline.Count}} eventos</span></div>
-          <div class="timeline">{{timeline}}</div>
-        </section>
-
-        <aside class="panel" data-section-id="context">
-          <div class="panel-header"><h2>Contexto activo</h2><span>runtime</span></div>
-          <div class="context-list">{{context}}</div>
-          <div class="fallback-note"><strong>Último fallback</strong><br>{{H(fallback)}}</div>
-        </aside>
+        <section class="panel" id="timeline" data-section-id="timeline"><div class="panel-header"><h2>Timeline de misión</h2><span>@@TIMELINE_COUNT@@ eventos</span></div><div class="timeline">@@TIMELINE@@</div></section>
+        <aside class="panel" data-section-id="context"><div class="panel-header"><h2>Contexto activo</h2><span>runtime</span></div><div class="context-list">@@CONTEXT@@</div><div class="fallback-note"><strong>Último fallback</strong><br>@@FALLBACK@@</div></aside>
       </div>
 
       <div class="lower-grid">
-        <section class="panel" id="evidence" data-section-id="evidence">
-          <div class="panel-header"><h2>Evidencia</h2><span>refs redacted</span></div>
-          <div class="evidence-list">{{evidence}}</div>
-        </section>
-        <section class="panel" data-section-id="next-step">
-          <div class="panel-header"><h2>Próximo gate productivo</h2><span>P2</span></div>
-          <div class="empty">Seleccionar y persistir un workspace local real, generar un plan revisado y mantener los paths absolutos fuera de la superficie.</div>
-        </section>
+        <section class="panel" id="evidence" data-section-id="evidence"><div class="panel-header"><h2>Evidencia</h2><span>refs redacted</span></div><div class="evidence-list">@@EVIDENCE@@</div></section>
+        <section class="panel" data-section-id="next-step"><div class="panel-header"><h2>Próximo gate productivo</h2><span>P2</span></div><div class="empty">@@NEXT_GATE@@<br><a class="workspace-cta" href="/workspace/select">@@WORKSPACE_ACTION@@</a></div></section>
       </div>
 
-      <details data-section-id="diagnostics">
-        <summary>Diagnóstico técnico y eventos</summary>
-        <div class="diagnostics">{{diagnostics}}</div>
-      </details>
-
-      <div class="footer"><span>Local-only · read-only · fixture-backed · sin product authority</span><a href="/pilot/legacy">Abrir laboratorio Pilot legado</a></div>
+      <details data-section-id="diagnostics"><summary>Diagnóstico técnico y eventos</summary><div class="diagnostics">@@DIAGNOSTICS@@</div></details>
+      <div class="footer"><span>Local-only · read-only mission shell · sin product authority</span><a href="/pilot/legacy">Abrir laboratorio Pilot legado</a></div>
     </main>
   </div>
 </body>
 </html>
 """;
+
+        var progress = snapshot.ProgressPercent.ToString(CultureInfo.InvariantCulture);
+        return template
+            .Replace("@@LOCAL_ONLY@@", Bool(snapshot.LocalOnly), StringComparison.Ordinal)
+            .Replace("@@READ_ONLY@@", Bool(snapshot.ReadOnly), StringComparison.Ordinal)
+            .Replace("@@FIXTURE_BACKED@@", Bool(snapshot.FixtureBacked), StringComparison.Ordinal)
+            .Replace("@@WORKSPACE_SELECTED@@", Bool(snapshot.WorkspaceSelected), StringComparison.Ordinal)
+            .Replace("@@WORKSPACE_PERSISTED@@", Bool(snapshot.WorkspacePersisted), StringComparison.Ordinal)
+            .Replace("@@PRODUCT_AUTHORITY@@", Bool(snapshot.ProductAuthorityGranted), StringComparison.Ordinal)
+            .Replace("@@GOAL@@", H(snapshot.Goal), StringComparison.Ordinal)
+            .Replace("@@MISSION_STATUS@@", H(snapshot.MissionStatus), StringComparison.Ordinal)
+            .Replace("@@PROGRESS@@", progress, StringComparison.Ordinal)
+            .Replace("@@ACTIVE_MODEL@@", H(snapshot.ActiveModel), StringComparison.Ordinal)
+            .Replace("@@APPROVAL_STATE@@", H(snapshot.ApprovalState), StringComparison.Ordinal)
+            .Replace("@@PRODUCT_MODE@@", H(snapshot.ProductMode), StringComparison.Ordinal)
+            .Replace("@@DECISION@@", H(snapshot.Decision), StringComparison.Ordinal)
+            .Replace("@@CURRENT_STEP@@", H(snapshot.CurrentStep), StringComparison.Ordinal)
+            .Replace("@@WORKSPACE_STATE@@", H(snapshot.WorkspaceState), StringComparison.Ordinal)
+            .Replace("@@ACTIVE_PROVIDER@@", H(snapshot.ActiveProvider), StringComparison.Ordinal)
+            .Replace("@@TIMELINE_COUNT@@", snapshot.Timeline.Count.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal)
+            .Replace("@@TIMELINE@@", timeline, StringComparison.Ordinal)
+            .Replace("@@CONTEXT@@", context, StringComparison.Ordinal)
+            .Replace("@@FALLBACK@@", H(fallback), StringComparison.Ordinal)
+            .Replace("@@EVIDENCE@@", evidence, StringComparison.Ordinal)
+            .Replace("@@NEXT_GATE@@", H(nextGate), StringComparison.Ordinal)
+            .Replace("@@WORKSPACE_ACTION@@", H(workspaceAction), StringComparison.Ordinal)
+            .Replace("@@DIAGNOSTICS@@", diagnostics, StringComparison.Ordinal);
     }
 
     private static string RenderTimeline(IReadOnlyList<MissionControlProductTimelineItem> items)
@@ -355,21 +354,15 @@ public static class MissionControlProductShellHtmlRenderer
         return builder.ToString();
     }
 
-    private static string RenderEvidence(IReadOnlyList<string> evidenceRefs)
-    {
-        if (evidenceRefs.Count == 0)
-            return "<span class=\"ref\">Sin evidencia</span>";
-
-        return string.Join(string.Empty, evidenceRefs.Select(reference => $"<span class=\"ref\">{H(reference)}</span>"));
-    }
+    private static string RenderEvidence(IReadOnlyList<string> evidenceRefs) =>
+        evidenceRefs.Count == 0
+            ? "<span class=\"ref\">Sin evidencia</span>"
+            : string.Join(string.Empty, evidenceRefs.Select(reference => $"<span class=\"ref\">{H(reference)}</span>"));
 
     private static string RenderDiagnostics(IReadOnlyList<string> diagnostics) =>
         diagnostics.Count == 0
             ? "<span>sin diagnóstico</span>"
             : string.Join(string.Empty, diagnostics.Select(value => $"<span>{H(value)}</span>"));
-
-    private static string Nav(string href, string label, bool active) =>
-        $"<a class=\"nav-link{(active ? " active" : string.Empty)}\" href=\"{H(href)}\"><span class=\"nav-dot\"></span><span>{H(label)}</span></a>";
 
     private static string StateIcon(string state) => state switch
     {
