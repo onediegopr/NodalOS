@@ -1,0 +1,53 @@
+name: One-shot PR33 Mission Control BYOK HTML
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-pr33-mission-control-html.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/productization-real-byok-connection-v1
+          fetch-depth: 0
+      - name: Update canonical Mission Control model navigation and gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/OneBrain.Pilot/MissionControlProductShellHtmlRenderer.cs')
+          text = path.read_text(encoding='utf-8')
+
+          def replace(old, new, count=1):
+              global text
+              actual = text.count(old)
+              if actual != count:
+                  raise SystemExit(f'Expected {count} occurrence(s), found {actual}: {old[:120]!r}')
+              text = text.replace(old, new, count)
+
+          replace(
+              'data-action-rolled-back="@@ACTION_ROLLED_BACK@@" data-product-authority="@@PRODUCT_AUTHORITY@@"',
+              'data-action-rolled-back="@@ACTION_ROLLED_BACK@@" data-byok-configured="@@BYOK_CONFIGURED@@" data-model-connection-verified="@@MODEL_CONNECTION_VERIFIED@@" data-model-fallback-applied="@@MODEL_FALLBACK_APPLIED@@" data-product-authority="@@PRODUCT_AUTHORITY@@"')
+          replace('href="/ai/config"><span class="nav-dot"></span><span>Models</span>', 'href="/models/config"><span class="nav-dot"></span><span>Models</span>')
+          replace(
+              '            .Replace("@@ACTION_ROLLED_BACK@@", Bool(snapshot.ActionRolledBack), StringComparison.Ordinal)\n            .Replace("@@PRODUCT_AUTHORITY@@", Bool(snapshot.ProductAuthorityGranted), StringComparison.Ordinal)',
+              '            .Replace("@@ACTION_ROLLED_BACK@@", Bool(snapshot.ActionRolledBack), StringComparison.Ordinal)\n            .Replace("@@BYOK_CONFIGURED@@", Bool(snapshot.ByokConfigured), StringComparison.Ordinal)\n            .Replace("@@MODEL_CONNECTION_VERIFIED@@", Bool(snapshot.ModelConnectionVerified), StringComparison.Ordinal)\n            .Replace("@@MODEL_FALLBACK_APPLIED@@", Bool(snapshot.ModelFallbackApplied), StringComparison.Ordinal)\n            .Replace("@@PRODUCT_AUTHORITY@@", Bool(snapshot.ProductAuthorityGranted), StringComparison.Ordinal)')
+          replace(
+              '        if (snapshot.ActionVerified && snapshot.ActionRollbackAvailable)\n            return ("P3", "La primera acción real quedó ejecutada y verificada con rollback disponible. El próximo gate es BYOK usable desde el producto bajo política de privacidad y costo.", "Configurar modelos BYOK", "/ai/config");',
+              '        if (snapshot.ActionVerified && snapshot.ActionRollbackAvailable && !snapshot.ModelConnectionVerified)\n            return ("P3", "La primera acción real quedó ejecutada y verificada con rollback disponible. El próximo gate es configurar BYOK y verificar una llamada real bajo política de privacidad y costo.", "Configurar y probar modelos", "/models/config");\n        if (snapshot.ActionVerified && snapshot.ModelConnectionVerified)\n            return ("P4", "El loop local ya incluye workspace, misión, aprobación, acción reversible y conexión BYOK verificadas. El próximo gate es packaging desktop reproducible y distribución local.", "Ver configuración de modelos", "/models/config");')
+          path.write_text(text, encoding='utf-8')
+          PY
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add src/OneBrain.Pilot/MissionControlProductShellHtmlRenderer.cs
+          git commit -m 'feat: expose secure BYOK gate in Mission Control'
+          git push origin HEAD:feature/productization-real-byok-connection-v1
