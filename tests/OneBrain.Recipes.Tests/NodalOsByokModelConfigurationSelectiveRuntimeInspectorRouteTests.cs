@@ -59,6 +59,7 @@ public sealed class NodalOsByokModelConfigurationSelectiveRuntimeInspectorRouteT
         StringAssert.Contains(formHtml, "data-configured=\"false\"");
         StringAssert.Contains(formResponse.Headers.GetValues("Content-Security-Policy").Single(), "form-action 'self'");
         Assert.IsFalse(formHtml.Contains("<script", StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(formHtml, "<option value=\"OpenAiCompatibleLocal\" selected>");
 
         using var configure = CreatePost(
             new Uri(address),
@@ -95,6 +96,17 @@ public sealed class NodalOsByokModelConfigurationSelectiveRuntimeInspectorRouteT
         token = ExtractToken(configuredPage);
         StringAssert.Contains(configuredPage, "data-configured=\"true\"");
         StringAssert.Contains(configuredPage, "Probar conexión real");
+        var configForm = Regex.Match(
+            configuredPage,
+            "<form class=\"config\".*?</form>",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline,
+            TimeSpan.FromSeconds(1));
+        Assert.IsTrue(configForm.Success);
+        Assert.IsFalse(configForm.Value.Contains("action=\"/models/test\"", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(configForm.Value.Contains("action=\"/models/clear\"", StringComparison.OrdinalIgnoreCase));
+        Assert.AreEqual(
+            3,
+            Regex.Matches(configuredPage, "<form\\b", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1)).Count);
         AssertNoSecret(configuredPage, rawKey, providerContent);
 
         using var testRequest = CreatePost(

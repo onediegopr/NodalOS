@@ -5,6 +5,8 @@ namespace OneBrain.Pilot;
 
 public static class NodalOsByokModelConfigurationRuntime
 {
+    private static readonly HttpClient SharedHttpClient = new();
+
     public const string MetadataPathEnvironmentVariable = "NODAL_OS_BYOK_MODEL_METADATA_PATH";
     public const string SecretRootEnvironmentVariable = "NODAL_OS_BYOK_MODEL_SECRET_ROOT";
 
@@ -23,6 +25,6 @@ public static class NodalOsByokModelConfigurationRuntime
         return new NodalOsByokModelConfigurationService(
             metadataPath,
             new WindowsDpapiSecretReferenceStore(secretRoot),
-            new HttpClient());
+            SharedHttpClient);
     }
 }

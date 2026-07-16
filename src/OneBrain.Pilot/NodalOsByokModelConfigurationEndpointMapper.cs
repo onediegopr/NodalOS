@@ -217,6 +217,7 @@ public static class NodalOsByokModelConfigurationEndpointMapper
     input[type=checkbox] { width:auto; min-height:auto; }
     .check { display:flex; align-items:center; gap:8px; }
     .actions { display:flex; flex-wrap:wrap; gap:9px; }
+    .secondary-actions { margin-top:12px; }
     button { min-height:39px; border-radius:9px; padding:0 13px; font:inherit; font-weight:800; cursor:pointer; }
     .primary { border:1px solid #405891; background:#26375F; color:#EEF2FF; }
     .danger { border:1px solid rgba(240,106,106,.45); background:rgba(240,106,106,.08); color:#FFB5B5; }
@@ -268,8 +269,9 @@ public static class NodalOsByokModelConfigurationEndpointMapper
               <label>Output USD / 1M<input name="fallbackOutputCostPerMillion" inputmode="decimal" value="@@FALLBACK_OUTPUT_COST@@"></label>
             </div></fieldset>
             <fieldset><legend>Política</legend><div class="fields"><label class="check"><input type="checkbox" name="cloudAllowed"@@CLOUD_CHECKED@@> Permitir cloud para estas rutas</label><label>Costo máximo del test USD<input name="maximumTotalCostUsd" inputmode="decimal" value="@@MAX_COST@@"></label><label>Timeout por intento<input name="perAttemptTimeoutSeconds" inputmode="numeric" value="@@TIMEOUT@@"></label></div></fieldset>
-            <div class="actions"><button class="primary" type="submit">Guardar configuración segura</button>@@TEST_FORM@@@@CLEAR_FORM@@</div>
+            <div class="actions"><button class="primary" type="submit">Guardar configuración segura</button></div>
           </form>
+          <div class="actions secondary-actions">@@TEST_FORM@@@@CLEAR_FORM@@</div>
         </section>
       </div>
       <aside class="stack">
@@ -390,9 +392,11 @@ public static class NodalOsByokModelConfigurationEndpointMapper
 
     private static string TypeOptions(string? selected)
     {
+        var localSelected = string.IsNullOrWhiteSpace(selected) ||
+            string.Equals(selected, nameof(NodalOsByokProviderType.OpenAiCompatibleLocal), StringComparison.Ordinal);
+        var local = localSelected ? " selected" : string.Empty;
         var cloud = string.Equals(selected, nameof(NodalOsByokProviderType.OpenAiCompatibleCloud), StringComparison.Ordinal) ? " selected" : string.Empty;
-        var local = string.Equals(selected, nameof(NodalOsByokProviderType.OpenAiCompatibleLocal), StringComparison.Ordinal) ? " selected" : string.Empty;
-        return $"<option value=\"OpenAiCompatibleCloud\"{cloud}>OpenAI-compatible cloud · HTTPS + key</option><option value=\"OpenAiCompatibleLocal\"{local}>OpenAI-compatible local · loopback</option>";
+        return $"<option value=\"OpenAiCompatibleLocal\"{local}>OpenAI-compatible local · loopback</option><option value=\"OpenAiCompatibleCloud\"{cloud}>OpenAI-compatible cloud · HTTPS + key</option>";
     }
 
     private static void ApplyHeaders(HttpResponse response)

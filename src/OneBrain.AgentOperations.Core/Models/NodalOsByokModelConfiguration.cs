@@ -80,6 +80,8 @@ public sealed record NodalOsPersistedByokConnectionTest(
     IReadOnlyList<string> AttemptSummaries,
     IReadOnlyList<NodalOsEvidenceBridgeRef> EvidenceRefs,
     IReadOnlyList<NodalOsCoreTimelineProjection> Timeline,
+    bool RealProviderCallAttempted,
+    bool NetworkUsed,
     DateTimeOffset TestedAt);
 
 public sealed record NodalOsPersistedByokModelConfiguration(
@@ -156,6 +158,9 @@ public sealed class NodalOsOpenAiCompatibleAttemptExecutor : IModelAttemptExecut
 {
     private const int MaximumResponseBytes = 1024 * 1024;
     private readonly HttpClient client;
+    private int providerCallAttempted;
+
+    public bool ProviderCallAttempted => Volatile.Read(ref providerCallAttempted) != 0;
 
     public NodalOsOpenAiCompatibleAttemptExecutor(HttpClient client)
     {
@@ -208,6 +213,7 @@ public sealed class NodalOsOpenAiCompatibleAttemptExecutor : IModelAttemptExecut
         {
             request.Content = new ByteArrayContent(payload);
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            Interlocked.Exchange(ref providerCallAttempted, 1);
             using var response = await client.SendAsync(
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
@@ -460,10 +466,8 @@ public sealed class NodalOsByokModelConfigurationService
         if (fallback is not null && fallback.ProviderType == NodalOsByokProviderType.OpenAiCompatibleCloud && !request.CloudAllowed)
             blockers.Add("Cloud access must be explicitly allowed for a cloud fallback provider.");
         if (primary is not null && fallback is not null &&
-            string.Equals(primary.ProviderId, fallback.ProviderId, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(primary.ModelId, fallback.ModelId, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(primary.Endpoint, fallback.Endpoint, StringComparison.OrdinalIgnoreCase))
-            blockers.Add("Fallback must differ from the primary provider route.");
+            string.Equals(primary.ProviderId, fallback.ProviderId, StringComparison.OrdinalIgnoreCase))
+            blockers.Add("Fallback route id must differ from the primary route id.");
 
         if (blockers.Count > 0 || primary is null)
         {
@@ -529,10 +533,11 @@ public sealed class NodalOsByokModelConfigurationService
         }
 
         var catalog = BuildCatalog(document);
+        var attemptExecutor = new NodalOsOpenAiCompatibleAttemptExecutor(httpClient);
         var router = new PolicyAwareModelRouter(
             catalog,
             secretStore,
-            new NodalOsOpenAiCompatibleAttemptExecutor(httpClient));
+            attemptExecutor);
         var route = new ModelRouteRequest(
             document.LogicalModel,
             ModelCapabilities.Chat,
@@ -605,6 +610,8 @@ public sealed class NodalOsByokModelConfigurationService
             attemptSummaries,
             evidence,
             timeline,
+            RealProviderCallAttempted: attemptExecutor.ProviderCallAttempted,
+            NetworkUsed: attemptExecutor.ProviderCallAttempted,
             DateTimeOffset.UtcNow);
         var updated = document with { LastConnectionTest = tested, UpdatedAt = DateTimeOffset.UtcNow };
 
@@ -1030,8 +1037,8 @@ public sealed class NodalOsByokModelConfigurationService
             test?.Timeline ?? [],
             blockers.Select(value => SafeRuntimeText.Sanitize(value, 240)).ToArray(),
             test?.TestedAt,
-            RealProviderCallAttempted: test is not null,
-            NetworkUsed: test is not null,
+            RealProviderCallAttempted: test?.RealProviderCallAttempted == true,
+            NetworkUsed: test?.NetworkUsed == true,
             SecretsExcluded: true,
             ProductAuthorityGranted: false);
     }

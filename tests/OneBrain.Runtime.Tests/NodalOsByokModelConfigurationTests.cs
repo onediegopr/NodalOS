@@ -25,7 +25,7 @@ public sealed class NodalOsByokModelConfigurationTests
         var configured = await service.ConfigureAsync(Request(primaryApiKey: rawKey));
 
         Assert.IsTrue(configured.Accepted, string.Join(" | ", configured.Blockers));
-        Assert.IsTrue(configured.Configured);
+        Assert.AreEqual(true, configured.Configured);
         Assert.IsTrue(configured.Persisted);
         Assert.IsTrue(configured.Primary?.CredentialConfigured == true);
         Assert.AreEqual("ephemeral", configured.Primary?.CredentialStoreId);
@@ -158,6 +158,51 @@ public sealed class NodalOsByokModelConfigurationTests
         Assert.AreEqual(NodalOsByokConfigurationState.ConfigurationInvalid, result.State);
         Assert.IsTrue(result.Blockers.Any(value => value.Contains("HTTPS", StringComparison.OrdinalIgnoreCase)));
         Assert.IsFalse(File.Exists(fixture.MetadataPath));
+    }
+
+    [TestMethod]
+    public async Task FallbackRouteIdMustBeUniqueWithinCatalog()
+    {
+        using var fixture = Fixture.Create();
+        using var secrets = new EphemeralSecretReferenceStore();
+        var service = fixture.Service(secrets, new QueueHandler());
+        var request = Request(
+            primaryApiKey: "primary-key",
+            enableFallback: true,
+            fallbackApiKey: "fallback" + "-key") with
+        {
+            FallbackProviderId = "primary-provider"
+        };
+
+        var result = await service.ConfigureAsync(request);
+
+        Assert.IsFalse(result.Accepted);
+        Assert.IsTrue(result.Blockers.Any(value => value.Contains("route id", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(File.Exists(fixture.MetadataPath));
+    }
+
+    [TestMethod]
+    public async Task UnavailableCredentialFailsBeforeNetworkAndDoesNotClaimProviderCall()
+    {
+        using var fixture = Fixture.Create();
+        using var secrets = new EphemeralSecretReferenceStore();
+        var handler = new QueueHandler((_, _) =>
+            throw new AssertFailedException("Provider must not be called when the credential reference is unavailable."));
+        var service = fixture.Service(secrets, handler);
+        var configured = await service.ConfigureAsync(Request(primaryApiKey: "private" + "-fixture-key"));
+        Assert.IsTrue(configured.Accepted);
+        var json = await File.ReadAllTextAsync(fixture.MetadataPath);
+        var document = JsonSerializer.Deserialize<NodalOsPersistedByokModelConfiguration>(json, JsonOptions());
+        Assert.IsNotNull(document?.Primary.CredentialReference);
+        Assert.IsTrue(await secrets.DeleteAsync(document!.Primary.CredentialReference!));
+
+        var tested = await service.TestConnectionAsync();
+
+        Assert.IsFalse(tested.Accepted);
+        Assert.IsFalse(tested.RealProviderCallAttempted);
+        Assert.IsFalse(tested.NetworkUsed);
+        Assert.AreEqual(1, tested.AttemptCount);
+        Assert.AreEqual(0, handler.Calls);
     }
 
     private static NodalOsByokModelConfigurationRequest Request(
