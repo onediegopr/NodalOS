@@ -124,11 +124,18 @@ if (-not (Test-Path (Join-Path $publishRoot "OneBrain.Pilot.exe"))) {
 }
 
 Copy-Item (Join-Path $publishRoot "*") $packageRoot -Recurse -Force
-$recipeSource = Join-Path $repoRoot "tools/recipes"
-if (Test-Path $recipeSource) {
-    $recipeTarget = Join-Path $packageRoot "tools/recipes"
-    New-Item -ItemType Directory -Path $recipeTarget -Force | Out-Null
-    Copy-Item (Join-Path $recipeSource "*") $recipeTarget -Recurse -Force
+$packagedRecipes = @(
+    "demo-product-evidence-report.json",
+    "demo-product-evidence-html-report.json",
+    "product-evidence-html-report.json",
+    "product-evidence-markdown-report.json"
+)
+$recipeTarget = Join-Path $packageRoot "tools/recipes"
+New-Item -ItemType Directory -Path $recipeTarget -Force | Out-Null
+foreach ($recipeName in $packagedRecipes) {
+    $recipePath = Join-Path $repoRoot "tools/recipes/$recipeName"
+    if (-not (Test-Path $recipePath)) { throw "Required product recipe was not found: $recipeName" }
+    Copy-Item $recipePath (Join-Path $recipeTarget $recipeName) -Force
 }
 
 New-NodalLogo 50 50 (Join-Path $assetsRoot "StoreLogo.png")
