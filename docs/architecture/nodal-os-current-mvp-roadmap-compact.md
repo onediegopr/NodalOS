@@ -1,8 +1,8 @@
 # NODAL OS — Current MVP Roadmap Compact
 
-Date: 2026-07-15
+Date: 2026-07-16
 
-Status: `TECHNICAL_FOUNDATION_STRONG_PRODUCTIZATION_INCOMPLETE`
+Status: `TECHNICAL_FOUNDATION_STRONG_PRODUCTIZATION_IN_PROGRESS`
 
 This document is the compact planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this current product path.
 
@@ -21,7 +21,7 @@ Ship one installable local-first desktop product that lets a technical founder, 
 
 The product must feel like a dark Mission Control with a central vertical timeline, not like an internal test console, ERP or collection of lab routes.
 
-## Stage closed by this audit
+## Stage closed by the technical audit
 
 The Living Skills foundation is complete enough to leave the research/foundation lane:
 
@@ -43,9 +43,9 @@ No further Living Skills expansion is prioritized until the productization gates
 | Safety and control foundations | 90% | Strong tests, mission/scope approval, redaction, semantic verification and fail-closed boundaries exist. |
 | Local/dev runtime foundations | 75% | Workspace understanding, test-owned file operations, model routing fixtures, Advisor and handoff loops run in CI. |
 | Living Skills foundation | 80% | Compiler, memory, capture session and Windows observation adapter are validated; live product capture/replay is not enabled. |
-| Coherent product experience | 30% | Multiple useful surfaces exist, but the root Pilot experience is internal/demo-heavy, visually inconsistent and not the intended Mission Control shell. |
-| Installable desktop product | 0% | No Tauri/Cargo workspace, desktop packaging project, signed installer or updater channel exists in the current repository. |
-| Sellable MVP | 35% | Technical capabilities are ahead of packaging, onboarding, BYOK live connection, product UX and release operations. |
+| Coherent product experience | 42% | The canonical root is now a dark Mission Control shell over the existing runtime; workspace selection, mission creation and customer data remain fixture-backed or diagnostic. |
+| Installable desktop product | 0% | No desktop packaging project, signed installer or updater channel exists in the current repository. |
+| Sellable MVP | 38% | The product now has a coherent entry surface, but real workspace selection, live BYOK, reversible user-workspace action and packaging remain open. |
 | Production and commercial release | 0% | No published release, licensing/billing flow, customer-data validation or production deployment. |
 
 Percentages are directional planning estimates, not completion claims.
@@ -63,6 +63,8 @@ Exit criteria:
 - product license is selected before external distribution;
 - no file or document claims a production release that does not exist.
 
+Current state: code and compatibility refs are aligned; the remote default-branch setting, protection rules and license decision remain external owner actions.
+
 ### P1 — One coherent Mission Control product shell
 
 Build one dark-first entry surface that replaces the current collection of demo links as the primary experience.
@@ -75,7 +77,17 @@ Required surface:
 - right context: active capability/model, fallback, Advisor and human intervention;
 - bottom or expandable diagnostics: logs/events/evidence, hidden from normal flow unless requested.
 
-The existing local/dev routes may remain diagnostic adapters, but they must not define the customer-facing information architecture.
+Implemented in shell v1:
+
+- `/` is the canonical dark-first Mission Control surface;
+- `/api/mission-control` exposes the same redacted projection;
+- the existing lightweight mission runtime, model router, capability registry, canonical event/timeline and evidence refs are reused;
+- fallback, verification, browser blocker, human-control status and evidence are visible;
+- diagnostics remain collapsed and local-only;
+- the former root Pilot/demo surface remains available explicitly at `/pilot/legacy`;
+- no second timeline, ledger, policy engine, storage layer or product authority was introduced.
+
+Remaining before P1 is fully product-complete: replace fixture-backed mission/workspace content with the real selected workspace and real mission lifecycle.
 
 ### P2 — Real local workspace MVP loop
 
@@ -148,14 +160,16 @@ Exit criteria:
 - CloakBrowser remains the canonical browser target; ChromeLab remains lab/transition only.
 - Product authority, production deployment and release/commercial claims require separate evidence-backed gates.
 
-## Immediate next macro after audit closeout
+## Productization macro progress
 
 `NODAL_OS_PRODUCTIZATION_MISSION_CONTROL_AND_REAL_LOCAL_WORKSPACE_MVP`
 
-Order inside that macro:
-
-1. canonical dark Mission Control shell;
-2. real local workspace selection and persistence;
+1. canonical dark Mission Control shell — `MISSION_CONTROL_PRODUCT_SHELL_V1_READY`;
+2. real local workspace selection and persistence — next;
 3. real BYOK connection path;
 4. one reversible user-workspace file operation;
 5. packaging and private-beta installer.
+
+Next exact macro:
+
+`NODAL_OS_PRODUCTIZATION_REAL_LOCAL_WORKSPACE_SELECTION_AND_PERSISTENCE`
