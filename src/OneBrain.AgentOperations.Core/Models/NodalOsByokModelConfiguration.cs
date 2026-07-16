@@ -1157,7 +1157,8 @@ public sealed class NodalOsByokModelConfigurationService
             return null;
         if (type == NodalOsByokProviderType.OpenAiCompatibleCloud)
             return endpoint.Scheme == Uri.UriSchemeHttps ? endpoint : null;
-        if (endpoint.Scheme is not (Uri.UriSchemeHttp or Uri.UriSchemeHttps))
+        if (!string.Equals(endpoint.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(endpoint.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
             return null;
         return IPAddress.TryParse(endpoint.Host, out var address) && IPAddress.IsLoopback(address) ||
                string.Equals(endpoint.Host, "localhost", StringComparison.OrdinalIgnoreCase)

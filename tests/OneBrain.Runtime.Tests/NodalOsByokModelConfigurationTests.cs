@@ -27,7 +27,7 @@ public sealed class NodalOsByokModelConfigurationTests
         Assert.IsTrue(configured.Accepted, string.Join(" | ", configured.Blockers));
         Assert.IsTrue(configured.Configured);
         Assert.IsTrue(configured.Persisted);
-        Assert.IsTrue(configured.Primary?.CredentialConfigured);
+        Assert.IsTrue(configured.Primary?.CredentialConfigured == true);
         Assert.AreEqual("ephemeral", configured.Primary?.CredentialStoreId);
         Assert.IsTrue(File.Exists(fixture.MetadataPath));
         var json = await File.ReadAllTextAsync(fixture.MetadataPath);
@@ -36,7 +36,7 @@ public sealed class NodalOsByokModelConfigurationTests
 
         var document = JsonSerializer.Deserialize<NodalOsPersistedByokModelConfiguration>(json, JsonOptions());
         Assert.IsNotNull(document?.Primary.CredentialReference);
-        using (var lease = await secrets.OpenAsync(document.Primary.CredentialReference))
+        using (var lease = await secrets.OpenAsync(document!.Primary.CredentialReference!))
         {
             Assert.IsNotNull(lease);
             Assert.AreEqual(rawKey, Encoding.UTF8.GetString(lease.Bytes.Span));
@@ -45,7 +45,7 @@ public sealed class NodalOsByokModelConfigurationTests
         var cleared = await service.ClearAsync();
         Assert.IsFalse(cleared.Configured);
         Assert.IsFalse(File.Exists(fixture.MetadataPath));
-        Assert.IsNull(await secrets.OpenAsync(document.Primary.CredentialReference));
+        Assert.IsNull(await secrets.OpenAsync(document!.Primary.CredentialReference!));
     }
 
     [TestMethod]
@@ -58,7 +58,7 @@ public sealed class NodalOsByokModelConfigurationTests
         {
             Assert.AreEqual("Bearer", request.Headers.Authorization?.Scheme);
             Assert.AreEqual(rawKey, request.Headers.Authorization?.Parameter);
-            return Json(HttpStatusCode.OK, "NODAL_OK", promptTokens: 11, completionTokens: 3);
+            return Task.FromResult(Json(HttpStatusCode.OK, "NODAL_OK", promptTokens: 11, completionTokens: 3));
         });
         var service = fixture.Service(secrets, handler);
         var configured = await service.ConfigureAsync(Request(primaryApiKey: rawKey));
@@ -90,8 +90,8 @@ public sealed class NodalOsByokModelConfigurationTests
         using var fixture = Fixture.Create();
         using var secrets = new EphemeralSecretReferenceStore();
         var handler = new QueueHandler(
-            (_, _) => Json(HttpStatusCode.ServiceUnavailable, "ignored"),
-            (_, _) => Json(HttpStatusCode.OK, "FALLBACK_OK", promptTokens: 7, completionTokens: 2));
+            (_, _) => Task.FromResult(Json(HttpStatusCode.ServiceUnavailable, "ignored")),
+            (_, _) => Task.FromResult(Json(HttpStatusCode.OK, "FALLBACK_OK", promptTokens: 7, completionTokens: 2)));
         var service = fixture.Service(secrets, handler);
         var configured = await service.ConfigureAsync(Request(
             primaryApiKey: "primary-key",
@@ -213,13 +213,6 @@ public sealed class NodalOsByokModelConfigurationTests
     private sealed class QueueHandler : HttpMessageHandler
     {
         private readonly Queue<Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>> responses = new();
-
-        public QueueHandler(params Func<HttpRequestMessage, CancellationToken, HttpResponseMessage>[] responses)
-        {
-            foreach (var response in responses)
-                this.responses.Enqueue((request, token) => Task.FromResult(response(request, token)));
-        }
-
         public QueueHandler(params Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>>[] responses)
         {
             foreach (var response in responses)
