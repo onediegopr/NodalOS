@@ -6,11 +6,6 @@ on:
       - main
     paths:
       - '.github/workflows/one-shot-pr32-stale-precondition-fix.yml'
-  push:
-    branches:
-      - 'feature/productization-controlled-handoff-execution-v1'
-    paths:
-      - '.github/workflows/one-shot-pr32-stale-precondition-fix.yml'
 
 permissions:
   contents: write
@@ -33,34 +28,19 @@ jobs:
 
           path = Path('src/OneBrain.AgentOperations.Core/Workspace/NodalOsWorkspaceHandoffExecution.cs')
           text = path.read_text(encoding='utf-8')
-          old = '''        var draft = await missionDraft.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
-          if (!draft.Accepted || draft.Candidate is null || draft.Plan is null || draft.Binding is null)
-          {
-              return Failure(
-                  "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_DRAFT_NOT_READY",
-                  NodalOsWorkspaceHandoffExecutionState.CandidateStale,
-                  draft.ReviewBlockers.DefaultIfEmpty("A fresh reviewed mission draft is required before approval.").ToArray());
-          }
-          '''
-          new = '''        var draft = await missionDraft.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
-          if (draft.Candidate?.State == NodalOsReviewedWorkspaceActionState.StalePrecondition)
-          {
-              return Failure(
-                  "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_PRECONDITION_CHANGED",
-                  NodalOsWorkspaceHandoffExecutionState.CandidateStale,
-                  draft.ReviewBlockers.DefaultIfEmpty("The reviewed target precondition changed before approval.").ToArray());
-          }
-          if (!draft.Accepted || draft.Candidate is null || draft.Plan is null || draft.Binding is null)
-          {
-              return Failure(
-                  "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_DRAFT_NOT_READY",
-                  NodalOsWorkspaceHandoffExecutionState.CandidateStale,
-                  draft.ReviewBlockers.DefaultIfEmpty("A fresh reviewed mission draft is required before approval.").ToArray());
-          }
-          '''
-          if text.count(old) != 1:
-              raise SystemExit(f'Expected exactly one target block, found {text.count(old)}')
-          path.write_text(text.replace(old, new, 1), encoding='utf-8', newline='\n')
+          marker = '        var draft = await missionDraft.GetCurrentAsync(cancellationToken).ConfigureAwait(false);\n'
+          inserted = marker + (
+              '        if (draft.Candidate?.State == NodalOsReviewedWorkspaceActionState.StalePrecondition)\n'
+              '        {\n'
+              '            return Failure(\n'
+              '                "BLOCKED_WORKSPACE_HANDOFF_EXECUTION_PRECONDITION_CHANGED",\n'
+              '                NodalOsWorkspaceHandoffExecutionState.CandidateStale,\n'
+              '                draft.ReviewBlockers.DefaultIfEmpty("The reviewed target precondition changed before approval.").ToArray());\n'
+              '        }\n'
+          )
+          if text.count(marker) != 1:
+              raise SystemExit(f'Expected exactly one draft marker, found {text.count(marker)}')
+          path.write_text(text.replace(marker, inserted, 1), encoding='utf-8', newline='\n')
           PY
           git diff --check
           git diff --exit-code --quiet && { echo 'Expected a source change but none was produced.'; exit 1; }
