@@ -40,6 +40,23 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
+      - name: Upload targeted source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: total-audit-targeted-source
+          path: |
+            src/OneBrain.Pilot
+            tests/OneBrain.Recipes.Tests
+            tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj
+            tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj
+            tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj
+            eng/ci/smoke-mission-control-root.ps1
+            eng/ci/smoke-desktop-package.ps1
+            README.md
+            docs/architecture/nodal-os-current-mvp-roadmap-compact.md
+          if-no-files-found: error
+          retention-days: 1
+
   dependency-and-cleanup-audit:
     runs-on: windows-latest
     timeout-minutes: 45
