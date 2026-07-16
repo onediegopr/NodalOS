@@ -15,6 +15,8 @@ public static class PilotRuntimeIntegrationEndpointMapper
             NodalOsWorkspaceSelectionRuntime.CreateDefault;
         Func<NodalOsWorkspaceMissionDraftService> missionDraftServiceFactory =
             NodalOsWorkspaceMissionDraftRuntime.CreateDefault;
+        Func<NodalOsWorkspaceHandoffExecutionService> handoffExecutionServiceFactory =
+            NodalOsWorkspaceHandoffExecutionRuntime.CreateDefault;
         LocalWorkspaceSelectionEndpointMapper.MapLocalWorkspaceSelection(
             app,
             environment,
@@ -23,11 +25,16 @@ public static class PilotRuntimeIntegrationEndpointMapper
             app,
             environment,
             missionDraftServiceFactory);
+        RealWorkspaceHandoffExecutionEndpointMapper.MapRealWorkspaceHandoffExecution(
+            app,
+            environment,
+            handoffExecutionServiceFactory);
         MissionControlProductShellEndpointMapper.MapMissionControlProductShell(
             app,
             environment,
             workspaceSelectionServiceFactory,
-            missionDraftServiceFactory);
+            missionDraftServiceFactory,
+            handoffExecutionServiceFactory);
         ProductLedgerLocalDevRouteEndpointMapper.MapProductLedgerLocalDevRoutePreview(
             (IEndpointRouteBuilder)app,
             environment);
