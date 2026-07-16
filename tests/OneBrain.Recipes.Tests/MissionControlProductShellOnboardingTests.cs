@@ -50,4 +50,44 @@ public sealed class MissionControlProductShellSelectiveRuntimeInspectorRouteTest
         Assert.IsFalse(html.Contains("Próximo gate productivo", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(completed.ProductAuthorityGranted);
     }
+
+    [DataTestMethod]
+    [DataRow("CandidateStale", "Revisión requerida", "Revisar y regenerar misión", "La precondición cambió")]
+    [DataRow("ResultChanged", "Resultado modificado", "Inspeccionar resultado", "rollback automático está deshabilitado")]
+    [DataRow("FailedClosed", "Ejecución detenida", "Revisar causa", "se detuvo de forma segura")]
+    public async Task RecoveryGuidanceUsesExistingExecutionStateWithoutNewAuthority(
+        string state,
+        string expectedStage,
+        string expectedAction,
+        string expectedDetail)
+    {
+        var snapshot = await MissionControlProductShellEndpointMapper.BuildSnapshotAsync();
+        var recovery = snapshot with
+        {
+            WorkspaceSelected = true,
+            WorkspacePersisted = true,
+            RealMissionDraft = true,
+            MissionDraftPersisted = true,
+            ActionCandidateKind = "ExactHashUpdate",
+            ActionCandidateTarget = "NODAL_HANDOFF.md",
+            ActionExecutionState = state,
+            ActionApprovalAvailable = false,
+            ActionExecuted = state == "ResultChanged",
+            ActionVerified = false,
+            ActionRollbackAvailable = false,
+            ActionRolledBack = false,
+            ProductAuthorityGranted = false
+        };
+        var html = System.Net.WebUtility.HtmlDecode(MissionControlProductShellHtmlRenderer.Render(recovery));
+
+        StringAssert.Contains(html, expectedStage);
+        StringAssert.Contains(html, expectedAction);
+        StringAssert.Contains(html, expectedDetail);
+        StringAssert.Contains(html, "data-onboarding-complete=\"false\"");
+        Assert.IsFalse(html.Contains("P2c", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("Próximo gate productivo", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+        Assert.IsFalse(recovery.ProductAuthorityGranted);
+    }
 }
