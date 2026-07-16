@@ -2,11 +2,11 @@
 
 Status: owner decision required before external distribution.
 
-The repository does not currently declare a source or product distribution license. In the absence of an explicit license, no public package, customer installer, marketplace listing or commercial release is authorized by this repository.
+The repository does not currently declare a source or product distribution license. In the absence of explicit terms, no public package, customer installer, marketplace listing or commercial release is authorized by this repository.
 
-The private-beta MSIX pipeline exists to validate technical packaging, installation, update metadata and uninstall behavior. Its artifacts are engineering evidence, not permission to distribute or use third-party code outside its applicable licenses.
+The private-beta MSIX pipeline validates technical packaging, installation, launch, update metadata and uninstall behavior. Its artifacts are engineering evidence for controlled internal evaluation, not permission for external distribution or for use of third-party code outside its applicable licenses.
 
-Before a public or commercial release, the owner must select and record:
+Before a public, customer-facing or commercial release, the owner must select and record:
 
 - the repository source license or proprietary source terms;
 - the end-user license terms for the desktop package;
