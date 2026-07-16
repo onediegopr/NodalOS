@@ -19,10 +19,9 @@ The generated PFX and password are temporary and are deleted after signing. They
 
 ## External signing
 
-`eng/packaging/build-msix.ps1` accepts an externally managed PFX:
+`eng/packaging/build-msix.ps1` accepts an externally managed PFX. Provide `NODAL_OS_SIGNING_PFX_PASSWORD` through the secure CI secret store, then run:
 
 ```powershell
-$env:NODAL_OS_SIGNING_PFX_PASSWORD = '<provided by the secure CI secret store>'
 ./eng/packaging/build-msix.ps1 `
   -Version 0.1.0.0 `
   -SigningPfxPath C:\secure\nodal-os-signing.pfx
