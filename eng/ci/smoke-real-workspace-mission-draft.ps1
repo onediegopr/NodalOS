@@ -19,6 +19,9 @@ $secretRoot = Join-Path $fixtureRoot "secrets"
 $targetPath = Join-Path $workspaceRoot "NODAL_HANDOFF.md"
 $sensitiveFixtureValue = "mission-draft-sensitive-fixture-value"
 $goal = "Prepare a verified product handoff for the selected workspace and make the next safe action explicit."
+$missionDraftReadyForReview = 1
+$actionKindCreateTextFile = 0
+$actionStateReadyForReview = 0
 
 if (Test-Path $fixtureRoot) { Remove-Item $fixtureRoot -Recurse -Force }
 New-Item -ItemType Directory -Path (Join-Path $workspaceRoot "src") -Force | Out-Null
@@ -144,8 +147,9 @@ try {
     if (-not $draft.accepted -or
         -not $draft.persisted -or
         -not $draft.rehydrated -or
-        $draft.state -ne "ReadyForReview" -or
-        $draft.candidate.kind -ne "CreateTextFile" -or
+        $draft.state -ne $missionDraftReadyForReview -or
+        $draft.candidate.kind -ne $actionKindCreateTextFile -or
+        $draft.candidate.state -ne $actionStateReadyForReview -or
         $draft.candidate.relativeTargetPath -ne "NODAL_HANDOFF.md" -or
         $draft.candidate.executionEnabled -or
         $draft.workspaceFilesystemMutated -or
@@ -195,7 +199,7 @@ try {
         -not $rehydrated.persisted -or
         -not $rehydrated.rehydrated -or
         $rehydrated.goalRedacted -ne $goal -or
-        $rehydrated.candidate.state -ne "ReadyForReview" -or
+        $rehydrated.candidate.state -ne $actionStateReadyForReview -or
         $rehydrated.candidate.executionEnabled -or
         $rehydrated.workspaceFilesystemMutated -or
         $rehydrated.productAuthorityGranted) {
