@@ -13,7 +13,7 @@ public sealed class PilotAIConfigConsoleTests
         var html = PilotHomePageRenderer.Render();
 
         StringAssert.Contains(html, "Decisiones de IA");
-        StringAssert.Contains(html, "/pilot/legacy/pilot/legacy/pilot/legacy/ai/config");
+        StringAssert.Contains(html, "/pilot/legacy/pilot/legacy/pilot/legacy/pilot/legacy/ai/config");
     }
 
     [TestMethod]
