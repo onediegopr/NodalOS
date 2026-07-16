@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text;
 using OneBrain.Core.AI;
 using OneBrain.Core.AppProfiles;
@@ -347,7 +347,7 @@ public static class PilotHomePageRenderer
       <div class="card">
         <h2>Configuracion de IA</h2>
         <p>Configurar y auditar el enrutamiento central de perfiles OpenAI. Pilot muestra secretos enmascarados y solo prueba en seco; no hay llamada real a proveedor.</p>
-        <p><a class="button ghost" href="/ai/config">Abrir configuracion de IA</a></p>
+        <p><a class="button ghost" href="/pilot/legacy/ai/config">Abrir configuracion de IA</a></p>
       </div>
 
       <div class="card">
@@ -988,7 +988,7 @@ public static class PilotHomePageRenderer
 
     <section class="card">
       <h2>Probar configuracion</h2>
-      <form method="post" action="/ai/config/test">
+      <form method="post" action="/pilot/legacy/ai/config/test">
         <p><button type="submit">Correr prueba en seco del router</button></p>
       </form>
       {{AIRoutingResultBlock(testResult)}}
@@ -1094,7 +1094,7 @@ public static class PilotHomePageRenderer
       <h1>Decisiones de IA</h1>
       <p>Esta bitacora muestra por que el router recomendaria un perfil IA, si hubo alternativa, presupuesto, escalado por riesgo o bloqueo seguro. En este hito solo hay decisiones locales o ejemplos simulados claramente marcados.</p>
       <p>{{ConceptHint("Bloqueo seguro", "Si falta configuracion, presupuesto o seguridad suficiente, la decision se bloquea en lugar de avanzar.")}}</p>
-      <p><a class="button" href="/">Volver al inicio</a> <a class="button" href="/ai/config">Ver configuracion IA</a></p>
+      <p><a class="button" href="/">Volver al inicio</a> <a class="button" href="/pilot/legacy/ai/config">Ver configuracion IA</a></p>
     </section>
 
     <section class="card">
@@ -1514,7 +1514,7 @@ public static class PilotHomePageRenderer
     <a class="button" href="/guia">Guiarme paso a paso</a>
     <a class="button" href="/recipes">Tareas</a>
     <a class="button" href="/runs">Historial</a>
-    <a class="button" href="/ai/config">Configuracion</a>
+    <a class="button" href="/pilot/legacy/ai/config">Configuracion</a>
   </nav>
   <p>Links secundarios: <a href="/variables">datos</a> - <a href="/flows">flujos supervisados</a> - <a href="/playback/demo">playback demo</a> - <a href="/executor-harness">click benigno supervisado</a> - <a href="/approvals/demo">aprobaciones</a> - <a href="/ai/audit">decisiones de IA</a> - <a href="/memory">procesos aprendidos</a> - <a href="/app-profiles">apps y sitios</a></p>
   {{SafetyAlwaysVisible()}}

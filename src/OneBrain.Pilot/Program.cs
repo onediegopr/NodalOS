@@ -254,13 +254,13 @@ app.MapPost("/approvals/demo/decide", async (HttpContext context) =>
     return Results.Content(PilotHomePageRenderer.RenderApprovalDemo(request, confidence, decision), "text/html");
 });
 
-app.MapGet("/ai/config", () =>
+app.MapGet("/pilot/legacy/ai/config", () =>
 {
     var profiles = AIModelConfiguration.LoadOfficialProfiles();
     return Results.Content(PilotHomePageRenderer.RenderAIConfigConsole(profiles), "text/html");
 });
 
-app.MapPost("/ai/config/test", () =>
+app.MapPost("/pilot/legacy/ai/config/test", () =>
 {
     var profiles = AIModelConfiguration.LoadOfficialProfiles();
     var policy = new AIModelRoutingPolicy(profiles, []);

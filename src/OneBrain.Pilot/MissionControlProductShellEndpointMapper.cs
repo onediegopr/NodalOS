@@ -1,5 +1,6 @@
 using System.Net;
 using OneBrain.AgentOperations.Contracts;
+using OneBrain.AgentOperations.Core.Models;
 using OneBrain.AgentOperations.Core.Runtime;
 using OneBrain.AgentOperations.Core.Workspace;
 
@@ -48,6 +49,9 @@ public sealed record MissionControlProductShellSnapshot(
     bool ActionVerified,
     bool ActionRollbackAvailable,
     bool ActionRolledBack,
+    bool ByokConfigured,
+    bool ModelConnectionVerified,
+    bool ModelFallbackApplied,
     string LogicalModel,
     string ActiveProvider,
     string ActiveModel,
@@ -78,12 +82,15 @@ public static class MissionControlProductShellEndpointMapper
         IHostEnvironment environment,
         Func<NodalOsWorkspaceSelectionService>? workspaceSelectionServiceFactory = null,
         Func<NodalOsWorkspaceMissionDraftService>? missionDraftServiceFactory = null,
-        Func<NodalOsWorkspaceHandoffExecutionService>? handoffExecutionServiceFactory = null)
+        Func<NodalOsWorkspaceHandoffExecutionService>? handoffExecutionServiceFactory = null,
+        Func<NodalOsByokModelConfigurationService>? byokModelConfigurationServiceFactory = null)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(environment);
         workspaceSelectionServiceFactory ??= NodalOsWorkspaceSelectionRuntime.CreateDefault;
         missionDraftServiceFactory ??= NodalOsWorkspaceMissionDraftRuntime.CreateDefault;
+        handoffExecutionServiceFactory ??= NodalOsWorkspaceHandoffExecutionRuntime.CreateDefault;
+        byokModelConfigurationServiceFactory ??= NodalOsByokModelConfigurationRuntime.CreateDefault;
 
         endpoints.MapGet(JsonRoute, async (HttpContext context) =>
         {
@@ -95,7 +102,8 @@ public static class MissionControlProductShellEndpointMapper
                     context.RequestAborted,
                     workspaceSelectionServiceFactory(),
                     missionDraftServiceFactory(),
-                    handoffExecutionServiceFactory?.Invoke())
+                    handoffExecutionServiceFactory(),
+                    byokModelConfigurationServiceFactory())
                 .ConfigureAwait(false);
             return Results.Json(snapshot);
         });
@@ -110,7 +118,8 @@ public static class MissionControlProductShellEndpointMapper
                     context.RequestAborted,
                     workspaceSelectionServiceFactory(),
                     missionDraftServiceFactory(),
-                    handoffExecutionServiceFactory?.Invoke())
+                    handoffExecutionServiceFactory(),
+                    byokModelConfigurationServiceFactory())
                 .ConfigureAwait(false);
             return Results.Content(
                 MissionControlProductShellHtmlRenderer.Render(snapshot),
@@ -133,7 +142,8 @@ public static class MissionControlProductShellEndpointMapper
         CancellationToken cancellationToken = default,
         NodalOsWorkspaceSelectionService? workspaceSelectionService = null,
         NodalOsWorkspaceMissionDraftService? missionDraftService = null,
-        NodalOsWorkspaceHandoffExecutionService? handoffExecutionService = null)
+        NodalOsWorkspaceHandoffExecutionService? handoffExecutionService = null,
+        NodalOsByokModelConfigurationService? byokModelConfigurationService = null)
     {
         var fixture = await new NodalOsSelectiveRuntimeFixtureScenario()
             .RunAsync(cancellationToken)
@@ -147,7 +157,12 @@ public static class MissionControlProductShellEndpointMapper
         var execution = handoffExecutionService is null
             ? null
             : await handoffExecutionService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
+        var modelConfiguration = byokModelConfigurationService is null
+            ? null
+            : await byokModelConfigurationService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
 
+        var byokConfigured = modelConfiguration?.Configured == true;
+        var modelConnectionVerified = modelConfiguration?.Connected == true;
         var workspaceSelected = workspaceSelection?.Accepted == true;
         var realMissionDraft = missionDraft?.Plan is not null &&
             missionDraft.Binding is not null &&
@@ -166,26 +181,39 @@ public static class MissionControlProductShellEndpointMapper
         var executionTimeline = execution?.Timeline.Count > 0
             ? ProjectExecutionTimeline(execution.Timeline, planTimeline.Count)
             : [];
-        var timeline = planTimeline.Concat(executionTimeline).ToArray();
+        var modelTimeline = modelConfiguration?.Timeline.Count > 0
+            ? ProjectExecutionTimeline(modelConfiguration.Timeline, planTimeline.Count + executionTimeline.Count)
+            : [];
+        var timeline = planTimeline.Concat(executionTimeline).Concat(modelTimeline).ToArray();
 
         var workspaceEvidence = workspaceSelection?.Workspace?.EvidenceRefs
             .Select(reference => reference.EvidenceId) ?? [];
         var missionEvidence = missionDraft?.EvidenceRefs ?? [];
         var executionEvidence = execution?.EvidenceRefs ?? [];
+        var modelEvidence = modelConfiguration?.EvidenceRefs ?? [];
         var evidenceRefs = fixture.Mission.EvidenceRefs
             .Concat(timeline.SelectMany(value => value.EvidenceRefs))
             .Concat(workspaceEvidence)
             .Concat(missionEvidence)
             .Concat(executionEvidence)
+            .Concat(modelEvidence)
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.Ordinal)
             .Take(48)
             .ToArray();
 
-        var activeProvider = ValueOr(fixture.Inspector.ActiveProvider, "not selected");
-        var activeModel = ValueOr(fixture.Inspector.ActiveModel, "not selected");
-        var logicalModel = ValueOr(fixture.Inspector.LogicalModel, "not selected");
-        var recentFallback = fixture.ResumeCard.RecentFallback ?? fixture.Inspector.RecentFallbacks.LastOrDefault();
+        var activeProvider = modelConnectionVerified
+            ? ValueOr(modelConfiguration!.SelectedProviderId, modelConfiguration.Primary?.ProviderId ?? "not selected")
+            : byokConfigured ? modelConfiguration!.Primary?.ProviderId ?? "configured" : ValueOr(fixture.Inspector.ActiveProvider, "not selected");
+        var activeModel = modelConnectionVerified
+            ? ValueOr(modelConfiguration!.SelectedModelId, modelConfiguration.Primary?.ModelId ?? "not selected")
+            : byokConfigured ? modelConfiguration!.Primary?.ModelId ?? "configured" : ValueOr(fixture.Inspector.ActiveModel, "not selected");
+        var logicalModel = byokConfigured
+            ? modelConfiguration!.LogicalModel
+            : ValueOr(fixture.Inspector.LogicalModel, "not selected");
+        var recentFallback = modelConfiguration?.FallbackApplied == true
+            ? $"Pre-authorized BYOK fallback selected {modelConfiguration.SelectedProviderId} / {modelConfiguration.SelectedModelId}."
+            : fixture.ResumeCard.RecentFallback ?? fixture.Inspector.RecentFallbacks.LastOrDefault();
         var readyCapabilities = fixture.Inspector.Capabilities.Count(value => value.Contains(":Ready:", StringComparison.Ordinal));
         var totalCapabilities = fixture.Inspector.Capabilities.Count;
         var readyProviders = fixture.Inspector.Providers.Count(value => value.Contains(":Ready:", StringComparison.Ordinal));
@@ -211,7 +239,16 @@ public static class MissionControlProductShellEndpointMapper
                             ? "The goal, plan and reviewed action candidate are persisted and bound to the selected workspace."
                             : "Create a real workspace mission draft to replace the runtime fixture projection.",
                 executionCompleted || executionRolledBack || realMissionDraft ? "ready" : "attention"),
-            new("model", "Active model", activeModel, $"{activeProvider} · logical alias {logicalModel}", "active"),
+            new(
+                "model",
+                "Active model",
+                activeModel,
+                modelConnectionVerified
+                    ? $"{activeProvider} · logical alias {logicalModel} · real connection verified"
+                    : byokConfigured
+                        ? $"{activeProvider} · logical alias {logicalModel} · connection test pending"
+                        : $"{activeProvider} · logical alias {logicalModel} · fixture-backed",
+                modelConnectionVerified ? "ready" : byokConfigured ? "attention" : "neutral"),
             new(
                 "fallback",
                 "Fallback policy",
@@ -227,10 +264,24 @@ public static class MissionControlProductShellEndpointMapper
             new(
                 "providers",
                 "Providers",
-                $"{readyProviders}/{totalProviders} ready",
-                "Local fixture providers prove routing and fallback without external calls.",
-                readyProviders > 0 ? "ready" : "attention"),
+                byokConfigured
+                    ? $"{1 + (modelConfiguration!.Fallback is null ? 0 : 1)} configured"
+                    : $"{readyProviders}/{totalProviders} fixture-ready",
+                modelConnectionVerified
+                    ? "A real provider call completed through the existing policy-aware router with redacted evidence."
+                    : byokConfigured
+                        ? "Configuration is stored securely; run the bounded connection test before using it for missions."
+                        : "Configure a BYOK or loopback provider to replace fixture-backed model context.",
+                modelConnectionVerified ? "ready" : "attention"),
             new("workspace", "Workspace", workspaceDisplay, workspaceDetail, workspaceSelected ? "ready" : "attention"),
+            new(
+                "model-connection",
+                "BYOK connection",
+                modelConnectionVerified ? "Verified" : byokConfigured ? "Test required" : "Not configured",
+                modelConnectionVerified
+                    ? $"{modelConfiguration!.AttemptCount} bounded attempt(s) · cost ${modelConfiguration.TotalEstimatedCost:0.########} · response hash {Short(modelConfiguration.ResponseSha256, 12)}."
+                    : "Keys remain in the local secure store; only opaque references enter configuration and evidence.",
+                modelConnectionVerified ? "ready" : "attention"),
             new(
                 "advisor",
                 "Expert Advisor",
@@ -360,6 +411,9 @@ public static class MissionControlProductShellEndpointMapper
             ActionVerified: execution?.Verified == true,
             ActionRollbackAvailable: execution?.RollbackAvailable == true,
             ActionRolledBack: execution?.RolledBack == true,
+            ByokConfigured: byokConfigured,
+            ModelConnectionVerified: modelConnectionVerified,
+            ModelFallbackApplied: modelConfiguration?.FallbackApplied == true,
             LogicalModel: logicalModel,
             ActiveProvider: activeProvider,
             ActiveModel: activeModel,
@@ -382,6 +436,9 @@ public static class MissionControlProductShellEndpointMapper
                 $"action-executed:{(execution?.Executed == true).ToString().ToLowerInvariant()}",
                 $"action-verified:{(execution?.Verified == true).ToString().ToLowerInvariant()}",
                 $"rollback-available:{(execution?.RollbackAvailable == true).ToString().ToLowerInvariant()}",
+                $"byok-configured:{byokConfigured.ToString().ToLowerInvariant()}",
+                $"model-connection-verified:{modelConnectionVerified.ToString().ToLowerInvariant()}",
+                $"model-fallback-applied:{(modelConfiguration?.FallbackApplied == true).ToString().ToLowerInvariant()}",
                 $"logical-model:{logicalModel}",
                 $"provider:{activeProvider}",
                 $"browser:{fixture.Inspector.Browser.State}",
@@ -390,10 +447,10 @@ public static class MissionControlProductShellEndpointMapper
             ],
             LocalOnly: true,
             ReadOnly: true,
-            FixtureBacked: !realMissionDraft,
+            FixtureBacked: !realMissionDraft || !modelConnectionVerified,
             SecretsExcluded: true,
-            ExternalIoUsed: fixture.ExternalIoUsed,
-            NetworkUsed: fixture.NetworkUsed,
+            ExternalIoUsed: fixture.ExternalIoUsed || modelConfiguration?.RealProviderCallAttempted == true,
+            NetworkUsed: fixture.NetworkUsed || modelConfiguration?.NetworkUsed == true,
             ProductAuthorityGranted: false);
     }
 

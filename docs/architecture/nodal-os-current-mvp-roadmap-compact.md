@@ -40,12 +40,12 @@ No further Living Skills expansion is prioritized until the productization gates
 
 | Area | Readiness | Evidence-backed interpretation |
 | --- | ---: | --- |
-| Safety and control foundations | 93% | Mission/scope approval binding, stale-precondition checks, exact-hash verification, redaction and guarded rollback are covered by focused and process-level tests. |
-| Local/dev runtime foundations | 85% | Protected workspace selection, persisted mission draft, real bounded handoff execution, restart rehydration, rollback, model routing fixtures, Advisor and handoff loops run in CI. |
+| Safety and control foundations | 93% | Mission/scope approval binding, stale-precondition checks, exact-hash verification, redaction, secure secret references and guarded rollback are covered by focused and process-level tests. |
+| Local/dev runtime foundations | 90% | Protected workspace selection, persisted mission draft, real bounded handoff execution, restart rehydration, rollback, real BYOK connection/fallback, Advisor and handoff loops run in CI. |
 | Living Skills foundation | 80% | Compiler, memory, capture session and Windows observation adapter are validated; live product capture/replay is not enabled. |
-| Coherent product experience | 62% | Mission Control is canonical and projects a real workspace, real mission, reviewed action, approval, verified execution, evidence and rollback state. Live model configuration remains fixture-backed. |
+| Coherent product experience | 72% | Mission Control is canonical and projects a real workspace, real mission, reviewed action, approval, verified execution, evidence, rollback and verified BYOK route without creating a second source of truth. |
 | Installable desktop product | 0% | No desktop packaging project, signed installer or updater channel exists in the current repository. |
-| Sellable MVP | 55% | The core local mission loop now reaches a verified reversible workspace action, but live BYOK, desktop packaging, onboarding and private-beta hardening remain open. |
+| Sellable MVP | 65% | The core local mission loop reaches a verified reversible workspace action and a verified BYOK route, but desktop packaging, onboarding and private-beta hardening remain open. |
 | Production and commercial release | 0% | No published release, licensing/billing flow, customer-data validation or production deployment. |
 
 Percentages are directional planning estimates, not completion claims.
@@ -73,13 +73,14 @@ Implemented in shell v1:
 - `/api/mission-control` exposes the same redacted projection;
 - the existing lightweight mission runtime, model router, capability registry, canonical event/timeline and evidence refs are reused;
 - fallback, verification, browser blocker, human-control status and evidence are visible;
-- the protected workspace, persisted real mission and controlled handoff execution are projected into the same shell;
-- approval availability, execution status, verification and rollback readiness are visible without introducing a second dashboard;
+- the protected workspace, persisted real mission, controlled handoff execution and verified BYOK route are projected into the same shell;
+- approval availability, execution status, verification, rollback readiness, model connection and fallback state are visible without introducing a second dashboard;
 - diagnostics remain collapsed and local-only;
 - the former root Pilot/demo surface remains available explicitly at `/pilot/legacy`;
+- the environment-only AI configuration console is isolated under `/pilot/legacy/ai/config`;
 - no second timeline, ledger, policy engine, storage layer or product authority was introduced.
 
-Remaining before P1 is fully product-complete: replace fixture-backed model/provider context with the usable BYOK path and finish desktop packaging/onboarding.
+Remaining before P1 is fully product-complete: desktop packaging, onboarding and private-beta usability hardening.
 
 ### P2 — Real local workspace MVP loop
 
@@ -143,15 +144,28 @@ The test-owned file operations remain regression fixtures. Their atomic-write, e
 
 ### P3 — BYOK usable from the product
 
-Next exit criteria:
+Implemented:
 
-- provider/model selection from the product shell;
-- opaque secret reference stored through the approved local secure store;
-- connection test with redacted diagnostics;
-- one real provider call under explicit privacy/cost policy;
-- automatic fallback only within pre-authorized privacy, capability and budget limits;
-- cancellation stops the chain;
-- usage/cost/fallback evidence excludes secrets.
+- `/models/config` is the canonical configuration surface; `/api/models/config` exposes the same redacted state;
+- `/models/test` performs the bounded connection test and `/models/clear` removes metadata and stored credential references;
+- the operator configures one primary OpenAI-compatible route and one optional fallback, with explicit local/cloud type, endpoint, model, privacy permission, timeout and cost limits;
+- local routes are restricted to loopback HTTP/HTTPS; cloud routes require HTTPS and explicit cloud authorization;
+- API keys are stored only through opaque `SecretReference` values backed by Windows current-user DPAPI in the default product runtime;
+- raw credentials are absent from persisted metadata, HTML, JSON, Mission Control, timeline, evidence and diagnostics;
+- the existing `ModelCatalog`, `PolicyAwareModelRouter`, `ModelFallbackPolicy` and secret-store contracts execute the route; no second router or policy engine was introduced;
+- the real connection test sends a bounded OpenAI-compatible request server-side and persists only the response SHA-256, redacted attempt summaries, selected route, token counts, estimated cost, evidence and canonical timeline;
+- provider response content and the test prompt are not persisted;
+- fallback continues automatically only through preconfigured routes compatible with the persisted privacy, capability and budget policy;
+- operator cancellation stops the chain and is not persisted as a successful connection result;
+- provider/model selection, connection verification and fallback state project into canonical Mission Control;
+- configuration and verified connection state rehydrate after process restart;
+- loopback-only access, same-origin one-time-token POST, bounded forms, closed CSP and no-store protect the model surface;
+- process smoke proves configure primary + fallback → store both credentials with DPAPI → reject plaintext leakage → primary HTTP 503 → automatic authorized fallback HTTP 200 → verify response hash/evidence → project Mission Control → restart → rehydrate → clear metadata and credentials;
+- product authority remains false and a connection test does not authorize mission execution.
+
+Runtime decision: `GO_BYOK_MODEL_CONNECTION_VERIFIED`.
+
+Productization decision: `REAL_BYOK_MODEL_CONNECTION_V1_READY`.
 
 ### P4 — Packaging and local distribution
 
@@ -199,6 +213,8 @@ Exit criteria:
 - Workspace selection and mission drafting may mutate NODAL OS local configuration, but not the selected workspace.
 - Workspace mutation is restricted to the exact approved `NODAL_HANDOFF.md` candidate and must preserve its reviewed precondition, verification and rollback boundary.
 - A reviewed action candidate and an approval decision are inputs to the controlled executor; neither grants general filesystem or product authority.
+- BYOK credentials remain opaque secure-store references outside the instant of provider use; provider response content is not persisted by the connection-test path.
+- Automatic model fallback is limited to routes already authorized by privacy, capability and cost policy; cancellation never continues the chain.
 - CloakBrowser remains the canonical browser target; ChromeLab remains lab/transition only.
 - Product authority, production deployment and release/commercial claims require separate evidence-backed gates.
 
@@ -210,9 +226,9 @@ Exit criteria:
 2. protected real local workspace selection and persistence — `REAL_LOCAL_WORKSPACE_SELECTION_V1_READY`;
 3. real workspace mission binding and reviewed action candidate — `REAL_WORKSPACE_MISSION_DRAFT_V1_READY`;
 4. mission-scope approval and one verified reversible handoff action — `REAL_WORKSPACE_HANDOFF_EXECUTION_V1_READY`;
-5. real BYOK connection path — next;
-6. packaging and private-beta installer.
+5. real BYOK connection path — `REAL_BYOK_MODEL_CONNECTION_V1_READY`;
+6. packaging and private-beta installer — next.
 
 Next exact macro:
 
-`NODAL_OS_PRODUCTIZATION_REAL_BYOK_CONNECTION_PATH`
+`NODAL_OS_PRODUCTIZATION_DESKTOP_PACKAGING_AND_LOCAL_DISTRIBUTION`
