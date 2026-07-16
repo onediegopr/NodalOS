@@ -1,0 +1,50 @@
+name: One-shot PR33 retire legacy AI config routes
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-pr33-retire-legacy-ai-config.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/productization-real-byok-connection-v1
+          fetch-depth: 0
+      - name: Move environment-only AI console under explicit legacy Pilot path
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path('src/OneBrain.Pilot/Program.cs'),
+              Path('src/OneBrain.Pilot/PilotHomePageRenderer.cs'),
+              Path('tests/OneBrain.Recipes.Tests/PilotAIConfigConsoleTests.cs'),
+              Path('tests/OneBrain.Recipes.Tests/PilotGuiUxHardeningTests.cs')
+          ]
+          total = 0
+          for path in paths:
+              text = path.read_text(encoding='utf-8-sig')
+              count = text.count('/ai/config')
+              if count:
+                  text = text.replace('/ai/config/test', '/pilot/legacy/ai/config/test')
+                  text = text.replace('/ai/config', '/pilot/legacy/ai/config')
+                  path.write_text(text, encoding='utf-8')
+                  total += count
+          if total < 4:
+              raise SystemExit(f'Expected legacy AI config references across product/test files, found {total}')
+          PY
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add src/OneBrain.Pilot/Program.cs src/OneBrain.Pilot/PilotHomePageRenderer.cs tests/OneBrain.Recipes.Tests/PilotAIConfigConsoleTests.cs tests/OneBrain.Recipes.Tests/PilotGuiUxHardeningTests.cs
+          git commit -m 'refactor: isolate legacy environment AI console'
+          git push origin HEAD:feature/productization-real-byok-connection-v1
