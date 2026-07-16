@@ -27,7 +27,7 @@ public sealed class NodalOsByokModelConfigurationTests
         Assert.IsTrue(configured.Accepted, string.Join(" | ", configured.Blockers));
         Assert.IsTrue(configured.Configured);
         Assert.IsTrue(configured.Persisted);
-        Assert.AreEqual(true, configured.Primary?.CredentialConfigured);
+        Assert.IsTrue(configured.Primary?.CredentialConfigured);
         Assert.AreEqual("ephemeral", configured.Primary?.CredentialStoreId);
         Assert.IsTrue(File.Exists(fixture.MetadataPath));
         var json = await File.ReadAllTextAsync(fixture.MetadataPath);
