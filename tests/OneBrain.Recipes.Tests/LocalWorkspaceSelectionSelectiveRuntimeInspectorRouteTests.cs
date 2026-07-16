@@ -76,7 +76,9 @@ public sealed class LocalWorkspaceSelectionSelectiveRuntimeInspectorRouteTests
 
         Assert.AreEqual(HttpStatusCode.OK, jsonResponse.StatusCode);
         Assert.IsTrue(root.GetProperty("accepted").GetBoolean());
-        Assert.AreEqual("Ready", root.GetProperty("state").GetString());
+        Assert.AreEqual(
+            (int)NodalOsWorkspaceSelectionState.Ready,
+            root.GetProperty("state").GetInt32());
         Assert.IsTrue(root.GetProperty("persisted").GetBoolean());
         Assert.IsTrue(root.GetProperty("rehydrated").GetBoolean());
         Assert.IsTrue(root.GetProperty("realFilesystemRead").GetBoolean());
