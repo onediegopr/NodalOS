@@ -143,8 +143,8 @@ try {
 
     $metadata = [System.IO.File]::ReadAllText($metadataPath)
     Assert-NoLeak $metadata "BYOK metadata"
-    if ($metadata -notmatch 'primary-provider' -or $metadata -notmatch 'fallback-provider' -or $metadata -notmatch 'dpapi-current-user') {
-        throw "BYOK metadata is incomplete or does not use DPAPI references."
+    if ($metadata -notmatch 'primary-provider' -or $metadata -notmatch 'fallback-provider' -or $metadata -notmatch 'windows-dpapi') {
+        throw "BYOK metadata is incomplete or does not use Windows DPAPI references."
     }
     foreach ($secretFile in Get-ChildItem $secretRoot -File -Recurse) {
         $secretProjection = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($secretFile.FullName))
