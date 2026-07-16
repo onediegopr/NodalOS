@@ -16,11 +16,20 @@ Current validated foundations include:
 - one reviewed reversible candidate over `NODAL_HANDOFF.md`, expressed as create-only or exact-hash update according to the current target state;
 - candidate preconditions, risk, approval scope, proposed hash, rollback plan and expected evidence visible before execution;
 - stale-precondition detection and mission/candidate rehydration after process restart;
-- real mission goal, reviewed plan and candidate projected into the canonical Mission Control timeline without creating a second source of truth;
-- one-time request tokens, strict same-origin POST, no-store and closed CSP on workspace and mission-entry surfaces;
+- one-shot mission-scope approval bound to mission, workspace fingerprint, action, `filesystem.write.safe`, target and reviewed hashes;
+- approval contracts that remain non-authoritative by themselves and do not grant general runtime or product authority;
+- controlled create-only execution with atomic move, exact byte verification and SHA-256 evidence;
+- controlled exact-hash update with verified app-local snapshot, atomic replace, post-write verification and guarded restore plan;
+- rollback restricted by operation identity, workspace fingerprint, allowlisted target and exact current result hash;
+- automatic rollback refusal when the verified result changed externally after execution;
+- persisted execution, verification, evidence and rollback state rehydrated after process restart;
+- `/mission/execution`, `/api/mission/execution` and `/mission/rollback` as loopback-only, same-origin, one-time-token product surfaces;
+- real mission goal, reviewed plan, approval, execution, verification and rollback projected into the canonical Mission Control timeline without creating a second source of truth;
+- process-level CI smoke covering workspace selection, mission creation, scope approval, execution, SHA-256 verification, restart, rehydration, rollback and restoration of the original workspace state;
+- one-time request tokens, strict same-origin POST, no-store and closed CSP on workspace, mission and execution surfaces;
 - former ONE BRAIN Pilot demo home preserved under an explicit legacy lab route instead of defining the primary product experience;
 - local/dev Runtime Inspector, bounded workspace understanding and verified handoff export;
-- test-owned create and exact-hash update operations with atomic verification, snapshot/rollback and cleanup;
+- test-owned create and exact-hash update operations retained as regression fixtures with atomic verification, snapshot/rollback and cleanup;
 - mission-level approval, evidence and semantic verification foundations;
 - policy-aware model routing and fallback fixtures;
 - Expert Advisor as a deterministic non-executor;
@@ -29,7 +38,7 @@ Current validated foundations include:
 - ChromeLab security validation as `LAB_LEGACY_TRANSITION`;
 - CloakBrowser as the canonical browser target, with live CDP validation still blocked when the pinned external binary is unavailable.
 
-The selected workspace remains read-only at this stage. The mission draft and reviewed candidate do not authorize execution. Mission-scope approval, controlled user-workspace mutation, live BYOK, customer-data workflows, public deployment, billing, licensing, auto-update and release claims remain closed until separately implemented and validated.
+The selected workspace can now be mutated only through the exact approved and revalidated `NODAL_HANDOFF.md` candidate, with deterministic verification and guarded rollback. Broader user-workspace mutation, arbitrary patching, shell execution, live BYOK, customer-data workflows, public deployment, billing, licensing, auto-update and release claims remain closed until separately implemented and validated.
 
 ## Historical experimental milestone — 2026-06-25
 
