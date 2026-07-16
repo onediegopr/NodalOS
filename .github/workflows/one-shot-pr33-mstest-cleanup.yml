@@ -1,0 +1,49 @@
+name: One-shot PR33 MSTest cleanup
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-pr33-mstest-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout head
+        uses: actions/checkout@v4
+        with:
+          ref: feature/productization-real-byok-connection-v1
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Align boolean assertions with MSTest analyzer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('tests/OneBrain.Runtime.Tests/NodalOsByokModelConfigurationTests.cs')
+          text = path.read_text(encoding='utf-8-sig')
+          replacements = {
+              '        Assert.AreEqual(true, configured.Configured);':
+                  '        Assert.IsTrue(configured.Configured);',
+              '        Assert.IsTrue(configured.Primary?.CredentialConfigured == true);':
+                  '        Assert.AreEqual(true, configured.Primary?.CredentialConfigured);',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'Expected one assertion, found {text.count(old)}: {old}')
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          git rm .github/workflows/one-shot-pr33-mstest-cleanup.yml
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add tests/OneBrain.Runtime.Tests/NodalOsByokModelConfigurationTests.cs
+          git commit -m 'test: align BYOK assertions with MSTest analyzer'
+          git push origin HEAD:feature/productization-real-byok-connection-v1
