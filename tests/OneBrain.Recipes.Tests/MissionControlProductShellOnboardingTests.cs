@@ -50,4 +50,47 @@ public sealed class MissionControlProductShellSelectiveRuntimeInspectorRouteTest
         Assert.IsFalse(html.Contains("Próximo gate productivo", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(completed.ProductAuthorityGranted);
     }
+
+    [TestMethod]
+    public async Task RecoveryGuidanceUsesExistingExecutionStateWithoutNewAuthority()
+    {
+        var snapshot = await MissionControlProductShellEndpointMapper.BuildSnapshotAsync();
+        var cases = new[]
+        {
+            (State: "CandidateStale", Stage: "Revisión requerida", Action: "Revisar y regenerar misión", Detail: "La precondición cambió"),
+            (State: "ResultChanged", Stage: "Resultado modificado", Action: "Inspeccionar resultado", Detail: "rollback automático está deshabilitado"),
+            (State: "FailedClosed", Stage: "Ejecución detenida", Action: "Revisar causa", Detail: "se detuvo de forma segura")
+        };
+
+        foreach (var item in cases)
+        {
+            var recovery = snapshot with
+            {
+                WorkspaceSelected = true,
+                WorkspacePersisted = true,
+                RealMissionDraft = true,
+                MissionDraftPersisted = true,
+                ActionCandidateKind = "ExactHashUpdate",
+                ActionCandidateTarget = "NODAL_HANDOFF.md",
+                ActionExecutionState = item.State,
+                ActionApprovalAvailable = false,
+                ActionExecuted = item.State == "ResultChanged",
+                ActionVerified = false,
+                ActionRollbackAvailable = false,
+                ActionRolledBack = false,
+                ProductAuthorityGranted = false
+            };
+            var html = System.Net.WebUtility.HtmlDecode(MissionControlProductShellHtmlRenderer.Render(recovery));
+
+            StringAssert.Contains(html, item.Stage);
+            StringAssert.Contains(html, item.Action);
+            StringAssert.Contains(html, item.Detail);
+            StringAssert.Contains(html, "data-onboarding-complete=\"false\"");
+            Assert.IsFalse(html.Contains("P2c", StringComparison.Ordinal));
+            Assert.IsFalse(html.Contains("Próximo gate productivo", StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(html.Contains("<script", StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(html.Contains("<form", StringComparison.OrdinalIgnoreCase));
+            Assert.IsFalse(recovery.ProductAuthorityGranted);
+        }
+    }
 }

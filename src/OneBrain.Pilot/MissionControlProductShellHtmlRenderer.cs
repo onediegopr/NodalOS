@@ -103,53 +103,63 @@ public static class MissionControlProductShellHtmlRenderer
     private static (string Stage, string Text, string Action, string Href) NextAction(MissionControlProductShellSnapshot snapshot)
     {
         if (!snapshot.WorkspaceSelected)
-            return ("P2", "Seleccionar y persistir un workspace local real manteniendo los paths absolutos fuera de la superficie.", "Seleccionar workspace local", "/workspace/select");
+            return ("Inicio", "Seleccionar y persistir un workspace local real manteniendo los paths absolutos fuera de la superficie.", "Seleccionar workspace local", "/workspace/select");
         if (!snapshot.RealMissionDraft)
-            return ("P2b", "Crear una misión real, revisar su plan y preparar una acción reversible sin mutar el proyecto.", "Crear misión real", "/mission/new");
+            return ("Misión", "Crear una misión real, revisar su plan y preparar una acción reversible sin mutar el proyecto.", "Crear misión real", "/mission/new");
+        if (snapshot.ActionExecutionState == "CandidateStale")
+            return ("Revisión requerida", "El candidato quedó desactualizado porque cambió su precondición. NODAL no ejecutará nada hasta que revises y regeneres la misión.", "Revisar y regenerar misión", "/mission/new");
+        if (snapshot.ActionExecutionState == "ResultChanged")
+            return ("Resultado modificado", "El resultado cambió después de la verificación. El rollback automático permanece deshabilitado para no sobrescribir trabajo posterior.", "Inspeccionar resultado", "/mission/execution");
+        if (snapshot.ActionExecutionState == "FailedClosed")
+            return ("Ejecución detenida", "La operación se cerró de forma segura. Revisá la causa redacted y el estado actual antes de volver a intentarlo.", "Revisar causa", "/mission/execution");
         if (snapshot.ActionApprovalAvailable)
-            return ("P2c", $"El candidato {snapshot.ActionCandidateKind} para {snapshot.ActionCandidateTarget} está listo. Una única aprobación exacta habilita la operación controlada, verificación y restore plan.", "Revisar, aprobar y ejecutar", "/mission/execution");
-        if (snapshot.ActionVerified && snapshot.ActionRollbackAvailable && !snapshot.ModelConnectionVerified)
-            return ("P3", "La primera acción real quedó ejecutada y verificada con rollback disponible. El próximo gate es configurar BYOK y verificar una llamada real bajo política de privacidad y costo.", "Configurar y probar modelos", "/models/config");
-        if (snapshot.ActionVerified && snapshot.ModelConnectionVerified)
-            return ("P5", "El loop local y el paquete private-beta están listos. Podés iniciar la siguiente misión y conservar el mismo workspace, modelo y evidencia verificable.", "Crear siguiente misión", "/mission/new");
+            return ("Aprobación", $"El candidato {snapshot.ActionCandidateKind} para {snapshot.ActionCandidateTarget} está listo. Una única aprobación exacta habilita la operación controlada, verificación y restore plan.", "Revisar, aprobar y ejecutar", "/mission/execution");
         if (snapshot.ActionRolledBack)
-            return ("P2c", "El rollback quedó verificado. La misión puede recrearse o revisarse antes de una nueva acción.", "Revisar misión", "/mission/new");
-        if (snapshot.ActionExecutionState is "CandidateStale" or "ResultChanged" or "FailedClosed")
-            return ("P2c", "La operación falló cerrado o cambió después de revisión. El operador debe inspeccionar el estado antes de continuar.", "Abrir aprobación y ejecución", "/mission/execution");
-        return ("P2c", "La misión y el candidato reversible están persistidos. Revisá la frontera de ejecución antes de continuar.", "Abrir ejecución controlada", "/mission/execution");
+            return ("Misión restaurada", "El rollback quedó verificado. La misión puede recrearse o revisarse antes de una nueva acción.", "Revisar misión", "/mission/new");
+        if (snapshot.ActionVerified && snapshot.ActionRollbackAvailable && !snapshot.ModelConnectionVerified)
+            return ("Modelos", "La primera acción real quedó ejecutada y verificada con rollback disponible. Configurá BYOK y verificá una llamada real bajo la política autorizada.", "Configurar y probar modelos", "/models/config");
+        if (snapshot.ActionVerified && snapshot.ModelConnectionVerified)
+            return ("Continuidad", "El loop local y el paquete private-beta están listos. Podés iniciar la siguiente misión y conservar el mismo workspace, modelo y evidencia verificable.", "Crear siguiente misión", "/mission/new");
+        return ("Revisión", "La misión y el candidato reversible están persistidos. Revisá la operación controlada antes de continuar.", "Abrir ejecución controlada", "/mission/execution");
     }
 
     private static string RenderQuickStart(MissionControlProductShellSnapshot snapshot)
-{
-    var actionComplete = snapshot.ActionVerified || snapshot.ActionRolledBack;
-    var steps = new[]
     {
-        (Id: "workspace", Label: "1. Workspace", Complete: snapshot.WorkspaceSelected, Available: true, Href: "/workspace/select"),
-        (Id: "mission", Label: "2. Misión", Complete: snapshot.RealMissionDraft, Available: snapshot.WorkspaceSelected, Href: "/mission/new"),
-        (Id: "execution", Label: "3. Acción verificada", Complete: actionComplete, Available: snapshot.RealMissionDraft, Href: "/mission/execution"),
-        (Id: "model", Label: "4. Modelo conectado", Complete: snapshot.ModelConnectionVerified, Available: actionComplete, Href: "/models/config")
-    };
-    var builder = new StringBuilder("<div class='context-list' data-section-id='quick-start'>");
-    foreach (var step in steps)
-    {
-        var state = step.Complete ? "complete" : step.Available ? "attention" : "neutral";
-        builder.Append("<article class='context-card' data-onboarding-step='")
-            .Append(H(step.Id)).Append("'><div class='context-top'><span class='context-label'>")
-            .Append(H(step.Label)).Append("</span><span class='badge ").Append(state).Append("'>")
-            .Append(step.Complete ? "listo" : step.Available ? "continuar" : "pendiente")
-            .Append("</span></div>");
-        if (!step.Complete && step.Available)
-            builder.Append("<a class='product-cta' href='").Append(H(step.Href)).Append("'>Abrir</a>");
-        builder.Append("</article>");
+        var actionComplete = snapshot.ActionVerified || snapshot.ActionRolledBack;
+        var steps = new[]
+        {
+            (Id: "workspace", Label: "1. Workspace", Complete: snapshot.WorkspaceSelected, Available: true, Href: "/workspace/select"),
+            (Id: "mission", Label: "2. Misión", Complete: snapshot.RealMissionDraft, Available: snapshot.WorkspaceSelected, Href: "/mission/new"),
+            (Id: "execution", Label: "3. Acción verificada", Complete: actionComplete, Available: snapshot.RealMissionDraft, Href: "/mission/execution"),
+            (Id: "model", Label: "4. Modelo conectado", Complete: snapshot.ModelConnectionVerified, Available: actionComplete, Href: "/models/config")
+        };
+        var builder = new StringBuilder("<div class='context-list' data-section-id='quick-start'>");
+        foreach (var step in steps)
+        {
+            var state = step.Complete ? "complete" : step.Available ? "attention" : "neutral";
+            builder.Append("<article class='context-card' data-onboarding-step='")
+                .Append(H(step.Id)).Append("'><div class='context-top'><span class='context-label'>")
+                .Append(H(step.Label)).Append("</span><span class='badge ").Append(state).Append("'>")
+                .Append(step.Complete ? "listo" : step.Available ? "continuar" : "pendiente")
+                .Append("</span></div>");
+            if (!step.Complete && step.Available)
+                builder.Append("<a class='product-cta' href='").Append(H(step.Href)).Append("'>Abrir</a>");
+            builder.Append("</article>");
+        }
+        return builder.Append("</div>").ToString();
     }
-    return builder.Append("</div>").ToString();
-}
 
     private static string RenderControlAction(MissionControlProductShellSnapshot snapshot)
     {
+        if (snapshot.ActionExecutionState == "CandidateStale")
+            return "<a class=\"button primary\" href=\"/mission/new\">Revisar misión</a>";
+        if (snapshot.ActionExecutionState == "ResultChanged")
+            return "<a class=\"button primary\" href=\"/mission/execution\">Inspeccionar resultado</a>";
+        if (snapshot.ActionExecutionState == "FailedClosed")
+            return "<a class=\"button primary\" href=\"/mission/execution\">Revisar causa</a>";
         if (snapshot.ActionApprovalAvailable)
             return "<a class=\"button primary\" href=\"/mission/execution\">Revisar y aprobar</a>";
-        if (snapshot.ActionExecuted || snapshot.ActionExecutionState is "CandidateStale" or "ResultChanged" or "FailedClosed")
+        if (snapshot.ActionExecuted)
             return "<a class=\"button primary\" href=\"/mission/execution\">Ver ejecución</a>";
         return $"<button class=\"button primary\" type=\"button\" disabled>{H(snapshot.ApprovalState)}</button>";
     }
@@ -168,9 +178,14 @@ public static class MissionControlProductShellHtmlRenderer
             ? "La acción y su rollback pasaron verificación exacta."
             : snapshot.ActionVerified
                 ? $"Ejecución verificada. Rollback disponible: {Bool(snapshot.ActionRollbackAvailable)}."
-                : snapshot.ActionApprovalAvailable
-                    ? "Reversible, exact-hash scoped y listo para una aprobación de misión."
-                    : $"Estado de ejecución: {H(snapshot.ActionExecutionState ?? "not-configured")}.";
+                : snapshot.ActionExecutionState switch
+                {
+                    "CandidateStale" => "La precondición cambió; la ejecución permanece bloqueada hasta revisar y regenerar la misión.",
+                    "ResultChanged" => "El resultado verificado cambió; el rollback automático está deshabilitado para preservar el estado actual.",
+                    "FailedClosed" => "La ejecución se detuvo de forma segura; revisá la causa antes de intentar una nueva operación.",
+                    _ when snapshot.ActionApprovalAvailable => "Reversible, exact-hash scoped y listo para una aprobación de misión.",
+                    _ => $"Estado de ejecución: {H(snapshot.ActionExecutionState ?? "not-configured")}."
+                };
         return $"<div class=\"{className}\" data-section-id=\"action-candidate\"><strong>{H(snapshot.ActionCandidateKind)} · {H(snapshot.ActionCandidateTarget)}</strong>{detail}<br><a class=\"product-cta\" href=\"/mission/execution\">Abrir detalle controlado</a></div>";
     }
 
