@@ -14,6 +14,17 @@ def replace(path: Path, old: str, new: str, count: int = 1) -> None:
     path.write_text(text.replace(old, new, count), encoding="utf-8")
 
 
+def replace_region(path: Path, start_marker: str, end_marker: str, replacement: str) -> None:
+    text = path.read_text(encoding="utf-8-sig")
+    start = text.find(start_marker)
+    if start < 0:
+        raise SystemExit(f"{path}: start marker not found: {start_marker!r}")
+    end = text.find(end_marker, start)
+    if end < 0:
+        raise SystemExit(f"{path}: end marker not found: {end_marker!r}")
+    path.write_text(text[:start] + replacement + text[end:], encoding="utf-8")
+
+
 endpoint = Path("src/OneBrain.Pilot/NodalOsByokModelConfigurationEndpointMapper.cs")
 replace(
     endpoint,
@@ -29,16 +40,11 @@ replace(
     "          </form>\n"
     '          <div class="actions secondary-actions">@@TEST_FORM@@@@CLEAR_FORM@@</div>',
 )
-replace(
+replace_region(
     endpoint,
-    """    private static string TypeOptions(string? selected)
-    {
-        var cloud = string.Equals(selected, nameof(NodalOsByokProviderType.OpenAiCompatibleCloud), StringComparison.Ordinal) ? " selected" : string.Empty;
-        var local = string.Equals(selected, nameof(NodalOsByokProviderType.OpenAiCompatibleLocal), StringComparison.Ordinal) ? " selected" : string.Empty;
-        return $"<option value=\"OpenAiCompatibleCloud\"{cloud}>OpenAI-compatible cloud · HTTPS + key</option><option value=\"OpenAiCompatibleLocal\"{local}>OpenAI-compatible local · loopback</option>";
-    }
-""",
-    """    private static string TypeOptions(string? selected)
+    "    private static string TypeOptions(string? selected)\n",
+    "\n    private static void ApplyHeaders(HttpResponse response)",
+    r'''    private static string TypeOptions(string? selected)
     {
         var localSelected = string.IsNullOrWhiteSpace(selected) ||
             string.Equals(selected, nameof(NodalOsByokProviderType.OpenAiCompatibleLocal), StringComparison.Ordinal);
@@ -46,7 +52,7 @@ replace(
         var cloud = string.Equals(selected, nameof(NodalOsByokProviderType.OpenAiCompatibleCloud), StringComparison.Ordinal) ? " selected" : string.Empty;
         return $"<option value=\"OpenAiCompatibleLocal\"{local}>OpenAI-compatible local · loopback</option><option value=\"OpenAiCompatibleCloud\"{cloud}>OpenAI-compatible cloud · HTTPS + key</option>";
     }
-""",
+''',
 )
 
 runtime = Path("src/OneBrain.Pilot/NodalOsByokModelConfigurationRuntime.cs")
@@ -206,18 +212,18 @@ route_tests = Path(
 )
 replace(
     route_tests,
-    """        StringAssert.Contains(formResponse.Headers.GetValues("Content-Security-Policy").Single(), "form-action 'self'");
-        Assert.IsFalse(formHtml.Contains("<script", StringComparison.OrdinalIgnoreCase));""",
-    """        StringAssert.Contains(formResponse.Headers.GetValues("Content-Security-Policy").Single(), "form-action 'self'");
+    r'''        StringAssert.Contains(formResponse.Headers.GetValues("Content-Security-Policy").Single(), "form-action 'self'");
+        Assert.IsFalse(formHtml.Contains("<script", StringComparison.OrdinalIgnoreCase));''',
+    r'''        StringAssert.Contains(formResponse.Headers.GetValues("Content-Security-Policy").Single(), "form-action 'self'");
         Assert.IsFalse(formHtml.Contains("<script", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(formHtml, "<option value=\"OpenAiCompatibleLocal\" selected>");""",
+        StringAssert.Contains(formHtml, "<option value=\"OpenAiCompatibleLocal\" selected>");''',
 )
 replace(
     route_tests,
-    """        StringAssert.Contains(configuredPage, "data-configured=\"true\"");
+    r'''        StringAssert.Contains(configuredPage, "data-configured=\"true\"");
         StringAssert.Contains(configuredPage, "Probar conexión real");
-        AssertNoSecret(configuredPage, rawKey, providerContent);""",
-    """        StringAssert.Contains(configuredPage, "data-configured=\"true\"");
+        AssertNoSecret(configuredPage, rawKey, providerContent);''',
+    r'''        StringAssert.Contains(configuredPage, "data-configured=\"true\"");
         StringAssert.Contains(configuredPage, "Probar conexión real");
         var configForm = Regex.Match(
             configuredPage,
@@ -230,5 +236,5 @@ replace(
         Assert.AreEqual(
             3,
             Regex.Matches(configuredPage, "<form\\b", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1)).Count);
-        AssertNoSecret(configuredPage, rawKey, providerContent);""",
+        AssertNoSecret(configuredPage, rawKey, providerContent);''',
 )
