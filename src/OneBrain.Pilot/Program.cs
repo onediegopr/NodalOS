@@ -18,7 +18,10 @@ using OneBrain.Observation.Windows;
 using FlaUI.UIA3;
 
 var packaged = NodalOsDesktopLaunchRuntime.IsPackaged();
-var root = ResolveRepoRoot(GetArg(args, "--root") ?? Directory.GetCurrentDirectory());
+var requestedRoot = GetArg(args, "--root");
+var root = packaged
+    ? NodalOsDesktopLaunchRuntime.ResolveProductDataRoot(requestedRoot)
+    : ResolveRepoRoot(requestedRoot ?? Directory.GetCurrentDirectory());
 var dotnet = GetArg(args, "--dotnet")
     ?? Environment.GetEnvironmentVariable("ONEBRAIN_DOTNET")
     ?? PilotRecipeExecutor.DefaultDotnetPath;
