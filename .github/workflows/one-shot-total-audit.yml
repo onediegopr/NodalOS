@@ -35,7 +35,7 @@ jobs:
       - name: Collect structural hotspots
         shell: bash
         run: |
-          set -euo pipefail
+          set -eu
           out="artifacts/repository-audit/structural-hotspots.txt"
           {
             echo "# HEAD"
