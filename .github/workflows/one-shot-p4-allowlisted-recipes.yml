@@ -1,0 +1,65 @@
+name: One-shot P4 allowlisted recipes
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-p4-allowlisted-recipes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'feature/productization-desktop-packaging-v1'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/productization-desktop-packaging-v1
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Remove lab and negative recipes from package payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('eng/packaging/build-msix.ps1')
+          text = path.read_text(encoding='utf-8-sig')
+          old = '''$recipeSource = Join-Path $repoRoot "tools/recipes"
+          if (Test-Path $recipeSource) {
+              $recipeTarget = Join-Path $packageRoot "tools/recipes"
+              New-Item -ItemType Directory -Path $recipeTarget -Force | Out-Null
+              Copy-Item (Join-Path $recipeSource "*") $recipeTarget -Recurse -Force
+          }
+          '''
+          new = '''$packagedRecipes = @(
+              "demo-product-evidence-report.json",
+              "demo-product-evidence-html-report.json",
+              "product-evidence-html-report.json",
+              "product-evidence-markdown-report.json"
+          )
+          $recipeTarget = Join-Path $packageRoot "tools/recipes"
+          New-Item -ItemType Directory -Path $recipeTarget -Force | Out-Null
+          foreach ($recipeName in $packagedRecipes) {
+              $recipePath = Join-Path $repoRoot "tools/recipes/$recipeName"
+              if (-not (Test-Path $recipePath)) { throw "Required product recipe was not found: $recipeName" }
+              Copy-Item $recipePath (Join-Path $recipeTarget $recipeName) -Force
+          }
+          '''
+          if text.count(old) != 1:
+              raise SystemExit('Expected recipe packaging block was not unique.')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          git rm .github/workflows/one-shot-p4-allowlisted-recipes.yml
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add eng/packaging/build-msix.ps1
+          git commit -m 'fix: package only product allowlisted recipes'
+          git push origin HEAD:feature/productization-desktop-packaging-v1
