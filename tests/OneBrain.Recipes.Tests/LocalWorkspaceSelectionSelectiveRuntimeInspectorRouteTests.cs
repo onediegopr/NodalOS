@@ -46,7 +46,9 @@ public sealed class LocalWorkspaceSelectionSelectiveRuntimeInspectorRouteTests
         Assert.AreEqual(HttpStatusCode.OK, formResponse.StatusCode);
         StringAssert.Contains(formHtml, "data-nodal-os=\"workspace-selection\"");
         StringAssert.Contains(formHtml, "data-selection-state=\"NotConfigured\"");
-        StringAssert.Contains(formHtml, "form-action 'self'");
+        StringAssert.Contains(
+            formResponse.Headers.GetValues("Content-Security-Policy").Single(),
+            "form-action 'self'");
         Assert.IsFalse(formHtml.Contains(fixture.WorkspaceRoot, StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(formHtml.Contains("<script", StringComparison.OrdinalIgnoreCase));
         Assert.IsFalse(formHtml.Contains("http://", StringComparison.OrdinalIgnoreCase));
