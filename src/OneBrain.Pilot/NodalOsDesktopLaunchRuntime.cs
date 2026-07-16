@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Hosting;
@@ -17,6 +18,20 @@ public static class NodalOsDesktopLaunchRuntime
     private static extern int GetCurrentPackageFullName(
         ref uint packageFullNameLength,
         StringBuilder? packageFullName);
+
+    [ModuleInitializer]
+    internal static void InitializePackagedDesktop()
+    {
+        if (!IsPackaged())
+            return;
+
+        var args = Environment.GetCommandLineArgs().Skip(1).ToArray();
+        var explicitRoot = GetArgument(args, "--root");
+        Environment.CurrentDirectory = ResolveProductRoot(explicitRoot);
+        var urls = ResolveLoopbackUrls(GetArgument(args, "--urls"));
+        if (ShouldOpenBrowser(args, packaged: true))
+            StartBrowserProbe(urls);
+    }
 
     public static bool IsPackaged()
     {
@@ -99,9 +114,7 @@ public static class NodalOsDesktopLaunchRuntime
         Action<string>? opener = null)
     {
         ArgumentNullException.ThrowIfNull(lifetime);
-        var target = ResolveLoopbackUrls(urls)
-            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .First();
+        var target = FirstOrigin(urls);
         opener ??= OpenWithShell;
 
         lifetime.ApplicationStarted.Register(() =>
@@ -117,6 +130,50 @@ public static class NodalOsDesktopLaunchRuntime
             {
             }
         });
+    }
+
+    private static void StartBrowserProbe(string urls)
+    {
+        var target = FirstOrigin(urls);
+        _ = Task.Run(async () =>
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            var health = new Uri(new Uri(target + "/", UriKind.Absolute), "api/mission-control");
+            for (var attempt = 0; attempt < 120; attempt++)
+            {
+                try
+                {
+                    using var response = await client.GetAsync(health).ConfigureAwait(false);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        OpenWithShell(target);
+                        return;
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                }
+                catch (TaskCanceledException)
+                {
+                }
+
+                await Task.Delay(250).ConfigureAwait(false);
+            }
+        });
+    }
+
+    private static string FirstOrigin(string urls) => ResolveLoopbackUrls(urls)
+        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .First();
+
+    private static string? GetArgument(IReadOnlyList<string> args, string name)
+    {
+        for (var index = 0; index < args.Count - 1; index++)
+        {
+            if (string.Equals(args[index], name, StringComparison.OrdinalIgnoreCase))
+                return args[index + 1];
+        }
+        return null;
     }
 
     private static string EnsureDirectory(string path)
