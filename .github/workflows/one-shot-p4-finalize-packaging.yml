@@ -1,0 +1,170 @@
+name: One-shot P4 finalize packaging
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-p4-finalize-packaging.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.head_ref == 'feature/productization-desktop-packaging-v1'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/productization-desktop-packaging-v1
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Apply minimal desktop packaging fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace(path: Path, old: str, new: str, count: int = 1) -> None:
+              text = path.read_text(encoding='utf-8-sig')
+              actual = text.count(old)
+              if actual != count:
+                  raise SystemExit(f'{path}: expected {count} occurrence(s), found {actual}: {old[:160]!r}')
+              path.write_text(text.replace(old, new, count), encoding='utf-8')
+
+          program = Path('src/OneBrain.Pilot/Program.cs')
+          replace(
+              program,
+              '''var root = ResolveRepoRoot(GetArg(args, "--root") ?? Directory.GetCurrentDirectory());
+          var dotnet = GetArg(args, "--dotnet")
+              ?? Environment.GetEnvironmentVariable("ONEBRAIN_DOTNET")
+              ?? PilotRecipeExecutor.DefaultDotnetPath;
+
+          var builder = WebApplication.CreateBuilder(args);
+          builder.WebHost.UseUrls(GetArg(args, "--urls") ?? "http://127.0.0.1:5084");
+
+          var app = builder.Build();''',
+              '''var packaged = NodalOsDesktopLaunchRuntime.IsPackaged();
+          var root = ResolveRepoRoot(GetArg(args, "--root") ?? Directory.GetCurrentDirectory());
+          var dotnet = GetArg(args, "--dotnet")
+              ?? Environment.GetEnvironmentVariable("ONEBRAIN_DOTNET")
+              ?? PilotRecipeExecutor.DefaultDotnetPath;
+          var urls = NodalOsDesktopLaunchRuntime.ResolveLoopbackUrls(GetArg(args, "--urls"));
+
+          var builder = WebApplication.CreateBuilder(args);
+          builder.WebHost.UseUrls(urls);
+
+          var app = builder.Build();
+          if (NodalOsDesktopLaunchRuntime.ShouldOpenBrowser(args, packaged))
+              NodalOsDesktopLaunchRuntime.RegisterBrowserLaunch(app.Lifetime, urls);''')
+
+          runtime = Path('src/OneBrain.Pilot/NodalOsDesktopLaunchRuntime.cs')
+          replace(
+              runtime,
+              '''    public static string ResolveProductRoot(
+              string? explicitRoot = null,
+              string? localApplicationData = null)
+              {
+                  if (!string.IsNullOrWhiteSpace(explicitRoot))
+                      return EnsureDirectory(Path.GetFullPath(explicitRoot));
+
+                  localApplicationData ??= Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                  if (string.IsNullOrWhiteSpace(localApplicationData))
+                      localApplicationData = Path.GetTempPath();
+
+                  return EnsureDirectory(Path.Combine(localApplicationData, "NodalOS", "ProductData"));
+              }
+
+          ''',
+              '')
+          replace(
+              runtime,
+              '''    private static string EnsureDirectory(string path)
+              {
+                  Directory.CreateDirectory(path);
+                  return path;
+              }
+
+          ''',
+              '')
+
+          tests = Path('tests/OneBrain.Recipes.Tests/NodalOsDesktopLaunchRuntimeTests.cs')
+          replace(
+              tests,
+              '''    [TestMethod]
+              public void ResolveProductRootUsesBoundedLocalApplicationDataDirectory()
+              {
+                  var baseDirectory = Path.Combine(Path.GetTempPath(), "nodal-os-desktop-root-tests", Guid.NewGuid().ToString("N"));
+                  try
+                  {
+                      var root = NodalOsDesktopLaunchRuntime.ResolveProductRoot(localApplicationData: baseDirectory);
+
+                      Assert.AreEqual(Path.Combine(baseDirectory, "NodalOS", "ProductData"), root);
+                      Assert.IsTrue(Directory.Exists(root));
+                  }
+                  finally
+                  {
+                      if (Directory.Exists(baseDirectory))
+                          Directory.Delete(baseDirectory, recursive: true);
+                  }
+              }
+
+          ''',
+              '')
+
+          build = Path('eng/packaging/build-msix.ps1')
+          replace(build, '$temporaryTrustThumbprint = $null', '$temporaryRootThumbprint = $null')
+          replace(
+              build,
+              '''        $trusted = Import-Certificate -FilePath $testCertificatePath -CertStoreLocation "Cert:\\CurrentUser\\TrustedPeople"
+                  $temporaryTrustThumbprint = $trusted.Thumbprint''',
+              '''        $trustedRoot = Import-Certificate -FilePath $testCertificatePath -CertStoreLocation "Cert:\\CurrentUser\\Root"
+                  $temporaryRootThumbprint = $trustedRoot.Thumbprint''')
+          replace(
+              build,
+              '''    if ($temporaryTrustThumbprint) {
+                  Remove-CertificateByThumbprint "Cert:\\CurrentUser\\TrustedPeople" $temporaryTrustThumbprint
+              }''',
+              '''    if ($temporaryRootThumbprint) {
+                  Remove-CertificateByThumbprint "Cert:\\CurrentUser\\Root" $temporaryRootThumbprint
+              }''')
+          replace(
+              build,
+              '    Import-Certificate -FilePath `$certificate -CertStoreLocation "Cert:\\CurrentUser\\TrustedPeople" | Out-Null',
+              '    Import-Certificate -FilePath `$certificate -CertStoreLocation "Cert:\\CurrentUser\\Root" | Out-Null')
+
+          smoke = Path('eng/ci/smoke-desktop-package.ps1')
+          replace(smoke, '$trustedThumbprint = $null', '$trustedRootThumbprint = $null')
+          replace(
+              smoke,
+              '''    $trusted = Import-Certificate -FilePath $certificatePath -CertStoreLocation "Cert:\\CurrentUser\\TrustedPeople"
+              $trustedThumbprint = $trusted.Thumbprint''',
+              '''    $trustedRoot = Import-Certificate -FilePath $certificatePath -CertStoreLocation "Cert:\\CurrentUser\\Root"
+              $trustedRootThumbprint = $trustedRoot.Thumbprint''')
+          replace(
+              smoke,
+              '''    if ($trustedThumbprint) {
+                  $trustedPath = "Cert:\\CurrentUser\\TrustedPeople\\$trustedThumbprint"
+                  if (Test-Path $trustedPath) { Remove-Item $trustedPath -Force }
+              }''',
+              '''    if ($trustedRootThumbprint) {
+                  $trustedRootPath = "Cert:\\CurrentUser\\Root\\$trustedRootThumbprint"
+                  if (Test-Path $trustedRootPath) { Remove-Item $trustedRootPath -Force }
+              }''')
+          PY
+
+          git rm .github/workflows/one-shot-p4-finalize-packaging.yml
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add \
+            src/OneBrain.Pilot/Program.cs \
+            src/OneBrain.Pilot/NodalOsDesktopLaunchRuntime.cs \
+            tests/OneBrain.Recipes.Tests/NodalOsDesktopLaunchRuntimeTests.cs \
+            eng/packaging/build-msix.ps1 \
+            eng/ci/smoke-desktop-package.ps1
+          git commit -m 'fix: finish minimal packaged desktop launch and trust flow'
+          git push origin HEAD:feature/productization-desktop-packaging-v1
