@@ -12,6 +12,7 @@ The package preserves the current product boundary:
 
 - the canonical UI remains Mission Control;
 - Kestrel binds only to loopback HTTP origins;
+- mutable Pilot data defaults to `%LOCALAPPDATA%\NodalOS\ProductData` instead of the read-only package location;
 - workspace and BYOK secret values remain outside the package and are stored under the current Windows user;
 - package installation does not grant mission, filesystem, provider or product authority;
 - ChromeLab and historical deployment prototypes are not installed as product services.
@@ -62,7 +63,7 @@ For a test-signed package on a controlled device:
 ./Install-NodalOS.ps1 -TrustTestCertificate
 ```
 
-For a CA-trusted or Microsoft-managed signature, the certificate trust switch and test certificate are unnecessary.
+The test certificate is trusted explicitly in the local machine `TrustedPeople` store for installation and removed by the clean-install smoke. For a CA-trusted or Microsoft-managed signature, the certificate trust switch and test certificate are unnecessary.
 
 The private-beta update policy is explicit and manual: install a package with the same identity and a greater four-part version. A hosted `.appinstaller` channel is generated only when `-DistributionBaseUri` is an HTTPS location supplied by the release operator.
 
@@ -91,7 +92,7 @@ This is intentionally explicit because removing local data can be irreversible.
 1. Release build and focused desktop-launch tests;
 2. self-contained publish;
 3. MSIX creation and signature verification;
-4. current-user certificate trust for the test package;
+4. explicit local-machine trust for the ephemeral test certificate;
 5. package installation;
 6. executable launch from the installed location;
 7. Mission Control and model-configuration health checks;
