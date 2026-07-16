@@ -1,0 +1,53 @@
+name: One-shot PR33 normalize legacy AI config routes
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-pr33-normalize-legacy-ai-config.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/productization-real-byok-connection-v1
+          fetch-depth: 0
+      - name: Collapse repeated legacy prefixes to one canonical route
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          paths = [
+              Path('src/OneBrain.Pilot/Program.cs'),
+              Path('src/OneBrain.Pilot/PilotHomePageRenderer.cs'),
+              Path('tests/OneBrain.Recipes.Tests/PilotAIConfigConsoleTests.cs'),
+              Path('tests/OneBrain.Recipes.Tests/PilotGuiUxHardeningTests.cs')
+          ]
+          total = 0
+          pattern = re.compile(r'(?:/pilot/legacy)+/ai/config(?:/test)?')
+          for path in paths:
+              text = path.read_text(encoding='utf-8-sig')
+              def normalize(match):
+                  value = match.group(0)
+                  return '/pilot/legacy/ai/config/test' if value.endswith('/test') else '/pilot/legacy/ai/config'
+              updated, count = pattern.subn(normalize, text)
+              total += count
+              if updated != text:
+                  path.write_text(updated, encoding='utf-8')
+          if total < 4:
+              raise SystemExit(f'Expected repeated legacy route references, normalized {total}')
+          PY
+          git diff --check
+          git config user.name 'nodal-os-ci'
+          git config user.email 'nodal-os-ci@users.noreply.github.com'
+          git add src/OneBrain.Pilot/Program.cs src/OneBrain.Pilot/PilotHomePageRenderer.cs tests/OneBrain.Recipes.Tests/PilotAIConfigConsoleTests.cs tests/OneBrain.Recipes.Tests/PilotGuiUxHardeningTests.cs
+          git commit -m 'fix: normalize legacy AI configuration routes'
+          git push origin HEAD:feature/productization-real-byok-connection-v1
