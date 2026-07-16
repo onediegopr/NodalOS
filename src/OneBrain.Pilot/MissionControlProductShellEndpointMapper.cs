@@ -83,7 +83,7 @@ public static class MissionControlProductShellEndpointMapper
             return Results.Content(
                 MissionControlProductShellHtmlRenderer.Render(snapshot),
                 "text/html; charset=utf-8");
-        });
+        }).WithOrder(-100);
 
         endpoints.MapGet(LegacyPilotRoute, (HttpContext context) =>
         {
@@ -290,7 +290,7 @@ public static class MissionControlProductShellEndpointMapper
         response.Headers.CacheControl = "no-store";
         response.Headers.Pragma = "no-cache";
         response.Headers.XContentTypeOptions = "nosniff";
-        response.Headers.XFrameOptions = "DENY";
+        response.Headers["X-Frame-Options"] = "DENY";
         response.Headers["Referrer-Policy"] = "no-referrer";
         response.Headers["Content-Security-Policy"] =
             "default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; font-src 'none'; connect-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
