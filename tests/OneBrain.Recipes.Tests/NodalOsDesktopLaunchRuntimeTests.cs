@@ -9,7 +9,6 @@ namespace OneBrain.Recipes.Tests;
 [TestCategory("MvpVerticalSlice")]
 public sealed class NodalOsDesktopLaunchRuntimeTests
 {
-
     [TestMethod]
     public void ResolveLoopbackUrlsAcceptsOnlyLocalHttpOrigins()
     {
@@ -26,6 +25,8 @@ public sealed class NodalOsDesktopLaunchRuntimeTests
             NodalOsDesktopLaunchRuntime.ResolveLoopbackUrls("https://127.0.0.1:5112"));
         Assert.ThrowsExactly<ArgumentException>(() =>
             NodalOsDesktopLaunchRuntime.ResolveLoopbackUrls("http://127.0.0.1:5112/path"));
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            NodalOsDesktopLaunchRuntime.ResolveLoopbackUrls("http://127.0.0.1:5112?source=external"));
     }
 
     [TestMethod]
