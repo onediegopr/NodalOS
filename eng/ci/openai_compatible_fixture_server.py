@@ -78,7 +78,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(encoded)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(encoded)
+        try:
+            self.wfile.write(encoded)
+        except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
+            # Health probes can disconnect immediately after headers during process teardown.
+            # Treat that as benign fixture lifecycle noise rather than a server failure.
+            return
 
 
 def main() -> None:
