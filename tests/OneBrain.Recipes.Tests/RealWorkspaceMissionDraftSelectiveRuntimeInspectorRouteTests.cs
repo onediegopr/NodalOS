@@ -76,7 +76,7 @@ public sealed class RealWorkspaceMissionDraftSelectiveRuntimeInspectorRouteTests
 
         Assert.AreEqual(HttpStatusCode.OK, jsonResponse.StatusCode);
         Assert.IsTrue(root.GetProperty("accepted").GetBoolean());
-        Assert.AreEqual("ReadyForReview", root.GetProperty("state").GetString());
+        Assert.AreEqual((int)NodalOsWorkspaceMissionDraftState.ReadyForReview, root.GetProperty("state").GetInt32());
         Assert.IsTrue(root.GetProperty("persisted").GetBoolean());
         Assert.IsTrue(root.GetProperty("rehydrated").GetBoolean());
         Assert.IsTrue(root.GetProperty("realFilesystemRead").GetBoolean());
@@ -85,8 +85,8 @@ public sealed class RealWorkspaceMissionDraftSelectiveRuntimeInspectorRouteTests
         Assert.IsTrue(root.GetProperty("secretsExcluded").GetBoolean());
         Assert.IsFalse(root.GetProperty("productAuthorityGranted").GetBoolean());
         Assert.AreEqual(goal, root.GetProperty("goalRedacted").GetString());
-        Assert.AreEqual("CreateTextFile", candidate.GetProperty("kind").GetString());
-        Assert.AreEqual("ReadyForReview", candidate.GetProperty("state").GetString());
+        Assert.AreEqual((int)NodalOsReviewedWorkspaceActionKind.CreateTextFile, candidate.GetProperty("kind").GetInt32());
+        Assert.AreEqual((int)NodalOsReviewedWorkspaceActionState.ReadyForReview, candidate.GetProperty("state").GetInt32());
         Assert.AreEqual("NODAL_HANDOFF.md", candidate.GetProperty("relativeTargetPath").GetString());
         Assert.IsTrue(candidate.GetProperty("approvalRequired").GetBoolean());
         Assert.IsFalse(candidate.GetProperty("executionEnabled").GetBoolean());
