@@ -98,12 +98,17 @@ This is intentionally explicit because removing local data can be irreversible.
 4. validation that the bundled installer refuses test-certificate trust without the explicit switch;
 5. installation through the bundled `Install-NodalOS.ps1` operator path, including hash verification and exact certificate trust;
 6. executable launch from the installed location;
-7. Mission Control and model-configuration health checks;
-8. product-authority, local-only and secret-exclusion assertions;
-9. process shutdown;
-10. package and exact test-certificate removal through the bundled `Uninstall-NodalOS.ps1` path;
-11. confirmation that default uninstall preserves local user data;
-12. explicit `-RemoveUserData` validation followed by final runner cleanup.
+7. clean Mission Control and model-configuration health checks;
+8. product-authority, local-only, packaged-route and secret-exclusion assertions;
+9. an installed-package core loop covering local BYOK configuration, authorized fallback, workspace selection, real mission review, scoped approval and verified `NODAL_HANDOFF.md` execution;
+10. canonical Markdown handoff export with no-store and redaction assertions;
+11. guarded rollback with exact workspace-baseline restoration;
+12. process shutdown;
+13. package and exact test-certificate removal through the bundled `Uninstall-NodalOS.ps1` path;
+14. confirmation that default uninstall preserves local user data;
+15. explicit `-RemoveUserData` validation followed by final runner cleanup.
+
+The installed core-loop smoke reuses the existing product routes and local OpenAI-compatible fixture; it does not introduce another runtime, product mode or release gate.
 
 The CI artifact uploads the private-beta bundle once, together with its update manifest and complete smoke log, rather than duplicating the raw MSIX payload.
 
