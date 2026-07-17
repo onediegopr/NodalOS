@@ -69,22 +69,31 @@ try {
         throw "External-signing update manifest does not preserve the release contract."
     }
 
-    $appInstallerText = Get-Content $appInstallerPath -Raw
     $expectedAppInstallerUri = "$distributionBase/NodalOS.appinstaller"
     $expectedPackageUri = "$distributionBase/NodalOS-$version-win-x64.msix"
-    foreach ($expected in @(
-        "Uri=`"$expectedAppInstallerUri`"",
-        "Name=`"$packageName`"",
-        "Publisher=`"$subject`"",
-        "Version=`"$version`"",
-        "Uri=`"$expectedPackageUri`""
-    )) {
-        if ($appInstallerText -notmatch [regex]::Escape($expected)) {
-            throw "Appinstaller metadata is missing expected value: $expected"
-        }
+    [xml]$appInstallerXml = Get-Content $appInstallerPath -Raw
+    $appInstallerNode = $appInstallerXml.SelectSingleNode("/*[local-name()='AppInstaller']")
+    $mainPackageNode = $appInstallerXml.SelectSingleNode("/*[local-name()='AppInstaller']/*[local-name()='MainPackage']")
+    if (-not $appInstallerNode -or -not $mainPackageNode) {
+        throw "Appinstaller XML does not contain the expected root and MainPackage nodes."
     }
-    if ($appInstallerText -match "http://") {
-        throw "Appinstaller metadata must use HTTPS paths."
+    if ($appInstallerNode.GetAttribute("Uri") -ne $expectedAppInstallerUri -or
+        $appInstallerNode.GetAttribute("Version") -ne $version -or
+        $mainPackageNode.GetAttribute("Name") -ne $packageName -or
+        $mainPackageNode.GetAttribute("Publisher") -ne $subject -or
+        $mainPackageNode.GetAttribute("Version") -ne $version -or
+        $mainPackageNode.GetAttribute("ProcessorArchitecture") -ne "x64" -or
+        $mainPackageNode.GetAttribute("Uri") -ne $expectedPackageUri) {
+        throw "Appinstaller identity or URI metadata does not match the externally signed package."
+    }
+    foreach ($uriText in @($appInstallerNode.GetAttribute("Uri"), $mainPackageNode.GetAttribute("Uri"))) {
+        $uri = $null
+        if (-not [Uri]::TryCreate($uriText, [UriKind]::Absolute, [ref]$uri) -or
+            $uri.Scheme -ne [Uri]::UriSchemeHttps -or
+            -not [string]::IsNullOrEmpty($uri.Query) -or
+            -not [string]::IsNullOrEmpty($uri.Fragment)) {
+            throw "Appinstaller URI must be absolute HTTPS without query or fragment: $uriText"
+        }
     }
 
     $signature = Get-AuthenticodeSignature $msixPath
