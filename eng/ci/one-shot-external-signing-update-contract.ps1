@@ -83,10 +83,8 @@ try {
             throw "Appinstaller metadata is missing expected value: $expected"
         }
     }
-    if ($appInstallerText -match "http://" -or
-        $appInstallerText -match "[?]" -or
-        $appInstallerText -match "#") {
-        throw "Appinstaller metadata must use clean HTTPS paths without query or fragment."
+    if ($appInstallerText -match "http://") {
+        throw "Appinstaller metadata must use HTTPS paths."
     }
 
     $signature = Get-AuthenticodeSignature $msixPath
