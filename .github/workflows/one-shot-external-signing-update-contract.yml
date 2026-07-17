@@ -32,7 +32,12 @@ jobs:
 
       - name: Validate external signing and HTTPS appinstaller metadata
         shell: pwsh
-        run: ./eng/ci/one-shot-external-signing-update-contract.ps1
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP "nodal-release-contract"
+          New-Item -ItemType Directory -Path $root -Force | Out-Null
+          $log = Join-Path $root "release-contract-run.log"
+          ./eng/ci/one-shot-external-signing-update-contract.ps1 *>&1 | Tee-Object -FilePath $log
+          exit $LASTEXITCODE
 
       - name: Upload redacted release-contract evidence
         if: always()
@@ -42,5 +47,6 @@ jobs:
           path: |
             ${{ runner.temp }}/nodal-release-contract/release-contract-evidence.json
             ${{ runner.temp }}/nodal-release-contract/release-contract-smoke.log
-          if-no-files-found: error
+            ${{ runner.temp }}/nodal-release-contract/release-contract-run.log
+          if-no-files-found: warn
           retention-days: 7
