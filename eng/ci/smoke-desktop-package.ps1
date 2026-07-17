@@ -107,7 +107,11 @@ try {
             }
         }
     }
-    $bundlePath = Get-ChildItem $outputRoot -Filter "*-private-beta.zip" -File | Select-Object -Single
+    $bundlePaths = @(Get-ChildItem $outputRoot -Filter "*-private-beta.zip" -File)
+    if ($bundlePaths.Count -ne 1) {
+        throw "Expected exactly one private-beta bundle, found $($bundlePaths.Count)."
+    }
+    $bundlePath = $bundlePaths[0]
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $bundleArchive = [System.IO.Compression.ZipFile]::OpenRead($bundlePath.FullName)
     try {
