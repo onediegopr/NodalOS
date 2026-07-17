@@ -71,6 +71,12 @@ Default uninstall preserves `%LOCALAPPDATA%\NodalOS`. Removing user data remains
 ./Uninstall-NodalOS.ps1 -RemoveUserData
 ```
 
+### Distribution boundary
+
+The repository currently has no root license and issue `#28` remains open for product terms and third-party notices. This runbook does not authorize sending the package to external users or publishing a download.
+
+Until explicit private-beta terms are approved, run sessions on an operator-controlled test device or under separately approved written participation terms. Never post the test-signed bundle, certificate or install link publicly.
+
 ## Data boundary
 
 Before the session, explain these facts plainly:
@@ -181,6 +187,8 @@ When the participant explicitly enables `/settings/diagnostics`, record only the
 
 These numbers establish a baseline. They are descriptive, not release thresholds, until the first cohort provides a real distribution.
 
+Mission completion is recorded only when verified execution completes in the current process. After a restart, record the value as `not measured` rather than reconstructing it from private state.
+
 Do not copy the local JSONL file by default. A participant may inspect and share it voluntarily after confirming that it contains only the disclosed redacted fields.
 
 ## Facilitator rules
@@ -211,6 +219,7 @@ Copy this section once per participant. Store the redacted record in an approved
 - Windows version:
 - Workspace class:
 - Provider class: local / authorized cloud
+- Operator-controlled device or approved private-beta terms confirmed: yes / no
 - Existing backup or clean source-control state: yes / no
 - Diagnostics explicitly enabled: yes / no
 
