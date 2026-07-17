@@ -64,7 +64,7 @@ For a test-signed package on a controlled device, open **PowerShell as Administr
 ./Install-NodalOS.ps1 -TrustTestCertificate
 ```
 
-The bundled installer refuses to trust a test certificate unless `-TrustTestCertificate` is passed explicitly. Trust is written to the local-machine `TrustedPeople` store, so the test-signed path requires elevation. For a CA-trusted or Microsoft-managed signature, the certificate trust switch, elevation for certificate import and bundled test certificate are unnecessary.
+The bundled installer verifies the MSIX against the generated SHA-256, refuses to trust a test certificate unless `-TrustTestCertificate` is passed explicitly and fails before mutation when PowerShell is not elevated. Trust is written to the local-machine `TrustedPeople` store. For a CA-trusted or Microsoft-managed signature, the certificate trust switch, elevation for certificate import and bundled test certificate are unnecessary.
 
 The private-beta update policy is explicit and manual: install a package with the same identity and a greater four-part version. A hosted `.appinstaller` channel is generated only when `-DistributionBaseUri` is an HTTPS location supplied by the release operator.
 
@@ -72,11 +72,13 @@ The `ms-appinstaller:` URI protocol is not assumed. Users download and open the 
 
 ## Uninstall and local data
 
+For a test-signed bundle, use **PowerShell as Administrator** so the package and the exact certificate included in the bundle are both removed:
+
 ```powershell
 ./Uninstall-NodalOS.ps1
 ```
 
-The default uninstall removes the registered package and preserves user data under `%LOCALAPPDATA%\NodalOS` so an uninstall or upgrade cannot silently destroy workspace bindings, evidence references or protected model configuration.
+The default uninstall removes the registered package and its exact test-certificate trust while preserving user data under `%LOCALAPPDATA%\NodalOS`, so an uninstall or upgrade cannot silently destroy workspace bindings, evidence references or protected model configuration.
 
 To remove both the package and local NODAL OS data:
 
@@ -94,13 +96,14 @@ This is intentionally explicit because removing local data can be irreversible.
 2. self-contained publish;
 3. MSIX creation and signature verification;
 4. validation that the bundled installer refuses test-certificate trust without the explicit switch;
-5. installation through the bundled `Install-NodalOS.ps1` operator path;
+5. installation through the bundled `Install-NodalOS.ps1` operator path, including hash verification and exact certificate trust;
 6. executable launch from the installed location;
 7. Mission Control and model-configuration health checks;
 8. product-authority, local-only and secret-exclusion assertions;
 9. process shutdown;
-10. package removal through the bundled `Uninstall-NodalOS.ps1` path;
-11. confirmation that default uninstall preserves local user data, followed by explicit CI cleanup of data and the temporary certificate.
+10. package and exact test-certificate removal through the bundled `Uninstall-NodalOS.ps1` path;
+11. confirmation that default uninstall preserves local user data;
+12. explicit `-RemoveUserData` validation followed by final runner cleanup.
 
 The CI artifact uploads the private-beta bundle once, together with its update manifest and complete smoke log, rather than duplicating the raw MSIX payload.
 

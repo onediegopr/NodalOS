@@ -16,7 +16,9 @@ $packageName = "NODALOS.PrivateBeta"
 $installScriptPath = Join-Path $outputRoot "Install-NodalOS.ps1"
 $uninstallScriptPath = Join-Path $outputRoot "Uninstall-NodalOS.ps1"
 $dataRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "NodalOS"
+$preserveSentinelPath = Join-Path $dataRoot "ci-default-uninstall-preserve.txt"
 $trustedPeopleThumbprint = $null
+$operatorUninstallCompleted = $false
 $process = $null
 
 function Wait-Json([string]$Uri, [int]$Attempts = 80) {
@@ -53,6 +55,16 @@ try {
         if (-not (Test-Path $requiredPath)) {
             throw "Desktop package bundle did not emit required operator file: $requiredPath"
         }
+    }
+
+    $installScriptText = Get-Content $installScriptPath -Raw
+    $uninstallScriptText = Get-Content $uninstallScriptPath -Raw
+    $installReadmeText = Get-Content (Join-Path $outputRoot "README-INSTALL.txt") -Raw
+    if ($installScriptText -notmatch 'requires an elevated PowerShell' -or
+        $installScriptText -notmatch 'SHA-256' -or
+        $uninstallScriptText -notmatch 'LocalMachine\\TrustedPeople' -or
+        $installReadmeText -notmatch 'exact included test-certificate trust') {
+        throw "Private-beta operator scripts do not verify integrity or clean up their machine-wide certificate trust."
     }
 
     $updateManifestPath = Join-Path $outputRoot "nodal-os-update-manifest.json"
@@ -97,6 +109,10 @@ try {
     }
 
     & $installScriptPath -TrustTestCertificate
+    $trustedPeoplePath = "Cert:\LocalMachine\TrustedPeople\$trustedPeopleThumbprint"
+    if (-not (Test-Path $trustedPeoplePath)) {
+        throw "Bundled installer did not trust the expected test certificate."
+    }
 
     $signature = Get-AuthenticodeSignature $msixPath
     if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
@@ -169,6 +185,34 @@ try {
             throw "Packaged runtime exposed non-product route $blockedRoute with status $($blocked.StatusCode)."
         }
     }
+
+    if ($process -and -not $process.HasExited) {
+        Stop-Process -Id $process.Id -Force -ErrorAction Stop
+        $process.WaitForExit(10000) | Out-Null
+        $process = $null
+    }
+
+    New-Item -ItemType Directory -Path $dataRoot -Force | Out-Null
+    Set-Content -Path $preserveSentinelPath -Value "preserve-on-default-uninstall" -Encoding utf8NoBOM
+    & $uninstallScriptPath
+    $operatorUninstallCompleted = $true
+
+    if (Get-AppxPackage -Name $packageName -ErrorAction SilentlyContinue) {
+        throw "Bundled uninstaller left the package registered."
+    }
+    $trustedPeoplePath = "Cert:\LocalMachine\TrustedPeople\$trustedPeopleThumbprint"
+    if (Test-Path $trustedPeoplePath) {
+        throw "Bundled uninstaller left the private-beta test certificate trusted."
+    }
+    if (-not (Test-Path $preserveSentinelPath)) {
+        throw "Bundled default uninstall removed local NODAL OS user data."
+    }
+
+    & $uninstallScriptPath -RemoveUserData
+    if (Test-Path $dataRoot) {
+        throw "Bundled uninstaller did not remove local NODAL OS user data when explicitly requested."
+    }
+    $trustedPeopleThumbprint = $null
 }
 finally {
     if ($process -and -not $process.HasExited) {
@@ -176,19 +220,11 @@ finally {
         $process.WaitForExit(10000) | Out-Null
     }
 
-    $dataRootExistedBeforeUninstall = Test-Path $dataRoot
-    if (Test-Path $uninstallScriptPath) {
-        & $uninstallScriptPath
-    }
-    else {
+    if (-not $operatorUninstallCompleted) {
         Remove-ExistingPackage
     }
-
     if (Get-AppxPackage -Name $packageName -ErrorAction SilentlyContinue) {
-        throw "Desktop package remained installed after bundled uninstall."
-    }
-    if ($dataRootExistedBeforeUninstall -and -not (Test-Path $dataRoot)) {
-        throw "Bundled default uninstall removed local NODAL OS user data."
+        throw "Desktop package remained installed after cleanup."
     }
     if ($trustedPeopleThumbprint) {
         $trustedPeoplePath = "Cert:\LocalMachine\TrustedPeople\$trustedPeopleThumbprint"
