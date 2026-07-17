@@ -63,7 +63,7 @@ jobs:
         shell: pwsh
         run: |
           $log = Join-Path $env:RUNNER_TEMP "nodal-desktop-package-smoke.log"
-          ./eng/ci/smoke-desktop-package.ps1 *>&1 | Tee-Object -FilePath $log
+          ./eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.1" *>&1 | Tee-Object -FilePath $log
           exit $LASTEXITCODE
 
       - name: Upload private-beta package and diagnostics
@@ -76,4 +76,4 @@ jobs:
             ${{ runner.temp }}/nodal-desktop-package/nodal-os-update-manifest.json
             ${{ runner.temp }}/nodal-desktop-package-smoke.log
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 30
