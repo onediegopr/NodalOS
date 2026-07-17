@@ -35,18 +35,21 @@ jobs:
         run: |
           $root = Join-Path $env:RUNNER_TEMP "nodal-release-contract"
           New-Item -ItemType Directory -Path $root -Force | Out-Null
+          "started" | Set-Content (Join-Path $root "run-started.txt")
           $log = Join-Path $root "release-contract-run.log"
-          ./eng/ci/one-shot-external-signing-update-contract.ps1 *>&1 | Tee-Object -FilePath $log
-          exit $LASTEXITCODE
+          try {
+              & ./eng/ci/one-shot-external-signing-update-contract.ps1 *>&1 | Tee-Object -FilePath $log
+          }
+          catch {
+              ($_ | Format-List * -Force | Out-String) | Set-Content (Join-Path $root "release-contract-failure.txt")
+              throw
+          }
 
       - name: Upload redacted release-contract evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: external-signing-update-contract-evidence
-          path: |
-            ${{ runner.temp }}/nodal-release-contract/release-contract-evidence.json
-            ${{ runner.temp }}/nodal-release-contract/release-contract-smoke.log
-            ${{ runner.temp }}/nodal-release-contract/release-contract-run.log
-          if-no-files-found: warn
+          path: ${{ runner.temp }}/nodal-release-contract
+          if-no-files-found: error
           retention-days: 7
