@@ -15,6 +15,9 @@ $outputRoot = Join-Path $RunnerTemp "nodal-desktop-package"
 $packageName = "NODALOS.PrivateBeta"
 $installScriptPath = Join-Path $outputRoot "Install-NodalOS.ps1"
 $uninstallScriptPath = Join-Path $outputRoot "Uninstall-NodalOS.ps1"
+$thirdPartyRoot = Join-Path $outputRoot "ThirdParty"
+$thirdPartyNoticesPath = Join-Path $thirdPartyRoot "THIRD_PARTY_NOTICES.txt"
+$thirdPartyInventoryPath = Join-Path $thirdPartyRoot "third-party-components.json"
 $dataRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "NodalOS"
 $preserveSentinelPath = Join-Path $dataRoot "ci-default-uninstall-preserve.txt"
 $trustedPeopleThumbprint = $null
@@ -50,7 +53,9 @@ try {
     foreach ($requiredPath in @(
         $installScriptPath,
         $uninstallScriptPath,
-        (Join-Path $outputRoot "README-INSTALL.txt")
+        (Join-Path $outputRoot "README-INSTALL.txt"),
+        $thirdPartyNoticesPath,
+        $thirdPartyInventoryPath
     )) {
         if (-not (Test-Path $requiredPath)) {
             throw "Desktop package bundle did not emit required operator file: $requiredPath"
@@ -72,8 +77,47 @@ try {
     if ($updateManifest.version -ne $Version -or
         $updateManifest.packageName -ne $packageName -or
         $updateManifest.channel -ne "private-beta-manual" -or
-        $updateManifest.productAuthorityGranted) {
+        $updateManifest.productAuthorityGranted -or
+        $updateManifest.thirdPartyLegalApprovalGranted -or
+        $updateManifest.thirdPartyNoticesFile -ne "ThirdParty/THIRD_PARTY_NOTICES.txt" -or
+        $updateManifest.thirdPartyComponentsFile -ne "ThirdParty/third-party-components.json") {
         throw "Desktop update manifest does not match the private-beta package contract."
+    }
+    if ((Get-FileHash $thirdPartyNoticesPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyNoticesSha256 -or
+        (Get-FileHash $thirdPartyInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyComponentsSha256) {
+        throw "Third-party notice hashes do not match the update manifest."
+    }
+    $thirdPartyInventory = Get-Content $thirdPartyInventoryPath -Raw | ConvertFrom-Json
+    if ($thirdPartyInventory.legalApprovalGranted -or
+        $thirdPartyInventory.publicDistributionAuthorized -or
+        -not $thirdPartyInventory.legalReviewRequired -or
+        $thirdPartyInventory.componentCount -lt 1 -or
+        $thirdPartyInventory.noticeFileCount -lt $thirdPartyInventory.componentCount) {
+        throw "Third-party inventory overclaims legal authority or lacks component notice coverage."
+    }
+    foreach ($component in $thirdPartyInventory.components) {
+        if (-not $component.id -or -not $component.version -or $component.noticeFiles.Count -lt 1) {
+            throw "Third-party inventory contains an incomplete component."
+        }
+        foreach ($noticeFile in $component.noticeFiles) {
+            $noticeMaterialPath = Join-Path $thirdPartyRoot $noticeFile.bundlePath
+            if (-not (Test-Path -LiteralPath $noticeMaterialPath -PathType Leaf) -or
+                (Get-FileHash $noticeMaterialPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $noticeFile.sha256) {
+                throw "Third-party source notice is missing or changed: $($noticeFile.bundlePath)"
+            }
+        }
+    }
+    $bundlePath = Get-ChildItem $outputRoot -Filter "*-private-beta.zip" -File | Select-Object -Single
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $bundleArchive = [System.IO.Compression.ZipFile]::OpenRead($bundlePath.FullName)
+    try {
+        $bundleEntries = @($bundleArchive.Entries | ForEach-Object { $_.FullName.Replace("\", "/") })
+        foreach ($requiredEntry in @("ThirdParty/THIRD_PARTY_NOTICES.txt", "ThirdParty/third-party-components.json")) {
+            if ($bundleEntries -notcontains $requiredEntry) { throw "Private-beta bundle is missing $requiredEntry." }
+        }
+    }
+    finally {
+        $bundleArchive.Dispose()
     }
 
     $msixPath = Join-Path $outputRoot $updateManifest.packageFile
@@ -130,6 +174,32 @@ try {
         $buildInfo.channel -ne "private-beta" -or
         $buildInfo.productAuthorityGranted) {
         throw "Installed build metadata is invalid."
+    }
+    $installedThirdPartyRoot = Join-Path $installed.InstallLocation "ThirdParty"
+    $installedNoticesPath = Join-Path $installedThirdPartyRoot "THIRD_PARTY_NOTICES.txt"
+    $installedInventoryPath = Join-Path $installedThirdPartyRoot "third-party-components.json"
+    if ((Get-FileHash $installedNoticesPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyNoticesSha256 -or
+        (Get-FileHash $installedInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyComponentsSha256) {
+        throw "Installed third-party notices do not match the package manifest."
+    }
+    $installedDeps = Get-Content (Join-Path $installed.InstallLocation "OneBrain.Pilot.deps.json") -Raw | ConvertFrom-Json
+    $expectedComponents = @(
+        $installedDeps.libraries.PSObject.Properties |
+            Where-Object { [string]$_.Value.type -in @("package", "runtimepack") } |
+            ForEach-Object {
+                $separator = $_.Name.LastIndexOf("/")
+                $id = $_.Name.Substring(0, $separator)
+                if ([string]$_.Value.type -eq "runtimepack" -and $id.StartsWith("runtimepack.", [StringComparison]::OrdinalIgnoreCase)) {
+                    $id = $id.Substring("runtimepack.".Length)
+                }
+                "$id/$($_.Name.Substring($separator + 1))"
+            } | Sort-Object -Unique
+    )
+    $actualComponents = @(
+        $thirdPartyInventory.components | ForEach-Object { "$($_.id)/$($_.version)" } | Sort-Object -Unique
+    )
+    if (Compare-Object $expectedComponents $actualComponents) {
+        throw "Third-party inventory does not match the installed dependency manifest."
     }
 
     $executable = Join-Path $installed.InstallLocation "OneBrain.Pilot.exe"

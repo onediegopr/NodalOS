@@ -26,6 +26,9 @@ $workRoot = Join-Path $OutputDirectory ".work"
 $publishRoot = Join-Path $workRoot "publish"
 $packageRoot = Join-Path $workRoot "package"
 $assetsRoot = Join-Path $packageRoot "Assets"
+$thirdPartyRoot = Join-Path $OutputDirectory "ThirdParty"
+$thirdPartyNoticesPath = Join-Path $thirdPartyRoot "THIRD_PARTY_NOTICES.txt"
+$thirdPartyInventoryPath = Join-Path $thirdPartyRoot "third-party-components.json"
 
 function Normalize-PackageVersion([string]$Value) {
     $parts = $Value.Split('.')
@@ -123,7 +126,19 @@ if (-not (Test-Path (Join-Path $publishRoot "OneBrain.Pilot.exe"))) {
     throw "Published application executable was not produced."
 }
 
+& (Join-Path $repoRoot "eng/release/generate-third-party-notices.ps1") `
+    -DepsPath (Join-Path $publishRoot "OneBrain.Pilot.deps.json") `
+    -OutputDirectory $thirdPartyRoot
+foreach ($requiredNoticePath in @($thirdPartyNoticesPath, $thirdPartyInventoryPath)) {
+    if (-not (Test-Path -LiteralPath $requiredNoticePath -PathType Leaf)) {
+        throw "Third-party notice generation did not emit required file: $requiredNoticePath"
+    }
+}
+$thirdPartyNoticesHash = (Get-FileHash $thirdPartyNoticesPath -Algorithm SHA256).Hash.ToLowerInvariant()
+$thirdPartyInventoryHash = (Get-FileHash $thirdPartyInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant()
+
 Copy-Item (Join-Path $publishRoot "*") $packageRoot -Recurse -Force
+Copy-Item $thirdPartyRoot (Join-Path $packageRoot "ThirdParty") -Recurse -Force
 $packagedRecipes = @(
     "demo-product-evidence-report.json",
     "demo-product-evidence-html-report.json",
@@ -255,6 +270,11 @@ $manualUpdate = [ordered]@{
     sha256 = $packageHash
     signingMode = $signingMode
     testCertificateFile = if ($testCertificatePath) { Split-Path $testCertificatePath -Leaf } else { $null }
+    thirdPartyNoticesFile = "ThirdParty/THIRD_PARTY_NOTICES.txt"
+    thirdPartyNoticesSha256 = $thirdPartyNoticesHash
+    thirdPartyComponentsFile = "ThirdParty/third-party-components.json"
+    thirdPartyComponentsSha256 = $thirdPartyInventoryHash
+    thirdPartyLegalApprovalGranted = $false
     minimumWindowsVersion = "10.0.19041.0"
     updatePolicy = "Install a newer package with the same identity and a greater four-part version. No automatic public channel is enabled."
     productAuthorityGranted = $false
@@ -386,6 +406,7 @@ Signing mode: $signingMode
 
 This package is not a production or public release.
 - Test-signed builds require explicit machine-wide trust of the included certificate. Open an elevated PowerShell and run .\Install-NodalOS.ps1 -TrustTestCertificate on a controlled test device. The installer verifies the exact MSIX SHA-256 before changing trust or installing.
+- ThirdParty/ contains an exact package-derived technical notice inventory. It requires owner/legal review and does not authorize public distribution.
 - Public distribution requires a CA-trusted or Microsoft-managed signing identity matching the package publisher.
 - Install a newer four-part version to update. The current private-beta channel is manual unless a validated HTTPS .appinstaller URI is supplied at build time.
 - For a test-signed bundle, run .\Uninstall-NodalOS.ps1 from an elevated PowerShell so the package and exact included test-certificate trust are both removed. Pass -RemoveUserData only when local workspaces, evidence references and model configuration should also be removed.
@@ -397,7 +418,8 @@ $bundleFiles = @(
     $updateManifestPath,
     (Join-Path $OutputDirectory "Install-NodalOS.ps1"),
     (Join-Path $OutputDirectory "Uninstall-NodalOS.ps1"),
-    (Join-Path $OutputDirectory "README-INSTALL.txt")
+    (Join-Path $OutputDirectory "README-INSTALL.txt"),
+    $thirdPartyRoot
 )
 if ($testCertificatePath) { $bundleFiles += $testCertificatePath }
 $appInstallerPath = Join-Path $OutputDirectory "NodalOS.appinstaller"
@@ -415,8 +437,12 @@ if ($env:GITHUB_OUTPUT) {
     "package_version=$packageVersion" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
     "package_sha256=$packageHash" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
     "signing_mode=$signingMode" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+    "third_party_notices_path=$thirdPartyNoticesPath" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+    "third_party_inventory_path=$thirdPartyInventoryPath" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
 }
 
+Write-Host "NODAL_OS_THIRD_PARTY_NOTICES_SHA256=$thirdPartyNoticesHash"
+Write-Host "NODAL_OS_THIRD_PARTY_INVENTORY_SHA256=$thirdPartyInventoryHash"
 Write-Host "NODAL_OS_MSIX=$msixPath"
 Write-Host "NODAL_OS_BUNDLE=$bundlePath"
 Write-Host "NODAL_OS_PACKAGE_SHA256=$packageHash"
