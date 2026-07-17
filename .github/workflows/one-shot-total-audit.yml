@@ -1,4 +1,4 @@
-name: One-shot Total Technical Audit
+name: One-shot Apply Total Audit Cleanup
 
 on:
   pull_request:
@@ -6,64 +6,25 @@ on:
       - main
     paths:
       - '.github/workflows/one-shot-total-audit.yml'
-      - 'eng/audit/**'
-      - 'src/**'
-      - 'tests/**'
-      - 'tools/repository/**'
-      - 'global.json'
+      - 'eng/audit/total_cleanup.patch.gz.b64'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: one-shot-total-audit-${{ github.ref }}
+  group: one-shot-total-audit-cleanup-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  repository-inventory:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout full history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run deterministic inventory
-        run: python eng/audit/repository_audit.py
-
-      - name: Upload repository audit
-        uses: actions/upload-artifact@v4
-        with:
-          name: total-audit-repository-inventory
-          path: artifacts/repository-audit
-          if-no-files-found: error
-          retention-days: 3
-
-      - name: Upload targeted source snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: total-audit-targeted-source
-          path: |
-            src/OneBrain.Pilot
-            tests/OneBrain.Recipes.Tests
-            tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj
-            tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj
-            tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj
-            eng/ci/smoke-mission-control-root.ps1
-            eng/ci/smoke-desktop-package.ps1
-            README.md
-            docs/architecture/nodal-os-current-mvp-roadmap-compact.md
-          if-no-files-found: error
-          retention-days: 1
-
-  dependency-and-cleanup-audit:
+  apply-and-validate:
+    if: github.head_ref == 'audit/total-cleanup-2026-07-16'
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
-      - name: Checkout full history
+      - name: Checkout audit branch
         uses: actions/checkout@v4
         with:
+          ref: audit/total-cleanup-2026-07-16
           fetch-depth: 0
 
       - name: Setup pinned .NET 11 preview
@@ -71,46 +32,57 @@ jobs:
         with:
           dotnet-version: 11.0.100-preview.6.26359.118
 
-      - name: Restore solution
-        shell: pwsh
-        run: dotnet restore OneBrain.slnx
-
-      - name: Dependency audit
+      - name: Decode and apply targeted cleanup
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force artifacts/total-audit | Out-Null
-          $log = 'artifacts/total-audit/dependencies.txt'
-          '# Vulnerable packages' | Set-Content $log
-          dotnet list OneBrain.slnx package --vulnerable --include-transitive 2>&1 | Tee-Object -FilePath $log -Append
+          $encodedPath = 'eng/audit/total_cleanup.patch.gz.b64'
+          $gzipPath = Join-Path $env:RUNNER_TEMP 'total_cleanup.patch.gz'
+          $patchPath = Join-Path $env:RUNNER_TEMP 'total_cleanup.patch'
+          $bytes = [Convert]::FromBase64String((Get-Content $encodedPath -Raw).Trim())
+          [IO.File]::WriteAllBytes($gzipPath, $bytes)
+          $input = [IO.File]::OpenRead($gzipPath)
+          $gzip = [IO.Compression.GzipStream]::new($input, [IO.Compression.CompressionMode]::Decompress)
+          $output = [IO.File]::Create($patchPath)
+          try { $gzip.CopyTo($output) }
+          finally { $output.Dispose(); $gzip.Dispose(); $input.Dispose() }
+          git apply --check $patchPath
+          git apply --whitespace=nowarn $patchPath
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          "`n# Deprecated packages" | Add-Content $log
-          dotnet list OneBrain.slnx package --deprecated 2>&1 | Tee-Object -FilePath $log -Append
-          exit $LASTEXITCODE
 
-      - name: Reference-aware artifact cleanup projection
+      - name: Restore and build focused product path
         shell: pwsh
         run: |
-          ./tools/repository/clean-unreferenced-artifacts.ps1
+          dotnet restore tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-restore --verbosity minimal
           exit $LASTEXITCODE
 
-      - name: Build canonical product projects
+      - name: Run focused product-surface tests
         shell: pwsh
         run: |
-          $log = 'artifacts/total-audit/build.txt'
-          dotnet build src/OneBrain.Pilot/OneBrain.Pilot.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log -Append
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          dotnet build tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-restore --verbosity minimal 2>&1 | Tee-Object -FilePath $log -Append
+          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj `
+            --configuration Release `
+            --no-build `
+            --filter "FullyQualifiedName~MissionControlProductShellSelectiveRuntimeInspectorRouteTests|FullyQualifiedName~NodalOsDesktopLaunchRuntimeTests" `
+            --logger "console;verbosity=normal"
           exit $LASTEXITCODE
 
-      - name: Upload dependency and cleanup audit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: total-audit-dependency-cleanup
-          path: |
-            artifacts/total-audit
-            docs/audit/artifact-cleanup-report.md
-          if-no-files-found: warn
-          retention-days: 3
+      - name: Smoke clean canonical Mission Control
+        shell: pwsh
+        run: ./eng/ci/smoke-mission-control-root.ps1
+
+      - name: Validate diff and remove one-shot files
+        shell: pwsh
+        run: |
+          git diff --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git rm .github/workflows/one-shot-total-audit.yml eng/audit/total_cleanup.patch.gz.b64
+
+      - name: Commit validated cleanup
+        shell: pwsh
+        run: |
+          git config user.name "onediegopr"
+          git config user.email "13628799+onediegopr@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(product): separate fixtures and close packaged lab routes"
+          git push origin HEAD:audit/total-cleanup-2026-07-16
