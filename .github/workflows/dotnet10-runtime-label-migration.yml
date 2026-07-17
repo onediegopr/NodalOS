@@ -1,0 +1,60 @@
+name: One-shot .NET 10 runtime label migration
+
+on:
+  push:
+    branches:
+      - build/migrate-dotnet-10-lts
+    paths:
+      - ".github/workflows/dotnet10-runtime-label-migration.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-labels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout migration branch
+        uses: actions/checkout@v4
+        with:
+          ref: build/migrate-dotnet-10-lts
+          fetch-depth: 0
+
+      - name: Reconcile operational runtime labels and remove this one-shot workflow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          paths = [
+              Path("src/OneBrain.BrowserExecutor.Cdp/NexaLeakHardeningServices.cs"),
+              Path("src/OneBrain.AgentOperations.Core/NodalOsMissionControlVisualServices.cs"),
+              Path("src/OneBrain.Pilot/PilotHomePageRenderer.cs"),
+              Path("src/OneBrain.AgentOperations.Core/NodalOsContextIntakePreviewServices.cs"),
+              Path("src/OneBrain.AgentOperations.Core/NodalOsMissionControlShellServices.cs"),
+              Path("src/OneBrain.ChromeLab.Bridge/ChromeLabLocalDevOperatorSurfaceHtmlRenderer.cs"),
+              Path("tests/OneBrain.Recipes.Tests/MissionControlProductShellSelectiveRuntimeInspectorRouteTests.cs"),
+          ]
+
+          changed = []
+          for path in paths:
+              text = path.read_text(encoding="utf-8-sig")
+              updated = text.replace(".NET 11 preview", ".NET 10 LTS")
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
+                  changed.append(str(path))
+
+          if not changed:
+              raise SystemExit("No operational .NET 11 preview label was found to migrate.")
+
+          Path(".github/workflows/dotnet10-runtime-label-migration.yml").unlink()
+          print("Updated:")
+          print("\n".join(changed))
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "docs: align operational runtime labels with .NET 10 LTS"
+          git push origin HEAD:build/migrate-dotnet-10-lts
