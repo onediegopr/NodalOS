@@ -192,6 +192,12 @@ try {
         $process = $null
     }
 
+    & (Join-Path $repoRoot "eng/ci/smoke-installed-private-beta-core-loop.ps1") `
+        -ExecutablePath $executable `
+        -RunnerTemp $RunnerTemp `
+        -BaseUrl "http://127.0.0.1:5127" `
+        -ProviderPort 5528
+
     New-Item -ItemType Directory -Path $dataRoot -Force | Out-Null
     Set-Content -Path $preserveSentinelPath -Value "preserve-on-default-uninstall" -Encoding utf8NoBOM
     & $uninstallScriptPath
