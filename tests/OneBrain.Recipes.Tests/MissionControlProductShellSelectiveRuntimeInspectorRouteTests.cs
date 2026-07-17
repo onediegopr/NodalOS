@@ -18,7 +18,7 @@ namespace OneBrain.Recipes.Tests;
 public sealed class MissionControlProductShellSelectiveRuntimeInspectorRouteTests
 {
     [TestMethod]
-    public async Task CanonicalRootRendersDarkMissionControlAndKeepsLegacyPilotOffRoot()
+    public async Task CanonicalRootStartsFromRealProductStateAndKeepsLegacyPilotOffRoot()
     {
         await using var app = BuildIntegratedApp(Environments.Development);
         await app.StartAsync(TestContext.CancellationTokenSource.Token);
@@ -52,23 +52,23 @@ public sealed class MissionControlProductShellSelectiveRuntimeInspectorRouteTest
         Assert.IsTrue(root.GetProperty("accepted").GetBoolean());
         Assert.IsTrue(root.GetProperty("localOnly").GetBoolean());
         Assert.IsTrue(root.GetProperty("readOnly").GetBoolean());
-        Assert.IsTrue(root.GetProperty("fixtureBacked").GetBoolean());
+        Assert.IsFalse(root.GetProperty("fixtureBacked").GetBoolean());
         Assert.IsTrue(root.GetProperty("secretsExcluded").GetBoolean());
         Assert.IsFalse(root.GetProperty("externalIoUsed").GetBoolean());
         Assert.IsFalse(root.GetProperty("networkUsed").GetBoolean());
         Assert.IsFalse(root.GetProperty("productAuthorityGranted").GetBoolean());
-        Assert.AreEqual("Completed", root.GetProperty("missionStatus").GetString());
-        Assert.AreEqual(100, root.GetProperty("progressPercent").GetInt32());
-        Assert.AreEqual("fixture-fallback-chat", root.GetProperty("activeModel").GetString());
-        Assert.IsTrue(root.GetProperty("timeline").GetArrayLength() >= 8);
-        Assert.IsTrue(root.GetProperty("context").GetArrayLength() >= 6);
-        Assert.IsTrue(root.GetProperty("evidenceRefs").GetArrayLength() >= 2);
-        StringAssert.Contains(root.GetProperty("recentFallback").GetString() ?? string.Empty, "fallback");
+        Assert.AreEqual("NotStarted", root.GetProperty("missionStatus").GetString());
+        Assert.AreEqual(0, root.GetProperty("progressPercent").GetInt32());
+        Assert.AreEqual("not configured", root.GetProperty("activeModel").GetString());
+        Assert.AreEqual(0, root.GetProperty("timeline").GetArrayLength());
+        Assert.IsTrue(root.GetProperty("context").GetArrayLength() >= 8);
+        Assert.AreEqual(0, root.GetProperty("evidenceRefs").GetArrayLength());
+        Assert.AreEqual(JsonValueKind.Null, root.GetProperty("recentFallback").ValueKind);
 
         StringAssert.Contains(html, "data-nodal-os=\"mission-control-product-shell\"");
         StringAssert.Contains(html, "data-local-only=\"true\"");
         StringAssert.Contains(html, "data-read-only=\"true\"");
-        StringAssert.Contains(html, "data-fixture-backed=\"true\"");
+        StringAssert.Contains(html, "data-fixture-backed=\"false\"");
         StringAssert.Contains(html, "data-product-authority=\"false\"");
         StringAssert.Contains(html, "data-section-id=\"topbar\"");
         StringAssert.Contains(html, "data-section-id=\"mission\"");
@@ -82,10 +82,15 @@ public sealed class MissionControlProductShellSelectiveRuntimeInspectorRouteTest
         StringAssert.Contains(html, "#4F7CFF");
         StringAssert.Contains(html, "Mission Control");
         StringAssert.Contains(html, "Timeline de misión");
-        StringAssert.Contains(html, "Fallback applied automatically");
-        StringAssert.Contains(html, "Primary fixture model was rate-limited");
-        StringAssert.Contains(html, "Mission-level scope avoids per-step approval prompts");
-        StringAssert.Contains(html, "Seleccionar y persistir un workspace local real");
+        StringAssert.Contains(html, "Ruta rápida");
+        StringAssert.Contains(html, "Seleccionar workspace local");
+        StringAssert.Contains(html, "No pending decision");
+        Assert.IsFalse(html.Contains("fixture-fallback-chat", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("Primary fixture model", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("Fixture mission", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("Abrir laboratorio Pilot legado", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("CloakBrowser", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("Probar ahora", StringComparison.OrdinalIgnoreCase));
         AssertNoExecutableOrExternalSurface(html);
 
@@ -116,6 +121,7 @@ public sealed class MissionControlProductShellSelectiveRuntimeInspectorRouteTest
         Assert.IsTrue(snapshot.Context.Any(value => value.Id == "advisor" && value.Value.Contains("non-executor", StringComparison.Ordinal)));
         Assert.IsTrue(snapshot.Diagnostics.Any(value => value == "external-io:false"));
         Assert.IsTrue(snapshot.Diagnostics.Any(value => value == "network:false"));
+        Assert.IsTrue(snapshot.Diagnostics.Any(value => value == "fixture-mode:true"));
         Assert.IsFalse(snapshot.Diagnostics.Any(value => value.Contains("API_KEY", StringComparison.OrdinalIgnoreCase)));
     }
 

@@ -504,7 +504,7 @@ public sealed class ApprovalHumanReviewReadOnlyFoundationTests
         Assert.IsTrue(surface.CandidateActionPreviews.Count >= 3);
         Assert.IsTrue(surface.RiskDecisionSummaries.Any(summary => summary.Contains("Risk/decision fixtures: 26", StringComparison.Ordinal)));
         Assert.IsTrue(surface.EvidenceContextLinkSummaries.Any(summary => summary.Contains("Evidence/context link fixtures: 27", StringComparison.Ordinal)));
-        Assert.IsTrue(surface.DecisionOptionPreviews.Count == 5);
+        Assert.AreEqual(5, surface.DecisionOptionPreviews.Count);
         Assert.IsTrue(surface.HumanReviewRequirements.Count > 0);
         Assert.IsTrue(surface.Warnings.Count > 0);
         Assert.IsTrue(surface.Blockers.Count > 0);

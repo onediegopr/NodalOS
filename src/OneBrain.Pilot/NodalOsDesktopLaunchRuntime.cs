@@ -13,10 +13,33 @@ public static class NodalOsDesktopLaunchRuntime
     private const int ErrorSuccess = 0;
     private const int ErrorInsufficientBuffer = 122;
 
+    private static readonly HashSet<string> PackagedProductPaths = new(StringComparer.Ordinal)
+    {
+        "/",
+        "/api/mission-control",
+        "/workspace/select",
+        "/api/workspace/selection",
+        "/workspace/clear",
+        "/mission/new",
+        "/api/mission/draft",
+        "/mission/clear",
+        "/mission/execution",
+        "/api/mission/execution",
+        "/mission/rollback",
+        "/mission/execution/clear",
+        "/models/config",
+        "/api/models/config",
+        "/models/test",
+        "/models/clear"
+    };
+
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
     private static extern int GetCurrentPackageFullName(
         ref uint packageFullNameLength,
         StringBuilder? packageFullName);
+
+    public static bool IsPackagedProductPath(string? path) =>
+        !string.IsNullOrWhiteSpace(path) && PackagedProductPaths.Contains(path);
 
     public static bool IsPackaged()
     {

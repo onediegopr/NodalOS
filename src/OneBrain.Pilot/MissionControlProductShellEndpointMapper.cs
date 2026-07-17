@@ -145,9 +145,15 @@ public static class MissionControlProductShellEndpointMapper
         NodalOsWorkspaceHandoffExecutionService? handoffExecutionService = null,
         NodalOsByokModelConfigurationService? byokModelConfigurationService = null)
     {
-        var fixture = await new NodalOsSelectiveRuntimeFixtureScenario()
-            .RunAsync(cancellationToken)
-            .ConfigureAwait(false);
+        var fixtureMode = workspaceSelectionService is null &&
+            missionDraftService is null &&
+            handoffExecutionService is null &&
+            byokModelConfigurationService is null;
+        var fixture = fixtureMode
+            ? await new NodalOsSelectiveRuntimeFixtureScenario()
+                .RunAsync(cancellationToken)
+                .ConfigureAwait(false)
+            : null;
         var workspaceSelection = workspaceSelectionService is null
             ? null
             : await workspaceSelectionService.GetCurrentAsync(cancellationToken).ConfigureAwait(false);
@@ -174,10 +180,13 @@ public static class MissionControlProductShellEndpointMapper
             NodalOsWorkspaceHandoffExecutionState.ResultChanged or
             NodalOsWorkspaceHandoffExecutionState.FailedClosed;
         var approvalAvailable = execution?.State == NodalOsWorkspaceHandoffExecutionState.ReadyForApproval;
+        var fixtureApprovalRequested = fixture?.ApprovalRequested == true;
+        var fixtureExternalIoUsed = fixture?.ExternalIoUsed == true;
+        var fixtureNetworkUsed = fixture?.NetworkUsed == true;
 
-        var planTimeline = realMissionDraft
+        IReadOnlyList<MissionControlProductTimelineItem> planTimeline = realMissionDraft
             ? ProjectPlanTimeline(missionDraft!.Plan!, execution)
-            : ProjectFixtureTimeline(fixture);
+            : fixture is null ? [] : ProjectFixtureTimeline(fixture);
         var executionTimeline = execution?.Timeline.Count > 0
             ? ProjectExecutionTimeline(execution.Timeline, planTimeline.Count)
             : [];
@@ -191,7 +200,8 @@ public static class MissionControlProductShellEndpointMapper
         var missionEvidence = missionDraft?.EvidenceRefs ?? [];
         var executionEvidence = execution?.EvidenceRefs ?? [];
         var modelEvidence = modelConfiguration?.EvidenceRefs ?? [];
-        var evidenceRefs = fixture.Mission.EvidenceRefs
+        var fixtureEvidence = fixture?.Mission.EvidenceRefs ?? [];
+        var evidenceRefs = fixtureEvidence
             .Concat(timeline.SelectMany(value => value.EvidenceRefs))
             .Concat(workspaceEvidence)
             .Concat(missionEvidence)
@@ -204,40 +214,54 @@ public static class MissionControlProductShellEndpointMapper
 
         var activeProvider = modelConnectionVerified
             ? ValueOr(modelConfiguration!.SelectedProviderId, modelConfiguration.Primary?.ProviderId ?? "not selected")
-            : byokConfigured ? modelConfiguration!.Primary?.ProviderId ?? "configured" : ValueOr(fixture.Inspector.ActiveProvider, "not selected");
+            : byokConfigured
+                ? modelConfiguration!.Primary?.ProviderId ?? "configured"
+                : ValueOr(fixture?.Inspector.ActiveProvider, "not configured");
         var activeModel = modelConnectionVerified
             ? ValueOr(modelConfiguration!.SelectedModelId, modelConfiguration.Primary?.ModelId ?? "not selected")
-            : byokConfigured ? modelConfiguration!.Primary?.ModelId ?? "configured" : ValueOr(fixture.Inspector.ActiveModel, "not selected");
+            : byokConfigured
+                ? modelConfiguration!.Primary?.ModelId ?? "configured"
+                : ValueOr(fixture?.Inspector.ActiveModel, "not configured");
         var logicalModel = byokConfigured
             ? modelConfiguration!.LogicalModel
-            : ValueOr(fixture.Inspector.LogicalModel, "not selected");
+            : ValueOr(fixture?.Inspector.LogicalModel, "not configured");
         var recentFallback = modelConfiguration?.FallbackApplied == true
             ? $"Pre-authorized BYOK fallback selected {modelConfiguration.SelectedProviderId} / {modelConfiguration.SelectedModelId}."
-            : fixture.ResumeCard.RecentFallback ?? fixture.Inspector.RecentFallbacks.LastOrDefault();
-        var readyCapabilities = fixture.Inspector.Capabilities.Count(value => value.Contains(":Ready:", StringComparison.Ordinal));
-        var totalCapabilities = fixture.Inspector.Capabilities.Count;
-        var readyProviders = fixture.Inspector.Providers.Count(value => value.Contains(":Ready:", StringComparison.Ordinal));
-        var totalProviders = fixture.Inspector.Providers.Count;
+            : fixture?.ResumeCard.RecentFallback ?? fixture?.Inspector.RecentFallbacks.LastOrDefault();
+        var readyCapabilities = fixture?.Inspector.Capabilities.Count(value => value.Contains(":Ready:", StringComparison.Ordinal)) ?? 0;
+        var totalCapabilities = fixture?.Inspector.Capabilities.Count ?? 0;
+        var readyProviders = fixture?.Inspector.Providers.Count(value => value.Contains(":Ready:", StringComparison.Ordinal)) ?? 0;
+        var totalProviders = fixture?.Inspector.Providers.Count ?? 0;
+        var browserRuntime = fixture?.Inspector.Browser.Runtime ?? "Not configured";
+        var browserState = fixture?.Inspector.Browser.State ?? "Not evaluated";
         var workspaceDisplay = workspaceSelected
             ? workspaceSelection!.DisplayNameRedacted ?? "Selected Local Workspace"
             : "No real workspace selected";
         var workspaceDetail = workspaceSelected
             ? $"Protected local selection · {workspaceSelection!.FilesRead} bounded file refs · fingerprint {Short(workspaceSelection.RootPathFingerprint, 12)}."
-            : "Select and persist a real local workspace before moving the mission runtime off fixtures.";
+            : "Select and persist a local workspace to begin a real mission.";
 
         var context = new List<MissionControlProductContextItem>
         {
             new(
                 "mission",
                 "Mission",
-                executionCompleted ? "Verified real mission" : executionRolledBack ? "Real mission rolled back" : realMissionDraft ? "Real workspace mission" : "Fixture mission",
+                executionCompleted
+                    ? "Verified real mission"
+                    : executionRolledBack
+                        ? "Real mission rolled back"
+                        : realMissionDraft
+                            ? "Real workspace mission"
+                            : fixtureMode ? "Fixture mission" : "Not started",
                 executionCompleted
                     ? "The approved handoff action completed with exact post-write verification and canonical evidence."
                     : executionRolledBack
                         ? "The approved action was reversed through its guarded restore plan and the prior state was verified."
                         : realMissionDraft
                             ? "The goal, plan and reviewed action candidate are persisted and bound to the selected workspace."
-                            : "Create a real workspace mission draft to replace the runtime fixture projection.",
+                            : fixtureMode
+                                ? "The explicit development fixture proves the runtime path without product authority."
+                                : "Create a mission after selecting a workspace; the product surface does not synthesize fixture work.",
                 executionCompleted || executionRolledBack || realMissionDraft ? "ready" : "attention"),
             new(
                 "model",
@@ -247,31 +271,37 @@ public static class MissionControlProductShellEndpointMapper
                     ? $"{activeProvider} · logical alias {logicalModel} · real connection verified"
                     : byokConfigured
                         ? $"{activeProvider} · logical alias {logicalModel} · connection test pending"
-                        : $"{activeProvider} · logical alias {logicalModel} · fixture-backed",
+                        : fixtureMode
+                            ? $"{activeProvider} · logical alias {logicalModel} · fixture-backed"
+                            : "Configure a BYOK or loopback provider before model-assisted work.",
                 modelConnectionVerified ? "ready" : byokConfigured ? "attention" : "neutral"),
             new(
                 "fallback",
                 "Fallback policy",
                 recentFallback is null ? "No fallback used" : "Fallback applied automatically",
-                recentFallback ?? "The current route completed without changing provider.",
+                recentFallback ?? (fixtureMode
+                    ? "The fixture route completed without changing provider."
+                    : "No model route has run in the current product state."),
                 recentFallback is null ? "ready" : "fallback"),
             new(
                 "capabilities",
                 "Capabilities",
-                $"{readyCapabilities}/{totalCapabilities} ready",
-                "The registry reports availability; policy still controls use.",
-                readyCapabilities == totalCapabilities ? "ready" : "attention"),
+                fixtureMode ? $"{readyCapabilities}/{totalCapabilities} ready" : "Not evaluated",
+                fixtureMode
+                    ? "The registry reports fixture availability; policy still controls use."
+                    : "Capabilities are evaluated when a real mission is reviewed.",
+                fixtureMode && readyCapabilities == totalCapabilities ? "ready" : "neutral"),
             new(
                 "providers",
                 "Providers",
                 byokConfigured
                     ? $"{1 + (modelConfiguration!.Fallback is null ? 0 : 1)} configured"
-                    : $"{readyProviders}/{totalProviders} fixture-ready",
+                    : fixtureMode ? $"{readyProviders}/{totalProviders} fixture-ready" : "Not configured",
                 modelConnectionVerified
                     ? "A real provider call completed through the existing policy-aware router with redacted evidence."
                     : byokConfigured
                         ? "Configuration is stored securely; run the bounded connection test before using it for missions."
-                        : "Configure a BYOK or loopback provider to replace fixture-backed model context.",
+                        : "Configure a BYOK or loopback provider when model assistance is needed.",
                 modelConnectionVerified ? "ready" : "attention"),
             new("workspace", "Workspace", workspaceDisplay, workspaceDetail, workspaceSelected ? "ready" : "attention"),
             new(
@@ -287,14 +317,17 @@ public static class MissionControlProductShellEndpointMapper
                 "Expert Advisor",
                 "Observer · non-executor",
                 "Advisor context can inform the mission but cannot authorize or execute work.",
-                "neutral"),
-            new(
-                "browser",
-                fixture.Inspector.Browser.Runtime,
-                fixture.Inspector.Browser.State,
-                fixture.Inspector.Browser.LastError ?? "Browser runtime is healthy.",
-                fixture.Inspector.Browser.State.Contains("BLOCKED", StringComparison.OrdinalIgnoreCase) ? "blocked" : "ready")
+                "neutral")
         };
+        if (fixture is not null)
+        {
+            context.Add(new MissionControlProductContextItem(
+                "browser",
+                browserRuntime,
+                browserState,
+                fixture.Inspector.Browser.LastError ?? "Browser runtime is healthy.",
+                browserState.Contains("BLOCKED", StringComparison.OrdinalIgnoreCase) ? "blocked" : "ready"));
+        }
 
         if (realMissionDraft)
         {
@@ -324,7 +357,7 @@ public static class MissionControlProductShellEndpointMapper
                         ? "Mission-scope approval required"
                         : realMissionDraft
                             ? "Review execution boundary"
-                            : fixture.ApprovalRequested ? "Review required" : "No pending decision";
+                            : fixtureApprovalRequested ? "Review required" : "No pending decision";
         var humanDetail = executionCompleted
             ? "The approval was bound to mission, workspace fingerprint, action id, capability, target and reviewed hashes."
             : executionRolledBack
@@ -333,13 +366,19 @@ public static class MissionControlProductShellEndpointMapper
                     ? string.Join(" ", execution?.Blockers ?? ["The controlled action failed closed."])
                     : realMissionDraft
                         ? "One explicit decision unlocks only the reviewed reversible target; ordinary mission steps do not prompt again."
-                        : "Mission-level scope avoids per-step approval prompts for ordinary work.";
+                        : fixtureMode
+                            ? "Mission-level scope avoids per-step approval prompts for ordinary fixture work."
+                            : "No approval is required until a reviewed mission proposes a sensitive action.";
         context.Add(new MissionControlProductContextItem(
             "human-control",
             "Human control",
             humanValue,
             humanDetail,
-            executionBlocked ? "blocked" : executionCompleted || executionRolledBack ? "ready" : realMissionDraft || fixture.ApprovalRequested ? "attention" : "ready"));
+            executionBlocked
+                ? "blocked"
+                : executionCompleted || executionRolledBack
+                    ? "ready"
+                    : realMissionDraft || fixtureApprovalRequested ? "attention" : "neutral"));
 
         var progressPercent = executionCompleted || executionRolledBack
             ? 100
@@ -347,26 +386,40 @@ public static class MissionControlProductShellEndpointMapper
                 ? Math.Max(missionDraft?.ProgressPercent ?? 0, 50)
                 : realMissionDraft
                     ? missionDraft!.ProgressPercent
-                    : (int)Math.Clamp(Math.Round(fixture.Mission.Progress * 100, MidpointRounding.AwayFromZero), 0, 100);
-        var missionId = realMissionDraft ? missionDraft!.MissionId! : fixture.Mission.MissionId;
+                    : fixture is null
+                        ? 0
+                        : (int)Math.Clamp(Math.Round(fixture.Mission.Progress * 100, MidpointRounding.AwayFromZero), 0, 100);
+        var missionId = realMissionDraft
+            ? missionDraft!.MissionId!
+            : fixture?.Mission.MissionId ?? "mission:not-started";
         var runId = execution?.OperationId is not null
             ? $"execution:{execution.OperationId}"
-            : realMissionDraft ? $"draft:{missionId}" : fixture.Mission.RunId;
-        var goal = realMissionDraft ? missionDraft!.GoalRedacted! : fixture.Plan.Goal;
+            : realMissionDraft
+                ? $"draft:{missionId}"
+                : fixture?.Mission.RunId ?? "run:not-started";
+        var goal = realMissionDraft
+            ? missionDraft!.GoalRedacted!
+            : fixture?.Plan.Goal ?? (workspaceSelected
+                ? "Create a mission for the selected workspace"
+                : "Select a workspace and create a mission");
         var missionStatus = executionCompleted
             ? "Completed"
             : executionRolledBack
                 ? "RolledBack"
                 : executionBlocked
                     ? "Blocked"
-                    : realMissionDraft ? "AwaitingMissionScopeApproval" : fixture.Mission.Status.ToString();
+                    : realMissionDraft
+                        ? "AwaitingMissionScopeApproval"
+                        : fixture?.Mission.Status.ToString() ?? (workspaceSelected ? "ReadyForMission" : "NotStarted");
         var currentStep = executionCompleted
             ? "Verified handoff and evidence"
             : executionRolledBack
                 ? "Rollback verified"
                 : executionBlocked
                     ? "Resolve controlled execution blocker"
-                    : realMissionDraft ? missionDraft!.CurrentStep : fixture.ResumeCard.CurrentStep ?? "Mission complete";
+                    : realMissionDraft
+                        ? missionDraft!.CurrentStep
+                        : fixture?.ResumeCard.CurrentStep ?? (workspaceSelected ? "Create a mission" : "Select a workspace");
         var approvalState = executionCompleted
             ? "Mission scope approved · execution verified"
             : executionRolledBack
@@ -375,18 +428,25 @@ public static class MissionControlProductShellEndpointMapper
                     ? "Controlled execution blocked"
                     : approvalAvailable
                         ? "Approve exact mission scope"
-                        : realMissionDraft ? missionDraft!.ApprovalState : fixture.ApprovalRequested ? "Human review required" : "Mission scope authorized · no per-step prompt";
+                        : realMissionDraft
+                            ? missionDraft!.ApprovalState
+                            : fixtureApprovalRequested ? "Human review required" : "No pending decision";
+        var productMode = executionCompleted
+            ? "Local private beta · verified real workspace action"
+            : executionRolledBack
+                ? "Local private beta · verified rollback"
+                : realMissionDraft
+                    ? "Local private beta · real workspace mission"
+                    : workspaceSelected
+                        ? "Local private beta · real workspace selected"
+                        : fixtureMode ? "Local development fixture" : "Local private beta";
+        var externalIoUsed = fixtureExternalIoUsed || modelConfiguration?.RealProviderCallAttempted == true;
+        var networkUsed = fixtureNetworkUsed || modelConfiguration?.NetworkUsed == true;
 
         return new MissionControlProductShellSnapshot(
             Decision,
             Accepted: true,
-            ProductMode: executionCompleted
-                ? "Local product preview · verified real workspace action"
-                : executionRolledBack
-                    ? "Local product preview · verified rollback"
-                    : realMissionDraft
-                        ? "Local product preview · real workspace mission"
-                        : workspaceSelected ? "Local product preview · real workspace selected" : "Local product preview",
+            ProductMode: productMode,
             MissionId: missionId,
             RunId: runId,
             Goal: goal,
@@ -418,8 +478,8 @@ public static class MissionControlProductShellEndpointMapper
             ActiveProvider: activeProvider,
             ActiveModel: activeModel,
             RecentFallback: recentFallback,
-            BrowserRuntime: fixture.Inspector.Browser.Runtime,
-            BrowserState: fixture.Inspector.Browser.State,
+            BrowserRuntime: browserRuntime,
+            BrowserState: browserState,
             Timeline: timeline,
             Context: context,
             EvidenceRefs: evidenceRefs,
@@ -427,6 +487,7 @@ public static class MissionControlProductShellEndpointMapper
             [
                 $"run:{runId}",
                 $"mission:{missionId}",
+                $"fixture-mode:{fixtureMode.ToString().ToLowerInvariant()}",
                 $"real-mission-draft:{realMissionDraft.ToString().ToLowerInvariant()}",
                 $"mission-draft-persisted:{(missionDraft?.Persisted == true).ToString().ToLowerInvariant()}",
                 $"workspace-selected:{workspaceSelected.ToString().ToLowerInvariant()}",
@@ -441,16 +502,16 @@ public static class MissionControlProductShellEndpointMapper
                 $"model-fallback-applied:{(modelConfiguration?.FallbackApplied == true).ToString().ToLowerInvariant()}",
                 $"logical-model:{logicalModel}",
                 $"provider:{activeProvider}",
-                $"browser:{fixture.Inspector.Browser.State}",
-                $"external-io:{fixture.ExternalIoUsed.ToString().ToLowerInvariant()}",
-                $"network:{fixture.NetworkUsed.ToString().ToLowerInvariant()}"
+                $"browser:{browserState}",
+                $"external-io:{externalIoUsed.ToString().ToLowerInvariant()}",
+                $"network:{networkUsed.ToString().ToLowerInvariant()}"
             ],
             LocalOnly: true,
             ReadOnly: true,
-            FixtureBacked: !realMissionDraft || !modelConnectionVerified,
+            FixtureBacked: fixtureMode,
             SecretsExcluded: true,
-            ExternalIoUsed: fixture.ExternalIoUsed || modelConfiguration?.RealProviderCallAttempted == true,
-            NetworkUsed: fixture.NetworkUsed || modelConfiguration?.NetworkUsed == true,
+            ExternalIoUsed: externalIoUsed,
+            NetworkUsed: networkUsed,
             ProductAuthorityGranted: false);
     }
 

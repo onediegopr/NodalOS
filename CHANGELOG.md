@@ -7,6 +7,8 @@ NODAL OS has a validated test-signed Windows private-beta package, but no produc
 Current validated foundations include:
 
 - canonical dark-first Mission Control root shell with central timeline, model/fallback context, evidence and collapsed diagnostics;
+- clean product startup with no synthetic mission, completed timeline, model, fallback or evidence;
+- four-step state-derived onboarding and specific recovery for stale candidates, changed results and failed-closed execution;
 - explicit real local workspace selection through a loopback-only product surface;
 - absolute workspace root protected through Windows current-user DPAPI and represented elsewhere by opaque/redacted references;
 - atomic local workspace metadata persistence, revalidation and rehydration after process restart;
@@ -40,11 +42,12 @@ Current validated foundations include:
 - self-contained `win-x64` publish, versioned package identity, deterministic product assets and SHA-256-bound manual update manifest;
 - ephemeral test signing for controlled devices and support for an externally managed PFX without copying private keys into artifacts;
 - packaged startup restricted to loopback, with writable state under `%LOCALAPPDATA%\NodalOS\ProductData` and optional headless launch;
+- packaged route allowlist exposing only Mission Control, workspace, mission, execution and model surfaces while returning 404 for legacy/demo/harness routes;
 - uninstall preserving local product data by default and deleting it only through an explicit destructive switch;
-- fresh-Windows CI smoke proving package build, signature verification, install, launch from the installed location, Mission Control/BYOK health, shutdown, uninstall and certificate cleanup;
+- fresh-Windows CI smoke proving package build, signature verification, install, launch from the installed location, clean Mission Control/BYOK health, blocked lab routes, shutdown, uninstall and certificate cleanup;
 - one-time request tokens, strict same-origin POST, no-store and closed CSP on workspace, mission, execution and model surfaces;
-- former ONE BRAIN Pilot demo home preserved under an explicit legacy lab route instead of defining the primary product experience;
-- environment-only AI configuration preserved explicitly under `/pilot/legacy/ai/config` instead of competing with the canonical BYOK product surface;
+- former ONE BRAIN Pilot demo home preserved only as an explicit development lab route and excluded from the packaged product;
+- environment-only AI configuration preserved under `/pilot/legacy/ai/config` for development instead of competing with canonical BYOK;
 - local/dev Runtime Inspector, bounded workspace understanding and verified handoff export;
 - test-owned create and exact-hash update operations retained as regression fixtures with atomic verification, snapshot/rollback and cleanup;
 - mission-level approval, evidence and semantic verification foundations;
@@ -53,7 +56,8 @@ Current validated foundations include:
 - CognitiveSnapshotV2, Trusted Control Flow and verified skill memory;
 - Teach NODAL fixture compilation, bounded capture sessions and application-scoped Windows UIA observation;
 - ChromeLab security validation as `LAB_LEGACY_TRANSITION`;
-- CloakBrowser as the canonical browser target, with live CDP validation still blocked when the pinned external binary is unavailable.
+- CloakBrowser as the canonical future browser target, with live CDP validation still blocked when the pinned external binary is unavailable;
+- supported stable MSTest dependencies replacing the deprecated preview adapter across Runtime, Recipes, ChromeLab and Safety tests.
 
 The selected workspace can be mutated only through the exact approved and revalidated `NODAL_HANDOFF.md` candidate, with deterministic verification and guarded rollback. A real BYOK route can be configured, tested, rehydrated and cleared without exposing its credential or provider response. The private-beta MSIX is engineering evidence, not a public release. Broader user-workspace mutation, arbitrary patching, shell execution, unrestricted mission inference, customer-data workflows, production signing, public distribution, billing, licensing, auto-update and commercial release claims remain closed until separately implemented and validated.
 

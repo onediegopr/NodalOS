@@ -10,22 +10,22 @@ namespace OneBrain.Recipes.Tests;
 public sealed class NodalOsDesktopLaunchRuntimeTests
 {
     [TestMethod]
-public void ResolveProductDataRootUsesWritableLocalApplicationData()
-{
-    var baseDirectory = Path.Combine(Path.GetTempPath(), "nodal-os-product-data-tests", Guid.NewGuid().ToString("N"));
-    try
+    public void ResolveProductDataRootUsesWritableLocalApplicationData()
     {
-        var root = NodalOsDesktopLaunchRuntime.ResolveProductDataRoot(localApplicationData: baseDirectory);
+        var baseDirectory = Path.Combine(Path.GetTempPath(), "nodal-os-product-data-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var root = NodalOsDesktopLaunchRuntime.ResolveProductDataRoot(localApplicationData: baseDirectory);
 
-        Assert.AreEqual(Path.Combine(baseDirectory, "NodalOS", "ProductData"), root);
-        Assert.IsTrue(Directory.Exists(root));
+            Assert.AreEqual(Path.Combine(baseDirectory, "NodalOS", "ProductData"), root);
+            Assert.IsTrue(Directory.Exists(root));
+        }
+        finally
+        {
+            if (Directory.Exists(baseDirectory))
+                Directory.Delete(baseDirectory, recursive: true);
+        }
     }
-    finally
-    {
-        if (Directory.Exists(baseDirectory))
-            Directory.Delete(baseDirectory, recursive: true);
-    }
-}
 
     [TestMethod]
     public void ResolveLoopbackUrlsAcceptsOnlyLocalHttpOrigins()
@@ -45,6 +45,41 @@ public void ResolveProductDataRootUsesWritableLocalApplicationData()
             NodalOsDesktopLaunchRuntime.ResolveLoopbackUrls("http://127.0.0.1:5112/path"));
         Assert.ThrowsExactly<ArgumentException>(() =>
             NodalOsDesktopLaunchRuntime.ResolveLoopbackUrls("http://127.0.0.1:5112?source=external"));
+    }
+
+    [TestMethod]
+    public void PackagedProductSurfaceAllowsOnlyCanonicalProductRoutes()
+    {
+        foreach (var route in new[]
+        {
+            "/",
+            "/api/mission-control",
+            "/workspace/select",
+            "/mission/new",
+            "/mission/execution",
+            "/models/config"
+        })
+        {
+            Assert.IsTrue(NodalOsDesktopLaunchRuntime.IsPackagedProductPath(route), route);
+        }
+
+        foreach (var route in new[]
+        {
+            "/pilot/legacy",
+            "/recording/demo",
+            "/executor-harness",
+            "/runs",
+            "/recipes",
+            "/api/runtime/inspector",
+            "/guia",
+            "/workspace/select/"
+        })
+        {
+            Assert.IsFalse(NodalOsDesktopLaunchRuntime.IsPackagedProductPath(route), route);
+        }
+
+        Assert.IsFalse(NodalOsDesktopLaunchRuntime.IsPackagedProductPath(null));
+        Assert.IsFalse(NodalOsDesktopLaunchRuntime.IsPackagedProductPath(string.Empty));
     }
 
     [TestMethod]
