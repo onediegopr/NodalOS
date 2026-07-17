@@ -23,14 +23,16 @@ This path matches the current paid desktop-product strategy, BYOK positioning an
 
 Engineering evidence source:
 
-- Desktop Package workflow run: `29615053896`;
-- PR head used by the validated candidate: `861798ca0284138454b9726151167f224b63ccc7`;
-- Actions test-merge commit embedded in package metadata: `98b0feac0e851c3af340a2b56d4ad0c698bfbb0d`;
+- Desktop Package workflow run: `29616288590`;
+- PR head used by the validated candidate: `f7ba903a0463c191d14c31a68fa02bb68b30e5e5`;
+- Actions test-merge commit embedded in package metadata: `83563af37877d669283c296125d7cd12aaa844ac`;
 - package version: `0.1.0.3`;
-- MSIX SHA-256: `acd9620ac60cb01453cee420b55ee1792cc037eb3328f1dd505d59a0741dfcab`;
-- private-beta bundle SHA-256: `d61f99bf475f1760411c2dfde0cc4c0e72dd8f5d6608a62d90a65b417d63ca0e`;
+- MSIX SHA-256: `14d6ca8d326cee78669a6f9304a8d697b4a891bcd6f62f8c3a4d3aac11010a96`;
+- private-beta bundle SHA-256: `914b9f25c6024df53fc41c2134f32e9beb61d76b1506b92ede21e465d8a92621`;
+- update manifest SHA-256: `15e4ec2ba981e6c8f6be2aa213e3cd8b75fcd8b5b3f22ea0ba3f312fcfc7753a`;
+- GitHub artifact digest: `f77710a9f3fddea67aaf889cd72ae15bf155f60a93f0d0c787864db7af82a9a6`;
 - dependency source inside the package: `OneBrain.Pilot.deps.json`;
-- dependency audit workflow run: `29615053925`, with no vulnerable or deprecated package reported.
+- dependency audit workflow run: `29616288545`, with no vulnerable or deprecated package reported.
 
 The validated self-contained package declares these external NuGet dependencies:
 
