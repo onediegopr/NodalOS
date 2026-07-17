@@ -95,6 +95,8 @@ Never collect in a GitHub issue or shared session note:
 
 Use an alias such as `DP-01`. Record workspace and provider only by broad class, for example `small .NET repo` and `authorized cloud OpenAI-compatible route`.
 
+This repository and its issue tracker are public. Keep per-participant session records in an approved private location and never commit them here. Only a reproducible product finding, stripped of participant and workspace data, may become a public issue.
+
 ## Session flow
 
 ### 1. Install and first launch — 5 to 10 minutes
@@ -194,7 +196,7 @@ Do not copy the local JSONL file by default. A participant may inspect and share
 
 ## Session record template
 
-Copy this section once per participant. Store only redacted operational notes.
+Copy this section once per participant. Store the redacted record in an approved private location; do not commit per-participant records to this public repository.
 
 ```markdown
 # Design-partner session — DP-XX
@@ -202,7 +204,7 @@ Copy this section once per participant. Store only redacted operational notes.
 ## Context
 
 - Date UTC:
-- Facilitator:
+- Facilitator alias:
 - Main commit:
 - Package version:
 - Package SHA-256:
