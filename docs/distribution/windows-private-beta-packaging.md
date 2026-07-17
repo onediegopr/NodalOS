@@ -58,13 +58,13 @@ No PFX, private key or signing password is copied into the output.
 
 ## Installation and update behavior
 
-For a test-signed package on a controlled device:
+For a test-signed package on a controlled device, open **PowerShell as Administrator** and run:
 
 ```powershell
 ./Install-NodalOS.ps1 -TrustTestCertificate
 ```
 
-The test certificate is trusted explicitly in the local machine `TrustedPeople` store for installation and removed by the clean-install smoke. For a CA-trusted or Microsoft-managed signature, the certificate trust switch and test certificate are unnecessary.
+The bundled installer refuses to trust a test certificate unless `-TrustTestCertificate` is passed explicitly. Trust is written to the local-machine `TrustedPeople` store, so the test-signed path requires elevation. For a CA-trusted or Microsoft-managed signature, the certificate trust switch, elevation for certificate import and bundled test certificate are unnecessary.
 
 The private-beta update policy is explicit and manual: install a package with the same identity and a greater four-part version. A hosted `.appinstaller` channel is generated only when `-DistributionBaseUri` is an HTTPS location supplied by the release operator.
 
@@ -93,13 +93,14 @@ This is intentionally explicit because removing local data can be irreversible.
 1. Release build and focused desktop-launch tests;
 2. self-contained publish;
 3. MSIX creation and signature verification;
-4. explicit local-machine trust for the ephemeral test certificate;
-5. package installation;
+4. validation that the bundled installer refuses test-certificate trust without the explicit switch;
+5. installation through the bundled `Install-NodalOS.ps1` operator path;
 6. executable launch from the installed location;
 7. Mission Control and model-configuration health checks;
 8. product-authority, local-only and secret-exclusion assertions;
 9. process shutdown;
-10. package uninstall and registration cleanup.
+10. package removal through the bundled `Uninstall-NodalOS.ps1` path;
+11. confirmation that default uninstall preserves local user data, followed by explicit CI cleanup of data and the temporary certificate.
 
 The CI artifact uploads the private-beta bundle once, together with its update manifest and complete smoke log, rather than duplicating the raw MSIX payload.
 
