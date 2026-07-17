@@ -24,9 +24,11 @@ NODAL OS is a local-first AI Mission Control for supervised work on real project
 7. Configure a BYOK or loopback OpenAI-compatible model route through opaque DPAPI-backed secret references.
 8. Continue automatically through an already authorized fallback when privacy, capability and budget remain compatible.
 9. Resume or recover from stale, changed or failed-closed execution states through the same Mission Control surface.
+10. Download a human-readable handoff derived from the canonical mission, timeline and evidence.
 
 ## Additional validated foundations
 
+- opt-in redacted startup/error/process diagnostics stored locally with bounded retention and no upload path;
 - bounded workspace understanding and reviewed planning context;
 - canonical evidence and timeline projections;
 - deterministic non-executing Expert Advisor foundation;

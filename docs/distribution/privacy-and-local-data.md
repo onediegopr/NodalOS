@@ -21,7 +21,8 @@ Depending on the product flow, local state can include:
 - app-local snapshots required for a guarded restore plan;
 - BYOK provider/model configuration with opaque secret references;
 - DPAPI-protected credential bytes;
-- redacted diagnostics and process-smoke state.
+- opt-in redacted startup/error/process diagnostic events;
+- process-smoke state used by engineering validation.
 
 Raw API keys are not stored in JSON. Absolute workspace roots and provider response content are excluded from the public product projections. The BYOK connection test persists a response hash rather than the response body.
 
@@ -45,6 +46,8 @@ Network access occurs only when the operator configures and tests an allowed mod
 
 Secrets, raw provider responses, absolute private paths and credential-like values must not enter logs, timeline, evidence, handoff or support reports. Any diagnostic shared outside the device must be reviewed for local usernames, customer content and private repository material.
 
+The `/settings/diagnostics` surface is disabled by default. When the operator enables it, NODAL OS stores a bounded local JSONL file below `%LOCALAPPDATA%\NodalOS\diagnostics` containing only UTC time, an allowlisted event kind/outcome, technical exception type, packaged mode and product version. Retention is limited to 200 events and 128 KB. Exception messages, stack traces, paths, URLs, query strings, request bodies, prompts, provider responses, workspace content, hostname, IP address and user identifiers are not persisted. The operator can clear the event file or disable future recording from the same local settings surface.
+
 ## Uninstall
 
 Package uninstall preserves `%LOCALAPPDATA%\NodalOS` by default to avoid silently destroying local mission state or protected configuration. The supplied uninstall script removes this data only when the operator explicitly passes `-RemoveUserData`.
@@ -53,4 +56,4 @@ Before removing user data, export any handoff or evidence needed for continuity.
 
 ## Telemetry
 
-The private-beta package does not activate a public telemetry, crash-reporting, billing or account service. Any future opt-in telemetry must be independently designed, redacted, disclosed and validated before activation.
+The private-beta package does not activate a public telemetry, remote crash-reporting, billing or account service. Local diagnostics are not uploaded automatically; sharing them outside the device remains an explicit human action. Any future remote telemetry must be independently designed, opt-in, redacted, disclosed and validated before activation.
