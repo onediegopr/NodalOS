@@ -191,19 +191,21 @@ public sealed class NodalOsLocalDiagnostics
             typeof(NodalOsLocalDiagnostics).Assembly.GetName().Version?.ToString() ?? "unknown");
         var line = JsonSerializer.Serialize(item, JsonOptions);
         var lineBytes = Utf8NoBom.GetByteCount(line) + 1;
+        var retained = ReadEventsLocked();
+        var currentBytes = File.Exists(_eventsPath) ? new FileInfo(_eventsPath).Length : 0;
 
-        if (!File.Exists(_eventsPath) || new FileInfo(_eventsPath).Length + lineBytes <= MaximumEventsBytes)
+        if (retained.Count < MaximumRetainedEvents && currentBytes + lineBytes <= MaximumEventsBytes)
         {
             File.AppendAllText(_eventsPath, line + "\n", Utf8NoBom);
             return;
         }
 
-        var retained = ReadEventsLocked()
+        var bounded = retained
             .TakeLast(MaximumRetainedEvents - 1)
             .Append(item)
             .Select(value => JsonSerializer.Serialize(value, JsonOptions))
             .ToArray();
-        WriteAtomic(_eventsPath, string.Join('\n', retained) + "\n");
+        WriteAtomic(_eventsPath, string.Join('\n', bounded) + "\n");
     }
 
     private IReadOnlyList<NodalOsLocalDiagnosticEvent> ReadEventsLocked()
