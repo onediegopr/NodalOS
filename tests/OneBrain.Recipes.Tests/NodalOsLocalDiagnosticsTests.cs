@@ -69,6 +69,47 @@ public sealed class NodalOsLocalDiagnosticsTests
     }
 
     [TestMethod]
+    public void ProductActivationMetricsAreLocalRedactedAndDeduplicated()
+    {
+        using var fixture = DiagnosticsFixture.Create();
+        var diagnostics = fixture.Diagnostics;
+        diagnostics.Enable(packaged: true);
+        diagnostics.RecordStartup(packaged: true);
+        diagnostics.RecordFirstValue(packaged: true);
+        diagnostics.RecordFirstValue(packaged: true);
+
+        var executedAt = DateTimeOffset.UtcNow;
+        var createdAt = executedAt.AddSeconds(-12);
+        const string missionId = "mission-private-marker-must-not-persist";
+        diagnostics.RecordMissionCompletion(missionId, createdAt, executedAt, packaged: true);
+        diagnostics.RecordMissionCompletion(missionId, createdAt, executedAt, packaged: true);
+
+        var snapshot = diagnostics.ReadSnapshot();
+        Assert.IsNotNull(snapshot.StartupMilliseconds);
+        Assert.IsNotNull(snapshot.FirstValueMilliseconds);
+        Assert.IsNotNull(snapshot.MissionCompletionMilliseconds);
+        Assert.IsTrue(snapshot.StartupMilliseconds >= 0);
+        Assert.IsTrue(snapshot.FirstValueMilliseconds >= 0);
+        Assert.IsTrue(snapshot.MissionCompletionMilliseconds is >= 11_900 and <= 12_100);
+        Assert.AreEqual(1, snapshot.MissionCompletionCount);
+
+        var events = File.ReadAllText(fixture.EventsPath);
+        StringAssert.Contains(events, NodalOsLocalDiagnostics.StartupReadyMetricCode);
+        StringAssert.Contains(events, NodalOsLocalDiagnostics.FirstValueMetricCode);
+        StringAssert.Contains(events, NodalOsLocalDiagnostics.MissionCompletionMetricCode);
+        StringAssert.Contains(events, "\"durationMilliseconds\":12000");
+        Assert.AreEqual(
+            1,
+            File.ReadLines(fixture.EventsPath)
+                .Count(line => line.Contains(NodalOsLocalDiagnostics.FirstValueMetricCode, StringComparison.Ordinal)));
+        Assert.AreEqual(
+            1,
+            File.ReadLines(fixture.EventsPath)
+                .Count(line => line.Contains(NodalOsLocalDiagnostics.MissionCompletionMetricCode, StringComparison.Ordinal)));
+        Assert.IsFalse(events.Contains(missionId, StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void ClearingEventsDoesNotSilentlyChangeTheOptInDecision()
     {
         using var fixture = DiagnosticsFixture.Create();
@@ -82,6 +123,38 @@ public sealed class NodalOsLocalDiagnosticsTests
         Assert.IsTrue(diagnostics.Enabled);
         Assert.IsTrue(File.Exists(fixture.OptInPath));
         Assert.IsFalse(File.Exists(fixture.EventsPath));
+    }
+
+    [TestMethod]
+    public async Task SuccessfulCanonicalHandoffRecordsFirstValueOnlyOnce()
+    {
+        using var fixture = DiagnosticsFixture.Create();
+        fixture.Diagnostics.Enable(packaged: false);
+        await using var app = BuildFirstValueApp(fixture.Diagnostics);
+        await app.StartAsync(TestContext.CancellationTokenSource.Token);
+        using var client = new HttpClient { BaseAddress = new Uri(ServerAddress(app)) };
+
+        using var unavailable = await client.GetAsync(
+            $"{MissionControlProductHandoffExportEndpointMapper.MarkdownRoute}?ready=false",
+            TestContext.CancellationTokenSource.Token);
+        Assert.AreEqual(HttpStatusCode.Conflict, unavailable.StatusCode);
+        Assert.IsNull(fixture.Diagnostics.ReadSnapshot().FirstValueMilliseconds);
+
+        using var first = await client.GetAsync(
+            $"{MissionControlProductHandoffExportEndpointMapper.MarkdownRoute}?ready=true",
+            TestContext.CancellationTokenSource.Token);
+        using var repeated = await client.GetAsync(
+            $"{MissionControlProductHandoffExportEndpointMapper.MarkdownRoute}?ready=true",
+            TestContext.CancellationTokenSource.Token);
+
+        Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, repeated.StatusCode);
+        Assert.IsNotNull(fixture.Diagnostics.ReadSnapshot().FirstValueMilliseconds);
+        Assert.AreEqual(
+            1,
+            File.ReadLines(fixture.EventsPath)
+                .Count(line => line.Contains(NodalOsLocalDiagnostics.FirstValueMetricCode, StringComparison.Ordinal)));
+        Assert.IsFalse(File.ReadAllText(fixture.EventsPath).Contains("ready=", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -100,8 +173,11 @@ public sealed class NodalOsLocalDiagnosticsTests
         var initialPage = await initialResponse.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
         Assert.AreEqual(HttpStatusCode.OK, initialResponse.StatusCode);
         StringAssert.Contains(initialPage, "data-diagnostics-enabled=\"false\"");
+        StringAssert.Contains(initialPage, "data-local-metrics=\"true\"");
         StringAssert.Contains(initialPage, "Desactivados");
         StringAssert.Contains(initialPage, "no envía datos");
+        StringAssert.Contains(initialPage, "Time to first value");
+        StringAssert.Contains(initialPage, "Pendiente");
         StringAssert.Contains(initialResponse.Headers.GetValues("Content-Security-Policy").Single(), "form-action 'self'");
         Assert.IsFalse(initialPage.Contains("<script", StringComparison.OrdinalIgnoreCase));
 
@@ -125,13 +201,24 @@ public sealed class NodalOsLocalDiagnosticsTests
         Assert.IsTrue(fixture.Diagnostics.Enabled);
 
         fixture.Diagnostics.RecordRequestError(new IOException("route-private-marker"), packaged: false);
+        fixture.Diagnostics.RecordFirstValue(packaged: false);
+        var completedAt = DateTimeOffset.UtcNow;
+        fixture.Diagnostics.RecordMissionCompletion(
+            "settings-mission-private-marker",
+            completedAt.AddMilliseconds(-2_500),
+            completedAt,
+            packaged: false);
         using var enabledResponse = await client.GetAsync(
             NodalOsLocalDiagnosticsEndpointMapper.HtmlRoute,
             TestContext.CancellationTokenSource.Token);
         var enabledPage = await enabledResponse.Content.ReadAsStringAsync(TestContext.CancellationTokenSource.Token);
         StringAssert.Contains(enabledPage, "data-diagnostics-enabled=\"true\"");
         StringAssert.Contains(enabledPage, "IOException");
+        StringAssert.Contains(enabledPage, "Misión → completada");
+        StringAssert.Contains(enabledPage, "2.5 s");
+        StringAssert.Contains(enabledPage, NodalOsLocalDiagnostics.FirstValueMetricCode);
         Assert.IsFalse(enabledPage.Contains("route-private-marker", StringComparison.Ordinal));
+        Assert.IsFalse(enabledPage.Contains("settings-mission-private-marker", StringComparison.Ordinal));
         StringAssert.Contains(enabledPage, "data-network-used=\"false\"");
         StringAssert.Contains(enabledPage, "data-product-authority=\"false\"");
 
@@ -168,6 +255,7 @@ public sealed class NodalOsLocalDiagnosticsTests
 
         var events = File.ReadAllText(fixture.EventsPath);
         StringAssert.Contains(events, "\"kind\":\"startup\"");
+        StringAssert.Contains(events, NodalOsLocalDiagnostics.StartupReadyMetricCode);
         StringAssert.Contains(events, "\"kind\":\"request-error\"");
         StringAssert.Contains(events, "\"kind\":\"shutdown\"");
         StringAssert.Contains(events, "InvalidOperationException");
@@ -201,6 +289,23 @@ public sealed class NodalOsLocalDiagnosticsTests
             app,
             () => diagnostics,
             () => false);
+        return app;
+    }
+
+    private static WebApplication BuildFirstValueApp(NodalOsLocalDiagnostics diagnostics)
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            EnvironmentName = Environments.Development
+        });
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        var app = builder.Build();
+        diagnostics.Attach(app, packaged: false);
+        app.MapGet(
+            MissionControlProductHandoffExportEndpointMapper.MarkdownRoute,
+            (HttpContext context) => string.Equals(context.Request.Query["ready"], "true", StringComparison.Ordinal)
+                ? Results.Content("# handoff\n", "text/markdown; charset=utf-8")
+                : Results.StatusCode(StatusCodes.Status409Conflict));
         return app;
     }
 
