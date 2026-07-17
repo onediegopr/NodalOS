@@ -49,7 +49,7 @@ public sealed class NodalOsLocalDiagnostics
         {
             Directory.CreateDirectory(_rootPath);
             WriteAtomic(_optInPath, "local-redacted-diagnostics-enabled-v1\n");
-            AppendEventLocked("diagnostics", "enabled", "operator-opt-in", packaged);
+            TryAppendEventLocked("diagnostics", "enabled", "operator-opt-in", packaged);
         }
     }
 
@@ -58,7 +58,7 @@ public sealed class NodalOsLocalDiagnostics
         lock (_sync)
         {
             if (File.Exists(_optInPath))
-                AppendEventLocked("diagnostics", "disabled", "operator-opt-out", packaged);
+                TryAppendEventLocked("diagnostics", "disabled", "operator-opt-out", packaged);
             TryDelete(_optInPath);
         }
     }
@@ -151,7 +151,30 @@ public sealed class NodalOsLocalDiagnostics
         {
             if (!Enabled)
                 return;
+            TryAppendEventLocked(kind, outcome, code, packaged);
+        }
+    }
+
+    private void TryAppendEventLocked(string kind, string outcome, string code, bool packaged)
+    {
+        try
+        {
             AppendEventLocked(kind, outcome, code, packaged);
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (System.Security.SecurityException)
+        {
         }
     }
 
