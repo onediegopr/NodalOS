@@ -43,6 +43,14 @@ public static class PilotRuntimeIntegrationEndpointMapper
             missionDraftServiceFactory,
             handoffExecutionServiceFactory,
             byokModelConfigurationServiceFactory);
+        MissionControlProductHandoffExportEndpointMapper.MapMissionControlProductHandoffExport(
+            app,
+            cancellationToken => MissionControlProductShellEndpointMapper.BuildSnapshotAsync(
+                cancellationToken,
+                workspaceSelectionServiceFactory(),
+                missionDraftServiceFactory(),
+                handoffExecutionServiceFactory(),
+                byokModelConfigurationServiceFactory()));
         ProductLedgerLocalDevRouteEndpointMapper.MapProductLedgerLocalDevRoutePreview(
             (IEndpointRouteBuilder)app,
             environment);
