@@ -23,11 +23,14 @@ This path matches the current paid desktop-product strategy, BYOK positioning an
 
 Engineering evidence source:
 
-- Desktop Package workflow run: `29572268295`;
-- package source commit: `68ad8e8c760656c6a4894cd452bf90db22370985`;
-- package version: `0.1.0.0`;
-- MSIX SHA-256: `ce12a1f2ada8fd0ba71b77b2fdb2ebe024479fc17db53c77eb262cd87dabd44d`;
-- dependency source inside the package: `OneBrain.Pilot.deps.json`.
+- Desktop Package workflow run: `29615053896`;
+- PR head used by the validated candidate: `861798ca0284138454b9726151167f224b63ccc7`;
+- Actions test-merge commit embedded in package metadata: `98b0feac0e851c3af340a2b56d4ad0c698bfbb0d`;
+- package version: `0.1.0.3`;
+- MSIX SHA-256: `acd9620ac60cb01453cee420b55ee1792cc037eb3328f1dd505d59a0741dfcab`;
+- private-beta bundle SHA-256: `d61f99bf475f1760411c2dfde0cc4c0e72dd8f5d6608a62d90a65b417d63ca0e`;
+- dependency source inside the package: `OneBrain.Pilot.deps.json`;
+- dependency audit workflow run: `29615053925`, with no vulnerable or deprecated package reported.
 
 The validated self-contained package declares these external NuGet dependencies:
 
@@ -38,15 +41,15 @@ The validated self-contained package declares these external NuGet dependencies:
 | `Interop.UIAutomationClient` | `10.19041.0` | transitive through FlaUI.UIA3 | MIT |
 | `System.Management` | `8.0.0` | transitive through FlaUI.Core | MIT |
 
-The package also embeds self-contained Windows runtime packs:
+The package embeds supported self-contained Windows runtime packs:
 
-- `runtimepack.Microsoft.NETCore.App.Runtime.win-x64/11.0.0-preview.6.26359.118`;
-- `runtimepack.Microsoft.AspNetCore.App.Runtime.win-x64/11.0.0-preview.6.26359.118`;
-- `runtimepack.Microsoft.WindowsDesktop.App.Runtime.win-x64/11.0.0-preview.6.26359.118`.
+- `runtimepack.Microsoft.NETCore.App.Runtime.win-x64/10.0.10`;
+- `runtimepack.Microsoft.AspNetCore.App.Runtime.win-x64/10.0.10`;
+- `runtimepack.Microsoft.WindowsDesktop.App.Runtime.win-x64/10.0.10`.
 
 This table is an inventory, not a complete notice file. Windows self-contained .NET distributions have authoritative license and third-party-notice material tied to the exact distributed build. Those files must be obtained from the final supported runtime distribution and reviewed with the final package payload.
 
-The validated `0.1.0.0` MSIX does not currently contain a root license or third-party-notice file. That is acceptable only for the present internal engineering artifact and remains a release blocker.
+The validated `0.1.0.3` MSIX and private-beta bundle do not contain a root license or third-party-notice file. That is acceptable only for the present controlled engineering artifact and remains a release blocker.
 
 ## Decisions still required
 
