@@ -1,0 +1,34 @@
+name: One-shot apply package-derived third-party notice integration
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-shot-integrate-third-party-notices-pr.yml"
+      - "eng/ci/one-shot-integrate-third-party-notices.py"
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/third-party-notice-inventory
+          fetch-depth: 0
+
+      - name: Apply integration patch
+        run: python eng/ci/one-shot-integrate-third-party-notices.py
+
+      - name: Commit integration and remove one-shot files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "build: bundle exact package-derived third-party notices"
+          git push origin HEAD:release/third-party-notice-inventory
