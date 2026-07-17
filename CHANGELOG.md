@@ -1,13 +1,16 @@
 # NODAL OS — Changelog
 
-## Unreleased — private-beta field validation next
+## Unreleased — private-beta field validation and owner decisions next
 
-NODAL OS has a validated test-signed Windows private-beta package, but no production signing identity, public update channel or commercial release.
+NODAL OS has a validated test-signed Windows private-beta package, but no production signing identity, real public update location, approved product terms or commercial release.
 
 Current validated foundations include:
 
 - solution-wide migration from .NET 11 preview to supported .NET 10 LTS, with SDK `10.0.302` pinned and prerelease SDKs disabled;
-- `0.1.0.3` self-contained `win-x64` private-beta candidate using .NET 10 runtime packs `10.0.10`;
+- `0.1.0.4` self-contained `win-x64` private-beta candidate using .NET 10 runtime packs `10.0.10`;
+- deterministic package-derived third-party inventory covering all seven external components and ten exact local license/notice source files;
+- `ThirdParty/THIRD_PARTY_NOTICES.txt`, component JSON and source-file hashes included in both the installed MSIX and private-beta ZIP, while explicitly retaining legal/public-distribution approval as false;
+- one-shot technical validation of external-PFX signing, publisher binding and clean HTTPS `.appinstaller` metadata without retaining an extra workflow or selecting a real identity/channel;
 - complete restore, dependency audit, Runtime/Recipes tests, product-loop smokes, Tier 1 Safety and installed-MSIX core-loop validation on the supported runtime;
 - canonical dark-first Mission Control root shell with central timeline, model/fallback context, evidence and collapsed diagnostics;
 - clean product startup with no synthetic mission, completed timeline, model, fallback or evidence;
@@ -50,7 +53,7 @@ Current validated foundations include:
 - packaged startup restricted to loopback, with writable state under `%LOCALAPPDATA%\NodalOS\ProductData` and optional headless launch;
 - packaged route allowlist exposing only Mission Control, workspace, mission, execution, handoff, model and local diagnostics surfaces while returning 404 for legacy/demo/harness routes;
 - uninstall preserving local product data by default and deleting it only through an explicit destructive switch;
-- fresh-Windows CI smoke proving package build, signature verification, install, launch from the installed location, clean Mission Control/BYOK health, blocked lab routes, shutdown, uninstall and certificate cleanup;
+- fresh-Windows CI smoke proving package build, notice/component matching, signature verification, install, launch from the installed location, clean Mission Control/BYOK health, blocked lab routes, core loop, rollback, uninstall and certificate cleanup;
 - one-time request tokens where required, strict same-origin POST, no-store and closed CSP on canonical mutable product surfaces;
 - former ONE BRAIN Pilot demo home preserved only as an explicit development lab route and excluded from the packaged product;
 - environment-only AI configuration preserved under `/pilot/legacy/ai/config` for development instead of competing with canonical BYOK;
@@ -65,7 +68,7 @@ Current validated foundations include:
 - CloakBrowser as the canonical future browser target, with live CDP validation still blocked when the pinned external binary is unavailable;
 - supported stable MSTest dependencies replacing the deprecated preview adapter across Runtime, Recipes, ChromeLab and Safety tests.
 
-The selected workspace can be mutated only through the exact approved and revalidated `NODAL_HANDOFF.md` candidate, with deterministic verification and guarded rollback. A real BYOK route can be configured, tested, rehydrated and cleared without exposing its credential or provider response. The private-beta MSIX is engineering evidence, not a public release. Broader user-workspace mutation, arbitrary patching, shell execution, unrestricted mission inference, customer-data workflows, production signing, public distribution, billing, licensing, auto-update and commercial release claims remain closed until separately implemented and validated.
+The selected workspace can be mutated only through the exact approved and revalidated `NODAL_HANDOFF.md` candidate, with deterministic verification and guarded rollback. A real BYOK route can be configured, tested, rehydrated and cleared without exposing its credential or provider response. The private-beta MSIX and package-derived notices are engineering evidence, not a public release or adopted product license. Broader user-workspace mutation, arbitrary patching, shell execution, unrestricted mission inference, customer-data workflows, production signing, public distribution, billing, licensing, auto-update and commercial release claims remain closed until separately approved and validated.
 
 ## Historical experimental milestone — 2026-06-25
 
