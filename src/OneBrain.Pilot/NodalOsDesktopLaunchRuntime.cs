@@ -27,6 +27,7 @@ public static class NodalOsDesktopLaunchRuntime
         "/api/mission/execution",
         "/mission/rollback",
         "/mission/execution/clear",
+        "/mission/handoff.md",
         "/models/config",
         "/api/models/config",
         "/models/test",
