@@ -204,6 +204,19 @@ public sealed class NodalOsLocalDiagnostics
         });
     }
 
+    public NodalOsLocalMetricsSnapshot ReadMetrics()
+    {
+        lock (_sync)
+        {
+            var events = ReadEventsLocked();
+            return new NodalOsLocalMetricsSnapshot(
+                events.Count(value => value.Code == MissionCompletionMetricCode),
+                LatestDuration(events, StartupReadyMetricCode),
+                LatestDuration(events, FirstValueMetricCode),
+                LatestDuration(events, MissionCompletionMetricCode));
+        }
+    }
+
     internal NodalOsLocalDiagnosticsSnapshot ReadSnapshot()
     {
         lock (_sync)
@@ -465,6 +478,12 @@ public sealed class NodalOsLocalDiagnostics
         }
     }
 }
+
+public sealed record NodalOsLocalMetricsSnapshot(
+    int MissionCompletionCount,
+    long? StartupMilliseconds,
+    long? FirstValueMilliseconds,
+    long? MissionCompletionMilliseconds);
 
 internal sealed record NodalOsLocalDiagnosticsSnapshot(
     bool Enabled,
