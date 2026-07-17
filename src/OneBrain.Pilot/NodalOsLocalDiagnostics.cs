@@ -57,9 +57,10 @@ public sealed class NodalOsLocalDiagnostics
     {
         lock (_sync)
         {
-            if (File.Exists(_optInPath))
+            var wasEnabled = File.Exists(_optInPath);
+            DeleteRequired(_optInPath);
+            if (wasEnabled)
                 TryAppendEventLocked("diagnostics", "disabled", "operator-opt-out", packaged);
-            TryDelete(_optInPath);
         }
     }
 
@@ -67,7 +68,7 @@ public sealed class NodalOsLocalDiagnostics
     {
         lock (_sync)
         {
-            TryDelete(_eventsPath);
+            DeleteRequired(_eventsPath);
         }
     }
 
@@ -275,12 +276,17 @@ public sealed class NodalOsLocalDiagnostics
         }
     }
 
+    private static void DeleteRequired(string path)
+    {
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+
     private static void TryDelete(string path)
     {
         try
         {
-            if (File.Exists(path))
-                File.Delete(path);
+            DeleteRequired(path);
         }
         catch (IOException)
         {
