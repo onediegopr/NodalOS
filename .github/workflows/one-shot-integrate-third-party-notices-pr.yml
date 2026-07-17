@@ -1,4 +1,4 @@
-name: One-shot apply package-derived third-party notice integration
+name: One-shot apply focused third-party smoke fix
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - ".github/workflows/one-shot-integrate-third-party-notices-pr.yml"
-      - "eng/ci/one-shot-integrate-third-party-notices.py"
+      - "eng/ci/one-shot-fix-third-party-smoke.py"
 
 permissions:
   contents: write
@@ -22,14 +22,13 @@ jobs:
           ref: release/third-party-notice-inventory
           fetch-depth: 0
 
-      - name: Apply integration patch
-        run: python eng/ci/one-shot-integrate-third-party-notices.py
+      - name: Apply focused smoke fix
+        run: python eng/ci/one-shot-fix-third-party-smoke.py
 
-      - name: Commit package and smoke changes
+      - name: Commit smoke fix
         run: |
-          git restore -- .github/workflows eng/ci/one-shot-integrate-third-party-notices.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add eng/packaging/build-msix.ps1 eng/ci/smoke-desktop-package.ps1
-          git commit -m "build: bundle exact package-derived third-party notices"
+          git add eng/ci/smoke-desktop-package.ps1
+          git commit -m "test: require exactly one generated private-beta bundle"
           git push origin HEAD:release/third-party-notice-inventory
