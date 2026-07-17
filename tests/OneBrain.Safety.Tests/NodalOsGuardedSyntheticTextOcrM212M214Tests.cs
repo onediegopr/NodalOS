@@ -43,7 +43,7 @@ public sealed class NodalOsGuardedSyntheticTextOcrM212M214Tests
 
     private static string? RunnerExePath()
     {
-        var exe = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", Configuration, "net11.0",
+        var exe = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", Configuration, "net10.0",
             "OneBrain.Tools.OnnxOcrProbeRunner.exe");
         return File.Exists(exe) ? exe : null;
     }

@@ -80,7 +80,7 @@ public sealed class NodalOsSyntheticDetectorToRecognizerPipelineM286M288Tests
     [TestMethod]
     public void ProbeRunner_BlocksBeforeRuntime_WhenDetectorModelIsMissing()
     {
-        var runner = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", "Debug", "net11.0", "OneBrain.Tools.OnnxOcrProbeRunner.dll");
+        var runner = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", "Debug", "net10.0", "OneBrain.Tools.OnnxOcrProbeRunner.dll");
         if (!File.Exists(runner))
             Assert.Inconclusive("Built probe runner is not available locally.");
 

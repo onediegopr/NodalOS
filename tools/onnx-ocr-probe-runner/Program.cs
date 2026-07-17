@@ -3319,8 +3319,8 @@ static string? ResolveQaWindowHostPath(string repoRoot)
 {
     var candidates = new[]
     {
-        Path.Combine(repoRoot, "tools", "qa-window-host", "bin", "Debug", "net11.0-windows", "OneBrain.Tools.QaWindowHost.exe"),
-        Path.Combine(repoRoot, "tools", "qa-window-host", "bin", "Release", "net11.0-windows", "OneBrain.Tools.QaWindowHost.exe")
+        Path.Combine(repoRoot, "tools", "qa-window-host", "bin", "Debug", "net10.0-windows", "OneBrain.Tools.QaWindowHost.exe"),
+        Path.Combine(repoRoot, "tools", "qa-window-host", "bin", "Release", "net10.0-windows", "OneBrain.Tools.QaWindowHost.exe")
     };
     return candidates.FirstOrDefault(File.Exists);
 }

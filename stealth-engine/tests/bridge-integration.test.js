@@ -118,7 +118,7 @@ test('Bridge build exists', () => {
     'OneBrain.ChromeLab.Bridge',
     'bin',
     'Debug',
-    'net11.0',
+    'net10.0',
     'OneBrain.ChromeLab.Bridge.dll'
   );
   assert.ok(existsSync(bridgeDll), `Bridge DLL not found at ${bridgeDll}. Run dotnet build first.`);
@@ -143,7 +143,7 @@ test('Bridge WebSocket handshake with Stealth Engine', async () => {
   try {
     // Start bridge
     bridgeProc = spawn('dotnet', [
-      path.join(REPO_ROOT, 'src', 'OneBrain.ChromeLab.Bridge', 'bin', 'Debug', 'net11.0', 'OneBrain.ChromeLab.Bridge.dll'),
+      path.join(REPO_ROOT, 'src', 'OneBrain.ChromeLab.Bridge', 'bin', 'Debug', 'net10.0', 'OneBrain.ChromeLab.Bridge.dll'),
     ], {
       cwd: REPO_ROOT,
       env: { ...process.env, ASPNETCORE_ENVIRONMENT: 'Development' },
