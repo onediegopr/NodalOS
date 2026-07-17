@@ -64,11 +64,17 @@ jobs:
 
               $separator = $library.Name.LastIndexOf('/')
               if ($separator -lt 1) { throw "Unexpected dependency key: $($library.Name)" }
-              $id = $library.Name.Substring(0, $separator)
+              $dependencyId = $library.Name.Substring(0, $separator)
+              $packageId = if ($kind -eq "runtimepack" -and $dependencyId.StartsWith("runtimepack.", [StringComparison]::OrdinalIgnoreCase)) {
+                  $dependencyId.Substring("runtimepack.".Length)
+              }
+              else {
+                  $dependencyId
+              }
               $version = $library.Name.Substring($separator + 1)
-              $packageRoot = Join-Path (Join-Path $nugetRoot $id.ToLowerInvariant()) $version.ToLowerInvariant()
+              $packageRoot = Join-Path (Join-Path $nugetRoot $packageId.ToLowerInvariant()) $version.ToLowerInvariant()
               if (-not (Test-Path $packageRoot -PathType Container)) {
-                  throw "NuGet package root is missing for $id/$version: $packageRoot"
+                  throw "NuGet package root is missing for $packageId/$version: $packageRoot"
               }
 
               $nuspecPath = Get-ChildItem $packageRoot -Filter "*.nuspec" -File | Select-Object -First 1
@@ -97,7 +103,7 @@ jobs:
                   if (-not $isDeclaredLicenseFile -and -not $looksLikeNotice) { continue }
                   if ($file.Length -gt 4MB) { continue }
 
-                  $safeComponent = ($id + "-" + $version) -replace '[^A-Za-z0-9._-]', '_'
+                  $safeComponent = ($packageId + "-" + $version) -replace '[^A-Za-z0-9._-]', '_'
                   $copyRoot = Join-Path $output "files/$safeComponent"
                   $copyPath = Join-Path $copyRoot $relative
                   New-Item -ItemType Directory -Path (Split-Path $copyPath -Parent) -Force | Out-Null
@@ -110,7 +116,8 @@ jobs:
               }
 
               $components += [ordered]@{
-                  id = $id
+                  dependencyKey = $dependencyId
+                  id = $packageId
                   version = $version
                   dependencyType = $kind
                   licenseType = $licenseType
