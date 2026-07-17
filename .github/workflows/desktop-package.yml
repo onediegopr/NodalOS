@@ -13,6 +13,8 @@ on:
       - "tests/OneBrain.Recipes.Tests/**"
       - "eng/packaging/**"
       - "eng/ci/smoke-desktop-package.ps1"
+      - "eng/ci/smoke-installed-private-beta-core-loop.ps1"
+      - "eng/ci/openai_compatible_fixture_server.py"
       - ".github/workflows/desktop-package.yml"
       - "global.json"
   workflow_dispatch:
@@ -58,7 +60,7 @@ jobs:
             --filter "FullyQualifiedName~NodalOsDesktopLaunchRuntimeTests" `
             --logger "console;verbosity=normal"
 
-      - name: Build, install, launch, verify and uninstall MSIX
+      - name: Build, install, exercise core loop, verify and uninstall MSIX
         id: package_smoke
         shell: pwsh
         run: |
