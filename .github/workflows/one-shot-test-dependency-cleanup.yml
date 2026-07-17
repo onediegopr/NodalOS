@@ -1,0 +1,98 @@
+name: One-shot Test Dependency Cleanup
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/one-shot-test-dependency-cleanup.yml'
+      - 'tests/**/*.csproj'
+      - 'tests/OneBrain.Recipes.Tests/ApprovalHumanReviewReadOnlyFoundationTests.cs'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: one-shot-test-dependency-cleanup-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-commit:
+    if: github.head_ref == 'audit/total-cleanup-2026-07-16'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout audit branch
+        uses: actions/checkout@v4
+        with:
+          ref: audit/total-cleanup-2026-07-16
+          fetch-depth: 0
+
+      - name: Setup pinned .NET 11 preview
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 11.0.100-preview.6.26359.118
+
+      - name: Fix the remaining analyzer warning
+        shell: pwsh
+        run: |
+          $path = 'tests/OneBrain.Recipes.Tests/ApprovalHumanReviewReadOnlyFoundationTests.cs'
+          $source = Get-Content $path -Raw
+          $old = 'Assert.IsTrue(surface.DecisionOptionPreviews.Count == 5);'
+          $new = 'Assert.AreEqual(5, surface.DecisionOptionPreviews.Count);'
+          if (($source.Split($old).Count - 1) -ne 1) { throw 'Expected exactly one legacy equality assertion.' }
+          [IO.File]::WriteAllText($path, $source.Replace($old, $new), [Text.UTF8Encoding]::new($false))
+
+      - name: Restore solution
+        shell: pwsh
+        run: dotnet restore OneBrain.slnx
+
+      - name: Build all test projects using the supported MSTest meta-package
+        shell: pwsh
+        run: |
+          $projects = @(
+            'tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj',
+            'tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj',
+            'tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj',
+            'tests/OneBrain.Safety.Tests/OneBrain.Safety.Tests.csproj'
+          )
+          foreach ($project in $projects) {
+            dotnet build $project --configuration Release --no-restore --verbosity minimal
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Run focused regression suites
+        shell: pwsh
+        run: |
+          dotnet test tests/OneBrain.Runtime.Tests/OneBrain.Runtime.Tests.csproj --configuration Release --no-build --logger 'console;verbosity=normal'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~MissionControlProductShellSelectiveRuntimeInspectorRouteTests|FullyQualifiedName~NodalOsDesktopLaunchRuntimeTests|FullyQualifiedName~ApprovalHumanReviewReadOnlyFoundationTests' --logger 'console;verbosity=normal'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet test tests/OneBrain.ChromeLab.Tests/OneBrain.ChromeLab.Tests.csproj --configuration Release --no-build --logger 'console;verbosity=normal'
+          exit $LASTEXITCODE
+
+      - name: Confirm deprecated preview adapter is gone
+        shell: pwsh
+        run: |
+          $output = dotnet list OneBrain.slnx package --deprecated 2>&1 | Out-String
+          $output | Write-Host
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($output -match 'MSTest\.TestAdapter\s+4\.0\.0-preview\.25358\.7') {
+            throw 'Deprecated preview MSTest adapter remains in the dependency graph.'
+          }
+
+      - name: Validate diff and remove one-shot workflow
+        shell: pwsh
+        run: |
+          git diff --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git rm .github/workflows/one-shot-test-dependency-cleanup.yml
+
+      - name: Commit validated test cleanup
+        shell: pwsh
+        run: |
+          git config user.name 'onediegopr'
+          git config user.email '13628799+onediegopr@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(tests): replace deprecated MSTest adapter'
+          git push origin HEAD:audit/total-cleanup-2026-07-16
