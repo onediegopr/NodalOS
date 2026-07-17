@@ -73,11 +73,11 @@ try {
     $expectedAppInstallerUri = "$distributionBase/NodalOS.appinstaller"
     $expectedPackageUri = "$distributionBase/NodalOS-$version-win-x64.msix"
     foreach ($expected in @(
-        "Uri=\"$expectedAppInstallerUri\"",
-        "Name=\"$packageName\"",
-        "Publisher=\"$subject\"",
-        "Version=\"$version\"",
-        "Uri=\"$expectedPackageUri\""
+        "Uri=`"$expectedAppInstallerUri`"",
+        "Name=`"$packageName`"",
+        "Publisher=`"$subject`"",
+        "Version=`"$version`"",
+        "Uri=`"$expectedPackageUri`""
     )) {
         if ($appInstallerText -notmatch [regex]::Escape($expected)) {
             throw "Appinstaller metadata is missing expected value: $expected"
