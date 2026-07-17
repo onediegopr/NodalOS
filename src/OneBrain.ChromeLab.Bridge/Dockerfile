@@ -1,8 +1,8 @@
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 
 WORKDIR /app
 
-COPY bin/Release/net11.0/publish/ ./
+COPY bin/Release/net10.0/publish/ ./
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
