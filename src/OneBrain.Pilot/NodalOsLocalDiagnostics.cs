@@ -78,6 +78,8 @@ public sealed class NodalOsLocalDiagnostics
         lock (_sync)
         {
             DeleteRequired(_eventsPath);
+            _firstValueRecorded = false;
+            _completedMissionIds.Clear();
         }
     }
 
@@ -181,6 +183,12 @@ public sealed class NodalOsLocalDiagnostics
 
         app.Use(async (context, next) =>
         {
+            context.Response.OnCompleted(() => TryRecordProductMetricAsync(
+                context,
+                packaged,
+                missionDraftServiceFactory,
+                handoffExecutionServiceFactory));
+
             try
             {
                 await next(context).ConfigureAwait(false);
@@ -194,13 +202,6 @@ public sealed class NodalOsLocalDiagnostics
                 RecordRequestError(exception, packaged);
                 throw;
             }
-
-            await TryRecordProductMetricAsync(
-                    context,
-                    packaged,
-                    missionDraftServiceFactory,
-                    handoffExecutionServiceFactory)
-                .ConfigureAwait(false);
         });
     }
 
@@ -236,35 +237,35 @@ public sealed class NodalOsLocalDiagnostics
         }
     }
 
-    private async ValueTask TryRecordProductMetricAsync(
+    private async Task TryRecordProductMetricAsync(
         HttpContext context,
         bool packaged,
         Func<NodalOsWorkspaceMissionDraftService>? missionDraftServiceFactory,
         Func<NodalOsWorkspaceHandoffExecutionService>? handoffExecutionServiceFactory)
     {
-        if (!Enabled || context.Response.StatusCode >= StatusCodes.Status400BadRequest)
-            return;
-
-        var path = context.Request.Path.Value;
-        if (HttpMethods.IsGet(context.Request.Method) &&
-            context.Response.StatusCode == StatusCodes.Status200OK &&
-            string.Equals(path, MissionControlProductHandoffExportEndpointMapper.MarkdownRoute, StringComparison.Ordinal))
-        {
-            RecordFirstValue(packaged);
-            return;
-        }
-
-        if (!HttpMethods.IsPost(context.Request.Method) ||
-            context.Response.StatusCode is < StatusCodes.Status300MultipleChoices or >= StatusCodes.Status400BadRequest ||
-            !string.Equals(path, RealWorkspaceHandoffExecutionEndpointMapper.HtmlRoute, StringComparison.Ordinal) ||
-            missionDraftServiceFactory is null ||
-            handoffExecutionServiceFactory is null)
-        {
-            return;
-        }
-
         try
         {
+            if (!Enabled || context.Response.StatusCode >= StatusCodes.Status400BadRequest)
+                return;
+
+            var path = context.Request.Path.Value;
+            if (HttpMethods.IsGet(context.Request.Method) &&
+                context.Response.StatusCode == StatusCodes.Status200OK &&
+                string.Equals(path, MissionControlProductHandoffExportEndpointMapper.MarkdownRoute, StringComparison.Ordinal))
+            {
+                RecordFirstValue(packaged);
+                return;
+            }
+
+            if (!HttpMethods.IsPost(context.Request.Method) ||
+                context.Response.StatusCode is < StatusCodes.Status300MultipleChoices or >= StatusCodes.Status400BadRequest ||
+                !string.Equals(path, RealWorkspaceHandoffExecutionEndpointMapper.HtmlRoute, StringComparison.Ordinal) ||
+                missionDraftServiceFactory is null ||
+                handoffExecutionServiceFactory is null)
+            {
+                return;
+            }
+
             var execution = await handoffExecutionServiceFactory()
                 .GetCurrentAsync(CancellationToken.None)
                 .ConfigureAwait(false);
