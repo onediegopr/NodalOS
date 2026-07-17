@@ -54,6 +54,20 @@ public sealed class NodalOsLocalDiagnosticsTests
     }
 
     [TestMethod]
+    public void LocalEventRetentionStaysInsideThePublishedBounds()
+    {
+        using var fixture = DiagnosticsFixture.Create();
+        fixture.Diagnostics.Enable(packaged: true);
+
+        for (var index = 0; index < 250; index++)
+            fixture.Diagnostics.RecordRequestError(new InvalidOperationException($"ignored-{index}"), packaged: true);
+
+        Assert.AreEqual(200, File.ReadLines(fixture.EventsPath).Count());
+        Assert.IsLessThanOrEqualTo(128 * 1024, new FileInfo(fixture.EventsPath).Length);
+        Assert.IsFalse(File.ReadAllText(fixture.EventsPath).Contains("ignored-", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void ClearingEventsDoesNotSilentlyChangeTheOptInDecision()
     {
         using var fixture = DiagnosticsFixture.Create();
@@ -198,8 +212,10 @@ public sealed class NodalOsLocalDiagnosticsTests
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         var app = builder.Build();
         diagnostics.Attach(app, packaged: false);
-        app.MapGet("/diagnostics-test-failure", () =>
-            throw new InvalidOperationException("runtime-private-payload-marker"));
+        app.MapGet(
+            "/diagnostics-test-failure",
+            static () => Task.FromException<IResult>(
+                new InvalidOperationException("runtime-private-payload-marker")));
         return app;
     }
 
