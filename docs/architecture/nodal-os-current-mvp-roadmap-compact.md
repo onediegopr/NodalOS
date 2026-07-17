@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: `PRIVATE_BETA_DOTNET_10_LTS_COHORT_CANDIDATE_VALIDATED_FIELD_SESSIONS_NEXT`
+Status: `PRIVATE_BETA_DOTNET_10_LTS_NOTICE_BOUND_COHORT_CANDIDATE_READY_FIELD_SESSIONS_AND_OWNER_DECISIONS_NEXT`
 
 This is the canonical planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this product path.
 
@@ -29,9 +29,9 @@ The product must feel like a dark Mission Control with a central vertical timeli
 | Local/dev runtime foundations | 93% | Workspace, mission, reversible execution, restart rehydration, BYOK fallback, evidence and recovery loops pass on supported .NET 10 LTS. |
 | Living Skills foundation | 80% | Cognitive snapshot, semantic verification, trusted control flow, skill memory, bounded teaching capture and Windows observation are validated; live global capture/replay remains closed. |
 | Coherent product experience | 79% | Mission Control starts from real state, exposes onboarding/recovery, exports its canonical mission handoff and offers explicit local diagnostics and activation timings without mixing fixtures into the packaged product. |
-| Installable desktop product | 91% | The `0.1.0.3` self-contained test-signed MSIX uses .NET 10 LTS and passes clean build, dependency review, operator install/uninstall, exact test-certificate cleanup, packaged route boundaries and the full BYOK → workspace → mission → approval → verification → handoff → rollback loop. |
-| Sellable MVP | 79% | The supported-runtime core loop, handoff export, local diagnostics, activation timings and field-validation runbook are ready; observed design-partner use and release/legal hardening remain. |
-| Production and commercial release | 0% | No production signing identity, published release, license terms, billing flow, customer-data validation or production deployment. |
+| Installable desktop product | 93% | The `0.1.0.4` self-contained test-signed MSIX uses .NET 10 LTS, binds exact third-party notice/inventory hashes and passes clean build, operator install/uninstall, certificate cleanup, route boundaries and the full core loop. |
+| Sellable MVP | 80% | The supported-runtime core loop, handoff, local diagnostics, activation timings, package-derived notices and field-validation runbook are ready; observed use and owner-controlled legal/release decisions remain. |
+| Production and commercial release | 0% | No production signing identity, published release, approved license terms, billing flow, customer-data validation or production deployment. |
 
 Percentages are planning estimates, not release claims.
 
@@ -57,13 +57,15 @@ Completed:
 - .NET 10 LTS SDK `10.0.302` is pinned, prerelease SDKs are disabled and the self-contained product runtime uses supported .NET 10 patches;
 - supported MSTest packages replace the deprecated preview adapter;
 - vulnerable/deprecated-package audit is clean;
-- technical fixtures and lab routes are separated from the packaged product surface.
+- technical fixtures and lab routes are separated from the packaged product surface;
+- an exact package-derived third-party component/notice inventory is generated, installed and hash-bound without claiming legal approval;
+- the existing external-PFX and HTTPS `.appinstaller` contract passed an ephemeral one-shot technical validation without retaining audit infrastructure.
 
 External owner actions still required:
 
 - make `main` the GitHub default branch and enable required checks/branch protection;
-- select source/product license terms;
-- provide production signing identity and release/update channel before external distribution.
+- select source/product/private-beta terms and review the generated third-party notice set;
+- provide production signing identity and a real release/update location before external distribution.
 
 ## P1 — Coherent Mission Control
 
@@ -129,10 +131,11 @@ Implemented:
 - deterministic assets, four-part version and SHA-256-bound manual update manifest;
 - ephemeral test signing and external PFX support without private key leakage;
 - packaged route allowlist includes only Mission Control, workspace, mission, execution, handoff, model and local diagnostics surfaces while excluding Pilot legacy, demos, harnesses, recipes and run history;
-- the `0.1.0.3` cohort candidate verifies the exact MSIX hash, requires explicit elevated test-certificate trust, removes that exact trust during uninstall and preserves local data unless deletion is explicitly requested;
-- clean-Windows CI proves build → dependency review → sign → operator install → clean packaged state → BYOK → protected workspace → real mission → scoped approval → verified execution → canonical handoff → guarded rollback → route-boundary checks → uninstall and certificate cleanup.
+- the `0.1.0.4` candidate verifies the exact MSIX hash, binds consolidated notices and component-inventory hashes, requires explicit elevated test-certificate trust, removes that trust during uninstall and preserves local data unless deletion is explicitly requested;
+- installed and outer-bundle notice inventories are checked against the installed dependency manifest and exact source-file hashes;
+- clean-Windows CI proves build → notice/dependency review → sign → operator install → clean packaged state → BYOK → protected workspace → real mission → scoped approval → verified execution → canonical handoff → guarded rollback → route-boundary checks → uninstall and certificate cleanup.
 
-Decision: `WINDOWS_PRIVATE_BETA_MSIX_DOTNET_10_LTS_READY`.
+Decision: `WINDOWS_PRIVATE_BETA_MSIX_DOTNET_10_LTS_NOTICE_BOUND_READY`.
 
 ## P5 — Remaining private-beta hardening
 
@@ -142,18 +145,20 @@ Completed in this block:
 - opt-in, redacted startup/error/process diagnostics with bounded local retention and no mandatory cloud;
 - opt-in local timings for process startup, first successful canonical handoff and verified mission completion, stored as durations without mission ids, paths or customer content;
 - one field-validation runbook covering participant fit, package identity, privacy boundaries, exact session flow, local timings, redacted notes and reproducible finding triage;
-- one validated `0.1.0.3` .NET 10 LTS cohort candidate retained for controlled sessions;
-- the complete core loop validated against the executable installed by MSIX in packaged Production mode, not only through `dotnet run`.
+- one validated `0.1.0.4` .NET 10 LTS cohort candidate with exact package-derived notices retained for controlled sessions;
+- the complete core loop validated against the executable installed by MSIX in packaged Production mode, not only through `dotnet run`;
+- external signing and clean HTTPS appinstaller metadata validated with an ephemeral PFX and synthetic location, without selecting a production identity or channel.
 
 Highest-value remaining work:
 
-1. recruit and schedule five to ten design partners from the initial ICP;
+1. recruit and schedule five to ten design partners from the initial ICP when human availability exists;
 2. run the complete loop with real non-critical workspaces and participant-owned providers;
 3. review activation timings and direct session observations;
 4. fix only findings reproduced during those sessions before expanding automation scope;
-5. complete license, production signing and release-channel decisions.
+5. select and review license/private-beta terms and the generated notice set;
+6. select a production signing identity and real controlled release/update location.
 
-Do not add more product infrastructure before `DP-01` unless a concrete P0/P1/P2 behavior is reproduced.
+Do not add product-feature infrastructure before `DP-01` unless a concrete P0/P1/P2 behavior is reproduced. Autonomous work may continue only on bounded release truth, maintenance and externally blocked decisions without inventing authority.
 
 Operational source:
 
@@ -183,4 +188,4 @@ Operational source:
 
 Next exact macro:
 
-`NODAL_OS_PRODUCTIZATION_PRIVATE_BETA_DESIGN_PARTNER_FIELD_SESSIONS_AND_OBSERVED_FINDINGS`
+`NODAL_OS_PRODUCTIZATION_PRIVATE_BETA_DESIGN_PARTNER_FIELD_SESSIONS_OWNER_DECISIONS_AND_OBSERVED_FINDINGS`
