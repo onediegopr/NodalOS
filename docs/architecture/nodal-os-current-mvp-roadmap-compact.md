@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: `PRIVATE_BETA_EXPORT_AND_LOCAL_DIAGNOSTICS_READY_METRICS_NEXT`
+Status: `PRIVATE_BETA_LOCAL_METRICS_READY_DESIGN_PARTNER_VALIDATION_NEXT`
 
 This is the canonical planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this product path.
 
@@ -28,9 +28,9 @@ The product must feel like a dark Mission Control with a central vertical timeli
 | Safety and control foundations | 93% | Mission/scope approval binding, stale-precondition checks, exact-hash verification, redaction, opaque secrets and guarded rollback are validated. |
 | Local/dev runtime foundations | 91% | Workspace, mission, reversible execution, restart rehydration, BYOK fallback, evidence and recovery loops run in CI. |
 | Living Skills foundation | 80% | Cognitive snapshot, semantic verification, trusted control flow, skill memory, bounded teaching capture and Windows observation are validated; live global capture/replay remains closed. |
-| Coherent product experience | 78% | Mission Control starts from real state, exposes onboarding/recovery, exports its canonical mission handoff and offers explicit local diagnostics without mixing fixtures into the packaged product. |
+| Coherent product experience | 79% | Mission Control starts from real state, exposes onboarding/recovery, exports its canonical mission handoff and offers explicit local diagnostics and activation timings without mixing fixtures into the packaged product. |
 | Installable desktop product | 88% | A self-contained test-signed MSIX passes clean build, signature verification, install, launch, health checks, route-boundary checks and uninstall. |
-| Sellable MVP | 76% | The core loop, handoff export and local diagnostics are installable; design-partner validation, activation metrics and release/legal hardening remain. |
+| Sellable MVP | 77% | The core loop, handoff export, local diagnostics and activation timings are installable; design-partner validation and release/legal hardening remain. |
 | Production and commercial release | 0% | No production signing identity, published release, license terms, billing flow, customer-data validation or production deployment. |
 
 Percentages are planning estimates, not release claims.
@@ -77,7 +77,7 @@ Implemented:
 - `CandidateStale`, `ResultChanged` and `FailedClosed` produce specific recovery guidance without new state or authority;
 - internal stage labels and lab browser blockers are absent from the clean product surface;
 - human-readable `/mission/handoff.md` is rendered from the canonical Mission Control snapshot, timeline and evidence;
-- Mission Control diagnostics remain collapsed; opt-in startup/error/process diagnostics use a separate local settings surface and no upload path;
+- Mission Control diagnostics remain collapsed; opt-in startup/error/process diagnostics and activation timings use one separate local settings surface and no upload path;
 - explicit legacy/lab routes remain available in development, but packaged MSIX requests are restricted to the canonical product allowlist;
 - no second timeline, ledger, policy engine, storage layer or product authority was introduced.
 
@@ -137,13 +137,14 @@ Decision: `WINDOWS_PRIVATE_BETA_MSIX_V1_READY`.
 Completed in this block:
 
 - user-facing Markdown handoff derived from canonical mission state, evidence and timeline;
-- opt-in, redacted startup/error/process diagnostics with bounded local retention and no mandatory cloud.
+- opt-in, redacted startup/error/process diagnostics with bounded local retention and no mandatory cloud;
+- opt-in local timings for process startup, first successful canonical handoff and verified mission completion, stored as durations without mission ids, paths or customer content.
 
 Highest-value remaining work:
 
-1. measure startup, first-value and mission-completion time locally;
-2. run the complete loop with five to ten design partners using real workspaces and their own providers;
-3. fix findings from those sessions before expanding automation scope;
+1. run the complete loop with five to ten design partners using real non-critical workspaces and their own providers;
+2. review activation timings and direct session observations;
+3. fix only findings reproduced during those sessions before expanding automation scope;
 4. complete license, production signing and release-channel decisions.
 
 ## Later — not MVP blockers
@@ -170,4 +171,4 @@ Highest-value remaining work:
 
 Next exact macro:
 
-`NODAL_OS_PRODUCTIZATION_PRIVATE_BETA_LOCAL_METRICS_AND_DESIGN_PARTNER_READINESS`
+`NODAL_OS_PRODUCTIZATION_PRIVATE_BETA_DESIGN_PARTNER_READINESS_AND_FIELD_VALIDATION`
