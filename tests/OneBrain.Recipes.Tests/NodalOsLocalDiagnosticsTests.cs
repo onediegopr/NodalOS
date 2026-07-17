@@ -84,14 +84,14 @@ public sealed class NodalOsLocalDiagnosticsTests
         diagnostics.RecordMissionCompletion(missionId, createdAt, executedAt, packaged: true);
         diagnostics.RecordMissionCompletion(missionId, createdAt, executedAt, packaged: true);
 
-        var snapshot = diagnostics.ReadSnapshot();
-        Assert.IsNotNull(snapshot.StartupMilliseconds);
-        Assert.IsNotNull(snapshot.FirstValueMilliseconds);
-        Assert.IsNotNull(snapshot.MissionCompletionMilliseconds);
-        Assert.IsTrue(snapshot.StartupMilliseconds >= 0);
-        Assert.IsTrue(snapshot.FirstValueMilliseconds >= 0);
-        Assert.IsTrue(snapshot.MissionCompletionMilliseconds is >= 11_900 and <= 12_100);
-        Assert.AreEqual(1, snapshot.MissionCompletionCount);
+        var metrics = diagnostics.ReadMetrics();
+        Assert.IsNotNull(metrics.StartupMilliseconds);
+        Assert.IsNotNull(metrics.FirstValueMilliseconds);
+        Assert.IsNotNull(metrics.MissionCompletionMilliseconds);
+        Assert.IsTrue(metrics.StartupMilliseconds >= 0);
+        Assert.IsTrue(metrics.FirstValueMilliseconds >= 0);
+        Assert.IsTrue(metrics.MissionCompletionMilliseconds is >= 11_900 and <= 12_100);
+        Assert.AreEqual(1, metrics.MissionCompletionCount);
 
         var events = File.ReadAllText(fixture.EventsPath);
         StringAssert.Contains(events, NodalOsLocalDiagnostics.StartupReadyMetricCode);
@@ -138,7 +138,7 @@ public sealed class NodalOsLocalDiagnosticsTests
             $"{MissionControlProductHandoffExportEndpointMapper.MarkdownRoute}?ready=false",
             TestContext.CancellationTokenSource.Token);
         Assert.AreEqual(HttpStatusCode.Conflict, unavailable.StatusCode);
-        Assert.IsNull(fixture.Diagnostics.ReadSnapshot().FirstValueMilliseconds);
+        Assert.IsNull(fixture.Diagnostics.ReadMetrics().FirstValueMilliseconds);
 
         using var first = await client.GetAsync(
             $"{MissionControlProductHandoffExportEndpointMapper.MarkdownRoute}?ready=true",
@@ -149,7 +149,7 @@ public sealed class NodalOsLocalDiagnosticsTests
 
         Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, repeated.StatusCode);
-        Assert.IsNotNull(fixture.Diagnostics.ReadSnapshot().FirstValueMilliseconds);
+        Assert.IsNotNull(fixture.Diagnostics.ReadMetrics().FirstValueMilliseconds);
         Assert.AreEqual(
             1,
             File.ReadLines(fixture.EventsPath)
@@ -303,9 +303,12 @@ public sealed class NodalOsLocalDiagnosticsTests
         diagnostics.Attach(app, packaged: false);
         app.MapGet(
             MissionControlProductHandoffExportEndpointMapper.MarkdownRoute,
-            (HttpContext context) => string.Equals(context.Request.Query["ready"], "true", StringComparison.Ordinal)
-                ? Results.Content("# handoff\n", "text/markdown; charset=utf-8")
-                : Results.StatusCode(StatusCodes.Status409Conflict));
+            (HttpContext context) =>
+            {
+                if (string.Equals(context.Request.Query["ready"].ToString(), "true", StringComparison.Ordinal))
+                    return (IResult)Results.Content("# handoff\n", "text/markdown; charset=utf-8");
+                return Results.StatusCode(StatusCodes.Status409Conflict);
+            });
         return app;
     }
 
