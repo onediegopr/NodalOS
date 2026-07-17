@@ -28,7 +28,7 @@ NODAL OS is a local-first AI Mission Control for supervised work on real project
 
 ## Additional validated foundations
 
-- opt-in redacted startup/error/process diagnostics stored locally with bounded retention and no upload path;
+- opt-in redacted startup/error/process diagnostics and local startup, first-value and mission-completion timings, stored with bounded retention and no upload path;
 - bounded workspace understanding and reviewed planning context;
 - canonical evidence and timeline projections;
 - deterministic non-executing Expert Advisor foundation;
