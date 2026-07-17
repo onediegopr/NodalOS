@@ -93,14 +93,25 @@ jobs:
                   $copyright = $null
                   if ($nuspecPath) {
                       [xml]$nuspec = Get-Content $nuspecPath.FullName -Raw
-                      $metadata = $nuspec.package.metadata
-                      if ($metadata.license) {
-                          $licenseType = [string]$metadata.license.type
-                          $licenseValue = ([string]$metadata.license).Trim()
+                      $metadata = $nuspec.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']")
+                      if ($metadata) {
+                          $licenseNode = $metadata.SelectSingleNode("./*[local-name()='license']")
+                          $licenseUrlNode = $metadata.SelectSingleNode("./*[local-name()='licenseUrl']")
+                          $projectUrlNode = $metadata.SelectSingleNode("./*[local-name()='projectUrl']")
+                          $repositoryNode = $metadata.SelectSingleNode("./*[local-name()='repository']")
+                          $copyrightNode = $metadata.SelectSingleNode("./*[local-name()='copyright']")
+                          if ($licenseNode) {
+                              $licenseType = $licenseNode.GetAttribute("type")
+                              $licenseValue = $licenseNode.InnerText.Trim()
+                          }
+                          elseif ($licenseUrlNode) {
+                              $licenseType = "url"
+                              $licenseValue = $licenseUrlNode.InnerText.Trim()
+                          }
+                          if ($projectUrlNode) { $projectUrl = $projectUrlNode.InnerText.Trim() }
+                          if ($repositoryNode) { $repositoryUrl = $repositoryNode.GetAttribute("url").Trim() }
+                          if ($copyrightNode) { $copyright = $copyrightNode.InnerText.Trim() }
                       }
-                      $projectUrl = ([string]$metadata.projectUrl).Trim()
-                      if ($metadata.repository) { $repositoryUrl = ([string]$metadata.repository.url).Trim() }
-                      $copyright = ([string]$metadata.copyright).Trim()
                   }
 
                   $noticeFiles = @()
