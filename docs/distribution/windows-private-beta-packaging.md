@@ -23,21 +23,22 @@ From a Windows machine with the SDK pinned by `global.json` and a Windows 10/11 
 
 ```powershell
 ./eng/packaging/build-msix.ps1 `
-  -Version 0.1.0.0 `
-  -OutputDirectory artifacts/desktop-package/0.1.0.0
+  -Version 0.1.0.4 `
+  -OutputDirectory artifacts/desktop-package/0.1.0.4
 ```
 
 The script:
 
 1. publishes `OneBrain.Pilot` self-contained for `win-x64`;
-2. copies only the four recipes currently allowlisted by the product and excludes lab, negative and unrelated recipe fixtures;
-3. generates deterministic NODAL OS package assets from the product palette;
-4. generates the MSIX manifest from `eng/packaging/AppxManifest.xml.template`;
-5. packages with the Windows SDK `MakeAppx.exe`;
-6. signs with `SignTool.exe`;
-7. verifies the signature;
-8. writes a SHA-256-bound manual update manifest;
-9. emits install/uninstall scripts and a private-beta ZIP bundle.
+2. generates an exact third-party component/notice inventory from the published `OneBrain.Pilot.deps.json` and locally restored package material;
+3. copies only the four recipes currently allowlisted by the product and excludes lab, negative and unrelated recipe fixtures;
+4. generates deterministic NODAL OS package assets from the product palette;
+5. generates the MSIX manifest from `eng/packaging/AppxManifest.xml.template`;
+6. packages with the Windows SDK `MakeAppx.exe`;
+7. signs with `SignTool.exe`;
+8. verifies the signature;
+9. writes a SHA-256-bound manual update manifest, including hashes for the third-party inventory;
+10. emits install/uninstall scripts and a private-beta ZIP bundle.
 
 A test signing certificate is generated when no external PFX is supplied. It is valid only for controlled testing and is never a public release identity.
 
@@ -51,8 +52,13 @@ The output directory contains:
 - `Install-NodalOS.ps1`;
 - `Uninstall-NodalOS.ps1`;
 - `README-INSTALL.txt`;
+- `ThirdParty/THIRD_PARTY_NOTICES.txt`;
+- `ThirdParty/third-party-components.json`;
+- `ThirdParty/files/...` with the exact package-derived source license/notice files;
 - a public `.cer` file for test-signed builds only;
 - optional `NodalOS.appinstaller` when a validated HTTPS distribution base URI is supplied.
+
+The `ThirdParty` inventory is included both in the installed MSIX and in the outer ZIP. It records exact components, versions, source-file hashes and the absence of legal/public-distribution approval. It is reproducible technical evidence, not adopted product terms.
 
 No PFX, private key or signing password is copied into the output.
 
@@ -94,22 +100,26 @@ This is intentionally explicit because removing local data can be irreversible.
 
 1. Release build and focused desktop-launch tests;
 2. self-contained publish;
-3. MSIX creation and signature verification;
-4. validation that the bundled installer refuses test-certificate trust without the explicit switch;
-5. installation through the bundled `Install-NodalOS.ps1` operator path, including hash verification and exact certificate trust;
-6. executable launch from the installed location;
-7. clean Mission Control and model-configuration health checks;
-8. product-authority, local-only, packaged-route and secret-exclusion assertions;
-9. an installed-package core loop covering local BYOK configuration, authorized fallback, workspace selection, real mission review, scoped approval and verified `NODAL_HANDOFF.md` execution;
-10. canonical Markdown handoff export with no-store and redaction assertions;
-11. guarded rollback with exact workspace-baseline restoration;
-12. process shutdown;
-13. package and exact test-certificate removal through the bundled `Uninstall-NodalOS.ps1` path;
-14. confirmation that default uninstall preserves local user data;
-15. explicit `-RemoveUserData` validation followed by final runner cleanup.
+3. exact component inventory generation from the published dependency manifest;
+4. source notice-file hash and coverage verification for every external component;
+5. MSIX creation and signature verification;
+6. validation that the bundled installer refuses test-certificate trust without the explicit switch;
+7. installation through the bundled `Install-NodalOS.ps1` operator path, including hash verification and exact certificate trust;
+8. verification that the outer ZIP and installed MSIX contain identical notice manifests bound by the update manifest;
+9. comparison of the generated inventory against the dependency manifest inside the installed package;
+10. executable launch from the installed location;
+11. clean Mission Control and model-configuration health checks;
+12. product-authority, local-only, packaged-route and secret-exclusion assertions;
+13. an installed-package core loop covering local BYOK configuration, authorized fallback, workspace selection, real mission review, scoped approval and verified `NODAL_HANDOFF.md` execution;
+14. canonical Markdown handoff export with no-store and redaction assertions;
+15. guarded rollback with exact workspace-baseline restoration;
+16. process shutdown;
+17. package and exact test-certificate removal through the bundled `Uninstall-NodalOS.ps1` path;
+18. confirmation that default uninstall preserves local user data;
+19. explicit `-RemoveUserData` validation followed by final runner cleanup.
 
 The installed core-loop smoke reuses the existing product routes and local OpenAI-compatible fixture; it does not introduce another runtime, product mode or release gate.
 
 The CI artifact uploads the private-beta bundle once, together with its update manifest and complete smoke log, rather than duplicating the raw MSIX payload.
 
-The produced artifact is a private-beta engineering artifact. Passing this gate does not create a public release or authorize customer-data use.
+The produced artifact is a private-beta engineering artifact. Passing this gate does not create a public release, approve legal terms or authorize customer-data use.
