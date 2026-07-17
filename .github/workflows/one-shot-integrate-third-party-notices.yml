@@ -1,0 +1,246 @@
+name: One-shot integrate package-derived third-party notices
+
+on:
+  push:
+    branches:
+      - release/third-party-notice-inventory
+    paths:
+      - ".github/workflows/one-shot-integrate-third-party-notices.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/third-party-notice-inventory
+          fetch-depth: 0
+
+      - name: Patch existing package and smoke paths, then remove this workflow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: Path, old: str, new: str) -> None:
+              text = path.read_text(encoding="utf-8-sig")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"Expected one marker in {path}, found {count}: {old[:100]!r}")
+              path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          build = Path("eng/packaging/build-msix.ps1")
+          replace_once(
+              build,
+              '$assetsRoot = Join-Path $packageRoot "Assets"\n',
+              '$assetsRoot = Join-Path $packageRoot "Assets"\n'
+              '$thirdPartyRoot = Join-Path $OutputDirectory "ThirdParty"\n'
+              '$thirdPartyNoticesPath = Join-Path $thirdPartyRoot "THIRD_PARTY_NOTICES.txt"\n'
+              '$thirdPartyInventoryPath = Join-Path $thirdPartyRoot "third-party-components.json"\n'
+          )
+          replace_once(
+              build,
+              'if (-not (Test-Path (Join-Path $publishRoot "OneBrain.Pilot.exe"))) {\n'
+              '    throw "Published application executable was not produced."\n'
+              '}\n\n'
+              'Copy-Item (Join-Path $publishRoot "*") $packageRoot -Recurse -Force\n',
+              'if (-not (Test-Path (Join-Path $publishRoot "OneBrain.Pilot.exe"))) {\n'
+              '    throw "Published application executable was not produced."\n'
+              '}\n\n'
+              '& (Join-Path $repoRoot "eng/release/generate-third-party-notices.ps1") `\n'
+              '    -DepsPath (Join-Path $publishRoot "OneBrain.Pilot.deps.json") `\n'
+              '    -OutputDirectory $thirdPartyRoot\n'
+              'foreach ($requiredNoticePath in @($thirdPartyNoticesPath, $thirdPartyInventoryPath)) {\n'
+              '    if (-not (Test-Path -LiteralPath $requiredNoticePath -PathType Leaf)) {\n'
+              '        throw "Third-party notice generation did not emit required file: $requiredNoticePath"\n'
+              '    }\n'
+              '}\n'
+              '$thirdPartyNoticesHash = (Get-FileHash $thirdPartyNoticesPath -Algorithm SHA256).Hash.ToLowerInvariant()\n'
+              '$thirdPartyInventoryHash = (Get-FileHash $thirdPartyInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant()\n\n'
+              'Copy-Item (Join-Path $publishRoot "*") $packageRoot -Recurse -Force\n'
+              'Copy-Item $thirdPartyRoot (Join-Path $packageRoot "ThirdParty") -Recurse -Force\n'
+          )
+          replace_once(
+              build,
+              '    testCertificateFile = if ($testCertificatePath) { Split-Path $testCertificatePath -Leaf } else { $null }\n'
+              '    minimumWindowsVersion = "10.0.19041.0"\n',
+              '    testCertificateFile = if ($testCertificatePath) { Split-Path $testCertificatePath -Leaf } else { $null }\n'
+              '    thirdPartyNoticesFile = "ThirdParty/THIRD_PARTY_NOTICES.txt"\n'
+              '    thirdPartyNoticesSha256 = $thirdPartyNoticesHash\n'
+              '    thirdPartyComponentsFile = "ThirdParty/third-party-components.json"\n'
+              '    thirdPartyComponentsSha256 = $thirdPartyInventoryHash\n'
+              '    thirdPartyLegalApprovalGranted = $false\n'
+              '    minimumWindowsVersion = "10.0.19041.0"\n'
+          )
+          replace_once(
+              build,
+              '- Public distribution requires a CA-trusted or Microsoft-managed signing identity matching the package publisher.\n',
+              '- ThirdParty/ contains an exact package-derived technical notice inventory. It requires owner/legal review and does not authorize public distribution.\n'
+              '- Public distribution requires a CA-trusted or Microsoft-managed signing identity matching the package publisher.\n'
+          )
+          replace_once(
+              build,
+              '    (Join-Path $OutputDirectory "README-INSTALL.txt")\n'
+              ')\n',
+              '    (Join-Path $OutputDirectory "README-INSTALL.txt"),\n'
+              '    $thirdPartyRoot\n'
+              ')\n'
+          )
+          replace_once(
+              build,
+              '    "signing_mode=$signingMode" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8\n'
+              '}\n\n'
+              'Write-Host "NODAL_OS_MSIX=$msixPath"\n',
+              '    "signing_mode=$signingMode" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8\n'
+              '    "third_party_notices_path=$thirdPartyNoticesPath" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8\n'
+              '    "third_party_inventory_path=$thirdPartyInventoryPath" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8\n'
+              '}\n\n'
+              'Write-Host "NODAL_OS_THIRD_PARTY_NOTICES_SHA256=$thirdPartyNoticesHash"\n'
+              'Write-Host "NODAL_OS_THIRD_PARTY_INVENTORY_SHA256=$thirdPartyInventoryHash"\n'
+              'Write-Host "NODAL_OS_MSIX=$msixPath"\n'
+          )
+
+          smoke = Path("eng/ci/smoke-desktop-package.ps1")
+          replace_once(
+              smoke,
+              '$uninstallScriptPath = Join-Path $outputRoot "Uninstall-NodalOS.ps1"\n'
+              '$dataRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "NodalOS"\n',
+              '$uninstallScriptPath = Join-Path $outputRoot "Uninstall-NodalOS.ps1"\n'
+              '$thirdPartyRoot = Join-Path $outputRoot "ThirdParty"\n'
+              '$thirdPartyNoticesPath = Join-Path $thirdPartyRoot "THIRD_PARTY_NOTICES.txt"\n'
+              '$thirdPartyInventoryPath = Join-Path $thirdPartyRoot "third-party-components.json"\n'
+              '$dataRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "NodalOS"\n'
+          )
+          replace_once(
+              smoke,
+              '        $uninstallScriptPath,\n'
+              '        (Join-Path $outputRoot "README-INSTALL.txt")\n',
+              '        $uninstallScriptPath,\n'
+              '        (Join-Path $outputRoot "README-INSTALL.txt"),\n'
+              '        $thirdPartyNoticesPath,\n'
+              '        $thirdPartyInventoryPath\n'
+          )
+          replace_once(
+              smoke,
+              '    if ($updateManifest.version -ne $Version -or\n'
+              '        $updateManifest.packageName -ne $packageName -or\n'
+              '        $updateManifest.channel -ne "private-beta-manual" -or\n'
+              '        $updateManifest.productAuthorityGranted) {\n'
+              '        throw "Desktop update manifest does not match the private-beta package contract."\n'
+              '    }\n\n'
+              '    $msixPath = Join-Path $outputRoot $updateManifest.packageFile\n',
+              '    if ($updateManifest.version -ne $Version -or\n'
+              '        $updateManifest.packageName -ne $packageName -or\n'
+              '        $updateManifest.channel -ne "private-beta-manual" -or\n'
+              '        $updateManifest.productAuthorityGranted -or\n'
+              '        $updateManifest.thirdPartyLegalApprovalGranted -or\n'
+              '        $updateManifest.thirdPartyNoticesFile -ne "ThirdParty/THIRD_PARTY_NOTICES.txt" -or\n'
+              '        $updateManifest.thirdPartyComponentsFile -ne "ThirdParty/third-party-components.json") {\n'
+              '        throw "Desktop update manifest does not match the private-beta package contract."\n'
+              '    }\n'
+              '    if ((Get-FileHash $thirdPartyNoticesPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyNoticesSha256 -or\n'
+              '        (Get-FileHash $thirdPartyInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyComponentsSha256) {\n'
+              '        throw "Third-party notice hashes do not match the update manifest."\n'
+              '    }\n'
+              '    $thirdPartyInventory = Get-Content $thirdPartyInventoryPath -Raw | ConvertFrom-Json\n'
+              '    if ($thirdPartyInventory.legalApprovalGranted -or\n'
+              '        $thirdPartyInventory.publicDistributionAuthorized -or\n'
+              '        -not $thirdPartyInventory.legalReviewRequired -or\n'
+              '        $thirdPartyInventory.componentCount -lt 1 -or\n'
+              '        $thirdPartyInventory.noticeFileCount -lt $thirdPartyInventory.componentCount) {\n'
+              '        throw "Third-party inventory overclaims legal authority or lacks component notice coverage."\n'
+              '    }\n'
+              '    foreach ($component in $thirdPartyInventory.components) {\n'
+              '        if (-not $component.id -or -not $component.version -or $component.noticeFiles.Count -lt 1) {\n'
+              '            throw "Third-party inventory contains an incomplete component."\n'
+              '        }\n'
+              '        foreach ($noticeFile in $component.noticeFiles) {\n'
+              '            $noticeMaterialPath = Join-Path $thirdPartyRoot $noticeFile.bundlePath\n'
+              '            if (-not (Test-Path -LiteralPath $noticeMaterialPath -PathType Leaf) -or\n'
+              '                (Get-FileHash $noticeMaterialPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $noticeFile.sha256) {\n'
+              '                throw "Third-party source notice is missing or changed: $($noticeFile.bundlePath)"\n'
+              '            }\n'
+              '        }\n'
+              '    }\n'
+              '    $bundlePath = Get-ChildItem $outputRoot -Filter "*-private-beta.zip" -File | Select-Object -Single\n'
+              '    Add-Type -AssemblyName System.IO.Compression.FileSystem\n'
+              '    $bundleArchive = [System.IO.Compression.ZipFile]::OpenRead($bundlePath.FullName)\n'
+              '    try {\n'
+              '        $bundleEntries = @($bundleArchive.Entries | ForEach-Object { $_.FullName.Replace("\\", "/") })\n'
+              '        foreach ($requiredEntry in @("ThirdParty/THIRD_PARTY_NOTICES.txt", "ThirdParty/third-party-components.json")) {\n'
+              '            if ($bundleEntries -notcontains $requiredEntry) { throw "Private-beta bundle is missing $requiredEntry." }\n'
+              '        }\n'
+              '    }\n'
+              '    finally {\n'
+              '        $bundleArchive.Dispose()\n'
+              '    }\n\n'
+              '    $msixPath = Join-Path $outputRoot $updateManifest.packageFile\n'
+          )
+          replace_once(
+              smoke,
+              '    if ($buildInfo.version -ne $Version -or\n'
+              '        $buildInfo.channel -ne "private-beta" -or\n'
+              '        $buildInfo.productAuthorityGranted) {\n'
+              '        throw "Installed build metadata is invalid."\n'
+              '    }\n\n'
+              '    $executable = Join-Path $installed.InstallLocation "OneBrain.Pilot.exe"\n',
+              '    if ($buildInfo.version -ne $Version -or\n'
+              '        $buildInfo.channel -ne "private-beta" -or\n'
+              '        $buildInfo.productAuthorityGranted) {\n'
+              '        throw "Installed build metadata is invalid."\n'
+              '    }\n'
+              '    $installedThirdPartyRoot = Join-Path $installed.InstallLocation "ThirdParty"\n'
+              '    $installedNoticesPath = Join-Path $installedThirdPartyRoot "THIRD_PARTY_NOTICES.txt"\n'
+              '    $installedInventoryPath = Join-Path $installedThirdPartyRoot "third-party-components.json"\n'
+              '    if ((Get-FileHash $installedNoticesPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyNoticesSha256 -or\n'
+              '        (Get-FileHash $installedInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyComponentsSha256) {\n'
+              '        throw "Installed third-party notices do not match the package manifest."\n'
+              '    }\n'
+              '    $installedDeps = Get-Content (Join-Path $installed.InstallLocation "OneBrain.Pilot.deps.json") -Raw | ConvertFrom-Json\n'
+              '    $expectedComponents = @(\n'
+              '        $installedDeps.libraries.PSObject.Properties |\n'
+              '            Where-Object { [string]$_.Value.type -in @("package", "runtimepack") } |\n'
+              '            ForEach-Object {\n'
+              '                $separator = $_.Name.LastIndexOf("/")\n'
+              '                $id = $_.Name.Substring(0, $separator)\n'
+              '                if ([string]$_.Value.type -eq "runtimepack" -and $id.StartsWith("runtimepack.", [StringComparison]::OrdinalIgnoreCase)) {\n'
+              '                    $id = $id.Substring("runtimepack.".Length)\n'
+              '                }\n'
+              '                "$id/$($_.Name.Substring($separator + 1))"\n'
+              '            } | Sort-Object -Unique\n'
+              '    )\n'
+              '    $actualComponents = @(\n'
+              '        $thirdPartyInventory.components | ForEach-Object { "$($_.id)/$($_.version)" } | Sort-Object -Unique\n'
+              '    )\n'
+              '    if (Compare-Object $expectedComponents $actualComponents) {\n'
+              '        throw "Third-party inventory does not match the installed dependency manifest."\n'
+              '    }\n\n'
+              '    $executable = Join-Path $installed.InstallLocation "OneBrain.Pilot.exe"\n'
+          )
+
+          workflow = Path(".github/workflows/desktop-package.yml")
+          replace_once(
+              workflow,
+              '      - "eng/packaging/**"\n',
+              '      - "eng/packaging/**"\n'
+              '      - "eng/release/**"\n'
+          )
+          replace_once(
+              workflow,
+              './eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.3"',
+              './eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.4"'
+          )
+
+          Path(".github/workflows/one-shot-integrate-third-party-notices.yml").unlink()
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "build: bundle exact package-derived third-party notices"
+          git push origin HEAD:release/third-party-notice-inventory
