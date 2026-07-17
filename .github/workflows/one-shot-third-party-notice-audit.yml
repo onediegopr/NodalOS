@@ -48,100 +48,115 @@ jobs:
           $publish = Join-Path $root "publish"
           $output = Join-Path $root "evidence"
           New-Item -ItemType Directory -Path $output -Force | Out-Null
-          $depsPath = Join-Path $publish "OneBrain.Pilot.deps.json"
-          $deps = Get-Content $depsPath -Raw | ConvertFrom-Json
-          $nugetRoot = if ($env:NUGET_PACKAGES) {
-              [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
-          }
-          else {
-              Join-Path $env:USERPROFILE ".nuget/packages"
-          }
+          "started" | Set-Content (Join-Path $output "run-started.txt")
 
-          $components = @()
-          foreach ($library in $deps.libraries.PSObject.Properties | Sort-Object Name) {
-              $kind = [string]$library.Value.type
-              if ($kind -notin @("package", "runtimepack")) { continue }
-
-              $separator = $library.Name.LastIndexOf('/')
-              if ($separator -lt 1) { throw "Unexpected dependency key: $($library.Name)" }
-              $dependencyId = $library.Name.Substring(0, $separator)
-              $packageId = if ($kind -eq "runtimepack" -and $dependencyId.StartsWith("runtimepack.", [StringComparison]::OrdinalIgnoreCase)) {
-                  $dependencyId.Substring("runtimepack.".Length)
+          try {
+              $depsPath = Join-Path $publish "OneBrain.Pilot.deps.json"
+              $deps = Get-Content $depsPath -Raw | ConvertFrom-Json
+              $nugetRoot = if ($env:NUGET_PACKAGES) {
+                  [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
               }
               else {
-                  $dependencyId
+                  Join-Path $env:USERPROFILE ".nuget/packages"
               }
-              $version = $library.Name.Substring($separator + 1)
-              $packageRoot = Join-Path (Join-Path $nugetRoot $packageId.ToLowerInvariant()) $version.ToLowerInvariant()
-              if (-not (Test-Path $packageRoot -PathType Container)) {
-                  throw "NuGet package root is missing for $packageId/$version: $packageRoot"
-              }
+              $dotnetRoot = Split-Path (Get-Command dotnet -ErrorAction Stop).Source -Parent
 
-              $nuspecPath = Get-ChildItem $packageRoot -Filter "*.nuspec" -File | Select-Object -First 1
-              $licenseType = $null
-              $licenseValue = $null
-              $projectUrl = $null
-              $repositoryUrl = $null
-              $copyright = $null
-              if ($nuspecPath) {
-                  [xml]$nuspec = Get-Content $nuspecPath.FullName -Raw
-                  $metadata = $nuspec.package.metadata
-                  if ($metadata.license) {
-                      $licenseType = [string]$metadata.license.type
-                      $licenseValue = ([string]$metadata.license).Trim()
+              $components = @()
+              foreach ($library in $deps.libraries.PSObject.Properties | Sort-Object Name) {
+                  $kind = [string]$library.Value.type
+                  if ($kind -notin @("package", "runtimepack")) { continue }
+
+                  $separator = $library.Name.LastIndexOf('/')
+                  if ($separator -lt 1) { throw "Unexpected dependency key: $($library.Name)" }
+                  $dependencyId = $library.Name.Substring(0, $separator)
+                  $packageId = if ($kind -eq "runtimepack" -and $dependencyId.StartsWith("runtimepack.", [StringComparison]::OrdinalIgnoreCase)) {
+                      $dependencyId.Substring("runtimepack.".Length)
                   }
-                  $projectUrl = ([string]$metadata.projectUrl).Trim()
-                  if ($metadata.repository) { $repositoryUrl = ([string]$metadata.repository.url).Trim() }
-                  $copyright = ([string]$metadata.copyright).Trim()
-              }
+                  else {
+                      $dependencyId
+                  }
+                  $version = $library.Name.Substring($separator + 1)
+                  $candidateRoots = @(
+                      (Join-Path (Join-Path $nugetRoot $packageId.ToLowerInvariant()) $version.ToLowerInvariant()),
+                      (Join-Path (Join-Path (Join-Path $dotnetRoot "packs") $packageId) $version)
+                  )
+                  $packageRoot = $candidateRoots | Where-Object { Test-Path $_ -PathType Container } | Select-Object -First 1
+                  if (-not $packageRoot) {
+                      throw "Dependency material root is missing for $packageId/$version. Checked: $($candidateRoots -join '; ')"
+                  }
 
-              $noticeFiles = @()
-              foreach ($file in Get-ChildItem $packageRoot -File -Recurse | Sort-Object FullName) {
-                  $relative = [System.IO.Path]::GetRelativePath($packageRoot, $file.FullName).Replace('\\', '/')
-                  $isDeclaredLicenseFile = $licenseType -eq "file" -and $relative.Equals($licenseValue, [StringComparison]::OrdinalIgnoreCase)
-                  $looksLikeNotice = $file.Name -match '(?i)^(license|licence|notice|third[-_. ]?party|copyright)(?:[._ -].*)?$'
-                  if (-not $isDeclaredLicenseFile -and -not $looksLikeNotice) { continue }
-                  if ($file.Length -gt 4MB) { continue }
+                  $nuspecPath = Get-ChildItem $packageRoot -Filter "*.nuspec" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+                  $licenseType = $null
+                  $licenseValue = $null
+                  $projectUrl = $null
+                  $repositoryUrl = $null
+                  $copyright = $null
+                  if ($nuspecPath) {
+                      [xml]$nuspec = Get-Content $nuspecPath.FullName -Raw
+                      $metadata = $nuspec.package.metadata
+                      if ($metadata.license) {
+                          $licenseType = [string]$metadata.license.type
+                          $licenseValue = ([string]$metadata.license).Trim()
+                      }
+                      $projectUrl = ([string]$metadata.projectUrl).Trim()
+                      if ($metadata.repository) { $repositoryUrl = ([string]$metadata.repository.url).Trim() }
+                      $copyright = ([string]$metadata.copyright).Trim()
+                  }
 
-                  $safeComponent = ($packageId + "-" + $version) -replace '[^A-Za-z0-9._-]', '_'
-                  $copyRoot = Join-Path $output "files/$safeComponent"
-                  $copyPath = Join-Path $copyRoot $relative
-                  New-Item -ItemType Directory -Path (Split-Path $copyPath -Parent) -Force | Out-Null
-                  Copy-Item $file.FullName $copyPath -Force
-                  $noticeFiles += [ordered]@{
-                      relativePath = $relative
-                      length = $file.Length
-                      sha256 = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                  $noticeFiles = @()
+                  foreach ($file in Get-ChildItem $packageRoot -File -Recurse | Sort-Object FullName) {
+                      $relative = [System.IO.Path]::GetRelativePath($packageRoot, $file.FullName).Replace('\', '/')
+                      $isDeclaredLicenseFile = $licenseType -eq "file" -and $relative.Equals($licenseValue, [StringComparison]::OrdinalIgnoreCase)
+                      $looksLikeNotice = $file.Name -match '(?i)^(license|licence|notice|third[-_. ]?party|copyright)(?:[._ -].*)?$'
+                      if (-not $isDeclaredLicenseFile -and -not $looksLikeNotice) { continue }
+                      if ($file.Length -gt 4MB) { continue }
+
+                      $safeComponent = ($packageId + "-" + $version) -replace '[^A-Za-z0-9._-]', '_'
+                      $copyRoot = Join-Path $output "files/$safeComponent"
+                      $copyPath = Join-Path $copyRoot $relative
+                      New-Item -ItemType Directory -Path (Split-Path $copyPath -Parent) -Force | Out-Null
+                      Copy-Item $file.FullName $copyPath -Force
+                      $noticeFiles += [ordered]@{
+                          relativePath = $relative
+                          length = $file.Length
+                          sha256 = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                      }
+                  }
+
+                  $components += [ordered]@{
+                      dependencyKey = $dependencyId
+                      id = $packageId
+                      version = $version
+                      dependencyType = $kind
+                      materialRootKind = if ($packageRoot.StartsWith($nugetRoot, [StringComparison]::OrdinalIgnoreCase)) { "nuget-global-packages" } else { "dotnet-installed-pack" }
+                      licenseType = $licenseType
+                      licenseValue = $licenseValue
+                      copyright = $copyright
+                      projectUrl = $projectUrl
+                      repositoryUrl = $repositoryUrl
+                      noticeFiles = $noticeFiles
                   }
               }
 
-              $components += [ordered]@{
-                  dependencyKey = $dependencyId
-                  id = $packageId
-                  version = $version
-                  dependencyType = $kind
-                  licenseType = $licenseType
-                  licenseValue = $licenseValue
-                  copyright = $copyright
-                  projectUrl = $projectUrl
-                  repositoryUrl = $repositoryUrl
-                  noticeFiles = $noticeFiles
+              $report = [ordered]@{
+                  schemaVersion = 1
+                  product = "NODAL OS"
+                  sourceDependencyFile = "OneBrain.Pilot.deps.json"
+                  componentCount = $components.Count
+                  components = $components
+                  legalApprovalGranted = $false
+                  publicDistributionAuthorized = $false
               }
+              $report | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $output "third-party-notice-audit.json") -Encoding utf8NoBOM
+              Write-Host "NODAL_OS_THIRD_PARTY_NOTICE_AUDIT=PASS"
           }
-
-          $report = [ordered]@{
-              schemaVersion = 1
-              product = "NODAL OS"
-              sourceDependencyFile = "OneBrain.Pilot.deps.json"
-              componentCount = $components.Count
-              components = $components
-              legalApprovalGranted = $false
-              publicDistributionAuthorized = $false
+          catch {
+              ($_ | Format-List * -Force | Out-String) | Set-Content (Join-Path $output "failure.txt")
+              throw
           }
-          $report | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $output "third-party-notice-audit.json") -Encoding utf8NoBOM
-          Write-Host "NODAL_OS_THIRD_PARTY_NOTICE_AUDIT=PASS"
 
       - name: Upload notice audit evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: third-party-notice-audit
