@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using OneBrain.AgentOperations.Core.Workspace;
 
 namespace OneBrain.Pilot;
 
@@ -8,6 +10,9 @@ public sealed class NodalOsLocalDiagnostics
     public const string RootEnvironmentVariable = "NODAL_OS_LOCAL_DIAGNOSTICS_ROOT";
     public const string OptInFileName = "opt-in.v1";
     public const string EventsFileName = "events.v1.jsonl";
+    public const string StartupReadyMetricCode = "startup-ready";
+    public const string FirstValueMetricCode = "time-to-first-value";
+    public const string MissionCompletionMetricCode = "mission-completion";
 
     private const int SchemaVersion = 1;
     private const long MaximumEventsBytes = 128 * 1024;
@@ -19,7 +24,10 @@ public sealed class NodalOsLocalDiagnostics
     private readonly string _rootPath;
     private readonly string _optInPath;
     private readonly string _eventsPath;
+    private readonly DateTimeOffset _processStartedAt;
+    private readonly HashSet<string> _completedMissionIds = new(StringComparer.Ordinal);
     private bool _attached;
+    private bool _firstValueRecorded;
 
     public NodalOsLocalDiagnostics(string rootPath)
     {
@@ -27,6 +35,7 @@ public sealed class NodalOsLocalDiagnostics
         _rootPath = Path.GetFullPath(rootPath);
         _optInPath = Path.Combine(_rootPath, OptInFileName);
         _eventsPath = Path.Combine(_rootPath, EventsFileName);
+        _processStartedAt = Process.GetCurrentProcess().StartTime.ToUniversalTime();
     }
 
     public bool Enabled => File.Exists(_optInPath);
@@ -69,11 +78,66 @@ public sealed class NodalOsLocalDiagnostics
         lock (_sync)
         {
             DeleteRequired(_eventsPath);
+            _firstValueRecorded = false;
+            _completedMissionIds.Clear();
         }
     }
 
     public void RecordStartup(bool packaged) =>
-        Record("startup", "ready", "pilot-ready", packaged);
+        RecordDuration(
+            "startup",
+            "ready",
+            StartupReadyMetricCode,
+            DateTimeOffset.UtcNow - _processStartedAt,
+            packaged);
+
+    public void RecordFirstValue(bool packaged)
+    {
+        lock (_sync)
+        {
+            if (!Enabled || _firstValueRecorded)
+                return;
+
+            _firstValueRecorded = TryAppendEventLocked(
+                "product-metric",
+                "measured",
+                FirstValueMetricCode,
+                packaged,
+                DurationMilliseconds(DateTimeOffset.UtcNow - _processStartedAt));
+        }
+    }
+
+    public void RecordMissionCompletion(
+        string? missionId,
+        DateTimeOffset? createdAt,
+        DateTimeOffset? executedAt,
+        bool packaged)
+    {
+        if (string.IsNullOrWhiteSpace(missionId) ||
+            createdAt is null ||
+            executedAt is null ||
+            executedAt < createdAt ||
+            executedAt < _processStartedAt)
+        {
+            return;
+        }
+
+        lock (_sync)
+        {
+            if (!Enabled || !_completedMissionIds.Add(missionId))
+                return;
+
+            if (!TryAppendEventLocked(
+                    "product-metric",
+                    "measured",
+                    MissionCompletionMetricCode,
+                    packaged,
+                    DurationMilliseconds(executedAt.Value - createdAt.Value)))
+            {
+                _completedMissionIds.Remove(missionId);
+            }
+        }
+    }
 
     public void RecordShutdown(bool packaged) =>
         Record("shutdown", "requested", "host-stopping", packaged);
@@ -87,7 +151,11 @@ public sealed class NodalOsLocalDiagnostics
     public void RecordUnhandledError(Exception? exception, bool terminating, bool packaged) =>
         Record("process-error", terminating ? "terminating" : "observed", ExceptionCode(exception), packaged);
 
-    public void Attach(WebApplication app, bool packaged)
+    public void Attach(
+        WebApplication app,
+        bool packaged,
+        Func<NodalOsWorkspaceMissionDraftService>? missionDraftServiceFactory = null,
+        Func<NodalOsWorkspaceHandoffExecutionService>? handoffExecutionServiceFactory = null)
     {
         ArgumentNullException.ThrowIfNull(app);
         lock (_sync)
@@ -115,6 +183,12 @@ public sealed class NodalOsLocalDiagnostics
 
         app.Use(async (context, next) =>
         {
+            context.Response.OnCompleted(() => TryRecordProductMetricAsync(
+                context,
+                packaged,
+                missionDraftServiceFactory,
+                handoffExecutionServiceFactory));
+
             try
             {
                 await next(context).ConfigureAwait(false);
@@ -131,6 +205,19 @@ public sealed class NodalOsLocalDiagnostics
         });
     }
 
+    public NodalOsLocalMetricsSnapshot ReadMetrics()
+    {
+        lock (_sync)
+        {
+            var events = ReadEventsLocked();
+            return new NodalOsLocalMetricsSnapshot(
+                events.Count(value => value.Code == MissionCompletionMetricCode),
+                LatestDuration(events, StartupReadyMetricCode),
+                LatestDuration(events, FirstValueMetricCode),
+                LatestDuration(events, MissionCompletionMetricCode));
+        }
+    }
+
     internal NodalOsLocalDiagnosticsSnapshot ReadSnapshot()
     {
         lock (_sync)
@@ -141,8 +228,64 @@ public sealed class NodalOsLocalDiagnostics
                 events.Count,
                 events.Count(value => value.Kind == "startup"),
                 events.Count(value => value.Kind is "request-error" or "process-error"),
+                events.Count(value => value.Code == MissionCompletionMetricCode),
+                LatestDuration(events, StartupReadyMetricCode),
+                LatestDuration(events, FirstValueMetricCode),
+                LatestDuration(events, MissionCompletionMetricCode),
                 events.LastOrDefault()?.RecordedAt,
                 events.TakeLast(20).Reverse().ToArray());
+        }
+    }
+
+    private async Task TryRecordProductMetricAsync(
+        HttpContext context,
+        bool packaged,
+        Func<NodalOsWorkspaceMissionDraftService>? missionDraftServiceFactory,
+        Func<NodalOsWorkspaceHandoffExecutionService>? handoffExecutionServiceFactory)
+    {
+        try
+        {
+            if (!Enabled || context.Response.StatusCode >= StatusCodes.Status400BadRequest)
+                return;
+
+            var path = context.Request.Path.Value;
+            if (HttpMethods.IsGet(context.Request.Method) &&
+                context.Response.StatusCode == StatusCodes.Status200OK &&
+                string.Equals(path, MissionControlProductHandoffExportEndpointMapper.MarkdownRoute, StringComparison.Ordinal))
+            {
+                RecordFirstValue(packaged);
+                return;
+            }
+
+            if (!HttpMethods.IsPost(context.Request.Method) ||
+                context.Response.StatusCode is < StatusCodes.Status300MultipleChoices or >= StatusCodes.Status400BadRequest ||
+                !string.Equals(path, RealWorkspaceHandoffExecutionEndpointMapper.HtmlRoute, StringComparison.Ordinal) ||
+                missionDraftServiceFactory is null ||
+                handoffExecutionServiceFactory is null)
+            {
+                return;
+            }
+
+            var execution = await handoffExecutionServiceFactory()
+                .GetCurrentAsync(CancellationToken.None)
+                .ConfigureAwait(false);
+            if (!execution.Accepted ||
+                execution.State != NodalOsWorkspaceHandoffExecutionState.Completed ||
+                !execution.Executed ||
+                !execution.Verified ||
+                execution.ExecutedAt is null)
+            {
+                return;
+            }
+
+            var mission = await missionDraftServiceFactory()
+                .GetCurrentAsync(CancellationToken.None)
+                .ConfigureAwait(false);
+            RecordMissionCompletion(mission.MissionId, mission.CreatedAt, execution.ExecutedAt, packaged);
+        }
+        catch
+        {
+            // Product metrics are best-effort and may never alter the completed product response.
         }
     }
 
@@ -156,30 +299,61 @@ public sealed class NodalOsLocalDiagnostics
         }
     }
 
-    private void TryAppendEventLocked(string kind, string outcome, string code, bool packaged)
+    private void RecordDuration(
+        string kind,
+        string outcome,
+        string code,
+        TimeSpan duration,
+        bool packaged)
     {
-        try
+        lock (_sync)
         {
-            AppendEventLocked(kind, outcome, code, packaged);
-        }
-        catch (IOException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-        catch (InvalidOperationException)
-        {
-        }
-        catch (NotSupportedException)
-        {
-        }
-        catch (System.Security.SecurityException)
-        {
+            if (!Enabled)
+                return;
+            TryAppendEventLocked(kind, outcome, code, packaged, DurationMilliseconds(duration));
         }
     }
 
-    private void AppendEventLocked(string kind, string outcome, string code, bool packaged)
+    private bool TryAppendEventLocked(
+        string kind,
+        string outcome,
+        string code,
+        bool packaged,
+        long? durationMilliseconds = null)
+    {
+        try
+        {
+            AppendEventLocked(kind, outcome, code, packaged, durationMilliseconds);
+            return true;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+        catch (System.Security.SecurityException)
+        {
+            return false;
+        }
+    }
+
+    private void AppendEventLocked(
+        string kind,
+        string outcome,
+        string code,
+        bool packaged,
+        long? durationMilliseconds)
     {
         Directory.CreateDirectory(_rootPath);
         var item = new NodalOsLocalDiagnosticEvent(
@@ -189,7 +363,8 @@ public sealed class NodalOsLocalDiagnostics
             SafeToken(outcome),
             SafeToken(code),
             packaged,
-            typeof(NodalOsLocalDiagnostics).Assembly.GetName().Version?.ToString() ?? "unknown");
+            typeof(NodalOsLocalDiagnostics).Assembly.GetName().Version?.ToString() ?? "unknown",
+            durationMilliseconds);
         var line = JsonSerializer.Serialize(item, JsonOptions);
         var lineBytes = Utf8NoBom.GetByteCount(line) + 1;
         var retained = ReadEventsLocked();
@@ -247,6 +422,14 @@ public sealed class NodalOsLocalDiagnostics
         }
     }
 
+    private static long? LatestDuration(
+        IReadOnlyList<NodalOsLocalDiagnosticEvent> events,
+        string code) =>
+        events.LastOrDefault(value => value.Code == code)?.DurationMilliseconds;
+
+    private static long DurationMilliseconds(TimeSpan duration) =>
+        Math.Max(0, (long)Math.Round(duration.TotalMilliseconds, MidpointRounding.AwayFromZero));
+
     private static string ExceptionCode(Exception? exception) =>
         SafeToken(exception?.GetBaseException().GetType().Name ?? "unknown-exception");
 
@@ -297,11 +480,21 @@ public sealed class NodalOsLocalDiagnostics
     }
 }
 
+public sealed record NodalOsLocalMetricsSnapshot(
+    int MissionCompletionCount,
+    long? StartupMilliseconds,
+    long? FirstValueMilliseconds,
+    long? MissionCompletionMilliseconds);
+
 internal sealed record NodalOsLocalDiagnosticsSnapshot(
     bool Enabled,
     int EventCount,
     int StartupCount,
     int ErrorCount,
+    int MissionCompletionCount,
+    long? StartupMilliseconds,
+    long? FirstValueMilliseconds,
+    long? MissionCompletionMilliseconds,
     DateTimeOffset? LastRecordedAt,
     IReadOnlyList<NodalOsLocalDiagnosticEvent> RecentEvents);
 
@@ -312,4 +505,5 @@ internal sealed record NodalOsLocalDiagnosticEvent(
     string Outcome,
     string Code,
     bool Packaged,
-    string ProductVersion);
+    string ProductVersion,
+    long? DurationMilliseconds);

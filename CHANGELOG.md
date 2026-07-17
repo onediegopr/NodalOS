@@ -39,8 +39,8 @@ Current validated foundations include:
 - verified BYOK provider/model/fallback state projected into canonical Mission Control without creating another router, policy engine, timeline or ledger;
 - restart rehydration and guarded clearing of BYOK metadata and stored credential references;
 - process-level CI smoke covering secure configuration, DPAPI plaintext checks, primary HTTP 503, authorized fallback HTTP 200, response-hash verification, Mission Control projection, restart, rehydration and credential cleanup;
-- opt-in `/settings/diagnostics` surface for redacted local startup/error/process events, disabled by default and bounded to 200 entries / 128 KB without cloud upload;
-- diagnostics persistence limited to UTC time, allowlisted event kind/outcome, technical exception type, packaged mode and product version, excluding messages, stack traces, paths, queries, bodies, prompts, provider responses and workspace content;
+- opt-in `/settings/diagnostics` surface for redacted local startup/error/process events and startup, first-value and mission-completion timings, disabled by default and bounded to 200 entries / 128 KB without cloud upload;
+- diagnostics persistence limited to UTC time, allowlisted event kind/outcome, optional numeric duration, technical exception type, packaged mode and product version, excluding mission ids, messages, stack traces, paths, queries, bodies, prompts, provider responses and workspace content;
 - Windows-native MSIX built directly from the existing .NET Pilot runtime without Tauri, Electron, Node or a second shell;
 - self-contained `win-x64` publish, versioned package identity, deterministic product assets and SHA-256-bound manual update manifest;
 - ephemeral test signing for controlled devices and support for an externally managed PFX without copying private keys into artifacts;
