@@ -7,11 +7,11 @@ NODAL OS is a local-first AI Mission Control for supervised work on real project
 - Canonical integration branch: `main`.
 - Runtime: .NET 10 LTS, with SDK `10.0.302` pinned by `global.json` and prerelease SDKs disabled.
 - Product maturity: installable Windows private beta; not a public or production release.
-- Desktop distribution: test-signed self-contained `win-x64` MSIX `0.1.0.3` validated through clean build, install, the packaged core loop, guarded rollback, uninstall and exact test-certificate cleanup.
+- Desktop distribution: test-signed self-contained `win-x64` MSIX `0.1.0.4` validated through clean build, exact package-derived third-party inventory, install, packaged core loop, guarded rollback, uninstall and exact test-certificate cleanup.
 - Field validation: design-partner runbook ready; no external partner sessions completed yet.
-- Public distribution: blocked until repository/product terms, production signing identity and release/update channel are selected.
+- Public distribution: blocked until repository/product terms, review of the generated notices, production signing identity and real release/update channel are selected.
 - Browser target: CloakBrowser direct CDP; ChromeLab remains an explicit lab/transition surface and is excluded from the packaged product route set.
-- License: not declared yet; external/customer/commercial distribution remains blocked until terms are selected.
+- License: not declared yet; generated third-party notice files are technical payload evidence, not adopted NODAL OS terms or distribution authority.
 - Cloud: optional by product strategy; no Vercel or Neon deployment is required by the current local runtime.
 
 ## Validated private-beta loop
@@ -29,6 +29,7 @@ NODAL OS is a local-first AI Mission Control for supervised work on real project
 
 ## Additional validated foundations
 
+- package-derived `ThirdParty` inventory matching the installed dependency manifest, with exact source notice files and hashes while legal/public-distribution approval remains false;
 - opt-in redacted startup/error/process diagnostics and local startup, first-value and mission-completion timings, stored with bounded retention and no upload path;
 - bounded workspace understanding and reviewed planning context;
 - canonical evidence and timeline projections;
@@ -60,9 +61,11 @@ The repository intentionally has no root Node package, Cargo workspace or Tauri 
 - `docs/architecture/` — current architecture and compact roadmap.
 - `docs/audit/` — technical audits and evidence-backed findings.
 - `docs/private-beta/` — design-partner field-validation operations and redacted session template.
+- `docs/distribution/` — package, signing, license-status and release boundaries.
 - `eng/ci/` — reusable CI and process-smoke scripts.
 - `eng/audit/` — deterministic repository inventory tooling.
 - `eng/packaging/` — native MSIX packaging pipeline.
+- `eng/release/` — deterministic package-derived third-party notice generation.
 - `browser-extension/` and `src/OneBrain.ChromeLab.Bridge/` — lab/transition browser surface.
 - `apps/nexa-test-owned-target/` — controlled test-owned web target.
 
@@ -84,4 +87,4 @@ The repository intentionally has no root Node package, Cargo workspace or Tauri 
 - No success promotion without verification and evidence.
 - No automatic rollback after the verified result has changed.
 - No lab/demo routes in the packaged private-beta product surface.
-- No public, production, billing or commercial authority is implied by private-beta validation.
+- No generated third-party inventory or technical signing test grants NODAL OS product, legal, public-distribution or commercial authority.
