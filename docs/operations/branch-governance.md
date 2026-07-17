@@ -15,17 +15,18 @@ Repository: `onediegopr/NodalOS`.
 
 Confirmed after the private-beta productization sequence:
 
-- canonical `main` HEAD: `ebdf429a215799f74d39300d57ca5ec5909fc58f`;
+- `main` contains the canonical product history;
 - GitHub still reports `wip/hito-004b-target-window-selection` as the default branch;
-- that historical default ref was fast-forwarded to the same HEAD as `main`, so a default checkout no longer receives stale code;
+- on 2026-07-17 that historical default ref was fast-forwarded to the then-current `main` commit `ebdf429a215799f74d39300d57ca5ec5909fc58f`;
+- that ref alignment is temporary containment only: any later commit on `main` can make the historical default stale again until the repository setting is changed;
 - the repository remains public;
 - no public production release is authorized;
 - issue `#27` is the single canonical tracker for default-branch and protection settings;
 - duplicate issue `#5` was closed as duplicate.
 
-The code-history defect is contained, but the repository setting is not closed until metadata reports `default_branch: main` and protection is verified.
+The code-history defect was temporarily contained at the recorded commit, but repository governance is not closed until metadata reports `default_branch: main` and protection is verified.
 
-Decision: `BLOCKED_EXTERNAL_GITHUB_REMOTE_SETTINGS_WITH_DEFAULT_REF_ALIGNED`.
+Decision: `BLOCKED_EXTERNAL_GITHUB_REMOTE_SETTINGS_TEMPORARY_REF_ALIGNMENT_ONLY`.
 
 The connected GitHub integration can inspect repository metadata and update refs, files, issues and pull requests, but it does not expose repository-default-branch or branch-protection mutations. The remaining setting change is an external repository-administration action, not a source-code blocker.
 
@@ -102,8 +103,9 @@ gh api --method PUT repos/onediegopr/NodalOS/branches/main/protection `
 
 - repository metadata returns `default_branch: main`;
 - a clean clone checks out `main`;
+- ordinary direct pushes or merges to `main` without a pull request are rejected;
 - a docs-only pull request can satisfy all required checks;
-- a source/runtime pull request runs `runtime-integration`;
+- a source/runtime pull request runs and passes `runtime-integration` before merge;
 - force pushes are rejected;
 - branch deletion is rejected;
 - required checks use real workflow job names, not retired or invented contexts;
