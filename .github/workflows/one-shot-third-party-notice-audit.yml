@@ -1,0 +1,143 @@
+name: One-shot third-party notice audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-shot-third-party-notice-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  notice-audit:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pinned .NET 10 LTS
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.302
+
+      - name: Publish exact self-contained payload
+        shell: pwsh
+        run: |
+          dotnet publish src/OneBrain.Pilot/OneBrain.Pilot.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --output "$env:RUNNER_TEMP/nodal-notice-audit/publish" `
+            --nologo `
+            -p:PublishTrimmed=false `
+            -p:PublishReadyToRun=false `
+            -p:DebugType=None `
+            -p:DebugSymbols=false
+          exit $LASTEXITCODE
+
+      - name: Inventory NuGet and runtime-pack notice material
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Set-StrictMode -Version Latest
+
+          $root = Join-Path $env:RUNNER_TEMP "nodal-notice-audit"
+          $publish = Join-Path $root "publish"
+          $output = Join-Path $root "evidence"
+          New-Item -ItemType Directory -Path $output -Force | Out-Null
+          $depsPath = Join-Path $publish "OneBrain.Pilot.deps.json"
+          $deps = Get-Content $depsPath -Raw | ConvertFrom-Json
+          $nugetRoot = if ($env:NUGET_PACKAGES) {
+              [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
+          }
+          else {
+              Join-Path $env:USERPROFILE ".nuget/packages"
+          }
+
+          $components = @()
+          foreach ($library in $deps.libraries.PSObject.Properties | Sort-Object Name) {
+              $kind = [string]$library.Value.type
+              if ($kind -notin @("package", "runtimepack")) { continue }
+
+              $separator = $library.Name.LastIndexOf('/')
+              if ($separator -lt 1) { throw "Unexpected dependency key: $($library.Name)" }
+              $id = $library.Name.Substring(0, $separator)
+              $version = $library.Name.Substring($separator + 1)
+              $packageRoot = Join-Path (Join-Path $nugetRoot $id.ToLowerInvariant()) $version.ToLowerInvariant()
+              if (-not (Test-Path $packageRoot -PathType Container)) {
+                  throw "NuGet package root is missing for $id/$version: $packageRoot"
+              }
+
+              $nuspecPath = Get-ChildItem $packageRoot -Filter "*.nuspec" -File | Select-Object -First 1
+              $licenseType = $null
+              $licenseValue = $null
+              $projectUrl = $null
+              $repositoryUrl = $null
+              $copyright = $null
+              if ($nuspecPath) {
+                  [xml]$nuspec = Get-Content $nuspecPath.FullName -Raw
+                  $metadata = $nuspec.package.metadata
+                  if ($metadata.license) {
+                      $licenseType = [string]$metadata.license.type
+                      $licenseValue = ([string]$metadata.license).Trim()
+                  }
+                  $projectUrl = ([string]$metadata.projectUrl).Trim()
+                  if ($metadata.repository) { $repositoryUrl = ([string]$metadata.repository.url).Trim() }
+                  $copyright = ([string]$metadata.copyright).Trim()
+              }
+
+              $noticeFiles = @()
+              foreach ($file in Get-ChildItem $packageRoot -File -Recurse | Sort-Object FullName) {
+                  $relative = [System.IO.Path]::GetRelativePath($packageRoot, $file.FullName).Replace('\\', '/')
+                  $isDeclaredLicenseFile = $licenseType -eq "file" -and $relative.Equals($licenseValue, [StringComparison]::OrdinalIgnoreCase)
+                  $looksLikeNotice = $file.Name -match '(?i)^(license|licence|notice|third[-_. ]?party|copyright)(?:[._ -].*)?$'
+                  if (-not $isDeclaredLicenseFile -and -not $looksLikeNotice) { continue }
+                  if ($file.Length -gt 4MB) { continue }
+
+                  $safeComponent = ($id + "-" + $version) -replace '[^A-Za-z0-9._-]', '_'
+                  $copyRoot = Join-Path $output "files/$safeComponent"
+                  $copyPath = Join-Path $copyRoot $relative
+                  New-Item -ItemType Directory -Path (Split-Path $copyPath -Parent) -Force | Out-Null
+                  Copy-Item $file.FullName $copyPath -Force
+                  $noticeFiles += [ordered]@{
+                      relativePath = $relative
+                      length = $file.Length
+                      sha256 = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                  }
+              }
+
+              $components += [ordered]@{
+                  id = $id
+                  version = $version
+                  dependencyType = $kind
+                  licenseType = $licenseType
+                  licenseValue = $licenseValue
+                  copyright = $copyright
+                  projectUrl = $projectUrl
+                  repositoryUrl = $repositoryUrl
+                  noticeFiles = $noticeFiles
+              }
+          }
+
+          $report = [ordered]@{
+              schemaVersion = 1
+              product = "NODAL OS"
+              sourceDependencyFile = "OneBrain.Pilot.deps.json"
+              componentCount = $components.Count
+              components = $components
+              legalApprovalGranted = $false
+              publicDistributionAuthorized = $false
+          }
+          $report | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $output "third-party-notice-audit.json") -Encoding utf8NoBOM
+          Write-Host "NODAL_OS_THIRD_PARTY_NOTICE_AUDIT=PASS"
+
+      - name: Upload notice audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: third-party-notice-audit
+          path: ${{ runner.temp }}/nodal-notice-audit/evidence
+          if-no-files-found: error
+          retention-days: 7
