@@ -1,6 +1,6 @@
 # NODAL OS Branch Governance
 
-Last updated: 2026-07-15
+Last updated: 2026-07-17
 
 ## Canonical branch
 
@@ -9,23 +9,25 @@ Last updated: 2026-07-15
 - `chrome-lab-001-extension-local-ai-bridge` is a compatibility/lab branch, not the product integration branch.
 - `wip/hito-004b-target-window-selection` is historical and must not remain the repository default.
 
-## Actual remote state found by the total technical audit
+## Current remote state
 
 Repository: `onediegopr/NodalOS`.
 
-Observed before audit closeout:
+Confirmed after the private-beta productization sequence:
 
-- GitHub default branch: `wip/hito-004b-target-window-selection`.
-- `main` was 1,007 commits ahead and 0 behind that default branch.
-- `chrome-lab-001-extension-local-ai-bridge` was behind `main`.
-- The repository is public.
-- No published GitHub release was identified.
+- canonical `main` HEAD: `ebdf429a215799f74d39300d57ca5ec5909fc58f`;
+- GitHub still reports `wip/hito-004b-target-window-selection` as the default branch;
+- that historical default ref was fast-forwarded to the same HEAD as `main`, so a default checkout no longer receives stale code;
+- the repository remains public;
+- no public production release is authorized;
+- issue `#27` is the single canonical tracker for default-branch and protection settings;
+- duplicate issue `#5` was closed as duplicate.
 
-This is a high-severity governance defect because cloning, browsing and external integrations begin from stale history even though active development is merged into `main`.
+The code-history defect is contained, but the repository setting is not closed until metadata reports `default_branch: main` and protection is verified.
 
-Decision: `BLOCKED_EXTERNAL_GITHUB_REMOTE_SETTINGS`.
+Decision: `BLOCKED_EXTERNAL_GITHUB_REMOTE_SETTINGS_WITH_DEFAULT_REF_ALIGNED`.
 
-The connected GitHub integration can inspect repository metadata and update branches, files and pull requests, but it does not expose repository-default-branch or branch-protection mutations. The older local CLI check `gh auth status` was also unauthenticated. The remaining setting change is therefore an external repository-administration action, not a source-code blocker.
+The connected GitHub integration can inspect repository metadata and update refs, files, issues and pull requests, but it does not expose repository-default-branch or branch-protection mutations. The remaining setting change is an external repository-administration action, not a source-code blocker.
 
 ## Required merge gates
 
@@ -96,12 +98,14 @@ gh api --method PUT repos/onediegopr/NodalOS/branches/main/protection `
   --field allow_deletions=false
 ```
 
-Remote governance requirements:
+## Verification checklist
 
-- `main` is the default branch.
-- Pull requests are required before merge.
-- Force push is blocked.
-- Branch deletion is blocked.
-- Required checks use real workflow job names; invented or retired contexts are not allowed.
-- Required conversations are resolved.
-- A successful local/dev or lab validation does not create production, release or commercial authority.
+- repository metadata returns `default_branch: main`;
+- a clean clone checks out `main`;
+- a docs-only pull request can satisfy all required checks;
+- a source/runtime pull request runs `runtime-integration`;
+- force pushes are rejected;
+- branch deletion is rejected;
+- required checks use real workflow job names, not retired or invented contexts;
+- resolved conversations are required;
+- no successful local/dev, CI or lab validation is treated as production, release or commercial authority.
