@@ -120,6 +120,7 @@ public sealed class PilotShellTests
             PilotRecipeExecutor.DefaultDotnetPath,
             "tools/recipes/demo-product-evidence-report.json");
 
+        Assert.AreEqual("dotnet", PilotRecipeExecutor.DefaultDotnetPath);
         Assert.AreEqual(PilotRecipeExecutor.DefaultDotnetPath, startInfo.FileName);
         Assert.IsFalse(startInfo.UseShellExecute);
         Assert.IsTrue(startInfo.CreateNoWindow);
