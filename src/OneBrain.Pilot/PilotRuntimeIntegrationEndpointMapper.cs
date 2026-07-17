@@ -14,8 +14,6 @@ public static class PilotRuntimeIntegrationEndpointMapper
 
         var packaged = NodalOsDesktopLaunchRuntime.IsPackaged();
         var localDiagnostics = NodalOsLocalDiagnostics.CreateDefault();
-        localDiagnostics.Attach(app, packaged);
-
         Func<NodalOsWorkspaceSelectionService> workspaceSelectionServiceFactory =
             NodalOsWorkspaceSelectionRuntime.CreateDefault;
         Func<NodalOsWorkspaceMissionDraftService> missionDraftServiceFactory =
@@ -24,6 +22,13 @@ public static class PilotRuntimeIntegrationEndpointMapper
             NodalOsWorkspaceHandoffExecutionRuntime.CreateDefault;
         Func<NodalOsByokModelConfigurationService> byokModelConfigurationServiceFactory =
             NodalOsByokModelConfigurationRuntime.CreateDefault;
+
+        localDiagnostics.Attach(
+            app,
+            packaged,
+            missionDraftServiceFactory,
+            handoffExecutionServiceFactory);
+
         LocalWorkspaceSelectionEndpointMapper.MapLocalWorkspaceSelection(
             app,
             environment,
