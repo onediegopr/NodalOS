@@ -31,7 +31,8 @@ public static class NodalOsDesktopLaunchRuntime
         "/models/config",
         "/api/models/config",
         "/models/test",
-        "/models/clear"
+        "/models/clear",
+        "/settings/diagnostics"
     };
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
