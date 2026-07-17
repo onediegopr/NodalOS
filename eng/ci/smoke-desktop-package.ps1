@@ -13,6 +13,9 @@ if ([string]::IsNullOrWhiteSpace($RunnerTemp)) {
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 $outputRoot = Join-Path $RunnerTemp "nodal-desktop-package"
 $packageName = "NODALOS.PrivateBeta"
+$installScriptPath = Join-Path $outputRoot "Install-NodalOS.ps1"
+$uninstallScriptPath = Join-Path $outputRoot "Uninstall-NodalOS.ps1"
+$dataRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "NodalOS"
 $trustedPeopleThumbprint = $null
 $process = $null
 
@@ -42,6 +45,16 @@ try {
         -OutputDirectory $outputRoot
     if ($LASTEXITCODE -ne 0) { throw "Desktop package build failed with exit code $LASTEXITCODE." }
 
+    foreach ($requiredPath in @(
+        $installScriptPath,
+        $uninstallScriptPath,
+        (Join-Path $outputRoot "README-INSTALL.txt")
+    )) {
+        if (-not (Test-Path $requiredPath)) {
+            throw "Desktop package bundle did not emit required operator file: $requiredPath"
+        }
+    }
+
     $updateManifestPath = Join-Path $outputRoot "nodal-os-update-manifest.json"
     $updateManifest = Get-Content $updateManifestPath -Raw | ConvertFrom-Json
     if ($updateManifest.version -ne $Version -or
@@ -61,15 +74,35 @@ try {
     if (-not (Test-Path $certificatePath)) {
         throw "Private-beta test certificate was not emitted."
     }
-    $trustedPeople = Import-Certificate -FilePath $certificatePath -CertStoreLocation "Cert:\LocalMachine\TrustedPeople"
-    $trustedPeopleThumbprint = $trustedPeople.Thumbprint
+    $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certificatePath)
+    try {
+        $trustedPeopleThumbprint = $certificate.Thumbprint
+    }
+    finally {
+        $certificate.Dispose()
+    }
+
+    $trustRefusalObserved = $false
+    try {
+        & $installScriptPath
+    }
+    catch {
+        if ($_.Exception.Message -notmatch [regex]::Escape("-TrustTestCertificate")) {
+            throw
+        }
+        $trustRefusalObserved = $true
+    }
+    if (-not $trustRefusalObserved) {
+        throw "Bundled installer did not refuse a test-signed package without explicit certificate trust."
+    }
+
+    & $installScriptPath -TrustTestCertificate
 
     $signature = Get-AuthenticodeSignature $msixPath
     if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
         throw "MSIX signature validation failed: $($signature.Status) $($signature.StatusMessage)"
     }
 
-    Add-AppxPackage -Path $msixPath -ErrorAction Stop
     $installed = Get-AppxPackage -Name $packageName -ErrorAction Stop
     if (-not $installed -or $installed.Version.ToString() -ne $Version) {
         throw "Installed package identity or version is incorrect."
@@ -142,15 +175,25 @@ finally {
         Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         $process.WaitForExit(10000) | Out-Null
     }
-    Remove-ExistingPackage
+
+    $dataRootExistedBeforeUninstall = Test-Path $dataRoot
+    if (Test-Path $uninstallScriptPath) {
+        & $uninstallScriptPath
+    }
+    else {
+        Remove-ExistingPackage
+    }
+
     if (Get-AppxPackage -Name $packageName -ErrorAction SilentlyContinue) {
-        throw "Desktop package remained installed after uninstall."
+        throw "Desktop package remained installed after bundled uninstall."
+    }
+    if ($dataRootExistedBeforeUninstall -and -not (Test-Path $dataRoot)) {
+        throw "Bundled default uninstall removed local NODAL OS user data."
     }
     if ($trustedPeopleThumbprint) {
         $trustedPeoplePath = "Cert:\LocalMachine\TrustedPeople\$trustedPeopleThumbprint"
         if (Test-Path $trustedPeoplePath) { Remove-Item $trustedPeoplePath -Force }
     }
-    $dataRoot = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "NodalOS"
     if (Test-Path $dataRoot) { Remove-Item $dataRoot -Recurse -Force }
 }
 
