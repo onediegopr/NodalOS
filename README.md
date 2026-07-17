@@ -8,6 +8,7 @@ NODAL OS is a local-first AI Mission Control for supervised work on real project
 - Runtime: .NET 11 preview, pinned by `global.json`.
 - Product maturity: installable Windows private beta; not a public or production release.
 - Desktop distribution: test-signed self-contained `win-x64` MSIX validated through clean build, install, launch, health checks and uninstall.
+- Field validation: design-partner runbook ready; no external partner sessions completed yet.
 - Public distribution: blocked until repository/product terms, production signing identity and release/update channel are selected.
 - Browser target: CloakBrowser direct CDP; ChromeLab remains an explicit lab/transition surface and is excluded from the packaged product route set.
 - License: not declared yet; external/customer/commercial distribution remains blocked until terms are selected.
@@ -58,6 +59,7 @@ The repository intentionally has no root Node package, Cargo workspace or Tauri 
 - `tests/` — Runtime, Recipes, Safety and ChromeLab suites.
 - `docs/architecture/` — current architecture and compact roadmap.
 - `docs/audit/` — technical audits and evidence-backed findings.
+- `docs/private-beta/` — design-partner field-validation operations and redacted session template.
 - `eng/ci/` — reusable CI and process-smoke scripts.
 - `eng/audit/` — deterministic repository inventory tooling.
 - `eng/packaging/` — native MSIX packaging pipeline.
@@ -68,9 +70,10 @@ The repository intentionally has no root Node package, Cargo workspace or Tauri 
 
 1. `docs/architecture/nodal-os-current-mvp-roadmap-compact.md`
 2. `docs/architecture/nodal-os-mvp-vertical-slice-canonical.md`
-3. `docs/audit/nodal-os-total-technical-audit-2026-07-16.md`
-4. `docs/operations/branch-governance.md`
-5. `CHANGELOG.md`
+3. `docs/private-beta/design-partner-field-validation.md`
+4. `docs/audit/nodal-os-total-technical-audit-2026-07-16.md`
+5. `docs/operations/branch-governance.md`
+6. `CHANGELOG.md`
 
 ## Guardrails
 
