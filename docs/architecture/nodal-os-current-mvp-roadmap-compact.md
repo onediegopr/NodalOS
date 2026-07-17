@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: `PRIVATE_BETA_DESIGN_PARTNER_RUNBOOK_READY_FIELD_SESSIONS_NEXT`
+Status: `PRIVATE_BETA_COHORT_PACKAGE_AND_INSTALLED_CORE_LOOP_VALIDATED_FIELD_SESSIONS_NEXT`
 
 This is the canonical planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this product path.
 
@@ -29,7 +29,7 @@ The product must feel like a dark Mission Control with a central vertical timeli
 | Local/dev runtime foundations | 91% | Workspace, mission, reversible execution, restart rehydration, BYOK fallback, evidence and recovery loops run in CI. |
 | Living Skills foundation | 80% | Cognitive snapshot, semantic verification, trusted control flow, skill memory, bounded teaching capture and Windows observation are validated; live global capture/replay remains closed. |
 | Coherent product experience | 79% | Mission Control starts from real state, exposes onboarding/recovery, exports its canonical mission handoff and offers explicit local diagnostics and activation timings without mixing fixtures into the packaged product. |
-| Installable desktop product | 88% | A self-contained test-signed MSIX passes clean build, signature verification, install, launch, health checks, route-boundary checks and uninstall. |
+| Installable desktop product | 88% | A self-contained test-signed MSIX passes clean build, signature verification, operator install/uninstall, exact test-certificate cleanup, packaged route boundaries and the full BYOK → workspace → mission → approval → verification → handoff → rollback loop. |
 | Sellable MVP | 77% | The core loop, handoff export, local diagnostics, activation timings and field-validation runbook are ready; observed design-partner use and release/legal hardening remain. |
 | Production and commercial release | 0% | No production signing identity, published release, license terms, billing flow, customer-data validation or production deployment. |
 
@@ -128,7 +128,8 @@ Implemented:
 - deterministic assets, four-part version and SHA-256-bound manual update manifest;
 - ephemeral test signing and external PFX support without private key leakage;
 - packaged route allowlist includes only Mission Control, workspace, mission, execution, handoff, model and local diagnostics surfaces while excluding Pilot legacy, demos, harnesses, recipes and run history;
-- clean-Windows CI proves build → sign → install → launch → clean Mission Control/BYOK → blocked lab routes → uninstall.
+- the `0.1.0.2` cohort bundle verifies the exact MSIX hash, requires explicit elevated test-certificate trust, removes that exact trust during uninstall and preserves local data unless deletion is explicitly requested;
+- clean-Windows CI proves build → sign → operator install → clean packaged state → BYOK → protected workspace → real mission → scoped approval → verified execution → canonical handoff → guarded rollback → route-boundary checks → uninstall and certificate cleanup.
 
 Decision: `WINDOWS_PRIVATE_BETA_MSIX_V1_READY`.
 
@@ -139,7 +140,9 @@ Completed in this block:
 - user-facing Markdown handoff derived from canonical mission state, evidence and timeline;
 - opt-in, redacted startup/error/process diagnostics with bounded local retention and no mandatory cloud;
 - opt-in local timings for process startup, first successful canonical handoff and verified mission completion, stored as durations without mission ids, paths or customer content;
-- one field-validation runbook covering participant fit, package identity, privacy boundaries, exact session flow, local timings, redacted notes and reproducible finding triage.
+- one field-validation runbook covering participant fit, package identity, privacy boundaries, exact session flow, local timings, redacted notes and reproducible finding triage;
+- one stable `0.1.0.2` cohort bundle retained for controlled sessions;
+- the complete core loop validated against the executable installed by MSIX in packaged Production mode, not only through `dotnet run`.
 
 Highest-value remaining work:
 
@@ -148,6 +151,8 @@ Highest-value remaining work:
 3. review activation timings and direct session observations;
 4. fix only findings reproduced during those sessions before expanding automation scope;
 5. complete license, production signing and release-channel decisions.
+
+Do not add more product infrastructure before `DP-01` unless a concrete P0/P1/P2 behavior is reproduced.
 
 Operational source:
 
