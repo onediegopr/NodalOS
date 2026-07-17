@@ -110,19 +110,42 @@ public sealed class NodalOsLocalDiagnosticsTests
     }
 
     [TestMethod]
-    public void ClearingEventsDoesNotSilentlyChangeTheOptInDecision()
+    public void ClearingEventsResetsMetricDedupeWithoutChangingOptIn()
     {
         using var fixture = DiagnosticsFixture.Create();
         var diagnostics = fixture.Diagnostics;
         diagnostics.Enable(packaged: false);
-        diagnostics.RecordStartup(packaged: false);
-        Assert.IsTrue(File.Exists(fixture.EventsPath));
+        diagnostics.RecordFirstValue(packaged: false);
+        var completedAt = DateTimeOffset.UtcNow;
+        const string missionId = "clear-reset-private-marker";
+        diagnostics.RecordMissionCompletion(
+            missionId,
+            completedAt.AddSeconds(-3),
+            completedAt,
+            packaged: false);
+
+        Assert.IsNotNull(diagnostics.ReadMetrics().FirstValueMilliseconds);
+        Assert.AreEqual(1, diagnostics.ReadMetrics().MissionCompletionCount);
 
         diagnostics.Clear();
 
         Assert.IsTrue(diagnostics.Enabled);
         Assert.IsTrue(File.Exists(fixture.OptInPath));
         Assert.IsFalse(File.Exists(fixture.EventsPath));
+        Assert.IsNull(diagnostics.ReadMetrics().FirstValueMilliseconds);
+        Assert.AreEqual(0, diagnostics.ReadMetrics().MissionCompletionCount);
+
+        var repeatedAt = DateTimeOffset.UtcNow;
+        diagnostics.RecordFirstValue(packaged: false);
+        diagnostics.RecordMissionCompletion(
+            missionId,
+            repeatedAt.AddSeconds(-2),
+            repeatedAt,
+            packaged: false);
+
+        Assert.IsNotNull(diagnostics.ReadMetrics().FirstValueMilliseconds);
+        Assert.AreEqual(1, diagnostics.ReadMetrics().MissionCompletionCount);
+        Assert.IsFalse(File.ReadAllText(fixture.EventsPath).Contains(missionId, StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -149,7 +172,9 @@ public sealed class NodalOsLocalDiagnosticsTests
 
         Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, repeated.StatusCode);
-        Assert.IsNotNull(fixture.Diagnostics.ReadMetrics().FirstValueMilliseconds);
+        await WaitForAsync(
+            () => fixture.Diagnostics.ReadMetrics().FirstValueMilliseconds is not null,
+            TestContext.CancellationTokenSource.Token);
         Assert.AreEqual(
             1,
             File.ReadLines(fixture.EventsPath)
@@ -326,6 +351,17 @@ public sealed class NodalOsLocalDiagnosticsTests
             static () => Task.FromException<IResult>(
                 new InvalidOperationException("runtime-private-payload-marker")));
         return app;
+    }
+
+    private static async Task WaitForAsync(Func<bool> condition, CancellationToken cancellationToken)
+    {
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(3);
+        while (!condition())
+        {
+            if (DateTimeOffset.UtcNow >= deadline)
+                Assert.Fail("The local metric was not recorded after response completion.");
+            await Task.Delay(25, cancellationToken);
+        }
     }
 
     private static HttpRequestMessage Post(string route, string action, string origin)
