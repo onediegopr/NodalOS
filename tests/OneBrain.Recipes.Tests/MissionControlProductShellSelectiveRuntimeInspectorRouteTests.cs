@@ -89,6 +89,8 @@ public sealed class MissionControlProductShellSelectiveRuntimeInspectorRouteTest
         Assert.IsFalse(html.Contains("Primary fixture model", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("Fixture mission", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("Abrir laboratorio Pilot legado", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("CloakBrowser", StringComparison.Ordinal));
+        Assert.IsFalse(html.Contains("BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY", StringComparison.Ordinal));
         Assert.IsFalse(html.Contains("Probar ahora", StringComparison.OrdinalIgnoreCase));
         AssertNoExecutableOrExternalSurface(html);
 

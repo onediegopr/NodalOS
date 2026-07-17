@@ -93,7 +93,7 @@ try {
         throw "Mission Control dark-first tokens are missing."
     }
     if ($response.Content -match '<script|<form|onclick=|https?://' -or
-        $response.Content -match 'Probar ahora|fixture-fallback-chat|Primary fixture model|Fixture mission|Abrir laboratorio Pilot legado') {
+        $response.Content -match 'Probar ahora|fixture-fallback-chat|Primary fixture model|Fixture mission|Abrir laboratorio Pilot legado|CloakBrowser|BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY') {
         throw "Mission Control root exposed legacy, synthetic, executable or external content."
     }
 

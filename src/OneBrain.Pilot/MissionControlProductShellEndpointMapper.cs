@@ -232,9 +232,8 @@ public static class MissionControlProductShellEndpointMapper
         var totalCapabilities = fixture?.Inspector.Capabilities.Count ?? 0;
         var readyProviders = fixture?.Inspector.Providers.Count(value => value.Contains(":Ready:", StringComparison.Ordinal)) ?? 0;
         var totalProviders = fixture?.Inspector.Providers.Count ?? 0;
-        var browserRuntime = fixture?.Inspector.Browser.Runtime ?? "CloakBrowser";
-        var browserState = fixture?.Inspector.Browser.State ?? "BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY";
-        var browserLastError = fixture?.Inspector.Browser.LastError ?? "Pinned CloakBrowser runtime binary is not provisioned in this environment.";
+        var browserRuntime = fixture?.Inspector.Browser.Runtime ?? "Not configured";
+        var browserState = fixture?.Inspector.Browser.State ?? "Not evaluated";
         var workspaceDisplay = workspaceSelected
             ? workspaceSelection!.DisplayNameRedacted ?? "Selected Local Workspace"
             : "No real workspace selected";
@@ -318,14 +317,17 @@ public static class MissionControlProductShellEndpointMapper
                 "Expert Advisor",
                 "Observer · non-executor",
                 "Advisor context can inform the mission but cannot authorize or execute work.",
-                "neutral"),
-            new(
+                "neutral")
+        };
+        if (fixture is not null)
+        {
+            context.Add(new MissionControlProductContextItem(
                 "browser",
                 browserRuntime,
                 browserState,
-                browserLastError,
-                browserState.Contains("BLOCKED", StringComparison.OrdinalIgnoreCase) ? "blocked" : "ready")
-        };
+                fixture.Inspector.Browser.LastError ?? "Browser runtime is healthy.",
+                browserState.Contains("BLOCKED", StringComparison.OrdinalIgnoreCase) ? "blocked" : "ready"));
+        }
 
         if (realMissionDraft)
         {

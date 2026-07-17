@@ -119,7 +119,7 @@ try {
     if ($root.StatusCode -ne 200 -or
         $root.Content -notmatch 'data-nodal-os="mission-control-product-shell"' -or
         $root.Content -notmatch 'data-fixture-backed="false"' -or
-        $root.Content -match 'fixture-fallback-chat|Primary fixture model|Abrir laboratorio Pilot legado') {
+        $root.Content -match 'fixture-fallback-chat|Primary fixture model|Abrir laboratorio Pilot legado|CloakBrowser|BLOCKED_EXTERNAL_CLOAKBROWSER_BINARY') {
         throw "Installed desktop package did not expose the clean canonical Mission Control root."
     }
 
