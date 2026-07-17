@@ -71,13 +71,15 @@ For a controlled test-signed build, open PowerShell **as administrator** and run
 ./Install-NodalOS.ps1 -TrustTestCertificate
 ```
 
-The elevation is required because the installer imports the test certificate into the local-machine `TrustedPeople` store. A production/CA-trusted signature would not require this test-certificate step.
+The elevation is required because the installer verifies and imports the exact test certificate into the local-machine `TrustedPeople` store. Keep the extracted bundle available through uninstall so the exact certificate can be identified and removed. A production/CA-trusted signature would not require this test-certificate step.
 
 Default uninstall preserves `%LOCALAPPDATA%\NodalOS`. Removing user data remains a separate explicit action:
 
 ```powershell
 ./Uninstall-NodalOS.ps1 -RemoveUserData
 ```
+
+For a test-signed bundle, run uninstall from an elevated PowerShell; it removes the package and exact included test-certificate trust. The `-RemoveUserData` switch remains the only destructive local-data action.
 
 ### Distribution boundary
 
