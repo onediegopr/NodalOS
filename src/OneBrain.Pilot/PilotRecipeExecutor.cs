@@ -5,8 +5,7 @@ namespace OneBrain.Pilot;
 
 public sealed class PilotRecipeExecutor
 {
-    public const string DefaultDotnetPath =
-        @"C:\Users\diego\OneDrive\PERSONAL\ONE Brain\Herramientas\dotnet-sdk-11.0.100-preview.5.26302.115-win-x64\dotnet.exe";
+    public const string DefaultDotnetPath = "dotnet";
 
     private readonly string _root;
     private readonly string _dotnetPath;

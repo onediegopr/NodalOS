@@ -23,11 +23,16 @@ This path matches the current paid desktop-product strategy, BYOK positioning an
 
 Engineering evidence source:
 
-- Desktop Package workflow run: `29572268295`;
-- package source commit: `68ad8e8c760656c6a4894cd452bf90db22370985`;
-- package version: `0.1.0.0`;
-- MSIX SHA-256: `ce12a1f2ada8fd0ba71b77b2fdb2ebe024479fc17db53c77eb262cd87dabd44d`;
-- dependency source inside the package: `OneBrain.Pilot.deps.json`.
+- Desktop Package workflow run: `29616288590`;
+- PR head used by the validated candidate: `f7ba903a0463c191d14c31a68fa02bb68b30e5e5`;
+- Actions test-merge commit embedded in package metadata: `83563af37877d669283c296125d7cd12aaa844ac`;
+- package version: `0.1.0.3`;
+- MSIX SHA-256: `14d6ca8d326cee78669a6f9304a8d697b4a891bcd6f62f8c3a4d3aac11010a96`;
+- private-beta bundle SHA-256: `914b9f25c6024df53fc41c2134f32e9beb61d76b1506b92ede21e465d8a92621`;
+- update manifest SHA-256: `15e4ec2ba981e6c8f6be2aa213e3cd8b75fcd8b5b3f22ea0ba3f312fcfc7753a`;
+- GitHub artifact digest: `f77710a9f3fddea67aaf889cd72ae15bf155f60a93f0d0c787864db7af82a9a6`;
+- dependency source inside the package: `OneBrain.Pilot.deps.json`;
+- dependency audit workflow run: `29616288545`, with no vulnerable or deprecated package reported.
 
 The validated self-contained package declares these external NuGet dependencies:
 
@@ -38,15 +43,15 @@ The validated self-contained package declares these external NuGet dependencies:
 | `Interop.UIAutomationClient` | `10.19041.0` | transitive through FlaUI.UIA3 | MIT |
 | `System.Management` | `8.0.0` | transitive through FlaUI.Core | MIT |
 
-The package also embeds self-contained Windows runtime packs:
+The package embeds supported self-contained Windows runtime packs:
 
-- `runtimepack.Microsoft.NETCore.App.Runtime.win-x64/11.0.0-preview.6.26359.118`;
-- `runtimepack.Microsoft.AspNetCore.App.Runtime.win-x64/11.0.0-preview.6.26359.118`;
-- `runtimepack.Microsoft.WindowsDesktop.App.Runtime.win-x64/11.0.0-preview.6.26359.118`.
+- `runtimepack.Microsoft.NETCore.App.Runtime.win-x64/10.0.10`;
+- `runtimepack.Microsoft.AspNetCore.App.Runtime.win-x64/10.0.10`;
+- `runtimepack.Microsoft.WindowsDesktop.App.Runtime.win-x64/10.0.10`.
 
 This table is an inventory, not a complete notice file. Windows self-contained .NET distributions have authoritative license and third-party-notice material tied to the exact distributed build. Those files must be obtained from the final supported runtime distribution and reviewed with the final package payload.
 
-The validated `0.1.0.0` MSIX does not currently contain a root license or third-party-notice file. That is acceptable only for the present internal engineering artifact and remains a release blocker.
+The validated `0.1.0.3` MSIX and private-beta bundle do not contain a root license or third-party-notice file. That is acceptable only for the present controlled engineering artifact and remains a release blocker.
 
 ## Decisions still required
 

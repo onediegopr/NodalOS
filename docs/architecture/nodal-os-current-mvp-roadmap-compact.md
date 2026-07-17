@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: `PRIVATE_BETA_COHORT_PACKAGE_AND_INSTALLED_CORE_LOOP_VALIDATED_FIELD_SESSIONS_NEXT`
+Status: `PRIVATE_BETA_DOTNET_10_LTS_COHORT_CANDIDATE_VALIDATED_FIELD_SESSIONS_NEXT`
 
 This is the canonical planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this product path.
 
@@ -26,11 +26,11 @@ The product must feel like a dark Mission Control with a central vertical timeli
 | Area | Readiness | Interpretation |
 | --- | ---: | --- |
 | Safety and control foundations | 93% | Mission/scope approval binding, stale-precondition checks, exact-hash verification, redaction, opaque secrets and guarded rollback are validated. |
-| Local/dev runtime foundations | 91% | Workspace, mission, reversible execution, restart rehydration, BYOK fallback, evidence and recovery loops run in CI. |
+| Local/dev runtime foundations | 93% | Workspace, mission, reversible execution, restart rehydration, BYOK fallback, evidence and recovery loops pass on supported .NET 10 LTS. |
 | Living Skills foundation | 80% | Cognitive snapshot, semantic verification, trusted control flow, skill memory, bounded teaching capture and Windows observation are validated; live global capture/replay remains closed. |
 | Coherent product experience | 79% | Mission Control starts from real state, exposes onboarding/recovery, exports its canonical mission handoff and offers explicit local diagnostics and activation timings without mixing fixtures into the packaged product. |
-| Installable desktop product | 88% | A self-contained test-signed MSIX passes clean build, signature verification, operator install/uninstall, exact test-certificate cleanup, packaged route boundaries and the full BYOK → workspace → mission → approval → verification → handoff → rollback loop. |
-| Sellable MVP | 77% | The core loop, handoff export, local diagnostics, activation timings and field-validation runbook are ready; observed design-partner use and release/legal hardening remain. |
+| Installable desktop product | 91% | The `0.1.0.3` self-contained test-signed MSIX uses .NET 10 LTS and passes clean build, dependency review, operator install/uninstall, exact test-certificate cleanup, packaged route boundaries and the full BYOK → workspace → mission → approval → verification → handoff → rollback loop. |
+| Sellable MVP | 79% | The supported-runtime core loop, handoff export, local diagnostics, activation timings and field-validation runbook are ready; observed design-partner use and release/legal hardening remain. |
 | Production and commercial release | 0% | No production signing identity, published release, license terms, billing flow, customer-data validation or production deployment. |
 
 Percentages are planning estimates, not release claims.
@@ -53,10 +53,10 @@ No further expansion is prioritized before private-beta field validation. Global
 Completed:
 
 - `main` contains the canonical implementation;
-- README, current roadmap and audit now describe the same maturity;
-- .NET SDK is pinned;
+- README, current roadmap and audit describe the same maturity;
+- .NET 10 LTS SDK `10.0.302` is pinned, prerelease SDKs are disabled and the self-contained product runtime uses supported .NET 10 patches;
 - supported MSTest packages replace the deprecated preview adapter;
-- vulnerable-package audit is clean;
+- vulnerable/deprecated-package audit is clean;
 - technical fixtures and lab routes are separated from the packaged product surface.
 
 External owner actions still required:
@@ -123,15 +123,16 @@ Decision: `REAL_BYOK_MODEL_CONNECTION_V1_READY`.
 Implemented:
 
 - native self-contained `win-x64` MSIX from the existing .NET application;
+- supported .NET 10 LTS SDK/runtime instead of a preview toolchain;
 - no Tauri, Electron, Node or second shell;
 - loopback-only runtime and mutable state under `%LOCALAPPDATA%\NodalOS\ProductData`;
 - deterministic assets, four-part version and SHA-256-bound manual update manifest;
 - ephemeral test signing and external PFX support without private key leakage;
 - packaged route allowlist includes only Mission Control, workspace, mission, execution, handoff, model and local diagnostics surfaces while excluding Pilot legacy, demos, harnesses, recipes and run history;
-- the `0.1.0.2` cohort bundle verifies the exact MSIX hash, requires explicit elevated test-certificate trust, removes that exact trust during uninstall and preserves local data unless deletion is explicitly requested;
-- clean-Windows CI proves build → sign → operator install → clean packaged state → BYOK → protected workspace → real mission → scoped approval → verified execution → canonical handoff → guarded rollback → route-boundary checks → uninstall and certificate cleanup.
+- the `0.1.0.3` cohort candidate verifies the exact MSIX hash, requires explicit elevated test-certificate trust, removes that exact trust during uninstall and preserves local data unless deletion is explicitly requested;
+- clean-Windows CI proves build → dependency review → sign → operator install → clean packaged state → BYOK → protected workspace → real mission → scoped approval → verified execution → canonical handoff → guarded rollback → route-boundary checks → uninstall and certificate cleanup.
 
-Decision: `WINDOWS_PRIVATE_BETA_MSIX_V1_READY`.
+Decision: `WINDOWS_PRIVATE_BETA_MSIX_DOTNET_10_LTS_READY`.
 
 ## P5 — Remaining private-beta hardening
 
@@ -141,7 +142,7 @@ Completed in this block:
 - opt-in, redacted startup/error/process diagnostics with bounded local retention and no mandatory cloud;
 - opt-in local timings for process startup, first successful canonical handoff and verified mission completion, stored as durations without mission ids, paths or customer content;
 - one field-validation runbook covering participant fit, package identity, privacy boundaries, exact session flow, local timings, redacted notes and reproducible finding triage;
-- one stable `0.1.0.2` cohort bundle retained for controlled sessions;
+- one validated `0.1.0.3` .NET 10 LTS cohort candidate retained for controlled sessions;
 - the complete core loop validated against the executable installed by MSIX in packaged Production mode, not only through `dotnet run`.
 
 Highest-value remaining work:

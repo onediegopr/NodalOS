@@ -34,10 +34,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pinned .NET 11 preview
+      - name: Setup pinned .NET 10 LTS
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 11.0.100-preview.6.26359.118
+          dotnet-version: 10.0.302
 
       - name: Restore package and test projects
         shell: pwsh
@@ -65,7 +65,7 @@ jobs:
         shell: pwsh
         run: |
           $log = Join-Path $env:RUNNER_TEMP "nodal-desktop-package-smoke.log"
-          ./eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.2" *>&1 | Tee-Object -FilePath $log
+          ./eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.3" *>&1 | Tee-Object -FilePath $log
           exit $LASTEXITCODE
 
       - name: Upload private-beta package and diagnostics

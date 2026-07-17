@@ -25,7 +25,7 @@ if (-not $dockerAvailable -and -not $Dev) {
 if (-not $SkipBuild) {
     Write-Host "`n[2/5] Building .NET Bridge..."
     Push-Location "$root\src\OneBrain.ChromeLab.Bridge"
-    dotnet publish -c Release -o bin\Release\net11.0\publish
+    dotnet publish -c Release -o bin\Release\net10.0\publish
     Pop-Location
     Write-Host "  Bridge build complete."
 }

@@ -80,7 +80,7 @@ public sealed class NodalOsOnnxSyntheticRecognizerDecodeProbeM280M282Tests
     {
         var model = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx", "candidates", "en_PP-OCRv5_rec_mobile.onnx");
         var dictionary = Path.Combine(RepoRoot, "tools", "ocr-worker", "models", "onnx", "dictionaries", "ppocrv5_en_dict.txt");
-        var runner = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", "Debug", "net11.0", "OneBrain.Tools.OnnxOcrProbeRunner.dll");
+        var runner = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", "Debug", "net10.0", "OneBrain.Tools.OnnxOcrProbeRunner.dll");
         if (!File.Exists(model) || !File.Exists(dictionary) || !File.Exists(runner))
             Assert.Inconclusive("PP-OCRv5 recognizer candidate or built probe runner is not available locally.");
 

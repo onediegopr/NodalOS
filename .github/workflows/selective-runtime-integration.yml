@@ -34,10 +34,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pinned .NET 11 preview
+      - name: Setup pinned .NET 10 LTS
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 11.0.100-preview.6.26359.118
+          dotnet-version: 10.0.302
 
       - name: Restore focused projects
         shell: pwsh

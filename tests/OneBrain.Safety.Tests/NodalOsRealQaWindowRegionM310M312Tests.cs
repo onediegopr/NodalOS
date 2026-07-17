@@ -143,7 +143,7 @@ public sealed class NodalOsRealQaWindowRegionM310M312Tests
     [TestMethod]
     public void ProbeRunner_ReportsRealQaWindowCaptureHonestly()
     {
-        var runner = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", "Debug", "net11.0", "OneBrain.Tools.OnnxOcrProbeRunner.dll");
+        var runner = Path.Combine(RepoRoot, "tools", "onnx-ocr-probe-runner", "bin", "Debug", "net10.0", "OneBrain.Tools.OnnxOcrProbeRunner.dll");
         if (!File.Exists(runner))
             Assert.Inconclusive("Built runner is not available locally.");
 

@@ -1,11 +1,14 @@
 # NODAL OS — Changelog
 
-## Unreleased — private-beta hardening next
+## Unreleased — private-beta field validation next
 
 NODAL OS has a validated test-signed Windows private-beta package, but no production signing identity, public update channel or commercial release.
 
 Current validated foundations include:
 
+- solution-wide migration from .NET 11 preview to supported .NET 10 LTS, with SDK `10.0.302` pinned and prerelease SDKs disabled;
+- `0.1.0.3` self-contained `win-x64` private-beta candidate using .NET 10 runtime packs `10.0.10`;
+- complete restore, dependency audit, Runtime/Recipes tests, product-loop smokes, Tier 1 Safety and installed-MSIX core-loop validation on the supported runtime;
 - canonical dark-first Mission Control root shell with central timeline, model/fallback context, evidence and collapsed diagnostics;
 - clean product startup with no synthetic mission, completed timeline, model, fallback or evidence;
 - four-step state-derived onboarding and specific recovery for stale candidates, changed results and failed-closed execution;

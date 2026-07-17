@@ -5,9 +5,9 @@ NODAL OS is a local-first AI Mission Control for supervised work on real project
 ## Current status
 
 - Canonical integration branch: `main`.
-- Runtime: .NET 11 preview, pinned by `global.json`.
+- Runtime: .NET 10 LTS, with SDK `10.0.302` pinned by `global.json` and prerelease SDKs disabled.
 - Product maturity: installable Windows private beta; not a public or production release.
-- Desktop distribution: test-signed self-contained `win-x64` MSIX validated through clean build, install, launch, health checks and uninstall.
+- Desktop distribution: test-signed self-contained `win-x64` MSIX `0.1.0.3` validated through clean build, install, the packaged core loop, guarded rollback, uninstall and exact test-certificate cleanup.
 - Field validation: design-partner runbook ready; no external partner sessions completed yet.
 - Public distribution: blocked until repository/product terms, production signing identity and release/update channel are selected.
 - Browser target: CloakBrowser direct CDP; ChromeLab remains an explicit lab/transition surface and is excluded from the packaged product route set.
