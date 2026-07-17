@@ -1,10 +1,10 @@
 # NODAL OS — Current MVP Roadmap Compact
 
-Date: 2026-07-16
+Date: 2026-07-17
 
-Status: `PRIVATE_BETA_PACKAGE_READY_HARDENING_NEXT`
+Status: `PRIVATE_BETA_PRODUCT_SURFACE_CLEAN_AUDIT_COMPLETE_HARDENING_NEXT`
 
-This document is the compact planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this current product path.
+This is the canonical planning entrypoint. Historical roadmaps, milestone reports and decision logs remain traceability records; they do not override this product path.
 
 ## Product target
 
@@ -12,228 +12,158 @@ Ship one installable local-first desktop product that lets a technical founder, 
 
 1. select a local workspace;
 2. state one mission;
-3. receive a reviewed plan;
-4. use a configured BYOK model or an explicitly allowed local/provider fallback;
+3. review its plan;
+4. use a configured BYOK or explicitly allowed local/provider route;
 5. approve one bounded reversible action at mission/scope level;
 6. execute and verify that action;
 7. inspect evidence and timeline;
 8. export a human-readable handoff.
 
-The product must feel like a dark Mission Control with a central vertical timeline, not like an internal test console, ERP or collection of lab routes.
+The product must feel like a dark Mission Control with a central vertical timeline, not an internal test console, ERP or collection of lab routes.
 
-## Stage closed by the technical audit
+## Current evidence-backed state
 
-The Living Skills foundation is complete enough to leave the research/foundation lane:
-
-- CognitiveSnapshotV2;
-- SemanticVerifierV2;
-- Trusted Control Flow;
-- verified skill memory and localized repair foundations;
-- Teach NODAL compiler;
-- bounded capture session;
-- local/dev teaching review surface;
-- application-scoped Windows UIA observation adapter.
-
-No further Living Skills expansion is prioritized until the productization gates below are closed. Live global hooks, raw input capture, raw screenshots/DOM and unrestricted replay remain out of scope.
-
-## Readiness recalibration
-
-| Area | Readiness | Evidence-backed interpretation |
+| Area | Readiness | Interpretation |
 | --- | ---: | --- |
-| Safety and control foundations | 93% | Mission/scope approval binding, stale-precondition checks, exact-hash verification, redaction, secure secret references and guarded rollback are covered by focused and process-level tests. |
-| Local/dev runtime foundations | 90% | Protected workspace selection, persisted mission draft, real bounded handoff execution, restart rehydration, rollback, real BYOK connection/fallback, Advisor and handoff loops run in CI. |
-| Living Skills foundation | 80% | Compiler, memory, capture session and Windows observation adapter are validated; live product capture/replay is not enabled. |
-| Coherent product experience | 72% | Mission Control is canonical and projects a real workspace, real mission, reviewed action, approval, verified execution, evidence, rollback and verified BYOK route without creating a second source of truth. |
-| Installable desktop product | 85% | A versioned test-signed MSIX is built from the existing .NET runtime and passes clean build/install/launch/health/uninstall on fresh Windows; production signing and public distribution remain closed. |
-| Sellable MVP | 72% | The core loop and installable private-beta package are validated; onboarding, failure recovery, real design-partner use and release/legal hardening remain open. |
-| Production and commercial release | 0% | No production signing identity, published release, licensing/billing flow, customer-data validation or production deployment. |
+| Safety and control foundations | 93% | Mission/scope approval binding, stale-precondition checks, exact-hash verification, redaction, opaque secrets and guarded rollback are validated. |
+| Local/dev runtime foundations | 91% | Workspace, mission, reversible execution, restart rehydration, BYOK fallback, evidence and recovery loops run in CI. |
+| Living Skills foundation | 80% | Cognitive snapshot, semantic verification, trusted control flow, skill memory, bounded teaching capture and Windows observation are validated; live global capture/replay remains closed. |
+| Coherent product experience | 76% | Mission Control starts from real state, exposes onboarding and recovery, and no longer mixes fixtures or browser-lab blockers into the packaged product surface. |
+| Installable desktop product | 88% | A self-contained test-signed MSIX passes clean build, signature verification, install, launch, health checks, route-boundary checks and uninstall. |
+| Sellable MVP | 74% | The core loop is installable and coherent; design-partner validation, release/legal hardening, export polish and opt-in diagnostics remain. |
+| Production and commercial release | 0% | No production signing identity, published release, license terms, billing flow, customer-data validation or production deployment. |
 
-Percentages are directional planning estimates, not completion claims.
+Percentages are planning estimates, not release claims.
 
-## Next roadmap — ordered by value
+## Closed research/foundation lane
 
-### P0 — Repository and release truth
+Living Skills is complete enough to leave the foundation lane:
 
-Exit criteria:
+- CognitiveSnapshotV2 and SemanticVerifierV2;
+- Trusted Control Flow;
+- verified skill memory and localized repair;
+- Teach NODAL compiler and bounded capture session;
+- local/dev teaching review;
+- application-scoped Windows UIA observation.
 
-- `main` is the actual GitHub default branch;
-- branch protection/rules require the real safety and runtime checks;
-- compatibility branches are aligned or clearly archived;
-- README, changelog, security policy and current roadmap agree on maturity;
-- product license is selected before external distribution;
-- no file or document claims a production release that does not exist.
+No further expansion is prioritized before private-beta product gates close. Global hooks, raw input capture, raw screenshots/DOM and unrestricted replay remain out of scope.
 
-Current state: code and compatibility refs are aligned; the remote default-branch setting, protection rules and license decision remain external owner actions.
+## P0 — Repository and release truth
 
-### P1 — One coherent Mission Control product shell
+Completed:
 
-Implemented in shell v1:
+- `main` contains the canonical implementation;
+- README, current roadmap and audit now describe the same maturity;
+- .NET SDK is pinned;
+- supported MSTest packages replace the deprecated preview adapter;
+- vulnerable-package audit is clean;
+- technical fixtures and lab routes are separated from the packaged product surface.
 
-- `/` is the canonical dark-first Mission Control surface;
-- `/api/mission-control` exposes the same redacted projection;
-- the existing lightweight mission runtime, model router, capability registry, canonical event/timeline and evidence refs are reused;
-- fallback, verification, browser blocker, human-control status and evidence are visible;
-- the protected workspace, persisted real mission, controlled handoff execution and verified BYOK route are projected into the same shell;
-- approval availability, execution status, verification, rollback readiness, model connection and fallback state are visible without introducing a second dashboard;
+External owner actions still required:
+
+- make `main` the GitHub default branch and enable required checks/branch protection;
+- select source/product license terms;
+- provide production signing identity and release/update channel before external distribution.
+
+## P1 — Coherent Mission Control
+
+Implemented:
+
+- `/` and `/api/mission-control` are the canonical dark-first shell and redacted projection;
+- a fresh product starts with no synthetic mission, model, fallback, evidence or completed timeline;
+- workspace, mission, reviewed action, approval, execution, verification, rollback and BYOK state share one projection;
+- four-step onboarding is derived from existing state: workspace → mission → verified action → connected model;
+- continuity directs a completed loop to the next mission;
+- `CandidateStale`, `ResultChanged` and `FailedClosed` produce specific recovery guidance without new state or authority;
+- internal stage labels and lab browser blockers are absent from the clean product surface;
 - diagnostics remain collapsed and local-only;
-- the former root Pilot/demo surface remains available explicitly at `/pilot/legacy`;
-- the environment-only AI configuration console is isolated under `/pilot/legacy/ai/config`;
+- explicit legacy/lab routes remain available in development, but packaged MSIX requests are restricted to the canonical product allowlist;
 - no second timeline, ledger, policy engine, storage layer or product authority was introduced.
 
-Remaining before P1 is fully product-complete: onboarding and private-beta usability hardening.
-
-### P2 — Real local workspace MVP loop
-
-#### P2a — selection and persistence
+## P2 — Real local workspace mission loop
 
 Implemented:
 
-- explicit local folder/repository entry at `/workspace/select`;
-- bounded real read-only scan using the existing workspace understanding service;
-- reviewed plan projection from the existing canonical planning service;
-- absolute root stored as an opaque secret reference through Windows current-user DPAPI;
-- redacted metadata persisted atomically under local application data;
-- revalidation and rehydration after process restart;
-- selected workspace projected into Mission Control without absolute path or secret exposure;
-- one-time request token, strict same-origin POST, loopback-only access, bounded form payload and fail-closed errors;
-- no writes to the selected workspace, shell, network, cloud, provider call or product authority.
+- protected local workspace selection, bounded read-only scan and restart rehydration;
+- absolute root stored only through an opaque Windows DPAPI-backed reference;
+- real mission draft bound to workspace id/fingerprint and canonical plan;
+- one allowlisted candidate targeting `NODAL_HANDOFF.md`;
+- `CreateTextFile` or `ExactHashUpdate` with exact reviewed SHA-256 precondition;
+- one-shot mission-scope approval bound to mission, workspace, action, capability, target and hashes;
+- atomic create/replace, exact byte/hash verification and canonical evidence/timeline;
+- interrupted approved execution does not auto-resume;
+- rollback requires the exact verified result and refuses to overwrite later user changes;
+- no arbitrary patch, shell, subprocess, path escape, alternate target or general filesystem authority.
 
-Decision: `REAL_LOCAL_WORKSPACE_SELECTION_V1_READY`.
+Decisions:
 
-#### P2b — real mission binding and reviewed action
+- `REAL_LOCAL_WORKSPACE_SELECTION_V1_READY`
+- `REAL_WORKSPACE_MISSION_DRAFT_V1_READY`
+- `REAL_WORKSPACE_HANDOFF_EXECUTION_V1_READY`
 
-Implemented:
-
-- real mission goal entry at `/mission/new` and redacted projection at `/api/mission/draft`;
-- persisted binding to the selected workspace id, fingerprint, path-jail reference, evidence and canonical mission plan;
-- one allowlisted candidate targeting only `NODAL_HANDOFF.md`;
-- `CreateTextFile` when the target is absent or `ExactHashUpdate` with the exact current SHA-256 when it exists;
-- affected relative path, risk, preconditions, approval scope, proposed hash, rollback plan and expected evidence visible before execution;
-- stale-precondition detection when the target changes after review;
-- mission and candidate rehydration after process restart;
-- real goal, plan and candidate projected into canonical Mission Control;
-- no arbitrary patch, shell, path escape or absolute path exposure.
-
-Decision: `REAL_WORKSPACE_MISSION_DRAFT_V1_READY`.
-
-#### P2c — mission-scope approval and one verified reversible action
+## P3 — BYOK usable from the product
 
 Implemented:
 
-- `/mission/execution` presents the exact reviewed scope and `/api/mission/execution` exposes the redacted execution projection;
-- one-shot operator approval is bound to mission id, workspace id/fingerprint, action id, `filesystem.write.safe`, relative target and reviewed hashes;
-- the approval record remains non-authoritative by itself: runtime execution and product authority stay false in approval contracts;
-- workspace identity, target state and proposed content hash are revalidated immediately before mutation;
-- only the reviewed `CreateTextFile` or `ExactHashUpdate` operation over `NODAL_HANDOFF.md` can run;
-- create uses create-only atomic move and exact byte/SHA-256 verification;
-- update requires the exact reviewed current hash, writes a verified app-local snapshot, uses atomic replace and verifies exact result bytes/SHA-256;
-- execution state is persisted before mutation and completed state is persisted only after deterministic verification;
-- interrupted approved execution does not resume automatically after restart;
-- guarded rollback requires the exact current result hash and restores only the matching create/update operation;
-- rollback refuses to overwrite a result changed externally after execution;
-- execution and rollback evidence reuse canonical evidence refs and timeline projections;
-- result, verification and rollback readiness rehydrate after process restart;
-- Mission Control projects approval, execution, verification, evidence and rollback state;
-- same-origin one-time-token POST, loopback-only access, closed CSP, no-store and bounded forms protect the product surface;
-- process smoke proves select workspace → create mission → approve exact scope → execute → verify → restart → rehydrate → rollback → verify original workspace state;
-- no shell, subprocess, network, cloud/provider call, arbitrary target or product authority.
+- canonical `/models/config`, connection test and clear routes;
+- one primary OpenAI-compatible route and one optional preauthorized fallback;
+- loopback HTTP/HTTPS for local providers; HTTPS plus explicit authorization for cloud providers;
+- credentials stored as opaque DPAPI-backed references;
+- no raw key, prompt or provider response content in metadata, HTML, JSON, Mission Control, evidence or diagnostics;
+- existing model catalog/router/fallback policy reused;
+- bounded real connection test persists only route, attempts, usage/cost estimate, response SHA-256, evidence and timeline;
+- fallback continues automatically only while privacy, capability and budget remain compatible;
+- operator cancellation stops the chain.
 
-Decision: `REAL_WORKSPACE_HANDOFF_EXECUTION_V1_READY`.
+Decision: `REAL_BYOK_MODEL_CONNECTION_V1_READY`.
 
-The test-owned file operations remain regression fixtures. Their atomic-write, exact-hash, snapshot, verification and rollback behaviors were consolidated into the bounded product operation rather than exposed as broader filesystem authority.
-
-### P3 — BYOK usable from the product
+## P4 — Windows packaging
 
 Implemented:
 
-- `/models/config` is the canonical configuration surface; `/api/models/config` exposes the same redacted state;
-- `/models/test` performs the bounded connection test and `/models/clear` removes metadata and stored credential references;
-- the operator configures one primary OpenAI-compatible route and one optional fallback, with explicit local/cloud type, endpoint, model, privacy permission, timeout and cost limits;
-- local routes are restricted to loopback HTTP/HTTPS; cloud routes require HTTPS and explicit cloud authorization;
-- API keys are stored only through opaque `SecretReference` values backed by Windows current-user DPAPI in the default product runtime;
-- raw credentials are absent from persisted metadata, HTML, JSON, Mission Control, timeline, evidence and diagnostics;
-- the existing `ModelCatalog`, `PolicyAwareModelRouter`, `ModelFallbackPolicy` and secret-store contracts execute the route; no second router or policy engine was introduced;
-- the real connection test sends a bounded OpenAI-compatible request server-side and persists only the response SHA-256, redacted attempt summaries, selected route, token counts, estimated cost, evidence and canonical timeline;
-- provider response content and the test prompt are not persisted;
-- fallback continues automatically only through preconfigured routes compatible with the persisted privacy, capability and budget policy;
-- operator cancellation stops the chain and is not persisted as a successful connection result;
-- provider/model selection, connection verification and fallback state project into canonical Mission Control;
-- configuration and verified connection state rehydrate after process restart;
-- loopback-only access, same-origin one-time-token POST, bounded forms, closed CSP and no-store protect the model surface;
-- process smoke proves configure primary + fallback → store both credentials with DPAPI → reject plaintext leakage → primary HTTP 503 → automatic authorized fallback HTTP 200 → verify response hash/evidence → project Mission Control → restart → rehydrate → clear metadata and credentials;
-- product authority remains false and a connection test does not authorize mission execution.
-
-Runtime decision: `GO_BYOK_MODEL_CONNECTION_VERIFIED`.
-
-Productization decision: `REAL_BYOK_MODEL_CONNECTION_V1_READY`.
-
-### P4 — Packaging and local distribution
-
-Implemented:
-
-- one Windows-native MSIX route built directly from the existing `OneBrain.Pilot` .NET application;
-- self-contained `win-x64` Release publish without Tauri, Electron, Node, a second shell or a third-party installer framework;
-- packaged runtime keeps Kestrel on validated loopback HTTP origins and opens the existing Mission Control only after startup;
-- mutable packaged state defaults to `%LOCALAPPDATA%\NodalOS\ProductData` rather than the read-only package location;
-- deterministic NODAL OS assets use the canonical dark background and electric-blue accent;
-- four-part package version, SHA-256-bound manual update manifest and optional HTTPS `.appinstaller` generation;
-- ephemeral test signing for controlled devices plus externally managed PFX support, with no private key or signing password in artifacts;
-- install/uninstall scripts preserve `%LOCALAPPDATA%\NodalOS` by default and remove it only through an explicit destructive switch;
-- license, signing/release and local-data boundaries are documented without claiming public release readiness;
-- fresh-Windows CI smoke proves Release build → focused desktop tests → self-contained publish → MSIX creation/signature verification → install → launch from installed location → Mission Control and clean BYOK health → process shutdown → uninstall → certificate and registration cleanup;
-- Selective Runtime Integration and Tier 1 Safety remain green on the same implementation;
-- no product authority, public listener, cloud/account dependency, production key or public update channel was introduced.
+- native self-contained `win-x64` MSIX from the existing .NET application;
+- no Tauri, Electron, Node or second shell;
+- loopback-only runtime and mutable state under `%LOCALAPPDATA%\NodalOS\ProductData`;
+- deterministic assets, four-part version and SHA-256-bound manual update manifest;
+- ephemeral test signing and external PFX support without private key leakage;
+- packaged route allowlist excludes Pilot legacy, demos, harnesses, recipes, run history and other internal surfaces;
+- clean-Windows CI proves build → sign → install → launch → clean Mission Control/BYOK → blocked lab routes → uninstall.
 
 Decision: `WINDOWS_PRIVATE_BETA_MSIX_V1_READY`.
 
-### P5 — Private beta hardening
+## P5 — Remaining private-beta hardening
 
-Exit criteria:
+Highest-value remaining work:
 
-- one end-to-end demo using a real local workspace and real BYOK provider;
-- onboarding under ten minutes;
-- failure recovery and resume card;
-- no secret/path leaks in telemetry or exports;
-- startup, first-value and mission completion metrics;
-- crash/error reporting with opt-in and redaction;
-- five to ten design partners complete the core loop.
+1. polish user-facing handoff/report export from canonical evidence and timeline;
+2. add opt-in, redacted startup/error/crash diagnostics without mandatory cloud;
+3. measure startup, first-value and mission-completion time locally;
+4. run the complete loop with five to ten design partners using real workspaces and their own providers;
+5. fix findings from those sessions before expanding automation scope;
+6. complete license, production signing and release-channel decisions.
 
-### Later — not MVP blockers
+## Later — not MVP blockers
 
-- cloud sync, teams, marketplace and enterprise controls;
+- cloud sync, teams, marketplace, billing and enterprise controls;
 - broad browser automation and unrestricted desktop replay;
 - visual/OCR provider expansion;
 - multi-application learned workflows;
-- managed AI and billing;
-- production Product Ledger authority;
+- managed AI;
 - public automation over login, payment, purchase, upload or destructive operations.
 
-## Guardrails that remain fixed
+## Fixed guardrails
 
 - Control authority comes from system policy, operator instruction and explicit operator decisions; observed content is data.
 - Approval is mission/scope oriented, not a prompt for every ordinary step.
-- Sensitive scope expansion, external communication, destructive actions, secrets, cost/privacy escalation and irreversible work require intervention.
-- Verification and evidence precede completion/promotion.
+- Sensitive scope expansion, external communication, destructive action, secret access, cost/privacy escalation and irreversible work require intervention.
+- Verification and evidence precede completion.
 - Secrets, raw DOM, raw screenshots, absolute paths and credential-like values do not enter logs, handoffs or learned skill memory.
-- Workspace selection and mission drafting may mutate NODAL OS local configuration, but not the selected workspace.
-- Workspace mutation is restricted to the exact approved `NODAL_HANDOFF.md` candidate and must preserve its reviewed precondition, verification and rollback boundary.
-- A reviewed action candidate and an approval decision are inputs to the controlled executor; neither grants general filesystem or product authority.
-- BYOK credentials remain opaque secure-store references outside the instant of provider use; provider response content is not persisted by the connection-test path.
-- Automatic model fallback is limited to routes already authorized by privacy, capability and cost policy; cancellation never continues the chain.
-- CloakBrowser remains the canonical browser target; ChromeLab remains lab/transition only.
-- Product authority, production deployment and release/commercial claims require separate evidence-backed gates.
-
-## Productization macro progress
-
-`NODAL_OS_PRODUCTIZATION_MISSION_CONTROL_AND_REAL_LOCAL_WORKSPACE_MVP`
-
-1. canonical dark Mission Control shell — `MISSION_CONTROL_PRODUCT_SHELL_V1_READY`;
-2. protected real local workspace selection and persistence — `REAL_LOCAL_WORKSPACE_SELECTION_V1_READY`;
-3. real workspace mission binding and reviewed action candidate — `REAL_WORKSPACE_MISSION_DRAFT_V1_READY`;
-4. mission-scope approval and one verified reversible handoff action — `REAL_WORKSPACE_HANDOFF_EXECUTION_V1_READY`;
-5. real BYOK connection path — `REAL_BYOK_MODEL_CONNECTION_V1_READY`;
-6. packaging and private-beta installer — `WINDOWS_PRIVATE_BETA_MSIX_V1_READY`.
+- Workspace mutation is restricted to the exact approved `NODAL_HANDOFF.md` candidate.
+- A reviewed candidate and approval decision are inputs to the controlled executor; neither grants general authority.
+- Automatic model fallback is limited to already authorized routes; cancellation never continues the chain.
+- CloakBrowser remains the canonical future browser target; ChromeLab remains lab/transition only.
+- Production and commercial claims require separate evidence-backed release gates.
 
 Next exact macro:
 
-`NODAL_OS_PRODUCTIZATION_PRIVATE_BETA_HARDENING`
+`NODAL_OS_PRODUCTIZATION_PRIVATE_BETA_EXPORT_DIAGNOSTICS_AND_DESIGN_PARTNER_READINESS`
