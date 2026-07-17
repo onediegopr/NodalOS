@@ -23,7 +23,7 @@ The generated PFX and password are temporary and are deleted after signing. They
 
 ```powershell
 ./eng/packaging/build-msix.ps1 `
-  -Version 0.1.0.0 `
+  -Version 0.1.0.3 `
   -SigningPfxPath C:\secure\nodal-os-signing.pfx
 ```
 
@@ -37,7 +37,7 @@ The repository must remain `NO-GO` for public/commercial release until all of th
 
 1. owner-approved source terms, product/end-user terms and any applicable private-beta evaluation terms;
 2. exact third-party notices generated and reviewed from the final release-candidate package, including self-contained runtime-pack notices;
-3. a supported non-preview .NET SDK/runtime and a clean dependency/vulnerability review for the release candidate;
+3. a supported non-preview .NET SDK/runtime and a clean dependency/vulnerability review for the final release candidate;
 4. a stable package identity and publisher;
 5. a CA-trusted, Microsoft-managed or Store signing strategy;
 6. a controlled release branch/tag and immutable version;
@@ -48,9 +48,11 @@ The repository must remain `NO-GO` for public/commercial release until all of th
 11. rollback or downgrade policy;
 12. explicit owner approval for public distribution.
 
+The `0.1.0.3` private-beta candidate already demonstrates the supported-runtime portion of item 3 on .NET 10 LTS and a clean dependency inventory. Public release still requires repeating that evidence against the final signed payload.
+
 The license and dependency inventory source of truth is `docs/distribution/license-status.md`. A checklist is not complete merely because a generic license file exists; the selected terms, bundled notices and final payload must agree.
 
-Until these prerequisites are evidenced, MSIX artifacts are private-beta engineering evidence only. The current `0.1.0.0` self-contained package remains suitable only for controlled evaluation under its existing boundary; it is not a public release candidate.
+Until these prerequisites are evidenced, MSIX artifacts are private-beta engineering evidence only. The current `0.1.0.3` self-contained package remains suitable only for controlled evaluation under its existing boundary; it is not a public release candidate.
 
 ## Version policy
 
