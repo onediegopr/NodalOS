@@ -2,27 +2,32 @@
 
 Status: private-beta operating runbook. Not a public release plan, customer-data authorization or commercial launch.
 
+## External-session prerequisite
+
+External design-partner sessions may begin only after the owner approves written private-beta evaluation terms and the allowed distribution scope. Until that happens, this runbook is limited to internal participants or sessions run on an operator-controlled test device. It does not authorize sending the package, certificate or install link to external users.
+
 ## Purpose
 
-Run the complete NODAL OS loop with five to ten design partners and learn from real use before expanding product scope.
+Prepare and, once the prerequisite above is satisfied, run the complete NODAL OS loop with five to ten design partners and learn from real use before expanding product scope.
 
 The field loop is intentionally narrow:
 
 1. install the test-signed Windows private-beta package;
-2. open a real but non-critical local workspace;
-3. create one real mission;
-4. review the proposed plan and exact `NODAL_HANDOFF.md` action;
-5. approve, execute and verify that action;
-6. inspect timeline and evidence;
-7. download the canonical Markdown handoff;
-8. optionally exercise guarded rollback;
-9. record observed friction and the opt-in local timings.
+2. configure and test an authorized participant-owned provider in `/models/config`;
+3. open a real but non-critical local workspace;
+4. create one real mission;
+5. review the proposed plan and exact `NODAL_HANDOFF.md` action;
+6. approve, execute and verify that action;
+7. inspect timeline and evidence;
+8. download the canonical Markdown handoff;
+9. optionally exercise guarded rollback;
+10. record observed friction and the opt-in local timings.
 
 The output of this block is evidence from use and a small set of reproducible fixes. It is not a reason to add browser automation, cloud sync, teams, billing, marketplace, managed AI or broader filesystem authority.
 
 ## Cohort
 
-Recruit five to ten people from the current initial ICP:
+After the external-session prerequisite is satisfied, recruit five to ten people from the current initial ICP:
 
 - technical founders and product builders;
 - independent developers;
@@ -33,11 +38,12 @@ Recruit five to ten people from the current initial ICP:
 A participant should have:
 
 - a Windows 10/11 x64 test device;
+- administrator/elevation access when the build is test-signed;
 - a local repository or document workspace that is useful but non-critical;
 - a current backup or clean source-control state;
 - permission to use that workspace and its contents;
 - an OpenAI-compatible local or cloud provider they are authorized to use;
-- 45 to 60 minutes for one observed session.
+- 50 to 70 minutes for one observed session.
 
 Do not use regulated, production-only, unrecoverable or customer-confidential material in the first cohort.
 
@@ -59,11 +65,13 @@ Installation and uninstall instructions remain canonical in:
 - `docs/distribution/windows-private-beta-packaging.md`;
 - `docs/distribution/privacy-and-local-data.md`.
 
-For a controlled test-signed build:
+For a controlled test-signed build, open PowerShell **as administrator** and run:
 
 ```powershell
 ./Install-NodalOS.ps1 -TrustTestCertificate
 ```
+
+The elevation is required because the installer imports the test certificate into the local-machine `TrustedPeople` store. A production/CA-trusted signature would not require this test-certificate step.
 
 Default uninstall preserves `%LOCALAPPDATA%\NodalOS`. Removing user data remains a separate explicit action:
 
@@ -75,7 +83,7 @@ Default uninstall preserves `%LOCALAPPDATA%\NodalOS`. Removing user data remains
 
 The repository currently has no root license and issue `#28` remains open for product terms and third-party notices. This runbook does not authorize sending the package to external users or publishing a download.
 
-Until explicit private-beta terms are approved, run sessions on an operator-controlled test device or under separately approved written participation terms. Never post the test-signed bundle, certificate or install link publicly.
+Until explicit private-beta terms are approved, run sessions on an operator-controlled test device or with internal participants. After terms are approved, keep each external session inside the written participation and distribution scope. Never post the test-signed bundle, certificate or install link publicly.
 
 ## Data boundary
 
@@ -85,6 +93,7 @@ Before the session, explain these facts plainly:
 - the package is an engineering private-beta artifact, not a production release;
 - workspace mutation is limited to the reviewed `NODAL_HANDOFF.md` candidate;
 - BYOK credentials remain protected under the current Windows user;
+- the facilitator must never ask to view, copy or transcribe an API key;
 - diagnostics and activation timings are disabled by default;
 - enabling diagnostics stores a bounded local JSONL file and performs no automatic upload;
 - sharing a handoff, screenshot, diagnostic file or session note is always a human decision.
@@ -107,11 +116,11 @@ This repository and its issue tracker are public. Keep per-participant session r
 
 ### 1. Install and first launch — 5 to 10 minutes
 
-The participant installs the package and opens Mission Control without facilitator takeover.
+The participant installs the package and opens Mission Control without facilitator takeover. For a test-signed build, the participant or device operator performs the certificate-install step from elevated PowerShell.
 
 Observe:
 
-- certificate/install friction;
+- certificate/install/elevation friction;
 - whether the app launch is understood;
 - whether the clean `NotStarted` state is clear;
 - unexpected browser, firewall or Windows trust prompts;
@@ -119,7 +128,22 @@ Observe:
 
 Do not teach product concepts until the participant has described what they believe the first screen means.
 
-### 2. Workspace and mission — 10 minutes
+### 2. BYOK provider configuration — 5 to 10 minutes
+
+The participant opens `/models/config`, configures an authorized local or cloud OpenAI-compatible route and runs the bounded connection test.
+
+Observe:
+
+- whether local versus cloud routing is understood;
+- whether cloud authorization and privacy copy are clear;
+- whether endpoint, model and cost/timeout fields are understandable;
+- whether the participant trusts the credential-storage explanation;
+- whether connection success, failure and optional preauthorized fallback are understandable;
+- whether any raw key, prompt or response appears where it must remain excluded.
+
+Do not ask the participant to expose the credential. Do not deliberately break a working provider merely to manufacture a fallback event.
+
+### 3. Workspace and mission — 10 minutes
 
 The participant selects a non-critical local workspace and writes one useful mission in their own words.
 
@@ -131,7 +155,7 @@ Observe:
 - whether paths or private content appear where they should remain redacted;
 - whether the reviewed plan matches the participant's intent.
 
-### 3. Review, approval and execution — 10 to 15 minutes
+### 4. Review, approval and execution — 10 to 15 minutes
 
 The participant reviews the exact action over `NODAL_HANDOFF.md`, then decides whether to approve it.
 
@@ -145,7 +169,7 @@ Observe:
 
 Stop the session immediately if NODAL OS attempts to write outside the reviewed target, exposes a secret/private absolute path, binds outside loopback or claims success without verification.
 
-### 4. Evidence, handoff and optional rollback — 10 minutes
+### 5. Evidence, handoff and optional rollback — 10 minutes
 
 The participant inspects the timeline/evidence and downloads `/mission/handoff.md`.
 
@@ -161,17 +185,18 @@ The first successful canonical handoff download is the current `time-to-first-va
 
 Exercise rollback only when the participant understands the result and the workspace remains in the expected exact-hash state. Never modify the file externally merely to force a positive rollback result.
 
-### 5. Debrief — 10 minutes
+### 6. Debrief — 10 minutes
 
 Ask only after the participant has completed or stopped the loop:
 
 1. What did you think NODAL OS would do before you used it?
 2. At what point did you first receive useful value?
 3. What was unclear or required facilitator help?
-4. Did the approval explain enough to make a decision?
-5. Did the evidence and handoff make the result trustworthy or transferable?
-6. What would prevent you from using this on another non-critical project next week?
-7. What is the smallest improvement that would make the next session materially better?
+4. Did provider setup make local/cloud privacy and cost boundaries clear?
+5. Did the approval explain enough to make a decision?
+6. Did the evidence and handoff make the result trustworthy or transferable?
+7. What would prevent you from using this on another non-critical project next week?
+8. What is the smallest improvement that would make the next session materially better?
 
 Avoid feature brainstorming until the observed core-loop problems are captured.
 
@@ -197,6 +222,7 @@ Do not copy the local JSONL file by default. A participant may inspect and share
 - Do not paste a prepared mission unless the participant cannot formulate one.
 - Do not explain a control before the participant attempts to interpret it.
 - Do not bypass, pre-approve or weaken product safety behavior.
+- Do not view or handle the participant's API key.
 - Do not fix code during the session.
 - Record the exact screen/state where friction happened.
 - Separate observed behavior from participant opinion and facilitator inference.
@@ -219,7 +245,8 @@ Copy this section once per participant. Store the redacted record in an approved
 - Windows version:
 - Workspace class:
 - Provider class: local / authorized cloud
-- Operator-controlled device or approved private-beta terms confirmed: yes / no
+- External evaluation terms approved, or internal/operator-controlled session: yes / no
+- Test-signed install elevation available: yes / no / not applicable
 - Existing backup or clean source-control state: yes / no
 - Diagnostics explicitly enabled: yes / no
 
@@ -227,6 +254,9 @@ Copy this section once per participant. Store the redacted record in an approved
 
 - Install completed: yes / no
 - Clean Mission Control understood without help: yes / no
+- Provider configured without exposing the credential: yes / no
+- Bounded provider connection test completed: yes / no
+- Provider/fallback result understood: yes / no / not applicable
 - Workspace selected: yes / no
 - Real mission created: yes / no
 - Exact action understood before approval: yes / no
@@ -263,6 +293,7 @@ Copy this section once per participant. Store the redacted record in an approved
 
 ### Trust and control
 
+- Provider/privacy interpretation:
 - Approval interpretation:
 - Evidence interpretation:
 - Handoff usefulness:
@@ -280,7 +311,7 @@ Copy this section once per participant. Store the redacted record in an approved
 
 ## Session conclusion
 
-- Core loop completed: yes / no
+- Complete provider → mission → approval → verification → handoff loop completed: yes / no
 - Smallest next-session improvement:
 - Do not build / out-of-scope requests mentioned:
 ```
@@ -290,7 +321,7 @@ Copy this section once per participant. Store the redacted record in an approved
 Use the existing audit vocabulary; do not invent another scoring system.
 
 - **P0:** credible safety, secret exposure, data-loss or authority-boundary failure. Stop further sessions until understood.
-- **P1:** the participant cannot complete install or the core mission → approval → verification → handoff loop.
+- **P1:** the participant cannot complete installation/provider setup or the mission → approval → verification → handoff loop.
 - **P2:** substantial confusion, recovery failure or repeated facilitator intervention with a viable workaround.
 - **P3:** copy, spacing or polish that does not block or materially undermine trust.
 
@@ -298,7 +329,7 @@ One reproducible behavior should become one issue. Include the exact build and s
 
 ## Cohort review
 
-After five to ten sessions:
+After five to ten valid sessions:
 
 1. group duplicate findings by reproduced behavior;
 2. compare local timing ranges without setting arbitrary targets retroactively;
