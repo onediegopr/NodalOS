@@ -95,9 +95,17 @@ try {
     if (-not $mission.accepted -or
         -not $mission.localOnly -or
         -not $mission.readOnly -or
+        $mission.fixtureBacked -or
         -not $mission.secretsExcluded -or
         $mission.productAuthorityGranted) {
         throw "Installed Mission Control did not preserve the local private-beta boundary."
+    }
+    if ($mission.missionStatus -ne "NotStarted" -or
+        $mission.progressPercent -ne 0 -or
+        $mission.activeModel -ne "not configured" -or
+        $mission.timeline.Count -ne 0 -or
+        $mission.evidenceRefs.Count -ne 0) {
+        throw "Fresh installed Mission Control exposed synthetic work instead of a clean product state."
     }
 
     $models = Wait-Json "$BaseUrl/api/models/config"
@@ -109,8 +117,24 @@ try {
 
     $root = Invoke-WebRequest -Uri "$BaseUrl/" -TimeoutSec 10
     if ($root.StatusCode -ne 200 -or
-        $root.Content -notmatch 'data-nodal-os="mission-control-product-shell"') {
-        throw "Installed desktop package did not expose the canonical Mission Control root."
+        $root.Content -notmatch 'data-nodal-os="mission-control-product-shell"' -or
+        $root.Content -notmatch 'data-fixture-backed="false"' -or
+        $root.Content -match 'fixture-fallback-chat|Primary fixture model|Abrir laboratorio Pilot legado') {
+        throw "Installed desktop package did not expose the clean canonical Mission Control root."
+    }
+
+    foreach ($blockedRoute in @(
+        "/pilot/legacy",
+        "/recording/demo",
+        "/executor-harness",
+        "/runs",
+        "/recipes",
+        "/guia"
+    )) {
+        $blocked = Invoke-WebRequest -Uri "$BaseUrl$blockedRoute" -TimeoutSec 10 -SkipHttpErrorCheck
+        if ($blocked.StatusCode -ne 404) {
+            throw "Packaged runtime exposed non-product route $blockedRoute with status $($blocked.StatusCode)."
+        }
     }
 }
 finally {

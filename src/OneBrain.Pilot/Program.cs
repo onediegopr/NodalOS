@@ -31,6 +31,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls(urls);
 
 var app = builder.Build();
+if (packaged)
+{
+    app.Use(async (context, next) =>
+    {
+        if (!NodalOsDesktopLaunchRuntime.IsPackagedProductPath(context.Request.Path.Value))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        await next(context);
+    });
+}
 if (NodalOsDesktopLaunchRuntime.ShouldOpenBrowser(args, packaged))
     NodalOsDesktopLaunchRuntime.RegisterBrowserLaunch(app.Lifetime, urls);
 var router = new PilotIntentRouter();
