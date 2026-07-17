@@ -54,7 +54,7 @@ public sealed class MissionControlProductHandoffExportRouteTests
         StringAssert.Contains(
             response.Content.Headers.ContentDisposition?.ToString() ?? string.Empty,
             "nodal-os-handoff-mission-123.md");
-        Assert.IsTrue(response.Headers.CacheControl?.NoStore);
+        Assert.IsTrue(response.Headers.CacheControl?.NoStore == true);
         StringAssert.Contains(response.Headers.GetValues("Content-Security-Policy").Single(), "default-src 'none'");
         StringAssert.Contains(markdown, "Prepare a human-ready handoff");
         StringAssert.Contains(markdown, "NODAL_HANDOFF.md");
@@ -93,6 +93,15 @@ public sealed class MissionControlProductHandoffExportRouteTests
         Assert.IsFalse(MissionControlProductHandoffExportEndpointMapper.IsRequestAllowed(null));
         Assert.IsFalse(MissionControlProductHandoffExportEndpointMapper.IsRequestAllowed(IPAddress.Parse("192.0.2.88")));
         Assert.IsTrue(MissionControlProductHandoffExportEndpointMapper.IsRequestAllowed(IPAddress.Loopback));
+    }
+
+    [TestMethod]
+    public void PackagedSurfaceIncludesOnlyTheCanonicalProductHandoffRoute()
+    {
+        Assert.IsTrue(NodalOsDesktopLaunchRuntime.IsPackagedProductPath(
+            MissionControlProductHandoffExportEndpointMapper.MarkdownRoute));
+        Assert.IsFalse(NodalOsDesktopLaunchRuntime.IsPackagedProductPath(
+            BoundedWorkspaceHandoffExportEndpointMapper.MarkdownRoute));
     }
 
     public TestContext TestContext { get; set; } = null!;
