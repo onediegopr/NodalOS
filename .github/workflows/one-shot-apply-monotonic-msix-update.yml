@@ -99,15 +99,13 @@ jobs:
               './eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.4"',
               './eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.5"'
           )
-
-          Path(".github/workflows/one-shot-apply-monotonic-msix-update.yml").unlink()
           PY
 
-      - name: Commit focused changes and remove this workflow
+      - name: Commit focused changes
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add --all
+          git add eng/packaging/build-msix.ps1 eng/ci/smoke-desktop-package.ps1 .github/workflows/desktop-package.yml
           git commit -m "fix: enforce monotonic MSIX package updates"
           git push origin HEAD:fix/monotonic-msix-updates
