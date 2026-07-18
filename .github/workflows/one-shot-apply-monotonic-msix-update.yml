@@ -1,4 +1,4 @@
-name: One-shot apply monotonic MSIX update hardening
+name: One-shot monotonic MSIX runner probe
 
 on:
   push:
@@ -13,109 +13,21 @@ on:
       - ".github/workflows/one-shot-apply-monotonic-msix-update.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply:
+  probe:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Checkout branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: fix/monotonic-msix-updates
-          fetch-depth: 0
-
-      - name: Apply focused package and smoke changes
-        shell: bash
-        run: |
-          set -o pipefail
-          python - <<'PY' 2>&1 | tee "$RUNNER_TEMP/monotonic-patch.log"
-          from pathlib import Path
-
-          def replace_once(path: str, old: str, new: str) -> None:
-              file = Path(path)
-              text = file.read_text(encoding="utf-8-sig")
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(f"Expected one match in {path}, found {count}: {old[:100]!r}")
-              file.write_text(text.replace(old, new, 1), encoding="utf-8")
-
-          build = "eng/packaging/build-msix.ps1"
-          install_guard_marker = '`$testSigned = -not [string]::IsNullOrWhiteSpace("$certificateLeaf")'
-          install_guard = '''`$installedPackage = Get-AppxPackage -Name "$PackageName" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (`$installedPackage) {
-              `$installedVersion = [version]`$installedPackage.Version
-              `$candidateVersion = [version]"$packageVersion"
-              if (`$candidateVersion -le `$installedVersion) {
-                  throw "NODAL OS $packageVersion is not newer than the installed version `$installedVersion. Same-version reinstall and downgrade are blocked."
-              }
-          }
-
-          '''
-          replace_once(build, install_guard_marker, install_guard + install_guard_marker)
-          replace_once(build, 'Add-AppxPackage -Path `$package -ForceUpdateFromAnyVersion', 'Add-AppxPackage -Path `$package')
-          replace_once(
-              build,
-              'updatePolicy = "Install a newer package with the same identity and a greater four-part version. No automatic public channel is enabled."',
-              'updatePolicy = "Install only a package with the same identity and a strictly greater four-part version. Same-version reinstall and downgrade are blocked. Test-signed revisions should be clean-uninstalled with their original bundle unless the same signing identity is reused. No automatic public channel is enabled."'
-          )
-          replace_once(
-              build,
-              '- Install a newer four-part version to update. The current private-beta channel is manual unless a validated HTTPS .appinstaller URI is supplied at build time.',
-              '- Updates require the same package identity and a strictly greater four-part version; same-version reinstall and downgrade are blocked before package mutation. Test-signed revisions should be clean-uninstalled with their original bundle unless the same signing identity is reused. The current private-beta channel is manual unless a validated HTTPS .appinstaller URI is supplied at build time.'
-          )
-
-          smoke = "eng/ci/smoke-desktop-package.ps1"
-          readme_marker = '    $installReadmeText = Get-Content (Join-Path $outputRoot "README-INSTALL.txt") -Raw\n'
-          readme_checks = '''    if ($installScriptText -match 'ForceUpdateFromAnyVersion' -or
-              $installScriptText -notmatch 'Same-version reinstall and downgrade are blocked') {
-              throw "Private-beta installer does not enforce monotonic package versions."
-          }
-          '''
-          replace_once(smoke, readme_marker, readme_marker + readme_checks)
-
-          build_info_marker = '    $buildInfoPath = Join-Path $installed.InstallLocation "nodal-build-info.json"\n'
-          same_version_test = '''    $sameVersionRefusalObserved = $false
-          try {
-              & $installScriptPath -TrustTestCertificate
-          }
-          catch {
-              if ($_.Exception.Message -notmatch "not newer than the installed version") { throw }
-              $sameVersionRefusalObserved = $true
-          }
-          if (-not $sameVersionRefusalObserved) {
-              throw "Bundled installer did not block a same-version reinstall."
-          }
-          $installedAfterRefusal = Get-AppxPackage -Name $packageName -ErrorAction Stop
-          if (-not $installedAfterRefusal -or $installedAfterRefusal.Version.ToString() -ne $Version) {
-              throw "Same-version refusal changed the installed package."
-          }
-
-          '''
-          replace_once(smoke, build_info_marker, same_version_test + build_info_marker)
-
-          replace_once(
-              ".github/workflows/desktop-package.yml",
-              './eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.4"',
-              './eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.5"'
-          )
-          PY
-
-      - name: Upload patch diagnostics
-        if: always()
+      - name: Probe runner
+        run: echo "NODAL_OS_MONOTONIC_RUNNER_PROBE=PASS" | tee monotonic-runner-probe.txt
+      - name: Upload probe
         uses: actions/upload-artifact@v4
         with:
-          name: monotonic-patch-diagnostics
-          path: ${{ runner.temp }}/monotonic-patch.log
-          if-no-files-found: warn
-          retention-days: 3
-
-      - name: Commit focused changes
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add eng/packaging/build-msix.ps1 eng/ci/smoke-desktop-package.ps1 .github/workflows/desktop-package.yml
-          git commit -m "fix: enforce monotonic MSIX package updates"
-          git push origin HEAD:fix/monotonic-msix-updates
+          name: monotonic-runner-probe
+          path: monotonic-runner-probe.txt
+          if-no-files-found: error
+          retention-days: 1
