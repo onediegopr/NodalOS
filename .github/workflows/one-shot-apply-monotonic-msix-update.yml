@@ -37,25 +37,12 @@ jobs:
               text = file.read_text(encoding="utf-8-sig")
               count = text.count(old)
               if count != 1:
-                  raise SystemExit(f"Expected one match in {path}, found {count}")
+                  raise SystemExit(f"Expected one match in {path}, found {count}: {old[:100]!r}")
               file.write_text(text.replace(old, new, 1), encoding="utf-8")
 
           build = "eng/packaging/build-msix.ps1"
-          replace_once(
-              build,
-              '''`$actualSha256 = (Get-FileHash -LiteralPath `$package -Algorithm SHA256).Hash.ToLowerInvariant()
-          if (`$actualSha256 -ne `$expectedSha256) {
-              throw "NODAL OS package SHA-256 does not match the generated update manifest. Installation stopped."
-          }
-
-          `$testSigned = -not [string]::IsNullOrWhiteSpace("$certificateLeaf")
-          ''',
-              '''`$actualSha256 = (Get-FileHash -LiteralPath `$package -Algorithm SHA256).Hash.ToLowerInvariant()
-          if (`$actualSha256 -ne `$expectedSha256) {
-              throw "NODAL OS package SHA-256 does not match the generated update manifest. Installation stopped."
-          }
-
-          `$installedPackage = Get-AppxPackage -Name "$PackageName" -ErrorAction SilentlyContinue | Select-Object -First 1
+          install_guard_marker = '`$testSigned = -not [string]::IsNullOrWhiteSpace("$certificateLeaf")'
+          install_guard = '''`$installedPackage = Get-AppxPackage -Name "$PackageName" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (`$installedPackage) {
               `$installedVersion = [version]`$installedPackage.Version
               `$candidateVersion = [version]"$packageVersion"
@@ -64,14 +51,9 @@ jobs:
               }
           }
 
-          `$testSigned = -not [string]::IsNullOrWhiteSpace("$certificateLeaf")
           '''
-          )
-          replace_once(
-              build,
-              'Add-AppxPackage -Path `$package -ForceUpdateFromAnyVersion',
-              'Add-AppxPackage -Path `$package'
-          )
+          replace_once(build, install_guard_marker, install_guard + install_guard_marker)
+          replace_once(build, 'Add-AppxPackage -Path `$package -ForceUpdateFromAnyVersion', 'Add-AppxPackage -Path `$package')
           replace_once(
               build,
               'updatePolicy = "Install a newer package with the same identity and a greater four-part version. No automatic public channel is enabled."',
@@ -84,58 +66,33 @@ jobs:
           )
 
           smoke = "eng/ci/smoke-desktop-package.ps1"
-          replace_once(
-              smoke,
-              '''    if ($installScriptText -notmatch 'requires an elevated PowerShell' -or
-                  $installScriptText -notmatch 'SHA-256' -or
-                  $uninstallScriptText -notmatch 'LocalMachine\\TrustedPeople' -or
-                  $installReadmeText -notmatch 'exact included test-certificate trust') {
-                  throw "Private-beta operator scripts do not verify integrity or clean up their machine-wide certificate trust."
-              }
-          ''',
-              '''    if ($installScriptText -notmatch 'requires an elevated PowerShell' -or
-                  $installScriptText -notmatch 'SHA-256' -or
-                  $installScriptText -match 'ForceUpdateFromAnyVersion' -or
-                  $installScriptText -notmatch 'Same-version reinstall and downgrade are blocked' -or
-                  $uninstallScriptText -notmatch 'LocalMachine\\TrustedPeople' -or
-                  $installReadmeText -notmatch 'exact included test-certificate trust') {
-                  throw "Private-beta operator scripts do not verify integrity, enforce monotonic versions or clean up their machine-wide certificate trust."
-              }
+          readme_marker = '    $installReadmeText = Get-Content (Join-Path $outputRoot "README-INSTALL.txt") -Raw\n'
+          readme_checks = '''    if ($installScriptText -match 'ForceUpdateFromAnyVersion' -or
+              $installScriptText -notmatch 'Same-version reinstall and downgrade are blocked') {
+              throw "Private-beta installer does not enforce monotonic package versions."
+          }
           '''
-          )
-          replace_once(
-              smoke,
-              '''    $installed = Get-AppxPackage -Name $packageName -ErrorAction Stop
-              if (-not $installed -or $installed.Version.ToString() -ne $Version) {
-                  throw "Installed package identity or version is incorrect."
-              }
+          replace_once(smoke, readme_marker, readme_marker + readme_checks)
 
-              $buildInfoPath = Join-Path $installed.InstallLocation "nodal-build-info.json"
-          ''',
-              '''    $installed = Get-AppxPackage -Name $packageName -ErrorAction Stop
-              if (-not $installed -or $installed.Version.ToString() -ne $Version) {
-                  throw "Installed package identity or version is incorrect."
-              }
+          build_info_marker = '    $buildInfoPath = Join-Path $installed.InstallLocation "nodal-build-info.json"\n'
+          same_version_test = '''    $sameVersionRefusalObserved = $false
+          try {
+              & $installScriptPath -TrustTestCertificate
+          }
+          catch {
+              if ($_.Exception.Message -notmatch "not newer than the installed version") { throw }
+              $sameVersionRefusalObserved = $true
+          }
+          if (-not $sameVersionRefusalObserved) {
+              throw "Bundled installer did not block a same-version reinstall."
+          }
+          $installedAfterRefusal = Get-AppxPackage -Name $packageName -ErrorAction Stop
+          if (-not $installedAfterRefusal -or $installedAfterRefusal.Version.ToString() -ne $Version) {
+              throw "Same-version refusal changed the installed package."
+          }
 
-              $sameVersionRefusalObserved = $false
-              try {
-                  & $installScriptPath -TrustTestCertificate
-              }
-              catch {
-                  if ($_.Exception.Message -notmatch "not newer than the installed version") { throw }
-                  $sameVersionRefusalObserved = $true
-              }
-              if (-not $sameVersionRefusalObserved) {
-                  throw "Bundled installer did not block a same-version reinstall."
-              }
-              $installedAfterRefusal = Get-AppxPackage -Name $packageName -ErrorAction Stop
-              if (-not $installedAfterRefusal -or $installedAfterRefusal.Version.ToString() -ne $Version) {
-                  throw "Same-version refusal changed the installed package."
-              }
-
-              $buildInfoPath = Join-Path $installed.InstallLocation "nodal-build-info.json"
           '''
-          )
+          replace_once(smoke, build_info_marker, same_version_test + build_info_marker)
 
           replace_once(
               ".github/workflows/desktop-package.yml",
@@ -150,7 +107,7 @@ jobs:
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "4189822+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --all
           git commit -m "fix: enforce monotonic MSIX package updates"
           git push origin HEAD:fix/monotonic-msix-updates
