@@ -29,7 +29,8 @@ jobs:
       - name: Apply focused package and smoke changes
         shell: bash
         run: |
-          python - <<'PY'
+          set -o pipefail
+          python - <<'PY' 2>&1 | tee "$RUNNER_TEMP/monotonic-patch.log"
           from pathlib import Path
 
           def replace_once(path: str, old: str, new: str) -> None:
@@ -100,6 +101,15 @@ jobs:
               './eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.5"'
           )
           PY
+
+      - name: Upload patch diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monotonic-patch-diagnostics
+          path: ${{ runner.temp }}/monotonic-patch.log
+          if-no-files-found: warn
+          retention-days: 3
 
       - name: Commit focused changes
         shell: bash
