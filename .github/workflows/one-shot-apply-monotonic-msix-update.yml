@@ -6,6 +6,11 @@ on:
       - fix/monotonic-msix-updates
     paths:
       - ".github/workflows/one-shot-apply-monotonic-msix-update.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/one-shot-apply-monotonic-msix-update.yml"
 
 permissions:
   contents: write
@@ -145,7 +150,7 @@ jobs:
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "4189822+github-actions[bot]@users.noreply.github.com"
           git add --all
           git commit -m "fix: enforce monotonic MSIX package updates"
           git push origin HEAD:fix/monotonic-msix-updates
