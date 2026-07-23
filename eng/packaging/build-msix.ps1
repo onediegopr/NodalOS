@@ -158,7 +158,6 @@ New-NodalLogo 44 44 (Join-Path $assetsRoot "Square44x44Logo.png")
 New-NodalLogo 150 150 (Join-Path $assetsRoot "Square150x150Logo.png")
 New-NodalLogo 310 310 (Join-Path $assetsRoot "Square310x310Logo.png")
 New-NodalLogo 310 150 (Join-Path $assetsRoot "Wide310x150Logo.png")
-
 $signingMode = "test"
 $testCertificate = $null
 $testCertificatePath = $null
@@ -276,7 +275,7 @@ $manualUpdate = [ordered]@{
     thirdPartyComponentsSha256 = $thirdPartyInventoryHash
     thirdPartyLegalApprovalGranted = $false
     minimumWindowsVersion = "10.0.19041.0"
-    updatePolicy = "Install a newer package with the same identity and a greater four-part version. No automatic public channel is enabled."
+    updatePolicy = "Install only a package with the same identity and a strictly greater four-part version. Same-version reinstall and downgrade are blocked. Test-signed revisions should be clean-uninstalled with their original bundle unless the same signing identity is reused. No automatic public channel is enabled."
     productAuthorityGranted = $false
     generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
 }
@@ -327,6 +326,15 @@ if (`$actualSha256 -ne `$expectedSha256) {
     throw "NODAL OS package SHA-256 does not match the generated update manifest. Installation stopped."
 }
 
+`$installedPackage = Get-AppxPackage -Name "$PackageName" -ErrorAction SilentlyContinue | Select-Object -First 1
+if (`$installedPackage) {
+    `$installedVersion = [version]`$installedPackage.Version
+    `$candidateVersion = [version]"$packageVersion"
+    if (`$candidateVersion -le `$installedVersion) {
+        throw "NODAL OS $packageVersion is not newer than the installed version `$installedVersion. Same-version reinstall and downgrade are blocked."
+    }
+}
+
 `$testSigned = -not [string]::IsNullOrWhiteSpace("$certificateLeaf")
 `$certificate = if (`$testSigned) { Join-Path `$root "$certificateLeaf" } else { `$null }
 if (`$testSigned) {
@@ -348,7 +356,7 @@ if (`$testSigned) {
     }
     Import-Certificate -FilePath `$certificate -CertStoreLocation "Cert:\LocalMachine\TrustedPeople" | Out-Null
 }
-Add-AppxPackage -Path `$package -ForceUpdateFromAnyVersion
+Add-AppxPackage -Path `$package
 Write-Host "NODAL OS $packageVersion installed for the current user."
 Write-Host "MSIX SHA-256 verified: `$actualSha256"
 "@
@@ -408,7 +416,7 @@ This package is not a production or public release.
 - Test-signed builds require explicit machine-wide trust of the included certificate. Open an elevated PowerShell and run .\Install-NodalOS.ps1 -TrustTestCertificate on a controlled test device. The installer verifies the exact MSIX SHA-256 before changing trust or installing.
 - ThirdParty/ contains an exact package-derived technical notice inventory. It requires owner/legal review and does not authorize public distribution.
 - Public distribution requires a CA-trusted or Microsoft-managed signing identity matching the package publisher.
-- Install a newer four-part version to update. The current private-beta channel is manual unless a validated HTTPS .appinstaller URI is supplied at build time.
+- Updates require the same package identity and a strictly greater four-part version; same-version reinstall and downgrade are blocked before package mutation. Test-signed revisions should be clean-uninstalled with their original bundle unless the same signing identity is reused. The current private-beta channel is manual unless a validated HTTPS .appinstaller URI is supplied at build time.
 - For a test-signed bundle, run .\Uninstall-NodalOS.ps1 from an elevated PowerShell so the package and exact included test-certificate trust are both removed. Pass -RemoveUserData only when local workspaces, evidence references and model configuration should also be removed.
 "@
 [System.IO.File]::WriteAllText((Join-Path $OutputDirectory "README-INSTALL.txt"), $installReadme, [System.Text.UTF8Encoding]::new($false))

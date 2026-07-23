@@ -65,6 +65,10 @@ try {
     $installScriptText = Get-Content $installScriptPath -Raw
     $uninstallScriptText = Get-Content $uninstallScriptPath -Raw
     $installReadmeText = Get-Content (Join-Path $outputRoot "README-INSTALL.txt") -Raw
+    if ($installScriptText -match 'ForceUpdateFromAnyVersion' -or
+        $installScriptText -notmatch 'Same-version reinstall and downgrade are blocked') {
+        throw "Private-beta installer does not enforce monotonic package versions."
+    }
     if ($installScriptText -notmatch 'requires an elevated PowerShell' -or
         $installScriptText -notmatch 'SHA-256' -or
         $uninstallScriptText -notmatch 'LocalMachine\\TrustedPeople' -or
@@ -170,6 +174,22 @@ try {
     $installed = Get-AppxPackage -Name $packageName -ErrorAction Stop
     if (-not $installed -or $installed.Version.ToString() -ne $Version) {
         throw "Installed package identity or version is incorrect."
+    }
+
+    $sameVersionRefusalObserved = $false
+    try {
+        & $installScriptPath -TrustTestCertificate
+    }
+    catch {
+        if ($_.Exception.Message -notmatch "not newer than the installed version") { throw }
+        $sameVersionRefusalObserved = $true
+    }
+    if (-not $sameVersionRefusalObserved) {
+        throw "Bundled installer did not block a same-version reinstall."
+    }
+    $installedAfterRefusal = Get-AppxPackage -Name $packageName -ErrorAction Stop
+    if (-not $installedAfterRefusal -or $installedAfterRefusal.Version.ToString() -ne $Version) {
+        throw "Same-version refusal changed the installed package."
     }
 
     $buildInfoPath = Join-Path $installed.InstallLocation "nodal-build-info.json"

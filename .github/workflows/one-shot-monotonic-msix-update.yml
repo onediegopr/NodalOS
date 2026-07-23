@@ -1,0 +1,52 @@
+name: One-shot monotonic MSIX update audit
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "eng/packaging/build-msix.ps1"
+      - "eng/release/**"
+      - "eng/ci/one-shot-monotonic-msix-update.ps1"
+      - ".github/workflows/one-shot-monotonic-msix-update.yml"
+      - "global.json"
+
+permissions:
+  contents: read
+
+jobs:
+  monotonic-update-audit:
+    runs-on: windows-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pinned .NET 10 LTS
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.302
+
+      - name: Exercise same-identity update and fail-closed version transitions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $log = Join-Path $env:RUNNER_TEMP "nodal-monotonic-msix-update.log"
+          try {
+              ./eng/ci/one-shot-monotonic-msix-update.ps1 *>&1 | Tee-Object -FilePath $log
+          }
+          catch {
+              $_ | Out-String | Tee-Object -FilePath $log -Append
+              throw
+          }
+
+      - name: Upload redacted monotonic update evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monotonic-msix-update-evidence
+          path: |
+            ${{ runner.temp }}/nodal-monotonic-update-evidence/monotonic-update-evidence.json
+            ${{ runner.temp }}/nodal-monotonic-msix-update.log
+          if-no-files-found: warn
+          retention-days: 3

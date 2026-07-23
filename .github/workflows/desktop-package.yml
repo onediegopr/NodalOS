@@ -66,7 +66,7 @@ jobs:
         shell: pwsh
         run: |
           $log = Join-Path $env:RUNNER_TEMP "nodal-desktop-package-smoke.log"
-          ./eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.4" *>&1 | Tee-Object -FilePath $log
+          ./eng/ci/smoke-desktop-package.ps1 -Version "0.1.0.5" *>&1 | Tee-Object -FilePath $log
           exit $LASTEXITCODE
 
       - name: Upload private-beta package and diagnostics
