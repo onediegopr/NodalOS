@@ -34,6 +34,8 @@ public sealed record NodalOsTeachNodalCaptureStepRequest(
 public sealed record NodalOsTeachNodalProposalEditRequest(
     string Title,
     string Summary,
+    int ExpectedVersion,
+    DateTimeOffset ExpectedUpdatedAtUtc,
     IReadOnlyDictionary<string, string> StepIntents,
     IReadOnlyDictionary<string, string> StepTargets);
 
@@ -53,6 +55,7 @@ public sealed record NodalOsTeachNodalProductStepSnapshot(
 public sealed record NodalOsTeachNodalProductProposal(
     string DraftId,
     int Version,
+    DateTimeOffset? BaseDraftUpdatedAtUtc,
     NodalOsTeachNodalProposalKind Kind,
     string Title,
     string Summary,
