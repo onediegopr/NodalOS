@@ -104,18 +104,20 @@ public static class NodalOsTeachNodalProductEndpointMapper
                 else if (pair.Key.StartsWith("stepTarget_", StringComparison.Ordinal))
                     targets[pair.Key["stepTarget_".Length..]] = pair.Value.FirstOrDefault() ?? string.Empty;
             }
+
+            var service = serviceFactory();
             try
             {
-                return Result(context, serviceFactory().UpdateProposal(
+                return Result(context, service.UpdateProposal(
                     new NodalOsTeachNodalProposalEditRequest(
                         form["proposalTitle"].FirstOrDefault() ?? string.Empty,
                         form["proposalSummary"].FirstOrDefault() ?? string.Empty,
                         intents,
                         targets)));
             }
-            catch (InvalidOperationException)
+            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
             {
-                return Results.Redirect(HtmlRoute);
+                return Result(context, service.RejectReview(exception.Message));
             }
         });
 
@@ -132,13 +134,7 @@ public static class NodalOsTeachNodalProductEndpointMapper
             var form = await ReadAuthorizedFormAsync(context).ConfigureAwait(false);
             if (form is null)
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
-            try
-            {
-                serviceFactory().Discard();
-            }
-            catch (InvalidOperationException)
-            {
-            }
+            serviceFactory().Discard();
             return Results.Redirect(HtmlRoute);
         });
 
