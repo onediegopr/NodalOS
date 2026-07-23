@@ -35,7 +35,7 @@ The `/teach` product surface reuses the existing Living Skills foundations inste
 1. name the workflow and select one application by switching it to foreground;
 2. record one semantic step at a time through bounded UI Automation before/after snapshots;
 3. enter or dictate the trusted intent with Windows dictation (`Win + H`);
-4. bind typed values only through `variable-ref:`, `literal-ref:`, `secret-ref:` or `secret://` references;
+4. bind typed values only through `variable-ref:`, `literal-ref:` or an opaque `secret-ref:` reference;
 5. finish the demonstration and inspect the generated proposal;
 6. edit title, summary, step intent and visible targets;
 7. save a local versioned draft or discard it.
