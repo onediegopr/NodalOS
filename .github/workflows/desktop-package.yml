@@ -52,13 +52,13 @@ jobs:
           dotnet build src/OneBrain.Pilot/OneBrain.Pilot.csproj --configuration Release --no-restore --verbosity minimal
           dotnet build tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj --configuration Release --no-restore --verbosity minimal
 
-      - name: Run desktop launch tests
+      - name: Run desktop launch and Teach NODAL tests
         shell: pwsh
         run: |
           dotnet test tests/OneBrain.Recipes.Tests/OneBrain.Recipes.Tests.csproj `
             --configuration Release `
             --no-build `
-            --filter "FullyQualifiedName~NodalOsDesktopLaunchRuntimeTests" `
+            --filter "FullyQualifiedName~NodalOsDesktopLaunchRuntimeTests|FullyQualifiedName~NodalOsTeachNodalProductTests" `
             --logger "console;verbosity=normal"
 
       - name: Build, install, exercise core loop, verify and uninstall MSIX

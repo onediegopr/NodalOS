@@ -32,6 +32,14 @@ public static class NodalOsDesktopLaunchRuntime
         "/api/models/config",
         "/models/test",
         "/models/clear",
+        "/teach",
+        "/api/teach",
+        "/teach/bind",
+        "/teach/capture",
+        "/teach/finish",
+        "/teach/review",
+        "/teach/save",
+        "/teach/discard",
         "/settings/diagnostics"
     };
 

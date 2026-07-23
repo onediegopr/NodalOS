@@ -238,6 +238,33 @@ try {
         throw "Fresh installed model configuration did not start clean and redacted."
     }
 
+    $teach = Wait-Json "$BaseUrl/api/teach"
+    if ($teach.state -ne "Empty" -or
+        $teach.bound -or
+        $teach.observationCount -ne 0 -or
+        $teach.voiceEngineAdded -or
+        $teach.videoStored -or
+        $teach.audioStored -or
+        $teach.rawInputStored -or
+        $teach.globalHooksUsed -or
+        $teach.replayEnabled -or
+        $teach.executionAuthorityGranted -or
+        $teach.productAuthorityGranted) {
+        throw "Fresh installed Teach NODAL surface violated its review-only privacy or authority boundary."
+    }
+    $teachPage = Invoke-WebRequest -Uri "$BaseUrl/teach" -TimeoutSec 10
+    if ($teachPage.StatusCode -ne 200 -or
+        $teachPage.Content -notmatch 'data-nodal-os="teach-nodal-product-surface"' -or
+        $teachPage.Content -notmatch 'data-video-stored="false"' -or
+        $teachPage.Content -notmatch 'data-audio-stored="false"' -or
+        $teachPage.Content -notmatch 'data-raw-input-stored="false"' -or
+        $teachPage.Content -notmatch 'data-global-hooks="false"' -or
+        $teachPage.Content -notmatch 'data-replay-enabled="false"' -or
+        $teachPage.Content -notmatch 'data-execution-authority="false"' -or
+        $teachPage.Content -notmatch 'data-product-authority="false"') {
+        throw "Installed Teach NODAL page did not expose the bounded review-only product contract."
+    }
+
     $root = Invoke-WebRequest -Uri "$BaseUrl/" -TimeoutSec 10
     if ($root.StatusCode -ne 200 -or
         $root.Content -notmatch 'data-nodal-os="mission-control-product-shell"' -or
@@ -248,6 +275,8 @@ try {
 
     foreach ($blockedRoute in @(
         "/pilot/legacy",
+        "/runtime/teach-nodal",
+        "/api/runtime/teach-nodal",
         "/recording/demo",
         "/executor-harness",
         "/runs",

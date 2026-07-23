@@ -14,6 +14,7 @@ public static class PilotRuntimeIntegrationEndpointMapper
 
         var packaged = NodalOsDesktopLaunchRuntime.IsPackaged();
         var localDiagnostics = NodalOsLocalDiagnostics.CreateDefault();
+        var teachNodalProductService = NodalOsTeachNodalProductRuntime.CreateDefault();
         Func<NodalOsWorkspaceSelectionService> workspaceSelectionServiceFactory =
             NodalOsWorkspaceSelectionRuntime.CreateDefault;
         Func<NodalOsWorkspaceMissionDraftService> missionDraftServiceFactory =
@@ -64,6 +65,9 @@ public static class PilotRuntimeIntegrationEndpointMapper
             app,
             () => localDiagnostics,
             () => packaged);
+        NodalOsTeachNodalProductEndpointMapper.MapNodalOsTeachNodalProductSurface(
+            app,
+            () => teachNodalProductService);
         ProductLedgerLocalDevRouteEndpointMapper.MapProductLedgerLocalDevRoutePreview(
             (IEndpointRouteBuilder)app,
             environment);
