@@ -168,6 +168,8 @@ public static class NodalOsTeachNodalProductHtmlRenderer
             ? $"""
 <form method="post" action="{NodalOsTeachNodalProductEndpointMapper.ReviewRoute}">
   <input type="hidden" name="{NodalOsTeachNodalProductEndpointMapper.TokenField}" value="{H(token)}">
+  <input type="hidden" name="proposalVersion" value="{proposal.Version}">
+  <input type="hidden" name="proposalUpdatedAtUtc" value="{H(proposal.UpdatedAtUtc.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture))}">
   <div class="fields">
     <label class="full">Título<input name="proposalTitle" maxlength="180" value="{H(proposal.Title)}" required></label>
     <label class="full">Resumen<textarea name="proposalSummary" maxlength="500" required>{H(proposal.Summary)}</textarea></label>

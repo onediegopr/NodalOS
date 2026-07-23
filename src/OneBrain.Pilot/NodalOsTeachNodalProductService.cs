@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using OneBrain.Core.History;
@@ -21,6 +22,8 @@ public sealed class NodalOsTeachNodalProductService
     private const string CapabilityId = "desktop.uia.action";
     private const int MaximumSteps = 12;
     private const string EditedCompilationCode = "TEACH_NODAL_REVIEW_EDIT_REQUIRES_REVERIFICATION";
+    private const string StaleDraftMessage = "Draft changed after this review started. Refresh and review the current version before saving.";
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> DraftFileGates = new(StringComparer.OrdinalIgnoreCase);
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -266,6 +269,7 @@ public sealed class NodalOsTeachNodalProductService
             var proposal = new NodalOsTeachNodalProductProposal(
                 overlap?.DraftId ?? "teach-draft-" + Hash($"{active.Binding.ApplicationRef}|{active.Title}|{active.StartedAtUtc.UtcDateTime.Ticks}", 24),
                 overlap?.Version ?? 0,
+                overlap?.UpdatedAtUtc,
                 overlap is null ? NodalOsTeachNodalProposalKind.NewSkill : NodalOsTeachNodalProposalKind.UpdateCandidate,
                 active.Title,
                 active.Steps.Count == 1
@@ -336,6 +340,12 @@ public sealed class NodalOsTeachNodalProductService
             {
                 RequireStateUnsafe(NodalOsTeachNodalProductState.ReviewReady, "Teach NODAL has no editable review-ready proposal.");
                 var proposal = _proposal ?? throw new InvalidOperationException("No Teach NODAL proposal is available for review.");
+                if (request.ExpectedVersion != proposal.Version ||
+                    request.ExpectedUpdatedAtUtc != proposal.UpdatedAtUtc)
+                {
+                    throw new InvalidOperationException(StaleDraftMessage);
+                }
+
                 var title = Text(request.Title, 180, "proposal title");
                 var summary = Text(request.Summary, 500, "proposal summary");
                 var changed = !string.Equals(title, proposal.Title, StringComparison.Ordinal) ||
@@ -415,31 +425,43 @@ public sealed class NodalOsTeachNodalProductService
             }
 
             Directory.CreateDirectory(_draftRoot);
-            var existing = ReadProposal(DraftPath(proposal.DraftId));
-            var persisted = proposal with
+            var target = DraftPath(proposal.DraftId);
+            var fileGate = DraftFileGates.GetOrAdd(target, _ => new SemaphoreSlim(1, 1));
+            await fileGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            NodalOsTeachNodalProductProposal persisted;
+            try
             {
-                Version = (existing?.Version ?? proposal.Version) + 1,
-                Kind = existing is null ? proposal.Kind : NodalOsTeachNodalProposalKind.UpdateCandidate,
-                CreatedAtUtc = existing?.CreatedAtUtc ?? proposal.CreatedAtUtc,
-                UpdatedAtUtc = DateTimeOffset.UtcNow,
-                ReviewRequired = true,
-                SaveAllowed = true,
-                ScriptsIncluded = false,
-                RawInputStored = false,
-                RawScreenshotStored = false,
-                RawDomStored = false,
-                GlobalHooksUsed = false,
-                ExecutionAuthorityGranted = false,
-                ProductAuthorityGranted = false
-            };
-            var target = DraftPath(persisted.DraftId);
-            var temporary = target + ".tmp";
-            await File.WriteAllTextAsync(
-                temporary,
-                JsonSerializer.Serialize(persisted, JsonOptions),
-                new UTF8Encoding(false),
-                cancellationToken).ConfigureAwait(false);
-            File.Move(temporary, target, overwrite: true);
+                var existing = ReadProposal(target);
+                EnsureCurrentDraftVersion(proposal, existing);
+                persisted = proposal with
+                {
+                    Version = proposal.Version + 1,
+                    BaseDraftUpdatedAtUtc = existing?.UpdatedAtUtc,
+                    Kind = existing is null ? proposal.Kind : NodalOsTeachNodalProposalKind.UpdateCandidate,
+                    CreatedAtUtc = existing?.CreatedAtUtc ?? proposal.CreatedAtUtc,
+                    UpdatedAtUtc = DateTimeOffset.UtcNow,
+                    ReviewRequired = true,
+                    SaveAllowed = true,
+                    ScriptsIncluded = false,
+                    RawInputStored = false,
+                    RawScreenshotStored = false,
+                    RawDomStored = false,
+                    GlobalHooksUsed = false,
+                    ExecutionAuthorityGranted = false,
+                    ProductAuthorityGranted = false
+                };
+                var temporary = target + ".tmp";
+                await File.WriteAllTextAsync(
+                    temporary,
+                    JsonSerializer.Serialize(persisted, JsonOptions),
+                    new UTF8Encoding(false),
+                    cancellationToken).ConfigureAwait(false);
+                File.Move(temporary, target, overwrite: true);
+            }
+            finally
+            {
+                fileGate.Release();
+            }
 
             lock (_stateGate)
             {
@@ -682,8 +704,6 @@ public sealed class NodalOsTeachNodalProductService
                 continue;
             if (string.Equals(value, label, StringComparison.OrdinalIgnoreCase))
                 labelScore += 10;
-            else if (value.Contains(label, StringComparison.OrdinalIgnoreCase))
-                labelScore += 5;
         }
         if (labelScore == 0)
             return 0;
@@ -796,11 +816,32 @@ public sealed class NodalOsTeachNodalProductService
     private string DraftPath(string draftId) =>
         Path.Combine(_draftRoot, Slug(draftId, 120, "draft id") + ".json");
 
+    private static void EnsureCurrentDraftVersion(
+        NodalOsTeachNodalProductProposal proposal,
+        NodalOsTeachNodalProductProposal? existing)
+    {
+        if (proposal.Version == 0)
+        {
+            if (existing is not null)
+                throw new InvalidOperationException(StaleDraftMessage);
+            return;
+        }
+
+        if (existing is null ||
+            existing.Version != proposal.Version ||
+            (proposal.BaseDraftUpdatedAtUtc is not null &&
+                existing.UpdatedAtUtc != proposal.BaseDraftUpdatedAtUtc))
+        {
+            throw new InvalidOperationException(StaleDraftMessage);
+        }
+    }
+
     private static string ParameterReference(string? value, bool secretByReference)
     {
         var requiredPrefix = secretByReference ? "secret-ref:" : null;
         if (string.IsNullOrWhiteSpace(value))
             throw new ArgumentException("parameter reference is required.");
+        RejectUnsafeRawParameterReference(value, secretByReference);
         var normalized = SafeRuntimeText.Sanitize(value, 180);
         var validPrefix = secretByReference
             ? normalized.StartsWith(requiredPrefix!, StringComparison.Ordinal)
@@ -814,6 +855,8 @@ public sealed class NodalOsTeachNodalProductService
         if (separator < 0 || separator == normalized.Length - 1)
             throw new ArgumentException("parameter reference requires a non-empty opaque identifier.");
         var identifier = normalized[(separator + 1)..];
+        if (identifier.Contains("[REDACTED", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("parameter reference contains sanitized secret marker content.");
         if (HistorySanitizer.ContainsSecretLikeContent(identifier))
             throw new ArgumentException("parameter reference contains raw-looking secret material.");
         if (HistorySanitizer.SanitizeText(normalized).Contains("[LOCAL_PATH]", StringComparison.Ordinal))
@@ -821,6 +864,48 @@ public sealed class NodalOsTeachNodalProductService
         if (!secretByReference && HistorySanitizer.ContainsSecretLikeContent(normalized))
             throw new ArgumentException("non-secret parameter reference contains secret-like content.");
         return normalized;
+    }
+
+    private static void RejectUnsafeRawParameterReference(string value, bool secretByReference)
+    {
+        var separator = value.IndexOf(':');
+        var identifier = separator >= 0 && separator < value.Length - 1
+            ? value[(separator + 1)..]
+            : string.Empty;
+        if (string.IsNullOrWhiteSpace(identifier))
+            throw new ArgumentException("parameter reference requires a non-empty opaque identifier.");
+        if (identifier.Contains("[REDACTED", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("parameter reference contains sanitized secret marker content.");
+        if (HistorySanitizer.ContainsSecretLikeContent(value) ||
+            LooksLikeRawSecretReference(identifier))
+        {
+            throw new ArgumentException(secretByReference
+                ? "Sensitive input requires an opaque secret-ref: reference, not raw secret material."
+                : "non-secret parameter reference contains secret-like content.");
+        }
+        if (HistorySanitizer.SanitizeText(value).Contains("[LOCAL_PATH]", StringComparison.Ordinal))
+            throw new ArgumentException("parameter reference contains local-path content.");
+    }
+
+    private static bool LooksLikeRawSecretReference(string identifier)
+    {
+        var text = identifier.Trim();
+        if (text.Length == 0)
+            return false;
+        var lower = text.ToLowerInvariant();
+        if (lower.StartsWith("bearer ", StringComparison.Ordinal) ||
+            lower.Contains("api_key=", StringComparison.Ordinal) ||
+            lower.Contains("apikey=", StringComparison.Ordinal) ||
+            lower.Contains("token=", StringComparison.Ordinal) ||
+            lower.Contains("password=", StringComparison.Ordinal) ||
+            lower.Contains("secret=", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (lower.StartsWith("sk-", StringComparison.Ordinal) && lower.Length >= 8)
+            return true;
+        return false;
     }
 
     private static string Text(string? value, int maximumLength, string field)

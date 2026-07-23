@@ -112,6 +112,8 @@ public static class NodalOsTeachNodalProductEndpointMapper
                 new NodalOsTeachNodalProposalEditRequest(
                     form["proposalTitle"].FirstOrDefault() ?? string.Empty,
                     form["proposalSummary"].FirstOrDefault() ?? string.Empty,
+                    ParseExpectedVersion(form["proposalVersion"].FirstOrDefault()),
+                    ParseExpectedUpdatedAtUtc(form["proposalUpdatedAtUtc"].FirstOrDefault()),
                     intents,
                     targets),
                 context.RequestAborted).ConfigureAwait(false);
@@ -162,6 +164,32 @@ public static class NodalOsTeachNodalProductEndpointMapper
             NodalOsTeachNodalProductHtmlRenderer.Render(snapshot, IssueToken(context)),
             "text/html; charset=utf-8",
             statusCode: StatusCodes.Status422UnprocessableEntity);
+    }
+
+    private static int ParseExpectedVersion(string? value)
+    {
+        if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var version) ||
+            version < 0)
+        {
+            return -1;
+        }
+
+        return version;
+    }
+
+    private static DateTimeOffset ParseExpectedUpdatedAtUtc(string? value)
+    {
+        if (!DateTimeOffset.TryParseExact(
+                value,
+                "O",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal,
+                out var updatedAtUtc))
+        {
+            return DateTimeOffset.MinValue;
+        }
+
+        return updatedAtUtc;
     }
 
     private static bool IsRequestAllowed(IPAddress? remoteAddress) =>
