@@ -112,6 +112,11 @@ public sealed class NodalOsTeachNodalProductService
                 return SnapshotUnsafe();
             }
         }
+        catch (OperationCanceledException)
+        {
+            FailClosed("Teach NODAL application binding was cancelled.");
+            throw;
+        }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
             return FailClosed(exception.Message);
@@ -178,7 +183,16 @@ public sealed class NodalOsTeachNodalProductService
                 userInterrupted: false,
                 evidenceRefs: [$"evidence:teach-product-observation:{stepId}"],
                 completedAtUtc: DateTimeOffset.UtcNow);
-
+            var verificationReport = new SemanticVerifierV2().Verify(
+                verificationPlan,
+                new SemanticVerificationContext(
+                    observation.Before,
+                    observation.After,
+                    observation.ActionExecuted,
+                    observation.ActionRejected,
+                    observation.UserInterrupted,
+                    observation.VerificationElapsed,
+                    observation.EvidenceRefs));
             var changed = !string.Equals(
                 observation.Before.StateFingerprint,
                 observation.After.StateFingerprint,
@@ -193,7 +207,7 @@ public sealed class NodalOsTeachNodalProductService
                 observation.Before.StateFingerprint,
                 observation.After.StateFingerprint,
                 changed,
-                changed && !observation.After.HasBlockingConflicts,
+                verificationReport.Success,
                 $"evidence:teach-product-observation:{stepId}");
 
             lock (_stateGate)
@@ -209,6 +223,7 @@ public sealed class NodalOsTeachNodalProductService
         catch (OperationCanceledException)
         {
             CancelPending(token);
+            FailClosed("Teach NODAL step capture was cancelled and the session was closed.");
             throw;
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
@@ -292,6 +307,11 @@ public sealed class NodalOsTeachNodalProductService
                 return SnapshotUnsafe();
             }
         }
+        catch (OperationCanceledException)
+        {
+            FailClosed("Teach NODAL proposal compilation was cancelled.");
+            throw;
+        }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
         {
             return FailClosed(exception.Message);
@@ -302,66 +322,83 @@ public sealed class NodalOsTeachNodalProductService
         }
     }
 
-    public NodalOsTeachNodalProductSnapshot UpdateProposal(NodalOsTeachNodalProposalEditRequest request)
+    public async Task<NodalOsTeachNodalProductSnapshot> UpdateProposalAsync(
+        NodalOsTeachNodalProposalEditRequest request,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.StepIntents);
         ArgumentNullException.ThrowIfNull(request.StepTargets);
-        lock (_stateGate)
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            RequireStateUnsafe(NodalOsTeachNodalProductState.ReviewReady, "Teach NODAL has no editable review-ready proposal.");
-            var proposal = _proposal ?? throw new InvalidOperationException("No Teach NODAL proposal is available for review.");
-            var title = Text(request.Title, 180, "proposal title");
-            var summary = Text(request.Summary, 500, "proposal summary");
-            var changed = !string.Equals(title, proposal.Title, StringComparison.Ordinal) ||
-                !string.Equals(summary, proposal.Summary, StringComparison.Ordinal);
-            var steps = proposal.Steps.Select(step =>
+            lock (_stateGate)
             {
-                var intent = request.StepIntents.TryGetValue(step.StepId, out var requestedIntent)
-                    ? Text(requestedIntent, 300, $"intent for {step.StepId}")
-                    : step.Intent;
-                var target = request.StepTargets.TryGetValue(step.StepId, out var requestedTarget)
-                    ? Text(requestedTarget, 240, $"target for {step.StepId}")
-                    : step.TargetLabel;
-                var stepChanged = !string.Equals(intent, step.Intent, StringComparison.Ordinal) ||
-                    !string.Equals(target, step.TargetLabel, StringComparison.Ordinal);
-                changed |= stepChanged;
-                return step with
+                RequireStateUnsafe(NodalOsTeachNodalProductState.ReviewReady, "Teach NODAL has no editable review-ready proposal.");
+                var proposal = _proposal ?? throw new InvalidOperationException("No Teach NODAL proposal is available for review.");
+                var title = Text(request.Title, 180, "proposal title");
+                var summary = Text(request.Summary, 500, "proposal summary");
+                var changed = !string.Equals(title, proposal.Title, StringComparison.Ordinal) ||
+                    !string.Equals(summary, proposal.Summary, StringComparison.Ordinal);
+                var steps = proposal.Steps.Select(step =>
                 {
-                    Intent = intent,
-                    TargetLabel = target,
-                    Verified = stepChanged ? false : step.Verified
+                    var intent = request.StepIntents.TryGetValue(step.StepId, out var requestedIntent)
+                        ? Text(requestedIntent, 300, $"intent for {step.StepId}")
+                        : step.Intent;
+                    var target = request.StepTargets.TryGetValue(step.StepId, out var requestedTarget)
+                        ? Text(requestedTarget, 240, $"target for {step.StepId}")
+                        : step.TargetLabel;
+                    var stepChanged = !string.Equals(intent, step.Intent, StringComparison.Ordinal) ||
+                        !string.Equals(target, step.TargetLabel, StringComparison.Ordinal);
+                    changed |= stepChanged;
+                    return step with
+                    {
+                        Intent = intent,
+                        TargetLabel = target,
+                        Verified = stepChanged ? false : step.Verified
+                    };
+                }).ToArray();
+
+                if (!changed)
+                    return SnapshotUnsafe();
+
+                var findings = proposal.Findings
+                    .Append("Review edits changed the compiled proposal. Prior verification metadata is stale and re-verification is required before any future promotion or replay.")
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(value => value, StringComparer.Ordinal)
+                    .ToArray();
+                _proposal = proposal with
+                {
+                    Title = title,
+                    Summary = summary,
+                    Steps = steps,
+                    CompilationDecision = TeachNodalCompilationDecision.DraftNeedsReview.ToString(),
+                    CompilationCode = EditedCompilationCode,
+                    SkillFingerprint = string.Empty,
+                    Findings = findings,
+                    UpdatedAtUtc = DateTimeOffset.UtcNow,
+                    ReviewRequired = true,
+                    SaveAllowed = true
                 };
-            }).ToArray();
-
-            if (!changed)
+                _findings = findings;
+                _state = NodalOsTeachNodalProductState.ReviewReady;
                 return SnapshotUnsafe();
-
-            var findings = proposal.Findings
-                .Append("Review edits changed the compiled proposal. Prior verification metadata is stale and re-verification is required before any future promotion or replay.")
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(value => value, StringComparer.Ordinal)
-                .ToArray();
-            _proposal = proposal with
-            {
-                Title = title,
-                Summary = summary,
-                Steps = steps,
-                CompilationDecision = TeachNodalCompilationDecision.DraftNeedsReview.ToString(),
-                CompilationCode = EditedCompilationCode,
-                SkillFingerprint = string.Empty,
-                Findings = findings,
-                UpdatedAtUtc = DateTimeOffset.UtcNow,
-                ReviewRequired = true,
-                SaveAllowed = true
-            };
-            _findings = findings;
-            _state = NodalOsTeachNodalProductState.ReviewReady;
-            return SnapshotUnsafe();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            FailClosed("Teach NODAL proposal review was cancelled.");
+            throw;
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
+        {
+            return FailClosed(exception.Message);
+        }
+        finally
+        {
+            _operationGate.Release();
         }
     }
-
-    public NodalOsTeachNodalProductSnapshot RejectReview(string message) => FailClosed(message);
 
     public async Task<NodalOsTeachNodalProductSnapshot> SaveAsync(CancellationToken cancellationToken)
     {
@@ -415,6 +452,11 @@ public sealed class NodalOsTeachNodalProductService
                 return SnapshotUnsafe();
             }
         }
+        catch (OperationCanceledException)
+        {
+            FailClosed("Teach NODAL draft persistence was cancelled.");
+            throw;
+        }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException)
         {
             return FailClosed(exception.Message);
@@ -425,16 +467,24 @@ public sealed class NodalOsTeachNodalProductService
         }
     }
 
-    public NodalOsTeachNodalProductSnapshot Discard()
+    public async Task<NodalOsTeachNodalProductSnapshot> DiscardAsync(CancellationToken cancellationToken)
     {
-        TryReleaseBinding();
-        lock (_stateGate)
+        await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            _active = null;
-            _proposal = null;
-            _findings = [];
-            _state = NodalOsTeachNodalProductState.Empty;
-            return SnapshotUnsafe();
+            TryReleaseBinding();
+            lock (_stateGate)
+            {
+                _active = null;
+                _proposal = null;
+                _findings = [];
+                _state = NodalOsTeachNodalProductState.Empty;
+                return SnapshotUnsafe();
+            }
+        }
+        finally
+        {
+            _operationGate.Release();
         }
     }
 
@@ -585,8 +635,11 @@ public sealed class NodalOsTeachNodalProductService
         new(
             "verify-" + stepId,
             [Rule(stepId + "-target", SemanticVerificationRuleKind.ElementPresent, targetRef)],
-            [Rule(stepId + "-fingerprint", SemanticVerificationRuleKind.StateFingerprintChanged)],
-            [Rule(stepId + "-conflicts", SemanticVerificationRuleKind.NoBlockingConflicts)],
+            [
+                Rule(stepId + "-fingerprint", SemanticVerificationRuleKind.StateFingerprintChanged),
+                Rule(stepId + "-conflicts", SemanticVerificationRuleKind.NoBlockingConflicts)
+            ],
+            [],
             [],
             [$"evidence:teach-product-observation:{stepId}"],
             DemonstrationWindow.Add(TimeSpan.FromSeconds(5)),
@@ -622,20 +675,24 @@ public sealed class NodalOsTeachNodalProductService
 
     private static int Score(UnifiedElementSnapshot element, string label, string role)
     {
-        var score = 0;
+        var labelScore = 0;
         foreach (var property in new[] { "name", "text", "automationId", "value" })
         {
             if (!element.CanonicalProperties.TryGetValue(property, out var value))
                 continue;
             if (string.Equals(value, label, StringComparison.OrdinalIgnoreCase))
-                score += 10;
+                labelScore += 10;
             else if (value.Contains(label, StringComparison.OrdinalIgnoreCase))
-                score += 5;
+                labelScore += 5;
         }
-        if (element.CanonicalProperties.TryGetValue("role", out var elementRole) &&
-            string.Equals(elementRole, role, StringComparison.OrdinalIgnoreCase))
-            score += 3;
-        return score;
+        if (labelScore == 0)
+            return 0;
+
+        var roleBonus = element.CanonicalProperties.TryGetValue("role", out var elementRole) &&
+            string.Equals(elementRole, role, StringComparison.OrdinalIgnoreCase)
+            ? 3
+            : 0;
+        return labelScore + roleBonus;
     }
 
     private static string Property(UnifiedElementSnapshot element, string key, string fallback) =>
@@ -756,6 +813,9 @@ public sealed class NodalOsTeachNodalProductService
         var separator = normalized.IndexOf(':');
         if (separator < 0 || separator == normalized.Length - 1)
             throw new ArgumentException("parameter reference requires a non-empty opaque identifier.");
+        var identifier = normalized[(separator + 1)..];
+        if (HistorySanitizer.ContainsSecretLikeContent(identifier))
+            throw new ArgumentException("parameter reference contains raw-looking secret material.");
         if (HistorySanitizer.SanitizeText(normalized).Contains("[LOCAL_PATH]", StringComparison.Ordinal))
             throw new ArgumentException("parameter reference contains local-path content.");
         if (!secretByReference && HistorySanitizer.ContainsSecretLikeContent(normalized))
