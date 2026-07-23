@@ -2,6 +2,8 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using OneBrain.Core.Skills;
 
 namespace OneBrain.Pilot;
@@ -22,6 +24,7 @@ public static class NodalOsTeachNodalProductEndpointMapper
     private const long MaximumFormBytes = 64 * 1024;
     private static readonly TimeSpan TokenLifetime = TimeSpan.FromMinutes(10);
     private static readonly ConcurrentDictionary<string, DateTimeOffset> Tokens = new(StringComparer.Ordinal);
+    private static readonly JsonSerializerOptions ApiJsonOptions = CreateApiJsonOptions();
 
     public static IEndpointRouteBuilder MapNodalOsTeachNodalProductSurface(
         this IEndpointRouteBuilder endpoints,
@@ -35,7 +38,7 @@ public static class NodalOsTeachNodalProductEndpointMapper
             if (!IsRequestAllowed(context.Connection.RemoteIpAddress))
                 return Results.NotFound(new { decision = "TEACH_NODAL_LOCAL_ONLY" });
             ApplyHeaders(context.Response);
-            return Results.Json(serviceFactory().GetSnapshot());
+            return Results.Json(serviceFactory().GetSnapshot(), ApiJsonOptions);
         });
 
         endpoints.MapGet(HtmlRoute, (HttpContext context) =>
@@ -105,20 +108,14 @@ public static class NodalOsTeachNodalProductEndpointMapper
                     targets[pair.Key["stepTarget_".Length..]] = pair.Value.FirstOrDefault() ?? string.Empty;
             }
 
-            var service = serviceFactory();
-            try
-            {
-                return Result(context, service.UpdateProposal(
-                    new NodalOsTeachNodalProposalEditRequest(
-                        form["proposalTitle"].FirstOrDefault() ?? string.Empty,
-                        form["proposalSummary"].FirstOrDefault() ?? string.Empty,
-                        intents,
-                        targets)));
-            }
-            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
-            {
-                return Result(context, service.RejectReview(exception.Message));
-            }
+            var snapshot = await serviceFactory().UpdateProposalAsync(
+                new NodalOsTeachNodalProposalEditRequest(
+                    form["proposalTitle"].FirstOrDefault() ?? string.Empty,
+                    form["proposalSummary"].FirstOrDefault() ?? string.Empty,
+                    intents,
+                    targets),
+                context.RequestAborted).ConfigureAwait(false);
+            return Result(context, snapshot);
         });
 
         endpoints.MapPost(SaveRoute, async Task<IResult> (HttpContext context) =>
@@ -134,7 +131,7 @@ public static class NodalOsTeachNodalProductEndpointMapper
             var form = await ReadAuthorizedFormAsync(context).ConfigureAwait(false);
             if (form is null)
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
-            serviceFactory().Discard();
+            await serviceFactory().DiscardAsync(context.RequestAborted).ConfigureAwait(false);
             return Results.Redirect(HtmlRoute);
         });
 
@@ -207,6 +204,13 @@ public static class NodalOsTeachNodalProductEndpointMapper
             CryptographicOperations.ZeroMemory(left);
             CryptographicOperations.ZeroMemory(right);
         }
+    }
+
+    private static JsonSerializerOptions CreateApiJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.Converters.Add(new JsonStringEnumConverter());
+        return options;
     }
 
     private static void ApplyHeaders(HttpResponse response)
