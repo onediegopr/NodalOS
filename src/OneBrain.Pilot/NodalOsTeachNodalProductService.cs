@@ -20,6 +20,7 @@ public sealed class NodalOsTeachNodalProductService
 
     private const string CapabilityId = "desktop.uia.action";
     private const int MaximumSteps = 12;
+    private const string EditedCompilationCode = "TEACH_NODAL_REVIEW_EDIT_REQUIRES_REVERIFICATION";
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -63,6 +64,9 @@ public sealed class NodalOsTeachNodalProductService
         await _operationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            lock (_stateGate)
+                RequireStateUnsafe(NodalOsTeachNodalProductState.Empty, "Discard the current Teach NODAL session before binding another application.");
+
             var title = Text(request.WorkflowTitle, 180, "workflow title");
             var profileId = Slug(request.AppProfileName, 80, "application profile");
             await _delay(SwitchDelay, cancellationToken).ConfigureAwait(false);
@@ -70,7 +74,7 @@ public sealed class NodalOsTeachNodalProductService
             if (handle == IntPtr.Zero)
                 throw new InvalidOperationException("No foreground application was available after the switch countdown.");
 
-            ReleaseBinding();
+            TryReleaseBinding();
             var now = DateTimeOffset.UtcNow;
             var bindingId = "teach-product-binding-" + Hash($"{handle.ToInt64()}|{profileId}|{now.UtcDateTime.Ticks}", 20);
             var binding = _adapter.Bind(
@@ -130,6 +134,7 @@ public sealed class NodalOsTeachNodalProductService
             ActiveCapture active;
             lock (_stateGate)
             {
+                RequireStateUnsafe(NodalOsTeachNodalProductState.Bound, "Teach NODAL is not ready to capture a step.");
                 active = _active ?? throw new InvalidOperationException("Bind one foreground application before recording a step.");
                 if (_proposal is not null)
                     throw new InvalidOperationException("Save or discard the current proposal before recording more steps.");
@@ -139,8 +144,8 @@ public sealed class NodalOsTeachNodalProductService
             }
 
             var intent = Text(request.Intent, 300, "step intent");
-            var targetLabel = Text(request.TargetLabel, 240, "target label");
-            var targetRole = Text(request.TargetRole, 120, "target role");
+            var requestedTargetLabel = Text(request.TargetLabel, 240, "target label");
+            var requestedTargetRole = Text(request.TargetRole, 120, "target role");
             var sequence = active.Steps.Count + 1;
             var stepId = $"step-{sequence:D2}-{Slug(request.Kind.ToString(), 30, "action kind")}";
 
@@ -152,7 +157,9 @@ public sealed class NodalOsTeachNodalProductService
                 DateTimeOffset.UtcNow,
                 DemonstrationWindow.Add(TimeSpan.FromSeconds(5)));
 
-            var target = FindTarget(token.Before, targetLabel, targetRole);
+            var target = FindTarget(token.Before, requestedTargetLabel, requestedTargetRole);
+            var targetLabel = Property(target, "name", requestedTargetLabel);
+            var targetRole = Property(target, "role", requestedTargetRole);
             var action = BuildAction(active, request, stepId, intent, targetLabel, targetRole, target);
             var verificationPlan = BuildVerificationPlan(active.ProfileId, stepId, target.SemanticRef);
 
@@ -223,6 +230,7 @@ public sealed class NodalOsTeachNodalProductService
             ActiveCapture active;
             lock (_stateGate)
             {
+                RequireStateUnsafe(NodalOsTeachNodalProductState.Bound, "Teach NODAL is not ready to finish this demonstration.");
                 active = _active ?? throw new InvalidOperationException("No active Teach NODAL demonstration exists.");
                 if (active.Steps.Count == 0)
                     throw new InvalidOperationException("Record at least one semantic step before review.");
@@ -275,6 +283,12 @@ public sealed class NodalOsTeachNodalProductService
                 _state = saveAllowed
                     ? NodalOsTeachNodalProductState.ReviewReady
                     : NodalOsTeachNodalProductState.FailedClosed;
+                if (!saveAllowed)
+                {
+                    _active = null;
+                    _proposal = null;
+                    TryReleaseBinding();
+                }
                 return SnapshotUnsafe();
             }
         }
@@ -291,30 +305,63 @@ public sealed class NodalOsTeachNodalProductService
     public NodalOsTeachNodalProductSnapshot UpdateProposal(NodalOsTeachNodalProposalEditRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.StepIntents);
+        ArgumentNullException.ThrowIfNull(request.StepTargets);
         lock (_stateGate)
         {
+            RequireStateUnsafe(NodalOsTeachNodalProductState.ReviewReady, "Teach NODAL has no editable review-ready proposal.");
             var proposal = _proposal ?? throw new InvalidOperationException("No Teach NODAL proposal is available for review.");
-            var steps = proposal.Steps.Select(step => step with
+            var title = Text(request.Title, 180, "proposal title");
+            var summary = Text(request.Summary, 500, "proposal summary");
+            var changed = !string.Equals(title, proposal.Title, StringComparison.Ordinal) ||
+                !string.Equals(summary, proposal.Summary, StringComparison.Ordinal);
+            var steps = proposal.Steps.Select(step =>
             {
-                Intent = request.StepIntents.TryGetValue(step.StepId, out var intent)
-                    ? Text(intent, 300, $"intent for {step.StepId}")
-                    : step.Intent,
-                TargetLabel = request.StepTargets.TryGetValue(step.StepId, out var target)
-                    ? Text(target, 240, $"target for {step.StepId}")
-                    : step.TargetLabel
+                var intent = request.StepIntents.TryGetValue(step.StepId, out var requestedIntent)
+                    ? Text(requestedIntent, 300, $"intent for {step.StepId}")
+                    : step.Intent;
+                var target = request.StepTargets.TryGetValue(step.StepId, out var requestedTarget)
+                    ? Text(requestedTarget, 240, $"target for {step.StepId}")
+                    : step.TargetLabel;
+                var stepChanged = !string.Equals(intent, step.Intent, StringComparison.Ordinal) ||
+                    !string.Equals(target, step.TargetLabel, StringComparison.Ordinal);
+                changed |= stepChanged;
+                return step with
+                {
+                    Intent = intent,
+                    TargetLabel = target,
+                    Verified = stepChanged ? false : step.Verified
+                };
             }).ToArray();
+
+            if (!changed)
+                return SnapshotUnsafe();
+
+            var findings = proposal.Findings
+                .Append("Review edits changed the compiled proposal. Prior verification metadata is stale and re-verification is required before any future promotion or replay.")
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(value => value, StringComparer.Ordinal)
+                .ToArray();
             _proposal = proposal with
             {
-                Title = Text(request.Title, 180, "proposal title"),
-                Summary = Text(request.Summary, 500, "proposal summary"),
+                Title = title,
+                Summary = summary,
                 Steps = steps,
+                CompilationDecision = TeachNodalCompilationDecision.DraftNeedsReview.ToString(),
+                CompilationCode = EditedCompilationCode,
+                SkillFingerprint = string.Empty,
+                Findings = findings,
                 UpdatedAtUtc = DateTimeOffset.UtcNow,
-                ReviewRequired = true
+                ReviewRequired = true,
+                SaveAllowed = true
             };
+            _findings = findings;
             _state = NodalOsTeachNodalProductState.ReviewReady;
             return SnapshotUnsafe();
         }
     }
+
+    public NodalOsTeachNodalProductSnapshot RejectReview(string message) => FailClosed(message);
 
     public async Task<NodalOsTeachNodalProductSnapshot> SaveAsync(CancellationToken cancellationToken)
     {
@@ -324,6 +371,7 @@ public sealed class NodalOsTeachNodalProductService
             NodalOsTeachNodalProductProposal proposal;
             lock (_stateGate)
             {
+                RequireStateUnsafe(NodalOsTeachNodalProductState.ReviewReady, "Only a review-ready Teach NODAL proposal can be saved once.");
                 proposal = _proposal ?? throw new InvalidOperationException("No Teach NODAL proposal is available to save.");
                 if (!proposal.SaveAllowed)
                     throw new InvalidOperationException("The proposal failed closed and cannot be saved.");
@@ -338,6 +386,7 @@ public sealed class NodalOsTeachNodalProductService
                 CreatedAtUtc = existing?.CreatedAtUtc ?? proposal.CreatedAtUtc,
                 UpdatedAtUtc = DateTimeOffset.UtcNow,
                 ReviewRequired = true,
+                SaveAllowed = true,
                 ScriptsIncluded = false,
                 RawInputStored = false,
                 RawScreenshotStored = false,
@@ -378,9 +427,9 @@ public sealed class NodalOsTeachNodalProductService
 
     public NodalOsTeachNodalProductSnapshot Discard()
     {
+        TryReleaseBinding();
         lock (_stateGate)
         {
-            ReleaseBinding();
             _active = null;
             _proposal = null;
             _findings = [];
@@ -425,8 +474,11 @@ public sealed class NodalOsTeachNodalProductService
 
     private NodalOsTeachNodalProductSnapshot FailClosed(string message)
     {
+        TryReleaseBinding();
         lock (_stateGate)
         {
+            _active = null;
+            _proposal = null;
             _state = NodalOsTeachNodalProductState.FailedClosed;
             _findings = [SafeRuntimeText.Sanitize(message, 500)];
             return SnapshotUnsafe();
@@ -450,14 +502,25 @@ public sealed class NodalOsTeachNodalProductService
         }
     }
 
-    private void ReleaseBinding()
+    private void TryReleaseBinding()
     {
-        var binding = _adapter.Binding;
-        if (binding is null)
-            return;
-        if (_adapter.PendingStepCount != 0)
-            throw new InvalidOperationException("A Teach NODAL step is still pending.");
-        _adapter.ReleaseBinding(binding);
+        try
+        {
+            var binding = _adapter.Binding;
+            if (binding is not null && _adapter.PendingStepCount == 0)
+                _adapter.ReleaseBinding(binding);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
+
+    private void RequireStateUnsafe(NodalOsTeachNodalProductState required, string reason)
+    {
+        if (_state == NodalOsTeachNodalProductState.FailedClosed)
+            throw new InvalidOperationException("Teach NODAL failed closed. Discard the session before starting again.");
+        if (_state != required)
+            throw new InvalidOperationException(reason);
     }
 
     private static TeachNodalObservedAction BuildAction(
@@ -475,16 +538,9 @@ public sealed class NodalOsTeachNodalProductService
             var name = Slug(request.ParameterName ?? "VALUE", 40, "parameter name")
                 .Replace('-', '_')
                 .ToUpperInvariant();
-            var reference = Text(request.ParameterReference ?? $"variable-ref:{name}", 180, "parameter reference");
-            var valid = request.SecretByReference
-                ? reference.StartsWith("secret-ref:", StringComparison.Ordinal) ||
-                  reference.StartsWith("secret://", StringComparison.Ordinal)
-                : reference.StartsWith("variable-ref:", StringComparison.Ordinal) ||
-                  reference.StartsWith("literal-ref:", StringComparison.Ordinal);
-            if (!valid)
-                throw new ArgumentException(request.SecretByReference
-                    ? "Sensitive input requires secret-ref: or secret://."
-                    : "Typed input requires variable-ref: or literal-ref:.");
+            var reference = ParameterReference(
+                request.ParameterReference ?? $"variable-ref:{name}",
+                request.SecretByReference);
             parameters =
             [
                 new TeachNodalParameterObservation(
@@ -582,6 +638,11 @@ public sealed class NodalOsTeachNodalProductService
         return score;
     }
 
+    private static string Property(UnifiedElementSnapshot element, string key, string fallback) =>
+        element.CanonicalProperties.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+            ? SafeRuntimeText.Sanitize(value, key == "role" ? 120 : 240)
+            : fallback;
+
     private NodalOsTeachNodalProductProposal? FindOverlap(string appProfileId, string title) =>
         ReadAllProposals()
             .Where(value => string.Equals(value.AppProfileId, appProfileId, StringComparison.Ordinal))
@@ -610,9 +671,7 @@ public sealed class NodalOsTeachNodalProductService
             return [];
         return Directory.EnumerateFiles(_draftRoot, "*.json", SearchOption.TopDirectoryOnly)
             .Select(ReadProposal)
-            .Where(value => value is not null &&
-                !value.ExecutionAuthorityGranted &&
-                !value.ProductAuthorityGranted)
+            .Where(value => value is not null)
             .Cast<NodalOsTeachNodalProductProposal>()
             .ToArray();
     }
@@ -623,9 +682,10 @@ public sealed class NodalOsTeachNodalProductService
             return null;
         try
         {
-            return JsonSerializer.Deserialize<NodalOsTeachNodalProductProposal>(
+            var proposal = JsonSerializer.Deserialize<NodalOsTeachNodalProductProposal>(
                 File.ReadAllText(path, Encoding.UTF8),
                 JsonOptions);
+            return IsValidPersistedProposal(proposal) ? proposal : null;
         }
         catch (JsonException)
         {
@@ -635,10 +695,73 @@ public sealed class NodalOsTeachNodalProductService
         {
             return null;
         }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private static bool IsValidPersistedProposal(NodalOsTeachNodalProductProposal? proposal)
+    {
+        if (proposal is null ||
+            proposal.Version < 1 ||
+            string.IsNullOrWhiteSpace(proposal.DraftId) ||
+            string.IsNullOrWhiteSpace(proposal.Title) ||
+            string.IsNullOrWhiteSpace(proposal.Summary) ||
+            string.IsNullOrWhiteSpace(proposal.AppProfileId) ||
+            string.IsNullOrWhiteSpace(proposal.ApplicationRef) ||
+            string.IsNullOrWhiteSpace(proposal.ProcessNameRedacted) ||
+            string.IsNullOrWhiteSpace(proposal.CompilationDecision) ||
+            string.IsNullOrWhiteSpace(proposal.CompilationCode) ||
+            proposal.Steps is null || proposal.Steps.Count is < 1 or > MaximumSteps ||
+            proposal.Findings is null ||
+            !proposal.ReviewRequired || !proposal.SaveAllowed ||
+            proposal.ScriptsIncluded || proposal.RawInputStored || proposal.RawScreenshotStored ||
+            proposal.RawDomStored || proposal.GlobalHooksUsed || proposal.ExecutionAuthorityGranted ||
+            proposal.ProductAuthorityGranted || proposal.UpdatedAtUtc < proposal.CreatedAtUtc)
+        {
+            return false;
+        }
+
+        return proposal.Steps.All(step =>
+            step is not null &&
+            !string.IsNullOrWhiteSpace(step.StepId) &&
+            !string.IsNullOrWhiteSpace(step.Kind) &&
+            !string.IsNullOrWhiteSpace(step.Intent) &&
+            !string.IsNullOrWhiteSpace(step.TargetLabel) &&
+            !string.IsNullOrWhiteSpace(step.TargetRole) &&
+            step.ParameterRefs is not null &&
+            !string.IsNullOrWhiteSpace(step.BeforeFingerprint) &&
+            !string.IsNullOrWhiteSpace(step.AfterFingerprint) &&
+            !string.IsNullOrWhiteSpace(step.EvidenceRef));
     }
 
     private string DraftPath(string draftId) =>
         Path.Combine(_draftRoot, Slug(draftId, 120, "draft id") + ".json");
+
+    private static string ParameterReference(string? value, bool secretByReference)
+    {
+        var requiredPrefix = secretByReference ? "secret-ref:" : null;
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException("parameter reference is required.");
+        var normalized = SafeRuntimeText.Sanitize(value, 180);
+        var validPrefix = secretByReference
+            ? normalized.StartsWith(requiredPrefix!, StringComparison.Ordinal)
+            : normalized.StartsWith("variable-ref:", StringComparison.Ordinal) ||
+              normalized.StartsWith("literal-ref:", StringComparison.Ordinal);
+        if (!validPrefix)
+            throw new ArgumentException(secretByReference
+                ? "Sensitive input requires an opaque secret-ref: reference."
+                : "Typed input requires variable-ref: or literal-ref:.");
+        var separator = normalized.IndexOf(':');
+        if (separator < 0 || separator == normalized.Length - 1)
+            throw new ArgumentException("parameter reference requires a non-empty opaque identifier.");
+        if (HistorySanitizer.SanitizeText(normalized).Contains("[LOCAL_PATH]", StringComparison.Ordinal))
+            throw new ArgumentException("parameter reference contains local-path content.");
+        if (!secretByReference && HistorySanitizer.ContainsSecretLikeContent(normalized))
+            throw new ArgumentException("non-secret parameter reference contains secret-like content.");
+        return normalized;
+    }
 
     private static string Text(string? value, int maximumLength, string field)
     {
