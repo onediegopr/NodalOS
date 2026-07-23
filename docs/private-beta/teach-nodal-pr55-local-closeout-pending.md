@@ -1,39 +1,87 @@
-# Teach NODAL PR #55 — local closeout pending
+# Teach NODAL PR #55 - local closeout
 
-## Estado
+## Decision
 
-El thin slice productivo Record → Review Draft está implementado en PR #55, pero no está autorizado para merge todavía.
+`GO_WITH_BASELINE_FINDINGS_TEACH_NODAL_PR55_LOCAL_VALIDATED_READY_FOR_MERGE_REVIEW`
 
-HEAD de referencia al registrar este estado: `6b10ccd46037f55d1efb25626d3e5d1725441ae8`.
+PR #55 implements the Teach NODAL Record -> Review Draft thin slice and is locally validated. GitHub Actions were not used as evidence because credits were unavailable. PR #54 was not touched.
 
-GitHub Actions no se usa como evidencia por falta de créditos disponibles. La validación y corrección final deben ejecutarse localmente con Codex sobre la rama `feature/teach-nodal-record-review-thin-slice`.
+Initial A/B HEAD: `9625adf4769353918e59e90a87c826cd209856d7`.
 
-## Findings finales confirmados
+Compared refs:
 
-1. Guardado stale entre dos sesiones/procesos puede sobrescribir una versión posterior del mismo draft.
-2. Un formulario de review stale puede borrar una edición más reciente.
-3. La selección de target debe aceptar únicamente coincidencia exacta de label visible, no substring.
-4. Una referencia debe rechazar material secreto crudo antes de aplicar cualquier sanitización.
+- Baseline: `origin/main` at `78f2a1988c68478eea9a65ecb4a04aa82f0d7483`.
+- PR #55: `feature/teach-nodal-record-review-thin-slice` at `9625adf4769353918e59e90a87c826cd209856d7`.
 
-## Estado parcial que debe reconciliarse
+## Local validation evidence
 
-`NodalOsTeachNodalProductModels.cs` ya introdujo metadata de concurrencia, pero servicio, endpoint, renderer y tests todavía deben quedar alineados y compilables en el mismo commit de cierre.
+Teach NODAL and relevant local regressions were validated on PR #55 before this docs-only closeout:
 
-## Límites obligatorios
+- `NodalOsTeachNodalProductTests`: PASS `24/24`.
+- `OneBrain.Runtime.Tests`: PASS `50/50`.
+- `OneBrain.Pilot` build: PASS.
+- `OneBrain.Recipes.Tests` build: PASS with one existing warning, `MSTEST0032` in `PilotShellTests.cs`.
+- `OneBrain.slnx` build: PASS.
 
-- No usar GitHub Actions.
-- No tocar PR #54.
-- No agregar replay, scripts, captura global, video, audio, screenshots, DOM, raw input, cloud, marketplace, scheduler ni autoridad de ejecución/producto.
-- No crear otro runtime, storage general, policy engine, approval system o framework.
-- Mantener `/teach` application-scoped, local-first y review-only.
-- Corregir solo defects confirmados.
+## Product Ledger A/B comparison
 
-## Criterio de cierre
+Full Recipes comparison:
 
-- restore/build local PASS;
-- tests focales Teach NODAL PASS;
-- regresión relevante Recipes y Runtime PASS;
-- todos los review threads resueltos con evidencia;
-- PR #55 mergeable y sin findings abiertos;
-- commit y push en la rama del PR;
-- no mergear hasta revisión del reporte final.
+- `origin/main`: FAIL `1625 passed / 6 failed / 0 skipped / 1631 total`.
+- PR #55: FAIL `1649 passed / 6 failed / 0 skipped / 1655 total`.
+
+Focused repetition of the same six failures:
+
+- `origin/main` focal run 1: FAIL `0 passed / 6 failed`.
+- `origin/main` focal run 2: FAIL `0 passed / 6 failed`.
+- PR #55 focal run 1: FAIL `0 passed / 6 failed`.
+- PR #55 focal run 2: FAIL `0 passed / 6 failed`.
+
+The six failing Product Ledger tests are identical in baseline and PR #55:
+
+1. `ProductLedgerPublicUiActionSurfaceTests.PublicUiActionSurface_CompletesBoundedLocalExportRecipe`
+2. `ProductLedgerPublicUiActionSurfaceTests.PublicUiActionSurface_CompletesLocalOnlyReadActionsRecipe`
+3. `ProductLedgerLocalOnlyOperatorDiagnosticsSurfaceTests.OperatorDiagnosticsSurface_RendersLocalOnlyOperatorSnapshotRecipe`
+4. `ProductLedgerPublicUiReadOnlyDisabledPreviewTests.PublicUiReadOnlyDisabledPreview_RendersDisabledMockRecipe`
+5. `ProductLedgerInternalOperatorUiPreviewTests.InternalOperatorUiPreview_RendersCockpitRecipeFromDiagnosticsSurface`
+6. `ProductLedgerInternalCommandPreviewRouterTests.InternalCommandPreviewRouter_MapsOperatorUiActionsToNoOpReadOnlyPreviewsRecipe`
+
+Failure mode:
+
+- Five tests receive `Rejected` where Product Ledger recipe expectations still expect local preview or local non-destructive completion.
+- One diagnostics recipe expects the stale next-step token `EXTERNAL_AUDIT_READ_ONLY_THEN_STATIC_SCAN_HARDENING`, while current runtime readiness metadata reports the local-dev runtime/product readiness action.
+
+## Causal conclusion
+
+`BASELINE_EXISTING_NOT_PR55_REGRESSION`.
+
+Evidence:
+
+- The six failures reproduce on `origin/main`.
+- The six failures reproduce on PR #55 with the same focused filter.
+- PR #55 diff does not touch `src/OneBrain.Core/Approval/ProductLedger*`.
+- PR #55 diff does not touch `tests/OneBrain.Recipes.Tests/ProductLedger*`.
+- Cross-scan found no Teach NODAL references inside Product Ledger sources/tests.
+- Cross-scan found no Product Ledger references inside Teach NODAL PR #55 sources/tests.
+
+Therefore the Product Ledger failures are baseline state, not caused by the Teach NODAL thin slice.
+
+## Boundaries preserved
+
+- No GitHub Actions evidence used.
+- No merge performed.
+- No PR #54 change.
+- No Product Ledger source or tests modified in this closeout.
+- No production runtime/product activation.
+- No public Product Ledger exposure.
+- No CI enforcement.
+- No workflow change.
+- No DB, cloud, external provider, KMS, WORM, customer data, release, or commercial path.
+
+## Remaining review item
+
+GitHub review thread resolution was not changed from local Codex. If GitHub authenticated review metadata is unavailable, the merge reviewer must confirm thread state in GitHub before pressing merge.
+
+## Merge recommendation
+
+PR #55 is locally ready for merge review with baseline findings documented. The remaining non-green Recipes signal is a pre-existing Product Ledger baseline issue and should not block PR #55 unless the reviewer chooses to enforce full Recipes green before merge.
