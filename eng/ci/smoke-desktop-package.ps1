@@ -65,6 +65,13 @@ try {
     $installScriptText = Get-Content $installScriptPath -Raw
     $uninstallScriptText = Get-Content $uninstallScriptPath -Raw
     $installReadmeText = Get-Content (Join-Path $outputRoot "README-INSTALL.txt") -Raw
+    if ($installScriptText -match 'ForceUpdateFromAnyVersion' -or
+        $installScriptText -notmatch 'Read-MsixIdentity' -or
+        $installScriptText -notmatch 'Get-InstalledPackageForIdentity' -or
+        $installScriptText -notmatch 'Test-signed private-beta packages require clean uninstall before installing another signed revision' -or
+        $installReadmeText -notmatch 'External-signed updates require the same package name and publisher and a strictly greater four-part version') {
+        throw "Private-beta operator scripts do not enforce safe monotonic identity-aware update policy."
+    }
     if ($installScriptText -notmatch 'requires an elevated PowerShell' -or
         $installScriptText -notmatch 'SHA-256' -or
         $uninstallScriptText -notmatch 'LocalMachine\\TrustedPeople' -or
@@ -82,6 +89,12 @@ try {
         $updateManifest.thirdPartyNoticesFile -ne "ThirdParty/THIRD_PARTY_NOTICES.txt" -or
         $updateManifest.thirdPartyComponentsFile -ne "ThirdParty/third-party-components.json") {
         throw "Desktop update manifest does not match the private-beta package contract."
+    }
+    if ($updateManifest.version -ne $Version -or
+        $updateManifest.updatePolicy -notmatch 'same package name and publisher' -or
+        $updateManifest.updatePolicy -notmatch 'Same-version reinstall and downgrade are blocked' -or
+        $updateManifest.updatePolicy -notmatch 'Test-signed private-beta packages require clean uninstall') {
+        throw "Desktop update manifest does not describe the monotonic private-beta update policy."
     }
     if ((Get-FileHash $thirdPartyNoticesPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyNoticesSha256 -or
         (Get-FileHash $thirdPartyInventoryPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $updateManifest.thirdPartyComponentsSha256) {
@@ -170,6 +183,27 @@ try {
     $installed = Get-AppxPackage -Name $packageName -ErrorAction Stop
     if (-not $installed -or $installed.Version.ToString() -ne $Version) {
         throw "Installed package identity or version is incorrect."
+    }
+
+    $testSignedInPlaceRefusalObserved = $false
+    try {
+        & $installScriptPath -TrustTestCertificate
+    }
+    catch {
+        if ($_.Exception.Message -notmatch "Test-signed private-beta packages require clean uninstall before installing another signed revision") { throw }
+        $testSignedInPlaceRefusalObserved = $true
+    }
+    if (-not $testSignedInPlaceRefusalObserved) {
+        throw "Bundled installer did not block test-signed in-place reinstall before mutation."
+    }
+    $installedAfterRefusal = Get-AppxPackage -Name $packageName -ErrorAction Stop
+    if (-not $installedAfterRefusal -or $installedAfterRefusal.Version.ToString() -ne $Version) {
+        throw "Test-signed in-place refusal changed the installed package."
+    }
+    $trustedPeopleAfterRefusal = @(Get-ChildItem "Cert:\LocalMachine\TrustedPeople" |
+        Where-Object { $_.Thumbprint -eq $trustedPeopleThumbprint })
+    if ($trustedPeopleAfterRefusal.Count -ne 1) {
+        throw "Test-signed in-place refusal changed existing private-beta certificate trust."
     }
 
     $buildInfoPath = Join-Path $installed.InstallLocation "nodal-build-info.json"

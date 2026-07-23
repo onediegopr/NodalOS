@@ -7,7 +7,7 @@ NODAL OS is a local-first AI Mission Control for supervised work on real project
 - Canonical integration branch: `main`.
 - Runtime: .NET 10 LTS, with SDK `10.0.302` pinned by `global.json` and prerelease SDKs disabled.
 - Product maturity: installable Windows private beta; not a public or production release.
-- Desktop distribution: test-signed self-contained `win-x64` MSIX `0.1.0.4` validated through clean build, exact package-derived third-party inventory, install, packaged core loop, guarded rollback, uninstall and exact test-certificate cleanup.
+- Desktop distribution: private-beta self-contained `win-x64` MSIX candidate `0.1.0.5` includes Teach NODAL and uses local packaging validation. External-signed updates are monotonic for exact package name + publisher identity; same-version reinstall and downgrade are blocked. Test-signed revisions require clean uninstall before another signed revision so stale local-machine trust is not stranded.
 - Teach NODAL: `/teach` exposes an application-scoped semantic Record → Review Draft flow. It stores no video, audio, raw input, coordinates, screenshots or DOM; drafts remain local, editable, review-only and non-executable.
 - Field validation: design-partner runbook ready; no external partner sessions completed yet.
 - Public distribution: blocked until repository/product terms, review of the generated notices, production signing identity and real release/update channel are selected.

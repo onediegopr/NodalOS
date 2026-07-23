@@ -237,15 +237,20 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "SignTool sign failed with exit code $LASTEXITCODE." }
 
     if ($testCertificatePath) {
-        $trustedRoot = Import-Certificate -FilePath $testCertificatePath -CertStoreLocation "Cert:\LocalMachine\TrustedPeople"
-        $temporaryTrustedPeopleThumbprint = $trustedRoot.Thumbprint
+        $signature = Get-AuthenticodeSignature $msixPath
+        if (-not $signature.SignerCertificate -or
+            -not [string]::Equals($signature.SignerCertificate.Thumbprint, $testCertificate.Thumbprint, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "MSIX test signature was not produced with the generated private-beta test certificate."
+        }
     }
-    & $signTool verify /pa /v $msixPath
-    if ($LASTEXITCODE -ne 0) { throw "SignTool verification failed with exit code $LASTEXITCODE." }
+    else {
+        & $signTool verify /pa /v $msixPath
+        if ($LASTEXITCODE -ne 0) { throw "SignTool verification failed with exit code $LASTEXITCODE." }
+    }
 }
 finally {
     if ($temporaryTrustedPeopleThumbprint) {
-        Remove-CertificateByThumbprint "Cert:\LocalMachine\TrustedPeople" $temporaryTrustedPeopleThumbprint
+        Remove-CertificateByThumbprint "Cert:\CurrentUser\Root" $temporaryTrustedPeopleThumbprint
     }
     if ($testCertificate) {
         Remove-CertificateByThumbprint "Cert:\CurrentUser\My" $testCertificate.Thumbprint
@@ -276,7 +281,7 @@ $manualUpdate = [ordered]@{
     thirdPartyComponentsSha256 = $thirdPartyInventoryHash
     thirdPartyLegalApprovalGranted = $false
     minimumWindowsVersion = "10.0.19041.0"
-    updatePolicy = "Install a newer package with the same identity and a greater four-part version. No automatic public channel is enabled."
+    updatePolicy = "External-signed updates require the same package name and publisher and a strictly greater four-part version. Same-version reinstall and downgrade are blocked. Test-signed private-beta packages require clean uninstall before installing another signed revision. No automatic public channel is enabled."
     productAuthorityGranted = $false
     generatedAtUtc = [DateTimeOffset]::UtcNow.ToString("O")
 }
@@ -316,6 +321,61 @@ $installScript = @"
 param([switch]`$TrustTestCertificate)
 `$ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+
+function Read-MsixIdentity([string]`$PackagePath) {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    `$archive = [System.IO.Compression.ZipFile]::OpenRead(`$PackagePath)
+    try {
+        `$entry = `$archive.Entries | Where-Object { `$_.FullName -eq "AppxManifest.xml" } | Select-Object -First 1
+        if (-not `$entry) { throw "NODAL OS package identity could not be read." }
+        `$reader = [System.IO.StreamReader]::new(`$entry.Open())
+        try {
+            [xml]`$manifest = `$reader.ReadToEnd()
+        }
+        finally {
+            `$reader.Dispose()
+        }
+        `$identity = `$manifest.Package.Identity
+        if (-not `$identity -or
+            [string]::IsNullOrWhiteSpace(`$identity.Name) -or
+            [string]::IsNullOrWhiteSpace(`$identity.Publisher) -or
+            [string]::IsNullOrWhiteSpace(`$identity.Version)) {
+            throw "NODAL OS package identity is incomplete."
+        }
+        [pscustomobject]@{
+            Name = [string]`$identity.Name
+            Publisher = [string]`$identity.Publisher
+            Version = [version]`$identity.Version
+        }
+    }
+    finally {
+        `$archive.Dispose()
+    }
+}
+
+function Get-InstalledPackageForIdentity([string]`$Name, [string]`$Publisher) {
+    `$matches = @(Get-AppxPackage -Name `$Name -ErrorAction SilentlyContinue |
+        Where-Object { [string]::Equals(`$_.Publisher, `$Publisher, [StringComparison]::Ordinal) })
+    if (`$matches.Count -gt 1) {
+        throw "Multiple installed NODAL OS packages match the same package name and publisher. Installation stopped."
+    }
+    if (`$matches.Count -eq 0) { return `$null }
+    return `$matches[0]
+}
+
+function Assert-AdministratorForTrust([string]`$Action) {
+    `$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    try {
+        `$principal = [Security.Principal.WindowsPrincipal]::new(`$identity)
+        if (-not `$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+            throw "`$Action requires an elevated PowerShell. Reopen PowerShell as Administrator and rerun on a controlled test device."
+        }
+    }
+    finally {
+        `$identity.Dispose()
+    }
+}
+
 `$root = Split-Path -Parent `$MyInvocation.MyCommand.Path
 `$package = Join-Path `$root "$msixName"
 `$expectedSha256 = "$packageHash"
@@ -328,6 +388,24 @@ if (`$actualSha256 -ne `$expectedSha256) {
 }
 
 `$testSigned = -not [string]::IsNullOrWhiteSpace("$certificateLeaf")
+`$signingMode = if (`$testSigned) { "test" } else { "external" }
+`$candidate = Read-MsixIdentity `$package
+if (`$candidate.Name -ne "$PackageName" -or `$candidate.Publisher -ne "$certificateSubject" -or `$candidate.Version -ne [version]"$packageVersion") {
+    throw "NODAL OS package identity does not match the generated update manifest. Installation stopped."
+}
+`$installedPackage = Get-InstalledPackageForIdentity `$candidate.Name `$candidate.Publisher
+if (`$installedPackage -and `$testSigned) {
+    throw "Test-signed private-beta packages require clean uninstall before installing another signed revision."
+}
+if (`$installedPackage -and -not `$testSigned) {
+    `$installedVersion = [version]`$installedPackage.Version
+    if (`$candidate.Version -eq `$installedVersion) {
+        throw "NODAL OS candidate version `$(`$candidate.Version) is not newer than installed version `$installedVersion. Same-version reinstall is blocked."
+    }
+    if (`$candidate.Version -lt `$installedVersion) {
+        throw "NODAL OS candidate version `$(`$candidate.Version) is older than installed version `$installedVersion. Downgrade is blocked."
+    }
+}
 `$certificate = if (`$testSigned) { Join-Path `$root "$certificateLeaf" } else { `$null }
 if (`$testSigned) {
     if (-not (Test-Path -LiteralPath `$certificate -PathType Leaf)) {
@@ -336,21 +414,13 @@ if (`$testSigned) {
     if (-not `$TrustTestCertificate) {
         throw "This private-beta package uses a test certificate. Re-run with -TrustTestCertificate only on a controlled test device."
     }
-    `$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-    try {
-        `$principal = [Security.Principal.WindowsPrincipal]::new(`$identity)
-        if (-not `$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-            throw "Trusting the private-beta test certificate requires an elevated PowerShell. Reopen PowerShell as Administrator and rerun with -TrustTestCertificate on a controlled test device."
-        }
-    }
-    finally {
-        `$identity.Dispose()
-    }
+    Assert-AdministratorForTrust "Trusting the private-beta test certificate"
     Import-Certificate -FilePath `$certificate -CertStoreLocation "Cert:\LocalMachine\TrustedPeople" | Out-Null
 }
-Add-AppxPackage -Path `$package -ForceUpdateFromAnyVersion
+Add-AppxPackage -Path `$package
 Write-Host "NODAL OS $packageVersion installed for the current user."
 Write-Host "MSIX SHA-256 verified: `$actualSha256"
+Write-Host "Package identity verified: `$(`$candidate.Name) / `$(`$candidate.Publisher) / `$(`$candidate.Version) / `$signingMode"
 "@
 [System.IO.File]::WriteAllText((Join-Path $OutputDirectory "Install-NodalOS.ps1"), $installScript, [System.Text.UTF8Encoding]::new($false))
 
@@ -359,6 +429,8 @@ param([switch]`$RemoveUserData)
 `$ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 `$root = Split-Path -Parent `$MyInvocation.MyCommand.Path
+`$packageName = "$PackageName"
+`$publisher = "$certificateSubject"
 `$testSigned = -not [string]::IsNullOrWhiteSpace("$certificateLeaf")
 `$certificate = if (`$testSigned) { Join-Path `$root "$certificateLeaf" } else { `$null }
 `$trustedPeoplePath = `$null
@@ -366,15 +438,15 @@ if (`$testSigned) {
     if (-not (Test-Path -LiteralPath `$certificate -PathType Leaf)) {
         throw "The private-beta test certificate file is unavailable, so its exact machine trust cannot be removed safely. No uninstall action was performed."
     }
-    `$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    `$windowsIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
     try {
-        `$principal = [Security.Principal.WindowsPrincipal]::new(`$identity)
+        `$principal = [Security.Principal.WindowsPrincipal]::new(`$windowsIdentity)
         if (-not `$principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
             throw "Removing the private-beta test certificate requires an elevated PowerShell. Reopen PowerShell as Administrator and rerun Uninstall-NodalOS.ps1. No uninstall action was performed."
         }
     }
     finally {
-        `$identity.Dispose()
+        `$windowsIdentity.Dispose()
     }
     `$publicCertificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(`$certificate)
     try {
@@ -384,7 +456,12 @@ if (`$testSigned) {
         `$publicCertificate.Dispose()
     }
 }
-Get-AppxPackage -Name "$PackageName" | ForEach-Object { Remove-AppxPackage -Package `$_.PackageFullName }
+`$packages = @(Get-AppxPackage -Name `$packageName -ErrorAction SilentlyContinue |
+    Where-Object { [string]::Equals(`$_.Publisher, `$publisher, [StringComparison]::Ordinal) })
+if (`$packages.Count -gt 1) {
+    throw "Multiple installed NODAL OS packages match the same package name and publisher. No uninstall action was performed."
+}
+`$packages | ForEach-Object { Remove-AppxPackage -Package `$_.PackageFullName }
 if (`$trustedPeoplePath -and (Test-Path `$trustedPeoplePath)) {
     Remove-Item `$trustedPeoplePath -Force
 }
@@ -406,9 +483,10 @@ Signing mode: $signingMode
 
 This package is not a production or public release.
 - Test-signed builds require explicit machine-wide trust of the included certificate. Open an elevated PowerShell and run .\Install-NodalOS.ps1 -TrustTestCertificate on a controlled test device. The installer verifies the exact MSIX SHA-256 before changing trust or installing.
+- Test-signed private-beta packages require clean uninstall before installing another signed revision. In-place test-signed update is blocked before importing new trust so the previous bundle can remove its exact certificate.
 - ThirdParty/ contains an exact package-derived technical notice inventory. It requires owner/legal review and does not authorize public distribution.
 - Public distribution requires a CA-trusted or Microsoft-managed signing identity matching the package publisher.
-- Install a newer four-part version to update. The current private-beta channel is manual unless a validated HTTPS .appinstaller URI is supplied at build time.
+- External-signed updates require the same package name and publisher and a strictly greater four-part version. Same-version reinstall and downgrade are blocked. The current private-beta channel is manual unless a validated HTTPS .appinstaller URI is supplied at build time.
 - For a test-signed bundle, run .\Uninstall-NodalOS.ps1 from an elevated PowerShell so the package and exact included test-certificate trust are both removed. Pass -RemoveUserData only when local workspaces, evidence references and model configuration should also be removed.
 "@
 [System.IO.File]::WriteAllText((Join-Path $OutputDirectory "README-INSTALL.txt"), $installReadme, [System.Text.UTF8Encoding]::new($false))

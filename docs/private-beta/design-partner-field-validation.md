@@ -73,6 +73,8 @@ For a controlled test-signed build, open PowerShell **as administrator** and run
 
 The elevation is required because the installer verifies and imports the exact test certificate into the local-machine `TrustedPeople` store. Keep the extracted bundle available through uninstall so the exact certificate can be identified and removed. A production/CA-trusted signature would not require this test-certificate step.
 
+Do not install a newer test-signed revision over an already installed test-signed package. Test-signed private-beta revisions require clean uninstall with the previous bundle before installing another signed revision, because the previous bundle is the only artifact that can safely remove its exact certificate trust. Externally signed updates remain monotonic: same package name, same publisher and a strictly greater four-part version.
+
 Default uninstall preserves `%LOCALAPPDATA%\NodalOS`. Removing user data remains a separate explicit action:
 
 ```powershell
