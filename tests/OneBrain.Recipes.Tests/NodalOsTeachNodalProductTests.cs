@@ -46,17 +46,19 @@ public sealed class NodalOsTeachNodalProductTests
             Assert.IsFalse(reviewed.ExecutionAuthorityGranted);
             Assert.IsFalse(reviewed.ProductAuthorityGranted);
 
-            var edited = service.UpdateProposal(new NodalOsTeachNodalProposalEditRequest(
-                "Save the reviewed fixture document",
-                "One bounded semantic action, reviewed before reuse.",
-                new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    [reviewed.Proposal.Steps.Single().StepId] = "Save only inside the already selected application."
-                },
-                new Dictionary<string, string>(StringComparer.Ordinal)
-                {
-                    [reviewed.Proposal.Steps.Single().StepId] = "Save"
-                }));
+            var edited = await service.UpdateProposalAsync(
+                new NodalOsTeachNodalProposalEditRequest(
+                    "Save the reviewed fixture document",
+                    "One bounded semantic action, reviewed before reuse.",
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        [reviewed.Proposal.Steps.Single().StepId] = "Save only inside the already selected application."
+                    },
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        [reviewed.Proposal.Steps.Single().StepId] = "Save"
+                    }),
+                CancellationToken.None);
             Assert.AreEqual("Save the reviewed fixture document", edited.Proposal?.Title);
             Assert.AreEqual(TeachNodalCompilationDecision.DraftNeedsReview.ToString(), edited.Proposal?.CompilationDecision);
             Assert.AreEqual("TEACH_NODAL_REVIEW_EDIT_REQUIRES_REVERIFICATION", edited.Proposal?.CompilationCode);
@@ -163,7 +165,7 @@ public sealed class NodalOsTeachNodalProductTests
             Assert.AreEqual(NodalOsTeachNodalProductState.FailedClosed, stillBlocked.State);
             Assert.IsFalse(stillBlocked.Bound);
 
-            var reset = service.Discard();
+            var reset = await service.DiscardAsync(CancellationToken.None);
             Assert.AreEqual(NodalOsTeachNodalProductState.Empty, reset.State);
         }
         finally
@@ -173,7 +175,7 @@ public sealed class NodalOsTeachNodalProductTests
     }
 
     [TestMethod]
-    public async Task InvalidReviewCanBeRejectedWithoutLeavingCaptureOrProposalActive()
+    public async Task InvalidReviewFailsClosedWithoutLeavingCaptureOrProposalActive()
     {
         var root = NewRoot();
         try
@@ -185,13 +187,13 @@ public sealed class NodalOsTeachNodalProductTests
             await CaptureSaveStep(service, "Save the fixture document.");
             await service.FinishAsync(CancellationToken.None);
 
-            var exception = Assert.ThrowsExactly<ArgumentException>(() => service.UpdateProposal(
+            var failed = await service.UpdateProposalAsync(
                 new NodalOsTeachNodalProposalEditRequest(
                     string.Empty,
                     "Still a summary",
                     new Dictionary<string, string>(),
-                    new Dictionary<string, string>())));
-            var failed = service.RejectReview(exception.Message);
+                    new Dictionary<string, string>()),
+                CancellationToken.None);
 
             Assert.AreEqual(NodalOsTeachNodalProductState.FailedClosed, failed.State);
             Assert.IsFalse(failed.Bound);
@@ -268,12 +270,7 @@ public sealed class NodalOsTeachNodalProductTests
         var root = NewRoot();
         try
         {
-            var service = Service(root,
-            [
-                InputSnapshot("Fixture Editor", "empty"),
-                InputSnapshot("Fixture Editor", "empty"),
-                InputSnapshot("Fixture Editor — Updated", "updated")
-            ]);
+            var service = Service(root, InputSnapshots());
             await service.BindAsync(
                 new NodalOsTeachNodalBindRequest("Enter protected value", "fixture-editor"),
                 CancellationToken.None);
@@ -294,6 +291,120 @@ public sealed class NodalOsTeachNodalProductTests
             StringAssert.Contains(reviewed.Proposal?.Steps.Single().ParameterRefs.Single(), "secret-ref:account-value");
             Assert.IsFalse(reviewed.RawInputStored);
             Assert.IsFalse(reviewed.Proposal?.RawInputStored ?? true);
+        }
+        finally
+        {
+            DeleteRoot(root);
+        }
+    }
+
+    [TestMethod]
+    public async Task RawLookingSecretInsideReferenceFailsClosedAndIsNotPersisted()
+    {
+        var root = NewRoot();
+        try
+        {
+            var service = Service(root,
+            [
+                InputSnapshot("Fixture Editor", "empty"),
+                InputSnapshot("Fixture Editor", "empty")
+            ]);
+            await service.BindAsync(
+                new NodalOsTeachNodalBindRequest("Reject raw protected value", "fixture-editor"),
+                CancellationToken.None);
+
+            var failed = await service.CaptureStepAsync(
+                new NodalOsTeachNodalCaptureStepRequest(
+                    TeachNodalActionKind.Type,
+                    "Enter the configured protected value.",
+                    "Account value",
+                    "Edit",
+                    "ACCOUNT_VALUE",
+                    "secret-ref:sk-12345678",
+                    true),
+                CancellationToken.None);
+
+            Assert.AreEqual(NodalOsTeachNodalProductState.FailedClosed, failed.State);
+            Assert.IsFalse(failed.Bound);
+            Assert.IsNull(failed.Proposal);
+            Assert.AreEqual(0, Directory.Exists(root) ? Directory.GetFiles(root, "*.json").Length : 0);
+        }
+        finally
+        {
+            DeleteRoot(root);
+        }
+    }
+
+    [TestMethod]
+    public async Task CaptureCancellationFailsClosedImmediately()
+    {
+        var root = NewRoot();
+        var delayCalls = 0;
+        try
+        {
+            Task Delay(TimeSpan _, CancellationToken __)
+            {
+                var call = Interlocked.Increment(ref delayCalls);
+                return call == 1
+                    ? Task.CompletedTask
+                    : Task.FromCanceled(new CancellationToken(canceled: true));
+            }
+
+            var service = Service(root, SaveSnapshots(), Delay);
+            await service.BindAsync(
+                new NodalOsTeachNodalBindRequest("Cancelled capture", "fixture-editor"),
+                CancellationToken.None);
+
+            await Assert.ThrowsExactlyAsync<TaskCanceledException>(() => CaptureSaveStep(service, "Save the fixture document."));
+            var snapshot = service.GetSnapshot();
+
+            Assert.AreEqual(NodalOsTeachNodalProductState.FailedClosed, snapshot.State);
+            Assert.IsFalse(snapshot.Bound);
+            Assert.IsNull(snapshot.Proposal);
+        }
+        finally
+        {
+            DeleteRoot(root);
+        }
+    }
+
+    [TestMethod]
+    public async Task DiscardWaitsForInFlightCaptureAndCannotBeResurrected()
+    {
+        var root = NewRoot();
+        var delayCalls = 0;
+        var captureDelayStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseCapture = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        try
+        {
+            async Task Delay(TimeSpan _, CancellationToken cancellationToken)
+            {
+                var call = Interlocked.Increment(ref delayCalls);
+                if (call == 2)
+                {
+                    captureDelayStarted.TrySetResult();
+                    await releaseCapture.Task.WaitAsync(cancellationToken);
+                }
+            }
+
+            var service = Service(root, SaveSnapshots(), Delay);
+            await service.BindAsync(
+                new NodalOsTeachNodalBindRequest("Serialized discard", "fixture-editor"),
+                CancellationToken.None);
+
+            var captureTask = CaptureSaveStep(service, "Save the fixture document.");
+            await captureDelayStarted.Task;
+            var discardTask = service.DiscardAsync(CancellationToken.None);
+            Assert.IsFalse(discardTask.IsCompleted);
+
+            releaseCapture.TrySetResult();
+            var captured = await captureTask;
+            var discarded = await discardTask;
+
+            Assert.AreEqual(NodalOsTeachNodalProductState.Bound, captured.State);
+            Assert.AreEqual(NodalOsTeachNodalProductState.Empty, discarded.State);
+            Assert.AreEqual(NodalOsTeachNodalProductState.Empty, service.GetSnapshot().State);
+            Assert.IsFalse(service.GetSnapshot().Bound);
         }
         finally
         {
@@ -374,14 +485,15 @@ public sealed class NodalOsTeachNodalProductTests
 
     private static NodalOsTeachNodalProductService Service(
         string root,
-        IEnumerable<CognitiveSnapshot> snapshots)
+        IEnumerable<CognitiveSnapshot> snapshots,
+        Func<TimeSpan, CancellationToken, Task>? delay = null)
     {
         var queue = new Queue<CognitiveSnapshot>(snapshots);
         return new NodalOsTeachNodalProductService(
             root,
             (_, _) => queue.Count == 0 ? null : queue.Dequeue(),
             () => Hwnd,
-            (_, _) => Task.CompletedTask);
+            delay ?? ((_, _) => Task.CompletedTask));
     }
 
     private static string NewRoot() => Path.Combine(
@@ -400,6 +512,13 @@ public sealed class NodalOsTeachNodalProductTests
         Snapshot("Fixture Editor", "empty"),
         Snapshot("Fixture Editor", "empty"),
         Snapshot("Fixture Editor — Saved", "saved")
+    ];
+
+    private static CognitiveSnapshot[] InputSnapshots() =>
+    [
+        InputSnapshot("Fixture Editor", "empty"),
+        InputSnapshot("Fixture Editor", "empty"),
+        InputSnapshot("Fixture Editor — Updated", "updated")
     ];
 
     private static CognitiveSnapshot Snapshot(string title, string documentState) => new(
